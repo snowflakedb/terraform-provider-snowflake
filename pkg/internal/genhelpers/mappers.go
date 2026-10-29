@@ -11,13 +11,14 @@ var (
 	FullyQualifiedName = func(field string) string { return fmt.Sprintf("%s.FullyQualifiedName()", field) }
 	Name               = func(field string) string { return fmt.Sprintf("%s.Name()", field) }
 	CastToString       = func(field string) string { return fmt.Sprintf("string(%s)", field) }
+	FormatBool         = func(field string) string { return fmt.Sprintf("strconv.FormatBool(%s)", field) }
 	CastToInt          = func(field string) string { return fmt.Sprintf("int(%s)", field) }
 	Dereference        = func(field string) string { return fmt.Sprintf("*%s", field) }
 	Parentheses        = func(field string) string { return fmt.Sprintf("(%s)", field) }
 )
 
 // MapSlice maps each identifier (or other method-valued type) in a slice.
-// Emits collections.Map(field, elemType.method) — e.g. sdk.SchemaObjectIdentifier.FullyQualifiedName.
+// Emits collections.Map(field, elemType.method) - e.g. sdk.SchemaObjectIdentifier.FullyQualifiedName.
 func MapSlice(elemType, method string) Mapper {
 	return func(field string) string {
 		return fmt.Sprintf("collections.Map(%s, %s.%s)", field, elemType, method)

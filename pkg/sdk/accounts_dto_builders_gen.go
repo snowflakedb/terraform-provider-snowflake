@@ -134,11 +134,6 @@ func (s *AccountSetRequest) WithParameters(parameters AccountParametersRequest) 
 	return s
 }
 
-func (s *AccountSetRequest) WithLegacyParameters(legacyParameters AccountLevelParametersRequest) *AccountSetRequest {
-	s.LegacyParameters = &legacyParameters
-	return s
-}
-
 func (s *AccountSetRequest) WithResourceMonitor(resourceMonitor AccountObjectIdentifier) *AccountSetRequest {
 	s.ResourceMonitor = &resourceMonitor
 	return s
@@ -399,7 +394,7 @@ func (s *AccountParametersRequest) WithDisableUserPrivilegeGrants(disableUserPri
 	return s
 }
 
-func (s *AccountParametersRequest) WithDisallowedSpcsWorkloadTypes(disallowedSpcsWorkloadTypes string) *AccountParametersRequest {
+func (s *AccountParametersRequest) WithDisallowedSpcsWorkloadTypes(disallowedSpcsWorkloadTypes StringAllowEmpty) *AccountParametersRequest {
 	s.DisallowedSpcsWorkloadTypes = &disallowedSpcsWorkloadTypes
 	return s
 }
@@ -914,7 +909,7 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
 	case "ACTIVE_PYTHON_PROFILER":
-		return assignParsedParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
+		return assignParsedEnumParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
 	case "ALLOW_BIND_VALUES_ACCESS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AllowBindValuesAccess)
 	case "ALLOW_CLIENT_MFA_CACHING":
@@ -928,9 +923,9 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "BASE_LOCATION_PREFIX":
 		return assignParsedParameter(value, identityParse, &s.BaseLocationPrefix)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
 	case "CATALOG":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.Catalog)
 	case "CATALOG_SYNC":
@@ -956,7 +951,7 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
 	case "CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER":
 		return assignParsedParameter(value, strconv.Atoi, &s.CortexCodeCliDailyEstCreditLimitPerUser)
 	case "CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER":
@@ -986,7 +981,7 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU":
 		return assignParsedParameter(value, identityParse, &s.DefaultNotebookComputePoolGpu)
 	case "DEFAULT_NULL_ORDERING":
-		return assignParsedParameter(value, ToDefaultNullOrdering, &s.DefaultNullOrdering)
+		return assignParsedEnumParameter(value, ToDefaultNullOrdering, &s.DefaultNullOrdering)
 	case "DEFAULT_STREAMLIT_COMPUTE_POOL":
 		return assignParsedParameter(value, identityParse, &s.DefaultStreamlitComputePool)
 	case "DEFAULT_STREAMLIT_NOTEBOOK_WAREHOUSE":
@@ -996,7 +991,7 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "DISABLE_USER_PRIVILEGE_GRANTS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.DisableUserPrivilegeGrants)
 	case "DISALLOWED_SPCS_WORKLOAD_TYPES":
-		return assignParsedParameter(value, identityParse, &s.DisallowedSpcsWorkloadTypes)
+		return assignParsedParameter(value, ToStringAllowEmpty, &s.DisallowedSpcsWorkloadTypes)
 	case "ENABLE_AUTOMATIC_SENSITIVE_DATA_CLASSIFICATION_LOG":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableAutomaticSensitiveDataClassificationLog)
 	case "ENABLE_BUDGET_EVENT_LOGGING":
@@ -1052,9 +1047,9 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "EXTERNAL_VOLUME":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
 	case "HYBRID_TABLE_LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.HybridTableLockTimeout)
 	case "ICEBERG_VERSION_DEFAULT":
@@ -1076,15 +1071,15 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MAX_CONCURRENCY_LEVEL":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxConcurrencyLevel)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
 	case "METRIC_LEVEL":
-		return assignParsedParameter(value, ToMetricLevel, &s.MetricLevel)
+		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "MIN_DATA_RETENTION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MinDataRetentionTimeInDays)
 	case "MULTI_STATEMENT_COUNT":
@@ -1132,9 +1127,9 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "SEARCH_PATH":
 		return assignParsedParameter(value, identityParse, &s.SearchPath)
 	case "SERVERLESS_TASK_MAX_STATEMENT_SIZE":
-		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
+		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
 	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
-		return assignParsedParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
 	case "SHARE_RESTRICTIONS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ShareRestrictions)
 	case "SIMULATED_DATA_SHARING_CONSUMER":
@@ -1148,7 +1143,7 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "STATEMENT_TIMEOUT_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
 	case "STORAGE_SERIALIZATION_POLICY":
-		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "STRICT_JSON_OUTPUT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.StrictJsonOutput)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
@@ -1170,27 +1165,27 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "USE_WORKSPACES_FOR_SQL":
 		return assignParsedParameter(value, identityParse, &s.UseWorkspacesForSql)
 	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
-		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+		return assignParsedEnumParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
 	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
 	case "USER_TASK_TIMEOUT_MS":
@@ -1202,31 +1197,6 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 	default:
 		return ErrParameterNotSupported
 	}
-}
-
-func NewAccountLevelParametersRequest() *AccountLevelParametersRequest {
-	s := AccountLevelParametersRequest{}
-	return &s
-}
-
-func (s *AccountLevelParametersRequest) WithAccountParameters(accountParameters LegacyAccountParameters) *AccountLevelParametersRequest {
-	s.AccountParameters = &accountParameters
-	return s
-}
-
-func (s *AccountLevelParametersRequest) WithSessionParameters(sessionParameters SessionParameters) *AccountLevelParametersRequest {
-	s.SessionParameters = &sessionParameters
-	return s
-}
-
-func (s *AccountLevelParametersRequest) WithObjectParameters(objectParameters ObjectParameters) *AccountLevelParametersRequest {
-	s.ObjectParameters = &objectParameters
-	return s
-}
-
-func (s *AccountLevelParametersRequest) WithUserParameters(userParameters UserParameters) *AccountLevelParametersRequest {
-	s.UserParameters = &userParameters
-	return s
 }
 
 func NewAccountSessionPolicySetRequest() *AccountSessionPolicySetRequest {
@@ -1286,11 +1256,6 @@ func NewAccountUnsetRequest() *AccountUnsetRequest {
 
 func (s *AccountUnsetRequest) WithParameters(parameters AccountParametersUnsetRequest) *AccountUnsetRequest {
 	s.Parameters = &parameters
-	return s
-}
-
-func (s *AccountUnsetRequest) WithLegacyParameters(legacyParameters AccountLevelParametersUnsetRequest) *AccountUnsetRequest {
-	s.LegacyParameters = &legacyParameters
 	return s
 }
 
@@ -2348,31 +2313,6 @@ func (s *AccountParametersUnsetRequest) UnsetParameterFromRaw(key string) error 
 		return ErrParameterNotSupported
 	}
 	return nil
-}
-
-func NewAccountLevelParametersUnsetRequest() *AccountLevelParametersUnsetRequest {
-	s := AccountLevelParametersUnsetRequest{}
-	return &s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithAccountParameters(accountParameters LegacyAccountParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.AccountParameters = &accountParameters
-	return s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithSessionParameters(sessionParameters SessionParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.SessionParameters = &sessionParameters
-	return s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithObjectParameters(objectParameters ObjectParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.ObjectParameters = &objectParameters
-	return s
-}
-
-func (s *AccountLevelParametersUnsetRequest) WithUserParameters(userParameters UserParametersUnset) *AccountLevelParametersUnsetRequest {
-	s.UserParameters = &userParameters
-	return s
 }
 
 func NewAccountAuthenticationPolicyUnsetRequest() *AccountAuthenticationPolicyUnsetRequest {

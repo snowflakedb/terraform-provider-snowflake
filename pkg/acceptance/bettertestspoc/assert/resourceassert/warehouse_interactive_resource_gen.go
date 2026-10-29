@@ -3,9 +3,11 @@
 package resourceassert
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type WarehouseInteractiveResourceAssert struct {
@@ -42,6 +44,11 @@ func (w *WarehouseInteractiveResourceAssert) HasAutoResume(expected string) *War
 	return w
 }
 
+func (w *WarehouseInteractiveResourceAssert) HasAutoResumeBool(expected bool) *WarehouseInteractiveResourceAssert {
+	w.StringValueSet("auto_resume", strconv.FormatBool(expected))
+	return w
+}
+
 func (w *WarehouseInteractiveResourceAssert) HasAutoSuspend(expected int) *WarehouseInteractiveResourceAssert {
 	w.IntValueSet("auto_suspend", expected)
 	return w
@@ -54,6 +61,11 @@ func (w *WarehouseInteractiveResourceAssert) HasComment(expected string) *Wareho
 
 func (w *WarehouseInteractiveResourceAssert) HasFallbackWarehouse(expected string) *WarehouseInteractiveResourceAssert {
 	w.StringValueSet("fallback_warehouse", expected)
+	return w
+}
+
+func (w *WarehouseInteractiveResourceAssert) HasFallbackWarehouseSdk(expected sdk.AccountObjectIdentifier) *WarehouseInteractiveResourceAssert {
+	w.StringValueSet("fallback_warehouse", expected.Name())
 	return w
 }
 
@@ -87,6 +99,11 @@ func (w *WarehouseInteractiveResourceAssert) HasResourceMonitor(expected string)
 	return w
 }
 
+func (w *WarehouseInteractiveResourceAssert) HasResourceMonitorSdk(expected sdk.AccountObjectIdentifier) *WarehouseInteractiveResourceAssert {
+	w.StringValueSet("resource_monitor", expected.Name())
+	return w
+}
+
 func (w *WarehouseInteractiveResourceAssert) HasStatementQueuedTimeoutInSeconds(expected int) *WarehouseInteractiveResourceAssert {
 	w.IntValueSet("statement_queued_timeout_in_seconds", expected)
 	return w
@@ -104,6 +121,11 @@ func (w *WarehouseInteractiveResourceAssert) HasTables(expected ...string) *Ware
 
 func (w *WarehouseInteractiveResourceAssert) HasWarehouseSize(expected string) *WarehouseInteractiveResourceAssert {
 	w.StringValueSet("warehouse_size", expected)
+	return w
+}
+
+func (w *WarehouseInteractiveResourceAssert) HasWarehouseSizeSdk(expected sdk.WarehouseSize) *WarehouseInteractiveResourceAssert {
+	w.StringValueSet("warehouse_size", string(expected))
 	return w
 }
 

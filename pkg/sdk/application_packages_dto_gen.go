@@ -14,7 +14,7 @@ type CreateApplicationPackageRequest struct {
 	name                       AccountObjectIdentifier // required
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
-	DefaultDdlCollation        *string
+	DefaultDdlCollation        *StringAllowEmpty
 	Comment                    *string
 	Distribution               *Distribution
 	Tag                        []TagAssociation
@@ -39,7 +39,7 @@ type AlterApplicationPackageRequest struct {
 type ApplicationPackageSetRequest struct {
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
-	DefaultDdlCollation        *string
+	DefaultDdlCollation        *StringAllowEmpty
 	Comment                    *string
 	Distribution               *Distribution
 }

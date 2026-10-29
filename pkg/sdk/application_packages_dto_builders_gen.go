@@ -25,7 +25,7 @@ func (s *CreateApplicationPackageRequest) WithMaxDataExtensionTimeInDays(maxData
 	return s
 }
 
-func (s *CreateApplicationPackageRequest) WithDefaultDdlCollation(defaultDdlCollation string) *CreateApplicationPackageRequest {
+func (s *CreateApplicationPackageRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *CreateApplicationPackageRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }
@@ -128,7 +128,7 @@ func (s *ApplicationPackageSetRequest) WithMaxDataExtensionTimeInDays(maxDataExt
 	return s
 }
 
-func (s *ApplicationPackageSetRequest) WithDefaultDdlCollation(defaultDdlCollation string) *ApplicationPackageSetRequest {
+func (s *ApplicationPackageSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllowEmpty) *ApplicationPackageSetRequest {
 	s.DefaultDdlCollation = &defaultDdlCollation
 	return s
 }

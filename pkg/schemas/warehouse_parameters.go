@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -15,8 +15,8 @@ var (
 	ShowWarehouseParametersSchema            = make(map[string]*schema.Schema)
 	ShowWarehouseParametersSchemaInteractive = make(map[string]*schema.Schema)
 
-	warehouseParameters            = defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouse)
-	warehouseInteractiveParameters = defs.ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)
+	warehouseParameters            = defs.ParameterDefsForLevel(ssot.ParameterLevelWarehouse)
+	warehouseInteractiveParameters = defs.ParameterDefsForLevel(ssot.ParameterLevelWarehouseInteractive)
 )
 
 func init() {
@@ -50,10 +50,10 @@ func AllWarehouseParametersToSchema(parameters []*sdk.Parameter, providerCtx *pr
 	return WarehouseInteractiveParametersToSchema(parameters, providerCtx)
 }
 
-func warehouseParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context, defsForLevel []parameterdefs.ParameterDef) map[string]any {
+func warehouseParametersToSchema(parameters []*sdk.Parameter, providerCtx *provider.Context, defsForLevel []ssot.ParameterDef) map[string]any {
 	warehouseParametersValue := make(map[string]any)
 	for _, parameter := range parameters {
-		if slices.ContainsFunc(defsForLevel, func(def parameterdefs.ParameterDef) bool { return def.SqlName == parameter.Key }) {
+		if slices.ContainsFunc(defsForLevel, func(def ssot.ParameterDef) bool { return def.SqlName == parameter.Key }) {
 			warehouseParametersValue[strings.ToLower(parameter.Key)] = []map[string]any{ParameterToSchemaReducedOutput(parameter, providerCtx)}
 		}
 	}

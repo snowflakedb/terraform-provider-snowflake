@@ -51,102 +51,102 @@ func SchemasDatasourceParametersOnIdx(t *testing.T, name string, idx int) *Schem
 ////////////////////////////
 
 func (s *SchemaResourceParametersAssert) HasCatalog(expected string) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterCatalog), expected)
+	s.ParameterValueSet(string(sdk.SchemaParameterCatalog), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDataRetentionTimeInDays(expected int) *SchemaResourceParametersAssert {
-	s.ParameterIntValueSet(string(sdk.ObjectParameterDataRetentionTimeInDays), expected)
+	s.ParameterIntValueSet(string(sdk.SchemaParameterDataRetentionTimeInDays), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDefaultDdlCollation(expected string) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterDefaultDdlCollation), expected)
+	s.ParameterValueSet(string(sdk.SchemaParameterDefaultDdlCollation), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolCpu(expected string) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterDefaultNotebookComputePoolCpu), expected)
+	s.ParameterValueSet(string(sdk.SchemaParameterDefaultNotebookComputePoolCpu), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolGpu(expected string) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterDefaultNotebookComputePoolGpu), expected)
+	s.ParameterValueSet(string(sdk.SchemaParameterDefaultNotebookComputePoolGpu), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasEnableConsoleOutput(expected bool) *SchemaResourceParametersAssert {
-	s.ParameterBoolValueSet(string(sdk.ObjectParameterEnableConsoleOutput), expected)
+	s.ParameterBoolValueSet(string(sdk.SchemaParameterEnableConsoleOutput), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasExternalVolume(expected string) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterExternalVolume), expected)
+	s.ParameterValueSet(string(sdk.SchemaParameterExternalVolume), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasLogEventLevel(expected sdk.LogLevel) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterLogEventLevel), string(expected))
+	s.ParameterValueSet(string(sdk.SchemaParameterLogEventLevel), string(expected))
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasLogLevel(expected sdk.LogLevel) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterLogLevel), string(expected))
+	s.ParameterValueSet(string(sdk.SchemaParameterLogLevel), string(expected))
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasMaxDataExtensionTimeInDays(expected int) *SchemaResourceParametersAssert {
-	s.ParameterIntValueSet(string(sdk.ObjectParameterMaxDataExtensionTimeInDays), expected)
+	s.ParameterIntValueSet(string(sdk.SchemaParameterMaxDataExtensionTimeInDays), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasPipeExecutionPaused(expected bool) *SchemaResourceParametersAssert {
-	s.ParameterBoolValueSet(string(sdk.ObjectParameterPipeExecutionPaused), expected)
+	s.ParameterBoolValueSet(string(sdk.SchemaParameterPipeExecutionPaused), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *SchemaResourceParametersAssert {
-	s.ParameterBoolValueSet(string(sdk.ObjectParameterQuotedIdentifiersIgnoreCase), expected)
+	s.ParameterBoolValueSet(string(sdk.SchemaParameterQuotedIdentifiersIgnoreCase), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasReplaceInvalidCharacters(expected bool) *SchemaResourceParametersAssert {
-	s.ParameterBoolValueSet(string(sdk.ObjectParameterReplaceInvalidCharacters), expected)
+	s.ParameterBoolValueSet(string(sdk.SchemaParameterReplaceInvalidCharacters), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasStorageSerializationPolicy(expected sdk.StorageSerializationPolicy) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterStorageSerializationPolicy), string(expected))
+	s.ParameterValueSet(string(sdk.SchemaParameterStorageSerializationPolicy), string(expected))
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasSuspendTaskAfterNumFailures(expected int) *SchemaResourceParametersAssert {
-	s.ParameterIntValueSet(string(sdk.ObjectParameterSuspendTaskAfterNumFailures), expected)
+	s.ParameterIntValueSet(string(sdk.SchemaParameterSuspendTaskAfterNumFailures), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasTaskAutoRetryAttempts(expected int) *SchemaResourceParametersAssert {
-	s.ParameterIntValueSet(string(sdk.ObjectParameterTaskAutoRetryAttempts), expected)
+	s.ParameterIntValueSet(string(sdk.SchemaParameterTaskAutoRetryAttempts), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasTraceLevel(expected sdk.TraceLevel) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterTraceLevel), string(expected))
+	s.ParameterValueSet(string(sdk.SchemaParameterTraceLevel), string(expected))
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasUserTaskManagedInitialWarehouseSize(expected sdk.WarehouseSize) *SchemaResourceParametersAssert {
-	s.ParameterValueSet(string(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize), string(expected))
+	s.ParameterValueSet(string(sdk.SchemaParameterUserTaskManagedInitialWarehouseSize), string(expected))
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSeconds(expected int) *SchemaResourceParametersAssert {
-	s.ParameterIntValueSet(string(sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
+	s.ParameterIntValueSet(string(sdk.SchemaParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasUserTaskTimeoutMs(expected int) *SchemaResourceParametersAssert {
-	s.ParameterIntValueSet(string(sdk.ObjectParameterUserTaskTimeoutMs), expected)
+	s.ParameterIntValueSet(string(sdk.SchemaParameterUserTaskTimeoutMs), expected)
 	return s
 }
 
@@ -155,101 +155,101 @@ func (s *SchemaResourceParametersAssert) HasUserTaskTimeoutMs(expected int) *Sch
 ////////////////////////////
 
 func (s *SchemaResourceParametersAssert) HasCatalogLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterCatalog), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterCatalog), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDataRetentionTimeInDaysLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterDataRetentionTimeInDays), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterDataRetentionTimeInDays), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDefaultDdlCollationLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterDefaultDdlCollation), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterDefaultDdlCollation), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolCpuLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterDefaultNotebookComputePoolCpu), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterDefaultNotebookComputePoolCpu), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasDefaultNotebookComputePoolGpuLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterDefaultNotebookComputePoolGpu), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterDefaultNotebookComputePoolGpu), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasEnableConsoleOutputLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterEnableConsoleOutput), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterEnableConsoleOutput), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasExternalVolumeLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterExternalVolume), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterExternalVolume), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasLogEventLevelLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterLogEventLevel), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterLogEventLevel), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasLogLevelLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterLogLevel), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterLogLevel), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterMaxDataExtensionTimeInDays), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterMaxDataExtensionTimeInDays), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasPipeExecutionPausedLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterPipeExecutionPaused), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterPipeExecutionPaused), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterQuotedIdentifiersIgnoreCase), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterQuotedIdentifiersIgnoreCase), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasReplaceInvalidCharactersLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterReplaceInvalidCharacters), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterReplaceInvalidCharacters), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasStorageSerializationPolicyLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterStorageSerializationPolicy), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterStorageSerializationPolicy), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasSuspendTaskAfterNumFailuresLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterSuspendTaskAfterNumFailures), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterSuspendTaskAfterNumFailures), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasTaskAutoRetryAttemptsLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterTaskAutoRetryAttempts), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterTaskAutoRetryAttempts), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasTraceLevelLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterTraceLevel), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterTraceLevel), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasUserTaskManagedInitialWarehouseSizeLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterUserTaskManagedInitialWarehouseSize), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasUserTaskMinimumTriggerIntervalInSecondsLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterUserTaskMinimumTriggerIntervalInSeconds), expected)
 	return s
 }
 
 func (s *SchemaResourceParametersAssert) HasUserTaskTimeoutMsLevel(expected sdk.ParameterType) *SchemaResourceParametersAssert {
-	s.ParameterLevelSet(string(sdk.ObjectParameterUserTaskTimeoutMs), expected)
+	s.ParameterLevelSet(string(sdk.SchemaParameterUserTaskTimeoutMs), expected)
 	return s
 }

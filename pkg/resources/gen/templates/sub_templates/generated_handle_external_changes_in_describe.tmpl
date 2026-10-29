@@ -1,0 +1,22 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- $changes := .DescribeExternalChanges -}}
+func {{ .Prefix }}HandleExternalChangesInDescribe(d *tfschema.ResourceData, details *sdk.{{ .Name }}Details, withExternalChangesMarking bool) diag.Diagnostics {
+	if !withExternalChangesMarking || details == nil {
+		return nil
+	}
+{{- if $changes.Prepare }}
+{{ range $changes.Prepare }}
+	{{ . }}
+{{- end }}
+{{- end }}
+{{- with $changes.Mappings }}
+	if err := handleExternalChangesToObjectInFlatDescribe(d,
+{{- range . }}
+		outputMapping{"{{ .OutputKey }}", "{{ .ConfigKey }}", {{ .Compare }}, {{ .Set }}, nil},
+{{- end }}
+	); err != nil {
+		return diag.FromErr(err)
+	}
+{{- end }}
+	return nil
+}

@@ -24,6 +24,18 @@ func Test_experimentListingWarnings(t *testing.T) {
 			userEnabled: []string{"OPT_IN_EXP"},
 		},
 		{
+			name:             "opt-in in disabled is not needed",
+			userDisabled:     []string{"OPT_IN_EXP"},
+			wantSummaries:    []string{"Opt-in experiment listed in experimental_features_disabled."},
+			wantDetailSubstr: []string{"OPT_IN_EXP"},
+		},
+		{
+			name:          "opt-in in both lists: overlap only",
+			userEnabled:   []string{"OPT_IN_EXP"},
+			userDisabled:  []string{"OPT_IN_EXP"},
+			wantSummaries: []string{"Experiment listed in both enabled and disabled lists."},
+		},
+		{
 			name:          "default-on in enabled is redundant",
 			userEnabled:   []string{"DEFAULT_EXP"},
 			wantSummaries: []string{"Experiment already enabled by default."},

@@ -22,6 +22,7 @@ type KindInfo struct {
 	FieldType   string // differs from GoType only for StringAllowEmpty
 	ReadParser  string
 	WriteParser string
+	IsEnum      bool
 }
 
 // InfoForKind resolves a kind's conversion info. Any bare named type that is neither a primitive nor
@@ -47,8 +48,9 @@ func InfoForKind(kind string) (KindInfo, error) {
 	parser := "To" + kind
 	if _, err := ToObjectIdentifierKind(kind); err == nil {
 		parser = "Parse" + kind
+		return KindInfo{GoType: kind, FieldType: kind, ReadParser: parser, WriteParser: parser}, nil
 	}
-	return KindInfo{GoType: kind, FieldType: kind, ReadParser: parser, WriteParser: parser}, nil
+	return KindInfo{GoType: kind, FieldType: kind, ReadParser: parser, WriteParser: parser, IsEnum: true}, nil
 }
 
 func isBareGoTypeName(kind string) bool {

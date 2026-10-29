@@ -17,13 +17,21 @@ func init() {
 				opts.IfNotExists = new(true)
 				opts.DataRetentionTimeInDays = new(1)
 				opts.MaxDataExtensionTimeInDays = new(1)
-				opts.DefaultDdlCollation = new("en_US")
+				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en_US"})
 				opts.Comment = new("comment")
 				opts.Distribution = new(DistributionInternal)
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
 			"CREATE APPLICATION PACKAGE IF NOT EXISTS %s DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' COMMENT = 'comment' DISTRIBUTION = INTERNAL TAG (%s = 'v1')",
 			id.FullyQualifiedName(), tagId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_emptyDefaultDdlCollation",
+			func(opts *CreateApplicationPackageOptions) {
+				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: ""})
+			},
+			"CREATE APPLICATION PACKAGE %s DEFAULT_DDL_COLLATION = ''",
+			id.FullyQualifiedName(),
 		)
 
 	applicationPackagesTests.Alter.
@@ -39,12 +47,20 @@ func init() {
 				opts.Set = &ApplicationPackageSet{
 					DataRetentionTimeInDays:    new(1),
 					MaxDataExtensionTimeInDays: new(1),
-					DefaultDdlCollation:        new("en_US"),
+					DefaultDdlCollation:        new(StringAllowEmpty{Value: "en_US"}),
 					Comment:                    new("comment"),
 					Distribution:               new(DistributionInternal),
 				}
 			},
 			`ALTER APPLICATION PACKAGE IF EXISTS %s SET DATA_RETENTION_TIME_IN_DAYS = 1 MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' COMMENT = 'comment' DISTRIBUTION = INTERNAL`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Set_emptyDefaultDdlCollation",
+			func(opts *AlterApplicationPackageOptions) {
+				opts.Set = &ApplicationPackageSet{DefaultDdlCollation: new(StringAllowEmpty{Value: ""})}
+			},
+			`ALTER APPLICATION PACKAGE IF EXISTS %s SET DEFAULT_DDL_COLLATION = ''`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

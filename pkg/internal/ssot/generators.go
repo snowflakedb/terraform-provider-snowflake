@@ -1,0 +1,868 @@
+package ssot
+
+import (
+	"fmt"
+)
+
+type SchemaGenerator struct {
+	Show     bool
+	Describe bool
+	// ShowFromBase keeps Show<Variant>Schema and <Variant>ToSchema, and maps *sdk.<VariantOf.Name>.
+	// Use it when every variant is one row of the base SHOW type.
+	ShowFromBase bool
+	// ShowManualFields and DescribeManualFields are the same *Attribute pointers that sit in Columns.
+	// The key stays in the generated schema map and ToSchema, but the mapping line is omitted: a
+	// generated additionalSchemaMapper[T] stub is emitted, and *_ext.go must implement it.
+	ShowManualFields     []*Attribute
+	DescribeManualFields []*Attribute
+}
+
+type SdkGenerator struct {
+	// DefineFromSsot defines this object's SDK interface from this ssot object alone.
+	DefineFromSsot bool
+
+	Show     bool
+	Describe bool
+
+	ShowDoc                string
+	ShowSql                string
+	ShowTerse              bool
+	ShowOptionalSql        []string
+	ShowOptionalLike       bool
+	ShowOptionalIn         bool
+	ShowOptionalExtendedIn bool
+	ShowOptionalOn         bool
+	ShowOptionalStartsWith bool
+	ShowOptionalLimitFrom  bool
+	ShowOptionalLimit      bool
+	ShowByIDFiltering      []SdkShowByIDFilteringKind
+	ShowByIDPredicate      SdkShowByIDPredicateKind
+	ShowQueryStructName    string
+	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
+	ShowResultFilterHook bool
+	// ShowPlainOnlyFields are SHOW columns that only the plain struct has. convert skips them and additionalConvert in the
+	// SDK ext file fills them.
+	ShowPlainOnlyFields []SdkShowPlainOnlyField
+
+	DescribeDoc     string
+	DescribeSql     string
+	DescribeMapping SdkDescriptionMapping
+	// DescribeDetails emits the plain details struct (<Name>Details) from Describe.Columns next to the DESCRIBE rows.
+	// DescribeDetailsNestedFields are the same *Attribute pointers that sit in Describe.Columns. Each is a list or set
+	// whose elements are a hand-written struct, so the column is not derived from its placeholder Elem.
+	DescribeDetails             bool
+	DescribeDetailsNestedFields []*Attribute
+	// DescribeDetailsRowsField is a field at the end of the details struct that keeps the original DESCRIBE rows. It is not a column.
+	DescribeDetailsRowsField *SdkPlainOnlyField
+	// DescribeDetailsForVariants emits, for each variant of this object that turns on SdkDescribeDetails, its details
+	// struct <Variant>Details and the method Describe<Variant>Details: Describe, Parse<Variant>Described, and Id.
+	DescribeDetailsForVariants bool
+	// DescribeDetailsMethod emits the DescribeDetails method: Describe, Parse<Name>Described, and Id.
+	// The parse function stays in the SDK ext file.
+	DescribeDetailsMethod bool
+	// DescribeDetailsParse emits Parse<Name>Described, which fills the details struct from the DESCRIBE property rows.
+	// Every Describe column except id is mapped by one entry. The per-element parser of a prefix entry and the
+	// validate<Name>Described function stay in the SDK ext file.
+	DescribeDetailsParse []DescribeDetailsMapping
+	// DescribeDetailsParseIgnoreUnknown skips a property with no mapping and logs a warning, instead of returning an error.
+	DescribeDetailsParseIgnoreUnknown bool
+	DescribeQueryStructName           string
+	DescribeIdentifierOverride        string
+	// DescribePlainOnlyFields are fields on the DESCRIBE plain struct that are not DESCRIBE columns.
+	// convert skips them. additionalConvert in the SDK ext file fills them, unless DescribeDetailsFromIdentifier
+	// copies every one of them from the identifier. Then the hook is not generated.
+	DescribePlainOnlyFields []SdkPlainOnlyField
+	// DescribeDetailsFromIdentifier emits DescribeDetails for a columnar DESCRIBE. The method calls Describe
+	// and copies plain-only identifier fields from the id. SchemaObjectIdentifier copies DatabaseName and SchemaName.
+	// DatabaseObjectIdentifier copies DatabaseName. It is separate from DescribeDetailsMethod, which parses a property-list DESCRIBE and sets Id.
+	DescribeDetailsFromIdentifier bool
+
+	Drop                bool
+	DropDoc             string
+	DropSql             string
+	DropQueryStructName string
+	DropSafelyHook      bool
+	DropSafelyForce     bool
+	DropCascadeRestrict bool
+
+	Create                      bool
+	CreateDoc                   string
+	CreateSql                   string
+	CreateQueryStructName       string
+	CreateWithoutIfNotExists    bool
+	CreateWithoutOrReplace      bool
+	CreateAdditionalValidations bool
+	// CreateForVariants emits each variant CREATE as a custom method on this object's interface.
+	// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+	CreateForVariants bool
+
+	Alter                          bool
+	AlterDoc                       string
+	AlterSql                       string
+	AlterQueryStructName           string
+	AlterWithoutIfExists           bool
+	AlterSetList                   bool
+	AlterSetAdditionalValidations  bool
+	AlterAdditionalValidations     bool
+	AlterWithoutExactlyOneValueSet bool
+	// AlterForVariants emits each variant ALTER as a custom method on this object's interface.
+	// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+	AlterForVariants bool
+
+	CustomOperations       bool
+	CustomInterfaceMethods bool
+	ShowParameters         bool
+	ShowParametersDetails  bool
+}
+
+type ModelGenerator struct {
+	Enabled bool
+	// RequestTypeOverrides maps an attribute Name to the real Go type for a Required nested-block
+	// attribute (a list or set of objects) that the generator cannot classify on its own. Mirrors the
+	// old-list complexListAttributesOverrides table, scoped to this object instead of by resource name.
+	RequestTypeOverrides map[string]string
+	// Multiline lists string attributes whose config model builder emits MultilineWrapperVariable.
+	// Mirrors the old-list multilineAttributesOverrides, scoped to this object.
+	Multiline []*Attribute
+}
+
+// ResourceGenerator emits the Terraform resource. Enabled is set by WithResource.
+// An object in All without it is not a resource-generation input.
+type ResourceGenerator struct {
+	Enabled bool
+}
+
+type ResourceAssertGenerator struct {
+	Enabled bool
+}
+
+type ShowOutputAssertGenerator struct {
+	Show     bool
+	Describe bool
+	// ShowSkipFields and DescribeSkipFields are the same *Attribute pointers that sit in Columns.
+	// The column stays in Columns. Has* is not generated.
+	ShowSkipFields     []*Attribute
+	DescribeSkipFields []*Attribute
+}
+
+type ObjectAssertGenerator struct {
+	Show                 bool
+	Describe             bool
+	NoIdentifiableObject bool
+	// ShowSkipFields and DescribeSkipFields are the same *Attribute pointers that sit in Columns.
+	// The column stays in Columns. Has* is not generated.
+	ShowSkipFields     []*Attribute
+	DescribeSkipFields []*Attribute
+	// ShowProjection is the method on the VariantOf client, such as ShowByIDAdaptive.
+	// The fetch is testClient.<VariantOf.Name>.<ShowProjection>.
+	// The row type stays sdk.<Variant>. The object type constant is sdk.ObjectType<VariantOf.Name>.
+	ShowProjection string
+	// ShowRowFromBase uses sdk.<VariantOf.Name> as the SHOW row and fetches through
+	// testClient.<VariantOf.Name>.Show. The assertion name stays the variant.
+	ShowRowFromBase bool
+	// DescribeMethod replaces testClient.<Object>.Describe. DescribeOnBase uses VariantOf.Name as the client.
+	DescribeMethod string
+	DescribeOnBase bool
+
+	// ShowNestedFields and DescribeNestedFields hold the *Attribute pointers that sit in Columns.
+	// The column gets the nested assertion adapter (Has<Field>With) instead of a plain Has*.
+	ShowNestedFields     []ObjectAssertNestedField
+	DescribeNestedFields []ObjectAssertNestedField
+}
+
+// ObjectAssertNestedField is a nested-block column. The nested assertion type is derived from the Go type of
+// its SDK field. GoType is that type when set, e.g. "[]sdk.ExternalVolumeStorageLocationDetails".
+// Empty GoType means the default. A list or set is "[]sdk." + object Name + the column name in
+// camel case with one trailing "s" dropped + "Details" (storage_locations on ExternalVolume is
+// []sdk.ExternalVolumeStorageLocationDetails). An object column is sdk.<NestedObjectDetails>, and a
+// pointer when the column is not required.
+type ObjectAssertNestedField struct {
+	Attr   *Attribute
+	GoType string
+}
+
+// ObjectAssertNestedOption overrides the defaults of one nested-block column.
+type ObjectAssertNestedOption func(*ObjectAssertNestedField)
+
+// ObjectAssertNestedGoType sets the Go type of the SDK field when the default composition does not match.
+func ObjectAssertNestedGoType(goType string) ObjectAssertNestedOption {
+	return func(f *ObjectAssertNestedField) { f.GoType = goType }
+}
+
+// ObjectParametersAssertGenerator emits Snowflake object parameter assertions from the parameter catalog.
+// Constants are sdk.<Name>Parameter.
+type ObjectParametersAssertGenerator struct {
+	Enabled bool
+}
+
+// ResourceParametersAssertGenerator emits resource parameter assertions from the parameter catalog.
+// Constants are sdk.<Name>Parameter.
+type ResourceParametersAssertGenerator struct {
+	Enabled bool
+}
+
+type Generators struct {
+	Schema                   SchemaGenerator
+	Sdk                      SdkGenerator
+	Resource                 ResourceGenerator
+	Model                    ModelGenerator
+	ResourceAssert           ResourceAssertGenerator
+	ShowOutputAssert         ShowOutputAssertGenerator
+	ObjectAssert             ObjectAssertGenerator
+	ObjectParametersAssert   ObjectParametersAssertGenerator
+	ResourceParametersAssert ResourceParametersAssertGenerator
+}
+
+type GeneratorOption func(*Generators)
+
+type SchemaOption func(*SchemaGenerator)
+
+type SchemaShowOption func(*SchemaGenerator)
+
+type SchemaDescribeOption func(*SchemaGenerator)
+
+func SchemaShow(opts ...SchemaShowOption) SchemaOption {
+	return func(s *SchemaGenerator) {
+		s.Show = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SchemaShowFromBase keeps Show<Variant>Schema and <Variant>ToSchema, and maps *sdk.<VariantOf.Name>.
+// Use it when every variant is one row of the base SHOW type.
+func SchemaShowFromBase() SchemaShowOption {
+	return func(s *SchemaGenerator) { s.ShowFromBase = true }
+}
+
+// SchemaShowManualFields copies ManualFields from the old show schema def.
+// Each argument is the *Attribute already listed in Show.Columns.
+func SchemaShowManualFields(attrs ...*Attribute) SchemaShowOption {
+	return func(s *SchemaGenerator) { s.ShowManualFields = append(s.ShowManualFields, attrs...) }
+}
+
+func SchemaDescribe(opts ...SchemaDescribeOption) SchemaOption {
+	return func(s *SchemaGenerator) {
+		s.Describe = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SchemaDescribeManualFields copies ManualFields from the old describe schema def.
+// Each argument is the *Attribute already listed in Describe.Columns.
+func SchemaDescribeManualFields(attrs ...*Attribute) SchemaDescribeOption {
+	return func(s *SchemaGenerator) { s.DescribeManualFields = append(s.DescribeManualFields, attrs...) }
+}
+
+func WithSchema(opts ...SchemaOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.Schema)
+		}
+	}
+}
+
+type SdkOption func(*SdkGenerator)
+
+// SdkDefineFromSsot defines this object's SDK interface from this ssot object alone.
+// The interface is built from the operation parts whose flags are on. A part whose flag is off is absent.
+// NamePlural must be unique among objects that are not variants. A variant shares this interface.
+// An object without this option stays on the handwritten SDK def.
+func SdkDefineFromSsot() SdkOption {
+	return func(s *SdkGenerator) { s.DefineFromSsot = true }
+}
+
+type SdkShowOption func(*SdkGenerator)
+
+type SdkDescribeOption func(*SdkGenerator)
+
+func SdkShow(opts ...SdkShowOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Show = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+func SdkDescribe(opts ...SdkDescribeOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Describe = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SdkDescribeDetails emits the plain details struct from Describe.Columns. It needs DescribeRows, because the rows
+// then take the <Name>Property name and <Name>Details is free. The Id field comes first unless a column is named id.
+// Parsing the rows into the struct stays in the SDK ext file.
+func SdkDescribeDetails(opts ...SdkDescribeDetailsOption) SdkDescribeOption {
+	return func(s *SdkGenerator) {
+		s.DescribeDetails = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+type SdkDescribeDetailsOption func(*SdkGenerator)
+
+// DescribeDetailsMapping maps one Describe column to the property rows it is read from.
+// Prefix is false for an exact property name and true for a nested list, whose elements are the rows whose property
+// name contains Property.
+type DescribeDetailsMapping struct {
+	Attr     *Attribute
+	Property string
+	Prefix   bool
+	// Parsed is an exact property whose value is parsed by a hand-written function.
+	Parsed bool
+}
+
+// DescribeProperty reads a string column from the property row with exactly this name.
+func DescribeProperty(attr *Attribute, property string) DescribeDetailsMapping {
+	return DescribeDetailsMapping{Attr: attr, Property: property}
+}
+
+// TODO [next PRs]: Generate the parser of a list of enums, of a single enum, and of a string whose null value means empty from the
+// column itself, so that DescribePropertyParsed is needed only for values with their own logic.
+
+// DescribePropertyParsed reads a column of any type from the property row with exactly this name. The value goes through the
+// hand-written Parse<Name><Column key in camel case>Described(value string) (<column type>, error).
+func DescribePropertyParsed(attr *Attribute, property string) DescribeDetailsMapping {
+	return DescribeDetailsMapping{Attr: attr, Property: property, Parsed: true}
+}
+
+// DescribePropertyPrefix reads a nested list column from every property row whose name contains prefix. The column must
+// be marked with SdkDescribeDetailsNestedField. Each row value goes through the hand-written element parser
+// Parse<Name><Column key in camel case without the plural s>Described(value string) (<element>, error).
+func DescribePropertyPrefix(attr *Attribute, prefix string) DescribeDetailsMapping {
+	return DescribeDetailsMapping{Attr: attr, Property: prefix, Prefix: true}
+}
+
+// SdkDescribeDetailsParse emits the function that parses the DESCRIBE property rows into the details struct.
+// Exact properties are matched first, then prefixes, and any other property is an error. The generated function is
+// Parse<Name>Described, which SdkDescribeDetailsMethod calls. validate<Name>Described stays in the SDK ext file.
+func SdkDescribeDetailsParse(mappings ...DescribeDetailsMapping) SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsParse = append(s.DescribeDetailsParse, mappings...) }
+}
+
+// SdkDescribeDetailsRowsField adds a field that keeps the original DESCRIBE rows to the end of the details struct, and the generated
+// Parse<Name>Described fills it. name is the Go field name (it can be unexported) and kind is a Go type with the rows as its underlying type.
+// Use it when a legacy describe_output block of raw strings is built from the rows, because the typed details cannot rebuild them.
+func SdkDescribeDetailsRowsField(name, kind string) SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsRowsField = &SdkPlainOnlyField{Name: name, Kind: kind} }
+}
+
+// SdkDescribeDetailsParseIgnoreUnknown makes the generated Parse<Name>Described skip a property that has no mapping, and log a
+// warning, instead of returning an "Unrecognized property" error. Use it when Snowflake can add properties to the DESCRIBE
+// output without the provider being updated.
+func SdkDescribeDetailsParseIgnoreUnknown() SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsParseIgnoreUnknown = true }
+}
+
+// SdkDescribeDetailsMethod emits the DescribeDetails method on the interface and its body: it calls Describe, parses
+// the rows with the hand-written Parse<Name>Described(rows []<Name>Property) (<Name>Details, error), and sets Id.
+func SdkDescribeDetailsMethod() SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsMethod = true }
+}
+
+// SdkDescribeDetailsFromIdentifier emits DescribeDetails for a columnar DESCRIBE. The method calls Describe and copies
+// plain-only identifier fields from the id: DatabaseName and SchemaName for a SchemaObjectIdentifier, and DatabaseName
+// for a DatabaseObjectIdentifier. It is not SdkDescribeDetailsMethod: that option parses a property-list DESCRIBE and sets Id.
+func SdkDescribeDetailsFromIdentifier() SdkDescribeOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsFromIdentifier = true }
+}
+
+// SdkDescribeDetailsForVariants emits the details of each variant: the struct <Variant>Details from the Describe.Columns
+// of the variant, and the method Describe<Variant>Details. The variant turns on SdkDescribeDetails, and the DESCRIBE rows are
+// the ones of this object. The parse function Parse<Variant>Described stays in the SDK ext file.
+func SdkDescribeDetailsForVariants() SdkDescribeOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsForVariants = true }
+}
+
+// SdkDescribeDetailsNestedField marks a Describe column as a list or set of a hand-written struct.
+// The element type is NestedDetailsElem: <Name>, the column key in camel case without the plural s, and Details.
+func SdkDescribeDetailsNestedField(attrs ...*Attribute) SdkDescribeDetailsOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsNestedFields = append(s.DescribeDetailsNestedFields, attrs...) }
+}
+
+type SdkDropOption func(*SdkGenerator)
+
+func SdkDrop(opts ...SdkDropOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Drop = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+func SdkDropSafelyHook() SdkDropOption {
+	return func(s *SdkGenerator) { s.DropSafelyHook = true }
+}
+
+func SdkDropSafelyForce() SdkDropOption {
+	return func(s *SdkGenerator) { s.DropSafelyForce = true }
+}
+
+// SdkDropCascadeRestrict adds optional CASCADE and RESTRICT, and marks them as conflicting.
+func SdkDropCascadeRestrict() SdkDropOption {
+	return func(s *SdkGenerator) { s.DropCascadeRestrict = true }
+}
+
+// SdkDropDoc overrides the default DROP doc URL.
+func SdkDropDoc(url string) SdkDropOption {
+	return func(s *SdkGenerator) { s.DropDoc = url }
+}
+
+type SdkCreateOption func(*SdkGenerator)
+
+func SdkCreate(opts ...SdkCreateOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Create = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SdkCreateDoc overrides the default CREATE doc URL.
+func SdkCreateDoc(url string) SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateDoc = url }
+}
+
+// SdkCreateSql overrides the default CREATE command words.
+func SdkCreateSql(sql string) SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateSql = sql }
+}
+
+// SdkCreateQueryStructName overrides the default CREATE query struct name.
+func SdkCreateQueryStructName(name string) SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateQueryStructName = name }
+}
+
+// SdkCreateWithoutIfNotExists leaves IF NOT EXISTS out. CREATE includes it unless this option is set.
+func SdkCreateWithoutIfNotExists() SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateWithoutIfNotExists = true }
+}
+
+// SdkCreateWithoutOrReplace leaves OR REPLACE out. CREATE includes it unless this option is set.
+func SdkCreateWithoutOrReplace() SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateWithoutOrReplace = true }
+}
+
+func SdkCreateAdditionalValidations() SdkCreateOption {
+	return func(s *SdkGenerator) { s.CreateAdditionalValidations = true }
+}
+
+// SdkCreateForVariants emits CREATE for each variant of this object as a custom method.
+// The variant supplies the CREATE spec.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+func SdkCreateForVariants() SdkOption {
+	return func(s *SdkGenerator) { s.CreateForVariants = true }
+}
+
+// SdkAlterForVariants emits ALTER for each variant of this object as a custom method.
+// The variant supplies the ALTER spec.
+// TODO [next PRs]: the same switch for variant SHOW/DESCRIBE.
+func SdkAlterForVariants() SdkOption {
+	return func(s *SdkGenerator) { s.AlterForVariants = true }
+}
+
+type SdkAlterOption func(*SdkGenerator)
+
+func SdkAlter(opts ...SdkAlterOption) SdkOption {
+	return func(s *SdkGenerator) {
+		s.Alter = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// SdkAlterDoc overrides the default ALTER doc URL.
+func SdkAlterDoc(url string) SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterDoc = url }
+}
+
+// SdkAlterSql overrides the default ALTER command words.
+func SdkAlterSql(sql string) SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterSql = sql }
+}
+
+// SdkAlterQueryStructName overrides the default ALTER query struct name.
+func SdkAlterQueryStructName(name string) SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterQueryStructName = name }
+}
+
+// SdkAlterWithoutIfExists leaves IF EXISTS out. ALTER includes it unless this option is set.
+func SdkAlterWithoutIfExists() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutIfExists = true }
+}
+
+// SdkAlterSetList makes SET a list with no parentheses. SET is a keyword unless this option is set.
+// TODO [next PRs]: Check why SET is a keyword for some objects and a list for others.
+func SdkAlterSetList() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterSetList = true }
+}
+
+// SdkAlterSetAdditionalValidations marks the SET struct with additional validations.
+func SdkAlterSetAdditionalValidations() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterSetAdditionalValidations = true }
+}
+
+// SdkAlterAdditionalValidations marks the ALTER query struct with additional validations.
+func SdkAlterAdditionalValidations() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterAdditionalValidations = true }
+}
+
+// SdkAlterWithoutExactlyOneValueSet leaves out the check that exactly one alter branch is set.
+// ALTER includes that check unless this option is set.
+func SdkAlterWithoutExactlyOneValueSet() SdkAlterOption {
+	return func(s *SdkGenerator) { s.AlterWithoutExactlyOneValueSet = true }
+}
+
+// SdkCustomOperations emits Object.CustomOperations. Each entry is one custom operation.
+// The query struct name is the kind plus Name. The object words are the uppercase words of Name.
+// The doc URL is the kind slug, a hyphen, and the name slug, unless the spec sets Doc.
+func SdkCustomOperations() SdkOption {
+	return func(s *SdkGenerator) { s.CustomOperations = true }
+}
+
+// SdkCustomInterfaceMethods emits Object.CustomInterfaceMethods. Each entry is one interface declaration.
+// The body stays in the SDK ext file. The default signature is id of IdType and a return of error.
+// An empty doc emits no comment.
+func SdkCustomInterfaceMethods() SdkOption {
+	return func(s *SdkGenerator) { s.CustomInterfaceMethods = true }
+}
+
+// SdkShowParameters emits ShowParameters as an interface declaration.
+// The doc is empty. The parameter is id of IdType. The returns are []*Parameter and error.
+// The body stays in the SDK ext file.
+func SdkShowParameters() SdkOption {
+	return func(s *SdkGenerator) { s.ShowParameters = true }
+}
+
+// SdkShowParametersDetails emits the typed parameters-details struct and ShowParametersDetails.
+// The fields are ParameterLevel() plus ShowParametersDetailsAdditionalLevels.
+// The struct name is Name plus ParametersDetails. The generated body calls ShowParameters.
+func SdkShowParametersDetails() SdkOption {
+	return func(s *SdkGenerator) { s.ShowParametersDetails = true }
+}
+
+func WithSdk(opts ...SdkOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.Sdk)
+		}
+	}
+}
+
+type ResourceOption func(*ResourceGenerator)
+
+// WithResource enables resource generation for this object.
+// Zero options still sets Enabled. An object without this call is left out of make generate-resource.
+func WithResource(opts ...ResourceOption) GeneratorOption {
+	return func(g *Generators) {
+		g.Resource.Enabled = true
+		for _, opt := range opts {
+			opt(&g.Resource)
+		}
+	}
+}
+
+type ModelOption func(*ModelGenerator)
+
+// ModelRequestType overrides the constructor parameter type for a Required nested-block attribute
+// (a list or set of objects). attr is the same *Attribute listed in Attributes. goType is the full type
+// expression used as the constructor parameter type, e.g. "[]sdk.ExternalVolumeStorageLocationRequest".
+func ModelRequestType(attr *Attribute, goType string) ModelOption {
+	return func(m *ModelGenerator) {
+		if m.RequestTypeOverrides == nil {
+			m.RequestTypeOverrides = make(map[string]string)
+		}
+		m.RequestTypeOverrides[attr.Name] = goType
+	}
+}
+
+// ModelMultiline marks string attributes whose config model builder emits MultilineWrapperVariable.
+// Each argument is the same *Attribute listed in Attributes. Mirrors multilineAttributesOverrides.
+func ModelMultiline(attrs ...*Attribute) ModelOption {
+	return func(m *ModelGenerator) {
+		for _, attr := range attrs {
+			if attr == nil {
+				panic("ModelMultiline: nil attribute")
+			}
+			m.Multiline = append(m.Multiline, attr)
+		}
+	}
+}
+
+func WithModel(opts ...ModelOption) GeneratorOption {
+	return func(g *Generators) {
+		g.Model.Enabled = true
+		for _, opt := range opts {
+			opt(&g.Model)
+		}
+	}
+}
+
+type ResourceAssertOption func(*ResourceAssertGenerator)
+
+func WithResourceAssert(opts ...ResourceAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		g.ResourceAssert.Enabled = true
+		for _, opt := range opts {
+			opt(&g.ResourceAssert)
+		}
+	}
+}
+
+type ShowOutputAssertOption func(*ShowOutputAssertGenerator)
+
+type ShowOutputShowOption func(*ShowOutputAssertGenerator)
+
+type ShowOutputDescribeOption func(*ShowOutputAssertGenerator)
+
+func ShowOutputShow(opts ...ShowOutputShowOption) ShowOutputAssertOption {
+	return func(s *ShowOutputAssertGenerator) {
+		s.Show = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// ShowOutputShowSkipFields copies SkipFields from the old show output def.
+// Each argument is the *Attribute already listed in Show.Columns.
+func ShowOutputShowSkipFields(attrs ...*Attribute) ShowOutputShowOption {
+	return func(s *ShowOutputAssertGenerator) { s.ShowSkipFields = append(s.ShowSkipFields, attrs...) }
+}
+
+func ShowOutputDescribe(opts ...ShowOutputDescribeOption) ShowOutputAssertOption {
+	return func(s *ShowOutputAssertGenerator) {
+		s.Describe = true
+		for _, opt := range opts {
+			opt(s)
+		}
+	}
+}
+
+// ShowOutputDescribeSkipFields copies SkipFields from the old describe show-output def.
+// Each argument is the *Attribute already listed in Describe.Columns.
+func ShowOutputDescribeSkipFields(attrs ...*Attribute) ShowOutputDescribeOption {
+	return func(s *ShowOutputAssertGenerator) { s.DescribeSkipFields = append(s.DescribeSkipFields, attrs...) }
+}
+
+func WithShowOutputAssert(opts ...ShowOutputAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.ShowOutputAssert)
+		}
+	}
+}
+
+type ObjectAssertOption func(*ObjectAssertGenerator)
+
+type ObjectAssertShowOption func(*ObjectAssertGenerator)
+
+type ObjectAssertDescribeOption func(*ObjectAssertGenerator)
+
+func ObjectAssertShow(opts ...ObjectAssertShowOption) ObjectAssertOption {
+	return func(a *ObjectAssertGenerator) {
+		a.Show = true
+		for _, opt := range opts {
+			opt(a)
+		}
+	}
+}
+
+// ObjectAssertShowNestedField copies NestedAssertFields from the old show object-assertion def.
+// attr is the *Attribute already listed in Show.Columns.
+func ObjectAssertShowNestedField(attr *Attribute, opts ...ObjectAssertNestedOption) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		a.ShowNestedFields = append(a.ShowNestedFields, newObjectAssertNestedField(attr, opts))
+	}
+}
+
+func newObjectAssertNestedField(attr *Attribute, opts []ObjectAssertNestedOption) ObjectAssertNestedField {
+	field := ObjectAssertNestedField{Attr: attr}
+	for _, opt := range opts {
+		opt(&field)
+	}
+	return field
+}
+
+// ObjectAssertShowSkipFields copies SkipFields from the old show object-assertion def.
+// Each argument is the *Attribute already listed in Show.Columns.
+func ObjectAssertShowSkipFields(attrs ...*Attribute) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.ShowSkipFields = append(a.ShowSkipFields, attrs...) }
+}
+
+// ObjectAssertShowFromBase fetches through testClient.<VariantOf.Name>.<method>, such as ShowByIDAdaptive.
+// The row type stays sdk.<Variant>. The client name is VariantOf.Name, returned by Object.ShowFromBase.
+func ObjectAssertShowFromBase(projection string) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		a.ShowProjection = projection
+	}
+}
+
+// ObjectAssertShowRowFromBase uses sdk.<VariantOf.Name> as the SHOW row and fetches through
+// testClient.<VariantOf.Name>.Show. The assertion name stays the variant.
+// Use it when every variant is one row of the base SHOW type.
+func ObjectAssertShowRowFromBase() ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.ShowRowFromBase = true }
+}
+
+// ShowFromBase is the SHOW fetch for a variant object assertion.
+// ClientName is VariantOf.Name. Method is the ObjectAssertShowFromBase argument.
+type ShowFromBase struct {
+	ClientName string
+	Method     string
+}
+
+// ShowFromBase returns the resolved SHOW projection. ok is false when ObjectAssertShowFromBase is not set.
+func (obj Object) ShowFromBase() (ShowFromBase, bool) {
+	g := ObjectGenerators(obj.Generators...).ObjectAssert
+	if g.ShowProjection == "" {
+		return ShowFromBase{}, false
+	}
+	if g.ShowRowFromBase {
+		panic(fmt.Sprintf("object %q: object assertion show row from base and show projection are both set", obj.Name))
+	}
+	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+		panic(fmt.Sprintf("object %q: object assertion show projection %q requires VariantOf", obj.Name, g.ShowProjection))
+	}
+	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: g.ShowProjection}, true
+}
+
+// ShowRowFromBase returns the shared SHOW row fetch. ok is false when ObjectAssertShowRowFromBase is not set.
+// ClientName is VariantOf.Name. Method is Show. The row type is sdk.<VariantOf.Name>.
+func (obj Object) ShowRowFromBase() (ShowFromBase, bool) {
+	g := ObjectGenerators(obj.Generators...).ObjectAssert
+	if !g.ShowRowFromBase {
+		return ShowFromBase{}, false
+	}
+	if g.ShowProjection != "" {
+		panic(fmt.Sprintf("object %q: object assertion show row from base and show projection are both set", obj.Name))
+	}
+	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+		panic(fmt.Sprintf("object %q: object assertion show row from base requires VariantOf", obj.Name))
+	}
+	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: "Show"}, true
+}
+
+// DescribeFetch is the DESCRIBE fetch when it is not testClient.<Object>.Describe.
+type DescribeFetch struct {
+	ClientName string
+	Method     string
+}
+
+// DescribeFetch returns the resolved DESCRIBE fetch. ok is false when no method override is set.
+// ObjectAssertDescribeMethod uses this object's name as the client.
+// ObjectAssertDescribeFromBase uses VariantOf.Name.
+func (obj Object) DescribeFetch() (DescribeFetch, bool) {
+	g := ObjectGenerators(obj.Generators...).ObjectAssert
+	if g.DescribeMethod == "" {
+		return DescribeFetch{}, false
+	}
+	client := obj.Name
+	if g.DescribeOnBase {
+		if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+			panic(fmt.Sprintf("object %q: object assertion describe method %q from base requires VariantOf", obj.Name, g.DescribeMethod))
+		}
+		client = obj.VariantOf.Name
+	}
+	return DescribeFetch{ClientName: client, Method: g.DescribeMethod}, true
+}
+
+// ObjectAssertDescribeMethod fetches through testClient.<Object>.<method> instead of .Describe.
+func ObjectAssertDescribeMethod(method string) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		if method == "" {
+			panic("object assertion describe method is empty")
+		}
+		a.DescribeMethod = method
+	}
+}
+
+// ObjectAssertDescribeFromBase fetches through testClient.<VariantOf.Name>.<method> instead of testClient.<Object>.Describe.
+// The details type stays sdk.<Object>Details.
+func ObjectAssertDescribeFromBase(method string) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		if method == "" {
+			panic("object assertion describe method is empty")
+		}
+		a.DescribeMethod = method
+		a.DescribeOnBase = true
+	}
+}
+
+func ObjectAssertDescribe(opts ...ObjectAssertDescribeOption) ObjectAssertOption {
+	return func(a *ObjectAssertGenerator) {
+		a.Describe = true
+		for _, opt := range opts {
+			opt(a)
+		}
+	}
+}
+
+// ObjectAssertDescribeNestedField copies NestedAssertFields from the old describe object-assertion def.
+// attr is the *Attribute already listed in Describe.Columns.
+func ObjectAssertDescribeNestedField(attr *Attribute, opts ...ObjectAssertNestedOption) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		a.DescribeNestedFields = append(a.DescribeNestedFields, newObjectAssertNestedField(attr, opts))
+	}
+}
+
+func WithNoIdentifiableObject() ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) { a.NoIdentifiableObject = true }
+}
+
+// ObjectAssertDescribeSkipFields copies SkipFields from the old describe object-assertion def.
+// Each argument is the *Attribute already listed in Describe.Columns.
+func ObjectAssertDescribeSkipFields(attrs ...*Attribute) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) { a.DescribeSkipFields = append(a.DescribeSkipFields, attrs...) }
+}
+
+func WithObjectAssert(opts ...ObjectAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		for _, opt := range opts {
+			opt(&g.ObjectAssert)
+		}
+	}
+}
+
+type ObjectParametersAssertOption func(*ObjectParametersAssertGenerator)
+
+func WithObjectParametersAssert(opts ...ObjectParametersAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		g.ObjectParametersAssert.Enabled = true
+		for _, opt := range opts {
+			opt(&g.ObjectParametersAssert)
+		}
+	}
+}
+
+type ResourceParametersAssertOption func(*ResourceParametersAssertGenerator)
+
+func WithResourceParametersAssert(opts ...ResourceParametersAssertOption) GeneratorOption {
+	return func(g *Generators) {
+		g.ResourceParametersAssert.Enabled = true
+		for _, opt := range opts {
+			opt(&g.ResourceParametersAssert)
+		}
+	}
+}
+
+func ObjectGenerators(opts ...GeneratorOption) Generators {
+	var g Generators
+	for _, opt := range opts {
+		opt(&g)
+	}
+	return g
+}

@@ -2645,7 +2645,7 @@ func (a *AccountParametersAssert) HasDefaultCatalogSyncValueExplicit() *AccountP
 }
 
 func (a *AccountParametersAssert) HasDefaultClientTimestampTypeMappingValueExplicit() *AccountParametersAssert {
-	return a.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingLtz)
+	return a.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampLtz)
 }
 
 func (a *AccountParametersAssert) HasDefaultCortexCodeCliDailyEstCreditLimitPerUserValueExplicit() *AccountParametersAssert {
@@ -2721,11 +2721,11 @@ func (a *AccountParametersAssert) HasDefaultExternalVolumeValueExplicit() *Accou
 }
 
 func (a *AccountParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *AccountParametersAssert {
-	return a.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJSON)
+	return a.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson)
 }
 
 func (a *AccountParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *AccountParametersAssert {
-	return a.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJSON)
+	return a.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson)
 }
 
 func (a *AccountParametersAssert) HasDefaultInitialReplicationSizeLimitInTbValueExplicit() *AccountParametersAssert {
@@ -2813,7 +2813,7 @@ func (a *AccountParametersAssert) HasDefaultTimestampOutputFormatValueExplicit()
 }
 
 func (a *AccountParametersAssert) HasDefaultTimestampTypeMappingValueExplicit() *AccountParametersAssert {
-	return a.HasTimestampTypeMapping(sdk.TimestampTypeMappingNtz)
+	return a.HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampNtz)
 }
 
 func (a *AccountParametersAssert) HasDefaultTimestampTzOutputFormatValueExplicit() *AccountParametersAssert {

@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -22,6 +23,13 @@ func NewPipeClient(context *TestClientContext, idsGenerator *IdsGenerator) *Pipe
 
 func (c *PipeClient) client() sdk.Pipes {
 	return c.context.client.Pipes
+}
+
+func (c *PipeClient) CopyStatement(t *testing.T, table *sdk.Table, stage *sdk.Stage) string {
+	t.Helper()
+	require.NotNil(t, table, "table has to be created")
+	require.NotNil(t, stage, "stage has to be created")
+	return fmt.Sprintf("COPY INTO %s\nFROM @%s", table.ID().FullyQualifiedName(), stage.ID().FullyQualifiedName())
 }
 
 func (c *PipeClient) CreatePipe(t *testing.T, copyStatement string) (*sdk.Pipe, func()) {
@@ -58,4 +66,9 @@ func (c *PipeClient) DropPipeFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 		err := c.client().Drop(ctx, sdk.NewDropPipeRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *PipeClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PipeDetails, error) {
+	t.Helper()
+	return c.client().Describe(context.Background(), id)
 }

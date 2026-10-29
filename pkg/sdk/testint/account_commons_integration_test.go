@@ -67,7 +67,7 @@ func setAndUnsetAccountParametersTest(
 				WithClientResultColumnCaseInsensitive(true).
 				WithClientSessionKeepAlive(true).
 				WithClientSessionKeepAliveHeartbeatFrequency(3599).
-				WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+				WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
 				WithCortexCodeCliDailyEstCreditLimitPerUser(10).
 				WithCortexCodeDesktopDailyEstCreditLimitPerUser(20).
 				WithCortexCodeSnowsightDailyEstCreditLimitPerUser(30).
@@ -85,7 +85,7 @@ func setAndUnsetAccountParametersTest(
 				WithDefaultNullOrdering(sdk.DefaultNullOrderingFirst).
 				WithDefaultStreamlitComputePool("SYSTEM_COMPUTE_POOL_GPU").
 				WithDefaultStreamlitNotebookWarehouse(warehouseId).
-				WithDisallowedSpcsWorkloadTypes("").
+				WithDisallowedSpcsWorkloadTypes(sdk.StringAllowEmpty{Value: ""}).
 				WithDisableUiDownloadButton(true).
 				WithDisableUserPrivilegeGrants(true).
 				WithEnableAutomaticSensitiveDataClassificationLog(false).
@@ -110,8 +110,8 @@ func setAndUnsetAccountParametersTest(
 				WithEventTable(eventTable.ID()).
 				WithExternalOauthAddPrivilegedRolesToBlockedList(false).
 				WithExternalVolume(externalVolumeId).
-				WithGeographyOutputFormat(sdk.GeographyOutputFormatWKT).
-				WithGeometryOutputFormat(sdk.GeometryOutputFormatWKT).
+				WithGeographyOutputFormat(sdk.GeographyOutputFormatWkt).
+				WithGeometryOutputFormat(sdk.GeometryOutputFormatWkt).
 				WithHybridTableLockTimeout(3599).
 				WithIcebergVersionDefault(2).
 				WithInitialReplicationSizeLimitInTb(9.9).
@@ -162,7 +162,7 @@ func setAndUnsetAccountParametersTest(
 				WithTimestampLtzOutputFormat("YYYY-MM-DD").
 				WithTimestampNtzOutputFormat("YYYY-MM-DD").
 				WithTimestampOutputFormat("YYYY-MM-DD").
-				WithTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+				WithTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
 				WithTimestampTzOutputFormat("YYYY-MM-DD").
 				WithTimezone("Europe/London").
 				WithTimeInputFormat("YYYY-MM-DD").
@@ -204,7 +204,7 @@ func setAndUnsetAccountParametersTest(
 			HasClientResultColumnCaseInsensitive(true).
 			HasClientSessionKeepAlive(true).
 			HasClientSessionKeepAliveHeartbeatFrequency(3599).
-			HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+			HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
 			HasCortexCodeCliDailyEstCreditLimitPerUser(10).
 			HasCortexCodeDesktopDailyEstCreditLimitPerUser(20).
 			HasCortexCodeSnowsightDailyEstCreditLimitPerUser(30).
@@ -237,8 +237,8 @@ func setAndUnsetAccountParametersTest(
 			HasEventTable(eventTable.ID().FullyQualifiedName()).
 			HasExternalOauthAddPrivilegedRolesToBlockedList(false).
 			HasExternalVolume(externalVolumeId.Name()).
-			HasGeographyOutputFormat(sdk.GeographyOutputFormatWKT).
-			HasGeometryOutputFormat(sdk.GeometryOutputFormatWKT).
+			HasGeographyOutputFormat(sdk.GeographyOutputFormatWkt).
+			HasGeometryOutputFormat(sdk.GeometryOutputFormatWkt).
 			HasHybridTableLockTimeout(3599).
 			HasInitialReplicationSizeLimitInTb("9.9").
 			HasJdbcTreatDecimalAsInt(false).
@@ -284,7 +284,7 @@ func setAndUnsetAccountParametersTest(
 			HasTimestampLtzOutputFormat("YYYY-MM-DD").
 			HasTimestampNtzOutputFormat("YYYY-MM-DD").
 			HasTimestampOutputFormat("YYYY-MM-DD").
-			HasTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+			HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
 			HasTimestampTzOutputFormat("YYYY-MM-DD").
 			HasTimezone("Europe/London").
 			HasTimeInputFormat("YYYY-MM-DD").

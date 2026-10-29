@@ -41,16 +41,16 @@ resource "snowflake_alert" "alert" {
 
 - `action` (String) The SQL statement that should be executed if the condition returns one or more rows.
 - `condition` (String) The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)
-- `database` (String) The database in which to create the alert.
-- `name` (String) Specifies the identifier for the alert; must be unique for the database and schema in which the alert is created.
-- `schema` (String) The schema in which to create the alert.
+- `database` (String) The database in which to create the alert. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `name` (String) Specifies the identifier for the alert; must be unique for the schema in which the alert is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `schema` (String) The schema in which to create the alert. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `warehouse` (String) The warehouse the alert will use.
 
 ### Optional
 
 - `alert_schedule` (Block List, Max: 1) The schedule for periodically running an alert. (see [below for nested schema](#nestedblock--alert_schedule))
 - `comment` (String) Specifies a comment for the alert.
-- `enabled` (Boolean) (Default: `false`) Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).
+- `enabled` (Boolean) Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

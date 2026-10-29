@@ -162,9 +162,9 @@ func (s *CreateSchemaRequest) SetParameterFromRaw(key string, value string) erro
 	case "EXTERNAL_VOLUME":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
 	case "PIPE_EXECUTION_PAUSED":
@@ -174,15 +174,15 @@ func (s *CreateSchemaRequest) SetParameterFromRaw(key string, value string) erro
 	case "REPLACE_INVALID_CHARACTERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
 	case "STORAGE_SERIALIZATION_POLICY":
-		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
 		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
 	case "TASK_AUTO_RETRY_ATTEMPTS":
 		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
 	case "TRACE_LEVEL":
-		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
-		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+		return assignParsedEnumParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
 	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
 	case "USER_TASK_TIMEOUT_MS":
@@ -190,34 +190,6 @@ func (s *CreateSchemaRequest) SetParameterFromRaw(key string, value string) erro
 	default:
 		return ErrParameterNotSupported
 	}
-}
-
-func NewCloneSchemaRequest(
-	name DatabaseObjectIdentifier,
-) *CloneSchemaRequest {
-	s := CloneSchemaRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *CloneSchemaRequest) WithOrReplace(orReplace bool) *CloneSchemaRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CloneSchemaRequest) WithTransient(transient bool) *CloneSchemaRequest {
-	s.Transient = &transient
-	return s
-}
-
-func (s *CloneSchemaRequest) WithIfNotExists(ifNotExists bool) *CloneSchemaRequest {
-	s.IfNotExists = &ifNotExists
-	return s
-}
-
-func (s *CloneSchemaRequest) WithClone(clone Clone) *CloneSchemaRequest {
-	s.Clone = clone
-	return s
 }
 
 func NewAlterSchemaRequest(
@@ -400,9 +372,9 @@ func (s *SchemaSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "EXTERNAL_VOLUME":
 		return assignParsedParameter(value, ParseAccountObjectIdentifier, &s.ExternalVolume)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
 	case "PIPE_EXECUTION_PAUSED":
@@ -412,15 +384,15 @@ func (s *SchemaSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "REPLACE_INVALID_CHARACTERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
 	case "STORAGE_SERIALIZATION_POLICY":
-		return assignParsedParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
+		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
 		return assignParsedParameter(value, strconv.Atoi, &s.SuspendTaskAfterNumFailures)
 	case "TASK_AUTO_RETRY_ATTEMPTS":
 		return assignParsedParameter(value, strconv.Atoi, &s.TaskAutoRetryAttempts)
 	case "TRACE_LEVEL":
-		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE":
-		return assignParsedParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
+		return assignParsedEnumParameter(value, ToWarehouseSize, &s.UserTaskManagedInitialWarehouseSize)
 	case "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS":
 		return assignParsedParameter(value, strconv.Atoi, &s.UserTaskMinimumTriggerIntervalInSeconds)
 	case "USER_TASK_TIMEOUT_MS":
@@ -611,14 +583,6 @@ func (s *DropSchemaRequest) WithRestrict(restrict bool) *DropSchemaRequest {
 	return s
 }
 
-func NewUndropSchemaRequest(
-	name DatabaseObjectIdentifier,
-) *UndropSchemaRequest {
-	s := UndropSchemaRequest{}
-	s.name = name
-	return &s
-}
-
 func NewShowSchemaRequest() *ShowSchemaRequest {
 	s := ShowSchemaRequest{}
 	return &s
@@ -658,6 +622,42 @@ func NewDescribeSchemaRequest(
 	name DatabaseObjectIdentifier,
 ) *DescribeSchemaRequest {
 	s := DescribeSchemaRequest{}
+	s.name = name
+	return &s
+}
+
+func NewCloneSchemaRequest(
+	name DatabaseObjectIdentifier,
+) *CloneSchemaRequest {
+	s := CloneSchemaRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CloneSchemaRequest) WithOrReplace(orReplace bool) *CloneSchemaRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CloneSchemaRequest) WithTransient(transient bool) *CloneSchemaRequest {
+	s.Transient = &transient
+	return s
+}
+
+func (s *CloneSchemaRequest) WithIfNotExists(ifNotExists bool) *CloneSchemaRequest {
+	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CloneSchemaRequest) WithClone(clone Clone) *CloneSchemaRequest {
+	s.Clone = clone
+	return s
+}
+
+func NewUndropSchemaRequest(
+	name DatabaseObjectIdentifier,
+) *UndropSchemaRequest {
+	s := UndropSchemaRequest{}
 	s.name = name
 	return &s
 }

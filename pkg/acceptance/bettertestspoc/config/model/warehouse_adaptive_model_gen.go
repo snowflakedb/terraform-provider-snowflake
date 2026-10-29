@@ -7,13 +7,13 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
 type WarehouseAdaptiveModel struct {
 	Name                            tfconfig.Variable `json:"name,omitempty"`
 	Comment                         tfconfig.Variable `json:"comment,omitempty"`
-	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MaxQueryPerformanceLevel        tfconfig.Variable `json:"max_query_performance_level,omitempty"`
 	QueryThroughputMultiplier       tfconfig.Variable `json:"query_throughput_multiplier,omitempty"`
 	ResourceMonitor                 tfconfig.Variable `json:"resource_monitor,omitempty"`
@@ -93,13 +93,13 @@ func (w *WarehouseAdaptiveModel) WithComment(comment string) *WarehouseAdaptiveM
 	return w
 }
 
-func (w *WarehouseAdaptiveModel) WithFullyQualifiedName(fullyQualifiedName string) *WarehouseAdaptiveModel {
-	w.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (w *WarehouseAdaptiveModel) WithMaxQueryPerformanceLevel(maxQueryPerformanceLevel string) *WarehouseAdaptiveModel {
+	w.MaxQueryPerformanceLevel = tfconfig.StringVariable(maxQueryPerformanceLevel)
 	return w
 }
 
-func (w *WarehouseAdaptiveModel) WithMaxQueryPerformanceLevel(maxQueryPerformanceLevel string) *WarehouseAdaptiveModel {
-	w.MaxQueryPerformanceLevel = tfconfig.StringVariable(maxQueryPerformanceLevel)
+func (w *WarehouseAdaptiveModel) WithMaxQueryPerformanceLevelSdk(maxQueryPerformanceLevel sdk.MaxQueryPerformanceLevel) *WarehouseAdaptiveModel {
+	w.MaxQueryPerformanceLevel = tfconfig.StringVariable(string(maxQueryPerformanceLevel))
 	return w
 }
 
@@ -110,6 +110,11 @@ func (w *WarehouseAdaptiveModel) WithQueryThroughputMultiplier(queryThroughputMu
 
 func (w *WarehouseAdaptiveModel) WithResourceMonitor(resourceMonitor string) *WarehouseAdaptiveModel {
 	w.ResourceMonitor = tfconfig.StringVariable(resourceMonitor)
+	return w
+}
+
+func (w *WarehouseAdaptiveModel) WithResourceMonitorSdk(resourceMonitor sdk.AccountObjectIdentifier) *WarehouseAdaptiveModel {
+	w.ResourceMonitor = tfconfig.StringVariable(resourceMonitor.Name())
 	return w
 }
 
@@ -139,11 +144,6 @@ func (w *WarehouseAdaptiveModel) WithNameValue(value tfconfig.Variable) *Warehou
 
 func (w *WarehouseAdaptiveModel) WithCommentValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
 	w.Comment = value
-	return w
-}
-
-func (w *WarehouseAdaptiveModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *WarehouseAdaptiveModel {
-	w.FullyQualifiedName = value
 	return w
 }
 

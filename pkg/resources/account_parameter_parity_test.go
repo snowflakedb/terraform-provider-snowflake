@@ -32,7 +32,7 @@ var oldAccountParameterSupportedParameters = []sdk.AccountParameter{
 	sdk.AccountParameterNetworkPolicy,
 	sdk.AccountParameterOauthAddPrivilegedRolesToBlockedList,
 	sdk.AccountParameterPeriodicDataRekeying,
-	sdk.AccountParameterPreventLoadFromInlineURL,
+	sdk.AccountParameterPreventLoadFromInlineUrl,
 	sdk.AccountParameterPreventUnloadToInlineUrl,
 	sdk.AccountParameterRequireStorageIntegrationForStageCreation,
 	sdk.AccountParameterRequireStorageIntegrationForStageOperation,

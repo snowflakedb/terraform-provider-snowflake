@@ -17,11 +17,147 @@ type AlterSessionRequest struct {
 }
 
 type SessionSetRequest struct {
-	SessionParameters *SessionParameters
+	SessionParameters *SessionParametersRequest
+}
+
+type SessionParametersRequest struct {
+	AbortDetachedQuery                       *bool
+	ActivePythonProfiler                     *ActivePythonProfiler
+	Autocommit                               *bool
+	BinaryInputFormat                        *BinaryInputFormat
+	BinaryOutputFormat                       *BinaryOutputFormat
+	ClientEnableLogInfoStatementParameters   *bool
+	ClientMemoryLimit                        *int
+	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientMetadataUseSessionDatabase         *bool
+	ClientPrefetchThreads                    *int
+	ClientResultChunkSize                    *int
+	ClientResultColumnCaseInsensitive        *bool
+	ClientSessionKeepAlive                   *bool
+	ClientSessionKeepAliveHeartbeatFrequency *int
+	ClientTimestampTypeMapping               *ClientTimestampTypeMapping
+	CsvTimestampFormat                       *string
+	DateInputFormat                          *string
+	DateOutputFormat                         *string
+	EnableGetDdlUseDataTypeAlias             *bool
+	EnableUnloadPhysicalTypeOptimization     *bool
+	ErrorOnNondeterministicMerge             *bool
+	ErrorOnNondeterministicUpdate            *bool
+	GeographyOutputFormat                    *GeographyOutputFormat
+	GeometryOutputFormat                     *GeometryOutputFormat
+	HybridTableLockTimeout                   *int
+	JdbcTreatDecimalAsInt                    *bool
+	JdbcTreatTimestampNtzAsUtc               *bool
+	JdbcUseSessionTimezone                   *bool
+	JsTreatIntegerAsBigint                   *bool
+	JsonIndent                               *int
+	LockTimeout                              *int
+	LogEventLevel                            *LogLevel
+	LogLevel                                 *LogLevel
+	MultiStatementCount                      *int
+	NoorderSequenceAsDefault                 *bool
+	OdbcTreatDecimalAsInt                    *bool
+	PythonProfilerModules                    *string
+	PythonProfilerTargetStage                *SchemaObjectIdentifier
+	QueryTag                                 *string
+	QuotedIdentifiersIgnoreCase              *bool
+	RowsPerResultset                         *int
+	S3StageVpceDnsName                       *string
+	SearchPath                               *string
+	SimulatedDataSharingConsumer             *string
+	StatementQueuedTimeoutInSeconds          *int
+	StatementTimeoutInSeconds                *int
+	StrictJsonOutput                         *bool
+	TimeInputFormat                          *string
+	TimeOutputFormat                         *string
+	TimestampDayIsAlways24H                  *bool
+	TimestampInputFormat                     *string
+	TimestampLtzOutputFormat                 *string
+	TimestampNtzOutputFormat                 *string
+	TimestampOutputFormat                    *string
+	TimestampTypeMapping                     *TimestampTypeMapping
+	TimestampTzOutputFormat                  *string
+	Timezone                                 *string
+	TraceLevel                               *TraceLevel
+	TransactionAbortOnError                  *bool
+	TransactionDefaultIsolationLevel         *TransactionDefaultIsolationLevel
+	TwoDigitCenturyStart                     *int
+	UnsupportedDdlAction                     *UnsupportedDDLAction
+	UseCachedResult                          *bool
+	WeekOfYearPolicy                         *int
+	WeekStart                                *int
 }
 
 type SessionUnsetRequest struct {
-	SessionParametersUnset *SessionParametersUnset
+	SessionParametersUnset *SessionParametersUnsetRequest
+}
+
+type SessionParametersUnsetRequest struct {
+	AbortDetachedQuery                       *bool
+	ActivePythonProfiler                     *bool
+	Autocommit                               *bool
+	BinaryInputFormat                        *bool
+	BinaryOutputFormat                       *bool
+	ClientEnableLogInfoStatementParameters   *bool
+	ClientMemoryLimit                        *bool
+	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientMetadataUseSessionDatabase         *bool
+	ClientPrefetchThreads                    *bool
+	ClientResultChunkSize                    *bool
+	ClientResultColumnCaseInsensitive        *bool
+	ClientSessionKeepAlive                   *bool
+	ClientSessionKeepAliveHeartbeatFrequency *bool
+	ClientTimestampTypeMapping               *bool
+	CsvTimestampFormat                       *bool
+	DateInputFormat                          *bool
+	DateOutputFormat                         *bool
+	EnableGetDdlUseDataTypeAlias             *bool
+	EnableUnloadPhysicalTypeOptimization     *bool
+	ErrorOnNondeterministicMerge             *bool
+	ErrorOnNondeterministicUpdate            *bool
+	GeographyOutputFormat                    *bool
+	GeometryOutputFormat                     *bool
+	HybridTableLockTimeout                   *bool
+	JdbcTreatDecimalAsInt                    *bool
+	JdbcTreatTimestampNtzAsUtc               *bool
+	JdbcUseSessionTimezone                   *bool
+	JsTreatIntegerAsBigint                   *bool
+	JsonIndent                               *bool
+	LockTimeout                              *bool
+	LogEventLevel                            *bool
+	LogLevel                                 *bool
+	MultiStatementCount                      *bool
+	NoorderSequenceAsDefault                 *bool
+	OdbcTreatDecimalAsInt                    *bool
+	PythonProfilerModules                    *bool
+	PythonProfilerTargetStage                *bool
+	QueryTag                                 *bool
+	QuotedIdentifiersIgnoreCase              *bool
+	RowsPerResultset                         *bool
+	S3StageVpceDnsName                       *bool
+	SearchPath                               *bool
+	SimulatedDataSharingConsumer             *bool
+	StatementQueuedTimeoutInSeconds          *bool
+	StatementTimeoutInSeconds                *bool
+	StrictJsonOutput                         *bool
+	TimeInputFormat                          *bool
+	TimeOutputFormat                         *bool
+	TimestampDayIsAlways24H                  *bool
+	TimestampInputFormat                     *bool
+	TimestampLtzOutputFormat                 *bool
+	TimestampNtzOutputFormat                 *bool
+	TimestampOutputFormat                    *bool
+	TimestampTypeMapping                     *bool
+	TimestampTzOutputFormat                  *bool
+	Timezone                                 *bool
+	TraceLevel                               *bool
+	TransactionAbortOnError                  *bool
+	TransactionDefaultIsolationLevel         *bool
+	TwoDigitCenturyStart                     *bool
+	UnsupportedDdlAction                     *bool
+	UseCachedResult                          *bool
+	WeekOfYearPolicy                         *bool
+	WeekStart                                *bool
 }
 
 type UseWarehouseSessionRequest struct {

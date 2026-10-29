@@ -41,7 +41,6 @@ type AlterAccountRequest struct {
 
 type AccountSetRequest struct {
 	Parameters               *AccountParametersRequest
-	LegacyParameters         *AccountLevelParametersRequest
 	ResourceMonitor          *AccountObjectIdentifier
 	PackagesPolicy           *SchemaObjectIdentifier
 	PasswordPolicy           *SchemaObjectIdentifier
@@ -96,7 +95,7 @@ type AccountParametersRequest struct {
 	DefaultStreamlitNotebookWarehouse                        *AccountObjectIdentifier
 	DisableUiDownloadButton                                  *bool
 	DisableUserPrivilegeGrants                               *bool
-	DisallowedSpcsWorkloadTypes                              *string
+	DisallowedSpcsWorkloadTypes                              *StringAllowEmpty
 	EnableAutomaticSensitiveDataClassificationLog            *bool
 	EnableBudgetEventLogging                                 *bool
 	EnableConsoleOutput                                      *bool
@@ -200,13 +199,6 @@ type AccountParametersRequest struct {
 	WeekStart                                                *int
 }
 
-type AccountLevelParametersRequest struct {
-	AccountParameters *LegacyAccountParameters
-	SessionParameters *SessionParameters
-	ObjectParameters  *ObjectParameters
-	UserParameters    *UserParameters
-}
-
 type AccountSessionPolicySetRequest struct {
 	SessionPolicy      *SchemaObjectIdentifier
 	ForAllPersonUsers  *bool
@@ -225,7 +217,6 @@ type AccountFeaturePolicySetRequest struct {
 
 type AccountUnsetRequest struct {
 	Parameters                *AccountParametersUnsetRequest
-	LegacyParameters          *AccountLevelParametersUnsetRequest
 	AuthenticationPolicyUnset *AccountAuthenticationPolicyUnsetRequest
 	FeaturePolicyUnset        *AccountFeaturePolicyUnsetRequest
 	PackagesPolicy            *bool
@@ -380,13 +371,6 @@ type AccountParametersUnsetRequest struct {
 	UserTaskTimeoutMs                                        *bool
 	WeekOfYearPolicy                                         *bool
 	WeekStart                                                *bool
-}
-
-type AccountLevelParametersUnsetRequest struct {
-	AccountParameters *LegacyAccountParametersUnset
-	SessionParameters *SessionParametersUnset
-	ObjectParameters  *ObjectParametersUnset
-	UserParameters    *UserParametersUnset
 }
 
 type AccountAuthenticationPolicyUnsetRequest struct {

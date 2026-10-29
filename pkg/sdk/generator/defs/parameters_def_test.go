@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/stretchr/testify/require"
@@ -165,30 +166,44 @@ func TestParameterDefsForLevel(t *testing.T) {
 		}, sqlNames(ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive)))
 	})
 
+	t.Run("warehouse plus interactive is the interactive set in catalog order", func(t *testing.T) {
+		require.Equal(t,
+			ParameterDefsForLevel(parameterdefs.ParameterLevelWarehouseInteractive),
+			ssotdefs.ParameterDefsForLevels(parameterdefs.ParameterLevelWarehouse, parameterdefs.ParameterLevelWarehouseInteractive),
+		)
+	})
+
 	t.Run("session level", func(t *testing.T) {
 		require.Equal(t, []string{
 			"ABORT_DETACHED_QUERY",
+			"ACTIVE_PYTHON_PROFILER",
 			"AUTOCOMMIT",
 			"BINARY_INPUT_FORMAT",
 			"BINARY_OUTPUT_FORMAT",
+			"CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS",
 			"CLIENT_MEMORY_LIMIT",
 			"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX",
+			"CLIENT_METADATA_USE_SESSION_DATABASE",
 			"CLIENT_PREFETCH_THREADS",
 			"CLIENT_RESULT_CHUNK_SIZE",
 			"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE",
 			"CLIENT_SESSION_KEEP_ALIVE",
 			"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY",
 			"CLIENT_TIMESTAMP_TYPE_MAPPING",
+			"CSV_TIMESTAMP_FORMAT",
 			"DATE_INPUT_FORMAT",
 			"DATE_OUTPUT_FORMAT",
+			"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS",
 			"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION",
 			"ERROR_ON_NONDETERMINISTIC_MERGE",
 			"ERROR_ON_NONDETERMINISTIC_UPDATE",
 			"GEOGRAPHY_OUTPUT_FORMAT",
 			"GEOMETRY_OUTPUT_FORMAT",
+			"HYBRID_TABLE_LOCK_TIMEOUT",
 			"JDBC_TREAT_DECIMAL_AS_INT",
 			"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC",
 			"JDBC_USE_SESSION_TIMEZONE",
+			"JS_TREAT_INTEGER_AS_BIGINT",
 			"JSON_INDENT",
 			"LOCK_TIMEOUT",
 			"LOG_EVENT_LEVEL",
@@ -196,6 +211,8 @@ func TestParameterDefsForLevel(t *testing.T) {
 			"MULTI_STATEMENT_COUNT",
 			"NOORDER_SEQUENCE_AS_DEFAULT",
 			"ODBC_TREAT_DECIMAL_AS_INT",
+			"PYTHON_PROFILER_MODULES",
+			"PYTHON_PROFILER_TARGET_STAGE",
 			"QUERY_TAG",
 			"QUOTED_IDENTIFIERS_IGNORE_CASE",
 			"ROWS_PER_RESULTSET",
@@ -251,28 +268,35 @@ func TestParameterDefsForLevel(t *testing.T) {
 	t.Run("user level", func(t *testing.T) {
 		require.Equal(t, []string{
 			"ABORT_DETACHED_QUERY",
+			"ACTIVE_PYTHON_PROFILER",
 			"AUTOCOMMIT",
 			"BINARY_INPUT_FORMAT",
 			"BINARY_OUTPUT_FORMAT",
+			"CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS",
 			"CLIENT_MEMORY_LIMIT",
 			"CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX",
+			"CLIENT_METADATA_USE_SESSION_DATABASE",
 			"CLIENT_PREFETCH_THREADS",
 			"CLIENT_RESULT_CHUNK_SIZE",
 			"CLIENT_RESULT_COLUMN_CASE_INSENSITIVE",
 			"CLIENT_SESSION_KEEP_ALIVE",
 			"CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY",
 			"CLIENT_TIMESTAMP_TYPE_MAPPING",
+			"CSV_TIMESTAMP_FORMAT",
 			"DATE_INPUT_FORMAT",
 			"DATE_OUTPUT_FORMAT",
+			"ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS",
 			"ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION",
 			"ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
 			"ERROR_ON_NONDETERMINISTIC_MERGE",
 			"ERROR_ON_NONDETERMINISTIC_UPDATE",
 			"GEOGRAPHY_OUTPUT_FORMAT",
 			"GEOMETRY_OUTPUT_FORMAT",
+			"HYBRID_TABLE_LOCK_TIMEOUT",
 			"JDBC_TREAT_DECIMAL_AS_INT",
 			"JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC",
 			"JDBC_USE_SESSION_TIMEZONE",
+			"JS_TREAT_INTEGER_AS_BIGINT",
 			"JSON_INDENT",
 			"LOCK_TIMEOUT",
 			"LOG_EVENT_LEVEL",
@@ -282,6 +306,8 @@ func TestParameterDefsForLevel(t *testing.T) {
 			"NOORDER_SEQUENCE_AS_DEFAULT",
 			"ODBC_TREAT_DECIMAL_AS_INT",
 			"PREVENT_UNLOAD_TO_INTERNAL_STAGES",
+			"PYTHON_PROFILER_MODULES",
+			"PYTHON_PROFILER_TARGET_STAGE",
 			"QUERY_TAG",
 			"QUOTED_IDENTIFIERS_IGNORE_CASE",
 			"ROWS_PER_RESULTSET",

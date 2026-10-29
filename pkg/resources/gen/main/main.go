@@ -21,8 +21,10 @@ func main() {
 			WithImport("errors").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas").
 			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/diag").
+			WithImport("github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff").
 			WithNamedImport("tfschema", "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"),
 		gen.GetAllObjects,
 		gen.ModelFromInputObject,
@@ -36,14 +38,14 @@ func main() {
 		RunAndHandleOsReturn()
 }
 
-func lifecycleFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
+func lifecycleFilename(_ gen.ResourceObject, model gen.ResourceModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_gen.go"
 }
 
-func schemaFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
+func schemaFilename(_ gen.ResourceObject, model gen.ResourceModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_schema_gen.go"
 }
 
-func parametersFilename(_ gen.ResourceDef, model gen.ResourceModel) string {
+func parametersFilename(_ gen.ResourceObject, model gen.ResourceModel) string {
 	return genhelpers.ToSnakeCase(model.Name) + "_parameters_gen.go"
 }

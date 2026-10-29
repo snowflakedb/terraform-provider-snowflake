@@ -49,9 +49,10 @@ type (
 )
 
 const (
-	ObjectTypeSequence                       = sdk.ObjectTypeSequence
-	ObjectTypeStreamlit                      = sdk.ObjectTypeStreamlit
-	ObjectTypePairedStructExample ObjectType = "PAIRED_STRUCT_EXAMPLE"
+	ObjectTypeSequence                         = sdk.ObjectTypeSequence
+	ObjectTypeStreamlit                        = sdk.ObjectTypeStreamlit
+	ObjectTypePairedStructExample   ObjectType = "PAIRED_STRUCT_EXAMPLE"
+	ObjectTypeShowProjectionExample ObjectType = "SHOW_PROJECTION_EXAMPLE"
 )
 
 func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {
@@ -230,6 +231,7 @@ func mapNullString(_ **string, _ sql.NullString)                                
 func mapNullStringToNonNullableField(_ *string, _ sql.NullString)                        {}
 func mapNullStringWithMapping[T any](_ **T, _ sql.NullString, _ func(string) (T, error)) {}
 func mapNullInt(_ **int, _ sql.NullInt64)                                                {}
+func mapNullInt64(_ **int64, _ sql.NullInt64)                                            {}
 func mapNullBool(_ **bool, _ sql.NullBool)                                               {}
 func mapNullBoolToNonNullableField(_ *bool, _ sql.NullBool)                              {}
 func mapNullIntToNonNullableField(_ *int, _ sql.NullInt64)                               {}

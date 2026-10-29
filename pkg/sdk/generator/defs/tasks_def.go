@@ -3,6 +3,7 @@ package defs
 import (
 	"slices"
 
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -16,7 +17,7 @@ var taskParameterFieldNames = collections.Map(taskParameters, g.ParameterSqlToFi
 
 // CREATE TASK sets the initial warehouse size through the WAREHOUSE clause (taskCreateWarehouse), not as a standalone assignment.
 var taskCreateParameters = collections.Filter(taskParameters, func(p parameterdefs.ParameterDef) bool {
-	return p.SqlName != UserTaskManagedInitialWarehouseSize.SqlName
+	return p.SqlName != ssotdefs.UserTaskManagedInitialWarehouseSize.SqlName
 })
 
 var taskPairs = g.StructPair("taskDBRow", "Task").

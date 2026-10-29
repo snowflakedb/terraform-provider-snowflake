@@ -2,6 +2,7 @@ package genhelpers
 
 import (
 	"slices"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -20,24 +21,35 @@ type SchemaAttribute struct {
 	AttributeType    schema.ValueType
 	AttributeSubType schema.ValueType
 	Required         bool
+	WriteOnly        bool
 }
 
 var preferredFrontOrdering = []string{"database", "schema", "name"}
 
+// OrderByNameWithPreferredFront sorts items by name, then moves database, schema, and name to the front when present.
+func OrderByNameWithPreferredFront[T any](items []T, name func(T) string) []T {
+	slices.SortFunc(items, func(a, b T) int {
+		return strings.Compare(name(a), name(b))
+	})
+	for _, front := range slices.Backward(preferredFrontOrdering) {
+		idx := slices.IndexFunc(items, func(item T) bool { return name(item) == front })
+		if idx == -1 {
+			continue
+		}
+		item := items[idx]
+		items = append(items[:idx], items[idx+1:]...)
+		items = append([]T{item}, items...)
+	}
+	return items
+}
+
 // TODO: test
 func ExtractResourceSchemaDetails(name string, resourceSchema map[string]*schema.Schema) ResourceSchemaDetails {
-	orderedAttributeNames := make([]string, 0)
+	orderedAttributeNames := make([]string, 0, len(resourceSchema))
 	for key := range resourceSchema {
 		orderedAttributeNames = append(orderedAttributeNames, key)
 	}
-	slices.Sort(orderedAttributeNames)
-
-	for _, v := range slices.Backward(preferredFrontOrdering) {
-		if idx := slices.Index(orderedAttributeNames, v); idx != -1 {
-			orderedAttributeNames = append(orderedAttributeNames[:idx], orderedAttributeNames[idx+1:]...)
-			orderedAttributeNames = append([]string{v}, orderedAttributeNames...)
-		}
-	}
+	orderedAttributeNames = OrderByNameWithPreferredFront(orderedAttributeNames, func(name string) string { return name })
 
 	attributes := make([]SchemaAttribute, 0, len(orderedAttributeNames))
 	for _, k := range orderedAttributeNames {
@@ -48,6 +60,7 @@ func ExtractResourceSchemaDetails(name string, resourceSchema map[string]*schema
 			AttributeType:    s.Type,
 			AttributeSubType: subtype,
 			Required:         s.Required,
+			WriteOnly:        s.WriteOnly,
 		})
 	}
 

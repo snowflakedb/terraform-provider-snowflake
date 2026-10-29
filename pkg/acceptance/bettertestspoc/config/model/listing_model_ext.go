@@ -10,6 +10,21 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+// listingAcceptanceTimeout is longer than the provider default of 20 minutes.
+// CREATE LISTING on preprod has hit that deadline while the same create finishes
+// in seconds on later runs. Acceptance configs wait 30 minutes so a slow
+// Snowflake response is less likely to end as context deadline exceeded.
+const listingAcceptanceTimeout = "30m"
+
+func withListingAcceptanceTimeout(l *ListingModel) *ListingModel {
+	return l.WithTimeout(config.Timeouts{
+		Create: listingAcceptanceTimeout,
+		Read:   listingAcceptanceTimeout,
+		Update: listingAcceptanceTimeout,
+		Delete: listingAcceptanceTimeout,
+	})
+}
+
 // TODO(SNOW-1501905): Remove after complex non-list type overrides are handled
 func (l *ListingModel) WithManifest(locations []sdk.StageLocation) *ListingModel {
 	if len(locations) != 1 {
@@ -40,7 +55,7 @@ func ListingWithInlineManifest(
 			"from_string": config.MultilineWrapperVariable(manifest),
 		}),
 	))
-	return l
+	return withListingAcceptanceTimeout(l)
 }
 
 func ListingWithStagedManifestWithLocation(
@@ -49,7 +64,7 @@ func ListingWithStagedManifestWithLocation(
 	stageId sdk.SchemaObjectIdentifier,
 	location string,
 ) *ListingModel {
-	return Listing(resourceName, name, []sdk.StageLocation{sdk.NewStageLocation(stageId, location)})
+	return withListingAcceptanceTimeout(Listing(resourceName, name, []sdk.StageLocation{sdk.NewStageLocation(stageId, location)}))
 }
 
 func ListingWithStagedManifestWithOptionals(
@@ -74,5 +89,5 @@ func ListingWithStagedManifestWithOptionals(
 			),
 		}),
 	))
-	return l
+	return withListingAcceptanceTimeout(l)
 }

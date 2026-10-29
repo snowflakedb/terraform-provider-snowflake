@@ -2,6 +2,14 @@
 {{- if .Hooks.AttributesSchema.Generate }}
 var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }}AttributesModificationExt({{ end }}map[string]*tfschema.Schema{
 {{- range .Attributes }}
+	{{ template "attributeSchemaEntry" . }}
+{{- end }}
+}{{ if .AttributesModification }}){{ end }}
+
+{{ end -}}
+
+{{- /* attributeSchemaEntry renders one schema field. Nested blocks call it again for each child. */ -}}
+{{- define "attributeSchemaEntry" -}}
 	"{{ .Name }}": {
 		Type: tfschema.{{ .TfType }},
 {{- if .Required }}
@@ -12,7 +20,24 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- if .ForceNew }}
 		ForceNew: true,
 {{- end }}
-{{- if .Elem }}
+{{- if .Sensitive }}
+		Sensitive: true,
+{{- end }}
+{{- if .MinItems }}
+		MinItems: {{ .MinItems }},
+{{- end }}
+{{- if .MaxItems }}
+		MaxItems: {{ .MaxItems }},
+{{- end }}
+{{- if .Children }}
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+{{- range .Children }}
+				{{ template "attributeSchemaEntry" . }}
+{{- end }}
+			},
+		},
+{{- else if .Elem }}
 		Elem: &tfschema.Schema{
 			Type: tfschema.{{ .Elem.TfType }},
 {{- if .Elem.ValidateDiagExpr }}
@@ -26,6 +51,27 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- if .DiffSuppressExpr }}
 		DiffSuppressFunc: {{ .DiffSuppressExpr }},
 {{- end }}
+{{- if .ConflictsWith }}
+		ConflictsWith: []string{
+{{- range .ConflictsWith }}
+			{{ printf "%q" . }},
+{{- end }}
+		},
+{{- end }}
+{{- if .AtLeastOneOf }}
+		AtLeastOneOf: []string{
+{{- range .AtLeastOneOf }}
+			{{ printf "%q" . }},
+{{- end }}
+		},
+{{- end }}
+{{- if .ExactlyOneOf }}
+		ExactlyOneOf: []string{
+{{- range .ExactlyOneOf }}
+			{{ printf "%q" . }},
+{{- end }}
+		},
+{{- end }}
 {{- if .DescriptionExpr }}
 		Description: {{ .DescriptionExpr }},
 {{- end }}
@@ -34,6 +80,3 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- end }}
 	},
 {{- end }}
-}{{ if .AttributesModification }}){{ end }}
-
-{{ end -}}

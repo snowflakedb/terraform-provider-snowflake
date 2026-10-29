@@ -17,28 +17,35 @@ type CreateUserRequest struct {
 	name                                     AccountObjectIdentifier // required
 	ObjectProperties                         *UserObjectPropertiesRequest
 	AbortDetachedQuery                       *bool
+	ActivePythonProfiler                     *ActivePythonProfiler
 	Autocommit                               *bool
 	BinaryInputFormat                        *BinaryInputFormat
 	BinaryOutputFormat                       *BinaryOutputFormat
+	ClientEnableLogInfoStatementParameters   *bool
 	ClientMemoryLimit                        *int
 	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientMetadataUseSessionDatabase         *bool
 	ClientPrefetchThreads                    *int
 	ClientResultChunkSize                    *int
 	ClientResultColumnCaseInsensitive        *bool
 	ClientSessionKeepAlive                   *bool
 	ClientSessionKeepAliveHeartbeatFrequency *int
 	ClientTimestampTypeMapping               *ClientTimestampTypeMapping
+	CsvTimestampFormat                       *string
 	DateInputFormat                          *string
 	DateOutputFormat                         *string
+	EnableGetDdlUseDataTypeAlias             *bool
 	EnableUnloadPhysicalTypeOptimization     *bool
 	EnableUnredactedQuerySyntaxError         *bool
 	ErrorOnNondeterministicMerge             *bool
 	ErrorOnNondeterministicUpdate            *bool
 	GeographyOutputFormat                    *GeographyOutputFormat
 	GeometryOutputFormat                     *GeometryOutputFormat
+	HybridTableLockTimeout                   *int
 	JdbcTreatDecimalAsInt                    *bool
 	JdbcTreatTimestampNtzAsUtc               *bool
 	JdbcUseSessionTimezone                   *bool
+	JsTreatIntegerAsBigint                   *bool
 	JsonIndent                               *int
 	LockTimeout                              *int
 	LogEventLevel                            *LogLevel
@@ -48,6 +55,8 @@ type CreateUserRequest struct {
 	NoorderSequenceAsDefault                 *bool
 	OdbcTreatDecimalAsInt                    *bool
 	PreventUnloadToInternalStages            *bool
+	PythonProfilerModules                    *string
+	PythonProfilerTargetStage                *SchemaObjectIdentifier
 	QueryTag                                 *string
 	QuotedIdentifiersIgnoreCase              *bool
 	RowsPerResultset                         *int
@@ -168,28 +177,35 @@ type UserSetRequest struct {
 	AuthenticationPolicy                     *SchemaObjectIdentifier
 	ObjectProperties                         *UserAlterObjectPropertiesRequest
 	AbortDetachedQuery                       *bool
+	ActivePythonProfiler                     *ActivePythonProfiler
 	Autocommit                               *bool
 	BinaryInputFormat                        *BinaryInputFormat
 	BinaryOutputFormat                       *BinaryOutputFormat
+	ClientEnableLogInfoStatementParameters   *bool
 	ClientMemoryLimit                        *int
 	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientMetadataUseSessionDatabase         *bool
 	ClientPrefetchThreads                    *int
 	ClientResultChunkSize                    *int
 	ClientResultColumnCaseInsensitive        *bool
 	ClientSessionKeepAlive                   *bool
 	ClientSessionKeepAliveHeartbeatFrequency *int
 	ClientTimestampTypeMapping               *ClientTimestampTypeMapping
+	CsvTimestampFormat                       *string
 	DateInputFormat                          *string
 	DateOutputFormat                         *string
+	EnableGetDdlUseDataTypeAlias             *bool
 	EnableUnloadPhysicalTypeOptimization     *bool
 	EnableUnredactedQuerySyntaxError         *bool
 	ErrorOnNondeterministicMerge             *bool
 	ErrorOnNondeterministicUpdate            *bool
 	GeographyOutputFormat                    *GeographyOutputFormat
 	GeometryOutputFormat                     *GeometryOutputFormat
+	HybridTableLockTimeout                   *int
 	JdbcTreatDecimalAsInt                    *bool
 	JdbcTreatTimestampNtzAsUtc               *bool
 	JdbcUseSessionTimezone                   *bool
+	JsTreatIntegerAsBigint                   *bool
 	JsonIndent                               *int
 	LockTimeout                              *int
 	LogEventLevel                            *LogLevel
@@ -199,6 +215,8 @@ type UserSetRequest struct {
 	NoorderSequenceAsDefault                 *bool
 	OdbcTreatDecimalAsInt                    *bool
 	PreventUnloadToInternalStages            *bool
+	PythonProfilerModules                    *string
+	PythonProfilerTargetStage                *SchemaObjectIdentifier
 	QueryTag                                 *string
 	QuotedIdentifiersIgnoreCase              *bool
 	RowsPerResultset                         *int
@@ -262,28 +280,35 @@ type UserUnsetRequest struct {
 	AuthenticationPolicy                     *bool
 	ObjectProperties                         *UserObjectPropertiesUnsetRequest
 	AbortDetachedQuery                       *bool
+	ActivePythonProfiler                     *bool
 	Autocommit                               *bool
 	BinaryInputFormat                        *bool
 	BinaryOutputFormat                       *bool
+	ClientEnableLogInfoStatementParameters   *bool
 	ClientMemoryLimit                        *bool
 	ClientMetadataRequestUseConnectionCtx    *bool
+	ClientMetadataUseSessionDatabase         *bool
 	ClientPrefetchThreads                    *bool
 	ClientResultChunkSize                    *bool
 	ClientResultColumnCaseInsensitive        *bool
 	ClientSessionKeepAlive                   *bool
 	ClientSessionKeepAliveHeartbeatFrequency *bool
 	ClientTimestampTypeMapping               *bool
+	CsvTimestampFormat                       *bool
 	DateInputFormat                          *bool
 	DateOutputFormat                         *bool
+	EnableGetDdlUseDataTypeAlias             *bool
 	EnableUnloadPhysicalTypeOptimization     *bool
 	EnableUnredactedQuerySyntaxError         *bool
 	ErrorOnNondeterministicMerge             *bool
 	ErrorOnNondeterministicUpdate            *bool
 	GeographyOutputFormat                    *bool
 	GeometryOutputFormat                     *bool
+	HybridTableLockTimeout                   *bool
 	JdbcTreatDecimalAsInt                    *bool
 	JdbcTreatTimestampNtzAsUtc               *bool
 	JdbcUseSessionTimezone                   *bool
+	JsTreatIntegerAsBigint                   *bool
 	JsonIndent                               *bool
 	LockTimeout                              *bool
 	LogEventLevel                            *bool
@@ -293,6 +318,8 @@ type UserUnsetRequest struct {
 	NoorderSequenceAsDefault                 *bool
 	OdbcTreatDecimalAsInt                    *bool
 	PreventUnloadToInternalStages            *bool
+	PythonProfilerModules                    *bool
+	PythonProfilerTargetStage                *bool
 	QueryTag                                 *bool
 	QuotedIdentifiersIgnoreCase              *bool
 	RowsPerResultset                         *bool

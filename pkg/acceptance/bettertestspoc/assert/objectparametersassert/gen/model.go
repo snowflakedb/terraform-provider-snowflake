@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -27,7 +28,7 @@ type ParameterAssertionModel struct {
 	IsSnowflakeDefault bool
 }
 
-func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjectParameters, preamble *genhelpers.PreambleModel) SnowflakeObjectParametersAssertionsModel {
+func ModelFromSnowflakeObjectParameters(snowflakeObjectParameters SnowflakeObjectParameters, preamble *genhelpers.PreambleModel, _ *log.Logger) SnowflakeObjectParametersAssertionsModel {
 	parameters := make([]ParameterAssertionModel, len(snowflakeObjectParameters.Parameters))
 	for idx, p := range snowflakeObjectParameters.Parameters {
 		// TODO [SNOW-1501905]: get a runtime name for the assertion creator

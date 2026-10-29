@@ -107,14 +107,6 @@ func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 		if r.Set.Parameters != nil {
 			opts.Set.Parameters = r.Set.Parameters.toOpts()
 		}
-		if r.Set.LegacyParameters != nil {
-			opts.Set.LegacyParameters = &AccountLevelParameters{
-				AccountParameters: r.Set.LegacyParameters.AccountParameters,
-				SessionParameters: r.Set.LegacyParameters.SessionParameters,
-				ObjectParameters:  r.Set.LegacyParameters.ObjectParameters,
-				UserParameters:    r.Set.LegacyParameters.UserParameters,
-			}
-		}
 		if r.Set.SessionPolicySet != nil {
 			opts.Set.SessionPolicySet = &AccountSessionPolicySet{
 				SessionPolicy:      r.Set.SessionPolicySet.SessionPolicy,
@@ -144,14 +136,6 @@ func (r *AlterAccountRequest) toOpts() *AlterAccountOptions {
 		}
 		if r.Unset.Parameters != nil {
 			opts.Unset.Parameters = r.Unset.Parameters.toOpts()
-		}
-		if r.Unset.LegacyParameters != nil {
-			opts.Unset.LegacyParameters = &AccountLevelParametersUnset{
-				AccountParameters: r.Unset.LegacyParameters.AccountParameters,
-				SessionParameters: r.Unset.LegacyParameters.SessionParameters,
-				ObjectParameters:  r.Unset.LegacyParameters.ObjectParameters,
-				UserParameters:    r.Unset.LegacyParameters.UserParameters,
-			}
 		}
 		if r.Unset.AuthenticationPolicyUnset != nil {
 			opts.Unset.AuthenticationPolicyUnset = &AccountAuthenticationPolicyUnset{

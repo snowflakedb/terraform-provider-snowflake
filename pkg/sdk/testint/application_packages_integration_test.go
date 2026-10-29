@@ -100,7 +100,7 @@ func TestInt_ApplicationPackages(t *testing.T) {
 			WithComment("test").
 			WithDataRetentionTimeInDays(2).
 			WithMaxDataExtensionTimeInDays(2).
-			WithDefaultDdlCollation("utf8mb4_0900_ai_ci")
+			WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "utf8mb4_0900_ai_ci"})
 		err := client.ApplicationPackages.Alter(ctx, sdk.NewAlterApplicationPackageRequest(id).WithSet(*set))
 		require.NoError(t, err)
 

@@ -4,6 +4,7 @@ package model
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -12,11 +13,10 @@ import (
 )
 
 type ExternalVolumeModel struct {
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	AllowWrites        tfconfig.Variable `json:"allow_writes,omitempty"`
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	StorageLocation    tfconfig.Variable `json:"storage_location,omitempty"`
+	Name            tfconfig.Variable `json:"name,omitempty"`
+	AllowWrites     tfconfig.Variable `json:"allow_writes,omitempty"`
+	Comment         tfconfig.Variable `json:"comment,omitempty"`
+	StorageLocation tfconfig.Variable `json:"storage_location,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -94,13 +94,13 @@ func (e *ExternalVolumeModel) WithAllowWrites(allowWrites string) *ExternalVolum
 	return e
 }
 
-func (e *ExternalVolumeModel) WithComment(comment string) *ExternalVolumeModel {
-	e.Comment = tfconfig.StringVariable(comment)
+func (e *ExternalVolumeModel) WithAllowWritesBool(allowWrites bool) *ExternalVolumeModel {
+	e.AllowWrites = tfconfig.StringVariable(strconv.FormatBool(allowWrites))
 	return e
 }
 
-func (e *ExternalVolumeModel) WithFullyQualifiedName(fullyQualifiedName string) *ExternalVolumeModel {
-	e.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (e *ExternalVolumeModel) WithComment(comment string) *ExternalVolumeModel {
+	e.Comment = tfconfig.StringVariable(comment)
 	return e
 }
 
@@ -122,11 +122,6 @@ func (e *ExternalVolumeModel) WithAllowWritesValue(value tfconfig.Variable) *Ext
 
 func (e *ExternalVolumeModel) WithCommentValue(value tfconfig.Variable) *ExternalVolumeModel {
 	e.Comment = value
-	return e
-}
-
-func (e *ExternalVolumeModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ExternalVolumeModel {
-	e.FullyQualifiedName = value
 	return e
 }
 

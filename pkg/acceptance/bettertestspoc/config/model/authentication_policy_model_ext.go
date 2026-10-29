@@ -36,16 +36,12 @@ func (a *AuthenticationPolicyModel) WithClientTypes(clientTypes ...sdk.ClientTyp
 	)
 }
 
-func (a *AuthenticationPolicyModel) WithClientPolicy(entries ...sdk.AuthenticationPolicyClientPolicyEntry) *AuthenticationPolicyModel {
+func (a *AuthenticationPolicyModel) WithClientPolicy(entries ...sdk.AuthenticationPolicyClientPolicyRequest) *AuthenticationPolicyModel {
 	blocks := make([]tfconfig.Variable, len(entries))
 	for i, e := range entries {
-		minVer := ""
-		if e.Params != nil && e.Params.MinimumVersion != nil {
-			minVer = *e.Params.MinimumVersion
-		}
 		blocks[i] = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"client_type":     tfconfig.StringVariable(string(e.ClientType)),
-			"minimum_version": tfconfig.StringVariable(minVer),
+			"minimum_version": tfconfig.StringVariable(e.Params.MinimumVersion),
 		})
 	}
 	return a.WithClientPolicyValue(tfconfig.SetVariable(blocks...))
@@ -72,8 +68,8 @@ func (a *AuthenticationPolicyModel) WithMfaPolicy(mfaPolicy sdk.AuthenticationPo
 	}
 	if mfaPolicy.AllowedMethods != nil {
 		m["allowed_methods"] = tfconfig.ListVariable(
-			collections.Map(mfaPolicy.AllowedMethods, func(allowedMethod sdk.AuthenticationPolicyMfaPolicyListItem) tfconfig.Variable {
-				return tfconfig.StringVariable(string(allowedMethod.Method))
+			collections.Map(mfaPolicy.AllowedMethods, func(allowedMethod sdk.MfaPolicyAllowedMethodsOptionListItem) tfconfig.Variable {
+				return tfconfig.StringVariable(string(allowedMethod.Value))
 			})...,
 		)
 	}
@@ -101,8 +97,8 @@ func (a *AuthenticationPolicyModel) WithWorkloadIdentityPolicy(workloadIdentityP
 	m := make(map[string]tfconfig.Variable)
 	if workloadIdentityPolicy.AllowedProviders != nil {
 		m["allowed_providers"] = tfconfig.SetVariable(
-			collections.Map(workloadIdentityPolicy.AllowedProviders, func(allowedProvider sdk.AuthenticationPolicyAllowedProviderListItem) tfconfig.Variable {
-				return tfconfig.StringVariable(string(allowedProvider.Provider))
+			collections.Map(workloadIdentityPolicy.AllowedProviders, func(allowedProvider sdk.AllowedProviderOptionListItem) tfconfig.Variable {
+				return tfconfig.StringVariable(string(allowedProvider.Value))
 			})...,
 		)
 	}

@@ -38,6 +38,9 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 		WithComment(comment)
 
 	ref := basic.ResourceReference()
+	shownSecrets := func(displayed string) string {
+		return testClient().SnowflakeDefaults.DescribeAllowedAuthenticationSecrets(t, displayed)
+	}
 
 	assertBasic := []assert.TestCheckFuncProvider{
 		resourceassert.ApiIntegrationGitRepositoryTokenResource(t, ref).
@@ -53,12 +56,12 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(""),
 		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets("").
+			HasAllowedAuthenticationSecrets(shownSecrets("ALL")).
 			HasComment(""),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasAllowedAuthenticationSecrets("").
+			HasAllowedAuthenticationSecrets(shownSecrets("ALL")).
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitAllowedPrefix).
@@ -80,12 +83,12 @@ func TestAcc_ApiIntegrationGitRepositoryToken_BasicUseCase(t *testing.T) {
 			HasComment(comment),
 		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets("").
+			HasAllowedAuthenticationSecrets(shownSecrets("ALL")).
 			HasComment(comment),
 		objectassert.ApiIntegrationGitHttpsApiDetails(t, id).
 			HasEnabled(true).
 			HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
-			HasAllowedAuthenticationSecrets("").
+			HasAllowedAuthenticationSecrets(shownSecrets("ALL")).
 			HasNoUserAuthType().
 			HasUsePrivatelinkEndpoint(false).
 			HasAllowedPrefixes(gitAllowedPrefix).

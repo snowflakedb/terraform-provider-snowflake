@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -57,21 +58,6 @@ func TestUnsetObjectParameterOnObject(t *testing.T) {
 	})
 }
 
-func TestUnsetObjectParameterNetworkPolicyOnAccount(t *testing.T) {
-	opts := &AlterAccountOptions{
-		Unset: &AccountUnset{
-			LegacyParameters: &AccountLevelParametersUnset{
-				ObjectParameters: &ObjectParametersUnset{
-					NetworkPolicy: Bool(true),
-				},
-			},
-		},
-	}
-	t.Run("Unset Account Network Policy", func(t *testing.T) {
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT UNSET NETWORK_POLICY")
-	})
-}
-
 func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 	opts := &AlterUserOptions{
 		name: NewAccountObjectIdentifierFromFullyQualifiedName("TEST_USER"),
@@ -85,61 +71,6 @@ func TestUnsetObjectParameterNetworkPolicyOnUser(t *testing.T) {
 }
 
 // Proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/3344 is fixed.
-func TestSetAccountParameterEnforceNetworkRulesForInternalStages(t *testing.T) {
-	opts := &AlterAccountOptions{
-		Set: &AccountSet{
-			LegacyParameters: &AccountLevelParameters{
-				AccountParameters: &LegacyAccountParameters{
-					EnforceNetworkRulesForInternalStages: Bool(true),
-				},
-			},
-		},
-	}
-	t.Run("Set Enforce Network Rules for Internal Stages", func(t *testing.T) {
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET ENFORCE_NETWORK_RULES_FOR_INTERNAL_STAGES = true")
-	})
-}
-
-func TestSetAccountParameterCortexCodeDailyEstCreditLimitPerUser(t *testing.T) {
-	set := func(params *LegacyAccountParameters) *AlterAccountOptions {
-		return &AlterAccountOptions{
-			Set: &AccountSet{
-				LegacyParameters: &AccountLevelParameters{
-					AccountParameters: params,
-				},
-			},
-		}
-	}
-
-	t.Run("CLI: set to -1 (unlimited)", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeCliDailyEstCreditLimitPerUser: Pointer(-1)})
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER = -1")
-	})
-
-	t.Run("Desktop: set to 0 (blocked)", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeDesktopDailyEstCreditLimitPerUser: Pointer(0)})
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_DESKTOP_DAILY_EST_CREDIT_LIMIT_PER_USER = 0")
-	})
-
-	t.Run("Snowsight: set to a positive cap", func(t *testing.T) {
-		opts := set(&LegacyAccountParameters{CortexCodeSnowsightDailyEstCreditLimitPerUser: Pointer(10)})
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT SET CORTEX_CODE_SNOWSIGHT_DAILY_EST_CREDIT_LIMIT_PER_USER = 10")
-	})
-
-	t.Run("Unset CLI limit", func(t *testing.T) {
-		opts := &AlterAccountOptions{
-			Unset: &AccountUnset{
-				LegacyParameters: &AccountLevelParametersUnset{
-					AccountParameters: &LegacyAccountParametersUnset{
-						CortexCodeCliDailyEstCreditLimitPerUser: Bool(true),
-					},
-				},
-			},
-		}
-		assertOptsValidAndSqlEqualsf(t, opts, "ALTER ACCOUNT UNSET CORTEX_CODE_CLI_DAILY_EST_CREDIT_LIMIT_PER_USER")
-	})
-}
-
 func TestToAccountParameter(t *testing.T) {
 	type test struct {
 		input string
@@ -287,4 +218,211 @@ func TestToAccountParameter(t *testing.T) {
 			require.Error(t, err)
 		})
 	}
+}
+
+func TestSetObjectParameterOnObjectViaCatalog(t *testing.T) {
+	cases := []struct {
+		name        string
+		object      Object
+		parameter   ObjectParameter
+		value       string
+		wantHandled bool
+		wantErr     bool
+	}{
+		{
+			name:      "unknown key falls back for warehouse",
+			object:    Object{ObjectType: ObjectTypeWarehouse, Name: NewAccountObjectIdentifier("some_object")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:        "warehouse parse error propagates",
+			object:      Object{ObjectType: ObjectTypeWarehouse, Name: NewAccountObjectIdentifier("some_object")},
+			parameter:   "MAX_CONCURRENCY_LEVEL",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "unknown key falls back for user",
+			object:    Object{ObjectType: ObjectTypeUser, Name: NewAccountObjectIdentifier("some_object")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:        "user parse error propagates",
+			object:      Object{ObjectType: ObjectTypeUser, Name: NewAccountObjectIdentifier("some_object")},
+			parameter:   "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR",
+			value:       "not-a-bool",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "task parse error propagates",
+			object:      Object{ObjectType: ObjectTypeTask, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_task")},
+			parameter:   "ABORT_DETACHED_QUERY",
+			value:       "not-a-bool",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "service parse error propagates",
+			object:      Object{ObjectType: ObjectTypeService, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_service")},
+			parameter:   "SERVICE_CALLER_TOKEN_VALIDITY_SECS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "hybrid table parse error propagates",
+			object:      Object{ObjectType: ObjectTypeHybridTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")},
+			parameter:   "DATA_RETENTION_TIME_IN_DAYS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:        "iceberg table parse error propagates",
+			object:      Object{ObjectType: ObjectTypeIcebergTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")},
+			parameter:   "DATA_RETENTION_TIME_IN_DAYS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "function without arguments falls back",
+			object:    Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_fn")},
+			parameter: "LOG_LEVEL",
+			value:     "INFO",
+		},
+		{
+			name:      "unknown function enum value falls back",
+			object:    Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_fn", DataTypeVARCHAR)},
+			parameter: "LOG_LEVEL",
+			value:     "not-a-level",
+		},
+		{
+			name:      "procedure without arguments falls back",
+			object:    Object{ObjectType: ObjectTypeProcedure, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_proc")},
+			parameter: "LOG_LEVEL",
+			value:     "INFO",
+		},
+		{
+			name:        "procedure parse error propagates",
+			object:      Object{ObjectType: ObjectTypeProcedure, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_proc", DataTypeVARCHAR)},
+			parameter:   "ENABLE_CONSOLE_OUTPUT",
+			value:       "not-a-bool",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "no catalog writer for table",
+			object:    Object{ObjectType: ObjectTypeTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:      "unknown key falls back for database",
+			object:    Object{ObjectType: ObjectTypeDatabase, Name: NewAccountObjectIdentifier("some_db")},
+			parameter: "NOT_A_REAL_PARAMETER",
+			value:     "1",
+		},
+		{
+			name:      "unknown key falls back for schema",
+			object:    Object{ObjectType: ObjectTypeSchema, Name: NewDatabaseObjectIdentifier("some_db", "some_schema")},
+			parameter: "NOT_A_REAL_PARAMETER",
+			value:     "1",
+		},
+		{
+			name:      "wrong identifier type falls back",
+			object:    Object{ObjectType: ObjectTypeDatabase, Name: NewDatabaseObjectIdentifier("some_db", "some_schema")},
+			parameter: "DATA_RETENTION_TIME_IN_DAYS",
+			value:     "1",
+		},
+		{
+			name:        "genuine parse error propagates",
+			object:      Object{ObjectType: ObjectTypeDatabase, Name: NewAccountObjectIdentifier("some_db")},
+			parameter:   "DATA_RETENTION_TIME_IN_DAYS",
+			value:       "not-an-int",
+			wantHandled: true,
+			wantErr:     true,
+		},
+		{
+			name:      "unknown database enum value falls back",
+			object:    Object{ObjectType: ObjectTypeDatabase, Name: NewAccountObjectIdentifier("some_db")},
+			parameter: "LOG_LEVEL",
+			value:     "not-a-level",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &parameters{client: &Client{}}
+			handled, err := p.SetObjectParameterOnObjectViaCatalog(context.Background(), tc.object, tc.parameter, tc.value)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.wantHandled, handled)
+		})
+	}
+}
+
+func TestUnsetObjectParameterOnObjectViaCatalog(t *testing.T) {
+	cases := []struct {
+		name        string
+		object      Object
+		parameter   ObjectParameter
+		wantHandled bool
+	}{
+		{name: "unknown key falls back for warehouse", object: Object{ObjectType: ObjectTypeWarehouse, Name: NewAccountObjectIdentifier("some_object")}, parameter: "DATA_RETENTION_TIME_IN_DAYS"},
+		{name: "unknown key falls back for user", object: Object{ObjectType: ObjectTypeUser, Name: NewAccountObjectIdentifier("some_object")}, parameter: "DATA_RETENTION_TIME_IN_DAYS"},
+		{name: "function without arguments falls back", object: Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_fn")}, parameter: "LOG_LEVEL"},
+		{name: "no catalog writer for table", object: Object{ObjectType: ObjectTypeTable, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_table")}, parameter: "DATA_RETENTION_TIME_IN_DAYS"},
+		{name: "unknown key falls back for schema", object: Object{ObjectType: ObjectTypeSchema, Name: NewDatabaseObjectIdentifier("some_db", "some_schema")}, parameter: "NOT_A_REAL_PARAMETER"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &parameters{client: &Client{}}
+			handled, err := p.UnsetObjectParameterOnObjectViaCatalog(context.Background(), tc.object, tc.parameter)
+			require.NoError(t, err)
+			require.Equal(t, tc.wantHandled, handled)
+		})
+	}
+}
+
+func TestSetObjectParameterOnAccountViaCatalog(t *testing.T) {
+	cases := []struct {
+		name        string
+		parameter   ObjectParameter
+		value       string
+		wantHandled bool
+		wantErr     bool
+	}{
+		{name: "unknown key falls back", parameter: "NOT_A_REAL_PARAMETER", value: "1"},
+		{name: "genuine parse error propagates", parameter: "MIN_DATA_RETENTION_TIME_IN_DAYS", value: "not-an-int", wantHandled: true, wantErr: true},
+		{name: "unknown enum value falls back", parameter: "LOG_LEVEL", value: "not-a-level"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			p := &parameters{client: &Client{}}
+			handled, err := p.SetObjectParameterOnAccountViaCatalog(context.Background(), tc.parameter, tc.value)
+			if tc.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+			require.Equal(t, tc.wantHandled, handled)
+		})
+	}
+}
+
+func TestUnsetObjectParameterOnAccountViaCatalog(t *testing.T) {
+	p := &parameters{client: &Client{}}
+	handled, err := p.UnsetObjectParameterOnAccountViaCatalog(context.Background(), ObjectParameter("NOT_A_REAL_PARAMETER"))
+	require.NoError(t, err)
+	require.False(t, handled)
 }

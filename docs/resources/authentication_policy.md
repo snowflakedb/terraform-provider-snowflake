@@ -63,7 +63,7 @@ resource "snowflake_authentication_policy" "complete" {
 ### Required
 
 - `database` (String) The database in which to create the authentication policy. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `name` (String) Specifies the identifier for the authentication policy. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `name` (String) Specifies the identifier for the authentication policy; must be unique for the schema in which the authentication policy is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the authentication policy. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 ### Optional
@@ -82,17 +82,17 @@ resource "snowflake_authentication_policy" "complete" {
 
 ### Read-Only
 
-- `describe_output` (List of Object) Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given policy. (see [below for nested schema](#nestedatt--describe_output))
+- `describe_output` (List of Object) Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given authentication policy. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `show_output` (List of Object) Outputs the result of `SHOW AUTHENTICATION POLICIES` for the given policy. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Outputs the result of `SHOW AUTHENTICATION POLICIES` for the given authentication policy. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--client_policy"></a>
 ### Nested Schema for `client_policy`
 
 Required:
 
-- `client_type` (String) The client or driver type. Valid values (case-insensitive): `JDBC_DRIVER` | `ODBC_DRIVER` | `PYTHON_DRIVER` | `JAVASCRIPT_DRIVER` | `C_DRIVER` | `GO_DRIVER` | `PHP_DRIVER` | `DOTNET_DRIVER` | `SQL_API` | `SNOWPIPE_STREAMING_CLIENT_SDK` | `PY_CORE` | `SPROC_PYTHON` | `PYTHON_SNOWPARK` | `SQL_ALCHEMY` | `SNOWPARK` | `SNOWFLAKE_CLIENT`.
+- `client_type` (String) The client or driver type. Valid values are (case-insensitive): `JDBC_DRIVER` | `ODBC_DRIVER` | `PYTHON_DRIVER` | `JAVASCRIPT_DRIVER` | `C_DRIVER` | `GO_DRIVER` | `PHP_DRIVER` | `DOTNET_DRIVER` | `SQL_API` | `SNOWPIPE_STREAMING_CLIENT_SDK` | `PY_CORE` | `SPROC_PYTHON` | `PYTHON_SNOWPARK` | `SQL_ALCHEMY` | `SNOWPARK` | `SNOWFLAKE_CLIENT`.
 - `minimum_version` (String) Minimum allowed version for this client/driver type (e.g. '1.14.1').
 
 

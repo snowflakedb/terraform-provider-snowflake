@@ -2,9 +2,9 @@ package gen
 
 // TODO [SNOW-1501905]: extract all overrides to object definitions
 var multilineAttributesOverrides = map[string][]string{
-	"User":                             {"rsa_public_key", "rsa_public_key_2"},
-	"ServiceUser":                      {"rsa_public_key", "rsa_public_key_2"},
-	"LegacyServiceUser":                {"rsa_public_key", "rsa_public_key_2"},
+	"User":                             {"rsa_public_key", "rsa_public_key_wo", "rsa_public_key_2", "rsa_public_key_2_wo"},
+	"ServiceUser":                      {"rsa_public_key", "rsa_public_key_wo", "rsa_public_key_2", "rsa_public_key_2_wo"},
+	"LegacyServiceUser":                {"rsa_public_key", "rsa_public_key_wo", "rsa_public_key_2", "rsa_public_key_2_wo"},
 	"FunctionJava":                     {"function_definition"},
 	"FunctionJavascript":               {"function_definition"},
 	"FunctionPython":                   {"function_definition"},
@@ -18,20 +18,17 @@ var multilineAttributesOverrides = map[string][]string{
 	"Account":                          {"admin_rsa_public_key"},
 	"Saml2SecurityIntegration":         {"saml2_x509_cert"},
 	"OauthIntegrationForCustomClients": {"oauth_client_rsa_public_key", "oauth_client_rsa_public_key_2"},
-	"Pipe":                             {"copy_statement"},
 	// TODO(SNOW-1501905): Uncomment once listings are generated
 	// "Listing":                          {"manifest.0.from_string"},
 }
 
 var complexListAttributesOverrides = map[string]map[string]string{
-	"GrantOwnership":                {"on": "sdk.OwnershipGrantOnRequest"},
-	"CatalogIntegrationOpenCatalog": {"rest_config": "sdk.OpenCatalogRestConfigRequest", "rest_authentication": "sdk.OAuthRestAuthenticationRequest"},
-	"CatalogIntegrationIcebergRest": {"rest_config": "sdk.IcebergRestRestConfigRequest", "oauth_rest_authentication": "sdk.OAuthRestAuthenticationRequest", "bearer_rest_authentication": "sdk.BearerRestAuthenticationRequest", "sigv4_rest_authentication": "sdk.SigV4RestAuthenticationRequest"}, //nolint:gosec // field-name mapping, not a credential
-	"ExternalVolume":                {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
-	"Listing":                       {"manifest": "sdk.StageLocation"},
-	"MaskingPolicy":                 {"argument": "sdk.TableColumnSignature"},
-	"RowAccessPolicy":               {"argument": "sdk.TableColumnSignature"},
-	"TagAssociation":                {"object_identifiers": "sdk.ObjectIdentifier"},
+	"GrantOwnership":  {"on": "sdk.OwnershipGrantOnRequest"},
+	"ExternalVolume":  {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
+	"Listing":         {"manifest": "sdk.StageLocation"},
+	"MaskingPolicy":   {"argument": "sdk.TableColumnSignature"},
+	"RowAccessPolicy": {"argument": "sdk.TableColumnSignature"},
+	"TagAssociation":  {"object_identifiers": "sdk.ObjectIdentifier"},
 	// TODO [SNOW-1348114]: use better type for override (not null and default are currently not supported)
 	"HybridTable":             {"column": "sdk.TableColumnSignature", "primary_key_constraint": "sdk.TableColumnSignature", "unique_constraint": "sdk.TableColumnSignature", "foreign_key_constraint": "sdk.TableColumnSignature"},
 	"IcebergTable":            {"column": "sdk.TableColumnSignature"},

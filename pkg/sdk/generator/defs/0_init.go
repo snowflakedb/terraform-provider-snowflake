@@ -5,6 +5,8 @@ package defs
 import (
 	"fmt"
 
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 )
 
@@ -17,11 +19,7 @@ func init() {
 		applicationPackagesDef,
 		applicationRolesDef,
 		applicationsDef,
-		authenticationPoliciesDef,
-		backupPoliciesDef,
 		budgetsDef,
-		catalogIntegrationsDef,
-		computePoolsDef,
 		connectionsDef,
 		contextFunctionsDef,
 		cortexAgentsDef,
@@ -34,7 +32,6 @@ func init() {
 		externalTablesDef,
 		externalAccessIntegrationsDef,
 		externalFunctionsDef,
-		externalVolumesDef,
 		failoverGroupsDef,
 		fileFormatsDef,
 		functionsDef,
@@ -57,20 +54,20 @@ func init() {
 		openflowDeploymentsDef,
 		openflowRuntimesDef,
 		organizationAccountsDef,
+		parametersDef,
 		passwordPoliciesDef,
 		pipesDef,
 		policyReferencesDef,
 		postgresInstancesDef,
+		postgresMirrorsDef,
 		proceduresDef,
 		replicationFunctionsDef,
 		resourceMonitorsDef,
 		rolesDef,
 		rowAccessPoliciesDef,
 		secretsDef,
-		schemasDef,
 		securityIntegrationsDef,
 		sessionsDef,
-		sharesDef,
 		semanticViewsDef,
 		sequencesDef,
 		servicesDef,
@@ -89,8 +86,8 @@ func init() {
 		userProgrammaticAccessTokensDef,
 		usersDef,
 		viewsDef,
-		warehousesDef,
 	)
+	gen.AllSdkObjectDefinitions = gen.MergeSdkDefinitions(gen.AllSdkObjectDefinitions, gen.SdkInterfacesFromSsot(ssotdefs.All(), sdkInterfaceOverrides))
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {
 		fmt.Printf(" - %s\n", def.Name)

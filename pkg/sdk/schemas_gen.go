@@ -10,15 +10,15 @@ import (
 
 type Schemas interface {
 	Create(ctx context.Context, request *CreateSchemaRequest) error
-	Clone(ctx context.Context, request *CloneSchemaRequest) error
 	Alter(ctx context.Context, request *AlterSchemaRequest) error
 	Drop(ctx context.Context, request *DropSchemaRequest) error
 	DropSafely(ctx context.Context, id DatabaseObjectIdentifier) error
-	Undrop(ctx context.Context, request *UndropSchemaRequest) error
 	Show(ctx context.Context, request *ShowSchemaRequest) ([]Schema, error)
 	ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error)
 	ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error)
 	Describe(ctx context.Context, id DatabaseObjectIdentifier) ([]SchemaDetails, error)
+	Clone(ctx context.Context, request *CloneSchemaRequest) error
+	Undrop(ctx context.Context, request *UndropSchemaRequest) error
 	ShowParameters(ctx context.Context, id DatabaseObjectIdentifier) ([]*Parameter, error)
 	ShowParametersDetails(ctx context.Context, id DatabaseObjectIdentifier) (*SchemaParametersDetails, error)
 	// Use is based on https://docs.snowflake.com/en/sql-reference/sql/use-schema
@@ -80,17 +80,6 @@ type CreateSchemaOptions struct {
 	UserTaskTimeoutMs                       *int                        `ddl:"parameter" sql:"USER_TASK_TIMEOUT_MS"`
 	Comment                                 *string                     `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	Tag                                     []TagAssociation            `ddl:"keyword,parentheses" sql:"TAG"`
-}
-
-// CloneSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-schema.
-type CloneSchemaOptions struct {
-	create      bool                     `ddl:"static" sql:"CREATE"`
-	OrReplace   *bool                    `ddl:"keyword" sql:"OR REPLACE"`
-	Transient   *bool                    `ddl:"keyword" sql:"TRANSIENT"`
-	schema      bool                     `ddl:"static" sql:"SCHEMA"`
-	IfNotExists *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name        DatabaseObjectIdentifier `ddl:"identifier"`
-	Clone       Clone                    `ddl:"keyword"`
 }
 
 // AlterSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-schema.
@@ -167,13 +156,6 @@ type DropSchemaOptions struct {
 	Restrict *bool                    `ddl:"keyword" sql:"RESTRICT"`
 }
 
-// UndropSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/undrop-schema.
-type UndropSchemaOptions struct {
-	undrop bool                     `ddl:"static" sql:"UNDROP"`
-	schema bool                     `ddl:"static" sql:"SCHEMA"`
-	name   DatabaseObjectIdentifier `ddl:"identifier"`
-}
-
 // ShowSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-schemas.
 type ShowSchemaOptions struct {
 	show       bool        `ddl:"static" sql:"SHOW"`
@@ -186,7 +168,7 @@ type ShowSchemaOptions struct {
 	Limit      *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
-type schemaRow struct {
+type schemasRow struct {
 	CreatedOn     time.Time      `db:"created_on"`
 	DroppedOn     sql.NullTime   `db:"dropped_on"`
 	Name          string         `db:"name"`
@@ -229,7 +211,7 @@ type DescribeSchemaOptions struct {
 	name     DatabaseObjectIdentifier `ddl:"identifier"`
 }
 
-type schemaDetailRow struct {
+type schemaDescRow struct {
 	CreatedOn time.Time `db:"created_on"`
 	Name      string    `db:"name"`
 	Kind      string    `db:"kind"`
@@ -239,4 +221,22 @@ type SchemaDetails struct {
 	CreatedOn time.Time
 	Name      string
 	Kind      string
+}
+
+// CloneSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-schema.
+type CloneSchemaOptions struct {
+	create      bool                     `ddl:"static" sql:"CREATE"`
+	OrReplace   *bool                    `ddl:"keyword" sql:"OR REPLACE"`
+	Transient   *bool                    `ddl:"keyword" sql:"TRANSIENT"`
+	schema      bool                     `ddl:"static" sql:"SCHEMA"`
+	IfNotExists *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name        DatabaseObjectIdentifier `ddl:"identifier"`
+	Clone       Clone                    `ddl:"keyword"`
+}
+
+// UndropSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/undrop-schema.
+type UndropSchemaOptions struct {
+	undrop bool                     `ddl:"static" sql:"UNDROP"`
+	schema bool                     `ddl:"static" sql:"SCHEMA"`
+	name   DatabaseObjectIdentifier `ddl:"identifier"`
 }

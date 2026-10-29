@@ -119,6 +119,7 @@ func TestParameterCatalogBuilders(t *testing.T) {
 				info, err := InfoForKind(tt.goType)
 				require.NoError(t, err)
 				require.Equal(t, tt.want, info.WriteParser)
+				require.Equal(t, tt.goType == "LogLevel" || tt.goType == "WarehouseSize", info.IsEnum)
 			})
 		}
 
@@ -153,7 +154,7 @@ func TestParameterCatalogBuilders(t *testing.T) {
 		// Order follows the catalog, and each entry carries the parser resolved from its kind.
 		require.Equal(t, []ParameterField{
 			{SqlName: "DATA_RETENTION_TIME_IN_DAYS", FieldName: "DataRetentionTimeInDays", Parser: "strconv.Atoi"},
-			{SqlName: "LOG_LEVEL", FieldName: "LogLevel", Parser: "ToLogLevel"},
+			{SqlName: "LOG_LEVEL", FieldName: "LogLevel", Parser: "ToLogLevel", IsEnum: true},
 			{SqlName: "CATALOG", FieldName: "Catalog", Parser: "ParseAccountObjectIdentifier"},
 		}, root.SetParameters)
 		// Comment lives on the same struct but is not a parameter, so it must not be writable by key.

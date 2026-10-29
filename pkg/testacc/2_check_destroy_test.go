@@ -221,6 +221,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.AuthenticationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.AuthenticationPolicies.ShowByID)
 	},
+	resources.BackupPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.BackupPolicies.ShowByID)
+	},
 	resources.CatalogIntegrationAwsGlue: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CatalogIntegrations.ShowByID)
 	},
@@ -235,6 +238,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.PrimaryConnection: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Connections.ShowByID)
+	},
+	resources.CodeBundle: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.CodeBundles.ShowByID)
 	},
 	resources.ComputePool: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ComputePools.ShowByID)
@@ -427,6 +433,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.ProcedureSql: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Procedures.ShowByID)
+	},
+	resources.ProjectionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ProjectionPolicies.ShowByID)
 	},
 	resources.ResourceMonitor: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ResourceMonitors.ShowByID)

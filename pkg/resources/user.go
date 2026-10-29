@@ -138,14 +138,56 @@ var userSchema = map[string]*schema.Schema{
 		Description:  externalChangesNotDetectedFieldDescription("Specifies the number of minutes to temporarily bypass MFA for the user. This property can be used to allow a MFA-enrolled user to temporarily bypass MFA during login in the event that their MFA device is not available."),
 	},
 	"rsa_public_key": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies the user’s RSA public key; used for key-pair authentication. Must be on 1 line without header and trailer.",
+		Type:          schema.TypeString,
+		Optional:      true,
+		ConflictsWith: []string{"rsa_public_key_wo"},
+		Description:   "Specifies the user’s RSA public key; used for key-pair authentication. Must be on 1 line without header and trailer.",
+	},
+	"rsa_public_key_wo": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		WriteOnly:     true,
+		ConflictsWith: []string{"rsa_public_key"},
+		RequiredWith:  []string{"rsa_public_key_wo_version"},
+		Description: joinWithSpace(
+			writeOnlyFieldDescription("Specifies the user’s RSA public key; used for key-pair authentication. Must be on 1 line without header and trailer.", "rsa_public_key_wo_version"),
+			experimentalFeatureDescription(experimentalfeatures.WriteOnlyAttributes),
+		),
+	},
+	"rsa_public_key_wo_version": {
+		Type:         schema.TypeInt,
+		Optional:     true,
+		RequiredWith: []string{"rsa_public_key_wo"},
+		Description: joinWithSpace(
+			writeOnlyVersionFieldDescription("rsa_public_key_wo"),
+			experimentalFeatureDescription(experimentalfeatures.WriteOnlyAttributes),
+		),
 	},
 	"rsa_public_key_2": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies the user’s second RSA public key; used to rotate the public and private keys for key-pair authentication based on an expiration schedule set by your organization. Must be on 1 line without header and trailer.",
+		Type:          schema.TypeString,
+		Optional:      true,
+		ConflictsWith: []string{"rsa_public_key_2_wo"},
+		Description:   "Specifies the user’s second RSA public key; used to rotate the public and private keys for key-pair authentication based on an expiration schedule set by your organization. Must be on 1 line without header and trailer.",
+	},
+	"rsa_public_key_2_wo": {
+		Type:          schema.TypeString,
+		Optional:      true,
+		WriteOnly:     true,
+		ConflictsWith: []string{"rsa_public_key_2"},
+		RequiredWith:  []string{"rsa_public_key_2_wo_version"},
+		Description: joinWithSpace(
+			writeOnlyFieldDescription("Specifies the user’s second RSA public key; used to rotate the public and private keys for key-pair authentication based on an expiration schedule set by your organization. Must be on 1 line without header and trailer.", "rsa_public_key_2_wo_version"),
+			experimentalFeatureDescription(experimentalfeatures.WriteOnlyAttributes),
+		),
+	},
+	"rsa_public_key_2_wo_version": {
+		Type:         schema.TypeInt,
+		Optional:     true,
+		RequiredWith: []string{"rsa_public_key_2_wo"},
+		Description: joinWithSpace(
+			writeOnlyVersionFieldDescription("rsa_public_key_2_wo"),
+			experimentalFeatureDescription(experimentalfeatures.WriteOnlyAttributes),
+		),
 	},
 	"comment": {
 		Type:        schema.TypeString,
@@ -204,6 +246,7 @@ func User() *schema.Resource {
 			ComputedIfAnyAttributeChanged(userSchema, FullyQualifiedNameAttributeName, "name"),
 			userParametersCustomDiff,
 			RecreateWhenUserTypeChangedExternally(sdk.UserTypePerson),
+			rsaPublicKeyWriteOnlyRequireExperiment(),
 		)),
 
 		StateUpgraders: []schema.StateUpgrader{
@@ -237,6 +280,7 @@ func ServiceUser() *schema.Resource {
 			ComputedIfAnyAttributeChanged(userSchema, FullyQualifiedNameAttributeName, "name"),
 			userParametersCustomDiff,
 			RecreateWhenUserTypeChangedExternally(sdk.UserTypeService),
+			rsaPublicKeyWriteOnlyRequireExperiment(),
 		)),
 	}
 }
@@ -260,6 +304,7 @@ func LegacyServiceUser() *schema.Resource {
 			ComputedIfAnyAttributeChanged(userSchema, FullyQualifiedNameAttributeName, "name"),
 			userParametersCustomDiff,
 			RecreateWhenUserTypeChangedExternally(sdk.UserTypeLegacyService),
+			rsaPublicKeyWriteOnlyRequireExperiment(),
 		)),
 	}
 }
@@ -347,8 +392,11 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 				return nil
 			}(),
 			// mins_to_bypass_mfa handled separately for proper user types,
+			// the write-only variants conflict with the non-write-only ones, so at most one of each pair is set
 			stringAttributeCreate(d, "rsa_public_key", &objectProperties.RsaPublicKey),
+			writeOnlyStringAttributeCreate(d, "rsa_public_key_wo", &objectProperties.RsaPublicKey),
 			stringAttributeCreate(d, "rsa_public_key_2", &objectProperties.RsaPublicKey2),
+			writeOnlyStringAttributeCreate(d, "rsa_public_key_2_wo", &objectProperties.RsaPublicKey2),
 			stringAttributeCreate(d, "comment", &objectProperties.Comment),
 			// disable mfa cannot be set in create, alter is run after creation
 		)
@@ -533,8 +581,8 @@ func GetReadUserFunc(userType sdk.UserType, withExternalChangesMarking bool) sch
 			d.Set("default_role", userDetails.DefaultRole),
 			// not setting default_secondary_role_option (handled as external change to show output)
 			// not reading mins_to_bypass_mfa on purpose (they always change)
-			d.Set("rsa_public_key", userDetails.RsaPublicKey),
-			d.Set("rsa_public_key_2", userDetails.RsaPublicKey2),
+			setStringUnlessWriteOnly(d, "rsa_public_key", "rsa_public_key_wo", "rsa_public_key_wo_version", userDetails.RsaPublicKey),
+			setStringUnlessWriteOnly(d, "rsa_public_key_2", "rsa_public_key_2_wo", "rsa_public_key_2_wo_version", userDetails.RsaPublicKey2),
 			d.Set("comment", userDetails.Comment),
 			// can't read disable_mfa
 			d.Set("user_type", u.Type),
@@ -645,8 +693,8 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 				return nil
 			}(),
 			// mins_to_bypass_mfa handled separately for proper user types,
-			stringAttributeUpdate(d, "rsa_public_key", &setObjectProperties.RsaPublicKey, &unsetObjectProperties.RsaPublicKey),
-			stringAttributeUpdate(d, "rsa_public_key_2", &setObjectProperties.RsaPublicKey2, &unsetObjectProperties.RsaPublicKey2),
+			stringAttributeWithWriteOnlyVariantUpdate(d, "rsa_public_key", "rsa_public_key_wo", "rsa_public_key_wo_version", &setObjectProperties.RsaPublicKey, &unsetObjectProperties.RsaPublicKey),
+			stringAttributeWithWriteOnlyVariantUpdate(d, "rsa_public_key_2", "rsa_public_key_2_wo", "rsa_public_key_2_wo_version", &setObjectProperties.RsaPublicKey2, &unsetObjectProperties.RsaPublicKey2),
 			stringAttributeUpdate(d, "comment", &setObjectProperties.Comment, &unsetObjectProperties.Comment),
 			// disable_mfa handled separately for proper user types,
 		)
@@ -870,4 +918,44 @@ func flattenWorkloadIdentityMethod(wif *sdk.UserWorkloadIdentityAuthenticationMe
 	}
 
 	return []any{result}
+}
+
+// rsaPublicKeyWriteOnlyAttributes are the write-only RSA public key fields and their version counters.
+var rsaPublicKeyWriteOnlyAttributes = []string{
+	"rsa_public_key_wo",
+	"rsa_public_key_wo_version",
+	"rsa_public_key_2_wo",
+	"rsa_public_key_2_wo_version",
+}
+
+// rsaPublicKeyWriteOnlyRequireExperiment returns a CustomizeDiff that fails the plan when a write-only
+// RSA public key field (or its version counter) is set while WRITE_ONLY_ATTRIBUTES is not enabled.
+func rsaPublicKeyWriteOnlyRequireExperiment() schema.CustomizeDiffFunc {
+	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
+		rawConfig := d.GetRawConfig()
+		if rawConfig.IsNull() || !rawConfig.IsKnown() {
+			return nil
+		}
+		if !rawConfigHasRsaPublicKeyWriteOnly(rawConfig) {
+			return nil
+		}
+		providerCtx := meta.(*provider.Context)
+		if !providerCtx.Experiments.IsEnabled(experimentalfeatures.WriteOnlyAttributes) {
+			return fmt.Errorf("using `rsa_public_key_wo`, `rsa_public_key_2_wo`, or their version fields requires the %q experiment to be enabled. Add it to the `experimental_features_enabled` list in the provider configuration", experimentalfeatures.WriteOnlyAttributes)
+		}
+		return nil
+	}
+}
+
+// rawConfigHasRsaPublicKeyWriteOnly reports whether any write-only RSA public key field or its version
+// counter is present in the configuration. An unknown value still counts: the attribute is configured
+// (for example from an ephemeral resource) even when the plan cannot see the value yet.
+func rawConfigHasRsaPublicKeyWriteOnly(rawConfig cty.Value) bool {
+	for _, name := range rsaPublicKeyWriteOnlyAttributes {
+		attr := rawConfig.GetAttr(name)
+		if !attr.IsNull() {
+			return true
+		}
+	}
+	return false
 }

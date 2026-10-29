@@ -122,19 +122,18 @@ func TestSetParameterFromRaw(t *testing.T) {
 		}
 	})
 
-	// A caller falls back to the untyped setter on the sentinel, so a bad value must never produce it.
-	t.Run("distinguishes an unsupported parameter from a bad value", func(t *testing.T) {
+	t.Run("classifies unsupported parameters and enum values separately from bad values", func(t *testing.T) {
 		tests := []struct {
-			name         string
-			key          string
-			value        string
-			wantSentinel bool
+			name            string
+			key             string
+			value           string
+			wantUnsupported bool
+			wantEnum        bool
 		}{
-			{name: "unknown key", key: "NOT_A_PARAMETER", value: "whatever", wantSentinel: true},
-			// Comment sits on the same struct but is not a parameter.
-			{name: "non-parameter field", key: "COMMENT", value: "x", wantSentinel: true},
+			{name: "unknown key", key: "NOT_A_PARAMETER", value: "whatever", wantUnsupported: true},
+			{name: "non-parameter field", key: "COMMENT", value: "x", wantUnsupported: true},
 			{name: "unparsable int", key: "DATA_RETENTION_TIME_IN_DAYS", value: "abc"},
-			{name: "invalid enum", key: "LOG_LEVEL", value: "NOT_A_LEVEL"},
+			{name: "unknown enum", key: "LOG_LEVEL", value: "NOT_A_LEVEL", wantEnum: true},
 			{name: "invalid identifier", key: "CATALOG", value: `"a"."b"`},
 		}
 
@@ -142,11 +141,8 @@ func TestSetParameterFromRaw(t *testing.T) {
 			t.Run(tt.name, func(t *testing.T) {
 				err := NewDatabaseSetRequest().SetParameterFromRaw(tt.key, tt.value)
 				require.Error(t, err)
-				if tt.wantSentinel {
-					require.ErrorIs(t, err, ErrParameterNotSupported)
-				} else {
-					require.NotErrorIs(t, err, ErrParameterNotSupported)
-				}
+				require.Equal(t, tt.wantUnsupported, errors.Is(err, ErrParameterNotSupported))
+				require.Equal(t, tt.wantEnum, errors.Is(err, ErrEnumValueNotSupported))
 			})
 		}
 	})
@@ -175,6 +171,12 @@ func TestSetParameterFromRaw(t *testing.T) {
 		require.Equal(t, setAccountSql(t, direct), sql)
 		require.Contains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 9.9")
 		require.NotContains(t, sql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = '9.9'")
+
+		wholeNumber := NewAccountParametersRequest()
+		require.NoError(t, wholeNumber.SetParameterFromRaw("INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", "3.0"))
+		wholeNumberSql := setAccountSql(t, wholeNumber)
+		require.Contains(t, wholeNumberSql, "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 3.0")
+		require.NotRegexp(t, wholeNumberSql, `INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 3([^0-9.]|$)`)
 	})
 
 	t.Run("accepts a lowercase parameter name", func(t *testing.T) {
@@ -189,6 +191,21 @@ func TestSetParameterFromRaw(t *testing.T) {
 		require.NoError(t, request.SetParameterFromRaw("DEFAULT_DDL_COLLATION", ""))
 		require.NotNil(t, request.DefaultDdlCollation)
 		require.Equal(t, "", request.DefaultDdlCollation.Value)
+
+		sql, err := structToSQL(NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*request)).toOpts())
+		require.NoError(t, err)
+		require.Contains(t, sql, "DEFAULT_DDL_COLLATION = ''")
+	})
+
+	t.Run("accepts an empty string for DISALLOWED_SPCS_WORKLOAD_TYPES", func(t *testing.T) {
+		request := NewAccountParametersRequest()
+		require.NoError(t, request.SetParameterFromRaw("DISALLOWED_SPCS_WORKLOAD_TYPES", ""))
+		require.NotNil(t, request.DisallowedSpcsWorkloadTypes)
+		require.Equal(t, "", request.DisallowedSpcsWorkloadTypes.Value)
+
+		sql, err := structToSQL(NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*request)).toOpts())
+		require.NoError(t, err)
+		require.Contains(t, sql, "DISALLOWED_SPCS_WORKLOAD_TYPES = ''")
 	})
 }
 
@@ -235,6 +252,13 @@ func TestAssignParsedParameter(t *testing.T) {
 		var target *int
 		err := assignParsedParameter("abc", func(string) (int, error) { return 0, parseErr }, &target)
 		require.ErrorIs(t, err, parseErr)
+		require.Nil(t, target)
+	})
+
+	t.Run("classifies an enum parse error and leaves the target unset", func(t *testing.T) {
+		var target *LogLevel
+		err := assignParsedEnumParameter("UNKNOWN", ToLogLevel, &target)
+		require.ErrorIs(t, err, ErrEnumValueNotSupported)
 		require.Nil(t, target)
 	})
 }

@@ -2,13 +2,15 @@
 
 var (
 {{- if .Hooks.ParametersAttributesSchema.Generate }}
-	{{ .Prefix }}ParametersAttributesSchema = func() map[string]*tfschema.Schema {
-		m := make(map[string]*tfschema.Schema)
-		for _, p := range defs.ParameterDefsForLevel(parameterdefs.ParameterLevel{{ .Name }}) {
-			m[p.FieldName()] = parameterSchema(p)
+	{{ .Prefix }}ParametersAttributesSchema = map[string]*tfschema.Schema{
+{{- range .ParameterHooks }}
+		{{ printf "%q" .Parameter.FieldName }}: parameterSchemaFromDefinition(parameterSchemaDefinition{
+			sqlName:     {{ printf "%q" .Parameter.SqlName }},
+			kind:        {{ printf "%q" .Parameter.Kind }},
+			description: {{ printf "%q" .Parameter.Description }},
+		}),
+{{- end }}
 		}
-		return m
-	}()
 {{- else if .Hooks.ParametersAttributesSchema.Present }}
 	{{ .Prefix }}ParametersAttributesSchema = {{ .Prefix }}ParametersAttributesSchemaExt
 {{- end }}
@@ -27,19 +29,68 @@ var (
 	{{ .Prefix }}ParametersOutputSchema = {{ .Prefix }}ParametersOutputSchemaExt
 {{- end }}
 {{- if .Hooks.ParametersFieldNames.Generate }}
-	{{ .Prefix }}ParametersFieldNames = collections.Map(
-		defs.ParameterDefsForLevel(parameterdefs.ParameterLevel{{ .Name }}),
-		func(p parameterdefs.ParameterDef) string { return p.FieldName() },
-	)
+	{{ .Prefix }}ParametersFieldNames = []string{
+{{- range .ParameterHooks }}
+		{{ printf "%q" .Parameter.FieldName }},
+{{- end }}
+	}
 {{- else if .Hooks.ParametersFieldNames.Present }}
 	{{ .Prefix }}ParametersFieldNames = {{ .Prefix }}ParametersFieldNamesExt
 {{- end }}
 {{- if .Hooks.ParametersCustomDiff.Generate }}
 	{{ .Prefix }}ParametersCustomDiff = ParametersCustomDiffFromTypedParameters(
-		{{ .Prefix }}ParametersProviderExt,
-		{{ .Prefix }}ParameterDiffFunctionsExt,
+		{{ .Prefix }}ParametersProvider,
+		{{ .Prefix }}ParameterDiffFunctions,
 	)
 {{- else if .Hooks.ParametersCustomDiff.Present }}
 	{{ .Prefix }}ParametersCustomDiff = {{ .Prefix }}ParametersCustomDiffExt
 {{- end }}
 )
+{{- if .Hooks.ParametersCustomDiff.Generate }}
+
+func {{ .Prefix }}ParametersProvider(ctx context.Context, d ResourceIdProvider, meta any) (*sdk.{{ .EffectiveSdkParametersObjectName }}ParametersDetails, error) {
+	id, err := {{ .ParseIdFunc }}(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	return meta.(*provider.Context).Client.{{ .NamePlural }}.ShowParametersDetails(ctx, id)
+}
+
+func {{ .Prefix }}ParameterDiffFunctions(parameters *sdk.{{ .EffectiveSdkParametersObjectName }}ParametersDetails) []tfschema.CustomizeDiffFunc {
+	return []tfschema.CustomizeDiffFunc{
+{{- range .ParameterHooks }}
+		{{ .DiffFunc }}({{ printf "%q" .Parameter.FieldName }}, parameters.{{ .Parameter.StructFieldName }}, sdk.ParameterType{{ $.EffectiveSdkParametersObjectName }}),
+{{- end }}
+	}
+}
+{{- end }}
+{{- if .Hooks.ApplyParametersCreate.Generate }}
+
+func {{ .Prefix }}ApplyParametersCreate(d *tfschema.ResourceData, req *sdk.Create{{ .EffectiveSdkCreateRequestObjectName }}Request) diag.Diagnostics {
+	return JoinDiags(
+{{- range .ParameterHooks }}
+		handleParameterCreate{{ if .NeedsMapping }}WithMapping{{ end }}(d, {{ printf "%q" .Parameter.FieldName }}, &req.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
+{{- end }}
+	)
+}
+{{- end }}
+{{- if .Hooks.ApplyParametersChanges.Generate }}
+
+func {{ .Prefix }}ApplyParametersChanges(d *tfschema.ResourceData, set *sdk.{{ .EffectiveSdkAlterObjectName }}SetRequest, unset *sdk.{{ .EffectiveSdkAlterObjectName }}UnsetRequest) diag.Diagnostics {
+	return JoinDiags(
+{{- range .ParameterHooks }}
+		handleParameterUpdate{{ if .NeedsMapping }}WithMapping{{ end }}(d, {{ printf "%q" .Parameter.FieldName }}, &set.{{ .Parameter.StructFieldName }}, &unset.{{ .Parameter.StructFieldName }}{{ if .NeedsMapping }}, {{ .Mapper }}{{ end }}),
+{{- end }}
+	)
+}
+{{- end }}
+{{- if .Hooks.SetParametersFields.Generate }}
+
+func {{ .Prefix }}SetParametersFields(d *tfschema.ResourceData, parameters *sdk.{{ .EffectiveSdkParametersObjectName }}ParametersDetails) diag.Diagnostics {
+	return JoinDiags(
+{{- range .ParameterHooks }}
+		setResourceData(d, {{ printf "%q" .Parameter.FieldName }}, {{ .Read }}),
+{{- end }}
+	)
+}
+{{- end }}

@@ -17,11 +17,14 @@ func init() {
 		SequencesDef,
 		PartialGenerationExample,
 		PairedStructExample,
+		PropertyListExample,
 		EnumExamplesDef,
 		CustomInterfaceMethodExamplesDef,
 		InstanceMethodExamplesDef,
 		DropSafelyHookExampleDef,
 		DropSafelyForceExampleDef,
+		DropSafelySuppressedExampleDef,
+		ShowProjectionExampleDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

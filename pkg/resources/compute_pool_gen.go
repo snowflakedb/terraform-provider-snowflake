@@ -5,9 +5,15 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -20,7 +26,7 @@ func ComputePool() *tfschema.Resource {
 		CreateContext: computePoolCreateExt,
 		ReadContext:   computePoolReadExt,
 		UpdateContext: computePoolUpdateExt,
-		DeleteContext: computePoolDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.ComputePool, DeleteComputePool),
 		Importer:      computePoolImporterExt,
 
 		CustomizeDiff: computePoolCustomizeDiffExt,
@@ -29,39 +35,40 @@ func ComputePool() *tfschema.Resource {
 }
 
 func ImportComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
-	id, err := computePoolParseIdExt(d.Id())
+	id, err := computePoolParseId(d.Id())
 	if err != nil {
 		return nil, err
 	}
 
-	computePool, err := computePoolShowByIdInSdkExt(ctx, meta, id)
+	computePool, err := meta.(*provider.Context).Client.ComputePools.ShowByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := computePoolSetFieldsNotSetByReadExt(d, id, computePool); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := computePoolSetFieldsNotSetByReadExt(d, id, computePool, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
 }
 
 func CreateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := computePoolParseIdFromConfigExt(d)
+	id, err := computePoolParseIdFromConfig(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	req, err := computePoolNewCreateRequestExt(d, id)
+	req, err := computePoolNewCreateRequest(d, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if err := computePoolApplyCreateOptionalsExt(d, req); err != nil {
+	if err := computePoolApplyCreateOptionals(d, req); err != nil {
 		return diag.FromErr(err)
 	}
 
-	if diags := computePoolCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.ComputePools.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
@@ -70,16 +77,26 @@ func CreateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) 
 
 func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	return func(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-		id, err := computePoolParseIdExt(d.Id())
+		id, err := computePoolParseId(d.Id())
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		computePool, diags := computePoolShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		computePool, err := meta.(*provider.Context).Client.ComputePools.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query compute pool. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Compute pool id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
 		}
-		computePoolDetails, err := computePoolDescribeInSdkExt(ctx, meta, id)
+		computePoolDetails, err := meta.(*provider.Context).Client.ComputePools.Describe(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -87,14 +104,18 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, computePoolSchema, computePoolSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, computePoolSchema, []string{
+			"for_application",
+			"auto_resume",
+			"auto_suspend_secs",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ComputePoolToSchema(computePool)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.ComputePoolDetailsToSchema(computePoolDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			computePoolSetConfigFieldsExt(d, computePool),
+			computePoolSetConfigFields(d, computePool),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -104,19 +125,87 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFu
 }
 
 func UpdateComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := computePoolParseIdExt(d.Id())
+	id, err := computePoolParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := computePoolApplySetUnsetExt(d)
+	setUnset, err := computePoolApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := computePoolAlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewComputePoolSetRequest()) {
+		if err := meta.(*provider.Context).Client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
-	if err := computePoolAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewComputePoolUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.ComputePools.Alter(ctx, sdk.NewAlterComputePoolRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadComputePoolFunc(false)(ctx, d, meta)
+}
+
+func computePoolParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
+	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
+}
+
+func computePoolParseId(id string) (sdk.AccountObjectIdentifier, error) {
+	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func computePoolNewCreateRequest(d *tfschema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateComputePoolRequest, error) {
+	minNodes := d.Get("min_nodes").(int)
+	maxNodes := d.Get("max_nodes").(int)
+	instanceFamily, err := sdk.ToComputePoolInstanceFamily(d.Get("instance_family").(string))
+	if err != nil {
+		return nil, err
+	}
+	return sdk.NewCreateComputePoolRequest(id, minNodes, maxNodes, instanceFamily), nil
+}
+
+func computePoolApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateComputePoolRequest) error {
+	return errors.Join(
+		accountObjectIdentifierAttributeCreateBuilder(d, "for_application", request.WithForApplication),
+		listValueCreate(d, "backup_instance_families", &request.BackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
+		booleanStringAttributeCreateBuilder(d, "auto_resume", request.WithAutoResume),
+		booleanStringAttributeCreateBuilder(d, "initially_suspended", request.WithInitiallySuspended),
+		intAttributeWithSpecialDefaultCreateBuilder(d, "auto_suspend_secs", request.WithAutoSuspendSecs),
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
+}
+
+func computePoolApplySetUnset(d *tfschema.ResourceData) (*computePoolAlterRequestsExt, error) {
+	set, unset := sdk.NewComputePoolSetRequest(), sdk.NewComputePoolUnsetRequest()
+	errs := errors.Join(
+		intAttributeUpdateSetOnlyBuilder(d, "min_nodes", set.WithMinNodes),
+		intAttributeUpdateSetOnlyBuilder(d, "max_nodes", set.WithMaxNodes),
+		listValueUpdateBuilder(d, "backup_instance_families", set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies),
+		booleanStringAttributeUpdateBuilder(d, "auto_resume", set.WithAutoResume, unset.WithAutoResume),
+		intAttributeWithSpecialDefaultUpdateBuilder(d, "auto_suspend_secs", set.WithAutoSuspendSecs, unset.WithAutoSuspendSecs),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &computePoolAlterRequestsExt{set: set, unset: unset}, nil
+}
+
+func DeleteComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseAccountObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
+			return client.ComputePools.DropSafely
+		},
+	)(ctx, d, meta)
+}
+
+func computePoolSetConfigFields(d *tfschema.ResourceData, obj *sdk.ComputePool) error {
+	return errors.Join(
+		d.Set("min_nodes", obj.MinNodes),
+		d.Set("max_nodes", obj.MaxNodes),
+		d.Set("instance_family", obj.InstanceFamily),
+		d.Set("backup_instance_families", obj.BackupInstanceFamilies),
+		d.Set("comment", obj.Comment),
+	)
 }

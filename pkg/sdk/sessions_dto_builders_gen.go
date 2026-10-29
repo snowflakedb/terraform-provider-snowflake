@@ -2,6 +2,11 @@
 
 package sdk
 
+import (
+	"strconv"
+	"strings"
+)
+
 func NewAlterSessionRequest() *AlterSessionRequest {
 	s := AlterSessionRequest{}
 	return &s
@@ -22,9 +27,476 @@ func NewSessionSetRequest() *SessionSetRequest {
 	return &s
 }
 
-func (s *SessionSetRequest) WithSessionParameters(sessionParameters SessionParameters) *SessionSetRequest {
+func (s *SessionSetRequest) WithSessionParameters(sessionParameters SessionParametersRequest) *SessionSetRequest {
 	s.SessionParameters = &sessionParameters
 	return s
+}
+
+func NewSessionParametersRequest() *SessionParametersRequest {
+	s := SessionParametersRequest{}
+	return &s
+}
+
+func (s *SessionParametersRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *SessionParametersRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *SessionParametersRequest) WithActivePythonProfiler(activePythonProfiler ActivePythonProfiler) *SessionParametersRequest {
+	s.ActivePythonProfiler = &activePythonProfiler
+	return s
+}
+
+func (s *SessionParametersRequest) WithAutocommit(autocommit bool) *SessionParametersRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *SessionParametersRequest) WithBinaryInputFormat(binaryInputFormat BinaryInputFormat) *SessionParametersRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithBinaryOutputFormat(binaryOutputFormat BinaryOutputFormat) *SessionParametersRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *SessionParametersRequest {
+	s.ClientEnableLogInfoStatementParameters = &clientEnableLogInfoStatementParameters
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientMemoryLimit(clientMemoryLimit int) *SessionParametersRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *SessionParametersRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *SessionParametersRequest {
+	s.ClientMetadataUseSessionDatabase = &clientMetadataUseSessionDatabase
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientPrefetchThreads(clientPrefetchThreads int) *SessionParametersRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientResultChunkSize(clientResultChunkSize int) *SessionParametersRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *SessionParametersRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *SessionParametersRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency int) *SessionParametersRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *SessionParametersRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping ClientTimestampTypeMapping) *SessionParametersRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *SessionParametersRequest) WithCsvTimestampFormat(csvTimestampFormat string) *SessionParametersRequest {
+	s.CsvTimestampFormat = &csvTimestampFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithDateInputFormat(dateInputFormat string) *SessionParametersRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithDateOutputFormat(dateOutputFormat string) *SessionParametersRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *SessionParametersRequest {
+	s.EnableGetDdlUseDataTypeAlias = &enableGetDdlUseDataTypeAlias
+	return s
+}
+
+func (s *SessionParametersRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *SessionParametersRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *SessionParametersRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *SessionParametersRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *SessionParametersRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *SessionParametersRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *SessionParametersRequest) WithGeographyOutputFormat(geographyOutputFormat GeographyOutputFormat) *SessionParametersRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithGeometryOutputFormat(geometryOutputFormat GeometryOutputFormat) *SessionParametersRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithHybridTableLockTimeout(hybridTableLockTimeout int) *SessionParametersRequest {
+	s.HybridTableLockTimeout = &hybridTableLockTimeout
+	return s
+}
+
+func (s *SessionParametersRequest) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *SessionParametersRequest {
+	s.JdbcTreatDecimalAsInt = &jdbcTreatDecimalAsInt
+	return s
+}
+
+func (s *SessionParametersRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *SessionParametersRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *SessionParametersRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *SessionParametersRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *SessionParametersRequest) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *SessionParametersRequest {
+	s.JsTreatIntegerAsBigint = &jsTreatIntegerAsBigint
+	return s
+}
+
+func (s *SessionParametersRequest) WithJsonIndent(jsonIndent int) *SessionParametersRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *SessionParametersRequest) WithLockTimeout(lockTimeout int) *SessionParametersRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *SessionParametersRequest) WithLogEventLevel(logEventLevel LogLevel) *SessionParametersRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *SessionParametersRequest) WithLogLevel(logLevel LogLevel) *SessionParametersRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *SessionParametersRequest) WithMultiStatementCount(multiStatementCount int) *SessionParametersRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *SessionParametersRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *SessionParametersRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *SessionParametersRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *SessionParametersRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *SessionParametersRequest) WithPythonProfilerModules(pythonProfilerModules string) *SessionParametersRequest {
+	s.PythonProfilerModules = &pythonProfilerModules
+	return s
+}
+
+func (s *SessionParametersRequest) WithPythonProfilerTargetStage(pythonProfilerTargetStage SchemaObjectIdentifier) *SessionParametersRequest {
+	s.PythonProfilerTargetStage = &pythonProfilerTargetStage
+	return s
+}
+
+func (s *SessionParametersRequest) WithQueryTag(queryTag string) *SessionParametersRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *SessionParametersRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SessionParametersRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *SessionParametersRequest) WithRowsPerResultset(rowsPerResultset int) *SessionParametersRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *SessionParametersRequest) WithS3StageVpceDnsName(s3StageVpceDnsName string) *SessionParametersRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
+	return s
+}
+
+func (s *SessionParametersRequest) WithSearchPath(searchPath string) *SessionParametersRequest {
+	s.SearchPath = &searchPath
+	return s
+}
+
+func (s *SessionParametersRequest) WithSimulatedDataSharingConsumer(simulatedDataSharingConsumer string) *SessionParametersRequest {
+	s.SimulatedDataSharingConsumer = &simulatedDataSharingConsumer
+	return s
+}
+
+func (s *SessionParametersRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds int) *SessionParametersRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *SessionParametersRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds int) *SessionParametersRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *SessionParametersRequest) WithStrictJsonOutput(strictJsonOutput bool) *SessionParametersRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimeInputFormat(timeInputFormat string) *SessionParametersRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimeOutputFormat(timeOutputFormat string) *SessionParametersRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *SessionParametersRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimestampInputFormat(timestampInputFormat string) *SessionParametersRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat string) *SessionParametersRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat string) *SessionParametersRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimestampOutputFormat(timestampOutputFormat string) *SessionParametersRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimestampTypeMapping(timestampTypeMapping TimestampTypeMapping) *SessionParametersRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat string) *SessionParametersRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *SessionParametersRequest) WithTimezone(timezone string) *SessionParametersRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *SessionParametersRequest) WithTraceLevel(traceLevel TraceLevel) *SessionParametersRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *SessionParametersRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *SessionParametersRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *SessionParametersRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel TransactionDefaultIsolationLevel) *SessionParametersRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *SessionParametersRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart int) *SessionParametersRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *SessionParametersRequest) WithUnsupportedDdlAction(unsupportedDdlAction UnsupportedDDLAction) *SessionParametersRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *SessionParametersRequest) WithUseCachedResult(useCachedResult bool) *SessionParametersRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *SessionParametersRequest) WithWeekOfYearPolicy(weekOfYearPolicy int) *SessionParametersRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *SessionParametersRequest) WithWeekStart(weekStart int) *SessionParametersRequest {
+	s.WeekStart = &weekStart
+	return s
+}
+
+func (s *SessionParametersRequest) SetParameterFromRaw(key string, value string) error {
+	switch strings.ToUpper(key) {
+	case "ABORT_DETACHED_QUERY":
+		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
+	case "ACTIVE_PYTHON_PROFILER":
+		return assignParsedEnumParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
+	case "AUTOCOMMIT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
+	case "BINARY_INPUT_FORMAT":
+		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+	case "BINARY_OUTPUT_FORMAT":
+		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientEnableLogInfoStatementParameters)
+	case "CLIENT_MEMORY_LIMIT":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataRequestUseConnectionCtx)
+	case "CLIENT_METADATA_USE_SESSION_DATABASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataUseSessionDatabase)
+	case "CLIENT_PREFETCH_THREADS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientPrefetchThreads)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientResultChunkSize)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientResultColumnCaseInsensitive)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientSessionKeepAlive)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+	case "CSV_TIMESTAMP_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.CsvTimestampFormat)
+	case "DATE_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
+	case "DATE_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.DateOutputFormat)
+	case "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableGetDdlUseDataTypeAlias)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnloadPhysicalTypeOptimization)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicMerge)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+	case "HYBRID_TABLE_LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.HybridTableLockTimeout)
+	case "JDBC_TREAT_DECIMAL_AS_INT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatDecimalAsInt)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcUseSessionTimezone)
+	case "JS_TREAT_INTEGER_AS_BIGINT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JsTreatIntegerAsBigint)
+	case "JSON_INDENT":
+		return assignParsedParameter(value, strconv.Atoi, &s.JsonIndent)
+	case "LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
+	case "LOG_EVENT_LEVEL":
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "LOG_LEVEL":
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+	case "MULTI_STATEMENT_COUNT":
+		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.NoorderSequenceAsDefault)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.OdbcTreatDecimalAsInt)
+	case "PYTHON_PROFILER_MODULES":
+		return assignParsedParameter(value, identityParse, &s.PythonProfilerModules)
+	case "PYTHON_PROFILER_TARGET_STAGE":
+		return assignParsedParameter(value, ParseSchemaObjectIdentifier, &s.PythonProfilerTargetStage)
+	case "QUERY_TAG":
+		return assignParsedParameter(value, identityParse, &s.QueryTag)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
+	case "ROWS_PER_RESULTSET":
+		return assignParsedParameter(value, strconv.Atoi, &s.RowsPerResultset)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		return assignParsedParameter(value, identityParse, &s.S3StageVpceDnsName)
+	case "SEARCH_PATH":
+		return assignParsedParameter(value, identityParse, &s.SearchPath)
+	case "SIMULATED_DATA_SHARING_CONSUMER":
+		return assignParsedParameter(value, identityParse, &s.SimulatedDataSharingConsumer)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementQueuedTimeoutInSeconds)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		return assignParsedParameter(value, strconv.Atoi, &s.StatementTimeoutInSeconds)
+	case "STRICT_JSON_OUTPUT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.StrictJsonOutput)
+	case "TIME_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeInputFormat)
+	case "TIME_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimeOutputFormat)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TimestampDayIsAlways24H)
+	case "TIMESTAMP_INPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampInputFormat)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampLtzOutputFormat)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampNtzOutputFormat)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
+	case "TIMESTAMP_TYPE_MAPPING":
+		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
+	case "TIMEZONE":
+		return assignParsedParameter(value, identityParse, &s.Timezone)
+	case "TRACE_LEVEL":
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+	case "TWO_DIGIT_CENTURY_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
+	case "UNSUPPORTED_DDL_ACTION":
+		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+	case "USE_CACHED_RESULT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
+	case "WEEK_OF_YEAR_POLICY":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekOfYearPolicy)
+	case "WEEK_START":
+		return assignParsedParameter(value, strconv.Atoi, &s.WeekStart)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewSessionUnsetRequest() *SessionUnsetRequest {
@@ -32,9 +504,477 @@ func NewSessionUnsetRequest() *SessionUnsetRequest {
 	return &s
 }
 
-func (s *SessionUnsetRequest) WithSessionParametersUnset(sessionParametersUnset SessionParametersUnset) *SessionUnsetRequest {
+func (s *SessionUnsetRequest) WithSessionParametersUnset(sessionParametersUnset SessionParametersUnsetRequest) *SessionUnsetRequest {
 	s.SessionParametersUnset = &sessionParametersUnset
 	return s
+}
+
+func NewSessionParametersUnsetRequest() *SessionParametersUnsetRequest {
+	s := SessionParametersUnsetRequest{}
+	return &s
+}
+
+func (s *SessionParametersUnsetRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *SessionParametersUnsetRequest {
+	s.AbortDetachedQuery = &abortDetachedQuery
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithActivePythonProfiler(activePythonProfiler bool) *SessionParametersUnsetRequest {
+	s.ActivePythonProfiler = &activePythonProfiler
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithAutocommit(autocommit bool) *SessionParametersUnsetRequest {
+	s.Autocommit = &autocommit
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithBinaryInputFormat(binaryInputFormat bool) *SessionParametersUnsetRequest {
+	s.BinaryInputFormat = &binaryInputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithBinaryOutputFormat(binaryOutputFormat bool) *SessionParametersUnsetRequest {
+	s.BinaryOutputFormat = &binaryOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *SessionParametersUnsetRequest {
+	s.ClientEnableLogInfoStatementParameters = &clientEnableLogInfoStatementParameters
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientMemoryLimit(clientMemoryLimit bool) *SessionParametersUnsetRequest {
+	s.ClientMemoryLimit = &clientMemoryLimit
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *SessionParametersUnsetRequest {
+	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *SessionParametersUnsetRequest {
+	s.ClientMetadataUseSessionDatabase = &clientMetadataUseSessionDatabase
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientPrefetchThreads(clientPrefetchThreads bool) *SessionParametersUnsetRequest {
+	s.ClientPrefetchThreads = &clientPrefetchThreads
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientResultChunkSize(clientResultChunkSize bool) *SessionParametersUnsetRequest {
+	s.ClientResultChunkSize = &clientResultChunkSize
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientResultColumnCaseInsensitive(clientResultColumnCaseInsensitive bool) *SessionParametersUnsetRequest {
+	s.ClientResultColumnCaseInsensitive = &clientResultColumnCaseInsensitive
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientSessionKeepAlive(clientSessionKeepAlive bool) *SessionParametersUnsetRequest {
+	s.ClientSessionKeepAlive = &clientSessionKeepAlive
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientSessionKeepAliveHeartbeatFrequency(clientSessionKeepAliveHeartbeatFrequency bool) *SessionParametersUnsetRequest {
+	s.ClientSessionKeepAliveHeartbeatFrequency = &clientSessionKeepAliveHeartbeatFrequency
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithClientTimestampTypeMapping(clientTimestampTypeMapping bool) *SessionParametersUnsetRequest {
+	s.ClientTimestampTypeMapping = &clientTimestampTypeMapping
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithCsvTimestampFormat(csvTimestampFormat bool) *SessionParametersUnsetRequest {
+	s.CsvTimestampFormat = &csvTimestampFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithDateInputFormat(dateInputFormat bool) *SessionParametersUnsetRequest {
+	s.DateInputFormat = &dateInputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithDateOutputFormat(dateOutputFormat bool) *SessionParametersUnsetRequest {
+	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *SessionParametersUnsetRequest {
+	s.EnableGetDdlUseDataTypeAlias = &enableGetDdlUseDataTypeAlias
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithEnableUnloadPhysicalTypeOptimization(enableUnloadPhysicalTypeOptimization bool) *SessionParametersUnsetRequest {
+	s.EnableUnloadPhysicalTypeOptimization = &enableUnloadPhysicalTypeOptimization
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithErrorOnNondeterministicMerge(errorOnNondeterministicMerge bool) *SessionParametersUnsetRequest {
+	s.ErrorOnNondeterministicMerge = &errorOnNondeterministicMerge
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithErrorOnNondeterministicUpdate(errorOnNondeterministicUpdate bool) *SessionParametersUnsetRequest {
+	s.ErrorOnNondeterministicUpdate = &errorOnNondeterministicUpdate
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithGeographyOutputFormat(geographyOutputFormat bool) *SessionParametersUnsetRequest {
+	s.GeographyOutputFormat = &geographyOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithGeometryOutputFormat(geometryOutputFormat bool) *SessionParametersUnsetRequest {
+	s.GeometryOutputFormat = &geometryOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithHybridTableLockTimeout(hybridTableLockTimeout bool) *SessionParametersUnsetRequest {
+	s.HybridTableLockTimeout = &hybridTableLockTimeout
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *SessionParametersUnsetRequest {
+	s.JdbcTreatDecimalAsInt = &jdbcTreatDecimalAsInt
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsUtc bool) *SessionParametersUnsetRequest {
+	s.JdbcTreatTimestampNtzAsUtc = &jdbcTreatTimestampNtzAsUtc
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *SessionParametersUnsetRequest {
+	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *SessionParametersUnsetRequest {
+	s.JsTreatIntegerAsBigint = &jsTreatIntegerAsBigint
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithJsonIndent(jsonIndent bool) *SessionParametersUnsetRequest {
+	s.JsonIndent = &jsonIndent
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithLockTimeout(lockTimeout bool) *SessionParametersUnsetRequest {
+	s.LockTimeout = &lockTimeout
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithLogEventLevel(logEventLevel bool) *SessionParametersUnsetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithLogLevel(logLevel bool) *SessionParametersUnsetRequest {
+	s.LogLevel = &logLevel
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithMultiStatementCount(multiStatementCount bool) *SessionParametersUnsetRequest {
+	s.MultiStatementCount = &multiStatementCount
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithNoorderSequenceAsDefault(noorderSequenceAsDefault bool) *SessionParametersUnsetRequest {
+	s.NoorderSequenceAsDefault = &noorderSequenceAsDefault
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *SessionParametersUnsetRequest {
+	s.OdbcTreatDecimalAsInt = &odbcTreatDecimalAsInt
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithPythonProfilerModules(pythonProfilerModules bool) *SessionParametersUnsetRequest {
+	s.PythonProfilerModules = &pythonProfilerModules
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithPythonProfilerTargetStage(pythonProfilerTargetStage bool) *SessionParametersUnsetRequest {
+	s.PythonProfilerTargetStage = &pythonProfilerTargetStage
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithQueryTag(queryTag bool) *SessionParametersUnsetRequest {
+	s.QueryTag = &queryTag
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SessionParametersUnsetRequest {
+	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithRowsPerResultset(rowsPerResultset bool) *SessionParametersUnsetRequest {
+	s.RowsPerResultset = &rowsPerResultset
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithS3StageVpceDnsName(s3StageVpceDnsName bool) *SessionParametersUnsetRequest {
+	s.S3StageVpceDnsName = &s3StageVpceDnsName
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithSearchPath(searchPath bool) *SessionParametersUnsetRequest {
+	s.SearchPath = &searchPath
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithSimulatedDataSharingConsumer(simulatedDataSharingConsumer bool) *SessionParametersUnsetRequest {
+	s.SimulatedDataSharingConsumer = &simulatedDataSharingConsumer
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithStatementQueuedTimeoutInSeconds(statementQueuedTimeoutInSeconds bool) *SessionParametersUnsetRequest {
+	s.StatementQueuedTimeoutInSeconds = &statementQueuedTimeoutInSeconds
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithStatementTimeoutInSeconds(statementTimeoutInSeconds bool) *SessionParametersUnsetRequest {
+	s.StatementTimeoutInSeconds = &statementTimeoutInSeconds
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithStrictJsonOutput(strictJsonOutput bool) *SessionParametersUnsetRequest {
+	s.StrictJsonOutput = &strictJsonOutput
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimeInputFormat(timeInputFormat bool) *SessionParametersUnsetRequest {
+	s.TimeInputFormat = &timeInputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimeOutputFormat(timeOutputFormat bool) *SessionParametersUnsetRequest {
+	s.TimeOutputFormat = &timeOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimestampDayIsAlways24H(timestampDayIsAlways24H bool) *SessionParametersUnsetRequest {
+	s.TimestampDayIsAlways24H = &timestampDayIsAlways24H
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimestampInputFormat(timestampInputFormat bool) *SessionParametersUnsetRequest {
+	s.TimestampInputFormat = &timestampInputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimestampLtzOutputFormat(timestampLtzOutputFormat bool) *SessionParametersUnsetRequest {
+	s.TimestampLtzOutputFormat = &timestampLtzOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimestampNtzOutputFormat(timestampNtzOutputFormat bool) *SessionParametersUnsetRequest {
+	s.TimestampNtzOutputFormat = &timestampNtzOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimestampOutputFormat(timestampOutputFormat bool) *SessionParametersUnsetRequest {
+	s.TimestampOutputFormat = &timestampOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimestampTypeMapping(timestampTypeMapping bool) *SessionParametersUnsetRequest {
+	s.TimestampTypeMapping = &timestampTypeMapping
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimestampTzOutputFormat(timestampTzOutputFormat bool) *SessionParametersUnsetRequest {
+	s.TimestampTzOutputFormat = &timestampTzOutputFormat
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTimezone(timezone bool) *SessionParametersUnsetRequest {
+	s.Timezone = &timezone
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTraceLevel(traceLevel bool) *SessionParametersUnsetRequest {
+	s.TraceLevel = &traceLevel
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTransactionAbortOnError(transactionAbortOnError bool) *SessionParametersUnsetRequest {
+	s.TransactionAbortOnError = &transactionAbortOnError
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTransactionDefaultIsolationLevel(transactionDefaultIsolationLevel bool) *SessionParametersUnsetRequest {
+	s.TransactionDefaultIsolationLevel = &transactionDefaultIsolationLevel
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithTwoDigitCenturyStart(twoDigitCenturyStart bool) *SessionParametersUnsetRequest {
+	s.TwoDigitCenturyStart = &twoDigitCenturyStart
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithUnsupportedDdlAction(unsupportedDdlAction bool) *SessionParametersUnsetRequest {
+	s.UnsupportedDdlAction = &unsupportedDdlAction
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithUseCachedResult(useCachedResult bool) *SessionParametersUnsetRequest {
+	s.UseCachedResult = &useCachedResult
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithWeekOfYearPolicy(weekOfYearPolicy bool) *SessionParametersUnsetRequest {
+	s.WeekOfYearPolicy = &weekOfYearPolicy
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) WithWeekStart(weekStart bool) *SessionParametersUnsetRequest {
+	s.WeekStart = &weekStart
+	return s
+}
+
+func (s *SessionParametersUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "ABORT_DETACHED_QUERY":
+		s.AbortDetachedQuery = Bool(true)
+	case "ACTIVE_PYTHON_PROFILER":
+		s.ActivePythonProfiler = Bool(true)
+	case "AUTOCOMMIT":
+		s.Autocommit = Bool(true)
+	case "BINARY_INPUT_FORMAT":
+		s.BinaryInputFormat = Bool(true)
+	case "BINARY_OUTPUT_FORMAT":
+		s.BinaryOutputFormat = Bool(true)
+	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
+		s.ClientEnableLogInfoStatementParameters = Bool(true)
+	case "CLIENT_MEMORY_LIMIT":
+		s.ClientMemoryLimit = Bool(true)
+	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
+		s.ClientMetadataRequestUseConnectionCtx = Bool(true)
+	case "CLIENT_METADATA_USE_SESSION_DATABASE":
+		s.ClientMetadataUseSessionDatabase = Bool(true)
+	case "CLIENT_PREFETCH_THREADS":
+		s.ClientPrefetchThreads = Bool(true)
+	case "CLIENT_RESULT_CHUNK_SIZE":
+		s.ClientResultChunkSize = Bool(true)
+	case "CLIENT_RESULT_COLUMN_CASE_INSENSITIVE":
+		s.ClientResultColumnCaseInsensitive = Bool(true)
+	case "CLIENT_SESSION_KEEP_ALIVE":
+		s.ClientSessionKeepAlive = Bool(true)
+	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
+		s.ClientSessionKeepAliveHeartbeatFrequency = Bool(true)
+	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
+		s.ClientTimestampTypeMapping = Bool(true)
+	case "CSV_TIMESTAMP_FORMAT":
+		s.CsvTimestampFormat = Bool(true)
+	case "DATE_INPUT_FORMAT":
+		s.DateInputFormat = Bool(true)
+	case "DATE_OUTPUT_FORMAT":
+		s.DateOutputFormat = Bool(true)
+	case "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS":
+		s.EnableGetDdlUseDataTypeAlias = Bool(true)
+	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
+		s.EnableUnloadPhysicalTypeOptimization = Bool(true)
+	case "ERROR_ON_NONDETERMINISTIC_MERGE":
+		s.ErrorOnNondeterministicMerge = Bool(true)
+	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
+		s.ErrorOnNondeterministicUpdate = Bool(true)
+	case "GEOGRAPHY_OUTPUT_FORMAT":
+		s.GeographyOutputFormat = Bool(true)
+	case "GEOMETRY_OUTPUT_FORMAT":
+		s.GeometryOutputFormat = Bool(true)
+	case "HYBRID_TABLE_LOCK_TIMEOUT":
+		s.HybridTableLockTimeout = Bool(true)
+	case "JDBC_TREAT_DECIMAL_AS_INT":
+		s.JdbcTreatDecimalAsInt = Bool(true)
+	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
+		s.JdbcTreatTimestampNtzAsUtc = Bool(true)
+	case "JDBC_USE_SESSION_TIMEZONE":
+		s.JdbcUseSessionTimezone = Bool(true)
+	case "JS_TREAT_INTEGER_AS_BIGINT":
+		s.JsTreatIntegerAsBigint = Bool(true)
+	case "JSON_INDENT":
+		s.JsonIndent = Bool(true)
+	case "LOCK_TIMEOUT":
+		s.LockTimeout = Bool(true)
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "LOG_LEVEL":
+		s.LogLevel = Bool(true)
+	case "MULTI_STATEMENT_COUNT":
+		s.MultiStatementCount = Bool(true)
+	case "NOORDER_SEQUENCE_AS_DEFAULT":
+		s.NoorderSequenceAsDefault = Bool(true)
+	case "ODBC_TREAT_DECIMAL_AS_INT":
+		s.OdbcTreatDecimalAsInt = Bool(true)
+	case "PYTHON_PROFILER_MODULES":
+		s.PythonProfilerModules = Bool(true)
+	case "PYTHON_PROFILER_TARGET_STAGE":
+		s.PythonProfilerTargetStage = Bool(true)
+	case "QUERY_TAG":
+		s.QueryTag = Bool(true)
+	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
+		s.QuotedIdentifiersIgnoreCase = Bool(true)
+	case "ROWS_PER_RESULTSET":
+		s.RowsPerResultset = Bool(true)
+	case "S3_STAGE_VPCE_DNS_NAME":
+		s.S3StageVpceDnsName = Bool(true)
+	case "SEARCH_PATH":
+		s.SearchPath = Bool(true)
+	case "SIMULATED_DATA_SHARING_CONSUMER":
+		s.SimulatedDataSharingConsumer = Bool(true)
+	case "STATEMENT_QUEUED_TIMEOUT_IN_SECONDS":
+		s.StatementQueuedTimeoutInSeconds = Bool(true)
+	case "STATEMENT_TIMEOUT_IN_SECONDS":
+		s.StatementTimeoutInSeconds = Bool(true)
+	case "STRICT_JSON_OUTPUT":
+		s.StrictJsonOutput = Bool(true)
+	case "TIME_INPUT_FORMAT":
+		s.TimeInputFormat = Bool(true)
+	case "TIME_OUTPUT_FORMAT":
+		s.TimeOutputFormat = Bool(true)
+	case "TIMESTAMP_DAY_IS_ALWAYS_24H":
+		s.TimestampDayIsAlways24H = Bool(true)
+	case "TIMESTAMP_INPUT_FORMAT":
+		s.TimestampInputFormat = Bool(true)
+	case "TIMESTAMP_LTZ_OUTPUT_FORMAT":
+		s.TimestampLtzOutputFormat = Bool(true)
+	case "TIMESTAMP_NTZ_OUTPUT_FORMAT":
+		s.TimestampNtzOutputFormat = Bool(true)
+	case "TIMESTAMP_OUTPUT_FORMAT":
+		s.TimestampOutputFormat = Bool(true)
+	case "TIMESTAMP_TYPE_MAPPING":
+		s.TimestampTypeMapping = Bool(true)
+	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
+		s.TimestampTzOutputFormat = Bool(true)
+	case "TIMEZONE":
+		s.Timezone = Bool(true)
+	case "TRACE_LEVEL":
+		s.TraceLevel = Bool(true)
+	case "TRANSACTION_ABORT_ON_ERROR":
+		s.TransactionAbortOnError = Bool(true)
+	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
+		s.TransactionDefaultIsolationLevel = Bool(true)
+	case "TWO_DIGIT_CENTURY_START":
+		s.TwoDigitCenturyStart = Bool(true)
+	case "UNSUPPORTED_DDL_ACTION":
+		s.UnsupportedDdlAction = Bool(true)
+	case "USE_CACHED_RESULT":
+		s.UseCachedResult = Bool(true)
+	case "WEEK_OF_YEAR_POLICY":
+		s.WeekOfYearPolicy = Bool(true)
+	case "WEEK_START":
+		s.WeekStart = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewUseWarehouseSessionRequest(

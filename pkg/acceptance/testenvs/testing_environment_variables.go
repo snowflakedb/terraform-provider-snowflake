@@ -92,6 +92,11 @@ const (
 	// The execute-as role must hold usage on the integration, which it does when the same role creates both.
 	OpenflowRuntime env = envPrefix + "OPENFLOW_RUNTIME"
 
+	// PostgresMirrorInstance names a pre-provisioned Postgres instance the mirror tests replicate from.
+	// The mirror tests run only when this variable is set.
+	// Keep the name TF_PROVIDER_TESTS_POSTGRES_MIRROR_SOURCE: the sweepers spare that name and no other.
+	PostgresMirrorInstance env = envPrefix + "POSTGRES_MIRROR_INSTANCE"
+
 	OpenCatalogAccountLocator             env = envPrefix + "OPEN_CATALOG_ACCOUNT_LOCATOR"
 	OpenCatalogPrimaryOAuthClientId       env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CLIENT_ID"
 	OpenCatalogPrimaryOAuthClientSecret   env = envPrefix + "OPEN_CATALOG_PRIMARY_OAUTH_CLIENT_SECRET"

@@ -466,62 +466,6 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 
 	id := testClientHelper().Context.CurrentAccountId(t)
 
-	t.Run("set / unset legacy parameters", func(t *testing.T) {
-		objectparametersassert.AccountParameters(t, id).
-			HasDefaultMinDataRetentionTimeInDaysValue().
-			HasDefaultJsonIndentValue().
-			HasDefaultUserTaskTimeoutMsValue().
-			HasDefaultEnableUnredactedQuerySyntaxErrorValue()
-
-		err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithSet(*sdk.NewAccountSetRequest().WithLegacyParameters(
-				*sdk.NewAccountLevelParametersRequest().
-					WithAccountParameters(sdk.LegacyAccountParameters{
-						MinDataRetentionTimeInDays: new(15), // default is 0
-					}).
-					WithSessionParameters(sdk.SessionParameters{
-						JsonIndent: new(8), // default is 2
-					}).
-					WithObjectParameters(sdk.ObjectParameters{
-						UserTaskTimeoutMs: new(100), // default is 3600000
-					}).
-					WithUserParameters(sdk.UserParameters{
-						EnableUnredactedQuerySyntaxError: new(true), // default is false
-					}),
-			)))
-		require.NoError(t, err)
-
-		objectparametersassert.AccountParameters(t, id).
-			HasMinDataRetentionTimeInDays(15).
-			HasJsonIndent(8).
-			HasUserTaskTimeoutMs(100).
-			HasEnableUnredactedQuerySyntaxError(true)
-
-		err = client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().
-			WithUnset(*sdk.NewAccountUnsetRequest().WithLegacyParameters(
-				*sdk.NewAccountLevelParametersUnsetRequest().
-					WithAccountParameters(sdk.LegacyAccountParametersUnset{
-						MinDataRetentionTimeInDays: new(true),
-					}).
-					WithSessionParameters(sdk.SessionParametersUnset{
-						JsonIndent: new(true),
-					}).
-					WithObjectParameters(sdk.ObjectParametersUnset{
-						UserTaskTimeoutMs: new(true),
-					}).
-					WithUserParameters(sdk.UserParametersUnset{
-						EnableUnredactedQuerySyntaxError: new(true),
-					}),
-			)))
-		require.NoError(t, err)
-
-		objectparametersassert.AccountParameters(t, id).
-			HasDefaultMinDataRetentionTimeInDaysValue().
-			HasDefaultJsonIndentValue().
-			HasDefaultUserTaskTimeoutMsValue().
-			HasDefaultEnableUnredactedQuerySyntaxErrorValue()
-	})
-
 	t.Run(
 		"set / unset parameters",
 		setAndUnsetAccountParametersTest(
@@ -806,7 +750,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					WithClientResultColumnCaseInsensitive(true).
 					WithClientSessionKeepAlive(true).
 					WithClientSessionKeepAliveHeartbeatFrequency(3599).
-					WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingNtz).
+					WithClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampNtz).
 					WithCortexEnabledCrossRegion("ANY_REGION").
 					WithCortexModelsAllowlist("All").
 					WithCsvTimestampFormat("YYYY-MM-DD").
@@ -836,8 +780,8 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					WithEventTable(eventTable.ID()).
 					WithExternalOauthAddPrivilegedRolesToBlockedList(false).
 					WithExternalVolume(externalVolumeId).
-					WithGeographyOutputFormat(sdk.GeographyOutputFormatWKT).
-					WithGeometryOutputFormat(sdk.GeometryOutputFormatWKT).
+					WithGeographyOutputFormat(sdk.GeographyOutputFormatWkt).
+					WithGeometryOutputFormat(sdk.GeometryOutputFormatWkt).
 					WithHybridTableLockTimeout(3599).
 					WithInitialReplicationSizeLimitInTb(9.9).
 					WithJdbcTreatDecimalAsInt(false).
@@ -883,7 +827,7 @@ func TestInt_Account_SelfAlter(t *testing.T) {
 					WithTimestampLtzOutputFormat("YYYY-MM-DD").
 					WithTimestampNtzOutputFormat("YYYY-MM-DD").
 					WithTimestampOutputFormat("YYYY-MM-DD").
-					WithTimestampTypeMapping(sdk.TimestampTypeMappingLtz).
+					WithTimestampTypeMapping(sdk.TimestampTypeMappingTimestampLtz).
 					WithTimestampTzOutputFormat("YYYY-MM-DD").
 					WithTimezone("Europe/London").
 					WithTimeInputFormat("YYYY-MM-DD").

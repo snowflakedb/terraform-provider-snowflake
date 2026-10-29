@@ -143,9 +143,9 @@ func TestAcc_ComputePools_BasicUseCase_DifferentFiltering(t *testing.T) {
 	idTwo := testClient().Ids.RandomAccountObjectIdentifierWithPrefix(prefix)
 	idThree := testClient().Ids.RandomAccountObjectIdentifier()
 
-	cpModel1 := model.ComputePool("test", idOne.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64XS), 1, 1)
-	cpModel2 := model.ComputePool("test1", idTwo.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64XS), 1, 1)
-	cpModel3 := model.ComputePool("test2", idThree.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64XS), 1, 1)
+	cpModel1 := model.ComputePool("test", idOne.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64Xs), 1, 1)
+	cpModel2 := model.ComputePool("test1", idTwo.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64Xs), 1, 1)
+	cpModel3 := model.ComputePool("test2", idThree.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64Xs), 1, 1)
 	computePoolsWithLikeModel := datasourcemodel.ComputePools("test").
 		WithLike(idOne.Name()).
 		WithDependsOn(cpModel1.ResourceReference(), cpModel2.ResourceReference(), cpModel3.ResourceReference())

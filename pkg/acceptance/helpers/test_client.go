@@ -22,6 +22,7 @@ type TestClient struct {
 	Application                  *ApplicationClient
 	ApplicationPackage           *ApplicationPackageClient
 	AuthenticationPolicy         *AuthenticationPolicyClient
+	BackupPolicy                 *BackupPolicyClient
 	BcrBundles                   *BcrBundlesClient
 	Budget                       *BudgetClient
 	ComputePool                  *ComputePoolClient
@@ -31,6 +32,7 @@ type TestClient struct {
 	CortexAgent                  *AgentClient
 	CortexSearchService          *CortexSearchServiceClient
 	CatalogIntegration           *CatalogIntegrationClient
+	CodeBundle                   *CodeBundleClient
 	Database                     *DatabaseClient
 	DatabaseRole                 *DatabaseRoleClient
 	DataMetricFunctionClient     *DataMetricFunctionClient
@@ -72,9 +74,11 @@ type TestClient struct {
 	PasswordPolicy               *PasswordPolicyClient
 	Pipe                         *PipeClient
 	PostgresInstance             *PostgresInstanceClient
+	PostgresMirror               *PostgresMirrorClient
 	Procedure                    *ProcedureClient
 	ProjectionPolicy             *ProjectionPolicyClient
 	PolicyReferences             *PolicyReferencesClient
+	ReplicationGroup             *ReplicationGroupClient
 	ResourceMonitor              *ResourceMonitorClient
 	Role                         *RoleClient
 	RowAccessPolicy              *RowAccessPolicyClient
@@ -134,6 +138,7 @@ func NewTestClient(
 		Application:                  NewApplicationClient(context, idsGenerator),
 		ApplicationPackage:           NewApplicationPackageClient(context, idsGenerator),
 		AuthenticationPolicy:         NewAuthenticationPolicyClient(context, idsGenerator),
+		BackupPolicy:                 NewBackupPolicyClient(context, idsGenerator),
 		BcrBundles:                   NewBcrBundlesClient(context),
 		Budget:                       NewBudgetClient(context, idsGenerator),
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
@@ -143,6 +148,7 @@ func NewTestClient(
 		CortexAgent:                  NewAgentClient(context, idsGenerator),
 		CortexSearchService:          NewCortexSearchServiceClient(context, idsGenerator),
 		CatalogIntegration:           NewCatalogIntegrationClient(context, idsGenerator),
+		CodeBundle:                   NewCodeBundleClient(context, idsGenerator),
 		Database:                     NewDatabaseClient(context, idsGenerator),
 		DatabaseRole:                 NewDatabaseRoleClient(context, idsGenerator),
 		DataMetricFunctionClient:     NewDataMetricFunctionClient(context, idsGenerator),
@@ -184,9 +190,11 @@ func NewTestClient(
 		PasswordPolicy:               NewPasswordPolicyClient(context, idsGenerator),
 		Pipe:                         NewPipeClient(context, idsGenerator),
 		PostgresInstance:             NewPostgresInstanceClient(context, idsGenerator),
+		PostgresMirror:               NewPostgresMirrorClient(context, idsGenerator),
 		Procedure:                    NewProcedureClient(context, idsGenerator),
 		ProjectionPolicy:             NewProjectionPolicyClient(context, idsGenerator),
 		PolicyReferences:             NewPolicyReferencesClient(context),
+		ReplicationGroup:             NewReplicationGroupClient(context, idsGenerator),
 		ResourceMonitor:              NewResourceMonitorClient(context, idsGenerator),
 		Role:                         NewRoleClient(context, idsGenerator),
 		RowAccessPolicy:              NewRowAccessPolicyClient(context, idsGenerator),

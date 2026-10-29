@@ -98,14 +98,14 @@ resource "snowflake_catalog_integration_iceberg_rest" "sigv4" {
 ### Required
 
 - `enabled` (Boolean) Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.
-- `name` (String) Specifies the identifier (i.e. name) of the catalog integration; must be unique in your account.
+- `name` (String) Specifies the identifier for the catalog integration iceberg rest; must be unique for the account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `rest_config` (Block List, Min: 1, Max: 1) Specifies information about REST configuration. (see [below for nested schema](#nestedblock--rest_config))
 
 ### Optional
 
 - `bearer_rest_authentication` (Block List, Max: 1) Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog. (see [below for nested schema](#nestedblock--bearer_rest_authentication))
 - `catalog_namespace` (String) Specifies the default namespace for all Iceberg tables that you associate with the catalog integration.
-- `comment` (String) (Default: ``) Specifies a comment for the catalog integration.
+- `comment` (String) Specifies a comment for the catalog integration.
 - `oauth_rest_authentication` (Block List, Max: 1) Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog. (see [below for nested schema](#nestedblock--oauth_rest_authentication))
 - `refresh_interval_seconds` (Number) Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.
 - `sigv4_rest_authentication` (Block List, Max: 1) Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog. (see [below for nested schema](#nestedblock--sigv4_rest_authentication))
@@ -117,7 +117,7 @@ resource "snowflake_catalog_integration_iceberg_rest" "sigv4" {
 - `describe_output` (List of Object) Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `show_output` (List of Object) Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration iceberg rest. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--rest_config"></a>
 ### Nested Schema for `rest_config`

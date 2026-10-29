@@ -16,6 +16,13 @@ type DescribeOverrideDef struct {
 	MethodName string
 }
 
+// ShowProjectionDef fetches through testClient.<ClientName>.Show and projects the row with <Method>().
+// The object type constant is sdk.ObjectType<ClientName>.
+type ShowProjectionDef struct {
+	ClientName string
+	Method     string
+}
+
 type SdkObjectDetails struct {
 	IdType               string
 	IsDataSourceOutput   bool
@@ -25,8 +32,11 @@ type SdkObjectDetails struct {
 	NoIdentifiableObject bool
 	ShowByParentId       *ShowByParentIdDef
 	DescribeOverride     *DescribeOverrideDef
-	FromObjectIDExpr     string
-	NestedAssertFields   []string
-	SkipFields           []string
+	ShowProjection       *ShowProjectionDef
+	// SdkType overrides StructDetails.Name as the row type. The assertion name stays StructDetails.Name.
+	SdkType            string
+	FromObjectIDExpr   string
+	NestedAssertFields []string
+	SkipFields         []string
 	StructDetails
 }

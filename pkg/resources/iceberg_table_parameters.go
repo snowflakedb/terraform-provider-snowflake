@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -16,7 +16,7 @@ import (
 // for any Iceberg table type.
 func icebergTableCommonParametersSchema() map[string]*schema.Schema {
 	parametersSchema := make(map[string]*schema.Schema)
-	for _, p := range []parameterdefs.ParameterDef{defs.ExternalVolume, defs.Catalog} {
+	for _, p := range []ssot.ParameterDef{defs.ExternalVolume, defs.Catalog} {
 		s := parameterSchema(p)
 		s.ForceNew = true
 		parametersSchema[p.FieldName()] = s
@@ -50,7 +50,7 @@ func icebergTableFromRestParametersSchema() map[string]*schema.Schema {
 func icebergTableSnowflakeManagedParametersSchema() map[string]*schema.Schema {
 	parametersSchema := icebergTableCommonParametersSchema()
 
-	for _, p := range []parameterdefs.ParameterDef{
+	for _, p := range []ssot.ParameterDef{
 		defs.TargetFileSize,
 		defs.CatalogSync,
 		defs.DataRetentionTimeInDays,

@@ -5,10 +5,16 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -21,13 +27,25 @@ func Schema() *tfschema.Resource {
 		CreateContext: schemaCreateExt,
 		ReadContext:   schemaReadExt,
 		UpdateContext: schemaUpdateExt,
-		DeleteContext: schemaDeleteExt,
+		DeleteContext: TrackingDeleteWrapper(resources.Schema, DeleteSchema),
 		Importer:      schemaImporterExt,
 
-		CustomizeDiff:  schemaCustomizeDiffExt,
-		Timeouts:       defaultTimeouts,
-		SchemaVersion:  schemaSchemaVersionExt,
-		StateUpgraders: schemaStateUpgradersExt,
+		CustomizeDiff: schemaCustomizeDiffExt,
+		Timeouts:      defaultTimeouts,
+		SchemaVersion: 2,
+		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+		StateUpgraders: []tfschema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v093SchemaStateUpgrader,
+			},
+			{
+				Version: 1,
+				Type:    cty.EmptyObject,
+				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+			},
+		},
 	}
 }
 
@@ -37,19 +55,20 @@ func ImportSchema(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*t
 		return nil, err
 	}
 
-	schema, err := schemaShowByIdInSdkExt(ctx, meta, id)
+	schema, err := meta.(*provider.Context).Client.Schemas.ShowByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := schemaSetFieldsNotSetByReadExt(d, id, schema); err != nil {
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := schemaSetFieldsNotSetByReadExt(d, id, schema, importPermissiveMode); err != nil {
 		return nil, err
 	}
 	return []*tfschema.ResourceData{d}, nil
 }
 
 func CreateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	id, err := schemaParseIdFromConfigExt(d)
+	id, err := schemaParseIdFromConfig(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -68,7 +87,7 @@ func CreateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	if diags := schemaApplyParametersCreateExt(d, req); diags != nil {
+	if diags := schemaApplyParametersCreate(d, req); diags != nil {
 		return diags
 	}
 
@@ -87,37 +106,50 @@ func ReadSchemaFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		schema, diags := schemaShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		schema, err := meta.(*provider.Context).Client.Schemas.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query schema. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Schema id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
 		}
 
 		// Describe is best-effort: log + skip Set, do not fail Read. Uses SHOW object's id.
 		schemaDetails, describeErr := schemaDescribeInSdkExt(ctx, meta, schema.ID())
-		rawSchemaParameters, err := schemaShowParametersInSdkExt(ctx, meta, id)
+		rawSchemaParameters, err := meta.(*provider.Context).Client.Schemas.ShowParameters(ctx, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		schemaParameters, err := schemaParametersDetailsFromRawExt(rawSchemaParameters)
+		schemaParameters, err := sdk.ToSchemaParametersDetails(rawSchemaParameters)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if diags := schemaSetParametersFieldsExt(d, schemaParameters); diags != nil {
+		if diags := schemaSetParametersFields(d, schemaParameters); diags != nil {
 			return diags
 		}
 		if err = schemaHandleExternalChangesExt(d, schema, withExternalChangesMarking); err != nil {
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, schemaSchema, schemaSetStateToValueFromConfigFieldsExt); err != nil {
+		if err = setStateToValuesFromConfig(d, schemaSchema, []string{
+			"with_managed_access",
+			"is_transient",
+		}); err != nil {
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.SchemaToSchema(schema)}),
-			schemaSetDescribeOutputExt(d, id, schemaDetails, describeErr),
+			schemaSetDescribeOutputExt(d, id, schemaDetails, describeErr, withExternalChangesMarking),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.SchemaParametersToSchema(rawSchemaParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			schemaSetConfigFieldsExt(d, schema),
+			schemaSetConfigFields(d, schema),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -145,17 +177,40 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		d.Partial(true)
 		return diag.FromErr(err)
 	}
-	if diags := schemaApplyParametersChangesExt(d, setUnset); diags != nil {
+	if diags := schemaApplyParametersChanges(d, setUnset.set, setUnset.unset); diags != nil {
 		d.Partial(true)
 		return diags
 	}
-	if err := schemaAlterSetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		d.Partial(true)
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewSchemaSetRequest()) {
+		if err := meta.(*provider.Context).Client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*setUnset.set)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
 	}
-	if err := schemaAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		d.Partial(true)
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewSchemaUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
 	}
 	return ReadSchemaFunc(false)(ctx, d, meta)
+}
+
+func schemaParseIdFromConfig(d *tfschema.ResourceData) (sdk.DatabaseObjectIdentifier, error) {
+	return sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string)), nil
+}
+
+func DeleteSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+	return ResourceDeleteContextFunc(
+		sdk.ParseDatabaseObjectIdentifier,
+		func(client *sdk.Client) DropSafelyFunc[sdk.DatabaseObjectIdentifier] {
+			return client.Schemas.DropSafely
+		},
+	)(ctx, d, meta)
+}
+
+func schemaSetConfigFields(d *tfschema.ResourceData, obj *sdk.Schema) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
+	)
 }

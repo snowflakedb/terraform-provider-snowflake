@@ -109,13 +109,15 @@ as no-ops — this package only needs to prove the generated `*_gen_test.go` com
 assertions are meaningful, so no `*_ext_test.go` companions are needed here.
 
 Additional example definitions covering specific generator features:
-- [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`
+- [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`, plus `WithDescribeDetailsFromIdentifier` for identifier columns DESCRIBE does not return (see [DESCRIBE that omits identifier columns](#describe-that-omits-identifier-columns))
 - [paired_struct_def.go](example/defs/paired_struct_def.go) — all `PairedStructs` field methods and options (see [PairedStructs](#pairedstructs) below)
 - [to_opts_optional_example_def.go](example/defs/to_opts_optional_example_def.go) — `ListQueryStructField` with slice-of-structs toOpts, optional nested fields
 - [slice_validation_example_def.go](example/defs/slice_validation_example_def.go) — `validate()` for lists of objects: multiple `WithValidation`s on a slice, nested structs under a slice, N-deep nested `ListQueryStructField` (Items → SubItems → LeafItems)
-- [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()` and `WithDropSafelyForce()` options
+- [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) — `DropOperation` with `WithDropSafelyHook()`, `WithDropSafelyForce()`, and `WithDropSafelySuppressed()` options
 - [instance_method_example_def.go](example/defs/instance_method_example_def.go) — `InstanceMethodOperation` and `InstanceMethodOperationScalar`
 - [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
+- [property_list_example_def.go](example/defs/property_list_example_def.go) — a property-list `DESCRIBE`: raw rows, the details struct, the generated `Parse...Described` and `DescribeDetails` (see [Property-list DESCRIBE](#property-list-describe) below), with the hand-written hooks in [property_list_examples_ext.go](example/property_list_examples_ext.go)
+- [show_projection_example_def.go](example/defs/show_projection_example_def.go) — `ShowProjection` and `ShowByIDProjection`
 
 The commands follow the same format as the official SDK ones:
 
@@ -161,7 +163,6 @@ make generate-sdk-examples SF_TF_GENERATOR_ARGS='--help'
 - Generate `ID()` methods for `Request` structs as already done for `Show` result structs.
 - Generate `ID()` methods for `Describe`/`DescribeDetails` structs as already done for `Show` result structs.
 - `PlainStruct`-only fields do not currently trigger the additionalConvert creation, as they are filtered out in the iteration
-- Generate field-subset `AsXxx` projection methods (see Potential Improvements)
 
 ##### CI guard targets
 
@@ -190,11 +191,13 @@ See `pkg/sdk/compute_pools_ext_test.go` and `pkg/sdk/functions_ext_test.go` for 
 
 ### DropSafely options
 
-`DropOperation` accepts optional functional options that configure how the generated `DropSafely` method behaves:
+`DropOperation` accepts optional functional options that configure how the generated `DropSafely` method behaves. The same flags are `SdkDropSafelyHook()` and `SdkDropSafelyForce()` on [`SdkDrop()`](../../internal/ssot/README.md#generators). When `SdkDrop()` is on, `DropOperationFromObject` builds the method from `Name`. `SdkDropCascadeRestrict()` adds optional `CASCADE` and `RESTRICT` and marks those fields as conflicting. When `SdkDrop()` is off, the call stays in the def.
 
 - **`WithDropSafelyHook()`** — the generated `DropSafely` calls `v.dropSafelyHook(ctx, id)` before issuing the drop. Useful when a pre-drop side-effect is needed (e.g. revoking grants). The hook function must be implemented manually in a `_ext.go` file.
 
 - **`WithDropSafelyForce()`** — the generated `DropSafely` appends `.WithForce(true)` to the Drop request, so dependent objects are also removed.
+
+- **`WithDropSafelySuppressed()`** — no `DropSafely` is generated. Use it when the object cannot be dropped safely with `IF EXISTS` and the identifier alone (e.g. the drop is a procedure call that needs the whole request). Declare the replacement with `WithCustomInterfaceMethod("DropSafely", ...)` and implement it in a `_ext.go` file.
 
 Example usage:
 ```go
@@ -203,9 +206,23 @@ Example usage:
 
 // Appends .WithForce(true) to the Drop request.
 ).DropOperation("https://...", dropStruct, g.WithDropSafelyForce())
+
+// Generates no DropSafely; the custom one is implemented in the _ext.go file.
+).DropOperation("https://...", dropStruct, g.WithDropSafelySuppressed()).
+	WithCustomInterfaceMethod("DropSafely", "", []*g.MethodParameter{g.NewMethodParameter("request", "*DropXxxRequest")}, "error")
 ```
 
 See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for complete examples.
+
+---
+
+### CREATE and ALTER
+
+When `SdkCreate()` or `SdkAlter()` is passed to [`WithSdk()`](../../internal/ssot/README.md#generators), `CreateOperationFromObject` or `AlterOperationFromObject` builds that method from `Name`. An object with the setting off keeps the handwritten call. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql` on [Attribute](../../internal/ssot/attribute.go). `Create` is a [`CreateSpec`](../../internal/ssot/object.go). `Create.Clauses`, `Set`, and `Unset` are the statement order inside those statements. `Alter.Clauses` is the ALTER order after the name. `Create.KeywordsBefore` is emitted after `OR REPLACE` and before the object words. [`Tags`](../../internal/ssot/attribute.go) is the optional `TAG` clause on `Create.Clauses`. [`Parameters`](../../internal/ssot/attribute.go) spreads the parameter catalog on a CREATE, SET, or UNSET list. CREATE and SET use `WithParameters`. UNSET uses `WithParametersUnset`. An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. Comment stays an attribute clause beside that entry.
+
+`SdkCreate()` includes `OR REPLACE` and `IF NOT EXISTS`. `OR REPLACE` comes before the object words. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those clauses out. When both clauses are present they are marked conflicting. `SdkAlter()` includes `IF EXISTS` and the check that exactly one alter branch is set. The branches are `Alter.Clauses`, in that order: action keywords, `RenameTo`, `SwapWith`, `SET`, `UNSET`, `SET TAG`, and `UNSET TAG`. `RenameTo` and `SwapWith` use the object's identifier type and get `ValidIdentifierIfSet`. `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out. `SdkAlterSetList()` makes `SET` a list with no parentheses. Without it, `SET` is a keyword. `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkCreateAdditionalValidations()` adds that validation call.
+
+A list parameter writes its SQL text and then the values. `ADD "db1" TO ALLOWED_DATABASES` and `REMOVE "db1" FROM ALLOWED_DATABASES` need the values first. Failover groups and replication groups get that order from the `reverse` DDL tag (`ParameterOptions().Reverse()` in a handwritten def, `Reverse()` on an SSOT list). `reverse` is used only by those two interfaces. TODO [next PRs]: drop `reverse`. Give each allowed-list target its own struct, emit the identifier list with no SQL prefix, and follow it with a static `TO ALLOWED_DATABASES` or `FROM ALLOWED_DATABASES` clause. The same shape covers external volumes, shares, and accounts.
 
 ---
 
@@ -213,7 +230,7 @@ See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for co
 
 `PairedStructs` is a single-definition approach for declaring both the database row struct (`dbStruct`) and the plain SDK struct (`plainStruct`) in one field-by-field chain. It replaces the older pattern of calling `ShowOperation`/`DescribeOperation` with separate `DbStruct` and `PlainStruct` builders.
 
-See [paired_struct_def.go](example/defs/paired_struct_def.go) for a complete usage example covering all supported field methods and options.
+See [paired_struct_def.go](example/defs/paired_struct_def.go) for a handwritten chain covering the field methods and options below. The field chain can instead come from ssot [Columns](../../internal/ssot/README.md#show-and-describe) when `SdkShow()` or `SdkDescribe()` is passed to [`WithSdk()`](../../internal/ssot/README.md#generators). `ShowPairedStructs` uses the unexported plural plus `Row` as the db row name and the object name as the plain struct name. `DescribePairedStructs` uses the unexported object name plus `DescRow` as the db row name and the object name plus `Details` as the plain struct name. When the object sets `DescribeRows` (a property-list `DESCRIBE`, see [Property-list DESCRIBE](#property-list-describe)), the columns come from `DescribeRows` and the plain struct name is the object name plus `Property`. When that setting is on, `ShowOperationFromObject` or `DescribeOperationFromObject` builds the Show or Describe method from the `SdkShow()` or `SdkDescribe()` options, including the query struct, ShowByID filtering, and `DescriptionMappingKind`. When the setting is off, that call stays in the def. A bool whose db column is text uses `BoolFromText` and compares to `"Y"`. A bool without that mark is db `bool`. See [Attribute](../../internal/ssot/README.md#attribute).
 
 #### Constructor
 
@@ -270,6 +287,67 @@ Each method accepts zero or more `PairedFieldOption`s (see below).
 
 - **`WithoutConvertGeneration()`** — disable `convert()` body generation for this pair entirely.
 - **`WithShowResultFilterHook()`** — enable row filtering; the generated code calls `excludeFromShow()` which must be implemented in a `_ext.go` file.
+
+### Property-list DESCRIBE
+
+Some objects return `DESCRIBE` as a list of `(property, value, ...)` rows that the SDK then parses into a details struct
+(external volumes, the integrations, stages, file formats). Three calls on the interface cover it. See
+[property_list_example_def.go](example/defs/property_list_example_def.go) for a complete definition.
+
+- **Raw rows and the details struct.** `DescribeOperationWithPairedStructs` with `DescriptionMappingKindSlice` declares the
+  rows (`Describe` returns `[]<Name>Property`). Pass a `g.PlainStruct("<Name>Details")` as the helper struct to generate the
+  details struct. Start it with `AccountObjectIdentifier()` for the `Id` field.
+- **`WithDescribeParse(g.DescribeParseConfig{...})`** generates `Parse<NameSingular>Described(rows []<RowsType>) (<DetailsType>, error)`.
+  - `Properties` are exact property-name matches that copy the row value into a string field.
+  - `Prefixes` are list fields filled from every row whose property name *contains* the prefix. Each row value goes through
+    `ElementParser`, a hand-written `func(value string) (<ElementType>, error)`.
+  - Exact matches are tried first, in order, then the prefixes, and any other property is an error:
+    `Unrecognized <ErrorLabel> property: <name>`.
+  - `ValidateFunc` is a hand-written `func(<DetailsType>) error` that runs last. It is required, so a definition with no
+    checks still writes a function that returns `nil`.
+  - `PropertyField` and `ValueField` name the row fields that hold the property name and value. They default to `Property`
+    and `PropertyValue`, which is what the `property` and `property_value` columns produce without `WithPlainFieldName`.
+- **`WithDescribeDetails(detailsType, parseFunc)`** declares `DescribeDetails(ctx, id) (*<detailsType>, error)` on the
+  interface and generates its body: it calls `Describe`, parses the rows with `parseFunc`, and sets `Id` on the result.
+  `parseFunc` is the function generated by `WithDescribeParse`, or a hand-written one with the same signature.
+
+The ssot generator fills the same `DescribeParseConfig` from `SdkDescribeDetailsParse(...)`. See the ssot
+[Generators](../../internal/ssot/README.md#generators).
+
+Limitations:
+- Only string properties are copied. A value that needs a conversion (bool, number, enum), a property that may repeat, or
+  rows that need the `parent_property` column to decide where a value goes must be parsed by hand.
+- The details struct always has an `Id` field and `DescribeDetails` always sets it, so the identifier is not a DESCRIBE column.
+- A property that no entry matches is an error. There is no option to ignore unknown properties.
+- `WithDescribeParse` names the function `Parse<NameSingular>Described`, and the validate hook and the element parsers are
+  referenced by name. The generated code does not check that they exist: a missing one is a compile error in the package.
+- The details struct, the row struct, and the element type are not linked to the config. A type name that does not match
+  is a compile error, not a generator error.
+- Mixing is possible: an object can use `WithDescribeParse` and a hand-written `DescribeDetails`, or the reverse.
+
+### DESCRIBE that omits identifier columns
+
+A columnar `DESCRIBE` returns one struct, and that row can omit the database or schema the identifier is built from.
+`PlainOnlyField` adds those fields to the plain struct. `convert` skips them. `WithDescribeDetailsFromIdentifier(detailsType, fields)`
+declares `DescribeDetails` and generates its body: it calls `Describe` and copies each field from the identifier.
+`fields` is `DatabaseName` and `SchemaName` for a `SchemaObjectIdentifier`, or `DatabaseName` for a `DatabaseObjectIdentifier`.
+The field name is the identifier method, so `DatabaseName` calls `id.DatabaseName()`.
+
+See [sequences_def.go](example/defs/sequences_def.go). `sequenceDescribeFields` marks `DatabaseName` and `SchemaName` as
+`PlainOnlyField`, and the interface calls `WithDescribeDetailsFromIdentifier("SequenceDetail", []string{"DatabaseName", "SchemaName"})`.
+When that list covers every plain-only field, `convert` does not call `additionalConvert`. A plain-only field outside the list keeps the hook. When the details struct has the identifier parts, the generator emits `ID()`.
+
+This is separate from [property-list DESCRIBE](#property-list-describe). That path parses property rows and sets `Id`.
+
+### SHOW projections
+
+`ShowProjection(source, method, target)` emits a method on the source struct. The method returns nil for a nil receiver and copies each target field from the source. It does not emit the target struct. Generation panics when a target field is missing on the source. The receiver is the first letter of the source type, lowercased. Warehouse uses this for `AsRegular`, `AsAdaptive`, and `AsInteractive`.
+
+`ShowByIDProjection(suffix)` emits `ShowByID` plus the suffix and `ShowByIDSafely` plus the suffix. `Mini` emits `ShowByIDMini` and `ShowByIDSafelyMini`. The body calls `ShowByID`, then `As` plus the suffix, and returns `ShowObjectName` plus the suffix. `ShowByIDSafelyMini` passes `ShowByIDMini` to `SafeShowById`. Call it after `Show`, so `ShowByID` and `ShowObjectName` already exist. Generation panics when the suffix or `ShowObjectName` is empty, or when the interface has no `ShowByID`.
+
+From ssot, `DescribeOperationFromObject` emits one projection for `ShowPlainName` and one for each `ShowVariants` entry. The method is `As` plus the plain name with the object name removed. When `ShowByID` is already registered, the same suffix is passed to `ShowByIDProjection`. `Show()` still returns the union row.
+
+See [show_projection_example_def.go](example/defs/show_projection_example_def.go).
 
 ### ShowByID suppression
 
@@ -338,4 +416,7 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
 - better handling of list of strings/identifiers
   - there should be no need to define custom types every time
   - more clear definition of lists that can be empty vs cannot be empty
-- generate field-subset `AsXxx` projections from PlainStructs. Methods like `Warehouse.AsRegular`, `StageDetails.AsAws`, and `ApiIntegrationGitHttpsApiDetails.AsToken` are mechanical: nil-guard + copy the intersecting fields. Property-list parsers (`AsScim`, `AsNetworkPolicyDescribe`, and similar name-keyed row switches) are a different shape and are not in scope for that generator.
+- Handwritten field-subset projections that can use `ShowProjection`:
+  - `StageDetails.AsCommon`, `StageDetails.AsAws`, and `StageDetails.AsAwsCompatible`
+  - `ApiIntegrationGitHttpsApiDetails.AsToken`, `AsGithubApp`, `AsOauth2`, and `AsPrivateLink`
+  - `ApiIntegrationExternalMcpDetails.AsOauth2` and `AsDynamicClient`

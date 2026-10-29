@@ -6,12 +6,12 @@ import "fmt"
 
 var (
 	_ validatable = new(CreateSchemaOptions)
-	_ validatable = new(CloneSchemaOptions)
 	_ validatable = new(AlterSchemaOptions)
 	_ validatable = new(DropSchemaOptions)
-	_ validatable = new(UndropSchemaOptions)
 	_ validatable = new(ShowSchemaOptions)
 	_ validatable = new(DescribeSchemaOptions)
+	_ validatable = new(CloneSchemaOptions)
+	_ validatable = new(UndropSchemaOptions)
 )
 
 func (opts *CreateSchemaOptions) validate() error {
@@ -25,11 +25,11 @@ func (opts *CreateSchemaOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateSchemaOptions", "OrReplace", "IfNotExists"))
 	}
-	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
-		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"))
-	}
 	if opts.Catalog != nil && !ValidObjectIdentifier(opts.Catalog) {
 		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "Catalog"))
+	}
+	if opts.ExternalVolume != nil && !ValidObjectIdentifier(opts.ExternalVolume) {
+		errs = append(errs, errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"))
 	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
@@ -38,21 +38,6 @@ func (opts *CreateSchemaOptions) validate() error {
 			}
 		}
 	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CloneSchemaOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CloneSchemaOptions", "name"))
-	}
-	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
-		errs = append(errs, errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"))
-	}
-	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }
 
@@ -74,11 +59,11 @@ func (opts *AlterSchemaOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("AlterSchemaOptions", "SwapWith"))
 	}
 	if valueSet(opts.Set) {
-		if opts.Set.ExternalVolume != nil && !ValidObjectIdentifier(opts.Set.ExternalVolume) {
-			errs = append(errs, errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"))
-		}
 		if opts.Set.Catalog != nil && !ValidObjectIdentifier(opts.Set.Catalog) {
 			errs = append(errs, errInvalidIdentifier("AlterSchemaOptions.Set", "Catalog"))
+		}
+		if opts.Set.ExternalVolume != nil && !ValidObjectIdentifier(opts.Set.ExternalVolume) {
+			errs = append(errs, errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"))
 		}
 		if !anyValueSet(opts.Set.Catalog, opts.Set.DataRetentionTimeInDays, opts.Set.DefaultDdlCollation, opts.Set.DefaultNotebookComputePoolCpu, opts.Set.DefaultNotebookComputePoolGpu, opts.Set.EnableConsoleOutput, opts.Set.ExternalVolume, opts.Set.LogEventLevel, opts.Set.LogLevel, opts.Set.MaxDataExtensionTimeInDays, opts.Set.PipeExecutionPaused, opts.Set.QuotedIdentifiersIgnoreCase, opts.Set.ReplaceInvalidCharacters, opts.Set.StorageSerializationPolicy, opts.Set.SuspendTaskAfterNumFailures, opts.Set.TaskAutoRetryAttempts, opts.Set.TraceLevel, opts.Set.UserTaskManagedInitialWarehouseSize, opts.Set.UserTaskMinimumTriggerIntervalInSeconds, opts.Set.UserTaskTimeoutMs, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterSchemaOptions.Set", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "PipeExecutionPaused", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"))
@@ -113,17 +98,6 @@ func (opts *DropSchemaOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *UndropSchemaOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("UndropSchemaOptions", "name"))
-	}
-	return JoinErrors(errs...)
-}
-
 func (opts *ShowSchemaOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
@@ -139,6 +113,32 @@ func (opts *DescribeSchemaOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("DescribeSchemaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CloneSchemaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CloneSchemaOptions", "name"))
+	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"))
+	}
+	errs = append(errs, opts.additionalValidations())
+	return JoinErrors(errs...)
+}
+
+func (opts *UndropSchemaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("UndropSchemaOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

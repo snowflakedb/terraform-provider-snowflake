@@ -25,21 +25,21 @@ type AlterBackupPolicyRequest struct {
 	name      SchemaObjectIdentifier // required
 	RenameTo  *SchemaObjectIdentifier
 	Set       *BackupPolicySetRequest
-	SetTags   []TagAssociation
 	Unset     *BackupPolicyUnsetRequest
+	SetTags   []TagAssociation
 	UnsetTags []ObjectIdentifier
 }
 
 type BackupPolicySetRequest struct {
+	Comment         *string
 	Schedule        *string
 	ExpireAfterDays *int
-	Comment         *string
 }
 
 type BackupPolicyUnsetRequest struct {
+	Comment         *bool
 	Schedule        *bool
 	ExpireAfterDays *bool
-	Comment         *bool
 }
 
 type DropBackupPolicyRequest struct {

@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/sdkv2enhancements"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -39,19 +40,29 @@ func ParameterValueComputedIf[T ~string](key string, parameters []*sdk.Parameter
 		return func(context.Context, *schema.ResourceDiff, any) error { return nil }
 	}
 	parameter := *foundParameter
-	return parameterValueComputedIf(key, parameter.Value, parameter.Level, objectParameterLevel, valueToString)
+	return parameterValueComputedIf(key, parameter.Value, parameter.Level, objectParameterLevel, valueToString, false)
 }
 
 func StringTypedParameterValueComputedIf[T ~string](key string, parameter sdk.TypedParameter[T], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
-	return parameterValueComputedIf(key, string(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return value.(string) })
+	return stringTypedParameterValueComputedIf(key, parameter, objectParameterLevel, false)
+}
+
+// StringAllowEmptyTypedParameterValueComputedIf is StringTypedParameterValueComputedIf for parameters
+// whose value may be an explicit empty string (catalog kind StringAllowEmpty).
+func StringAllowEmptyTypedParameterValueComputedIf[T ~string](key string, parameter sdk.TypedParameter[T], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
+	return stringTypedParameterValueComputedIf(key, parameter, objectParameterLevel, true)
+}
+
+func stringTypedParameterValueComputedIf[T ~string](key string, parameter sdk.TypedParameter[T], objectParameterLevel sdk.ParameterType, allowEmptyString bool) schema.CustomizeDiffFunc {
+	return parameterValueComputedIf(key, string(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return value.(string) }, allowEmptyString)
 }
 
 func IntTypedParameterValueComputedIf(key string, parameter sdk.TypedParameter[int], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
-	return parameterValueComputedIf(key, strconv.Itoa(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return strconv.Itoa(value.(int)) })
+	return parameterValueComputedIf(key, strconv.Itoa(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return strconv.Itoa(value.(int)) }, false)
 }
 
 func BoolTypedParameterValueComputedIf(key string, parameter sdk.TypedParameter[bool], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
-	return parameterValueComputedIf(key, strconv.FormatBool(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return strconv.FormatBool(value.(bool)) })
+	return parameterValueComputedIf(key, strconv.FormatBool(parameter.Value), parameter.Level, objectParameterLevel, func(value any) string { return strconv.FormatBool(value.(bool)) }, false)
 }
 
 // formatFloatParameter renders a float parameter with at least one fractional digit
@@ -71,14 +82,18 @@ func FloatTypedParameterValueComputedIf(key string, parameter sdk.TypedParameter
 			return value.(string)
 		}
 		return formatFloatParameter(parsed)
-	})
+	}, false)
 }
 
 func IdentifierTypedParameterValueComputedIf[T sdk.ObjectIdentifier](key string, parameter sdk.TypedParameter[T], objectParameterLevel sdk.ParameterType) schema.CustomizeDiffFunc {
-	return parameterValueComputedIf(key, parameter.Value.FullyQualifiedName(), parameter.Level, objectParameterLevel, func(value any) string { return value.(string) })
+	return parameterValueComputedIf(key, parameter.Value.FullyQualifiedName(), parameter.Level, objectParameterLevel, func(value any) string { return value.(string) }, false)
 }
 
-func parameterValueComputedIf(key string, parameterValue string, parameterLevel sdk.ParameterType, objectParameterLevel sdk.ParameterType, valueToString func(any) string) schema.CustomizeDiffFunc {
+func explicitEmptyString(value cty.Value) bool {
+	return value.IsKnown() && value.Type() == cty.String && value.AsString() == ""
+}
+
+func parameterValueComputedIf(key string, parameterValue string, parameterLevel sdk.ParameterType, objectParameterLevel sdk.ParameterType, valueToString func(any) string, allowEmptyString bool) schema.CustomizeDiffFunc {
 	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
 		providerCtx := meta.(*provider.Context)
 		configValue, ok := d.GetRawConfig().AsValueMap()[key]
@@ -97,6 +112,12 @@ func parameterValueComputedIf(key string, parameterValue string, parameterLevel 
 
 		// For all other cases, if a parameter is set in the configuration, we can ignore parts needed for Computed fields.
 		if ok && !configValue.IsNull() {
+			// Parameters that allow an explicit empty string still lose that change on an Optional+Computed
+			// attribute: SDKv2 treats "" as unset, so HasChange is false when a non-empty object-level
+			// value is replaced with "". Mark it computed so the update emits SET ... = ''.
+			if allowEmptyString && explicitEmptyString(configValue) && parameterValue != "" {
+				return d.SetNewComputed(key)
+			}
 			return nil
 		}
 

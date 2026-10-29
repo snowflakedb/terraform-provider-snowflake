@@ -65,12 +65,16 @@ var (
 	s3StageProviderFactory                                 = providerFactoryUsingCache("StageExternalS3")
 	enabledByDefaultExperimentsDisabledProviderFactory     = providerFactoryUsingCache("EnabledByDefaultExperimentsDisabled")
 	objectParameterUnsetOnDeleteProviderFactory            = providerFactoryUsingCache("ObjectParameterUnsetOnDelete")
+	objectParameterParseOnSetProviderFactory               = providerFactoryUsingCache("ObjectParameterParseOnSet")
 	grantAccountRoleShowCachingProviderFactory             = providerFactoryUsingCache("GrantAccountRoleShowCaching")
 	accountRoleShowCachingProviderFactory                  = providerFactoryUsingCache("AccountRoleShowCaching")
 	grantsShowCachingProviderFactory                       = providerFactoryUsingCache("GrantsShowCaching")
 	experimentalHierarchyRenamesProviderFactory            = providerFactoryUsingCache("ExperimentalHierarchyRenames")
 	activeWarehouseSetOnUserProviderFactory                = providerFactoryUsingCache("ActiveWarehouseSetOnUser")
 	accountParameterCatalogWritePathProviderFactory        = providerFactoryUsingCache("AccountParameterCatalogWritePath")
+	writeOnlyAttributesProviderFactory                     = providerFactoryUsingCache("WriteOnlyAttributes")
+	importBooleanDefaultProviderFactory                    = providerFactoryUsingCache("ImportBooleanDefault")
+	importPermissiveModeProviderFactory                    = providerFactoryUsingCache("ImportPermissiveMode")
 )
 
 // TODO [SNOW-2661409]: secondary account can have also a different configuration, so for now we need to be careful; let's add some hash check for the config or something else to mitigate
@@ -85,6 +89,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
+	p.ResourcesMap["snowflake_projection_policy"] = resources.ProjectionPolicy()
 	return p
 }
 

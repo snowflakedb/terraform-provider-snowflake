@@ -14,3 +14,6 @@
         {{ template "showObjectTypeMethodTemplate" .ObjectTypeMethod }}
     {{- end }}
 {{- end }}
+{{- range .ShowProjections }}
+    {{ template "showProjectionMethodTemplate" . }}
+{{- end }}

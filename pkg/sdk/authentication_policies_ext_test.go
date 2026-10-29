@@ -15,8 +15,8 @@ func init() {
 
 	mfaPolicy := &AuthenticationPolicyMfaPolicy{
 		EnforceMfaOnExternalAuthentication: new(EnforceMfaOnExternalAuthenticationOptionAll),
-		AllowedMethods: []AuthenticationPolicyMfaPolicyListItem{
-			{Method: MfaPolicyAllowedMethodsOptionPasskey},
+		AllowedMethods: []MfaPolicyAllowedMethodsOptionListItem{
+			{Value: MfaPolicyAllowedMethodsOptionPasskey},
 		},
 	}
 	patPolicy := &AuthenticationPolicyPatPolicy{
@@ -26,20 +26,20 @@ func init() {
 		NetworkPolicyEvaluation:               new(NetworkPolicyEvaluationOptionEnforcedRequired),
 	}
 	workloadIdentityPolicy := &AuthenticationPolicyWorkloadIdentityPolicy{
-		AllowedProviders:    []AuthenticationPolicyAllowedProviderListItem{{Provider: AllowedProviderOptionAll}},
+		AllowedProviders:    []AllowedProviderOptionListItem{{Value: AllowedProviderOptionAll}},
 		AllowedAwsAccounts:  []StringListItemWrapper{{Value: "1234567890"}},
 		AllowedAzureIssuers: []StringListItemWrapper{{Value: "https://login.microsoftonline.com/1234567890/v2.0"}},
 		AllowedOidcIssuers:  []StringListItemWrapper{{Value: "https://oidc.example.com"}},
 	}
-	clientTypes := []ClientTypes{
-		{ClientType: ClientTypesOptionDrivers},
-		{ClientType: ClientTypesOptionSnowsql},
+	clientTypes := []ClientTypesOptionListItem{
+		{Value: ClientTypesOptionDrivers},
+		{Value: ClientTypesOptionSnowsql},
 	}
-	clientPolicy := []AuthenticationPolicyClientPolicyEntry{
-		{ClientType: ClientPolicyDriverTypeGoDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: new("1.14.1")}},
-		{ClientType: ClientPolicyDriverTypeJdbcDriver, Params: &AuthenticationPolicyClientPolicyEntryParams{MinimumVersion: new("3.25.0")}},
+	clientPolicy := []AuthenticationPolicyClientPolicy{
+		{ClientType: ClientPolicyDriverTypeGoDriver, Params: AuthenticationPolicyClientPolicyParams{MinimumVersion: "1.14.1"}},
+		{ClientType: ClientPolicyDriverTypeJdbcDriver, Params: AuthenticationPolicyClientPolicyParams{MinimumVersion: "3.25.0"}},
 	}
-	securityIntegrations := &SecurityIntegrationsOption{
+	securityIntegrations := &AuthenticationPolicySecurityIntegrationsOption{
 		SecurityIntegrations: []AccountObjectIdentifier{securityIntegrationId},
 	}
 	createAllSql := "CREATE AUTHENTICATION POLICY IF NOT EXISTS %s AUTHENTICATION_METHODS = ('SAML', 'PASSWORD')" +
@@ -59,7 +59,7 @@ func init() {
 		withModify(
 			case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *CreateAuthenticationPolicyOptions) {
-				opts.SecurityIntegrations = &SecurityIntegrationsOption{
+				opts.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{
 					All:                  new(true),
 					SecurityIntegrations: []AccountObjectIdentifier{securityIntegrationId},
 				}
@@ -68,7 +68,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_AuthenticationPolicies_sql_Create_basic,
 			func(opts *CreateAuthenticationPolicyOptions) {
-				opts.AuthenticationMethods = []AuthenticationMethods{{Method: AuthenticationMethodsOptionAll}}
+				opts.AuthenticationMethods = []AuthenticationMethodsOptionListItem{{Value: AuthenticationMethodsOptionAll}}
 				opts.Comment = new("some comment")
 			},
 			"CREATE AUTHENTICATION POLICY %s AUTHENTICATION_METHODS = ('ALL') COMMENT = 'some comment'",
@@ -78,9 +78,9 @@ func init() {
 			case_AuthenticationPolicies_sql_Create_all,
 			func(opts *CreateAuthenticationPolicyOptions) {
 				opts.IfNotExists = new(true)
-				opts.AuthenticationMethods = []AuthenticationMethods{
-					{Method: AuthenticationMethodsOptionSaml},
-					{Method: AuthenticationMethodsOptionPassword},
+				opts.AuthenticationMethods = []AuthenticationMethodsOptionListItem{
+					{Value: AuthenticationMethodsOptionSaml},
+					{Value: AuthenticationMethodsOptionPassword},
 				}
 				opts.MfaEnrollment = new(MfaEnrollmentOptionOptional)
 				opts.MfaPolicy = mfaPolicy
@@ -96,7 +96,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Create_securityIntegrations_all",
 			func(opts *CreateAuthenticationPolicyOptions) {
-				opts.SecurityIntegrations = &SecurityIntegrationsOption{All: new(true)}
+				opts.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{All: new(true)}
 			},
 			"CREATE AUTHENTICATION POLICY %s SECURITY_INTEGRATIONS = ('ALL')", id.FullyQualifiedName(),
 		).
@@ -118,7 +118,7 @@ func init() {
 			case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *AlterAuthenticationPolicyOptions) {
 				opts.Set = &AuthenticationPolicySet{
-					SecurityIntegrations: &SecurityIntegrationsOption{
+					SecurityIntegrations: &AuthenticationPolicySecurityIntegrationsOption{
 						All:                  new(true),
 						SecurityIntegrations: []AccountObjectIdentifier{securityIntegrationId},
 					},
@@ -129,7 +129,7 @@ func init() {
 			case_AuthenticationPolicies_sql_Alter_Set,
 			func(opts *AlterAuthenticationPolicyOptions) {
 				opts.Set = &AuthenticationPolicySet{
-					AuthenticationMethods: []AuthenticationMethods{{Method: AuthenticationMethodsOptionSaml}},
+					AuthenticationMethods: []AuthenticationMethodsOptionListItem{{Value: AuthenticationMethodsOptionSaml}},
 				}
 			},
 			"ALTER AUTHENTICATION POLICY %s SET AUTHENTICATION_METHODS = ('SAML')", id.FullyQualifiedName(),
@@ -139,8 +139,8 @@ func init() {
 			func(opts *AlterAuthenticationPolicyOptions) {
 				opts.IfExists = new(true)
 				opts.Set = &AuthenticationPolicySet{
-					AuthenticationMethods: []AuthenticationMethods{
-						{Method: AuthenticationMethodsOptionSaml},
+					AuthenticationMethods: []AuthenticationMethodsOptionListItem{
+						{Value: AuthenticationMethodsOptionSaml},
 					},
 					MfaEnrollment:          new(MfaEnrollmentOptionOptional),
 					MfaPolicy:              mfaPolicy,
@@ -311,16 +311,140 @@ func Test_parseAuthenticationPolicyTargetScopes(t *testing.T) {
 	})
 }
 
-func TestAuthenticationPolicyDescribeProjection(t *testing.T) {
-	name := AuthenticationPolicyDescription{Property: "NAME", Value: "ap", Default: "", Description: "name"}
-	methods := AuthenticationPolicyDescription{Property: "AUTHENTICATION_METHODS", Value: "[PASSWORD]", Default: "", Description: "methods"}
-	comment := AuthenticationPolicyDescription{Property: "COMMENT", Value: "c", Default: "", Description: "comment"}
-	unknown := AuthenticationPolicyDescription{Property: "UNEXPECTED", Value: "x", Default: "", Description: ""}
+func TestParseAuthenticationPolicyDetails(t *testing.T) {
+	id := NewSchemaObjectIdentifier("DB", "SCHEMA", "POLICY")
 
-	details := AsAuthenticationPolicyDescribe([]AuthenticationPolicyDescription{name, methods, comment, unknown})
-	require.Equal(t, "ap", details.Name)
-	require.Equal(t, "[PASSWORD]", details.AuthenticationMethods)
-	require.Equal(t, "c", details.Comment)
-	require.Empty(t, details.Owner)
-	require.Nil(t, AsAuthenticationPolicyDescribe(nil))
+	t.Run("defaults", func(t *testing.T) {
+		rows := []AuthenticationPolicyProperty{
+			{Property: "NAME", Value: "POLICY"},
+			{Property: "OWNER", Value: "ACCOUNTADMIN"},
+			{Property: "COMMENT", Value: "null"},
+			{Property: "MFA_ENROLLMENT", Value: "OPTIONAL"},
+			{Property: "SECURITY_INTEGRATIONS", Value: "[ALL]"},
+			{Property: "CLIENT_TYPES", Value: "[ALL]"},
+			{Property: "CLIENT_POLICY", Value: "{}"},
+			{Property: "AUTHENTICATION_METHODS", Value: "[ALL]"},
+			{Property: "MFA_POLICY", Value: "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}"},
+			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}"},
+			{Property: "WORKLOAD_IDENTITY_POLICY", Value: "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}"},
+		}
+		parsed, err := ParseAuthenticationPolicyDescribed(rows)
+		details := &parsed
+		details.Id = id
+		require.NoError(t, err)
+		requireAuthenticationPolicyDetailsEqual(t, rows, &AuthenticationPolicyDetails{
+			Id:                    id,
+			Name:                  "POLICY",
+			Owner:                 "ACCOUNTADMIN",
+			AuthenticationMethods: []AuthenticationMethodsOption{AuthenticationMethodsOptionAll},
+			MfaEnrollment:         MfaEnrollmentReadOptionOptional,
+			ClientTypes:           []ClientTypesOption{ClientTypesOptionAll},
+			SecurityIntegrations:  AuthenticationPolicySecurityIntegrationsDetails{All: true},
+			ClientPolicy:          []AuthenticationPolicyClientPolicyDetails{},
+			MfaPolicy: AuthenticationPolicyMfaPolicyDetails{
+				AllowedMethods:                     []MfaPolicyAllowedMethodsOption{MfaPolicyAllowedMethodsOptionAll},
+				EnforceMfaOnExternalAuthentication: EnforceMfaOnExternalAuthenticationOptionNone,
+			},
+			PatPolicy: AuthenticationPolicyPatPolicyDetails{
+				DefaultExpiryInDays:                   15,
+				MaxExpiryInDays:                       365,
+				NetworkPolicyEvaluation:               NetworkPolicyEvaluationOptionEnforcedRequired,
+				RequireRoleRestrictionForServiceUsers: true,
+			},
+			WorkloadIdentityPolicy: AuthenticationPolicyWorkloadIdentityPolicyDetails{
+				AllowedProviders:    []AllowedProviderOption{AllowedProviderOptionAll},
+				AllowedAwsAccounts:  []string{"ALL"},
+				AllowedAzureIssuers: []string{"ALL"},
+				AllowedOidcIssuers:  []string{"ALL"},
+			},
+		}, details)
+	})
+
+	t.Run("configured values", func(t *testing.T) {
+		rows := []AuthenticationPolicyProperty{
+			{Property: "NAME", Value: "POLICY"},
+			{Property: "OWNER", Value: "ACCOUNTADMIN"},
+			{Property: "COMMENT", Value: "some comment"},
+			{Property: "MFA_ENROLLMENT", Value: "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"},
+			{Property: "SECURITY_INTEGRATIONS", Value: `["My Integration"]`},
+			{Property: "CLIENT_TYPES", Value: "[DRIVERS, SNOWSQL]"},
+			{Property: "CLIENT_POLICY", Value: "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}"},
+			{Property: "AUTHENTICATION_METHODS", Value: "[PASSWORD, SAML]"},
+			{Property: "MFA_POLICY", Value: "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}"},
+			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false}"},
+			{Property: "WORKLOAD_IDENTITY_POLICY", Value: "{ALLOWED_PROVIDERS=[AWS, AZURE], ALLOWED_AWS_ACCOUNTS=[111122223333, 444455556666], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com, https://other.example]}"},
+		}
+		parsed, err := ParseAuthenticationPolicyDescribed(rows)
+		details := &parsed
+		details.Id = id
+		require.NoError(t, err)
+		requireAuthenticationPolicyDetailsEqual(t, rows, &AuthenticationPolicyDetails{
+			Id:                    id,
+			Name:                  "POLICY",
+			Owner:                 "ACCOUNTADMIN",
+			AuthenticationMethods: []AuthenticationMethodsOption{AuthenticationMethodsOptionPassword, AuthenticationMethodsOptionSaml},
+			MfaEnrollment:         MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly,
+			ClientTypes:           []ClientTypesOption{ClientTypesOptionDrivers, ClientTypesOptionSnowsql},
+			SecurityIntegrations: AuthenticationPolicySecurityIntegrationsDetails{
+				SecurityIntegrations: []AccountObjectIdentifier{NewAccountObjectIdentifier("My Integration")},
+			},
+			Comment: "some comment",
+			ClientPolicy: []AuthenticationPolicyClientPolicyDetails{
+				{ClientType: ClientPolicyDriverTypeJdbcDriver, MinimumVersion: "3.25.0"},
+				{ClientType: ClientPolicyDriverTypeGoDriver, MinimumVersion: "1.14.1"},
+			},
+			MfaPolicy: AuthenticationPolicyMfaPolicyDetails{
+				AllowedMethods:                     []MfaPolicyAllowedMethodsOption{MfaPolicyAllowedMethodsOptionPasskey, MfaPolicyAllowedMethodsOptionDuo},
+				EnforceMfaOnExternalAuthentication: EnforceMfaOnExternalAuthenticationOptionAll,
+			},
+			PatPolicy: AuthenticationPolicyPatPolicyDetails{
+				DefaultExpiryInDays:                   1,
+				MaxExpiryInDays:                       30,
+				NetworkPolicyEvaluation:               NetworkPolicyEvaluationOptionNotEnforced,
+				RequireRoleRestrictionForServiceUsers: false,
+			},
+			WorkloadIdentityPolicy: AuthenticationPolicyWorkloadIdentityPolicyDetails{
+				AllowedProviders:    []AllowedProviderOption{AllowedProviderOptionAws, AllowedProviderOptionAzure},
+				AllowedAwsAccounts:  []string{"111122223333", "444455556666"},
+				AllowedAzureIssuers: []string{"https://login.microsoftonline.com/tenantid/v2.0"},
+				AllowedOidcIssuers:  []string{"https://example.com", "https://other.example"},
+			},
+		}, details)
+	})
+
+	t.Run("invalid authentication method", func(t *testing.T) {
+		_, err := ParseAuthenticationPolicyDescribed([]AuthenticationPolicyProperty{
+			{Property: "AUTHENTICATION_METHODS", Value: "[NOT_A_METHOD]"},
+		})
+		require.ErrorContains(t, err, "parsing AUTHENTICATION_METHODS")
+	})
+
+	t.Run("invalid pat expiry", func(t *testing.T) {
+		_, err := ParseAuthenticationPolicyDescribed([]AuthenticationPolicyProperty{
+			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=nope}"},
+		})
+		require.ErrorContains(t, err, "parsing PAT_POLICY")
+	})
+
+	t.Run("all mixed with security integrations", func(t *testing.T) {
+		_, err := ParseAuthenticationPolicyDescribed([]AuthenticationPolicyProperty{
+			{Property: "SECURITY_INTEGRATIONS", Value: "[ALL, OTHER]"},
+		})
+		require.ErrorContains(t, err, "parsing SECURITY_INTEGRATIONS")
+	})
+
+	t.Run("malformed client policy", func(t *testing.T) {
+		_, err := ParseAuthenticationPolicyDescribed([]AuthenticationPolicyProperty{
+			{Property: "CLIENT_POLICY", Value: "{GO_DRIVER={MINIMUM_VERSION=1.0.0}"},
+		})
+		require.ErrorContains(t, err, "parsing CLIENT_POLICY")
+	})
+}
+
+func requireAuthenticationPolicyDetailsEqual(t *testing.T, rows []AuthenticationPolicyProperty, expected *AuthenticationPolicyDetails, got *AuthenticationPolicyDetails) {
+	t.Helper()
+	require.Equal(t, AuthenticationPolicyDescriptions(rows), got.Descriptions())
+	parsed := *got
+	parsed.descriptions = nil
+	require.Equal(t, expected, &parsed)
 }

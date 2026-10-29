@@ -118,6 +118,43 @@ func TestParameterValueComputedIf(t *testing.T) {
 	// of getting into this situation would be in create operation for which custom diffs are skipped.
 }
 
+func TestParameterValueComputedIf_ExplicitEmptyString(t *testing.T) {
+	parameter := sdk.TypedParameter[string]{
+		Key:   "VALUE",
+		Value: "en_nz",
+		Level: sdk.ParameterTypeDatabase,
+	}
+	rawConfig := cty.MapVal(map[string]cty.Value{"value": cty.StringVal("")})
+	state := map[string]any{"value": "en_nz"}
+	tests := []struct {
+		name            string
+		customDiff      schema.CustomizeDiffFunc
+		wantNewComputed bool
+	}{
+		{
+			name:            "allow-empty parameter replaces a non-empty object-level value",
+			customDiff:      resources.StringAllowEmptyTypedParameterValueComputedIf("value", parameter, sdk.ParameterTypeDatabase),
+			wantNewComputed: true,
+		},
+		{
+			name:            "plain string parameter does not treat empty string as a value",
+			customDiff:      resources.StringTypedParameterValueComputedIf("value", parameter, sdk.ParameterTypeDatabase),
+			wantNewComputed: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			providerConfig := createProviderWithNamedPropertyAndCustomDiff(t, "value", &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+				Optional: true,
+			}, tt.customDiff)
+			diff := calculateDiff(t, providerConfig, rawConfig, state)
+			assert.Equal(t, tt.wantNewComputed, diff.Attributes["value"].NewComputed)
+		})
+	}
+}
+
 func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 	tests := []struct {
 		name            string

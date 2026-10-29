@@ -283,7 +283,7 @@ func init() {
 				opts.DataRetentionTimeInDays = new(10)
 				opts.MaxDataExtensionTimeInDays = new(100)
 				opts.ChangeTracking = new(true)
-				opts.DefaultDdlCollation = new("en")
+				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en"})
 				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tableTagId1, Value: "v1"},
@@ -302,6 +302,14 @@ func init() {
 			tableTagId1.FullyQualifiedName(),
 			tableTagId2.FullyQualifiedName(),
 			tableComment,
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_emptyDefaultDdlCollation",
+			func(opts *CreateTableOptions) {
+				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: ""})
+			},
+			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR) DEFAULT_DDL_COLLATION = ''`,
+			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_orReplace",
@@ -720,12 +728,20 @@ func init() {
 					DataRetentionTimeInDays:    new(30),
 					MaxDataExtensionTimeInDays: new(90),
 					ChangeTracking:             new(false),
-					DefaultDdlCollation:        new("us"),
+					DefaultDdlCollation:        new(StringAllowEmpty{Value: "us"}),
 					Comment:                    &tableComment,
 				}
 			},
 			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
 			id.FullyQualifiedName(), tableComment,
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Set_emptyDefaultDdlCollation",
+			func(opts *AlterTableOptions) {
+				opts.Set = &TableSet{DefaultDdlCollation: new(StringAllowEmpty{Value: ""})}
+			},
+			`ALTER TABLE %s SET DEFAULT_DDL_COLLATION = ''`,
+			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_SetTags,

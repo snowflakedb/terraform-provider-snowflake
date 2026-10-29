@@ -58,3 +58,13 @@ func (c *AlertClient) DropAlertFunc(t *testing.T, id sdk.SchemaObjectIdentifier)
 		require.NoError(t, err)
 	}
 }
+
+func (c *AlertClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.AlertDetails, error) {
+	t.Helper()
+	return c.client().Describe(context.Background(), id)
+}
+
+func (c *AlertClient) Show(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.Alert, error) {
+	t.Helper()
+	return c.client().ShowByID(context.Background(), id)
+}

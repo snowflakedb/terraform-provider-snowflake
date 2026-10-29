@@ -42,6 +42,11 @@ func (u *UserResourceAssert) HasAbortDetachedQuery(expected bool) *UserResourceA
 	return u
 }
 
+func (u *UserResourceAssert) HasActivePythonProfiler(expected string) *UserResourceAssert {
+	u.StringValueSet("active_python_profiler", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasAutocommit(expected bool) *UserResourceAssert {
 	u.BoolValueSet("autocommit", expected)
 	return u
@@ -57,6 +62,11 @@ func (u *UserResourceAssert) HasBinaryOutputFormat(expected string) *UserResourc
 	return u
 }
 
+func (u *UserResourceAssert) HasClientEnableLogInfoStatementParameters(expected bool) *UserResourceAssert {
+	u.BoolValueSet("client_enable_log_info_statement_parameters", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasClientMemoryLimit(expected int) *UserResourceAssert {
 	u.IntValueSet("client_memory_limit", expected)
 	return u
@@ -64,6 +74,11 @@ func (u *UserResourceAssert) HasClientMemoryLimit(expected int) *UserResourceAss
 
 func (u *UserResourceAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *UserResourceAssert {
 	u.BoolValueSet("client_metadata_request_use_connection_ctx", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasClientMetadataUseSessionDatabase(expected bool) *UserResourceAssert {
+	u.BoolValueSet("client_metadata_use_session_database", expected)
 	return u
 }
 
@@ -99,6 +114,11 @@ func (u *UserResourceAssert) HasClientTimestampTypeMapping(expected string) *Use
 
 func (u *UserResourceAssert) HasComment(expected string) *UserResourceAssert {
 	u.StringValueSet("comment", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasCsvTimestampFormat(expected string) *UserResourceAssert {
+	u.StringValueSet("csv_timestamp_format", expected)
 	return u
 }
 
@@ -157,6 +177,11 @@ func (u *UserResourceAssert) HasEmail(expected string) *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *UserResourceAssert {
+	u.BoolValueSet("enable_get_ddl_use_data_type_alias", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasEnableUnloadPhysicalTypeOptimization(expected bool) *UserResourceAssert {
 	u.BoolValueSet("enable_unload_physical_type_optimization", expected)
 	return u
@@ -197,6 +222,11 @@ func (u *UserResourceAssert) HasGeometryOutputFormat(expected string) *UserResou
 	return u
 }
 
+func (u *UserResourceAssert) HasHybridTableLockTimeout(expected int) *UserResourceAssert {
+	u.IntValueSet("hybrid_table_lock_timeout", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasJdbcTreatDecimalAsInt(expected bool) *UserResourceAssert {
 	u.BoolValueSet("jdbc_treat_decimal_as_int", expected)
 	return u
@@ -209,6 +239,11 @@ func (u *UserResourceAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *UserR
 
 func (u *UserResourceAssert) HasJdbcUseSessionTimezone(expected bool) *UserResourceAssert {
 	u.BoolValueSet("jdbc_use_session_timezone", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasJsTreatIntegerAsBigint(expected bool) *UserResourceAssert {
+	u.BoolValueSet("js_treat_integer_as_bigint", expected)
 	return u
 }
 
@@ -292,6 +327,16 @@ func (u *UserResourceAssert) HasPreventUnloadToInternalStages(expected bool) *Us
 	return u
 }
 
+func (u *UserResourceAssert) HasPythonProfilerModules(expected string) *UserResourceAssert {
+	u.StringValueSet("python_profiler_modules", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasPythonProfilerTargetStage(expected string) *UserResourceAssert {
+	u.StringValueSet("python_profiler_target_stage", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasQueryTag(expected string) *UserResourceAssert {
 	u.StringValueSet("query_tag", expected)
 	return u
@@ -314,6 +359,16 @@ func (u *UserResourceAssert) HasRsaPublicKey(expected string) *UserResourceAsser
 
 func (u *UserResourceAssert) HasRsaPublicKey2(expected string) *UserResourceAssert {
 	u.StringValueSet("rsa_public_key_2", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersion(expected int) *UserResourceAssert {
+	u.IntValueSet("rsa_public_key_2_wo_version", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersion(expected int) *UserResourceAssert {
+	u.IntValueSet("rsa_public_key_wo_version", expected)
 	return u
 }
 
@@ -456,6 +511,11 @@ func (u *UserResourceAssert) HasAbortDetachedQueryString(expected string) *UserR
 	return u
 }
 
+func (u *UserResourceAssert) HasActivePythonProfilerString(expected string) *UserResourceAssert {
+	u.ValueSet("active_python_profiler", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasAutocommitString(expected string) *UserResourceAssert {
 	u.ValueSet("autocommit", expected)
 	return u
@@ -471,6 +531,11 @@ func (u *UserResourceAssert) HasBinaryOutputFormatString(expected string) *UserR
 	return u
 }
 
+func (u *UserResourceAssert) HasClientEnableLogInfoStatementParametersString(expected string) *UserResourceAssert {
+	u.ValueSet("client_enable_log_info_statement_parameters", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasClientMemoryLimitString(expected string) *UserResourceAssert {
 	u.ValueSet("client_memory_limit", expected)
 	return u
@@ -478,6 +543,11 @@ func (u *UserResourceAssert) HasClientMemoryLimitString(expected string) *UserRe
 
 func (u *UserResourceAssert) HasClientMetadataRequestUseConnectionCtxString(expected string) *UserResourceAssert {
 	u.ValueSet("client_metadata_request_use_connection_ctx", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasClientMetadataUseSessionDatabaseString(expected string) *UserResourceAssert {
+	u.ValueSet("client_metadata_use_session_database", expected)
 	return u
 }
 
@@ -513,6 +583,11 @@ func (u *UserResourceAssert) HasClientTimestampTypeMappingString(expected string
 
 func (u *UserResourceAssert) HasCommentString(expected string) *UserResourceAssert {
 	u.ValueSet("comment", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasCsvTimestampFormatString(expected string) *UserResourceAssert {
+	u.ValueSet("csv_timestamp_format", expected)
 	return u
 }
 
@@ -571,6 +646,11 @@ func (u *UserResourceAssert) HasEmailString(expected string) *UserResourceAssert
 	return u
 }
 
+func (u *UserResourceAssert) HasEnableGetDdlUseDataTypeAliasString(expected string) *UserResourceAssert {
+	u.ValueSet("enable_get_ddl_use_data_type_alias", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationString(expected string) *UserResourceAssert {
 	u.ValueSet("enable_unload_physical_type_optimization", expected)
 	return u
@@ -611,6 +691,11 @@ func (u *UserResourceAssert) HasGeometryOutputFormatString(expected string) *Use
 	return u
 }
 
+func (u *UserResourceAssert) HasHybridTableLockTimeoutString(expected string) *UserResourceAssert {
+	u.ValueSet("hybrid_table_lock_timeout", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasJdbcTreatDecimalAsIntString(expected string) *UserResourceAssert {
 	u.ValueSet("jdbc_treat_decimal_as_int", expected)
 	return u
@@ -623,6 +708,11 @@ func (u *UserResourceAssert) HasJdbcTreatTimestampNtzAsUtcString(expected string
 
 func (u *UserResourceAssert) HasJdbcUseSessionTimezoneString(expected string) *UserResourceAssert {
 	u.ValueSet("jdbc_use_session_timezone", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasJsTreatIntegerAsBigintString(expected string) *UserResourceAssert {
+	u.ValueSet("js_treat_integer_as_bigint", expected)
 	return u
 }
 
@@ -706,6 +796,16 @@ func (u *UserResourceAssert) HasPreventUnloadToInternalStagesString(expected str
 	return u
 }
 
+func (u *UserResourceAssert) HasPythonProfilerModulesString(expected string) *UserResourceAssert {
+	u.ValueSet("python_profiler_modules", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasPythonProfilerTargetStageString(expected string) *UserResourceAssert {
+	u.ValueSet("python_profiler_target_stage", expected)
+	return u
+}
+
 func (u *UserResourceAssert) HasQueryTagString(expected string) *UserResourceAssert {
 	u.ValueSet("query_tag", expected)
 	return u
@@ -728,6 +828,16 @@ func (u *UserResourceAssert) HasRsaPublicKeyString(expected string) *UserResourc
 
 func (u *UserResourceAssert) HasRsaPublicKey2String(expected string) *UserResourceAssert {
 	u.ValueSet("rsa_public_key_2", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersionString(expected string) *UserResourceAssert {
+	u.ValueSet("rsa_public_key_2_wo_version", expected)
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersionString(expected string) *UserResourceAssert {
+	u.ValueSet("rsa_public_key_wo_version", expected)
 	return u
 }
 
@@ -870,6 +980,11 @@ func (u *UserResourceAssert) HasNoAbortDetachedQuery() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasNoActivePythonProfiler() *UserResourceAssert {
+	u.ValueNotSet("active_python_profiler")
+	return u
+}
+
 func (u *UserResourceAssert) HasNoAutocommit() *UserResourceAssert {
 	u.ValueNotSet("autocommit")
 	return u
@@ -885,6 +1000,11 @@ func (u *UserResourceAssert) HasNoBinaryOutputFormat() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasNoClientEnableLogInfoStatementParameters() *UserResourceAssert {
+	u.ValueNotSet("client_enable_log_info_statement_parameters")
+	return u
+}
+
 func (u *UserResourceAssert) HasNoClientMemoryLimit() *UserResourceAssert {
 	u.ValueNotSet("client_memory_limit")
 	return u
@@ -892,6 +1012,11 @@ func (u *UserResourceAssert) HasNoClientMemoryLimit() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasNoClientMetadataRequestUseConnectionCtx() *UserResourceAssert {
 	u.ValueNotSet("client_metadata_request_use_connection_ctx")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoClientMetadataUseSessionDatabase() *UserResourceAssert {
+	u.ValueNotSet("client_metadata_use_session_database")
 	return u
 }
 
@@ -927,6 +1052,11 @@ func (u *UserResourceAssert) HasNoClientTimestampTypeMapping() *UserResourceAsse
 
 func (u *UserResourceAssert) HasNoComment() *UserResourceAssert {
 	u.ValueNotSet("comment")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoCsvTimestampFormat() *UserResourceAssert {
+	u.ValueNotSet("csv_timestamp_format")
 	return u
 }
 
@@ -985,6 +1115,11 @@ func (u *UserResourceAssert) HasNoEmail() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasNoEnableGetDdlUseDataTypeAlias() *UserResourceAssert {
+	u.ValueNotSet("enable_get_ddl_use_data_type_alias")
+	return u
+}
+
 func (u *UserResourceAssert) HasNoEnableUnloadPhysicalTypeOptimization() *UserResourceAssert {
 	u.ValueNotSet("enable_unload_physical_type_optimization")
 	return u
@@ -1025,6 +1160,11 @@ func (u *UserResourceAssert) HasNoGeometryOutputFormat() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasNoHybridTableLockTimeout() *UserResourceAssert {
+	u.ValueNotSet("hybrid_table_lock_timeout")
+	return u
+}
+
 func (u *UserResourceAssert) HasNoJdbcTreatDecimalAsInt() *UserResourceAssert {
 	u.ValueNotSet("jdbc_treat_decimal_as_int")
 	return u
@@ -1037,6 +1177,11 @@ func (u *UserResourceAssert) HasNoJdbcTreatTimestampNtzAsUtc() *UserResourceAsse
 
 func (u *UserResourceAssert) HasNoJdbcUseSessionTimezone() *UserResourceAssert {
 	u.ValueNotSet("jdbc_use_session_timezone")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoJsTreatIntegerAsBigint() *UserResourceAssert {
+	u.ValueNotSet("js_treat_integer_as_bigint")
 	return u
 }
 
@@ -1120,6 +1265,16 @@ func (u *UserResourceAssert) HasNoPreventUnloadToInternalStages() *UserResourceA
 	return u
 }
 
+func (u *UserResourceAssert) HasNoPythonProfilerModules() *UserResourceAssert {
+	u.ValueNotSet("python_profiler_modules")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoPythonProfilerTargetStage() *UserResourceAssert {
+	u.ValueNotSet("python_profiler_target_stage")
+	return u
+}
+
 func (u *UserResourceAssert) HasNoQueryTag() *UserResourceAssert {
 	u.ValueNotSet("query_tag")
 	return u
@@ -1142,6 +1297,16 @@ func (u *UserResourceAssert) HasNoRsaPublicKey() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasNoRsaPublicKey2() *UserResourceAssert {
 	u.ValueNotSet("rsa_public_key_2")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoRsaPublicKey2WoVersion() *UserResourceAssert {
+	u.ValueNotSet("rsa_public_key_2_wo_version")
+	return u
+}
+
+func (u *UserResourceAssert) HasNoRsaPublicKeyWoVersion() *UserResourceAssert {
+	u.ValueNotSet("rsa_public_key_wo_version")
 	return u
 }
 
@@ -1279,6 +1444,11 @@ func (u *UserResourceAssert) HasAbortDetachedQueryEmpty() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasActivePythonProfilerEmpty() *UserResourceAssert {
+	u.ValueSet("active_python_profiler", "")
+	return u
+}
+
 func (u *UserResourceAssert) HasAutocommitEmpty() *UserResourceAssert {
 	u.ValueSet("autocommit", "")
 	return u
@@ -1294,6 +1464,11 @@ func (u *UserResourceAssert) HasBinaryOutputFormatEmpty() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasClientEnableLogInfoStatementParametersEmpty() *UserResourceAssert {
+	u.ValueSet("client_enable_log_info_statement_parameters", "")
+	return u
+}
+
 func (u *UserResourceAssert) HasClientMemoryLimitEmpty() *UserResourceAssert {
 	u.ValueSet("client_memory_limit", "")
 	return u
@@ -1301,6 +1476,11 @@ func (u *UserResourceAssert) HasClientMemoryLimitEmpty() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasClientMetadataRequestUseConnectionCtxEmpty() *UserResourceAssert {
 	u.ValueSet("client_metadata_request_use_connection_ctx", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasClientMetadataUseSessionDatabaseEmpty() *UserResourceAssert {
+	u.ValueSet("client_metadata_use_session_database", "")
 	return u
 }
 
@@ -1336,6 +1516,11 @@ func (u *UserResourceAssert) HasClientTimestampTypeMappingEmpty() *UserResourceA
 
 func (u *UserResourceAssert) HasCommentEmpty() *UserResourceAssert {
 	u.ValueSet("comment", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasCsvTimestampFormatEmpty() *UserResourceAssert {
+	u.ValueSet("csv_timestamp_format", "")
 	return u
 }
 
@@ -1394,6 +1579,11 @@ func (u *UserResourceAssert) HasEmailEmpty() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasEnableGetDdlUseDataTypeAliasEmpty() *UserResourceAssert {
+	u.ValueSet("enable_get_ddl_use_data_type_alias", "")
+	return u
+}
+
 func (u *UserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationEmpty() *UserResourceAssert {
 	u.ValueSet("enable_unload_physical_type_optimization", "")
 	return u
@@ -1434,6 +1624,11 @@ func (u *UserResourceAssert) HasGeometryOutputFormatEmpty() *UserResourceAssert 
 	return u
 }
 
+func (u *UserResourceAssert) HasHybridTableLockTimeoutEmpty() *UserResourceAssert {
+	u.ValueSet("hybrid_table_lock_timeout", "")
+	return u
+}
+
 func (u *UserResourceAssert) HasJdbcTreatDecimalAsIntEmpty() *UserResourceAssert {
 	u.ValueSet("jdbc_treat_decimal_as_int", "")
 	return u
@@ -1446,6 +1641,11 @@ func (u *UserResourceAssert) HasJdbcTreatTimestampNtzAsUtcEmpty() *UserResourceA
 
 func (u *UserResourceAssert) HasJdbcUseSessionTimezoneEmpty() *UserResourceAssert {
 	u.ValueSet("jdbc_use_session_timezone", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasJsTreatIntegerAsBigintEmpty() *UserResourceAssert {
+	u.ValueSet("js_treat_integer_as_bigint", "")
 	return u
 }
 
@@ -1529,6 +1729,16 @@ func (u *UserResourceAssert) HasPreventUnloadToInternalStagesEmpty() *UserResour
 	return u
 }
 
+func (u *UserResourceAssert) HasPythonProfilerModulesEmpty() *UserResourceAssert {
+	u.ValueSet("python_profiler_modules", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasPythonProfilerTargetStageEmpty() *UserResourceAssert {
+	u.ValueSet("python_profiler_target_stage", "")
+	return u
+}
+
 func (u *UserResourceAssert) HasQueryTagEmpty() *UserResourceAssert {
 	u.ValueSet("query_tag", "")
 	return u
@@ -1551,6 +1761,16 @@ func (u *UserResourceAssert) HasRsaPublicKeyEmpty() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasRsaPublicKey2Empty() *UserResourceAssert {
 	u.ValueSet("rsa_public_key_2", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersionEmpty() *UserResourceAssert {
+	u.ValueSet("rsa_public_key_2_wo_version", "")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersionEmpty() *UserResourceAssert {
+	u.ValueSet("rsa_public_key_wo_version", "")
 	return u
 }
 
@@ -1693,6 +1913,11 @@ func (u *UserResourceAssert) HasAbortDetachedQueryNotEmpty() *UserResourceAssert
 	return u
 }
 
+func (u *UserResourceAssert) HasActivePythonProfilerNotEmpty() *UserResourceAssert {
+	u.ValuePresent("active_python_profiler")
+	return u
+}
+
 func (u *UserResourceAssert) HasAutocommitNotEmpty() *UserResourceAssert {
 	u.ValuePresent("autocommit")
 	return u
@@ -1708,6 +1933,11 @@ func (u *UserResourceAssert) HasBinaryOutputFormatNotEmpty() *UserResourceAssert
 	return u
 }
 
+func (u *UserResourceAssert) HasClientEnableLogInfoStatementParametersNotEmpty() *UserResourceAssert {
+	u.ValuePresent("client_enable_log_info_statement_parameters")
+	return u
+}
+
 func (u *UserResourceAssert) HasClientMemoryLimitNotEmpty() *UserResourceAssert {
 	u.ValuePresent("client_memory_limit")
 	return u
@@ -1715,6 +1945,11 @@ func (u *UserResourceAssert) HasClientMemoryLimitNotEmpty() *UserResourceAssert 
 
 func (u *UserResourceAssert) HasClientMetadataRequestUseConnectionCtxNotEmpty() *UserResourceAssert {
 	u.ValuePresent("client_metadata_request_use_connection_ctx")
+	return u
+}
+
+func (u *UserResourceAssert) HasClientMetadataUseSessionDatabaseNotEmpty() *UserResourceAssert {
+	u.ValuePresent("client_metadata_use_session_database")
 	return u
 }
 
@@ -1750,6 +1985,11 @@ func (u *UserResourceAssert) HasClientTimestampTypeMappingNotEmpty() *UserResour
 
 func (u *UserResourceAssert) HasCommentNotEmpty() *UserResourceAssert {
 	u.ValuePresent("comment")
+	return u
+}
+
+func (u *UserResourceAssert) HasCsvTimestampFormatNotEmpty() *UserResourceAssert {
+	u.ValuePresent("csv_timestamp_format")
 	return u
 }
 
@@ -1808,6 +2048,11 @@ func (u *UserResourceAssert) HasEmailNotEmpty() *UserResourceAssert {
 	return u
 }
 
+func (u *UserResourceAssert) HasEnableGetDdlUseDataTypeAliasNotEmpty() *UserResourceAssert {
+	u.ValuePresent("enable_get_ddl_use_data_type_alias")
+	return u
+}
+
 func (u *UserResourceAssert) HasEnableUnloadPhysicalTypeOptimizationNotEmpty() *UserResourceAssert {
 	u.ValuePresent("enable_unload_physical_type_optimization")
 	return u
@@ -1848,6 +2093,11 @@ func (u *UserResourceAssert) HasGeometryOutputFormatNotEmpty() *UserResourceAsse
 	return u
 }
 
+func (u *UserResourceAssert) HasHybridTableLockTimeoutNotEmpty() *UserResourceAssert {
+	u.ValuePresent("hybrid_table_lock_timeout")
+	return u
+}
+
 func (u *UserResourceAssert) HasJdbcTreatDecimalAsIntNotEmpty() *UserResourceAssert {
 	u.ValuePresent("jdbc_treat_decimal_as_int")
 	return u
@@ -1860,6 +2110,11 @@ func (u *UserResourceAssert) HasJdbcTreatTimestampNtzAsUtcNotEmpty() *UserResour
 
 func (u *UserResourceAssert) HasJdbcUseSessionTimezoneNotEmpty() *UserResourceAssert {
 	u.ValuePresent("jdbc_use_session_timezone")
+	return u
+}
+
+func (u *UserResourceAssert) HasJsTreatIntegerAsBigintNotEmpty() *UserResourceAssert {
+	u.ValuePresent("js_treat_integer_as_bigint")
 	return u
 }
 
@@ -1943,6 +2198,16 @@ func (u *UserResourceAssert) HasPreventUnloadToInternalStagesNotEmpty() *UserRes
 	return u
 }
 
+func (u *UserResourceAssert) HasPythonProfilerModulesNotEmpty() *UserResourceAssert {
+	u.ValuePresent("python_profiler_modules")
+	return u
+}
+
+func (u *UserResourceAssert) HasPythonProfilerTargetStageNotEmpty() *UserResourceAssert {
+	u.ValuePresent("python_profiler_target_stage")
+	return u
+}
+
 func (u *UserResourceAssert) HasQueryTagNotEmpty() *UserResourceAssert {
 	u.ValuePresent("query_tag")
 	return u
@@ -1965,6 +2230,16 @@ func (u *UserResourceAssert) HasRsaPublicKeyNotEmpty() *UserResourceAssert {
 
 func (u *UserResourceAssert) HasRsaPublicKey2NotEmpty() *UserResourceAssert {
 	u.ValuePresent("rsa_public_key_2")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKey2WoVersionNotEmpty() *UserResourceAssert {
+	u.ValuePresent("rsa_public_key_2_wo_version")
+	return u
+}
+
+func (u *UserResourceAssert) HasRsaPublicKeyWoVersionNotEmpty() *UserResourceAssert {
+	u.ValuePresent("rsa_public_key_wo_version")
 	return u
 }
 

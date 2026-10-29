@@ -21,24 +21,6 @@ func accountDrop() *g.QueryStruct {
 		OptionalSQLWithCustomFieldName("OldOrganizationUrl", "DROP OLD ORGANIZATION URL")
 }
 
-func accountLevelParameters() *g.QueryStruct {
-	return g.NewQueryStruct("AccountLevelParameters").
-		PredefinedQueryStructField("AccountParameters", "*LegacyAccountParameters", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("ObjectParameters", "*ObjectParameters", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("UserParameters", "*UserParameters", g.ListOptions().NoParentheses()).
-		WithAdditionalValidations()
-}
-
-func accountLevelParametersUnset() *g.QueryStruct {
-	return g.NewQueryStruct("AccountLevelParametersUnset").
-		PredefinedQueryStructField("AccountParameters", "*LegacyAccountParametersUnset", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("SessionParameters", "*SessionParametersUnset", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("ObjectParameters", "*ObjectParametersUnset", g.ListOptions().NoParentheses()).
-		PredefinedQueryStructField("UserParameters", "*UserParametersUnset", g.ListOptions().NoParentheses()).
-		WithValidation(g.AtLeastOneValueSet, "AccountParameters", "SessionParameters", "ObjectParameters", "UserParameters")
-}
-
 func accountFeaturePolicySet() *g.QueryStruct {
 	return g.NewQueryStruct("AccountFeaturePolicySet").
 		OptionalIdentifier("FeaturePolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("FEATURE POLICY")).
@@ -100,7 +82,6 @@ func accountParametersUnsetStruct() *g.QueryStruct {
 func accountSet() *g.QueryStruct {
 	return g.NewQueryStruct("AccountSet").
 		OptionalQueryStructField("Parameters", accountParametersStruct(), g.ListOptions().NoParentheses()).
-		OptionalQueryStructField("LegacyParameters", accountLevelParameters(), g.ListOptions().NoParentheses()).
 		OptionalIdentifier("ResourceMonitor", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Equals().SQL("RESOURCE_MONITOR")).
 		OptionalIdentifier("PackagesPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PACKAGES POLICY")).
 		OptionalIdentifier("PasswordPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PASSWORD POLICY")).
@@ -110,14 +91,13 @@ func accountSet() *g.QueryStruct {
 		OptionalTextAssignment("CONSUMPTION_BILLING_ENTITY", g.ParameterOptions().DoubleQuotes()).
 		OptionalAssignmentWithFieldName("IS_ORG_ADMIN", "bool", g.ParameterOptions(), "OrgAdmin").
 		OptionalSQL("FORCE").
-		WithValidation(g.ExactlyOneValueSet, "Parameters", "LegacyParameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity").
+		WithValidation(g.ExactlyOneValueSet, "Parameters", "ResourceMonitor", "PackagesPolicy", "PasswordPolicy", "SessionPolicySet", "AuthenticationPolicySet", "FeaturePolicySet", "OrgAdmin", "ConsumptionBillingEntity").
 		WithAdditionalValidations()
 }
 
 func accountUnset() *g.QueryStruct {
 	return g.NewQueryStruct("AccountUnset").
 		OptionalQueryStructField("Parameters", accountParametersUnsetStruct(), g.ListOptions().NoParentheses()).
-		OptionalQueryStructField("LegacyParameters", accountLevelParametersUnset(), g.ListOptions().NoParentheses()).
 		OptionalQueryStructField("AuthenticationPolicyUnset", accountAuthenticationPolicyUnset(), g.KeywordOptions()).
 		OptionalQueryStructField("FeaturePolicyUnset", accountFeaturePolicyUnset(), g.KeywordOptions()).
 		OptionalSQL("PACKAGES POLICY").
@@ -125,7 +105,7 @@ func accountUnset() *g.QueryStruct {
 		OptionalQueryStructField("SessionPolicyUnset", accountSessionPolicyUnset(), g.KeywordOptions()).
 		OptionalSQL("RESOURCE_MONITOR").
 		OptionalSQL("CONSUMPTION_BILLING_ENTITY").
-		WithValidation(g.ExactlyOneValueSet, "Parameters", "LegacyParameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity").
+		WithValidation(g.ExactlyOneValueSet, "Parameters", "PackagesPolicy", "PasswordPolicy", "SessionPolicyUnset", "AuthenticationPolicyUnset", "ResourceMonitor", "FeaturePolicyUnset", "ConsumptionBillingEntity").
 		WithAdditionalValidations()
 }
 

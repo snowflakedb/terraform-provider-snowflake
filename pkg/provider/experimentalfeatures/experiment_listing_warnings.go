@@ -27,6 +27,13 @@ func experimentListingWarnings(experiments []Experiment, userEnabled, userDisabl
 			})
 		}
 		switch experiment.state {
+		case ExperimentalFeatureStateOptIn:
+			if inDisabled && !inEnabled {
+				warnings = append(warnings, ExperimentListingWarning{
+					Summary: "Opt-in experiment listed in experimental_features_disabled.",
+					Detail:  fmt.Sprintf("Experimental feature %s is opt-in, so it's disabled unless it's listed in experimental_features_enabled. Listing it in experimental_features_disabled isn't needed; please remove it from that list.", name),
+				})
+			}
 		case ExperimentalFeatureStateEnabledByDefault:
 			if inEnabled {
 				warnings = append(warnings, ExperimentListingWarning{

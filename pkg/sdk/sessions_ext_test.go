@@ -1,21 +1,13 @@
 package sdk
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
 func init() {
 	sessionsTests.Alter.
-		withModifyAndExpectedErr(
-			case_Sessions_validation_Alter_Set_SessionParameters_ValidateValue,
-			func(opts *AlterSessionOptions) {
-				opts.Set = &SessionSet{SessionParameters: &SessionParameters{ClientPrefetchThreads: new(-1)}}
-			},
-			errIntValue("SessionParameters", "ClientPrefetchThreads", IntErrGreaterOrEqual, 0),
-		).
-		withModifyAndExpectedErr(
-			case_Sessions_validation_Alter_Unset_SessionParametersUnset_ValidateValue,
-			func(opts *AlterSessionOptions) {
-				opts.Unset = &SessionUnset{SessionParametersUnset: &SessionParametersUnset{}}
-			},
-			errAtLeastOneOf("SessionParametersUnset", "AbortDetachedQuery", "ActivePythonProfiler", "Autocommit", "BinaryInputFormat", "BinaryOutputFormat", "ClientEnableLogInfoStatementParameters", "ClientMemoryLimit", "ClientMetadataRequestUseConnectionCtx", "ClientPrefetchThreads", "ClientResultChunkSize", "ClientResultColumnCaseInsensitive", "ClientMetadataUseSessionDatabase", "ClientSessionKeepAlive", "ClientSessionKeepAliveHeartbeatFrequency", "ClientTimestampTypeMapping", "CsvTimestampFormat", "DateInputFormat", "DateOutputFormat", "EnableCortexAnalyst", "EnableGetDdlUseDataTypeAlias", "EnableUnloadPhysicalTypeOptimization", "ErrorOnNondeterministicMerge", "ErrorOnNondeterministicUpdate", "GeographyOutputFormat", "GeometryOutputFormat", "HybridTableLockTimeout", "JdbcTreatDecimalAsInt", "JdbcTreatTimestampNtzAsUtc", "JdbcUseSessionTimezone", "JsonIndent", "JsTreatIntegerAsBigInt", "LockTimeout", "LogLevel", "LogEventLevel", "MultiStatementCount", "NoorderSequenceAsDefault", "OdbcTreatDecimalAsInt", "PythonProfilerModules", "PythonProfilerTargetStage", "QueryTag", "QuotedIdentifiersIgnoreCase", "RowsPerResultset", "S3StageVpceDnsName", "SearchPath", "SimulatedDataSharingConsumer", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "StrictJsonOutput", "TimestampDayIsAlways24h", "TimestampInputFormat", "TimestampLTZOutputFormat", "TimestampNTZOutputFormat", "TimestampOutputFormat", "TimestampTypeMapping", "TimestampTZOutputFormat", "Timezone", "TimeInputFormat", "TimeOutputFormat", "TraceLevel", "TransactionAbortOnError", "TransactionDefaultIsolationLevel", "TwoDigitCenturyStart", "UnsupportedDDLAction", "UseCachedResult", "WeekOfYearPolicy", "WeekStart"),
-		).
 		withModifyAndExpectedSqlf(
 			case_Sessions_sql_Alter_Set,
 			func(opts *AlterSessionOptions) {
@@ -56,4 +48,9 @@ func init() {
 			func(opts *UseSecondaryRolesSessionOptions) { opts.Option = SecondaryRoleOptionAll },
 			`USE SECONDARY ROLES ALL`,
 		)
+}
+
+func TestSessionParametersAdditionalValidations(t *testing.T) {
+	err := (&SessionParameters{ClientPrefetchThreads: new(-1)}).additionalValidations()
+	require.ErrorContains(t, err, "SessionParameters field: ClientPrefetchThreads must be greater than or equal to 0")
 }

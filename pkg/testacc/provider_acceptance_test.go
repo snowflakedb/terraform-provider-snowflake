@@ -684,6 +684,7 @@ func TestAcc_Provider_envConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.NoProxy, "localhost,snowflake.computing.com")
 					t.Setenv(snowflakeenvs.DisableOCSPChecks, "true")
 					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "ENABLED")
+					t.Setenv(snowflakeenvs.TokenAccessorMinTLSVersion, "1.3")
 					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "true")
 					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "true")
 					t.Setenv(snowflakeenvs.CrlOnDiskCacheDisabled, "true")
@@ -834,6 +835,7 @@ func TestAcc_Provider_tfConfig(t *testing.T) {
 					t.Setenv(snowflakeenvs.NoProxy, "overridden")
 					t.Setenv(snowflakeenvs.DisableOCSPChecks, "false")
 					t.Setenv(snowflakeenvs.CertRevocationCheckMode, "overridden")
+					t.Setenv(snowflakeenvs.TokenAccessorMinTLSVersion, "overridden")
 					t.Setenv(snowflakeenvs.CrlAllowCertificatesWithoutCrlURL, "false")
 					t.Setenv(snowflakeenvs.CrlInMemoryCacheDisabled, "false")
 					t.Setenv(snowflakeenvs.CrlOnDiskCacheDisabled, "false")
@@ -1522,6 +1524,27 @@ func TestAcc_Provider_invalidConfigurations(t *testing.T) {
 				ExpectError: regexp.MustCompile(`invalid driver log level: invalid`),
 			},
 			{
+				Config: config.FromModels(
+					t,
+					providermodel.SnowflakeProvider().
+						WithProfile(tmpServiceUserConfig.Profile).
+						WithTokenAccessorValue(
+							tfconfig.ObjectVariable(
+								map[string]tfconfig.Variable{
+									"token_endpoint":  tfconfig.StringVariable("https://example.com/oauth/token"),
+									"refresh_token":   tfconfig.StringVariable("refresh_token"),
+									"client_id":       tfconfig.StringVariable("client_id"),
+									"client_secret":   tfconfig.StringVariable("client_secret"),
+									"redirect_uri":    tfconfig.StringVariable("https://example.com/redirect"),
+									"min_tls_version": tfconfig.StringVariable("tls1.1"),
+								},
+							),
+						),
+					datasourceModel(),
+				),
+				ExpectError: regexp.MustCompile(`invalid min tls version: tls1.1`),
+			},
+			{
 				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile("non-existing"), datasourceModel()),
 				ExpectError: regexp.MustCompile(fmt.Sprintf(`profile "non-existing" not found in file %s`, tmpServiceUserConfig.Path)),
 			},
@@ -1546,6 +1569,34 @@ func TestAcc_Provider_invalidConfigurations(t *testing.T) {
 				},
 				Config:      config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile).WithAuthenticator(string(sdk.AuthenticationTypeWorkloadIdentityFederation)).WithWorkloadIdentityProvider("OIDC").WithTfcWorkloadIdentityTokenTag("SNOWFLAKE"), datasourceModel()),
 				ExpectError: regexp.MustCompile(`environment variable TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE is not set or is empty`),
+			},
+		},
+	})
+}
+
+func TestAcc_Provider_DriverMinTLSVersion(t *testing.T) {
+	tmpServiceUser := testClient().SetUpTemporaryServiceUser(t)
+	tmpServiceUserConfig := testClient().TempTomlConfigForServiceUser(t, tmpServiceUser)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		PreCheck: func() {
+			t.Setenv(snowflakeenvs.ConfigPath, tmpServiceUserConfig.Path)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.MinTLSVersion)
+			testenvs.AssertEnvNotSet(t, snowflakeenvs.TokenAccessorMinTLSVersion)
+		},
+		Steps: []resource.TestStep{
+			{
+				PreConfig: func() {
+					t.Setenv(snowflakeenvs.MinTLSVersion, "1.3")
+				},
+				Config: config.FromModels(t, providermodel.SnowflakeProvider().WithProfile(tmpServiceUserConfig.Profile), datasourceModel()),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("data.snowflake_database.t", "name", TestDatabaseName),
+				),
 			},
 		},
 	})

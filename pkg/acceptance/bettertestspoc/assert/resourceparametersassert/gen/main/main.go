@@ -20,7 +20,7 @@ func main() {
 			WithImport("testing").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert").
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"),
-		objectparametersassertgen.GetAllSnowflakeObjectParameters,
+		objectparametersassertgen.SnowflakeResourceParametersForAssertions,
 		gen.ModelFromSnowflakeObjectParameters,
 		getFilename,
 		gen.AllTemplates,

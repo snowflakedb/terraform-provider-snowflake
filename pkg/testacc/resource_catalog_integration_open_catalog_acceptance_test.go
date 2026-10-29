@@ -18,8 +18,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -59,28 +61,28 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 	externalRefreshIntervalSeconds := random.IntRange(30, 86400)
 
-	basicRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
+	basicRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
 	}
-	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 			WithOauthTokenUri(oAuthTokenUri),
 	}
-	changedRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
+	changedRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
 			WithOauthTokenUri(privateOAuthTokenUri),
 	}
 
-	basicRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName),
+	basicRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName),
 	}
-	completeRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	completeRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
-	changedRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(privateCatalogUri, newCatalogName).
+	changedRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(privateCatalogUri, newCatalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePrivate).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeVendedCredentials),
 	}
@@ -106,8 +108,8 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedOAuthClientSecret := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
+	withChangedOAuthClientSecret := model.CatalogIntegrationOpenCatalogVar("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}),
 	}, changedRestConfig, oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
@@ -128,13 +130,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       "",
 				CatalogName:          catalogName,
 				AccessDelegationMode: "",
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -173,13 +175,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				HasCommentEmpty().
 				HasRefreshIntervalSeconds(0).
 				HasCatalogNamespaceEmpty().
-				HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+				HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 					CatalogUri:           catalogUri,
 					CatalogApiType:       "",
 					CatalogName:          catalogName,
 					AccessDelegationMode: "",
 				}).
-				HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+				HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 					OauthTokenUri:      "",
 					OauthClientId:      oAuthClientId,
 					OauthClientSecret:  oAuthClientSecret,
@@ -197,13 +199,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       "",
 				CatalogName:          catalogName,
 				AccessDelegationMode: "",
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -241,13 +243,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(catalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          catalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -285,13 +287,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           catalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          catalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -329,13 +331,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           privateCatalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePrivate,
 				CatalogName:          newCatalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -374,13 +376,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				HasComment(comment).
 				HasRefreshIntervalSeconds(refreshIntervalSeconds).
 				HasCatalogNamespace(newCatalogNamespace).
-				HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+				HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 					CatalogUri:           privateCatalogUri,
 					CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePrivate,
 					CatalogName:          newCatalogName,
 					AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 				}).
-				HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+				HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 					OauthTokenUri:      "",
 					OauthClientId:      oAuthClientId,
 					OauthClientSecret:  newOAuthClientSecret,
@@ -398,13 +400,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 				CatalogUri:           privateCatalogUri,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePrivate,
 				CatalogName:          newCatalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
-			HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 				OauthTokenUri:      privateOAuthTokenUri,
 				OauthClientId:      newOAuthClientId,
 				OauthClientSecret:  newOAuthClientSecret,
@@ -434,8 +436,10 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			HasRestAuthenticationOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope),
 	}
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -443,6 +447,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -452,17 +457,25 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				ConfigVariables: oauthClientSecretConfigVariables,
 				Check:           assertThat(t, basicAssertions...),
 			},
-			// Import
+			// Import - permissive mode
+			// oauth_client_secret is not returned from Snowflake, so the plan after import updates it.
 			{
-				Config:                  config.FromModels(t, basic, oauthClientSecretVariableModel),
-				ConfigVariables:         oauthClientSecretConfigVariables,
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"rest_config", "rest_authentication"},
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
 			},
 			// Change alterable props
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -474,6 +487,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Unset
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -485,6 +499,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Destroy
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
@@ -496,6 +511,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Create with all attributes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -505,17 +521,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 				ConfigVariables: oauthClientSecretConfigVariables,
 				Check:           assertThat(t, completeAssertions...),
 			},
-			// Import
-			{
-				Config:                  config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
-				ConfigVariables:         oauthClientSecretConfigVariables,
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"refresh_interval_seconds", "rest_config", "rest_authentication"},
-			},
 			// Change alterable props externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(
 						*sdk.NewCatalogIntegrationSetRequest().
@@ -542,6 +550,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change force new "catalog_namespace" prop
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -553,14 +562,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change force new "catalog_namespace" prop externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithRestAuthentication(completeRestAuth[0]).
-							WithCatalogNamespace(externalCatalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, completeRestConfig[0], completeRestAuth[0], false).
+						WithCatalogNamespace(externalCatalogNamespace).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -575,6 +582,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change force new props in "rest_config"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -586,13 +594,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change force new props in "rest_config" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithRestAuthentication(completeRestAuth[0]))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, completeRestConfig[0], completeRestAuth[0], false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -613,6 +619,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change alterable "oauth_client_secret" prop in "rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -624,6 +631,7 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change force new props in "rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -635,16 +643,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change force new props in "rest_authentication" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(changedRestConfig[0]).
-							WithRestAuthentication(
-								*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
-									WithOauthTokenUri(privateOAuthTokenUri),
-							))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, changedRestConfig[0], *sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+						WithOauthTokenUri(privateOAuthTokenUri), false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					// Open Catalog only accepts one OAuth token URI (<account_url>/v1/oauth/tokens),
@@ -663,11 +667,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase(t *testing.T) {
 			},
 			// Change "catalog_source" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -686,11 +690,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	catalogUri := "https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog"
 	catalogName := "my_catalog_name"
-	restConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName),
+	restConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName),
 	}
-	restAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	restAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}
 
 	refreshIntervalNonPositive := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, restConfig).
@@ -699,39 +703,39 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 	emptyCatalogNamespace := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, restConfig).
 		WithCatalogNamespace("")
 
-	emptyCatalogUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest("", catalogName),
+	emptyCatalogUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest("", catalogName),
 	})
 
-	emptyCatalogName := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, ""),
+	emptyCatalogName := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, ""),
 	})
 
-	invalidCatalogApiType := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	invalidCatalogApiType := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType("invalid"),
 	})
 
-	invalidAccessDelegationMode := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	invalidAccessDelegationMode := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, restAuth, []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithAccessDelegationMode("invalid"),
 	})
 
-	emptyOAuthTokenUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
+	emptyOAuthTokenUri := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
 			WithOauthTokenUri(""),
 	}, restConfig)
 
-	emptyOAuthClientId := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	emptyOAuthClientId := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}, restConfig)
 
-	emptyOAuthClientSecret := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	emptyOAuthClientSecret := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}, restConfig)
 
-	emptyOAuthScopes := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}),
+	emptyOAuthScopes := model.CatalogIntegrationOpenCatalog("t", id.Name(), false, []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}),
 	}, restConfig)
 
 	resource.Test(t, resource.TestCase{
@@ -796,11 +800,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_Validations(t *testing.T) {
 }
 
 func TestAcc_CatalogIntegrationOpenCatalog_BasicUseCase_ImportValidation(t *testing.T) {
-	restConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest("https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog", "my_catalog_name"),
+	restConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest("https://testorg-testacc.snowflakecomputing.com/polaris/api/catalog", "my_catalog_name"),
 	}
-	restAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
+	restAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}),
 	}
 
 	notificationIntegration, notificationIntegrationCleanup := testClient().NotificationIntegration.Create(t)
@@ -856,12 +860,12 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 			WithOauthTokenUri(oAuthTokenUri),
 	}
-	completeRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	completeRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
@@ -873,8 +877,10 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 
 	ref := allAttributes.ResourceReference()
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -882,8 +888,9 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create - with all optionals (including optional force-new fields)
 			{
-				Config:          config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
-				ConfigVariables: oauthClientSecretConfigVariables,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
 				Check: assertThat(
 					t,
 					resourceassert.CatalogIntegrationOpenCatalogResource(t, ref).
@@ -893,13 +900,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 						HasComment(comment).
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).
 						HasCatalogNamespace(catalogNamespace).
-						HasRestConfig(&sdk.OpenCatalogRestConfigDetails{
+						HasRestConfig(&sdk.CatalogIntegrationOpenCatalogRestConfigDetails{
 							CatalogUri:           catalogUri,
 							CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 							CatalogName:          catalogName,
 							AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 						}).
-						HasRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+						HasRestAuthentication(&sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{
 							OauthTokenUri:      oAuthTokenUri,
 							OauthClientId:      oAuthClientId,
 							OauthClientSecret:  oAuthClientSecret,
@@ -942,30 +949,42 @@ func TestAcc_CatalogIntegrationOpenCatalog_CompleteUseCase(t *testing.T) {
 						HasRefreshIntervalSeconds(refreshIntervalSeconds).
 						HasComment(comment).
 						HasCatalogNamespace(catalogNamespace).
-						HasRestConfigWith(objectassert.NewOpenCatalogRestConfigDetailsAssert().
+						HasRestConfigWith(objectassert.NewCatalogIntegrationOpenCatalogRestConfigDetailsAssert().
 							HasCatalogUri(catalogUri).
 							HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 							HasCatalogName(catalogName).
 							HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
-						HasRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+						HasRestAuthenticationWith(objectassert.NewCatalogIntegrationOpenCatalogRestAuthenticationDetailsAssert().
 							HasOauthTokenUri(oAuthTokenUri).
 							HasOauthClientId(oAuthClientId).
 							HasOauthAllowedScopes(oAuthAllowedScope)),
 				),
 			},
-			// Import - with all optionals.
-			// refresh_interval_seconds is not read back into state (handled as external change via describe_output).
-			// rest_config and rest_authentication are not read back on purpose; oauth_client_secret is not returned by Snowflake.
+			// Import - with all optionals
 			{
-				Config:            config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
-				ConfigVariables:   oauthClientSecretConfigVariables,
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"refresh_interval_seconds",
-					"rest_config",
-					"rest_authentication",
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				// Snowflake never returns oauth_client_secret.
+				ImportStateVerifyIgnore: []string{"rest_authentication.0.oauth_client_secret"},
+			},
+			// Import - with all optionals, permissive mode
+			// oauth_client_secret is not returned from Snowflake, so the plan after import updates it.
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, allAttributes, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
 				},
 			},
 		},
@@ -991,13 +1010,13 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := []sdk.OAuthRestAuthenticationRequest{
-		*sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := []sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 			WithOauthTokenUri(oAuthTokenUri),
 	}
 
-	completeRestConfig := []sdk.OpenCatalogRestConfigRequest{
-		*sdk.NewOpenCatalogRestConfigRequest(catalogUri, catalogName).
+	completeRestConfig := []sdk.CatalogIntegrationOpenCatalogRestConfigRequest{
+		*sdk.NewCatalogIntegrationOpenCatalogRestConfigRequest(catalogUri, catalogName).
 			WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 			WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials),
 	}
@@ -1018,14 +1037,11 @@ func TestAcc_CatalogIntegrationOpenCatalog_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+					createRequest := sdk.NewCreateOpenCatalogCatalogIntegrationRequest(id, completeRestConfig[0], completeRestAuth[0], false).
+						WithCatalogNamespace(catalogNamespace).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment).
-						WithOpenCatalogCatalogSourceParams(*sdk.NewOpenCatalogParamsRequest().
-							WithRestConfig(completeRestConfig[0]).
-							WithRestAuthentication(completeRestAuth[0]).
-							WithCatalogNamespace(catalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+						WithComment(comment)
+					testClient().CatalogIntegration.CreateOpenCatalogFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
 				ConfigVariables:    oauthClientSecretConfigVariables,

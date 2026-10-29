@@ -3,9 +3,11 @@
 package resourceassert
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type WarehouseResourceAssert struct {
@@ -42,6 +44,11 @@ func (w *WarehouseResourceAssert) HasAutoResume(expected string) *WarehouseResou
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasAutoResumeBool(expected bool) *WarehouseResourceAssert {
+	w.StringValueSet("auto_resume", strconv.FormatBool(expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasAutoSuspend(expected int) *WarehouseResourceAssert {
 	w.IntValueSet("auto_suspend", expected)
 	return w
@@ -57,6 +64,11 @@ func (w *WarehouseResourceAssert) HasEnableQueryAcceleration(expected string) *W
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasEnableQueryAccelerationBool(expected bool) *WarehouseResourceAssert {
+	w.StringValueSet("enable_query_acceleration", strconv.FormatBool(expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasFullyQualifiedName(expected string) *WarehouseResourceAssert {
 	w.StringValueSet("fully_qualified_name", expected)
 	return w
@@ -64,6 +76,11 @@ func (w *WarehouseResourceAssert) HasFullyQualifiedName(expected string) *Wareho
 
 func (w *WarehouseResourceAssert) HasGeneration(expected string) *WarehouseResourceAssert {
 	w.StringValueSet("generation", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasGenerationSdk(expected sdk.WarehouseGeneration) *WarehouseResourceAssert {
+	w.StringValueSet("generation", string(expected))
 	return w
 }
 
@@ -97,13 +114,28 @@ func (w *WarehouseResourceAssert) HasResourceConstraint(expected string) *Wareho
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasResourceConstraintSdk(expected sdk.WarehouseResourceConstraint) *WarehouseResourceAssert {
+	w.StringValueSet("resource_constraint", string(expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasResourceMonitor(expected string) *WarehouseResourceAssert {
 	w.StringValueSet("resource_monitor", expected)
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasResourceMonitorSdk(expected sdk.AccountObjectIdentifier) *WarehouseResourceAssert {
+	w.StringValueSet("resource_monitor", expected.Name())
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasScalingPolicy(expected string) *WarehouseResourceAssert {
 	w.StringValueSet("scaling_policy", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasScalingPolicySdk(expected sdk.ScalingPolicy) *WarehouseResourceAssert {
+	w.StringValueSet("scaling_policy", string(expected))
 	return w
 }
 
@@ -122,8 +154,18 @@ func (w *WarehouseResourceAssert) HasWarehouseSize(expected string) *WarehouseRe
 	return w
 }
 
+func (w *WarehouseResourceAssert) HasWarehouseSizeSdk(expected sdk.WarehouseSize) *WarehouseResourceAssert {
+	w.StringValueSet("warehouse_size", string(expected))
+	return w
+}
+
 func (w *WarehouseResourceAssert) HasWarehouseType(expected string) *WarehouseResourceAssert {
 	w.StringValueSet("warehouse_type", expected)
+	return w
+}
+
+func (w *WarehouseResourceAssert) HasWarehouseTypeSdk(expected sdk.WarehouseType) *WarehouseResourceAssert {
+	w.StringValueSet("warehouse_type", string(expected))
 	return w
 }
 

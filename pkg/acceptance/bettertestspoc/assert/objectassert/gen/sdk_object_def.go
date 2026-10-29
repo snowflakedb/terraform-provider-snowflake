@@ -38,10 +38,6 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.Database{},
 	},
 	{
-		IdType:       "sdk.DatabaseObjectIdentifier",
-		ObjectStruct: sdk.Schema{},
-	},
-	{
 		IdType:       "sdk.AccountObjectIdentifier",
 		ObjectStruct: sdk.Role{},
 	},
@@ -62,13 +58,15 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.User{},
 	},
 	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.View{},
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.UserDetails{},
+		IsDataSourceOutput: true,
+		FromObjectIDExpr:   "sdk.NewAccountObjectIdentifier(userDetails.Name)",
+		SkipFields:         []string{"Password"},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.Warehouse{},
-		SkipFields:   []string{"Tables"},
+		IdType:       "sdk.SchemaObjectIdentifier",
+		ObjectStruct: sdk.View{},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",
@@ -87,19 +85,47 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.AuthenticationPolicy{},
 	},
 	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.AuthenticationPolicyDetails{},
+		IsDataSourceOutput: true,
+		NestedAssertFields: []string{"SecurityIntegrations", "ClientPolicy", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"},
+		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "AuthenticationPolicy", MethodName: "DescribeDetails"},
+		SkipFields:         []string{"descriptions"},
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.AuthenticationPolicySecurityIntegrationsDetails{},
+		IsDataSourceOutput: true,
+		IsSubStruct:        true,
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.AuthenticationPolicyClientPolicyDetails{},
+		IsDataSourceOutput: true,
+		IsSubStruct:        true,
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.AuthenticationPolicyMfaPolicyDetails{},
+		IsDataSourceOutput: true,
+		IsSubStruct:        true,
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.AuthenticationPolicyPatPolicyDetails{},
+		IsDataSourceOutput: true,
+		IsSubStruct:        true,
+	},
+	{
+		IdType:             "sdk.SchemaObjectIdentifier",
+		ObjectStruct:       sdk.AuthenticationPolicyWorkloadIdentityPolicyDetails{},
+		IsDataSourceOutput: true,
+		IsSubStruct:        true,
+	},
+	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Task{},
 		SkipFields:   []string{"TaskRelations"},
-	},
-	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.ExternalVolume{},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.ExternalVolumeDetails{},
-		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"StorageLocations"},
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -132,15 +158,6 @@ var allStructs = []SdkObjectDef{
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.ImageRepository{},
-	},
-	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.ComputePool{},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.ComputePoolDetails{},
-		IsDataSourceOutput: true,
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",
@@ -279,10 +296,6 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.SecurityIntegration{},
 	},
 	{
-		IdType:       "sdk.DatabaseObjectIdentifier",
-		ObjectStruct: sdk.Schema{},
-	},
-	{
 		IdType:       "sdk.SchemaObjectIdentifier",
 		ObjectStruct: sdk.Streamlit{},
 	},
@@ -307,10 +320,6 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.SchemaObjectIdentifier",
 		ObjectStruct:       sdk.NetworkRuleDetails{},
 		IsDataSourceOutput: true,
-	},
-	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.Pipe{},
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
@@ -379,69 +388,32 @@ var allStructs = []SdkObjectDef{
 		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeAllDetails"},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.CatalogIntegration{},
-	},
-	{
 		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationAwsGlueDetails{},
-		IsDataSourceOutput: true,
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeAwsGlue"},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationObjectStorageDetails{},
-		IsDataSourceOutput: true,
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeObjectStorage"},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogDetails{},
-		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"RestConfig", "RestAuthentication"},
-		DescribeOverride: &genhelpers.DescribeOverrideDef{
-			ClientName: "CatalogIntegration",
-			MethodName: "DescribeOpenCatalog",
-		},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationIcebergRestDetails{},
-		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"RestConfig", "OAuthRestAuthentication", "SigV4RestAuthentication"},
-		SkipFields:         []string{"BearerRestAuthentication"},
-		DescribeOverride: &genhelpers.DescribeOverrideDef{
-			ClientName: "CatalogIntegration",
-			MethodName: "DescribeIcebergRest",
-		},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationAllDetails{},
-		IsDataSourceOutput: true,
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeDetails"},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.OpenCatalogRestConfigDetails{},
+		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogRestConfigDetails{},
 		IsDataSourceOutput: true,
 		IsSubStruct:        true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.IcebergRestRestConfigDetails{},
+		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogRestAuthenticationDetails{},
 		IsDataSourceOutput: true,
 		IsSubStruct:        true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.OAuthRestAuthenticationDetails{},
+		ObjectStruct:       sdk.CatalogIntegrationIcebergRestRestConfigDetails{},
 		IsDataSourceOutput: true,
 		IsSubStruct:        true,
 	},
 	{
 		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.SigV4RestAuthenticationDetails{},
+		ObjectStruct:       sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{},
+		IsDataSourceOutput: true,
+		IsSubStruct:        true,
+	},
+	{
+		IdType:             "sdk.AccountObjectIdentifier",
+		ObjectStruct:       sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{},
 		IsDataSourceOutput: true,
 		IsSubStruct:        true,
 	},
@@ -537,6 +509,12 @@ var allStructs = []SdkObjectDef{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.PostgresInstanceDetails{},
 		IsDataSourceOutput: true,
+	},
+	{
+		IdType:               "sdk.AccountObjectIdentifier",
+		ObjectStruct:         sdk.PostgresMirrorDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
 	},
 	{
 		IdType:       "sdk.SchemaObjectIdentifier",

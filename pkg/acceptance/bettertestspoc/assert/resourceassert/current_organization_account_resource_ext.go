@@ -28,7 +28,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasClientResultColumnCaseInsensitiveString("false").
 		HasClientSessionKeepAliveString("false").
 		HasClientSessionKeepAliveHeartbeatFrequencyString("3600").
-		HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingLtz)).
+		HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingTimestampLtz)).
 		HasCortexEnabledCrossRegionString("DISABLED").
 		HasCortexModelsAllowlistString("ALL").
 		HasCsvTimestampFormatEmpty().
@@ -68,8 +68,8 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasEventTableString(sdk.NewSchemaObjectIdentifier("snowflake", "telemetry", "events").FullyQualifiedName()).
 		HasExternalOauthAddPrivilegedRolesToBlockedListString("true").
 		HasExternalVolumeEmpty().
-		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeoJSON)).
-		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeoJSON)).
+		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatGeoJson)).
+		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatGeoJson)).
 		HasHybridTableLockTimeoutString("3600").
 		HasIcebergVersionDefaultString("2").
 		HasInitialReplicationSizeLimitInTbString("10.0").
@@ -120,7 +120,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasTimestampLtzOutputFormatEmpty().
 		HasTimestampNtzOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3").
 		HasTimestampOutputFormatString("YYYY-MM-DD HH24:MI:SS.FF3 TZHTZM").
-		HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingNtz)).
+		HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingTimestampNtz)).
 		HasTimestampTzOutputFormatEmpty().
 		HasTimezoneString("America/Los_Angeles").
 		HasTimeInputFormatString("AUTO").
@@ -161,7 +161,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasClientResultColumnCaseInsensitiveString("true").
 		HasClientSessionKeepAliveString("true").
 		HasClientSessionKeepAliveHeartbeatFrequencyString("3599").
-		HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingNtz)).
+		HasClientTimestampTypeMappingString(string(sdk.ClientTimestampTypeMappingTimestampNtz)).
 		HasCortexEnabledCrossRegionString("ANY_REGION").
 		HasCortexModelsAllowlistString("ALL").
 		HasCsvTimestampFormatString("YYYY-MM-DD").
@@ -202,8 +202,8 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasEventTableString(eventTableId.FullyQualifiedName()).
 		HasExternalOauthAddPrivilegedRolesToBlockedListString("false").
 		HasExternalVolumeString(externalVolumeId.FullyQualifiedName()).
-		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatWKT)).
-		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatWKT)).
+		HasGeographyOutputFormatString(string(sdk.GeographyOutputFormatWkt)).
+		HasGeometryOutputFormatString(string(sdk.GeometryOutputFormatWkt)).
 		HasHybridTableLockTimeoutString("3599").
 		HasIcebergVersionDefaultString("2").
 		HasInitialReplicationSizeLimitInTbString("9.9").
@@ -254,7 +254,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllParametersEqualToPredef
 		HasTimestampLtzOutputFormatString("YYYY-MM-DD").
 		HasTimestampNtzOutputFormatString("YYYY-MM-DD").
 		HasTimestampOutputFormatString("YYYY-MM-DD").
-		HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingLtz)).
+		HasTimestampTypeMappingString(string(sdk.TimestampTypeMappingTimestampLtz)).
 		HasTimestampTzOutputFormatString("YYYY-MM-DD").
 		HasTimezoneString("Europe/London").
 		HasTimeInputFormatString("YYYY-MM-DD").

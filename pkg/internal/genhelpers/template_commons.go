@@ -26,6 +26,10 @@ func FirstLetterLowercase(in string) string {
 	return strings.ToLower(in[:1]) + in[1:]
 }
 
+func FirstLetterUppercase(in string) string {
+	return strings.ToUpper(in[:1]) + in[1:]
+}
+
 func FirstLetter(in string) string {
 	return in[:1]
 }

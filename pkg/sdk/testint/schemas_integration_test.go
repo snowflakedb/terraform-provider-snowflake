@@ -28,7 +28,7 @@ func TestInt_Schemas(t *testing.T) {
 		assert.Equal(t, expected, helpers.FindParameter(t, params, parameterName).Value)
 	}
 
-	assertParameterEqualsToDefaultValue := func(t *testing.T, params []*sdk.Parameter, parameterName sdk.ObjectParameter) {
+	assertParameterEqualsToDefaultValue := func(t *testing.T, params []*sdk.Parameter, parameterName sdk.SchemaParameter) {
 		t.Helper()
 		param, err := collections.FindFirst(params, func(param *sdk.Parameter) bool { return param.Key == string(parameterName) })
 		assert.NoError(t, err)
@@ -50,24 +50,24 @@ func TestInt_Schemas(t *testing.T) {
 		require.NoError(t, err)
 		assertParameterEquals(t, params, sdk.AccountParameterDataRetentionTimeInDays, strconv.Itoa(testClientHelper().Database.TestDatabaseDataRetentionTimeInDays()))
 		assertParameterEquals(t, params, sdk.AccountParameterMaxDataExtensionTimeInDays, strconv.Itoa(testClientHelper().Database.TestDatabaseMaxDataExtensionTimeInDays()))
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterExternalVolume)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterExternalVolume)
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, testClientHelper().Database.TestDatabaseCatalog().Name())
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolCpu)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolGpu)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterTraceLevel)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterSuspendTaskAfterNumFailures)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterTaskAutoRetryAttempts)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterUserTaskManagedInitialWarehouseSize)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterUserTaskTimeoutMs)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterQuotedIdentifiersIgnoreCase)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterEnableConsoleOutput)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterPipeExecutionPaused)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterReplaceInvalidCharacters)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterDefaultDdlCollation)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterDefaultNotebookComputePoolCpu)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterDefaultNotebookComputePoolGpu)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterStorageSerializationPolicy)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterLogLevel)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterLogEventLevel)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterTraceLevel)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterSuspendTaskAfterNumFailures)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterTaskAutoRetryAttempts)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterUserTaskManagedInitialWarehouseSize)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterUserTaskTimeoutMs)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterUserTaskMinimumTriggerIntervalInSeconds)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterQuotedIdentifiersIgnoreCase)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterEnableConsoleOutput)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterPipeExecutionPaused)
 	})
 
 	t.Run("create: or replace", func(t *testing.T) {
@@ -374,24 +374,24 @@ func TestInt_Schemas(t *testing.T) {
 		require.NoError(t, err)
 		assertParameterEquals(t, params, sdk.AccountParameterDataRetentionTimeInDays, strconv.Itoa(testClientHelper().Database.TestDatabaseDataRetentionTimeInDays()))
 		assertParameterEquals(t, params, sdk.AccountParameterMaxDataExtensionTimeInDays, strconv.Itoa(testClientHelper().Database.TestDatabaseMaxDataExtensionTimeInDays()))
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterExternalVolume)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterExternalVolume)
 		assertParameterEquals(t, params, sdk.AccountParameterCatalog, testClientHelper().Database.TestDatabaseCatalog().Name())
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterReplaceInvalidCharacters)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultDdlCollation)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolCpu)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterDefaultNotebookComputePoolGpu)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterStorageSerializationPolicy)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogLevel)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterLogEventLevel)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterTraceLevel)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterSuspendTaskAfterNumFailures)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterTaskAutoRetryAttempts)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterUserTaskManagedInitialWarehouseSize)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterUserTaskTimeoutMs)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterQuotedIdentifiersIgnoreCase)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterEnableConsoleOutput)
-		assertParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterPipeExecutionPaused)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterReplaceInvalidCharacters)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterDefaultDdlCollation)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterDefaultNotebookComputePoolCpu)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterDefaultNotebookComputePoolGpu)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterStorageSerializationPolicy)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterLogLevel)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterLogEventLevel)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterTraceLevel)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterSuspendTaskAfterNumFailures)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterTaskAutoRetryAttempts)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterUserTaskManagedInitialWarehouseSize)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterUserTaskTimeoutMs)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterUserTaskMinimumTriggerIntervalInSeconds)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterQuotedIdentifiersIgnoreCase)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterEnableConsoleOutput)
+		assertParameterEqualsToDefaultValue(t, params, sdk.SchemaParameterPipeExecutionPaused)
 	})
 
 	t.Run("alter: set non-parameters", func(t *testing.T) {
@@ -636,36 +636,36 @@ func TestInt_SchemasShowParametersDetails(t *testing.T) {
 	require.NoError(t, err)
 
 	assertThatObject(t, objectparametersassert.SchemaParameters(t, schema.ID()).
-		HasStringParameterValue(sdk.ObjectParameterCatalog, details.Catalog.Value.Name()).
-		HasIntParameterValue(sdk.ObjectParameterDataRetentionTimeInDays, details.DataRetentionTimeInDays.Value).
+		HasStringParameterValue(sdk.SchemaParameterCatalog, details.Catalog.Value.Name()).
+		HasIntParameterValue(sdk.SchemaParameterDataRetentionTimeInDays, details.DataRetentionTimeInDays.Value).
 		HasDefaultDdlCollation(details.DefaultDdlCollation.Value).
 		HasDefaultNotebookComputePoolCpu(details.DefaultNotebookComputePoolCpu.Value).
 		HasDefaultNotebookComputePoolGpu(details.DefaultNotebookComputePoolGpu.Value).
-		HasBoolParameterValue(sdk.ObjectParameterEnableConsoleOutput, details.EnableConsoleOutput.Value).
-		HasStringParameterValue(sdk.ObjectParameterExternalVolume, details.ExternalVolume.Value.Name()).
-		HasStringParameterValue(sdk.ObjectParameterLogEventLevel, string(details.LogEventLevel.Value)).
-		HasStringParameterValue(sdk.ObjectParameterLogLevel, string(details.LogLevel.Value)).
-		HasIntParameterValue(sdk.ObjectParameterMaxDataExtensionTimeInDays, details.MaxDataExtensionTimeInDays.Value).
-		HasBoolParameterValue(sdk.ObjectParameterPipeExecutionPaused, details.PipeExecutionPaused.Value).
-		HasBoolParameterValue(sdk.ObjectParameterQuotedIdentifiersIgnoreCase, details.QuotedIdentifiersIgnoreCase.Value).
-		HasBoolParameterValue(sdk.ObjectParameterReplaceInvalidCharacters, details.ReplaceInvalidCharacters.Value).
-		HasStringParameterValue(sdk.ObjectParameterStorageSerializationPolicy, string(details.StorageSerializationPolicy.Value)).
-		HasIntParameterValue(sdk.ObjectParameterSuspendTaskAfterNumFailures, details.SuspendTaskAfterNumFailures.Value).
-		HasIntParameterValue(sdk.ObjectParameterTaskAutoRetryAttempts, details.TaskAutoRetryAttempts.Value).
-		HasStringParameterValue(sdk.ObjectParameterTraceLevel, string(details.TraceLevel.Value)).
-		HasStringParameterValue(sdk.ObjectParameterUserTaskManagedInitialWarehouseSize, string(details.UserTaskManagedInitialWarehouseSize.Value)).
-		HasIntParameterValue(sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds, details.UserTaskMinimumTriggerIntervalInSeconds.Value).
-		HasIntParameterValue(sdk.ObjectParameterUserTaskTimeoutMs, details.UserTaskTimeoutMs.Value))
+		HasBoolParameterValue(sdk.SchemaParameterEnableConsoleOutput, details.EnableConsoleOutput.Value).
+		HasStringParameterValue(sdk.SchemaParameterExternalVolume, details.ExternalVolume.Value.Name()).
+		HasStringParameterValue(sdk.SchemaParameterLogEventLevel, string(details.LogEventLevel.Value)).
+		HasStringParameterValue(sdk.SchemaParameterLogLevel, string(details.LogLevel.Value)).
+		HasIntParameterValue(sdk.SchemaParameterMaxDataExtensionTimeInDays, details.MaxDataExtensionTimeInDays.Value).
+		HasBoolParameterValue(sdk.SchemaParameterPipeExecutionPaused, details.PipeExecutionPaused.Value).
+		HasBoolParameterValue(sdk.SchemaParameterQuotedIdentifiersIgnoreCase, details.QuotedIdentifiersIgnoreCase.Value).
+		HasBoolParameterValue(sdk.SchemaParameterReplaceInvalidCharacters, details.ReplaceInvalidCharacters.Value).
+		HasStringParameterValue(sdk.SchemaParameterStorageSerializationPolicy, string(details.StorageSerializationPolicy.Value)).
+		HasIntParameterValue(sdk.SchemaParameterSuspendTaskAfterNumFailures, details.SuspendTaskAfterNumFailures.Value).
+		HasIntParameterValue(sdk.SchemaParameterTaskAutoRetryAttempts, details.TaskAutoRetryAttempts.Value).
+		HasStringParameterValue(sdk.SchemaParameterTraceLevel, string(details.TraceLevel.Value)).
+		HasStringParameterValue(sdk.SchemaParameterUserTaskManagedInitialWarehouseSize, string(details.UserTaskManagedInitialWarehouseSize.Value)).
+		HasIntParameterValue(sdk.SchemaParameterUserTaskMinimumTriggerIntervalInSeconds, details.UserTaskMinimumTriggerIntervalInSeconds.Value).
+		HasIntParameterValue(sdk.SchemaParameterUserTaskTimeoutMs, details.UserTaskTimeoutMs.Value))
 
-	assert.Equal(t, string(sdk.ObjectParameterDataRetentionTimeInDays), details.DataRetentionTimeInDays.Key)
+	assert.Equal(t, string(sdk.SchemaParameterDataRetentionTimeInDays), details.DataRetentionTimeInDays.Key)
 	assert.Equal(t, sdk.ParameterTypeSchema, details.DataRetentionTimeInDays.Level)
 	assert.Equal(t, 1, details.DataRetentionTimeInDays.Default)
 
-	assert.Equal(t, string(sdk.ObjectParameterLogLevel), details.LogLevel.Key)
+	assert.Equal(t, string(sdk.SchemaParameterLogLevel), details.LogLevel.Key)
 	assert.Equal(t, sdk.ParameterTypeSchema, details.LogLevel.Level)
 	assert.Equal(t, sdk.LogLevelOff, details.LogLevel.Default)
 
-	assert.Equal(t, string(sdk.ObjectParameterExternalVolume), details.ExternalVolume.Key)
+	assert.Equal(t, string(sdk.SchemaParameterExternalVolume), details.ExternalVolume.Key)
 	assert.Equal(t, sdk.ParameterTypeSchema, details.ExternalVolume.Level)
 	assert.Equal(t, sdk.AccountObjectIdentifier{}, details.ExternalVolume.Default)
 }

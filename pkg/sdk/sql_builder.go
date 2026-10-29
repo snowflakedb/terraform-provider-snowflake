@@ -2,7 +2,9 @@ package sdk
 
 import (
 	"fmt"
+	"math"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 	"unsafe"
@@ -68,8 +70,33 @@ var singleQuoteEscapes = []struct {
 	{original: string(rune(0)), replacement: `\0`}, // NUL character
 }
 
+// sqlLiteral renders a value for SQL. Whole-number floats keep one fractional digit so
+// parameters such as INITIAL_REPLICATION_SIZE_LIMIT_IN_TB are sent as 3.0 rather than 3.
+// Snowflake rejects the integer form of that parameter.
+func sqlLiteral(v any) string {
+	switch n := v.(type) {
+	case float32:
+		return formatFloatLiteral(float64(n))
+	case float64:
+		return formatFloatLiteral(n)
+	default:
+		return fmt.Sprintf("%v", v)
+	}
+}
+
+func formatFloatLiteral(n float64) string {
+	if math.IsNaN(n) || math.IsInf(n, 0) {
+		return strconv.FormatFloat(n, 'f', -1, 64)
+	}
+	rendered := strconv.FormatFloat(n, 'f', -1, 64)
+	if !strings.Contains(rendered, ".") {
+		rendered += ".0"
+	}
+	return rendered
+}
+
 func (qm quoteModifier) Modify(v any) string {
-	s := fmt.Sprintf("%v", v)
+	s := sqlLiteral(v)
 	switch qm {
 	case NoQuotes:
 		return s
@@ -126,6 +153,8 @@ func (pm parenModifier) Modify(v any) string {
 	}
 }
 
+// TODO [next PRs]: drop the reverse modifier. One struct per allowed-list target, then a static
+// TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
 type reverseModifier string
 
 const (

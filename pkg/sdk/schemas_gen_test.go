@@ -11,21 +11,18 @@ var schemasTestIdDatabaseObjectIdentifier = randomDatabaseObjectIdentifier()
 const (
 	case_Schemas_validation_Create_name_ValidIdentifier                   testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Schemas_validation_Create_opts_ConflictingFields                 testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet    testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Create_Catalog_ValidIdentifierIfSet           testCaseName = "validation_Create_Catalog_ValidIdentifierIfSet"
+	case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet    testCaseName = "validation_Create_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Create_Tag_ValidIdentifier                    testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Schemas_sql_Create_basic                                         testCaseName = "sql_Create_basic"
 	case_Schemas_sql_Create_all                                           testCaseName = "sql_Create_all"
-	case_Schemas_validation_Clone_name_ValidIdentifier                    testCaseName = "validation_Clone_name_ValidIdentifier"
-	case_Schemas_validation_Clone_opts_ConflictingFields                  testCaseName = "validation_Clone_opts_ConflictingFields"
-	case_Schemas_sql_Clone_basic                                          testCaseName = "sql_Clone_basic"
 	case_Schemas_validation_Alter_name_ValidIdentifier                    testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_Schemas_validation_Alter_opts_ExactlyOneValueSet_NoneSet         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Schemas_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Schemas_validation_Alter_RenameTo_ValidIdentifierIfSet           testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_Schemas_validation_Alter_SwapWith_ValidIdentifierIfSet           testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
-	case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Alter_Set_Catalog_ValidIdentifierIfSet        testCaseName = "validation_Alter_Set_Catalog_ValidIdentifierIfSet"
+	case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet testCaseName = "validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet"
 	case_Schemas_validation_Alter_opts_Set_AtLeastOneValueSet             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Schemas_validation_Alter_opts_Unset_AtLeastOneValueSet           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Schemas_validation_Alter_SetTags_ValidIdentifier                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
@@ -41,8 +38,6 @@ const (
 	case_Schemas_validation_Drop_opts_ConflictingFields                   testCaseName = "validation_Drop_opts_ConflictingFields"
 	case_Schemas_sql_Drop_basic                                           testCaseName = "sql_Drop_basic"
 	case_Schemas_sql_Drop_all                                             testCaseName = "sql_Drop_all"
-	case_Schemas_validation_Undrop_name_ValidIdentifier                   testCaseName = "validation_Undrop_name_ValidIdentifier"
-	case_Schemas_sql_Undrop_basic                                         testCaseName = "sql_Undrop_basic"
 	case_Schemas_sql_Show_basic                                           testCaseName = "sql_Show_basic"
 	case_Schemas_sql_Show_all                                             testCaseName = "sql_Show_all"
 	case_Schemas_sql_Show_Like                                            testCaseName = "sql_Show_Like"
@@ -51,16 +46,21 @@ const (
 	case_Schemas_sql_Show_Limit                                           testCaseName = "sql_Show_Limit"
 	case_Schemas_validation_Describe_name_ValidIdentifier                 testCaseName = "validation_Describe_name_ValidIdentifier"
 	case_Schemas_sql_Describe_basic                                       testCaseName = "sql_Describe_basic"
+	case_Schemas_validation_Clone_name_ValidIdentifier                    testCaseName = "validation_Clone_name_ValidIdentifier"
+	case_Schemas_validation_Clone_opts_ConflictingFields                  testCaseName = "validation_Clone_opts_ConflictingFields"
+	case_Schemas_sql_Clone_basic                                          testCaseName = "sql_Clone_basic"
+	case_Schemas_validation_Undrop_name_ValidIdentifier                   testCaseName = "validation_Undrop_name_ValidIdentifier"
+	case_Schemas_sql_Undrop_basic                                         testCaseName = "sql_Undrop_basic"
 )
 
 type SchemasTestsContext struct {
 	Create   *sdkTestCtx[*CreateSchemaOptions]
-	Clone    *sdkTestCtx[*CloneSchemaOptions]
 	Alter    *sdkTestCtx[*AlterSchemaOptions]
 	Drop     *sdkTestCtx[*DropSchemaOptions]
-	Undrop   *sdkTestCtx[*UndropSchemaOptions]
 	Show     *sdkTestCtx[*ShowSchemaOptions]
 	Describe *sdkTestCtx[*DescribeSchemaOptions]
+	Clone    *sdkTestCtx[*CloneSchemaOptions]
+	Undrop   *sdkTestCtx[*UndropSchemaOptions]
 }
 
 var schemasTests = SchemasTestsContext{
@@ -89,17 +89,17 @@ var schemasTests = SchemasTestsContext{
 				},
 			},
 			validationCase[*CreateSchemaOptions]{
-				Name:        case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"),
-				DefaultModify: func(opts *CreateSchemaOptions) {
-					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
-				},
-			},
-			validationCase[*CreateSchemaOptions]{
 				Name:        case_Schemas_validation_Create_Catalog_ValidIdentifierIfSet,
 				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "Catalog"),
 				DefaultModify: func(opts *CreateSchemaOptions) {
 					opts.Catalog = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateSchemaOptions]{
+				Name:        case_Schemas_validation_Create_ExternalVolume_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateSchemaOptions", "ExternalVolume"),
+				DefaultModify: func(opts *CreateSchemaOptions) {
+					opts.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateSchemaOptions]{
@@ -117,37 +117,6 @@ var schemasTests = SchemasTestsContext{
 			},
 			sqlCase[*CreateSchemaOptions]{
 				Name: case_Schemas_sql_Create_all,
-			},
-		),
-	Clone: newSdkTestCtx[*CloneSchemaOptions](
-		"Schemas", "Clone",
-	).
-		withDefaultOpts(func() *CloneSchemaOptions {
-			return &CloneSchemaOptions{
-				name: schemasTestIdDatabaseObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CloneSchemaOptions]{
-				Name:        case_Schemas_validation_Clone_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CloneSchemaOptions", "name"),
-				DefaultModify: func(opts *CloneSchemaOptions) {
-					opts.name = emptyDatabaseObjectIdentifier
-				},
-			},
-			validationCase[*CloneSchemaOptions]{
-				Name:        case_Schemas_validation_Clone_opts_ConflictingFields,
-				ExpectedErr: errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"),
-				DefaultModify: func(opts *CloneSchemaOptions) {
-					opts.OrReplace = new(true)
-					opts.IfNotExists = new(true)
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CloneSchemaOptions]{
-				Name:           case_Schemas_sql_Clone_basic,
-				NoModifyNeeded: true,
 			},
 		),
 	Alter: newSdkTestCtx[*AlterSchemaOptions](
@@ -203,19 +172,19 @@ var schemasTests = SchemasTestsContext{
 				},
 			},
 			validationCase[*AlterSchemaOptions]{
-				Name:        case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet,
-				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"),
-				DefaultModify: func(opts *AlterSchemaOptions) {
-					opts.Set = &SchemaSet{}
-					opts.Set.ExternalVolume = new(emptyAccountObjectIdentifier)
-				},
-			},
-			validationCase[*AlterSchemaOptions]{
 				Name:        case_Schemas_validation_Alter_Set_Catalog_ValidIdentifierIfSet,
 				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "Catalog"),
 				DefaultModify: func(opts *AlterSchemaOptions) {
 					opts.Set = &SchemaSet{}
 					opts.Set.Catalog = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterSchemaOptions]{
+				Name:        case_Schemas_validation_Alter_Set_ExternalVolume_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterSchemaOptions.Set", "ExternalVolume"),
+				DefaultModify: func(opts *AlterSchemaOptions) {
+					opts.Set = &SchemaSet{}
+					opts.Set.ExternalVolume = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterSchemaOptions]{
@@ -342,29 +311,6 @@ var schemasTests = SchemasTestsContext{
 				Name: case_Schemas_sql_Drop_all,
 			},
 		),
-	Undrop: newSdkTestCtx[*UndropSchemaOptions](
-		"Schemas", "Undrop",
-	).
-		withDefaultOpts(func() *UndropSchemaOptions {
-			return &UndropSchemaOptions{
-				name: schemasTestIdDatabaseObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*UndropSchemaOptions]{
-				Name:        case_Schemas_validation_Undrop_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("UndropSchemaOptions", "name"),
-				DefaultModify: func(opts *UndropSchemaOptions) {
-					opts.name = emptyDatabaseObjectIdentifier
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*UndropSchemaOptions]{
-				Name:           case_Schemas_sql_Undrop_basic,
-				NoModifyNeeded: true,
-			},
-		),
 	Show: newSdkTestCtx[*ShowSchemaOptions](
 		"Schemas", "Show",
 	).
@@ -416,16 +362,65 @@ var schemasTests = SchemasTestsContext{
 				NoModifyNeeded: true,
 			},
 		),
+	Clone: newSdkTestCtx[*CloneSchemaOptions](
+		"Schemas", "Clone",
+	).
+		withDefaultOpts(func() *CloneSchemaOptions {
+			return &CloneSchemaOptions{
+				name: schemasTestIdDatabaseObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CloneSchemaOptions]{
+				Name:        case_Schemas_validation_Clone_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CloneSchemaOptions", "name"),
+				DefaultModify: func(opts *CloneSchemaOptions) {
+					opts.name = emptyDatabaseObjectIdentifier
+				},
+			},
+			validationCase[*CloneSchemaOptions]{
+				Name:        case_Schemas_validation_Clone_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CloneSchemaOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CloneSchemaOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CloneSchemaOptions]{
+				Name:           case_Schemas_sql_Clone_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	Undrop: newSdkTestCtx[*UndropSchemaOptions](
+		"Schemas", "Undrop",
+	).
+		withDefaultOpts(func() *UndropSchemaOptions {
+			return &UndropSchemaOptions{
+				name: schemasTestIdDatabaseObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*UndropSchemaOptions]{
+				Name:        case_Schemas_validation_Undrop_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("UndropSchemaOptions", "name"),
+				DefaultModify: func(opts *UndropSchemaOptions) {
+					opts.name = emptyDatabaseObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*UndropSchemaOptions]{
+				Name:           case_Schemas_sql_Undrop_basic,
+				NoModifyNeeded: true,
+			},
+		),
 }
 
 func TestSchemas_Create(t *testing.T) {
 	schemasTests.Create.RunValidationCases(t)
 	schemasTests.Create.RunSqlCases(t)
-}
-
-func TestSchemas_Clone(t *testing.T) {
-	schemasTests.Clone.RunValidationCases(t)
-	schemasTests.Clone.RunSqlCases(t)
 }
 
 func TestSchemas_Alter(t *testing.T) {
@@ -438,11 +433,6 @@ func TestSchemas_Drop(t *testing.T) {
 	schemasTests.Drop.RunSqlCases(t)
 }
 
-func TestSchemas_Undrop(t *testing.T) {
-	schemasTests.Undrop.RunValidationCases(t)
-	schemasTests.Undrop.RunSqlCases(t)
-}
-
 func TestSchemas_Show(t *testing.T) {
 	schemasTests.Show.RunValidationCases(t)
 	schemasTests.Show.RunSqlCases(t)
@@ -451,4 +441,14 @@ func TestSchemas_Show(t *testing.T) {
 func TestSchemas_Describe(t *testing.T) {
 	schemasTests.Describe.RunValidationCases(t)
 	schemasTests.Describe.RunSqlCases(t)
+}
+
+func TestSchemas_Clone(t *testing.T) {
+	schemasTests.Clone.RunValidationCases(t)
+	schemasTests.Clone.RunSqlCases(t)
+}
+
+func TestSchemas_Undrop(t *testing.T) {
+	schemasTests.Undrop.RunValidationCases(t)
+	schemasTests.Undrop.RunSqlCases(t)
 }

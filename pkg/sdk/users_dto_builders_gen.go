@@ -35,6 +35,11 @@ func (s *CreateUserRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *Cre
 	return s
 }
 
+func (s *CreateUserRequest) WithActivePythonProfiler(activePythonProfiler ActivePythonProfiler) *CreateUserRequest {
+	s.ActivePythonProfiler = &activePythonProfiler
+	return s
+}
+
 func (s *CreateUserRequest) WithAutocommit(autocommit bool) *CreateUserRequest {
 	s.Autocommit = &autocommit
 	return s
@@ -50,6 +55,11 @@ func (s *CreateUserRequest) WithBinaryOutputFormat(binaryOutputFormat BinaryOutp
 	return s
 }
 
+func (s *CreateUserRequest) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *CreateUserRequest {
+	s.ClientEnableLogInfoStatementParameters = &clientEnableLogInfoStatementParameters
+	return s
+}
+
 func (s *CreateUserRequest) WithClientMemoryLimit(clientMemoryLimit int) *CreateUserRequest {
 	s.ClientMemoryLimit = &clientMemoryLimit
 	return s
@@ -57,6 +67,11 @@ func (s *CreateUserRequest) WithClientMemoryLimit(clientMemoryLimit int) *Create
 
 func (s *CreateUserRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *CreateUserRequest {
 	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *CreateUserRequest) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *CreateUserRequest {
+	s.ClientMetadataUseSessionDatabase = &clientMetadataUseSessionDatabase
 	return s
 }
 
@@ -90,6 +105,11 @@ func (s *CreateUserRequest) WithClientTimestampTypeMapping(clientTimestampTypeMa
 	return s
 }
 
+func (s *CreateUserRequest) WithCsvTimestampFormat(csvTimestampFormat string) *CreateUserRequest {
+	s.CsvTimestampFormat = &csvTimestampFormat
+	return s
+}
+
 func (s *CreateUserRequest) WithDateInputFormat(dateInputFormat string) *CreateUserRequest {
 	s.DateInputFormat = &dateInputFormat
 	return s
@@ -97,6 +117,11 @@ func (s *CreateUserRequest) WithDateInputFormat(dateInputFormat string) *CreateU
 
 func (s *CreateUserRequest) WithDateOutputFormat(dateOutputFormat string) *CreateUserRequest {
 	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *CreateUserRequest) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *CreateUserRequest {
+	s.EnableGetDdlUseDataTypeAlias = &enableGetDdlUseDataTypeAlias
 	return s
 }
 
@@ -130,6 +155,11 @@ func (s *CreateUserRequest) WithGeometryOutputFormat(geometryOutputFormat Geomet
 	return s
 }
 
+func (s *CreateUserRequest) WithHybridTableLockTimeout(hybridTableLockTimeout int) *CreateUserRequest {
+	s.HybridTableLockTimeout = &hybridTableLockTimeout
+	return s
+}
+
 func (s *CreateUserRequest) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *CreateUserRequest {
 	s.JdbcTreatDecimalAsInt = &jdbcTreatDecimalAsInt
 	return s
@@ -142,6 +172,11 @@ func (s *CreateUserRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtz
 
 func (s *CreateUserRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *CreateUserRequest {
 	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *CreateUserRequest) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *CreateUserRequest {
+	s.JsTreatIntegerAsBigint = &jsTreatIntegerAsBigint
 	return s
 }
 
@@ -187,6 +222,16 @@ func (s *CreateUserRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool
 
 func (s *CreateUserRequest) WithPreventUnloadToInternalStages(preventUnloadToInternalStages bool) *CreateUserRequest {
 	s.PreventUnloadToInternalStages = &preventUnloadToInternalStages
+	return s
+}
+
+func (s *CreateUserRequest) WithPythonProfilerModules(pythonProfilerModules string) *CreateUserRequest {
+	s.PythonProfilerModules = &pythonProfilerModules
+	return s
+}
+
+func (s *CreateUserRequest) WithPythonProfilerTargetStage(pythonProfilerTargetStage SchemaObjectIdentifier) *CreateUserRequest {
+	s.PythonProfilerTargetStage = &pythonProfilerTargetStage
 	return s
 }
 
@@ -339,16 +384,22 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
+	case "ACTIVE_PYTHON_PROFILER":
+		return assignParsedEnumParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
 	case "AUTOCOMMIT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientEnableLogInfoStatementParameters)
 	case "CLIENT_MEMORY_LIMIT":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
 	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataRequestUseConnectionCtx)
+	case "CLIENT_METADATA_USE_SESSION_DATABASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataUseSessionDatabase)
 	case "CLIENT_PREFETCH_THREADS":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientPrefetchThreads)
 	case "CLIENT_RESULT_CHUNK_SIZE":
@@ -360,11 +411,15 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+	case "CSV_TIMESTAMP_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.CsvTimestampFormat)
 	case "DATE_INPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
 	case "DATE_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.DateOutputFormat)
+	case "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableGetDdlUseDataTypeAlias)
 	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnloadPhysicalTypeOptimization)
 	case "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR":
@@ -374,23 +429,27 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+	case "HYBRID_TABLE_LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.HybridTableLockTimeout)
 	case "JDBC_TREAT_DECIMAL_AS_INT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatDecimalAsInt)
 	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
 	case "JDBC_USE_SESSION_TIMEZONE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcUseSessionTimezone)
+	case "JS_TREAT_INTEGER_AS_BIGINT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JsTreatIntegerAsBigint)
 	case "JSON_INDENT":
 		return assignParsedParameter(value, strconv.Atoi, &s.JsonIndent)
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MULTI_STATEMENT_COUNT":
 		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
 	case "NETWORK_POLICY":
@@ -401,6 +460,10 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 		return assignParsedParameter(value, strconv.ParseBool, &s.OdbcTreatDecimalAsInt)
 	case "PREVENT_UNLOAD_TO_INTERNAL_STAGES":
 		return assignParsedParameter(value, strconv.ParseBool, &s.PreventUnloadToInternalStages)
+	case "PYTHON_PROFILER_MODULES":
+		return assignParsedParameter(value, identityParse, &s.PythonProfilerModules)
+	case "PYTHON_PROFILER_TARGET_STAGE":
+		return assignParsedParameter(value, ParseSchemaObjectIdentifier, &s.PythonProfilerTargetStage)
 	case "QUERY_TAG":
 		return assignParsedParameter(value, identityParse, &s.QueryTag)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
@@ -434,21 +497,21 @@ func (s *CreateUserRequest) SetParameterFromRaw(key string, value string) error 
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "WEEK_OF_YEAR_POLICY":
@@ -803,6 +866,11 @@ func (s *UserSetRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *UserSe
 	return s
 }
 
+func (s *UserSetRequest) WithActivePythonProfiler(activePythonProfiler ActivePythonProfiler) *UserSetRequest {
+	s.ActivePythonProfiler = &activePythonProfiler
+	return s
+}
+
 func (s *UserSetRequest) WithAutocommit(autocommit bool) *UserSetRequest {
 	s.Autocommit = &autocommit
 	return s
@@ -818,6 +886,11 @@ func (s *UserSetRequest) WithBinaryOutputFormat(binaryOutputFormat BinaryOutputF
 	return s
 }
 
+func (s *UserSetRequest) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *UserSetRequest {
+	s.ClientEnableLogInfoStatementParameters = &clientEnableLogInfoStatementParameters
+	return s
+}
+
 func (s *UserSetRequest) WithClientMemoryLimit(clientMemoryLimit int) *UserSetRequest {
 	s.ClientMemoryLimit = &clientMemoryLimit
 	return s
@@ -825,6 +898,11 @@ func (s *UserSetRequest) WithClientMemoryLimit(clientMemoryLimit int) *UserSetRe
 
 func (s *UserSetRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *UserSetRequest {
 	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *UserSetRequest) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *UserSetRequest {
+	s.ClientMetadataUseSessionDatabase = &clientMetadataUseSessionDatabase
 	return s
 }
 
@@ -858,6 +936,11 @@ func (s *UserSetRequest) WithClientTimestampTypeMapping(clientTimestampTypeMappi
 	return s
 }
 
+func (s *UserSetRequest) WithCsvTimestampFormat(csvTimestampFormat string) *UserSetRequest {
+	s.CsvTimestampFormat = &csvTimestampFormat
+	return s
+}
+
 func (s *UserSetRequest) WithDateInputFormat(dateInputFormat string) *UserSetRequest {
 	s.DateInputFormat = &dateInputFormat
 	return s
@@ -865,6 +948,11 @@ func (s *UserSetRequest) WithDateInputFormat(dateInputFormat string) *UserSetReq
 
 func (s *UserSetRequest) WithDateOutputFormat(dateOutputFormat string) *UserSetRequest {
 	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *UserSetRequest) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *UserSetRequest {
+	s.EnableGetDdlUseDataTypeAlias = &enableGetDdlUseDataTypeAlias
 	return s
 }
 
@@ -898,6 +986,11 @@ func (s *UserSetRequest) WithGeometryOutputFormat(geometryOutputFormat GeometryO
 	return s
 }
 
+func (s *UserSetRequest) WithHybridTableLockTimeout(hybridTableLockTimeout int) *UserSetRequest {
+	s.HybridTableLockTimeout = &hybridTableLockTimeout
+	return s
+}
+
 func (s *UserSetRequest) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *UserSetRequest {
 	s.JdbcTreatDecimalAsInt = &jdbcTreatDecimalAsInt
 	return s
@@ -910,6 +1003,11 @@ func (s *UserSetRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzAsU
 
 func (s *UserSetRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *UserSetRequest {
 	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *UserSetRequest) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *UserSetRequest {
+	s.JsTreatIntegerAsBigint = &jsTreatIntegerAsBigint
 	return s
 }
 
@@ -955,6 +1053,16 @@ func (s *UserSetRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool) *
 
 func (s *UserSetRequest) WithPreventUnloadToInternalStages(preventUnloadToInternalStages bool) *UserSetRequest {
 	s.PreventUnloadToInternalStages = &preventUnloadToInternalStages
+	return s
+}
+
+func (s *UserSetRequest) WithPythonProfilerModules(pythonProfilerModules string) *UserSetRequest {
+	s.PythonProfilerModules = &pythonProfilerModules
+	return s
+}
+
+func (s *UserSetRequest) WithPythonProfilerTargetStage(pythonProfilerTargetStage SchemaObjectIdentifier) *UserSetRequest {
+	s.PythonProfilerTargetStage = &pythonProfilerTargetStage
 	return s
 }
 
@@ -1102,16 +1210,22 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	switch strings.ToUpper(key) {
 	case "ABORT_DETACHED_QUERY":
 		return assignParsedParameter(value, strconv.ParseBool, &s.AbortDetachedQuery)
+	case "ACTIVE_PYTHON_PROFILER":
+		return assignParsedEnumParameter(value, ToActivePythonProfiler, &s.ActivePythonProfiler)
 	case "AUTOCOMMIT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.Autocommit)
 	case "BINARY_INPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
+		return assignParsedEnumParameter(value, ToBinaryInputFormat, &s.BinaryInputFormat)
 	case "BINARY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+		return assignParsedEnumParameter(value, ToBinaryOutputFormat, &s.BinaryOutputFormat)
+	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientEnableLogInfoStatementParameters)
 	case "CLIENT_MEMORY_LIMIT":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientMemoryLimit)
 	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataRequestUseConnectionCtx)
+	case "CLIENT_METADATA_USE_SESSION_DATABASE":
+		return assignParsedParameter(value, strconv.ParseBool, &s.ClientMetadataUseSessionDatabase)
 	case "CLIENT_PREFETCH_THREADS":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientPrefetchThreads)
 	case "CLIENT_RESULT_CHUNK_SIZE":
@@ -1123,11 +1237,15 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "CLIENT_SESSION_KEEP_ALIVE_HEARTBEAT_FREQUENCY":
 		return assignParsedParameter(value, strconv.Atoi, &s.ClientSessionKeepAliveHeartbeatFrequency)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToClientTimestampTypeMapping, &s.ClientTimestampTypeMapping)
+	case "CSV_TIMESTAMP_FORMAT":
+		return assignParsedParameter(value, identityParse, &s.CsvTimestampFormat)
 	case "DATE_INPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.DateInputFormat)
 	case "DATE_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.DateOutputFormat)
+	case "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS":
+		return assignParsedParameter(value, strconv.ParseBool, &s.EnableGetDdlUseDataTypeAlias)
 	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
 		return assignParsedParameter(value, strconv.ParseBool, &s.EnableUnloadPhysicalTypeOptimization)
 	case "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR":
@@ -1137,23 +1255,27 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "ERROR_ON_NONDETERMINISTIC_UPDATE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ErrorOnNondeterministicUpdate)
 	case "GEOGRAPHY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
+		return assignParsedEnumParameter(value, ToGeographyOutputFormat, &s.GeographyOutputFormat)
 	case "GEOMETRY_OUTPUT_FORMAT":
-		return assignParsedParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+		return assignParsedEnumParameter(value, ToGeometryOutputFormat, &s.GeometryOutputFormat)
+	case "HYBRID_TABLE_LOCK_TIMEOUT":
+		return assignParsedParameter(value, strconv.Atoi, &s.HybridTableLockTimeout)
 	case "JDBC_TREAT_DECIMAL_AS_INT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatDecimalAsInt)
 	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcTreatTimestampNtzAsUtc)
 	case "JDBC_USE_SESSION_TIMEZONE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.JdbcUseSessionTimezone)
+	case "JS_TREAT_INTEGER_AS_BIGINT":
+		return assignParsedParameter(value, strconv.ParseBool, &s.JsTreatIntegerAsBigint)
 	case "JSON_INDENT":
 		return assignParsedParameter(value, strconv.Atoi, &s.JsonIndent)
 	case "LOCK_TIMEOUT":
 		return assignParsedParameter(value, strconv.Atoi, &s.LockTimeout)
 	case "LOG_EVENT_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogEventLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
-		return assignParsedParameter(value, ToLogLevel, &s.LogLevel)
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MULTI_STATEMENT_COUNT":
 		return assignParsedParameter(value, strconv.Atoi, &s.MultiStatementCount)
 	case "NETWORK_POLICY":
@@ -1164,6 +1286,10 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 		return assignParsedParameter(value, strconv.ParseBool, &s.OdbcTreatDecimalAsInt)
 	case "PREVENT_UNLOAD_TO_INTERNAL_STAGES":
 		return assignParsedParameter(value, strconv.ParseBool, &s.PreventUnloadToInternalStages)
+	case "PYTHON_PROFILER_MODULES":
+		return assignParsedParameter(value, identityParse, &s.PythonProfilerModules)
+	case "PYTHON_PROFILER_TARGET_STAGE":
+		return assignParsedParameter(value, ParseSchemaObjectIdentifier, &s.PythonProfilerTargetStage)
 	case "QUERY_TAG":
 		return assignParsedParameter(value, identityParse, &s.QueryTag)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
@@ -1197,21 +1323,21 @@ func (s *UserSetRequest) SetParameterFromRaw(key string, value string) error {
 	case "TIMESTAMP_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampOutputFormat)
 	case "TIMESTAMP_TYPE_MAPPING":
-		return assignParsedParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
+		return assignParsedEnumParameter(value, ToTimestampTypeMapping, &s.TimestampTypeMapping)
 	case "TIMESTAMP_TZ_OUTPUT_FORMAT":
 		return assignParsedParameter(value, identityParse, &s.TimestampTzOutputFormat)
 	case "TIMEZONE":
 		return assignParsedParameter(value, identityParse, &s.Timezone)
 	case "TRACE_LEVEL":
-		return assignParsedParameter(value, ToTraceLevel, &s.TraceLevel)
+		return assignParsedEnumParameter(value, ToTraceLevel, &s.TraceLevel)
 	case "TRANSACTION_ABORT_ON_ERROR":
 		return assignParsedParameter(value, strconv.ParseBool, &s.TransactionAbortOnError)
 	case "TRANSACTION_DEFAULT_ISOLATION_LEVEL":
-		return assignParsedParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
+		return assignParsedEnumParameter(value, ToTransactionDefaultIsolationLevel, &s.TransactionDefaultIsolationLevel)
 	case "TWO_DIGIT_CENTURY_START":
 		return assignParsedParameter(value, strconv.Atoi, &s.TwoDigitCenturyStart)
 	case "UNSUPPORTED_DDL_ACTION":
-		return assignParsedParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
+		return assignParsedEnumParameter(value, ToUnsupportedDDLAction, &s.UnsupportedDdlAction)
 	case "USE_CACHED_RESULT":
 		return assignParsedParameter(value, strconv.ParseBool, &s.UseCachedResult)
 	case "WEEK_OF_YEAR_POLICY":
@@ -1378,6 +1504,11 @@ func (s *UserUnsetRequest) WithAbortDetachedQuery(abortDetachedQuery bool) *User
 	return s
 }
 
+func (s *UserUnsetRequest) WithActivePythonProfiler(activePythonProfiler bool) *UserUnsetRequest {
+	s.ActivePythonProfiler = &activePythonProfiler
+	return s
+}
+
 func (s *UserUnsetRequest) WithAutocommit(autocommit bool) *UserUnsetRequest {
 	s.Autocommit = &autocommit
 	return s
@@ -1393,6 +1524,11 @@ func (s *UserUnsetRequest) WithBinaryOutputFormat(binaryOutputFormat bool) *User
 	return s
 }
 
+func (s *UserUnsetRequest) WithClientEnableLogInfoStatementParameters(clientEnableLogInfoStatementParameters bool) *UserUnsetRequest {
+	s.ClientEnableLogInfoStatementParameters = &clientEnableLogInfoStatementParameters
+	return s
+}
+
 func (s *UserUnsetRequest) WithClientMemoryLimit(clientMemoryLimit bool) *UserUnsetRequest {
 	s.ClientMemoryLimit = &clientMemoryLimit
 	return s
@@ -1400,6 +1536,11 @@ func (s *UserUnsetRequest) WithClientMemoryLimit(clientMemoryLimit bool) *UserUn
 
 func (s *UserUnsetRequest) WithClientMetadataRequestUseConnectionCtx(clientMetadataRequestUseConnectionCtx bool) *UserUnsetRequest {
 	s.ClientMetadataRequestUseConnectionCtx = &clientMetadataRequestUseConnectionCtx
+	return s
+}
+
+func (s *UserUnsetRequest) WithClientMetadataUseSessionDatabase(clientMetadataUseSessionDatabase bool) *UserUnsetRequest {
+	s.ClientMetadataUseSessionDatabase = &clientMetadataUseSessionDatabase
 	return s
 }
 
@@ -1433,6 +1574,11 @@ func (s *UserUnsetRequest) WithClientTimestampTypeMapping(clientTimestampTypeMap
 	return s
 }
 
+func (s *UserUnsetRequest) WithCsvTimestampFormat(csvTimestampFormat bool) *UserUnsetRequest {
+	s.CsvTimestampFormat = &csvTimestampFormat
+	return s
+}
+
 func (s *UserUnsetRequest) WithDateInputFormat(dateInputFormat bool) *UserUnsetRequest {
 	s.DateInputFormat = &dateInputFormat
 	return s
@@ -1440,6 +1586,11 @@ func (s *UserUnsetRequest) WithDateInputFormat(dateInputFormat bool) *UserUnsetR
 
 func (s *UserUnsetRequest) WithDateOutputFormat(dateOutputFormat bool) *UserUnsetRequest {
 	s.DateOutputFormat = &dateOutputFormat
+	return s
+}
+
+func (s *UserUnsetRequest) WithEnableGetDdlUseDataTypeAlias(enableGetDdlUseDataTypeAlias bool) *UserUnsetRequest {
+	s.EnableGetDdlUseDataTypeAlias = &enableGetDdlUseDataTypeAlias
 	return s
 }
 
@@ -1473,6 +1624,11 @@ func (s *UserUnsetRequest) WithGeometryOutputFormat(geometryOutputFormat bool) *
 	return s
 }
 
+func (s *UserUnsetRequest) WithHybridTableLockTimeout(hybridTableLockTimeout bool) *UserUnsetRequest {
+	s.HybridTableLockTimeout = &hybridTableLockTimeout
+	return s
+}
+
 func (s *UserUnsetRequest) WithJdbcTreatDecimalAsInt(jdbcTreatDecimalAsInt bool) *UserUnsetRequest {
 	s.JdbcTreatDecimalAsInt = &jdbcTreatDecimalAsInt
 	return s
@@ -1485,6 +1641,11 @@ func (s *UserUnsetRequest) WithJdbcTreatTimestampNtzAsUtc(jdbcTreatTimestampNtzA
 
 func (s *UserUnsetRequest) WithJdbcUseSessionTimezone(jdbcUseSessionTimezone bool) *UserUnsetRequest {
 	s.JdbcUseSessionTimezone = &jdbcUseSessionTimezone
+	return s
+}
+
+func (s *UserUnsetRequest) WithJsTreatIntegerAsBigint(jsTreatIntegerAsBigint bool) *UserUnsetRequest {
+	s.JsTreatIntegerAsBigint = &jsTreatIntegerAsBigint
 	return s
 }
 
@@ -1530,6 +1691,16 @@ func (s *UserUnsetRequest) WithOdbcTreatDecimalAsInt(odbcTreatDecimalAsInt bool)
 
 func (s *UserUnsetRequest) WithPreventUnloadToInternalStages(preventUnloadToInternalStages bool) *UserUnsetRequest {
 	s.PreventUnloadToInternalStages = &preventUnloadToInternalStages
+	return s
+}
+
+func (s *UserUnsetRequest) WithPythonProfilerModules(pythonProfilerModules bool) *UserUnsetRequest {
+	s.PythonProfilerModules = &pythonProfilerModules
+	return s
+}
+
+func (s *UserUnsetRequest) WithPythonProfilerTargetStage(pythonProfilerTargetStage bool) *UserUnsetRequest {
+	s.PythonProfilerTargetStage = &pythonProfilerTargetStage
 	return s
 }
 
@@ -1672,16 +1843,22 @@ func (s *UserUnsetRequest) UnsetParameterFromRaw(key string) error {
 	switch key {
 	case "ABORT_DETACHED_QUERY":
 		s.AbortDetachedQuery = Bool(true)
+	case "ACTIVE_PYTHON_PROFILER":
+		s.ActivePythonProfiler = Bool(true)
 	case "AUTOCOMMIT":
 		s.Autocommit = Bool(true)
 	case "BINARY_INPUT_FORMAT":
 		s.BinaryInputFormat = Bool(true)
 	case "BINARY_OUTPUT_FORMAT":
 		s.BinaryOutputFormat = Bool(true)
+	case "CLIENT_ENABLE_LOG_INFO_STATEMENT_PARAMETERS":
+		s.ClientEnableLogInfoStatementParameters = Bool(true)
 	case "CLIENT_MEMORY_LIMIT":
 		s.ClientMemoryLimit = Bool(true)
 	case "CLIENT_METADATA_REQUEST_USE_CONNECTION_CTX":
 		s.ClientMetadataRequestUseConnectionCtx = Bool(true)
+	case "CLIENT_METADATA_USE_SESSION_DATABASE":
+		s.ClientMetadataUseSessionDatabase = Bool(true)
 	case "CLIENT_PREFETCH_THREADS":
 		s.ClientPrefetchThreads = Bool(true)
 	case "CLIENT_RESULT_CHUNK_SIZE":
@@ -1694,10 +1871,14 @@ func (s *UserUnsetRequest) UnsetParameterFromRaw(key string) error {
 		s.ClientSessionKeepAliveHeartbeatFrequency = Bool(true)
 	case "CLIENT_TIMESTAMP_TYPE_MAPPING":
 		s.ClientTimestampTypeMapping = Bool(true)
+	case "CSV_TIMESTAMP_FORMAT":
+		s.CsvTimestampFormat = Bool(true)
 	case "DATE_INPUT_FORMAT":
 		s.DateInputFormat = Bool(true)
 	case "DATE_OUTPUT_FORMAT":
 		s.DateOutputFormat = Bool(true)
+	case "ENABLE_GET_DDL_USE_DATA_TYPE_ALIAS":
+		s.EnableGetDdlUseDataTypeAlias = Bool(true)
 	case "ENABLE_UNLOAD_PHYSICAL_TYPE_OPTIMIZATION":
 		s.EnableUnloadPhysicalTypeOptimization = Bool(true)
 	case "ENABLE_UNREDACTED_QUERY_SYNTAX_ERROR":
@@ -1710,12 +1891,16 @@ func (s *UserUnsetRequest) UnsetParameterFromRaw(key string) error {
 		s.GeographyOutputFormat = Bool(true)
 	case "GEOMETRY_OUTPUT_FORMAT":
 		s.GeometryOutputFormat = Bool(true)
+	case "HYBRID_TABLE_LOCK_TIMEOUT":
+		s.HybridTableLockTimeout = Bool(true)
 	case "JDBC_TREAT_DECIMAL_AS_INT":
 		s.JdbcTreatDecimalAsInt = Bool(true)
 	case "JDBC_TREAT_TIMESTAMP_NTZ_AS_UTC":
 		s.JdbcTreatTimestampNtzAsUtc = Bool(true)
 	case "JDBC_USE_SESSION_TIMEZONE":
 		s.JdbcUseSessionTimezone = Bool(true)
+	case "JS_TREAT_INTEGER_AS_BIGINT":
+		s.JsTreatIntegerAsBigint = Bool(true)
 	case "JSON_INDENT":
 		s.JsonIndent = Bool(true)
 	case "LOCK_TIMEOUT":
@@ -1734,6 +1919,10 @@ func (s *UserUnsetRequest) UnsetParameterFromRaw(key string) error {
 		s.OdbcTreatDecimalAsInt = Bool(true)
 	case "PREVENT_UNLOAD_TO_INTERNAL_STAGES":
 		s.PreventUnloadToInternalStages = Bool(true)
+	case "PYTHON_PROFILER_MODULES":
+		s.PythonProfilerModules = Bool(true)
+	case "PYTHON_PROFILER_TARGET_STAGE":
+		s.PythonProfilerTargetStage = Bool(true)
 	case "QUERY_TAG":
 		s.QueryTag = Bool(true)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":

@@ -3,21 +3,37 @@ package defs
 import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
 
 var secondaryRoleOptionEnum = g.NewEnum("SecondaryRoleOption", "SecondaryRoleOptions", "ALL", "NONE")
 
+var sessionParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelSession)
+
+var sessionParameterFieldNames = collections.Map(sessionParameters, g.ParameterSqlToFieldName)
+
+func sessionParametersStruct() *g.QueryStruct {
+	return g.NewQueryStruct("SessionParameters").
+		WithParameters(sessionParameters...).
+		WithAdditionalValidations()
+}
+
+func sessionParametersUnsetStruct() *g.QueryStruct {
+	return g.NewQueryStruct("SessionParametersUnset").
+		WithParametersUnset(sessionParameters...).
+		WithValidation(g.AtLeastOneValueSet, sessionParameterFieldNames...)
+}
+
 func sessionSet() *g.QueryStruct {
 	return g.NewQueryStruct("SessionSet").
-		PredefinedQueryStructField("SessionParameters", "*SessionParameters", g.ListOptions()).
-		WithValidation(g.ValidateValue, "SessionParameters")
+		OptionalQueryStructField("SessionParameters", sessionParametersStruct(), g.ListOptions())
 }
 
 func sessionUnset() *g.QueryStruct {
 	return g.NewQueryStruct("SessionUnset").
-		PredefinedQueryStructField("SessionParametersUnset", "*SessionParametersUnset", g.ListOptions()).
-		WithValidation(g.ValidateValue, "SessionParametersUnset")
+		OptionalQueryStructField("SessionParametersUnset", sessionParametersUnsetStruct(), g.ListOptions())
 }
 
 var sessionsDef = g.NewInterface(

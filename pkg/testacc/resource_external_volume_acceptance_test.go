@@ -388,10 +388,10 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -755,7 +755,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -1036,7 +1036,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -1309,10 +1309,10 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithComment("external comment"),
+						*sdk.NewExternalVolumeSetRequest().WithComment("external comment"),
 					))
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
-						*sdk.NewAlterExternalVolumeSetRequest().WithAllowWrites(true),
+						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true),
 					))
 					testClient().ExternalVolume.Alter(
 						t,
@@ -3175,6 +3175,20 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 		"azure_tenant_id":         config.StringVariable(azureTenantId),
 		"storage_aws_external_id": config.StringVariable(awsExternalId),
 	})
+	s3CompatStorageLocationNoEndpoint := config.MapVariable(map[string]config.Variable{
+		"storage_location_name":  config.StringVariable(s3CompatStorageLocationName),
+		"storage_provider":       config.StringVariable(s3CompatStorageProvider),
+		"storage_base_url":       config.StringVariable(s3CompatStorageBaseUrl),
+		"storage_aws_key_id":     config.StringVariable("AKIAIOSFODNN7EXAMPLE"),
+		"storage_aws_secret_key": config.StringVariable("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"),
+	})
+	s3CompatStorageLocationNoAwsKeyId := config.MapVariable(map[string]config.Variable{
+		"storage_location_name":  config.StringVariable(s3CompatStorageLocationName),
+		"storage_provider":       config.StringVariable(s3CompatStorageProvider),
+		"storage_base_url":       config.StringVariable(s3CompatStorageBaseUrl),
+		"storage_endpoint":       config.StringVariable("s3.us-west-2.amazonaws.com"),
+		"storage_aws_secret_key": config.StringVariable("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"),
+	})
 	s3CompatStorageLocationWithAwsExternalId := config.MapVariable(map[string]config.Variable{
 		"storage_location_name":   config.StringVariable(s3CompatStorageLocationName),
 		"storage_provider":        config.StringVariable(s3CompatStorageProvider),
@@ -3215,6 +3229,18 @@ func TestAcc_ExternalVolume_Validations(t *testing.T) {
 				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
 				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocationNoTenantId), externalVolumeName, "", ""),
 				ExpectError:     regexp.MustCompile("unable to extract storage location, missing azure_tenant_id provider key in an azure storage location"),
+			},
+			// s3compat storage location doesn't specify storage_endpoint
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(s3CompatStorageLocationNoEndpoint), externalVolumeName, "", ""),
+				ExpectError:     regexp.MustCompile("unable to extract storage location, storage_endpoint is required for s3compat storage location"),
+			},
+			// s3compat storage location doesn't specify storage_aws_key_id
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(s3CompatStorageLocationNoAwsKeyId), externalVolumeName, "", ""),
+				ExpectError:     regexp.MustCompile("unable to extract storage location, storage_aws_key_id is required for s3compat storage location"),
 			},
 			// azure_tenant_id specified for s3 storage location
 			{

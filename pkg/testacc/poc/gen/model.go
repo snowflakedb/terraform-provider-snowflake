@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"log"
 	"maps"
 	"os"
 	"slices"
@@ -16,7 +17,7 @@ type PluginFrameworkProviderModel struct {
 	*genhelpers.PreambleModel
 }
 
-func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema, preamble *genhelpers.PreambleModel) PluginFrameworkProviderModel {
+func ModelFromSdkV2Schema(sdkV2ProviderSchema SdkV2ProviderSchema, preamble *genhelpers.PreambleModel, _ *log.Logger) PluginFrameworkProviderModel {
 	orderedAttributeNames := slices.Collect(maps.Keys(sdkV2ProviderSchema))
 	slices.Sort(orderedAttributeNames)
 

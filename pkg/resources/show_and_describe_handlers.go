@@ -149,7 +149,7 @@ type describeMapping struct {
 	normalizeFunc  func(any) any
 }
 
-// setStateToValuesFromConfig currently handles only int, float, and string types.
+// setStateToValuesFromConfig handles int, float, string, and sets of strings or ints.
 // It's needed for the case where:
 // - previous config was empty (therefore Snowflake defaults had been used)
 // - new config have the same values that are already in SF
@@ -174,7 +174,20 @@ func setStateToValuesFromConfig(d *schema.ResourceData, resourceSchema map[strin
 							return err
 						}
 					case schema.TypeSet:
-						if err := d.Set(field, ctyValToSliceString(v.AsValueSlice())); err != nil {
+						var values any
+						switch schemaField.Elem.(*schema.Schema).Type {
+						case schema.TypeInt:
+							valueElems := v.AsValueSlice()
+							intValues := make([]int, len(valueElems))
+							for i, value := range valueElems {
+								intVal, _ := value.AsBigFloat().Int64()
+								intValues[i] = int(intVal)
+							}
+							values = intValues
+						default:
+							values = ctyValToSliceString(v.AsValueSlice())
+						}
+						if err := d.Set(field, values); err != nil {
 							return err
 						}
 					default:

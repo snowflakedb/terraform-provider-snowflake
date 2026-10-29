@@ -29,6 +29,17 @@ func TestEnum_ValueRepresentations(t *testing.T) {
 			},
 		},
 		{
+			name: "explicit value name and empty value",
+			enum: NewEnum("ParameterType", "ParameterTypes", "ACCOUNT").
+				WithValue("CustomName", "CUSTOM").
+				WithEmptyValue("SnowflakeDefault"),
+			expectedValueRepresentations: []EnumValueRepresentation{
+				{Name: "ParameterTypeAccount", Value: "ACCOUNT", Aliases: nil},
+				{Name: "ParameterTypeCustomName", Value: "CUSTOM", Aliases: nil},
+				{Name: "ParameterTypeSnowflakeDefault", Value: "", Aliases: nil},
+			},
+		},
+		{
 			name: "values with aliases",
 			enum: NewEnum("Size", "Sizes", "XSMALL", "SMALL", "XXLARGE").
 				WithAliases("XSMALL", "X-SMALL").
@@ -37,6 +48,14 @@ func TestEnum_ValueRepresentations(t *testing.T) {
 				{Name: "SizeXsmall", Value: "XSMALL", Aliases: []string{"X-SMALL"}},
 				{Name: "SizeSmall", Value: "SMALL", Aliases: nil},
 				{Name: "SizeXxlarge", Value: "XXLARGE", Aliases: []string{"X2LARGE", "2X-LARGE"}},
+			},
+		},
+		{
+			name: "mixed-case value",
+			enum: NewEnum("GeographyOutputFormat", "GeographyOutputFormats", "GeoJSON", "WKT"),
+			expectedValueRepresentations: []EnumValueRepresentation{
+				{Name: "GeographyOutputFormatGeoJson", Value: "GeoJSON", Aliases: nil},
+				{Name: "GeographyOutputFormatWkt", Value: "WKT", Aliases: nil},
 			},
 		},
 	}
@@ -88,6 +107,32 @@ func TestEnum_WithAliases(t *testing.T) {
 	t.Run("panics on undeclared value", func(t *testing.T) {
 		require.Panics(t, func() {
 			NewEnum("Size", "Sizes", "XSMALL").WithAliases("UNKNOWN", "alias")
+		})
+	})
+}
+
+func TestEnum_WithValue(t *testing.T) {
+	t.Run("empty value delegates to WithValue", func(t *testing.T) {
+		withValue := NewEnum("ParameterType", "ParameterTypes", "ACCOUNT").WithValue("SnowflakeDefault", "")
+		withEmpty := NewEnum("ParameterType", "ParameterTypes", "ACCOUNT").WithEmptyValue("SnowflakeDefault")
+		require.Equal(t, withValue.ValueRepresentations(), withEmpty.ValueRepresentations())
+	})
+
+	t.Run("panics on empty field name", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewEnum("ParameterType", "ParameterTypes", "ACCOUNT").WithValue("", "CUSTOM")
+		})
+	})
+
+	t.Run("panics on duplicate value", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewEnum("ParameterType", "ParameterTypes", "ACCOUNT").WithValue("Other", "ACCOUNT")
+		})
+	})
+
+	t.Run("panics on duplicate constant name", func(t *testing.T) {
+		require.Panics(t, func() {
+			NewEnum("ParameterType", "ParameterTypes", "ACCOUNT").WithValue("Account", "CUSTOM")
 		})
 	})
 }

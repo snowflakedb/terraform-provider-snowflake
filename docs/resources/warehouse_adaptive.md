@@ -38,7 +38,7 @@ resource "snowflake_warehouse_adaptive" "complete" {
 
 ### Required
 
-- `name` (String) Identifier for the adaptive warehouse; must be unique for your account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `name` (String) Specifies the identifier for the warehouse adaptive; must be unique for the account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 ### Optional
 
@@ -172,7 +172,7 @@ import {
 
 Remove the old `resource "snowflake_warehouse" "example"` block from your configuration at the same time - a `removed` block and a `resource` block cannot both refer to the same address.
 
-`terraform plan` reports an **update** (not a replacement) for `snowflake_warehouse_adaptive.example`, changing `warehouse_type` from `STANDARD` to `ADAPTIVE`. After `terraform apply`, both the `removed` and the `import` block can be deleted from the configuration.
+`terraform plan` reports an **update** (not a replacement) for `snowflake_warehouse_adaptive.example`, changing `warehouse_type` from `STANDARD` to `ADAPTIVE`. The provider applies it with a plain `ALTER WAREHOUSE` and does not suspend the warehouse first, so queries already running finish on the old compute. After `terraform apply`, both the `removed` and the `import` block can be deleted from the configuration.
 
 ~> **Note** `removed` blocks require Terraform 1.7 or later (`import` blocks require 1.5 or later). On older versions, use [`terraform state rm`](../guides/resource_migration) followed by `terraform import` instead.
 

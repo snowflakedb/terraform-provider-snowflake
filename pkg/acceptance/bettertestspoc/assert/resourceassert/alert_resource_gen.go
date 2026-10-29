@@ -52,7 +52,7 @@ func (a *AlertResourceAssert) HasAction(expected string) *AlertResourceAssert {
 	return a
 }
 
-// typed assert for "alert_schedule" (type: List, subtype: Map) is not currently supported
+// typed assert for "alert_schedule" (type: List) is not currently supported
 
 func (a *AlertResourceAssert) HasComment(expected string) *AlertResourceAssert {
 	a.StringValueSet("comment", expected)

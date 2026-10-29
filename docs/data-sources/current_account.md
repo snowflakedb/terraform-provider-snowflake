@@ -33,4 +33,4 @@ resource "aws_ssm_parameter" "snowflake_account_url" {
 - `account` (String) The Snowflake Account ID; as returned by CURRENT_ACCOUNT().
 - `id` (String) The ID of this resource.
 - `region` (String) The Snowflake Region; as returned by CURRENT_REGION()
-- `url` (String) The Snowflake URL.
+- `url` (String) The Snowflake account URL. This value supports only the snowflakecomputing.com and snowflakecomputing.cn domains. Build a URL for any other domain from the region attribute.

@@ -18,8 +18,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -63,20 +65,20 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 	externalRefreshIntervalSeconds := random.IntRange(30, 86400)
 
-	basicRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}})
-	completeRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	basicRestAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}})
+	completeRestAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 		WithOauthTokenUri(oAuthTokenUri)
-	changedRestAuth := *sdk.NewOAuthRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
+	changedRestAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(newOAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}, {Value: additionalOAuthAllowedScope}}).
 		WithOauthTokenUri(oAuthTokenUri)
 
-	basicRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	basicRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogName(catalogName)
-	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	completeRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithPrefix(prefix).
 		WithCatalogName(catalogName).
 		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 		WithAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)
-	changedRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	changedRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithPrefix(newPrefix).
 		WithCatalogName(newCatalogName).
 		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
@@ -103,7 +105,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
 
-	withChangedOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, changedRestConfig, *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}), oauthClientSecretVariableName).
+	withChangedOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, changedRestConfig, *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(oAuthClientId, newOAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}), oauthClientSecretVariableName).
 		WithComment(comment).
 		WithRefreshIntervalSeconds(refreshIntervalSeconds).
 		WithCatalogNamespace(newCatalogNamespace)
@@ -128,14 +130,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       "",
 				CatalogName:          catalogName,
 				AccessDelegationMode: "",
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -177,14 +179,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				HasCommentEmpty().
 				HasRefreshIntervalSeconds(0).
 				HasCatalogNamespaceEmpty().
-				HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+				HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 					CatalogUri:           catalogUri,
 					Prefix:               "",
 					CatalogApiType:       "",
 					CatalogName:          catalogName,
 					AccessDelegationMode: "",
 				}).
-				HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+				HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 					OauthTokenUri:      "",
 					OauthClientId:      oAuthClientId,
 					OauthClientSecret:  oAuthClientSecret,
@@ -204,14 +206,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       "",
 				CatalogName:          catalogName,
 				AccessDelegationMode: "",
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -252,14 +254,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(catalogNamespace).
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               prefix,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          catalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -300,14 +302,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               prefix,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          catalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -348,14 +350,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               newPrefix,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          newCatalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -397,14 +399,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				HasComment(comment).
 				HasRefreshIntervalSeconds(refreshIntervalSeconds).
 				HasCatalogNamespace(newCatalogNamespace).
-				HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+				HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 					CatalogUri:           catalogUri,
 					Prefix:               newPrefix,
 					CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 					CatalogName:          newCatalogName,
 					AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 				}).
-				HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+				HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 					OauthTokenUri:      "",
 					OauthClientId:      oAuthClientId,
 					OauthClientSecret:  newOAuthClientSecret,
@@ -424,14 +426,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               newPrefix,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          newCatalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      newOAuthClientId,
 				OauthClientSecret:  newOAuthClientSecret,
@@ -473,7 +475,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			HasComment(comment).
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(newCatalogNamespace).
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               newPrefix,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
@@ -481,12 +483,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeVendedCredentials,
 			}).
 			HasOauthRestAuthenticationEmpty().
-			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{BearerToken: bearerToken}).
+			HasBearerRestAuthentication(&sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{BearerToken: bearerToken}).
 			HasSigv4RestAuthenticationEmpty(),
 	}, evenMoreForceNewAssertions[1:4]...)
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -494,6 +498,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -503,8 +508,25 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 				ConfigVariables: oauthClientSecretConfigVariables,
 				Check:           assertThat(t, basicAssertions...),
 			},
+			// Import - permissive mode
+			// oauth_client_secret is not returned from Snowflake, so the plan after import updates it.
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+			},
 			// Change alterable props
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -516,6 +538,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Unset
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -527,6 +550,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Destroy
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroy),
@@ -538,6 +562,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Create with all attributes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -549,6 +574,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change alterable props externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					alterRequest := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(
 						*sdk.NewCatalogIntegrationSetRequest().
@@ -575,6 +601,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new "catalog_namespace" prop
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -586,14 +613,13 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new "catalog_namespace" prop externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(completeRestConfig).
-							WithOAuthRestAuthentication(completeRestAuth).
-							WithCatalogNamespace(externalCatalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, completeRestConfig, false).
+						WithOAuthRestAuthentication(completeRestAuth).
+						WithCatalogNamespace(externalCatalogNamespace).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -608,6 +634,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "rest_config"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -619,13 +646,12 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "rest_config" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(completeRestConfig).
-							WithOAuthRestAuthentication(basicRestAuth))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, completeRestConfig, false).
+						WithOAuthRestAuthentication(basicRestAuth).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -644,6 +670,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change alterable "oauth_client_secret" prop in "rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -655,6 +682,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "oauth_rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -666,13 +694,12 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change force new props in "oauth_rest_authentication" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(changedRestConfig).
-							WithOAuthRestAuthentication(completeRestAuth))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, changedRestConfig, false).
+						WithOAuthRestAuthentication(completeRestAuth).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					// Open Catalog only accepts one OAuth token URI (<account_url>/v1/oauth/tokens),
@@ -691,6 +718,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change to different authentication type
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -702,11 +730,11 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseOAuth(t *testing.T) {
 			},
 			// Change catalog source externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithObjectStorageCatalogSourceParams(*sdk.NewObjectStorageParamsRequest(sdk.CatalogIntegrationTableFormatDelta))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateObjectStorageCatalogIntegrationRequest(id, sdk.CatalogIntegrationTableFormatDelta, false).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateObjectStorageFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -741,10 +769,10 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 		WithOauthTokenUri(oAuthTokenUri)
 
-	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	completeRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithPrefix(prefix).
 		WithCatalogName(catalogName).
 		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
@@ -767,14 +795,12 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportOAuth(t *testing.T) {
 			// Import the externally created resource
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, completeRestConfig, false).
+						WithOAuthRestAuthentication(completeRestAuth).
+						WithCatalogNamespace(catalogNamespace).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment).
-						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(completeRestConfig).
-							WithOAuthRestAuthentication(completeRestAuth).
-							WithCatalogNamespace(catalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+						WithComment(comment)
+					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes, oauthClientSecretVariableModel),
 				ConfigVariables:    oauthClientSecretConfigVariables,
@@ -822,9 +848,9 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportBearer(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := *sdk.NewBearerRestAuthenticationRequest(bearerToken)
+	completeRestAuth := *sdk.NewCatalogIntegrationIcebergRestBearerRestAuthenticationRequest(bearerToken)
 
-	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	completeRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithPrefix(prefix).
 		WithCatalogName(catalogName).
 		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
@@ -847,14 +873,12 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportBearer(t *testing.T) {
 			// Import the externally created resource
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, completeRestConfig, false).
+						WithBearerRestAuthentication(completeRestAuth).
+						WithCatalogNamespace(catalogNamespace).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment).
-						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(completeRestConfig).
-							WithBearerRestAuthentication(completeRestAuth).
-							WithCatalogNamespace(catalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+						WithComment(comment)
+					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes, bearerTokenVariableModel),
 				ConfigVariables:    bearerTokenConfigVariables,
@@ -899,11 +923,11 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportSigV4(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := *sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole).
+	completeRestAuth := *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(sigV4IamRole).
 		WithSigv4SigningRegion(sigV4SigningRegion).
 		WithSigv4ExternalId(sigV4ExternalId)
 
-	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	completeRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithPrefix(prefix).
 		WithCatalogName(catalogName).
 		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
@@ -926,14 +950,12 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportSigV4(t *testing.T) {
 			// Import the externally created resource
 			{
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
+					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, completeRestConfig, false).
+						WithSigV4RestAuthentication(completeRestAuth).
+						WithCatalogNamespace(catalogNamespace).
 						WithRefreshIntervalSeconds(refreshIntervalSeconds).
-						WithComment(comment).
-						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(completeRestConfig).
-							WithSigV4RestAuthentication(completeRestAuth).
-							WithCatalogNamespace(catalogNamespace))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+						WithComment(comment)
+					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
 				Config:             config.FromModels(t, allAttributes),
 				ResourceName:       ref,
@@ -980,12 +1002,12 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 	_, bearerTokenConfigVariablesSecondary := config.SecretStringVariableModelWithConfigVariables(bearerTokenVariableName, bearerToken2)
 	oauthClientSecretVariableModel, oauthClientSecretConfigVariables := config.SecretStringVariableModelWithConfigVariables(oauthClientSecretVariableName, oAuthClientSecret)
 
-	basicRestCfg := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	basicRestCfg := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogName(catalogName)
 
 	basic := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, basicRestCfg, bearerTokenVariableName)
 	updated := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, basicRestCfg, bearerTokenVariableName)
-	withOAuth := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, basicRestCfg, *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}), oauthClientSecretVariableName)
+	withOAuth := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, basicRestCfg, *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}), oauthClientSecretVariableName)
 
 	ref := basic.ResourceReference()
 
@@ -1019,7 +1041,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       "",
@@ -1027,7 +1049,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 				AccessDelegationMode: "",
 			}).
 			HasOauthRestAuthenticationEmpty().
-			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{BearerToken: bearerToken1}).
+			HasBearerRestAuthentication(&sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{BearerToken: bearerToken1}).
 			HasSigv4RestAuthenticationEmpty(),
 	}, commonAssertions...)
 
@@ -1039,7 +1061,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       "",
@@ -1047,7 +1069,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 				AccessDelegationMode: "",
 			}).
 			HasOauthRestAuthenticationEmpty().
-			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{BearerToken: bearerToken2}).
+			HasBearerRestAuthentication(&sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{BearerToken: bearerToken2}).
 			HasSigv4RestAuthenticationEmpty(),
 	}, commonAssertions...)
 
@@ -1059,14 +1081,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       "",
 				CatalogName:          catalogName,
 				AccessDelegationMode: "",
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      "",
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -1080,8 +1102,10 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			HasOAuthRestAuthenticationOauthAllowedScopes(oAuthAllowedScope),
 	}, commonAssertions...)
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1089,6 +1113,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1098,8 +1123,25 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 				ConfigVariables: bearerTokenConfigVariables,
 				Check:           assertThat(t, basicAssertions...),
 			},
+			// Import - permissive mode
+			// bearer_token is not returned from Snowflake, so the plan after import updates it.
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic, bearerTokenVariableModel),
+				ConfigVariables:          bearerTokenConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+			},
 			// Change alterable "bearer_token" prop in "bearer_rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -1111,6 +1153,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseBearer(t *testing.T) {
 			},
 			// Change to different authentication type
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -1141,13 +1184,13 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 	bearerTokenVariableName := "bearer_token"
 	bearerTokenVariableModel, bearerTokenConfigVariables := config.SecretStringVariableModelWithConfigVariables(bearerTokenVariableName, bearerToken)
 
-	basicRestCfg := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	basicRestCfg := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway)
 
-	basicSigV4Auth := *sdk.NewSigV4RestAuthenticationRequest(sigV4IamRole).
+	basicSigV4Auth := *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(sigV4IamRole).
 		WithSigv4SigningRegion(sigV4SigningRegion)
 
-	updatedSigV4Auth := *sdk.NewSigV4RestAuthenticationRequest(newSigV4IamRole).
+	updatedSigV4Auth := *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(newSigV4IamRole).
 		WithSigv4SigningRegion(newSigV4SigningRegion).
 		WithSigv4ExternalId(newSigV4ExternalId)
 
@@ -1167,7 +1210,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway,
@@ -1176,7 +1219,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			}).
 			HasOauthRestAuthenticationEmpty().
 			HasBearerRestAuthenticationEmpty().
-			HasSigV4RestAuthentication(&sdk.SigV4RestAuthenticationDetails{
+			HasSigV4RestAuthentication(&sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{
 				Sigv4IamRole:       sigV4IamRole,
 				Sigv4SigningRegion: sigV4SigningRegion,
 				Sigv4ExternalId:    "",
@@ -1208,7 +1251,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway,
@@ -1217,7 +1260,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			}).
 			HasOauthRestAuthenticationEmpty().
 			HasBearerRestAuthenticationEmpty().
-			HasSigV4RestAuthentication(&sdk.SigV4RestAuthenticationDetails{
+			HasSigV4RestAuthentication(&sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{
 				Sigv4IamRole:       newSigV4IamRole,
 				Sigv4SigningRegion: newSigV4SigningRegion,
 				Sigv4ExternalId:    newSigV4ExternalId,
@@ -1235,7 +1278,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			HasCommentEmpty().
 			HasNoRefreshIntervalSeconds().
 			HasCatalogNamespaceEmpty().
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               "",
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway,
@@ -1243,12 +1286,14 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				AccessDelegationMode: "",
 			}).
 			HasOauthRestAuthenticationEmpty().
-			HasBearerRestAuthentication(&sdk.BearerRestAuthenticationDetails{BearerToken: bearerToken}).
+			HasBearerRestAuthentication(&sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{BearerToken: bearerToken}).
 			HasSigv4RestAuthenticationEmpty(),
 	}, basicAssertions[2:]...)
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1256,6 +1301,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1264,8 +1310,17 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, basicAssertions...),
 			},
+			// Import - permissive mode
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+			},
 			// Change force new props in "sigv4_rest_authentication"
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -1276,13 +1331,12 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			},
 			// Change force new props in "sigv4_rest_authentication" externally
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					createRequest := sdk.NewCreateCatalogIntegrationRequest(id, false).
-						WithOrReplace(true).
-						WithIcebergRestCatalogSourceParams(*sdk.NewIcebergRestParamsRequest().
-							WithRestConfig(basicRestCfg).
-							WithSigV4RestAuthentication(basicSigV4Auth))
-					testClient().CatalogIntegration.CreateFunc(t, createRequest)
+					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, basicRestCfg, false).
+						WithSigV4RestAuthentication(basicSigV4Auth).
+						WithOrReplace(true)
+					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1298,6 +1352,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			},
 			// Change to different authentication type
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
@@ -1331,10 +1386,10 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 	comment := random.Comment()
 	refreshIntervalSeconds := random.IntRange(30, 86400)
 
-	completeRestAuth := *sdk.NewOAuthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
+	completeRestAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest(oAuthClientId, oAuthClientSecret, []sdk.StringListItemWrapper{{Value: oAuthAllowedScope}}).
 		WithOauthTokenUri(oAuthTokenUri)
 
-	completeRestConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	completeRestConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithPrefix(prefix).
 		WithCatalogName(catalogName).
 		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
@@ -1356,14 +1411,14 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasCatalogNamespace(catalogNamespace).
 			HasFullyQualifiedName(id.FullyQualifiedName()).
-			HasRestConfig(&sdk.IcebergRestRestConfigDetails{
+			HasRestConfig(&sdk.CatalogIntegrationIcebergRestRestConfigDetails{
 				CatalogUri:           catalogUri,
 				Prefix:               prefix,
 				CatalogApiType:       sdk.CatalogIntegrationCatalogApiTypePublic,
 				CatalogName:          catalogName,
 				AccessDelegationMode: sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials,
 			}).
-			HasOauthRestAuthentication(&sdk.OAuthRestAuthenticationDetails{
+			HasOauthRestAuthentication(&sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{
 				OauthTokenUri:      oAuthTokenUri,
 				OauthClientId:      oAuthClientId,
 				OauthClientSecret:  oAuthClientSecret,
@@ -1409,20 +1464,22 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 			HasRefreshIntervalSeconds(refreshIntervalSeconds).
 			HasComment(comment).
 			HasCatalogNamespace(catalogNamespace).
-			HasRestConfigWith(objectassert.NewIcebergRestRestConfigDetailsAssert().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasPrefix(prefix).
 				HasCatalogName(catalogName).
 				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)).
-			HasOAuthRestAuthenticationWith(objectassert.NewOAuthRestAuthenticationDetailsAssert().
+			HasOauthRestAuthenticationWith(objectassert.NewCatalogIntegrationIcebergRestOauthRestAuthenticationDetailsAssert().
 				HasOauthTokenUri(oAuthTokenUri).
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope)),
 	}
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1430,6 +1487,7 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create - with all optionals (including optional force-new fields)
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -1439,18 +1497,31 @@ func TestAcc_CatalogIntegrationIcebergRest_CompleteUseCase(t *testing.T) {
 				ConfigVariables: oauthClientSecretConfigVariables,
 				Check:           assertThat(t, completeAssertions...),
 			},
-			// Import - with all optionals.
-			// ImportOAuth has no ImportStateVerifyIgnore list (it uses ImportStatePersist instead).
-			// These fields cannot round-trip through import:
+			// Import - with all optionals
 			{
-				Config:            config.FromModels(t, complete, oauthClientSecretVariableModel),
-				ConfigVariables:   oauthClientSecretConfigVariables,
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"refresh_interval_seconds",                        // unreadable: Read skips this attribute; value is only compared via describe_output
-					"oauth_rest_authentication.0.oauth_client_secret", // write-only: Snowflake never returns oauth_client_secret (see ImportOAuth)
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, complete, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				// Snowflake never returns oauth_client_secret.
+				ImportStateVerifyIgnore: []string{"oauth_rest_authentication.0.oauth_client_secret"},
+			},
+			// Import - with all optionals, permissive mode
+			// oauth_client_secret is not returned from Snowflake, so the plan after import updates it.
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, complete, oauthClientSecretVariableModel),
+				ConfigVariables:          oauthClientSecretConfigVariables,
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
 				},
 			},
 		},
@@ -1461,9 +1532,9 @@ func TestAcc_CatalogIntegrationIcebergRest_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	catalogUri := "https://api.tabular.io/ws"
 	catalogName := "my_catalog_name"
-	restConfig := *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	restConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogName(catalogName)
-	restAuth := *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}})
+	restAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}})
 
 	oauthClientSecretVariableName := "oauth_client_secret"
 	bearerTokenVariableName := "bearer_token"
@@ -1478,53 +1549,53 @@ func TestAcc_CatalogIntegrationIcebergRest_Validations(t *testing.T) {
 	emptyCatalogNamespace := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, restAuth, oauthClientSecretVariableName).
 		WithCatalogNamespace("")
 
-	emptyCatalogUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(""), restAuth, oauthClientSecretVariableName)
+	emptyCatalogUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(""), restAuth, oauthClientSecretVariableName)
 
-	emptyCatalogName := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	emptyCatalogName := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogName(""), restAuth, oauthClientSecretVariableName)
 
-	invalidCatalogApiType := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	invalidCatalogApiType := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogName(catalogName).
 		WithCatalogApiType("invalid"), restAuth, oauthClientSecretVariableName)
 
-	invalidAccessDelegationMode := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewIcebergRestRestConfigRequest(catalogUri).
+	invalidAccessDelegationMode := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest(catalogUri).
 		WithCatalogName(catalogName).
 		WithAccessDelegationMode("invalid"), restAuth, oauthClientSecretVariableName)
 
-	emptyOAuthTokenUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
+	emptyOAuthTokenUri := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}).
 		WithOauthTokenUri(""), oauthClientSecretVariableName)
 
-	emptyOAuthClientId := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}), oauthClientSecretVariableName)
+	emptyOAuthClientId := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest("", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}), oauthClientSecretVariableName)
 
-	emptyOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}), oauthClientSecretVariableName)
+	emptyOAuthClientSecret := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest("my_client_id", "", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}}), oauthClientSecretVariableName)
 
-	emptyOAuthScopes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}), oauthClientSecretVariableName)
+	emptyOAuthScopes := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{}), oauthClientSecretVariableName)
 
 	emptyBearerToken := model.CatalogIntegrationIcebergRestBearer("t", id.Name(), false, restConfig, bearerTokenVariableName)
 
-	emptySigV4IamRole := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest(""))
+	emptySigV4IamRole := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(""))
 
 	emptySigV4SigningRegion := model.CatalogIntegrationIcebergRestSigV4(
-		"t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
+		"t", id.Name(), false, restConfig, *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
 			WithSigv4SigningRegion(""),
 	)
 
 	emptySigV4ExternalId := model.CatalogIntegrationIcebergRestSigV4(
-		"t", id.Name(), false, restConfig, *sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
+		"t", id.Name(), false, restConfig, *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role").
 			WithSigv4ExternalId(""),
 	)
 
-	noAuthentication := model.CatalogIntegrationIcebergRest("t", id.Name(), false, []sdk.IcebergRestRestConfigRequest{restConfig})
+	noAuthentication := model.CatalogIntegrationIcebergRest("t", id.Name(), false, []sdk.CatalogIntegrationIcebergRestRestConfigRequest{restConfig})
 
 	oauthAndBearer := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, restAuth, oauthClientSecretVariableName).
 		WithBearerRestAuthentication(bearerTokenVariableName)
 
 	oauthAndSigv4 := model.CatalogIntegrationIcebergRestOAuth("t", id.Name(), false, restConfig, restAuth, oauthClientSecretVariableName).
-		WithSigV4RestAuthentication(*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"))
+		WithSigV4RestAuthentication(*sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"))
 
-	bearerAndSigv4 := model.CatalogIntegrationIcebergRest("t", id.Name(), false, []sdk.IcebergRestRestConfigRequest{restConfig}).
+	bearerAndSigv4 := model.CatalogIntegrationIcebergRest("t", id.Name(), false, []sdk.CatalogIntegrationIcebergRestRestConfigRequest{restConfig}).
 		WithBearerRestAuthentication(bearerTokenVariableName).
-		WithSigV4RestAuthentication(*sdk.NewSigV4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"))
+		WithSigV4RestAuthentication(*sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest("arn:aws:iam::123456789012:role/role"))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1645,9 +1716,9 @@ func TestAcc_CatalogIntegrationIcebergRest_Validations(t *testing.T) {
 }
 
 func TestAcc_CatalogIntegrationIcebergRest_BasicUseCase_ImportValidation(t *testing.T) {
-	restConfig := *sdk.NewIcebergRestRestConfigRequest("https://api.tabular.io/ws").
+	restConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest("https://api.tabular.io/ws").
 		WithCatalogName("my_catalog_name")
-	restAuth := *sdk.NewOAuthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}})
+	restAuth := *sdk.NewCatalogIntegrationIcebergRestOauthRestAuthenticationRequest("my_client_id", "my_client_secret", []sdk.StringListItemWrapper{{Value: "PRINCIPAL_ROLE:ALL"}})
 	oauthClientSecretVariableName := "oauth_client_secret"
 	oauthClientSecretVariableModel, oauthClientSecretConfigVariables := config.SecretStringVariableModelWithConfigVariables(oauthClientSecretVariableName, "my_client_secret")
 

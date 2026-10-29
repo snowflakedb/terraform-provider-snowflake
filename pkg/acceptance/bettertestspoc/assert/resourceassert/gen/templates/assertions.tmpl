@@ -12,7 +12,13 @@
         func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}(expected {{ .ExpectedType }}) *{{ $assertName }} {
             {{ $assertVar }}.{{ .AssertionCreator }}("{{ .Name }}", expected{{ if .IsCollection}}...{{ end }})
             return {{ $assertVar }}
+        }{{ if .SdkType }}{{/* TODO [next PRs]: migrate ssot-derived assertion generation to only the new methods. */}}
+
+        func ({{ $assertVar }} *{{ $assertName }}) Has{{ SnakeCaseToCamel .Name }}{{ SdkMethodSuffix .SdkType }}(expected {{ .SdkType }}) *{{ $assertName }} {
+            {{ $assertVar }}.StringValueSet("{{ .Name }}", {{ RunMapper (SdkValueMapper .SdkKind) "expected" }})
+            return {{ $assertVar }}
         }
+        {{ end }}
 
     {{ else -}}
         // typed assert for "{{ .Name }}" (type: {{ .Type }}{{ if .SubType }}, subtype: {{ .SubType }}{{ end }}) is not currently supported

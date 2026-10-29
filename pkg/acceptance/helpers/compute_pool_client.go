@@ -28,7 +28,7 @@ func (c *ComputePoolClient) Create(t *testing.T) (*sdk.ComputePool, func()) {
 	t.Helper()
 
 	id := c.ids.RandomAccountObjectIdentifier()
-	return c.CreateWithRequest(t, sdk.NewCreateComputePoolRequest(id, 1, 1, sdk.ComputePoolInstanceFamilyCpuX64XS))
+	return c.CreateWithRequest(t, sdk.NewCreateComputePoolRequest(id, 1, 1, sdk.ComputePoolInstanceFamilyCpuX64Xs))
 }
 
 func (c *ComputePoolClient) CreateWithRequest(t *testing.T, req *sdk.CreateComputePoolRequest) (*sdk.ComputePool, func()) {

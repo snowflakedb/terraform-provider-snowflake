@@ -2,7 +2,7 @@ package sdk
 
 import (
 	"context"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -17,9 +17,9 @@ type testTasks struct {
 }
 
 func (v *testTasks) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Task, error) {
-	t, ok := v.stubbedTasks[id.Name()]
+	t, ok := v.stubbedTasks[id.FullyQualifiedName()]
 	if !ok {
-		return nil, errors.New("no task configured, check test config")
+		return nil, fmt.Errorf("no task configured for %s, check test config", id.FullyQualifiedName())
 	}
 	return t, nil
 }
@@ -40,7 +40,8 @@ func TestTasks_GetRootTasks(t *testing.T) {
 				predecessors[i] = NewSchemaObjectIdentifier(db, sc, predecessor)
 			}
 			t.Predecessors = predecessors
-			r[k] = &t
+			t.TaskRelations.Predecessors = predecessors
+			r[t.ID().FullyQualifiedName()] = &t
 		}
 		return r
 	}
@@ -81,6 +82,56 @@ func TestTasks_GetRootTasks(t *testing.T) {
 				assert.Contains(t, expected, v.Name)
 			}
 			require.Len(t, rootTasks, len(expected))
+		})
+	}
+}
+
+func TestTasks_GetRootTasks_FromShowOutput(t *testing.T) {
+	tests := []struct {
+		name        string
+		database    string
+		schema      string
+		root        string
+		predecessor string
+	}{
+		{"unquoted identifiers", "DATABASE", "SCHEMA", "ROOT", `DATABASE.SCHEMA.ROOT`},
+		{"quoted database", "Example staging", "SCHEMA", "ROOT", `"Example staging".SCHEMA.ROOT`},
+		{"quoted database and schema", "Example staging", "Mixed schema", "ROOT", `"Example staging"."Mixed schema".ROOT`},
+		{"task name containing a dot", "Example staging", "SCHEMA", "ROOT.TASK", `"Example staging".SCHEMA."ROOT.TASK"`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rootId := NewSchemaObjectIdentifier(tt.database, tt.schema, tt.root)
+			predecessors, err := json.Marshal([]string{tt.predecessor})
+			require.NoError(t, err)
+			relations, err := json.Marshal(TaskRelationsRepresentation{Predecessors: []string{tt.predecessor}})
+			require.NoError(t, err)
+
+			// Convert both SHOW TASKS columns before traversing the graph, just as ShowByID does.
+			child, err := (taskDBRow{
+				DatabaseName:  tt.database,
+				SchemaName:    tt.schema,
+				Name:          "CHILD",
+				Predecessors:  string(predecessors),
+				TaskRelations: string(relations),
+			}).convert()
+			require.NoError(t, err)
+			root, err := (taskDBRow{
+				DatabaseName:  tt.database,
+				SchemaName:    tt.schema,
+				Name:          tt.root,
+				Predecessors:  "[]",
+				TaskRelations: `{"Predecessors":[]}`,
+			}).convert()
+			require.NoError(t, err)
+
+			client := &testTasks{stubbedTasks: map[string]*Task{
+				child.ID().FullyQualifiedName(): child,
+				rootId.FullyQualifiedName():     root,
+			}}
+			roots, err := GetRootTasks(client, context.Background(), child.ID())
+			require.NoError(t, err)
+			require.Equal(t, []Task{*root}, roots)
 		})
 	}
 }

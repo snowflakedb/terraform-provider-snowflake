@@ -10,9 +10,11 @@ import (
 	"os"
 	"slices"
 	"strings"
+	"sync"
 	"text/template"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"golang.org/x/sync/errgroup"
 )
 
 // TODO [SNOW-1501905]: describe
@@ -22,7 +24,7 @@ type ObjectNameProvider interface {
 
 type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	objectsProvider func() []T
-	modelProvider   func(T, *PreambleModel) M
+	modelProvider   func(T, *PreambleModel, *log.Logger) M
 	// TODO [SNOW-1501905]: consider adding filename to model?
 	filenameProvider func(T, M) string
 	templates        []*template.Template
@@ -32,10 +34,13 @@ type Generator[T ObjectNameProvider, M HasPreambleModel] struct {
 	additionalObjectDebugLogProviders []func([]T)
 	objectFilters                     []func(T) bool
 	generationPartFilters             []func(GenerationPart[T, M]) bool
+	objectPrepare                     func(T, *log.Logger)
 
 	description         string
 	makefileCommandPart string
 	cliEnabledParts     []string
+	// parallelism is the number of objects generated at once. Values <= 1 keep the sequential loop.
+	parallelism int
 
 	preamble *PreambleModel
 }
@@ -65,7 +70,7 @@ func NewGenerationPart[T ObjectNameProvider, M HasPreambleModel](name Generation
 	}
 }
 
-func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
+func NewGenerator[T ObjectNameProvider, M HasPreambleModel](preamble *PreambleModel, objectsProvider func() []T, modelProvider func(T, *PreambleModel, *log.Logger) M, filenameProvider func(T, M) string, templates []*template.Template) *Generator[T, M] {
 	// TODO [SNOW-2324252]: handle vararg input
 	parts := []GenerationPart[T, M]{
 		// TODO [SNOW-2324252]: change default to name when changing to vararg
@@ -136,6 +141,13 @@ func (g *Generator[T, M]) WithAdditionalObjectFilter(objectFilter func(T) bool) 
 
 func (g *Generator[T, M]) WithAdditionalGenerationPartFilter(generationPartFilter func(GenerationPart[T, M]) bool) *Generator[T, M] {
 	g.generationPartFilters = append(g.generationPartFilters, generationPartFilter)
+	return g
+}
+
+// WithObjectPrepare runs prepare once per object, on that object's logger, after filtering and before the model provider.
+// The function mutates the object and must be safe to call once. It runs on the same worker that generates the object.
+func (g *Generator[T, M]) WithObjectPrepare(prepare func(T, *log.Logger)) *Generator[T, M] {
+	g.objectPrepare = prepare
 	return g
 }
 
@@ -210,6 +222,7 @@ func (g *Generator[T, M]) Run() error {
 
 	additionalLogs := flag.Bool("verbose", false, "print additional object debug logs")
 	dryRun := flag.Bool("dry-run", false, "generate to std out instead of saving")
+	parallelism := flag.Int("parallelism", 1, "number of goroutines used to generate objects after filtering; 1 keeps sequential generation; ignored with --dry-run")
 	flag.Var(filterObjects, filterObjects.flagName(), filterObjects.usage())
 	flag.Var(filterParts, filterParts.flagName(), filterParts.usage())
 	flag.Var(excludeObjects, excludeObjects.flagName(), excludeObjects.usage())
@@ -240,6 +253,11 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 	}
 
 	flag.Parse()
+
+	if *parallelism < 1 {
+		return fmt.Errorf("--parallelism must be >= 1, got %d", *parallelism)
+	}
+	g.parallelism = *parallelism
 
 	if filterObjects.hasValues() {
 		fmt.Printf("Object filters present: %s\n", filterObjects)
@@ -325,16 +343,12 @@ usage: make [clean-%[2]s] generate-%[2]s SF_TF_GENERATOR_ARGS='<args>'
 	}
 
 	if *dryRun {
-		if err := g.generateAndPrint(objects, parts); err != nil {
-			return err
+		if g.parallelism > 1 {
+			log.Printf("--dry-run ignores --parallelism; generation is sequential")
 		}
-	} else {
-		if err := g.generateAndSave(objects, parts); err != nil {
-			return err
-		}
+		return g.generateAndPrint(objects, parts)
 	}
-
-	return nil
+	return g.generateAndSave(objects, parts)
 }
 
 // We would like to be able to alter the generator behavior based on the command line flags.
@@ -378,47 +392,116 @@ func (g *Generator[_, _]) RunAndHandleOsReturn() {
 }
 
 func (g *Generator[T, M]) generateAndSave(objects []T, parts []GenerationPart[T, M]) error {
+	if g.parallelism <= 1 {
+		return g.generateAndSaveSequential(objects, parts)
+	}
+	return g.generateAndSaveParallel(objects, parts)
+}
+
+func (g *Generator[T, M]) generateAndSaveSequential(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
-	for _, s := range objects {
-		model := g.modelProvider(s, g.preamble)
-
-		for _, p := range g.effectivePartsForObject(s, parts) {
-			if p.condition != nil && !p.condition(s) {
-				log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
-				continue
-			}
-			buffer := bytes.Buffer{}
-
-			if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
-				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
-				continue
-			}
-			filename := p.filenameProvider(s, model)
-			if err := WriteCodeToFile(&buffer, filename); err != nil {
-				errs = append(errs, fmt.Errorf("saving output for object %s to file %s failed with err: %w", s.ObjectName(), filename, err))
-				continue
-			}
+	for _, object := range objects {
+		batch, err := g.generateObject(object, parts)
+		emitObjectLogBatch(batch)
+		if err != nil {
+			errs = append(errs, err)
 		}
 	}
 	return errors.Join(errs...)
 }
 
+func (g *Generator[T, M]) generateAndSaveParallel(objects []T, parts []GenerationPart[T, M]) error {
+	var grp errgroup.Group
+	grp.SetLimit(g.parallelism)
+
+	// Return nil from each worker so one object failure does not skip the rest.
+	// Sequential generation reports every object error; this keeps that behavior.
+	batches := make([]string, len(objects))
+	var mu sync.Mutex
+	var errs []error
+	for i, object := range objects {
+		grp.Go(func() error {
+			batch, err := g.generateObject(object, parts)
+			batches[i] = batch
+			if err != nil {
+				mu.Lock()
+				errs = append(errs, err)
+				mu.Unlock()
+			}
+			return nil
+		})
+	}
+	if err := grp.Wait(); err != nil {
+		return err
+	}
+	for _, batch := range batches {
+		emitObjectLogBatch(batch)
+	}
+	return errors.Join(errs...)
+}
+
+func (g *Generator[T, M]) generateObject(object T, parts []GenerationPart[T, M]) (string, error) {
+	var batch bytes.Buffer
+	objectLog := log.New(&batch, object.ObjectName()+": ", log.LstdFlags)
+	if g.objectPrepare != nil {
+		g.objectPrepare(object, objectLog)
+	}
+
+	var errs []error
+	model := g.modelProvider(object, g.preamble, objectLog)
+
+	for _, p := range g.effectivePartsForObject(object, parts) {
+		if p.condition != nil && !p.condition(object) {
+			objectLog.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, object.ObjectName())
+			continue
+		}
+		buffer := bytes.Buffer{}
+
+		if err := executeAllTemplates(model, &buffer, p.templates...); err != nil {
+			errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", object.ObjectName(), err))
+			continue
+		}
+		filename := p.filenameProvider(object, model)
+		if err := WriteCodeToFile(&buffer, filename); err != nil {
+			errs = append(errs, fmt.Errorf("saving output for object %s to file %s failed with err: %w", object.ObjectName(), filename, err))
+			continue
+		}
+	}
+	return batch.String(), errors.Join(errs...)
+}
+
+// emitObjectLogBatch writes one object's buffered logs as a single logger record.
+// An empty batch writes nothing. log.Output holds the process logger lock for the whole block.
+func emitObjectLogBatch(batch string) {
+	if batch == "" {
+		return
+	}
+	_ = log.Output(2, batch)
+}
+
 func (g *Generator[T, M]) generateAndPrint(objects []T, parts []GenerationPart[T, M]) error {
 	var errs []error
 	for _, s := range objects {
+		var batch bytes.Buffer
+		objectLog := log.New(&batch, s.ObjectName()+": ", log.LstdFlags)
+		if g.objectPrepare != nil {
+			g.objectPrepare(s, objectLog)
+		}
+
 		fmt.Println("===========================")
 		fmt.Printf("Generating for object %s\n", s.ObjectName())
 		fmt.Println("===========================")
 		for _, p := range g.effectivePartsForObject(s, parts) {
 			if p.condition != nil && !p.condition(s) {
-				log.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
+				objectLog.Printf("[DEBUG] Condition for generation part %s in object %s not satisfied, skipping", p.name, s.ObjectName())
 				continue
 			}
-			if err := executeAllTemplates(g.modelProvider(s, g.preamble), os.Stdout, p.templates...); err != nil {
+			if err := executeAllTemplates(g.modelProvider(s, g.preamble, objectLog), os.Stdout, p.templates...); err != nil {
 				errs = append(errs, fmt.Errorf("generating output for object %s failed with err: %w", s.ObjectName(), err))
 				continue
 			}
 		}
+		emitObjectLogBatch(batch.String())
 	}
 	return errors.Join(errs...)
 }

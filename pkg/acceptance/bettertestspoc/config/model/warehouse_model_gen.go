@@ -4,9 +4,11 @@ package model
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -16,7 +18,6 @@ type WarehouseModel struct {
 	AutoSuspend                     tfconfig.Variable `json:"auto_suspend,omitempty"`
 	Comment                         tfconfig.Variable `json:"comment,omitempty"`
 	EnableQueryAcceleration         tfconfig.Variable `json:"enable_query_acceleration,omitempty"`
-	FullyQualifiedName              tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Generation                      tfconfig.Variable `json:"generation,omitempty"`
 	InitiallySuspended              tfconfig.Variable `json:"initially_suspended,omitempty"`
 	MaxClusterCount                 tfconfig.Variable `json:"max_cluster_count,omitempty"`
@@ -103,6 +104,11 @@ func (w *WarehouseModel) WithAutoResume(autoResume string) *WarehouseModel {
 	return w
 }
 
+func (w *WarehouseModel) WithAutoResumeBool(autoResume bool) *WarehouseModel {
+	w.AutoResume = tfconfig.StringVariable(strconv.FormatBool(autoResume))
+	return w
+}
+
 func (w *WarehouseModel) WithAutoSuspend(autoSuspend int) *WarehouseModel {
 	w.AutoSuspend = tfconfig.IntegerVariable(autoSuspend)
 	return w
@@ -118,13 +124,18 @@ func (w *WarehouseModel) WithEnableQueryAcceleration(enableQueryAcceleration str
 	return w
 }
 
-func (w *WarehouseModel) WithFullyQualifiedName(fullyQualifiedName string) *WarehouseModel {
-	w.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (w *WarehouseModel) WithEnableQueryAccelerationBool(enableQueryAcceleration bool) *WarehouseModel {
+	w.EnableQueryAcceleration = tfconfig.StringVariable(strconv.FormatBool(enableQueryAcceleration))
 	return w
 }
 
 func (w *WarehouseModel) WithGeneration(generation string) *WarehouseModel {
 	w.Generation = tfconfig.StringVariable(generation)
+	return w
+}
+
+func (w *WarehouseModel) WithGenerationSdk(generation sdk.WarehouseGeneration) *WarehouseModel {
+	w.Generation = tfconfig.StringVariable(string(generation))
 	return w
 }
 
@@ -158,13 +169,28 @@ func (w *WarehouseModel) WithResourceConstraint(resourceConstraint string) *Ware
 	return w
 }
 
+func (w *WarehouseModel) WithResourceConstraintSdk(resourceConstraint sdk.WarehouseResourceConstraint) *WarehouseModel {
+	w.ResourceConstraint = tfconfig.StringVariable(string(resourceConstraint))
+	return w
+}
+
 func (w *WarehouseModel) WithResourceMonitor(resourceMonitor string) *WarehouseModel {
 	w.ResourceMonitor = tfconfig.StringVariable(resourceMonitor)
 	return w
 }
 
+func (w *WarehouseModel) WithResourceMonitorSdk(resourceMonitor sdk.AccountObjectIdentifier) *WarehouseModel {
+	w.ResourceMonitor = tfconfig.StringVariable(resourceMonitor.Name())
+	return w
+}
+
 func (w *WarehouseModel) WithScalingPolicy(scalingPolicy string) *WarehouseModel {
 	w.ScalingPolicy = tfconfig.StringVariable(scalingPolicy)
+	return w
+}
+
+func (w *WarehouseModel) WithScalingPolicySdk(scalingPolicy sdk.ScalingPolicy) *WarehouseModel {
+	w.ScalingPolicy = tfconfig.StringVariable(string(scalingPolicy))
 	return w
 }
 
@@ -183,8 +209,18 @@ func (w *WarehouseModel) WithWarehouseSize(warehouseSize string) *WarehouseModel
 	return w
 }
 
+func (w *WarehouseModel) WithWarehouseSizeSdk(warehouseSize sdk.WarehouseSize) *WarehouseModel {
+	w.WarehouseSize = tfconfig.StringVariable(string(warehouseSize))
+	return w
+}
+
 func (w *WarehouseModel) WithWarehouseType(warehouseType string) *WarehouseModel {
 	w.WarehouseType = tfconfig.StringVariable(warehouseType)
+	return w
+}
+
+func (w *WarehouseModel) WithWarehouseTypeSdk(warehouseType sdk.WarehouseType) *WarehouseModel {
+	w.WarehouseType = tfconfig.StringVariable(string(warehouseType))
 	return w
 }
 
@@ -214,11 +250,6 @@ func (w *WarehouseModel) WithCommentValue(value tfconfig.Variable) *WarehouseMod
 
 func (w *WarehouseModel) WithEnableQueryAccelerationValue(value tfconfig.Variable) *WarehouseModel {
 	w.EnableQueryAcceleration = value
-	return w
-}
-
-func (w *WarehouseModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *WarehouseModel {
-	w.FullyQualifiedName = value
 	return w
 }
 

@@ -15,6 +15,8 @@ description: |-
 
 -> **Note** This resource does not support all account parameters. The supported ones are listed below. This feature gap will be addressed in future releases.
 
+~> **Note** A new `OBJECT_PARAMETER_PARSE_ON_SET` experimental feature is available for this resource. When enabled, covered parameters are parsed with the same rules as the provider's typed parameter fields, instead of sending `value` as a raw SQL token. String values are quoted by the provider, and a value that does not match the parameter fails in the provider. Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Anything not covered yet keeps the previous behavior. This includes enum values added by Snowflake before the provider catalog recognizes them; the provider logs a warning before falling back. To enable the experiment, add `OBJECT_PARAMETER_PARSE_ON_SET` to the [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) provider field. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#opt-in-experiment-parse-snowflake_object_parameter-values-on-set) for details.
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}

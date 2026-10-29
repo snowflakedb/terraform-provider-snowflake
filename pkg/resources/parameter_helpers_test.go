@@ -3,9 +3,9 @@ package resources
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/defs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
@@ -89,7 +89,7 @@ func TestHandleSchemaParameterRead(t *testing.T) {
 	}
 	d := schema.TestResourceDataRaw(t, schemaParametersAttributesSchema, state)
 
-	diags := schemaSetParametersFieldsExt(d, &sdk.SchemaParametersDetails{
+	diags := schemaSetParametersFields(d, &sdk.SchemaParametersDetails{
 		ExternalVolume:          sdk.TypedParameter[sdk.AccountObjectIdentifier]{Value: sdk.NewAccountObjectIdentifier("external_volume")},
 		Catalog:                 sdk.TypedParameter[sdk.AccountObjectIdentifier]{},
 		DataRetentionTimeInDays: sdk.TypedParameter[int]{Value: 7},
@@ -117,12 +117,46 @@ func TestParameterSchema_AllCatalogKindsAreHandled(t *testing.T) {
 	}
 }
 
+func TestParameterSchemaFromDefinition_matchesCatalogBackedSchema(t *testing.T) {
+	testCases := []struct {
+		parameter ssot.ParameterDef
+		valid     any
+		invalid   any
+	}{
+		{parameter: defs.DataRetentionTimeInDays, valid: 0, invalid: -1},
+		{parameter: defs.LogLevel, valid: "INFO", invalid: "INVALID"},
+		{parameter: defs.InitialReplicationSizeLimitInTb, valid: "9.9", invalid: "not-a-float"},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.parameter.SqlName, func(t *testing.T) {
+			fromCatalog := parameterSchema(tt.parameter)
+			fromGeneratedDefinition := parameterSchemaFromDefinition(parameterSchemaDefinition{
+				sqlName:     tt.parameter.SqlName,
+				kind:        tt.parameter.Kind,
+				description: tt.parameter.Description,
+			})
+
+			require.Equal(t, fromCatalog.Type, fromGeneratedDefinition.Type)
+			require.Equal(t, fromCatalog.Description, fromGeneratedDefinition.Description)
+			require.Equal(t, fromCatalog.Optional, fromGeneratedDefinition.Optional)
+			require.Equal(t, fromCatalog.Computed, fromGeneratedDefinition.Computed)
+			require.Equal(t, fromCatalog.ValidateDiagFunc == nil, fromGeneratedDefinition.ValidateDiagFunc == nil)
+			require.Equal(t, fromCatalog.DiffSuppressFunc == nil, fromGeneratedDefinition.DiffSuppressFunc == nil)
+
+			path := cty.IndexStringPath(tt.parameter.FieldName())
+			require.Equal(t, fromCatalog.ValidateDiagFunc(tt.valid, path), fromGeneratedDefinition.ValidateDiagFunc(tt.valid, path))
+			require.Equal(t, fromCatalog.ValidateDiagFunc(tt.invalid, path), fromGeneratedDefinition.ValidateDiagFunc(tt.invalid, path))
+		})
+	}
+}
+
 func TestParameterSchema_PanicsForUnhandledKind(t *testing.T) {
 	require.PanicsWithValue(
 		t,
 		`parameter EXAMPLE has unhandled kind "UnhandledKind"; register it as a primitive, enum, or identifier kind`,
 		func() {
-			parameterSchema(parameterdefs.ParameterDef{SqlName: "EXAMPLE", Kind: "UnhandledKind"})
+			parameterSchema(ssot.ParameterDef{SqlName: "EXAMPLE", Kind: "UnhandledKind"})
 		},
 	)
 }
@@ -130,7 +164,7 @@ func TestParameterSchema_PanicsForUnhandledKind(t *testing.T) {
 func TestParameterSchema_AccountSpecificValidation(t *testing.T) {
 	testCases := []struct {
 		name      string
-		parameter parameterdefs.ParameterDef
+		parameter ssot.ParameterDef
 		valid     any
 		invalid   any
 	}{

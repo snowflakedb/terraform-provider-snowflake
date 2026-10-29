@@ -11,18 +11,15 @@ import (
 )
 
 type PipeModel struct {
-	Database            tfconfig.Variable `json:"database,omitempty"`
-	Schema              tfconfig.Variable `json:"schema,omitempty"`
-	Name                tfconfig.Variable `json:"name,omitempty"`
-	AutoIngest          tfconfig.Variable `json:"auto_ingest,omitempty"`
-	AwsSnsTopicArn      tfconfig.Variable `json:"aws_sns_topic_arn,omitempty"`
-	Comment             tfconfig.Variable `json:"comment,omitempty"`
-	CopyStatement       tfconfig.Variable `json:"copy_statement,omitempty"`
-	ErrorIntegration    tfconfig.Variable `json:"error_integration,omitempty"`
-	FullyQualifiedName  tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Integration         tfconfig.Variable `json:"integration,omitempty"`
-	NotificationChannel tfconfig.Variable `json:"notification_channel,omitempty"`
-	Owner               tfconfig.Variable `json:"owner,omitempty"`
+	Database         tfconfig.Variable `json:"database,omitempty"`
+	Schema           tfconfig.Variable `json:"schema,omitempty"`
+	Name             tfconfig.Variable `json:"name,omitempty"`
+	AutoIngest       tfconfig.Variable `json:"auto_ingest,omitempty"`
+	AwsSnsTopicArn   tfconfig.Variable `json:"aws_sns_topic_arn,omitempty"`
+	Comment          tfconfig.Variable `json:"comment,omitempty"`
+	CopyStatement    tfconfig.Variable `json:"copy_statement,omitempty"`
+	ErrorIntegration tfconfig.Variable `json:"error_integration,omitempty"`
+	Integration      tfconfig.Variable `json:"integration,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -138,23 +135,8 @@ func (p *PipeModel) WithErrorIntegration(errorIntegration string) *PipeModel {
 	return p
 }
 
-func (p *PipeModel) WithFullyQualifiedName(fullyQualifiedName string) *PipeModel {
-	p.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return p
-}
-
 func (p *PipeModel) WithIntegration(integration string) *PipeModel {
 	p.Integration = tfconfig.StringVariable(integration)
-	return p
-}
-
-func (p *PipeModel) WithNotificationChannel(notificationChannel string) *PipeModel {
-	p.NotificationChannel = tfconfig.StringVariable(notificationChannel)
-	return p
-}
-
-func (p *PipeModel) WithOwner(owner string) *PipeModel {
-	p.Owner = tfconfig.StringVariable(owner)
 	return p
 }
 
@@ -202,22 +184,7 @@ func (p *PipeModel) WithErrorIntegrationValue(value tfconfig.Variable) *PipeMode
 	return p
 }
 
-func (p *PipeModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *PipeModel {
-	p.FullyQualifiedName = value
-	return p
-}
-
 func (p *PipeModel) WithIntegrationValue(value tfconfig.Variable) *PipeModel {
 	p.Integration = value
-	return p
-}
-
-func (p *PipeModel) WithNotificationChannelValue(value tfconfig.Variable) *PipeModel {
-	p.NotificationChannel = value
-	return p
-}
-
-func (p *PipeModel) WithOwnerValue(value tfconfig.Variable) *PipeModel {
-	p.Owner = value
 	return p
 }

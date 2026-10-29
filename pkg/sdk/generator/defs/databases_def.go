@@ -3,6 +3,7 @@ package defs
 import (
 	"slices"
 
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -16,7 +17,7 @@ var databaseParameterFieldNames = collections.Map(databaseParameters, g.Paramete
 
 // CREATE DATABASE ... FROM SHARE does not accept the retention parameters.
 var databaseSharedCreateParameters = collections.Filter(databaseParameters, func(p parameterdefs.ParameterDef) bool {
-	return p.SqlName != DataRetentionTimeInDays.SqlName && p.SqlName != MaxDataExtensionTimeInDays.SqlName
+	return p.SqlName != ssotdefs.DataRetentionTimeInDays.SqlName && p.SqlName != ssotdefs.MaxDataExtensionTimeInDays.SqlName
 })
 
 // The values are not listed in https://docs.snowflake.com/en/sql-reference/sql/show-databases,

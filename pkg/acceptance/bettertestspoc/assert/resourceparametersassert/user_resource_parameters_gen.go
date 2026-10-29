@@ -55,6 +55,11 @@ func (u *UserResourceParametersAssert) HasAbortDetachedQuery(expected bool) *Use
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasActivePythonProfiler(expected sdk.ActivePythonProfiler) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterActivePythonProfiler), string(expected))
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasAutocommit(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterAutocommit), expected)
 	return u
@@ -70,6 +75,11 @@ func (u *UserResourceParametersAssert) HasBinaryOutputFormat(expected sdk.Binary
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasClientEnableLogInfoStatementParameters(expected bool) *UserResourceParametersAssert {
+	u.ParameterBoolValueSet(string(sdk.UserParameterClientEnableLogInfoStatementParameters), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasClientMemoryLimit(expected int) *UserResourceParametersAssert {
 	u.ParameterIntValueSet(string(sdk.UserParameterClientMemoryLimit), expected)
 	return u
@@ -77,6 +87,11 @@ func (u *UserResourceParametersAssert) HasClientMemoryLimit(expected int) *UserR
 
 func (u *UserResourceParametersAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterClientMetadataRequestUseConnectionCtx), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasClientMetadataUseSessionDatabase(expected bool) *UserResourceParametersAssert {
+	u.ParameterBoolValueSet(string(sdk.UserParameterClientMetadataUseSessionDatabase), expected)
 	return u
 }
 
@@ -110,6 +125,11 @@ func (u *UserResourceParametersAssert) HasClientTimestampTypeMapping(expected sd
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasCsvTimestampFormat(expected string) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterCsvTimestampFormat), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasDateInputFormat(expected string) *UserResourceParametersAssert {
 	u.ParameterValueSet(string(sdk.UserParameterDateInputFormat), expected)
 	return u
@@ -117,6 +137,11 @@ func (u *UserResourceParametersAssert) HasDateInputFormat(expected string) *User
 
 func (u *UserResourceParametersAssert) HasDateOutputFormat(expected string) *UserResourceParametersAssert {
 	u.ParameterValueSet(string(sdk.UserParameterDateOutputFormat), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *UserResourceParametersAssert {
+	u.ParameterBoolValueSet(string(sdk.UserParameterEnableGetDdlUseDataTypeAlias), expected)
 	return u
 }
 
@@ -150,6 +175,11 @@ func (u *UserResourceParametersAssert) HasGeometryOutputFormat(expected sdk.Geom
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasHybridTableLockTimeout(expected int) *UserResourceParametersAssert {
+	u.ParameterIntValueSet(string(sdk.UserParameterHybridTableLockTimeout), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasJdbcTreatDecimalAsInt(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterJdbcTreatDecimalAsInt), expected)
 	return u
@@ -162,6 +192,11 @@ func (u *UserResourceParametersAssert) HasJdbcTreatTimestampNtzAsUtc(expected bo
 
 func (u *UserResourceParametersAssert) HasJdbcUseSessionTimezone(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterJdbcUseSessionTimezone), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasJsTreatIntegerAsBigint(expected bool) *UserResourceParametersAssert {
+	u.ParameterBoolValueSet(string(sdk.UserParameterJsTreatIntegerAsBigint), expected)
 	return u
 }
 
@@ -202,6 +237,16 @@ func (u *UserResourceParametersAssert) HasOdbcTreatDecimalAsInt(expected bool) *
 
 func (u *UserResourceParametersAssert) HasPreventUnloadToInternalStages(expected bool) *UserResourceParametersAssert {
 	u.ParameterBoolValueSet(string(sdk.UserParameterPreventUnloadToInternalStages), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasPythonProfilerModules(expected string) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterPythonProfilerModules), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasPythonProfilerTargetStage(expected string) *UserResourceParametersAssert {
+	u.ParameterValueSet(string(sdk.UserParameterPythonProfilerTargetStage), expected)
 	return u
 }
 
@@ -354,6 +399,11 @@ func (u *UserResourceParametersAssert) HasAbortDetachedQueryLevel(expected sdk.P
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasActivePythonProfilerLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterActivePythonProfiler), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasAutocommitLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterAutocommit), expected)
 	return u
@@ -369,6 +419,11 @@ func (u *UserResourceParametersAssert) HasBinaryOutputFormatLevel(expected sdk.P
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasClientEnableLogInfoStatementParametersLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterClientEnableLogInfoStatementParameters), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasClientMemoryLimitLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterClientMemoryLimit), expected)
 	return u
@@ -376,6 +431,11 @@ func (u *UserResourceParametersAssert) HasClientMemoryLimitLevel(expected sdk.Pa
 
 func (u *UserResourceParametersAssert) HasClientMetadataRequestUseConnectionCtxLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterClientMetadataRequestUseConnectionCtx), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasClientMetadataUseSessionDatabaseLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterClientMetadataUseSessionDatabase), expected)
 	return u
 }
 
@@ -409,6 +469,11 @@ func (u *UserResourceParametersAssert) HasClientTimestampTypeMappingLevel(expect
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasCsvTimestampFormatLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterCsvTimestampFormat), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasDateInputFormatLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterDateInputFormat), expected)
 	return u
@@ -416,6 +481,11 @@ func (u *UserResourceParametersAssert) HasDateInputFormatLevel(expected sdk.Para
 
 func (u *UserResourceParametersAssert) HasDateOutputFormatLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterDateOutputFormat), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasEnableGetDdlUseDataTypeAliasLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterEnableGetDdlUseDataTypeAlias), expected)
 	return u
 }
 
@@ -449,6 +519,11 @@ func (u *UserResourceParametersAssert) HasGeometryOutputFormatLevel(expected sdk
 	return u
 }
 
+func (u *UserResourceParametersAssert) HasHybridTableLockTimeoutLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterHybridTableLockTimeout), expected)
+	return u
+}
+
 func (u *UserResourceParametersAssert) HasJdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterJdbcTreatDecimalAsInt), expected)
 	return u
@@ -461,6 +536,11 @@ func (u *UserResourceParametersAssert) HasJdbcTreatTimestampNtzAsUtcLevel(expect
 
 func (u *UserResourceParametersAssert) HasJdbcUseSessionTimezoneLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterJdbcUseSessionTimezone), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasJsTreatIntegerAsBigintLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterJsTreatIntegerAsBigint), expected)
 	return u
 }
 
@@ -501,6 +581,16 @@ func (u *UserResourceParametersAssert) HasOdbcTreatDecimalAsIntLevel(expected sd
 
 func (u *UserResourceParametersAssert) HasPreventUnloadToInternalStagesLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
 	u.ParameterLevelSet(string(sdk.UserParameterPreventUnloadToInternalStages), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasPythonProfilerModulesLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterPythonProfilerModules), expected)
+	return u
+}
+
+func (u *UserResourceParametersAssert) HasPythonProfilerTargetStageLevel(expected sdk.ParameterType) *UserResourceParametersAssert {
+	u.ParameterLevelSet(string(sdk.UserParameterPythonProfilerTargetStage), expected)
 	return u
 }
 

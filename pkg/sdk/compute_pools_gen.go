@@ -21,23 +21,23 @@ type ComputePools interface {
 
 // CreateComputePoolOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool.
 type CreateComputePoolOptions struct {
-	create                 bool                                      `ddl:"static" sql:"CREATE"`
-	computePool            bool                                      `ddl:"static" sql:"COMPUTE POOL"`
-	IfNotExists            *bool                                     `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                   AccountObjectIdentifier                   `ddl:"identifier"`
-	ForApplication         *AccountObjectIdentifier                  `ddl:"identifier" sql:"FOR APPLICATION"`
-	MinNodes               int                                       `ddl:"parameter" sql:"MIN_NODES"`
-	MaxNodes               int                                       `ddl:"parameter" sql:"MAX_NODES"`
-	InstanceFamily         ComputePoolInstanceFamily                 `ddl:"parameter,no_quotes" sql:"INSTANCE_FAMILY"`
-	AutoResume             *bool                                     `ddl:"parameter" sql:"AUTO_RESUME"`
-	InitiallySuspended     *bool                                     `ddl:"parameter" sql:"INITIALLY_SUSPENDED"`
-	AutoSuspendSecs        *int                                      `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
-	Tag                    []TagAssociation                          `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment                *string                                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem `ddl:"parameter,parentheses" sql:"BACKUP_INSTANCE_FAMILIES"`
+	create                 bool                                `ddl:"static" sql:"CREATE"`
+	computePool            bool                                `ddl:"static" sql:"COMPUTE POOL"`
+	IfNotExists            *bool                               `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                   AccountObjectIdentifier             `ddl:"identifier"`
+	ForApplication         *AccountObjectIdentifier            `ddl:"identifier" sql:"FOR APPLICATION"`
+	MinNodes               int                                 `ddl:"parameter" sql:"MIN_NODES"`
+	MaxNodes               int                                 `ddl:"parameter" sql:"MAX_NODES"`
+	InstanceFamily         ComputePoolInstanceFamily           `ddl:"parameter,no_quotes" sql:"INSTANCE_FAMILY"`
+	AutoResume             *bool                               `ddl:"parameter" sql:"AUTO_RESUME"`
+	InitiallySuspended     *bool                               `ddl:"parameter" sql:"INITIALLY_SUSPENDED"`
+	AutoSuspendSecs        *int                                `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
+	Tag                    []TagAssociation                    `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment                *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	BackupInstanceFamilies []ComputePoolInstanceFamilyListItem `ddl:"parameter,parentheses" sql:"BACKUP_INSTANCE_FAMILIES"`
 }
 
-type ComputePoolBackupInstanceFamilyListItem struct {
+type ComputePoolInstanceFamilyListItem struct {
 	Value ComputePoolInstanceFamily `ddl:"keyword,single_quotes"`
 }
 
@@ -57,12 +57,12 @@ type AlterComputePoolOptions struct {
 }
 
 type ComputePoolSet struct {
-	MinNodes               *int                                      `ddl:"parameter" sql:"MIN_NODES"`
-	MaxNodes               *int                                      `ddl:"parameter" sql:"MAX_NODES"`
-	AutoResume             *bool                                     `ddl:"parameter" sql:"AUTO_RESUME"`
-	AutoSuspendSecs        *int                                      `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
-	BackupInstanceFamilies []ComputePoolBackupInstanceFamilyListItem `ddl:"parameter,parentheses" sql:"BACKUP_INSTANCE_FAMILIES"`
-	Comment                *string                                   `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	MinNodes               *int                                `ddl:"parameter" sql:"MIN_NODES"`
+	MaxNodes               *int                                `ddl:"parameter" sql:"MAX_NODES"`
+	AutoResume             *bool                               `ddl:"parameter" sql:"AUTO_RESUME"`
+	AutoSuspendSecs        *int                                `ddl:"parameter" sql:"AUTO_SUSPEND_SECS"`
+	BackupInstanceFamilies []ComputePoolInstanceFamilyListItem `ddl:"parameter,parentheses" sql:"BACKUP_INSTANCE_FAMILIES"`
+	Comment                *string                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type ComputePoolUnset struct {

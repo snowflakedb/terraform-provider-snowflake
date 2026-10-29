@@ -14,7 +14,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,13 +24,9 @@ import (
 // =============================================================================
 
 var (
-	schemaCreateExt = TrackingCreateWrapper(resources.Schema, CreateSchema)
-	schemaReadExt   = TrackingReadWrapper(resources.Schema, ReadSchemaFunc(true))
-	schemaUpdateExt = TrackingUpdateWrapper(resources.Schema, UpdateSchema)
-	schemaDeleteExt = TrackingDeleteWrapper(resources.Schema, ResourceDeleteContextFunc(
-		schemaParseIdExt,
-		schemaDropSafelyInSdkExt,
-	))
+	schemaCreateExt        = TrackingCreateWrapper(resources.Schema, CreateSchema)
+	schemaReadExt          = TrackingReadWrapper(resources.Schema, ReadSchemaFunc(true))
+	schemaUpdateExt        = TrackingUpdateWrapper(resources.Schema, UpdateSchema)
 	schemaDescriptionExt   = "Resource used to manage schema objects. For more information, check [schema documentation](https://docs.snowflake.com/en/sql-reference/sql/create-schema)."
 	schemaCustomizeDiffExt = TrackingCustomDiffWrapper(resources.Schema, customdiff.All(
 		TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
@@ -44,41 +39,15 @@ var (
 	schemaImporterExt = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.Schema, ImportSchema),
 	}
-	schemaSchemaVersionExt  = 2
-	schemaStateUpgradersExt = []schema.StateUpgrader{
-		{
-			Version: 0,
-			// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
-			Type:    cty.EmptyObject,
-			Upgrade: v093SchemaStateUpgrader,
-		},
-		{
-			Version: 1,
-			// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
-			Type:    cty.EmptyObject,
-			Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
-		},
-	}
 )
 
 // =============================================================================
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-var schemaSetStateToValueFromConfigFieldsExt = []string{
-	"is_transient",
-	"with_managed_access",
-}
-
 type schemaAlterRequestsExt struct {
 	set   *sdk.SchemaSetRequest
 	unset *sdk.SchemaUnsetRequest
-}
-
-func schemaParseIdFromConfigExt(d *schema.ResourceData) (sdk.DatabaseObjectIdentifier, error) {
-	name := d.Get("name").(string)
-	database := d.Get("database").(string)
-	return sdk.NewDatabaseObjectIdentifier(database, name), nil
 }
 
 func schemaParseIdExt(id string) (sdk.DatabaseObjectIdentifier, error) {
@@ -147,11 +116,7 @@ func schemaOutputMappingsExt(s *sdk.Schema) []outputMapping {
 	}
 }
 
-func schemaSetConfigFieldsExt(d *schema.ResourceData, s *sdk.Schema) error {
-	return d.Set("comment", s.Comment)
-}
-
-func schemaSetDescribeOutputExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, details []sdk.SchemaDetails, describeErr error) error {
+func schemaSetDescribeOutputExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, details []sdk.SchemaDetails, describeErr error, _ bool) error {
 	if describeErr != nil {
 		log.Printf("[DEBUG] describing schema: %s, err: %s", id.FullyQualifiedName(), describeErr)
 		return nil
@@ -239,7 +204,7 @@ func schemaApplySetUnsetExt(d *schema.ResourceData) (*schemaAlterRequestsExt, er
 	return &schemaAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, s *sdk.Schema) error {
+func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, s *sdk.Schema, _ bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
@@ -267,51 +232,7 @@ func schemaCreateInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectId
 	return nil
 }
 
-func schemaShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	s, err := client.Schemas.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query schema. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Schema id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-	return s, nil
-}
-
-func schemaShowByIdInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) (*sdk.Schema, error) {
-	client := meta.(*provider.Context).Client
-	return client.Schemas.ShowByID(ctx, id)
-}
-
 func schemaDescribeInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier) ([]sdk.SchemaDetails, error) {
 	client := meta.(*provider.Context).Client
 	return client.Schemas.Describe(ctx, id)
-}
-
-func schemaAlterSetInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
-	if *reqs.set != *sdk.NewSchemaSetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithSet(*reqs.set))
-	}
-	return nil
-}
-
-func schemaAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.DatabaseObjectIdentifier, reqs *schemaAlterRequestsExt) error {
-	if *reqs.unset != *sdk.NewSchemaUnsetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Schemas.Alter(ctx, sdk.NewAlterSchemaRequest(id).WithUnset(*reqs.unset))
-	}
-	return nil
-}
-
-func schemaDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.DatabaseObjectIdentifier] {
-	return client.Schemas.DropSafely
 }

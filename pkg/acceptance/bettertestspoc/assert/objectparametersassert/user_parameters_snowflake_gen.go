@@ -70,28 +70,35 @@ func (u *UserParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk
 func (u *UserParametersAssert) HasAllDefaults() *UserParametersAssert {
 	return u.
 		HasDefaultParameterValueOnLevel(sdk.UserParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterActivePythonProfiler, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterBinaryInputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterBinaryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterClientEnableLogInfoStatementParameters, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientMemoryLimit, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientMetadataRequestUseConnectionCtx, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterClientMetadataUseSessionDatabase, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientPrefetchThreads, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientResultChunkSize, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientResultColumnCaseInsensitive, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientSessionKeepAlive, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientSessionKeepAliveHeartbeatFrequency, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterClientTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterCsvTimestampFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterDateInputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterDateOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableGetDdlUseDataTypeAlias, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableUnloadPhysicalTypeOptimization, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableUnredactedQuerySyntaxError, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterErrorOnNondeterministicMerge, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterErrorOnNondeterministicUpdate, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterGeographyOutputFormat, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterGeometryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterHybridTableLockTimeout, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterJdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterJdbcTreatTimestampNtzAsUtc, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterJdbcUseSessionTimezone, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterJsTreatIntegerAsBigint, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
@@ -100,6 +107,8 @@ func (u *UserParametersAssert) HasAllDefaults() *UserParametersAssert {
 		HasDefaultParameterValueOnLevel(sdk.UserParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterPreventUnloadToInternalStages, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterPythonProfilerModules, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnLevel(sdk.UserParameterPythonProfilerTargetStage, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterQueryTag, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
 		HasDefaultParameterValueOnLevel(sdk.UserParameterRowsPerResultset, sdk.ParameterTypeSnowflakeDefault).
@@ -134,28 +143,35 @@ func (u *UserParametersAssert) HasAllDefaults() *UserParametersAssert {
 func (u *UserParametersAssert) HasAllDefaultsExplicit() *UserParametersAssert {
 	return u.
 		HasDefaultAbortDetachedQueryValueExplicit().
+		HasDefaultActivePythonProfilerValueExplicit().
 		HasDefaultAutocommitValueExplicit().
 		HasDefaultBinaryInputFormatValueExplicit().
 		HasDefaultBinaryOutputFormatValueExplicit().
+		HasDefaultClientEnableLogInfoStatementParametersValueExplicit().
 		HasDefaultClientMemoryLimitValueExplicit().
 		HasDefaultClientMetadataRequestUseConnectionCtxValueExplicit().
+		HasDefaultClientMetadataUseSessionDatabaseValueExplicit().
 		HasDefaultClientPrefetchThreadsValueExplicit().
 		HasDefaultClientResultChunkSizeValueExplicit().
 		HasDefaultClientResultColumnCaseInsensitiveValueExplicit().
 		HasDefaultClientSessionKeepAliveValueExplicit().
 		HasDefaultClientSessionKeepAliveHeartbeatFrequencyValueExplicit().
 		HasDefaultClientTimestampTypeMappingValueExplicit().
+		HasDefaultCsvTimestampFormatValueExplicit().
 		HasDefaultDateInputFormatValueExplicit().
 		HasDefaultDateOutputFormatValueExplicit().
+		HasDefaultEnableGetDdlUseDataTypeAliasValueExplicit().
 		HasDefaultEnableUnloadPhysicalTypeOptimizationValueExplicit().
 		HasDefaultEnableUnredactedQuerySyntaxErrorValueExplicit().
 		HasDefaultErrorOnNondeterministicMergeValueExplicit().
 		HasDefaultErrorOnNondeterministicUpdateValueExplicit().
 		HasDefaultGeographyOutputFormatValueExplicit().
 		HasDefaultGeometryOutputFormatValueExplicit().
+		HasDefaultHybridTableLockTimeoutValueExplicit().
 		HasDefaultJdbcTreatDecimalAsIntValueExplicit().
 		HasDefaultJdbcTreatTimestampNtzAsUtcValueExplicit().
 		HasDefaultJdbcUseSessionTimezoneValueExplicit().
+		HasDefaultJsTreatIntegerAsBigintValueExplicit().
 		HasDefaultJsonIndentValueExplicit().
 		HasDefaultLockTimeoutValueExplicit().
 		HasDefaultLogEventLevelValueExplicit().
@@ -164,6 +180,8 @@ func (u *UserParametersAssert) HasAllDefaultsExplicit() *UserParametersAssert {
 		HasDefaultNoorderSequenceAsDefaultValueExplicit().
 		HasDefaultOdbcTreatDecimalAsIntValueExplicit().
 		HasDefaultPreventUnloadToInternalStagesValueExplicit().
+		HasDefaultPythonProfilerModulesValueExplicit().
+		HasDefaultPythonProfilerTargetStageValueExplicit().
 		HasDefaultQueryTagValueExplicit().
 		HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
 		HasDefaultRowsPerResultsetValueExplicit().
@@ -203,6 +221,11 @@ func (u *UserParametersAssert) HasAbortDetachedQuery(expected bool) *UserParamet
 	return u
 }
 
+func (u *UserParametersAssert) HasActivePythonProfiler(expected sdk.ActivePythonProfiler) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.UserParameterActivePythonProfiler, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasAutocommit(expected bool) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterAutocommit, expected))
 	return u
@@ -218,6 +241,11 @@ func (u *UserParametersAssert) HasBinaryOutputFormat(expected sdk.BinaryOutputFo
 	return u
 }
 
+func (u *UserParametersAssert) HasClientEnableLogInfoStatementParameters(expected bool) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterClientEnableLogInfoStatementParameters, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasClientMemoryLimit(expected int) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.UserParameterClientMemoryLimit, expected))
 	return u
@@ -225,6 +253,11 @@ func (u *UserParametersAssert) HasClientMemoryLimit(expected int) *UserParameter
 
 func (u *UserParametersAssert) HasClientMetadataRequestUseConnectionCtx(expected bool) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterClientMetadataRequestUseConnectionCtx, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasClientMetadataUseSessionDatabase(expected bool) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterClientMetadataUseSessionDatabase, expected))
 	return u
 }
 
@@ -258,6 +291,11 @@ func (u *UserParametersAssert) HasClientTimestampTypeMapping(expected sdk.Client
 	return u
 }
 
+func (u *UserParametersAssert) HasCsvTimestampFormat(expected string) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterValueSet(sdk.UserParameterCsvTimestampFormat, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasDateInputFormat(expected string) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterValueSet(sdk.UserParameterDateInputFormat, expected))
 	return u
@@ -265,6 +303,11 @@ func (u *UserParametersAssert) HasDateInputFormat(expected string) *UserParamete
 
 func (u *UserParametersAssert) HasDateOutputFormat(expected string) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterValueSet(sdk.UserParameterDateOutputFormat, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasEnableGetDdlUseDataTypeAlias(expected bool) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterEnableGetDdlUseDataTypeAlias, expected))
 	return u
 }
 
@@ -298,6 +341,11 @@ func (u *UserParametersAssert) HasGeometryOutputFormat(expected sdk.GeometryOutp
 	return u
 }
 
+func (u *UserParametersAssert) HasHybridTableLockTimeout(expected int) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.UserParameterHybridTableLockTimeout, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasJdbcTreatDecimalAsInt(expected bool) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterJdbcTreatDecimalAsInt, expected))
 	return u
@@ -310,6 +358,11 @@ func (u *UserParametersAssert) HasJdbcTreatTimestampNtzAsUtc(expected bool) *Use
 
 func (u *UserParametersAssert) HasJdbcUseSessionTimezone(expected bool) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterJdbcUseSessionTimezone, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasJsTreatIntegerAsBigint(expected bool) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterJsTreatIntegerAsBigint, expected))
 	return u
 }
 
@@ -350,6 +403,16 @@ func (u *UserParametersAssert) HasOdbcTreatDecimalAsInt(expected bool) *UserPara
 
 func (u *UserParametersAssert) HasPreventUnloadToInternalStages(expected bool) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.UserParameterPreventUnloadToInternalStages, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasPythonProfilerModules(expected string) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterValueSet(sdk.UserParameterPythonProfilerModules, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasPythonProfilerTargetStage(expected string) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterValueSet(sdk.UserParameterPythonProfilerTargetStage, expected))
 	return u
 }
 
@@ -502,6 +565,11 @@ func (u *UserParametersAssert) HasAbortDetachedQueryLevel(expected sdk.Parameter
 	return u
 }
 
+func (u *UserParametersAssert) HasActivePythonProfilerLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterActivePythonProfiler, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasAutocommitLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterAutocommit, expected))
 	return u
@@ -517,6 +585,11 @@ func (u *UserParametersAssert) HasBinaryOutputFormatLevel(expected sdk.Parameter
 	return u
 }
 
+func (u *UserParametersAssert) HasClientEnableLogInfoStatementParametersLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterClientEnableLogInfoStatementParameters, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasClientMemoryLimitLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterClientMemoryLimit, expected))
 	return u
@@ -524,6 +597,11 @@ func (u *UserParametersAssert) HasClientMemoryLimitLevel(expected sdk.ParameterT
 
 func (u *UserParametersAssert) HasClientMetadataRequestUseConnectionCtxLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterClientMetadataRequestUseConnectionCtx, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasClientMetadataUseSessionDatabaseLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterClientMetadataUseSessionDatabase, expected))
 	return u
 }
 
@@ -557,6 +635,11 @@ func (u *UserParametersAssert) HasClientTimestampTypeMappingLevel(expected sdk.P
 	return u
 }
 
+func (u *UserParametersAssert) HasCsvTimestampFormatLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterCsvTimestampFormat, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasDateInputFormatLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterDateInputFormat, expected))
 	return u
@@ -564,6 +647,11 @@ func (u *UserParametersAssert) HasDateInputFormatLevel(expected sdk.ParameterTyp
 
 func (u *UserParametersAssert) HasDateOutputFormatLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterDateOutputFormat, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasEnableGetDdlUseDataTypeAliasLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterEnableGetDdlUseDataTypeAlias, expected))
 	return u
 }
 
@@ -597,6 +685,11 @@ func (u *UserParametersAssert) HasGeometryOutputFormatLevel(expected sdk.Paramet
 	return u
 }
 
+func (u *UserParametersAssert) HasHybridTableLockTimeoutLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterHybridTableLockTimeout, expected))
+	return u
+}
+
 func (u *UserParametersAssert) HasJdbcTreatDecimalAsIntLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterJdbcTreatDecimalAsInt, expected))
 	return u
@@ -609,6 +702,11 @@ func (u *UserParametersAssert) HasJdbcTreatTimestampNtzAsUtcLevel(expected sdk.P
 
 func (u *UserParametersAssert) HasJdbcUseSessionTimezoneLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterJdbcUseSessionTimezone, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasJsTreatIntegerAsBigintLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterJsTreatIntegerAsBigint, expected))
 	return u
 }
 
@@ -649,6 +747,16 @@ func (u *UserParametersAssert) HasOdbcTreatDecimalAsIntLevel(expected sdk.Parame
 
 func (u *UserParametersAssert) HasPreventUnloadToInternalStagesLevel(expected sdk.ParameterType) *UserParametersAssert {
 	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterPreventUnloadToInternalStages, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasPythonProfilerModulesLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterPythonProfilerModules, expected))
+	return u
+}
+
+func (u *UserParametersAssert) HasPythonProfilerTargetStageLevel(expected sdk.ParameterType) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.UserParameterPythonProfilerTargetStage, expected))
 	return u
 }
 
@@ -800,6 +908,10 @@ func (u *UserParametersAssert) HasDefaultAbortDetachedQueryValue() *UserParamete
 	return u.HasDefaultParameterValue(sdk.UserParameterAbortDetachedQuery)
 }
 
+func (u *UserParametersAssert) HasDefaultActivePythonProfilerValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterActivePythonProfiler)
+}
+
 func (u *UserParametersAssert) HasDefaultAutocommitValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterAutocommit)
 }
@@ -812,12 +924,20 @@ func (u *UserParametersAssert) HasDefaultBinaryOutputFormatValue() *UserParamete
 	return u.HasDefaultParameterValue(sdk.UserParameterBinaryOutputFormat)
 }
 
+func (u *UserParametersAssert) HasDefaultClientEnableLogInfoStatementParametersValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterClientEnableLogInfoStatementParameters)
+}
+
 func (u *UserParametersAssert) HasDefaultClientMemoryLimitValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterClientMemoryLimit)
 }
 
 func (u *UserParametersAssert) HasDefaultClientMetadataRequestUseConnectionCtxValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterClientMetadataRequestUseConnectionCtx)
+}
+
+func (u *UserParametersAssert) HasDefaultClientMetadataUseSessionDatabaseValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterClientMetadataUseSessionDatabase)
 }
 
 func (u *UserParametersAssert) HasDefaultClientPrefetchThreadsValue() *UserParametersAssert {
@@ -844,12 +964,20 @@ func (u *UserParametersAssert) HasDefaultClientTimestampTypeMappingValue() *User
 	return u.HasDefaultParameterValue(sdk.UserParameterClientTimestampTypeMapping)
 }
 
+func (u *UserParametersAssert) HasDefaultCsvTimestampFormatValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterCsvTimestampFormat)
+}
+
 func (u *UserParametersAssert) HasDefaultDateInputFormatValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterDateInputFormat)
 }
 
 func (u *UserParametersAssert) HasDefaultDateOutputFormatValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterDateOutputFormat)
+}
+
+func (u *UserParametersAssert) HasDefaultEnableGetDdlUseDataTypeAliasValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterEnableGetDdlUseDataTypeAlias)
 }
 
 func (u *UserParametersAssert) HasDefaultEnableUnloadPhysicalTypeOptimizationValue() *UserParametersAssert {
@@ -876,6 +1004,10 @@ func (u *UserParametersAssert) HasDefaultGeometryOutputFormatValue() *UserParame
 	return u.HasDefaultParameterValue(sdk.UserParameterGeometryOutputFormat)
 }
 
+func (u *UserParametersAssert) HasDefaultHybridTableLockTimeoutValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterHybridTableLockTimeout)
+}
+
 func (u *UserParametersAssert) HasDefaultJdbcTreatDecimalAsIntValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterJdbcTreatDecimalAsInt)
 }
@@ -886,6 +1018,10 @@ func (u *UserParametersAssert) HasDefaultJdbcTreatTimestampNtzAsUtcValue() *User
 
 func (u *UserParametersAssert) HasDefaultJdbcUseSessionTimezoneValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterJdbcUseSessionTimezone)
+}
+
+func (u *UserParametersAssert) HasDefaultJsTreatIntegerAsBigintValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterJsTreatIntegerAsBigint)
 }
 
 func (u *UserParametersAssert) HasDefaultJsonIndentValue() *UserParametersAssert {
@@ -918,6 +1054,14 @@ func (u *UserParametersAssert) HasDefaultOdbcTreatDecimalAsIntValue() *UserParam
 
 func (u *UserParametersAssert) HasDefaultPreventUnloadToInternalStagesValue() *UserParametersAssert {
 	return u.HasDefaultParameterValue(sdk.UserParameterPreventUnloadToInternalStages)
+}
+
+func (u *UserParametersAssert) HasDefaultPythonProfilerModulesValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterPythonProfilerModules)
+}
+
+func (u *UserParametersAssert) HasDefaultPythonProfilerTargetStageValue() *UserParametersAssert {
+	return u.HasDefaultParameterValue(sdk.UserParameterPythonProfilerTargetStage)
 }
 
 func (u *UserParametersAssert) HasDefaultQueryTagValue() *UserParametersAssert {
@@ -1040,6 +1184,10 @@ func (u *UserParametersAssert) HasDefaultAbortDetachedQueryValueExplicit() *User
 	return u.HasAbortDetachedQuery(false)
 }
 
+func (u *UserParametersAssert) HasDefaultActivePythonProfilerValueExplicit() *UserParametersAssert {
+	return u.HasActivePythonProfiler(sdk.ActivePythonProfiler(""))
+}
+
 func (u *UserParametersAssert) HasDefaultAutocommitValueExplicit() *UserParametersAssert {
 	return u.HasAutocommit(true)
 }
@@ -1052,12 +1200,20 @@ func (u *UserParametersAssert) HasDefaultBinaryOutputFormatValueExplicit() *User
 	return u.HasBinaryOutputFormat(sdk.BinaryOutputFormatHex)
 }
 
+func (u *UserParametersAssert) HasDefaultClientEnableLogInfoStatementParametersValueExplicit() *UserParametersAssert {
+	return u.HasClientEnableLogInfoStatementParameters(false)
+}
+
 func (u *UserParametersAssert) HasDefaultClientMemoryLimitValueExplicit() *UserParametersAssert {
 	return u.HasClientMemoryLimit(1536)
 }
 
 func (u *UserParametersAssert) HasDefaultClientMetadataRequestUseConnectionCtxValueExplicit() *UserParametersAssert {
 	return u.HasClientMetadataRequestUseConnectionCtx(false)
+}
+
+func (u *UserParametersAssert) HasDefaultClientMetadataUseSessionDatabaseValueExplicit() *UserParametersAssert {
+	return u.HasClientMetadataUseSessionDatabase(false)
 }
 
 func (u *UserParametersAssert) HasDefaultClientPrefetchThreadsValueExplicit() *UserParametersAssert {
@@ -1081,7 +1237,11 @@ func (u *UserParametersAssert) HasDefaultClientSessionKeepAliveHeartbeatFrequenc
 }
 
 func (u *UserParametersAssert) HasDefaultClientTimestampTypeMappingValueExplicit() *UserParametersAssert {
-	return u.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingLtz)
+	return u.HasClientTimestampTypeMapping(sdk.ClientTimestampTypeMappingTimestampLtz)
+}
+
+func (u *UserParametersAssert) HasDefaultCsvTimestampFormatValueExplicit() *UserParametersAssert {
+	return u.HasCsvTimestampFormat("")
 }
 
 func (u *UserParametersAssert) HasDefaultDateInputFormatValueExplicit() *UserParametersAssert {
@@ -1090,6 +1250,10 @@ func (u *UserParametersAssert) HasDefaultDateInputFormatValueExplicit() *UserPar
 
 func (u *UserParametersAssert) HasDefaultDateOutputFormatValueExplicit() *UserParametersAssert {
 	return u.HasDateOutputFormat("YYYY-MM-DD")
+}
+
+func (u *UserParametersAssert) HasDefaultEnableGetDdlUseDataTypeAliasValueExplicit() *UserParametersAssert {
+	return u.HasEnableGetDdlUseDataTypeAlias(false)
 }
 
 func (u *UserParametersAssert) HasDefaultEnableUnloadPhysicalTypeOptimizationValueExplicit() *UserParametersAssert {
@@ -1109,11 +1273,15 @@ func (u *UserParametersAssert) HasDefaultErrorOnNondeterministicUpdateValueExpli
 }
 
 func (u *UserParametersAssert) HasDefaultGeographyOutputFormatValueExplicit() *UserParametersAssert {
-	return u.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJSON)
+	return u.HasGeographyOutputFormat(sdk.GeographyOutputFormatGeoJson)
 }
 
 func (u *UserParametersAssert) HasDefaultGeometryOutputFormatValueExplicit() *UserParametersAssert {
-	return u.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJSON)
+	return u.HasGeometryOutputFormat(sdk.GeometryOutputFormatGeoJson)
+}
+
+func (u *UserParametersAssert) HasDefaultHybridTableLockTimeoutValueExplicit() *UserParametersAssert {
+	return u.HasHybridTableLockTimeout(3600)
 }
 
 func (u *UserParametersAssert) HasDefaultJdbcTreatDecimalAsIntValueExplicit() *UserParametersAssert {
@@ -1126,6 +1294,10 @@ func (u *UserParametersAssert) HasDefaultJdbcTreatTimestampNtzAsUtcValueExplicit
 
 func (u *UserParametersAssert) HasDefaultJdbcUseSessionTimezoneValueExplicit() *UserParametersAssert {
 	return u.HasJdbcUseSessionTimezone(true)
+}
+
+func (u *UserParametersAssert) HasDefaultJsTreatIntegerAsBigintValueExplicit() *UserParametersAssert {
+	return u.HasJsTreatIntegerAsBigint(false)
 }
 
 func (u *UserParametersAssert) HasDefaultJsonIndentValueExplicit() *UserParametersAssert {
@@ -1158,6 +1330,14 @@ func (u *UserParametersAssert) HasDefaultOdbcTreatDecimalAsIntValueExplicit() *U
 
 func (u *UserParametersAssert) HasDefaultPreventUnloadToInternalStagesValueExplicit() *UserParametersAssert {
 	return u.HasPreventUnloadToInternalStages(false)
+}
+
+func (u *UserParametersAssert) HasDefaultPythonProfilerModulesValueExplicit() *UserParametersAssert {
+	return u.HasPythonProfilerModules("")
+}
+
+func (u *UserParametersAssert) HasDefaultPythonProfilerTargetStageValueExplicit() *UserParametersAssert {
+	return u.HasPythonProfilerTargetStage("")
 }
 
 func (u *UserParametersAssert) HasDefaultQueryTagValueExplicit() *UserParametersAssert {
@@ -1225,7 +1405,7 @@ func (u *UserParametersAssert) HasDefaultTimestampOutputFormatValueExplicit() *U
 }
 
 func (u *UserParametersAssert) HasDefaultTimestampTypeMappingValueExplicit() *UserParametersAssert {
-	return u.HasTimestampTypeMapping(sdk.TimestampTypeMappingNtz)
+	return u.HasTimestampTypeMapping(sdk.TimestampTypeMappingTimestampNtz)
 }
 
 func (u *UserParametersAssert) HasDefaultTimestampTzOutputFormatValueExplicit() *UserParametersAssert {

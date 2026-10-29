@@ -18,13 +18,15 @@ const (
 	case_BackupPolicies_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_BackupPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet          testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_BackupPolicies_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_BackupPolicies_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_BackupPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_BackupPolicies_validation_Alter_opts_Unset_ConflictingFields           testCaseName = "validation_Alter_opts_Unset_ConflictingFields"
+	case_BackupPolicies_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_BackupPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
 	case_BackupPolicies_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
-	case_BackupPolicies_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
 	case_BackupPolicies_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
+	case_BackupPolicies_sql_Alter_SetTags                                       testCaseName = "sql_Alter_SetTags"
 	case_BackupPolicies_sql_Alter_UnsetTags                                     testCaseName = "sql_Alter_UnsetTags"
 	case_BackupPolicies_validation_Drop_name_ValidIdentifier                    testCaseName = "validation_Drop_name_ValidIdentifier"
 	case_BackupPolicies_sql_Drop_basic                                          testCaseName = "sql_Drop_basic"
@@ -115,31 +117,57 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 			},
 			validationCase[*AlterBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"),
+				ExpectedErr: errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"),
 				DefaultModify: func(opts *AlterBackupPolicyOptions) {
 					opts.RenameTo = nil
 					opts.Set = nil
-					opts.SetTags = nil
 					opts.Unset = nil
+					opts.SetTags = nil
 					opts.UnsetTags = nil
 				},
 			},
 			validationCase[*AlterBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "SetTags", "Unset", "UnsetTags"),
+				ExpectedErr: errExactlyOneOf("AlterBackupPolicyOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags"),
 				DefaultModify: func(opts *AlterBackupPolicyOptions) {
 					opts.RenameTo = new(randomSchemaObjectIdentifier())
 					opts.Set = &BackupPolicySet{}
 				},
 			},
 			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterBackupPolicyOptions", "RenameTo"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Set", "Schedule", "ExpireAfterDays", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Set", "Comment", "Schedule", "ExpireAfterDays"),
 				DefaultModify: func(opts *AlterBackupPolicyOptions) {
 					opts.Set = &BackupPolicySet{}
+					opts.Set.Comment = nil
 					opts.Set.Schedule = nil
 					opts.Set.ExpireAfterDays = nil
-					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Comment", "Schedule", "ExpireAfterDays"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.Unset = &BackupPolicyUnset{}
+					opts.Unset.Comment = nil
+					opts.Unset.Schedule = nil
+					opts.Unset.ExpireAfterDays = nil
+				},
+			},
+			validationCase[*AlterBackupPolicyOptions]{
+				Name:        case_BackupPolicies_validation_Alter_opts_Unset_ConflictingFields,
+				ExpectedErr: errOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "ExpireAfterDays"),
+				DefaultModify: func(opts *AlterBackupPolicyOptions) {
+					opts.Unset = &BackupPolicyUnset{}
+					opts.Unset.Schedule = new(true)
+					opts.Unset.ExpireAfterDays = new(true)
 				},
 			},
 			validationCase[*AlterBackupPolicyOptions]{
@@ -147,16 +175,6 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterBackupPolicyOptions.SetTags[0]", "Name"),
 				DefaultModify: func(opts *AlterBackupPolicyOptions) {
 					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
-				},
-			},
-			validationCase[*AlterBackupPolicyOptions]{
-				Name:        case_BackupPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "ExpireAfterDays", "Comment"),
-				DefaultModify: func(opts *AlterBackupPolicyOptions) {
-					opts.Unset = &BackupPolicyUnset{}
-					opts.Unset.Schedule = nil
-					opts.Unset.ExpireAfterDays = nil
-					opts.Unset.Comment = nil
 				},
 			},
 		).
@@ -168,10 +186,10 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 				Name: case_BackupPolicies_sql_Alter_Set,
 			},
 			sqlCase[*AlterBackupPolicyOptions]{
-				Name: case_BackupPolicies_sql_Alter_SetTags,
+				Name: case_BackupPolicies_sql_Alter_Unset,
 			},
 			sqlCase[*AlterBackupPolicyOptions]{
-				Name: case_BackupPolicies_sql_Alter_Unset,
+				Name: case_BackupPolicies_sql_Alter_SetTags,
 			},
 			sqlCase[*AlterBackupPolicyOptions]{
 				Name: case_BackupPolicies_sql_Alter_UnsetTags,
