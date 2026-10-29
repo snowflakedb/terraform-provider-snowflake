@@ -28,6 +28,16 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Quota resource
+
+We have added a new preview resource, [`snowflake_quota`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/quota), for managing [per-user quotas](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) (`SNOWFLAKE.CORE.QUOTA`). It manages the monitored domains (`WAREHOUSE`, `AI FUNCTION`, `CORTEX AGENT`, `CORTEX CODE`, `SNOWFLAKE INTELLIGENCE`, and `AI GATEWAY`), the users the quota applies to, per-user limits for the monthly, weekly, and daily cycles, block enforcement, and notifications.
+
+Apart from the name and comment, which are changed in place with `ALTER`, a quota is configured with its instance methods, which the provider calls one by one. These calls are not transactional: if one of them fails during creation, the quota is marked as tainted and recreated by the next apply; if one fails during an update, the quota is left partially configured and the next apply applies the remaining changes.
+
+This feature will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use it, add `snowflake_quota_resource` to the `preview_features_enabled` field in the provider configuration.
+
+No changes are required for existing configurations unless you want to adopt this preview feature with Terraform.
+
 ### *(new feature)* Projection policy resource and data source
 
 We have added a new preview resource, [`snowflake_projection_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/projection_policy), for managing [projection policies](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy). CREATE requires a body, an SQL expression that calls `PROJECTION_CONSTRAINT`.

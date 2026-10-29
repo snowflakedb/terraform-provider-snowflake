@@ -93,6 +93,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PolicyReference{}},
 	{ObjectStruct: sdk.PostgresInstance{}, ManualFields: []string{"is_highly_available"}},
 	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments_old", "return_type_old"}},
+	{ObjectStruct: sdk.Quota{}},
 	{ObjectStruct: sdk.ReplicationAccount{}},
 	{ObjectStruct: sdk.ReplicationDatabase{}},
 	{ObjectStruct: sdk.Region{}},
@@ -250,6 +251,10 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"id", "normalized_imports", "normalized_target_path",
 		"normalized_arguments", "normalized_external_access_integrations", "normalized_secrets", "normalized_packages",
 		"snowpark_version",
+	}},
+	// ManualFields: the GET_* results are nested structs and slices of structs, mapped in ext.
+	{ObjectStruct: sdk.QuotaDetails{}, IsDescribe: true, SkipFields: []string{"id"}, ManualFields: []string{
+		"scope", "config", "notification_thresholds", "notification_integrations", "custom_actions", "cycle_start_action",
 	}},
 	// ManualFields `signature` stays ext (slice of structs). `return_type` is string (not datatypes.DataType) so it generates natively.
 	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
