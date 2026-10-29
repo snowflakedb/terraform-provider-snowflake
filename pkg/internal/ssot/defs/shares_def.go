@@ -14,20 +14,28 @@ var shareDescribeKindEnum = ssot.NewEnum("ObjectType", "ObjectTypes").WithSdkTyp
 // object in the share, which is an outbound or an inbound (external) identifier. They are separate attributes.
 // to_total is not a Snowflake column: it is the N of the "... (N TOTAL)" marker that SHOW SHARES appends to the to column.
 var ShareAttrs = struct {
-	Comment      ssot.Attribute
-	Accounts     ssot.Attribute
-	CreatedOn    ssot.Attribute
-	Kind         ssot.Attribute
-	OwnerAccount ssot.Attribute
-	Name         ssot.Attribute
-	DatabaseName ssot.Attribute
-	To           ssot.Attribute
-	Owner        ssot.Attribute
-	ToTotal      ssot.Attribute
-	DescribeKind ssot.Attribute
-	DescribeName ssot.Attribute
-	SharedOn     ssot.Attribute
+	SecureObjectsOnly     ssot.Attribute
+	Comment               ssot.Attribute
+	Accounts              ssot.Attribute
+	CreatedOn             ssot.Attribute
+	Kind                  ssot.Attribute
+	OwnerAccount          ssot.Attribute
+	Name                  ssot.Attribute
+	DatabaseName          ssot.Attribute
+	To                    ssot.Attribute
+	Owner                 ssot.Attribute
+	ListingGlobalName     ssot.Attribute
+	ShowSecureObjectsOnly ssot.Attribute
+	ToTotal               ssot.Attribute
+	DescribeKind          ssot.Attribute
+	DescribeName          ssot.Attribute
+	SharedOn              ssot.Attribute
 }{
+	SecureObjectsOnly: ssot.Attribute{
+		Name:        "secure_objects_only",
+		Type:        ssot.AttrBool,
+		Description: "Specifies whether only secure objects can be added to the share. Once set to false, it cannot be set back to true.",
+	},
 	Comment: ssot.Attribute{
 		Name:        "comment",
 		Type:        ssot.AttrString,
@@ -56,11 +64,13 @@ var ShareAttrs = struct {
 		ManualConvert: true,
 		Readonly:      true,
 	},
-	Owner:        ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
-	ToTotal:      ssot.Attribute{Name: "to_total", Type: ssot.AttrInt, Readonly: true},
-	DescribeKind: ssot.Attribute{Name: "kind", Type: ssot.AttrEnum, Enum: shareDescribeKindEnum, ManualConvert: true, Readonly: true},
-	DescribeName: ssot.Attribute{Name: "name", Type: ssot.AttrIdentifier, IdentifierType: "ObjectIdentifier", ManualConvert: true, Readonly: true},
-	SharedOn:     ssot.Attribute{Name: "shared_on", Type: ssot.AttrTime, Readonly: true},
+	Owner:                 ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
+	ListingGlobalName:     ssot.Attribute{Name: "listing_global_name", Type: ssot.AttrString, Readonly: true},
+	ShowSecureObjectsOnly: ssot.Attribute{Name: "secure_objects_only_output", ShowName: "secure_objects_only", Type: ssot.AttrString, Readonly: true},
+	ToTotal:               ssot.Attribute{Name: "to_total", Type: ssot.AttrInt, Readonly: true},
+	DescribeKind:          ssot.Attribute{Name: "kind", Type: ssot.AttrEnum, Enum: shareDescribeKindEnum, ManualConvert: true, Readonly: true},
+	DescribeName:          ssot.Attribute{Name: "name", Type: ssot.AttrIdentifier, IdentifierType: "ObjectIdentifier", ManualConvert: true, Readonly: true},
+	SharedOn:              ssot.Attribute{Name: "shared_on", Type: ssot.AttrTime, Readonly: true},
 }
 
 // shareAdd and shareRemove are the ADD ACCOUNTS and REMOVE ACCOUNTS blocks of ALTER. They are not Terraform fields.
@@ -88,18 +98,15 @@ var (
 
 // Share is defined for the SDK only: no Generators entry sets WithResource. The whole SDK interface is built from here.
 //
-// Checked against create-share, alter-share, drop-share, show-shares, desc-share, and parameters. The handwritten SDK
-// definition did not have the items below either, so the migration kept the SQL as it was.
+// Checked against create-share, alter-share, drop-share, show-shares, desc-share, and parameters.
 //
-// TODO [next PRs]: The SDK is missing what the docs document:
-//   - CREATE: SECURE_OBJECTS_ONLY (default TRUE; once FALSE it cannot be set back), IF NOT EXISTS, and CREATE OR ALTER SHARE
-//     (COMMENT only; no accounts, SHARE_RESTRICTIONS, tags, or rename).
-//   - SHOW: the listing_global_name column, which the show-shares page lists only in its example output.
+// SHOW SHARES returns a secure_objects_only column ("true" for an outbound share, "" for an inbound one, observed on a live
+// account) that the show-shares page does not list. It is a string, because the inbound value is empty. Separate from the
+// secure_objects_only CREATE attribute, which is a bool, so it has the ShowName.
 //
-// TODO [next PRs]: Unclear from the docs, not a clear gap:
-//   - ALTER: the syntax block places SHARE_RESTRICTIONS after { ADD | REMOVE } ACCOUNTS, but the description says to set it
-//     when adding accounts. It is on ADD only. Check against Snowflake whether REMOVE accepts it.
-//   - DROP: the docs show DROP SHARE <name> without IF EXISTS. The SDK keeps IF EXISTS.
+// CREATE OR ALTER SHARE is documented (COMMENT only) and is not added, because the existing interface did not have it.
+//
+// The docs show DROP SHARE <name> without IF EXISTS. The SDK keeps IF EXISTS.
 //
 // Object parameters: none is documented for a share.
 var Share = ssot.Object{
@@ -107,6 +114,10 @@ var Share = ssot.Object{
 	NamePlural: "Shares",
 	IdType:     "AccountObjectIdentifier",
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(),
+			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
@@ -116,7 +127,7 @@ var Share = ssot.Object{
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike),
 				ssot.SdkShowPlainOnly(&ShareAttrs.ToTotal, "int"),
 			),
-			ssot.SdkCreate(ssot.SdkCreateWithoutIfNotExists()),
+			ssot.SdkCreate(),
 			ssot.SdkDescribe(
 				ssot.SdkDescribeMapping(ssot.SdkDescriptionMappingSlice),
 				ssot.SdkDescribeIdentifierOverride("ObjectIdentifier"),
@@ -146,11 +157,13 @@ var Share = ssot.Object{
 		},
 	},
 	Attributes: []ssot.Attribute{
+		ShareAttrs.SecureObjectsOnly,
 		ShareAttrs.Comment,
 		ShareAttrs.Accounts,
 	},
 	Create: ssot.CreateSpec{
 		Clauses: []*ssot.Attribute{
+			&ShareAttrs.SecureObjectsOnly,
 			&ShareAttrs.Comment,
 		},
 	},
@@ -181,6 +194,8 @@ var Share = ssot.Object{
 			&ShareAttrs.To,
 			&ShareAttrs.Owner,
 			&ShareAttrs.Comment,
+			&ShareAttrs.ListingGlobalName,
+			&ShareAttrs.ShowSecureObjectsOnly,
 			&ShareAttrs.ToTotal,
 		},
 	},
