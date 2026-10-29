@@ -28,6 +28,19 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Projection policy resource and data source
+
+We have added a new preview resource, [`snowflake_projection_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/projection_policy), for managing [projection policies](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy). CREATE requires a body, an SQL expression that calls `PROJECTION_CONSTRAINT`.
+
+We have also added a new preview data source, [`snowflake_projection_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/projection_policies), for listing projection policies. It supports `like`, `starts_with`, `limit`, and `in` (`account`, `database`, or `schema`). `with_describe` is on by default and runs DESCRIBE for each policy returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_projection_policy_resource` for `snowflake_projection_policy`;
+- `snowflake_projection_policies_datasource` for `snowflake_projection_policies`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(new feature)* Code bundle resource and data source
 
 We have added a new preview resource, [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle), for managing [code bundles](https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles). `from` is the source that backs the bundle, a `snow://workspace/...` URL or an internal or temporary stage reference, and it cannot be changed after creation.
@@ -78,6 +91,8 @@ The experiment is currently supported on the following resources:
 - [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
 - [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
 - [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse)
+- [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)
+- [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive)
 
 More resources will be added gradually and listed in the experiment's description and in this guide.
 
@@ -258,6 +273,18 @@ Snowflake accepts `EXTERNAL_OAUTH_SCOPE_DELIMITER` only for `CUSTOM` external OA
 The [`snowflake_external_oauth_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_oauth_integration) resource now leaves `external_oauth_scope_delimiter` unset in state and omits it from SQL for every non-`CUSTOM` integration. The Snowflake-managed value remains available in `describe_output`.
 
 If a non-`CUSTOM` integration configures `external_oauth_scope_delimiter`, remove the field; the provider now returns an error explaining that it is supported only with `external_oauth_type = "CUSTOM"`. If you used `lifecycle.ignore_changes` for this field as a workaround, you can remove that entry after upgrading. `CUSTOM` integrations require no changes.
+
+## v2.22.0 ➞ v2.22.1
+
+### *(chore)* Provider rebuilt with Go 1.26.10 (CVE-2026-111943)
+
+v2.22.0 was built with Go 1.26.4. That toolchain still accepts a small set of intermediate certificates that are no longer considered trustworthy. v2.22.1 is built with Go 1.26.10, which adds a denylist in `crypto/x509`. `Certificate.Verify` now returns an error for any chain that contains one of those intermediates ([CVE-2026-111943](https://pkg.go.dev/vuln/GO-2026-6809)).
+
+Go normally uses the system root certificates. On some platforms that store stays stale until a separate OS update, so the denylist is compiled into the provider binary and applies even when the process uses the operating system's trust store.
+
+No Terraform configuration changes are required. Upgrade to v2.22.1. Connections whose certificate chain does not include those intermediates behave as before. A connection that presents one of them fails certificate verification.
+
+References: [Go 1.26.10 security announcement](https://groups.google.com/g/golang-announce/c/66pojueaQek/m/tmWX2Pq9AgAJ), [GO-2026-6809](https://pkg.go.dev/vuln/GO-2026-6809), [golang/go#82345](https://go.dev/issue/82345).
 
 ## v2.21.x ➞ v2.22.0
 

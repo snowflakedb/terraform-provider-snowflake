@@ -7,6 +7,7 @@ import (
 	internalprovider "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/oswrapper"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -89,6 +90,8 @@ func acceptanceTestsProvider() *schema.Provider {
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
+	p.ResourcesMap["snowflake_projection_policy"] = resources.ProjectionPolicy()
+	p.DataSourcesMap["snowflake_projection_policies"] = datasources.ProjectionPolicies()
 	return p
 }
 

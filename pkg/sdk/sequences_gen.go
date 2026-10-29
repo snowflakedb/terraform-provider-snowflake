@@ -122,6 +122,10 @@ type SequenceDetail struct {
 	Ordered       bool
 }
 
+func (v *SequenceDetail) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}
+
 // DropSequenceOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-sequence.
 type DropSequenceOptions struct {
 	drop       bool                   `ddl:"static" sql:"DROP"`

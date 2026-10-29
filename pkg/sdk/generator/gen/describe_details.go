@@ -1,5 +1,7 @@
 package gen
 
+import "fmt"
+
 // DescribeDetailsConfig holds the data needed to generate one Describe details accessor.
 type DescribeDetailsConfig struct {
 	// MethodName is the interface method, e.g. "DescribeDetails" or "DescribeAwsGlueDetails".
@@ -71,6 +73,47 @@ type DescribeParsePrefix struct {
 	ElementType string
 	// ElementParser is the hand-written func(value string) (<ElementType>, error).
 	ElementParser string
+}
+
+// DescribeDetailsFromIdentifierConfig drives the columnar DescribeDetails body.
+// It calls Describe and copies identifier fields. It does not parse property rows or set Id.
+type DescribeDetailsFromIdentifierConfig struct {
+	// DetailsType is the DESCRIBE plain struct, e.g. "ProjectionPolicyDetails".
+	DetailsType string
+	// Fields are plain-only identifier fields copied from id, in assignment order.
+	// Each field name is also the identifier method: DatabaseName calls id.DatabaseName().
+	Fields []string
+}
+
+// WithDescribeDetailsFromIdentifier declares DescribeDetails and generates its body:
+// it calls Describe and copies each field from the identifier.
+func (i *Interface) WithDescribeDetailsFromIdentifier(detailsType string, fields []string) *Interface {
+	if detailsType == "" || len(fields) == 0 {
+		panic("DescribeDetails from identifier needs a details type and a field")
+	}
+	i.DescribeDetailsFromIdentifier = &DescribeDetailsFromIdentifierConfig{
+		DetailsType: detailsType,
+		Fields:      fields,
+	}
+	return i.WithCustomInterfaceMethod(
+		"DescribeDetails",
+		describeDetailsFromIdentifierDoc(fields),
+		[]*MethodParameter{NewMethodParameter("id", i.IdentifierKind)},
+		"*"+detailsType, "error",
+	)
+}
+
+func describeDetailsFromIdentifierDoc(fields []string) string {
+	switch {
+	case len(fields) == 2 && fields[0] == "DatabaseName" && fields[1] == "SchemaName":
+		return "DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns."
+	case len(fields) == 1 && fields[0] == "DatabaseName":
+		return "DescribeDetails calls Describe and sets database from the identifier. DESCRIBE does not return that column."
+	case len(fields) == 1 && fields[0] == "SchemaName":
+		return "DescribeDetails calls Describe and sets schema from the identifier. DESCRIBE does not return that column."
+	default:
+		panic(fmt.Sprintf("DescribeDetails from identifier has fields %v", fields))
+	}
 }
 
 // WithDescribeParse generates Parse<NameSingular>Described from the config. It is the function WithDescribeDetails calls.

@@ -141,6 +141,7 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		SdkShowOptionalLimitFrom(),
 		SdkShowOptionalLimit(),
 		SdkShowByIDFiltering(SdkShowByIDExtendedIn, SdkShowByIDLike),
+		SdkShowByIDPredicate(SdkShowByIDPredicateNameAndLocator),
 		SdkShowResultFilterHook(),
 		SdkShowPlainOnly(&scopes, "[]Scope"),
 	), SdkDescribe(
@@ -163,6 +164,7 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		ShowOptionalLimitFrom:   true,
 		ShowOptionalLimit:       true,
 		ShowByIDFiltering:       []SdkShowByIDFilteringKind{SdkShowByIDExtendedIn, SdkShowByIDLike},
+		ShowByIDPredicate:       SdkShowByIDPredicateNameAndLocator,
 		ShowResultFilterHook:    true,
 		ShowPlainOnlyFields:     []SdkShowPlainOnlyField{{Column: &scopes, Kind: "[]Scope"}},
 		DescribeDoc:             "https://desc",
@@ -181,6 +183,12 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 			{Name: "DatabaseName", Kind: "string"},
 			{Name: "SchemaName", Kind: "string"},
 		},
+	}}, g)
+
+	g = ObjectGenerators(WithSdk(SdkDescribe(SdkDescribeDetailsFromIdentifier())))
+	require.Equal(t, Generators{Sdk: SdkGenerator{
+		Describe:                      true,
+		DescribeDetailsFromIdentifier: true,
 	}}, g)
 
 	column := Attribute{Name: "column", Type: AttrString}
