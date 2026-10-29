@@ -163,6 +163,14 @@ Previously, the catalog integration resources and the adaptive and interactive w
 
 The provider now saves these configured values in state. When they already match Snowflake, Snowflake is left unchanged. No configuration changes are required. After upgrading, the next `terraform plan` refreshes the resource and the fields listed above show the configured values.
 
+### *(bug fix)* Converting a warehouse to `ADAPTIVE` no longer suspends it
+
+Previously, [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive) applied the Standard to Adaptive type change through the same suspend-then-alter path used for changing between Standard and Snowpark-optimized. On a warehouse that never idles the suspend never completed and the update failed with `warehouse suspension failed`; on a quiet one it cost a cold start. Snowflake applies this conversion online, so the provider now runs `ALTER WAREHOUSE ... SET WAREHOUSE_TYPE = 'ADAPTIVE'` directly. Queries already running finish on the old compute.
+
+No changes to existing configurations are required.
+
+Reference: [#5342](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5342).
+
 ### *(bug fix)* Fixed task graph root resolution for quoted identifiers
 
 Previously, updating an existing child [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task) during `terraform apply` could fail with:

@@ -183,7 +183,7 @@ func warehouseAdaptiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.Acc
 func warehouseAdaptiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequestsExt) error {
 	if *reqs.set != *sdk.NewWarehouseAdaptiveSetRequest() {
 		client := meta.(*provider.Context).Client
-		if err := client.Warehouses.AlterAdaptiveWithSuspend(ctx, sdk.NewAlterAdaptiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
+		if err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
 			return fmt.Errorf("error setting adaptive warehouse properties: %w", err)
 		}
 	}
