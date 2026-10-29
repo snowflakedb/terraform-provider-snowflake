@@ -81,6 +81,19 @@ func (v *{{ $.NameLowerCased }}) {{ .MethodName }}(ctx context.Context, id {{ $.
 	return &details, nil
 }
 {{- end }}
+{{- with .DescribeDetailsFromIdentifier }}
+
+func (v *{{ $.NameLowerCased }}) DescribeDetails(ctx context.Context, id {{ $.IdentifierKind }}) (*{{ .DetailsType }}, error) {
+	details, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	{{- range .Fields }}
+	details.{{ . }} = id.{{ . }}()
+	{{- end }}
+	return details, nil
+}
+{{- end }}
 {{- if .ParametersDetails }}
 
 func To{{ .NameSingular }}ParametersDetails(params []*Parameter) (*{{ .NameSingular }}ParametersDetails, error) {

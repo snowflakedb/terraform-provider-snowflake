@@ -126,3 +126,7 @@ type ProjectionPolicyDetails struct {
 	DatabaseName string
 	SchemaName   string
 }
+
+func (v *ProjectionPolicyDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

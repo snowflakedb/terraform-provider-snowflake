@@ -147,3 +147,7 @@ type CodeBundleDetails struct {
 	DatabaseName                    string
 	SchemaName                      string
 }
+
+func (v *CodeBundleDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

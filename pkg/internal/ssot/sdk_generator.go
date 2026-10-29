@@ -174,8 +174,8 @@ type SdkPlainOnlyField struct {
 }
 
 // SdkDescribePlainOnlyField adds a plain-only field to the DESCRIBE paired struct.
-// It is the ssot form of PlainOnlyField. The field is not a column, convert skips it,
-// and additionalConvert in the SDK ext file fills it.
+// It is the ssot form of PlainOnlyField. The field is not a column and convert skips it.
+// additionalConvert in the SDK ext file fills it, unless SdkDescribeDetailsFromIdentifier copies every plain-only field.
 func SdkDescribePlainOnlyField(name, kind string) SdkDescribeOption {
 	return func(s *SdkGenerator) {
 		s.DescribePlainOnlyFields = append(s.DescribePlainOnlyFields, SdkPlainOnlyField{Name: name, Kind: kind})

@@ -1020,6 +1020,92 @@ func Test_ValidateObject_describePlainOnlyField(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_describeDetailsFromIdentifier(t *testing.T) {
+	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
+	row := Attribute{Name: "property", Type: AttrString, Readonly: true}
+	obj := func(idType string, generators ...GeneratorOption) Object {
+		return Object{
+			Name:       "Widget",
+			IdType:     idType,
+			Describe:   OutputSpec{Columns: []*Attribute{&name}},
+			Generators: generators,
+		}
+	}
+	both := SdkDescribe(
+		SdkDescribePlainOnlyField("DatabaseName", "string"),
+		SdkDescribePlainOnlyField("SchemaName", "string"),
+		SdkDescribeDetailsFromIdentifier(),
+	)
+	require.NotPanics(t, func() { ValidateObject(obj("SchemaObjectIdentifier", WithSdk(both))) })
+	require.NotPanics(t, func() {
+		ValidateObject(obj("SchemaObjectIdentifier", WithSdk(SdkDescribe(
+			SdkDescribePlainOnlyField("DatabaseName", "string"),
+			SdkDescribeDetailsFromIdentifier(),
+		))))
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(obj("SchemaObjectIdentifier", WithSdk(SdkDescribe(
+			SdkDescribePlainOnlyField("SchemaName", "string"),
+			SdkDescribeDetailsFromIdentifier(),
+		))))
+	})
+	withOtherMethod := obj("SchemaObjectIdentifier", WithSdk(both))
+	withOtherMethod.CustomInterfaceMethods = []CustomInterfaceMethodSpec{{Name: "Use"}}
+	require.NotPanics(t, func() { ValidateObject(withOtherMethod) })
+	require.NotPanics(t, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkDescribe(
+			SdkDescribePlainOnlyField("DatabaseName", "string"),
+			SdkDescribeDetailsFromIdentifier(),
+		))))
+	})
+
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier needs SdkDescribe`, func() {
+		ValidateObject(obj("SchemaObjectIdentifier", WithSdk(func(s *SdkGenerator) { s.DescribeDetailsFromIdentifier = true })))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier needs IdType SchemaObjectIdentifier or DatabaseObjectIdentifier`, func() {
+		ValidateObject(obj("AccountObjectIdentifier", WithSdk(both)))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier plain-only field "SchemaName" must be DatabaseName`, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(both)))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier needs a plain-only DatabaseName`, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkDescribe(SdkDescribeDetailsFromIdentifier()))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier needs a plain-only DatabaseName or SchemaName`, func() {
+		ValidateObject(obj("SchemaObjectIdentifier", WithSdk(SdkDescribe(SdkDescribeDetailsFromIdentifier()))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier plain-only field "Comment" must be DatabaseName or SchemaName`, func() {
+		ValidateObject(obj("SchemaObjectIdentifier", WithSdk(SdkDescribe(
+			SdkDescribePlainOnlyField("Comment", "string"),
+			SdkDescribeDetailsFromIdentifier(),
+		))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier plain-only field "DatabaseName" must be a string`, func() {
+		ValidateObject(obj("SchemaObjectIdentifier", WithSdk(SdkDescribe(
+			SdkDescribePlainOnlyField("DatabaseName", "int"),
+			SdkDescribeDetailsFromIdentifier(),
+		))))
+	})
+	withRows := obj("SchemaObjectIdentifier", WithSdk(SdkDescribe(SdkDescribeDetailsFromIdentifier())))
+	withRows.DescribeRows = OutputSpec{Columns: []*Attribute{&row}}
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier cannot be used with DescribeRows`, func() {
+		ValidateObject(withRows)
+	})
+	withDetails := obj("SchemaObjectIdentifier", WithSdk(SdkDescribe(
+		SdkDescribeDetails(),
+		SdkDescribeDetailsFromIdentifier(),
+	)))
+	withDetails.DescribeRows = OutputSpec{Columns: []*Attribute{&row}}
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier cannot be used with SdkDescribeDetails`, func() {
+		ValidateObject(withDetails)
+	})
+	withCustom := obj("SchemaObjectIdentifier", WithSdk(both))
+	withCustom.CustomInterfaceMethods = []CustomInterfaceMethodSpec{{Name: "DescribeDetails"}}
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier conflicts with custom interface method DescribeDetails`, func() {
+		ValidateObject(withCustom)
+	})
+}
+
 func Test_Object_PairedDescribeColumns(t *testing.T) {
 	details := Attribute{Name: "active", Type: AttrString, Readonly: true}
 	row := Attribute{Name: "property", Type: AttrString, Readonly: true}

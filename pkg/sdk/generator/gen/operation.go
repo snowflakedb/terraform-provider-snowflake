@@ -110,8 +110,11 @@ type Mapping struct {
 	// SkipConvert is set by preprocessDefinition when another Mapping with the same From.Name has
 	// already been scheduled for emission in the same interface. Guards and convert bodies are suppressed.
 	SkipConvert bool
-	// AdditionalConvert enforces the additional conversion invocation (for cases where we have plain only field without manual conversion for any other field)
+	// AdditionalConvert enforces the additional conversion invocation (for cases where we have plain only field without manual conversion for any other field).
+	// preprocessDefinition clears it when DescribeDetails copies every plain-only field from the identifier.
 	AdditionalConvert bool
+	// PlainOnlyFields are plain struct fields with no db column, in definition order.
+	PlainOnlyFields []string
 }
 
 // AddFieldPairs converts the paired field definitions into a slice of FieldPair values used in conversion generation.
@@ -119,6 +122,7 @@ func (m *Mapping) AddFieldPairs(p *PairedStructs) {
 	pairs := make([]FieldPair, 0, len(p.fields))
 	for _, f := range p.fields {
 		if f.plainOnly {
+			m.PlainOnlyFields = append(m.PlainOnlyFields, f.resolvedPlainFieldName())
 			m.AdditionalConvert = true
 			continue
 		}

@@ -489,8 +489,9 @@ func (p *PairedStructs) WithShowResultFilterHook() *PairedStructs {
 }
 
 // PlainOnlyField adds a field that only appears in the plain struct (not in the db row struct).
-// These fields are always skipped in generated convert() code — they must be populated manually
-// in additionalConvert(). No dbColumnName is needed since there is no db column.
+// These fields are skipped in generated convert() code. additionalConvert fills them, unless DescribeDetails
+// copies every plain-only field from the identifier, in which case that hook is not generated.
+// No dbColumnName is needed since there is no db column.
 //
 //	db:    (nothing)
 //	plain: <fieldName> <plainKind>

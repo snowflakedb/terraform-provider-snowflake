@@ -82,6 +82,9 @@ func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs .
 	if cfg.DescribeDetailsMethod {
 		i = i.WithDescribeDetails(obj.Name+"Details", "Parse"+obj.Name+"Described")
 	}
+	if cfg.DescribeDetailsFromIdentifier {
+		i = i.WithDescribeDetailsFromIdentifier(obj.DescribePlainName(), obj.DescribeDetailsFromIdentifierAssignments())
+	}
 	for _, variant := range variants {
 		i = i.WithDescribeDetailsMethod("Describe"+variant.VariantStem(obj.Name)+"Details", variant.Name+"Details", "Parse"+variant.Name+"Described")
 	}
