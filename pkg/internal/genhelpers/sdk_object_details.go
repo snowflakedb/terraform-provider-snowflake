@@ -33,8 +33,10 @@ type SdkObjectDetails struct {
 	ShowByParentId       *ShowByParentIdDef
 	DescribeOverride     *DescribeOverrideDef
 	ShowProjection       *ShowProjectionDef
-	FromObjectIDExpr     string
-	NestedAssertFields   []string
-	SkipFields           []string
+	// SdkType overrides StructDetails.Name as the row type. The assertion name stays StructDetails.Name.
+	SdkType            string
+	FromObjectIDExpr   string
+	NestedAssertFields []string
+	SkipFields         []string
 	StructDetails
 }

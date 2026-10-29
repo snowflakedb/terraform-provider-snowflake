@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type CatalogIntegrationAwsGlueResourceAssert struct {
@@ -44,6 +45,11 @@ func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogNamespace(expected s
 
 func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSource(expected string) *CatalogIntegrationAwsGlueResourceAssert {
 	c.StringValueSet("catalog_source", expected)
+	return c
+}
+
+func (c *CatalogIntegrationAwsGlueResourceAssert) HasCatalogSourceSdk(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationAwsGlueResourceAssert {
+	c.StringValueSet("catalog_source", string(expected))
 	return c
 }
 

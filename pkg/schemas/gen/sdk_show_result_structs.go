@@ -36,6 +36,8 @@ type ShowResultSchemaDetails struct {
 	ManualFields    []string
 	TypeOverrides   map[string]schema.ValueType
 	UsedAsListEntry bool
+	// SdkType overrides StructDetails.Name as the mapped Go type. The schema variable stays StructDetails.Name.
+	SdkType string
 	genhelpers.StructDetails
 }
 
@@ -47,7 +49,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ApplicationRole{}},
 	{ObjectStruct: sdk.Application{}},
 	{ObjectStruct: sdk.AuthenticationPolicy{}, ManualFields: []string{"target_scopes"}},
-	{ObjectStruct: sdk.CatalogIntegration{}},
 	{ObjectStruct: sdk.Connection{}},
 	{ObjectStruct: sdk.CortexAgent{}, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.DatabaseRole{}},
@@ -162,13 +163,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// TypeString of each property .Value (today’s public describe_output).
 	// Property-row list entry (same pattern as SecurityIntegrationProperty / NetworkPolicyProperty).
 	{ObjectStruct: sdk.AuthenticationPolicyProperty{}, UsedAsListEntry: true},
-	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
-	{ObjectStruct: sdk.CatalogIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}},
-	{ObjectStruct: sdk.CatalogIntegrationAwsGlueDetails{}, IsDescribe: true},
-	// ManualFields uses generator snake_case (OAuth → o_auth, SigV4 → sig_v4); ext re-adds public oauth_* / sigv4_* keys.
-	{ObjectStruct: sdk.CatalogIntegrationIcebergRestDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "oauth_rest_authentication", "bearer_rest_authentication", "sigv4_rest_authentication"}},
-	{ObjectStruct: sdk.CatalogIntegrationObjectStorageDetails{}, IsDescribe: true},
-	{ObjectStruct: sdk.CatalogIntegrationOpenCatalogDetails{}, IsDescribe: true, ManualFields: []string{"rest_config", "rest_authentication"}},
 	{ObjectStruct: sdk.CortexAgentDetails{}, IsDescribe: true, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.

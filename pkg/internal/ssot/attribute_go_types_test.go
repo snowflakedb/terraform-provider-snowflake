@@ -76,6 +76,10 @@ func Test_AttributeGoTypes(t *testing.T) {
 	})
 	require.Equal(t, "[]int", concrete)
 	require.Equal(t, "slice", underlying)
+
+	concrete, underlying = AttributeGoTypes(obj, Attribute{Name: "rest_config", Type: AttrObject})
+	require.Equal(t, "sdk.PoolRestConfigDetails", concrete)
+	require.Equal(t, "struct", underlying)
 }
 
 func Test_ColumnField_matchesExtractedStructField(t *testing.T) {
