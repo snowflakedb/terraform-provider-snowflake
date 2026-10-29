@@ -25,11 +25,39 @@ func importIntAttribute(d *schema.ResourceData, key string, importPermissiveMode
 	return d.Set(key, snowflakeValue)
 }
 
-func importStringAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue string) error {
+func importStringAttribute[T ~string](d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue T) error {
 	if importPermissiveMode {
 		return d.Set(key, "")
 	}
 	return d.Set(key, snowflakeValue)
+}
+
+func importOptionalBooleanStringAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue *bool) error {
+	if snowflakeValue == nil {
+		return d.Set(key, BooleanDefault)
+	}
+	return importBooleanStringAttribute(d, key, importPermissiveMode, *snowflakeValue)
+}
+
+func importOptionalIntWithIntDefaultAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue *int) error {
+	if snowflakeValue == nil {
+		return d.Set(key, IntDefault)
+	}
+	return importIntWithIntDefaultAttribute(d, key, importPermissiveMode, *snowflakeValue)
+}
+
+func importOptionalIntAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue *int) error {
+	if snowflakeValue == nil {
+		return nil
+	}
+	return importIntAttribute(d, key, importPermissiveMode, *snowflakeValue)
+}
+
+func importOptionalStringAttribute[T ~string](d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue *T) error {
+	if snowflakeValue == nil {
+		return nil
+	}
+	return importStringAttribute(d, key, importPermissiveMode, string(*snowflakeValue))
 }
 
 func importSetAttribute[T any](d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue []T) error {
