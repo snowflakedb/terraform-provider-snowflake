@@ -74,17 +74,11 @@ func catalogIntegrationIcebergRestApplyCreateOptionalsExt(d *schema.ResourceData
 
 func catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if withExternalChangesMarking {
-		if err := handleExternalChangesToObjectInFlatDescribe(
-			d,
-			catalogIntegrationIcebergRestOutputMappingsExt(details)...,
-		); err != nil {
-			return diag.FromErr(err)
-		}
 		if err := handleExternalChangesToIcebergRestNestedAttrs(d, details); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	// refresh_interval_seconds is not copied into config; drift is marked on describe output.
+	// refresh_interval_seconds is a generated external change, not copied here.
 	if err := errors.Join(
 		d.Set("catalog_source", string(details.CatalogSource)),
 		d.Set("catalog_namespace", details.CatalogNamespace),
@@ -92,12 +86,6 @@ func catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(d *schema.R
 		return diag.FromErr(err)
 	}
 	return nil
-}
-
-func catalogIntegrationIcebergRestOutputMappingsExt(details *sdk.CatalogIntegrationIcebergRestDetails) []outputMapping {
-	return []outputMapping{
-		{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
-	}
 }
 
 func catalogIntegrationIcebergRestSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {

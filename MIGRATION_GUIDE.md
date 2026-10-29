@@ -128,6 +128,14 @@ The provider now clears the current error integration and then sets the new one.
 
 The check now uses `alert_schedule.0.interval` and `alert_schedule.0.cron`. Setting both fails at plan time. Remove one of them. Configurations that set only one are unchanged.
 
+### *(bug fix)* Setting a Snowflake default explicitly no longer plans an update
+
+For the fields below, Snowflake fills a value when the configuration omits the field. Writing that same value explicitly used to plan an update. It no longer does. Omitting the field is unchanged, and no configuration change is required.
+
+- [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive): `max_query_performance_level`, `query_throughput_multiplier`
+- [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume): `allow_writes`
+- [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) created from a REST or AWS Glue catalog: `catalog_namespace`
+
 ### *(bug fix)* `snowflake_resource_monitor` now saves configured values in state
 
 Previously, [`snowflake_resource_monitor`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/resource_monitor) left some optional fields empty in Terraform state when your configuration used the value Snowflake already had. A number could appear as `0`, and text could appear blank, although the value was present both in your configuration and in Snowflake. This affected:

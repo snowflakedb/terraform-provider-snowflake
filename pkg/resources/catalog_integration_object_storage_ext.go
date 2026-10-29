@@ -61,13 +61,8 @@ func catalogIntegrationObjectStorageApplyCreateOptionalsExt(d *schema.ResourceDa
 	)
 }
 
-func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails, withExternalChangesMarking bool) diag.Diagnostics {
-	if withExternalChangesMarking {
-		if err := handleExternalChangesToObjectInFlatDescribe(d, catalogIntegrationObjectStorageOutputMappingsExt(details)...); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-	// refresh_interval_seconds is not copied into config; drift is marked on describe output.
+func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails, _ bool) diag.Diagnostics {
+	// refresh_interval_seconds is a generated external change, not copied here.
 	if err := errors.Join(
 		d.Set("catalog_source", string(details.CatalogSource)),
 		d.Set("table_format", string(details.TableFormat)),
@@ -75,12 +70,6 @@ func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d *schema
 		return diag.FromErr(err)
 	}
 	return nil
-}
-
-func catalogIntegrationObjectStorageOutputMappingsExt(details *sdk.CatalogIntegrationObjectStorageDetails) []outputMapping {
-	return []outputMapping{
-		{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
-	}
 }
 
 func catalogIntegrationObjectStorageSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {

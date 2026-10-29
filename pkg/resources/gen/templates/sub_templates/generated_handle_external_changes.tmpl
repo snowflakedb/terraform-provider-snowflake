@@ -1,0 +1,21 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- $changes := .ShowExternalChanges -}}
+func {{ .Prefix }}HandleExternalChanges(d *tfschema.ResourceData, {{ .Prefix }} *sdk.{{ .ShowObjectName }}, withExternalChangesMarking bool) error {
+	if !withExternalChangesMarking {
+		return nil
+	}
+{{- if $changes.Prepare }}
+{{ range $changes.Prepare }}
+	{{ . }}
+{{- end }}
+{{- end }}
+{{- with $changes.Mappings }}
+	return handleExternalChangesToObjectInShow(d,
+{{- range . }}
+		outputMapping{"{{ .OutputKey }}", "{{ .ConfigKey }}", {{ .Compare }}, {{ .Set }}, nil},
+{{- end }}
+	)
+{{- else }}
+	return nil
+{{- end }}
+}

@@ -99,6 +99,14 @@ type Attribute struct {
 	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.
 	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
 	DiffSuppress  DiffSuppress
+	// Computed marks a field the resource schema ext turns into a computed attribute.
+	// The generator still emits Optional. Drift tracking and output suppression skip it.
+	Computed bool
+	// ServerDefault marks a describe-only field that Snowflake fills in when the configuration omits it.
+	// The generator drift-tracks that field and suppresses a diff against describe_output.
+	// A SHOW column does not need this: every optional scalar SHOW column is drift-tracked.
+	// Leave it unset when the omitted value is empty, as catalog_namespace is.
+	ServerDefault bool
 	// ConflictsWith names other attributes on the same level. The generator emits schema.ConflictsWith
 	// as a path from the resource root: the name at the top, and parent.0.name under a single block
 	// (an object, or a list of objects with MaxItems 1).

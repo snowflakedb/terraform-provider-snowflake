@@ -90,6 +90,10 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 			return diag.FromErr(err)
 		}
 
+		diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribe(d, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)
+		if diags.HasError() {
+			return diags
+		}
 		diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
@@ -136,6 +140,19 @@ func catalogIntegrationAwsGlueParseIdFromConfig(d *tfschema.ResourceData) (sdk.A
 
 func catalogIntegrationAwsGlueParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func catalogIntegrationAwsGlueHandleExternalChangesInDescribe(d *tfschema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails, withExternalChangesMarking bool) diag.Diagnostics {
+	if !withExternalChangesMarking || details == nil {
+		return nil
+	}
+	if err := handleExternalChangesToObjectInFlatDescribe(d,
+		outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
+		outputMapping{"glue_region", "glue_region", details.GlueRegion, details.GlueRegion, nil},
+	); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func DeleteCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

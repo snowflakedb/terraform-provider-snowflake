@@ -94,12 +94,17 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   `true`/`false` through `strconv.ParseBool`. A page that says `Y` or `N` can still return `true` or `false`; use
   `BoolParsed` for that column and record the gap. A bool without `StoredAsText` is still db `bool`. Other generators ignore both marks.
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs).
-- `DiffSuppress` - a suppressor composed with inferred identifier and enum normalization. Set it directly to
-  `ssot.SuppressShow`, `ssot.SuppressDescribe`, or `ssot.SuppressStatement`; combine them with
-  `ssot.SuppressIfAny(ssot.SuppressStatement, ssot.SuppressDescribe)`. Nested combinations are flattened, and nil
-  means no configured suppression. Output suppressors use `OutputKey()` unless a leaf supplies an override, e.g.
-  `ssot.SuppressDescribe.WithKey("definition")`. Output strategies apply to fields, not collection elems.
-  Statement suppression uses the resource's `DiffSuppressStatement` helper for strings, including string elems.
+- `DiffSuppress` - a suppressor composed with inferred identifier and enum normalization, and with the derived
+  output suppressor below. `ssot.SuppressStatement` stays manual. `ssot.SuppressShow` and `ssot.SuppressDescribe`
+  still compose when set, including `WithKey`, and then derivation skips that kind. Nested combinations are
+  flattened. Output strategies apply to fields, not collection elems. Statement suppression uses the resource's
+  `DiffSuppressStatement` helper for strings, including string elems.
+- `Computed` - the schema ext turns the field into a computed attribute. The generator still emits Optional.
+  Drift tracking and output suppression skip it. Adaptive `warehouse_type` sets it.
+- `ServerDefault` - Snowflake fills a describe-only field when the configuration omits it, and that value is not
+  Terraform's empty value. The generator drift-tracks the field and suppresses a diff against `describe_output`.
+  Optional scalar SHOW columns get the same treatment without this flag. `catalog_namespace` stays unset because
+  Snowflake reports an empty namespace.
 - `ConflictsWith` names other attributes on the same level. The generator emits `schema.ConflictsWith` as a path from
   the resource root: the attribute name at the top, and `parent.0.name` for a child of a single block (an `AttrObject`,
   or a list of objects with `MaxItems: 1`).
@@ -467,6 +472,24 @@ The identity schema template emits that `ForceNew`. An unknown `IdType` panics.
 `ObjectType()` is `Sdk.DescribeSql` when that is set, and otherwise the uppercase words of `Name`. The words after
 "for the given" are the lowercase of `ObjectType()`. A shared command such as `DESCRIBE CATALOG INTEGRATION` sets
 `SdkDescribeSql` so every variant emits the same sentence.
+
+`WithHandleExternalChanges(Generated())` emits `<prefix>HandleExternalChanges` and calls
+`handleExternalChangesToObjectInShow`. `WithHandleExternalChangesInDescribe(Generated())` emits
+`<prefix>HandleExternalChangesInDescribe` and calls `handleExternalChangesToObjectInFlatDescribe`, then calls
+`<prefix>HandleExternalChangesInDescribeExt`. The ext function keeps nested drift and the config fields copied on
+every read. The describe hook also requires `DescribeInSdk`. A column is included when its name is a resource
+attribute, it is not create-only, it is not an identifier field (`database`, `schema`, `name`), and it is not
+`comment`. Comment is copied on every read. A required or `Computed` attribute is copied on every read. Describe also skips a
+column that is already a SHOW column, and includes a column only when `ServerDefault` is set. The schema suppressor
+is derived from the same rule: SHOW uses `IgnoreChangeToCurrentSnowflakeValueInShow`, and a describe-only
+`ServerDefault` field uses `IgnoreChangeToCurrentSnowflakeValueInDescribe`. Column order is the mapping order. The output key is
+`OutputKey()`. The config key is `Name`. The SDK field is the camel-case output key. Compare and set are that field.
+An enum compare is `string(field)`. A boolean string uses `booleanStringFromBool`. An optional SHOW field uses
+`optionalStringOutputMapping`, `optionalBooleanStringOutputMapping`, or `optionalIntOutputMapping`. An optional int
+whose schema default is `IntDefault` uses `optionalIntOutputMappingIntDefault`. An `AccountObjectIdentifier` uses
+`Name()`. Any other identifier uses `FullyQualifiedName()`. A variant's show value is `*sdk.<VariantOf.Name>`. A
+nested column or a collection panics. Anything else panics. Keep `ExtCall` for a property-list describe, a normalize
+function, or a mapping this deduction does not cover.
 
 Optional bools are boolean-strings on purpose (`applyResourceAttributeRules`
 in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go)): an optional bool is Terraform

@@ -33,7 +33,7 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 		Type:          ssot.AttrInt,
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
-		DiffSuppress:  ssot.SuppressDescribe,
+		ServerDefault: true,
 		CreateMapping: ssot.IntAttributeCreateBuilder,
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
@@ -63,11 +63,11 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 	},
 	// GlueRegion and CatalogNamespace are written onto AwsGlueCatalogSourceParams, not request.With<Field>.
 	GlueRegion: ssot.Attribute{
-		Name:         "glue_region",
-		Type:         ssot.AttrString,
-		ForceNew:     true,
-		DiffSuppress: ssot.SuppressDescribe,
-		Description:  "Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.",
+		Name:          "glue_region",
+		Type:          ssot.AttrString,
+		ForceNew:      true,
+		ServerDefault: true,
+		Description:   "Specifies the AWS region of your AWS Glue Data Catalog. You must specify a value for this attribute if your Snowflake account is not hosted on AWS. Otherwise, the default region is the Snowflake deployment region for the account.",
 	},
 	CatalogNamespace: ssot.Attribute{
 		Name:        "catalog_namespace",
@@ -108,8 +108,6 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
-		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
-		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list. SSOT would repeat sdk.CatalogIntegrationAwsGlueDetails.
@@ -125,7 +123,7 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
+		ssot.WithHandleExternalChangesInDescribe(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},

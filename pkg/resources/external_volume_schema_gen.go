@@ -19,6 +19,7 @@ var externalVolumeAttributesSchema = externalVolumeAttributesModificationExt(map
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("allow_writes"),
 		Description:      booleanStringFieldDescription("Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog."),
 		Default:          BooleanDefault,
 	},

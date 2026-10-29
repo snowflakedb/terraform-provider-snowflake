@@ -90,6 +90,10 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tf
 			return diag.FromErr(err)
 		}
 
+		diags = catalogIntegrationObjectStorageHandleExternalChangesInDescribe(d, catalogIntegrationObjectStorageDetails, withExternalChangesMarking)
+		if diags.HasError() {
+			return diags
+		}
 		diags = catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d, catalogIntegrationObjectStorageDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
@@ -134,6 +138,18 @@ func catalogIntegrationObjectStorageParseIdFromConfig(d *tfschema.ResourceData) 
 
 func catalogIntegrationObjectStorageParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func catalogIntegrationObjectStorageHandleExternalChangesInDescribe(d *tfschema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails, withExternalChangesMarking bool) diag.Diagnostics {
+	if !withExternalChangesMarking || details == nil {
+		return nil
+	}
+	if err := handleExternalChangesToObjectInFlatDescribe(d,
+		outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
+	); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func DeleteCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
