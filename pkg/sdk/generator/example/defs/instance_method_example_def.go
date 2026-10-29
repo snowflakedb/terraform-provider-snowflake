@@ -9,6 +9,18 @@ var addNotificationIntegrationArgs = g.NewQueryStruct("AddNotificationIntegratio
 	Identifier("IntegrationName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
 	WithValidation(g.ValidIdentifier, "IntegrationName")
 
+// renders as [(SELECT SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET')), '<value>']
+var exampleTagValue = g.NewQueryStruct("ExampleTagValue").
+	Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET").InSubquery()).
+	Text("Value", g.KeywordOptions().SingleQuotes().Required()).
+	WithValidation(g.ValidIdentifier, "Tag")
+
+// renders as ([[<tag reference>, '<value>'], ...], ['<user>', ...], <bool>)
+var setScopeArgs = g.NewQueryStruct("SetScopeArgs").
+	ListQueryStructField("Tags", exampleTagValue, g.ListOptions().Required().MustBrackets().ArrayElements()).
+	List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()).
+	PredefinedQueryStructField("Enabled", "bool", g.ParameterOptions().NoEquals().Required())
+
 var addNotificationIntegrationResult = g.StructPair(
 	"addNotificationIntegrationRow",
 	"AddNotificationIntegrationResult",
@@ -30,4 +42,9 @@ var InstanceMethodExamplesDef = g.NewInterface(
 	"GET_SPENDING_LIMIT",
 	nil,
 	"",
+).InstanceMethodOperationScalar(
+	"https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas",
+	"SET_SCOPE",
+	setScopeArgs,
+	"string",
 )

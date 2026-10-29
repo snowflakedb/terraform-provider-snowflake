@@ -377,6 +377,29 @@ OptionalSharedQueryStructField("Secrets", sharedStruct, g.ParameterOptions().SQL
 
 See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go](defs/notebooks_def.go) (reuser).
 
+### Instance method arguments
+
+Class objects (e.g. `SNOWFLAKE.CORE.BUDGET`, `SNOWFLAKE.CORE.QUOTA`) are configured with instance methods called as
+`CALL <name>!METHOD(args)`; see `InstanceMethodOperation` / `InstanceMethodOperationScalar` and
+[instance_method_example_def.go](example/defs/instance_method_example_def.go). The argument structs support a few
+list and reference renderings on top of the usual ones:
+
+```go
+// ['a', 'b'] - MustBrackets renders an empty list as [], Brackets omits it
+List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes())
+
+// [[<element fields>, ...], ...] - each struct element is rendered as an array literal
+ListQueryStructField("Tags", tagValue, g.ListOptions().Required().MustBrackets().ArrayElements())
+
+// (SELECT SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET')) - extra arguments and subquery wrapping
+Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET").InSubquery())
+
+// true / false
+PredefinedQueryStructField("Enabled", "bool", g.ParameterOptions().NoEquals().Required())
+```
+
+Arguments are positional: an optional argument that is not set is omitted, so only trailing arguments can be optional.
+
 ### Potential Improvements
 
 - handle more validation types
