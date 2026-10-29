@@ -74,8 +74,8 @@ var ProjectionPolicy = ssot.Object{
 			ssot.SdkDescribe(
 				ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
 				ssot.SdkDescribePlainOnlyField("SchemaName", "string"),
+				ssot.SdkDescribeDetailsFromIdentifier(),
 			),
-			ssot.SdkCustomInterfaceMethods(),
 		),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
@@ -104,11 +104,6 @@ var ProjectionPolicy = ssot.Object{
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
-	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{{
-		Name:    "DescribeDetails",
-		Doc:     "DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.",
-		Returns: []string{"*ProjectionPolicyDetails", "error"},
-	}},
 	Attributes: []ssot.Attribute{
 		ProjectionPolicyAttrs.Body,
 		ProjectionPolicyAttrs.Comment,

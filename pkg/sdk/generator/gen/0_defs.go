@@ -89,6 +89,14 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 				}
 				o.ObjectTypeMethod = NewShowObjectTypeMethod(definition.ShowObjectName, typeName)
 			}
+			if o.Name == string(OperationKindDescribe) && definition.DescribeDetailsFromIdentifier != nil {
+				idKind, err := ToObjectIdentifierKind(definition.IdentifierKind)
+				if err != nil {
+					logger.Printf("[WARN] for describeObjectIdMethod: %v", err)
+				} else if CheckRequiredFieldsForIdMethod(definition.DescribeDetailsFromIdentifier.DetailsType, o.HelperStructs, idKind, logger) {
+					o.ObjectIdMethod = NewShowObjectIDMethod(definition.DescribeDetailsFromIdentifier.DetailsType, idKind)
+				}
+			}
 
 			if o.NoRequest {
 				if hasDtoField(o.OptsField) {
@@ -126,8 +134,43 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 		requireConsistentStructShapes(definition)
 	}
 
+	omitAdditionalConvertForIdentifierCopies(definition)
+
 	// Built for every object regardless of opt-in; main.go's generation part decides whether to render it.
 	definition.UnitTests = definition.buildUnitTestsModel()
+}
+
+// omitAdditionalConvertForIdentifierCopies drops the additionalConvert hook when DescribeDetails copies every
+// plain-only DESCRIBE field from the identifier. A plain-only field outside that list keeps the hook.
+// A column marked manual still calls additionalConvert through its field pair.
+func omitAdditionalConvertForIdentifierCopies(definition *Interface) {
+	cfg := definition.DescribeDetailsFromIdentifier
+	if cfg == nil {
+		return
+	}
+	covered := make(map[string]struct{}, len(cfg.Fields))
+	for _, name := range cfg.Fields {
+		covered[name] = struct{}{}
+	}
+	for _, op := range definition.Operations {
+		mapping := op.DescribeMapping
+		if mapping == nil || len(mapping.PlainOnlyFields) == 0 {
+			continue
+		}
+		if !identifierFieldsCover(mapping.PlainOnlyFields, covered) {
+			continue
+		}
+		mapping.AdditionalConvert = false
+	}
+}
+
+func identifierFieldsCover(fields []string, covered map[string]struct{}) bool {
+	for _, name := range fields {
+		if _, ok := covered[name]; !ok {
+			return false
+		}
+	}
+	return true
 }
 
 // resolveInterfaceIdentifierKinds walks all fields recursively and replaces sentinel kind values

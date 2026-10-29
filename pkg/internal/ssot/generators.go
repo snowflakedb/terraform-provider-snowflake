@@ -66,8 +66,13 @@ type SdkGenerator struct {
 	DescribeQueryStructName           string
 	DescribeIdentifierOverride        string
 	// DescribePlainOnlyFields are fields on the DESCRIBE plain struct that are not DESCRIBE columns.
-	// convert skips them. additionalConvert in the SDK ext file fills them.
+	// convert skips them. additionalConvert in the SDK ext file fills them, unless DescribeDetailsFromIdentifier
+	// copies every one of them from the identifier. Then the hook is not generated.
 	DescribePlainOnlyFields []SdkPlainOnlyField
+	// DescribeDetailsFromIdentifier emits DescribeDetails for a columnar DESCRIBE. The method calls Describe
+	// and copies plain-only identifier fields from the id. SchemaObjectIdentifier copies DatabaseName and SchemaName.
+	// DatabaseObjectIdentifier copies DatabaseName. It is separate from DescribeDetailsMethod, which parses a property-list DESCRIBE and sets Id.
+	DescribeDetailsFromIdentifier bool
 
 	Drop                bool
 	DropDoc             string
@@ -347,6 +352,13 @@ func SdkDescribeDetailsParseIgnoreUnknown() SdkDescribeDetailsOption {
 // the rows with the hand-written Parse<Name>Described(rows []<Name>Property) (<Name>Details, error), and sets Id.
 func SdkDescribeDetailsMethod() SdkDescribeDetailsOption {
 	return func(s *SdkGenerator) { s.DescribeDetailsMethod = true }
+}
+
+// SdkDescribeDetailsFromIdentifier emits DescribeDetails for a columnar DESCRIBE. The method calls Describe and copies
+// plain-only identifier fields from the id: DatabaseName and SchemaName for a SchemaObjectIdentifier, and DatabaseName
+// for a DatabaseObjectIdentifier. It is not SdkDescribeDetailsMethod: that option parses a property-list DESCRIBE and sets Id.
+func SdkDescribeDetailsFromIdentifier() SdkDescribeOption {
+	return func(s *SdkGenerator) { s.DescribeDetailsFromIdentifier = true }
 }
 
 // SdkDescribeDetailsForVariants emits the details of each variant: the struct <Variant>Details from the Describe.Columns

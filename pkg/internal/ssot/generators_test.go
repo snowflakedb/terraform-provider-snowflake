@@ -185,6 +185,12 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		},
 	}}, g)
 
+	g = ObjectGenerators(WithSdk(SdkDescribe(SdkDescribeDetailsFromIdentifier())))
+	require.Equal(t, Generators{Sdk: SdkGenerator{
+		Describe:                      true,
+		DescribeDetailsFromIdentifier: true,
+	}}, g)
+
 	column := Attribute{Name: "column", Type: AttrString}
 	g = ObjectGenerators(WithSdk(SdkDescribe(SdkDescribeDetails(
 		SdkDescribeDetailsRowsField("descriptions", "Descriptions"),

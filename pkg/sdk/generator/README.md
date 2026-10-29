@@ -109,7 +109,7 @@ as no-ops — this package only needs to prove the generated `*_gen_test.go` com
 assertions are meaningful, so no `*_ext_test.go` companions are needed here.
 
 Additional example definitions covering specific generator features:
-- [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`
+- [sequences_def.go](example/defs/sequences_def.go) — full CRUD with `ShowOperationWithPairedStructs` and `DescribeOperationWithPairedStructs`, plus `WithDescribeDetailsFromIdentifier` for identifier columns DESCRIBE does not return (see [DESCRIBE that omits identifier columns](#describe-that-omits-identifier-columns))
 - [paired_struct_def.go](example/defs/paired_struct_def.go) — all `PairedStructs` field methods and options (see [PairedStructs](#pairedstructs) below)
 - [to_opts_optional_example_def.go](example/defs/to_opts_optional_example_def.go) — `ListQueryStructField` with slice-of-structs toOpts, optional nested fields
 - [slice_validation_example_def.go](example/defs/slice_validation_example_def.go) — `validate()` for lists of objects: multiple `WithValidation`s on a slice, nested structs under a slice, N-deep nested `ListQueryStructField` (Items → SubItems → LeafItems)
@@ -324,6 +324,20 @@ Limitations:
 - The details struct, the row struct, and the element type are not linked to the config. A type name that does not match
   is a compile error, not a generator error.
 - Mixing is possible: an object can use `WithDescribeParse` and a hand-written `DescribeDetails`, or the reverse.
+
+### DESCRIBE that omits identifier columns
+
+A columnar `DESCRIBE` returns one struct, and that row can omit the database or schema the identifier is built from.
+`PlainOnlyField` adds those fields to the plain struct. `convert` skips them. `WithDescribeDetailsFromIdentifier(detailsType, fields)`
+declares `DescribeDetails` and generates its body: it calls `Describe` and copies each field from the identifier.
+`fields` is `DatabaseName` and `SchemaName` for a `SchemaObjectIdentifier`, or `DatabaseName` for a `DatabaseObjectIdentifier`.
+The field name is the identifier method, so `DatabaseName` calls `id.DatabaseName()`.
+
+See [sequences_def.go](example/defs/sequences_def.go). `sequenceDescribeFields` marks `DatabaseName` and `SchemaName` as
+`PlainOnlyField`, and the interface calls `WithDescribeDetailsFromIdentifier("SequenceDetail", []string{"DatabaseName", "SchemaName"})`.
+When that list covers every plain-only field, `convert` does not call `additionalConvert`. A plain-only field outside the list keeps the hook. When the details struct has the identifier parts, the generator emits `ID()`.
+
+This is separate from [property-list DESCRIBE](#property-list-describe). That path parses property rows and sets `Id`.
 
 ### SHOW projections
 

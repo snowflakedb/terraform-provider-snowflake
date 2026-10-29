@@ -1,6 +1,9 @@
 package gen
 
 import (
+	"io"
+	"log"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -1790,6 +1793,137 @@ func Test_DescribeOperationFromObject_detailsMethod(t *testing.T) {
 	require.Equal(t, "DescribeDetails", got.CustomMethods[0].Name)
 	require.Equal(t, []string{"*WidgetDetails", "error"}, got.CustomMethods[0].ReturnTypes)
 	require.Equal(t, "AccountObjectIdentifier", got.CustomMethods[0].Parameters[0].Kind)
+}
+
+func Test_DescribeOperationFromObject_detailsFromIdentifier(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true}
+	obj := func(idType string, opts ...ssot.SdkDescribeOption) ssot.Object {
+		return ssot.Object{
+			Name:       "Widget",
+			NamePlural: "Widgets",
+			IdType:     idType,
+			Describe:   ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+			Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(opts...))},
+		}
+	}
+	schema := obj("SchemaObjectIdentifier",
+		ssot.SdkDescribePlainOnlyField("SchemaName", "string"),
+		ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
+		ssot.SdkDescribeDetailsFromIdentifier(),
+	)
+	got := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").DescribeOperationFromObject(schema)
+	require.Equal(t, &DescribeDetailsFromIdentifierConfig{
+		DetailsType: "WidgetDetails",
+		Fields:      []string{"DatabaseName", "SchemaName"},
+	}, got.DescribeDetailsFromIdentifier)
+	require.Empty(t, got.DescribeDetailsMethods)
+	require.Len(t, got.CustomMethods, 1)
+	require.Equal(t, "DescribeDetails", got.CustomMethods[0].Name)
+	require.Equal(t, "DescribeDetails calls Describe and sets database and schema from the identifier. DESCRIBE does not return those columns.", got.CustomMethods[0].Doc)
+	require.Equal(t, []string{"*WidgetDetails", "error"}, got.CustomMethods[0].ReturnTypes)
+	require.Equal(t, "SchemaObjectIdentifier", got.CustomMethods[0].Parameters[0].Kind)
+	preprocessDefinition(got, log.New(io.Discard, "", 0))
+	require.False(t, got.Operations[0].DescribeMapping.HasManualConvert())
+	require.Equal(t, NewShowObjectIDMethod("WidgetDetails", SchemaObjectIdentifier), got.Operations[0].ObjectIdMethod)
+
+	var idOut strings.Builder
+	require.NoError(t, ShowObjectIdMethodTemplate.Execute(&idOut, got.Operations[0].ObjectIdMethod))
+	require.Contains(t, idOut.String(), "func (v *WidgetDetails) ID() SchemaObjectIdentifier {")
+	require.Contains(t, idOut.String(), "return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name, )")
+
+	var ifaceOut strings.Builder
+	require.NoError(t, InterfaceTemplate.Execute(&ifaceOut, got))
+	require.Contains(t, ifaceOut.String(), "DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*WidgetDetails, error)")
+
+	var implOut strings.Builder
+	require.NoError(t, ImplementationTemplate.Execute(&implOut, got))
+	require.Contains(t, implOut.String(), `func (v *widgets) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*WidgetDetails, error) {
+	details, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details.DatabaseName = id.DatabaseName()
+	details.SchemaName = id.SchemaName()
+	return details, nil
+}`)
+	require.NotContains(t, implOut.String(), "ParseWidgetDescribed")
+	require.NotContains(t, implOut.String(), "details.Id")
+	require.NotContains(t, implOut.String(), "additionalConvert")
+
+	database := obj("DatabaseObjectIdentifier",
+		ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
+		ssot.SdkDescribeDetailsFromIdentifier(),
+	)
+	got = NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").DescribeOperationFromObject(database)
+	require.Equal(t, []string{"DatabaseName"}, got.DescribeDetailsFromIdentifier.Fields)
+	require.Equal(t, "DescribeDetails calls Describe and sets database from the identifier. DESCRIBE does not return that column.", got.CustomMethods[0].Doc)
+	preprocessDefinition(got, log.New(io.Discard, "", 0))
+	require.False(t, got.Operations[0].DescribeMapping.HasManualConvert())
+	require.Equal(t, NewShowObjectIDMethod("WidgetDetails", DatabaseObjectIdentifier), got.Operations[0].ObjectIdMethod)
+	implOut.Reset()
+	require.NoError(t, ImplementationTemplate.Execute(&implOut, got))
+	require.Contains(t, implOut.String(), "details.DatabaseName = id.DatabaseName()")
+	require.NotContains(t, implOut.String(), "SchemaName")
+	require.NotContains(t, implOut.String(), "additionalConvert")
+
+	schemaOnly := obj("SchemaObjectIdentifier",
+		ssot.SdkDescribePlainOnlyField("SchemaName", "string"),
+		ssot.SdkDescribeDetailsFromIdentifier(),
+	)
+	got = NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").DescribeOperationFromObject(schemaOnly)
+	require.Equal(t, []string{"SchemaName"}, got.DescribeDetailsFromIdentifier.Fields)
+	require.Equal(t, "DescribeDetails calls Describe and sets schema from the identifier. DESCRIBE does not return that column.", got.CustomMethods[0].Doc)
+	preprocessDefinition(got, log.New(io.Discard, "", 0))
+	require.Nil(t, got.Operations[0].ObjectIdMethod)
+
+	require.PanicsWithValue(t, `object "Widget": SdkDescribeDetailsFromIdentifier needs IdType SchemaObjectIdentifier or DatabaseObjectIdentifier`, func() {
+		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj("AccountObjectIdentifier",
+			ssot.SdkDescribePlainOnlyField("DatabaseName", "string"),
+			ssot.SdkDescribeDetailsFromIdentifier(),
+		))
+	})
+}
+
+func Test_preprocessDefinition_identifierPlainOnlySkipsAdditionalConvert(t *testing.T) {
+	describe := func(fields *PairedStructs, fromIdentifier []string) *Interface {
+		iface := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").
+			DescribeOperationWithPairedStructs(
+				DescriptionMappingKindSingleValue,
+				"https://example.com",
+				fields,
+				NewQueryStruct("DescWidget").Describe().SQL("WIDGET").Name().WithValidation(ValidIdentifier, "name"),
+			)
+		if fromIdentifier != nil {
+			iface = iface.WithDescribeDetailsFromIdentifier("WidgetDetails", fromIdentifier)
+		}
+		preprocessDefinition(iface, log.New(io.Discard, "", 0))
+		return iface
+	}
+	covered := describe(
+		StructPair("widgetDescRow", "WidgetDetails").Text("name").PlainOnlyField("DatabaseName", "string").PlainOnlyField("SchemaName", "string"),
+		[]string{"DatabaseName", "SchemaName"},
+	)
+	require.False(t, covered.Operations[0].DescribeMapping.HasManualConvert())
+	require.Equal(t, NewShowObjectIDMethod("WidgetDetails", SchemaObjectIdentifier), covered.Operations[0].ObjectIdMethod)
+
+	extra := describe(
+		StructPair("widgetDescRow", "WidgetDetails").Text("name").PlainOnlyField("DatabaseName", "string").PlainOnlyField("Comment", "string"),
+		[]string{"DatabaseName"},
+	)
+	require.True(t, extra.Operations[0].DescribeMapping.HasManualConvert())
+	require.Nil(t, extra.Operations[0].ObjectIdMethod)
+
+	manualColumn := describe(
+		StructPair("widgetDescRow", "WidgetDetails").Text("comment", WithManualConvert()).PlainOnlyField("DatabaseName", "string"),
+		[]string{"DatabaseName"},
+	)
+	require.True(t, manualColumn.Operations[0].DescribeMapping.HasManualConvert())
+
+	withoutOption := describe(
+		StructPair("widgetDescRow", "WidgetDetails").Text("name").PlainOnlyField("DatabaseName", "string"),
+		nil,
+	)
+	require.True(t, withoutOption.Operations[0].DescribeMapping.HasManualConvert())
 }
 
 func Test_DescribeOperationFromObject_detailsParse(t *testing.T) {
