@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -30,8 +29,8 @@ var (
 	tableCreateExt = PreviewFeatureCreateContextWrapper(string(previewfeatures.TableResource), TrackingCreateWrapper(resources.Table, CreateTable))
 	tableReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.TableResource), TrackingReadWrapper(resources.Table, ReadTableFunc(true)))
 	tableUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.TableResource), TrackingUpdateWrapper(resources.Table, UpdateTable))
-	tableDeleteExt = PreviewFeatureDeleteContextWrapper(string(previewfeatures.TableResource), TrackingDeleteWrapper(resources.Table, ResourceDeleteContextFunc(tableParseIdExt, tableDropSafelyInSdkExt)))
 
+	tableDescriptionExt   = ""
 	tableCustomizeDiffExt = TrackingCustomDiffWrapper(resources.Table, customdiff.All(
 		TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
 		TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
@@ -52,95 +51,22 @@ type tableAlterRequestsExt struct {
 	unset *sdk.TableUnsetRequest
 }
 
-func tableParseIdFromConfigExt(d *schema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
-	databaseName := d.Get("database").(string)
-	schemaName := d.Get("schema").(string)
-	name := d.Get("name").(string)
-	return sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name), nil
-}
-
-func tableParseIdExt(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
-}
-
 func tableNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateTableRequest, error) {
 	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]any))
 	if err != nil {
 		return nil, err
 	}
 
-	return sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(tableColumnRequests)), nil
-}
-
-func tableApplyCreateOptionalsExt(d *schema.ResourceData, createRequest *sdk.CreateTableRequest) error {
-	if v, ok := d.GetOk("comment"); ok {
-		createRequest.WithComment(v.(string))
-	}
-
-	if v, ok := d.GetOk("cluster_by"); ok {
-		createRequest.WithClusterBy(expandStringList(v.([]any)))
-	}
-
-	if v, ok := d.GetOk("primary_key"); ok {
-		keysList := v.([]any)
-		if len(keysList) > 0 {
-			keys := expandStringList(keysList[0].(map[string]any)["keys"].([]any))
-			// TODO [SNOW-1007542]: constraintRequest is never attached to createRequest (missing WithOutOfLineConstraint); primary_key is only applied on Update via Alter
-			constraintRequest := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(toColumns(keys))
-
-			keyName, isPresent := keysList[0].(map[string]any)["name"]
-			if isPresent && keyName != "" {
-				constraintRequest.WithName(keyName.(string))
-			}
-		}
-	}
-
-	if v := d.Get("data_retention_time_in_days"); v.(int) != IntDefault {
-		createRequest.WithDataRetentionTimeInDays(v.(int))
-	}
-
-	if v, ok := d.GetOk("change_tracking"); ok {
-		createRequest.WithChangeTracking(v.(bool))
-	}
-
+	request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(tableColumnRequests))
+	// tag is not an attribute, so generated ApplyCreateOptionals does not see it.
 	if _, ok := d.GetOk("tag"); ok {
-		tagAssociations := getPropertyTags(d, "tag")
-		createRequest.WithTag(tagAssociations)
+		request.WithTag(getPropertyTags(d, "tag"))
 	}
-	return nil
+	return request, nil
 }
 
-// tableBeforeDescribeExt reads the parent schema retention time needed to decide whether data_retention_time_in_days
-// is kept in state. If done is true, Read must stop and return diags.
-func tableBeforeDescribeExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, table *sdk.Table) (done bool, diags diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-
-	s, err := client.Schemas.ShowByID(ctx, sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName()))
-	if err != nil {
-		log.Printf("[DEBUG] schema (%s) not found", d.Id())
-		d.SetId("")
-		return true, nil
-	}
-	var schemaRetentionTime int64
-	// "retention_time" may sometimes be empty string instead of an integer
-	{
-		rt := s.RetentionTime
-		if rt == "" {
-			rt = "0"
-		}
-
-		schemaRetentionTime, err = strconv.ParseInt(rt, 10, 64)
-		if err != nil {
-			return true, diag.FromErr(err)
-		}
-	}
-
-	if v := d.Get("data_retention_time_in_days"); v.(int) != IntDefault || int64(table.RetentionTime) != schemaRetentionTime {
-		if err := d.Set("data_retention_time_in_days", table.RetentionTime); err != nil {
-			return true, diag.FromErr(err)
-		}
-	}
-	return false, nil
+func toTableClusterBy(value []any) ([]string, error) {
+	return expandStringList(value), nil
 }
 
 func tableSetConfigFieldsExt(d *schema.ResourceData, table *sdk.Table) error {
@@ -163,7 +89,7 @@ func tableSetConfigFieldsExt(d *schema.ResourceData, table *sdk.Table) error {
 	return nil
 }
 
-func tableSetDescribeFieldsExt(d *schema.ResourceData, tableDescription []sdk.TableColumnDetails) error {
+func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, _ error, _ bool) error {
 	return d.Set("column", toColumnConfig(tableDescription))
 }
 
@@ -201,34 +127,6 @@ func tableHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta a
 		*id = newId
 	}
 	return nil
-}
-
-func tableApplySetUnsetExt(d *schema.ResourceData) (*tableAlterRequestsExt, error) {
-	setRequest := sdk.NewTableSetRequest()
-	unsetRequest := sdk.NewTableUnsetRequest()
-
-	if d.HasChange("comment") {
-		comment := d.Get("comment").(string)
-		if comment == "" {
-			unsetRequest.WithComment(true)
-		} else {
-			setRequest.WithComment(comment)
-		}
-	}
-
-	if d.HasChange("change_tracking") {
-		setRequest.WithChangeTracking(d.Get("change_tracking").(bool))
-	}
-
-	if d.HasChange("data_retention_time_in_days") {
-		if days := d.Get("data_retention_time_in_days"); days.(int) != IntDefault {
-			setRequest.WithDataRetentionTimeInDays(days.(int))
-		} else {
-			unsetRequest.WithDataRetentionTimeInDays(true)
-		}
-	}
-
-	return &tableAlterRequestsExt{set: setRequest, unset: unsetRequest}, nil
 }
 
 // tableAfterAlterExt runs the ALTER TABLE statements issued after SET/UNSET: clustering, columns, primary key, and tags.
@@ -416,16 +314,6 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 // SDK incision points
 // =============================================================================
 
-func tableCreateInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier, req *sdk.CreateTableRequest) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-
-	err := client.Tables.Create(ctx, req)
-	if err != nil {
-		return diag.FromErr(fmt.Errorf("error creating table %v err = %w", id.Name(), err))
-	}
-	return nil
-}
-
 func tableShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Table, diag.Diagnostics) {
 	client := meta.(*provider.Context).Client
 
@@ -443,40 +331,34 @@ func tableShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, me
 		}
 		return nil, diag.FromErr(err)
 	}
+
+	s, err := client.Schemas.ShowByID(ctx, sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName()))
+	if err != nil {
+		log.Printf("[DEBUG] schema (%s) not found", d.Id())
+		d.SetId("")
+		return nil, diag.Diagnostics{}
+	}
+
+	// "retention_time" may sometimes be empty string instead of an integer.
+	retentionTime := s.RetentionTime
+	if retentionTime == "" {
+		retentionTime = "0"
+	}
+	schemaRetentionTime, err := strconv.ParseInt(retentionTime, 10, 64)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+	if v := d.Get("data_retention_time_in_days"); v.(int) != IntDefault || int64(table.RetentionTime) != schemaRetentionTime {
+		if err := d.Set("data_retention_time_in_days", table.RetentionTime); err != nil {
+			return nil, diag.FromErr(err)
+		}
+	}
 	return table, nil
 }
 
 func tableDescribeInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) ([]sdk.TableColumnDetails, error) {
 	client := meta.(*provider.Context).Client
 	return client.Tables.DescribeColumns(ctx, sdk.NewDescribeColumnsTableRequest(id))
-}
-
-func tableAlterSetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier, reqs *tableAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-
-	if !reflect.DeepEqual(reqs.set, sdk.NewTableSetRequest()) {
-		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*reqs.set))
-		if err != nil {
-			return fmt.Errorf("error updating table: %w", err)
-		}
-	}
-	return nil
-}
-
-func tableAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier, reqs *tableAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-
-	if !reflect.DeepEqual(reqs.unset, sdk.NewTableUnsetRequest()) {
-		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(*reqs.unset))
-		if err != nil {
-			return fmt.Errorf("error updating table: %w", err)
-		}
-	}
-	return nil
-}
-
-func tableDropSafelyInSdkExt(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-	return client.Tables.DropSafely
 }
 
 // =============================================================================

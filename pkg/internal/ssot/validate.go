@@ -74,7 +74,6 @@ func ValidateObject(obj Object) {
 		if a.NativeBool && a.Type != AttrBool {
 			panic(fmt.Sprintf("object %q: NativeBool attribute %q must be a bool", obj.Name, a.Name))
 		}
-		validateSkipCreateBlock(obj, a)
 		validateAttributeRelations(obj, a, obj.Attributes)
 	}
 	nested := nestedAttributeNames(obj)
@@ -244,7 +243,6 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 			}
 		}
 		validateCollectionBounds(obj, child)
-		validateSkipCreateBlock(obj, child)
 		validateNestedAttribute(obj, child)
 	}
 	if attr.IsObjectList() {
@@ -298,15 +296,6 @@ func validateNestedShape(obj Object, attr Attribute) {
 		if len(attr.NestedFields()) == 0 {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem with no Children", obj.Name, attr.Name))
 		}
-	}
-}
-
-func validateSkipCreateBlock(obj Object, attr Attribute) {
-	if !attr.SkipCreateBlock {
-		return
-	}
-	if (attr.Type != AttrList && attr.Type != AttrObject) || len(attr.NestedFields()) == 0 {
-		panic(fmt.Sprintf("object %q: SkipCreateBlock attribute %q must be a block", obj.Name, attr.Name))
 	}
 }
 

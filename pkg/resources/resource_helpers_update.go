@@ -152,6 +152,13 @@ func booleanAttributeUpdateSetOnly(d *schema.ResourceData, key string, setField 
 	return nil
 }
 
+func booleanAttributeUpdateSetOnlyBuilder[Set any](d *schema.ResourceData, key string, setValue func(bool) Set) error {
+	if d.HasChange(key) {
+		setValue(d.Get(key).(bool))
+	}
+	return nil
+}
+
 func booleanStringAttributeUpdate(d *schema.ResourceData, key string, setField **bool, unsetField **bool) error {
 	if d.HasChange(key) {
 		if v := d.Get(key).(string); v != BooleanDefault {

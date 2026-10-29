@@ -31,7 +31,6 @@ type Object struct {
 	DescribeDetailsName string
 	IdType              string
 	// LegacyIdEncoding keeps the pipe-delimited resource id (db|schema|name) that older resources store.
-	// Those identity schemas stay plain strings and omit suppressIdentifierQuoting.
 	LegacyIdEncoding bool
 	// PreviewFeature marks a preview resource. Generated Delete wraps DeleteContext with previewfeatures.<Name>Resource.
 	PreviewFeature       bool

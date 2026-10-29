@@ -36,10 +36,11 @@ var TableAttrs = struct {
 	ChangeTracking          ssot.Attribute
 }{
 	ClusterBy: ssot.Attribute{
-		Name:        "cluster_by",
-		Type:        ssot.AttrList,
-		Description: "A list of one or more table columns/expressions to be used as clustering key(s) for the table",
-		Elem:        &ssot.Attribute{Type: ssot.AttrString},
+		Name:          "cluster_by",
+		Type:          ssot.AttrList,
+		Description:   "A list of one or more table columns/expressions to be used as clustering key(s) for the table",
+		Elem:          &ssot.Attribute{Type: ssot.AttrString},
+		CreateMapping: ssot.AttributeMappedValueCreate("toTableClusterBy"),
 	},
 	Column: ssot.Attribute{
 		Name:        "column",
@@ -171,13 +172,38 @@ var Table = ssot.Object{
 	Name:                   "Table",
 	NamePlural:             "Tables",
 	IdType:                 "SchemaObjectIdentifier",
+	LegacyIdEncoding:       true,
+	PreviewFeature:         true,
+	DescribeFailRead:       true,
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
 	},
+	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.
+	// ShowByIdSafely stays in the extension because Read compares schema retention before describing columns.
+	// Describe uses DescribeColumns. SetConfigFields copies owner and cluster keys. Hierarchy rename, column diffs,
+	// primary key, and tags stay in the extension. Generated HierarchyRename, AfterAlter, and SetDescribeOutput are unimplemented.
+	// The importer is a passthrough, so ShowByIdInSdk stays omitted.
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithCreateInSdk(ssot.Generated()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
+		ssot.WithShowOutputSet(ssot.Omitted()),
+		ssot.WithDescribeOutputSet(ssot.Omitted()),
+		ssot.WithSetDescribeOutput(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		ssot.WithAfterAlter(ssot.ExtCall()),
+		ssot.WithShowByIdInSdk(ssot.Omitted()),
+		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
 		TableAttrs.ClusterBy,

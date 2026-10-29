@@ -33,6 +33,7 @@ func attachUpdateMappings(objectName string, src []ssot.Attribute, dst []Resourc
 // updateCallFor uses an explicit UpdateMapping when one is set.
 // Otherwise it picks the helper from the attribute type and the schema default the attribute rules already chose.
 // ForceNew and CreateOnly attributes are create-only, so they are left out of set/unset.
+// SkipCreate does not leave the attribute out of set/unset.
 func updateCallFor(objectName string, src ssot.Attribute, resolved ResourceAttribute) (ssot.UpdateCall, bool) {
 	if src.UpdateMapping != nil {
 		return src.UpdateMapping.UpdateCall(objectName, src), true
@@ -51,6 +52,8 @@ func deduceUpdateCall(objectName string, src ssot.Attribute, resolved ResourceAt
 		return ssot.IntAttributeWithSpecialDefaultUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrInt:
 		return ssot.IntAttributeUpdateBuilder.UpdateCall(objectName, src), true
+	case src.Type == ssot.AttrBool && src.NativeBool:
+		return ssot.BooleanAttributeUpdateSetOnlyBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault":
 		return ssot.BooleanStringAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrString:

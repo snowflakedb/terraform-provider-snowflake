@@ -328,6 +328,20 @@ func Test_stringAttributeUpdateBuilder(t *testing.T) {
 	})
 }
 
+func Test_booleanAttributeUpdateSetOnlyBuilder(t *testing.T) {
+	flagSchema := map[string]*schema.Schema{
+		"change_tracking": {Type: schema.TypeBool, Optional: true},
+	}
+	d := resourceDataWithPlan(t, flagSchema, map[string]string{"change_tracking": "false"}, map[string]any{"change_tracking": true})
+	var set *bool
+	require.NoError(t, booleanAttributeUpdateSetOnlyBuilder(d, "change_tracking", func(v bool) any {
+		set = &v
+		return nil
+	}))
+	require.NotNil(t, set)
+	assert.True(t, *set)
+}
+
 func Test_intAttributeUpdateSetOnlyBuilder(t *testing.T) {
 	nodesSchema := map[string]*schema.Schema{
 		"min_nodes": {Type: schema.TypeInt, Required: true},

@@ -88,12 +88,15 @@ type Attribute struct {
 	Readonly       bool
 	// CreateMapping overrides the create helper deduced from Type, the schema default, and CreateOnly.
 	// Nil means deduce one. A required attribute with a nil mapping is a create constructor argument.
+	// SkipCreate leaves the attribute out of that deduction and out of constructor arguments.
 	CreateMapping CreateMapping
-	// SkipCreateBlock leaves a list block out of generated create.
-	// Ext create code builds the value. The generator does not emit a parse function.
-	SkipCreateBlock bool
+	// SkipCreate leaves the attribute out of generated create.
+	// There is no constructor argument, no ApplyCreateOptionals call, and no block parse function.
+	// Ext create code builds the value when CREATE still needs it. The update helper stays.
+	SkipCreate bool
 	// UpdateMapping overrides the update helper deduced the same way.
 	// Nil means deduce one. ForceNew and CreateOnly attributes are left out of set/unset.
+	// SkipCreate does not leave the attribute out of set/unset.
 	UpdateMapping UpdateMapping
 	CreateSql     SqlClause // CREATE SQL clause. Zero is absent from that statement.
 	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.

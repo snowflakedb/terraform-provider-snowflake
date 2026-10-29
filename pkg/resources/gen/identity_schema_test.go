@@ -109,17 +109,16 @@ func TestIdentitySchema_hierarchyForceNew(t *testing.T) {
 	require.Contains(t, got, "DiffSuppressFunc: suppressIdentifierQuoting")
 }
 
-func TestIdentitySchema_plainHistoricalSentence(t *testing.T) {
+func TestIdentitySchema_legacyIdEncodingUsesQuotingSuppression(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Pipe}, nil, nil)
 	require.True(t, model.Hooks.IdentitySchema.Generate)
 
 	got := renderSchemaTemplate(t, "identitySchema", model)
-	require.Contains(t, got, "\"Specifies the identifier for the pipe; must be unique for the schema in which the pipe is created.\"")
-	require.Contains(t, got, "\"The database in which to create the pipe.\"")
-	require.Contains(t, got, "\"The schema in which to create the pipe.\"")
+	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"Specifies the identifier for the pipe; must be unique for the schema in which the pipe is created.\")")
+	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"The database in which to create the pipe.\")")
+	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"The schema in which to create the pipe.\")")
 	require.Contains(t, got, "ForceNew: true")
-	require.NotContains(t, got, "blocklistedCharactersFieldDescription")
-	require.NotContains(t, got, "DiffSuppressFunc")
+	require.Contains(t, got, "DiffSuppressFunc: suppressIdentifierQuoting")
 }
 
 func TestIdentitySchema_nameDescription(t *testing.T) {
@@ -131,4 +130,16 @@ func TestIdentitySchema_nameDescription(t *testing.T) {
 	require.Contains(t, got, "DiffSuppressFunc: suppressIdentifierQuoting")
 	require.NotContains(t, got, "ForceNew")
 	require.NotContains(t, got, "\"database\"")
+}
+
+func TestIdentitySchema_legacyIdEncodingKeepsQuotingSuppression(t *testing.T) {
+	model := ModelFromInputObject(ResourceObject{Object: defs.Table}, nil, nil)
+	require.True(t, model.Hooks.IdentitySchema.Generate)
+
+	got := renderSchemaTemplate(t, "identitySchema", model)
+	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"Specifies the identifier for the table; must be unique for the schema in which the table is created.\")")
+	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"The database in which to create the table.\")")
+	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"The schema in which to create the table.\")")
+	require.Contains(t, got, "DiffSuppressFunc: suppressIdentifierQuoting")
+	require.NotContains(t, got, "ForceNew")
 }

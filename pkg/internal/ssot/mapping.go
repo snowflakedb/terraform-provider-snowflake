@@ -34,6 +34,7 @@ const (
 	StringAttributeCreateBuilder                  HelperMapping = "stringAttributeCreateBuilder"
 	IntAttributeCreateBuilder                     HelperMapping = "intAttributeCreateBuilder"
 	IntAttributeWithSpecialDefaultCreateBuilder   HelperMapping = "intAttributeWithSpecialDefaultCreateBuilder"
+	BoolAttributeCreateBuilder                    HelperMapping = "boolAttributeCreateBuilder"
 	BooleanStringAttributeCreateBuilder           HelperMapping = "booleanStringAttributeCreateBuilder"
 	AccountObjectIdentifierAttributeCreateBuilder HelperMapping = "accountObjectIdentifierAttributeCreateBuilder"
 )
@@ -95,7 +96,10 @@ func (m SetOnlyMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
 	}
 }
 
-const IntAttributeUpdateSetOnlyBuilder SetOnlyMapping = "intAttributeUpdateSetOnlyBuilder"
+const (
+	IntAttributeUpdateSetOnlyBuilder     SetOnlyMapping = "intAttributeUpdateSetOnlyBuilder"
+	BooleanAttributeUpdateSetOnlyBuilder SetOnlyMapping = "booleanAttributeUpdateSetOnlyBuilder"
+)
 
 // SetUnsetMapping is an update helper called with set.With<Field>, unset.With<Field>.
 // The value is the helper function name.
