@@ -939,6 +939,7 @@ func nukeRoles(client *sdk.Client, suffix string) func() error {
 		snowflakeroles.OktaProvisioner,
 		snowflakeroles.AadProvisioner,
 		snowflakeroles.GenericScimProvisioner,
+		snowflakeroles.InteractiveBenchmarkRole,
 	}
 
 	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.Role]{

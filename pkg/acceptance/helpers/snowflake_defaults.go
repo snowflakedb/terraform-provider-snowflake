@@ -37,19 +37,10 @@ func (c *SnowflakeDefaultsClient) DefaultQuotedIdentifiersIgnoreCaseLevel(t *tes
 	return sdk.ParameterTypeSnowflakeDefault
 }
 
-// DefaultAutoSuspend returns the Snowflake default for AUTO_SUSPEND.
-// Prod accounts default to 600; preprod still defaults to 34.
-func (c *SnowflakeDefaultsClient) DefaultAutoSuspend(t *testing.T) int {
-	t.Helper()
-	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
-		return 34
-	}
-	return 600
-}
-
 // DefaultStatementTimeoutInSecondsLevel returns the expected parameter level for
-// STATEMENT_TIMEOUT_IN_SECONDS on a newly created warehouse. Prod inherits the
-// Snowflake default (empty level); non-prod accounts currently surface ACCOUNT because they need to be overridden.
+// STATEMENT_TIMEOUT_IN_SECONDS on a newly created object. Prod inherits the
+// Snowflake default (empty level). Non-prod accounts currently surface ACCOUNT.
+// The value is the catalog default, 172800, in both environments.
 func (c *SnowflakeDefaultsClient) DefaultStatementTimeoutInSecondsLevel(t *testing.T) sdk.ParameterType {
 	t.Helper()
 	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
@@ -90,4 +81,15 @@ func (c *SnowflakeDefaultsClient) DefaultEnableNotebookCreationInPersonalDbLevel
 		return sdk.ParameterTypeSystem
 	}
 	return sdk.ParameterTypeSnowflakeDefault
+}
+
+// DescribeAllowedAuthenticationSecrets returns the DESCRIBE value of
+// ALLOWED_AUTHENTICATION_SECRETS. Prod hides the property, so the value is empty.
+// Non-prod returns the stored display value (for example "[]" or "ALL").
+func (c *SnowflakeDefaultsClient) DescribeAllowedAuthenticationSecrets(t *testing.T, displayed string) string {
+	t.Helper()
+	if c.context.snowflakeEnvironment == testenvs.SnowflakeProdEnvironment {
+		return ""
+	}
+	return displayed
 }
