@@ -29,6 +29,10 @@ func (v *instanceMethodExamples) GetSpendingLimit(ctx context.Context, request *
 	return validateAndExec(v.client, ctx, opts)
 }
 
+func (v *instanceMethodExamples) SetScope(ctx context.Context, request *SetScopeInstanceMethodExampleRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
 func (r *AddNotificationIntegrationInstanceMethodExampleRequest) toOpts() *AddNotificationIntegrationInstanceMethodExampleOptions {
 	opts := &AddNotificationIntegrationInstanceMethodExampleOptions{
 		name: r.name,
@@ -49,6 +53,27 @@ func (r addNotificationIntegrationRow) convert() (*AddNotificationIntegrationRes
 func (r *GetSpendingLimitInstanceMethodExampleRequest) toOpts() *GetSpendingLimitInstanceMethodExampleOptions {
 	opts := &GetSpendingLimitInstanceMethodExampleOptions{
 		name: r.name,
+	}
+	return opts
+}
+
+func (r *SetScopeInstanceMethodExampleRequest) toOpts() *SetScopeInstanceMethodExampleOptions {
+	opts := &SetScopeInstanceMethodExampleOptions{
+		name: r.name,
+	}
+	opts.args = InstanceMethodExampleSetScopeArgs{
+		Users:   r.args.Users,
+		Enabled: r.args.Enabled,
+	}
+	if r.args.Tags != nil {
+		tags := make([]ExampleTagValue, len(r.args.Tags))
+		for i, v := range r.args.Tags {
+			tags[i] = ExampleTagValue{
+				Tag:   v.Tag,
+				Value: v.Value,
+			}
+		}
+		opts.args.Tags = tags
 	}
 	return opts
 }

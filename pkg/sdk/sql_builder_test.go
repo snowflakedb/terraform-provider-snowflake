@@ -366,6 +366,28 @@ func TestParenModifier(t *testing.T) {
 	})
 }
 
+func TestBracketModifier(t *testing.T) {
+	t.Run("test bracket modifier", func(t *testing.T) {
+		result := Brackets.Modify("example")
+		assert.Equal(t, `[example]`, result)
+	})
+
+	t.Run("test must bracket modifier", func(t *testing.T) {
+		result := MustBrackets.Modify("")
+		assert.Equal(t, `[]`, result)
+	})
+
+	t.Run("test no bracket modifier", func(t *testing.T) {
+		result := NoBrackets.Modify("example")
+		assert.Equal(t, `example`, result)
+	})
+
+	t.Run("test unknown bracket modifier", func(t *testing.T) {
+		result := bracketModifier("unknown").Modify("example")
+		assert.Equal(t, `example`, result)
+	})
+}
+
 func TestQuoteModifier(t *testing.T) {
 	t.Run("test double quotes modifier", func(t *testing.T) {
 		result := DoubleQuotes.Modify("example")
@@ -584,6 +606,17 @@ func TestBuilder_instanceMethodInvocation(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, id.FullyQualifiedName()+"!MY_METHOD ('first', 'second')", sql)
 	})
+
+	t.Run("instance method of an object with double quotes in its name", func(t *testing.T) {
+		type noArg struct{}
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier,instance_method" sql:"MY_METHOD"`
+			args *noArg                 `ddl:"list,must_parentheses"`
+		}{name: NewSchemaObjectIdentifier("db", "sch", `my"object`), args: &noArg{}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, `"db"."sch"."my""object"!MY_METHOD ()`, sql)
+	})
 }
 
 func TestBuilder_systemReferenceInvocation(t *testing.T) {
@@ -625,6 +658,219 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
 		assert.Equal(t, "SYSTEM$REFERENCE('TABLE', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: object type with a space", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('CORTEX AGENT', '"+id.FullyQualifiedName()+"')", sql)
+	})
+
+	t.Run("system reference: with extra arguments", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"TAG,SESSION,APPLYBUDGET"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('TAG', '"+id.FullyQualifiedName()+"', 'SESSION', 'APPLYBUDGET')", sql)
+	})
+
+	t.Run("system reference: in subquery", func(t *testing.T) {
+		id := randomAccountObjectIdentifier()
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"WAREHOUSE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "(SELECT SYSTEM$REFERENCE('WAREHOUSE', '"+id.FullyQualifiedName()+"'))", sql)
+	})
+
+	t.Run("system reference: quotes and backslashes in the name are escaped", func(t *testing.T) {
+		id := NewAccountObjectIdentifier(`it's\here`)
+		s := &struct {
+			name AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, `SYSTEM$REFERENCE('WAREHOUSE', '"it\'s\\here"')`, sql)
+	})
+
+	t.Run("system reference: double quotes in the name are escaped", func(t *testing.T) {
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
+		}{name: NewSchemaObjectIdentifier("db", "sch", `my"agent`)}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, `SYSTEM$REFERENCE('CORTEX AGENT', '"db"."sch"."my""agent"')`, sql)
+	})
+
+	t.Run("system reference: empty identifier is omitted", func(t *testing.T) {
+		s := &struct {
+			name *AccountObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"WAREHOUSE"`
+		}{}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "", sql)
+	})
+}
+
+func TestBuilder_arrayLiterals(t *testing.T) {
+	t.Run("list of strings with brackets and single quotes", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"list,brackets,single_quotes"`
+		}{values: []string{"a", "b"}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "['a', 'b']", sql)
+	})
+
+	t.Run("list elements are escaped", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"list,brackets,single_quotes"`
+		}{values: []string{"it's"}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, `['it\'s']`, sql)
+	})
+
+	t.Run("empty list with brackets is omitted", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"list,brackets,single_quotes"`
+		}{values: []string{}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "", sql)
+	})
+
+	t.Run("empty list with must brackets renders an empty array", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"list,must_brackets,single_quotes"`
+		}{values: []string{}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "[]", sql)
+	})
+
+	t.Run("nil list with must brackets renders an empty array", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"list,must_brackets"`
+		}{}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "[]", sql)
+	})
+
+	t.Run("plain list is unchanged", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"list"`
+		}{values: []string{"a", "b"}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "a, b", sql)
+	})
+
+	t.Run("quotes on a parameter list still apply to the whole list", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"parameter,single_quotes" sql:"KEY"`
+		}{values: []string{"a", "b"}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "KEY = 'a, b'", sql)
+	})
+
+	t.Run("list of structs rendered as nested arrays", func(t *testing.T) {
+		type pair struct {
+			Key   string `ddl:"keyword,single_quotes"`
+			Value int    `ddl:"parameter,no_equals"`
+		}
+		s := &struct {
+			pairs []pair `ddl:"list,must_brackets,array_elements"`
+		}{pairs: []pair{{Key: "a", Value: 1}, {Key: "b", Value: 2}}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "[['a', 1], ['b', 2]]", sql)
+	})
+
+	t.Run("empty list of nested arrays renders an empty array", func(t *testing.T) {
+		type pair struct {
+			Key string `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			pairs []pair `ddl:"list,must_brackets,array_elements"`
+		}{}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "[]", sql)
+	})
+
+	t.Run("empty list of nested arrays with brackets is omitted", func(t *testing.T) {
+		type pair struct {
+			Key string `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			pairs []pair `ddl:"list,brackets,array_elements"`
+		}{}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "", sql)
+	})
+
+	t.Run("nested array elements rendering empty are skipped", func(t *testing.T) {
+		type pair struct {
+			Key *string `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			pairs []pair `ddl:"list,must_brackets,array_elements"`
+		}{pairs: []pair{{}, {Key: String("a")}, {}}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "[['a']]", sql)
+	})
+
+	t.Run("must brackets and must parentheses on the same field", func(t *testing.T) {
+		s := &struct {
+			values []string `ddl:"list,must_brackets,must_parentheses,single_quotes"`
+		}{}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "([])", sql)
+	})
+
+	t.Run("nested arrays with a system reference in a subquery", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		type tagValue struct {
+			Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"TAG,SESSION,APPLYBUDGET"`
+			Value string                 `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			tags []tagValue `ddl:"list,must_brackets,array_elements"`
+		}{tags: []tagValue{{Tag: id, Value: "finance"}}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "[[(SELECT SYSTEM$REFERENCE('TAG', '"+id.FullyQualifiedName()+"', 'SESSION', 'APPLYBUDGET')), 'finance']]", sql)
+	})
+
+	t.Run("instance method with array and boolean arguments", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		type args struct {
+			Kind    string   `ddl:"static" sql:"'USER'"`
+			Users   []string `ddl:"list,must_brackets,single_quotes"`
+			Enabled bool     `ddl:"parameter,no_equals"`
+			Notify  *bool    `ddl:"parameter,no_equals"`
+		}
+		s := &struct {
+			call bool                   `ddl:"static" sql:"CALL"`
+			name SchemaObjectIdentifier `ddl:"identifier,instance_method" sql:"EXCLUDE_USERS"`
+			args *args                  `ddl:"list,must_parentheses"`
+		}{name: id, args: &args{Users: []string{"ALICE", "BOB"}, Enabled: false}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "CALL "+id.FullyQualifiedName()+"!EXCLUDE_USERS ('USER', ['ALICE', 'BOB'], false)", sql)
 	})
 }
 
@@ -679,9 +925,7 @@ func TestBuilder_singleQuotedIdentifier(t *testing.T) {
 		assert.Equal(t, "'\\\""+id.DatabaseName()+"\\\".\\\""+id.SchemaName()+"\\\".\\\""+id.Name()+"\\\"'", sql)
 	})
 
-	// TODO [next PRs]: handle single quotes for identifier lists correctly
 	t.Run("identifier in list with single_quotes wraps each element", func(t *testing.T) {
-		t.Skip("Handle single quotes for identifier lists correctly")
 		id1 := randomAccountObjectIdentifier()
 		id2 := randomAccountObjectIdentifier()
 		s := &struct {

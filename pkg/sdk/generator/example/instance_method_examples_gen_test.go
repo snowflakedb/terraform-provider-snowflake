@@ -14,11 +14,15 @@ const (
 	case_InstanceMethodExamples_sql_AddNotificationIntegration_basic                                       testCaseName = "sql_AddNotificationIntegration_basic"
 	case_InstanceMethodExamples_validation_GetSpendingLimit_name_ValidIdentifier                           testCaseName = "validation_GetSpendingLimit_name_ValidIdentifier"
 	case_InstanceMethodExamples_sql_GetSpendingLimit_basic                                                 testCaseName = "sql_GetSpendingLimit_basic"
+	case_InstanceMethodExamples_validation_SetScope_name_ValidIdentifier                                   testCaseName = "validation_SetScope_name_ValidIdentifier"
+	case_InstanceMethodExamples_validation_SetScope_args_Tags_Tag_ValidIdentifier                          testCaseName = "validation_SetScope_args_Tags_Tag_ValidIdentifier"
+	case_InstanceMethodExamples_sql_SetScope_basic                                                         testCaseName = "sql_SetScope_basic"
 )
 
 type InstanceMethodExamplesTestsContext struct {
 	AddNotificationIntegration *sdkTestCtx[*AddNotificationIntegrationInstanceMethodExampleOptions]
 	GetSpendingLimit           *sdkTestCtx[*GetSpendingLimitInstanceMethodExampleOptions]
+	SetScope                   *sdkTestCtx[*SetScopeInstanceMethodExampleOptions]
 }
 
 var instanceMethodExamplesTests = InstanceMethodExamplesTestsContext{
@@ -75,6 +79,37 @@ var instanceMethodExamplesTests = InstanceMethodExamplesTestsContext{
 				NoModifyNeeded: true,
 			},
 		),
+	SetScope: newSdkTestCtx[*SetScopeInstanceMethodExampleOptions](
+		"InstanceMethodExamples", "SetScope",
+	).
+		withDefaultOpts(func() *SetScopeInstanceMethodExampleOptions {
+			return &SetScopeInstanceMethodExampleOptions{
+				name: instanceMethodExamplesTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*SetScopeInstanceMethodExampleOptions]{
+				Name:        case_InstanceMethodExamples_validation_SetScope_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetScopeInstanceMethodExampleOptions", "name"),
+				DefaultModify: func(opts *SetScopeInstanceMethodExampleOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*SetScopeInstanceMethodExampleOptions]{
+				Name:        case_InstanceMethodExamples_validation_SetScope_args_Tags_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetScopeInstanceMethodExampleOptions.args.Tags[0]", "Tag"),
+				DefaultModify: func(opts *SetScopeInstanceMethodExampleOptions) {
+					opts.args.Tags = []ExampleTagValue{{}}
+					opts.args.Tags[0].Tag = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetScopeInstanceMethodExampleOptions]{
+				Name:           case_InstanceMethodExamples_sql_SetScope_basic,
+				NoModifyNeeded: true,
+			},
+		),
 }
 
 func TestInstanceMethodExamples_AddNotificationIntegration(t *testing.T) {
@@ -85,4 +120,9 @@ func TestInstanceMethodExamples_AddNotificationIntegration(t *testing.T) {
 func TestInstanceMethodExamples_GetSpendingLimit(t *testing.T) {
 	instanceMethodExamplesTests.GetSpendingLimit.RunValidationCases(t)
 	instanceMethodExamplesTests.GetSpendingLimit.RunSqlCases(t)
+}
+
+func TestInstanceMethodExamples_SetScope(t *testing.T) {
+	instanceMethodExamplesTests.SetScope.RunValidationCases(t)
+	instanceMethodExamplesTests.SetScope.RunSqlCases(t)
 }
