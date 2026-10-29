@@ -6,7 +6,8 @@ import (
 )
 
 // catalogIntegrationAwsGlueAttributesModificationExt adds the computed catalog_source field
-// and the validations the attribute generator does not emit.
+// and the empty-string checks the attribute generator does not emit.
+// refresh_interval_seconds and glue_region diff suppression comes from the attribute definition.
 // AWS Glue has no nested blocks.
 func catalogIntegrationAwsGlueAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["glue_aws_role_arn"].ValidateFunc = validation.StringIsNotEmpty

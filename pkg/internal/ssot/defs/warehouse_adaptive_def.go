@@ -30,9 +30,11 @@ var WarehouseAdaptiveAttrs = struct {
 		Description: "Specifies a comment for the adaptive warehouse.",
 	},
 	// Computed in Terraform. The generator emits Optional; AttributesModificationExt clears it.
+	// Computed skips output suppression: SHOW already has a column of this name.
 	WarehouseType: ssot.Attribute{
 		Name:        "warehouse_type",
 		Type:        ssot.AttrString,
+		Computed:    true,
 		Description: "Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
 	MaxQueryPerformanceLevel: ssot.Attribute{
@@ -55,7 +57,6 @@ var WarehouseAdaptiveAttrs = struct {
 		IdentifierType:  "AccountObjectIdentifier",
 		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.",
 		RelatedResource: &ResourceMonitor,
-		DiffSuppress:    ssot.SuppressShow,
 		CreateSql:       ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 		SetSql:          ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 	},

@@ -381,6 +381,7 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 	if !ctx.AsCollectionElem {
 		out.Required = in.Required
 		out.Optional = !in.Required
+		out.Computed = in.Computed
 		out.ForceNew = in.ForceNew
 		out.Sensitive = in.Sensitive
 		out.MinItems = in.MinItems

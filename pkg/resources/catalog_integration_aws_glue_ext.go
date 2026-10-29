@@ -61,13 +61,8 @@ type catalogIntegrationAwsGlueAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails, withExternalChangesMarking bool) diag.Diagnostics {
-	if withExternalChangesMarking {
-		if err := handleExternalChangesToObjectInFlatDescribe(d, catalogIntegrationAwsGlueOutputMappingsExt(details)...); err != nil {
-			return diag.FromErr(err)
-		}
-	}
-	// refresh_interval_seconds and glue_region are not copied into config; drift is marked on describe output.
+func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails, _ bool) diag.Diagnostics {
+	// refresh_interval_seconds and glue_region are generated external changes, not copied here.
 	if err := errors.Join(
 		d.Set("catalog_source", string(details.CatalogSource)),
 		d.Set("glue_aws_role_arn", details.GlueAwsRoleArn),
@@ -77,13 +72,6 @@ func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d *schema.Resou
 		return diag.FromErr(err)
 	}
 	return nil
-}
-
-func catalogIntegrationAwsGlueOutputMappingsExt(details *sdk.CatalogIntegrationAwsGlueDetails) []outputMapping {
-	return []outputMapping{
-		{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
-		{"glue_region", "glue_region", details.GlueRegion, details.GlueRegion, nil},
-	}
 }
 
 func catalogIntegrationAwsGlueSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {

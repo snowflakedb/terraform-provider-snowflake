@@ -33,14 +33,16 @@ var pipeAttributesSchema = pipeAttributesModificationExt(map[string]*tfschema.Sc
 		Description: "Specifies the Amazon Resource Name (ARN) for the SNS topic for your S3 bucket.",
 	},
 	"integration": {
-		Type:        tfschema.TypeString,
-		Optional:    true,
-		Description: "Specifies an integration for the pipe.",
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("integration"),
+		Description:      "Specifies an integration for the pipe.",
 	},
 	"error_integration": {
-		Type:        tfschema.TypeString,
-		Optional:    true,
-		Description: "Specifies the name of the notification integration used for error notifications.",
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("error_integration"),
+		Description:      "Specifies the name of the notification integration used for error notifications.",
 	},
 })
 

@@ -38,6 +38,7 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		Description: "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. " +
 			"For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
+		ServerDefault: true,
 		CreateMapping: ssot.IntAttributeCreateBuilder,
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 		DiffSuppress:  ssot.SuppressDescribe,
@@ -227,8 +228,6 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
-		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
-		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"))),
 		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
 		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
 		// DESCRIBE stays on the SDK schema list until ManualFields exist in SSOT.
@@ -249,7 +248,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		ssot.WithHandleExternalChangesInDescribe(ssot.ExtCall()),
+		ssot.WithHandleExternalChangesInDescribe(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},

@@ -138,7 +138,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	if hooks.ApplySetUnset.Generate {
 		attachUpdateMappings(input.Name, resourceAttributes, attributes)
 	}
-	return ResourceModel{
+	model := ResourceModel{
 		Name:                                input.Name,
 		NamePlural:                          input.NamePlural,
 		DescribeFailRead:                    input.DescribeFailRead,
@@ -164,4 +164,9 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
 		PreambleModel:                       preamble,
 	}
+	model.applyDerivedOutputDiffSuppress(resourceAttributes)
+	// Building the mappings panics when a generated hook cannot describe a column.
+	model.ShowExternalChanges()
+	model.DescribeExternalChanges()
+	return model
 }

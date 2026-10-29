@@ -18,6 +18,9 @@ func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema
 			"This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens."),
 	}
 
+	// TODO: dotted keys below never match. describe_output stores these blocks as nested lists, and
+	// IgnoreChangeToCurrentSnowflakeValueInDescribe looks up one flat key. Drop them or switch to
+	// IgnoreChangeToCurrentSnowflakePlainValueInOutput on the parent block.
 	restConfig := s["rest_config"].Elem.(*schema.Resource).Schema
 	restConfig["catalog_uri"].ValidateFunc = validation.StringIsNotEmpty
 	restConfig["catalog_name"].ValidateFunc = validation.StringIsNotEmpty

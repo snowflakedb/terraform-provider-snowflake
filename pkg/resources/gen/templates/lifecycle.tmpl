@@ -133,6 +133,14 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 
 {{ template "generatedApplySetUnset" . }}
 {{- end }}
+{{- if .Hooks.HandleExternalChanges.Generate }}
+
+{{ template "generatedHandleExternalChanges" . }}
+{{- end }}
+{{- if and .Hooks.HandleExternalChangesInDescribe.Generate .Hooks.DescribeInSdk.Present }}
+
+{{ template "generatedHandleExternalChangesInDescribe" . }}
+{{- end }}
 {{- if .Hooks.DropSafelyInSdk.Generate }}
 
 {{ template "generatedDelete" . }}

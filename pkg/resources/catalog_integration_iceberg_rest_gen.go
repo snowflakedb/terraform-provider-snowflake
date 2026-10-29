@@ -90,6 +90,10 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 			return diag.FromErr(err)
 		}
 
+		diags = catalogIntegrationIcebergRestHandleExternalChangesInDescribe(d, catalogIntegrationIcebergRestDetails, withExternalChangesMarking)
+		if diags.HasError() {
+			return diags
+		}
 		diags = catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(d, catalogIntegrationIcebergRestDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
@@ -135,6 +139,18 @@ func catalogIntegrationIcebergRestParseIdFromConfig(d *tfschema.ResourceData) (s
 
 func catalogIntegrationIcebergRestParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+func catalogIntegrationIcebergRestHandleExternalChangesInDescribe(d *tfschema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails, withExternalChangesMarking bool) diag.Diagnostics {
+	if !withExternalChangesMarking || details == nil {
+		return nil
+	}
+	if err := handleExternalChangesToObjectInFlatDescribe(d,
+		outputMapping{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
+	); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
 }
 
 func DeleteCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

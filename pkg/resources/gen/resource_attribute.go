@@ -17,6 +17,7 @@ type ResourceAttribute struct {
 	TfType               SchemaValueType
 	Required             bool
 	Optional             bool
+	Computed             bool
 	ForceNew             bool
 	Sensitive            bool
 	MinItems             *int

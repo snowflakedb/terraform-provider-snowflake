@@ -67,12 +67,6 @@ func catalogIntegrationOpenCatalogApplyCreateOptionalsExt(d *schema.ResourceData
 
 func catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if withExternalChangesMarking {
-		if err := handleExternalChangesToObjectInFlatDescribe(
-			d,
-			catalogIntegrationOpenCatalogOutputMappingsExt(details)...,
-		); err != nil {
-			return diag.FromErr(err)
-		}
 		if err := handleExternalChangesToNestedAttrs(d, details); err != nil {
 			return diag.FromErr(err)
 		}
@@ -81,12 +75,6 @@ func catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(d *schema.R
 		return diag.FromErr(err)
 	}
 	return nil
-}
-
-func catalogIntegrationOpenCatalogOutputMappingsExt(details *sdk.CatalogIntegrationOpenCatalogDetails) []outputMapping {
-	return []outputMapping{
-		{"refresh_interval_seconds", "refresh_interval_seconds", details.RefreshIntervalSeconds, details.RefreshIntervalSeconds, nil},
-	}
 }
 
 func catalogIntegrationOpenCatalogSetConfigFieldsExt(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
