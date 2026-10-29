@@ -137,8 +137,6 @@ func (r sequenceDetailRow) convert() (*SequenceDetail, error) {
 	result := &SequenceDetail{
 		CreatedOn:     r.CreatedOn,
 		Name:          r.Name,
-		SchemaName:    r.SchemaName,
-		DatabaseName:  r.DatabaseName,
 		NextValue:     r.NextValue,
 		Interval:      r.Interval,
 		Owner:         r.Owner,
@@ -161,4 +159,14 @@ func (r *DropSequenceRequest) toOpts() *DropSequenceOptions {
 		}
 	}
 	return opts
+}
+
+func (v *sequences) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*SequenceDetail, error) {
+	details, err := v.Describe(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	details.DatabaseName = id.DatabaseName()
+	details.SchemaName = id.SchemaName()
+	return details, nil
 }

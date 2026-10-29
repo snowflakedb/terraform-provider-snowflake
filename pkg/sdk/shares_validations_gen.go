@@ -20,6 +20,9 @@ func (opts *CreateShareOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateShareOptions", "name"))
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateShareOptions", "OrReplace", "IfNotExists"))
+	}
 	return JoinErrors(errs...)
 }
 

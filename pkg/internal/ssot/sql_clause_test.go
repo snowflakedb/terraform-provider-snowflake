@@ -55,6 +55,14 @@ func Test_SqlClause_listParameter(t *testing.T) {
 	require.Equal(t, "parameter,parentheses", clause.Ddl())
 }
 
+func Test_SqlClause_reverseList(t *testing.T) {
+	clause := ListParameter("AccountObjectIdentifier", NoParentheses(), Reverse(), Sql("TO ALLOWED_DATABASES"))
+
+	require.True(t, clause.Reverse)
+	require.Equal(t, "parameter,no_parentheses,reverse", clause.Ddl())
+	require.Equal(t, "TO ALLOWED_DATABASES", clause.SQLText(Attribute{Name: "allowed_databases"}))
+}
+
 func Test_SqlClause_identifierKeyword(t *testing.T) {
 	attr := Attribute{Name: "for_application", Type: AttrIdentifier}
 	clause := IdentifierKeyword("AccountObjectIdentifier", Sql("FOR APPLICATION"))

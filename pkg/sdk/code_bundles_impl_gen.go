@@ -161,8 +161,15 @@ func (r codeBundleDescRow) convert() (*CodeBundleDetails, error) {
 	mapNullString(&result.ContainerDatabase, r.ContainerDatabase)
 	mapNullString(&result.ContainerSchema, r.ContainerSchema)
 	mapNullString(&result.ContainerName, r.ContainerName)
-	if err := r.additionalConvert(result); err != nil {
+	return result, nil
+}
+
+func (v *codeBundles) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*CodeBundleDetails, error) {
+	details, err := v.Describe(ctx, id)
+	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	details.DatabaseName = id.DatabaseName()
+	details.SchemaName = id.SchemaName()
+	return details, nil
 }

@@ -129,7 +129,7 @@ func init() {
 			case_ProjectionPolicies_sql_Show_all,
 			func(opts *ShowProjectionPolicyOptions) {
 				opts.Like = &Like{Pattern: String("like-pattern")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &In{Account: new(true)}
 				opts.StartsWith = String("abc")
 				opts.Limit = &LimitFrom{Rows: Int(10)}
 			},
@@ -142,7 +142,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_ProjectionPolicies_sql_Show_In,
-			func(opts *ShowProjectionPolicyOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
+			func(opts *ShowProjectionPolicyOptions) { opts.In = &In{Account: new(true)} },
 			"SHOW PROJECTION POLICIES IN ACCOUNT",
 		).
 		withModifyAndExpectedSqlf(
@@ -158,7 +158,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Show_In_Database",
 			func(opts *ShowProjectionPolicyOptions) {
-				opts.In = &ExtendedIn{In: In{Database: id.DatabaseId()}}
+				opts.In = &In{Database: id.DatabaseId()}
 			},
 			"SHOW PROJECTION POLICIES IN DATABASE %s",
 			id.DatabaseId().FullyQualifiedName(),
@@ -166,7 +166,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Show_In_Schema",
 			func(opts *ShowProjectionPolicyOptions) {
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &In{Schema: id.SchemaId()}
 			},
 			"SHOW PROJECTION POLICIES IN SCHEMA %s",
 			id.SchemaId().FullyQualifiedName(),

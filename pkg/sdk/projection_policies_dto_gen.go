@@ -45,7 +45,7 @@ type DropProjectionPolicyRequest struct {
 
 type ShowProjectionPolicyRequest struct {
 	Like       *Like
-	In         *ExtendedIn
+	In         *In
 	StartsWith *string
 	Limit      *LimitFrom
 }
