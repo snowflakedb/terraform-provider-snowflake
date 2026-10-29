@@ -38,6 +38,31 @@ func CheckRequiredFieldsForIdMethod(structName string, helperStructs []*Field, i
 	return false
 }
 
+// describeIDPartsAreStrings reports whether the struct has every identifier part as a plain string.
+// A pointer field stays hand-written, because ID() passes the fields straight into the constructor.
+func describeIDPartsAreStrings(structName string, helperStructs []*Field, idKind objectIdentifierKind) bool {
+	required, ok := idTypeParts[idKind]
+	if !ok {
+		return false
+	}
+	for _, field := range helperStructs {
+		if field.Name != structName {
+			continue
+		}
+		kinds := make(map[string]string, len(field.Fields))
+		for _, child := range field.Fields {
+			kinds[child.Name] = child.Kind
+		}
+		for _, name := range required {
+			if kinds[name] != "string" {
+				return false
+			}
+		}
+		return true
+	}
+	return false
+}
+
 func containsFieldNames(fields []Field, names ...string) bool {
 	fieldNames := make([]string, 0, len(fields))
 	for _, field := range fields {
