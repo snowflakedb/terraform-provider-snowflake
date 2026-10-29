@@ -49,6 +49,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.OpenflowRuntime{}):             {"OpenflowRuntimes"},
 	normalized(sdk.PasswordPolicy{}):              {"PasswordPolicies"},
 	normalized(sdk.ProgrammaticAccessToken{}):     {"UserProgrammaticAccessTokens"},
+	normalized(sdk.Quota{}):                       {"Quotas"},
 	normalized(sdk.ResourceMonitor{}):             {"ResourceMonitors"},
 	normalized(sdk.Role{}):                        {"AccountRoles"},
 	normalized(sdk.RowAccessPolicy{}):             {"RowAccessPolicies"},

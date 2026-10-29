@@ -31,6 +31,21 @@ func ImportedQuotaShowOutput(t *testing.T, id string) *QuotaShowOutputAssert {
 	return &quotaAssert
 }
 
+func QuotasDatasourceShowOutput(t *testing.T, name string) *QuotaShowOutputAssert {
+	t.Helper()
+
+	return QuotasDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func QuotasDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *QuotaShowOutputAssert {
+	t.Helper()
+
+	quotaAssert := QuotaShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "quotas", idx),
+	}
+	return &quotaAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

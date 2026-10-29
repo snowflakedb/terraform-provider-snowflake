@@ -163,6 +163,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Procedures().Schema,
 	},
 	{
+		name:   "Quotas",
+		schema: datasources.Quotas().Schema,
+	},
+	{
 		name:   "ResourceMonitors",
 		schema: datasources.ResourceMonitors().Schema,
 	},

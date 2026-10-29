@@ -229,6 +229,7 @@ var RepositoryLabels = []string{
 	"data_source:password_policies",
 	"data_source:pipes",
 	"data_source:procedures",
+	"data_source:quotas",
 	"data_source:resource_monitors",
 	"data_source:roles",
 	"data_source:row_access_policies",

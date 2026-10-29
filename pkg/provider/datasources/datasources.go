@@ -49,6 +49,7 @@ const (
 	PasswordPolicies               datasource = "snowflake_password_policies"
 	Pipes                          datasource = "snowflake_pipes"
 	Procedures                     datasource = "snowflake_procedures"
+	Quotas                         datasource = "snowflake_quotas"
 	ResourceMonitors               datasource = "snowflake_resource_monitors"
 	RowAccessPolicies              datasource = "snowflake_row_access_policies"
 	Schemas                        datasource = "snowflake_schemas"

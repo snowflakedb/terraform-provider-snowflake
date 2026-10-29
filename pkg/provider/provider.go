@@ -817,6 +817,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_password_policies":                  datasources.PasswordPolicies(),
 		"snowflake_pipes":                              datasources.Pipes(),
 		"snowflake_procedures":                         datasources.Procedures(),
+		"snowflake_quotas":                             datasources.Quotas(),
 		"snowflake_resource_monitors":                  datasources.ResourceMonitors(),
 		"snowflake_row_access_policies":                datasources.RowAccessPolicies(),
 		"snowflake_schemas":                            datasources.Schemas(),
