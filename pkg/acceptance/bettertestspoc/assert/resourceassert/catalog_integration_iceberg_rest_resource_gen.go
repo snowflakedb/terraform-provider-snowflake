@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type CatalogIntegrationIcebergRestResourceAssert struct {
@@ -37,7 +38,7 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasName(expected string) *
 	return c
 }
 
-// typed assert for "bearer_rest_authentication" (type: List, subtype: Map) is not currently supported
+// typed assert for "bearer_rest_authentication" (type: List) is not currently supported
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespace(expected string) *CatalogIntegrationIcebergRestResourceAssert {
 	c.StringValueSet("catalog_namespace", expected)
@@ -46,6 +47,11 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogNamespace(expect
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSource(expected string) *CatalogIntegrationIcebergRestResourceAssert {
 	c.StringValueSet("catalog_source", expected)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestResourceAssert) HasCatalogSourceSdk(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationIcebergRestResourceAssert {
+	c.StringValueSet("catalog_source", string(expected))
 	return c
 }
 
@@ -64,16 +70,16 @@ func (c *CatalogIntegrationIcebergRestResourceAssert) HasFullyQualifiedName(expe
 	return c
 }
 
-// typed assert for "oauth_rest_authentication" (type: List, subtype: Map) is not currently supported
+// typed assert for "oauth_rest_authentication" (type: List) is not currently supported
 
 func (c *CatalogIntegrationIcebergRestResourceAssert) HasRefreshIntervalSeconds(expected int) *CatalogIntegrationIcebergRestResourceAssert {
 	c.IntValueSet("refresh_interval_seconds", expected)
 	return c
 }
 
-// typed assert for "rest_config" (type: List, subtype: Map) is not currently supported
+// typed assert for "rest_config" (type: List) is not currently supported
 
-// typed assert for "sigv4_rest_authentication" (type: List, subtype: Map) is not currently supported
+// typed assert for "sigv4_rest_authentication" (type: List) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

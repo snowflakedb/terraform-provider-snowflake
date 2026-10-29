@@ -162,21 +162,40 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
+	// catalog_source is describe-only. The schema ext adds it; assertions read it from here.
+	ComputedAttributes: []ssot.Attribute{
+		CatalogIntegrationOpenCatalogAttrs.CatalogSource,
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
-		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
-		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
-		// DESCRIBE stays on the SDK schema list until ManualFields exist in SSOT.
-		// WithModel omitted. The model generator cannot emit setters for nested blocks.
-		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
-		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationOpenCatalog type.
-		// ObjectAssertDescribe omitted. The SDK list keeps DescribeOpenCatalog and the nested rest asserts.
+		ssot.WithSchema(
+			ssot.SchemaShow(ssot.SchemaShowFromBase()),
+			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+				&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+				&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+			)),
+		),
+		ssot.WithModel(
+			ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestConfig, "[]sdk.CatalogIntegrationOpenCatalogRestConfigRequest"),
+			ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication, "[]sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest"),
+		),
+		ssot.WithResourceAssert(),
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+			ssot.ObjectAssertDescribe(
+				ssot.ObjectAssertDescribeFromBase("DescribeOpenCatalog"),
+				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestConfig),
+				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication),
+			),
+		),
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
-		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
-			&CatalogIntegrationOpenCatalogAttrs.RestConfig,
-			&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
-		))),
+		ssot.WithShowOutputAssert(
+			ssot.ShowOutputShow(),
+			ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+				&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+				&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+			))),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

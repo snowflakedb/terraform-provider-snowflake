@@ -328,6 +328,79 @@ func Test_objectAssertionDetailsFromSsot_nestedFieldGoTypeOverride(t *testing.T)
 	require.Equal(t, "[]sdk.Custom", desc.Fields[0].ConcreteType)
 }
 
+func Test_objectAssertionDetailsFromSsot_showRowFromBase(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{Name: "Widget"}
+	obj := ssot.Object{
+		Name:      "WidgetGlue",
+		IdType:    "AccountObjectIdentifier",
+		VariantOf: &base,
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase())),
+		},
+		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}
+
+	details := objectAssertionDetailsFromSsot(obj, false)
+	require.Equal(t, "sdk.WidgetGlue", details.Name)
+	require.Equal(t, "sdk.Widget", details.SdkType)
+	require.Equal(t, "Widget", details.ObjectTypeName)
+	require.Equal(t, &genhelpers.ShowProjectionDef{ClientName: "Widget", Method: "Show"}, details.ShowProjection)
+	model := SnowflakeObjectAssertionsFromSsot(obj, false)
+	require.Equal(t, "WidgetGlue", model.Name)
+	require.Equal(t, "sdk.Widget", model.SdkType)
+}
+
+func Test_objectAssertionDetailsFromSsot_describeFetch(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{Name: "Widget"}
+	variant := ssot.Object{
+		Name:      "WidgetGlue",
+		IdType:    "AccountObjectIdentifier",
+		VariantOf: &base,
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeGlue"))),
+		},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}
+	own := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeMethod("DescribeDetails"))),
+		},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}
+
+	fromBase := objectAssertionDetailsFromSsot(variant, true)
+	require.Equal(t, &genhelpers.DescribeOverrideDef{ClientName: "Widget", MethodName: "DescribeGlue"}, fromBase.DescribeOverride)
+	require.Equal(t, "sdk.WidgetGlueDetails", fromBase.Name)
+	ownDetails := objectAssertionDetailsFromSsot(own, true)
+	require.Equal(t, &genhelpers.DescribeOverrideDef{ClientName: "Widget", MethodName: "DescribeDetails"}, ownDetails.DescribeOverride)
+}
+
+func Test_objectAssertionDetailsFromSsot_nestedObjectColumn(t *testing.T) {
+	required := ssot.Attribute{Name: "rest_config", Type: ssot.AttrObject, Required: true}
+	optional := ssot.Attribute{Name: "oauth_rest_authentication", Type: ssot.AttrObject}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertDescribe(
+				ssot.ObjectAssertDescribeNestedField(&required),
+				ssot.ObjectAssertDescribeNestedField(&optional),
+			)),
+		},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&required, &optional}},
+	}
+
+	desc := objectAssertionDetailsFromSsot(obj, true)
+	require.Equal(t, "sdk.WidgetRestConfigDetails", desc.Fields[0].ConcreteType)
+	require.Equal(t, "struct", desc.Fields[0].UnderlyingType)
+	require.Equal(t, "*sdk.WidgetOauthRestAuthenticationDetails", desc.Fields[1].ConcreteType)
+	require.Equal(t, "*struct", desc.Fields[1].UnderlyingType)
+}
+
 func fieldByName(t *testing.T, model SnowflakeObjectAssertionsModel, name string) SnowflakeObjectFieldAssertion {
 	t.Helper()
 	for _, field := range model.Fields {

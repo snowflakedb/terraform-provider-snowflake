@@ -226,23 +226,46 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
+	// catalog_source is describe-only. The schema ext adds it; assertions read it from here.
+	ComputedAttributes: []ssot.Attribute{
+		CatalogIntegrationIcebergRestAttrs.CatalogSource,
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
-		// ShowOutputShow omitted. SHOW rows are sdk.CatalogIntegration, so tests use CatalogIntegrationShowOutput.
-		// WithSchema omitted. SHOW is the shared CatalogIntegration schema alias in the ext.
-		// DESCRIBE stays on the SDK schema list until ManualFields exist in SSOT.
-		// WithModel omitted. The model generator cannot emit setters for nested blocks.
-		// WithResourceAssert omitted. catalog_source is added in the schema ext, so the schema-based assert still emits it.
-		// ObjectAssertShow omitted. There is no sdk.CatalogIntegrationIcebergRest type.
-		// ObjectAssertDescribe omitted. The SDK list keeps DescribeIcebergRest and the nested rest asserts.
+		ssot.WithSchema(
+			ssot.SchemaShow(ssot.SchemaShowFromBase()),
+			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+				&CatalogIntegrationIcebergRestAttrs.RestConfig,
+				&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+				&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+				&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+			)),
+		),
+		ssot.WithModel(ssot.ModelRequestType(
+			&CatalogIntegrationIcebergRestAttrs.RestConfig,
+			"[]sdk.CatalogIntegrationIcebergRestRestConfigRequest",
+		)),
+		ssot.WithResourceAssert(),
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+			ssot.ObjectAssertDescribe(
+				ssot.ObjectAssertDescribeFromBase("DescribeIcebergRest"),
+				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.RestConfig),
+				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication),
+				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication),
+				ssot.ObjectAssertDescribeSkipFields(&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication),
+			),
+		),
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
-		ssot.WithShowOutputAssert(ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
-			&CatalogIntegrationIcebergRestAttrs.RestConfig,
-			&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
-			&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
-			&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
-		))),
+		ssot.WithShowOutputAssert(
+			ssot.ShowOutputShow(),
+			ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+				&CatalogIntegrationIcebergRestAttrs.RestConfig,
+				&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+				&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+				&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+			))),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

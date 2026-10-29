@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type CatalogIntegrationObjectStorageResourceAssert struct {
@@ -42,6 +43,11 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSource(expecte
 	return c
 }
 
+func (c *CatalogIntegrationObjectStorageResourceAssert) HasCatalogSourceSdk(expected sdk.CatalogIntegrationCatalogSourceType) *CatalogIntegrationObjectStorageResourceAssert {
+	c.StringValueSet("catalog_source", string(expected))
+	return c
+}
+
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasComment(expected string) *CatalogIntegrationObjectStorageResourceAssert {
 	c.StringValueSet("comment", expected)
 	return c
@@ -64,6 +70,11 @@ func (c *CatalogIntegrationObjectStorageResourceAssert) HasRefreshIntervalSecond
 
 func (c *CatalogIntegrationObjectStorageResourceAssert) HasTableFormat(expected string) *CatalogIntegrationObjectStorageResourceAssert {
 	c.StringValueSet("table_format", expected)
+	return c
+}
+
+func (c *CatalogIntegrationObjectStorageResourceAssert) HasTableFormatSdk(expected sdk.CatalogIntegrationTableFormat) *CatalogIntegrationObjectStorageResourceAssert {
+	c.StringValueSet("table_format", string(expected))
 	return c
 }
 

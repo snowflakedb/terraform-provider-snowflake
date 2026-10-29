@@ -90,7 +90,7 @@ If the object is still on the SDK-struct path, change the show output struct in 
 
 If the object is plugged from ssot, change `Show` / `Describe` `Columns` ([ssot SHOW and DESCRIBE](../../../internal/ssot/README.md#show-and-describe))
 instead of relying on reflect. `ToSchema` still compiles against `*sdk.<Type>` / `*sdk.<Type>Details` from SDK paired
-structs until [ssot later work](../../../internal/ssot/README.md#later).
+structs until [ssot later work](../../../internal/ssot/README.md#later). `SchemaShow(SchemaShowFromBase())` maps `*sdk.<VariantOf.Name>` when every variant is one row of the base SHOW type. The schema variable stays `Show<Variant>Schema`.
 
 ##### Adding a new object to the SDK
 

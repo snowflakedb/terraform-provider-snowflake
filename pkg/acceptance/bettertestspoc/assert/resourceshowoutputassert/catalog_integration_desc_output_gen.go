@@ -173,23 +173,3 @@ func (c *CatalogIntegrationDescribeOutputAssert) HasNoGlueAwsExternalId() *Catal
 	c.ValueNotSet("glue_aws_external_id")
 	return c
 }
-
-func (c *CatalogIntegrationDescribeOutputAssert) HasNoRestConfig() *CatalogIntegrationDescribeOutputAssert {
-	c.ValueNotSet("rest_config")
-	return c
-}
-
-func (c *CatalogIntegrationDescribeOutputAssert) HasNoOauthRestAuthentication() *CatalogIntegrationDescribeOutputAssert {
-	c.ValueNotSet("oauth_rest_authentication")
-	return c
-}
-
-func (c *CatalogIntegrationDescribeOutputAssert) HasNoBearerRestAuthentication() *CatalogIntegrationDescribeOutputAssert {
-	c.ValueNotSet("bearer_rest_authentication")
-	return c
-}
-
-func (c *CatalogIntegrationDescribeOutputAssert) HasNoSigv4RestAuthentication() *CatalogIntegrationDescribeOutputAssert {
-	c.ValueNotSet("sigv4_rest_authentication")
-	return c
-}

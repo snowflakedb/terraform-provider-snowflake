@@ -237,7 +237,8 @@ enable nothing.
   `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
   key stays in the generated schema map, and its mapping line is not generated — `*_ext.go` must implement the
   generated `additionalSchemaMapper[T]` stub instead. `SchemaDescribe(SchemaDescribeManualFields(&attrs.Password))`
-  is the describe-side copy.
+  is the describe-side copy. `SchemaShow(SchemaShowFromBase())` keeps `Show<Variant>Schema` and `<Variant>ToSchema`, and maps
+  `*sdk.<VariantOf.Name>`. Use it when every variant is one row of the base SHOW type.
 - `WithModel()` - resource config model builders (`make generate-resource-model-builders`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-config-model-builders). Fields come
   from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are
@@ -264,6 +265,8 @@ enable nothing.
   `ShowOutputShow(ShowOutputShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The argument is
   the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not generated.
   `ShowOutputDescribe(ShowOutputDescribeSkipFields(&attrs.Password))` is the describe-side copy.
+  `ShowOutputShow` does not use the SHOW row Go type, so a variant whose SHOW row is the base type still opts in. The
+  assertion is named after the variant.
 - `WithObjectAssert(ObjectAssertShow(), ObjectAssertDescribe())` - Snowflake object assertions (
   `make generate-snowflake-object-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-assertions). Fields come
@@ -276,14 +279,18 @@ enable nothing.
   assertion type instead of a plain `Has*`. A nested column has only a placeholder scalar `Elem`, so the assertion type
   cannot be derived from it, and the SDK field's Go type defaults for a list or set to `[]sdk.` + the object `Name` + the column name in camel case with
   one trailing "s" dropped + `Details` (`storage_locations` on `ExternalVolume` is
-  `[]sdk.ExternalVolumeStorageLocationDetails`). Pass `ObjectAssertNestedGoType("[]sdk.Other")` when the default does
+  `[]sdk.ExternalVolumeStorageLocationDetails`). An object column defaults to `sdk.` + the object `Name` + the column key in camel case + `Details`, and a pointer when the column is not required.
+  Pass `ObjectAssertNestedGoType("[]sdk.Other")` when the default does
   not match. `ObjectAssertDescribeNestedField` is the describe-side copy.
   A DESCRIBE assertion uses `sdk.<Object>Details` and fetches through `testClient.<Object>.Describe`.
-  Rename the SDK describe type and the test client method to that. There is no type or method override.
+  `ObjectAssertDescribe(ObjectAssertDescribeMethod("DescribeDetails"))` fetches through `testClient.<Object>.<method>` when the helper is not `Describe`.
+  `ObjectAssertDescribe(ObjectAssertDescribeFromBase("DescribeAwsGlue"))` fetches through `testClient.<VariantOf.Name>.<method>`. The details type stays `sdk.<Object>Details`.
   Identified rows provide `ID()` in SDK extensions when it is not generated.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
-  slice and the row has no `ID()`.   `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through
-  `testClient.<VariantOf.Name>.ShowByIDAdaptive`. `Object.ShowFromBase` resolves that
+  slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowRowFromBase())` uses `sdk.<VariantOf.Name>` as the row and fetches through
+  `testClient.<VariantOf.Name>.Show`. The assertion name stays the variant. Use it when every variant is one row of the base SHOW type.
+  `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through
+  `testClient.<VariantOf.Name>.ShowByIDAdaptive` and keeps `sdk.<Variant>` as the row. `Object.ShowFromBase` resolves that
   client from `VariantOf`. The object type constant is `sdk.ObjectType<VariantOf.Name>`. These are settings of
   object-assertion show or describe, not their own generators.
 - `WithObjectParametersAssert()` - Snowflake object parameters assertions (

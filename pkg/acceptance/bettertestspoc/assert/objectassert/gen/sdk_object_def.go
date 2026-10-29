@@ -388,49 +388,6 @@ var allStructs = []SdkObjectDef{
 		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "ApiIntegration", MethodName: "DescribeAllDetails"},
 	},
 	{
-		IdType:       "sdk.AccountObjectIdentifier",
-		ObjectStruct: sdk.CatalogIntegration{},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationAwsGlueDetails{},
-		IsDataSourceOutput: true,
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeAwsGlue"},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationObjectStorageDetails{},
-		IsDataSourceOutput: true,
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeObjectStorage"},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogDetails{},
-		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"RestConfig", "RestAuthentication"},
-		DescribeOverride: &genhelpers.DescribeOverrideDef{
-			ClientName: "CatalogIntegration",
-			MethodName: "DescribeOpenCatalog",
-		},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationIcebergRestDetails{},
-		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"RestConfig", "OauthRestAuthentication", "Sigv4RestAuthentication"},
-		SkipFields:         []string{"BearerRestAuthentication"},
-		DescribeOverride: &genhelpers.DescribeOverrideDef{
-			ClientName: "CatalogIntegration",
-			MethodName: "DescribeIcebergRest",
-		},
-	},
-	{
-		IdType:             "sdk.AccountObjectIdentifier",
-		ObjectStruct:       sdk.CatalogIntegrationDetails{},
-		IsDataSourceOutput: true,
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "CatalogIntegration", MethodName: "DescribeDetails"},
-	},
-	{
 		IdType:             "sdk.AccountObjectIdentifier",
 		ObjectStruct:       sdk.CatalogIntegrationOpenCatalogRestConfigDetails{},
 		IsDataSourceOutput: true,

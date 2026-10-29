@@ -76,9 +76,13 @@ func ModelFromStructDetails(sdkStruct ShowResultSchemaDetails, preamble *genhelp
 		panic(fmt.Sprintf("TypeOverrides for %s contain unknown schema keys: %s", sdkStruct.Name, strings.Join(unmatched, ", ")))
 	}
 
+	sdkType := sdkStruct.Name
+	if sdkStruct.SdkType != "" {
+		sdkType = sdkStruct.SdkType
+	}
 	return ShowResultSchemaModel{
 		Name:              name,
-		SdkType:           sdkStruct.Name,
+		SdkType:           sdkType,
 		IsDescribe:        sdkStruct.IsDescribe,
 		UsedAsListEntry:   sdkStruct.UsedAsListEntry,
 		AdditionalMapping: len(sdkStruct.ManualFields) > 0,

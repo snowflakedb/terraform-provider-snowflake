@@ -13,10 +13,8 @@ import (
 type CatalogIntegrationAwsGlueModel struct {
 	Name                   tfconfig.Variable `json:"name,omitempty"`
 	CatalogNamespace       tfconfig.Variable `json:"catalog_namespace,omitempty"`
-	CatalogSource          tfconfig.Variable `json:"catalog_source,omitempty"`
 	Comment                tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                tfconfig.Variable `json:"enabled,omitempty"`
-	FullyQualifiedName     tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	GlueAwsRoleArn         tfconfig.Variable `json:"glue_aws_role_arn,omitempty"`
 	GlueCatalogId          tfconfig.Variable `json:"glue_catalog_id,omitempty"`
 	GlueRegion             tfconfig.Variable `json:"glue_region,omitempty"`
@@ -106,11 +104,6 @@ func (c *CatalogIntegrationAwsGlueModel) WithCatalogNamespace(catalogNamespace s
 	return c
 }
 
-func (c *CatalogIntegrationAwsGlueModel) WithCatalogSource(catalogSource string) *CatalogIntegrationAwsGlueModel {
-	c.CatalogSource = tfconfig.StringVariable(catalogSource)
-	return c
-}
-
 func (c *CatalogIntegrationAwsGlueModel) WithComment(comment string) *CatalogIntegrationAwsGlueModel {
 	c.Comment = tfconfig.StringVariable(comment)
 	return c
@@ -118,11 +111,6 @@ func (c *CatalogIntegrationAwsGlueModel) WithComment(comment string) *CatalogInt
 
 func (c *CatalogIntegrationAwsGlueModel) WithEnabled(enabled bool) *CatalogIntegrationAwsGlueModel {
 	c.Enabled = tfconfig.BoolVariable(enabled)
-	return c
-}
-
-func (c *CatalogIntegrationAwsGlueModel) WithFullyQualifiedName(fullyQualifiedName string) *CatalogIntegrationAwsGlueModel {
-	c.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
 	return c
 }
 
@@ -160,11 +148,6 @@ func (c *CatalogIntegrationAwsGlueModel) WithCatalogNamespaceValue(value tfconfi
 	return c
 }
 
-func (c *CatalogIntegrationAwsGlueModel) WithCatalogSourceValue(value tfconfig.Variable) *CatalogIntegrationAwsGlueModel {
-	c.CatalogSource = value
-	return c
-}
-
 func (c *CatalogIntegrationAwsGlueModel) WithCommentValue(value tfconfig.Variable) *CatalogIntegrationAwsGlueModel {
 	c.Comment = value
 	return c
@@ -172,11 +155,6 @@ func (c *CatalogIntegrationAwsGlueModel) WithCommentValue(value tfconfig.Variabl
 
 func (c *CatalogIntegrationAwsGlueModel) WithEnabledValue(value tfconfig.Variable) *CatalogIntegrationAwsGlueModel {
 	c.Enabled = value
-	return c
-}
-
-func (c *CatalogIntegrationAwsGlueModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *CatalogIntegrationAwsGlueModel {
-	c.FullyQualifiedName = value
 	return c
 }
 

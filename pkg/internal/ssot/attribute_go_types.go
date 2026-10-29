@@ -35,7 +35,8 @@ func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) 
 		elemConcrete, _ := AttributeGoTypes(obj, *attr.Elem)
 		return "[]" + elemConcrete, "slice"
 	case AttrObject:
-		return NestedObjectDetails(obj, attr), "struct"
+		// ColumnField and object assertions need the sdk package. The SDK paired-struct path strips the prefix.
+		return "sdk." + NestedObjectDetails(obj, attr), "struct"
 	default:
 		panic(fmt.Sprintf("object %q: attribute %q has unknown type %q", obj.Name, attr.Name, attr.Type))
 	}

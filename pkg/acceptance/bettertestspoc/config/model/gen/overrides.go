@@ -23,14 +23,12 @@ var multilineAttributesOverrides = map[string][]string{
 }
 
 var complexListAttributesOverrides = map[string]map[string]string{
-	"GrantOwnership":                {"on": "sdk.OwnershipGrantOnRequest"},
-	"CatalogIntegrationOpenCatalog": {"rest_config": "sdk.CatalogIntegrationOpenCatalogRestConfigRequest", "rest_authentication": "sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest"},
-	"CatalogIntegrationIcebergRest": {"rest_config": "sdk.CatalogIntegrationIcebergRestRestConfigRequest", "oauth_rest_authentication": "sdk.CatalogIntegrationIcebergRestOauthRestAuthenticationRequest", "bearer_rest_authentication": "sdk.CatalogIntegrationIcebergRestBearerRestAuthenticationRequest", "sigv4_rest_authentication": "sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationRequest"}, //nolint:gosec // field-name mapping, not a credential
-	"ExternalVolume":                {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
-	"Listing":                       {"manifest": "sdk.StageLocation"},
-	"MaskingPolicy":                 {"argument": "sdk.TableColumnSignature"},
-	"RowAccessPolicy":               {"argument": "sdk.TableColumnSignature"},
-	"TagAssociation":                {"object_identifiers": "sdk.ObjectIdentifier"},
+	"GrantOwnership":  {"on": "sdk.OwnershipGrantOnRequest"},
+	"ExternalVolume":  {"storage_location": "sdk.ExternalVolumeStorageLocationRequest"},
+	"Listing":         {"manifest": "sdk.StageLocation"},
+	"MaskingPolicy":   {"argument": "sdk.TableColumnSignature"},
+	"RowAccessPolicy": {"argument": "sdk.TableColumnSignature"},
+	"TagAssociation":  {"object_identifiers": "sdk.ObjectIdentifier"},
 	// TODO [SNOW-1348114]: use better type for override (not null and default are currently not supported)
 	"HybridTable":             {"column": "sdk.TableColumnSignature", "primary_key_constraint": "sdk.TableColumnSignature", "unique_constraint": "sdk.TableColumnSignature", "foreign_key_constraint": "sdk.TableColumnSignature"},
 	"IcebergTable":            {"column": "sdk.TableColumnSignature"},
