@@ -5,6 +5,7 @@ package example
 var (
 	_ optionsProvider[AddNotificationIntegrationInstanceMethodExampleOptions] = new(AddNotificationIntegrationInstanceMethodExampleRequest)
 	_ optionsProvider[GetSpendingLimitInstanceMethodExampleOptions]           = new(GetSpendingLimitInstanceMethodExampleRequest)
+	_ optionsProvider[SetScopeInstanceMethodExampleOptions]                   = new(SetScopeInstanceMethodExampleRequest)
 )
 
 type AddNotificationIntegrationInstanceMethodExampleRequest struct {
@@ -18,4 +19,20 @@ type InstanceMethodExampleAddNotificationIntegrationArgsRequest struct {
 
 type GetSpendingLimitInstanceMethodExampleRequest struct {
 	name AccountObjectIdentifier // required
+}
+
+type SetScopeInstanceMethodExampleRequest struct {
+	name AccountObjectIdentifier                  // required
+	args InstanceMethodExampleSetScopeArgsRequest // required
+}
+
+type InstanceMethodExampleSetScopeArgsRequest struct {
+	Tags    []ExampleTagValueRequest // required
+	Users   []string                 // required
+	Enabled bool                     // required
+}
+
+type ExampleTagValueRequest struct {
+	Tag   SchemaObjectIdentifier // required
+	Value string                 // required
 }

@@ -1,0 +1,391 @@
+---
+page_title: "snowflake_quota Resource - terraform-provider-snowflake"
+subcategory: "Preview"
+description: |-
+  Resource used to manage per-user quota objects (SNOWFLAKE.CORE.QUOTA). For more information, check per-user quotas documentation https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas.
+---
+
+!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
+~> **Note** Apart from the name and comment, a quota is configured with its instance methods, which the provider calls one by one. These calls are not transactional. If one of them fails while the quota is being created, the quota is marked as tainted and the next `terraform apply` recreates it. If one fails during an update, the quota is left partially configured, and the next `terraform apply` applies the remaining changes.
+
+~> **Note** A quota monitors either the `WAREHOUSE` domain or the AI domains (`AI FUNCTION`, `CORTEX AGENT`, `CORTEX CODE`, `SNOWFLAKE INTELLIGENCE`, `AI GATEWAY`), not both, and each domain either as a whole or by its instances. Block enforcement applies only to the AI domains. Snowflake evaluates quotas within minutes, not in real time, so users can briefly exceed their limits.
+
+~> **Note** Users are selected either by tags (`user_tags`) or by excluding tags (`excluded_user_tag`), not both. Snowflake clears the included and excluded users when tags are excluded, so the provider sets them again after changing `excluded_user_tag`.
+
+-> **Note** The role managing the quota needs the `SNOWFLAKE.QUOTA_CREATOR` database role and the `CREATE SNOWFLAKE.CORE.QUOTA` privilege on the schema. Tags used in `user_tags` and `excluded_user_tag` require the `APPLYBUDGET` privilege. Notification integrations must be webhook or queue integrations (email integrations aren't accepted; email recipients are set with `admin_emails`). USAGE on the notification integrations and on the procedures used in `custom_action` and `cycle_start_action` must be granted to the `SNOWFLAKE` application, and `admin_emails` must be verified emails of users in the account. Check the [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas) for details.
+
+# snowflake_quota (Resource)
+
+Resource used to manage per-user quota objects (`SNOWFLAKE.CORE.QUOTA`). For more information, check [per-user quotas documentation](https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas).
+
+## Example Usage
+
+```terraform
+## Minimal
+resource "snowflake_quota" "basic" {
+  database = "database_name"
+  schema   = "schema_name"
+  name     = "quota_name"
+}
+
+## AI domains: per-user Cortex Code and AI function limits for the finance team, with blocking
+resource "snowflake_quota" "ai" {
+  database = "database_name"
+  schema   = "schema_name"
+  name     = "ai_quota"
+  comment  = "per-user AI quota"
+
+  shared_resource {
+    domain = "CORTEX CODE"
+  }
+  shared_resource {
+    domain   = "AI FUNCTION"
+    instance = "AI_CLASSIFY"
+  }
+  shared_resource {
+    domain   = "CORTEX AGENT"
+    instance = snowflake_cortex_agent.example.fully_qualified_name
+  }
+
+  user_tags {
+    operator = "UNION"
+    tag {
+      tag   = snowflake_tag.cost_center.fully_qualified_name
+      value = "finance"
+    }
+  }
+  included_users = [snowflake_user.alice.name]
+  excluded_users = [snowflake_user.carol.name]
+
+  per_user_limit_monthly = 1000
+  per_user_limit_weekly  = 300
+  per_user_limit_daily   = 60
+
+  block_enforcement_enabled = true
+  notify_blocked_users      = true
+
+  notification_threshold {
+    threshold      = 80
+    spend_strategy = "PROJECTED"
+    notify_user    = true
+    cycle          = "MONTHLY"
+  }
+  notification_threshold {
+    threshold      = 100
+    spend_strategy = "ACTUAL"
+    notify_user    = false
+  }
+
+  # Webhook or queue integrations with USAGE granted to the SNOWFLAKE application; admin emails must be verified emails of
+  # users in the account.
+  notification_integrations = [snowflake_notification_integration.example.name]
+  admin_emails              = ["admin@example.com"]
+}
+
+## All users except the ones with a tag
+resource "snowflake_quota" "all_but_high_tier" {
+  database = "database_name"
+  schema   = "schema_name"
+  name     = "default_ai_quota"
+
+  shared_resource {
+    domain = "AI FUNCTION"
+  }
+
+  excluded_user_tag {
+    tag   = snowflake_tag.usage_tier.fully_qualified_name
+    value = "high"
+  }
+
+  per_user_limit_monthly = 200
+}
+
+## Warehouse domain: per-user warehouse credit limits with custom and cycle-start actions
+resource "snowflake_quota" "warehouse" {
+  database = "database_name"
+  schema   = "schema_name"
+  name     = "warehouse_quota"
+
+  shared_resource {
+    domain   = "WAREHOUSE"
+    instance = snowflake_warehouse.example.name
+  }
+
+  per_user_limit_monthly = 100
+
+  # The procedures must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application. The first argument of a custom action
+  # procedure receives the IDs of the users who crossed the threshold; `arguments` fill the remaining ones.
+  custom_action {
+    procedure      = "\"database_name\".\"schema_name\".\"disable_users\"(VARCHAR)"
+    spend_strategy = "ACTUAL"
+    threshold      = 100
+  }
+
+  cycle_start_action {
+    procedure = "\"database_name\".\"schema_name\".\"enable_users\"()"
+  }
+}
+```
+
+-> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+<!-- TODO(SNOW-1634854): include an example showing both methods-->
+
+-> **Note** If a field has a default value, it is shown next to the type in the schema.
+
+<!-- schema generated by tfplugindocs -->
+## Schema
+
+### Required
+
+- `database` (String) The database in which to create the quota. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `name` (String) Specifies the identifier for the quota; must be unique for the database and schema in which the quota is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `schema` (String) The schema in which to create the quota. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+
+### Optional
+
+- `admin_emails` (Set of String) Email addresses that receive admin summary notifications. Each must be the verified email of a user in the account.
+- `block_enforcement_enabled` (Boolean) (Default: `false`) Blocks new requests of users who reached their limit. Applies only to the AI domains.
+- `comment` (String) Specifies a comment for the quota.
+- `custom_action` (Block Set) Stored procedures called when users cross a threshold of their monthly limit. (see [below for nested schema](#nestedblock--custom_action))
+- `cycle_start_action` (Block List, Max: 1) Stored procedure called at the start of each monthly cycle. (see [below for nested schema](#nestedblock--cycle_start_action))
+- `excluded_user_tag` (Block Set) Applies the quota to all users except the ones with the given tag and value. Conflicts with `user_tags`. (see [below for nested schema](#nestedblock--excluded_user_tag))
+- `excluded_users` (Set of String) Names of individual users excluded from the quota. Names are resolved case-insensitively. For more information about this resource, see [docs](./user).
+- `included_users` (Set of String) Names of individual users the quota applies to. Names are resolved case-insensitively. For more information about this resource, see [docs](./user).
+- `notification_integrations` (Set of String) Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application. For more information about this resource, see [docs](./notification_integration).
+- `notification_threshold` (Block Set) Thresholds (percentages of the limit) at which notifications are sent. (see [below for nested schema](#nestedblock--notification_threshold))
+- `notify_blocked_users` (Boolean) (Default: `true`) Sends an email to users when they are blocked. Used only when `block_enforcement_enabled` is true.
+- `per_user_limit_daily` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Credit limit (a whole number of credits) applied to each user in scope for every daily cycle (UTC-aligned). If not set, the limit is unset.
+- `per_user_limit_monthly` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Credit limit (a whole number of credits) applied to each user in scope for every monthly cycle (UTC-aligned). If not set, the limit is unset.
+- `per_user_limit_weekly` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Credit limit (a whole number of credits) applied to each user in scope for every weekly cycle (UTC-aligned). If not set, the limit is unset.
+- `shared_resource` (Block Set) Resources (domains) whose spend counts toward the quota. A quota can monitor either the WAREHOUSE domain or the AI domains, not both, and a domain is monitored either as a whole or by its instances. (see [below for nested schema](#nestedblock--shared_resource))
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `user_tags` (Block List, Max: 1) Applies the quota to users with the given tags. Conflicts with `excluded_user_tag`: Snowflake selects users either by tags or by excluding tags. (see [below for nested schema](#nestedblock--user_tags))
+
+### Read-Only
+
+- `describe_output` (List of Object) Outputs the quota configuration read with its GET_* methods (scope, config, notifications, and actions). (see [below for nested schema](#nestedatt--describe_output))
+- `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
+- `id` (String) The ID of this resource.
+- `show_output` (List of Object) Outputs the result of `SHOW SNOWFLAKE.CORE.QUOTA` for the given quota. (see [below for nested schema](#nestedatt--show_output))
+
+<a id="nestedblock--custom_action"></a>
+### Nested Schema for `custom_action`
+
+Required:
+
+- `procedure` (String) Fully qualified name of the procedure with its argument types, e.g. `"<database>"."<schema>"."<procedure>"(VARCHAR)`. The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application; its first argument receives the IDs of the users who crossed the threshold.
+- `threshold` (Number) Percentage of the monthly limit.
+
+Optional:
+
+- `arguments` (List of String) Additional arguments passed to the procedure.
+- `spend_strategy` (String) (Default: `ACTUAL`) Whether the threshold applies to actual or projected spend. Valid values are (case-sensitive): `ACTUAL` | `PROJECTED`.
+
+
+<a id="nestedblock--cycle_start_action"></a>
+### Nested Schema for `cycle_start_action`
+
+Required:
+
+- `procedure` (String) Fully qualified name of the procedure with its argument types, e.g. `"<database>"."<schema>"."<procedure>"()`. The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application.
+
+Optional:
+
+- `arguments` (List of String) Arguments passed to the procedure.
+
+
+<a id="nestedblock--excluded_user_tag"></a>
+### Nested Schema for `excluded_user_tag`
+
+Required:
+
+- `tag` (String) Fully qualified name of the tag, e.g. `"<database>"."<schema>"."<tag>"`. The role managing the quota needs the APPLYBUDGET privilege on the tag.
+- `value` (String) Tag value.
+
+
+<a id="nestedblock--notification_threshold"></a>
+### Nested Schema for `notification_threshold`
+
+Required:
+
+- `threshold` (Number) Percentage of the limit (1 to 1000).
+
+Optional:
+
+- `cycle` (String) (Default: `MONTHLY`) Cycle the threshold applies to. Valid values are (case-sensitive): `MONTHLY` | `WEEKLY` | `DAILY`.
+- `notify_user` (Boolean) (Default: `true`) Notifies the user who crossed the threshold.
+- `spend_strategy` (String) (Default: `PROJECTED`) Whether the threshold applies to actual or projected spend. Valid values are (case-sensitive): `ACTUAL` | `PROJECTED`.
+
+
+<a id="nestedblock--shared_resource"></a>
+### Nested Schema for `shared_resource`
+
+Required:
+
+- `domain` (String) Monitored domain. Valid values are (case-sensitive): `WAREHOUSE` | `AI FUNCTION` | `CORTEX AGENT` | `CORTEX CODE` | `SNOWFLAKE INTELLIGENCE` | `AI GATEWAY`.
+
+Optional:
+
+- `instance` (String) A single instance of the domain; if not set, the whole domain is monitored. For `AI FUNCTION` and `CORTEX CODE`, the instance name (e.g. `AI_CLASSIFY`, `CORTEX_CODE_CLI`). For `CORTEX AGENT`, the fully qualified agent name. For `WAREHOUSE`, `SNOWFLAKE INTELLIGENCE`, and `AI GATEWAY`, the object name.
+
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String)
+- `delete` (String)
+- `read` (String)
+- `update` (String)
+
+
+<a id="nestedblock--user_tags"></a>
+### Nested Schema for `user_tags`
+
+Required:
+
+- `tag` (Block Set, Min: 1) Tag and value pairs that select the users. (see [below for nested schema](#nestedblock--user_tags--tag))
+
+Optional:
+
+- `operator` (String) (Default: `UNION`) How the tags are combined. Valid values are (case-sensitive): `UNION` | `INTERSECTION`.
+
+<a id="nestedblock--user_tags--tag"></a>
+### Nested Schema for `user_tags.tag`
+
+Required:
+
+- `tag` (String) Fully qualified name of the tag, e.g. `"<database>"."<schema>"."<tag>"`. The role managing the quota needs the APPLYBUDGET privilege on the tag.
+- `value` (String) Tag value.
+
+
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `config` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--config))
+- `custom_actions` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--custom_actions))
+- `cycle_start_action` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--cycle_start_action))
+- `notification_integrations` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--notification_integrations))
+- `notification_thresholds` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--notification_thresholds))
+- `scope` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--scope))
+
+<a id="nestedobjatt--describe_output--config"></a>
+### Nested Schema for `describe_output.config`
+
+Read-Only:
+
+- `admin_emails` (List of String)
+- `block_enforcement_enabled` (Boolean)
+- `per_user_block_notifications_enabled` (Boolean)
+- `per_user_limit` (Number)
+- `per_user_limit_daily` (Number)
+- `per_user_limit_weekly` (Number)
+- `refresh_tier` (String)
+
+
+<a id="nestedobjatt--describe_output--custom_actions"></a>
+### Nested Schema for `describe_output.custom_actions`
+
+Read-Only:
+
+- `action_id` (String)
+- `added_timestamp` (String)
+- `last_trigger_attempt_time` (String)
+- `procedure` (String)
+- `procedure_arguments` (List of String)
+- `spend_strategy` (String)
+- `threshold` (Number)
+
+
+<a id="nestedobjatt--describe_output--cycle_start_action"></a>
+### Nested Schema for `describe_output.cycle_start_action`
+
+Read-Only:
+
+- `action_id` (String)
+- `added_timestamp` (String)
+- `last_trigger_attempt_time` (String)
+- `procedure` (String)
+- `procedure_arguments` (List of String)
+
+
+<a id="nestedobjatt--describe_output--notification_integrations"></a>
+### Nested Schema for `describe_output.notification_integrations`
+
+Read-Only:
+
+- `added_timestamp` (String)
+- `integration_name` (String)
+- `last_notification_time` (String)
+
+
+<a id="nestedobjatt--describe_output--notification_thresholds"></a>
+### Nested Schema for `describe_output.notification_thresholds`
+
+Read-Only:
+
+- `added_timestamp` (String)
+- `cycle` (String)
+- `notify_user` (Boolean)
+- `spend_strategy` (String)
+- `threshold` (Number)
+
+
+<a id="nestedobjatt--describe_output--scope"></a>
+### Nested Schema for `describe_output.scope`
+
+Read-Only:
+
+- `excluded_users` (List of String)
+- `included_users` (List of String)
+- `shared_resources` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--scope--shared_resources))
+- `user_tags` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--scope--user_tags))
+- `user_tags_operator` (String)
+
+<a id="nestedobjatt--describe_output--scope--shared_resources"></a>
+### Nested Schema for `describe_output.scope.shared_resources`
+
+Read-Only:
+
+- `domain` (String)
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedobjatt--describe_output--scope--user_tags"></a>
+### Nested Schema for `describe_output.scope.user_tags`
+
+Read-Only:
+
+- `tag` (String)
+- `values` (List of String)
+
+
+
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `current_version` (String)
+- `database_name` (String)
+- `name` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `schema_name` (String)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+terraform import snowflake_quota.example '"<database_name>"."<schema_name>"."<quota_name>"'
+```
