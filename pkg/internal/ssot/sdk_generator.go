@@ -120,6 +120,11 @@ func SdkShowOptionalLimit() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalLimit = true }
 }
 
+// SdkShowAdditionalValidations marks the SHOW query struct so validate calls additionalValidations.
+func SdkShowAdditionalValidations() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowAdditionalValidations = true }
+}
+
 func SdkShowByIDFiltering(kinds ...SdkShowByIDFilteringKind) SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowByIDFiltering = kinds }
 }

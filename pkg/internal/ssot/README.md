@@ -321,7 +321,7 @@ enable nothing.
   and the name, then `Create.Clauses`. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those
   clauses out. When both clauses are
   present they are marked conflicting. `AtLeastOneOf` adds `AtLeastOneValueSet` for each group that is entirely in
-  `Create.Clauses`. `SdkCreateAdditionalValidations()` adds that validation call. `SdkAlter()` builds
+  `Create.Clauses`. `SdkCreateAdditionalValidations()` adds that validation call. `SdkShowAdditionalValidations()` marks the SHOW query struct the same way. `SdkAlter()` builds
   ALTER from `Name`: `ALTER`, the uppercase words, `IF EXISTS`, and the name, then [`Alter`](object.go) in list order.
   `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out.
   `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkAlterSetList()` makes that `SET` a list with no

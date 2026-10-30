@@ -89,7 +89,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.OrganizationAccount{}},
 	{ObjectStruct: sdk.Parameter{}},
 	{ObjectStruct: sdk.PasswordPolicy{}},
-	{ObjectStruct: sdk.Pipe{}},
 	{ObjectStruct: sdk.PolicyReference{}},
 	{ObjectStruct: sdk.PostgresInstance{}, ManualFields: []string{"is_highly_available"}},
 	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments_old", "return_type_old"}},

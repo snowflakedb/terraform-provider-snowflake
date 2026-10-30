@@ -10,8 +10,8 @@ import (
 
 var (
 	_ Pipes                       = (*pipes)(nil)
-	_ convertibleRow[Pipe]        = new(pipeDBRow)
-	_ convertibleRow[PipeDetails] = new(pipeDetailRow)
+	_ convertibleRow[Pipe]        = new(pipesRow)
+	_ convertibleRow[PipeDetails] = new(pipeDescRow)
 )
 
 type pipes struct {
@@ -39,11 +39,11 @@ func (v *pipes) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 
 func (v *pipes) Show(ctx context.Context, request *ShowPipeRequest) ([]Pipe, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[pipeDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[pipesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[pipeDBRow, Pipe](dbRows)
+	return convertRows[pipesRow, Pipe](dbRows)
 }
 
 func (v *pipes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error) {
@@ -65,7 +65,7 @@ func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeD
 	opts := &DescribePipeOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[pipeDetailRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[pipeDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (r *ShowPipeRequest) toOpts() *ShowPipeOptions {
 	return opts
 }
 
-func (r pipeDBRow) convert() (*Pipe, error) {
+func (r pipesRow) convert() (*Pipe, error) {
 	result := &Pipe{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -159,7 +159,7 @@ func (r *DescribePipeRequest) toOpts() *DescribePipeOptions {
 	return opts
 }
 
-func (r pipeDetailRow) convert() (*PipeDetails, error) {
+func (r pipeDescRow) convert() (*PipeDetails, error) {
 	result := &PipeDetails{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
