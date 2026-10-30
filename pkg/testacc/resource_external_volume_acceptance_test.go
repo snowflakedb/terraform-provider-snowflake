@@ -5,6 +5,7 @@ package testacc
 // TODO Add test that includes Iceberg table creation, as this impacts the describe output (updates ACTIVE)
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -19,16 +20,21 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 // Note that generators currently don't handle lists of objects, which is required for storage locations
@@ -210,7 +216,6 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 	s3StorageLocationCompleteUpdated := getS3StorageLocationWithExtras(s3StorageLocationName, s3StorageProvider, s3StorageBaseUrl, s3StorageAwsRoleArn, s3EncryptionTypeSseKms, s3EncryptionKmsKeyId2, s3AccessPointArnUpdated, "true", awsExternalId2)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -218,8 +223,9 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with a basic storage location
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables: externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:          externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
 				Check: assertThat(
 					t,
 					resourceassert.ExternalVolumeResource(t, ref).
@@ -260,17 +266,18 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 						}),
 				),
 			},
-			// import
+			// import - permissive mode
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables:         externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"allow_writes", "storage_location.0.storage_aws_external_id"},
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic_permissive"),
+				ConfigVariables:          externalVolume(config.ListVariable(s3StorageLocation), externalVolumeName, "", ""),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// update the location to have all optional fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -324,15 +331,17 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:         externalVolume(config.ListVariable(s3StorageLocationComplete), externalVolumeName, comment, "true"),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"storage_location.0.use_privatelink_endpoint", "storage_location.0.storage_aws_external_id"},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
+				ConfigVariables:          externalVolume(config.ListVariable(s3StorageLocationComplete), externalVolumeName, comment, "true"),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateVerifyIgnore:  []string{"storage_location.0.storage_aws_external_id"},
 			},
 			// update the location to have changed fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -386,6 +395,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			},
 			// verify external changes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
 						*sdk.NewExternalVolumeSetRequest().WithComment("external comment"),
@@ -459,6 +469,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -488,11 +499,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3(t *testing.T) {
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
 						HasCommentEmpty().
-						HasAllowWrites(false),
+						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasActiveEmpty().
 						HasCommentEmpty().
-						HasAllowWrites("false").
+						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
 							{
 								Name:            s3StorageLocationName,
@@ -597,7 +608,6 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 	s3CompatLocation := getS3CompatStorageLocation(s3CompatLocationName, s3CompatBaseUrl, s3CompatEndpoint, s3CompatAwsKeyId, s3CompatAwsSecretKey)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -605,8 +615,9 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with a basic S3-compatible storage location
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables: externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, "", ""),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:          externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, "", ""),
 				Check: assertThat(
 					t,
 					resourceassert.ExternalVolumeResource(t, ref).
@@ -643,17 +654,32 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 						}),
 				),
 			},
-			// import
+			// import - permissive mode
+			// storage_aws_secret_key is not returned by Snowflake, so the plan after import always updates storage_location.
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables:         externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, "", ""),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"allow_writes", "storage_location.0.storage_aws_secret_key", "storage_location.0.use_privatelink_endpoint"},
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic_permissive"),
+				ConfigVariables:          externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, "", ""),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						// The secret is compared without printing it; planchecks.ExpectChange would print it on failure.
+						plancheck.ExpectKnownValue(ref, tfjsonpath.New("storage_location").AtSliceIndex(0).AtMapKey("storage_aws_secret_key"), knownvalue.StringFunc(func(v string) error {
+							if v != s3CompatAwsSecretKey {
+								return errors.New("storage_aws_secret_key in the plan doesn't match the configured value")
+							}
+							return nil
+						})),
+					},
+				},
 			},
 			// update to have all optional fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -699,15 +725,17 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:         externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, comment, "true"),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"storage_location.0.storage_aws_secret_key", "storage_location.0.use_privatelink_endpoint"},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
+				ConfigVariables:          externalVolume(config.ListVariable(s3CompatLocation), externalVolumeName, comment, "true"),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateVerifyIgnore:  []string{"storage_location.0.storage_aws_secret_key"},
 			},
 			// update with changed fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -753,6 +781,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			},
 			// verify external changes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
 						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
@@ -818,6 +847,7 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -842,11 +872,11 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
 						HasCommentEmpty().
-						HasAllowWrites(false),
+						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasActiveEmpty().
 						HasCommentEmpty().
-						HasAllowWrites("false").
+						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
 							{
 								Name:            s3CompatLocationName,
@@ -885,7 +915,6 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 	gcsStorageLocationKmsEncryptionUpdatedKey := getGcsStorageLocation(gcsStorageLocationName, gcsStorageBaseUrl, gcsEncryptionTypeSseKms, gcsEncryptionKmsKeyId2)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -893,8 +922,9 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with a basic storage location
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, "", ""),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:          externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, "", ""),
 				Check: assertThat(
 					t,
 					resourceassert.ExternalVolumeResource(t, ref).
@@ -927,17 +957,18 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 						}),
 				),
 			},
-			// import
+			// import - permissive mode
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables:         externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, "", ""),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"allow_writes"},
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic_permissive"),
+				ConfigVariables:          externalVolume(config.ListVariable(gcsStorageLocation), externalVolumeName, "", ""),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// update the location to have all optional fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -982,14 +1013,16 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(gcsStorageLocationKmsEncryption), externalVolumeName, comment, "true"),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
+				ConfigVariables:          externalVolume(config.ListVariable(gcsStorageLocationKmsEncryption), externalVolumeName, comment, "true"),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
 			},
 			// update the location to have changed fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -1034,6 +1067,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			},
 			// verify external changes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
 						*sdk.NewExternalVolumeSetRequest().WithAllowWrites(true).WithComment("external comment"),
@@ -1093,6 +1127,7 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -1117,11 +1152,11 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
 						HasCommentEmpty().
-						HasAllowWrites(false),
+						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasActiveEmpty().
 						HasCommentEmpty().
-						HasAllowWrites("false").
+						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
 							{
 								Name:            gcsStorageLocationName,
@@ -1130,6 +1165,93 @@ func TestAcc_ExternalVolume_BasicUseCase_GCS(t *testing.T) {
 								EncryptionType:  gcsEncryptionTypeNone,
 							},
 						}),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_ExternalVolume_BasicUseCase_Import(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	resourceId := helpers.EncodeResourceIdentifier(id)
+	ref := "snowflake_external_volume.complete"
+
+	gcsStorageLocationName := "gcsTest"
+	gcsStorageBaseUrl := "gcs://my-example-bucket/"
+	gcsEncryptionTypeNone := string(sdk.GCSEncryptionTypeNone)
+	gcsStorageLocation := getGcsStorageLocation(gcsStorageLocationName, gcsStorageBaseUrl, gcsEncryptionTypeNone, "")
+
+	_, cleanup := testClient().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(id, []sdk.ExternalVolumeStorageLocationItemRequest{
+		{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocationRequest{
+			Name: gcsStorageLocationName,
+			GCSStorageLocationParams: sdk.NewGCSStorageLocationParamsRequest(gcsStorageBaseUrl).
+				WithEncryption(*sdk.NewExternalVolumeGcsEncryptionRequest(sdk.GCSEncryptionTypeNone)),
+		}},
+	}))
+	t.Cleanup(cleanup)
+
+	externalVolumeObject, err := testClient().ExternalVolume.Show(t, id)
+	require.NoError(t, err)
+	defaultAllowWrites := fmt.Sprintf("%t", externalVolumeObject.AllowWrites)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
+		Steps: []resource.TestStep{
+			// import - enforcing mode
+			{
+				ConfigDirectory:    ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:    externalVolume(config.ListVariable(gcsStorageLocation), id.Name(), "", ""),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      resourceId,
+				ImportStatePersist: true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedExternalVolumeResource(t, resourceId).
+						HasName(id.Name()).
+						HasFullyQualifiedName(id.FullyQualifiedName()).
+						HasCommentEmpty().
+						HasAllowWrites(defaultAllowWrites).
+						HasGCSStorageLocationAtIndex(
+							0,
+							gcsStorageLocationName,
+							gcsStorageBaseUrl,
+							gcsEncryptionTypeNone,
+							"",
+						),
+				),
+			},
+			// apply the basic config, which resets the attributes omitted in the config
+			{
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(gcsStorageLocation), id.Name(), "", ""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "allow_writes", tfjson.ActionUpdate, new(defaultAllowWrites), new(r.BooleanDefault)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasName(id.Name()).
+						HasFullyQualifiedName(id.FullyQualifiedName()).
+						HasCommentEmpty().
+						HasAllowWrites(r.BooleanDefault).
+						HasStorageLocationLength(1).
+						HasGCSStorageLocationAtIndex(
+							0,
+							gcsStorageLocationName,
+							gcsStorageBaseUrl,
+							gcsEncryptionTypeNone,
+							"",
+						),
 				),
 			},
 		},
@@ -1152,7 +1274,6 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 	azureStorageLocation := getAzureStorageLocation(azureStorageLocationName, azureStorageBaseUrl, azureTenantId)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1160,8 +1281,9 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create with a basic storage location
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables: externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, "", ""),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables:          externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, "", ""),
 				Check: assertThat(
 					t,
 					resourceassert.ExternalVolumeResource(t, ref).
@@ -1198,17 +1320,18 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 						}),
 				),
 			},
-			// import
+			// import - permissive mode
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
-				ConfigVariables:         externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, "", ""),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"allow_writes"},
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/basic_permissive"),
+				ConfigVariables:          externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, "", ""),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// update the location to have all optional fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -1254,14 +1377,16 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			},
 			// import
 			{
-				ConfigDirectory:   ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
-				ConfigVariables:   externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, "true"),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/single/complete"),
+				ConfigVariables:          externalVolume(config.ListVariable(azureStorageLocation), externalVolumeName, comment, "true"),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
 			},
 			// update the location to have changed fields
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -1307,6 +1432,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			},
 			// verify external changes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().ExternalVolume.Alter(t, sdk.NewAlterExternalVolumeRequest(id).WithSet(
 						*sdk.NewExternalVolumeSetRequest().WithComment("external comment"),
@@ -1371,6 +1497,7 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 			},
 			// unset the optional parameters
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -1396,11 +1523,11 @@ func TestAcc_ExternalVolume_BasicUseCase_Azure(t *testing.T) {
 					resourceshowoutputassert.ExternalVolumeShowOutput(t, ref).
 						HasName(externalVolumeName).
 						HasCommentEmpty().
-						HasAllowWrites(false),
+						HasAllowWrites(true),
 					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
 						HasActiveEmpty().
 						HasCommentEmpty().
-						HasAllowWrites("false").
+						HasAllowWrites("true").
 						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
 							{
 								Name:            azureStorageLocationName,
@@ -1632,15 +1759,15 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 	azureStorageLocation := getAzureStorageLocation(azureStorageLocationName, azureStorageBaseUrl, azureTenantId)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.ExternalVolume),
 		Steps: []resource.TestStep{
 			{
-				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables: externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "false"),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
+				ConfigVariables:          externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "false"),
 				Check: assertThat(
 					t,
 					resourceassert.ExternalVolumeResource(t, "snowflake_external_volume.complete").
@@ -1715,13 +1842,32 @@ func TestAcc_ExternalVolume_CompleteUseCase(t *testing.T) {
 						}),
 				),
 			},
+			// import - permissive mode
+			// TODO(SNOW-4392614): add a suppressor for storage_aws_external_id that compares against describe_output; Import doesn't write it, so the plan after import updates storage_location.
 			{
-				ConfigDirectory:         ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
-				ConfigVariables:         externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "false"),
-				ResourceName:            "snowflake_external_volume.complete",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"storage_location.0.storage_aws_external_id"},
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete_permissive"),
+				ConfigVariables:          externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "false"),
+				ResourceName:             "snowflake_external_volume.complete",
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+				ExpectNonEmptyPlan:       true,
+				ImportPlanChecks: resource.ImportPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("snowflake_external_volume.complete", plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange("snowflake_external_volume.complete", "storage_location.0.storage_aws_external_id", tfjson.ActionUpdate, nil, new(awsExternalId)),
+					},
+				},
+			},
+			// import - enforcing mode
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigDirectory:          ConfigurationDirectory("TestAcc_ExternalVolume/multiple/complete"),
+				ConfigVariables:          externalVolumeMultiple(config.ListVariable(s3StorageLocationKmsEncryption), config.ListVariable(gcsStorageLocationKmsEncryption), config.ListVariable(azureStorageLocation), externalVolumeName, comment, "false"),
+				ResourceName:             "snowflake_external_volume.complete",
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateVerifyIgnore:  []string{"storage_location.0.storage_aws_external_id"},
 			},
 		},
 	})
