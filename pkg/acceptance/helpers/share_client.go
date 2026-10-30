@@ -64,6 +64,14 @@ func (c *ShareClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.S
 	return c.client().ShowByID(ctx, id)
 }
 
+func (c *ShareClient) Alter(t *testing.T, req *sdk.AlterShareRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
+}
+
 func (c *ShareClient) SetAccountOnShare(t *testing.T, accountId sdk.AccountIdentifier, shareId sdk.AccountObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()
