@@ -74,6 +74,7 @@ func sweep(client *sdk.Client, suffix string, includePostgres bool) error {
 		nukeResourceMonitors(client, suffix),
 		nukeNetworkPolicies(client, suffix),
 		nukeUsers(client, suffix),
+		nukeReplicationGroups(client, suffix),
 		nukeFailoverGroups(client, suffix),
 		nukeShares(client, suffix),
 		nukeApplications(client, suffix),
@@ -208,6 +209,13 @@ func Test_Sweeper_NukeStaleObjects(t *testing.T) {
 	t.Run("sweep users", func(t *testing.T) {
 		for _, c := range allClients {
 			err := nukeUsers(c, "")()
+			assert.NoError(t, err)
+		}
+	})
+
+	t.Run("sweep replication groups", func(t *testing.T) {
+		for _, c := range allClients {
+			err := nukeReplicationGroups(c, "")()
 			assert.NoError(t, err)
 		}
 	})
@@ -1018,6 +1026,33 @@ func nukeResourceMonitors(client *sdk.Client, suffix string) func() error {
 		dropSafely:    client.ResourceMonitors.DropSafely,
 		owner:         func(object sdk.ResourceMonitor) string { return object.Owner },
 		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeResourceMonitor),
+	})
+}
+
+func nukeReplicationGroups(client *sdk.Client, suffix string) func() error {
+	accountLocator := client.GetAccountLocator()
+
+	return nukeAccountObjects("", suffix, accountObjectSweeperConfig[sdk.ReplicationGroup]{
+		objectTypeName: "replication group",
+		// no replication groups are protected for now
+		protectedNames: []string{},
+		// the replication groups replicated from the other accounts are not ours to drop
+		skip: func(object sdk.ReplicationGroup) bool { return object.AccountLocator != accountLocator },
+		show: func(ctx context.Context) ([]sdk.ReplicationGroup, error) {
+			req := sdk.NewShowReplicationGroupRequest().WithInAccount(sdk.NewAccountIdentifierFromAccountLocator(accountLocator))
+			return client.ReplicationGroups.Show(ctx, req)
+		},
+		name:       func(object sdk.ReplicationGroup) string { return object.Name },
+		createdOn:  func(object sdk.ReplicationGroup) (time.Time, error) { return object.CreatedOn, nil },
+		id:         func(object sdk.ReplicationGroup) sdk.AccountObjectIdentifier { return object.ID() },
+		dropSafely: client.ReplicationGroups.DropSafely,
+		owner: func(object sdk.ReplicationGroup) string {
+			if object.Owner == nil {
+				return ""
+			}
+			return *object.Owner
+		},
+		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeReplicationGroup),
 	})
 }
 
