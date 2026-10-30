@@ -199,3 +199,7 @@ type BackupSetDetails struct {
 	OwnerRoleType            string
 	Comment                  *string
 }
+
+func (v *BackupSetDetails) ID() SchemaObjectIdentifier {
+	return NewSchemaObjectIdentifier(v.DatabaseName, v.SchemaName, v.Name)
+}

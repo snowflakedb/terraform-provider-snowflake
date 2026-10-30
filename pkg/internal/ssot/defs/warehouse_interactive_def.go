@@ -103,7 +103,7 @@ var WarehouseInteractiveAttrs = struct {
 }
 
 // tables is a writable attribute, so the Readonly WarehouseAttrs column cannot be reused.
-// The resource field is a set; SHOW reports a list.
+// TODO [next PRs]: the resource field is a set and this column is an AttrList so SHOW could build a paired struct. A set now maps like a list, so Show.Columns can use WarehouseInteractiveAttrs.Tables and this column can go.
 var warehouseInteractiveTablesShow = ssot.Attribute{
 	Name: "tables", Type: ssot.AttrList, OptionalInDb: true,
 	CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",

@@ -194,11 +194,12 @@ var ReplicationGroupAttrs = struct {
 	},
 	AllowedAccounts: ssot.Attribute{
 		Name:          "allowed_accounts",
-		Type:          ssot.AttrList,
+		Type:          ssot.AttrSet,
 		Required:      true,
 		CreateMapping: ssot.ListValueCreate("toReplicationGroupAllowedAccounts"),
-		Description:   "Target accounts, as organization and account name, to which replication is enabled.",
+		Description:   "Target accounts, as organization and account name, to which replication is enabled. Snowflake also includes the source account.",
 		Elem:          &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+		// TODO [next PRs]: show_output.allowed_accounts stays TypeList. The schema generator follows the SDK slice, so SHOW order remains on that block. The resource attribute is the set.
 		// The SHOW example prints org.account.group. The column text says accounts, and CREATE takes org.account.
 		// The parser accepts org.account. A three-part value fails conversion.
 		OptionalInDb: true,
@@ -422,10 +423,14 @@ var ReplicationGroup = ssot.Object{
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
-		ssot.WithApplySetUnset(ssot.Generated()),
-		ssot.WithAlterSetInSdk(ssot.Generated()),
+		// OBJECT_TYPES and the allowed lists cannot share a SET with COMMENT, REPLICATION_SCHEDULE,
+		// or ERROR_INTEGRATION. The extension builds one request per group and issues two ALTER SET calls.
+		ssot.WithApplySetUnset(ssot.ExtCall()),
+		ssot.WithAlterSetInSdk(ssot.ExtCall()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
-		ssot.WithSetConfigFields(ssot.Generated()),
+		// SHOW stores identifier lists as SDK values. Generated SetConfigFields passes that slice through,
+		// and d.Set cannot write []AccountIdentifier into a list of strings.
+		ssot.WithSetConfigFields(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},

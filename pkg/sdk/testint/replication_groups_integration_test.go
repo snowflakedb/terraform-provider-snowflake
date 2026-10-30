@@ -136,8 +136,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("create secondary: basic", func(t *testing.T) {
 		primaryID, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		secondaryID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		// A new primary is not always visible to the target account immediately.
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 
 		require.NoError(t, secondaryClient.ReplicationGroups.CreateSecondary(secondaryCtx, sdk.NewCreateSecondaryReplicationGroupRequest(
 			secondaryID,
@@ -154,7 +153,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("create secondary: all", func(t *testing.T) {
 		primaryID, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		secondaryID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 		request := sdk.NewCreateSecondaryReplicationGroupRequest(
 			secondaryID,
 			sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID),
@@ -171,7 +170,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 
 	t.Run("show by id: same name in two accounts", func(t *testing.T) {
 		primaryID, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 		require.NoError(t, secondaryClient.ReplicationGroups.CreateSecondary(secondaryCtx, sdk.NewCreateSecondaryReplicationGroupRequest(
 			primaryID,
 			sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID),
@@ -340,7 +339,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 			WithSet(*sdk.NewReplicationGroupSetRequest().WithReplicationSchedule("10 MINUTE")),
 		))
 		secondaryID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 		require.NoError(t, secondaryClient.ReplicationGroups.CreateSecondary(secondaryCtx, sdk.NewCreateSecondaryReplicationGroupRequest(
 			secondaryID,
 			sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID),
