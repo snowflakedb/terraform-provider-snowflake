@@ -2,9 +2,12 @@
 
 package example
 
+import "fmt"
+
 var (
 	_ validatable = new(AddNotificationIntegrationInstanceMethodExampleOptions)
 	_ validatable = new(GetSpendingLimitInstanceMethodExampleOptions)
+	_ validatable = new(SetScopeInstanceMethodExampleOptions)
 )
 
 func (opts *AddNotificationIntegrationInstanceMethodExampleOptions) validate() error {
@@ -30,6 +33,26 @@ func (opts *GetSpendingLimitInstanceMethodExampleOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("GetSpendingLimitInstanceMethodExampleOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *SetScopeInstanceMethodExampleOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("SetScopeInstanceMethodExampleOptions", "name"))
+	}
+	if valueSet(opts.args) {
+		if valueSet(opts.args.Tags) {
+			for tagIdx, tag := range opts.args.Tags {
+				if !ValidObjectIdentifier(tag.Tag) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetScopeInstanceMethodExampleOptions.args.Tags[%d]", tagIdx), "Tag"))
+				}
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
