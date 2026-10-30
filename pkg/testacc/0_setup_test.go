@@ -44,6 +44,7 @@ type snowflakeTestEnvironmentContext struct {
 type acceptanceTestContext struct {
 	defaultTestEnv           snowflakeTestEnvironmentContext
 	secondaryTestEnv         snowflakeTestEnvironmentContext
+	thirdTestEnv             snowflakeTestEnvironmentContext
 	azureTestEnv             snowflakeTestEnvironmentContext
 	gcpTestEnv               snowflakeTestEnvironmentContext
 	snowflakeDefaultsTestEnv snowflakeTestEnvironmentContext
@@ -122,6 +123,7 @@ func (atc *acceptanceTestContext) initialize() error {
 		}
 
 		if errs := errors.Join(
+			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Third, &atc.thirdTestEnv),
 			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Azure, &atc.azureTestEnv),
 			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Gcp, &atc.gcpTestEnv),
 		); errs != nil {
@@ -228,6 +230,10 @@ func testClient() *helpers.TestClient {
 
 func secondaryTestClient() *helpers.TestClient {
 	return atc.secondaryTestEnv.testClient
+}
+
+func thirdTestClient() *helpers.TestClient {
+	return atc.thirdTestEnv.testClient
 }
 
 func azureTestClient() *helpers.TestClient {

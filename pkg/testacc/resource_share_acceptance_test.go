@@ -11,6 +11,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -18,13 +19,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// TODO [SNOW-1284394]: Unskip the test
 // TODO [SNOW-1348347]: Add more tests or merge with other tests.
 func TestAcc_Share(t *testing.T) {
-	t.Skip("second and third account must be set for Share acceptance tests")
+	// The prod environment has no setup with three accounts on the same deployment, which is needed to add two recipients.
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeProdEnvironment {
+		t.Skip("Skipping for the prod Snowflake environment: three accounts on the same deployment are required")
+	}
 
-	var account2 string
-	var account3 string
+	account2 := secondaryTestClient().Account.GetAccountIdentifier(t).Name()
+	account3 := thirdTestClient().Account.GetAccountIdentifier(t).Name()
 
 	shareComment := "Created by a Terraform acceptance test"
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -281,4 +284,14 @@ resource "snowflake_share" "test" {
 	accounts       = ["%s", "%s"]
 }
 `, shareId.Name(), comment, account, account2)
+}
+
+func shareConfigOneAccount(shareId sdk.AccountObjectIdentifier, comment string, account string) string {
+	return fmt.Sprintf(`
+resource "snowflake_share" "test" {
+	name           = "%s"
+	comment        = "%s"
+	accounts       = ["%s"]
+}
+`, shareId.Name(), comment, account)
 }
