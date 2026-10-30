@@ -118,7 +118,7 @@ func UserProgrammaticAccessToken() *schema.Resource {
 				func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
 					o, n := diff.GetChange("keeper")
 					// If the key is being rotated, mark the `token` and `rotated_token_name` as computed to inform that these values will change.
-					if shouldRotateToken(o.(string), n.(string), diff.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
+					if keeperChanged(o.(string), n.(string), diff.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
 						errs := errors.Join(
 							diff.SetNewComputed("token"),
 							diff.SetNewComputed("rotated_token_name"),
@@ -140,12 +140,6 @@ func UserProgrammaticAccessToken() *schema.Resource {
 
 		Timeouts: defaultTimeouts,
 	}
-}
-
-// Rotate the token, but only when the change is from a non-empty to a non-empty value or the new value is unknown (known after apply).
-// When the value was empty, but is now known after apply, it means that the token is not being rotated.
-func shouldRotateToken(old, new string, isKnown bool) bool {
-	return old != "" && (new != "" && old != new || !isKnown)
 }
 
 func ImportUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
@@ -319,7 +313,7 @@ func UpdateUserProgrammaticAccessToken(ctx context.Context, d *schema.ResourceDa
 
 	var warnings diag.Diagnostics
 	o, n := d.GetChange("keeper")
-	if shouldRotateToken(o.(string), n.(string), d.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
+	if keeperChanged(o.(string), n.(string), d.GetRawPlan().AsValueMap()["keeper"].IsKnown()) {
 		request := sdk.NewRotateUserProgrammaticAccessTokenRequest(resourceId.userName, resourceId.tokenName)
 		if v := d.Get("expire_rotated_token_after_hours").(int); v != IntDefault {
 			currentToken, err := client.Users.ShowProgrammaticAccessTokenByNameSafely(ctx, resourceId.userName, resourceId.tokenName)

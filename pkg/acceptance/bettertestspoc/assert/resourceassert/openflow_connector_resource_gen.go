@@ -69,6 +69,11 @@ func (o *OpenflowConnectorResourceAssert) HasRuntime(expected string) *OpenflowC
 	return o
 }
 
+func (o *OpenflowConnectorResourceAssert) HasVersionTrigger(expected string) *OpenflowConnectorResourceAssert {
+	o.StringValueSet("version_trigger", expected)
+	return o
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -105,6 +110,11 @@ func (o *OpenflowConnectorResourceAssert) HasFullyQualifiedNameString(expected s
 
 func (o *OpenflowConnectorResourceAssert) HasRuntimeString(expected string) *OpenflowConnectorResourceAssert {
 	o.ValueSet("runtime", expected)
+	return o
+}
+
+func (o *OpenflowConnectorResourceAssert) HasVersionTriggerString(expected string) *OpenflowConnectorResourceAssert {
+	o.ValueSet("version_trigger", expected)
 	return o
 }
 
@@ -147,6 +157,11 @@ func (o *OpenflowConnectorResourceAssert) HasNoRuntime() *OpenflowConnectorResou
 	return o
 }
 
+func (o *OpenflowConnectorResourceAssert) HasNoVersionTrigger() *OpenflowConnectorResourceAssert {
+	o.ValueNotSet("version_trigger")
+	return o
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -163,6 +178,11 @@ func (o *OpenflowConnectorResourceAssert) HasDisplayNameEmpty() *OpenflowConnect
 
 func (o *OpenflowConnectorResourceAssert) HasFullyQualifiedNameEmpty() *OpenflowConnectorResourceAssert {
 	o.ValueSet("fully_qualified_name", "")
+	return o
+}
+
+func (o *OpenflowConnectorResourceAssert) HasVersionTriggerEmpty() *OpenflowConnectorResourceAssert {
+	o.ValueSet("version_trigger", "")
 	return o
 }
 
@@ -202,5 +222,10 @@ func (o *OpenflowConnectorResourceAssert) HasFullyQualifiedNameNotEmpty() *Openf
 
 func (o *OpenflowConnectorResourceAssert) HasRuntimeNotEmpty() *OpenflowConnectorResourceAssert {
 	o.ValuePresent("runtime")
+	return o
+}
+
+func (o *OpenflowConnectorResourceAssert) HasVersionTriggerNotEmpty() *OpenflowConnectorResourceAssert {
+	o.ValuePresent("version_trigger")
 	return o
 }

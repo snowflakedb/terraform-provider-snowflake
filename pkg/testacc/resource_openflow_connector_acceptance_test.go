@@ -23,6 +23,7 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -425,6 +426,128 @@ func TestAcc_OpenflowConnector_FromStage(t *testing.T) {
 					resourceshowoutputassert.OpenflowConnectorShowOutput(t, ref).
 						HasConnectorDefinition(definition.Name).
 						HasStatus(sdk.OpenflowConnectorStatusStopped),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_OpenflowConnector_VersionTrigger(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.TestOpenflow)
+
+	runtimeId := testClient().OpenflowRuntime.ActiveRuntime(t)
+	definition := testClient().OpenflowConnectorDefinition.ForTesting(t)
+
+	stage, stageCleanup := testClient().Stage.CreateStageInSchema(t, runtimeId.SchemaId())
+	t.Cleanup(stageCleanup)
+
+	// The two bundles differ only in whitespace: Snowflake checks that config.json names the connector's
+	// definition, and nothing else in it matters for the version to be added.
+	bundleV1 := fmt.Sprintf(`{"configFormatVersion":1,"connectorDefinitionId":%q,"configuration":[]}`, definition.Name)
+	bundleV2 := fmt.Sprintf(`{"configFormatVersion": 1, "connectorDefinitionId": %q, "configuration": []}`, definition.Name)
+	testClient().Stage.PutOnStageWithContent(t, stage.ID(), "config.json", bundleV1)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(runtimeId.SchemaId())
+	withV1 := model.OpenflowConnector("t", id.DatabaseName(), id.SchemaName(), id.Name(), "", runtimeId.FullyQualifiedName()).
+		WithFromStage(stage.ID(), "").
+		WithVersionTrigger("v1")
+	withV2 := model.OpenflowConnector("t", id.DatabaseName(), id.SchemaName(), id.Name(), "", runtimeId.FullyQualifiedName()).
+		WithFromStage(stage.ID(), "").
+		WithVersionTrigger("v2")
+	withoutTrigger := model.OpenflowConnector("t", id.DatabaseName(), id.SchemaName(), id.Name(), "", runtimeId.FullyQualifiedName()).
+		WithFromStage(stage.ID(), "")
+	ref := withV1.ResourceReference()
+
+	// The version a step leaves behind, so the next step can tell whether one was added.
+	var lastVersion string
+	recordLastVersion := resource.TestCheckResourceAttrWith(ref, "describe_output.0.last_version_name", func(value string) error {
+		lastVersion = value
+		return nil
+	})
+	lastVersionChanged := resource.TestCheckResourceAttrWith(ref, "describe_output.0.last_version_name", func(value string) error {
+		if value == "" || value == lastVersion {
+			return fmt.Errorf("expected a new last version, got %q after %q", value, lastVersion)
+		}
+		lastVersion = value
+		return nil
+	})
+	lastVersionUnchanged := resource.TestCheckResourceAttrWith(ref, "describe_output.0.last_version_name", func(value string) error {
+		if value != lastVersion {
+			return fmt.Errorf("expected the last version to stay %q, got %q", lastVersion, value)
+		}
+		return nil
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.OpenflowConnector),
+		Steps: []resource.TestStep{
+			// 1. Create without a trigger. The bundle is read by CREATE.
+			{
+				Config: config.FromModels(t, withoutTrigger),
+				Check: assertThat(
+					t,
+					resourceassert.OpenflowConnectorResource(t, ref).
+						HasNoVersionTrigger(),
+					resourceshowoutputassert.OpenflowConnectorShowOutput(t, ref).
+						HasStatus(sdk.OpenflowConnectorStatusStopped),
+					assert.Check(recordLastVersion),
+				),
+			},
+			// 2. Adding the trigger updates state only and adds no version.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withV1),
+				Check: assertThat(
+					t,
+					resourceassert.OpenflowConnectorResource(t, ref).
+						HasVersionTriggerString("v1"),
+					assert.Check(lastVersionUnchanged),
+				),
+			},
+			// 3. Change the bundle and the trigger. The same connector takes the bundle as a new version, in
+			// place, and a stopped connector stays stopped.
+			{
+				PreConfig: func() {
+					testClient().Stage.PutOnStageWithContent(t, stage.ID(), "config.json", bundleV2)
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						plancheck.ExpectUnknownValue(ref, tfjsonpath.New("describe_output")),
+					},
+				},
+				Config: config.FromModels(t, withV2),
+				Check: assertThat(
+					t,
+					resourceassert.OpenflowConnectorResource(t, ref).
+						HasNameString(id.Name()).
+						HasVersionTriggerString("v2"),
+					resourceshowoutputassert.OpenflowConnectorShowOutput(t, ref).
+						HasStatus(sdk.OpenflowConnectorStatusStopped),
+					assert.Check(lastVersionChanged),
+				),
+			},
+			// 4. Removing the trigger updates state only and adds no version.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withoutTrigger),
+				Check: assertThat(
+					t,
+					resourceassert.OpenflowConnectorResource(t, ref).
+						HasVersionTriggerEmpty(),
+					assert.Check(lastVersionUnchanged),
 				),
 			},
 		},

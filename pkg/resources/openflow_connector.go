@@ -104,6 +104,12 @@ var openflowConnectorSchema = map[string]*schema.Schema{
 			},
 		},
 	},
+	"version_trigger": {
+		Type:         schema.TypeString,
+		Optional:     true,
+		RequiredWith: []string{"from.0.stage"},
+		Description:  "An arbitrary value, such as a hash of the bundle's files, that, if and only if changed from a non-empty to a different non-empty value (or known after apply), loads the bundle at `from` again as a new configuration version of the same connector, rather than recreating it. When you add this field to the configuration, or remove it, nothing is loaded, so add it before the bundle changes. A running connector is stopped for the load and started again afterwards; a stopped one stays stopped. When a version is loaded, `show_output` and `describe_output` are marked as computed. Only for a connector created from a stage.",
+	},
 	"display_name": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -142,7 +148,7 @@ func OpenflowConnector() *schema.Resource {
 		Description: joinWithSpace(
 			"Resource used to manage Openflow connectors, which run inside an Openflow runtime.",
 			"Every mutating statement is asynchronous, so create and update return once the connector settles.",
-			"Starting, stopping and version management are operational actions and are not exposed here; the connector's state is reported in `show_output`.",
+			"Starting and stopping are operational actions and are not exposed here, although the provider may execute such commands when altering the object; the connector's state is reported in `show_output`.",
 			"For more information, check [Openflow connector documentation](https://docs.snowflake.com/en/sql-reference/sql/create-openflow-connector).",
 		),
 
@@ -150,6 +156,17 @@ func OpenflowConnector() *schema.Resource {
 			ComputedIfAnyAttributeChanged(openflowConnectorSchema, ShowOutputAttributeName, "name", "display_name", "comment"),
 			ComputedIfAnyAttributeChanged(openflowConnectorSchema, DescribeOutputAttributeName, "name", "display_name", "comment"),
 			ComputedIfAnyAttributeChanged(openflowConnectorSchema, FullyQualifiedNameAttributeName, "name"),
+			func(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+				// A new version changes the version columns of both outputs.
+				o, n := diff.GetChange("version_trigger")
+				if keeperChanged(o.(string), n.(string), diff.GetRawPlan().AsValueMap()["version_trigger"].IsKnown()) {
+					return errors.Join(
+						diff.SetNewComputed(ShowOutputAttributeName),
+						diff.SetNewComputed(DescribeOutputAttributeName),
+					)
+				}
+				return nil
+			},
 		)),
 
 		Schema:   openflowConnectorSchema,
@@ -193,6 +210,23 @@ func ImportOpenflowConnector(ctx context.Context, d *schema.ResourceData, meta a
 	return []*schema.ResourceData{d}, nil
 }
 
+// openflowConnectorBundleLocation is the stage location of the bundle a `from` block with a stage names.
+func openflowConnectorBundleLocation(from map[string]any) (sdk.Location, error) {
+	stage, err := sdk.ParseSchemaObjectIdentifier(from["stage"].(string))
+	if err != nil {
+		return nil, err
+	}
+	// Snowflake resolves the bundle's config.json under the path only when the path ends in a slash, and
+	// rejects the create with "No connector configuration file found at location" without one. The
+	// trailing slash is added here rather than being asked of the configuration, so that state keeps the
+	// path as written.
+	path := from["path"].(string)
+	if path != "" && !strings.HasSuffix(path, "/") {
+		path += "/"
+	}
+	return sdk.NewStageLocation(stage, path), nil
+}
+
 func CreateOpenflowConnector(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 	id := sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string))
@@ -216,20 +250,12 @@ func CreateOpenflowConnector(ctx context.Context, d *schema.ResourceData, meta a
 	if definition := from["definition"].(string); definition != "" {
 		request.WithFromDefinition(definition)
 	}
-	if stageRaw := from["stage"].(string); stageRaw != "" {
-		stage, err := sdk.ParseSchemaObjectIdentifier(stageRaw)
+	if from["stage"].(string) != "" {
+		location, err := openflowConnectorBundleLocation(from)
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		// Snowflake resolves the bundle's config.json under the path only when the path ends in a slash, and
-		// rejects the create with "No connector configuration file found at location" without one. The
-		// trailing slash is added here rather than being asked of the configuration, so that state keeps the
-		// path as written.
-		path := from["path"].(string)
-		if path != "" && !strings.HasSuffix(path, "/") {
-			path += "/"
-		}
-		request.WithFrom(sdk.NewStageLocation(stage, path))
+		request.WithFrom(location)
 	}
 
 	if err := client.OpenflowConnectors.Create(ctx, request); err != nil {
@@ -364,7 +390,65 @@ func UpdateOpenflowConnector(ctx context.Context, d *schema.ResourceData, meta a
 		}
 	}
 
+	if o, n := d.GetChange("version_trigger"); keeperChanged(o.(string), n.(string), d.GetRawPlan().AsValueMap()["version_trigger"].IsKnown()) {
+		if err := addOpenflowConnectorVersionFromBundle(ctx, client, id, d.Get("from").([]any)[0].(map[string]any), timeout); err != nil {
+			// Without this the new trigger would be saved even though no version was added, and the next plan
+			// would show nothing left to do.
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
+	}
+
 	return ReadOpenflowConnector(false)(ctx, d, meta)
+}
+
+// addOpenflowConnectorVersionFromBundle loads the bundle again with ADD VERSION, which makes it the new
+// default version of the same connector. Snowflake accepts ADD VERSION only from STOPPED, so a running
+// connector is stopped around it and started again, leaving it in the status it was found in. A failure after
+// the STOP leaves the connector stopped, for an operator to look at rather than to have it started on a
+// version that may not have loaded.
+func addOpenflowConnectorVersionFromBundle(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, from map[string]any, timeout time.Duration) error {
+	location, err := openflowConnectorBundleLocation(from)
+	if err != nil {
+		return err
+	}
+
+	connector, err := client.OpenflowConnectors.ShowByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	var wasRunning bool
+	switch connector.Status {
+	case sdk.OpenflowConnectorStatusRunning:
+		wasRunning = true
+		if err := client.OpenflowConnectors.Alter(ctx, sdk.NewAlterOpenflowConnectorRequest(id).WithStop(true)); err != nil {
+			return err
+		}
+		if err := waitForOpenflowConnectorStopped(ctx, client, id, timeout); err != nil {
+			return err
+		}
+	case sdk.OpenflowConnectorStatusStopped:
+	default:
+		// A failed or troubleshooting connector needs an operator; starting it again afterwards would hide that.
+		return fmt.Errorf("openflow connector %s is %s; a new version can only be added to a RUNNING or STOPPED connector", id.FullyQualifiedName(), connector.Status)
+	}
+
+	if err := client.OpenflowConnectors.Alter(ctx, sdk.NewAlterOpenflowConnectorRequest(id).WithAddVersion(*sdk.NewOpenflowConnectorAddVersionRequest(&location))); err != nil {
+		return err
+	}
+	if err := waitForOpenflowConnectorReady(ctx, client, id, timeout); err != nil {
+		return err
+	}
+
+	if wasRunning {
+		if err := client.OpenflowConnectors.Alter(ctx, sdk.NewAlterOpenflowConnectorRequest(id).WithStart(true)); err != nil {
+			return err
+		}
+		if err := waitForOpenflowConnectorRunning(ctx, client, id, timeout); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func DeleteOpenflowConnector(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
