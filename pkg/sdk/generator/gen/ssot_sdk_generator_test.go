@@ -23,6 +23,7 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 			ssot.SdkShowOptionalIn(),
 			ssot.SdkShowOptionalStartsWith(),
 			ssot.SdkShowOptionalLimit(),
+			ssot.SdkShowAdditionalValidations(),
 			ssot.SdkShowByIDFiltering(ssot.SdkShowByIDIn, ssot.SdkShowByIDLike),
 		))},
 	}
@@ -36,7 +37,8 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 			OptionalLike().
 			OptionalIn().
 			OptionalStartsWith().
-			OptionalLimit(),
+			OptionalLimit().
+			WithAdditionalValidations(),
 		ShowByIDInFiltering,
 		ShowByIDLikeFiltering,
 	)

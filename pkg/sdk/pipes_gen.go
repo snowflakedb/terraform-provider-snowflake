@@ -30,8 +30,7 @@ type CreatePipeOptions struct {
 	AwsSnsTopic      *string                `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
 	Integration      *string                `ddl:"parameter,single_quotes" sql:"INTEGRATION"`
 	Comment          *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	as               bool                   `ddl:"static" sql:"AS"`
-	copyStatement    string                 `ddl:"keyword,no_quotes"`
+	copyStatement    string                 `ddl:"parameter,no_quotes,no_equals" sql:"AS"`
 }
 
 // AlterPipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-pipe.
@@ -80,7 +79,7 @@ type ShowPipeOptions struct {
 	In    *In   `ddl:"keyword" sql:"IN"`
 }
 
-type pipeDBRow struct {
+type pipesRow struct {
 	CreatedOn           string         `db:"created_on"`
 	Name                string         `db:"name"`
 	DatabaseName        string         `db:"database_name"`
@@ -127,7 +126,7 @@ type DescribePipeOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type pipeDetailRow struct {
+type pipeDescRow struct {
 	CreatedOn           string         `db:"created_on"`
 	Name                string         `db:"name"`
 	DatabaseName        string         `db:"database_name"`

@@ -236,6 +236,9 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	if cfg.ShowOptionalLimit {
 		q = q.OptionalLimit()
 	}
+	if cfg.ShowAdditionalValidations {
+		q = q.WithAdditionalValidations()
+	}
 	return q
 }
 

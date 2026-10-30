@@ -24,20 +24,21 @@ type SdkGenerator struct {
 	Show     bool
 	Describe bool
 
-	ShowDoc                string
-	ShowSql                string
-	ShowTerse              bool
-	ShowOptionalSql        []string
-	ShowOptionalLike       bool
-	ShowOptionalIn         bool
-	ShowOptionalExtendedIn bool
-	ShowOptionalOn         bool
-	ShowOptionalStartsWith bool
-	ShowOptionalLimitFrom  bool
-	ShowOptionalLimit      bool
-	ShowByIDFiltering      []SdkShowByIDFilteringKind
-	ShowByIDPredicate      SdkShowByIDPredicateKind
-	ShowQueryStructName    string
+	ShowDoc                   string
+	ShowSql                   string
+	ShowTerse                 bool
+	ShowOptionalSql           []string
+	ShowOptionalLike          bool
+	ShowOptionalIn            bool
+	ShowOptionalExtendedIn    bool
+	ShowOptionalOn            bool
+	ShowOptionalStartsWith    bool
+	ShowOptionalLimitFrom     bool
+	ShowOptionalLimit         bool
+	ShowByIDFiltering         []SdkShowByIDFilteringKind
+	ShowByIDPredicate         SdkShowByIDPredicateKind
+	ShowQueryStructName       string
+	ShowAdditionalValidations bool
 	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
 	ShowResultFilterHook bool
 	// ShowPlainOnlyFields are SHOW columns that only the plain struct has. convert skips them and additionalConvert in the
