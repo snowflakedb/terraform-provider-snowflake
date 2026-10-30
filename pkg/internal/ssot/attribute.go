@@ -80,6 +80,12 @@ type Attribute struct {
 	ManualConvert bool // paired-struct convert() skips this column; ext additionalConvert fills it
 	CustomParser  string
 	SkipInSchema  bool // column stays on the SDK struct and assertions, and is omitted from the public schema
+	// SdkString marks an optional AttrObject that is one nested block in Terraform and one string in SQL, SHOW, and DESCRIBE,
+	// such as the schedule of a backup policy. The resource, the model, and the resource assertions read the Children as a
+	// block. CREATE, SET, UNSET, the SHOW and DESCRIBE columns, and their schemas and assertions read it as a string, see
+	// SdkType. The generated create (SkipCreate) and update skip it: ext code converts between the block and the string.
+	// Set OptionalInShow or OptionalInDb for the string column.
+	SdkString bool
 	// SqlOnly keeps the attribute on a SQL sequence and out of schema, resource, model, and assertion generation.
 	// ResourceAttributes drops these. A static CREATE value sets CreateSql to StaticSQL.
 	SqlOnly        bool
@@ -139,6 +145,15 @@ var Tags = &Attribute{Name: "tags", Tags: true}
 
 // Parameters is the parameter catalog spread. Put it on a CREATE, SET, or UNSET list. It is not an Attributes entry.
 var Parameters = &Attribute{Name: "parameters", Parameters: true}
+
+// SdkType is the type the SDK holds the attribute as: a string for an SdkString object, the Type otherwise.
+// SQL clauses, SHOW and DESCRIBE columns, and the code generated from them read it. The resource reads Type.
+func (a Attribute) SdkType() AttributeType {
+	if a.SdkString {
+		return AttrString
+	}
+	return a.Type
+}
 
 func (a *Attribute) IsTags() bool {
 	return a != nil && a.Tags

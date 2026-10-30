@@ -259,7 +259,7 @@ func (a *Attribute) defaultSqlClause(use ClauseUse) SqlClause {
 	if use == ClauseUnset {
 		return BoolKeyword()
 	}
-	switch a.Type {
+	switch a.SdkType() {
 	case AttrInt:
 		return IntParameter()
 	case AttrBool:

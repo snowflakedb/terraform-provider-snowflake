@@ -110,7 +110,7 @@ func (m ResourceModel) changedAttributeKeys(columns []*ssot.Attribute) []string 
 	names := m.diffAttributeNames()
 	keys := make([]string, 0, len(columns))
 	for _, col := range columns {
-		if col == nil || len(col.Children) > 0 {
+		if col == nil || (len(col.Children) > 0 && !col.SdkString) {
 			continue
 		}
 		// For now, the set/list fields have to be excluded.
@@ -139,7 +139,7 @@ func (m ResourceModel) diffAttributeNames() map[string]struct{} {
 		names[field.Name] = struct{}{}
 	}
 	for _, attr := range m.Attributes {
-		if len(attr.Children) > 0 || attr.TfType == SchemaTypeList || attr.TfType == SchemaTypeSet {
+		if !attr.SdkString && (len(attr.Children) > 0 || attr.TfType == SchemaTypeList || attr.TfType == SchemaTypeSet) {
 			continue
 		}
 		names[attr.Name] = struct{}{}

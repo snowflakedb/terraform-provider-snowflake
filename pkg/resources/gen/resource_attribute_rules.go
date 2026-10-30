@@ -383,8 +383,9 @@ func resolveResourceAttribute(in ssot.Attribute, ctx resourceAttributeRuleContex
 
 func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleContext) ResourceAttribute {
 	out := ResourceAttribute{
-		Name:   in.Name,
-		TfType: tfTypeFor(in.Type),
+		Name:      in.Name,
+		TfType:    tfTypeFor(in.Type),
+		SdkString: in.SdkString,
 	}
 	if !ctx.AsCollectionElem {
 		out.Required = in.Required

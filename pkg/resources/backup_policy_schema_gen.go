@@ -20,10 +20,58 @@ var backupPolicyAttributesSchema = map[string]*tfschema.Schema{
 		Default:          BooleanDefault,
 	},
 	"schedule": {
-		Type:             tfschema.TypeString,
-		Optional:         true,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("schedule"),
-		Description:      "Specifies how often Snowflake creates a backup. The value is an interval of at least 60 minutes (`<num> MINUTE` or `<num> HOUR`) or `USING CRON <expr> <time_zone>`.",
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"hours": {
+					Type:             tfschema.TypeInt,
+					Optional:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
+					ConflictsWith: []string{
+						"schedule.0.minutes",
+						"schedule.0.using_cron",
+					},
+					AtLeastOneOf: []string{
+						"schedule.0.hours",
+						"schedule.0.minutes",
+						"schedule.0.using_cron",
+					},
+					Description: "Specifies an interval (in hours) of wait time inserted between backups. Accepts positive integers. (conflicts with `minutes` and `using_cron`)",
+				},
+				"minutes": {
+					Type:             tfschema.TypeInt,
+					Optional:         true,
+					ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(60)),
+					ConflictsWith: []string{
+						"schedule.0.hours",
+						"schedule.0.using_cron",
+					},
+					AtLeastOneOf: []string{
+						"schedule.0.hours",
+						"schedule.0.minutes",
+						"schedule.0.using_cron",
+					},
+					Description: "Specifies an interval (in minutes) of wait time inserted between backups. Accepts integers of at least 60. (conflicts with `hours` and `using_cron`)",
+				},
+				"using_cron": {
+					Type:     tfschema.TypeString,
+					Optional: true,
+					ConflictsWith: []string{
+						"schedule.0.hours",
+						"schedule.0.minutes",
+					},
+					AtLeastOneOf: []string{
+						"schedule.0.hours",
+						"schedule.0.minutes",
+						"schedule.0.using_cron",
+					},
+					Description: "Specifies a cron expression and time zone for creating backups. Supports a subset of standard cron utility syntax. (conflicts with `hours` and `minutes`)",
+				},
+			},
+		},
+		Description: "Specifies how often Snowflake creates a backup. Either an interval of at least 60 minutes (`hours` or `minutes`) or a cron expression (`using_cron`). Exactly one of the sub-fields has to be set.",
 	},
 	"expire_after_days": {
 		Type:             tfschema.TypeInt,

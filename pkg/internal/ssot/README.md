@@ -181,6 +181,7 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   - Provider-like alternatives are variants of the element: `WithVariants(Variant("S3", &a, &b, ...), ...)` lists, for each
     one, the attributes it consists of, as pointers, in SQL order. Exactly one variant is set. A child that is in no variant
     is a field of the element itself.
+- **Block in Terraform, string in SQL.** An optional `AttrObject` with `SdkString` is one attribute that two sides read differently. The resource, model, and resource assertions read its `Children` as a nested block. CREATE, SET, UNSET, the SHOW and DESCRIBE columns, and their schemas and assertions read `SdkType()`, which is a string. Set `OptionalInShow` or `OptionalInDb` for the string column, and `SkipCreate`. Generated create, set, unset, and the set-state-from-config list skip a nested block, so ext code converts between the block and the string, while `show_output`, `describe_output`, and the recompute lists still watch it. The backup policy `schedule` is the only user.
 - **Object that is not a Terraform attribute.** A `SqlOnly` attribute of type `AttrObject` with `Children` is a nested SQL
   struct (`ENCRYPTION = (...)`, `UPDATE ... CREDENTIALS = (...)`). It is not in the schema, the resource, or the assertions.
   A variant or an ALTER block refers to it by pointer. A fixed text is a `SqlOnly` attribute with `StaticSQL`, and
