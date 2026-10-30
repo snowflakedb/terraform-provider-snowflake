@@ -128,6 +128,8 @@ const (
 	CatalogIntegrationCatalogApiTypeAwsPrivateApiGateway CatalogIntegrationCatalogApiType = "AWS_PRIVATE_API_GATEWAY"
 	CatalogIntegrationCatalogApiTypeAwsGlue              CatalogIntegrationCatalogApiType = "AWS_GLUE"
 	CatalogIntegrationCatalogApiTypeAwsPrivateGlue       CatalogIntegrationCatalogApiType = "AWS_PRIVATE_GLUE"
+	CatalogIntegrationCatalogApiTypeAwsS3tables          CatalogIntegrationCatalogApiType = "AWS_S3TABLES"
+	CatalogIntegrationCatalogApiTypeAwsPrivateS3tables   CatalogIntegrationCatalogApiType = "AWS_PRIVATE_S3TABLES"
 )
 
 var AllCatalogIntegrationCatalogApiTypes = []CatalogIntegrationCatalogApiType{
@@ -137,6 +139,8 @@ var AllCatalogIntegrationCatalogApiTypes = []CatalogIntegrationCatalogApiType{
 	CatalogIntegrationCatalogApiTypeAwsPrivateApiGateway,
 	CatalogIntegrationCatalogApiTypeAwsGlue,
 	CatalogIntegrationCatalogApiTypeAwsPrivateGlue,
+	CatalogIntegrationCatalogApiTypeAwsS3tables,
+	CatalogIntegrationCatalogApiTypeAwsPrivateS3tables,
 }
 
 func ToCatalogIntegrationCatalogApiType(s string) (CatalogIntegrationCatalogApiType, error) {
@@ -154,6 +158,10 @@ func ToCatalogIntegrationCatalogApiType(s string) (CatalogIntegrationCatalogApiT
 		return CatalogIntegrationCatalogApiTypeAwsGlue, nil
 	case string(CatalogIntegrationCatalogApiTypeAwsPrivateGlue):
 		return CatalogIntegrationCatalogApiTypeAwsPrivateGlue, nil
+	case string(CatalogIntegrationCatalogApiTypeAwsS3tables):
+		return CatalogIntegrationCatalogApiTypeAwsS3tables, nil
+	case string(CatalogIntegrationCatalogApiTypeAwsPrivateS3tables):
+		return CatalogIntegrationCatalogApiTypeAwsPrivateS3tables, nil
 	default:
 		return "", fmt.Errorf("invalid catalog integration catalog api type: %s", s)
 	}

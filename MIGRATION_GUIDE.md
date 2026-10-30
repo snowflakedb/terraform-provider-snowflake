@@ -28,6 +28,14 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* `AWS_S3TABLES` and `AWS_PRIVATE_S3TABLES` catalog API types
+
+[`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) now accepts `AWS_S3TABLES` and `AWS_PRIVATE_S3TABLES` as valid values for `rest_config.catalog_api_type`.
+
+No configuration changes are required unless you want to set one of these values.
+
+Reference: [#5344](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5344).
+
 ### *(new feature)* Projection policy resource and data source
 
 We have added a new preview resource, [`snowflake_projection_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/projection_policy), for managing [projection policies](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy). CREATE requires a body, an SQL expression that calls `PROJECTION_CONSTRAINT`.
