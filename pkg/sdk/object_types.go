@@ -106,6 +106,7 @@ const (
 	ObjectTypeOpenflowConnectorDefinition ObjectType = "OPENFLOW CONNECTOR DEFINITION"
 	ObjectTypeSnowflakeIntelligence       ObjectType = "SNOWFLAKE INTELLIGENCE"
 	ObjectTypeBackupPolicy                ObjectType = "BACKUP POLICY"
+	ObjectTypeBackupSet                   ObjectType = "BACKUP SET"
 	// ObjectTypeProgrammaticAccessToken is a pseudo-object, as it does not support the usual operations in Snowflake, but it is handled by user functions.
 	// Programmatic access tokens do not have grants and cannot be tagged.
 	ObjectTypeProgrammaticAccessToken ObjectType = "PROGRAMMATIC ACCESS TOKEN" //nolint:gosec
@@ -227,6 +228,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeProgrammaticAccessToken,
 	ObjectTypeCatalogIntegration,
 	ObjectTypeBackupPolicy,
+	ObjectTypeBackupSet,
 }
 
 // TODO(SNOW-1834370): use ToObjectType in other places with type conversion (instead of sdk.ObjectType)
@@ -348,6 +350,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeOpenflowConnectorDefinition: PluralObjectTypeOpenflowConnectorDefinitions,
 		ObjectTypeCatalogIntegration:          PluralObjectTypeCatalogIntegrations,
 		ObjectTypeBackupPolicy:                PluralObjectTypeBackupPolicies,
+		ObjectTypeBackupSet:                   PluralObjectTypeBackupSets,
 	}
 }
 
@@ -485,6 +488,7 @@ const (
 	PluralObjectTypeOpenflowConnectorDefinitions PluralObjectType = "OPENFLOW CONNECTOR DEFINITIONS"
 	PluralObjectTypeSnowflakeIntelligences       PluralObjectType = "SNOWFLAKE INTELLIGENCES"
 	PluralObjectTypeBackupPolicies               PluralObjectType = "BACKUP POLICIES"
+	PluralObjectTypeBackupSets                   PluralObjectType = "BACKUP SETS"
 )
 
 func (p PluralObjectType) String() string {
