@@ -12,15 +12,15 @@ Generated files (`*_gen.go`) are fully replaced on every run — **never edit th
 
 1. Create `defs/<plural_snake_case>_def.go` (e.g., [sequences_def.go](defs/sequences_def.go)) with `package defs`. Declare one package-level variable (e.g., `var pipesDef = g.NewInterface(...)`). Base it on existing definitions or the [example directory](example).
 2. Register the definition in alphabetical order in [0_init.go](defs/0_init.go).
-3. Run generation scoped to your object — the singular name must match the second argument of `g.NewInterface(...)` exactly:
+3. Run generation scoped to your object — the plural name must match the first argument of `g.NewInterface(...)` exactly (e.g., `Sequences`):
    ```shell
-   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
+   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<PluralName>'
    ```
 4. Verify compilation and idempotency — re-running generation must produce no diff:
    ```shell
    go build ./pkg/sdk/...
    go vet ./pkg/sdk/...
-   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
+   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<PluralName>'
    git diff --stat   # must be empty
    ```
 
