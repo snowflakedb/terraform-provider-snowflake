@@ -94,6 +94,7 @@ func acceptanceTestsProvider() *schema.Provider {
 	p.DataSourcesMap["snowflake_projection_policies"] = datasources.ProjectionPolicies()
 	p.ResourcesMap["snowflake_replication_group"] = resources.ReplicationGroup()
 	p.ResourcesMap["snowflake_replication_group_secondary"] = resources.ReplicationGroupSecondary()
+	p.DataSourcesMap["snowflake_replication_groups"] = datasources.ReplicationGroups()
 	return p
 }
 

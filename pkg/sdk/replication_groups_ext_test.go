@@ -171,12 +171,20 @@ func init() {
 			NewError("OBJECT_TYPES must include ROLES when ALLOWED_INTEGRATION_TYPES includes SECURITY INTEGRATIONS"),
 		)
 
+	showAccount := NewAccountIdentifier("MY_ORG", "MY_ACCOUNT")
 	replicationGroupsTests.Show.
 		withExpectedSqlf(case_ReplicationGroups_sql_Show_basic, "SHOW REPLICATION GROUPS").
 		withModifyAndExpectedSqlf(
 			case_ReplicationGroups_sql_Show_all,
-			func(*ShowReplicationGroupOptions) {},
-			"SHOW REPLICATION GROUPS",
+			func(opts *ShowReplicationGroupOptions) { opts.InAccount = &showAccount },
+			"SHOW REPLICATION GROUPS IN ACCOUNT %s",
+			showAccount.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_ReplicationGroups_sql_Show_InAccount,
+			func(opts *ShowReplicationGroupOptions) { opts.InAccount = &showAccount },
+			"SHOW REPLICATION GROUPS IN ACCOUNT %s",
+			showAccount.FullyQualifiedName(),
 		)
 
 	replicationGroupsTests.Drop.

@@ -45,6 +45,28 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_ShowOperationFromObject_inAccount(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "AccountObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowOptionalInAccount(),
+			ssot.SdkShowByIDNoFiltering(),
+		))},
+	}
+	got := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").ShowOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").ShowOperationWithPairedStructs(
+		"https://docs.snowflake.com/en/sql-reference/sql/show-fakes",
+		ShowPairedStructs(obj),
+		NewQueryStruct("ShowFakes").Show().SQL("FAKES").OptionalInAccount(),
+		ShowByIDNoFiltering,
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_ShowOperationFromObject_noFilteringAndPredicate(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	obj := ssot.Object{

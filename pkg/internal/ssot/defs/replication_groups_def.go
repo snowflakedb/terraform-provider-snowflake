@@ -25,8 +25,8 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // exist and publish no columns. Those commands are not operations here.
 //
 // SHOW is `SHOW REPLICATION GROUPS [ IN ACCOUNT <account> ]`.
-// SdkShowOptionalIn also emits database and schema IN, so the show step needs
-// the account form only. ObjectTypeReplicationGroup, its plural, and the
+// SdkShowOptionalInAccount emits that clause. SdkShowOptionalIn would also emit
+// database and schema IN. ObjectTypeReplicationGroup, its plural, and the
 // singular-to-plural map already exist in pkg/sdk/object_types.go.
 //
 // OBJECT_TYPES and ALLOWED_INTEGRATION_TYPES are unquoted keywords. The list
@@ -392,6 +392,7 @@ var ReplicationGroup = ssot.Object{
 			),
 			ssot.SdkCreateForVariants(),
 			ssot.SdkShow(
+				ssot.SdkShowOptionalInAccount(),
 				ssot.SdkShowByIDNoFiltering(),
 				ssot.SdkShowByIDPredicate(ssot.SdkShowByIDPredicateNameAndLocator),
 			),

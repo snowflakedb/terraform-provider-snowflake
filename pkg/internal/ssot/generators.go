@@ -30,6 +30,7 @@ type SdkGenerator struct {
 	ShowOptionalSql           []string
 	ShowOptionalLike          bool
 	ShowOptionalIn            bool
+	ShowOptionalInAccount     bool
 	ShowOptionalExtendedIn    bool
 	ShowOptionalOn            bool
 	ShowOptionalStartsWith    bool
