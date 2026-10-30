@@ -227,7 +227,8 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 			panicPairedColumn(obj, attr, "an identifier maps only when it is required in SHOW and in the DB row, or optional in both")
 		}
 		return pairs.Field(key, "sql.NullString", "*"+kind, WithPlainFieldName(sqlToFieldName(key, true)))
-	case ssot.AttrList:
+	case ssot.AttrList, ssot.AttrSet:
+		// A set is the same SHOW value as a list. The database column is a string and the plain field is a slice.
 		if attr.ManualConvert && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && !attr.OptionalInShow && !attr.OptionalInDb {
 			return pairs.Field(key, "string", "[]"+attr.Elem.IdentifierType, WithManualConvert())
 		}
@@ -235,18 +236,16 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 			return pairs.Field(key, "sql.NullString", "[]"+kind, WithCustomParser(attr.CustomParser))
 		}
 		if attr.OptionalInShow || attr.OptionalInDb || attr.Elem == nil || attr.Elem.Type != ssot.AttrEnum {
-			panicPairedColumn(obj, attr, "only a list of enum maps to StringList")
+			panicPairedColumn(obj, attr, "only a list or set of enum maps to StringList")
 		}
 		return pairs.StringList(key)
-	case ssot.AttrSet:
-		panicPairedColumn(obj, attr, "a set has no paired struct mapping")
 	default:
 		panicPairedColumn(obj, attr, fmt.Sprintf("type %q has no paired struct mapping", attr.Type))
 	}
 	return pairs
 }
 
-// customListElementKind is the element type of a CSV list parsed by CustomParser.
+// customListElementKind is the element type of a CSV list or set parsed by CustomParser.
 // The column is optional in the database row and required in the plain struct.
 // The parser is func(string) ([]T, error). An identifier element uses IdentifierType.
 // An enum element uses the enum's SDK type name.

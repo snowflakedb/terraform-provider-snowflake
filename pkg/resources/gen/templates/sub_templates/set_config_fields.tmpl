@@ -1,6 +1,9 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- /* TODO [next PRs]: change SetConfigFieldsExt to SetConfigFieldsExt(ctx, d, meta, obj) for every object and remove the ReplicationGroup name check. */ -}}
 {{- if .Hooks.SetConfigFields.Generate -}}
 			{{ .Prefix }}SetConfigFields(d, {{ .Prefix }}),
+{{- else if and .Hooks.SetConfigFields.Present (eq .Name "ReplicationGroup") -}}
+			{{ .Prefix }}SetConfigFieldsExt(ctx, d, meta, {{ .Prefix }}),
 {{- else if .Hooks.SetConfigFields.Present -}}
 			{{ .Prefix }}SetConfigFieldsExt(d, {{ .Prefix }}),
 {{ end -}}

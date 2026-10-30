@@ -40,7 +40,7 @@ func (r *ReplicationGroupResourceAssert) HasName(expected string) *ReplicationGr
 }
 
 func (r *ReplicationGroupResourceAssert) HasAllowedAccounts(expected ...string) *ReplicationGroupResourceAssert {
-	r.ListContainsExactlyStringValuesInOrder("allowed_accounts", expected...)
+	r.SetContainsExactlyStringValues("allowed_accounts", expected...)
 	return r
 }
 

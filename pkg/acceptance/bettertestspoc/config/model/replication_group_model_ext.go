@@ -11,7 +11,29 @@ func (r *ReplicationGroupModel) WithObjectTypes(objectTypes []string) *Replicati
 }
 
 func (r *ReplicationGroupModel) WithAllowedAccounts(allowedAccounts []string) *ReplicationGroupModel {
-	return r.WithAllowedAccountsValue(replicationGroupStringList(allowedAccounts))
+	return r.WithAllowedAccountsValue(replicationGroupStringSet(allowedAccounts))
+}
+
+func (r *ReplicationGroupModel) WithAllowedDatabases(allowedDatabases []string) *ReplicationGroupModel {
+	return r.WithAllowedDatabasesValue(replicationGroupStringList(allowedDatabases))
+}
+
+func (r *ReplicationGroupModel) WithAllowedExternalVolumes(allowedExternalVolumes []string) *ReplicationGroupModel {
+	return r.WithAllowedExternalVolumesValue(replicationGroupStringList(allowedExternalVolumes))
+}
+
+func (r *ReplicationGroupModel) WithAllowedShares(allowedShares []string) *ReplicationGroupModel {
+	return r.WithAllowedSharesValue(replicationGroupStringList(allowedShares))
+}
+
+func (r *ReplicationGroupModel) WithAllowedIntegrationTypes(allowedIntegrationTypes []string) *ReplicationGroupModel {
+	return r.WithAllowedIntegrationTypesValue(replicationGroupStringList(allowedIntegrationTypes))
+}
+
+func replicationGroupStringSet(values []string) tfconfig.Variable {
+	return tfconfig.SetVariable(
+		collections.Map(values, func(value string) tfconfig.Variable { return tfconfig.StringVariable(value) })...,
+	)
 }
 
 func replicationGroupStringList(values []string) tfconfig.Variable {

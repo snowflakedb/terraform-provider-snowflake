@@ -58,13 +58,14 @@ var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
 		Description:      "Integration types enabled for replication. Requires Business Critical Edition or higher. OBJECT_TYPES must include INTEGRATIONS. SECURITY INTEGRATIONS also requires ROLES. " + enumValuesDescription(sdk.AllReplicationGroupIntegrationTypes),
 	},
 	"allowed_accounts": {
-		Type:     tfschema.TypeList,
+		Type:     tfschema.TypeSet,
 		Required: true,
 		Elem: &tfschema.Schema{
 			Type:             tfschema.TypeString,
 			ValidateDiagFunc: IsValidAccountIdentifier(),
 		},
-		Description: "Target accounts, as organization and account name, to which replication is enabled.",
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("allowed_accounts"),
+		Description:      "Target accounts, as organization and account name, to which replication is enabled. Snowflake also includes the source account.",
 	},
 	"ignore_edition_check": {
 		Type:             tfschema.TypeString,

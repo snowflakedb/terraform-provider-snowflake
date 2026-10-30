@@ -221,7 +221,7 @@ Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGener
 
 They are independent: a column can be optional in SHOW, in the DB row, both, or neither.
 
-A list with `CustomParser`, `OptionalInDb`, and no `OptionalInShow` is a CSV column. The database field is `sql.NullString` and the plain field is a slice. An identifier element uses `IdentifierType`. An enum element uses the enum's SDK type name. Object assertions use that same plain type. The parser is `func(string) ([]T, error)`.
+A list or set with `CustomParser`, `OptionalInDb`, and no `OptionalInShow` is a CSV column. The database field is `sql.NullString` and the plain field is a slice. An identifier element uses `IdentifierType`. An enum element uses the enum's SDK type name. Object assertions use that same plain type. The parser is `func(string) ([]T, error)`. A set uses the same paired-struct mapping as a list.
 
 ### Generators
 

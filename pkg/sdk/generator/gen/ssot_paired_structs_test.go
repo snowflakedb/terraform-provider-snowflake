@@ -136,7 +136,6 @@ func Test_ShowPairedStructs_plainOnlyHookAndManualConvert(t *testing.T) {
 
 func Test_PairedStructsFromColumns_panics(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
-	state := NewEnum("FakeState", "FakeStates", "STARTED")
 
 	tests := []struct {
 		name string
@@ -201,14 +200,10 @@ func Test_PairedStructsFromColumns_panics(t *testing.T) {
 			},
 		},
 		{
-			name: "set of enum",
+			name: "set whose element is not an enum",
 			call: func() {
-				families := ssot.Attribute{
-					Name: "families",
-					Type: ssot.AttrSet,
-					Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: state},
-				}
-				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &families))
+				names := ssot.Attribute{Name: "names", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &names))
 			},
 		},
 	}
@@ -277,6 +272,38 @@ func Test_PairedStructsFromColumns_mapsWarehouseColumnShapes(t *testing.T) {
 			Field("name", "string", "ObjectIdentifier", WithManualConvert()).
 			Field("to", "string", "[]AccountIdentifier", WithManualConvert()),
 		ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &requiredID, &manualID, &manualIDs)),
+	)
+}
+
+func Test_ShowPairedStructs_setMapsLikeList(t *testing.T) {
+	state := NewEnum("FakeState", "FakeStates", "STARTED")
+	families := ssot.Attribute{
+		Name: "families",
+		Type: ssot.AttrSet,
+		Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: state},
+	}
+	accounts := ssot.Attribute{
+		Name:         "allowed_accounts",
+		Type:         ssot.AttrSet,
+		OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedAccountIdentifierArray",
+		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+	}
+	manualIDs := ssot.Attribute{
+		Name:          "to",
+		Type:          ssot.AttrSet,
+		ManualConvert: true,
+		Elem:          &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+	}
+
+	require.Equal(t, StructPair("fakesRow", "Fake").StringList("families"), ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &families)))
+	require.Equal(t,
+		StructPair("fakesRow", "Fake").Field("allowed_accounts", "sql.NullString", "[]AccountIdentifier", WithCustomParser("ParseCommaSeparatedAccountIdentifierArray")),
+		ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &accounts)),
+	)
+	require.Equal(t,
+		StructPair("fakesRow", "Fake").Field("to", "string", "[]AccountIdentifier", WithManualConvert()),
+		ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &manualIDs)),
 	)
 }
 
