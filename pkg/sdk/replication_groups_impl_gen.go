@@ -177,7 +177,9 @@ func (r *DropReplicationGroupRequest) toOpts() *DropReplicationGroupOptions {
 }
 
 func (r *ShowReplicationGroupRequest) toOpts() *ShowReplicationGroupOptions {
-	opts := &ShowReplicationGroupOptions{}
+	opts := &ShowReplicationGroupOptions{
+		InAccount: r.InAccount,
+	}
 	return opts
 }
 

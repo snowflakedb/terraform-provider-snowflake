@@ -68,6 +68,7 @@ const (
 	case_ReplicationGroups_sql_Drop_all                                                       testCaseName = "sql_Drop_all"
 	case_ReplicationGroups_sql_Show_basic                                                     testCaseName = "sql_Show_basic"
 	case_ReplicationGroups_sql_Show_all                                                       testCaseName = "sql_Show_all"
+	case_ReplicationGroups_sql_Show_InAccount                                                 testCaseName = "sql_Show_InAccount"
 )
 
 type ReplicationGroupsTestsContext struct {
@@ -475,6 +476,9 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 			},
 			sqlCase[*ShowReplicationGroupOptions]{
 				Name: case_ReplicationGroups_sql_Show_all,
+			},
+			sqlCase[*ShowReplicationGroupOptions]{
+				Name: case_ReplicationGroups_sql_Show_InAccount,
 			},
 		),
 }

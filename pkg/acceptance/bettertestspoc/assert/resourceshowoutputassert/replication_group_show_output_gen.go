@@ -32,6 +32,21 @@ func ImportedReplicationGroupShowOutput(t *testing.T, id string) *ReplicationGro
 	return &replicationGroupAssert
 }
 
+func ReplicationGroupsDatasourceShowOutput(t *testing.T, name string) *ReplicationGroupShowOutputAssert {
+	t.Helper()
+
+	return ReplicationGroupsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func ReplicationGroupsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ReplicationGroupShowOutputAssert {
+	t.Helper()
+
+	replicationGroupAssert := ReplicationGroupShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "replication_groups", idx),
+	}
+	return &replicationGroupAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

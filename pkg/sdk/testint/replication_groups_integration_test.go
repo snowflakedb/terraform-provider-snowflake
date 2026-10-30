@@ -207,6 +207,16 @@ func TestInt_ReplicationGroups(t *testing.T) {
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
+	t.Run("show in account", func(t *testing.T) {
+		id, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
+
+		inSource, err := client.ReplicationGroups.Show(ctx, sdk.NewShowReplicationGroupRequest().WithInAccount(sourceAccountID))
+		require.NoError(t, err)
+		require.True(t, slices.ContainsFunc(inSource, func(group sdk.ReplicationGroup) bool {
+			return group.Name == id.Name() && group.IsPrimary
+		}))
+	})
+
 	t.Run("alter: rename", func(t *testing.T) {
 		id, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()

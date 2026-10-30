@@ -325,3 +325,8 @@ func NewShowReplicationGroupRequest() *ShowReplicationGroupRequest {
 	s := ShowReplicationGroupRequest{}
 	return &s
 }
+
+func (s *ShowReplicationGroupRequest) WithInAccount(inAccount AccountIdentifier) *ShowReplicationGroupRequest {
+	s.InAccount = &inAccount
+	return s
+}

@@ -218,8 +218,14 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	if cfg.ShowOptionalIn && cfg.ShowOptionalExtendedIn {
 		panic("SHOW cannot set both plain IN and extended IN")
 	}
+	if cfg.ShowOptionalInAccount && (cfg.ShowOptionalIn || cfg.ShowOptionalExtendedIn) {
+		panic("SHOW cannot set IN ACCOUNT together with plain IN or extended IN")
+	}
 	if cfg.ShowOptionalIn {
 		q = q.OptionalIn()
+	}
+	if cfg.ShowOptionalInAccount {
+		q = q.OptionalInAccount()
 	}
 	if cfg.ShowOptionalExtendedIn {
 		q = q.OptionalExtendedIn()

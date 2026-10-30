@@ -135,8 +135,9 @@ type DropReplicationGroupOptions struct {
 
 // ShowReplicationGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-replication-groups.
 type ShowReplicationGroupOptions struct {
-	show              bool `ddl:"static" sql:"SHOW"`
-	replicationGroups bool `ddl:"static" sql:"REPLICATION GROUPS"`
+	show              bool               `ddl:"static" sql:"SHOW"`
+	replicationGroups bool               `ddl:"static" sql:"REPLICATION GROUPS"`
+	InAccount         *AccountIdentifier `ddl:"identifier" sql:"IN ACCOUNT"`
 }
 
 type replicationGroupsRow struct {

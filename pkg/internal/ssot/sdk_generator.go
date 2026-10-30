@@ -77,6 +77,11 @@ func SdkShowOptionalIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalIn = true }
 }
 
+// SdkShowOptionalInAccount emits only IN ACCOUNT <account>.
+func SdkShowOptionalInAccount() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalInAccount = true }
+}
+
 // SdkShowOptionalExtendedIn emits IN for account, database, schema, application, and application package.
 func SdkShowOptionalExtendedIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalExtendedIn = true }

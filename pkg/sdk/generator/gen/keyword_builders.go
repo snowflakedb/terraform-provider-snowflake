@@ -112,6 +112,10 @@ func (v *QueryStruct) OptionalIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*In", KeywordOptions().SQL("IN"))
 }
 
+func (v *QueryStruct) OptionalInAccount() *QueryStruct {
+	return v.OptionalIdentifier("InAccount", "AccountIdentifier", IdentifierOptions().SQL("IN ACCOUNT"))
+}
+
 func (v *QueryStruct) OptionalExtendedIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*ExtendedIn", KeywordOptions().SQL("IN"))
 }

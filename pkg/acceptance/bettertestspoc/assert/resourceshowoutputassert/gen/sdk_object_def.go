@@ -50,6 +50,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.PasswordPolicy{}):              {"PasswordPolicies"},
 	normalized(sdk.ProgrammaticAccessToken{}):     {"UserProgrammaticAccessTokens"},
 	normalized(sdk.ProjectionPolicy{}):            {"ProjectionPolicies"},
+	normalized(sdk.ReplicationGroup{}):            {"ReplicationGroups"},
 	normalized(sdk.ResourceMonitor{}):             {"ResourceMonitors"},
 	normalized(sdk.Role{}):                        {"AccountRoles"},
 	normalized(sdk.RowAccessPolicy{}):             {"RowAccessPolicies"},
