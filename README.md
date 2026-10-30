@@ -15,7 +15,7 @@ Important documents: [Registry docs](https://registry.terraform.io/providers/sno
 | [Migration guide](MIGRATION_GUIDE.md)
 | [BCR migration guide](SNOWFLAKE_BCR_MIGRATION_GUIDE.md)
 | [Roadmap](ROADMAP.md)
-| [Changelog](CHANGELOG.md)
+| [Release notes](https://github.com/snowflakedb/terraform-provider-snowflake/releases)
 | [Contributing](CONTRIBUTING.md)
 
 The provider is generally available. Some resources and data sources are still **preview**: they are disabled by default, may change without a major version bump, and are not officially supported. Enable them with `preview_features_enabled` in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). See the [preview resources](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#currently-preview-resources) and [preview data sources](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#currently-preview-data-sources) lists. [`experimental_features_enabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_enabled-1) changes behavior of existing resources; it is also a preview feature.
@@ -120,6 +120,7 @@ Start with the matching guide. If you are still blocked, use the support path be
 | If you need to… | Read |
 |---|---|
 | Install and configure the provider | [Registry docs](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs) and [authentication methods](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) |
+| See what changed in a release | [GitHub release notes](https://github.com/snowflakedb/terraform-provider-snowflake/releases) and [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) |
 | Upgrade the provider version (for example 2.19 → 2.20) | [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) |
 | Absorb a Snowflake behavior-change (BCR) bundle | [SNOWFLAKE_BCR_MIGRATION_GUIDE.md](SNOWFLAKE_BCR_MIGRATION_GUIDE.md) |
 | Change Registry source | [CZI_UPGRADE.md](CZI_UPGRADE.md) then [SNOWFLAKEDB_MIGRATION.md](SNOWFLAKEDB_MIGRATION.md) |
@@ -143,8 +144,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for requirements, the PR workflow and oth
 
 Releases land as needed, typically every two weeks, on the [Terraform Registry](https://registry.terraform.io/providers/snowflakedb/snowflake/latest).
 
-- [GitHub Releases](https://github.com/snowflakedb/terraform-provider-snowflake/releases) and [CHANGELOG.md](CHANGELOG.md)
-- Breaking changes: [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
+- What changed in each version: [GitHub release notes](https://github.com/snowflakedb/terraform-provider-snowflake/releases)
+- Breaking changes, new features, and upgrade steps: [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)
 - Snowflake BCR impact: [SNOWFLAKE_BCR_MIGRATION_GUIDE.md](SNOWFLAKE_BCR_MIGRATION_GUIDE.md)
 
 ## License
