@@ -112,7 +112,9 @@ func ReadReplicationGroupSecondaryFunc(withExternalChangesMarking bool) tfschema
 	}
 }
 
-var replicationGroupSecondaryCustomizeDiff = TrackingCustomDiffWrapper(resources.ReplicationGroupSecondary, customdiff.All())
+var replicationGroupSecondaryCustomizeDiff = TrackingCustomDiffWrapper(resources.ReplicationGroupSecondary, customdiff.All(
+	ComputedIfAnyAttributeChanged(replicationGroupSecondarySchema, ShowOutputAttributeName, "name", "primary"),
+))
 
 func replicationGroupSecondaryParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil

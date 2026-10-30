@@ -404,6 +404,12 @@ var ReplicationGroup = ssot.Object{
 		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
 		ssot.WithSchema(ssot.SchemaShow()),
 		ssot.WithResource(),
+		ssot.WithModel(
+			ssot.ModelRequestType(&ReplicationGroupAttrs.ObjectTypes, "[]string"),
+			ssot.ModelRequestType(&ReplicationGroupAttrs.AllowedAccounts, "[]string"),
+		),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -532,6 +538,9 @@ var ReplicationGroupSecondary = ssot.Object{
 	VariantOf:                  &ReplicationGroup,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
 	},
 	// SHOW is the base row. The schema is ShowReplicationGroupSchema. Create and alter use the variant methods.
 	ResourceHooks: []ssot.ResourceHookOption{
@@ -556,6 +565,8 @@ var ReplicationGroupSecondary = ssot.Object{
 	Attributes: []ssot.Attribute{
 		replicationGroupAsReplicaOf,
 	},
+	// The same SHOW row as the base. The assertion is named after this resource.
+	Show: ssot.OutputSpec{Columns: ReplicationGroup.Show.Columns},
 	Create: ssot.CreateSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-replication-group",
 		// The secondary CREATE page has IF NOT EXISTS and no OR REPLACE.

@@ -13,7 +13,7 @@ var replicationGroupSecondaryAttributesSchema = map[string]*tfschema.Schema{
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ForceNew:         true,
-		DiffSuppressFunc: suppressIdentifierQuoting,
+		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("primary")),
 		Description:      "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
 	},
 }
