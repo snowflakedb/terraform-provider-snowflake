@@ -129,6 +129,10 @@ var resourceAttributeRules = []resourceAttributeRule{
 			return in.Type == ssot.AttrIdentifier && identifierSchemaType(in, ctx) != ""
 		},
 		Then: func(in ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
+			if idType := identifierSchemaType(in, ctx); idType == "AccountIdentifier" {
+				out.ValidateDiagExpr = "IsValidAccountIdentifier()"
+				return
+			}
 			out.ValidateDiagExpr = fmt.Sprintf("IsValidIdentifier[sdk.%s]()", identifierSchemaType(in, ctx))
 		},
 	},
@@ -262,6 +266,10 @@ func isSetOfIdentifiers(in ssot.Attribute) bool {
 // Collection elements use their own IdentifierType. Nested block fields are left alone.
 // A top-level field uses the object id type, then IdentifierType.
 func identifierSchemaType(in ssot.Attribute, ctx resourceAttributeRuleContext) string {
+	// External identifiers are not parsed by IsValidIdentifier. Account identifiers use IsValidAccountIdentifier.
+	if in.IdentifierType == "ExternalObjectIdentifier" {
+		return ""
+	}
 	if ctx.AsCollectionElem {
 		return in.IdentifierType
 	}

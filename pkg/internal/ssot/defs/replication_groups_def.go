@@ -135,15 +135,19 @@ var ReplicationGroupAttrs = struct {
 	ReadOnly                      ssot.Attribute
 }{
 	ObjectTypes: ssot.Attribute{
-		Name:        "object_types",
-		Type:        ssot.AttrList,
-		Required:    true,
-		Description: "Types of objects replicated from the source account to the target accounts.",
-		Elem:        &ssot.Attribute{Type: ssot.AttrEnum, Enum: ReplicationGroupObjectType},
+		Name:          "object_types",
+		Type:          ssot.AttrList,
+		Required:      true,
+		CreateMapping: ssot.ListValueCreate("toReplicationGroupObjectTypes"),
+		UpdateMapping: ssot.ListValueUpdateSetOnly("toReplicationGroupObjectTypes"),
+		Description:   "Types of objects replicated from the source account to the target accounts.",
+		Elem:          &ssot.Attribute{Type: ssot.AttrEnum, Enum: ReplicationGroupObjectType},
 		// CSV. NULL or empty when a secondary group lists none. The plain field stays a slice.
 		// SHOW uses PARAMETERS for account parameters. That token is mapped to ACCOUNT PARAMETERS.
 		// Any other token is left unchanged.
+		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
 		OptionalInDb: true,
+		SkipInSchema: true,
 		CustomParser: "ParseCommaSeparatedReplicationGroupObjectTypeArray",
 		CreateSql:    replicationGroupEnumList(ReplicationGroupObjectType, true),
 		SetSql:       replicationGroupEnumList(ReplicationGroupObjectType, false),
@@ -180,17 +184,21 @@ var ReplicationGroupAttrs = struct {
 		// The column is always present. It is empty when no integration types are set.
 		// SHOW prints short tokens such as API and EXTERNAL_ACCESS. Those tokens are mapped to the
 		// create-page values. Any other token is left unchanged.
-		OptionalInDb: true,
-		CustomParser: "ParseCommaSeparatedReplicationGroupIntegrationTypeArray",
-		CreateSql:    replicationGroupEnumList(ReplicationGroupIntegrationType, false),
-		SetSql:       replicationGroupEnumList(ReplicationGroupIntegrationType, false),
+		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
+		OptionalInDb:  true,
+		SkipInSchema:  true,
+		UpdateMapping: ssot.ListValueUpdateSetOnly("toReplicationGroupAllowedIntegrationTypes"),
+		CustomParser:  "ParseCommaSeparatedReplicationGroupIntegrationTypeArray",
+		CreateSql:     replicationGroupEnumList(ReplicationGroupIntegrationType, false),
+		SetSql:        replicationGroupEnumList(ReplicationGroupIntegrationType, false),
 	},
 	AllowedAccounts: ssot.Attribute{
-		Name:        "allowed_accounts",
-		Type:        ssot.AttrList,
-		Required:    true,
-		Description: "Target accounts, as organization and account name, to which replication is enabled.",
-		Elem:        &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+		Name:          "allowed_accounts",
+		Type:          ssot.AttrList,
+		Required:      true,
+		CreateMapping: ssot.ListValueCreate("toReplicationGroupAllowedAccounts"),
+		Description:   "Target accounts, as organization and account name, to which replication is enabled.",
+		Elem:          &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
 		// The SHOW example prints org.account.group. The column text says accounts, and CREATE takes org.account.
 		// The parser accepts org.account. A three-part value fails conversion.
 		OptionalInDb: true,
@@ -226,14 +234,14 @@ var ReplicationGroupAttrs = struct {
 		OptionalInDb:   true,
 		Description:    "Comment for the replication group. The alter page defaults it to NULL. CREATE has no COMMENT clause.",
 	},
-	// SHOW primary is org.account.name. ParseExternalObjectIdentifier returns an error, so this is a custom parser.
+	// SHOW primary is org.account.name. It is not a source-account argument.
 	Primary: ssot.Attribute{
 		Name:           "primary",
 		Type:           ssot.AttrIdentifier,
 		IdentifierType: "ExternalObjectIdentifier",
-		ForceNew:       true,
+		Readonly:       true,
 		CustomParser:   "ParseExternalObjectIdentifier",
-		Description:    "Primary replication group of a secondary group, as org.account.name. Set only on the secondary CREATE (AS REPLICA OF).",
+		Description:    "Primary replication group, as org.account.name. On a primary group this is the group itself. On a secondary group this is the source group.",
 	},
 	// The column is present only for organizations that span multiple region groups.
 	// The SHOW example omits it, and omits read_only. The column list includes both.
@@ -272,12 +280,17 @@ var ReplicationGroupAttrs = struct {
 	},
 }
 
-// The attribute on ReplicationGroup has no create clause, so primary CREATE does not gain AS REPLICA OF.
-// A create clause that is present on an Attributes entry has to be in that statement's sequence.
-var replicationGroupAsReplicaOf = ssot.WithCreateSql(
-	&ReplicationGroupAttrs.Primary,
-	ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("Primary")),
-)
+// AS REPLICA OF is the secondary CREATE argument. It is not the SHOW column primary.
+// The SHOW column is read-only. A create clause on an Attributes entry has to be in that statement's sequence,
+// so the source attribute has no create clause and the primary CREATE does not gain AS REPLICA OF.
+var replicationGroupAsReplicaOf = ssot.Attribute{
+	Name:           "primary",
+	Type:           ssot.AttrIdentifier,
+	IdentifierType: "ExternalObjectIdentifier",
+	ForceNew:       true,
+	Description:    "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
+	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("Primary")),
+}
 
 func replicationGroupReverseIdentifierList(name, sql, idType string) ssot.Attribute {
 	return ssot.Attribute{
@@ -389,6 +402,26 @@ var ReplicationGroup = ssot.Object{
 			ssot.SdkAlterForVariants(),
 		),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
+		ssot.WithSchema(ssot.SchemaShow()),
+		ssot.WithResource(),
+	},
+	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.ExtCall()),
+		ssot.WithApplyCreateOptionals(ssot.ExtCall()),
+		ssot.WithCreateInSdk(ssot.Generated()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithDescribeInSdk(ssot.Omitted()),
+		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
 		ReplicationGroupAttrs.ObjectTypes,
@@ -401,7 +434,6 @@ var ReplicationGroup = ssot.Object{
 		ReplicationGroupAttrs.ReplicationSchedule,
 		ReplicationGroupAttrs.ErrorIntegration,
 		ReplicationGroupAttrs.Comment,
-		ReplicationGroupAttrs.Primary,
 	},
 	Create: ssot.CreateSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-replication-group",
@@ -495,8 +527,32 @@ var ReplicationGroupSecondary = ssot.Object{
 	Name:                       "ReplicationGroupSecondary",
 	NamePlural:                 "ReplicationGroups",
 	IdType:                     "AccountObjectIdentifier",
+	IdentityNameForceNew:       true,
 	SdkCreateRequestObjectName: "SecondaryReplicationGroup",
 	VariantOf:                  &ReplicationGroup,
+	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
+	},
+	// SHOW is the base row. The schema is ShowReplicationGroupSchema. Create and alter use the variant methods.
+	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.ExtCall()),
+		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithDescribeInSdk(ssot.Omitted()),
+		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithShowOutputSchema(ssot.ExtCall()),
+		ssot.WithShowOutputSet(ssot.ExtCall()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Omitted()),
+		ssot.WithAlterSetInSdk(ssot.Omitted()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
+		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
+	},
 	Attributes: []ssot.Attribute{
 		replicationGroupAsReplicaOf,
 	},

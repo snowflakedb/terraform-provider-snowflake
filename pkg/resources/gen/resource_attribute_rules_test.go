@@ -612,6 +612,25 @@ func Test_applyResourceAttributeRules_setOfIdentifiers(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
+func Test_applyResourceAttributeRules_accountAndExternalIdentifiers(t *testing.T) {
+	accounts := resolveResourceAttribute(ssot.Attribute{
+		Name: "allowed_accounts",
+		Type: ssot.AttrList,
+		Elem: &ssot.Attribute{
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "AccountIdentifier",
+		},
+	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
+	require.Equal(t, "IsValidAccountIdentifier()", accounts.Elem.ValidateDiagExpr)
+
+	primary := resolveResourceAttribute(ssot.Attribute{
+		Name:           "primary",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "ExternalObjectIdentifier",
+	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
+	require.Empty(t, primary.ValidateDiagExpr)
+}
+
 func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:     "mfa_policy",
