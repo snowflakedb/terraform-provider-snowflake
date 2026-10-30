@@ -114,6 +114,7 @@ var Share = ssot.Object{
 	NamePlural: "Shares",
 	IdType:     "AccountObjectIdentifier",
 	Generators: []ssot.GeneratorOption{
+		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowManualFields(&ShareAttrs.Name))),
 		ssot.WithObjectAssert(
 			ssot.ObjectAssertShow(),
 			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),

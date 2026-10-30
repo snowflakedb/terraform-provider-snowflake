@@ -103,7 +103,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Service{}, TypeOverrides: map[string]schema.ValueType{"external_access_integrations": schema.TypeSet}},
 	{ObjectStruct: sdk.Sequence{}},
 	{ObjectStruct: sdk.SessionPolicy{}, ManualFields: []string{"target_scopes"}},
-	{ObjectStruct: sdk.Share{}, ManualFields: []string{"name"}},
 	{ObjectStruct: sdk.Stage{}},
 	{ObjectStruct: sdk.StorageIntegration{}},
 	{ObjectStruct: sdk.StorageLifecyclePolicy{}},
