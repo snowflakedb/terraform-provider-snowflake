@@ -12,9 +12,10 @@ var CatalogIntegrationTableFormat = ssot.NewEnum(
 	"ICEBERG", "DELTA",
 )
 
+// AWS_S3TABLES and AWS_PRIVATE_S3TABLES were added after Snowflake made them generally available.
 var CatalogIntegrationCatalogApiType = ssot.NewEnum(
 	"CatalogIntegrationCatalogApiType", "CatalogIntegrationCatalogApiTypes",
-	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE",
+	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE", "AWS_S3TABLES", "AWS_PRIVATE_S3TABLES",
 )
 
 var CatalogIntegrationAccessDelegationMode = ssot.NewEnum(
