@@ -29,7 +29,7 @@ type CreateAlertOptions struct {
 	Warehouse   AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
 	Schedule    string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
 	Comment     *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	condition   []AlertCondition        `ddl:"keyword,parentheses,no_comma" sql:"IF"`
+	condition   AlertCondition          `ddl:"list,parentheses,no_comma" sql:"IF"`
 	action      string                  `ddl:"parameter,no_equals" sql:"THEN"`
 }
 
@@ -43,9 +43,10 @@ type AlterAlertOptions struct {
 	alert           bool                   `ddl:"static" sql:"ALERT"`
 	IfExists        *bool                  `ddl:"keyword" sql:"IF EXISTS"`
 	name            SchemaObjectIdentifier `ddl:"identifier"`
-	Action          *AlertAction           `ddl:"keyword"`
+	Resume          *bool                  `ddl:"keyword" sql:"RESUME"`
+	Suspend         *bool                  `ddl:"keyword" sql:"SUSPEND"`
 	Set             *AlertSet              `ddl:"keyword" sql:"SET"`
-	Unset           *AlertUnset            `ddl:"keyword" sql:"UNSET"`
+	Unset           *AlertUnset            `ddl:"list,no_parentheses" sql:"UNSET"`
 	ModifyCondition []string               `ddl:"keyword,parentheses,no_comma" sql:"MODIFY CONDITION EXISTS"`
 	ModifyAction    *string                `ddl:"parameter,no_equals" sql:"MODIFY ACTION"`
 }
@@ -81,7 +82,7 @@ type ShowAlertOptions struct {
 	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
 }
 
-type alertDBRow struct {
+type alertsRow struct {
 	CreatedOn     time.Time      `db:"created_on"`
 	Name          string         `db:"name"`
 	DatabaseName  string         `db:"database_name"`
@@ -126,7 +127,7 @@ type DescribeAlertOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type alertDetailRow struct {
+type alertDescRow struct {
 	CreatedOn    time.Time      `db:"created_on"`
 	Name         string         `db:"name"`
 	DatabaseName string         `db:"database_name"`

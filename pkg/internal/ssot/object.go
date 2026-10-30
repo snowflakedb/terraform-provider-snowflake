@@ -125,16 +125,18 @@ func (obj Object) ParameterLevelsFor(string) []ParameterLevel {
 type AlterClauseKind string
 
 const (
-	AlterClauseKeyword   AlterClauseKind = "keyword"
-	AlterClauseRenameTo  AlterClauseKind = "rename_to"
-	AlterClauseSwapWith  AlterClauseKind = "swap_with"
-	AlterClauseSet       AlterClauseKind = "set"
-	AlterClauseUnset     AlterClauseKind = "unset"
-	AlterClauseSetTags   AlterClauseKind = "set_tags"
-	AlterClauseUnsetTags AlterClauseKind = "unset_tags"
-	AlterClauseList      AlterClauseKind = "list"
-	AlterClauseText      AlterClauseKind = "text"
-	AlterClauseBlock     AlterClauseKind = "block"
+	AlterClauseKeyword     AlterClauseKind = "keyword"
+	AlterClauseRenameTo    AlterClauseKind = "rename_to"
+	AlterClauseSwapWith    AlterClauseKind = "swap_with"
+	AlterClauseSet         AlterClauseKind = "set"
+	AlterClauseUnset       AlterClauseKind = "unset"
+	AlterClauseSetTags     AlterClauseKind = "set_tags"
+	AlterClauseUnsetTags   AlterClauseKind = "unset_tags"
+	AlterClauseList        AlterClauseKind = "list"
+	AlterClauseKeywordList AlterClauseKind = "keyword_list"
+	AlterClauseText        AlterClauseKind = "text"
+	AlterClausePlainText   AlterClauseKind = "plain_text"
+	AlterClauseBlock       AlterClauseKind = "block"
 )
 
 // AlterClause is one ALTER entry. Keyword and list use SQL. The other kinds are the SET, UNSET, SET TAG, and UNSET TAG blocks.
@@ -177,6 +179,19 @@ func AlterList(sql, itemType string) AlterClause {
 // It is one branch of ExactlyOneValueSet.
 func AlterText(sql string) AlterClause {
 	return AlterClause{Kind: AlterClauseText, SQL: sql}
+}
+
+// AlterKeywordList is an optional keyword list in parentheses with no comma, such as MODIFY CONDITION EXISTS.
+// field is the Go field name. itemType is the element Go type, without a pointer.
+// The elements are not checked as identifiers. It is one branch of ExactlyOneValueSet.
+func AlterKeywordList(field, sql, itemType string) AlterClause {
+	return AlterClause{Kind: AlterClauseKeywordList, Field: field, SQL: sql, ListItem: itemType}
+}
+
+// AlterPlainText is an optional unquoted value with no equals, such as MODIFY ACTION.
+// field is the Go field name. It is one branch of ExactlyOneValueSet.
+func AlterPlainText(field, sql string) AlterClause {
+	return AlterClause{Kind: AlterClausePlainText, Field: field, SQL: sql}
 }
 
 // AlterParameterBlock is an optional nested block after the name, as a parameter clause, such as ADD STORAGE_LOCATION.

@@ -6,7 +6,7 @@ func NewCreateAlertRequest(
 	name SchemaObjectIdentifier,
 	warehouse AccountObjectIdentifier,
 	schedule string,
-	condition []AlertConditionRequest,
+	condition AlertConditionRequest,
 	action string,
 ) *CreateAlertRequest {
 	s := CreateAlertRequest{}
@@ -56,8 +56,13 @@ func (s *AlterAlertRequest) WithIfExists(ifExists bool) *AlterAlertRequest {
 	return s
 }
 
-func (s *AlterAlertRequest) WithAction(action AlertAction) *AlterAlertRequest {
-	s.Action = &action
+func (s *AlterAlertRequest) WithResume(resume bool) *AlterAlertRequest {
+	s.Resume = &resume
+	return s
+}
+
+func (s *AlterAlertRequest) WithSuspend(suspend bool) *AlterAlertRequest {
+	s.Suspend = &suspend
 	return s
 }
 

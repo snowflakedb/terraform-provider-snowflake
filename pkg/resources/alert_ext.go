@@ -167,7 +167,7 @@ func alertAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, 
 		return nil
 	}
 	client := meta.(*provider.Context).Client
-	if err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithAction(sdk.AlertActionResume)); err != nil {
+	if err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithResume(true)); err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Warning,
@@ -236,7 +236,7 @@ func alertAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 
 func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
 	resumeAlert := func() (error, bool) {
-		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithAction(sdk.AlertActionResume))
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithResume(true))
 		if err != nil {
 			return fmt.Errorf("error resuming alert %v err = %w", id.Name(), err), false
 		}
@@ -251,7 +251,7 @@ func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjec
 
 func waitSuspendAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
 	suspendAlert := func() (error, bool) {
-		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithAction(sdk.AlertActionSuspend))
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithSuspend(true))
 		if err != nil {
 			return fmt.Errorf("error suspending alert %v err = %w", id.Name(), err), false
 		}

@@ -32,8 +32,18 @@ func (opts *AlterAlertOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterAlertOptions", "name"))
 	}
-	if !exactlyOneValueSet(opts.Action, opts.Set, opts.Unset, opts.ModifyCondition, opts.ModifyAction) {
-		errs = append(errs, errExactlyOneOf("AlterAlertOptions", "Action", "Set", "Unset", "ModifyCondition", "ModifyAction"))
+	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.Set, opts.Unset, opts.ModifyCondition, opts.ModifyAction) {
+		errs = append(errs, errExactlyOneOf("AlterAlertOptions", "Resume", "Suspend", "Set", "Unset", "ModifyCondition", "ModifyAction"))
+	}
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.Warehouse, opts.Set.Schedule, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterAlertOptions.Set", "Warehouse", "Schedule", "Comment"))
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.Warehouse, opts.Unset.Schedule, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterAlertOptions.Unset", "Warehouse", "Schedule", "Comment"))
+		}
 	}
 	return JoinErrors(errs...)
 }

@@ -34,16 +34,21 @@ var AlertAttrs = struct {
 	Comment: ssot.Attribute{
 		Name:           "comment",
 		OptionalInShow: true,
+		OptionalInDb:   true,
 		Type:           ssot.AttrString,
 		Description:    "Specifies a comment for the alert.",
 		CreateMapping:  ssot.StringAttributeCreateBuilder,
+		CreateSql:      ssot.StringParameter(),
+		SetSql:         ssot.StringParameter(),
+		UnsetSql:       ssot.BoolKeyword(),
 	},
 	Warehouse: ssot.Attribute{
-		Name:        "warehouse",
-		Type:        ssot.AttrString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "The warehouse the alert will use.",
+		Name:         "warehouse",
+		Type:         ssot.AttrString,
+		Required:     true,
+		ForceNew:     true,
+		OptionalInDb: true,
+		Description:  "The warehouse the alert will use.",
 	},
 	Condition: ssot.Attribute{
 		Name:         "condition",
@@ -96,16 +101,60 @@ var AlertAttrs = struct {
 			},
 		}),
 	},
-	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
-	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
-	DatabaseName:  ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
-	SchemaName:    ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, Readonly: true},
-	Owner:         ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
-	Schedule:      ssot.Attribute{Name: "schedule", Type: ssot.AttrString, Readonly: true},
-	State:         ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: &ssot.Enum{Name: "AlertState"}, Readonly: true},
+	CreatedOn:    ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
+	Name:         ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	DatabaseName: ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
+	SchemaName:   ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, Readonly: true},
+	Owner:        ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
+	Schedule: ssot.Attribute{
+		Name:      "schedule",
+		Type:      ssot.AttrString,
+		Readonly:  true,
+		CreateSql: ssot.StringParameter(ssot.Sql("SCHEDULE"), ssot.Required()),
+		SetSql:    ssot.StringParameter(ssot.Sql("SCHEDULE")),
+		UnsetSql:  ssot.BoolKeyword(ssot.Sql("SCHEDULE")),
+	},
+	State:         ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: alertStateEnum, Readonly: true},
 	DescribeState: ssot.Attribute{Name: "state", Type: ssot.AttrString, Readonly: true},
-	OwnerRoleType: ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true},
+	OwnerRoleType: ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
 }
+
+// alertStateEnum is the SHOW state column. RESUME and SUSPEND are ALTER keywords, not this enum.
+var alertStateEnum = ssot.NewEnum("AlertState", "AlertStates", "started", "suspended")
+
+// SQL clauses that are not resource attributes. The resource warehouse is a string, and condition and action
+// are statement text. CREATE and ALTER use an identifier, IF (EXISTS (...)), and THEN.
+var (
+	alertWarehouseSql = ssot.Attribute{
+		Name:           "sql_warehouse",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
+		Required:       true,
+		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("WAREHOUSE"), ssot.Equals(), ssot.Required()),
+		SetSql:         ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("WAREHOUSE"), ssot.Equals()),
+		UnsetSql:       ssot.BoolKeyword(ssot.Sql("WAREHOUSE")),
+	}
+	// One IF block, not a list. ObjectParameter is a struct tagged list, so the SQL word is printed
+	// before the parentheses: IF (EXISTS (...)).
+	alertConditionSql = ssot.Attribute{
+		Name:      "condition",
+		Type:      ssot.AttrObject,
+		Required:  true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("IF"), ssot.Parentheses(), ssot.Required(), ssot.FieldName("condition")),
+		Children: []ssot.Attribute{{
+			Name:      "condition",
+			Type:      ssot.AttrList,
+			Elem:      &ssot.Attribute{Type: ssot.AttrString},
+			CreateSql: ssot.StringListKeyword(ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
+		}},
+	}
+	alertActionSql = ssot.Attribute{
+		Name:      "then_action",
+		Type:      ssot.AttrString,
+		Required:  true,
+		CreateSql: ssot.PlainParameter(ssot.Sql("THEN"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("action")),
+	}
+)
 
 var Alert = ssot.Object{
 	Name:                      "Alert",
@@ -132,6 +181,7 @@ var Alert = ssot.Object{
 		ssot.WithShowByIdInSdk(ssot.Omitted()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
+		// Schemas and output assertions are generated. The resource has no show_output or describe_output.
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
@@ -141,8 +191,49 @@ var Alert = ssot.Object{
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+		ssot.WithSdk(
+			ssot.SdkDefineFromSsot(),
+			ssot.SdkCreate(),
+			ssot.SdkAlter(),
+			ssot.SdkDrop(),
+			ssot.SdkShow(
+				ssot.SdkShowTerse(),
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalIn(),
+				ssot.SdkShowOptionalStartsWith(),
+				ssot.SdkShowOptionalLimitFrom(),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDIn),
+			),
+			ssot.SdkDescribe(),
+		),
 	},
+	Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{
+		&alertWarehouseSql,
+		&AlertAttrs.Schedule,
+		&AlertAttrs.Comment,
+		&alertConditionSql,
+		&alertActionSql,
+	}},
+	Set: []*ssot.Attribute{
+		&alertWarehouseSql,
+		&AlertAttrs.Schedule,
+		&AlertAttrs.Comment,
+	},
+	Unset: []*ssot.Attribute{
+		&alertWarehouseSql,
+		&AlertAttrs.Schedule,
+		&AlertAttrs.Comment,
+	},
+	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+		ssot.AlterKeyword("RESUME"),
+		ssot.AlterKeyword("SUSPEND"),
+		ssot.AlterSet(),
+		ssot.AlterUnset(),
+		ssot.AlterKeywordList("ModifyCondition", "MODIFY CONDITION EXISTS", "string"),
+		ssot.AlterPlainText("ModifyAction", "MODIFY ACTION"),
+	}},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
 			&AlertAttrs.CreatedOn,

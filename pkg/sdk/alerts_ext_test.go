@@ -14,7 +14,7 @@ func init() {
 				name:      id,
 				Warehouse: warehouse,
 				Schedule:  schedule,
-				condition: []AlertCondition{{Condition: []string{existsCondition}}},
+				condition: AlertCondition{Condition: []string{existsCondition}},
 				action:    action,
 			}
 		}).
@@ -43,18 +43,18 @@ func init() {
 		withModify(
 			case_Alerts_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *AlterAlertOptions) {
-				opts.Action = new(AlertActionResume)
+				opts.Resume = new(true)
 				opts.Set = &AlertSet{Comment: &comment}
 			},
 		).
 		withModifyAndExpectedSqlf(
-			case_Alerts_sql_Alter_Action,
-			func(opts *AlterAlertOptions) { opts.Action = new(AlertActionResume) },
+			case_Alerts_sql_Alter_Resume,
+			func(opts *AlterAlertOptions) { opts.Resume = new(true) },
 			"ALTER ALERT %s RESUME", id.FullyQualifiedName(),
 		).
-		withAdditionalSqlCasef(
-			"sql_Alter_ActionSuspend",
-			func(opts *AlterAlertOptions) { opts.Action = new(AlertActionSuspend) },
+		withModifyAndExpectedSqlf(
+			case_Alerts_sql_Alter_Suspend,
+			func(opts *AlterAlertOptions) { opts.Suspend = new(true) },
 			"ALTER ALERT %s SUSPEND", id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -83,7 +83,7 @@ func init() {
 					Comment:   new(true),
 				}
 			},
-			"ALTER ALERT %s UNSET WAREHOUSE SCHEDULE COMMENT", id.FullyQualifiedName(),
+			"ALTER ALERT %s UNSET WAREHOUSE, SCHEDULE, COMMENT", id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_UnsetComment",

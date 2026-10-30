@@ -1511,7 +1511,7 @@ func Test_ValidateObject_enumKeywordAndNestedStruct(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrEnum, Enum: driver, CreateSql: EnumKeyword(NoQuotes())})))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, or a list of identifiers`, func() {
+	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings`, func() {
 		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrString, CreateSql: EnumKeyword(NoQuotes())})))
 	})
 }

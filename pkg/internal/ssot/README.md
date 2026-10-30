@@ -327,9 +327,11 @@ enable nothing.
   `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkAlterSetList()` makes that `SET` a list with no
   parentheses. Without it, `SET` is a keyword. `Create` is a [`CreateSpec`](object.go). `Alter` is an
   [`AlterSpec`](object.go): action keywords, `RenameTo`, `SwapWith`, `SET`, `UNSET`, list assignments, `SET TAG`, and
-  `UNSET TAG` are entries, so a keyword can follow the tag clauses. `AlterKeywordNotExactlyOne` leaves a keyword out of
+  `UNSET TAG` are entries, so a keyword can follow the tag clauses.   `AlterKeywordNotExactlyOne` leaves a keyword out of
   `ExactlyOneValueSet`. `AlterList` is a parentheses list with no equals, one exactly-one branch, and `ValidIdentifier`
-  on each element. It does not spell a list that comes before its keyword. A keyword block child list uses `Reverse()` for that shape, such as `ADD <id> TO ALLOWED_DATABASES`. `SdkAlterAdditionalValidations()` marks the ALTER query struct. `RenameTo` and `SwapWith` use the
+  on each element. It does not spell a list that comes before its keyword. A keyword block child list uses `Reverse()` for that shape, such as `ADD <id> TO ALLOWED_DATABASES`. `AlterKeywordList(field, sql, itemType)` is a keyword list in parentheses with no comma and no identifier
+  check, such as `MODIFY CONDITION EXISTS`. `AlterPlainText(field, sql)` is an optional unquoted value with no equals, such as
+  `MODIFY ACTION`. `SdkAlterAdditionalValidations()` marks the ALTER query struct. `RenameTo` and `SwapWith` use the
   object's `IdType` and get `ValidIdentifierIfSet`. `Set` and `Unset` are the fields inside those blocks. [`Tags`](attribute.go) is the
   optional `TAG` clause and belongs on `Create.Clauses`, not on `KeywordsBefore`. [`Parameters`](attribute.go) spreads
   the parameter catalog for `ParameterLevel()`. `ShowParametersDetailsAdditionalLevels` adds parameters from more levels
@@ -339,12 +341,13 @@ enable nothing.
   fields first, then the other fields in the struct.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
-  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
+  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
   keyword.
   `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
+  `StringListKeyword` is a keyword list of strings in parentheses with no comma, such as `EXISTS ( <condition> )`.
   `AlterParameterBlock(field, sql, &attr)` and `AlterKeywordBlock(field, sql, &attr)` are optional nested blocks, as a
   parameter or a keyword clause. `attr` is a list of objects, and the block is one of its elements, with the same struct as in
   CREATE (`ADD STORAGE_LOCATION`), or a SqlOnly object attribute whose `Children` are the fields and whose `CreateSql` are

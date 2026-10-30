@@ -183,7 +183,7 @@ func TestAcc_Alert_BasicUseCase(t *testing.T) {
 					require.NoError(t, client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).
 						WithModifyAction("SELECT 5")))
 					require.NoError(t, client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).
-						WithAction(sdk.AlertActionResume)))
+						WithResume(true)))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

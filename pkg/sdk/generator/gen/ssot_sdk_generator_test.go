@@ -1669,6 +1669,30 @@ func requireSameOperations(t *testing.T, want, got *Interface) {
 	}
 }
 
+func Test_AlterOperationFromObject_keywordListAndPlainText(t *testing.T) {
+	obj := ssot.Object{
+		Name: "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterKeywordList("ModifyCondition", "MODIFY CONDITION EXISTS", "string"),
+			ssot.AlterPlainText("ModifyAction", "MODIFY ACTION"),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			UnnamedList("ModifyCondition", "string", KeywordOptions().SQL("MODIFY CONDITION EXISTS").Parentheses().NoComma()).
+			OptionalAssignmentWithFieldName("MODIFY ACTION", "string", ParameterOptions().NoEquals(), "ModifyAction").
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "ModifyCondition", "ModifyAction"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_AlterOperationFromObject_textAndBlocks(t *testing.T) {
 	widget := newWidgetLocationAttributes()
 	locations := widget.list

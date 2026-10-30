@@ -13,7 +13,8 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 	if name == "" {
 		name = sqlToFieldName(clause.SQLText(attr), true)
 	}
-	v = v.ListQueryStructField(name, queryStructFromObjectList(v.owner, attr), parameterOptionsFromClause(clause, required).SQL(clause.SQLText(attr)))
+	transformer := parameterOptionsFromClause(clause, required).SQL(clause.SQLText(attr))
+	v = v.ListQueryStructField(name, queryStructFromObjectList(v.owner, attr), transformer)
 	if required {
 		v = v.WithValidation(ValidateValueSet, name)
 	}
