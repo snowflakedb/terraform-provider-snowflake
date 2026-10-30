@@ -42,6 +42,7 @@ func ValidateObject(obj Object) {
 		if a.SqlOnly {
 			sqlOnly[a.Name] = struct{}{}
 		}
+		validateSdkString(obj, a)
 		validateCollectionBounds(obj, a)
 		validateNestedAttribute(obj, a)
 		validateAttribute(obj, a)
@@ -730,12 +731,12 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 	if !clause.Present {
 		return
 	}
-	if clause.AllowEmpty && (clause.Kind != SqlKindParameter || attr.Type != AttrString) {
+	if clause.AllowEmpty && (clause.Kind != SqlKindParameter || attr.SdkType() != AttrString) {
 		panic(fmt.Sprintf("object %q: attribute %q %s clause allows an empty value but is not a string parameter", obj.Name, attr.Name, statement))
 	}
 	switch clause.Kind {
 	case SqlKindParameter:
-		switch attr.Type {
+		switch attr.SdkType() {
 		case AttrInt, AttrBool, AttrString:
 		case AttrIdentifier:
 			// An identifier with a parameter clause is quoted text.
@@ -854,7 +855,7 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		// A column that is an object is a nested struct of the details, from the Children of the attribute.
 		// TODO (next PRs): Support the other nested attributes.
 		_, nestedAttr := nested[a.Name]
-		if (nestedAttr || len(a.NestedFields()) > 0) && !(kind == "DESCRIBE" && a.Type == AttrObject && ObjectGenerators(obj.Generators...).Sdk.DescribeDetails) {
+		if !a.SdkString && (nestedAttr || len(a.NestedFields()) > 0) && !(kind == "DESCRIBE" && a.Type == AttrObject && ObjectGenerators(obj.Generators...).Sdk.DescribeDetails) {
 			panic(fmt.Sprintf("object %q: nested attribute %q is not a %s column", obj.Name, a.Name, kind))
 		}
 		seenKey[key] = struct{}{}
@@ -1093,5 +1094,21 @@ func validateGeneratorSkips(obj Object, generator, kind string, enabled bool, co
 			panic(fmt.Sprintf("object %q: duplicate %s %s skip %q", obj.Name, kind, generator, attr.Name))
 		}
 		seen[attr] = struct{}{}
+	}
+}
+
+// validateSdkString allows SdkString on an optional object with a string column nullability: the block is the
+// Terraform side, and the string is what SQL, SHOW, and DESCRIBE hold.
+func validateSdkString(obj Object, attr Attribute) {
+	if !attr.SdkString {
+		return
+	}
+	switch {
+	case attr.Type != AttrObject:
+		panic(fmt.Sprintf("object %q: SdkString attribute %q must be an object", obj.Name, attr.Name))
+	case attr.Required:
+		panic(fmt.Sprintf("object %q: SdkString attribute %q must be optional", obj.Name, attr.Name))
+	case !attr.OptionalInShow && !attr.OptionalInDb:
+		panic(fmt.Sprintf("object %q: SdkString attribute %q needs OptionalInShow or OptionalInDb for its string column", obj.Name, attr.Name))
 	}
 }

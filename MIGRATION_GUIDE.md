@@ -64,7 +64,7 @@ No changes are required for existing configurations unless you want to adopt the
 
 ### *(new feature)* Backup policy resource and data source
 
-We have added a new preview resource, [`snowflake_backup_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_policy), for managing [backup policies](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy). CREATE requires a schedule, an expiration, or both. `with_retention_lock` cannot be changed after creation.
+We have added a new preview resource, [`snowflake_backup_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_policy), for managing [backup policies](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy). CREATE requires a schedule, an expiration, or both. `with_retention_lock` cannot be changed after creation. The `schedule` is a block with exactly one of `hours`, `minutes` (at least 60), or `using_cron`, like the `schedule` of [`snowflake_task`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/task). `show_output` and `describe_output` keep the schedule as the string returned by Snowflake.
 
 We have also added a new preview data source, [`snowflake_backup_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/backup_policies), for listing backup policies. It supports `like`, `in`, `starts_with`, and `limit`. `with_describe` is on by default and runs DESCRIBE for each policy returned by SHOW.
 

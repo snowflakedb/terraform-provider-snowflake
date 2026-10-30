@@ -56,14 +56,14 @@ func (e expectChangePlanCheck) CheckPlan(_ context.Context, req plancheck.CheckP
 				if err != nil {
 					valueBefore = valueBefore.(map[string]any)[part]
 				} else {
-					valueBefore = valueBefore.([]any)[partInt]
+					valueBefore = elementOrNil(valueBefore.([]any), partInt)
 				}
 			}
 			if valueAfter != nil {
 				if err != nil {
 					valueAfter = valueAfter.(map[string]any)[part]
 				} else {
-					valueAfter = valueAfter.([]any)[partInt]
+					valueAfter = elementOrNil(valueAfter.([]any), partInt)
 				}
 			}
 		}
@@ -111,4 +111,12 @@ func ExpectChange(resourceAddress string, attribute string, action tfjson.Action
 		oldValue,
 		newValue,
 	}
+}
+
+// elementOrNil is the element at the index, or nil when the list has none, as a block that is not set in the plan.
+func elementOrNil(list []any, idx int) any {
+	if idx >= len(list) {
+		return nil
+	}
+	return list[idx]
 }

@@ -94,7 +94,7 @@ func detailsGoType(obj ssot.Object, attr ssot.Attribute) string {
 func DescribeNestedPlains(obj ssot.Object) []*Plain {
 	var plains []*Plain
 	for _, column := range obj.Describe.Columns {
-		if column == nil || column.Type != ssot.AttrObject {
+		if column == nil || column.SdkType() != ssot.AttrObject {
 			continue
 		}
 		plain := PlainStruct(ssot.NestedObjectDetails(obj, *column))
@@ -160,7 +160,7 @@ func pairedStructsFromColumns(obj ssot.Object, describe bool, dbName, plainName 
 
 func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribute) *PairedStructs {
 	key := attr.OutputKey()
-	switch attr.Type {
+	switch attr.SdkType() {
 	case ssot.AttrString:
 		switch {
 		case !attr.OptionalInShow && !attr.OptionalInDb:

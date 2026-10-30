@@ -10,7 +10,7 @@ import (
 // AttributeGoTypes returns the concrete Go type and underlying kind for one column,
 // without the OptionalInShow pointer. ColumnField applies that pointer.
 func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) {
-	switch attr.Type {
+	switch attr.SdkType() {
 	case AttrString:
 		return "string", "string"
 	case AttrInt:
@@ -57,7 +57,7 @@ func NestedObjectDetails(obj Object, attr Attribute) string {
 // IsOptionalColumn reports whether the column is a pointer in the details: it is OptionalInShow, or it is an object
 // that is not required.
 func (a Attribute) IsOptionalColumn() bool {
-	return a.OptionalInShow || (a.Type == AttrObject && !a.Required)
+	return a.OptionalInShow || (a.SdkType() == AttrObject && !a.Required)
 }
 
 // NestedDetailsElem is the element type name of a nested list or set column in the details struct:

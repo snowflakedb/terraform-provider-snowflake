@@ -138,7 +138,7 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		}
 		return "*" + kind
 	}
-	attrType := attr.Type
+	attrType := attr.SdkType()
 	enum := attr.ColumnEnum()
 	if clause.Enum != nil {
 		// The clause makes the attribute an enum parameter, such as a string that is a provider-specific enum.
