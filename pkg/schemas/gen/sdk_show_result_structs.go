@@ -43,7 +43,6 @@ type ShowResultSchemaDetails struct {
 
 var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Account{}},
-	{ObjectStruct: sdk.Alert{}},
 	{ObjectStruct: sdk.ApiIntegration{}},
 	{ObjectStruct: sdk.ApplicationPackage{}},
 	{ObjectStruct: sdk.ApplicationRole{}},
@@ -117,7 +116,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
-	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
 	// struct + DescribeApiAuthDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.

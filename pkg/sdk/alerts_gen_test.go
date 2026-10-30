@@ -7,7 +7,6 @@ import (
 )
 
 func init() {
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AlertAction]{"AlertAction", AllAlertActions, ToAlertAction})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AlertState]{"AlertState", AllAlertStates, ToAlertState})
 }
 
@@ -21,7 +20,10 @@ const (
 	case_Alerts_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_Alerts_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Alerts_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Alerts_sql_Alter_Action                                        testCaseName = "sql_Alter_Action"
+	case_Alerts_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Alerts_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Alerts_sql_Alter_Resume                                        testCaseName = "sql_Alter_Resume"
+	case_Alerts_sql_Alter_Suspend                                       testCaseName = "sql_Alter_Suspend"
 	case_Alerts_sql_Alter_Set                                           testCaseName = "sql_Alter_Set"
 	case_Alerts_sql_Alter_Unset                                         testCaseName = "sql_Alter_Unset"
 	case_Alerts_sql_Alter_ModifyCondition                               testCaseName = "sql_Alter_ModifyCondition"
@@ -100,9 +102,10 @@ var alertsTests = AlertsTestsContext{
 			},
 			validationCase[*AlterAlertOptions]{
 				Name:        case_Alerts_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterAlertOptions", "Action", "Set", "Unset", "ModifyCondition", "ModifyAction"),
+				ExpectedErr: errExactlyOneOf("AlterAlertOptions", "Resume", "Suspend", "Set", "Unset", "ModifyCondition", "ModifyAction"),
 				DefaultModify: func(opts *AlterAlertOptions) {
-					opts.Action = nil
+					opts.Resume = nil
+					opts.Suspend = nil
 					opts.Set = nil
 					opts.Unset = nil
 					opts.ModifyCondition = nil
@@ -111,12 +114,39 @@ var alertsTests = AlertsTestsContext{
 			},
 			validationCase[*AlterAlertOptions]{
 				Name:        case_Alerts_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterAlertOptions", "Action", "Set", "Unset", "ModifyCondition", "ModifyAction"),
+				ExpectedErr: errExactlyOneOf("AlterAlertOptions", "Resume", "Suspend", "Set", "Unset", "ModifyCondition", "ModifyAction"),
+				DefaultModify: func(opts *AlterAlertOptions) {
+					opts.Resume = new(true)
+					opts.Suspend = new(true)
+				},
+			},
+			validationCase[*AlterAlertOptions]{
+				Name:        case_Alerts_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAlertOptions.Set", "Warehouse", "Schedule", "Comment"),
+				DefaultModify: func(opts *AlterAlertOptions) {
+					opts.Set = &AlertSet{}
+					opts.Set.Warehouse = nil
+					opts.Set.Schedule = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterAlertOptions]{
+				Name:        case_Alerts_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterAlertOptions.Unset", "Warehouse", "Schedule", "Comment"),
+				DefaultModify: func(opts *AlterAlertOptions) {
+					opts.Unset = &AlertUnset{}
+					opts.Unset.Warehouse = nil
+					opts.Unset.Schedule = nil
+					opts.Unset.Comment = nil
+				},
 			},
 		).
 		withSqlCases(
 			sqlCase[*AlterAlertOptions]{
-				Name: case_Alerts_sql_Alter_Action,
+				Name: case_Alerts_sql_Alter_Resume,
+			},
+			sqlCase[*AlterAlertOptions]{
+				Name: case_Alerts_sql_Alter_Suspend,
 			},
 			sqlCase[*AlterAlertOptions]{
 				Name: case_Alerts_sql_Alter_Set,

@@ -460,6 +460,46 @@ func Test_CreateOperationFromObject_exactlyOneKeywordAndIdentifierList(t *testin
 	requireSameOperations(t, want, got)
 }
 
+func Test_CreateOperationFromObject_keywordStringList(t *testing.T) {
+	condition := ssot.Attribute{
+		Name:      "condition",
+		Type:      ssot.AttrObject,
+		Required:  true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("IF"), ssot.Parentheses(), ssot.Required(), ssot.FieldName("condition")),
+		Children: []ssot.Attribute{{
+			Name:      "condition",
+			Type:      ssot.AttrList,
+			Elem:      &ssot.Attribute{Type: ssot.AttrString},
+			CreateSql: ssot.StringListKeyword(ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
+		}},
+	}
+	action := ssot.Attribute{
+		Name:      "then_action",
+		Type:      ssot.AttrString,
+		Required:  true,
+		CreateSql: ssot.PlainParameter(ssot.Sql("THEN"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("action")),
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&condition, &action}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(ssot.SdkCreateWithoutOrReplace(), ssot.SdkCreateWithoutIfNotExists()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			SQL("WIDGET").
+			Name().
+			QueryStructField("condition", NewQueryStruct("WidgetCondition").
+				UnnamedList("Condition", "string", KeywordOptions().Parentheses().NoComma().SQL("EXISTS")),
+				ListOptions().NoComma().Parentheses().SQL("IF").Required()).
+			AssignmentWithFieldName("THEN", "string", ParameterOptions().NoEquals().Required(), "action").
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CreateOperationFromObject_objectAsParameter(t *testing.T) {
 	option := ssot.Attribute{
 		Name:      "option",

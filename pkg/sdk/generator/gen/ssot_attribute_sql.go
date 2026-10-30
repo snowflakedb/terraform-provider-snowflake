@@ -214,6 +214,9 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 		return v.appendIdentifierListKeywordClause(attr, clause)
 	}
+	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrString {
+		return v.appendStringListKeywordClause(attr, clause, required)
+	}
 	enum := clause.Enum
 	if enum == nil {
 		enum = attr.ColumnEnum()
@@ -242,6 +245,24 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 		return v.Enum(name, enum, opts.Required())
 	}
 	return v.OptionalEnum(name, enum, opts)
+}
+
+func (v *QueryStruct) appendStringListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	name := clause.Field
+	if name == "" {
+		name = genhelpers.SnakeCaseToCamel(attr.Name)
+	}
+	opts := KeywordOptions()
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses().NoComma()
+	}
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	if required {
+		opts = opts.Required()
+	}
+	return v.UnnamedList(name, "string", opts)
 }
 
 func (v *QueryStruct) appendIdentifierListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {

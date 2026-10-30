@@ -506,6 +506,25 @@ func validateAlterSpec(obj Object) {
 				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
 			}
 			seenList[clause.SQL] = struct{}{}
+		case AlterClauseKeywordList:
+			if clause.NotExactlyOne {
+				panic(fmt.Sprintf("object %q: ALTER keyword list %q is an exactly-one branch", obj.Name, clause.SQL))
+			}
+			if clause.Field == "" || clause.SQL == "" || clause.ListItem == "" {
+				panic(fmt.Sprintf("object %q: ALTER keyword list needs a field, SQL, and an item type", obj.Name))
+			}
+			if _, dup := seenList[clause.SQL]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
+			}
+			seenList[clause.SQL] = struct{}{}
+		case AlterClausePlainText:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER plain text needs a field and SQL", obj.Name))
+			}
+			if _, dup := seenList[clause.SQL]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
+			}
+			seenList[clause.SQL] = struct{}{}
 		case AlterClauseBlock:
 			if clause.Field == "" || clause.SQL == "" || clause.Block == nil {
 				panic(fmt.Sprintf("object %q: ALTER block needs a field, SQL, and an attribute", obj.Name))
@@ -739,8 +758,9 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 				enum = attr.ColumnEnum()
 			}
 			identifiers := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrIdentifier && attr.Elem.IdentifierType != ""
-			if !identifiers && (attr.Type != AttrEnum || enum == nil || enum.Name == "") {
-				panic(fmt.Sprintf("object %q: attribute %q %s value keyword needs an enum attribute with an Enum, or a list of identifiers", obj.Name, attr.Name, statement))
+			stringsList := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrString
+			if !identifiers && !stringsList && (attr.Type != AttrEnum || enum == nil || enum.Name == "") {
+				panic(fmt.Sprintf("object %q: attribute %q %s value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings", obj.Name, attr.Name, statement))
 			}
 		}
 	case SqlKindIdentifier:

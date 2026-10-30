@@ -190,6 +190,16 @@ func EnumKeyword(opts ...SqlClauseOption) SqlClause {
 	}, opts)
 }
 
+// StringListKeyword is a keyword list of strings in parentheses with no comma, such as EXISTS ( <condition> ).
+// The attribute is a list of strings. Sql is the keyword before the parentheses. FieldName sets the Go field.
+// The list is not checked as identifiers.
+func StringListKeyword(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindKeyword, func(c *SqlClause) {
+		c.ValueKeyword = true
+		c.Parentheses = SqlParensYes
+	}, opts)
+}
+
 // IdentifierListKeyword is a list of identifiers written with no name, in parentheses: ('a', 'b').
 // The attribute is a list or set of identifiers.
 func IdentifierListKeyword(opts ...SqlClauseOption) SqlClause {
@@ -340,7 +350,7 @@ func ObjectParameter(opts ...SqlClauseOption) SqlClause {
 }
 
 // ListOfObjects is a parameter clause for a list or set whose Elem is an object. Sql is the text before the list and
-// Parentheses() wraps the whole list.
+// Parentheses() wraps the whole list. A single block such as IF (EXISTS (...)) is an object clause, not this list.
 func ListOfObjects(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindParameter, nil, opts)
 }

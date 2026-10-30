@@ -17,8 +17,8 @@ type CreateAlertRequest struct {
 	Warehouse   AccountObjectIdentifier // required
 	Schedule    string                  // required
 	Comment     *string
-	condition   []AlertConditionRequest // required
-	action      string                  // required
+	condition   AlertConditionRequest // required
+	action      string                // required
 }
 
 type AlertConditionRequest struct {
@@ -28,7 +28,8 @@ type AlertConditionRequest struct {
 type AlterAlertRequest struct {
 	IfExists        *bool
 	name            SchemaObjectIdentifier // required
-	Action          *AlertAction
+	Resume          *bool
+	Suspend         *bool
 	Set             *AlertSetRequest
 	Unset           *AlertUnsetRequest
 	ModifyCondition []string

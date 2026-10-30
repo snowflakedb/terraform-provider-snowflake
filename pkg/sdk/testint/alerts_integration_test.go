@@ -109,18 +109,12 @@ func TestInt_Alerts(t *testing.T) {
 
 		assertAlert(t, id, otherWarehouse.Name, "10 MINUTE", "changed", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
 
-		// Snowflake rejects UNSET WAREHOUSE COMMENT as a syntax error, so each property is unset on its own.
-		// Schedule is omitted: unsetting it would convert the alert into a streaming alert.
+		// Commas are required. UNSET WAREHOUSE COMMENT is a syntax error.
+		// Schedule stays: UNSET SCHEDULE is rejected because a scheduled alert cannot become a streaming alert.
 		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).
 			WithUnset(
 				*sdk.NewAlertUnsetRequest().
-					WithWarehouse(true),
-			))
-		require.NoError(t, err)
-
-		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).
-			WithUnset(
-				*sdk.NewAlertUnsetRequest().
+					WithWarehouse(true).
 					WithComment(true),
 			))
 		require.NoError(t, err)
@@ -148,13 +142,13 @@ func TestInt_Alerts(t *testing.T) {
 		t.Cleanup(cleanup)
 
 		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
-			WithAction(sdk.AlertActionResume))
+			WithResume(true))
 		require.NoError(t, err)
 
 		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateStarted)
 
 		err = client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
-			WithAction(sdk.AlertActionSuspend))
+			WithSuspend(true))
 		require.NoError(t, err)
 
 		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateSuspended)

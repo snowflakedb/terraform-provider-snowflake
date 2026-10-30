@@ -950,11 +950,21 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 				panic(fmt.Sprintf("object %q: ALTER list %q has no SQL or item type", obj.Name, clause.SQL))
 			}
 			q = q.ListAssignment(clause.SQL, clause.ListItem, ParameterOptions().Parentheses().NoEquals())
+		case ssot.AlterClauseKeywordList:
+			if clause.Field == "" || clause.SQL == "" || clause.ListItem == "" {
+				panic(fmt.Sprintf("object %q: ALTER keyword list %q needs a field, SQL, and an item type", obj.Name, clause.SQL))
+			}
+			q = q.UnnamedList(clause.Field, clause.ListItem, KeywordOptions().SQL(clause.SQL).Parentheses().NoComma())
 		case ssot.AlterClauseText:
 			if clause.SQL == "" {
 				panic(fmt.Sprintf("object %q: ALTER text is empty", obj.Name))
 			}
 			q = q.OptionalTextAssignment(clause.SQL, ParameterOptions().SingleQuotes().NoEquals())
+		case ssot.AlterClausePlainText:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER plain text %q needs a field and SQL", obj.Name, clause.SQL))
+			}
+			q = q.OptionalAssignmentWithFieldName(clause.SQL, "string", ParameterOptions().NoEquals(), clause.Field)
 		case ssot.AlterClauseBlock:
 			block := queryStructFromBlockAttribute(obj.Name, *clause.Block)
 			var transformer FieldTransformer = ParameterOptions().SQL(clause.SQL)
@@ -1094,6 +1104,8 @@ func alterExactlyOneFields(obj ssot.Object) []string {
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
 		case ssot.AlterClauseList, ssot.AlterClauseText:
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
+		case ssot.AlterClauseKeywordList, ssot.AlterClausePlainText:
+			fields = append(fields, clause.Field)
 		case ssot.AlterClauseBlock:
 			fields = append(fields, clause.Field)
 		case ssot.AlterClauseRenameTo:
