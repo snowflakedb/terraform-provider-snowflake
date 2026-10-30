@@ -546,7 +546,7 @@ func TestAcc_AuthenticationPolicy_CompleteUseCase(t *testing.T) {
 				),
 			},
 			// import - complete, permissive mode
-			// TODO(next-prs): add suppressors for the authentication_methods, client_types, and security_integrations sets
+			// TODO(SNOW-4392614): add suppressors for the authentication_methods, client_types, and security_integrations sets
 			// and the mfa_policy, pat_policy, and workload_identity_policy blocks, then expect an empty plan.
 			{
 				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,

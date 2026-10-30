@@ -98,6 +98,7 @@ The experiment is currently supported on the following resources:
 - [`snowflake_catalog_integration_object_storage`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_object_storage)
 - [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
 - [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
+- [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume)
 - [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse)
 - [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)
 - [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive)
@@ -145,6 +146,12 @@ Cannot reset ERROR_INTEGRATION property
 ```
 
 The provider now clears the current error integration and then sets the new one. No configuration changes are required. After upgrading, apply the same configuration that previously failed. This resource is still in preview and will be reworked in the future.
+
+### *(bug fix)* `snowflake_external_volume` resets `allow_writes` to `TRUE`
+
+Removing `allow_writes` from the configuration of an existing [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume) set `ALLOW_WRITES = FALSE` on the volume, but the Snowflake default is `TRUE`. The provider now sets `ALLOW_WRITES = TRUE` instead. Creating a volume without `allow_writes` already used the Snowflake default and is unchanged.
+
+Volumes that were updated this way keep `ALLOW_WRITES = FALSE`, and the provider doesn't report it as a change. To restore the default, set `allow_writes = true` and apply, or run `ALTER EXTERNAL VOLUME <name> SET ALLOW_WRITES = TRUE`. To keep writes disabled, set `allow_writes = false`.
 
 ### *(bug fix)* `snowflake_alert` rejects a schedule that sets both `cron` and `interval`
 
