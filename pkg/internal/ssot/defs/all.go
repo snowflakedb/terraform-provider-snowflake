@@ -21,6 +21,7 @@ func All() []ssot.Object {
 		Pipe,
 		CodeBundle,
 		BackupPolicy,
+		BackupSet,
 		ProjectionPolicy,
 		Share,
 		ReplicationGroup,
