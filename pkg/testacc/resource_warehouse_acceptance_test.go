@@ -1830,7 +1830,7 @@ func TestAcc_Warehouse_migrateFromVersion092_allFieldsFilledBeforeMigration(t *t
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "name", id.Name()),
 					resource.TestCheckNoResourceAttr(warehouseModelFull.ResourceReference(), "wait_for_provisioning"),
-					resource.TestCheckNoResourceAttr(warehouseModelFull.ResourceReference(), "resource_monitor"),
+					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "resource_monitor", ""),
 					resource.TestCheckResourceAttr(warehouseModelFull.ResourceReference(), "enable_query_acceleration", "true"),
 				),
 			},
@@ -2113,7 +2113,7 @@ func TestAcc_Warehouse_migrateFromVersion092_noConfigToFullConfig(t *testing.T) 
 					resource.TestCheckResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "auto_suspend", "600"),
 					resource.TestCheckResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "auto_resume", "true"),
 					resource.TestCheckNoResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "initially_suspended"),
-					resource.TestCheckNoResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "resource_monitor"),
+					resource.TestCheckResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "resource_monitor", ""),
 					resource.TestCheckResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "comment", ""),
 					resource.TestCheckResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "enable_query_acceleration", "true"),
 					resource.TestCheckResourceAttr(warehouseModelFullDefaultWithQueryAcceleration.ResourceReference(), "query_acceleration_max_scale_factor", "8"),
