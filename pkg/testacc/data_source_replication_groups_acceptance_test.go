@@ -5,15 +5,20 @@ package testacc
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
+
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
-	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -101,27 +106,60 @@ func TestAcc_ReplicationGroups_CompleteUseCase(t *testing.T) {
 
 func TestAcc_ReplicationGroups_BasicUseCase_DifferentFiltering(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	replicaID := secondaryTestClient().Ids.RandomAccountObjectIdentifier()
 	database, cleanupDatabase := testClient().Database.CreateDatabase(t)
 	t.Cleanup(cleanupDatabase)
 	sourceAccount := testClient().Account.GetAccountIdentifier(t)
-	otherAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+	targetAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+	primaryOf := sdk.NewExternalObjectIdentifier(sourceAccount, id)
 
-	group := model.ReplicationGroup("t", id.Name(), []string{otherAccount.FullyQualifiedName()}, []string{string(sdk.ReplicationGroupObjectTypeDatabases)}).
-		WithAllowedDatabases([]string{database.ID().FullyQualifiedName()})
-	// IN ACCOUNT of another account is not authorized for this role, so the filter step uses this account.
-	inSource := datasourcemodel.ReplicationGroups("test").
-		WithInAccount(sourceAccount.FullyQualifiedName()).
-		WithDependsOn(group.ResourceReference())
+	testClient().ReplicationGroup.CreateWithRequest(t, sdk.NewCreateReplicationGroupRequest(
+		id,
+		[]sdk.ReplicationGroupObjectType{sdk.ReplicationGroupObjectTypeDatabases},
+		[]sdk.AccountIdentifier{targetAccount},
+	).WithAllowedDatabases([]sdk.AccountObjectIdentifier{database.ID()}))
+	t.Cleanup(func() { testClient().ReplicationGroup.Drop(t, id) })
+	secondaryTestClient().ReplicationGroup.WaitForPrimaryToBeVisible(t, primaryOf)
+	secondaryTestClient().ReplicationGroup.CreateSecondary(t, replicaID, primaryOf)
+	t.Cleanup(func() { secondaryTestClient().ReplicationGroup.Drop(t, replicaID) })
+
+	fromSource := datasourcemodel.ReplicationGroups("source")
+	inSource := datasourcemodel.ReplicationGroups("in_source").
+		WithInAccount(sourceAccount.FullyQualifiedName())
+	fromTarget := datasourcemodel.ReplicationGroups("target")
+
+	targetProvider := providermodel.SnowflakeProvider().
+		WithProfile(testprofiles.Secondary).
+		WithPreviewFeaturesEnabled(string(previewfeatures.ReplicationGroupsDatasource))
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, group, inSource),
-				Check:  assertThat(t, assert.Check(replicationGroupListed(t, inSource.DatasourceReference(), id.Name(), true))),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, fromSource, inSource),
+				Check: assertThat(t,
+					assert.Check(replicationGroupListed(t, fromSource.DatasourceReference(), id.Name(), true)),
+					assert.Check(replicationGroupListed(t, fromSource.DatasourceReference(), replicaID.Name(), true)),
+					assert.Check(replicationGroupHasShape(t, fromSource.DatasourceReference(), id.Name(), true, testClient().GetAccountLocator())),
+					assert.Check(replicationGroupHasShape(t, fromSource.DatasourceReference(), replicaID.Name(), false, secondaryTestClient().GetAccountLocator())),
+					assert.Check(replicationGroupListed(t, inSource.DatasourceReference(), id.Name(), true)),
+					assert.Check(replicationGroupListed(t, inSource.DatasourceReference(), replicaID.Name(), true)),
+					assert.Check(replicationGroupHasShape(t, inSource.DatasourceReference(), id.Name(), true, testClient().GetAccountLocator())),
+					assert.Check(replicationGroupHasShape(t, inSource.DatasourceReference(), replicaID.Name(), false, secondaryTestClient().GetAccountLocator())),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: secondaryAccountProviderFactory,
+				Config:                   accconfig.FromModels(t, targetProvider, fromTarget),
+				Check: assertThat(t,
+					assert.Check(replicationGroupListed(t, fromTarget.DatasourceReference(), replicaID.Name(), true)),
+					assert.Check(replicationGroupHasShape(t, fromTarget.DatasourceReference(), replicaID.Name(), false, secondaryTestClient().GetAccountLocator())),
+					assert.Check(replicationGroupListed(t, fromTarget.DatasourceReference(), id.Name(), true)),
+					assert.Check(replicationGroupHasShape(t, fromTarget.DatasourceReference(), id.Name(), true, testClient().GetAccountLocator())),
+				),
 			},
 		},
 	})
@@ -148,10 +186,61 @@ func replicationGroupListed(t *testing.T, ref string, name string, want bool) re
 			}
 		}
 		if found != want {
-			return fmt.Errorf("replication group %s listed=%t, want %t", name, found, want)
+			return fmt.Errorf("replication group %s listed=%t, want %t\n%s", name, found, want, replicationGroupShowListing(rs))
 		}
 		return nil
 	}
+}
+
+// IN ACCOUNT still returns every replication group in that account, so the created row is not at index 0.
+// Other data source tests filter with LIKE until the row is at a known index, then use TestCheckResourceAttr.
+func replicationGroupHasShape(t *testing.T, ref, name string, isPrimary bool, locator string) resource.TestCheckFunc {
+	t.Helper()
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[ref]
+		if !ok {
+			return fmt.Errorf("data source %s not found", ref)
+		}
+		count, err := strconv.Atoi(rs.Primary.Attributes["replication_groups.#"])
+		if err != nil {
+			return err
+		}
+		for i := range count {
+			prefix := fmt.Sprintf("replication_groups.%d.show_output.0.", i)
+			if rs.Primary.Attributes[prefix+"name"] != name {
+				continue
+			}
+			gotPrimary := rs.Primary.Attributes[prefix+"is_primary"]
+			gotLocator := rs.Primary.Attributes[prefix+"account_locator"]
+			if gotPrimary != strconv.FormatBool(isPrimary) || gotLocator != locator {
+				return fmt.Errorf("replication group %s is_primary=%s locator=%s, want is_primary=%t locator=%s\n%s",
+					name, gotPrimary, gotLocator, isPrimary, locator, replicationGroupShowListing(rs))
+			}
+			return nil
+		}
+		return fmt.Errorf("replication group %s not found in %s\n%s", name, ref, replicationGroupShowListing(rs))
+	}
+}
+
+// IN ACCOUNT still returns every replication group in that account, so the created row is not at index 0.
+// Other data source tests filter with LIKE until the row is at a known index, then use TestCheckResourceAttr.
+func replicationGroupShowListing(rs *terraform.ResourceState) string {
+	count, err := strconv.Atoi(rs.Primary.Attributes["replication_groups.#"])
+	if err != nil {
+		return rs.Primary.ID
+	}
+	var b strings.Builder
+	for i := range count {
+		prefix := fmt.Sprintf("replication_groups.%d.show_output.0.", i)
+		fmt.Fprintf(&b, "  name=%s is_primary=%s locator=%s account=%s.%s\n",
+			rs.Primary.Attributes[prefix+"name"],
+			rs.Primary.Attributes[prefix+"is_primary"],
+			rs.Primary.Attributes[prefix+"account_locator"],
+			rs.Primary.Attributes[prefix+"organization_name"],
+			rs.Primary.Attributes[prefix+"account_name"],
+		)
+	}
+	return b.String()
 }
 
 // The show-output builder needs an index. This finds the created group for the same reason as replicationGroupListed.
