@@ -116,6 +116,67 @@ func TestAcc_ReplicationGroupSecondary_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_ReplicationGroupSecondary_RecreateWhenExternallyPrimary(t *testing.T) {
+	targetAccount := testClient().Account.GetAccountIdentifier(t)
+	sourceAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+	sourceDatabase, cleanupSourceDatabase := secondaryTestClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupSourceDatabase)
+	localDatabase, cleanupLocalDatabase := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupLocalDatabase)
+
+	primaryID := secondaryTestClient().Ids.RandomAccountObjectIdentifier()
+	replicaID := testClient().Ids.RandomAccountObjectIdentifier()
+	secondaryTestClient().ReplicationGroup.CreateWithRequest(t, sdk.NewCreateReplicationGroupRequest(
+		primaryID,
+		[]sdk.ReplicationGroupObjectType{sdk.ReplicationGroupObjectTypeDatabases},
+		[]sdk.AccountIdentifier{targetAccount},
+	).WithAllowedDatabases([]sdk.AccountObjectIdentifier{sourceDatabase.ID()}))
+	t.Cleanup(func() {
+		testClient().ReplicationGroup.Drop(t, replicaID)
+		secondaryTestClient().ReplicationGroup.Drop(t, primaryID)
+	})
+
+	primaryOf := sdk.NewExternalObjectIdentifier(sourceAccount, primaryID)
+	testClient().ReplicationGroup.WaitForPrimaryToBeVisible(t, primaryOf)
+	replica := model.ReplicationGroupSecondary("t", replicaID.Name()).WithPrimary(primaryOf.FullyQualifiedName())
+	ref := replica.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ReplicationGroupSecondary),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, replica),
+				Check:  assertThat(t, replicationGroupSecondaryAssertions(t, ref, replicaID, primaryOf, targetAccount)...),
+			},
+			{
+				// Replace the replica with a primary of the same name. The resource must destroy it and create the replica again.
+				PreConfig: func() {
+					testClient().ReplicationGroup.Drop(t, replicaID)
+					testClient().ReplicationGroup.CreateWithRequest(t, sdk.NewCreateReplicationGroupRequest(
+						replicaID,
+						[]sdk.ReplicationGroupObjectType{sdk.ReplicationGroupObjectTypeDatabases},
+						[]sdk.AccountIdentifier{sourceAccount},
+					).WithAllowedDatabases([]sdk.AccountObjectIdentifier{localDatabase.ID()}))
+				},
+				Config: config.FromModels(t, replica),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t, replicationGroupSecondaryAssertions(t, ref, replicaID, primaryOf, targetAccount)...),
+			},
+		},
+	})
+}
+
 func replicationGroupSecondaryAssertions(
 	t *testing.T,
 	ref string,
@@ -129,7 +190,8 @@ func replicationGroupSecondaryAssertions(
 		resourceassert.ReplicationGroupSecondaryResource(t, ref).
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasPrimaryString(primary.FullyQualifiedName()),
+			HasPrimaryString(primary.FullyQualifiedName()).
+			HasIsPrimary(false),
 		resourceshowoutputassert.ReplicationGroupSecondaryShowOutput(t, ref).
 			HasName(id.Name()).
 			HasType(sdk.ReplicationGroupTypeReplication).
@@ -173,7 +235,8 @@ func replicationGroupSecondaryImportChecks(t *testing.T, id sdk.AccountObjectIde
 	return assertThatImport(t,
 		resourceassert.ImportedReplicationGroupSecondaryResource(t, encoded).
 			HasNameString(id.Name()).
-			HasPrimaryString(primary.FullyQualifiedName()),
+			HasPrimaryString(primary.FullyQualifiedName()).
+			HasIsPrimary(false),
 		resourceshowoutputassert.ImportedReplicationGroupSecondaryShowOutput(t, encoded).
 			HasName(id.Name()).
 			HasIsPrimary(false).

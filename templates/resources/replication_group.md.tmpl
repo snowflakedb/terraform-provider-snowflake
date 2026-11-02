@@ -25,6 +25,8 @@ description: |-
 
 {{- end }}
 
+-> **Note** When this replication group is no longer primary, Terraform recreates it as a primary group. Moving the object to [`snowflake_replication_group_secondary`](./replication_group_secondary) is a manual state migration. See [resource migration](../guides/resource_migration).
+
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
 {{ .SchemaMarkdown | trimspace }}

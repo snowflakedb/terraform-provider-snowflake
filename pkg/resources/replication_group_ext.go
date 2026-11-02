@@ -20,6 +20,8 @@ var (
 	replicationGroupImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.ReplicationGroup, ImportReplicationGroup),
 	}
+	// Listed on the replication group SSOT object and appended to the generated customdiff.All.
+	replicationGroupRecreateWhenNotPrimary = RecreateWhenResourceBoolFieldChangedExternally("is_primary", true)
 )
 
 type replicationGroupAlterRequestsExt struct {
@@ -96,6 +98,7 @@ func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceD
 		return err
 	}
 	errs := []error{
+		d.Set("is_primary", group.IsPrimary),
 		d.Set("object_types", replicationGroupEnumStrings(group.ObjectTypes)),
 		d.Set("allowed_accounts", accountIdentifierNames(allowedAccounts)),
 		d.Set("comment", group.Comment),

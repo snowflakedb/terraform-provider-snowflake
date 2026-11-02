@@ -94,6 +94,11 @@ func (r *ReplicationGroupResourceAssert) HasIgnoreEditionCheckBool(expected bool
 	return r
 }
 
+func (r *ReplicationGroupResourceAssert) HasIsPrimary(expected bool) *ReplicationGroupResourceAssert {
+	r.BoolValueSet("is_primary", expected)
+	return r
+}
+
 func (r *ReplicationGroupResourceAssert) HasObjectTypes(expected ...string) *ReplicationGroupResourceAssert {
 	r.ListContainsExactlyStringValuesInOrder("object_types", expected...)
 	return r
@@ -133,6 +138,11 @@ func (r *ReplicationGroupResourceAssert) HasIgnoreEditionCheckString(expected st
 	return r
 }
 
+func (r *ReplicationGroupResourceAssert) HasIsPrimaryString(expected string) *ReplicationGroupResourceAssert {
+	r.ValueSet("is_primary", expected)
+	return r
+}
+
 func (r *ReplicationGroupResourceAssert) HasReplicationScheduleString(expected string) *ReplicationGroupResourceAssert {
 	r.ValueSet("replication_schedule", expected)
 	return r
@@ -164,6 +174,11 @@ func (r *ReplicationGroupResourceAssert) HasNoFullyQualifiedName() *ReplicationG
 
 func (r *ReplicationGroupResourceAssert) HasNoIgnoreEditionCheck() *ReplicationGroupResourceAssert {
 	r.ValueNotSet("ignore_edition_check")
+	return r
+}
+
+func (r *ReplicationGroupResourceAssert) HasNoIsPrimary() *ReplicationGroupResourceAssert {
+	r.ValueNotSet("is_primary")
 	return r
 }
 
@@ -216,6 +231,11 @@ func (r *ReplicationGroupResourceAssert) HasIgnoreEditionCheckEmpty() *Replicati
 	return r
 }
 
+func (r *ReplicationGroupResourceAssert) HasIsPrimaryEmpty() *ReplicationGroupResourceAssert {
+	r.ValueSet("is_primary", "")
+	return r
+}
+
 func (r *ReplicationGroupResourceAssert) HasReplicationScheduleEmpty() *ReplicationGroupResourceAssert {
 	r.ValueSet("replication_schedule", "")
 	return r
@@ -247,6 +267,11 @@ func (r *ReplicationGroupResourceAssert) HasFullyQualifiedNameNotEmpty() *Replic
 
 func (r *ReplicationGroupResourceAssert) HasIgnoreEditionCheckNotEmpty() *ReplicationGroupResourceAssert {
 	r.ValuePresent("ignore_edition_check")
+	return r
+}
+
+func (r *ReplicationGroupResourceAssert) HasIsPrimaryNotEmpty() *ReplicationGroupResourceAssert {
+	r.ValuePresent("is_primary")
 	return r
 }
 
