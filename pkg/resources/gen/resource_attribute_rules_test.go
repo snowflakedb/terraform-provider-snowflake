@@ -378,6 +378,16 @@ func Test_applyResourceAttributeRules_identifierValidationRelatedResourceAndShow
 	require.Equal(t, []string{"generation"}, got.ConflictsWith)
 }
 
+func Test_applyResourceAttributeRules_identifierTypeOverridesObjectIdType(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:           "for_database",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
+	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
+
+	require.Equal(t, "IsValidIdentifier[sdk.AccountObjectIdentifier]()", got.ValidateDiagExpr)
+}
+
 func Test_applyResourceAttributeRules_showSuppressOnPlainField(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:         "max_cluster_count",

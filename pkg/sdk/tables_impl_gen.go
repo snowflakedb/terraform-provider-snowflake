@@ -637,6 +637,7 @@ func (r tableDBRow) convert() (*Table, error) {
 	mapNullStringToRequiredBool(&result.EnableSchemaEvolution, r.EnableSchemaEvolution)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToRequiredBool(&result.IsEvent, r.IsEvent)
+	mapNullStringToRequiredBool(&result.IsDynamic, r.IsDynamic)
 	mapNullString(&result.Budget, r.Budget)
 	return result, nil
 }

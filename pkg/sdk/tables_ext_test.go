@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -997,5 +998,27 @@ func TestTable_GetClusterByKeys(t *testing.T) {
 	})
 	t.Run("with nested functions", func(t *testing.T) {
 		assert.Equal(t, []string{"some_func(some_param, some_other_param, other_func(some_param, some_other_param))", "other_param"}, (&Table{ClusterBy: "LINEAR(some_func(some_param, some_other_param, other_func(some_param, some_other_param)),other_param)"}).GetClusterByKeys())
+	})
+}
+
+func Test_Table_convertIsDynamic(t *testing.T) {
+	convert := func(t *testing.T, value sql.NullString) *Table {
+		t.Helper()
+		table, err := (tableDBRow{IsDynamic: value}).convert()
+		assert.NoError(t, err)
+		return table
+	}
+
+	t.Run("Y", func(t *testing.T) {
+		assert.True(t, convert(t, sql.NullString{String: "Y", Valid: true}).IsDynamic)
+	})
+	t.Run("N", func(t *testing.T) {
+		assert.False(t, convert(t, sql.NullString{String: "N", Valid: true}).IsDynamic)
+	})
+	t.Run("other text", func(t *testing.T) {
+		assert.False(t, convert(t, sql.NullString{String: "YES", Valid: true}).IsDynamic)
+	})
+	t.Run("unset", func(t *testing.T) {
+		assert.False(t, convert(t, sql.NullString{}).IsDynamic)
 	})
 }
