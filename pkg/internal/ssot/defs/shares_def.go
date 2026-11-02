@@ -39,16 +39,17 @@ var ShareAttrs = struct {
 	Comment: ssot.Attribute{
 		Name:        "comment",
 		Type:        ssot.AttrString,
-		Description: "Specifies a comment for the share.",
+		Description: "Specifies a comment for the managed account.",
 	},
 	Accounts: ssot.Attribute{
 		Name: "accounts",
-		Type: ssot.AttrList,
+		Type: ssot.AttrSet,
 		Elem: &ssot.Attribute{
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountIdentifier",
 		},
-		Description: "Specifies the accounts that can consume the share.",
+		Description: "A list of accounts to be added to the share. Values should not be the account locator, but " +
+			"in the form of 'organization_name.account_name",
 		// The ACCOUNTS list has no parentheses and no tag for them. The ADD and REMOVE blocks set the same clause.
 		SetSql: ssot.PlainParameter(),
 	},
@@ -114,7 +115,10 @@ var Share = ssot.Object{
 	NamePlural: "Shares",
 	IdType:     "AccountObjectIdentifier",
 	Generators: []ssot.GeneratorOption{
-		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowManualFields(&ShareAttrs.Name))),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowManualFields(&ShareAttrs.Name)), ssot.SchemaDescribe()),
 		ssot.WithObjectAssert(
 			ssot.ObjectAssertShow(),
 			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
@@ -158,7 +162,9 @@ var Share = ssot.Object{
 		},
 	},
 	Attributes: []ssot.Attribute{
-		ShareAttrs.SecureObjectsOnly,
+		// TODO [next PRs]: Add secure_objects_only to the attributes when the resource gets it. Until then it is only a CREATE clause,
+		// and the resource has no such field.
+		// ShareAttrs.SecureObjectsOnly,
 		ShareAttrs.Comment,
 		ShareAttrs.Accounts,
 	},

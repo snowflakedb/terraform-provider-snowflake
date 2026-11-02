@@ -11,10 +11,9 @@ import (
 )
 
 type ShareModel struct {
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Accounts           tfconfig.Variable `json:"accounts,omitempty"`
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Name     tfconfig.Variable `json:"name,omitempty"`
+	Accounts tfconfig.Variable `json:"accounts,omitempty"`
+	Comment  tfconfig.Variable `json:"comment,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -90,11 +89,6 @@ func (s *ShareModel) WithComment(comment string) *ShareModel {
 	return s
 }
 
-func (s *ShareModel) WithFullyQualifiedName(fullyQualifiedName string) *ShareModel {
-	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return s
-}
-
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -111,10 +105,5 @@ func (s *ShareModel) WithAccountsValue(value tfconfig.Variable) *ShareModel {
 
 func (s *ShareModel) WithCommentValue(value tfconfig.Variable) *ShareModel {
 	s.Comment = value
-	return s
-}
-
-func (s *ShareModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ShareModel {
-	s.FullyQualifiedName = value
 	return s
 }
