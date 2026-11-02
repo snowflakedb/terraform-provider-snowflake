@@ -28,6 +28,20 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Replication group resources and data source
+
+We have added two new preview resources for [replication groups](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group). [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) manages the group in the source account. [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) manages a replica in the target account. `allowed_accounts` is the list of target accounts. Snowflake also includes the source account, and the resource omits that account from state. `object_types` and the allowed-object lists are changed in one ALTER, and `comment`, `replication_schedule`, and `error_integration` are changed in another.
+
+We have also added a new preview data source, [`snowflake_replication_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/replication_groups), for listing replication groups. SHOW supports `IN ACCOUNT` only. There is no DESCRIBE command.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_replication_group_resource` for `snowflake_replication_group`;
+- `snowflake_replication_group_secondary_resource` for `snowflake_replication_group_secondary`;
+- `snowflake_replication_groups_datasource` for `snowflake_replication_groups`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(new feature)* `AWS_S3TABLES` and `AWS_PRIVATE_S3TABLES` catalog API types
 
 [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) now accepts `AWS_S3TABLES` and `AWS_PRIVATE_S3TABLES` as valid values for `rest_config.catalog_api_type`.

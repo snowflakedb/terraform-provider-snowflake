@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -24,7 +25,7 @@ func ReplicationGroupSecondary() *tfschema.Resource {
 
 		CreateContext: replicationGroupSecondaryCreateExt,
 		ReadContext:   replicationGroupSecondaryReadExt,
-		DeleteContext: TrackingDeleteWrapper(resources.ReplicationGroupSecondary, DeleteReplicationGroupSecondary),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ReplicationGroupSecondaryResource), TrackingDeleteWrapper(resources.ReplicationGroupSecondary, DeleteReplicationGroupSecondary)),
 		Importer:      replicationGroupSecondaryImporterExt,
 
 		CustomizeDiff: replicationGroupSecondaryCustomizeDiff,
