@@ -806,6 +806,10 @@ func validateAttributeOptions(objectName string, attr Attribute, asElem bool) {
 				if asElem {
 					panic(fmt.Sprintf("object %q: output suppression on collection elem %q", objectName, attr.Name))
 				}
+			case SuppressAlways:
+				if suppress.Key != "" || len(attr.DiffSuppress.Suppressors()) != 1 {
+					panic(fmt.Sprintf("object %q: ignore-always suppression for attribute %q stands alone", objectName, attr.Name))
+				}
 			default:
 				panic(fmt.Sprintf("object %q: unknown suppression %q for attribute %q", objectName, suppress.Kind, attr.Name))
 			}

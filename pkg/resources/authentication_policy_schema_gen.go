@@ -21,6 +21,17 @@ var authenticationPolicyAttributesSchema = authenticationPolicyAttributesModific
 		DiffSuppressFunc: NormalizeAndCompareEnumsInSet("authentication_methods", sdk.ToAuthenticationMethodsOption),
 		Description:      "A list of authentication methods that are allowed during login. " + enumValuesDescription(sdk.AllAuthenticationMethodsOptions),
 	},
+	"mfa_authentication_methods": {
+		Type:     tfschema.TypeSet,
+		Optional: true,
+		Elem: &tfschema.Schema{
+			Type:             tfschema.TypeString,
+			ValidateDiagFunc: sdkValidation(sdk.ToMfaAuthenticationMethodsOption),
+		},
+		DiffSuppressFunc: ignoreAlwaysSuppressFunc,
+		Description:      "A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. " + enumValuesDescription(sdk.AllMfaAuthenticationMethodsOptions),
+		Deprecated:       "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
+	},
 	"mfa_enrollment": {
 		Type:             tfschema.TypeString,
 		Optional:         true,

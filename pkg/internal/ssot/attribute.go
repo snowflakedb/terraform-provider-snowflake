@@ -126,6 +126,10 @@ type Attribute struct {
 	AtLeastOneOf []Attribute
 	// Sensitive marks the Terraform schema field sensitive.
 	Sensitive bool
+	// Deprecated is the schema Deprecated message. Empty means the attribute is not deprecated.
+	// The attribute stays on Attributes, so the schema, model builders, and resource assertions include it.
+	// setStateToValuesFromConfig leaves it out. SkipCreate leaves it out of generated create when the value is not sent.
+	Deprecated string
 	// CreateOnly marks an optional bool that is applied only on create.
 	// The generator emits IgnoreAfterCreation and a create helper, not an update helper.
 	// The Terraform type stays a boolean string unless NativeBool is set.
@@ -176,4 +180,9 @@ func (a Attribute) ColumnEnum() *Enum {
 		return a.ShowEnum
 	}
 	return a.Enum
+}
+
+// IsEnumCollection reports a list or set whose element is an enum.
+func (a Attribute) IsEnumCollection() bool {
+	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrEnum
 }

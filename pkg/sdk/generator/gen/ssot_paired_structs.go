@@ -82,7 +82,7 @@ func detailsFieldKind(obj ssot.Object, attr ssot.Attribute, nested []*ssot.Attri
 // detailsGoType is the Go type of a column in a details struct. A list or set of enums is a slice of the enum there,
 // unlike in a SHOW row, where it is []string.
 func detailsGoType(obj ssot.Object, attr ssot.Attribute) string {
-	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrEnum && attr.Elem.ColumnEnum() != nil {
+	if attr.IsEnumCollection() && attr.Elem.ColumnEnum() != nil {
 		return "[]" + attr.Elem.ColumnEnum().Name
 	}
 	concrete, _ := ssot.AttributeGoTypes(obj, attr)

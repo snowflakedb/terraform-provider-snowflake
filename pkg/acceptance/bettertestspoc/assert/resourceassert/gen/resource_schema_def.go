@@ -94,10 +94,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
 	},
 	{
-		name:   "AuthenticationPolicy",
-		schema: resources.AuthenticationPolicy().Schema,
-	},
-	{
 		name:   "CortexAgent",
 		schema: resources.CortexAgent().Schema,
 	},

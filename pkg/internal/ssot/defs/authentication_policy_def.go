@@ -213,9 +213,9 @@ var authenticationPolicySecurityIntegrationsOption = ssot.Attribute{
 // AuthenticationPolicyAttrs holds reusable Authentication Policy fields so SHOW and DESCRIBE
 // Columns can point at the same definitions instead of restating names.
 //
-// mfa_authentication_methods stays in the schema ext. It is a deprecated set with no effect,
-// not a CREATE/ALTER column. Nested enum sets stay case-sensitive: the generator normalizes
-// them, and the ext clears that and keeps the case-sensitive wording.
+// mfa_authentication_methods is a deprecated set with no effect, not a CREATE/ALTER column.
+// Nested enum sets stay case-sensitive: the generator normalizes them, and the ext clears
+// that and keeps the case-sensitive wording.
 //
 // Sets are created through hand-written per-element mappers named to<Stem><Field>. The
 // security integrations option is mapped as a whole, because the SDK takes one option request.
@@ -234,24 +234,25 @@ var authenticationPolicyPatAtLeastOneOf = []ssot.Attribute{
 }
 
 var AuthenticationPolicyAttrs = struct {
-	AuthenticationMethods  ssot.Attribute
-	MfaEnrollment          ssot.Attribute
-	ClientTypes            ssot.Attribute
-	ClientPolicy           ssot.Attribute
-	MfaPolicy              ssot.Attribute
-	PatPolicy              ssot.Attribute
-	WorkloadIdentityPolicy ssot.Attribute
-	SecurityIntegrations   ssot.Attribute
-	Comment                ssot.Attribute
-	CreatedOn              ssot.Attribute
-	Name                   ssot.Attribute
-	DatabaseName           ssot.Attribute
-	SchemaName             ssot.Attribute
-	Kind                   ssot.Attribute
-	Owner                  ssot.Attribute
-	OwnerRoleType          ssot.Attribute
-	Options                ssot.Attribute
-	TargetScopes           ssot.Attribute
+	AuthenticationMethods    ssot.Attribute
+	MfaAuthenticationMethods ssot.Attribute
+	MfaEnrollment            ssot.Attribute
+	ClientTypes              ssot.Attribute
+	ClientPolicy             ssot.Attribute
+	MfaPolicy                ssot.Attribute
+	PatPolicy                ssot.Attribute
+	WorkloadIdentityPolicy   ssot.Attribute
+	SecurityIntegrations     ssot.Attribute
+	Comment                  ssot.Attribute
+	CreatedOn                ssot.Attribute
+	Name                     ssot.Attribute
+	DatabaseName             ssot.Attribute
+	SchemaName               ssot.Attribute
+	Kind                     ssot.Attribute
+	Owner                    ssot.Attribute
+	OwnerRoleType            ssot.Attribute
+	Options                  ssot.Attribute
+	TargetScopes             ssot.Attribute
 	// DESCRIBE-only columns: a read enum, and the values DESCRIBE returns as nested structs. They share the Children of the attributes.
 	DescribeMfaEnrollment          ssot.Attribute
 	DescribeSecurityIntegrations   ssot.Attribute
@@ -273,6 +274,19 @@ var AuthenticationPolicyAttrs = struct {
 			Type: ssot.AttrEnum,
 			Enum: AuthenticationMethodsOption,
 		},
+	},
+	MfaAuthenticationMethods: ssot.Attribute{
+		Name:        "mfa_authentication_methods",
+		Type:        ssot.AttrSet,
+		Description: "A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication.",
+		Deprecated:  "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
+		Elem: &ssot.Attribute{
+			Type: ssot.AttrEnum,
+			Enum: MfaAuthenticationMethodsOption,
+		},
+		// The field is not sent. Ignore every diff so a configured value does not plan a change.
+		DiffSuppress: ssot.SuppressAlways,
+		SkipCreate:   true,
 	},
 	MfaEnrollment: ssot.Attribute{
 		Name:        "mfa_enrollment",
@@ -400,16 +414,35 @@ var AuthenticationPolicy = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
 		// describe_output is a block of the raw DESCRIBE strings. The typed columns and the comment are mapped from the original rows in the ext.
-		ssot.WithSchema(ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
-			&AuthenticationPolicyAttrs.AuthenticationMethods,
-			&AuthenticationPolicyAttrs.ClientTypes,
-			&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
-			&AuthenticationPolicyAttrs.Comment,
-			&AuthenticationPolicyAttrs.DescribeClientPolicy,
-			&AuthenticationPolicyAttrs.DescribeMfaPolicy,
-			&AuthenticationPolicyAttrs.DescribePatPolicy,
-			&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
-		))),
+		// target_scopes is plain-only, so the SHOW mapper stays in the schema ext.
+		ssot.WithSchema(
+			ssot.SchemaShow(ssot.SchemaShowManualFields(&AuthenticationPolicyAttrs.TargetScopes)),
+			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+				&AuthenticationPolicyAttrs.AuthenticationMethods,
+				&AuthenticationPolicyAttrs.ClientTypes,
+				&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
+				&AuthenticationPolicyAttrs.Comment,
+				&AuthenticationPolicyAttrs.DescribeClientPolicy,
+				&AuthenticationPolicyAttrs.DescribeMfaPolicy,
+				&AuthenticationPolicyAttrs.DescribePatPolicy,
+				&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
+			)),
+		),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+		// Parameter assertions omitted. The catalog has no AUTHENTICATION_POLICY entries.
+		ssot.WithObjectAssert(
+			ssot.ObjectAssertShow(),
+			ssot.ObjectAssertDescribe(
+				ssot.ObjectAssertDescribeMethod("DescribeDetails"),
+				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations),
+				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeClientPolicy),
+				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeMfaPolicy),
+				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribePatPolicy),
+				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy),
+			),
+		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
@@ -469,10 +502,11 @@ var AuthenticationPolicy = ssot.Object{
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v2_9_0_AuthenticationPolicyStateUpgrader",
 	},
-	// mfa_authentication_methods is a deprecated schema-ext field and DESCRIBE returns the READ variants.
-	AdditionalEnums: []*ssot.Enum{MfaAuthenticationMethodsOption, MfaAuthenticationMethodsReadOption, MfaEnrollmentReadOption},
+	// DESCRIBE returns the READ variants. mfa_authentication_methods uses MfaAuthenticationMethodsOption on the attribute.
+	AdditionalEnums: []*ssot.Enum{MfaAuthenticationMethodsReadOption, MfaEnrollmentReadOption},
 	Attributes: []ssot.Attribute{
 		AuthenticationPolicyAttrs.AuthenticationMethods,
+		AuthenticationPolicyAttrs.MfaAuthenticationMethods,
 		AuthenticationPolicyAttrs.MfaEnrollment,
 		AuthenticationPolicyAttrs.ClientTypes,
 		AuthenticationPolicyAttrs.ClientPolicy,
