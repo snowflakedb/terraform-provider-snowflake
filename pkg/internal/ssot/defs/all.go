@@ -23,6 +23,7 @@ func All() []ssot.Object {
 		BackupPolicy,
 		BackupSet,
 		ProjectionPolicy,
+		PostgresMirror,
 		Share,
 		ReplicationGroup,
 		ReplicationGroupSecondary,

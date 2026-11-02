@@ -118,7 +118,6 @@ var (
 		sdk.CatalogIntegrationOpenCatalogRestConfigDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
 		sdk.PolicyReference{},
-		sdk.PostgresMirrorDetails{},
 		sdk.StorageLocationAzureDetails{},
 		sdk.StorageLocationGcsDetails{},
 		sdk.StorageLocationS3CompatDetails{},

@@ -240,6 +240,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PasswordPolicyDetails{}, IsDescribe: true},
 	// SkipFields omits SDK parse helpers (not DESCRIBE columns; keep omitted).
 	{ObjectStruct: sdk.PostgresInstanceDetails{}, IsDescribe: true, SkipFields: []string{"has_any_running_operations", "operation_errors"}},
+	{ObjectStruct: sdk.PostgresMirrorDetails{}, IsDescribe: true},
 	// SkipFields omits SDK-only identifier/normalized fields (not Snowflake DESCRIBE properties; schema is not wired yet).
 	{ObjectStruct: sdk.ProcedureDetails{}, IsDescribe: true, SkipFields: []string{
 		"id", "normalized_imports", "normalized_target_path",
