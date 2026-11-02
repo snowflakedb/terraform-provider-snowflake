@@ -34,6 +34,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 	comment := random.Comment()
 	externalComment := random.Comment()
 	const schedule = "10 MINUTE"
+	const externalSchedule = "20 MINUTE"
 	// Config names the target account. Snowflake also adds the source account; the resource suppresses that member.
 	configAccounts := []string{allowedAccount.FullyQualifiedName()}
 
@@ -98,7 +99,6 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 	objectListsState.comment = ""
 	objectListsState.schedule = ""
 	objectListsState.errorIntegration = ""
-	objectListsState.scheduleCleared = true
 	objectListsState.errorIntegrationCleared = true
 
 	assertBasic := replicationGroupAssertions(t, ref, id, configAccounts, sourceAccount, basicState)
@@ -127,8 +127,8 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// SHOW does not return the allowed-object lists or error_integration.
-				// ignore_edition_check is a create-only default. An omitted schedule comes back nil; import writes that nil as "".
-				ImportStateVerifyIgnore: replicationGroupImportIgnores(true),
+				// ignore_edition_check is a create-only default.
+				ImportStateVerifyIgnore: replicationGroupImportIgnores(),
 				ImportStateCheck:        replicationGroupImportChecks(t, id, configAccounts, basicState),
 			},
 			{
@@ -149,7 +149,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: replicationGroupImportIgnores(false),
+				ImportStateVerifyIgnore: replicationGroupImportIgnores(),
 				ImportStateCheck:        replicationGroupImportChecks(t, id, configAccounts, allState),
 			},
 			{
@@ -167,13 +167,17 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().ReplicationGroup.Alter(t, sdk.NewAlterReplicationGroupRequest(id).
-						WithSet(*sdk.NewReplicationGroupSetRequest().WithComment(externalComment)))
+						WithSet(*sdk.NewReplicationGroupSetRequest().
+							WithComment(externalComment).
+							WithReplicationSchedule(externalSchedule)))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectDrift(ref, "comment", nil, sdk.String(externalComment)),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(externalComment), nil),
+						planchecks.ExpectDrift(ref, "replication_schedule", nil, sdk.String(externalSchedule)),
+						planchecks.ExpectChange(ref, "replication_schedule", tfjson.ActionUpdate, sdk.String(externalSchedule), nil),
 					},
 				},
 				Config: config.FromModels(t, objectLists),
@@ -192,7 +196,6 @@ type replicationGroupExpected struct {
 	comment                 string
 	schedule                string
 	errorIntegration        string
-	scheduleCleared         bool
 	errorIntegrationCleared bool
 }
 
@@ -261,11 +264,7 @@ func replicationGroupAssertions(
 		objectCheck = objectCheck.HasComment(expected.comment)
 	}
 	if expected.schedule == "" {
-		if expected.scheduleCleared {
-			resourceCheck = resourceCheck.HasReplicationScheduleEmpty()
-		} else {
-			resourceCheck = resourceCheck.HasNoReplicationSchedule()
-		}
+		resourceCheck = resourceCheck.HasReplicationScheduleEmpty()
 		showCheck = showCheck.HasReplicationSchedule("")
 		objectCheck = objectCheck.HasNoReplicationSchedule()
 	} else {
@@ -308,25 +307,24 @@ func replicationGroupImportChecks(t *testing.T, id sdk.AccountObjectIdentifier, 
 		resourceCheck = resourceCheck.HasCommentString(expected.comment)
 		showCheck = showCheck.HasComment(expected.comment)
 	}
-	if expected.schedule != "" {
+	if expected.schedule == "" {
+		resourceCheck = resourceCheck.HasReplicationScheduleEmpty()
+		showCheck = showCheck.HasReplicationSchedule("")
+	} else {
 		resourceCheck = resourceCheck.HasReplicationScheduleString(expected.schedule)
 		showCheck = showCheck.HasReplicationSchedule(expected.schedule)
 	}
 	return assertThatImport(t, resourceCheck, showCheck)
 }
 
-func replicationGroupImportIgnores(scheduleOmitted bool) []string {
-	ignores := []string{
+func replicationGroupImportIgnores() []string {
+	return []string{
 		"allowed_databases",
 		"allowed_external_volumes",
 		"allowed_shares",
 		"ignore_edition_check",
 		"error_integration",
 	}
-	if scheduleOmitted {
-		ignores = append(ignores, "replication_schedule")
-	}
-	return ignores
 }
 
 func replicationGroupEnumStrings[T ~string](values []T) []string {
