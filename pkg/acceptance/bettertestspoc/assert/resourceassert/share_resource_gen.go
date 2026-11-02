@@ -38,7 +38,7 @@ func (s *ShareResourceAssert) HasName(expected string) *ShareResourceAssert {
 }
 
 func (s *ShareResourceAssert) HasAccounts(expected ...string) *ShareResourceAssert {
-	s.ListContainsExactlyStringValuesInOrder("accounts", expected...)
+	s.SetContainsExactlyStringValues("accounts", expected...)
 	return s
 }
 

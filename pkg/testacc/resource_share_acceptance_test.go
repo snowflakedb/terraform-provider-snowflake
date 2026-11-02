@@ -27,9 +27,6 @@ import (
 
 // TODO [next PRs]: Add resourceshowoutputassert, the describe output assertions and the parameters assertions to the use case tests
 // once the share resource has show_output, describe_output and parameters (none of them exists in the current resource shape).
-// TODO [next PRs]: The share does not import or detect accounts that are not in the configuration (see the import step below).
-// TODO [next PRs]: Assert the out-of-band change of accounts with a plan check once planchecks support list fields (drift is only
-// asserted on the comment in the plan, and on the accounts after the apply).
 func TestAcc_Share_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	account := secondaryTestClient().Account.GetAccountIdentifier(t)
@@ -40,9 +37,6 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 	complete := model.Share("t", id.Name()).
 		WithComment(comment).
 		WithAccounts(account.Name())
-	// TODO [next PRs]: The comment cannot be unset by the resource: it sends SET COMMENT = '' and the SDK rejects an empty SET. The unset
-	// step removes only the accounts until the update uses UNSET COMMENT.
-	withoutAccounts := model.Share("t", id.Name()).WithComment(comment)
 	ref := basic.ResourceReference()
 
 	basicAssertions := []assert.TestCheckFuncProvider{
@@ -56,20 +50,6 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 			HasKind(sdk.ShareKindOutbound).
 			HasOwnerAccountNotEmpty().
 			HasComment("").
-			HasNoTo().
-			HasToTotal(0),
-	}
-	withoutAccountsAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.ShareResource(t, ref).
-			HasNameString(id.Name()).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasCommentString(comment).
-			HasAccountsEmpty(),
-		objectassert.Share(t, id).
-			HasName(id.Name()).
-			HasKind(sdk.ShareKindOutbound).
-			HasOwnerAccountNotEmpty().
-			HasComment(comment).
 			HasNoTo().
 			HasToTotal(0),
 	}
@@ -123,6 +103,7 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectSetChange(ref, "accounts", tfjson.ActionUpdate, nil, []string{account.Name()}),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
@@ -134,25 +115,24 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// TODO [next PRs]: accounts are not imported: reorderStringList drops the accounts that are not configured, and an
-				// import has none configured. It also hides accounts that were added in Snowflake outside of the configuration.
-				ImportStateVerifyIgnore: []string{"accounts"},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedShareResource(t, id.Name()).
 						HasNameString(id.Name()).
-						HasCommentString(comment),
+						HasCommentString(comment).
+						HasAccounts(account.Name()),
 				),
 			},
-			// Update - unset optionals (only the accounts, see the TODO above)
+			// Update - unset optionals
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectNoChangeOnField(ref, "comment"),
+						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(comment), nil),
+						planchecks.ExpectSetElementsChange(ref, "accounts", tfjson.ActionUpdate, nil, []string{account.Name()}),
 					},
 				},
-				Config: accconfig.FromModels(t, withoutAccounts),
-				Check:  assertThat(t, withoutAccountsAssertions...),
+				Config: accconfig.FromModels(t, basic),
+				Check:  assertThat(t, basicAssertions...),
 			},
 			// Update - external changes (set the optionals again, then change them in Snowflake)
 			{
@@ -174,6 +154,8 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectDrift(ref, "comment", sdk.String(comment), sdk.String(externalComment)),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(externalComment), sdk.String(comment)),
+						planchecks.ExpectSetDrift(ref, "accounts", []string{account.Name()}, nil),
+						planchecks.ExpectSetElementsChange(ref, "accounts", tfjson.ActionUpdate, []string{account.Name()}, nil),
 					},
 				},
 				Config: accconfig.FromModels(t, complete),
@@ -225,9 +207,6 @@ func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 			HasTo(account2, account3).
 			HasToTotal(0),
 	}
-	// TODO [next PRs]: The update only adds accounts and the read drops the accounts that are not configured (reorderStringList), so
-	// the account that is removed from the configuration stays in Snowflake and is not shown in the state. The two assertion bundles
-	// below do not assert the recipients in Snowflake; they should assert exactly the configured accounts once this is fixed.
 	oneAccountAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.ShareResource(t, ref).
 			HasNameString(id.Name()).
@@ -235,17 +214,9 @@ func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 			HasAccounts(account2.Name()),
 		objectassert.Share(t, id).
 			HasName(id.Name()).
-			HasComment(comment),
-	}
-	noAccountsAfterRemovalAssertions := []assert.TestCheckFuncProvider{
-		resourceassert.ShareResource(t, ref).
-			HasNameString(id.Name()).
-			HasFullyQualifiedNameString(id.FullyQualifiedName()).
-			HasCommentString(comment).
-			HasAccountsEmpty(),
-		objectassert.Share(t, id).
-			HasName(id.Name()).
-			HasComment(comment),
+			HasComment(comment).
+			HasTo(account2).
+			HasToTotal(0),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -270,6 +241,7 @@ func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectSetChange(ref, "accounts", tfjson.ActionUpdate, nil, []string{account2.Name(), account3.Name()}),
 					},
 				},
 				Config: accconfig.FromModels(t, twoAccounts),
@@ -280,6 +252,27 @@ func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectSetElementsChange(ref, "accounts", tfjson.ActionUpdate, nil, []string{account3.Name()}),
+					},
+				},
+				Config: accconfig.FromModels(t, oneAccount),
+				Check:  assertThat(t, oneAccountAssertions...),
+			},
+			// Update - a recipient added outside of the configuration is detected and removed
+			{
+				PreConfig: func() {
+					// Recipients can be added only to a share that has a database, and the provider removes its temporary one.
+					testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), id, []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage})
+					testClient().Share.Alter(t, sdk.NewAlterShareRequest(id).WithAdd(sdk.ShareAddRequest{
+						Accounts:          []sdk.AccountIdentifier{account3},
+						ShareRestrictions: sdk.Bool(false),
+					}))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectSetElementsDrift(ref, "accounts", []string{account3.Name()}, nil),
+						planchecks.ExpectSetElementsChange(ref, "accounts", tfjson.ActionUpdate, nil, []string{account3.Name()}),
 					},
 				},
 				Config: accconfig.FromModels(t, oneAccount),
@@ -290,10 +283,11 @@ func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectSetChange(ref, "accounts", tfjson.ActionUpdate, []string{account2.Name()}, nil),
 					},
 				},
 				Config: accconfig.FromModels(t, noAccounts),
-				Check:  assertThat(t, noAccountsAfterRemovalAssertions...),
+				Check:  assertThat(t, noAccountsAssertions...),
 			},
 			// Import
 			{

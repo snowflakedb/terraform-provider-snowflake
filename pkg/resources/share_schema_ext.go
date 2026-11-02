@@ -21,8 +21,7 @@ var shareAttributesSchemaExt = map[string]*schema.Schema{
 		Description: "Specifies a comment for the managed account.",
 	},
 	"accounts": {
-		// Changed from Set to List to use DiffSuppressFunc: https://github.com/hashicorp/terraform-plugin-sdk/issues/160
-		Type: schema.TypeList,
+		Type: schema.TypeSet,
 		Elem: &schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: IsValidAccountIdentifier(),
@@ -30,6 +29,6 @@ var shareAttributesSchemaExt = map[string]*schema.Schema{
 		Optional: true,
 		Description: "A list of accounts to be added to the share. Values should not be the account locator, but " +
 			"in the form of 'organization_name.account_name",
-		DiffSuppressFunc: ignoreCaseSuppressFunc,
+		DiffSuppressFunc: IgnoreCaseInSet("accounts"),
 	},
 }
