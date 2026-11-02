@@ -15,6 +15,10 @@ type SchemaGenerator struct {
 	// generated additionalSchemaMapper[T] stub is emitted, and *_ext.go must implement it.
 	ShowManualFields     []*Attribute
 	DescribeManualFields []*Attribute
+	// ShowListFields and DescribeListFields are the same *Attribute pointers that sit in Columns.
+	// An AttrSet column is generated as TypeSet. Listed columns stay TypeList, the type the SDK slice maps to.
+	ShowListFields     []*Attribute
+	DescribeListFields []*Attribute
 }
 
 type SdkGenerator struct {
@@ -244,6 +248,13 @@ func SchemaShowManualFields(attrs ...*Attribute) SchemaShowOption {
 	return func(s *SchemaGenerator) { s.ShowManualFields = append(s.ShowManualFields, attrs...) }
 }
 
+// SchemaShowListFields keeps AttrSet columns as TypeList in the show schema.
+// Use it when show_output was released as a list: a set breaks indexing like show_output[0].tables[0].
+// Each argument is the *Attribute already listed in Show.Columns.
+func SchemaShowListFields(attrs ...*Attribute) SchemaShowOption {
+	return func(s *SchemaGenerator) { s.ShowListFields = append(s.ShowListFields, attrs...) }
+}
+
 func SchemaDescribe(opts ...SchemaDescribeOption) SchemaOption {
 	return func(s *SchemaGenerator) {
 		s.Describe = true
@@ -257,6 +268,12 @@ func SchemaDescribe(opts ...SchemaDescribeOption) SchemaOption {
 // Each argument is the *Attribute already listed in Describe.Columns.
 func SchemaDescribeManualFields(attrs ...*Attribute) SchemaDescribeOption {
 	return func(s *SchemaGenerator) { s.DescribeManualFields = append(s.DescribeManualFields, attrs...) }
+}
+
+// SchemaDescribeListFields keeps AttrSet columns as TypeList in the describe schema.
+// Each argument is the *Attribute already listed in Describe.Columns.
+func SchemaDescribeListFields(attrs ...*Attribute) SchemaDescribeOption {
+	return func(s *SchemaGenerator) { s.DescribeListFields = append(s.DescribeListFields, attrs...) }
 }
 
 func WithSchema(opts ...SchemaOption) GeneratorOption {

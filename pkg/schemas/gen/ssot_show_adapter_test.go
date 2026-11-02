@@ -5,6 +5,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 )
 
@@ -73,4 +74,18 @@ func Test_showResultSchemaDetailsFromSsot_panicsOnNilColumn(t *testing.T) {
 			Show: ssot.OutputSpec{Columns: []*ssot.Attribute{nil}},
 		}, false)
 	})
+}
+
+func Test_showResultSchemaDetailsFromSsot_overridesSetColumnsToTypeSet(t *testing.T) {
+	accounts := ssot.Attribute{Name: "allowed_accounts", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"}}
+	tags := ssot.Attribute{Name: "tags", Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	tables := ssot.Attribute{Name: "tables", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&accounts, &tags, &tables}},
+		Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowListFields(&tables)))},
+	}
+
+	got := showResultSchemaDetailsFromSsot(obj, false)
+	require.Equal(t, map[string]schema.ValueType{"allowed_accounts": schema.TypeSet}, got.TypeOverrides)
 }
