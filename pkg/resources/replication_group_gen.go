@@ -140,6 +140,7 @@ func UpdateReplicationGroup(ctx context.Context, d *tfschema.ResourceData, meta 
 var replicationGroupCustomizeDiff = TrackingCustomDiffWrapper(resources.ReplicationGroup, customdiff.All(
 	ComputedIfAnyAttributeChanged(replicationGroupSchema, ShowOutputAttributeName, "name", "comment", "replication_schedule"),
 	ComputedIfAnyAttributeChanged(replicationGroupSchema, FullyQualifiedNameAttributeName, "name"),
+	replicationGroupRecreateWhenNotPrimary,
 ))
 
 func replicationGroupParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {

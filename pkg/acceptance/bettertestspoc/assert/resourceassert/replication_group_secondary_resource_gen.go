@@ -43,6 +43,11 @@ func (r *ReplicationGroupSecondaryResourceAssert) HasFullyQualifiedName(expected
 	return r
 }
 
+func (r *ReplicationGroupSecondaryResourceAssert) HasIsPrimary(expected bool) *ReplicationGroupSecondaryResourceAssert {
+	r.BoolValueSet("is_primary", expected)
+	return r
+}
+
 func (r *ReplicationGroupSecondaryResourceAssert) HasPrimary(expected string) *ReplicationGroupSecondaryResourceAssert {
 	r.StringValueSet("primary", expected)
 	return r
@@ -67,6 +72,11 @@ func (r *ReplicationGroupSecondaryResourceAssert) HasFullyQualifiedNameString(ex
 	return r
 }
 
+func (r *ReplicationGroupSecondaryResourceAssert) HasIsPrimaryString(expected string) *ReplicationGroupSecondaryResourceAssert {
+	r.ValueSet("is_primary", expected)
+	return r
+}
+
 func (r *ReplicationGroupSecondaryResourceAssert) HasPrimaryString(expected string) *ReplicationGroupSecondaryResourceAssert {
 	r.ValueSet("primary", expected)
 	return r
@@ -86,6 +96,11 @@ func (r *ReplicationGroupSecondaryResourceAssert) HasNoFullyQualifiedName() *Rep
 	return r
 }
 
+func (r *ReplicationGroupSecondaryResourceAssert) HasNoIsPrimary() *ReplicationGroupSecondaryResourceAssert {
+	r.ValueNotSet("is_primary")
+	return r
+}
+
 func (r *ReplicationGroupSecondaryResourceAssert) HasNoPrimary() *ReplicationGroupSecondaryResourceAssert {
 	r.ValueNotSet("primary")
 	return r
@@ -97,6 +112,11 @@ func (r *ReplicationGroupSecondaryResourceAssert) HasNoPrimary() *ReplicationGro
 
 func (r *ReplicationGroupSecondaryResourceAssert) HasFullyQualifiedNameEmpty() *ReplicationGroupSecondaryResourceAssert {
 	r.ValueSet("fully_qualified_name", "")
+	return r
+}
+
+func (r *ReplicationGroupSecondaryResourceAssert) HasIsPrimaryEmpty() *ReplicationGroupSecondaryResourceAssert {
+	r.ValueSet("is_primary", "")
 	return r
 }
 
@@ -116,6 +136,11 @@ func (r *ReplicationGroupSecondaryResourceAssert) HasNameNotEmpty() *Replication
 
 func (r *ReplicationGroupSecondaryResourceAssert) HasFullyQualifiedNameNotEmpty() *ReplicationGroupSecondaryResourceAssert {
 	r.ValuePresent("fully_qualified_name")
+	return r
+}
+
+func (r *ReplicationGroupSecondaryResourceAssert) HasIsPrimaryNotEmpty() *ReplicationGroupSecondaryResourceAssert {
+	r.ValuePresent("is_primary")
 	return r
 }
 

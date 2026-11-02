@@ -187,6 +187,70 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 	})
 }
 
+func TestAcc_ReplicationGroup_RecreateWhenExternallyNotPrimary(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	database, cleanupDatabase := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDatabase)
+	sourceAccount := testClient().Account.GetAccountIdentifier(t)
+	targetAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+
+	// A primary in the other account, so this account can replace the managed group with a replica of the same name.
+	otherDatabase, cleanupOtherDatabase := secondaryTestClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupOtherDatabase)
+	otherPrimary := secondaryTestClient().Ids.RandomAccountObjectIdentifier()
+	secondaryTestClient().ReplicationGroup.CreateWithRequest(t, sdk.NewCreateReplicationGroupRequest(
+		otherPrimary,
+		[]sdk.ReplicationGroupObjectType{sdk.ReplicationGroupObjectTypeDatabases},
+		[]sdk.AccountIdentifier{sourceAccount},
+	).WithAllowedDatabases([]sdk.AccountObjectIdentifier{otherDatabase.ID()}))
+	t.Cleanup(func() {
+		// The brief replica copies this database into the current account. Drop that copy after the group is gone.
+		_ = testClient().Database.DropDatabase(t, otherDatabase.ID())
+		secondaryTestClient().ReplicationGroup.Drop(t, otherPrimary)
+	})
+
+	group := model.ReplicationGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{string(sdk.ReplicationGroupObjectTypeDatabases)}).
+		WithAllowedDatabases([]string{database.ID().FullyQualifiedName()})
+	ref := group.ResourceReference()
+	otherOf := sdk.NewExternalObjectIdentifier(targetAccount, otherPrimary)
+	basicState := replicationGroupExpected{
+		databases:   []sdk.AccountObjectIdentifier{database.ID()},
+		objectTypes: []sdk.ReplicationGroupObjectType{sdk.ReplicationGroupObjectTypeDatabases},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ReplicationGroup),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, group),
+				Check:  assertThat(t, replicationGroupAssertions(t, ref, id, []string{targetAccount.FullyQualifiedName()}, sourceAccount, basicState)...),
+			},
+			{
+				// Replace the primary with a replica of the same name. The resource must destroy it and create the primary again.
+				PreConfig: func() {
+					testClient().ReplicationGroup.Drop(t, id)
+					testClient().ReplicationGroup.WaitForPrimaryToBeVisible(t, otherOf)
+					testClient().ReplicationGroup.CreateSecondary(t, id, otherOf)
+				},
+				Config: config.FromModels(t, group),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t, replicationGroupAssertions(t, ref, id, []string{targetAccount.FullyQualifiedName()}, sourceAccount, basicState)...),
+			},
+		},
+	})
+}
+
 type replicationGroupExpected struct {
 	databases               []sdk.AccountObjectIdentifier
 	externalVolumes         []sdk.AccountObjectIdentifier
@@ -216,7 +280,8 @@ func replicationGroupAssertions(
 		HasObjectTypes(replicationGroupEnumStrings(expected.objectTypes)...).
 		HasAllowedDatabases(replicationGroupIdentifierNames(expected.databases)...).
 		HasAllowedAccounts(allowedAccounts...).
-		HasIgnoreEditionCheckString(tfresources.BooleanDefault)
+		HasIgnoreEditionCheckString(tfresources.BooleanDefault).
+		HasIsPrimary(true)
 	showCheck := resourceshowoutputassert.ReplicationGroupShowOutput(t, ref).
 		HasName(id.Name()).
 		HasType(sdk.ReplicationGroupTypeReplication).
@@ -290,7 +355,8 @@ func replicationGroupImportChecks(t *testing.T, id sdk.AccountObjectIdentifier, 
 	resourceCheck := resourceassert.ImportedReplicationGroupResource(t, encoded).
 		HasNameString(id.Name()).
 		HasObjectTypes(replicationGroupEnumStrings(expected.objectTypes)...).
-		HasAllowedAccounts(allowedAccounts...)
+		HasAllowedAccounts(allowedAccounts...).
+		HasIsPrimary(true)
 	showCheck := resourceshowoutputassert.ImportedReplicationGroupShowOutput(t, encoded).
 		HasName(id.Name()).
 		HasType(sdk.ReplicationGroupTypeReplication).

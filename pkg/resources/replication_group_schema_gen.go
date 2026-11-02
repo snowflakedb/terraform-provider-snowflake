@@ -9,7 +9,7 @@ import (
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
+var replicationGroupAttributesSchema = replicationGroupAttributesModificationExt(map[string]*tfschema.Schema{
 	"object_types": {
 		Type:     tfschema.TypeList,
 		Required: true,
@@ -93,7 +93,7 @@ var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
 		Optional:    true,
 		Description: "Comment for the replication group. The alter page defaults it to NULL. CREATE has no COMMENT clause.",
 	},
-}
+})
 
 var replicationGroupSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{

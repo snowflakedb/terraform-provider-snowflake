@@ -280,6 +280,14 @@ var ReplicationGroupAttrs = struct {
 	},
 }
 
+// is_primary is resource state copied from SHOW. It is not a CREATE or ALTER clause.
+// NativeBool keeps the resource assertion a bool, matching the computed schema field.
+var replicationGroupIsPrimaryState = ssot.Attribute{
+	Name:       "is_primary",
+	Type:       ssot.AttrBool,
+	NativeBool: true,
+}
+
 // AS REPLICA OF is the secondary CREATE argument. It is not the SHOW column primary.
 // The SHOW column is read-only. A create clause on an Attributes entry has to be in that statement's sequence,
 // so the source attribute has no create clause and the primary CREATE does not gain AS REPLICA OF.
@@ -379,10 +387,18 @@ var replicationGroupSuspend = ssot.Attribute{
 // ReplicationGroupSecondary holds the target-account CREATE and ALTER.
 // SdkCreateForVariants emits CreateSecondary. SdkAlterForVariants emits AlterSecondary.
 var ReplicationGroup = ssot.Object{
-	Name:           "ReplicationGroup",
-	NamePlural:     "ReplicationGroups",
-	IdType:         "AccountObjectIdentifier",
-	PreviewFeature: true,
+	Name:                   "ReplicationGroup",
+	NamePlural:             "ReplicationGroups",
+	IdType:                 "AccountObjectIdentifier",
+	PreviewFeature:         true,
+	AttributesModification: true,
+	// is_primary is added by the schema modification. It is not a resource attribute, so it stays out of CREATE and ALTER.
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"replicationGroupRecreateWhenNotPrimary",
+	},
+	ComputedAttributes: []ssot.Attribute{
+		replicationGroupIsPrimaryState,
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
@@ -565,9 +581,15 @@ var ReplicationGroupSecondary = ssot.Object{
 		ssot.WithApplySetUnset(ssot.Omitted()),
 		ssot.WithAlterSetInSdk(ssot.Omitted()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
+	},
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"replicationGroupSecondaryRecreateWhenPrimary",
+	},
+	ComputedAttributes: []ssot.Attribute{
+		replicationGroupIsPrimaryState,
 	},
 	Attributes: []ssot.Attribute{
 		replicationGroupAsReplicaOf,

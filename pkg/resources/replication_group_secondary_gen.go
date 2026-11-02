@@ -104,7 +104,7 @@ func ReadReplicationGroupSecondaryFunc(withExternalChangesMarking bool) tfschema
 		errs := errors.Join(
 			replicationGroupSecondaryShowOutputSetExt(d, replicationGroupSecondary),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			replicationGroupSecondarySetConfigFields(d, replicationGroupSecondary),
+			replicationGroupSecondarySetConfigFieldsExt(d, replicationGroupSecondary),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -115,6 +115,7 @@ func ReadReplicationGroupSecondaryFunc(withExternalChangesMarking bool) tfschema
 
 var replicationGroupSecondaryCustomizeDiff = TrackingCustomDiffWrapper(resources.ReplicationGroupSecondary, customdiff.All(
 	ComputedIfAnyAttributeChanged(replicationGroupSecondarySchema, ShowOutputAttributeName, "name", "primary"),
+	replicationGroupSecondaryRecreateWhenPrimary,
 ))
 
 func replicationGroupSecondaryParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
@@ -136,8 +137,4 @@ func DeleteReplicationGroupSecondary(ctx context.Context, d *tfschema.ResourceDa
 			return client.ReplicationGroups.DropSafely
 		},
 	)(ctx, d, meta)
-}
-
-func replicationGroupSecondarySetConfigFields(d *tfschema.ResourceData, obj *sdk.ReplicationGroup) error {
-	return nil
 }
