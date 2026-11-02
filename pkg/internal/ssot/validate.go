@@ -234,7 +234,7 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 		}
 		seen[child.Name] = struct{}{}
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
-			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
 		}
 		if child.SqlOnly {
 			validateSqlClause(obj, child, "CREATE", child.CreateSql)
@@ -254,11 +254,11 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 	}
 }
 
-// isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword, or a
-// nested struct.
+// isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword,
+// an identifier, or a nested struct.
 func isNestedSqlOnlyClause(child Attribute) bool {
 	switch child.CreateSql.Kind {
-	case SqlKindStatic, SqlKindKeyword:
+	case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier:
 		return true
 	case SqlKindObject:
 		return child.Type == AttrObject
@@ -696,6 +696,11 @@ func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[
 		if _, ok := attrs[name]; !ok {
 			validateAttribute(obj, *field)
 			validateSqlClauses(obj, *field)
+			// A CREATE-only object is not an attribute, so its children are checked here.
+			// A PreexistingStruct names a struct the SDK definition supplies and has no Children.
+			if field.EffectiveSqlClause(clauseUse(statement)).Kind == SqlKindObject {
+				validateNestedAttribute(obj, *field)
+			}
 		}
 		validateSqlClause(obj, *field, statement, field.EffectiveSqlClause(clauseUse(statement)))
 	}
@@ -760,7 +765,14 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 			}
 			identifiers := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrIdentifier && attr.Elem.IdentifierType != ""
 			stringsList := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrString
-			if !identifiers && !stringsList && (attr.Type != AttrEnum || enum == nil || enum.Name == "") {
+			switch {
+			case identifiers:
+			case stringsList:
+				if clause.Quotes != "" || clause.Equals != "" {
+					panic(fmt.Sprintf("object %q: attribute %q %s string list keyword has quotes or equals", obj.Name, attr.Name, statement))
+				}
+			case attr.Type == AttrEnum && enum != nil && enum.Name != "":
+			default:
 				panic(fmt.Sprintf("object %q: attribute %q %s value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings", obj.Name, attr.Name, statement))
 			}
 		}
@@ -776,10 +788,13 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		if clause.AsParameter && (clause.SQL == "" || clause.Parentheses != "") {
 			panic(fmt.Sprintf("object %q: attribute %q %s object clause as a parameter needs Sql and no parentheses", obj.Name, attr.Name, statement))
 		}
-	case SqlKindStatic:
-		if statement != "CREATE" {
-			panic(fmt.Sprintf("object %q: attribute %q static clause is CREATE only", obj.Name, attr.Name))
+	case SqlKindPreexistingStruct:
+		requireCreateOnlyClause(obj, attr, statement, clause)
+		if clause.StructName == "" {
+			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause has no struct name", obj.Name, attr.Name))
 		}
+	case SqlKindStatic:
+		requireCreateOnlyClause(obj, attr, statement, clause)
 		if !attr.SqlOnly {
 			panic(fmt.Sprintf("object %q: attribute %q static clause is SQL-only", obj.Name, attr.Name))
 		}
@@ -791,6 +806,12 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		}
 	default:
 		panic(fmt.Sprintf("object %q: attribute %q %s has sql kind %q", obj.Name, attr.Name, statement, clause.Kind))
+	}
+}
+
+func requireCreateOnlyClause(obj Object, attr Attribute, statement string, clause SqlClause) {
+	if statement != "CREATE" {
+		panic(fmt.Sprintf("object %q: attribute %q %s clause is CREATE only", obj.Name, attr.Name, clause.Kind))
 	}
 }
 

@@ -19,6 +19,7 @@ var tablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
 	case_Tables_validation_Create_name_ValidIdentifier                                                                                              testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Tables_validation_Create_opts_ConflictingFields                                                                                            testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet                                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet"
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet                                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet"
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields                                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields"
@@ -174,6 +175,14 @@ var tablesTests = TablesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateTableOptions", "name"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateTableOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 			validationCase[*CreateTableOptions]{

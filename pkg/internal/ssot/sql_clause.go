@@ -19,6 +19,8 @@ const (
 	// SqlKindObject is a nested struct: the fields are the Children of the attribute, or the Children of the Elem object
 	// of a list. See ObjectParameter.
 	SqlKindObject SqlKind = "object"
+	// SqlKindPreexistingStruct is a struct that already exists in the SDK definition. See PreexistingStruct.
+	SqlKindPreexistingStruct SqlKind = "preexisting_struct"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -93,6 +95,10 @@ type SqlClause struct {
 	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
 	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
 	Variants []SqlVariant
+	// StructName is the name of the preexisting struct that the SDK definition supplies. PreexistingStruct sets it.
+	StructName string
+	// NoComma separates the elements of a nested struct without commas. NoComma sets it.
+	NoComma bool
 }
 
 // SqlVariant is one variant of an object, such as a storage provider. Fields are references to attributes, in SQL order.
@@ -190,16 +196,6 @@ func EnumKeyword(opts ...SqlClauseOption) SqlClause {
 	}, opts)
 }
 
-// StringListKeyword is a keyword list of strings in parentheses with no comma, such as EXISTS ( <condition> ).
-// The attribute is a list of strings. Sql is the keyword before the parentheses. FieldName sets the Go field.
-// The list is not checked as identifiers.
-func StringListKeyword(opts ...SqlClauseOption) SqlClause {
-	return newClause(SqlKindKeyword, func(c *SqlClause) {
-		c.ValueKeyword = true
-		c.Parentheses = SqlParensYes
-	}, opts)
-}
-
 // IdentifierListKeyword is a list of identifiers written with no name, in parentheses: ('a', 'b').
 // The attribute is a list or set of identifiers.
 func IdentifierListKeyword(opts ...SqlClauseOption) SqlClause {
@@ -209,11 +205,33 @@ func IdentifierListKeyword(opts ...SqlClauseOption) SqlClause {
 	}, opts)
 }
 
+// StringListKeyword is a list of strings written as a keyword, such as CLUSTER BY (a, b) or EXISTS ( <condition> ).
+// Sql is the text before the list. Parentheses() wraps the list, and NoComma() joins the items with a space
+// instead of a comma. The attribute is a list or set of strings, which are not checked as identifiers.
+// The Go field name is FieldName, or the attribute name in camel case.
+func StringListKeyword(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindKeyword, func(c *SqlClause) {
+		c.ValueKeyword = true
+	}, opts)
+}
+
 // IdentifierKeyword is an identifier keyword.
 // idType is the identifier type, without a pointer. Pass Sql to set the clause text.
+// FieldName sets the Go field name when it should not be derived from the SQL text.
 func IdentifierKeyword(idType string, opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindIdentifier, func(c *SqlClause) {
 		c.IdType = idType
+	}, opts)
+}
+
+// PreexistingStruct is a field of the query struct structName, which the SDK definition passes to CreateOperationFromObject.
+// The struct and its fields stay in that definition, and the generated statement embeds it.
+// Parentheses() wraps the struct, NoComma() leaves the commas out, Sql is the text before it,
+// and Required makes the field a value rather than a pointer. The Go field name is FieldName,
+// or the attribute name in camel case.
+func PreexistingStruct(structName string, opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindPreexistingStruct, func(c *SqlClause) {
+		c.StructName = structName
 	}, opts)
 }
 
@@ -467,6 +485,11 @@ func Parentheses() SqlClauseOption {
 
 func NoParentheses() SqlClauseOption {
 	return func(c *SqlClause) { c.Parentheses = SqlParensNo }
+}
+
+// NoComma leaves the commas out between the elements of a nested struct.
+func NoComma() SqlClauseOption {
+	return func(c *SqlClause) { c.NoComma = true }
 }
 
 func Equals() SqlClauseOption {

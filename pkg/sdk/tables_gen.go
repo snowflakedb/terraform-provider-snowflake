@@ -48,7 +48,7 @@ type CreateTableOptions struct {
 	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
 	DefaultDdlCollation        *StringAllowEmpty                `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy            *TableRowAccessPolicyLegacy      `ddl:"keyword"`
+	RowAccessPolicy            *TableRowAccessPolicy            `ddl:"list,no_comma"`
 	Tag                        []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment                    *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -132,17 +132,22 @@ type LegacyTableCopyOnErrorOptions struct {
 	AbortStatement *bool   `ddl:"keyword" sql:"ABORT_STATEMENT"`
 }
 
+type TableRowAccessPolicy struct {
+	Name SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
+	On   []string               `ddl:"keyword,parentheses" sql:"ON"`
+}
+
 // CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
 type CreateAsSelectTableOptions struct {
-	create          bool                        `ddl:"static" sql:"CREATE"`
-	OrReplace       *bool                       `ddl:"keyword" sql:"OR REPLACE"`
-	table           bool                        `ddl:"static" sql:"TABLE"`
-	name            SchemaObjectIdentifier      `ddl:"identifier"`
-	Columns         []TableAsSelectColumn       `ddl:"list,parentheses"`
-	ClusterBy       []string                    `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	CopyGrants      *bool                       `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy *TableRowAccessPolicyLegacy `ddl:"keyword"`
-	Query           string                      `ddl:"parameter,no_equals" sql:"AS"`
+	create          bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table           bool                   `ddl:"static" sql:"TABLE"`
+	name            SchemaObjectIdentifier `ddl:"identifier"`
+	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
+	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	CopyGrants      *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+	RowAccessPolicy *TableRowAccessPolicy  `ddl:"keyword"`
+	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
 }
 
 type TableAsSelectColumn struct {

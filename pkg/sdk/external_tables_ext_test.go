@@ -58,7 +58,7 @@ func init() {
 				opts.AwsSnsTopic = new("aws_sns_topic")
 				opts.CopyGrants = new(true)
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},
@@ -114,7 +114,7 @@ func init() {
 				opts.PartitionBy = []string{"column"}
 				opts.CopyGrants = new(true)
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},
@@ -177,7 +177,7 @@ func init() {
 				opts.FileFormat = &ExternalTableFileFormat{Name: new("JSON")}
 				opts.CopyGrants = new(true)
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},
@@ -238,7 +238,7 @@ func init() {
 				opts.FileFormat = &ExternalTableFileFormat{Name: new("JSON")}
 				opts.AwsSnsTopic = new("aws_sns_topic")
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},

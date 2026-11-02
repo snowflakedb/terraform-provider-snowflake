@@ -1,6 +1,7 @@
 package defs
 
 import (
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
@@ -178,8 +179,6 @@ var tableSelectCheckConstraints = g.NewQueryStruct("SelectCheckConstraints").
 	WithValidation(g.ValidIdentifier, "Database")
 
 var (
-	TableScopeEnumDef     = g.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
-	TableKindEnumDef      = g.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
 	CloneMomentEnumDef    = g.NewEnum("CloneMoment", "CloneMoments", "AT", "BEFORE")
 	ReclusterStateEnumDef = g.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
 	MatchTypeEnumDef      = g.NewEnum("MatchType", "MatchTypes", "FULL", "SIMPLE", "PARTIAL")
@@ -615,34 +614,8 @@ var tablesDef = g.NewInterface(
 	"Table",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
-	CreateOperation(
-		"https://docs.snowflake.com/en/sql-reference/sql/create-table",
-		g.NewQueryStruct("CreateTable").
-			Create().
-			OrReplace().
-			OptionalEnum("Scope", TableScopeEnumDef, g.KeywordOptions()).
-			OptionalEnum("Kind", TableKindEnumDef, g.KeywordOptions()).
-			SQL("TABLE").
-			IfNotExists().
-			Name().
-			QueryStructField("ColumnsAndConstraints", tableColumnsAndConstraints(), g.ListOptions().Parentheses().Required()).
-			PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-			OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-			OptionalQueryStructField("StageFileFormat", tableFileFormat(), g.ListOptions().Parentheses().NoComma().SQL("STAGE_FILE_FORMAT =")).
-			OptionalQueryStructField("StageCopyOptions", tableCopyOptions(), g.ListOptions().Parentheses().NoComma().SQL("STAGE_COPY_OPTIONS =")).
-			OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-			OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-			OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
-			OptionalAssignment("DEFAULT_DDL_COLLATION", g.KindOfT[sdkcommons.StringAllowEmpty](), g.ParameterOptions()).
-			OptionalCopyGrants().
-			PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
-			OptionalTags().
-			OptionalComment().
-			WithValidation(g.ValidIdentifier, "name").
-			// Remaining additionalValidations: empty Columns, inline constraint,
-			// per-element tags, row access policy, out-of-line constraint type/FK.
-			WithAdditionalValidations(),
-	).
+	// CREATE comes from ssotdefs.Table. The structs it names stay here because other operations reuse them.
+	CreateOperationFromObject(ssotdefs.Table, tableColumnsAndConstraints(), tableFileFormat(), tableCopyOptions()).
 	// TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" CreateTableOptions
 	CustomOperation(
 		"CreateAsSelect",
@@ -655,7 +628,7 @@ var tablesDef = g.NewInterface(
 			ListQueryStructField("Columns", tableAsSelectColumn(), g.ListOptions().Parentheses().Required()).
 			PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 			OptionalCopyGrants().
-			PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
+			PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
 			AssignmentWithFieldName("AS", "string", g.ParameterOptions().NoEquals().Required(), "Query").
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidateValueSet, "Columns").
@@ -805,7 +778,7 @@ var tablesDef = g.NewInterface(
 		tableCheckConstraintDetails,
 		tableSelectCheckConstraints,
 	).
-	WithEnums(TableConstraintTypeDef, TableScopeEnumDef, TableKindEnumDef, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef)
+	WithEnums(TableConstraintTypeDef, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").

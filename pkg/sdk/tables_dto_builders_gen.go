@@ -77,7 +77,7 @@ func (s *CreateTableRequest) WithCopyGrants(copyGrants bool) *CreateTableRequest
 	return s
 }
 
-func (s *CreateTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateTableRequest {
+func (s *CreateTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyRequest) *CreateTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -378,6 +378,16 @@ func (s *LegacyTableCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement
 	return s
 }
 
+func NewTableRowAccessPolicyRequest(
+	name SchemaObjectIdentifier,
+	on []string,
+) *TableRowAccessPolicyRequest {
+	s := TableRowAccessPolicyRequest{}
+	s.Name = name
+	s.On = on
+	return &s
+}
+
 func NewCreateAsSelectTableRequest(
 	name SchemaObjectIdentifier,
 	columns []TableAsSelectColumnRequest,
@@ -405,7 +415,7 @@ func (s *CreateAsSelectTableRequest) WithCopyGrants(copyGrants bool) *CreateAsSe
 	return s
 }
 
-func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateAsSelectTableRequest {
+func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateAsSelectTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }

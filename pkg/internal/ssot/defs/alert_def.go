@@ -145,7 +145,7 @@ var (
 			Name:      "condition",
 			Type:      ssot.AttrList,
 			Elem:      &ssot.Attribute{Type: ssot.AttrString},
-			CreateSql: ssot.StringListKeyword(ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
+			CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.NoComma(), ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
 		}},
 	}
 	alertActionSql = ssot.Attribute{

@@ -41,6 +41,7 @@ var TableAttrs = struct {
 		Description:   "A list of one or more table columns/expressions to be used as clustering key(s) for the table",
 		Elem:          &ssot.Attribute{Type: ssot.AttrString},
 		CreateMapping: ssot.AttributeMappedValueCreate("toTableClusterBy"),
+		CreateSql:     ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("CLUSTER BY")),
 	},
 	Column: ssot.Attribute{
 		Name:        "column",
@@ -168,6 +169,112 @@ var TableAttrs = struct {
 	},
 }
 
+// TableScope and TableKind are the CREATE TABLE keywords before TABLE. The SDK Create request holds them,
+// and the resource does not expose them.
+var (
+	TableScope = ssot.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
+	TableKind  = ssot.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
+)
+
+// TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
+// resource, model, and assertion generators skip them.
+//
+// The column list, the stage file format, and the stage copy options name query structs by PreexistingStruct. The SDK
+// definition in pkg/sdk/generator/defs/tables_def.go supplies them to CreateOperationFromObject and keeps their fields,
+// because other operations and the request types of the resource use them. The row access policy is generated here as
+// TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type.
+var TableCreateAttrs = struct {
+	Scope                      ssot.Attribute
+	Kind                       ssot.Attribute
+	ColumnsAndConstraints      ssot.Attribute
+	EnableSchemaEvolution      ssot.Attribute
+	StageFileFormat            ssot.Attribute
+	StageCopyOptions           ssot.Attribute
+	MaxDataExtensionTimeInDays ssot.Attribute
+	DefaultDdlCollation        ssot.Attribute
+	CopyGrants                 ssot.Attribute
+	RowAccessPolicy            ssot.Attribute
+}{
+	Scope: ssot.Attribute{
+		Name:      "scope",
+		Type:      ssot.AttrEnum,
+		Enum:      TableScope,
+		SqlOnly:   true,
+		CreateSql: ssot.EnumKeyword(),
+	},
+	Kind: ssot.Attribute{
+		Name:      "kind",
+		Type:      ssot.AttrEnum,
+		Enum:      TableKind,
+		SqlOnly:   true,
+		CreateSql: ssot.EnumKeyword(),
+	},
+	ColumnsAndConstraints: ssot.Attribute{
+		Name:      "columns_and_constraints",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.PreexistingStruct("CreateTableColumnsAndConstraints", ssot.Parentheses(), ssot.Required()),
+	},
+	EnableSchemaEvolution: ssot.Attribute{
+		Name:    "enable_schema_evolution",
+		Type:    ssot.AttrBool,
+		SqlOnly: true,
+	},
+	StageFileFormat: ssot.Attribute{
+		Name:      "stage_file_format",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.PreexistingStruct("LegacyFileFormat", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT =")),
+	},
+	StageCopyOptions: ssot.Attribute{
+		Name:      "stage_copy_options",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.PreexistingStruct("LegacyTableCopyOptions", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_COPY_OPTIONS =")),
+	},
+	MaxDataExtensionTimeInDays: ssot.Attribute{
+		Name:    "max_data_extension_time_in_days",
+		Type:    ssot.AttrInt,
+		SqlOnly: true,
+	},
+	DefaultDdlCollation: ssot.Attribute{
+		Name:      "default_ddl_collation",
+		Type:      ssot.AttrString,
+		SqlOnly:   true,
+		CreateSql: ssot.StringParameter(ssot.AllowEmpty()),
+	},
+	CopyGrants: ssot.Attribute{
+		Name:      "copy_grants",
+		Type:      ssot.AttrBool,
+		SqlOnly:   true,
+		CreateSql: ssot.BoolKeyword(ssot.Sql("COPY GRANTS")),
+	},
+	RowAccessPolicy: ssot.Attribute{
+		Name:      "row_access_policy",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children: []ssot.Attribute{
+			{
+				Name:           "name",
+				Type:           ssot.AttrIdentifier,
+				IdentifierType: "SchemaObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ROW ACCESS POLICY"), ssot.FieldName("Name")),
+			},
+			{
+				Name:      "on",
+				Type:      ssot.AttrList,
+				Required:  true,
+				SqlOnly:   true,
+				Elem:      &ssot.Attribute{Type: ssot.AttrString},
+				CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("ON")),
+			},
+		},
+	},
+}
+
 var Table = ssot.Object{
 	Name:                   "Table",
 	NamePlural:             "Tables",
@@ -178,6 +285,28 @@ var Table = ssot.Object{
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
+		ssot.WithSdk(ssot.SdkCreate(ssot.SdkCreateAdditionalValidations())),
+	},
+	Create: ssot.CreateSpec{
+		KeywordsBefore: []*ssot.Attribute{
+			&TableCreateAttrs.Scope,
+			&TableCreateAttrs.Kind,
+		},
+		Clauses: []*ssot.Attribute{
+			&TableCreateAttrs.ColumnsAndConstraints,
+			&TableAttrs.ClusterBy,
+			&TableCreateAttrs.EnableSchemaEvolution,
+			&TableCreateAttrs.StageFileFormat,
+			&TableCreateAttrs.StageCopyOptions,
+			&TableAttrs.DataRetentionTimeInDays,
+			&TableCreateAttrs.MaxDataExtensionTimeInDays,
+			&TableAttrs.ChangeTracking,
+			&TableCreateAttrs.DefaultDdlCollation,
+			&TableCreateAttrs.CopyGrants,
+			&TableCreateAttrs.RowAccessPolicy,
+			ssot.Tags,
+			&TableAttrs.Comment,
+		},
 	},
 	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.
 	// ShowByIdSafely stays in the extension because Read compares schema retention before describing columns.

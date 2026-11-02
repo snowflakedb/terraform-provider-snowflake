@@ -96,6 +96,8 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendIdentifierClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindStatic:
 		return v.appendStaticClause(attr, clause)
+	case ssot.SqlKindPreexistingStruct:
+		return v.appendPreexistingStructClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindObject:
 		return v.appendObjectClause(attr, clause, clauseRequired(attr, clause, statement))
 	default:
@@ -108,6 +110,37 @@ func (v *QueryStruct) appendStaticClause(attr ssot.Attribute, clause ssot.SqlCla
 		panic(fmt.Sprintf("attribute %q: static clause needs a field name and SQL", attr.Name))
 	}
 	return v.SQLWithCustomFieldName(clause.Field, clause.SQL)
+}
+
+// appendPreexistingStructClause embeds the supplied query struct that the clause names.
+func (v *QueryStruct) appendPreexistingStructClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	nested, ok := v.suppliedStructs[clause.StructName]
+	if !ok {
+		panic(fmt.Sprintf("attribute %q: struct clause names %q, which the SDK definition did not supply", attr.Name, clause.StructName))
+	}
+	opts := ListOptions()
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if clause.NoComma {
+		opts = opts.NoComma()
+	}
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	name := clauseGoFieldName(attr, clause)
+	if required {
+		return v.QueryStructField(name, nested, opts.Required())
+	}
+	return v.OptionalQueryStructField(name, nested, opts)
+}
+
+// clauseGoFieldName is the Go field name of a clause: Field, or the attribute name in camel case.
+func clauseGoFieldName(attr ssot.Attribute, clause ssot.SqlClause) string {
+	if clause.Field != "" {
+		return clause.Field
+	}
+	return genhelpers.SnakeCaseToCamel(attr.Name)
 }
 
 // clauseRequired is Attribute.Required on create when the clause leaves Required nil.
@@ -227,10 +260,7 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 	if clause.Parentheses != "" || clause.Equals != "" {
 		panic(fmt.Sprintf("attribute %q: enum keyword has parentheses or equals", attr.Name))
 	}
-	name := clause.Field
-	if name == "" {
-		name = genhelpers.SnakeCaseToCamel(attr.Name)
-	}
+	name := clauseGoFieldName(attr, clause)
 	opts := KeywordOptions()
 	switch clause.Quotes {
 	case "":
@@ -247,29 +277,27 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 	return v.OptionalEnum(name, enum, opts)
 }
 
+// appendStringListKeywordClause adds a keyword field of []string, such as CLUSTER BY (a, b) or EXISTS ( <condition> ).
 func (v *QueryStruct) appendStringListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
-	name := clause.Field
-	if name == "" {
-		name = genhelpers.SnakeCaseToCamel(attr.Name)
+	if clause.Quotes != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: string list keyword has quotes or equals", attr.Name))
 	}
-	opts := KeywordOptions()
+	opts := KeywordOptions().SQL(clause.SQLText(attr))
 	if clause.Parentheses == ssot.SqlParensYes {
-		opts = opts.Parentheses().NoComma()
+		opts = opts.Parentheses()
 	}
-	if clause.SQL != "" {
-		opts = opts.SQL(clause.SQL)
+	if clause.NoComma {
+		opts = opts.NoComma()
 	}
 	if required {
 		opts = opts.Required()
 	}
-	return v.UnnamedList(name, "string", opts)
+	v.fields = append(v.fields, NewField(clauseGoFieldName(attr, clause), KindOfSlice("string"), Tags().Keyword(), opts))
+	return v
 }
 
 func (v *QueryStruct) appendIdentifierListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
-	name := clause.Field
-	if name == "" {
-		name = genhelpers.SnakeCaseToCamel(attr.Name)
-	}
+	name := clauseGoFieldName(attr, clause)
 	opts := KeywordOptions()
 	if clause.Parentheses == ssot.SqlParensYes {
 		opts = opts.Parentheses()
@@ -287,6 +315,9 @@ func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.Sq
 	sql := clause.SQLText(attr)
 	opts := identifierOptionsFromClause(clause, required).SQL(sql)
 	name := sqlToFieldName(sql, true)
+	if clause.Field != "" {
+		name = clause.Field
+	}
 	if required {
 		return v.Identifier(name, clause.IdType, opts)
 	}

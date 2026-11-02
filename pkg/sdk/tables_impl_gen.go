@@ -146,7 +146,6 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		ChangeTracking:             r.ChangeTracking,
 		DefaultDdlCollation:        r.DefaultDdlCollation,
 		CopyGrants:                 r.CopyGrants,
-		RowAccessPolicy:            r.RowAccessPolicy,
 		Tag:                        r.Tag,
 		Comment:                    r.Comment,
 	}
@@ -236,6 +235,12 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 				SkipFile:       r.StageCopyOptions.OnError.SkipFile,
 				AbortStatement: r.StageCopyOptions.OnError.AbortStatement,
 			}
+		}
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &TableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
 		}
 	}
 	return opts
