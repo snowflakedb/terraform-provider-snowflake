@@ -4,6 +4,8 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -97,6 +99,7 @@ func (r *AlterPipeRequest) toOpts() *AlterPipeOptions {
 	if r.Set != nil {
 		opts.Set = &PipeSet{
 			ErrorIntegration:    r.Set.ErrorIntegration,
+			LogEventLevel:       r.Set.LogEventLevel,
 			PipeExecutionPaused: r.Set.PipeExecutionPaused,
 			Comment:             r.Set.Comment,
 		}
@@ -104,6 +107,7 @@ func (r *AlterPipeRequest) toOpts() *AlterPipeOptions {
 	if r.Unset != nil {
 		opts.Unset = &PipeUnset{
 			ErrorIntegration:    r.Unset.ErrorIntegration,
+			LogEventLevel:       r.Unset.LogEventLevel,
 			PipeExecutionPaused: r.Unset.PipeExecutionPaused,
 			Comment:             r.Unset.Comment,
 		}
@@ -176,4 +180,24 @@ func (r pipeDescRow) convert() (*PipeDetails, error) {
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToNonNullableField(&result.InvalidReason, r.InvalidReason)
 	return result, nil
+}
+
+func ToPipeParametersDetails(params []*Parameter) (*PipeParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d PipeParametersDetails
+	if err := errors.Join(
+		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
+		fillTypedParameter(byKey["PIPE_EXECUTION_PAUSED"], strconv.ParseBool, &d.PipeExecutionPaused),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *pipes) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*PipeParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ToPipeParametersDetails(params)
 }

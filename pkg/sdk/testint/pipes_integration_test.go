@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -468,6 +469,69 @@ func TestInt_Pipes(t *testing.T) {
 		status, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
 		require.Equal(t, sdk.PipeExecutionStateRunning, status.ExecutionState)
+	})
+
+	t.Run("show parameters", func(t *testing.T) {
+		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+		t.Cleanup(pipeCleanup)
+		id := pipe.ID()
+
+		parameters, err := client.Parameters.ShowParameters(ctx, &sdk.ShowParametersOptions{
+			In: &sdk.ParametersIn{
+				Pipe: id,
+			},
+		})
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, id, parameters).
+			HasAllDefaults().
+			HasAllDefaultsExplicit())
+
+		parameters, err = client.Pipes.ShowParameters(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, id, parameters).
+			HasAllDefaults().
+			HasAllDefaultsExplicit())
+
+		details, err := client.Pipes.ShowParametersDetails(ctx, id)
+		require.NoError(t, err)
+		require.Equal(t, sdk.LogLevelOff, details.LogEventLevel.Value)
+		require.Equal(t, sdk.ParameterTypeSnowflakeDefault, details.LogEventLevel.Level)
+		require.False(t, details.PipeExecutionPaused.Value)
+		require.Equal(t, sdk.ParameterTypeSnowflakeDefault, details.PipeExecutionPaused.Level)
+	})
+
+	t.Run("alter: set and unset log event level", func(t *testing.T) {
+		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+		t.Cleanup(pipeCleanup)
+
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).
+			WithSet(*sdk.NewPipeSetRequest().
+				WithLogEventLevel(sdk.LogLevelInfo)))
+		require.NoError(t, err)
+
+		params, err := client.Pipes.ShowParameters(ctx, pipe.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, pipe.ID(), params).
+			HasLogEventLevel(sdk.LogLevelInfo).
+			HasLogEventLevelLevel(sdk.ParameterTypePipe).
+			HasPipeExecutionPaused(false).
+			HasPipeExecutionPausedLevel(sdk.ParameterTypeSnowflakeDefault))
+
+		details, err := client.Pipes.ShowParametersDetails(ctx, pipe.ID())
+		require.NoError(t, err)
+		require.Equal(t, sdk.LogLevelInfo, details.LogEventLevel.Value)
+		require.Equal(t, sdk.ParameterTypePipe, details.LogEventLevel.Level)
+
+		err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).
+			WithUnset(*sdk.NewPipeUnsetRequest().
+				WithLogEventLevel(true)))
+		require.NoError(t, err)
+
+		params, err = client.Pipes.ShowParameters(ctx, pipe.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, pipe.ID(), params).
+			HasLogEventLevel(sdk.LogLevelOff).
+			HasLogEventLevelLevel(sdk.ParameterTypeSnowflakeDefault))
 	})
 
 	t.Run("alter: missing object", func(t *testing.T) {

@@ -2,6 +2,11 @@
 
 package sdk
 
+import (
+	"strconv"
+	"strings"
+)
+
 func NewCreatePipeRequest(
 	name SchemaObjectIdentifier,
 	copyStatement string,
@@ -95,6 +100,11 @@ func (s *PipeSetRequest) WithErrorIntegration(errorIntegration string) *PipeSetR
 	return s
 }
 
+func (s *PipeSetRequest) WithLogEventLevel(logEventLevel LogLevel) *PipeSetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
 func (s *PipeSetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *PipeSetRequest {
 	s.PipeExecutionPaused = &pipeExecutionPaused
 	return s
@@ -103,6 +113,17 @@ func (s *PipeSetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *Pipe
 func (s *PipeSetRequest) WithComment(comment string) *PipeSetRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *PipeSetRequest) SetParameterFromRaw(key string, value string) error {
+	switch strings.ToUpper(key) {
+	case "LOG_EVENT_LEVEL":
+		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
+	case "PIPE_EXECUTION_PAUSED":
+		return assignParsedParameter(value, strconv.ParseBool, &s.PipeExecutionPaused)
+	default:
+		return ErrParameterNotSupported
+	}
 }
 
 func NewPipeUnsetRequest() *PipeUnsetRequest {
@@ -115,6 +136,11 @@ func (s *PipeUnsetRequest) WithErrorIntegration(errorIntegration bool) *PipeUnse
 	return s
 }
 
+func (s *PipeUnsetRequest) WithLogEventLevel(logEventLevel bool) *PipeUnsetRequest {
+	s.LogEventLevel = &logEventLevel
+	return s
+}
+
 func (s *PipeUnsetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *PipeUnsetRequest {
 	s.PipeExecutionPaused = &pipeExecutionPaused
 	return s
@@ -123,6 +149,18 @@ func (s *PipeUnsetRequest) WithPipeExecutionPaused(pipeExecutionPaused bool) *Pi
 func (s *PipeUnsetRequest) WithComment(comment bool) *PipeUnsetRequest {
 	s.Comment = &comment
 	return s
+}
+
+func (s *PipeUnsetRequest) UnsetParameterFromRaw(key string) error {
+	switch key {
+	case "LOG_EVENT_LEVEL":
+		s.LogEventLevel = Bool(true)
+	case "PIPE_EXECUTION_PAUSED":
+		s.PipeExecutionPaused = Bool(true)
+	default:
+		return ErrParameterNotSupported
+	}
+	return nil
 }
 
 func NewPipeRefreshRequest() *PipeRefreshRequest {

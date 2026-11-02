@@ -1,6 +1,9 @@
 package sdk
 
-import "errors"
+import (
+	"context"
+	"errors"
+)
 
 // additionalValidations for CreatePipeOptions — copyStatement must be non-empty.
 // The generator cannot express "required string must be non-empty" natively.
@@ -21,4 +24,12 @@ func (opts *ShowPipeOptions) additionalValidations() error {
 		errs = append(errs, errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema"))
 	}
 	return errors.Join(errs...)
+}
+
+func (v *pipes) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
+	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
+		In: &ParametersIn{
+			Pipe: id,
+		},
+	})
 }

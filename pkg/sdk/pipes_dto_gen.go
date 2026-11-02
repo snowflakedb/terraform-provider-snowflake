@@ -34,12 +34,14 @@ type AlterPipeRequest struct {
 
 type PipeSetRequest struct {
 	ErrorIntegration    *string
+	LogEventLevel       *LogLevel
 	PipeExecutionPaused *bool
 	Comment             *string
 }
 
 type PipeUnsetRequest struct {
 	ErrorIntegration    *bool
+	LogEventLevel       *bool
 	PipeExecutionPaused *bool
 	Comment             *bool
 }
