@@ -5,7 +5,6 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -19,7 +18,7 @@ var (
 	replicationGroupUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.ReplicationGroupResource), TrackingUpdateWrapper(resources.ReplicationGroup, UpdateReplicationGroup))
 	replicationGroupDescriptionExt = "Resource used to manage replication groups in the source account. For more information, check [replication group documentation](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group)."
 	replicationGroupImporterExt    = &schema.ResourceImporter{
-		StateContext: TrackingImportWrapper(resources.ReplicationGroup, importReplicationGroup),
+		StateContext: TrackingImportWrapper(resources.ReplicationGroup, ImportReplicationGroup),
 	}
 )
 
@@ -100,31 +99,14 @@ func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceD
 		d.Set("object_types", replicationGroupEnumStrings(group.ObjectTypes)),
 		d.Set("allowed_accounts", accountIdentifierNames(allowedAccounts)),
 		d.Set("comment", group.Comment),
-	}
-	// An empty integration-type list is omitted from config. Writing [] would plan a diff against null.
-	if len(group.AllowedIntegrationTypes) > 0 {
-		errs = append(errs, d.Set("allowed_integration_types", replicationGroupEnumStrings(group.AllowedIntegrationTypes)))
+		d.Set("replication_schedule", group.ReplicationSchedule),
+		d.Set("allowed_integration_types", replicationGroupEnumStrings(group.AllowedIntegrationTypes)),
 	}
 	return errors.Join(errs...)
 }
 
-func replicationGroupSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, group *sdk.ReplicationGroup, importPermissiveMode bool) error {
-	comment := ""
-	if group.Comment != nil {
-		comment = *group.Comment
-	}
-	schedule := ""
-	if group.ReplicationSchedule != nil {
-		schedule = *group.ReplicationSchedule
-	}
-	return errors.Join(
-		d.Set("name", id.Name()),
-		d.Set("object_types", replicationGroupEnumStrings(group.ObjectTypes)),
-		d.Set("allowed_integration_types", replicationGroupEnumStrings(group.AllowedIntegrationTypes)),
-		d.Set("allowed_accounts", accountIdentifierNames(group.AllowedAccounts)),
-		importStringAttribute(d, "comment", importPermissiveMode, comment),
-		importStringAttribute(d, "replication_schedule", importPermissiveMode, schedule),
-	)
+func replicationGroupSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, _ *sdk.ReplicationGroup, _ bool) error {
+	return d.Set("name", id.Name())
 }
 
 func toReplicationGroupObjectTypes(value any) (sdk.ReplicationGroupObjectType, error) {
@@ -159,17 +141,6 @@ func replicationGroupEnumStrings[T ~string](values []T) []string {
 	return out
 }
 
-func importReplicationGroup(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	result, err := ImportReplicationGroup(ctx, d, meta)
-	if err != nil {
-		return nil, err
-	}
-	if err := replicationGroupOmitCurrentAccountFromState(ctx, d, meta); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
 func replicationGroupCurrentAccount(ctx context.Context, meta any) (sdk.AccountIdentifier, error) {
 	details, err := meta.(*provider.Context).Client.ContextFunctions.CurrentSessionDetails(ctx)
 	if err != nil {
@@ -195,29 +166,6 @@ func omitCurrentAccount(accounts []sdk.AccountIdentifier, current sdk.AccountIde
 		filtered = append(filtered, account)
 	}
 	return filtered
-}
-
-func replicationGroupOmitCurrentAccountFromState(ctx context.Context, d *schema.ResourceData, meta any) error {
-	current, err := replicationGroupCurrentAccount(ctx, meta)
-	if err != nil {
-		return err
-	}
-	raw, ok := d.GetOk("allowed_accounts")
-	if !ok {
-		return nil
-	}
-	filtered := make([]string, 0)
-	for _, value := range expandStringList(raw.(*schema.Set).List()) {
-		account, err := helpers.DecodeSnowflakeAccountIdentifier(value)
-		if err != nil {
-			return err
-		}
-		if account.FullyQualifiedName() == current.FullyQualifiedName() {
-			continue
-		}
-		filtered = append(filtered, value)
-	}
-	return d.Set("allowed_accounts", filtered)
 }
 
 func accountIdentifierNames(values []sdk.AccountIdentifier) []string {

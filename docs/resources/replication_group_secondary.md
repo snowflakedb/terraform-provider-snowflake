@@ -61,7 +61,7 @@ Read-Only:
 
 - `account_locator` (String)
 - `account_name` (String)
-- `allowed_accounts` (List of String)
+- `allowed_accounts` (Set of String)
 - `comment` (String)
 - `created_on` (String)
 - `is_listing_auto_fulfillment_group` (Boolean)
