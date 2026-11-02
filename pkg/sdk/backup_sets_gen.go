@@ -143,7 +143,7 @@ type BackupSet struct {
 	BackupPolicyName         *string
 	BackupPolicyDatabaseName *string
 	BackupPolicySchemaName   *string
-	BackupPolicyState        *string
+	BackupPolicyState        *BackupPolicyState
 	OwnerRole                string
 	OwnerRoleType            string
 	Comment                  *string
@@ -194,7 +194,7 @@ type BackupSetDetails struct {
 	BackupPolicyName         *string
 	BackupPolicyDatabaseName *string
 	BackupPolicySchemaName   *string
-	BackupPolicyState        *string
+	BackupPolicyState        *BackupPolicyState
 	OwnerRole                string
 	OwnerRoleType            string
 	Comment                  *string

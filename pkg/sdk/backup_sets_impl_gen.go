@@ -176,7 +176,7 @@ func (r backupSetsRow) convert() (*BackupSet, error) {
 	mapNullString(&result.BackupPolicyName, r.BackupPolicyName)
 	mapNullString(&result.BackupPolicyDatabaseName, r.BackupPolicyDatabaseName)
 	mapNullString(&result.BackupPolicySchemaName, r.BackupPolicySchemaName)
-	mapNullString(&result.BackupPolicyState, r.BackupPolicyState)
+	mapNullStringWithMapping(&result.BackupPolicyState, r.BackupPolicyState, ToBackupPolicyState)
 	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }
@@ -204,7 +204,7 @@ func (r backupSetDescRow) convert() (*BackupSetDetails, error) {
 	mapNullString(&result.BackupPolicyName, r.BackupPolicyName)
 	mapNullString(&result.BackupPolicyDatabaseName, r.BackupPolicyDatabaseName)
 	mapNullString(&result.BackupPolicySchemaName, r.BackupPolicySchemaName)
-	mapNullString(&result.BackupPolicyState, r.BackupPolicyState)
+	mapNullStringWithMapping(&result.BackupPolicyState, r.BackupPolicyState, ToBackupPolicyState)
 	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }

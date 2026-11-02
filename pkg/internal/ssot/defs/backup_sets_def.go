@@ -2,6 +2,13 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
+// backupPolicyStateEnum is backup_policy_state on SHOW and DESCRIBE.
+// The public pages do not list the values. The integration test sees these four.
+var backupPolicyStateEnum = ssot.NewEnum(
+	"BackupPolicyState", "BackupPolicyStates",
+	"ACTIVE", "CREATION_SUSPENDED", "EXPIRATION_SUSPENDED", "SUSPENDED",
+)
+
 // BackupSetAttrs holds reusable backup set fields.
 //
 // There is no handwritten SDK definition for this object.
@@ -140,7 +147,8 @@ var BackupSetAttrs = struct {
 	},
 	BackupPolicyState: ssot.Attribute{
 		Name:           "backup_policy_state",
-		Type:           ssot.AttrString,
+		Type:           ssot.AttrEnum,
+		Enum:           backupPolicyStateEnum,
 		Readonly:       true,
 		OptionalInShow: true,
 		OptionalInDb:   true,
@@ -235,6 +243,7 @@ var BackupSet = ssot.Object{
 			ssot.SdkAlter(),
 			ssot.SdkDescribe(),
 		),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 	},
 	ExactlyOneOf: [][]*ssot.Attribute{{
 		&BackupSetAttrs.ForTable,
