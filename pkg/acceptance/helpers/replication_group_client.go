@@ -36,6 +36,11 @@ func (c *ReplicationGroupClient) CreateWithRequest(t *testing.T, request *sdk.Cr
 	require.NoError(t, c.client().Create(context.Background(), request))
 }
 
+func (c *ReplicationGroupClient) CreateSecondary(t *testing.T, id sdk.AccountObjectIdentifier, primary sdk.ExternalObjectIdentifier) {
+	t.Helper()
+	require.NoError(t, c.client().CreateSecondary(context.Background(), sdk.NewCreateSecondaryReplicationGroupRequest(id, primary)))
+}
+
 func (c *ReplicationGroupClient) Alter(t *testing.T, request *sdk.AlterReplicationGroupRequest) {
 	t.Helper()
 	require.NoError(t, c.client().Alter(context.Background(), request))
