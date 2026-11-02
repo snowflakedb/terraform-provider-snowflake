@@ -66,7 +66,7 @@ func Test_createQueryStruct_objectListWithVariants(t *testing.T) {
 	}
 	ssot.ValidateObject(obj)
 
-	got := createQueryStructFromConfig(obj, obj.SdkConfig())
+	got := createQueryStructFromConfig(obj, obj.SdkConfig(), nil)
 
 	want := NewQueryStruct("CreateWidget").
 		Create().
@@ -470,7 +470,7 @@ func Test_CreateOperationFromObject_keywordStringList(t *testing.T) {
 			Name:      "condition",
 			Type:      ssot.AttrList,
 			Elem:      &ssot.Attribute{Type: ssot.AttrString},
-			CreateSql: ssot.StringListKeyword(ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
+			CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.NoComma(), ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
 		}},
 	}
 	action := ssot.Attribute{
@@ -526,4 +526,85 @@ func Test_CreateOperationFromObject_objectAsParameter(t *testing.T) {
 			WithValidation(ValidIdentifier, "name"),
 	)
 	requireSameOperations(t, want, got)
+}
+
+func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T) {
+	scope := ssot.NewEnum("WidgetScope", "WidgetScopes", "GLOBAL", "LOCAL")
+	scopeAttr := ssot.Attribute{Name: "scope", Type: ssot.AttrEnum, Enum: scope, SqlOnly: true, CreateSql: ssot.EnumKeyword()}
+	columns := ssot.Attribute{Name: "columns_and_constraints", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("CreateWidgetColumns", ssot.Parentheses(), ssot.Required())}
+	clusterBy := ssot.Attribute{Name: "cluster_by", Type: ssot.AttrList, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("CLUSTER BY"))}
+	format := ssot.Attribute{Name: "stage_file_format", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("WidgetFileFormat", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT ="))}
+	policy := ssot.Attribute{
+		Name:      "row_access_policy",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children: []ssot.Attribute{
+			{
+				Name:           "name",
+				Type:           ssot.AttrIdentifier,
+				IdentifierType: "SchemaObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ROW ACCESS POLICY"), ssot.FieldName("Name")),
+			},
+			{
+				Name:      "on",
+				Type:      ssot.AttrList,
+				Required:  true,
+				SqlOnly:   true,
+				Elem:      &ssot.Attribute{Type: ssot.AttrString},
+				CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("ON")),
+			},
+		},
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "SchemaObjectIdentifier",
+		Create: ssot.CreateSpec{
+			KeywordsBefore: []*ssot.Attribute{&scopeAttr},
+			Clauses:        []*ssot.Attribute{&columns, &clusterBy, &format, &policy},
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+	}
+	ssot.ValidateObject(obj)
+
+	newColumns := func() *QueryStruct {
+		return NewQueryStruct("CreateWidgetColumns").Text("Name", KeywordOptions().Required())
+	}
+	newFormat := func() *QueryStruct {
+		return NewQueryStruct("WidgetFileFormat").OptionalTextAssignment("FORMAT_NAME", ParameterOptions().SingleQuotes())
+	}
+	unrelated := NewQueryStruct("WidgetUnrelated").Text("Name", KeywordOptions())
+
+	got := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newColumns(), newFormat(), unrelated)
+
+	want := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			OrReplace().
+			OptionalEnum("Scope", scope, KeywordOptions()).
+			SQL("WIDGET").
+			IfNotExists().
+			Name().
+			QueryStructField("ColumnsAndConstraints", newColumns(), ListOptions().Parentheses().Required()).
+			NamedList("CLUSTER BY", "string", KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+			OptionalQueryStructField("StageFileFormat", newFormat(), ListOptions().Parentheses().NoComma().SQL("STAGE_FILE_FORMAT =")).
+			OptionalQueryStructField("RowAccessPolicy", NewQueryStruct("WidgetRowAccessPolicy").
+				Identifier("Name", "SchemaObjectIdentifier", IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+				NamedList("ON", "string", KeywordOptions().Parentheses().SQL("ON").Required()),
+				ListOptions().NoComma()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ConflictingFields, "OrReplace", "IfNotExists"),
+		unrelated,
+	)
+	requireSameOperations(t, want, got)
+
+	t.Run("a named struct that is not supplied panics", func(t *testing.T) {
+		require.PanicsWithValue(t, `attribute "columns_and_constraints": struct clause names "CreateWidgetColumns", which the SDK definition did not supply`, func() {
+			NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newFormat())
+		})
+	})
 }

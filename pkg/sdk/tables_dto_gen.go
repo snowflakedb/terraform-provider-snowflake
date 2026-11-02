@@ -34,7 +34,7 @@ type CreateTableRequest struct {
 	ChangeTracking             *bool
 	DefaultDdlCollation        *StringAllowEmpty
 	CopyGrants                 *bool
-	RowAccessPolicy            *TableRowAccessPolicyLegacy
+	RowAccessPolicy            *TableRowAccessPolicyRequest
 	Tag                        []TagAssociation
 	Comment                    *string
 }
@@ -117,13 +117,18 @@ type LegacyTableCopyOnErrorOptionsRequest struct {
 	AbortStatement *bool
 }
 
+type TableRowAccessPolicyRequest struct {
+	Name SchemaObjectIdentifier // required
+	On   []string               // required
+}
+
 type CreateAsSelectTableRequest struct {
 	OrReplace       *bool
 	name            SchemaObjectIdentifier       // required
 	Columns         []TableAsSelectColumnRequest // required
 	ClusterBy       []string
 	CopyGrants      *bool
-	RowAccessPolicy *TableRowAccessPolicyLegacy
+	RowAccessPolicy *TableRowAccessPolicy
 	Query           string // required
 }
 

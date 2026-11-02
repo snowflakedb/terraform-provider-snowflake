@@ -148,11 +148,24 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   `Children`), for SQL that is nested deeper than the Terraform block. A child of the element that such a struct holds is
   written only inside it, so `client_policy` stays `{client_type, minimum_version}` in Terraform and is
   `CLIENT_TYPE = (MINIMUM_VERSION = '...')` in SQL. `EnumKeyword(NoQuotes(), Required())` writes an enum as a bare keyword
-  (the driver name before its settings), and `IdentifierListKeyword()` writes a list of identifiers with no name, in
-  parentheses. A `SqlOnly` child can also be a keyword (`BoolKeyword(Sql("('ALL')"), FieldName("All"))` is an optional flag
-  with that text). An attribute that a `SqlOnly` nested struct holds counts as listed in the CREATE sequence when the struct
+  (the driver name before its settings), `IdentifierListKeyword()` writes a list of identifiers with no name, in
+  parentheses, and `StringListKeyword(Parentheses(), Sql("CLUSTER BY"))` writes a list of strings as a keyword.
+  A `SqlOnly` child can also be a keyword (`BoolKeyword(Sql("('ALL')"), FieldName("All"))` is an optional flag
+  with that text) or an identifier (`IdentifierKeyword`, with `FieldName` when the Go name is not the SQL text).
+  An attribute that a `SqlOnly` nested struct holds counts as listed in the CREATE sequence when the struct
   is: this is how an attribute that is a Terraform field is also the field of a struct that is not (`security_integrations`
   is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ChildrenExactlyOne` requires one of the two).
+- **Clauses the SDK defines outside the statement.** An object that keeps a handwritten SDK definition has CREATE fields
+  whose structs stay in that definition because other operations and the request types use them.
+  `PreexistingStruct("LegacyFileFormat", Parentheses(), NoComma(), Sql("STAGE_FILE_FORMAT ="))` embeds a query struct by name.
+  The handwritten definition passes that struct to `CreateOperationFromObject` as a helper struct, and the call embeds
+  the struct whose name a clause names instead of emitting it beside the statement. A named struct that is not passed panics.
+  An attribute with this clause is `SqlOnly`. Its `Type` is not read.
+  A list of strings is `StringListKeyword(Parentheses(), Sql("CLUSTER BY"))`: a keyword field of `[]string`. The attribute
+  is a list or set of strings, and it can be a resource attribute (`cluster_by`).
+  A struct this definition owns is an `AttrObject` with `Children` and `ObjectParameter()`. The generated struct is named
+  after the object and the attribute (`Table` and `row_access_policy` give `TableRowAccessPolicy`). Other operations refer
+  to that type. A `SqlOnly` child of it can be an identifier (`IdentifierKeyword`) or a list of strings (`StringListKeyword`).
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
   object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
   fields and `IsObjectList()` tells a list of objects from a list of scalars, so generators ask the attribute for its fields
@@ -355,7 +368,7 @@ enable nothing.
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
   keyword.
   `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
-  `StringListKeyword` is a keyword list of strings in parentheses with no comma, such as `EXISTS ( <condition> )`.
+  `StringListKeyword(Parentheses(), NoComma(), Sql("EXISTS"))` is a keyword list of strings in parentheses with no comma, such as `EXISTS ( <condition> )`. Without `NoComma()` the items are joined with commas.
   `AlterParameterBlock(field, sql, &attr)` and `AlterKeywordBlock(field, sql, &attr)` are optional nested blocks, as a
   parameter or a keyword clause. `attr` is a list of objects, and the block is one of its elements, with the same struct as in
   CREATE (`ADD STORAGE_LOCATION`), or a SqlOnly object attribute whose `Children` are the fields and whose `CreateSql` are

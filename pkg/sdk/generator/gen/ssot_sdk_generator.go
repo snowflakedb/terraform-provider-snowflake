@@ -351,6 +351,7 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 // Clauses are Create, optional OR REPLACE, Create.KeywordsBefore, SQL, optional IF NOT EXISTS, Name, then Create.Clauses, then ValidIdentifier.
 // helperStructs are query structs the attribute clauses name, other than an enum list item.
 // A list of enums adds its item query struct here. The struct name is the enum name plus ListItem, and its field is Value.
+// Query structs named by a NestedStruct clause are embedded in the statement, not emitted as helper structs.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	if obj.VariantOf != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
@@ -360,7 +361,38 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
 	i.checkStructShapes = true
-	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), append(helperStructs, enumListItemStructs(obj)...)...)
+	supplied, helpers := splitSuppliedStructs(obj, helperStructs)
+	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg, supplied), append(helpers, enumListItemStructs(obj)...)...)
+}
+
+// splitSuppliedStructs separates the helper structs named by a struct clause of CREATE from the rest.
+func splitSuppliedStructs(obj ssot.Object, helperStructs []IntoField) (map[string]*QueryStruct, []IntoField) {
+	named := make(map[string]struct{})
+	for _, list := range [][]*ssot.Attribute{obj.Create.KeywordsBefore, obj.Create.Clauses} {
+		for _, attr := range list {
+			if attr == nil || attr.IsTags() || attr.IsParameters() {
+				continue
+			}
+			if clause := attr.EffectiveSqlClause(ssot.ClauseCreate); clause.Present && clause.Kind == ssot.SqlKindPreexistingStruct {
+				named[clause.StructName] = struct{}{}
+			}
+		}
+	}
+	supplied := make(map[string]*QueryStruct, len(named))
+	helpers := make([]IntoField, 0, len(helperStructs))
+	for _, helper := range helperStructs {
+		if qs, ok := helper.(*QueryStruct); ok {
+			if _, used := named[qs.name]; used {
+				if _, dup := supplied[qs.name]; dup {
+					panic(fmt.Sprintf("object %q: struct %q is supplied twice", obj.Name, qs.name))
+				}
+				supplied[qs.name] = qs
+				continue
+			}
+		}
+		helpers = append(helpers, helper)
+	}
+	return supplied, helpers
 }
 
 // CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
@@ -382,15 +414,16 @@ func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interfa
 			panic(fmt.Sprintf("object %q: variant CREATE has no spec", variant.Name))
 		}
 		cfg := variant.VariantCreateConfig()
-		q := createQueryStructFromConfig(variant, cfg)
+		q := createQueryStructFromConfig(variant, cfg, nil)
 		i = i.CustomOperation(variant.VariantCreateMethod(base.Name), cfg.CreateDoc, q, enumListItemStructs(variant)...)
 	}
 	return i
 }
 
-func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, supplied map[string]*QueryStruct) *QueryStruct {
 	q := NewQueryStruct(cfg.CreateQueryStructName).Create()
 	q.owner = obj.Name
+	q.suppliedStructs = supplied
 	if !cfg.CreateWithoutOrReplace {
 		q = q.OrReplace()
 	}

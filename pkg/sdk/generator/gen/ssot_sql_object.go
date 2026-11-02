@@ -2,7 +2,6 @@ package gen
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -24,10 +23,7 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 // appendObjectClause adds a SqlOnly nested struct, such as ENCRYPTION = (...), whose fields are the Children of attr.
 func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
 	nested := queryStructFromObject(v.owner, attr)
-	name := clause.Field
-	if name == "" {
-		name = genhelpers.SnakeCaseToCamel(attr.Name)
-	}
+	name := clauseGoFieldName(attr, clause)
 	if clause.AsParameter {
 		opts := ParameterOptions().SQL(clause.SQL)
 		if required {

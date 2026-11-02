@@ -290,7 +290,7 @@ var replicationGroupAsReplicaOf = ssot.Attribute{
 	IdentifierType: "ExternalObjectIdentifier",
 	ForceNew:       true,
 	Description:    "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
-	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("Primary")),
+	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("AsReplicaOf")),
 }
 
 func replicationGroupReverseIdentifierList(name, sql, idType string) ssot.Attribute {
@@ -321,7 +321,7 @@ var replicationGroupMove = ssot.Attribute{
 			Name:           "to",
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountObjectIdentifier",
-			CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("TO REPLICATION GROUP"), ssot.Required(), ssot.FieldName("To")),
+			CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("TO REPLICATION GROUP"), ssot.Required(), ssot.FieldName("ToReplicationGroup")),
 		},
 	},
 }

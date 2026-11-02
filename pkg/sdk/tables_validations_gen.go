@@ -28,6 +28,9 @@ func (opts *CreateTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateTableOptions", "name"))
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateTableOptions", "OrReplace", "IfNotExists"))
+	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ColumnsAndConstraints) {
 		if valueSet(opts.ColumnsAndConstraints.Columns) {

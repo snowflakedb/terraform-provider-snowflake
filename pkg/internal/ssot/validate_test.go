@@ -1325,14 +1325,14 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 
 	t.Run("without an object clause", func(t *testing.T) {
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, or a nested struct of an object clause`, func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "block", Type: AttrObject, Children: []Attribute{typeOauth, uri}}}})
 		})
 	})
 
 	t.Run("not static", func(t *testing.T) {
 		notStatic := Attribute{Name: "other", SqlOnly: true, CreateSql: StringParameter()}
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, or a nested struct of an object clause`, func() {
 			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{notStatic, uri}})
 		})
 	})
@@ -1487,7 +1487,7 @@ func Test_ValidateObject_childrenAtLeastOneValueSet(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_enumKeywordAndNestedStruct(t *testing.T) {
+func Test_ValidateObject_enumKeywordAndPreexistingStruct(t *testing.T) {
 	driver := NewEnum("WidgetDriver", "WidgetDrivers", "JDBC")
 	version := Attribute{Name: "minimum_version", Type: AttrString}
 	params := Attribute{
@@ -1513,5 +1513,65 @@ func Test_ValidateObject_enumKeywordAndNestedStruct(t *testing.T) {
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings`, func() {
 		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrString, CreateSql: EnumKeyword(NoQuotes())})))
+	})
+}
+
+func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
+	objectWith := func(attr Attribute) Object {
+		return Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}}
+	}
+	clusterBy := Attribute{
+		Name:      "cluster_by",
+		Type:      AttrList,
+		SqlOnly:   true,
+		Elem:      &Attribute{Type: AttrString},
+		CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY")),
+	}
+	policy := Attribute{
+		Name:      "row_access_policy",
+		Type:      AttrObject,
+		SqlOnly:   true,
+		CreateSql: ObjectParameter(),
+		Children: []Attribute{
+			{
+				Name:           "name",
+				Type:           AttrIdentifier,
+				IdentifierType: "SchemaObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      IdentifierKeyword("SchemaObjectIdentifier", Sql("ROW ACCESS POLICY"), FieldName("Name")),
+			},
+			{
+				Name:      "on",
+				Type:      AttrList,
+				Required:  true,
+				SqlOnly:   true,
+				Elem:      &Attribute{Type: AttrString},
+				CreateSql: StringListKeyword(Parentheses(), Sql("ON")),
+			},
+		},
+	}
+
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(clusterBy))
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(policy))
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat", Parentheses(), NoComma())}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings`, func() {
+		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"))}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE string list keyword has quotes or equals`, func() {
+		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, Elem: &Attribute{Type: AttrString}, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"), SingleQuotes())}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting struct clause has no struct name`, func() {
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("")}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting_struct clause is CREATE only`, func() {
+		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat"), SetSql: PreexistingStruct("WidgetFormat")}
+		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Set: []*Attribute{&attr}})
 	})
 }
