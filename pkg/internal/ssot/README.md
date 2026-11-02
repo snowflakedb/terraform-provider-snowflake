@@ -647,8 +647,9 @@ Until a piece has moved, do not assume it is already in ssot:
 - Schema `SkipFields` has an ssot equivalent: the `SkipInSchema` attribute mark ([Attribute](#attribute)). Schema
   `ManualFields` has an ssot equivalent too, but as a generator option rather than an attribute mark:
   `SchemaShowManualFields` / `SchemaDescribeManualFields` ([Generators](#generators)), the same shape as the
-  show-output and object-assertion `SkipFields` options below. Schema `TypeOverrides` and `UsedAsListEntry` have no
-  ssot equivalent yet. Object-assertion
+  show-output and object-assertion `SkipFields` options below. Schema `TypeOverrides` is derived: an `AttrSet` column
+  is generated as `TypeSet`, and `SchemaShowListFields` / `SchemaDescribeListFields` keep a listed column as `TypeList`
+  (for a `show_output` that was released as a list). `UsedAsListEntry` has no ssot equivalent yet. Object-assertion
   `SkipFields` is `ObjectAssertShowSkipFields` and `ObjectAssertDescribeSkipFields`. Show-output `SkipFields` is
   `ShowOutputShowSkipFields` and `ShowOutputDescribeSkipFields`.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext

@@ -21,6 +21,6 @@ func (r *ReplicationGroupShowOutputAssert) HasSecondaryStateEmpty() *Replication
 }
 
 func (r *ReplicationGroupShowOutputAssert) HasAllowedAccounts(expected ...string) *ReplicationGroupShowOutputAssert {
-	r.ListContainsExactlyStringValuesInOrder("allowed_accounts", expected...)
+	r.SetContainsExactlyStringValues("allowed_accounts", expected...)
 	return r
 }

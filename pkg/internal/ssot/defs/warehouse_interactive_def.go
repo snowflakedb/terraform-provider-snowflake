@@ -83,9 +83,12 @@ var WarehouseInteractiveAttrs = struct {
 		Description: "Specifies a comment for the interactive warehouse.",
 	},
 	Tables: ssot.Attribute{
-		Name:        "tables",
-		Type:        ssot.AttrSet,
-		Description: "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
+		Name: "tables",
+		Type: ssot.AttrSet,
+		// SHOW reports the tables as one comma-separated string, so it is optional in the database row.
+		OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
+		Description:  "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
 		Elem: &ssot.Attribute{
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "SchemaObjectIdentifier",
@@ -102,14 +105,6 @@ var WarehouseInteractiveAttrs = struct {
 	},
 }
 
-// tables is a writable attribute, so the Readonly WarehouseAttrs column cannot be reused.
-// TODO [next PRs]: the resource field is a set and this column is an AttrList so SHOW could build a paired struct. A set now maps like a list, so Show.Columns can use WarehouseInteractiveAttrs.Tables and this column can go.
-var warehouseInteractiveTablesShow = ssot.Attribute{
-	Name: "tables", Type: ssot.AttrList, OptionalInDb: true,
-	CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
-	Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"},
-}
-
 var WarehouseInteractive = ssot.Object{
 	Name:                       "WarehouseInteractive",
 	NamePlural:                 "Warehouses",
@@ -120,13 +115,14 @@ var WarehouseInteractive = ssot.Object{
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow()),
+		// show_output.tables was released as a list. A set would break indexing, so SHOW stays TypeList.
+		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowListFields(&WarehouseInteractiveAttrs.Tables))),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(
 			ssot.ObjectAssertShowFromBase("ShowByIDInteractive"),
-			ssot.ObjectAssertShowSkipFields(&warehouseInteractiveTablesShow),
+			ssot.ObjectAssertShowSkipFields(&WarehouseInteractiveAttrs.Tables),
 		)),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
@@ -189,7 +185,7 @@ var WarehouseInteractive = ssot.Object{
 			&WarehouseAttrs.Comment,
 			&WarehouseAttrs.ResourceMonitor,
 			&WarehouseAttrs.OwnerRoleType,
-			&warehouseInteractiveTablesShow,
+			&WarehouseInteractiveAttrs.Tables,
 		},
 	},
 	Create: ssot.CreateSpec{
