@@ -1,7 +1,7 @@
 FROM artifactory.ci1.us-west-2.aws-dev.app.snowflake.com/docker-remote/library/ubuntu:18.04 AS base
 
 ENV GO_VERSION 1.26.10
-ENV TERRAFORM_VERSION 1.8.4
+ENV TERRAFORM_VERSION 1.11.4
 
 # Update packages and install necessary tools
 RUN apt-get update && apt-get install -y wget make git gnupg software-properties-common unzip jq
