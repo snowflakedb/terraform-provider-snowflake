@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -27,7 +28,7 @@ var (
 	alertCreateExt        = PreviewFeatureCreateContextWrapper(string(previewfeatures.AlertResource), TrackingCreateWrapper(resources.Alert, CreateAlert))
 	alertReadExt          = PreviewFeatureReadContextWrapper(string(previewfeatures.AlertResource), TrackingReadWrapper(resources.Alert, ReadAlertFunc(true)))
 	alertUpdateExt        = PreviewFeatureUpdateContextWrapper(string(previewfeatures.AlertResource), TrackingUpdateWrapper(resources.Alert, UpdateAlert))
-	alertDescriptionExt   = ""
+	alertDescriptionExt   = docs.WithPreviewFeatureMark() + "Resource used to manage alert objects. For more information, check [alert documentation](https://docs.snowflake.com/en/sql-reference/sql/create-alert)."
 	alertCustomizeDiffExt schema.CustomizeDiffFunc
 	alertImporterExt      = &schema.ResourceImporter{
 		StateContext: schema.ImportStatePassthroughContext,

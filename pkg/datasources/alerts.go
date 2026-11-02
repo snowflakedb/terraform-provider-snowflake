@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
@@ -80,6 +81,7 @@ var alertsSchema = map[string]*schema.Schema{
 // Alerts Snowflake Roles resource.
 func Alerts() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.AlertsDatasource), TrackingReadWrapper(datasources.Alerts, ReadAlerts)),
 		Schema:      alertsSchema,
 	}

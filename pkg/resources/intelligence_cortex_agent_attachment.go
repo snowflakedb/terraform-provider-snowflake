@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -36,7 +37,7 @@ var intelligenceCortexAgentAttachmentSchema = map[string]*schema.Schema{
 
 func IntelligenceCortexAgentAttachment() *schema.Resource {
 	return &schema.Resource{
-		Description: "Attaches a Cortex agent to a Snowflake Intelligence object so the agent is available in Snowflake CoWork.",
+		Description: docs.WithPreviewFeatureMark() + "Attaches a Cortex agent to a Snowflake Intelligence object so the agent is available in Snowflake CoWork.",
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.IntelligenceCortexAgentAttachmentResource), TrackingCreateWrapper(resources.IntelligenceCortexAgentAttachment, CreateIntelligenceCortexAgentAttachment)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.IntelligenceCortexAgentAttachmentResource), TrackingReadWrapper(resources.IntelligenceCortexAgentAttachment, ReadIntelligenceCortexAgentAttachment)),

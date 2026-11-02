@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -52,7 +53,7 @@ func ExternalAccessIntegrations() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ExternalAccessIntegrationsDatasource), TrackingReadWrapper(datasources.ExternalAccessIntegrations, ReadExternalAccessIntegrations)),
 		Schema:      externalAccessIntegrationsSchema,
-		Description: "Data source used to get details of filtered external access integrations. Filtering is aligned with the current possibilities for [SHOW EXTERNAL ACCESS INTEGRATIONS](https://docs.snowflake.com/en/sql-reference/sql/show-integrations) query (only `like` is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection `external_access_integrations`.",
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered external access integrations. Filtering is aligned with the current possibilities for [SHOW EXTERNAL ACCESS INTEGRATIONS](https://docs.snowflake.com/en/sql-reference/sql/show-integrations) query (only `like` is supported). The results of SHOW and DESCRIBE are encapsulated in one output collection `external_access_integrations`.",
 	}
 }
 
