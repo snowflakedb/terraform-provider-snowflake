@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -50,6 +51,34 @@ func TestInt_BackupPolicies(t *testing.T) {
 			HasExpireAfterDays(7).
 			HasHasRetentionLock(false),
 		)
+	})
+
+	t.Run("create: with schedule only", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		create(t, id, sdk.NewCreateBackupPolicyRequest(id).WithSchedule("2 HOUR"))
+
+		assertThatObject(t, objectassert.BackupPolicy(t, id).
+			HasSchedule("2 HOUR").
+			HasNoExpireAfterDays(),
+		)
+	})
+
+	t.Run("create: with expiration only", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		create(t, id, sdk.NewCreateBackupPolicyRequest(id).WithExpireAfterDays(7))
+
+		assertThatObject(t, objectassert.BackupPolicy(t, id).
+			HasNoSchedule().
+			HasExpireAfterDays(7),
+		)
+	})
+
+	// The SDK validation rejects this before any SQL is sent, so the statement goes through the raw connection.
+	t.Run("create: Snowflake requires a schedule or an expiration", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		_, err := client.ExecForTests(ctx, fmt.Sprintf("CREATE BACKUP POLICY %s COMMENT = 'no schedule and no expiration'", id.FullyQualifiedName()))
+		require.ErrorContains(t, err, "missing required argument [one of {schedule, expire_after_days}]")
 	})
 
 	// OR REPLACE conflicts with IF NOT EXISTS, so the complete create uses IF NOT EXISTS.

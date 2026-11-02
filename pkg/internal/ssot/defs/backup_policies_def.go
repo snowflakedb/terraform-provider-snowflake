@@ -36,6 +36,7 @@ var BackupPolicyAttrs = struct {
 		SkipCreate:     true,
 		OptionalInShow: true,
 		OptionalInDb:   true,
+		AtLeastOneOf:   []ssot.Attribute{{Name: "schedule"}, {Name: "expire_after_days"}},
 		Description:    "Specifies how often Snowflake creates a backup. Either an interval of at least 60 minutes (`hours` or `minutes`) or a cron expression (`using_cron`). Exactly one of the sub-fields has to be set.",
 		Children: []ssot.Attribute{
 			{
@@ -70,6 +71,7 @@ var BackupPolicyAttrs = struct {
 		Min:            new(1),
 		OptionalInShow: true,
 		OptionalInDb:   true,
+		AtLeastOneOf:   []ssot.Attribute{{Name: "schedule"}, {Name: "expire_after_days"}},
 		Description:    "Specifies the number of days until a backup expires. The minimum is 1. The maximum is 3653 when SCHEDULE is omitted.",
 	},
 	Comment: ssot.Attribute{

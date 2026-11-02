@@ -107,6 +107,7 @@ provider "snowflake" {
 The experiment is currently supported on the following resources:
 
 - [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy)
+- [`snowflake_backup_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_policy)
 - [`snowflake_backup_set`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_set)
 - [`snowflake_catalog_integration_aws_glue`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_aws_glue)
 - [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest)

@@ -94,7 +94,7 @@ func backupPolicyScheduleFromConfig(v any) (*string, error) {
 }
 
 // backupPolicyScheduleToState turns the SCHEDULE value of SHOW into the schedule block, or nil when it is not set.
-func backupPolicyScheduleToState(schedule *string) ([]any, error) {
+func backupPolicyScheduleToState(schedule *string) ([]map[string]any, error) {
 	if schedule == nil || *schedule == "" {
 		return nil, nil
 	}
@@ -104,39 +104,24 @@ func backupPolicyScheduleToState(schedule *string) ([]any, error) {
 	}
 	switch {
 	case taskSchedule.Cron != "":
-		return []any{map[string]any{"using_cron": taskSchedule.Cron}}, nil
+		return []map[string]any{{"using_cron": taskSchedule.Cron}}, nil
 	case taskSchedule.Hours > 0:
-		return []any{map[string]any{"hours": taskSchedule.Hours}}, nil
+		return []map[string]any{{"hours": taskSchedule.Hours}}, nil
 	case taskSchedule.Minutes > 0:
-		return []any{map[string]any{"minutes": taskSchedule.Minutes}}, nil
+		return []map[string]any{{"minutes": taskSchedule.Minutes}}, nil
 	default:
 		return nil, fmt.Errorf("unsupported backup policy schedule: %s", *schedule)
 	}
 }
 
+// Read sets comment and schedule from SHOW in both import modes, so only the attributes that Read leaves alone are written here.
+// expire_after_days is a pointer in SHOW and has no Snowflake default, so it stays out of the state when the policy has none.
 func backupPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, backupPolicy *sdk.BackupPolicy, importPermissiveMode bool) error {
-	schedule, err := backupPolicyScheduleToState(backupPolicy.Schedule)
-	if err != nil {
-		return err
-	}
-	if importPermissiveMode {
-		schedule = nil
-	}
-	comment := ""
-	if backupPolicy.Comment != nil {
-		comment = *backupPolicy.Comment
-	}
-	expireAfterDays := 0
-	if backupPolicy.ExpireAfterDays != nil {
-		expireAfterDays = *backupPolicy.ExpireAfterDays
-	}
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
 		d.Set("schema", id.SchemaName()),
-		d.Set("schedule", schedule),
-		importStringAttribute(d, "comment", importPermissiveMode, comment),
-		importIntAttribute(d, "expire_after_days", importPermissiveMode, expireAfterDays),
+		importOptionalIntAttribute(d, "expire_after_days", importPermissiveMode, backupPolicy.ExpireAfterDays),
 		importBooleanStringAttribute(d, "with_retention_lock", importPermissiveMode, backupPolicy.HasRetentionLock),
 	)
 }
