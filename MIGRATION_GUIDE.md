@@ -63,6 +63,24 @@ These features will be marked as stable in future releases. Breaking changes are
 
 No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
 
+### *(new feature)* `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` enabled by default
+
+`USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` is now enabled by default. It manages the [`default_workload_identity`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user#default_workload_identity-1) block on [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user) and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user).
+
+Opt out by listing the name in [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1). Leaving the name in `experimental_features_enabled` is redundant and produces a warning.
+
+It will be promoted (the opt-out removed) in **v2.24.0** or **v2.25.0**. After promotion, listing the name in either list is a no-op until the next major version.
+
+No action is required when service users have no workload identity, or when `default_workload_identity` is already in the configuration. If a workload identity was set outside Terraform and the block is omitted, the next apply unsets it. To keep that external workload identity unmanaged, opt out:
+
+```terraform
+provider "snowflake" {
+  experimental_features_disabled = ["USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY"]
+}
+```
+
+To keep managing it, add the matching `default_workload_identity` block instead of opting out.
+
 ### *(new feature)* Code bundle resource and data source
 
 We have added a new preview resource, [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle), for managing [code bundles](https://docs.snowflake.com/en/developer-guide/code-bundles/code-bundles). `from` is the source that backs the bundle, a `snow://workspace/...` URL or an internal or temporary stage reference, and it cannot be changed after creation.

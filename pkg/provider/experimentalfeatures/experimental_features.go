@@ -135,10 +135,12 @@ var allExperiments = []Experiment{
 		"To mitigate the problem, we are adding this option to reduce the output to only `value` and `level` fields, which should significantly reduce the state size. **Note**: it's also affecting the `parameters` output for data sources.",
 		"We considered the option to remove the `parameters` output completely, however, we plan to change the external change logic detection to use it (to make it consistent with other attributes using `show_output` and because we won't be able to implement the current logic when switching to the Terraform Plugin Framework) and it still allows referencing the parameter value/level from other parts of the configuration.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		UserEnableDefaultWorkloadIdentity,
-		"The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.",
-		"Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).",
+		[]string{"v2.24.0", "v2.25.0"},
+		"The `default_workload_identity` field on the `snowflake_legacy_service_user` and `snowflake_service_user` resources manages workload identity federation (WIF).",
+		"When the field is omitted, a workload identity configured outside Terraform is unset on the next apply.",
+		"Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-user_enable_default_workload_identity-enabled-by-default).",
 	),
 	NewEnabledByDefaultExperiment(
 		GrantsImportValidation,

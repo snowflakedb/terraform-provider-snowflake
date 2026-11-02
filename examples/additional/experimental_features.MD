@@ -22,11 +22,6 @@ To mitigate the problem, we are adding this option to reduce the output to only 
 
 We considered the option to remove the `parameters` output completely, however, we plan to change the external change logic detection to use it (to make it consistent with other attributes using `show_output` and because we won't be able to implement the current logic when switching to the Terraform Plugin Framework) and it still allows referencing the parameter value/level from other parts of the configuration.
 
-#### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
-The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.
-
-Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).
-
 #### TAGS_ALLOW_EMPTY_ALLOWED_VALUES
 Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.
 
@@ -183,6 +178,17 @@ When enabled, the provider ignores changes to the parameter value happening on t
 This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
 
 It will be promoted in v2.23.0 or v2.24.0.
+
+#### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
+The `default_workload_identity` field on the `snowflake_legacy_service_user` and `snowflake_service_user` resources manages workload identity federation (WIF).
+
+When the field is omitted, a workload identity configured outside Terraform is unset on the next apply.
+
+Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-user_enable_default_workload_identity-enabled-by-default).
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.24.0 or v2.25.0.
 
 #### GRANTS_IMPORT_VALIDATION
 Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.

@@ -125,8 +125,8 @@ provider "snowflake" {
 - `disable_telemetry` (Boolean, Deprecated) This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`. Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.
 - `driver_tracing` (String) Specifies the logging level to be used by the driver. Valid options are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. The following values are deprecated and will be removed in v3: `WARNING` (uses `WARN` instead), `PRINT` (uses `INFO` instead), `PANIC` (uses `FATAL` instead). Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.
 - `enable_single_use_refresh_tokens` (Boolean) Enables single use refresh tokens for Snowflake IdP. Can also be sourced from the `SNOWFLAKE_ENABLE_SINGLE_USE_REFRESH_TOKENS` environment variable.
-- `experimental_features_disabled` (Set of String) A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `GRANTS_IMPORT_VALIDATION` | `GRANTS_SAFE_DESTROY` | `TAG_ASSOCIATION_SAFE_DESTROY` | `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` | `INHERITED_GRANTS`. Promoted and discontinued experiment names are still accepted as no-ops. Opt-in experiment names are accepted with a warning: opt-in experiments are disabled unless listed in `experimental_features_enabled`, so they don't need to be listed here.
-- `experimental_features_enabled` (Set of String) A list of opt-in experimental features to enable. Opt-in experiments are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource. Experiments that are already enabled by default are not preview — listing them here is redundant. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Opt-in experiments you can enable are: `PARAMETERS_REDUCED_OUTPUT` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` | `IMPORT_BOOLEAN_DEFAULT` | `IMPORT_PERMISSIVE_MODE` | `GRANT_ACCOUNT_ROLE_SHOW_CACHING` | `ACCOUNT_ROLE_SHOW_CACHING` | `GRANTS_SHOW_CACHING` | `HIERARCHY_RENAMES` | `OBJECT_PARAMETER_UNSET_ON_DELETE` | `OBJECT_PARAMETER_PARSE_ON_SET` | `AUTHENTICATOR_EXPLICIT_ONLY` | `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` | `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` | `WRITE_ONLY_ATTRIBUTES`. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).
+- `experimental_features_disabled` (Set of String) A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `GRANTS_IMPORT_VALIDATION` | `GRANTS_SAFE_DESTROY` | `TAG_ASSOCIATION_SAFE_DESTROY` | `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` | `INHERITED_GRANTS`. Promoted and discontinued experiment names are still accepted as no-ops. Opt-in experiment names are accepted with a warning: opt-in experiments are disabled unless listed in `experimental_features_enabled`, so they don't need to be listed here.
+- `experimental_features_enabled` (Set of String) A list of opt-in experimental features to enable. Opt-in experiments are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource. Experiments that are already enabled by default are not preview — listing them here is redundant. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Opt-in experiments you can enable are: `PARAMETERS_REDUCED_OUTPUT` | `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` | `IMPORT_BOOLEAN_DEFAULT` | `IMPORT_PERMISSIVE_MODE` | `GRANT_ACCOUNT_ROLE_SHOW_CACHING` | `ACCOUNT_ROLE_SHOW_CACHING` | `GRANTS_SHOW_CACHING` | `HIERARCHY_RENAMES` | `OBJECT_PARAMETER_UNSET_ON_DELETE` | `OBJECT_PARAMETER_PARSE_ON_SET` | `AUTHENTICATOR_EXPLICIT_ONLY` | `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` | `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` | `WRITE_ONLY_ATTRIBUTES`. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).
 - `external_browser_timeout` (Number) The timeout in seconds for the external browser to complete the authentication. Can also be sourced from the `SNOWFLAKE_EXTERNAL_BROWSER_TIMEOUT` environment variable.
 - `host` (String) Specifies a custom host value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_HOST` environment variable.
 - `include_retry_reason` (String) Should retried request contain retry reason. Can also be sourced from the `SNOWFLAKE_INCLUDE_RETRY_REASON` environment variable.
@@ -1024,11 +1024,6 @@ To mitigate the problem, we are adding this option to reduce the output to only 
 
 We considered the option to remove the `parameters` output completely, however, we plan to change the external change logic detection to use it (to make it consistent with other attributes using `show_output` and because we won't be able to implement the current logic when switching to the Terraform Plugin Framework) and it still allows referencing the parameter value/level from other parts of the configuration.
 
-#### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
-The new `default_workload_identity_federation` field was added to the `snowflake_legacy_service_user` and `snowflake_service_user` resources. This field allows for managing WIFs. Due to feature complexity, it requires enabling this experiment.
-
-Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-workload-identity-federation-support-for-service-users).
-
 #### TAGS_ALLOW_EMPTY_ALLOWED_VALUES
 Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.
 
@@ -1185,6 +1180,17 @@ When enabled, the provider ignores changes to the parameter value happening on t
 This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
 
 It will be promoted in v2.23.0 or v2.24.0.
+
+#### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
+The `default_workload_identity` field on the `snowflake_legacy_service_user` and `snowflake_service_user` resources manages workload identity federation (WIF).
+
+When the field is omitted, a workload identity configured outside Terraform is unset on the next apply.
+
+Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-user_enable_default_workload_identity-enabled-by-default).
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.24.0 or v2.25.0.
 
 #### GRANTS_IMPORT_VALIDATION
 Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.

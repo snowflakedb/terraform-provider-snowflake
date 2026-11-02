@@ -62,7 +62,6 @@ var (
 	adaptiveWarehouseProviderFactory                       = providerFactoryUsingCache("AdaptiveWarehouse")
 	adaptiveWarehouseExperimentsDisabledProviderFactory    = providerFactoryUsingCache("AdaptiveWarehouseExperimentsDisabled")
 	explicitAccountAdminRoleProviderFactory                = providerFactoryUsingCache("ExplicitAccountAdminRole")
-	userEnableDefaultWorkloadIdentityProviderFactory       = providerFactoryUsingCache("UserEnableDefaultWorkloadIdentity")
 	s3StageProviderFactory                                 = providerFactoryUsingCache("StageExternalS3")
 	enabledByDefaultExperimentsDisabledProviderFactory     = providerFactoryUsingCache("EnabledByDefaultExperimentsDisabled")
 	objectParameterUnsetOnDeleteProviderFactory            = providerFactoryUsingCache("ObjectParameterUnsetOnDelete")

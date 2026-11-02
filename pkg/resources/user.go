@@ -354,7 +354,7 @@ func GetCreateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
 		if _, ok := d.GetOk("default_workload_identity"); ok && !providerCtx.Experiments.IsEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity) {
-			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
+			return diag.Errorf("to use `default_workload_identity`, you need the %q experiment to be enabled. Remove it from the `experimental_features_disabled` list in the provider configuration", experimentalfeatures.UserEnableDefaultWorkloadIdentity)
 		}
 
 		objectProperties := &sdk.UserObjectPropertiesRequest{}
@@ -639,7 +639,7 @@ func GetUpdateUserFunc(userType sdk.UserType) func(ctx context.Context, d *schem
 		providerCtx := meta.(*provider.Context)
 		client := providerCtx.Client
 		if ok := d.HasChange("default_workload_identity"); ok && !providerCtx.Experiments.IsEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity) {
-			return diag.Errorf("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level")
+			return diag.Errorf("to use `default_workload_identity`, you need the %q experiment to be enabled. Remove it from the `experimental_features_disabled` list in the provider configuration", experimentalfeatures.UserEnableDefaultWorkloadIdentity)
 		}
 		id, err := sdk.ParseAccountObjectIdentifier(d.Id())
 		if err != nil {
