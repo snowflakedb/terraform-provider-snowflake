@@ -244,6 +244,32 @@ var BackupSet = ssot.Object{
 			ssot.SdkDescribe(),
 		),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+		ssot.WithResource(),
+	},
+	// backup_policy and the FOR targets are not SHOW columns, so the generated diff does not
+	// mark show_output computed when they change. The extra diff watches those attributes.
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"backupSetOutputsComputedWhenTargetOrPolicyChanges",
+	},
+	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.Generated()),
+		ssot.WithApplyCreateOptionals(ssot.ExtCall()),
+		ssot.WithCreateInSdk(ssot.Generated()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithDescribeInSdk(ssot.Generated()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithBeforeAlter(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
 	ExactlyOneOf: [][]*ssot.Attribute{{
 		&BackupSetAttrs.ForTable,

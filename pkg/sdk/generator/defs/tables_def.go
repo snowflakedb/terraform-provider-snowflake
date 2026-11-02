@@ -578,6 +578,7 @@ var tableShowOutput = g.StructPair("tableDBRow", "Table").
 	OptionalBoolFromText("enable_schema_evolution", g.WithRequiredInPlain()).
 	OptionalText("owner_role_type", g.WithRequiredInPlain()).
 	OptionalBoolFromText("is_event", g.WithRequiredInPlain()).
+	OptionalBoolFromText("is_dynamic", g.WithRequiredInPlain()).
 	OptionalText("budget")
 
 // DESCRIBE TABLE returns the collation glued onto the "type" column (e.g. "VARCHAR(200) COLLATE 'en-ci'"),

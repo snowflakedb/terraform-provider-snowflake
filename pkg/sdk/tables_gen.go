@@ -458,6 +458,7 @@ type tableDBRow struct {
 	EnableSchemaEvolution      sql.NullString `db:"enable_schema_evolution"`
 	OwnerRoleType              sql.NullString `db:"owner_role_type"`
 	IsEvent                    sql.NullString `db:"is_event"`
+	IsDynamic                  sql.NullString `db:"is_dynamic"`
 	Budget                     sql.NullString `db:"budget"`
 }
 
@@ -483,6 +484,7 @@ type Table struct {
 	EnableSchemaEvolution      bool
 	OwnerRoleType              string
 	IsEvent                    bool
+	IsDynamic                  bool
 	Budget                     *string
 }
 

@@ -242,6 +242,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.CodeBundle: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CodeBundles.ShowByID)
 	},
+	resources.BackupSet: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.BackupSets.ShowByID)
+	},
 	resources.ComputePool: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ComputePools.ShowByID)
 	},

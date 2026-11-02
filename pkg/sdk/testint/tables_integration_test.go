@@ -61,6 +61,7 @@ func TestInt_Table(t *testing.T) {
 		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), table.DatabaseName)
 		assert.Equal(t, testClientHelper().Ids.SchemaId().Name(), table.SchemaName)
 		assert.Equal(t, "TABLE", table.Kind)
+		assert.False(t, table.IsDynamic)
 		assert.Equal(t, 0, table.Rows)
 		assert.Equal(t, "ACCOUNTADMIN", table.Owner)
 		assert.Equal(t, "ROLE", table.OwnerRoleType)
@@ -93,6 +94,32 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 
 		assertTable(t, table, id)
+	})
+
+	t.Run("show: dynamic table is_dynamic", func(t *testing.T) {
+		baseID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(baseID, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
+		})))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(baseID))
+
+		dynamicID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err = client.DynamicTables.Create(ctx, sdk.NewCreateDynamicTableRequest(
+			dynamicID,
+			sdk.TargetLagRequest{MaximumDuration: sdk.String("1 hour")},
+			testClientHelper().Ids.WarehouseId(),
+			fmt.Sprintf("SELECT ID FROM %s", baseID.FullyQualifiedName()),
+		))
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			require.NoError(t, client.DynamicTables.Drop(ctx, sdk.NewDropDynamicTableRequest(dynamicID)))
+		})
+
+		table, err := client.Tables.ShowByID(ctx, dynamicID)
+		require.NoError(t, err)
+		assert.Equal(t, "TABLE", table.Kind)
+		assert.True(t, table.IsDynamic)
 	})
 
 	t.Run("create table: DECFLOAT", func(t *testing.T) {

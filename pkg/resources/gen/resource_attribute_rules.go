@@ -124,7 +124,7 @@ var resourceAttributeRules = []resourceAttributeRule{
 	},
 	{
 		Name:        RuleIdentifierValidates,
-		Description: "Identifier fields validate with IsValidIdentifier. A collection element uses its IdentifierType. A top-level field uses the object id type.",
+		Description: "Identifier fields validate with IsValidIdentifier. A collection element uses its IdentifierType. A top-level field uses its IdentifierType when that is set, and the object id type otherwise.",
 		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
 			return in.Type == ssot.AttrIdentifier && identifierSchemaType(in, ctx) != ""
 		},
@@ -267,7 +267,8 @@ func isSetOfIdentifiers(in ssot.Attribute) bool {
 
 // identifierSchemaType is the SDK identifier type used for schema validation.
 // Collection elements use their own IdentifierType. Nested block fields are left alone.
-// A top-level field uses the object id type, then IdentifierType.
+// A top-level field uses its IdentifierType when that is set, so a schema object can
+// point at a database or account object. Otherwise it uses the object id type.
 func identifierSchemaType(in ssot.Attribute, ctx resourceAttributeRuleContext) string {
 	// External identifiers are not parsed by IsValidIdentifier. Account identifiers use IsValidAccountIdentifier.
 	if in.IdentifierType == "ExternalObjectIdentifier" {
@@ -279,10 +280,13 @@ func identifierSchemaType(in ssot.Attribute, ctx resourceAttributeRuleContext) s
 	if ctx.InBlock {
 		return ""
 	}
+	if in.IdentifierType != "" {
+		return in.IdentifierType
+	}
 	if ctx.IdType != "" {
 		return ctx.IdType
 	}
-	return in.IdentifierType
+	return ""
 }
 
 func relationPaths(prefix string, attrs []ssot.Attribute) []string {
