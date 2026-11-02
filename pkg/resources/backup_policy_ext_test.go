@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -44,15 +45,15 @@ func Test_backupPolicyScheduleToState(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    *string
-		expected []any
+		expected []map[string]any
 		err      string
 	}{
 		{name: "not set (nil)", input: nil},
 		{name: "not set (empty)", input: sdk.String("")},
-		{name: "hours", input: sdk.String("2 HOUR"), expected: []any{map[string]any{"hours": 2}}},
-		{name: "hours (plural)", input: sdk.String("2 HOURS"), expected: []any{map[string]any{"hours": 2}}},
-		{name: "minutes", input: sdk.String("60 MINUTE"), expected: []any{map[string]any{"minutes": 60}}},
-		{name: "cron keeps the time zone casing", input: sdk.String("USING CRON 0 0 * * * America/Los_Angeles"), expected: []any{map[string]any{"using_cron": "0 0 * * * America/Los_Angeles"}}},
+		{name: "hours", input: sdk.String("2 HOUR"), expected: []map[string]any{{"hours": 2}}},
+		{name: "hours (plural)", input: sdk.String("2 HOURS"), expected: []map[string]any{{"hours": 2}}},
+		{name: "minutes", input: sdk.String("60 MINUTE"), expected: []map[string]any{{"minutes": 60}}},
+		{name: "cron keeps the time zone casing", input: sdk.String("USING CRON 0 0 * * * America/Los_Angeles"), expected: []map[string]any{{"using_cron": "0 0 * * * America/Los_Angeles"}}},
 		{name: "seconds are not supported", input: sdk.String("30 SECOND"), err: "unsupported backup policy schedule"},
 		{name: "invalid", input: sdk.String("every day"), err: "EVERY"},
 	}
@@ -74,7 +75,7 @@ func Test_backupPolicyScheduleRoundTrip(t *testing.T) {
 		t.Run(value, func(t *testing.T) {
 			state, err := backupPolicyScheduleToState(sdk.String(value))
 			require.NoError(t, err)
-			schedule, err := backupPolicyScheduleFromConfig(state)
+			schedule, err := backupPolicyScheduleFromConfig([]any{state[0]})
 			require.NoError(t, err)
 			require.Equal(t, sdk.String(value), schedule)
 		})
@@ -118,5 +119,38 @@ func Test_backupPolicyRequestsExt(t *testing.T) {
 		})
 		_, err := backupPolicyApplySetUnsetExt(d)
 		require.ErrorContains(t, err, "one of hours, minutes, or using_cron")
+	})
+}
+
+func Test_backupPolicySetFieldsNotSetByReadExt(t *testing.T) {
+	id := sdk.NewSchemaObjectIdentifier("db", "sch", "bp")
+	stateOf := func(t *testing.T, backupPolicy *sdk.BackupPolicy, importPermissiveMode bool) map[string]string {
+		t.Helper()
+		d := (&schema.Resource{Schema: backupPolicySchema}).Data(nil)
+		d.SetId("id")
+		require.NoError(t, backupPolicySetFieldsNotSetByReadExt(d, id, backupPolicy, importPermissiveMode))
+		return d.State().Attributes
+	}
+
+	for _, permissive := range []bool{false, true} {
+		t.Run(fmt.Sprintf("a policy without an expiration, permissive: %t", permissive), func(t *testing.T) {
+			attributes := stateOf(t, &sdk.BackupPolicy{Schedule: sdk.String("2 HOUR")}, permissive)
+			require.NotContains(t, attributes, "expire_after_days")
+			require.Equal(t, "db", attributes["database"])
+			require.Equal(t, "sch", attributes["schema"])
+			require.Equal(t, "bp", attributes["name"])
+		})
+	}
+
+	t.Run("enforcing mode writes the expiration", func(t *testing.T) {
+		attributes := stateOf(t, &sdk.BackupPolicy{ExpireAfterDays: sdk.Int(7), HasRetentionLock: true}, false)
+		require.Equal(t, "7", attributes["expire_after_days"])
+		require.Equal(t, "true", attributes["with_retention_lock"])
+	})
+
+	t.Run("permissive mode writes the unset values", func(t *testing.T) {
+		attributes := stateOf(t, &sdk.BackupPolicy{ExpireAfterDays: sdk.Int(7), HasRetentionLock: true}, true)
+		require.Equal(t, "0", attributes["expire_after_days"])
+		require.Equal(t, BooleanDefault, attributes["with_retention_lock"])
 	})
 }

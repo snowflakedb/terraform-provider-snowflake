@@ -71,6 +71,10 @@ var backupPolicyAttributesSchema = map[string]*tfschema.Schema{
 				},
 			},
 		},
+		AtLeastOneOf: []string{
+			"schedule",
+			"expire_after_days",
+		},
 		Description: "Specifies how often Snowflake creates a backup. Either an interval of at least 60 minutes (`hours` or `minutes`) or a cron expression (`using_cron`). Exactly one of the sub-fields has to be set.",
 	},
 	"expire_after_days": {
@@ -78,7 +82,11 @@ var backupPolicyAttributesSchema = map[string]*tfschema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: validation.ToDiagFunc(validation.IntAtLeast(1)),
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("expire_after_days"),
-		Description:      "Specifies the number of days until a backup expires. The minimum is 1. The maximum is 3653 when SCHEDULE is omitted.",
+		AtLeastOneOf: []string{
+			"schedule",
+			"expire_after_days",
+		},
+		Description: "Specifies the number of days until a backup expires. The minimum is 1. The maximum is 3653 when SCHEDULE is omitted.",
 	},
 	"comment": {
 		Type:        tfschema.TypeString,
