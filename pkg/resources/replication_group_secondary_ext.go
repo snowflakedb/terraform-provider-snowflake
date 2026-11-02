@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -14,8 +15,8 @@ import (
 )
 
 var (
-	replicationGroupSecondaryCreateExt      = TrackingCreateWrapper(resources.ReplicationGroupSecondary, CreateReplicationGroupSecondary)
-	replicationGroupSecondaryReadExt        = TrackingReadWrapper(resources.ReplicationGroupSecondary, ReadReplicationGroupSecondaryFunc(true))
+	replicationGroupSecondaryCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.ReplicationGroupSecondaryResource), TrackingCreateWrapper(resources.ReplicationGroupSecondary, CreateReplicationGroupSecondary))
+	replicationGroupSecondaryReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.ReplicationGroupSecondaryResource), TrackingReadWrapper(resources.ReplicationGroupSecondary, ReadReplicationGroupSecondaryFunc(true)))
 	replicationGroupSecondaryDescriptionExt = "Resource used to manage a replication group replica in the target account. For more information, check [replication group documentation](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group)."
 	replicationGroupSecondaryImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.ReplicationGroupSecondary, ImportReplicationGroupSecondary),

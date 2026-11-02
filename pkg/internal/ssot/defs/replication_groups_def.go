@@ -379,9 +379,10 @@ var replicationGroupSuspend = ssot.Attribute{
 // ReplicationGroupSecondary holds the target-account CREATE and ALTER.
 // SdkCreateForVariants emits CreateSecondary. SdkAlterForVariants emits AlterSecondary.
 var ReplicationGroup = ssot.Object{
-	Name:       "ReplicationGroup",
-	NamePlural: "ReplicationGroups",
-	IdType:     "AccountObjectIdentifier",
+	Name:           "ReplicationGroup",
+	NamePlural:     "ReplicationGroups",
+	IdType:         "AccountObjectIdentifier",
+	PreviewFeature: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
@@ -538,6 +539,7 @@ var ReplicationGroupSecondary = ssot.Object{
 	Name:                       "ReplicationGroupSecondary",
 	NamePlural:                 "ReplicationGroups",
 	IdType:                     "AccountObjectIdentifier",
+	PreviewFeature:             true,
 	IdentityNameForceNew:       true,
 	SdkCreateRequestObjectName: "SecondaryReplicationGroup",
 	VariantOf:                  &ReplicationGroup,

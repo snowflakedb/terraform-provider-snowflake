@@ -7,15 +7,16 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
-	replicationGroupCreateExt      = TrackingCreateWrapper(resources.ReplicationGroup, CreateReplicationGroup)
-	replicationGroupReadExt        = TrackingReadWrapper(resources.ReplicationGroup, ReadReplicationGroupFunc(true))
-	replicationGroupUpdateExt      = TrackingUpdateWrapper(resources.ReplicationGroup, UpdateReplicationGroup)
+	replicationGroupCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.ReplicationGroupResource), TrackingCreateWrapper(resources.ReplicationGroup, CreateReplicationGroup))
+	replicationGroupReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.ReplicationGroupResource), TrackingReadWrapper(resources.ReplicationGroup, ReadReplicationGroupFunc(true)))
+	replicationGroupUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.ReplicationGroupResource), TrackingUpdateWrapper(resources.ReplicationGroup, UpdateReplicationGroup))
 	replicationGroupDescriptionExt = "Resource used to manage replication groups in the source account. For more information, check [replication group documentation](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group)."
 	replicationGroupImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.ReplicationGroup, importReplicationGroup),

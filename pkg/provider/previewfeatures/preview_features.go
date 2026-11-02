@@ -131,6 +131,9 @@ const (
 	ProceduresDatasource                           feature = "snowflake_procedures_datasource"
 	ProjectionPoliciesDatasource                   feature = "snowflake_projection_policies_datasource"
 	ProjectionPolicyResource                       feature = "snowflake_projection_policy_resource"
+	ReplicationGroupResource                       feature = "snowflake_replication_group_resource"
+	ReplicationGroupSecondaryResource              feature = "snowflake_replication_group_secondary_resource"
+	ReplicationGroupsDatasource                    feature = "snowflake_replication_groups_datasource"
 	CurrentRoleDatasource                          feature = "snowflake_current_role_datasource"
 	SemanticViewResource                           feature = "snowflake_semantic_view_resource"
 	SemanticViewDatasource                         feature = "snowflake_semantic_views_datasource"
@@ -249,6 +252,9 @@ var allPreviewFeatures = []feature{
 	ProceduresDatasource,
 	ProjectionPoliciesDatasource,
 	ProjectionPolicyResource,
+	ReplicationGroupResource,
+	ReplicationGroupSecondaryResource,
+	ReplicationGroupsDatasource,
 	StageResource,
 	StagesDatasource,
 	StorageIntegrationResource,

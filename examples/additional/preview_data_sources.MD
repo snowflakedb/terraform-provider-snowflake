@@ -27,6 +27,7 @@
 - [snowflake_pipes](./docs/data-sources/pipes)
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_projection_policies](./docs/data-sources/projection_policies)
+- [snowflake_replication_groups](./docs/data-sources/replication_groups)
 - [snowflake_semantic_views](./docs/data-sources/semantic_views)
 - [snowflake_sequences](./docs/data-sources/sequences)
 - [snowflake_shares](./docs/data-sources/shares)
