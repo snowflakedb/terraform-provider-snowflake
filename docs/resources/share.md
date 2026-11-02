@@ -15,7 +15,9 @@ The provider automatically:
 4. Revokes the privileges and drops the temporary database
 This process is fully automated during the creation.
 
--> **Note** `SHOW SHARES` lists at most three accounts of a share. For a share with more than three accounts, the provider reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES`, so the role used by the provider needs `SELECT` on that view (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). Querying that view requires a warehouse in the session: set a `DEFAULT_WAREHOUSE` for the user, or specify a warehouse in the provider configuration. That view can be up to 3 hours behind, so for up to 3 hours after accounts are added or removed outside the three listed by `SHOW SHARES`, a plan can still show them as changes; applying it does not alter the share. Without the privilege or the warehouse, the provider reports a warning and only the listed accounts are known.
+~> **Required warehouse** For a share with more than three accounts, the provider reads the full list of accounts from the `SNOWFLAKE.ACCOUNT_USAGE.SHARES` view, which requires a warehouse in the connection. Please, make sure you have either set a `DEFAULT_WAREHOUSE` for the user, or specified a warehouse in the provider configuration.
+
+-> **Note** `SHOW SHARES` lists at most three accounts of a share. For a share with more than three accounts, the provider reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES`, so the role used by the provider needs `SELECT` on that view (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). That view can be up to 3 hours behind, so for up to 3 hours after accounts are added or removed outside the three listed by `SHOW SHARES`, a plan can still show them as changes; applying it does not alter the share. Without the privilege or the warehouse, the provider reports a warning and only the listed accounts are known.
 
 # snowflake_share (Resource)
 
@@ -51,7 +53,7 @@ resource "snowflake_database" "example" {
 
 ### Optional
 
-- `accounts` (List of String) A list of accounts to be added to the share. Values should not be the account locator, but in the form of 'organization_name.account_name
+- `accounts` (Set of String) A list of accounts to be added to the share. Values should not be the account locator, but in the form of 'organization_name.account_name
 - `comment` (String) Specifies a comment for the managed account.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 

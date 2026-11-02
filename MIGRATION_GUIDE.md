@@ -293,13 +293,52 @@ On rotation, the provider now caps a positive value at the remaining whole hours
 
 The configured value stays in state. Only the value sent to Snowflake is adjusted. No configuration changes are required.
 
-### *(bug fix)* `snowflake_share` reads every account of a share with more than three accounts
+### *(breaking change)* `snowflake_share` rework
 
-`SHOW SHARES` lists at most three accounts in its `to` column and appends `... (N TOTAL)` for the rest. Since v2.19.0, reading a [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) with more than three accounts failed to parse that column and set `accounts` to an empty list, so `terraform plan` proposed adding every configured account on every run.
+The [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) resource has been reworked: `accounts` is now a set, and the provider reads, imports, and removes the accounts of a share consistently with Snowflake. This resource is still in preview and will be reworked in the future.
+
+#### `accounts` is now a set
+
+`accounts` was a list and is now a set of strings. The recipients of a share have no order in Snowflake, so the order of the accounts in your configuration no longer matters, and changing it plans no changes. Accounts that differ only in case are still treated as the same account. The existing state is read as a set, so no state migration is needed.
+
+Terraform handles sets differently from lists, so expressions that rely on `accounts` being a list must be adjusted:
+
+- an account cannot be referenced by its position, so `snowflake_share.example.accounts[0]` is no longer valid; convert the set first, for example `tolist(snowflake_share.example.accounts)[0]`, or iterate with a `for` expression;
+- functions and variables that expect a list, such as `concat(...)` or a module input typed `list(string)`, need `tolist(snowflake_share.example.accounts)`;
+- the order of the elements is not stable, so do not depend on it.
+
+Configurations that only assign a list of accounts to `accounts`, or only use `length(...)` or `for` expressions, keep working.
+
+#### The accounts of a share are read from Snowflake
+
+Previously, the read dropped every recipient that was not in the `accounts` of your configuration. This had two effects:
+
+- importing a share left `accounts` empty;
+- a recipient added outside Terraform was invisible, so the plan showed no changes.
+
+The provider now sets `accounts` to the recipients that Snowflake reports. After upgrading, `terraform import` sets `accounts`, and a share with recipients that are not in your configuration plans an update that removes them (see below).
+
+#### Accounts that are no longer configured are removed
+
+Previously, when you changed `accounts` so that it listed fewer accounts, the apply only added the configured accounts. The accounts you removed from the configuration stayed recipients of the share in Snowflake, while the state did not show them.
+
+When `accounts` changes, the provider now adds the configured accounts that are missing and removes every recipient that is not configured. It compares the configuration with the accounts in the state, which the refresh reads from Snowflake. This includes recipients that were added outside Terraform. If you want to keep a recipient, add it to `accounts` before applying.
+
+#### The comment can be unset
+
+Previously, removing `comment` from the configuration (or setting it to an empty string) of a share that had a comment made the apply fail, because the provider sent an empty `SET COMMENT`, which the update rejected. The provider now clears the comment with `UNSET COMMENT`, so removing `comment` from the configuration unsets it in Snowflake.
+
+#### Shares with more than three accounts are read in full
+
+`SHOW SHARES` lists at most three accounts in its `to` column and appends `... (N TOTAL)` for the rest. Since v2.19.0, reading a share with more than three accounts failed to parse that column and set `accounts` to an empty list, so `terraform plan` proposed adding every configured account on every run.
 
 The provider now reads the `... (N TOTAL)` marker as a count instead of an account. For a share with more than three accounts, it reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` and combines it with the accounts `SHOW SHARES` lists. That view can be up to 3 hours behind, so for up to 3 hours after a change to the accounts, a plan can still show it.
 
-To read the full list, the role used by the provider needs `SELECT` on `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). Without it, the provider reports a warning and only the accounts listed by `SHOW SHARES` are known. This resource is still in preview and will be reworked in the future.
+To read the full list, the role used by the provider needs `SELECT` on `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). Without it, the provider reports a warning and only the accounts listed by `SHOW SHARES` are known.
+
+#### Required warehouse
+
+For a share with more than three accounts, the provider reads the full list of accounts from the `SNOWFLAKE.ACCOUNT_USAGE.SHARES` view, which requires a warehouse in the connection. Please, make sure you have either set a `DEFAULT_WAREHOUSE` for the user, or specified a warehouse in the provider configuration. Without a warehouse, the provider reports a warning and only the accounts listed by `SHOW SHARES` are known.
 
 ### *(bug fix)* `snowflake_pipe` reads SNS topic ARNs from every AWS partition
 

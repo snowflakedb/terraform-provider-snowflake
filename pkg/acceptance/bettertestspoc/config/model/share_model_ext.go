@@ -7,6 +7,6 @@ import (
 
 func (s *ShareModel) WithAccounts(accounts ...string) *ShareModel {
 	accountStringVariables := collections.Map(accounts, func(account string) config.Variable { return config.StringVariable(account) })
-	s.WithAccountsValue(config.ListVariable(accountStringVariables...))
+	s.WithAccountsValue(config.SetVariable(accountStringVariables...))
 	return s
 }
