@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -68,7 +69,7 @@ func OpenflowDeployments() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.OpenflowDeploymentsDatasource), TrackingReadWrapper(datasources.OpenflowDeployments, ReadOpenflowDeployments)),
 		Schema:      openflowDeploymentsSchema,
-		Description: "Data source used to get details of filtered Openflow deployments. Both Snowflake-managed and BYOC deployments are returned; the `type` field in `show_output` distinguishes them. The results of SHOW and DESCRIBE are encapsulated in one output collection `openflow_deployments`.",
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered Openflow deployments. Both Snowflake-managed and BYOC deployments are returned; the `type` field in `show_output` distinguishes them. The results of SHOW and DESCRIBE are encapsulated in one output collection `openflow_deployments`.",
 	}
 }
 

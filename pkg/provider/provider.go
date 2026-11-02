@@ -40,6 +40,7 @@ func init() {
 			}
 			// <deprecation> tag is a hack to split description into two parts (deprecation/real description) nicely. This tag won't be rendered.
 			// Check resources.md.tmpl for usage example.
+			// A <preview_feature> mark may already be present in the description. Leave it in place; the generic resource and data source templates use it.
 			desc = fmt.Sprintf("~> **Deprecation** %v <deprecation>\n\n%s", deprecationMessage, r.Description)
 		}
 		return strings.TrimSpace(desc)
@@ -614,7 +615,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 // TODO(next postgres prs): "snowflake_postgres_fork":                                                resources.PostgresFork(),
 // TODO(next postgres prs): "snowflake_postgres_instance":                                            resources.PostgresInstance(),
 func getResources() map[string]*schema.Resource {
-	return map[string]*schema.Resource{
+	resourcesByName := map[string]*schema.Resource{
 		"snowflake_account": resources.Account(),
 		"snowflake_account_authentication_policy_attachment":                     resources.AccountAuthenticationPolicyAttachment(),
 		"snowflake_account_role":                                                 resources.AccountRole(),
@@ -767,10 +768,11 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
 		"snowflake_warehouse_interactive":                                        resources.WarehouseInteractive(),
 	}
+	return resourcesByName
 }
 
 func getDataSources() map[string]*schema.Resource {
-	return map[string]*schema.Resource{
+	dataSourcesByName := map[string]*schema.Resource{
 		"snowflake_accounts":                           datasources.Accounts(),
 		"snowflake_account_roles":                      datasources.AccountRoles(),
 		"snowflake_alerts":                             datasources.Alerts(),
@@ -845,6 +847,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_views":                              datasources.Views(),
 		"snowflake_warehouses":                         datasources.Warehouses(),
 	}
+	return dataSourcesByName
 }
 
 func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {

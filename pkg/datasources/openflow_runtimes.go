@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -55,7 +56,7 @@ func OpenflowRuntimes() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.OpenflowRuntimesDatasource), TrackingReadWrapper(datasources.OpenflowRuntimes, ReadOpenflowRuntimes)),
 		Schema:      openflowRuntimesSchema,
-		Description: "Data source used to get details of filtered Openflow runtimes. The results of SHOW and DESCRIBE are encapsulated in one output collection `openflow_runtimes`.",
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered Openflow runtimes. The results of SHOW and DESCRIBE are encapsulated in one output collection `openflow_runtimes`.",
 	}
 }
 
