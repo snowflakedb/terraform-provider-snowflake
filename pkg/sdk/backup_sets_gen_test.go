@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[BackupPolicyState]{"BackupPolicyState", AllBackupPolicyStates, ToBackupPolicyState})
+}
+
 var backupSetsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
