@@ -28,4 +28,28 @@ func TestParameters_ShowParameters(t *testing.T) {
 		}
 		assertOptsValidAndSqlEquals(t, opts, "SHOW PARAMETERS LIKE 'test' IN ACCOUNT")
 	})
+
+	t.Run("in pipe", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &ShowParametersOptions{
+			In: &ParametersIn{Pipe: id},
+		}
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW PARAMETERS IN PIPE %s", id.FullyQualifiedName())
+	})
+
+	t.Run("like log event level in pipe", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &ShowParametersOptions{
+			Like: &Like{Pattern: String("LOG_EVENT_LEVEL")},
+			In:   &ParametersIn{Pipe: id},
+		}
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW PARAMETERS LIKE 'LOG_EVENT_LEVEL' IN PIPE %s", id.FullyQualifiedName())
+	})
+
+	t.Run("no scope", func(t *testing.T) {
+		opts := &ShowParametersOptions{
+			In: &ParametersIn{},
+		}
+		assertOptsInvalid(t, opts, errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment", "Service", "Pipe"))
+	})
 }

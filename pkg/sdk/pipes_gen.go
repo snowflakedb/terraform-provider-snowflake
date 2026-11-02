@@ -16,6 +16,14 @@ type Pipes interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeDetails, error)
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*PipeParametersDetails, error)
+}
+
+// PipeParametersDetails holds the object's parameters with values parsed into their Go types.
+type PipeParametersDetails struct {
+	LogEventLevel       TypedParameter[LogLevel]
+	PipeExecutionPaused TypedParameter[bool]
 }
 
 // CreatePipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-pipe.
@@ -47,13 +55,15 @@ type AlterPipeOptions struct {
 }
 
 type PipeSet struct {
-	ErrorIntegration    *string `ddl:"parameter,no_quotes" sql:"ERROR_INTEGRATION"`
-	PipeExecutionPaused *bool   `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
-	Comment             *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	ErrorIntegration    *string   `ddl:"parameter,no_quotes" sql:"ERROR_INTEGRATION"`
+	LogEventLevel       *LogLevel `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	PipeExecutionPaused *bool     `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
+	Comment             *string   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type PipeUnset struct {
 	ErrorIntegration    *bool `ddl:"keyword" sql:"ERROR_INTEGRATION"`
+	LogEventLevel       *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	PipeExecutionPaused *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
 	Comment             *bool `ddl:"keyword" sql:"COMMENT"`
 }

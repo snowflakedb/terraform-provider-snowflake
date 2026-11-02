@@ -2,13 +2,6 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
-// pipeExecutionPaused is an ALTER SET/UNSET clause. It stays off Attributes so resource generation does not add a schema field.
-// LOG_EVENT_LEVEL is also on ALTER PIPE, and the parameters page lists it for pipes. The previous SDK did not have it, so it stays out of this definition.
-var pipeExecutionPaused = ssot.Attribute{
-	Name: "pipe_execution_paused",
-	Type: ssot.AttrBool,
-}
-
 // pipeRefresh is the ALTER REFRESH block. Its children are the PREFIX and MODIFIED_AFTER parameters.
 var pipeRefresh = ssot.Attribute{
 	Name:    "refresh",
@@ -29,6 +22,8 @@ var pipeRefresh = ssot.Attribute{
 // integration and error_integration stay strings: the resource never suppressed identifier quoting on them.
 // SHOW and DESCRIBE schemas and assertions are generated. The resource hooks omit show_output and
 // describe_output, so the resource schema does not expose them.
+// ALTER SET and UNSET spread the parameter catalog for pipes: LOG_EVENT_LEVEL and PIPE_EXECUTION_PAUSED.
+// Those stay off Attributes, so the resource schema does not gain parameter fields.
 var PipeAttrs = struct {
 	Comment             ssot.Attribute
 	CopyStatement       ssot.Attribute
@@ -146,7 +141,11 @@ var Pipe = ssot.Object{
 			ssot.SdkDrop(),
 			ssot.SdkAlter(ssot.SdkAlterSetList()),
 			ssot.SdkDescribe(ssot.SdkDescribeQueryStructName("DescribePipe")),
+			ssot.SdkShowParameters(),
+			ssot.SdkShowParametersDetails(),
 		),
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 	},
 	ComputedAttributes: []ssot.Attribute{
 		PipeAttrs.Owner,
@@ -204,12 +203,12 @@ var Pipe = ssot.Object{
 	}},
 	Set: []*ssot.Attribute{
 		&PipeAttrs.ErrorIntegration,
-		&pipeExecutionPaused,
+		ssot.Parameters,
 		&PipeAttrs.Comment,
 	},
 	Unset: []*ssot.Attribute{
 		&PipeAttrs.ErrorIntegration,
-		&pipeExecutionPaused,
+		ssot.Parameters,
 		&PipeAttrs.Comment,
 	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{

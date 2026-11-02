@@ -67,6 +67,24 @@ func init() {
 			`ALTER PIPE IF EXISTS %s UNSET ERROR_INTEGRATION, PIPE_EXECUTION_PAUSED, COMMENT`,
 			id.FullyQualifiedName(),
 		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Set_logEventLevel",
+			func(opts *AlterPipeOptions) {
+				opts.Set = &PipeSet{
+					LogEventLevel: new(LogLevelInfo),
+				}
+			},
+			`ALTER PIPE %s SET LOG_EVENT_LEVEL = 'INFO'`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Unset_logEventLevel",
+			func(opts *AlterPipeOptions) {
+				opts.Unset = &PipeUnset{
+					LogEventLevel: new(true),
+				}
+			},
+			`ALTER PIPE %s UNSET LOG_EVENT_LEVEL`, id.FullyQualifiedName(),
+		).
 		withModifyAndExpectedSqlf(
 			case_Pipes_sql_Alter_SetTags,
 			func(opts *AlterPipeOptions) {
