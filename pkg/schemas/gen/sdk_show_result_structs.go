@@ -47,7 +47,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ApplicationPackage{}},
 	{ObjectStruct: sdk.ApplicationRole{}},
 	{ObjectStruct: sdk.Application{}},
-	{ObjectStruct: sdk.AuthenticationPolicy{}, ManualFields: []string{"target_scopes"}},
 	{ObjectStruct: sdk.Connection{}},
 	{ObjectStruct: sdk.CortexAgent{}, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.DatabaseRole{}},

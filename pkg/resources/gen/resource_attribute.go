@@ -23,6 +23,7 @@ type ResourceAttribute struct {
 	MinItems         *int
 	MaxItems         *int
 	DescriptionExpr  string
+	DeprecatedExpr   string
 	DefaultExpr      string
 	ValidateDiagExpr string
 	DiffSuppressExpr string

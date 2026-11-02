@@ -29,7 +29,7 @@ func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) 
 		if attr.Elem == nil {
 			panic(fmt.Sprintf("object %q: collection attribute %q has no Elem", obj.Name, attr.Name))
 		}
-		if attr.Elem.Type == AttrEnum {
+		if attr.IsEnumCollection() {
 			// A SHOW row stores an ordinary enum list as []string. A CSV column parsed by CustomParser
 			// stores the enum, the same type the plain SHOW field uses.
 			if attr.CustomParser != "" && !attr.OptionalInShow && attr.OptionalInDb && attr.Elem.ColumnEnum() != nil {

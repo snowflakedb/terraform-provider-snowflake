@@ -401,6 +401,50 @@ func Test_objectAssertionDetailsFromSsot_nestedObjectColumn(t *testing.T) {
 	require.Equal(t, "*struct", desc.Fields[1].UnderlyingType)
 }
 
+func Test_objectAssertionDetailsFromSsot_enumSlicesUseSdkTypes(t *testing.T) {
+	method := ssot.NewEnum("Method", "Methods", "ALL")
+	scope := ssot.NewEnum("Scope", "Scopes", "ACCOUNT")
+	methods := ssot.Attribute{
+		Name: "authentication_methods",
+		Type: ssot.AttrSet,
+		Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: method},
+	}
+	scopes := ssot.Attribute{
+		Name: "target_scopes",
+		Type: ssot.AttrList,
+		Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: scope},
+	}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+			ssot.WithSdk(
+				ssot.SdkShow(ssot.SdkShowPlainOnly(&scopes, "[]Scope")),
+				ssot.SdkDescribe(ssot.SdkDescribeDetails()),
+			),
+		},
+		Show:     ssot.OutputSpec{Columns: []*ssot.Attribute{&scopes}},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&methods}},
+	}
+
+	show := objectAssertionDetailsFromSsot(obj, false)
+	require.Equal(t, "[]sdk.Scope", show.Fields[0].ConcreteType)
+	require.Equal(t, "slice", show.Fields[0].UnderlyingType)
+
+	desc := objectAssertionDetailsFromSsot(obj, true)
+	require.Equal(t, "[]sdk.Method", desc.Fields[0].ConcreteType)
+	require.Equal(t, "slice", desc.Fields[0].UnderlyingType)
+
+	columnar := obj
+	columnar.Generators = []ssot.GeneratorOption{
+		ssot.WithObjectAssert(ssot.ObjectAssertDescribe()),
+		ssot.WithSdk(ssot.SdkDescribe()),
+	}
+	columnarDesc := objectAssertionDetailsFromSsot(columnar, true)
+	require.Equal(t, "[]string", columnarDesc.Fields[0].ConcreteType)
+}
+
 func fieldByName(t *testing.T, model SnowflakeObjectAssertionsModel, name string) SnowflakeObjectFieldAssertion {
 	t.Helper()
 	for _, field := range model.Fields {

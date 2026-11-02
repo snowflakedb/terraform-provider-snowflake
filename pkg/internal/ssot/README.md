@@ -97,7 +97,12 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   output suppressor below. `ssot.SuppressStatement` stays manual. `ssot.SuppressShow` and `ssot.SuppressDescribe`
   still compose when set, including `WithKey`, and then derivation skips that kind. Nested combinations are
   flattened. Output strategies apply to fields, not collection elems. Statement suppression uses the resource's
-  `DiffSuppressStatement` helper for strings, including string elems.
+  `DiffSuppressStatement` helper for strings, including string elems. `ssot.SuppressAlways` ignores every diff.
+  It stands alone and replaces inferred normalization, emitting `ignoreAlwaysSuppressFunc`.
+- `Deprecated` - the schema `Deprecated` message. Empty means the attribute is not deprecated. The attribute stays
+  on `Attributes`, so the schema, model builders, and resource assertions include it. `setStateToValuesFromConfig`
+  leaves it out. It is not a CREATE or ALTER column unless it is also on those lists. `SkipCreate` leaves it out of
+  generated create when the value is not sent.
 - `Computed` - the schema ext turns the field into a computed attribute. The generator still emits Optional.
   Drift tracking and output suppression skip it. Adaptive `warehouse_type` sets it.
 - `ServerDefault` - Snowflake fills a describe-only field when the configuration omits it, and that value is not
@@ -272,7 +277,9 @@ enable nothing.
   `make generate-snowflake-object-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-assertions). Fields come
   from [SHOW and DESCRIBE](#show-and-describe) `Columns`, not from `Attributes`. `StoredAsText` is ignored. A bool stays
-  `bool`. `ObjectAssertShow(ObjectAssertShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The
+  `bool`. A list or set of enums is `[]string` in a SHOW assertion and in a columnar DESCRIBE assertion.
+  `SdkDescribeDetails` stores that list as a slice of the enum, and the DESCRIBE assertion uses that slice.
+  A SHOW plain-only column uses its plain kind, with the `sdk.` prefix, so `Has*` is generated for that field. `ObjectAssertShow(ObjectAssertShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The
   argument is the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not
   generated. `ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&attrs.Password))` is the describe-side copy.
   `ObjectAssertShow(ObjectAssertShowNestedField(&attrs.Locations))` copies `NestedAssertFields` from the old show def.
@@ -515,8 +522,8 @@ A top-level set of identifiers emits `NormalizeAndCompareIdentifiersInSet`. A to
 `NormalizeAndCompareEnumsInSet`. A list of enums, and a nested set of enums, emit `NormalizeAndCompare` on the
 collection. A resource that must keep a nested set case-sensitive clears that suppressor in the attributes
 modification function. A list or set element is validated: an enum element uses `sdkValidation`, and an identifier
-element uses `IsValidIdentifier` for the element's `IdentifierType`. `ConflictsWith`, `AtLeastOneOf`, and `Sensitive`
-are emitted on the schema field. See [Attribute](#attribute).
+element uses `IsValidIdentifier` for the element's `IdentifierType`. `ConflictsWith`, `AtLeastOneOf`, `Sensitive`,
+and `Deprecated` are emitted on the schema field. See [Attribute](#attribute).
 
 `WithAlterSetInSdk(Generated())` and `WithAlterUnsetInSdk(Generated())` call `Client.<NamePlural>.Alter` with
 `NewAlter<Name>Request(id).WithSet` or `WithUnset`. They compare the corresponding request against
@@ -528,7 +535,8 @@ operations, custom diagnostics, or request names that differ from the object nam
 `SetStateToValuesFromConfig` defaults to `Generated`. Read inlines the field names in `setStateToValuesFromConfig`.
 The names are optional attributes in `Attributes` order that the helper can copy: string (an optional bool, an enum,
 an identifier, or a float), int, and a set of string or int. An optional bool element is stored as a string, so a set
-of those bools is included. `comment` is left out, because `SetConfigFields` writes it from SHOW. A nested block
+of those bools is included. `comment` is left out, because `SetConfigFields` writes it from SHOW. A deprecated attribute
+is left out. A nested block
 (`Children`) is left out. A list is left out, because the helper does not handle `TypeList`. `CreateOnly` is left out.
 Skipping a nested block does not panic. An empty list omits the call. A resource does not list this hook to opt in.
 `Omitted` drops the call. `ExtCall` keeps a hand-written `<prefix>SetStateToValueFromConfigFieldsExt` list, for an
@@ -662,7 +670,8 @@ the enum type in a details struct (also in its nested structs).
   list) and `DescribePropertyParsed` (a hand-written `Parse<Name><Column>Described`). Some columns that need a hand-written parser
   could be generated from the column itself: a list of enums (the items validated with the `To<Enum>` function of the element
   enum), a single enum (one `To<Enum>` call), and a string whose `null` value means empty. They are hand-written for now.
-- Computed fields and `Deprecated` are not attribute fields. An explicit schema `Default` is not an attribute field.
+- A computed-only field is not an attribute field. `Deprecated` is the schema message; see [Attribute](#attribute).
+  An explicit schema `Default` is not an attribute field.
   An optional int whose `Min` is 0 or less still emits `Default = IntDefault`. `NativeBool`
   keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
   Chrome the generator does not emit stays in the attributes modification function.

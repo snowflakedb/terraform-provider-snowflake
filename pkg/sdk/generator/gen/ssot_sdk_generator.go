@@ -859,7 +859,7 @@ func enumListItemQueryStructs(obj ssot.Object) []*QueryStruct {
 		if attr == nil {
 			return
 		}
-		if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrEnum && attr.Elem.Enum != nil {
+		if attr.IsEnumCollection() && attr.Elem.Enum != nil {
 			name := ssot.EnumListItemName(attr.Elem.Enum)
 			if _, ok := seen[name]; !ok {
 				seen[name] = struct{}{}

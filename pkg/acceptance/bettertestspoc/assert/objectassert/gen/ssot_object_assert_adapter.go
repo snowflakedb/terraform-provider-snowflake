@@ -44,7 +44,7 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 		if attr == nil {
 			panic(fmt.Sprintf("object %q: nil %s column", obj.Name, kind))
 		}
-		field := ssot.ColumnField(obj, *attr)
+		field := objectAssertColumnField(obj, attr, isDescribe)
 		if nestedField, ok := findNestedField(nested, attr); ok {
 			field.ConcreteType, field.UnderlyingType = nestedFieldTypes(nestedFieldGoType(obj, nestedField))
 		}
@@ -93,6 +93,66 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 			Name:   name,
 			Fields: fields,
 		},
+	}
+}
+
+// objectAssertColumnField is the SDK field an object assertion reads.
+// A SHOW list or set of enums stays []string, as does a columnar DESCRIBE. SdkDescribeDetails stores
+// that list as a slice of the enum. A SHOW plain-only column uses its plain kind, with the sdk prefix.
+func objectAssertColumnField(obj ssot.Object, attr *ssot.Attribute, isDescribe bool) genhelpers.Field {
+	field := ssot.ColumnField(obj, *attr)
+	concrete, underlying, ok := objectAssertOverrideType(obj, attr, isDescribe)
+	if !ok {
+		return field
+	}
+	if isDescribe && attr.IsOptionalColumn() {
+		concrete = "*" + concrete
+		underlying = "*" + underlying
+	}
+	field.ConcreteType = concrete
+	field.UnderlyingType = underlying
+	return field
+}
+
+func objectAssertOverrideType(obj ssot.Object, attr *ssot.Attribute, isDescribe bool) (concrete, underlying string, ok bool) {
+	g := ssot.ObjectGenerators(obj.Generators...)
+	if isDescribe {
+		if g.Sdk.DescribeDetails && attr.IsEnumCollection() && attr.Elem.ColumnEnum() != nil {
+			return "[]sdk." + attr.Elem.ColumnEnum().Name, "slice", true
+		}
+		return "", "", false
+	}
+	for _, plain := range g.Sdk.ShowPlainOnlyFields {
+		if plain.Column == attr {
+			concrete, underlying = assertionTypesFromSdkKind(plain.Kind)
+			return concrete, underlying, true
+		}
+	}
+	return "", "", false
+}
+
+// assertionTypesFromSdkKind turns an SDK kind, written without the sdk package prefix, into the
+// concrete type and underlying kind an object assertion uses.
+func assertionTypesFromSdkKind(kind string) (concrete, underlying string) {
+	pointer := ""
+	if rest, ok := strings.CutPrefix(kind, "*"); ok {
+		pointer = "*"
+		kind = rest
+	}
+	if elem, ok := strings.CutPrefix(kind, "[]"); ok {
+		elemConcrete, _ := assertionTypesFromSdkKind(elem)
+		return pointer + "[]" + strings.TrimPrefix(elemConcrete, "*"), pointer + "slice"
+	}
+	switch kind {
+	case "string", "int", "bool", "float64", "byte", "any":
+		return pointer + kind, pointer + kind
+	case "time.Time":
+		return pointer + "time.Time", pointer + "struct"
+	default:
+		if strings.Contains(kind, ".") {
+			return pointer + kind, pointer + "struct"
+		}
+		return pointer + "sdk." + kind, pointer + "struct"
 	}
 }
 
