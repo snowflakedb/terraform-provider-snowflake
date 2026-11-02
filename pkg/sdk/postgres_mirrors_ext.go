@@ -7,11 +7,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
-	"time"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
 func (v *postgresMirrors) DropSafely(ctx context.Context, request *DropPostgresMirrorRequest) error {
@@ -21,52 +18,9 @@ func (v *postgresMirrors) DropSafely(ctx context.Context, request *DropPostgresM
 	return nil
 }
 
-const postgresMirrorPollInterval = 10 * time.Second
-
-func (v *postgresMirrors) WaitForInitialSnapshot(ctx context.Context, postgresInstance string, name string, minimumTables int) error {
-	if minimumTables < 1 {
-		return fmt.Errorf("minimumTables must be at least 1: LIST_MIRRORS reports 0 tables remaining before any table is registered")
-	}
-	normalizedName := strings.ToLower(name)
-	_, err := util.PollUntil(ctx, postgresMirrorPollInterval, func() (*PostgresMirror, error) {
-		mirrors, err := v.List(ctx, NewListPostgresMirrorRequest(*NewListPostgresMirrorArgumentsRequest().WithPostgresInstance(postgresInstance)))
-		if err != nil {
-			return nil, err
-		}
-		mirror, err := collections.FindFirst(mirrors, func(mirror PostgresMirror) bool {
-			return mirror.Name == normalizedName
-		})
-		if err != nil {
-			return nil, fmt.Errorf("%w: postgres mirror %s on instance %s", ErrObjectNotFound, name, postgresInstance)
-		}
-		// A suspended apply task never finishes the snapshot; the procedures suspend it after repeated failures.
-		if mirror.Status == PostgresMirrorStatusSuspended {
-			suspended := fmt.Errorf("postgres mirror %s is suspended, so its initial snapshot cannot complete", name)
-			if mirror.ErrorMessage != nil && *mirror.ErrorMessage != "" {
-				suspended = fmt.Errorf("%w: %s", suspended, *mirror.ErrorMessage)
-			}
-			return nil, suspended
-		}
-		return mirror, nil
-	}, func(mirror *PostgresMirror) bool {
-		return mirror.InitialSnapshotCompleted(minimumTables)
-	}, fmt.Sprintf("initial snapshot of postgres mirror %s did not complete", name))
-	return err
-}
-
-// InitialSnapshotCompleted needs more than "0 tables remaining": LIST_MIRRORS also reports 0 before the apply task has
-// registered any table, so the mirror must be ACTIVE and have registered at least minimumTables tables.
-// Callers must pass minimumTables >= 1; WaitForInitialSnapshot enforces that before calling this.
-// INITIAL_SNAPSHOT_TABLES_REMAINING counts only the first copy of each table, not later re-snapshots.
-func (v *PostgresMirror) InitialSnapshotCompleted(minimumTables int) bool {
-	return v.Status == PostgresMirrorStatusActive &&
-		v.InitialSnapshotTablesRemaining != nil && *v.InitialSnapshotTablesRemaining == 0 &&
-		v.TableCount != nil && *v.TableCount >= minimumTables
-}
-
 func (r postgresMirrorRow) additionalConvert(result *PostgresMirror) error {
-	// Normalized so WaitForInitialSnapshot's comparisons against the uppercase status constants still match.
-	// An unrecognized status is kept (uppercased). ToPostgresMirrorStatus would reject it and fail List/Wait.
+	// ToPostgresMirrorStatus would reject an unrecognized status and fail List. Uppercasing keeps its case-insensitive
+	// matching, so known statuses still equal the constants.
 	result.Status = PostgresMirrorStatus(strings.ToUpper(r.Status.String))
 	return nil
 }
@@ -108,10 +62,65 @@ func (v *PostgresMirrorDetails) IsMembershipKnown() bool {
 	return v.PostgresTables != nil && v.PostgresSchemas != nil
 }
 
+// PostgresMirrorRefreshInterval is a refresh interval in one unit. CREATE_MIRROR and ALTER_MIRROR store the phrase they
+// receive, and DESCRIBE_MIRROR returns it unchanged.
+type PostgresMirrorRefreshInterval struct {
+	Hours   int
+	Minutes int
+	Seconds int
+}
+
+// ParsePostgresMirrorRefreshInterval reads a day as 24 hours. It converts DESCRIBE_MIRROR output and checks no range,
+// so it must not validate input.
+func ParsePostgresMirrorRefreshInterval(interval string) (PostgresMirrorRefreshInterval, error) {
+	invalid := fmt.Errorf("invalid postgres mirror refresh interval: %q", interval)
+	parts := strings.Fields(strings.ToLower(interval))
+	if len(parts) != 2 {
+		return PostgresMirrorRefreshInterval{}, invalid
+	}
+	count, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return PostgresMirrorRefreshInterval{}, invalid
+	}
+	switch parts[1] {
+	case "hour", "hours":
+		return PostgresMirrorRefreshInterval{Hours: count}, nil
+	case "minute", "minutes":
+		return PostgresMirrorRefreshInterval{Minutes: count}, nil
+	case "second", "seconds":
+		return PostgresMirrorRefreshInterval{Seconds: count}, nil
+	case "day", "days":
+		return PostgresMirrorRefreshInterval{Hours: 24 * count}, nil
+	default:
+		return PostgresMirrorRefreshInterval{}, invalid
+	}
+}
+
+// String spells the phrase like the Snowflake documentation ("1 minute", "10 minutes"), because describe_output shows it
+// as sent.
+func (i PostgresMirrorRefreshInterval) String() string {
+	switch {
+	case i.Hours > 0:
+		return postgresMirrorRefreshIntervalPhrase(i.Hours, "hour")
+	case i.Minutes > 0:
+		return postgresMirrorRefreshIntervalPhrase(i.Minutes, "minute")
+	default:
+		return postgresMirrorRefreshIntervalPhrase(i.Seconds, "second")
+	}
+}
+
+func postgresMirrorRefreshIntervalPhrase(count int, unit string) string {
+	if count == 1 {
+		return "1 " + unit
+	}
+	return fmt.Sprintf("%d %ss", count, unit)
+}
+
 // additionalConvert fills the fields marked WithManualConvert in postgres_mirrors_def.go.
 func (r postgresMirrorDetailsRow) additionalConvert(result *PostgresMirrorDetails) error {
-	// An unrecognized status is kept. ToPostgresMirrorStatus would reject it and fail Describe.
-	result.Status = PostgresMirrorStatus(r.Status.String)
+	// ToPostgresMirrorStatus would reject an unrecognized status and fail Describe. Uppercasing keeps its
+	// case-insensitive matching, so known statuses still equal the constants.
+	result.Status = PostgresMirrorStatus(strings.ToUpper(r.Status.String))
 	result.RecentQueryDurations = compactPostgresMirrorJson(r.RecentQueryDurations)
 	result.PostgresStatus = compactPostgresMirrorJson(r.PostgresStatus)
 

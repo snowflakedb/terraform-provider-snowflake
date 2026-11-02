@@ -7,7 +7,6 @@ import (
 	"slices"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -184,16 +183,6 @@ func TestInt_PostgresMirrors(t *testing.T) {
 		allMirrors, err := client.PostgresMirrors.List(ctx, sdk.NewListPostgresMirrorRequest(*sdk.NewListPostgresMirrorArgumentsRequest()))
 		require.NoError(t, err)
 		assert.True(t, slices.ContainsFunc(allMirrors, func(mirror sdk.PostgresMirror) bool { return mirror.Name == details.Name }))
-	})
-
-	t.Run("wait for the initial snapshot", func(t *testing.T) {
-		details := testClientHelper().PostgresMirror.CreateWithTables(t, instance, helpers.PostgresMirrorFixtureTable1, helpers.PostgresMirrorFixtureTable2)
-
-		testClientHelper().PostgresMirror.WaitForInitialSnapshot(t, instance, details.Name, 2, 15*time.Minute)
-
-		assertThatObject(t, objectassert.PostgresMirrorDetailsFromObject(t, describe(t, details.Name)).
-			HasStatus(sdk.PostgresMirrorStatusActive),
-		)
 	})
 
 	t.Run("describe: missing mirror", func(t *testing.T) {

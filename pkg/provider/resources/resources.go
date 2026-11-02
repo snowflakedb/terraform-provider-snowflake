@@ -104,6 +104,7 @@ const (
 	Pipe                                                   resource = "snowflake_pipe"
 	PostgresFork                                           resource = "snowflake_postgres_fork"
 	PostgresInstance                                       resource = "snowflake_postgres_instance"
+	PostgresMirror                                         resource = "snowflake_postgres_mirror"
 	PrimaryConnection                                      resource = "snowflake_primary_connection"
 	ProcedureJava                                          resource = "snowflake_procedure_java"
 	ProcedureJavascript                                    resource = "snowflake_procedure_javascript"

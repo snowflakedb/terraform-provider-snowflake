@@ -165,17 +165,5 @@ var postgresMirrorsDef = g.NewInterface(
 	"DropSafely treats a mirror that no longer exists as dropped.",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*DropPostgresMirrorRequest")},
 	"error",
-).WithCustomInterfaceMethod(
-	"WaitForInitialSnapshot",
-	"WaitForInitialSnapshot polls LIST_MIRRORS until the mirror is ACTIVE, no table is left in its first copy, and at\n"+
-		"least minimumTables tables are registered. minimumTables is the number of tables named explicitly on create and\n"+
-		"must be at least 1: LIST_MIRRORS reports 0 remaining before registration. Tables reached only through a schema,\n"+
-		"or added by a later alter, are included only when the caller counts them. The caller sets the deadline on ctx.",
-	[]*g.MethodParameter{
-		g.NewMethodParameter("postgresInstance", "string"),
-		g.NewMethodParameter("name", "string"),
-		g.NewMethodParameter("minimumTables", "int"),
-	},
-	"error",
 ).
 	WithEnums(PostgresMirrorTargetTableTypeEnumDef, PostgresMirrorStatusEnumDef)

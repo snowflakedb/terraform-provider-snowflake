@@ -61,6 +61,8 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 		assertionCreator = "BoolValueSet"
 	case concreteTypeWithoutPtr == "int":
 		assertionCreator = "IntValueSet"
+	case concreteTypeWithoutPtr == "int64":
+		assertionCreator = "Int64ValueSet"
 	case concreteTypeWithoutPtr == "float64":
 		assertionCreator = "FloatValueSet"
 	case concreteTypeWithoutPtr == "string":

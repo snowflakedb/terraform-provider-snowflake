@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"context"
 	"database/sql"
 	"math"
 	"testing"
@@ -207,49 +206,24 @@ func init() {
 		)
 }
 
-func TestPostgresMirrors_WaitForInitialSnapshot_minimumTables(t *testing.T) {
-	var mirrors *postgresMirrors
-	err := mirrors.WaitForInitialSnapshot(context.Background(), "my-instance", "orders_mirror", 0)
-	require.ErrorContains(t, err, "minimumTables must be at least 1")
-}
-
 func TestPostgresMirrorRow_convert(t *testing.T) {
-	t.Run("keeps unrecognized status", func(t *testing.T) {
+	t.Run("lowercase status", func(t *testing.T) {
 		mirror, err := postgresMirrorRow{
 			MirrorName: "orders_mirror",
-			Status:     sql.NullString{String: "REPAIRING", Valid: true},
+			Status:     sql.NullString{String: "active", Valid: true},
+		}.convert()
+		require.NoError(t, err)
+		assert.Equal(t, PostgresMirrorStatusActive, mirror.Status)
+	})
+
+	t.Run("keeps unrecognized status, uppercased", func(t *testing.T) {
+		mirror, err := postgresMirrorRow{
+			MirrorName: "orders_mirror",
+			Status:     sql.NullString{String: "Repairing", Valid: true},
 		}.convert()
 		require.NoError(t, err)
 		assert.Equal(t, PostgresMirrorStatus("REPAIRING"), mirror.Status)
 	})
-}
-
-func TestPostgresMirror_InitialSnapshotCompleted(t *testing.T) {
-	completed := &PostgresMirror{
-		Status:                         PostgresMirrorStatusActive,
-		TableCount:                     Int(2),
-		InitialSnapshotTablesRemaining: Int(0),
-	}
-	assert.True(t, completed.InitialSnapshotCompleted(2))
-	assert.False(t, completed.InitialSnapshotCompleted(3))
-
-	assert.False(t, (&PostgresMirror{
-		Status:                         PostgresMirrorStatusStarting,
-		TableCount:                     Int(2),
-		InitialSnapshotTablesRemaining: Int(0),
-	}).InitialSnapshotCompleted(2))
-
-	assert.False(t, (&PostgresMirror{
-		Status:                         PostgresMirrorStatusActive,
-		TableCount:                     Int(0),
-		InitialSnapshotTablesRemaining: Int(0),
-	}).InitialSnapshotCompleted(1))
-
-	assert.False(t, (&PostgresMirror{
-		Status:                         PostgresMirrorStatusActive,
-		TableCount:                     Int(2),
-		InitialSnapshotTablesRemaining: Int(1),
-	}).InitialSnapshotCompleted(2))
 }
 
 func TestPostgresMirrorDetailsRow_convert(t *testing.T) {
@@ -344,6 +318,22 @@ func TestPostgresMirrorDetailsRow_convert(t *testing.T) {
 		require.ErrorContains(t, err, "POSTGRES_TABLES")
 	})
 
+	t.Run("lowercase status", func(t *testing.T) {
+		details, err := postgresMirrorDetailsRow{
+			Status: sql.NullString{String: "active", Valid: true},
+		}.convert()
+		require.NoError(t, err)
+		assert.Equal(t, PostgresMirrorStatusActive, details.Status)
+	})
+
+	t.Run("keeps unrecognized status, uppercased", func(t *testing.T) {
+		details, err := postgresMirrorDetailsRow{
+			Status: sql.NullString{String: "Repairing", Valid: true},
+		}.convert()
+		require.NoError(t, err)
+		assert.Equal(t, PostgresMirrorStatus("REPAIRING"), details.Status)
+	})
+
 	t.Run("lowercase target table type", func(t *testing.T) {
 		details, err := postgresMirrorDetailsRow{
 			TargetTableType: sql.NullString{String: "snowflake", Valid: true},
@@ -358,4 +348,32 @@ func TestPostgresMirrorDetailsRow_convert(t *testing.T) {
 		}.convert()
 		require.ErrorContains(t, err, "TARGET_TABLE_TYPE")
 	})
+}
+
+func TestParsePostgresMirrorRefreshInterval(t *testing.T) {
+	for input, expected := range map[string]PostgresMirrorRefreshInterval{
+		"30 seconds": {Seconds: 30},
+		"1 minute":   {Minutes: 1},
+		"10 MINUTES": {Minutes: 10},
+		"1 hour":     {Hours: 1},
+		"1 day":      {Hours: 24},
+	} {
+		t.Run(input, func(t *testing.T) {
+			interval, err := ParsePostgresMirrorRefreshInterval(input)
+			require.NoError(t, err)
+			assert.Equal(t, expected, interval)
+		})
+	}
+
+	t.Run("unknown unit", func(t *testing.T) {
+		_, err := ParsePostgresMirrorRefreshInterval("1 week")
+		require.ErrorContains(t, err, `invalid postgres mirror refresh interval: "1 week"`)
+	})
+}
+
+func TestPostgresMirrorRefreshInterval_String(t *testing.T) {
+	assert.Equal(t, "30 seconds", PostgresMirrorRefreshInterval{Seconds: 30}.String())
+	assert.Equal(t, "1 minute", PostgresMirrorRefreshInterval{Minutes: 1}.String())
+	assert.Equal(t, PostgresMirrorDefaultRefreshInterval, PostgresMirrorRefreshInterval{Minutes: 10}.String())
+	assert.Equal(t, "24 hours", PostgresMirrorRefreshInterval{Hours: 24}.String())
 }

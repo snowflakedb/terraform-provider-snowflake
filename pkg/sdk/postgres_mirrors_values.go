@@ -4,5 +4,6 @@ package sdk
 // replication slot name. Test name generation stays inside it.
 const PostgresMirrorNameMaxLength = 50
 
-// PostgresMirrorDefaultRefreshInterval is what CREATE_MIRROR uses when refresh_interval is omitted.
+// PostgresMirrorDefaultRefreshInterval is what CREATE_MIRROR uses when refresh_interval is omitted. Only tests use it:
+// the provider never repeats the Snowflake default.
 const PostgresMirrorDefaultRefreshInterval = "10 minutes"

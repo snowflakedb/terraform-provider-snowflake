@@ -422,6 +422,11 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.PostgresInstance: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.PostgresInstances.ShowByID)
 	},
+	// A mirror ID is the plain mirror name, which parses as a single-part identifier. DESCRIBE_MIRROR returns no row for a dropped mirror.
+	resources.PostgresMirror: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		_, err := client.PostgresMirrors.Describe(ctx, sdk.NewDescribePostgresMirrorRequest(*sdk.NewDescribePostgresMirrorArgumentsRequest(id.Name())))
+		return err
+	},
 	resources.ProcedureJava: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Procedures.ShowByID)
 	},
