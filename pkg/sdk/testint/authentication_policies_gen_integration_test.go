@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,7 +56,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				HasDefaultExpiryInDays(15).
 				HasMaxExpiryInDays(365).
 				HasNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionEnforcedRequired).
-				HasRequireRoleRestrictionForServiceUsers(true)).
+				HasRequireRoleRestrictionForServiceUsers(true).
+				HasRequireRoleRestrictionForPersonUsers(false).
+				HasNoBlockedRolesList()).
 			HasWorkloadIdentityPolicyWith(objectassert.NewAuthenticationPolicyWorkloadIdentityPolicyDetailsAssert().
 				HasAllowedProviders(sdk.AllowedProviderOptionAll).
 				HasAllowedAwsAccounts("ALL").
@@ -80,6 +83,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		samlIntegration, cleanupSamlIntegration := testClientHelper().SecurityIntegration.CreateSaml2(t)
 		t.Cleanup(cleanupSamlIntegration)
+
+		quotedRole, cleanupQuotedRole := testClientHelper().Role.CreateRoleWithIdentifier(t, testClientHelper().Ids.RandomAccountObjectIdentifierContaining("a b"))
+		t.Cleanup(cleanupQuotedRole)
 
 		err := client.AuthenticationPolicies.Create(ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
 			WithComment(comment).
@@ -111,6 +117,8 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 					WithDefaultExpiryInDays(1).
 					WithMaxExpiryInDays(30).
 					WithRequireRoleRestrictionForServiceUsers(false).
+					WithRequireRoleRestrictionForPersonUsers(true).
+					WithBlockedRolesList([]sdk.StringListItemWrapper{{Value: snowflakeroles.Accountadmin.FullyQualifiedName()}, {Value: quotedRole.ID().FullyQualifiedName()}}).
 					WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 			).
 			WithWorkloadIdentityPolicy(
@@ -167,7 +175,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				HasDefaultExpiryInDays(1).
 				HasMaxExpiryInDays(30).
 				HasNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced).
-				HasRequireRoleRestrictionForServiceUsers(false)).
+				HasRequireRoleRestrictionForServiceUsers(false).
+				HasRequireRoleRestrictionForPersonUsers(true).
+				HasBlockedRolesList(snowflakeroles.Accountadmin, quotedRole.ID())).
 			HasWorkloadIdentityPolicyWith(objectassert.NewAuthenticationPolicyWorkloadIdentityPolicyDetailsAssert().
 				HasAllowedProviders(sdk.AllowedProviderOptionAll).
 				HasAllowedAwsAccounts("111122223333").
@@ -278,7 +288,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				HasDefaultExpiryInDays(1).
 				HasMaxExpiryInDays(30).
 				HasNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced).
-				HasRequireRoleRestrictionForServiceUsers(true)).
+				HasRequireRoleRestrictionForServiceUsers(true).
+				HasRequireRoleRestrictionForPersonUsers(false).
+				HasNoBlockedRolesList()).
 			HasWorkloadIdentityPolicyWith(objectassert.NewAuthenticationPolicyWorkloadIdentityPolicyDetailsAssert().
 				HasAllowedProviders(sdk.AllowedProviderOptionAll).
 				HasAllowedAwsAccounts("111122223333").

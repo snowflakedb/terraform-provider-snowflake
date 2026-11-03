@@ -20,9 +20,12 @@ resource "snowflake_authentication_policy" "complete" {
     enforce_mfa_on_external_authentication = "ALL"
   }
   pat_policy {
-    default_expiry_in_days    = 1
-    max_expiry_in_days        = 30
-    network_policy_evaluation = "NOT_ENFORCED"
+    blocked_roles_list                         = ["ACCOUNTADMIN", "SYSADMIN"]
+    default_expiry_in_days                     = 1
+    max_expiry_in_days                         = 30
+    network_policy_evaluation                  = "NOT_ENFORCED"
+    require_role_restriction_for_person_users  = "true"
+    require_role_restriction_for_service_users = "false"
   }
   workload_identity_policy {
     allowed_providers     = ["ALL"]

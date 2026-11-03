@@ -126,6 +126,17 @@ These features will be marked as stable in future releases. Breaking changes are
 
 No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
 
+### *(new feature)* `require_role_restriction_for_person_users` and `blocked_roles_list` in `snowflake_authentication_policy`
+
+The `pat_policy` block of [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) has two new optional fields, matching the [`PAT_POLICY`](https://docs.snowflake.com/en/sql-reference/sql/create-authentication-policy) parameters:
+
+- `require_role_restriction_for_person_users` (`"true"` or `"false"`): if true, a programmatic access token generated for a person user must be restricted to a role. When it's not set, the provider uses the Snowflake default.
+- `blocked_roles_list` (set of role names): roles that can't be used as the role restriction of a programmatic access token. Removing the field, or setting it to `[]`, clears the list in Snowflake.
+
+`describe_output.pat_policy` in the resource and in the [`snowflake_authentication_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/authentication_policies) data source now includes `REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS` and `BLOCKED_ROLES_LIST`.
+
+No configuration changes are required unless you want to set these fields.
+
 ### *(new feature)* Opt-in experiment: permissive import mode
 
 Imports follow one of two modes:

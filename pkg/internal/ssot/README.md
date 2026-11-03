@@ -367,6 +367,8 @@ enable nothing.
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
   keyword.
+  `MustParentheses()` on `ListParameter` writes `must_parentheses`. An empty list stays in the statement as `NAME = ()`.
+  Without it, an empty list is omitted.
   `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
   `StringListKeyword(Parentheses(), NoComma(), Sql("EXISTS"))` is a keyword list of strings in parentheses with no comma, such as `EXISTS ( <condition> )`. Without `NoComma()` the items are joined with commas.
   `AlterParameterBlock(field, sql, &attr)` and `AlterKeywordBlock(field, sql, &attr)` are optional nested blocks, as a

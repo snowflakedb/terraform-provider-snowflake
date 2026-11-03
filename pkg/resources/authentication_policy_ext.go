@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -131,11 +132,11 @@ func authenticationPolicySecurityIntegrationNames(details sdk.AuthenticationPoli
 	if details.All {
 		return []string{"ALL"}
 	}
-	names := make([]string, len(details.SecurityIntegrations))
-	for i, id := range details.SecurityIntegrations {
-		names[i] = id.Name()
-	}
-	return names
+	return accountObjectIdentifierNames(details.SecurityIntegrations)
+}
+
+func accountObjectIdentifierNames(ids []sdk.AccountObjectIdentifier) []string {
+	return collections.Map(ids, sdk.AccountObjectIdentifier.Name)
 }
 
 // =============================================================================
@@ -195,6 +196,8 @@ func applyPatPolicyUpdate(d *schema.ResourceData, prefix string, req *sdk.Authen
 		intAttributeUnsetFallbackUpdateWithZeroDefault(d, prefix+"max_expiry_in_days", &req.MaxExpiryInDays, 365),
 		attributeMappedValueUpdateSetOnlyFallback(d, prefix+"network_policy_evaluation", &req.NetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption, sdk.NetworkPolicyEvaluationOptionEnforcedRequired),
 		booleanStringAttributeUnsetFallbackUpdate(d, prefix+"require_role_restriction_for_service_users", &req.RequireRoleRestrictionForServiceUsers, true),
+		booleanStringAttributeUnsetFallbackUpdate(d, prefix+"require_role_restriction_for_person_users", &req.RequireRoleRestrictionForPersonUsers, false),
+		setValueUpdateFallback(d, prefix+"blocked_roles_list", &req.BlockedRolesList, toAuthenticationPolicyPatPolicyBlockedRolesList, []sdk.StringListItemWrapper{}),
 	)
 }
 
@@ -230,6 +233,10 @@ var (
 	toAuthenticationPolicyWorkloadIdentityPolicyAllowedAzureIssuers = stringListItem
 	toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers  = stringListItem
 )
+
+func toAuthenticationPolicyPatPolicyBlockedRolesList(v any) (sdk.StringListItemWrapper, error) {
+	return sdk.StringListItemWrapper{Value: sdk.NewAccountObjectIdentifier(v.(string)).FullyQualifiedName()}, nil
+}
 
 func ToSecurityIntegrationsRequest(value any) (sdk.AuthenticationPolicySecurityIntegrationsOptionRequest, error) {
 	raw := expandStringList(value.(*schema.Set).List())
@@ -277,6 +284,8 @@ func authenticationPolicyPatPolicyToSchema(details sdk.AuthenticationPolicyPatPo
 		"max_expiry_in_days":                         details.MaxExpiryInDays,
 		"network_policy_evaluation":                  string(details.NetworkPolicyEvaluation),
 		"require_role_restriction_for_service_users": booleanStringFromBool(details.RequireRoleRestrictionForServiceUsers),
+		"require_role_restriction_for_person_users":  booleanStringFromBool(details.RequireRoleRestrictionForPersonUsers),
+		"blocked_roles_list":                         accountObjectIdentifierNames(details.BlockedRolesList),
 	}}
 }
 

@@ -87,6 +87,16 @@ func (a *AuthenticationPolicyModel) WithPatPolicy(patPolicy sdk.AuthenticationPo
 	if patPolicy.RequireRoleRestrictionForServiceUsers != nil {
 		m["require_role_restriction_for_service_users"] = tfconfig.BoolVariable(*patPolicy.RequireRoleRestrictionForServiceUsers)
 	}
+	if patPolicy.RequireRoleRestrictionForPersonUsers != nil {
+		m["require_role_restriction_for_person_users"] = tfconfig.BoolVariable(*patPolicy.RequireRoleRestrictionForPersonUsers)
+	}
+	if patPolicy.BlockedRolesList != nil {
+		m["blocked_roles_list"] = tfconfig.SetVariable(
+			collections.Map(patPolicy.BlockedRolesList, func(blockedRole sdk.StringListItemWrapper) tfconfig.Variable {
+				return tfconfig.StringVariable(sdk.NewAccountObjectIdentifierFromFullyQualifiedName(blockedRole.Value).Name())
+			})...,
+		)
+	}
 	if patPolicy.NetworkPolicyEvaluation != nil {
 		m["network_policy_evaluation"] = tfconfig.StringVariable(string(*patPolicy.NetworkPolicyEvaluation))
 	}

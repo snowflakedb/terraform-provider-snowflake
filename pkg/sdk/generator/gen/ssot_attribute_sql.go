@@ -223,7 +223,8 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		if required && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 			v = v.WithValidation(AtLeastOneValueSet, name)
 		}
-		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
+		// ValidIdentifier works only on a list of identifiers, not on item structs like StringListItemWrapper.
+		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && item == attr.Elem.IdentifierType {
 			v = v.WithValidation(ValidIdentifier, name)
 		}
 		return v
@@ -350,6 +351,8 @@ func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *Parameter
 		opts = opts.Parentheses()
 	case ssot.SqlParensNo:
 		opts = opts.NoParentheses()
+	case ssot.SqlParensMust:
+		opts = opts.MustParentheses()
 	default:
 		panic(fmt.Sprintf("sql clause parentheses %q", clause.Parentheses))
 	}

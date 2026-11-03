@@ -35,8 +35,9 @@ const (
 type SqlParens string
 
 const (
-	SqlParensYes SqlParens = "parentheses"
-	SqlParensNo  SqlParens = "no_parentheses"
+	SqlParensYes  SqlParens = "parentheses"
+	SqlParensNo   SqlParens = "no_parentheses"
+	SqlParensMust SqlParens = "must_parentheses"
 )
 
 // SqlEquals is the equals ddl tag. Zero leaves the identifier default, which has no equals tag.
@@ -485,6 +486,12 @@ func Parentheses() SqlClauseOption {
 
 func NoParentheses() SqlClauseOption {
 	return func(c *SqlClause) { c.Parentheses = SqlParensNo }
+}
+
+// MustParentheses keeps an empty list in the statement as NAME = ().
+// Parentheses() omits an empty list.
+func MustParentheses() SqlClauseOption {
+	return func(c *SqlClause) { c.Parentheses = SqlParensMust }
 }
 
 // NoComma leaves the commas out between the elements of a nested struct.

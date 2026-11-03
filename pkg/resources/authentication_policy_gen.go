@@ -208,6 +208,8 @@ func parseAuthenticationPolicyPatPolicy(d *tfschema.ResourceData, prefix string)
 		intAttributeCreateBuilder(d, prefix+"default_expiry_in_days", request.WithDefaultExpiryInDays),
 		intAttributeCreateBuilder(d, prefix+"max_expiry_in_days", request.WithMaxExpiryInDays),
 		booleanStringAttributeCreateBuilder(d, prefix+"require_role_restriction_for_service_users", request.WithRequireRoleRestrictionForServiceUsers),
+		booleanStringAttributeCreateBuilder(d, prefix+"require_role_restriction_for_person_users", request.WithRequireRoleRestrictionForPersonUsers),
+		setMappedValueCreateBuilder(d, prefix+"blocked_roles_list", request.WithBlockedRolesList, toAuthenticationPolicyPatPolicyBlockedRolesList),
 		attributeMappedValueCreateBuilder(d, prefix+"network_policy_evaluation", request.WithNetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption),
 	)
 	return *request, errs

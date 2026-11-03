@@ -55,6 +55,13 @@ func Test_SqlClause_listParameter(t *testing.T) {
 	require.Equal(t, "parameter,parentheses", clause.Ddl())
 }
 
+func Test_SqlClause_listParameterMustParentheses(t *testing.T) {
+	clause := ListParameter("StringListItemWrapper", MustParentheses())
+
+	require.Equal(t, SqlParensMust, clause.Parentheses)
+	require.Equal(t, "parameter,must_parentheses", clause.Ddl())
+}
+
 func Test_SqlClause_reverseList(t *testing.T) {
 	clause := ListParameter("AccountObjectIdentifier", NoParentheses(), Reverse(), Sql("TO ALLOWED_DATABASES"))
 
