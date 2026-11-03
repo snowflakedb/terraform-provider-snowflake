@@ -89,9 +89,10 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 - `IncludeAliasedInTheDescription` - the resource description lists enum aliases. Without the mark, the description
   lists canonical values. Warehouse size sets it.
 - `StoredAsText` - the db column is text, and the plain kind stays the semantic type. For a bool, the paired-struct
-  generator calls `BoolFromText`, which is true when the column is `Y`. `BoolParsed` with `StoredAsText` parses
-  `true`/`false` through `strconv.ParseBool`. A page that says `Y` or `N` can still return `true` or `false`; use
-  `BoolParsed` for that column and record the gap. A bool without `StoredAsText` is still db `bool`. Other generators ignore both marks.
+  generator calls `BoolFromText` and converts the column with `strconv.ParseBool`. `BoolTrueValue` compares the column
+  to that text, such as `Y`, `YES`, or `ON`, and requires `StoredAsText`. A page that says `Y` or `N` can still return
+  `true` or `false`. Leave `BoolTrueValue` empty for that column and record the gap. A bool without `StoredAsText` is
+  still db `bool`. Other generators ignore the mark.
   See [PairedStructs](../../sdk/generator/README.md#pairedstructs).
 - `DiffSuppress` - a suppressor composed with inferred identifier and enum normalization, and with the derived
   output suppressor below. `ssot.SuppressStatement` stays manual. `ssot.SuppressShow` and `ssot.SuppressDescribe`
@@ -638,6 +639,7 @@ Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 - `ShowParameters` is that same declaration with a fixed name, an empty doc, `id` of `IdType`, and returns `[]*Parameter` and `error`. The body stays in the SDK ext file. `SdkShowParameters()` enables it. The object does not pass the identifier kind.
 - `ShowParametersDetails` fills the details struct from `ParameterDefsForLevel` for `ParameterLevel()`, which is derived from `Name`. The struct name is `Name` plus `ParametersDetails`. The method has an empty doc, takes `id` of the interface identifier kind, and returns a pointer to that struct and `error`. The body is generated and calls `ShowParameters`. `SdkShowParametersDetails()` enables it. When the setting is off, the call stays in the SDK def.
 - One generator fits every object. When an object's statement does not match the current emission, extend the spec.
+- A text bool uses `strconv.ParseBool`. `BoolTrueValue` compares the column to that text, such as `Y`, `YES`, or `ON`, and requires `StoredAsText`.
 - A repeated generated name has one spelling. An enum list item is `{Enum}ListItem` with the field `Value`. Rename the SDK type to that spelling. The definition does not pass the struct name or the field name.
 
 #### Incremental coverage

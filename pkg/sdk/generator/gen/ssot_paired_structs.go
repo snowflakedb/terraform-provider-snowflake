@@ -271,11 +271,13 @@ func customListElementKind(attr ssot.Attribute) (string, bool) {
 }
 
 func boolFromTextOpts(attr ssot.Attribute) []PairedFieldOption {
-	if attr.BoolParsed && !attr.StoredAsText {
-		panic(fmt.Sprintf("column %q sets BoolParsed without StoredAsText", attr.OutputKey()))
+	if attr.BoolTrueValue != "" && !attr.StoredAsText {
+		panic(fmt.Sprintf("column %q sets BoolTrueValue without StoredAsText", attr.OutputKey()))
 	}
 	opts := plainRequiredOpt(attr)
-	if attr.BoolParsed {
+	if attr.BoolTrueValue != "" {
+		opts = append(opts, WithBoolTrueValue(attr.BoolTrueValue))
+	} else {
 		opts = append(opts, WithBoolParsed())
 	}
 	return opts

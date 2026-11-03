@@ -555,31 +555,6 @@ func tableAddStorageLifecyclePolicy() *g.QueryStruct {
 		WithValidation(g.ValidateValueSet, "On")
 }
 
-var tableShowOutput = g.StructPair("tableDBRow", "Table").
-	Text("created_on").
-	Text("name").
-	Text("schema_name").
-	Text("database_name").
-	Text("kind").
-	OptionalText("comment", g.WithRequiredInPlain()).
-	OptionalText("cluster_by", g.WithRequiredInPlain()).
-	OptionalNumber("rows", g.WithRequiredInPlain()).
-	OptionalNumber("bytes").
-	Text("owner").
-	OptionalNumber("retention_time", g.WithRequiredInPlain()).
-	OptionalText("dropped_on").
-	OptionalBoolFromText("automatic_clustering", g.WithBoolTrueValue("ON"), g.WithRequiredInPlain()).
-	OptionalBoolFromText("change_tracking", g.WithBoolTrueValue("ON"), g.WithRequiredInPlain()).
-	OptionalBoolFromText("search_optimization", g.WithBoolTrueValue("ON"), g.WithRequiredInPlain()).
-	OptionalText("search_optimization_progress", g.WithRequiredInPlain()).
-	OptionalNumber("search_optimization_bytes").
-	OptionalBoolFromText("is_external", g.WithRequiredInPlain()).
-	OptionalBoolFromText("enable_schema_evolution", g.WithRequiredInPlain()).
-	OptionalText("owner_role_type", g.WithRequiredInPlain()).
-	OptionalBoolFromText("is_event", g.WithRequiredInPlain()).
-	OptionalBoolFromText("is_dynamic", g.WithRequiredInPlain()).
-	OptionalText("budget")
-
 // DESCRIBE TABLE returns the collation glued onto the "type" column (e.g. "VARCHAR(200) COLLATE 'en-ci'"),
 // so Type is converted manually and Collation is derived from it in additionalConvert().
 var tableColumnDetails = g.StructPair("tableColumnDetailsRow", "TableColumnDetails").
@@ -704,35 +679,8 @@ var tablesDef = g.NewInterface(
 			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy").
 			WithAdditionalValidations(),
 	).
-	DropOperation(
-		"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
-		g.NewQueryStruct("DropTable").
-			Drop().
-			SQL("TABLE").
-			IfExists().
-			Name().
-			OptionalSQL("CASCADE").
-			OptionalSQL("RESTRICT").
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
-	).
-	ShowOperationWithPairedStructs(
-		"https://docs.snowflake.com/en/sql-reference/sql/show-tables",
-		tableShowOutput,
-		g.NewQueryStruct("ShowTable").
-			Show().
-			Terse().
-			SQL("TABLES").
-			OptionalSQL("HISTORY").
-			OptionalLike().
-			OptionalExtendedIn().
-			OptionalStartsWith().
-			OptionalLimitFrom().
-			// ErrPatternRequiredForLikeKeyword cannot be generated.
-			WithAdditionalValidations(),
-		g.ShowByIDExtendedInFiltering,
-		g.ShowByIDLikeFiltering,
-	).
+	DropOperationFromObject(ssotdefs.Table).
+	ShowOperationFromObject(ssotdefs.Table).
 	CustomShowOperationWithPairedStructs(
 		"DescribeColumns",
 		g.ShowMappingKindSlice,

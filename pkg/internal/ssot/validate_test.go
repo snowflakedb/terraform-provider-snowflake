@@ -1487,6 +1487,12 @@ func Test_ValidateObject_childrenAtLeastOneValueSet(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_boolTrueValueNeedsStoredAsText(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": attribute "flag" sets BoolTrueValue without StoredAsText`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "flag", Type: AttrBool, BoolTrueValue: "ON"}}})
+	})
+}
+
 func Test_ValidateObject_enumKeywordAndPreexistingStruct(t *testing.T) {
 	driver := NewEnum("WidgetDriver", "WidgetDrivers", "JDBC")
 	version := Attribute{Name: "minimum_version", Type: AttrString}
