@@ -245,13 +245,19 @@ var ReplicationGroupAttrs = struct {
 	},
 	// The column is present only for organizations that span multiple region groups.
 	// The SHOW example omits it, and omits read_only. The column list includes both.
-	RegionGroup:      ssot.Attribute{Name: "region_group", Type: ssot.AttrString, Readonly: true, Description: "Region group where the account is located. Visible only to organizations that span multiple region groups."},
-	SnowflakeRegion:  ssot.Attribute{Name: "snowflake_region", Type: ssot.AttrString, Readonly: true},
-	CreatedOn:        ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
-	AccountName:      ssot.Attribute{Name: "account_name", Type: ssot.AttrString, Readonly: true},
-	Name:             ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
-	Type:             ssot.Attribute{Name: "type", Type: ssot.AttrEnum, Enum: ReplicationGroupType, Readonly: true, Description: "REPLICATION or FAILOVER. SHOW REPLICATION GROUPS returns both."},
-	IsPrimary:        ssot.Attribute{Name: "is_primary", Type: ssot.AttrBool, Readonly: true},
+	RegionGroup:     ssot.Attribute{Name: "region_group", Type: ssot.AttrString, Readonly: true, Description: "Region group where the account is located. Visible only to organizations that span multiple region groups."},
+	SnowflakeRegion: ssot.Attribute{Name: "snowflake_region", Type: ssot.AttrString, Readonly: true},
+	CreatedOn:       ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
+	AccountName:     ssot.Attribute{Name: "account_name", Type: ssot.AttrString, Readonly: true},
+	Name:            ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	Type:            ssot.Attribute{Name: "type", Type: ssot.AttrEnum, Enum: ReplicationGroupType, Readonly: true, Description: "REPLICATION or FAILOVER. SHOW REPLICATION GROUPS returns both."},
+	IsPrimary: ssot.Attribute{
+		Name:        "is_primary",
+		Type:        ssot.AttrBool,
+		NativeBool:  true,
+		Readonly:    true,
+		Description: "Indicates if the replication group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.",
+	},
 	OrganizationName: ssot.Attribute{Name: "organization_name", Type: ssot.AttrString, Readonly: true},
 	AccountLocator:   ssot.Attribute{Name: "account_locator", Type: ssot.AttrString, Readonly: true},
 	SecondaryState: ssot.Attribute{
@@ -278,14 +284,6 @@ var ReplicationGroupAttrs = struct {
 		OptionalInDb:   true,
 		Description:    "Read-only mode. TRUE or FALSE on a primary failover group. NULL on a secondary failover group and on every replication group.",
 	},
-}
-
-// is_primary is resource state copied from SHOW. It is not a CREATE or ALTER clause.
-// NativeBool keeps the resource assertion a bool, matching the computed schema field.
-var replicationGroupIsPrimaryState = ssot.Attribute{
-	Name:       "is_primary",
-	Type:       ssot.AttrBool,
-	NativeBool: true,
 }
 
 // AS REPLICA OF is the secondary CREATE argument. It is not the SHOW column primary.
@@ -386,17 +384,16 @@ var replicationGroupSuspend = ssot.Attribute{
 // ReplicationGroupSecondary holds the target-account CREATE and ALTER.
 // SdkCreateForVariants emits CreateSecondary. SdkAlterForVariants emits AlterSecondary.
 var ReplicationGroup = ssot.Object{
-	Name:                   "ReplicationGroup",
-	NamePlural:             "ReplicationGroups",
-	IdType:                 "AccountObjectIdentifier",
-	PreviewFeature:         true,
-	AttributesModification: true,
-	// is_primary is added by the schema modification. It is not a resource attribute, so it stays out of CREATE and ALTER.
+	Name:           "ReplicationGroup",
+	NamePlural:     "ReplicationGroups",
+	IdType:         "AccountObjectIdentifier",
+	PreviewFeature: true,
+	// is_primary is a computed attribute, not a resource attribute, so it stays out of CREATE and ALTER.
 	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
 		"replicationGroupRecreateWhenNotPrimary",
 	},
 	ComputedAttributes: []ssot.Attribute{
-		replicationGroupIsPrimaryState,
+		ReplicationGroupAttrs.IsPrimary,
 	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithObjectParametersAssert(),
@@ -567,7 +564,7 @@ var ReplicationGroupSecondary = ssot.Object{
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithSchema(ssot.SchemaDescribe()),
+		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase()), ssot.SchemaDescribe()),
 		ssot.WithObjectAssert(ssot.ObjectAssertDescribe()),
 	},
 	// SHOW is the base row. The schema is ShowReplicationGroupSchema. Create and alter use the variant methods.
@@ -580,13 +577,11 @@ var ReplicationGroupSecondary = ssot.Object{
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
-		ssot.WithShowOutputSchema(ssot.ExtCall()),
-		ssot.WithShowOutputSet(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithApplySetUnset(ssot.Omitted()),
 		ssot.WithAlterSetInSdk(ssot.Omitted()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		ssot.WithSetConfigFields(ssot.ExtCall()),
+		ssot.WithSetConfigFields(ssot.Omitted()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
@@ -594,7 +589,7 @@ var ReplicationGroupSecondary = ssot.Object{
 		"replicationGroupSecondaryRecreateWhenPrimary",
 	},
 	ComputedAttributes: []ssot.Attribute{
-		replicationGroupIsPrimaryState,
+		ReplicationGroupAttrs.IsPrimary,
 	},
 	Attributes: []ssot.Attribute{
 		replicationGroupAsReplicaOf,

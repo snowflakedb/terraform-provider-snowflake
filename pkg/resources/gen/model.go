@@ -1,8 +1,10 @@
 package gen
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
@@ -27,11 +29,14 @@ type ResourceModel struct {
 	SdkCreateRequestObjectName          string
 	VariantOf                           *ssot.Object
 	Attributes                          []ResourceAttribute
-	AttributesModification              bool
-	ObjectType                          string
-	Hooks                               ssot.ResourceHooks
-	SchemaStateUpgraders                []ssot.StateUpgraderFunc
-	AdditionalCustomizeDiffs            []ssot.CustomizeDiffFunc
+	// ComputedAttributes are the SHOW-sourced computed-only schema fields. ComputedColumns are their SHOW columns.
+	ComputedAttributes       []ResourceAttribute
+	ComputedColumns          []*ssot.Attribute
+	AttributesModification   bool
+	ObjectType               string
+	Hooks                    ssot.ResourceHooks
+	SchemaStateUpgraders     []ssot.StateUpgraderFunc
+	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
 	*genhelpers.PreambleModel
 }
 
@@ -163,6 +168,15 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
 		PreambleModel:                       preamble,
+	}
+	if computed, columns := showComputedAttributes(input.Object); len(computed) > 0 {
+		if !hooks.ShowByIdSafelyInSdk.Present {
+			panic(fmt.Sprintf("object %q: computed attributes are set from SHOW and need ShowByIdSafelyInSdk", input.Name))
+		}
+		model.ComputedColumns = columns
+		model.ComputedAttributes = collections.Map(computed, func(attr ssot.Attribute) ResourceAttribute {
+			return computedResourceAttribute(input.Name, attr)
+		})
 	}
 	model.applyDerivedOutputDiffSuppress(resourceAttributes)
 	// Building the mappings panics when a generated hook cannot describe a column.

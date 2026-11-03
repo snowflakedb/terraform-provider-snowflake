@@ -45,6 +45,16 @@ var pipeAttributesSchema = pipeAttributesModificationExt(map[string]*tfschema.Sc
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("error_integration"),
 		Description:      "Specifies the name of the notification integration used for error notifications.",
 	},
+	"owner": {
+		Type:        tfschema.TypeString,
+		Computed:    true,
+		Description: "Name of the role that owns the pipe.",
+	},
+	"notification_channel": {
+		Type:        tfschema.TypeString,
+		Computed:    true,
+		Description: "Amazon Resource Name of the Amazon SQS queue for the stage named in the DEFINITION column.",
+	},
 })
 
 var pipeSchema = collections.MergeMaps(

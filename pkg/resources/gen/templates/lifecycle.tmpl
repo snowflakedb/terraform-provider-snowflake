@@ -69,6 +69,7 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 {{ template "setDescribeOutput" . -}}
 {{ template "parametersOutputSet" . -}}
 {{ template "fqnSet" . -}}
+{{ template "setComputedFields" . -}}
 {{ template "setConfigFields" . }}
 		)
 		if errs != nil {
@@ -148,4 +149,8 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 {{- if .Hooks.SetConfigFields.Generate }}
 
 {{ template "generatedSetConfigFields" . }}
+{{- end }}
+{{- if .ComputedAttributes }}
+
+{{ template "generatedSetComputedFields" . }}
 {{- end }}

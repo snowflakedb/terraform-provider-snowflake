@@ -9,7 +9,7 @@ import (
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var replicationGroupAttributesSchema = replicationGroupAttributesModificationExt(map[string]*tfschema.Schema{
+var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
 	"object_types": {
 		Type:     tfschema.TypeList,
 		Required: true,
@@ -93,7 +93,12 @@ var replicationGroupAttributesSchema = replicationGroupAttributesModificationExt
 		Optional:    true,
 		Description: "Comment for the replication group. The alter page defaults it to NULL. CREATE has no COMMENT clause.",
 	},
-})
+	"is_primary": {
+		Type:        tfschema.TypeBool,
+		Computed:    true,
+		Description: "Indicates if the replication group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.",
+	},
+}
 
 var replicationGroupSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{

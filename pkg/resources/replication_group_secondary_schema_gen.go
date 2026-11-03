@@ -16,6 +16,11 @@ var replicationGroupSecondaryAttributesSchema = map[string]*tfschema.Schema{
 		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("primary")),
 		Description:      "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
 	},
+	"is_primary": {
+		Type:        tfschema.TypeBool,
+		Computed:    true,
+		Description: "Indicates if the replication group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.",
+	},
 }
 
 var replicationGroupSecondarySchema = collections.MergeMaps(
@@ -32,5 +37,14 @@ var replicationGroupSecondarySchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},
-	replicationGroupSecondaryShowOutputSchemaExt,
+	map[string]*tfschema.Schema{
+		ShowOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW REPLICATION GROUPS` for the given replication group secondary.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowReplicationGroupSecondarySchema,
+			},
+		},
+	},
 )

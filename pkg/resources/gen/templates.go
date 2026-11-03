@@ -107,6 +107,12 @@ var (
 	//go:embed templates/sub_templates/set_config_fields.tmpl
 	setConfigFieldsTemplateContent string
 
+	//go:embed templates/sub_templates/set_computed_fields.tmpl
+	setComputedFieldsTemplateContent string
+
+	//go:embed templates/sub_templates/generated_set_computed_fields.tmpl
+	generatedSetComputedFieldsTemplateContent string
+
 	//go:embed templates/sub_templates/hierarchy_rename.tmpl
 	hierarchyRenameTemplateContent string
 
@@ -219,6 +225,8 @@ func init() {
 	subTemplates, _ = subTemplates.New("setDescribeOutput").Parse(setDescribeOutputTemplateContent)
 	subTemplates, _ = subTemplates.New("fqnSet").Parse(fqnSetTemplateContent)
 	subTemplates, _ = subTemplates.New("setConfigFields").Parse(setConfigFieldsTemplateContent)
+	subTemplates, _ = subTemplates.New("setComputedFields").Parse(setComputedFieldsTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedSetComputedFields").Parse(generatedSetComputedFieldsTemplateContent)
 	subTemplates, _ = subTemplates.New("hierarchyRename").Parse(hierarchyRenameTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeAlter").Parse(beforeAlterTemplateContent)
 	subTemplates, _ = subTemplates.New("applySetUnset").Parse(applySetUnsetTemplateContent)

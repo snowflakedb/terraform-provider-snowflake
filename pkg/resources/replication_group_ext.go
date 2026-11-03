@@ -98,7 +98,6 @@ func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceD
 		return err
 	}
 	errs := []error{
-		d.Set("is_primary", group.IsPrimary),
 		d.Set("object_types", replicationGroupEnumStrings(group.ObjectTypes)),
 		d.Set("allowed_accounts", accountIdentifierNames(allowedAccounts)),
 		d.Set("comment", group.Comment),

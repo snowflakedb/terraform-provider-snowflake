@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
@@ -102,9 +103,9 @@ func ReadReplicationGroupSecondaryFunc(withExternalChangesMarking bool) tfschema
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(
-			replicationGroupSecondaryShowOutputSetExt(d, replicationGroupSecondary),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ReplicationGroupSecondaryToSchema(replicationGroupSecondary)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			replicationGroupSecondarySetConfigFieldsExt(ctx, d, meta, replicationGroupSecondary),
+			replicationGroupSecondarySetComputedFields(d, replicationGroupSecondary),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -137,4 +138,10 @@ func DeleteReplicationGroupSecondary(ctx context.Context, d *tfschema.ResourceDa
 			return client.ReplicationGroups.DropSafely
 		},
 	)(ctx, d, meta)
+}
+
+func replicationGroupSecondarySetComputedFields(d *tfschema.ResourceData, obj *sdk.ReplicationGroup) error {
+	return errors.Join(
+		d.Set("is_primary", obj.IsPrimary),
+	)
 }

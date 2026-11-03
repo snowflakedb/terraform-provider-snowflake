@@ -108,6 +108,7 @@ func ReadReplicationGroupFunc(withExternalChangesMarking bool) tfschema.ReadCont
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ReplicationGroupToSchema(replicationGroup)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+			replicationGroupSetComputedFields(d, replicationGroup),
 			replicationGroupSetConfigFieldsExt(ctx, d, meta, replicationGroup),
 		)
 		if errs != nil {
@@ -158,4 +159,10 @@ func DeleteReplicationGroup(ctx context.Context, d *tfschema.ResourceData, meta 
 			return client.ReplicationGroups.DropSafely
 		},
 	)(ctx, d, meta)
+}
+
+func replicationGroupSetComputedFields(d *tfschema.ResourceData, obj *sdk.ReplicationGroup) error {
+	return errors.Join(
+		d.Set("is_primary", obj.IsPrimary),
+	)
 }

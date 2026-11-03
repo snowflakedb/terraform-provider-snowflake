@@ -95,7 +95,7 @@ var WarehouseInteractiveAttrs = struct {
 		},
 		CreateSql: ssot.ListParameter("SchemaObjectIdentifier", ssot.Parentheses(), ssot.NoEquals()),
 	},
-	// Computed in Terraform. The generator emits Optional; AttributesModificationExt clears it.
+	// Computed in Terraform: the generator emits it as computed-only.
 	// Computed skips output suppression: SHOW already has a column of this name.
 	WarehouseType: ssot.Attribute{
 		Name:        "warehouse_type",
