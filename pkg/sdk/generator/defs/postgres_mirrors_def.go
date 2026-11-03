@@ -13,8 +13,8 @@ var PostgresMirrorTargetTableTypeEnumDef = g.NewEnum(
 	"SNOWFLAKE", "ICEBERG",
 )
 
-// PostgresMirrorStatusEnumDef lists the statuses DESCRIBE_MIRROR returns today. additionalConvert keeps an unrecognized
-// value instead of calling ToPostgresMirrorStatus, so a new status does not fail Describe.
+// PostgresMirrorStatusEnumDef lists the statuses DESCRIBE_MIRROR returns today. additionalConvert converts with
+// ToPostgresMirrorStatus, so an unrecognized status fails List and Describe.
 var PostgresMirrorStatusEnumDef = g.NewEnum(
 	"PostgresMirrorStatus", "PostgresMirrorStatuses",
 	"STARTING", "ACTIVE", "SUSPENDED",
