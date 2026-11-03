@@ -191,6 +191,8 @@ var ComputePool = ssot.Object{
 	IdType:               "AccountObjectIdentifier",
 	IdentityNameForceNew: true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithResource(),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),

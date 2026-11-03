@@ -427,6 +427,8 @@ var AuthenticationPolicy = ssot.Object{
 	// Public describe_output uses the projected AuthenticationPolicyDescribeDetails schema.
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithResource(),
 		// describe_output is a block of the raw DESCRIBE strings. The typed columns and the comment are mapped from the original rows in the ext.
 		// target_scopes is plain-only, so the SHOW mapper stays in the schema ext.

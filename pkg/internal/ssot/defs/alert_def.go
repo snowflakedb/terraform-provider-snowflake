@@ -187,6 +187,8 @@ var Alert = ssot.Object{
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithResource(),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),

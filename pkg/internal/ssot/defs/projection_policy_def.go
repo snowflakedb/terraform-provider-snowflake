@@ -60,6 +60,8 @@ var ProjectionPolicy = ssot.Object{
 	IdentityHierarchyForceNew: true,
 	PreviewFeature:            true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),

@@ -158,6 +158,8 @@ var PostgresMirror = ssot.Object{
 	// CREATE_MIRROR takes its arguments in a nested request, which has the With* methods the create helpers call.
 	SdkCreateRequestObjectName: "PostgresMirrorArguments",
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithResource(),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),

@@ -96,13 +96,13 @@ var WarehouseAdaptive = ssot.Object{
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow()),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(
 			ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
-		)),
+		), ssot.ObjectAssertDescribe()),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
 	},
