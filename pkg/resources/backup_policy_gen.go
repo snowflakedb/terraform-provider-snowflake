@@ -113,7 +113,7 @@ func ReadBackupPolicyFunc(withExternalChangesMarking bool) tfschema.ReadContextF
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.BackupPolicyToSchema(backupPolicy)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.BackupPolicyDetailsToSchema(backupPolicyDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			backupPolicySetConfigFieldsExt(d, backupPolicy),
+			backupPolicySetConfigFieldsExt(ctx, d, meta, backupPolicy),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

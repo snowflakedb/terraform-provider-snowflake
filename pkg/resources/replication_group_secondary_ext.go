@@ -61,7 +61,7 @@ func replicationGroupSecondaryShowOutputSetExt(d *schema.ResourceData, group *sd
 	return d.Set(ShowOutputAttributeName, []map[string]any{schemas.ReplicationGroupToSchema(group)})
 }
 
-func replicationGroupSecondarySetConfigFieldsExt(d *schema.ResourceData, group *sdk.ReplicationGroup) error {
+func replicationGroupSecondarySetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, group *sdk.ReplicationGroup) error {
 	return d.Set("is_primary", group.IsPrimary)
 }
 

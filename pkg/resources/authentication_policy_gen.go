@@ -113,7 +113,7 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 			return diag.FromErr(err)
 		}
 
-		diags = authenticationPolicyHandleExternalChangesInDescribeExt(d, authenticationPolicyDetails, withExternalChangesMarking)
+		diags = authenticationPolicyHandleExternalChangesInDescribeExt(ctx, d, meta, authenticationPolicyDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
 		}

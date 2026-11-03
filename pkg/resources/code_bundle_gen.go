@@ -107,7 +107,7 @@ func ReadCodeBundleFunc(withExternalChangesMarking bool) tfschema.ReadContextFun
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CodeBundleToSchema(codeBundle)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CodeBundleDetailsToSchema(codeBundleDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			codeBundleSetConfigFieldsExt(d, codeBundle),
+			codeBundleSetConfigFieldsExt(ctx, d, meta, codeBundle),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

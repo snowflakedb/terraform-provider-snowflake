@@ -53,7 +53,7 @@ func alertNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentif
 	return sdk.NewCreateAlertRequest(id, warehouse, alertSchedule, sdk.NewAlertConditionFromString(condition), action), nil
 }
 
-func alertSetConfigFieldsExt(d *schema.ResourceData, alert *sdk.Alert) error {
+func alertSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, alert *sdk.Alert) error {
 	alertSchedule, err := alertScheduleToState(alert.Schedule)
 	if err != nil {
 		return err

@@ -40,7 +40,7 @@ func authenticationPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.Sche
 	return sdk.NewCreateAuthenticationPolicyRequest(id), nil
 }
 
-func authenticationPolicyHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.AuthenticationPolicyDetails, withExternalChangesMarking bool) diag.Diagnostics {
+func authenticationPolicyHandleExternalChangesInDescribeExt(_ context.Context, d *schema.ResourceData, _ any, details *sdk.AuthenticationPolicyDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if details == nil {
 		return nil
 	}

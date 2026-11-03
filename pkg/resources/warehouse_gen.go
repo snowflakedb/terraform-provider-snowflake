@@ -139,7 +139,7 @@ func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc
 		errs := errors.Join(
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseParametersToSchema(rawWarehouseParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			warehouseSetConfigFieldsExt(d, warehouse),
+			warehouseSetConfigFieldsExt(ctx, d, meta, warehouse),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

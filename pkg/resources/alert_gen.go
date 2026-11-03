@@ -80,7 +80,7 @@ func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 
 		errs := errors.Join(
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			alertSetConfigFieldsExt(d, alert),
+			alertSetConfigFieldsExt(ctx, d, meta, alert),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

@@ -94,7 +94,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tf
 		if diags.HasError() {
 			return diags
 		}
-		diags = catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d, catalogIntegrationObjectStorageDetails, withExternalChangesMarking)
+		diags = catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(ctx, d, meta, catalogIntegrationObjectStorageDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
 		}
@@ -108,7 +108,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tf
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationObjectStorageToSchema(catalogIntegrationObjectStorage)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationObjectStorageDetailsToSchema(catalogIntegrationObjectStorageDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			catalogIntegrationObjectStorageSetConfigFieldsExt(d, catalogIntegrationObjectStorage),
+			catalogIntegrationObjectStorageSetConfigFieldsExt(ctx, d, meta, catalogIntegrationObjectStorage),
 		)
 		if errs != nil {
 			return append(diags, diag.FromErr(errs)...)

@@ -104,7 +104,7 @@ func ReadReplicationGroupSecondaryFunc(withExternalChangesMarking bool) tfschema
 		errs := errors.Join(
 			replicationGroupSecondaryShowOutputSetExt(d, replicationGroupSecondary),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			replicationGroupSecondarySetConfigFieldsExt(d, replicationGroupSecondary),
+			replicationGroupSecondarySetConfigFieldsExt(ctx, d, meta, replicationGroupSecondary),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

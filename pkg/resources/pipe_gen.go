@@ -79,7 +79,7 @@ func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 
 		errs := errors.Join(
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			pipeSetConfigFieldsExt(d, pipe),
+			pipeSetConfigFieldsExt(ctx, d, meta, pipe),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

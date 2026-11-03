@@ -74,7 +74,7 @@ func ReadTableFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 		errs := errors.Join(
 			tableSetDescribeOutputExt(d, id, tableDetails, nil, withExternalChangesMarking),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			tableSetConfigFieldsExt(d, table),
+			tableSetConfigFieldsExt(ctx, d, meta, table),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

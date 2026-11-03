@@ -94,7 +94,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 		if diags.HasError() {
 			return diags
 		}
-		diags = catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(d, catalogIntegrationOpenCatalogDetails, withExternalChangesMarking)
+		diags = catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(ctx, d, meta, catalogIntegrationOpenCatalogDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
 		}
