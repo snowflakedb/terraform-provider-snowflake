@@ -82,14 +82,3 @@ func (c *SnowflakeDefaultsClient) DefaultEnableNotebookCreationInPersonalDbLevel
 	}
 	return sdk.ParameterTypeSnowflakeDefault
 }
-
-// DescribeAllowedAuthenticationSecrets returns the DESCRIBE value of
-// ALLOWED_AUTHENTICATION_SECRETS. Prod hides the property, so the value is empty.
-// Non-prod returns the stored display value (for example "[]" or "ALL").
-func (c *SnowflakeDefaultsClient) DescribeAllowedAuthenticationSecrets(t *testing.T, displayed string) string {
-	t.Helper()
-	if c.context.snowflakeEnvironment == testenvs.SnowflakeProdEnvironment {
-		return ""
-	}
-	return displayed
-}

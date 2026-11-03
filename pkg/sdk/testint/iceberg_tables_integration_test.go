@@ -1349,6 +1349,22 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasAllDefaultsExplicit(),
 		)
 	})
+
+	t.Run("show object parameter", func(t *testing.T) {
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSet(*sdk.NewIcebergTableSetPropertiesRequest().WithMaxDataExtensionTimeInDays(5)))
+		require.NoError(t, err)
+
+		parameter, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMaxDataExtensionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeIcebergTable, Name: id})
+		require.NoError(t, err)
+		require.Equal(t, "5", parameter.Value)
+		require.Equal(t, sdk.ParameterTypeTable, parameter.Level)
+	})
+
 	t.Run("alter: add plus drop row access policy", func(t *testing.T) {
 		rowAccessPolicy, rowAccessPolicyCleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicy(t)
 		t.Cleanup(rowAccessPolicyCleanup)
