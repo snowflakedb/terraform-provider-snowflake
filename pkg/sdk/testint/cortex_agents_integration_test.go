@@ -198,7 +198,7 @@ func TestInt_CortexAgents(t *testing.T) {
 		t.Run("like", func(t *testing.T) {
 			cortexAgents, err := client.CortexAgents.Show(ctx, sdk.NewShowCortexAgentRequest().
 				WithLike(sdk.Like{Pattern: sdk.String("test_cortex_agent_2_%")}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, cortexAgents, 1)
 		})
@@ -206,28 +206,28 @@ func TestInt_CortexAgents(t *testing.T) {
 		t.Run("starts_with", func(t *testing.T) {
 			cortexAgents, err := client.CortexAgents.Show(ctx, sdk.NewShowCortexAgentRequest().
 				WithStartsWith("test_cortex_agent_").
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, cortexAgents, 2)
 		})
 
 		t.Run("in_account", func(t *testing.T) {
 			cortexAgents, err := client.CortexAgents.Show(ctx, sdk.NewShowCortexAgentRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+				WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}))
 			require.NoError(t, err)
 			assert.GreaterOrEqual(t, len(cortexAgents), 4)
 		})
 
 		t.Run("in_database", func(t *testing.T) {
 			cortexAgents, err := client.CortexAgents.Show(ctx, sdk.NewShowCortexAgentRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Database: id1.DatabaseId()}}))
+				WithIn(sdk.ExtendedIn{Database: id1.DatabaseId()}))
 			require.NoError(t, err)
 			assert.Len(t, cortexAgents, 3)
 		})
 
 		t.Run("in_schema", func(t *testing.T) {
 			cortexAgents, err := client.CortexAgents.Show(ctx, sdk.NewShowCortexAgentRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, cortexAgents, 3)
 		})
@@ -235,7 +235,7 @@ func TestInt_CortexAgents(t *testing.T) {
 		t.Run("limit", func(t *testing.T) {
 			cortexAgents, err := client.CortexAgents.Show(ctx, sdk.NewShowCortexAgentRequest().
 				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, cortexAgents, 1)
 		})
@@ -243,7 +243,7 @@ func TestInt_CortexAgents(t *testing.T) {
 		t.Run("limit from", func(t *testing.T) {
 			cortexAgents, err := client.CortexAgents.Show(ctx, sdk.NewShowCortexAgentRequest().
 				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1), From: sdk.String("test_cortex_agent_")}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			require.Len(t, cortexAgents, 1)
 			require.True(t, strings.HasPrefix(cortexAgents[0].Name, "test_cortex_agent_2"))

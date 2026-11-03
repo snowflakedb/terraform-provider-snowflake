@@ -1072,7 +1072,7 @@ func TestInt_Tasks(t *testing.T) {
 		task2, task2Cleanup := testClientHelper().Task.Create(t)
 		t.Cleanup(task2Cleanup)
 
-		returnedTasks, err := client.Tasks.Show(ctx, sdk.NewShowTaskRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}))
+		returnedTasks, err := client.Tasks.Show(ctx, sdk.NewShowTaskRequest().WithIn(sdk.ExtendedIn{Schema: testClientHelper().Ids.SchemaId()}))
 		require.NoError(t, err)
 
 		require.Len(t, returnedTasks, 2)
@@ -1085,7 +1085,7 @@ func TestInt_Tasks(t *testing.T) {
 		task, taskCleanup := testClientHelper().Task.CreateWithRequest(t, sdk.NewCreateTaskRequest(id, sql).WithSchedule("10 MINUTE"))
 		t.Cleanup(taskCleanup)
 
-		returnedTasks, err := client.Tasks.Show(ctx, sdk.NewShowTaskRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}).WithTerse(true))
+		returnedTasks, err := client.Tasks.Show(ctx, sdk.NewShowTaskRequest().WithIn(sdk.ExtendedIn{Schema: testClientHelper().Ids.SchemaId()}).WithTerse(true))
 		require.NoError(t, err)
 
 		require.Len(t, returnedTasks, 1)
@@ -1101,7 +1101,7 @@ func TestInt_Tasks(t *testing.T) {
 
 		returnedTasks, err := client.Tasks.Show(ctx, sdk.NewShowTaskRequest().
 			WithLike(sdk.Like{Pattern: &task1.Name}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}).
+			WithIn(sdk.ExtendedIn{Schema: testClientHelper().Ids.SchemaId()}).
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(5)}))
 
 		require.NoError(t, err)

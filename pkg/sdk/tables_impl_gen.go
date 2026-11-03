@@ -75,7 +75,7 @@ func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, 
 func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	request := NewShowTableRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(ExtendedIn{Schema: id.SchemaId()})
 	tables, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err

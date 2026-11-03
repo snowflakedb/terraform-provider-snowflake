@@ -27,7 +27,7 @@
 
 ## Setting up the development environment
 
-1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on your OS). Go 1.26.3+ is required — see `go.mod` for the exact version.
+1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on your OS). Go 1.27.3+ is required — see `go.mod` for the exact version.
 2. Fork this repo and clone it. Base your changes on the [dev](https://github.com/snowflakedb/terraform-provider-snowflake/tree/dev) branch as it contains the latest unreleased changes.
 3. Run `make dev-setup` in the main directory of the cloned repository.
 4. You can clean up the dev setup by running `make dev-cleanup`.

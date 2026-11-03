@@ -164,12 +164,12 @@ func ReadSchemas(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok {
 			if account := v.(bool); account {
-				req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}})
+				req.WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)})
 			}
 		}
 		if v, ok := in["database"]; ok {
 			if database := v.(string); database != "" {
-				req.WithIn(sdk.ExtendedIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}})
+				req.WithIn(sdk.ExtendedIn{Database: sdk.NewAccountObjectIdentifier(database)})
 			}
 		}
 		if v, ok := in["application"]; ok {

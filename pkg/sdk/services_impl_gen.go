@@ -50,7 +50,7 @@ func (v *services) Show(ctx context.Context, request *ShowServiceRequest) ([]Ser
 
 func (v *services) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Service, error) {
 	request := NewShowServiceRequest().
-		WithIn(ServiceIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(ServiceIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	services, err := v.Show(ctx, request)
 	if err != nil {
@@ -322,7 +322,7 @@ func ToServiceParametersDetails(params []*Parameter) (*ServiceParametersDetails,
 	byKey := parametersByKey(params)
 	var d ServiceParametersDetails
 	if err := errors.Join(
-		fillTypedParameter(byKey["SERVICE_CALLER_TOKEN_VALIDITY_SECS"], strconv.Atoi, &d.ServiceCallerTokenValiditySecs),
+		byKey["SERVICE_CALLER_TOKEN_VALIDITY_SECS"].fillTyped(strconv.Atoi, &d.ServiceCallerTokenValiditySecs),
 	); err != nil {
 		return nil, err
 	}

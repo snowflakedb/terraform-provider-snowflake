@@ -541,7 +541,7 @@ func (b sqlBuilder) parseFieldSlice(field reflect.StructField, value reflect.Val
 	if err != nil {
 		return nil, err
 	}
-	ddlTag := strings.Split(field.Tag.Get("ddl"), ",")[0]
+	ddlTag, _, _ := strings.Cut(field.Tag.Get("ddl"), ",")
 	sqlTag := field.Tag.Get("sql")
 	// depending on the ddl tag we may want to add a parameter clause or a keyword clause before rendered list clause
 	switch ddlTag {
@@ -576,7 +576,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 		value = value.Elem()
 	}
 
-	ddlTag := strings.Split(field.Tag.Get("ddl"), ",")[0]
+	ddlTag, _, _ := strings.Cut(field.Tag.Get("ddl"), ",")
 	sqlTag := field.Tag.Get("sql")
 
 	// static must be applied no matter what

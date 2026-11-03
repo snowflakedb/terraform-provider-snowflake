@@ -860,7 +860,7 @@ func init() {
 				opts.Terse = new(true)
 				opts.History = new(true)
 				opts.Like = &Like{Pattern: &likePattern}
-				opts.In = &ExtendedIn{In: In{Database: showDatabaseId}}
+				opts.In = &ExtendedIn{Database: showDatabaseId}
 				opts.StartsWith = new("prefix")
 				opts.Limit = &LimitFrom{Rows: new(10)}
 			},
@@ -874,7 +874,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Show_In,
-			func(opts *ShowTableOptions) { opts.In = &ExtendedIn{In: In{Database: showDatabaseId}} },
+			func(opts *ShowTableOptions) { opts.In = &ExtendedIn{Database: showDatabaseId} },
 			`SHOW TABLES IN DATABASE %s`, showDatabaseId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"slices"
 	"strings"
@@ -943,13 +942,8 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 
 	providerCtx.Experiments = experiments
 
-	spanID, err := telemetry.NewSpanID()
-	if err != nil {
-		log.Printf("[WARN] failed to generate telemetry span_id: %v", err)
-	} else {
-		providerCtx.SpanID = spanID
-		telemetry.EmitProviderInit(ctx, providerCtx)
-	}
+	providerCtx.SpanID = telemetry.NewSpanID()
+	telemetry.EmitProviderInit(ctx, providerCtx)
 
 	return providerCtx, diags
 }

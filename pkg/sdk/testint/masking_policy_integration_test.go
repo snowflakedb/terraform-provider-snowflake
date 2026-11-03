@@ -70,7 +70,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+			WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		assert.Len(t, maskingPolicy, 1)
 		assert.Equal(t, id.Name(), maskingPolicy[0].Name)
@@ -98,7 +98,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+			WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		assert.Len(t, maskingPolicy, 1)
 		assert.Equal(t, id.Name(), maskingPolicy[0].Name)
@@ -122,7 +122,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 
 		maskingPolicy, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+			WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		assert.Len(t, maskingPolicy, 1)
 		assert.Equal(t, id.Name(), maskingPolicy[0].Name)
@@ -193,7 +193,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 		require.NoError(t, err)
 		maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+			WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		assert.Len(t, maskingPolicies, 1)
 		assert.Equal(t, comment, maskingPolicies[0].Comment)
@@ -206,7 +206,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 		require.NoError(t, err)
 		maskingPolicies, err = client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 			WithLike(sdk.Like{Pattern: sdk.String(id.Name())}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+			WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		assert.Len(t, maskingPolicies, 1)
 		assert.Equal(t, "", maskingPolicies[0].Comment)
@@ -294,7 +294,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 		t.Run("like", func(t *testing.T) {
 			maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 				WithLike(sdk.Like{Pattern: sdk.String("test_masking_policy_2_%")}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: schemaId}}))
+				WithIn(sdk.ExtendedIn{Schema: schemaId}))
 			require.NoError(t, err)
 			assert.Len(t, maskingPolicies, 1)
 			assert.Contains(t, maskingPolicies, *maskingPolicy2)
@@ -303,7 +303,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 		t.Run("like: exact name", func(t *testing.T) {
 			maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
 				WithLike(sdk.Like{Pattern: sdk.String(id1.Name())}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: schemaId}}))
+				WithIn(sdk.ExtendedIn{Schema: schemaId}))
 			require.NoError(t, err)
 			assert.Len(t, maskingPolicies, 1)
 			assert.Contains(t, maskingPolicies, *maskingPolicy1)
@@ -318,14 +318,14 @@ func TestInt_MaskingPolicies(t *testing.T) {
 
 		t.Run("in_account", func(t *testing.T) {
 			maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+				WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}))
 			require.NoError(t, err)
 			assert.GreaterOrEqual(t, len(maskingPolicies), 4)
 		})
 
 		t.Run("in_database", func(t *testing.T) {
 			maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Database: db.ID()}}))
+				WithIn(sdk.ExtendedIn{Database: db.ID()}))
 			require.NoError(t, err)
 			assert.Len(t, maskingPolicies, 4)
 			assert.Contains(t, maskingPolicies, *maskingPolicy4)
@@ -333,7 +333,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 
 		t.Run("in_schema", func(t *testing.T) {
 			maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: schemaId}}))
+				WithIn(sdk.ExtendedIn{Schema: schemaId}))
 			require.NoError(t, err)
 			assert.Len(t, maskingPolicies, 3)
 			assert.Contains(t, maskingPolicies, *maskingPolicy1)
@@ -343,7 +343,7 @@ func TestInt_MaskingPolicies(t *testing.T) {
 
 		t.Run("limit", func(t *testing.T) {
 			maskingPolicies, err := client.MaskingPolicies.Show(ctx, sdk.NewShowMaskingPolicyRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: schemaId}}).
+				WithIn(sdk.ExtendedIn{Schema: schemaId}).
 				WithLimit(sdk.LimitFrom{Rows: sdk.Pointer(1)}))
 			require.NoError(t, err)
 			assert.Len(t, maskingPolicies, 1)

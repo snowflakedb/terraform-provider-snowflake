@@ -186,8 +186,8 @@ func ToPipeParametersDetails(params []*Parameter) (*PipeParametersDetails, error
 	byKey := parametersByKey(params)
 	var d PipeParametersDetails
 	if err := errors.Join(
-		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
-		fillTypedParameter(byKey["PIPE_EXECUTION_PAUSED"], strconv.ParseBool, &d.PipeExecutionPaused),
+		byKey["LOG_EVENT_LEVEL"].fillTyped(ToLogLevel, &d.LogEventLevel),
+		byKey["PIPE_EXECUTION_PAUSED"].fillTyped(strconv.ParseBool, &d.PipeExecutionPaused),
 	); err != nil {
 		return nil, err
 	}

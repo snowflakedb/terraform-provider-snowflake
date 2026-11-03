@@ -68,8 +68,7 @@ func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFu
 			if err := showById(ctx, client, id); err == nil {
 				return fmt.Errorf("%s %v still exists", resource, id.FullyQualifiedName())
 			} else {
-				var incorrectIdentifierError *IncorrectIdentifierError
-				if errors.As(err, &incorrectIdentifierError) {
+				if _, ok := errors.AsType[*IncorrectIdentifierError](err); ok {
 					return err
 				} else {
 					t.Logf("resource %s (%v) was dropped successfully in Snowflake, err: %v", resource, id.FullyQualifiedName(), err)

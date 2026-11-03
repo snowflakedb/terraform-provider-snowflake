@@ -304,7 +304,7 @@ func init() {
 			func(opts *ShowViewOptions) {
 				opts.Terse = new(true)
 				opts.Like = &Like{Pattern: new("myaccount")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 				opts.StartsWith = new("abc")
 				opts.Limit = &LimitFrom{Rows: new(10)}
 			},
@@ -317,7 +317,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Views_sql_Show_In,
-			func(opts *ShowViewOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
+			func(opts *ShowViewOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			"SHOW VIEWS IN ACCOUNT",
 		).
 		withModifyAndExpectedSqlf(
@@ -332,12 +332,12 @@ func init() {
 		).
 		withAdditionalSqlCasef(
 			"sql_Show_inDatabase",
-			func(opts *ShowViewOptions) { opts.In = &ExtendedIn{In: In{Database: databaseId}} },
+			func(opts *ShowViewOptions) { opts.In = &ExtendedIn{Database: databaseId} },
 			"SHOW VIEWS IN DATABASE %s", databaseId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Show_inSchema",
-			func(opts *ShowViewOptions) { opts.In = &ExtendedIn{In: In{Schema: schemaId}} },
+			func(opts *ShowViewOptions) { opts.In = &ExtendedIn{Schema: schemaId} },
 			"SHOW VIEWS IN SCHEMA %s", schemaId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(

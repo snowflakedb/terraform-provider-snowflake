@@ -257,11 +257,11 @@ func suppressIcebergTableBaseLocationSuffix(_, oldValue, newValue string, _ *sch
 }
 
 func NormalizeIcebergTableBaseLocation(value string) string {
-	idx := strings.LastIndex(value, ".")
-	if idx == -1 {
+	before, _, found := strings.CutLast(value, ".")
+	if !found {
 		return value
 	}
-	return value[:idx]
+	return before
 }
 
 // IgnoreNewEmptyListOrSubfields suppresses the diff if `new` list is empty or compared subfield is ignored. Subfields can be nested.

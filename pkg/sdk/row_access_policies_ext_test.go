@@ -120,7 +120,7 @@ func init() {
 			case_RowAccessPolicies_sql_Show_all,
 			func(opts *ShowRowAccessPolicyOptions) {
 				opts.Like = &Like{Pattern: new("myaccount")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 				opts.Limit = &LimitFrom{Rows: new(10), From: new("foo")}
 			},
 			"SHOW ROW ACCESS POLICIES LIKE 'myaccount' IN ACCOUNT LIMIT 10 FROM 'foo'",
@@ -135,7 +135,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_RowAccessPolicies_sql_Show_In,
 			func(opts *ShowRowAccessPolicyOptions) {
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW ROW ACCESS POLICIES IN ACCOUNT",
 		).
