@@ -67,8 +67,6 @@ var failoverGroupsDef = g.NewInterface(
 				WithValidation(g.ExactlyOneValueSet, "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"),
 			g.ListOptions().NoParentheses().SQL("UNSET")).
 		OptionalQueryStructField("Add",
-			// TODO [next PRs]: drop Reverse(). One struct per allowed-list target, then a static TO ALLOWED_* clause.
-			// See pkg/sdk/generator/README.md#create-and-alter.
 			g.NewQueryStruct("FailoverGroupAdd").
 				ListAssignmentWithFieldName("TO ALLOWED_DATABASES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedDatabases").
 				ListAssignmentWithFieldName("TO ALLOWED_SHARES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedShares").
@@ -89,7 +87,6 @@ var failoverGroupsDef = g.NewInterface(
 				WithValidation(g.ValidIdentifier, "To"),
 			g.KeywordOptions().SQL("MOVE")).
 		OptionalQueryStructField("Remove",
-			// TODO [next PRs]: same replacement as Add above. Static FROM ALLOWED_* instead of Reverse().
 			g.NewQueryStruct("FailoverGroupRemove").
 				ListAssignmentWithFieldName("FROM ALLOWED_DATABASES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedDatabases").
 				ListAssignmentWithFieldName("FROM ALLOWED_SHARES", "AccountObjectIdentifier", g.ParameterOptions().Reverse(), "AllowedShares").
