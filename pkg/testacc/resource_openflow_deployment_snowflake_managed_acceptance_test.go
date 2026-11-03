@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -32,8 +31,6 @@ func TestAcc_OpenflowDeploymentSnowflakeManaged_BasicUseCase(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestOpenflow)
 
 	currentRole := testClient().Context.CurrentRole(t)
-	// event_table is a parameter, so with none set on the deployment it reports what the account has.
-	accountEventTable := helpers.FindParameter(t, testClient().Parameter.ShowAccountParameters(t), sdk.AccountParameterEventTable).Value
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()

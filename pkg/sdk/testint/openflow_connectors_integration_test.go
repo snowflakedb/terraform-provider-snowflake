@@ -254,6 +254,10 @@ func TestInt_OpenflowConnectors(t *testing.T) {
 	})
 
 	t.Run("alter: start and stop", func(t *testing.T) {
+		// TODO(SNOW-4418285): START on a committed connector with no uploaded config stays STOPPED for the
+		// whole wait instead of settling on START_FAILED.
+		t.Skip("TODO(SNOW-4418285): START stays STOPPED on an unconfigured connector")
+
 		// Committed, because a connector must have a committed default version before START is even accepted.
 		connector, cleanup := testClientHelper().OpenflowConnector.CreateFromDefinitionAndCommit(t, runtimeId, definition.Name)
 		t.Cleanup(cleanup)
