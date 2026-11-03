@@ -147,6 +147,8 @@ var Share = ssot.Object{
 	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),

@@ -231,6 +231,8 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		CatalogIntegrationIcebergRestAttrs.CatalogSource,
 	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithResource(),
 		ssot.WithSchema(
 			ssot.SchemaShow(ssot.SchemaShowFromBase()),

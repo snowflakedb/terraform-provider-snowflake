@@ -15,14 +15,24 @@ func ssotShowOutputDetails() []SdkObjectShowOutputDetails {
 	var details []SdkObjectShowOutputDetails
 	for _, obj := range defs.All() {
 		g := ssot.ObjectGenerators(obj.Generators...)
-		if g.ShowOutputAssert.Show {
+		if g.ShowOutputAssert.Show && selectsForShowOutputShow(obj) {
 			details = append(details, showOutputDetailsFromSsot(obj, false))
 		}
-		if g.ShowOutputAssert.Describe {
+		if g.ShowOutputAssert.Describe && selectsForShowOutputDescribe(obj) {
 			details = append(details, showOutputDetailsFromSsot(obj, true))
 		}
 	}
 	return details
+}
+
+// selectsForShowOutputShow is the one filter of the SHOW output assertion generator: the object has SHOW output columns.
+func selectsForShowOutputShow(obj ssot.Object) bool {
+	return obj.HasShowOutput()
+}
+
+// selectsForShowOutputDescribe is the one filter of the DESCRIBE output assertion generator: the object has DESCRIBE output columns.
+func selectsForShowOutputDescribe(obj ssot.Object) bool {
+	return obj.HasDescribeOutput()
 }
 
 // mergeShowOutputAssertionDetails drops reflected names that ssot emits, then appends the ssot models.

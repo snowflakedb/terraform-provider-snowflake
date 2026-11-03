@@ -229,6 +229,8 @@ var BackupSet = ssot.Object{
 	IdentityHierarchyForceNew: true,
 	// DROP and ALTER pages omit IF EXISTS. Both stay on until a probe shows Snowflake rejects the clause.
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),

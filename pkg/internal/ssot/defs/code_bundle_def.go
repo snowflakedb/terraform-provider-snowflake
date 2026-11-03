@@ -130,6 +130,8 @@ var CodeBundle = ssot.Object{
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

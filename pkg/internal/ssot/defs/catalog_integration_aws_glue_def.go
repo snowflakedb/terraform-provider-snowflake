@@ -111,6 +111,8 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		CatalogIntegrationAwsGlueAttrs.CatalogSource,
 	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithResource(),
 		ssot.WithSchema(
 			ssot.SchemaShow(ssot.SchemaShowFromBase()),

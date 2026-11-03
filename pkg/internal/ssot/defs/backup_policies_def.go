@@ -103,6 +103,8 @@ var BackupPolicy = ssot.Object{
 		&BackupPolicyAttrs.ExpireAfterDays,
 	}},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),

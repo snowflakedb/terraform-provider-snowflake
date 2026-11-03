@@ -286,6 +286,8 @@ var ExternalVolumeObject = ssot.Object{
 	AttributesModification:              true,
 	AdditionalDescribeOutputDescription: "Because of Terraform limitations, the changes on storage_location field do not mark this field as computed.",
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
 		ssot.WithResource(),
 		ssot.WithSchema(
 			ssot.SchemaShow(),

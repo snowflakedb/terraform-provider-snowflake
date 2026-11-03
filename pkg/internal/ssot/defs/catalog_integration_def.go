@@ -156,6 +156,11 @@ var CatalogIntegration = ssot.Object{
 		CatalogIntegrationCatalogApiType,
 	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectParametersAssert(),
+		ssot.WithResourceParametersAssert(),
+		ssot.WithResource(),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
 		ssot.WithSchema(
 			ssot.SchemaShow(),
 			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
