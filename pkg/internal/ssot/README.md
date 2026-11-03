@@ -12,7 +12,7 @@ generators will follow. Ultimately, all the generators should default to using s
 `Object` is the written intent for one Snowflake object:
 
 - `Attributes` - CREATE/ALTER sequence (resource schema)
-- `ComputedAttributes` - read-only resource state used by resource assertions; excluded from CREATE/ALTER and config models
+- `ComputedAttributes` - read-only resource state used by resource assertions and, for SHOW columns, the resource schema; excluded from CREATE/ALTER and config models
 - `Show` / `Describe` - output columns ([SHOW and DESCRIBE](#show-and-describe))
 - `Generators` - which generators may consume those lists ([Generators](#generators))
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
@@ -271,7 +271,13 @@ enable nothing.
   `WithModel(ModelMultiline(&attrs.CopyStatement))` marks string attributes whose config model builder emits
   `MultilineWrapperVariable`. This is the ssot equivalent of the old-list `multilineAttributesOverrides`, scoped to
   this object. The argument is the same `*Attribute` that sits in `Attributes`, and it must be a string.
-- `ComputedAttributes` are included in generated resource assertions, but not in the resource schema or config model.
+- `ComputedAttributes` are included in generated resource assertions, never in the config model, and never in CREATE/ALTER.
+  A computed attribute that is also a SHOW column is generated natively: its `Name` matches a column in `Show.Columns`
+  (like `SetConfigFields`) and it needs a `Description`. Reuse the SHOW attribute itself, so the description lives in one place. The resource generator then emits it
+  into the attributes schema as `Computed: true` (no `Optional`, so it does not require an Update), and Read sets it
+  from the SHOW row in a generated `<prefix>SetComputedFields`. It must be a scalar, and the object needs
+  `ShowByIdSafelyInSdk`. A computed attribute that is not a SHOW column (a DESCRIBE-only field such as `catalog_source`)
+  is still added by the schema ext and set by the ext hooks.
 - `WithResourceAssert()` - resource assertions (`make generate-resource-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-assertions). Fields come from
   `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are

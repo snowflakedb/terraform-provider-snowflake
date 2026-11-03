@@ -134,6 +134,7 @@ func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			pipeSetDescribeOutputExt(d, id, pipeDetails, nil, withExternalChangesMarking),
 			d.Set(ParametersAttributeName, []map[string]any{schemas.PipeParametersToSchema(rawPipeParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+			pipeSetComputedFields(d, pipe),
 			pipeSetConfigFields(d, pipe),
 		)
 		if errs != nil {
@@ -238,5 +239,12 @@ func pipeSetConfigFields(d *tfschema.ResourceData, obj *sdk.Pipe) error {
 	return errors.Join(
 		d.Set("comment", obj.Comment),
 		d.Set("copy_statement", obj.Definition),
+	)
+}
+
+func pipeSetComputedFields(d *tfschema.ResourceData, obj *sdk.Pipe) error {
+	return errors.Join(
+		d.Set("owner", obj.Owner),
+		d.Set("notification_channel", obj.NotificationChannel),
 	)
 }

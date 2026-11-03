@@ -29,7 +29,7 @@ var WarehouseAdaptiveAttrs = struct {
 		Type:        ssot.AttrString,
 		Description: "Specifies a comment for the adaptive warehouse.",
 	},
-	// Computed in Terraform. The generator emits Optional; AttributesModificationExt clears it.
+	// Computed in Terraform: the generator emits it as computed-only.
 	// Computed skips output suppression: SHOW already has a column of this name.
 	WarehouseType: ssot.Attribute{
 		Name:        "warehouse_type",
@@ -93,7 +93,6 @@ var WarehouseAdaptive = ssot.Object{
 	IdType:                     "AccountObjectIdentifier",
 	SdkCreateRequestObjectName: "AdaptiveWarehouse",
 	VariantOf:                  &Warehouse,
-	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),

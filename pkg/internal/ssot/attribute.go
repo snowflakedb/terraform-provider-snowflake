@@ -108,8 +108,8 @@ type Attribute struct {
 	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.
 	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
 	DiffSuppress  DiffSuppress
-	// Computed marks a field the resource schema ext turns into a computed attribute.
-	// The generator still emits Optional. Drift tracking and output suppression skip it.
+	// Computed marks a computed-only field: the generator emits Computed and neither Optional nor Required.
+	// Drift tracking and output suppression skip it.
 	Computed bool
 	// ServerDefault marks a describe-only field that Snowflake fills in when the configuration omits it.
 	// The generator drift-tracks that field and suppresses a diff against describe_output.
