@@ -13,8 +13,6 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-~> **Note** Right now, changes for the `integration` field are not detected. This will be resolved in the [upcoming refactoring](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#preparing-essential-ga-objects-for-the-provider-v1). For now, please try to use the [replace_triggered_by](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#replace_triggered_by) HCL meta-argument.
-
 {{ .Description | trimspace }}
 
 {{ if .HasExample -}}

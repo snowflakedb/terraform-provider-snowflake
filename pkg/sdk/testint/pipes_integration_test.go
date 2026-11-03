@@ -219,7 +219,7 @@ func TestInt_Pipes(t *testing.T) {
 		// A syntactically valid but unprovisioned SNS topic must surface the Snowflake error.
 		err := client.Pipes.Create(ctx, sdk.NewCreatePipeRequest(id, testClientHelper().Pipe.CopyStatement(t, table, externalStage)).
 			WithAutoIngest(true).
-			WithAwsSnsTopic("arn:aws:sns:us-east-2:123456789012:MissingTopic"))
+			WithAwsSnsTopicArn("arn:aws:sns:us-east-2:123456789012:MissingTopic"))
 		require.ErrorContains(t, err, "Pipe Notifications bind failure")
 	})
 

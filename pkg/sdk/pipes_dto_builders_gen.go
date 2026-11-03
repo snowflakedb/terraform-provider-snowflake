@@ -37,8 +37,8 @@ func (s *CreatePipeRequest) WithErrorIntegration(errorIntegration string) *Creat
 	return s
 }
 
-func (s *CreatePipeRequest) WithAwsSnsTopic(awsSnsTopic string) *CreatePipeRequest {
-	s.AwsSnsTopic = &awsSnsTopic
+func (s *CreatePipeRequest) WithAwsSnsTopicArn(awsSnsTopicArn string) *CreatePipeRequest {
+	s.AwsSnsTopicArn = &awsSnsTopicArn
 	return s
 }
 

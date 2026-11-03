@@ -6,13 +6,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -27,9 +32,36 @@ func Pipe() *tfschema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.PipeResource), TrackingDeleteWrapper(resources.Pipe, DeletePipe)),
 		Importer:      pipeImporterExt,
 
-		CustomizeDiff: pipeCustomizeDiffExt,
+		CustomizeDiff: pipeCustomizeDiff,
 		Timeouts:      defaultTimeouts,
+		SchemaVersion: 1,
+		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+		StateUpgraders: []tfschema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+			},
+		},
 	}
+}
+
+func ImportPipe(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
+	id, err := pipeParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	pipe, err := meta.(*provider.Context).Client.Pipes.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := pipeSetFieldsNotSetByReadExt(d, id, pipe, importPermissiveMode); err != nil {
+		return nil, err
+	}
+	return []*tfschema.ResourceData{d}, nil
 }
 
 func CreatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
@@ -43,7 +75,7 @@ func CreatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 		return diag.FromErr(err)
 	}
 
-	if err := pipeApplyCreateOptionalsExt(d, req); err != nil {
+	if err := pipeApplyCreateOptionals(d, req); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -51,8 +83,9 @@ func CreatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 		return diag.FromErr(err)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
-	return ReadPipeFunc(false)(ctx, d, meta)
+	d.SetId(helpers.EncodeResourceIdentifier(id))
+	afterCreateDiags := pipeAfterCreateExt(ctx, d, meta, id)
+	return append(afterCreateDiags, ReadPipeFunc(false)(ctx, d, meta)...)
 }
 
 func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
@@ -76,10 +109,32 @@ func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			}
 			return diag.FromErr(err)
 		}
+		pipeDetails, err := meta.(*provider.Context).Client.Pipes.Describe(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		rawPipeParameters, err := meta.(*provider.Context).Client.Pipes.ShowParameters(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		pipeParameters, err := sdk.ToPipeParametersDetails(rawPipeParameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := pipeSetParametersFields(d, pipeParameters); diags != nil {
+			return diags
+		}
+		if err = pipeHandleExternalChanges(d, pipe, withExternalChangesMarking); err != nil {
+			return diag.FromErr(err)
+		}
 
 		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.PipeToSchema(pipe)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PipeDetailsToSchema(pipeDetails)}),
+			pipeSetDescribeOutputExt(d, id, pipeDetails, nil, withExternalChangesMarking),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.PipeParametersToSchema(rawPipeParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			pipeSetConfigFieldsExt(ctx, d, meta, pipe),
+			pipeSetConfigFields(d, pipe),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -93,25 +148,44 @@ func UpdatePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Di
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := pipeApplySetUnsetExt(d)
+
+	if diags := pipeBeforeAlterExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+
+	setUnset, err := pipeApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := pipeAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if diags := pipeApplyParametersChanges(d, setUnset.set, setUnset.unset); diags != nil {
+		return diags
 	}
-	if err := pipeAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewPipeSetRequest()) {
+		if err := meta.(*provider.Context).Client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewPipeUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadPipeFunc(false)(ctx, d, meta)
 }
+
+var pipeCustomizeDiff = TrackingCustomDiffWrapper(resources.Pipe, customdiff.All(
+	ComputedIfAnyAttributeChanged(pipeSchema, ShowOutputAttributeName, "name", "copy_statement", "comment", "integration", "error_integration"),
+	ComputedIfAnyAttributeChanged(pipeSchema, DescribeOutputAttributeName, "name", "copy_statement", "comment", "integration", "error_integration"),
+	ComputedIfAnyAttributeChanged(pipeParametersAttributesSchema, ParametersAttributeName, pipeParametersFieldNames...),
+	pipeParametersCustomDiff,
+))
 
 func pipeParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
 }
 
 func pipeParseId(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
+	return sdk.ParseSchemaObjectIdentifier(id)
 }
 
 func pipeNewCreateRequest(d *tfschema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreatePipeRequest, error) {
@@ -119,11 +193,50 @@ func pipeNewCreateRequest(d *tfschema.ResourceData, id sdk.SchemaObjectIdentifie
 	return sdk.NewCreatePipeRequest(id, copyStatement), nil
 }
 
+func pipeApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreatePipeRequest) error {
+	return errors.Join(
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+		boolAttributeCreateBuilder(d, "auto_ingest", request.WithAutoIngest),
+		stringAttributeCreateBuilder(d, "aws_sns_topic_arn", request.WithAwsSnsTopicArn),
+		stringAttributeCreateBuilder(d, "integration", request.WithIntegration),
+		stringAttributeCreateBuilder(d, "error_integration", request.WithErrorIntegration),
+	)
+}
+
+func pipeApplySetUnset(d *tfschema.ResourceData) (*pipeAlterRequestsExt, error) {
+	set, unset := sdk.NewPipeSetRequest(), sdk.NewPipeUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+		stringAttributeUpdateBuilder(d, "error_integration", set.WithErrorIntegration, unset.WithErrorIntegration),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &pipeAlterRequestsExt{set: set, unset: unset}, nil
+}
+
+func pipeHandleExternalChanges(d *tfschema.ResourceData, pipe *sdk.Pipe, withExternalChangesMarking bool) error {
+	if !withExternalChangesMarking {
+		return nil
+	}
+	return handleExternalChangesToObjectInShow(d,
+		outputMapping{"integration", "integration", pipe.Integration, pipe.Integration, nil},
+		outputMapping{"error_integration", "error_integration", pipe.ErrorIntegration, pipe.ErrorIntegration, nil},
+	)
+}
+
 func DeletePipe(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	return ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		sdk.ParseSchemaObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.Pipes.DropSafely
 		},
 	)(ctx, d, meta)
+}
+
+func pipeSetConfigFields(d *tfschema.ResourceData, obj *sdk.Pipe) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
+		d.Set("copy_statement", obj.Definition),
+	)
 }

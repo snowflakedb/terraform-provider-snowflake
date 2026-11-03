@@ -81,7 +81,7 @@ func (r *CreatePipeRequest) toOpts() *CreatePipeOptions {
 		name:             r.name,
 		AutoIngest:       r.AutoIngest,
 		ErrorIntegration: r.ErrorIntegration,
-		AwsSnsTopic:      r.AwsSnsTopic,
+		AwsSnsTopicArn:   r.AwsSnsTopicArn,
 		Integration:      r.Integration,
 		Comment:          r.Comment,
 		copyStatement:    r.copyStatement,

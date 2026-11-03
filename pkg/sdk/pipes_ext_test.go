@@ -27,7 +27,7 @@ func init() {
 				opts.IfNotExists = Bool(true)
 				opts.AutoIngest = Bool(true)
 				opts.ErrorIntegration = String("some_error_integration")
-				opts.AwsSnsTopic = String("some aws sns topic")
+				opts.AwsSnsTopicArn = String("some aws sns topic")
 				opts.Integration = String("some integration")
 				opts.Comment = String("some comment")
 			},

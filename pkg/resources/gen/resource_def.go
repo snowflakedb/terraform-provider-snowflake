@@ -16,6 +16,10 @@ type ResourceObject struct {
 }
 
 var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings{
+	"Pipe": {
+		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
+		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
+	},
 	"Schema": {
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
