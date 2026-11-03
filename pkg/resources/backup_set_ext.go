@@ -17,7 +17,7 @@ import (
 
 var (
 	backupSetCreateExt      = TrackingCreateWrapper(resources.BackupSet, CreateBackupSet)
-	backupSetReadExt        = TrackingReadWrapper(resources.BackupSet, ReadBackupSetFunc(true))
+	backupSetReadExt        = TrackingReadWrapper(resources.BackupSet, readBackupSet)
 	backupSetUpdateExt      = TrackingUpdateWrapper(resources.BackupSet, UpdateBackupSet)
 	backupSetDescriptionExt = "Resource used to manage backup sets. For more information, check [backup set documentation](https://docs.snowflake.com/en/user-guide/backups)."
 	backupSetImporterExt    = &schema.ResourceImporter{
@@ -112,47 +112,92 @@ func importBackupSet(ctx context.Context, d *schema.ResourceData, meta any) ([]*
 	return []*schema.ResourceData{d}, nil
 }
 
+// The generated Read copies the FOR attributes from config, because SHOW splits the target
+// across object_kind and the object name columns, which the generator cannot map to one
+// attribute. Overwrite them with what SHOW actually reports, same as import does, so an
+// external target change is not masked by the copied config value. The attributes are ForceNew,
+// so a changed value recreates the backup set on the next plan.
+func readBackupSet(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	diags := ReadBackupSetFunc(true)(ctx, d, meta)
+	if diags.HasError() || d.Id() == "" {
+		return diags
+	}
+	id, err := backupSetParseId(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	client := meta.(*provider.Context).Client
+	backupSet, err := client.BackupSets.ShowByID(ctx, id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := backupSetSetTarget(ctx, client, d, id, backupSet); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
+}
+
 func backupSetSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, backupSet *sdk.BackupSet, importPermissiveMode bool) error {
 	return backupSetSetImportedFields(context.Background(), nil, d, id, backupSet, importPermissiveMode)
 }
 
 func backupSetSetImportedFields(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id sdk.SchemaObjectIdentifier, backupSet *sdk.BackupSet, importPermissiveMode bool) error {
-	errs := []error{
+	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
 		d.Set("schema", id.SchemaName()),
 		// Read sets comment from SHOW in both modes.
 		d.Set("comment", backupSet.Comment),
 		importOptionalStringAttribute(d, "backup_policy", importPermissiveMode, backupSetBackupPolicy(backupSet)),
+		backupSetSetTarget(ctx, client, d, id, backupSet),
+	)
+}
+
+// backupSetSetTarget writes SHOW's target onto the one matching attribute, overwriting whatever
+// the generated Read copied from config. The other three attributes are left untouched: on a
+// real target change, the matching attribute itself goes from one value to another (or from
+// absent to present), which is enough for Terraform to diff it against config and recreate the
+// ForceNew attribute. Writing "" to the other attributes would turn "absent" into "explicitly
+// empty", which import and plan checks treat as the attribute being present.
+func backupSetSetTarget(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id sdk.SchemaObjectIdentifier, backupSet *sdk.BackupSet) error {
+	field, fullyQualifiedName, err := backupSetTarget(ctx, client, id, backupSet)
+	if err != nil {
+		return err
 	}
+	return d.Set(field, fullyQualifiedName)
+}
+
+// backupSetTarget resolves the schema attribute and the fully qualified identifier of the
+// backup set's current target from SHOW. SHOW TABLES' is_dynamic decides for_table vs
+// for_dynamic_table, because SHOW BACKUP SETS reports object_kind TABLE for both.
+func backupSetTarget(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, backupSet *sdk.BackupSet) (string, string, error) {
 	switch backupSet.ObjectKind {
 	case "TABLE":
 		if backupSet.ObjectDatabaseName == nil || *backupSet.ObjectDatabaseName == "" || backupSet.ObjectSchemaName == nil || *backupSet.ObjectSchemaName == "" || backupSet.ObjectName == "" {
-			return fmt.Errorf("backup set %s is missing the database, schema, or name of its table target", id.FullyQualifiedName())
+			return "", "", fmt.Errorf("backup set %s is missing the database, schema, or name of its table target", id.FullyQualifiedName())
 		}
 		if client == nil {
-			return fmt.Errorf("backup set %s import needs the table target kind", id.FullyQualifiedName())
+			return "", "", fmt.Errorf("backup set %s import needs the table target kind", id.FullyQualifiedName())
 		}
 		targetID := sdk.NewSchemaObjectIdentifier(*backupSet.ObjectDatabaseName, *backupSet.ObjectSchemaName, backupSet.ObjectName)
 		field, err := backupSetTableTargetField(ctx, client, targetID)
 		if err != nil {
-			return err
+			return "", "", err
 		}
-		errs = append(errs, d.Set(field, targetID.FullyQualifiedName()))
+		return field, targetID.FullyQualifiedName(), nil
 	case "SCHEMA":
 		if backupSet.ObjectDatabaseName == nil || *backupSet.ObjectDatabaseName == "" || backupSet.ObjectName == "" {
-			return fmt.Errorf("backup set %s is missing the database or name of its schema target", id.FullyQualifiedName())
+			return "", "", fmt.Errorf("backup set %s is missing the database or name of its schema target", id.FullyQualifiedName())
 		}
-		errs = append(errs, d.Set("for_schema", sdk.NewDatabaseObjectIdentifier(*backupSet.ObjectDatabaseName, backupSet.ObjectName).FullyQualifiedName()))
+		return "for_schema", sdk.NewDatabaseObjectIdentifier(*backupSet.ObjectDatabaseName, backupSet.ObjectName).FullyQualifiedName(), nil
 	case "DATABASE":
 		if backupSet.ObjectName == "" {
-			return fmt.Errorf("backup set %s is missing the name of its database target", id.FullyQualifiedName())
+			return "", "", fmt.Errorf("backup set %s is missing the name of its database target", id.FullyQualifiedName())
 		}
-		errs = append(errs, d.Set("for_database", sdk.NewAccountObjectIdentifier(backupSet.ObjectName).FullyQualifiedName()))
+		return "for_database", sdk.NewAccountObjectIdentifier(backupSet.ObjectName).FullyQualifiedName(), nil
 	default:
-		return fmt.Errorf("backup set %s has unsupported object kind %q", id.FullyQualifiedName(), backupSet.ObjectKind)
+		return "", "", fmt.Errorf("backup set %s has unsupported object kind %q", id.FullyQualifiedName(), backupSet.ObjectKind)
 	}
-	return errors.Join(errs...)
 }
 
 // SHOW TABLES reports kind TABLE for a dynamic table, so is_dynamic decides the field.

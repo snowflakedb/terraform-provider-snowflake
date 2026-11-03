@@ -35,6 +35,22 @@ func (c *BackupSetClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) 
 	return c.client().Describe(context.Background(), id)
 }
 
+func (c *BackupSetClient) CreateWithOptions(t *testing.T, id sdk.SchemaObjectIdentifier, request *sdk.CreateBackupSetRequest) (*sdk.BackupSet, func()) {
+	t.Helper()
+	ctx := context.Background()
+	require.NoError(t, c.client().Create(ctx, request))
+	backupSet, err := c.client().ShowByID(ctx, id)
+	require.NoError(t, err)
+	return backupSet, c.DropFunc(t, id)
+}
+
+func (c *BackupSetClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
+	t.Helper()
+	return func() {
+		require.NoError(t, c.client().Drop(context.Background(), sdk.NewDropBackupSetRequest(id).WithIfExists(true)))
+	}
+}
+
 func (c *BackupSetClient) Alter(t *testing.T, req *sdk.AlterBackupSetRequest) {
 	t.Helper()
 	require.NoError(t, c.client().Alter(context.Background(), req))
