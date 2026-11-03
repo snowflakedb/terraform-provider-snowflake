@@ -77,6 +77,9 @@ func ValidateObject(obj Object) {
 		if a.NativeBool && a.Type != AttrBool {
 			panic(fmt.Sprintf("object %q: NativeBool attribute %q must be a bool", obj.Name, a.Name))
 		}
+		if a.BoolTrueValue != "" && !a.StoredAsText {
+			panic(fmt.Sprintf("object %q: attribute %q sets BoolTrueValue without StoredAsText", obj.Name, a.Name))
+		}
 		validateAttributeRelations(obj, a, obj.Attributes)
 	}
 	nested := nestedAttributeNames(obj)

@@ -1004,7 +1004,7 @@ func TestTable_GetClusterByKeys(t *testing.T) {
 func Test_Table_convertIsDynamic(t *testing.T) {
 	convert := func(t *testing.T, value sql.NullString) *Table {
 		t.Helper()
-		table, err := (tableDBRow{IsDynamic: value}).convert()
+		table, err := (tablesRow{IsDynamic: value}).convert()
 		assert.NoError(t, err)
 		return table
 	}

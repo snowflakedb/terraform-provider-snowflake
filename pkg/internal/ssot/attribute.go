@@ -74,9 +74,9 @@ type Attribute struct {
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
 	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
-	// BoolParsed, with StoredAsText, parses a bool column with strconv.ParseBool.
-	// Without it, a text bool is true when the column is Y.
-	BoolParsed    bool
+	// BoolTrueValue, with StoredAsText, is the text that converts to true, such as Y, YES, or ON.
+	// Empty uses strconv.ParseBool.
+	BoolTrueValue string
 	ManualConvert bool // paired-struct convert() skips this column; ext additionalConvert fills it
 	CustomParser  string
 	SkipInSchema  bool // column stays on the SDK struct and assertions, and is omitted from the public schema

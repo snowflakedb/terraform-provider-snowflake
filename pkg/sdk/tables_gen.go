@@ -441,7 +441,7 @@ type ShowTableOptions struct {
 	Limit      *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
-type tableDBRow struct {
+type tablesRow struct {
 	CreatedOn                  string         `db:"created_on"`
 	Name                       string         `db:"name"`
 	SchemaName                 string         `db:"schema_name"`

@@ -130,9 +130,10 @@ var TableAttrs = struct {
 		}),
 	},
 	Comment: ssot.Attribute{
-		Name:        "comment",
-		Type:        ssot.AttrString,
-		Description: "Specifies a comment for the table.",
+		Name:         "comment",
+		Type:         ssot.AttrString,
+		OptionalInDb: true,
+		Description:  "Specifies a comment for the table.",
 	},
 	PrimaryKey: ssot.Attribute{
 		Name:        "primary_key",
@@ -275,6 +276,49 @@ var TableCreateAttrs = struct {
 	},
 }
 
+func tableShowString(name string, optionalInDb, optionalInShow bool) ssot.Attribute {
+	return ssot.Attribute{Name: name, Type: ssot.AttrString, Readonly: true, OptionalInDb: optionalInDb, OptionalInShow: optionalInShow}
+}
+
+func tableShowInt(name string, optionalInShow bool) ssot.Attribute {
+	return ssot.Attribute{Name: name, Type: ssot.AttrInt, Readonly: true, OptionalInDb: true, OptionalInShow: optionalInShow}
+}
+
+func tableShowBool(name, trueValue string) ssot.Attribute {
+	return ssot.Attribute{
+		Name: name, Type: ssot.AttrBool, Readonly: true, StoredAsText: true, OptionalInDb: true, BoolTrueValue: trueValue,
+	}
+}
+
+var (
+	tableShowCreatedOn           = tableShowString("created_on", false, false)
+	tableShowName                = tableShowString("name", false, false)
+	tableShowSchemaName          = tableShowString("schema_name", false, false)
+	tableShowDatabaseName        = tableShowString("database_name", false, false)
+	tableShowKind                = tableShowString("kind", false, false)
+	tableShowClusterBy           = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
+	tableShowOwner               = tableShowString("owner", false, false)
+	tableShowRows                = tableShowInt("rows", false)
+	tableShowBytes               = tableShowInt("bytes", true)
+	tableShowRetentionTime       = tableShowInt("retention_time", false)
+	tableShowDroppedOn           = tableShowString("dropped_on", true, true)
+	tableShowAutomaticClustering = tableShowBool("automatic_clustering", "ON")
+	// The resource attribute stays a separate field. Sharing its name would drift-suppress change_tracking.
+	tableShowChangeTracking = ssot.Attribute{
+		Name: "show_change_tracking", ShowName: "change_tracking", Type: ssot.AttrBool, Readonly: true,
+		StoredAsText: true, OptionalInDb: true, BoolTrueValue: "ON",
+	}
+	tableShowSearchOptimization         = tableShowBool("search_optimization", "ON")
+	tableShowSearchOptimizationProgress = tableShowString("search_optimization_progress", true, false)
+	tableShowSearchOptimizationBytes    = tableShowInt("search_optimization_bytes", true)
+	tableShowIsExternal                 = tableShowBool("is_external", "Y")
+	tableShowEnableSchemaEvolution      = tableShowBool("enable_schema_evolution", "Y")
+	tableShowOwnerRoleType              = tableShowString("owner_role_type", true, false)
+	tableShowIsEvent                    = tableShowBool("is_event", "Y")
+	tableShowIsDynamic                  = tableShowBool("is_dynamic", "Y")
+	tableShowBudget                     = tableShowString("budget", true, true)
+)
+
 var Table = ssot.Object{
 	Name:                   "Table",
 	NamePlural:             "Tables",
@@ -285,7 +329,24 @@ var Table = ssot.Object{
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
-		ssot.WithSdk(ssot.SdkCreate(ssot.SdkCreateAdditionalValidations())),
+		ssot.WithSdk(
+			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
+			ssot.SdkDrop(
+				ssot.SdkDropCascadeRestrict(),
+				ssot.SdkDropDoc("https://docs.snowflake.com/en/sql-reference/sql/drop-table"),
+			),
+			ssot.SdkShow(
+				ssot.SdkShowDoc("https://docs.snowflake.com/en/sql-reference/sql/show-tables"),
+				ssot.SdkShowTerse(),
+				ssot.SdkShowOptionalSql("HISTORY"),
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalExtendedIn(),
+				ssot.SdkShowOptionalStartsWith(),
+				ssot.SdkShowOptionalLimitFrom(),
+				ssot.SdkShowAdditionalValidations(),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedIn, ssot.SdkShowByIDLike),
+			),
+		),
 	},
 	Create: ssot.CreateSpec{
 		KeywordsBefore: []*ssot.Attribute{
@@ -306,6 +367,33 @@ var Table = ssot.Object{
 			&TableCreateAttrs.RowAccessPolicy,
 			ssot.Tags,
 			&TableAttrs.Comment,
+		},
+	},
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&tableShowCreatedOn,
+			&tableShowName,
+			&tableShowSchemaName,
+			&tableShowDatabaseName,
+			&tableShowKind,
+			&TableAttrs.Comment,
+			&tableShowClusterBy,
+			&tableShowRows,
+			&tableShowBytes,
+			&tableShowOwner,
+			&tableShowRetentionTime,
+			&tableShowDroppedOn,
+			&tableShowAutomaticClustering,
+			&tableShowChangeTracking,
+			&tableShowSearchOptimization,
+			&tableShowSearchOptimizationProgress,
+			&tableShowSearchOptimizationBytes,
+			&tableShowIsExternal,
+			&tableShowEnableSchemaEvolution,
+			&tableShowOwnerRoleType,
+			&tableShowIsEvent,
+			&tableShowIsDynamic,
+			&tableShowBudget,
 		},
 	},
 	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.

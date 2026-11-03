@@ -22,7 +22,6 @@ var BackupPolicyAttrs = struct {
 		Type:         ssot.AttrBool,
 		ForceNew:     true,
 		StoredAsText: true,
-		BoolParsed:   true,
 		Description:  "Specifies a retention lock. Backups created under the policy cannot be deleted before they expire, including by a privileged user. The lock cannot be changed on an existing backup policy.",
 		CreateSql:    ssot.BoolKeyword(ssot.Sql("WITH RETENTION LOCK")),
 	},

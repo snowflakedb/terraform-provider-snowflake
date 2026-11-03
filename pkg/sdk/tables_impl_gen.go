@@ -12,7 +12,7 @@ import (
 
 var (
 	_ Tables                                         = (*tables)(nil)
-	_ convertibleRow[Table]                          = new(tableDBRow)
+	_ convertibleRow[Table]                          = new(tablesRow)
 	_ convertibleRow[TableColumnDetails]             = new(tableColumnDetailsRow)
 	_ convertibleRow[TableStageDetails]              = new(tableStageDetailsRow)
 	_ convertibleRow[TableSearchOptimizationDetails] = new(tableSearchOptimizationDetailsRow)
@@ -65,11 +65,11 @@ func (v *tables) DropSafely(ctx context.Context, id SchemaObjectIdentifier) erro
 
 func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[tableDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[tablesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[tableDBRow, Table](dbRows)
+	return convertRows[tablesRow, Table](dbRows)
 }
 
 func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
@@ -618,7 +618,7 @@ func (r *ShowTableRequest) toOpts() *ShowTableOptions {
 	return opts
 }
 
-func (r tableDBRow) convert() (*Table, error) {
+func (r tablesRow) convert() (*Table, error) {
 	result := &Table{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
