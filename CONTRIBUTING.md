@@ -124,7 +124,7 @@ To run the tests we have the following commands:
 - `make test-unit` run unit tests
 - `make test-acceptance` run acceptance tests (without account-level ones)
 - `make test-integration` run integration tests (without account-level ones)
-- `make test-account-level-features` run both integration and acceptance tests verifying account-level features
+- `make test-account-level` run both integration and acceptance tests verifying account-level features
 - `make test-functional` run functional tests of the underlying terraform libraries (currently SDKv2)
 
 **Run a single test:**
