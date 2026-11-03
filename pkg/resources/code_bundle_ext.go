@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"context"
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -23,24 +22,6 @@ var (
 type codeBundleAlterRequestsExt struct {
 	set   *sdk.CodeBundleSetRequest
 	unset *sdk.CodeBundleUnsetRequest
-}
-
-// from is not returned by SHOW. Read keeps the configured value.
-var codeBundleSetStateToValueFromConfigFieldsExt = []string{
-	"from",
-}
-
-func codeBundleSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, codeBundle *sdk.CodeBundle) error {
-	comment := ""
-	if codeBundle.Comment != nil {
-		comment = *codeBundle.Comment
-	}
-	return errors.Join(
-		d.Set("name", codeBundle.Name),
-		d.Set("database", codeBundle.DatabaseName),
-		d.Set("schema", codeBundle.SchemaName),
-		d.Set("comment", comment),
-	)
 }
 
 func codeBundleSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, codeBundle *sdk.CodeBundle, _ bool) error {
