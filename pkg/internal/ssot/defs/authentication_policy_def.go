@@ -118,6 +118,20 @@ var authenticationPolicyPatPolicyChildren = []ssot.Attribute{
 		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
 	},
 	{
+		Name:         "require_role_restriction_for_person_users",
+		Type:         ssot.AttrBool,
+		Description:  "If true, when you generate a programmatic access token for a person user, you must restrict the use of that token to a specific role.",
+		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+	},
+	{
+		Name:         "blocked_roles_list",
+		Type:         ssot.AttrSet,
+		Description:  "Specifies the roles that cannot be used as the role restriction for a programmatic access token.",
+		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql:    ssot.ListParameter("StringListItemWrapper", ssot.MustParentheses()),
+		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+	},
+	{
 		Name:         "network_policy_evaluation",
 		Type:         ssot.AttrEnum,
 		Description:  "Specifies the network policy evaluation for the PAT.",
@@ -230,6 +244,8 @@ var authenticationPolicyPatAtLeastOneOf = []ssot.Attribute{
 	{Name: "default_expiry_in_days"},
 	{Name: "max_expiry_in_days"},
 	{Name: "require_role_restriction_for_service_users"},
+	{Name: "require_role_restriction_for_person_users"},
+	{Name: "blocked_roles_list"},
 	{Name: "network_policy_evaluation"},
 }
 
@@ -344,13 +360,12 @@ var AuthenticationPolicyAttrs = struct {
 		Children:     authenticationPolicyMfaPolicyChildren,
 	},
 	PatPolicy: ssot.Attribute{
-		Name:         "pat_policy",
-		Type:         ssot.AttrObject,
-		CreateSql:    authenticationPolicyPatPolicyClause,
-		SetSql:       authenticationPolicyPatPolicyClause,
-		ChildrenRule: ssot.ChildrenAtLeastOne,
-		Description:  "Specifies the policy for programmatic access tokens.",
-		Children:     authenticationPolicyPatPolicyChildren,
+		Name:        "pat_policy",
+		Type:        ssot.AttrObject,
+		CreateSql:   authenticationPolicyPatPolicyClause,
+		SetSql:      authenticationPolicyPatPolicyClause,
+		Description: "Specifies the policy for programmatic access tokens.",
+		Children:    authenticationPolicyPatPolicyChildren,
 	},
 	WorkloadIdentityPolicy: ssot.Attribute{
 		Name:         "workload_identity_policy",
