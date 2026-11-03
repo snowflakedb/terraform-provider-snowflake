@@ -19,6 +19,7 @@ type OpenflowConnectorModel struct {
 	From               tfconfig.Variable `json:"from,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Runtime            tfconfig.Variable `json:"runtime,omitempty"`
+	VersionTrigger     tfconfig.Variable `json:"version_trigger,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -135,6 +136,11 @@ func (o *OpenflowConnectorModel) WithRuntime(runtime string) *OpenflowConnectorM
 	return o
 }
 
+func (o *OpenflowConnectorModel) WithVersionTrigger(versionTrigger string) *OpenflowConnectorModel {
+	o.VersionTrigger = tfconfig.StringVariable(versionTrigger)
+	return o
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -176,5 +182,10 @@ func (o *OpenflowConnectorModel) WithFullyQualifiedNameValue(value tfconfig.Vari
 
 func (o *OpenflowConnectorModel) WithRuntimeValue(value tfconfig.Variable) *OpenflowConnectorModel {
 	o.Runtime = value
+	return o
+}
+
+func (o *OpenflowConnectorModel) WithVersionTriggerValue(value tfconfig.Variable) *OpenflowConnectorModel {
+	o.VersionTrigger = value
 	return o
 }

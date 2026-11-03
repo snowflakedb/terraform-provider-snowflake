@@ -432,6 +432,9 @@ resource "snowflake_openflow_connector" "example" {
     path  = local.bundle_path
   }
 
+  # a change to the rendered config.json loads the bundle again as a new version of this connector
+  version_trigger = local_file.config.content_sha256
+
   timeouts {
     create = "45m"
     update = "45m"
@@ -449,7 +452,7 @@ resource "snowflake_openflow_connector" "example" {
 }
 ```
 
-The connector reads the bundle **once, at create time**. Changing `config.json` afterwards and re-applying uploads the new file but leaves the connector as it was: `from` is create-only, and the contents behind it are not tracked. To pick up a changed configuration, either replace the connector (`terraform apply -replace=snowflake_openflow_connector.example`) or commit a new version.
+The connector reads the bundle **once, at create time**: `from` is create-only, and the contents behind it are not tracked. `version_trigger` is how a changed configuration reaches the same connector. When its value changes from one non-empty value to another, the provider loads the bundle again with `ALTER OPENFLOW CONNECTOR ... ADD VERSION FROM`, stopping a running connector for the load and starting it again afterwards. Adding the field, or removing it, loads nothing, so on an existing connector add it before the bundle next changes. Replacing the connector instead (`terraform apply -replace=snowflake_openflow_connector.example`) also picks up the change, but a new connector starts from nothing, which for a CDC connector means its log position and a fresh snapshot of every table. Whichever you use, the new files have to be on the stage before the connector reads them, so make sure the upload runs again when they change.
 
 Confirm Snowflake actually read the file from the `connector_definition` [output](https://developer.hashicorp.com/terraform/language/values/outputs) after the apply — it reports the definition Snowflake resolved, so `OPENFLOW_POSTGRES_CDC` there means your `config.json` was found and parsed rather than silently skipped.
 
@@ -517,7 +520,7 @@ terraform output connector_definition
 Openflow has a large operational surface that is deliberately not modeled as desired state:
 
 - **Starting and stopping connectors.** Whether a connector is running is an operational decision, not configuration. The current status is reported in `show_output`.
-- **Connector version management.** Committing a configuration version, upgrading a connector, and promoting versions are not modeled here.
+- **Connector version management.** Committing a configuration version, upgrading a connector, and promoting versions are not modeled here. The one exception is `version_trigger`, which loads a changed bundle as a new version.
 - **The BYOC cloud infrastructure.** If you later use a BYOC deployment, the CloudFormation template is downloaded from the Openflow UI and applied in your own cloud account. That path is outside this walkthrough.
 
 ## Things worth knowing
