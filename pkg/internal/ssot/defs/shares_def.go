@@ -111,10 +111,42 @@ var (
 //
 // Object parameters: none is documented for a share.
 var Share = ssot.Object{
-	Name:       "Share",
-	NamePlural: "Shares",
-	IdType:     "AccountObjectIdentifier",
+	Name:                   "Share",
+	NamePlural:             "Shares",
+	IdType:                 "AccountObjectIdentifier",
+	LegacyIdEncoding:       true,
+	PreviewFeature:         true,
+	IdentityNameForceNew:   true,
+	AttributesModification: true,
+	// Create, read and update keep the behavior of the handwritten resource, so most steps are in share_ext.go:
+	// accounts need a temporary database when no database is granted yet, the update makes the recipients equal to
+	// the configured accounts, and the read merges the recipients that SHOW SHARES does not list.
+	// The resource has no show_output and no describe_output.
+	// TODO [next PRs]: update the resource and enable more hooks
+	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.Generated()),
+		ssot.WithApplyCreateOptionals(ssot.ExtCall()),
+		ssot.WithCreateInSdk(ssot.ExtCall()),
+		ssot.WithAfterCreate(ssot.ExtCall()),
+		ssot.WithShowByIdSafelyInSdk(ssot.ExtCall()),
+		ssot.WithDescribeInSdk(ssot.Omitted()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
+		ssot.WithSetConfigFields(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.ExtCall()),
+		ssot.WithAlterSetInSdk(ssot.ExtCall()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
+		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
+		ssot.WithShowByIdInSdk(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithIdentitySchema(ssot.ExtCall()),
+		ssot.WithShowOutputSchema(ssot.Omitted()),
+		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+	},
 	Generators: []ssot.GeneratorOption{
+		ssot.WithResource(),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),

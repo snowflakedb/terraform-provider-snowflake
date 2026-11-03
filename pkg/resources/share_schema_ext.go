@@ -14,21 +14,9 @@ var shareIdentitySchemaExt = map[string]*schema.Schema{
 	},
 }
 
-var shareAttributesSchemaExt = map[string]*schema.Schema{
-	"comment": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Specifies a comment for the managed account.",
-	},
-	"accounts": {
-		Type: schema.TypeSet,
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: IsValidAccountIdentifier(),
-		},
-		Optional: true,
-		Description: "A list of accounts to be added to the share. Values should not be the account locator, but " +
-			"in the form of 'organization_name.account_name",
-		DiffSuppressFunc: IgnoreCaseInSet("accounts"),
-	},
+// shareAttributesModificationExt keeps the case-insensitive comparison of the accounts, which the generated one does not do.
+// The generated suppressor stays, so quoting differences are still suppressed.
+func shareAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
+	s["accounts"].DiffSuppressFunc = SuppressIfAny(s["accounts"].DiffSuppressFunc, IgnoreCaseInSet("accounts"))
+	return s
 }
