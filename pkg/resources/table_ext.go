@@ -70,7 +70,7 @@ func toTableClusterBy(value []any) ([]string, error) {
 	return expandStringList(value), nil
 }
 
-func tableSetConfigFieldsExt(d *schema.ResourceData, table *sdk.Table) error {
+func tableSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, table *sdk.Table) error {
 	// Set the relevant data in the state
 	toSet := map[string]any{
 		"name":            table.Name,

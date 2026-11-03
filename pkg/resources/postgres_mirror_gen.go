@@ -71,7 +71,7 @@ func ReadPostgresMirrorFunc(withExternalChangesMarking bool) tfschema.ReadContex
 		}
 		errs := errors.Join(
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			postgresMirrorSetConfigFieldsExt(d, postgresMirror),
+			postgresMirrorSetConfigFieldsExt(ctx, d, meta, postgresMirror),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

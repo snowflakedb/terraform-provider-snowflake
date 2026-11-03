@@ -108,7 +108,7 @@ func warehouseHandleExternalChangesExt(d *schema.ResourceData, warehouse *sdk.Wa
 	)
 }
 
-func warehouseSetConfigFieldsExt(d *schema.ResourceData, warehouse *sdk.WarehouseRegular) error {
+func warehouseSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, warehouse *sdk.WarehouseRegular) error {
 	return errors.Join(
 		d.Set("comment", warehouse.Comment),
 		d.Set("resource_monitor", warehouse.ResourceMonitor.Name()),

@@ -81,7 +81,7 @@ func shareAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, 
 	return nil
 }
 
-func shareSetConfigFieldsExt(d *schema.ResourceData, share *sdk.Share) error {
+func shareSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, share *sdk.Share) error {
 	if err := d.Set("comment", share.Comment); err != nil {
 		return err
 	}

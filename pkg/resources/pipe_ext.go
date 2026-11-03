@@ -63,7 +63,7 @@ func pipeApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreatePipeRequ
 	return nil
 }
 
-func pipeSetConfigFieldsExt(d *schema.ResourceData, pipe *sdk.Pipe) error {
+func pipeSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, pipe *sdk.Pipe) error {
 	errs := errors.Join(
 		d.Set("name", pipe.Name),
 		d.Set("database", pipe.DatabaseName),

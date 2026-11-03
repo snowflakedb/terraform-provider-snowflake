@@ -70,7 +70,7 @@ func ReadShareFunc(withExternalChangesMarking bool) schema.ReadContextFunc {
 
 		errs := errors.Join(
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			shareSetConfigFieldsExt(d, share),
+			shareSetConfigFieldsExt(ctx, d, meta, share),
 		)
 		if errs != nil {
 			return append(diags, diag.FromErr(errs)...)

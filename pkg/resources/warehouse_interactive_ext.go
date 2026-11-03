@@ -105,7 +105,7 @@ func warehouseInteractiveOutputMappingsExt(w *sdk.WarehouseInteractive) []output
 	}
 }
 
-func warehouseInteractiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.WarehouseInteractive) error {
+func warehouseInteractiveSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, w *sdk.WarehouseInteractive) error {
 	// Snowflake reports interactive warehouses through the type column (type = INTERACTIVE).
 	effectiveType := string(sdk.WarehouseTypeStandard)
 	if w.Type == sdk.WarehouseTypeInteractive {

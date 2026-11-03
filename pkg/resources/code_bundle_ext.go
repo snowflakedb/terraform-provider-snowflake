@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"errors"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -29,7 +30,7 @@ var codeBundleSetStateToValueFromConfigFieldsExt = []string{
 	"from",
 }
 
-func codeBundleSetConfigFieldsExt(d *schema.ResourceData, codeBundle *sdk.CodeBundle) error {
+func codeBundleSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, codeBundle *sdk.CodeBundle) error {
 	comment := ""
 	if codeBundle.Comment != nil {
 		comment = *codeBundle.Comment

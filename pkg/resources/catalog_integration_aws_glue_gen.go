@@ -94,7 +94,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 		if diags.HasError() {
 			return diags
 		}
-		diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)
+		diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(ctx, d, meta, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
 		}
@@ -110,7 +110,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueToSchema(catalogIntegrationAwsGlue)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueDetailsToSchema(catalogIntegrationAwsGlueDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			catalogIntegrationAwsGlueSetConfigFieldsExt(d, catalogIntegrationAwsGlue),
+			catalogIntegrationAwsGlueSetConfigFieldsExt(ctx, d, meta, catalogIntegrationAwsGlue),
 		)
 		if errs != nil {
 			return append(diags, diag.FromErr(errs)...)

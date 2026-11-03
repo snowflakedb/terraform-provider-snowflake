@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -60,7 +61,7 @@ func backupPolicyApplySetUnsetExt(d *schema.ResourceData) (*backupPolicyAlterReq
 	return &backupPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }
 
-func backupPolicySetConfigFieldsExt(d *schema.ResourceData, backupPolicy *sdk.BackupPolicy) error {
+func backupPolicySetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, backupPolicy *sdk.BackupPolicy) error {
 	schedule, err := backupPolicyScheduleToState(backupPolicy.Schedule)
 	if err != nil {
 		return err

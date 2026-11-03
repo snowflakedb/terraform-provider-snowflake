@@ -224,7 +224,7 @@ func postgresMirrorHandleExternalChangesExt(d *schema.ResourceData, details *sdk
 	)
 }
 
-func postgresMirrorSetConfigFieldsExt(d *schema.ResourceData, details *sdk.PostgresMirrorDetails) error {
+func postgresMirrorSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, details *sdk.PostgresMirrorDetails) error {
 	return errors.Join(
 		d.Set("postgres_tables", details.PostgresTables),
 		d.Set("postgres_schemas", collections.Map(details.PostgresSchemas, unquotePostgresIdentifier)),
