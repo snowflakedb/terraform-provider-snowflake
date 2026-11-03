@@ -123,6 +123,8 @@ const (
 	PipesDatasource                                feature = "snowflake_pipes_datasource"
 	PostgresForkResource                           feature = "snowflake_postgres_fork_resource"
 	PostgresInstanceResource                       feature = "snowflake_postgres_instance_resource"
+	PostgresMirrorResource                         feature = "snowflake_postgres_mirror_resource"
+	PostgresMirrorsDatasource                      feature = "snowflake_postgres_mirrors_datasource"
 	ProcedureJavaResource                          feature = "snowflake_procedure_java_resource"
 	ProcedureJavascriptResource                    feature = "snowflake_procedure_javascript_resource"
 	ProcedurePythonResource                        feature = "snowflake_procedure_python_resource"
@@ -236,6 +238,8 @@ var allPreviewFeatures = []feature{
 	PipesDatasource,
 	// PostgresForkResource,
 	PostgresInstanceResource,
+	PostgresMirrorResource,
+	PostgresMirrorsDatasource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,

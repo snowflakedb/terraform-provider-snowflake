@@ -25,6 +25,7 @@
 - [snowflake_openflow_runtimes](./docs/data-sources/openflow_runtimes)
 - [snowflake_parameters](./docs/data-sources/parameters)
 - [snowflake_pipes](./docs/data-sources/pipes)
+- [snowflake_postgres_mirrors](./docs/data-sources/postgres_mirrors)
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_projection_policies](./docs/data-sources/projection_policies)
 - [snowflake_replication_groups](./docs/data-sources/replication_groups)

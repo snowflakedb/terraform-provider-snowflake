@@ -89,7 +89,6 @@ func acceptanceTestsProvider() *schema.Provider {
 	// p.ResourcesMap["snowflake_semantic_view"] = resources.SemanticView()
 	// TODO(next postgres prs): Remove postgres resources from here
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
-	p.ResourcesMap["snowflake_postgres_mirror"] = resources.PostgresMirror()
 	p.ResourcesMap["snowflake_backup_set"] = resources.BackupSet()
 	p.ResourcesMap["snowflake_projection_policy"] = resources.ProjectionPolicy()
 	p.DataSourcesMap["snowflake_projection_policies"] = datasources.ProjectionPolicies()

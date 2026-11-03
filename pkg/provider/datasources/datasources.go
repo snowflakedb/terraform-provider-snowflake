@@ -48,6 +48,7 @@ const (
 	Parameters                     datasource = "snowflake_parameters"
 	PasswordPolicies               datasource = "snowflake_password_policies"
 	Pipes                          datasource = "snowflake_pipes"
+	PostgresMirrors                datasource = "snowflake_postgres_mirrors"
 	Procedures                     datasource = "snowflake_procedures"
 	ProjectionPolicies             datasource = "snowflake_projection_policies"
 	ReplicationGroups              datasource = "snowflake_replication_groups"

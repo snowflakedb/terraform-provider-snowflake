@@ -51,23 +51,50 @@ var postgresMirrorAttributesSchema = postgresMirrorAttributesModificationExt(map
 		Elem: &tfschema.Resource{
 			Schema: map[string]*tfschema.Schema{
 				"hours": {
-					Type:        tfschema.TypeInt,
-					Optional:    true,
-					Description: "Specifies the refresh interval in hours.",
+					Type:     tfschema.TypeInt,
+					Optional: true,
+					ConflictsWith: []string{
+						"refresh_interval.0.minutes",
+						"refresh_interval.0.seconds",
+					},
+					AtLeastOneOf: []string{
+						"refresh_interval.0.hours",
+						"refresh_interval.0.minutes",
+						"refresh_interval.0.seconds",
+					},
+					Description: "Specifies the refresh interval in hours. (conflicts with `minutes` and `seconds`)",
 				},
 				"minutes": {
-					Type:        tfschema.TypeInt,
-					Optional:    true,
-					Description: "Specifies the refresh interval in minutes.",
+					Type:     tfschema.TypeInt,
+					Optional: true,
+					ConflictsWith: []string{
+						"refresh_interval.0.hours",
+						"refresh_interval.0.seconds",
+					},
+					AtLeastOneOf: []string{
+						"refresh_interval.0.hours",
+						"refresh_interval.0.minutes",
+						"refresh_interval.0.seconds",
+					},
+					Description: "Specifies the refresh interval in minutes. (conflicts with `hours` and `seconds`)",
 				},
 				"seconds": {
-					Type:        tfschema.TypeInt,
-					Optional:    true,
-					Description: "Specifies the refresh interval in seconds.",
+					Type:     tfschema.TypeInt,
+					Optional: true,
+					ConflictsWith: []string{
+						"refresh_interval.0.hours",
+						"refresh_interval.0.minutes",
+					},
+					AtLeastOneOf: []string{
+						"refresh_interval.0.hours",
+						"refresh_interval.0.minutes",
+						"refresh_interval.0.seconds",
+					},
+					Description: "Specifies the refresh interval in seconds. (conflicts with `hours` and `minutes`)",
 				},
 			},
 		},
-		Description: "Specifies how often changes are merged into the target tables. Set one of `hours`, `minutes`, or `seconds`. Snowflake accepts intervals from 10 seconds to 24 hours. When not set, Snowflake uses its default interval. Removing the block keeps the current interval, because `ALTER_MIRROR` cannot reset it.",
+		Description: "Specifies how often changes are merged into the target tables. Set exactly one of `hours`, `minutes`, or `seconds`. When not set, Snowflake uses its default interval. Removing the block keeps the current interval, because `ALTER_MIRROR` cannot reset it.",
 	},
 	"target_table_type": {
 		Type:             tfschema.TypeString,
@@ -105,14 +132,5 @@ var postgresMirrorSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE POSTGRES MIRROR` for the given postgres mirror.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribePostgresMirrorDetailsSchema,
-			},
-		},
-	},
+	postgresMirrorDescribeOutputSchemaExt,
 )

@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -23,10 +24,10 @@ import (
 // =============================================================================
 
 var (
-	postgresMirrorCreateExt      = TrackingCreateWrapper(resources.PostgresMirror, CreatePostgresMirror)
-	postgresMirrorReadExt        = TrackingReadWrapper(resources.PostgresMirror, ReadPostgresMirrorFunc(true))
-	postgresMirrorUpdateExt      = TrackingUpdateWrapper(resources.PostgresMirror, UpdatePostgresMirror)
-	postgresMirrorDeleteExt      = TrackingDeleteWrapper(resources.PostgresMirror, DeletePostgresMirror)
+	postgresMirrorCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.PostgresMirrorResource), TrackingCreateWrapper(resources.PostgresMirror, CreatePostgresMirror))
+	postgresMirrorReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.PostgresMirrorResource), TrackingReadWrapper(resources.PostgresMirror, ReadPostgresMirrorFunc(true)))
+	postgresMirrorUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.PostgresMirrorResource), TrackingUpdateWrapper(resources.PostgresMirror, UpdatePostgresMirror))
+	postgresMirrorDeleteExt      = PreviewFeatureDeleteContextWrapper(string(previewfeatures.PostgresMirrorResource), TrackingDeleteWrapper(resources.PostgresMirror, DeletePostgresMirror))
 	postgresMirrorDescriptionExt = "Resource used to manage Postgres data mirrors, which replicate Postgres tables into a Snowflake database. For more information, check [data mirroring documentation](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring)."
 
 	postgresMirrorCustomizeDiffExt = TrackingCustomDiffWrapper(resources.PostgresMirror, customdiff.All(
@@ -55,6 +56,17 @@ var postgresMirrorIdentitySchemaExt = map[string]*schema.Schema{
 		ForceNew:         true,
 		DiffSuppressFunc: ignoreCaseSuppressFunc,
 		Description:      "Specifies the name of the mirror. It must be unique across all Postgres instances in the account. Snowflake stores the name lowercased, and the lowercased name is the resource ID.",
+	},
+}
+
+var postgresMirrorDescribeOutputSchemaExt = map[string]*schema.Schema{
+	DescribeOutputAttributeName: {
+		Type:        schema.TypeList,
+		Computed:    true,
+		Description: "Outputs the result of `DESCRIBE_MIRROR` for the given Postgres mirror.",
+		Elem: &schema.Resource{
+			Schema: schemas.DescribePostgresMirrorDetailsSchema,
+		},
 	},
 }
 
