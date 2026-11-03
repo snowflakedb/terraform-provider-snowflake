@@ -35,6 +35,7 @@ var pipeAttributesSchema = pipeAttributesModificationExt(map[string]*tfschema.Sc
 	"integration": {
 		Type:             tfschema.TypeString,
 		Optional:         true,
+		ForceNew:         true,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("integration"),
 		Description:      "Specifies an integration for the pipe.",
 	},
@@ -71,7 +72,29 @@ var pipeSchema = collections.MergeMaps(
 		},
 	},
 	pipeAttributesSchema,
+	pipeParametersAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},
+	map[string]*tfschema.Schema{
+		ShowOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW PIPES` for the given pipe.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowPipeSchema,
+			},
+		},
+	},
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE PIPE` for the given pipe.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribePipeDetailsSchema,
+			},
+		},
+	},
+	pipeParametersOutputSchema,
 )

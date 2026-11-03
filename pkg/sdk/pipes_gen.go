@@ -35,7 +35,7 @@ type CreatePipeOptions struct {
 	name             SchemaObjectIdentifier `ddl:"identifier"`
 	AutoIngest       *bool                  `ddl:"parameter" sql:"AUTO_INGEST"`
 	ErrorIntegration *string                `ddl:"parameter,no_quotes" sql:"ERROR_INTEGRATION"`
-	AwsSnsTopic      *string                `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
+	AwsSnsTopicArn   *string                `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
 	Integration      *string                `ddl:"parameter,single_quotes" sql:"INTEGRATION"`
 	Comment          *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	copyStatement    string                 `ddl:"parameter,no_quotes,no_equals" sql:"AS"`

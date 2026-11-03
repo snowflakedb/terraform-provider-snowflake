@@ -152,6 +152,7 @@ The experiment is currently supported on the following resources:
 - [`snowflake_catalog_integration_open_catalog`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_open_catalog)
 - [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
 - [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume)
+- [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe)
 - [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse)
 - [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)
 - [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive)
@@ -197,6 +198,32 @@ After upgrading:
 - `mfa_policy`, `pat_policy`, and `workload_identity_policy` are compared through `describe_output`, so only changes made after the upgrade are detected.
 
 No configuration changes are required. To keep a value that was changed outside Terraform, add it to your configuration.
+
+### *(breaking change)* `snowflake_pipe` aligned with the newest preview resources
+
+The preview [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) resource now follows the same structure as the newest preview resources. Existing state is migrated by a state upgrader on the next `terraform plan` or `terraform apply`; no manual action is required for the resource ID. The resource is still in preview and may change again before it becomes stable.
+
+What changed:
+
+- **Resource ID.** The ID changed from the legacy pipe-separated format (`database|schema|name`) to the fully qualified name format (`"database"."schema"."name"`). The state is migrated automatically. Import now expects the new format:
+
+  ```shell
+  terraform import snowflake_pipe.example '"<database_name>"."<schema_name>"."<pipe_name>"'
+  ```
+
+- **New `show_output` and `describe_output` fields.** They contain the results of `SHOW PIPES` and `DESCRIBE PIPE`. They have no value in the state before the first refresh, so the first plan after the upgrade may report an update in place for `show_output`, `describe_output`, and `parameters`. Applying it only refreshes the computed values.
+- **New `parameters` output and `log_event_level` / `pipe_execution_paused` fields.** The pipe-level [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level) and [`PIPE_EXECUTION_PAUSED`](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused) parameters can now be set on the resource. `CREATE PIPE` has no parameters, so they are set with `ALTER PIPE` right after the pipe is created. Removing a field from the configuration unsets the parameter. The `parameters` output shows the value and the level of each parameter.
+- **`owner` and `notification_channel` are deprecated.** Use `show_output.0.owner` and `show_output.0.notification_channel` instead. The deprecated fields are still computed and will be removed in the next major version.
+- **`integration` forces replacement.** Snowflake cannot change the integration of an existing pipe (`ALTER PIPE` does not support it), and the provider silently ignored such changes. Changing `integration` now plans a replacement of the pipe, so the note about undetected `integration` changes was removed from the resource documentation. If you used `replace_triggered_by` as a workaround, it is no longer needed for this field.
+- **`integration` and `error_integration` are no longer refreshed from Snowflake on every read.** The fields follow the other resources that use `show_output`: the configured value is kept in the state, and a plan difference is suppressed when the configured value already equals the value in `show_output`. Changes made outside of Terraform (for example, recreating the pipe with a different integration) are detected: a different `integration` plans a replacement and a different `error_integration` plans an in-place update, unless the configuration was adjusted to the new value. `error_integration` can still be replaced on an existing pipe; the provider clears the current value in Snowflake before setting the new one.
+- **Supports the [`IMPORT_PERMISSIVE_MODE`](#new-feature-opt-in-experiment-permissive-import-mode) experiment.** `integration` and `error_integration` are not refreshed by every read, so they are written to the state only on import. By default (enforcing mode), import stores the values from Snowflake, so the plan after import shows a change when the configuration omits a value that Snowflake already has. With `IMPORT_PERMISSIVE_MODE` enabled, import leaves both empty and the plan shows no change for them.
+
+To migrate:
+
+1. Upgrade the provider and run `terraform plan`. The ID is migrated automatically.
+2. If you reference `owner` or `notification_channel`, switch to `show_output.0.owner` and `show_output.0.notification_channel`.
+3. If you manage `integration`, make sure the configured value matches the pipe in Snowflake. A mismatch now plans a replacement.
+4. If you import pipes with a script, switch to the new ID format shown above.
 
 ### *(bug fix)* `snowflake_pipe` can replace `error_integration` on an existing pipe
 

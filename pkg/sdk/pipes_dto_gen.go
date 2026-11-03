@@ -16,7 +16,7 @@ type CreatePipeRequest struct {
 	name             SchemaObjectIdentifier // required
 	AutoIngest       *bool
 	ErrorIntegration *string
-	AwsSnsTopic      *string
+	AwsSnsTopicArn   *string
 	Integration      *string
 	Comment          *string
 	copyStatement    string // required
