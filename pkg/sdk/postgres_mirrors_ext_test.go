@@ -216,13 +216,12 @@ func TestPostgresMirrorRow_convert(t *testing.T) {
 		assert.Equal(t, PostgresMirrorStatusActive, mirror.Status)
 	})
 
-	t.Run("keeps unrecognized status, uppercased", func(t *testing.T) {
-		mirror, err := postgresMirrorRow{
+	t.Run("unknown status", func(t *testing.T) {
+		_, err := postgresMirrorRow{
 			MirrorName: "orders_mirror",
 			Status:     sql.NullString{String: "Repairing", Valid: true},
 		}.convert()
-		require.NoError(t, err)
-		assert.Equal(t, PostgresMirrorStatus("REPAIRING"), mirror.Status)
+		require.ErrorContains(t, err, "STATUS")
 	})
 }
 
@@ -326,12 +325,11 @@ func TestPostgresMirrorDetailsRow_convert(t *testing.T) {
 		assert.Equal(t, PostgresMirrorStatusActive, details.Status)
 	})
 
-	t.Run("keeps unrecognized status, uppercased", func(t *testing.T) {
-		details, err := postgresMirrorDetailsRow{
+	t.Run("unknown status", func(t *testing.T) {
+		_, err := postgresMirrorDetailsRow{
 			Status: sql.NullString{String: "Repairing", Valid: true},
 		}.convert()
-		require.NoError(t, err)
-		assert.Equal(t, PostgresMirrorStatus("REPAIRING"), details.Status)
+		require.ErrorContains(t, err, "STATUS")
 	})
 
 	t.Run("lowercase target table type", func(t *testing.T) {

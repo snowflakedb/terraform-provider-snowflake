@@ -19,9 +19,13 @@ func (v *postgresMirrors) DropSafely(ctx context.Context, request *DropPostgresM
 }
 
 func (r postgresMirrorRow) additionalConvert(result *PostgresMirror) error {
-	// ToPostgresMirrorStatus would reject an unrecognized status and fail List. Uppercasing keeps its case-insensitive
-	// matching, so known statuses still equal the constants.
-	result.Status = PostgresMirrorStatus(strings.ToUpper(r.Status.String))
+	if r.Status.Valid {
+		status, err := ToPostgresMirrorStatus(r.Status.String)
+		if err != nil {
+			return fmt.Errorf("STATUS: %w", err)
+		}
+		result.Status = status
+	}
 	return nil
 }
 
@@ -118,14 +122,16 @@ func postgresMirrorRefreshIntervalPhrase(count int, unit string) string {
 
 // additionalConvert fills the fields marked WithManualConvert in postgres_mirrors_def.go.
 func (r postgresMirrorDetailsRow) additionalConvert(result *PostgresMirrorDetails) error {
-	// ToPostgresMirrorStatus would reject an unrecognized status and fail Describe. Uppercasing keeps its
-	// case-insensitive matching, so known statuses still equal the constants.
-	result.Status = PostgresMirrorStatus(strings.ToUpper(r.Status.String))
 	result.RecentQueryDurations = compactPostgresMirrorJson(r.RecentQueryDurations)
 	result.PostgresStatus = compactPostgresMirrorJson(r.PostgresStatus)
 
 	var errs []error
 	var err error
+	if r.Status.Valid {
+		if result.Status, err = ToPostgresMirrorStatus(r.Status.String); err != nil {
+			errs = append(errs, fmt.Errorf("STATUS: %w", err))
+		}
+	}
 	if r.TargetTableType.Valid {
 		if result.TargetTableType, err = ToPostgresMirrorTargetTableType(r.TargetTableType.String); err != nil {
 			errs = append(errs, fmt.Errorf("TARGET_TABLE_TYPE: %w", err))
