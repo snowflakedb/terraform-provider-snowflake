@@ -153,8 +153,8 @@ func (pm parenModifier) Modify(v any) string {
 	}
 }
 
-// TODO [next PRs]: drop the reverse modifier. One struct per allowed-list target, then a static
-// TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
+// reverseModifier swaps a parameter name and its value so the values print first.
+// ADD "db1" TO ALLOWED_DATABASES is the SQL text TO ALLOWED_DATABASES after the identifier.
 type reverseModifier string
 
 const (

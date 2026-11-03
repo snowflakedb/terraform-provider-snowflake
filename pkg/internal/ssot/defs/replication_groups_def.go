@@ -300,6 +300,7 @@ var replicationGroupAsReplicaOf = ssot.Attribute{
 	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("AsReplicaOf")),
 }
 
+// Reverse prints the identifiers before the SQL text: ADD "db1" TO ALLOWED_DATABASES.
 func replicationGroupReverseIdentifierList(name, sql, idType string) ssot.Attribute {
 	return ssot.Attribute{
 		Name: name,
@@ -334,8 +335,6 @@ var replicationGroupMove = ssot.Attribute{
 }
 
 // ADD and REMOVE each set one allowed list. IGNORE EDITION CHECK belongs only to ADD accounts.
-// TODO [next PRs]: drop Reverse(). One struct per allowed-list target, then a static TO ALLOWED_* or FROM ALLOWED_* clause.
-// See pkg/sdk/generator/README.md#create-and-alter.
 var replicationGroupAdd = ssot.Attribute{
 	Name:      "add",
 	Type:      ssot.AttrObject,

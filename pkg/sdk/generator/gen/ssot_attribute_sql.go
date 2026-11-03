@@ -210,12 +210,21 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		if item == "" {
 			panic(fmt.Sprintf("attribute %q: list parameter has no item struct", attr.Name))
 		}
-		v = v.ListAssignment(sql, item, opts)
+		// FieldName separates the Go name from the SQL text. Empty SQL then stays empty, as on a nested struct.
+		name := sqlToFieldName(sql, true)
+		prefix := sql
+		if clause.Field != "" {
+			name = clause.Field
+			prefix = clause.SQL
+			v = v.ListAssignmentWithFieldName(prefix, item, opts, clause.Field)
+		} else {
+			v = v.ListAssignment(prefix, item, opts)
+		}
 		if required && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
-			v = v.WithValidation(AtLeastOneValueSet, sqlToFieldName(sql, true))
+			v = v.WithValidation(AtLeastOneValueSet, name)
 		}
 		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
-			v = v.WithValidation(ValidIdentifier, sqlToFieldName(sql, true))
+			v = v.WithValidation(ValidIdentifier, name)
 		}
 		return v
 	default:

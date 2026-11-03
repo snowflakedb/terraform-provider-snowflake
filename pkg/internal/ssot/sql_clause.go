@@ -500,9 +500,9 @@ func NoEquals() SqlClauseOption {
 	return func(c *SqlClause) { c.Equals = SqlEqualsNo }
 }
 
-// Reverse puts a list parameter before its SQL text.
-// TODO [next PRs]: drop reverse. One struct per allowed-list target, the identifier list with no SQL prefix,
-// then a static TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
+// Reverse prints a list parameter's values before its SQL text.
+// ADD "db1" TO ALLOWED_DATABASES is Reverse() with SQL text TO ALLOWED_DATABASES.
+// The Go field name still comes from that text unless FieldName is set.
 func Reverse() SqlClauseOption {
 	return func(c *SqlClause) { c.Reverse = true }
 }
