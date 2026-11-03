@@ -42,6 +42,25 @@ These features will be marked as stable in future releases. Breaking changes are
 
 No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
 
+### *(new feature)* `version_trigger` in `snowflake_openflow_connector`
+
+We added an optional `version_trigger` field to the `snowflake_openflow_connector` resource. A connector reads its bundle only once, when it is created, so until now the only way to apply a changed `config.json` was to replace the connector. For a CDC connector, replacing it loses the replication position and snapshots every table again. When `version_trigger` changes from one non-empty value to another, the provider instead runs `ALTER OPENFLOW CONNECTOR ... ADD VERSION FROM` with the stage location in `from`, so the same connector takes the bundle as its new default version. A running connector is stopped for the load and started again afterwards. A stopped one stays stopped.
+
+Set it to a value that changes with the bundle, such as a hash of its files. Adding it to the configuration, or removing it, loads nothing, so add it to an existing connector before its bundle next changes, not in the same apply. It can only be used with `from.stage`.
+
+```terraform
+resource "snowflake_openflow_connector" "example" {
+  # ...
+  from {
+    stage = snowflake_stage_internal.bundles.fully_qualified_name
+    path  = "connectors/postgres"
+  }
+  version_trigger = local_file.config.content_sha256
+}
+```
+
+No configuration or state changes are required for existing connectors.
+
 ### *(new feature)* `AWS_S3TABLES` and `AWS_PRIVATE_S3TABLES` catalog API types
 
 [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) now accepts `AWS_S3TABLES` and `AWS_PRIVATE_S3TABLES` as valid values for `rest_config.catalog_api_type`.
