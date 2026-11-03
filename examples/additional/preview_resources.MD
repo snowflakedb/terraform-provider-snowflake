@@ -39,6 +39,7 @@
 - [snowflake_openflow_runtime](./docs/resources/openflow_runtime)
 - [snowflake_pipe](./docs/resources/pipe)
 - [snowflake_postgres_instance](./docs/resources/postgres_instance)
+- [snowflake_postgres_mirror](./docs/resources/postgres_mirror)
 - [snowflake_procedure_java](./docs/resources/procedure_java)
 - [snowflake_procedure_javascript](./docs/resources/procedure_javascript)
 - [snowflake_procedure_python](./docs/resources/procedure_python)

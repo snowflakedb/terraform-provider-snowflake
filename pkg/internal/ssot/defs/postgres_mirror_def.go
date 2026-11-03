@@ -87,11 +87,29 @@ var PostgresMirrorAttrs = struct {
 		Name:        "refresh_interval",
 		Type:        ssot.AttrObject,
 		SkipCreate:  true,
-		Description: "Specifies how often changes are merged into the target tables. Set one of `hours`, `minutes`, or `seconds`. Snowflake accepts intervals from 10 seconds to 24 hours. When not set, Snowflake uses its default interval. Removing the block keeps the current interval, because `ALTER_MIRROR` cannot reset it.",
+		Description: "Specifies how often changes are merged into the target tables. Set exactly one of `hours`, `minutes`, or `seconds`. When not set, Snowflake uses its default interval. Removing the block keeps the current interval, because `ALTER_MIRROR` cannot reset it.",
 		Children: []ssot.Attribute{
-			{Name: "hours", Type: ssot.AttrInt, Description: "Specifies the refresh interval in hours."},
-			{Name: "minutes", Type: ssot.AttrInt, Description: "Specifies the refresh interval in minutes."},
-			{Name: "seconds", Type: ssot.AttrInt, Description: "Specifies the refresh interval in seconds."},
+			{
+				Name:          "hours",
+				Type:          ssot.AttrInt,
+				ConflictsWith: []ssot.Attribute{{Name: "minutes"}, {Name: "seconds"}},
+				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "seconds"}},
+				Description:   "Specifies the refresh interval in hours. (conflicts with `minutes` and `seconds`)",
+			},
+			{
+				Name:          "minutes",
+				Type:          ssot.AttrInt,
+				ConflictsWith: []ssot.Attribute{{Name: "hours"}, {Name: "seconds"}},
+				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "seconds"}},
+				Description:   "Specifies the refresh interval in minutes. (conflicts with `hours` and `seconds`)",
+			},
+			{
+				Name:          "seconds",
+				Type:          ssot.AttrInt,
+				ConflictsWith: []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}},
+				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "seconds"}},
+				Description:   "Specifies the refresh interval in seconds. (conflicts with `hours` and `minutes`)",
+			},
 		},
 	},
 	TargetTableType: ssot.Attribute{
@@ -155,6 +173,7 @@ var PostgresMirror = ssot.Object{
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
+	PreviewFeature:         true,
 	// CREATE_MIRROR takes its arguments in a nested request, which has the With* methods the create helpers call.
 	SdkCreateRequestObjectName: "PostgresMirrorArguments",
 	Generators: []ssot.GeneratorOption{
@@ -171,6 +190,7 @@ var PostgresMirror = ssot.Object{
 		ssot.WithShowByIdInSdk(ssot.Omitted()),
 		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.Omitted()),
+		ssot.WithDescribeOutputSchema(ssot.ExtCall()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),
 		ssot.WithSetStateToValuesFromConfig(ssot.ExtCall()),
 	},

@@ -28,6 +28,23 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(new feature)* Postgres mirror resource and data source
+
+We have added a new preview resource, [`snowflake_postgres_mirror`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_mirror), for managing [Postgres data mirrors](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring), which replicate Postgres tables into a Snowflake database. Changes to `postgres_tables`, `postgres_schemas`, `refresh_interval`, and `warehouse` are applied in place with `ALTER_MIRROR`, without copying the existing tables again. `terraform apply` returns before the initial copy of the tables finishes. Existing mirrors can be imported by name.
+
+If you manage a mirror with `snowflake_execute` calling `CREATE_MIRROR`, every change to `execute` replaces that resource: it runs your `revert` statement and calls `CREATE_MIRROR` again. With a `revert` that calls `DROP_MIRROR`, this drops the target database and copies all tables again. To move to the new resource without that, remove the `snowflake_execute` resource from the state with `terraform state rm`, remove its block from the configuration, and import the mirror by name into `snowflake_postgres_mirror`.
+
+We have also added a new preview data source, [`snowflake_postgres_mirrors`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/postgres_mirrors), for listing mirrors with `LIST_MIRRORS`. It supports filtering by `postgres_instance`. `with_describe` is on by default and runs `DESCRIBE_MIRROR` for each mirror.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_postgres_mirror_resource` for `snowflake_postgres_mirror`;
+- `snowflake_postgres_mirrors_datasource` for `snowflake_postgres_mirrors`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
+Reference: [#5229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5229).
+
 ### *(new feature)* Replication group resources and data source
 
 We have added two new preview resources for [replication groups](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group). [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) manages the group in the source account. [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) manages a replica in the target account. `allowed_accounts` is the list of target accounts. Snowflake also includes the source account, and the resource omits that account from state. `object_types` and the allowed-object lists are changed in one ALTER, and `comment`, `replication_schedule`, and `error_integration` are changed in another.

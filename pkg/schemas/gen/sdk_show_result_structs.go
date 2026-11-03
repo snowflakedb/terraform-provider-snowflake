@@ -89,6 +89,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PasswordPolicy{}},
 	{ObjectStruct: sdk.PolicyReference{}},
 	{ObjectStruct: sdk.PostgresInstance{}, ManualFields: []string{"is_highly_available"}},
+	{ObjectStruct: sdk.PostgresMirror{}},
 	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments_old", "return_type_old"}},
 	{ObjectStruct: sdk.ReplicationAccount{}},
 	{ObjectStruct: sdk.ReplicationDatabase{}},

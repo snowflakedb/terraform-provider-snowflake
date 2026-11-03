@@ -8,6 +8,7 @@ import (
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/stretchr/testify/require"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -507,6 +508,44 @@ func TestAcc_PostgresMirror_ExternalVolumeWithoutIceberg(t *testing.T) {
 			{
 				Config:      config.FromModels(t, withSnowflakeTargetTableType),
 				ExpectError: regexp.MustCompile("ExternalVolume can only be set when TargetTableType is ICEBERG"),
+			},
+		},
+	})
+}
+
+func TestAcc_PostgresMirror_RefreshIntervalValidations(t *testing.T) {
+	instance := testClient().PostgresMirror.FixtureInstance(t)
+
+	name := testClient().Ids.RandomPostgresMirrorName()
+	targetDatabase := testClient().Ids.RandomAccountObjectIdentifier()
+
+	newModel := func(interval map[string]tfconfig.Variable) *model.PostgresMirrorModel {
+		return model.PostgresMirror("test", name, helpers.PostgresMirrorFixtureDatabase, instance, targetDatabase.Name()).
+			WithPostgresTables(helpers.PostgresMirrorFixtureTable1).
+			WithRefreshIntervalValue(tfconfig.ObjectVariable(interval))
+	}
+	twoUnits := newModel(map[string]tfconfig.Variable{
+		"minutes": tfconfig.IntegerVariable(1),
+		"seconds": tfconfig.IntegerVariable(30),
+	})
+	noUnit := newModel(map[string]tfconfig.Variable{
+		"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+	})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.PostgresMirror),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, twoUnits),
+				ExpectError: regexp.MustCompile("conflicts with refresh_interval.0.seconds"),
+			},
+			{
+				Config:      config.FromModels(t, noUnit),
+				ExpectError: regexp.MustCompile(`"refresh_interval.0.hours": one of\s+` + "`refresh_interval.0.hours,refresh_interval.0.minutes,refresh_interval.0.seconds`"),
 			},
 		},
 	})
