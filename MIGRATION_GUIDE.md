@@ -158,6 +158,14 @@ This affects only new imports of these resources. Resources that are already in 
 
 When a resource starts supporting `IMPORT_PERMISSIVE_MODE`, it stops honoring `IMPORT_BOOLEAN_DEFAULT`, and this guide lists it. After all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
 
+### *(bug fix)* `snowflake_object_parameter` unsets a parameter whose Snowflake default is empty
+
+Destroying [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) resets the parameter on the object. When the Snowflake default is an empty string, `SET` does not emit that value, so the parameter stayed set. Destroy now runs `UNSET` in that case. A parameter whose default is not empty is still reset with `SET`.
+
+This applies to object-level parameters (`on_account = false`) while `OBJECT_PARAMETER_UNSET_ON_DELETE` is disabled. With that experiment enabled, destroy already unsets every parameter.
+
+No configuration changes are required. After upgrading, destroying a resource whose parameter default is an empty string, such as `QUERY_TAG` on a task, clears the parameter.
+
 ### *(bug fix)* `snowflake_authentication_policy` detects external changes to `client_policy`, `mfa_policy`, `pat_policy`, and `workload_identity_policy`
 
 Previously, [`snowflake_authentication_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/authentication_policy) didn't detect changes made outside Terraform to the `client_policy`, `mfa_policy`, `pat_policy`, and `workload_identity_policy` blocks. The plan showed no changes, and the values in Snowflake stayed different from your configuration.

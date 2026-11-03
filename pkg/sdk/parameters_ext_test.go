@@ -29,6 +29,14 @@ func TestParameters_ShowParameters(t *testing.T) {
 		assertOptsValidAndSqlEquals(t, opts, "SHOW PARAMETERS LIKE 'test' IN ACCOUNT")
 	})
 
+	t.Run("in table", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		opts := &ShowParametersOptions{
+			In: &ParametersIn{Table: id},
+		}
+		assertOptsValidAndSqlEqualsf(t, opts, "SHOW PARAMETERS IN TABLE %s", id.FullyQualifiedName())
+	})
+
 	t.Run("in pipe", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
 		opts := &ShowParametersOptions{

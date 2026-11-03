@@ -583,7 +583,8 @@ func (v *parameters) ShowObjectParameter(ctx context.Context, parameter ObjectPa
 		opts.In.Schema = object.Name.(DatabaseObjectIdentifier)
 	case ObjectTypeTask:
 		opts.In.Task = object.Name.(SchemaObjectIdentifier)
-	case ObjectTypeTable:
+	// Hybrid and Iceberg tables are shown with IN TABLE. IN HYBRID TABLE and IN ICEBERG TABLE are rejected.
+	case ObjectTypeTable, ObjectTypeHybridTable, ObjectTypeIcebergTable:
 		opts.In.Table = object.Name.(SchemaObjectIdentifier)
 	case ObjectTypeUser:
 		opts.In.User = object.Name.(AccountObjectIdentifier)
