@@ -57,3 +57,12 @@ func (c *BackupPolicyClient) Alter(t *testing.T, request *sdk.AlterBackupPolicyR
 	t.Helper()
 	require.NoError(t, c.client().Alter(context.Background(), request))
 }
+
+func (c *BackupPolicyClient) Create(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
+	t.Helper()
+	err := c.client().Create(context.Background(), sdk.NewCreateBackupPolicyRequest(id).WithExpireAfterDays(7))
+	require.NoError(t, err)
+	return func() {
+		require.NoError(t, c.client().DropSafely(context.Background(), id))
+	}
+}

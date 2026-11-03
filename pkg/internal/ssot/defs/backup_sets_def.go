@@ -246,6 +246,9 @@ var BackupSet = ssot.Object{
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithResource(),
+		ssot.WithModel(),
+		ssot.WithResourceAssert(),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	// backup_policy and the FOR targets are not SHOW columns, so the generated diff does not
 	// mark show_output computed when they change. The extra diff watches those attributes.
