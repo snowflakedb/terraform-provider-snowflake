@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"time"
+	"uuid"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -86,13 +86,10 @@ func Execute() *schema.Resource {
 func CreateExecute(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
 
-	id, err := uuid.GenerateUUID()
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	id := uuid.NewV4().String()
 
 	executeStatement := d.Get("execute").(string)
-	_, err = client.ExecUnsafe(ctx, executeStatement)
+	_, err := client.ExecUnsafe(ctx, executeStatement)
 	if err != nil {
 		return diag.FromErr(err)
 	}

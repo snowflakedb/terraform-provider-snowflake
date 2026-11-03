@@ -4,11 +4,11 @@ import (
 	"log"
 	"os"
 	"strings"
+	"uuid"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 
 	"github.com/brianvoe/gofakeit/v6"
-	"github.com/hashicorp/go-uuid"
 )
 
 // generatedRandomValue is used to mask random values in GitHub Action logs.
@@ -25,8 +25,7 @@ func init() {
 }
 
 func UUID() string {
-	v, _ := uuid.GenerateUUID()
-	return v
+	return uuid.NewV4().String()
 }
 
 func Comment() string {

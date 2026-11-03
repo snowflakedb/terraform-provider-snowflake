@@ -9,10 +9,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"uuid"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
-	"github.com/hashicorp/go-uuid"
 )
 
 // Backward-compatible enum constant aliases.
@@ -266,10 +266,7 @@ func (v *warehouses) CreateInteractivePreservingSession(ctx context.Context, req
 // one selected. There is no direct syntax for this, so it creates a minimal temporary warehouse (which
 // implicitly becomes the session's current warehouse) and drops it again, which clears CURRENT_WAREHOUSE().
 func (v *warehouses) clearSessionWarehouse(ctx context.Context) error {
-	suffix, err := uuid.GenerateUUID()
-	if err != nil {
-		return err
-	}
+	suffix := uuid.NewV4().String()
 	tempId := NewAccountObjectIdentifier(fmt.Sprintf("TF_TEMP_%s", strings.ReplaceAll(suffix, "-", "_")))
 
 	if err := v.Create(ctx, NewCreateWarehouseRequest(tempId).WithWarehouseSize(WarehouseSizeXSmall).WithInitiallySuspended(true)); err != nil {

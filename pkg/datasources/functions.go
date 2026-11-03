@@ -79,7 +79,7 @@ func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta any)
 	schemaName := d.Get("schema").(string)
 
 	request := sdk.NewShowFunctionRequest()
-	request.WithIn(sdk.ExtendedIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)}})
+	request.WithIn(sdk.ExtendedIn{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)})
 	functions, err := client.Functions.Show(ctx, request)
 	if err != nil {
 		id := d.Id()

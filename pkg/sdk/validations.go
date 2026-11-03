@@ -77,8 +77,8 @@ func valueSet(value any) bool {
 	case reflect.Invalid:
 		return false
 	case reflect.Struct:
-		if _, ok := reflectedValue.Interface().(ObjectIdentifier); ok {
-			return ValidObjectIdentifier(reflectedValue.Interface().(ObjectIdentifier))
+		if id, ok := reflect.TypeAssert[ObjectIdentifier](reflectedValue); ok {
+			return ValidObjectIdentifier(id)
 		}
 		return reflectedValue.Interface() != nil
 	}

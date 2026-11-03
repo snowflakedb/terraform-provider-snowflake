@@ -110,7 +110,7 @@ func init() {
 			case_PasswordPolicies_sql_Show_all,
 			func(opts *ShowPasswordPolicyOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 				opts.StartsWith = new("starts-with-pattern")
 				opts.Limit = &LimitFrom{Rows: new(10), From: new("limit-from")}
 			},
@@ -125,7 +125,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_PasswordPolicies_sql_Show_In,
 			func(opts *ShowPasswordPolicyOptions) {
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			"SHOW PASSWORD POLICIES IN SCHEMA %s", id.SchemaId().FullyQualifiedName(),
 		).
@@ -148,7 +148,7 @@ func init() {
 			"sql_Show_Like_In_Account",
 			func(opts *ShowPasswordPolicyOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW PASSWORD POLICIES LIKE '%s' IN ACCOUNT", id.Name(),
 		).
@@ -156,7 +156,7 @@ func init() {
 			"sql_Show_Like_In_Database",
 			func(opts *ShowPasswordPolicyOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &ExtendedIn{In: In{Database: databaseId}}
+				opts.In = &ExtendedIn{Database: databaseId}
 			},
 			"SHOW PASSWORD POLICIES LIKE '%s' IN DATABASE %s",
 			id.Name(), databaseId.FullyQualifiedName(),

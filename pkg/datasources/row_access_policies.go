@@ -128,12 +128,12 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 	if v, ok := d.GetOk("in"); ok {
 		in := v.([]any)[0].(map[string]any)
 		if v, ok := in["account"]; ok && v.(bool) {
-			req.WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}})
+			req.WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)})
 		}
 		if v, ok := in["database"]; ok {
 			database := v.(string)
 			if database != "" {
-				req.WithIn(sdk.ExtendedIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(database)}})
+				req.WithIn(sdk.ExtendedIn{Database: sdk.NewAccountObjectIdentifier(database)})
 			}
 		}
 		if v, ok := in["schema"]; ok {
@@ -143,7 +143,7 @@ func ReadRowAccessPolicies(ctx context.Context, d *schema.ResourceData, meta any
 				if err != nil {
 					return diag.FromErr(err)
 				}
-				req.WithIn(sdk.ExtendedIn{In: sdk.In{Schema: schemaId}})
+				req.WithIn(sdk.ExtendedIn{Schema: schemaId})
 			}
 		}
 		if v, ok := in["application"]; ok {

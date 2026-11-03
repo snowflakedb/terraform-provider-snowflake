@@ -51,7 +51,7 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
 	request := NewShowAuthenticationPolicyRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	authenticationPolicies, err := v.Show(ctx, request)
 	if err != nil {

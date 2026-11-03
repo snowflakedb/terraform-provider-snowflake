@@ -203,7 +203,7 @@ func init() {
 			case_AuthenticationPolicies_sql_Show_all,
 			func(opts *ShowAuthenticationPolicyOptions) {
 				opts.Like = &Like{Pattern: new("like-pattern")}
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 				opts.StartsWith = new("starts-with-pattern")
 				opts.Limit = &LimitFrom{Rows: new(10), From: new("limit-from")}
 			},
@@ -218,7 +218,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_AuthenticationPolicies_sql_Show_In,
 			func(opts *ShowAuthenticationPolicyOptions) {
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			"SHOW AUTHENTICATION POLICIES IN SCHEMA %s", id.SchemaId().FullyQualifiedName(),
 		).

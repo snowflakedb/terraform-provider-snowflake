@@ -21,16 +21,14 @@ func Test_commonFields(t *testing.T) {
 
 func Test_NewSpanID(t *testing.T) {
 	t.Run("has UUID length", func(t *testing.T) {
-		id, err := NewSpanID()
-		require.NoError(t, err)
+		id := NewSpanID()
 		require.Len(t, id, 36)
 	})
 
 	t.Run("subsequent ids are unique", func(t *testing.T) {
 		ids := make(map[string]struct{})
 		for range 100 {
-			id, err := NewSpanID()
-			require.NoError(t, err)
+			id := NewSpanID()
 			require.NotContains(t, ids, id)
 			ids[id] = struct{}{}
 		}

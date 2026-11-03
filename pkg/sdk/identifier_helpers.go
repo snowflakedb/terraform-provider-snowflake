@@ -290,9 +290,9 @@ func NewSchemaObjectIdentifierFromFullyQualifiedName(fullyQualifiedName string) 
 
 	// this is either a function or procedure
 	if strings.HasSuffix(parts[2], ")") {
-		idx := strings.LastIndex(parts[2], "(")
-		id.name = strings.Trim(parts[2][:idx], `"`)
-		strArgs := strings.Split(strings.Trim(parts[2][idx+1:], `)`), ",")
+		namePart, argsPart, _ := strings.CutLast(parts[2], "(")
+		id.name = strings.Trim(namePart, `"`)
+		strArgs := strings.Split(strings.Trim(argsPart, `)`), ",")
 		id.arguments = make([]DataType, 0)
 		for _, arg := range strArgs {
 			trimmedArg := strings.TrimSpace(strings.Trim(arg, `"`))

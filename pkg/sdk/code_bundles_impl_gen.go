@@ -51,7 +51,7 @@ func (v *codeBundles) Show(ctx context.Context, request *ShowCodeBundleRequest) 
 
 func (v *codeBundles) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*CodeBundle, error) {
 	request := NewShowCodeBundleRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(ExtendedIn{Schema: id.SchemaId()})
 	codeBundles, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err

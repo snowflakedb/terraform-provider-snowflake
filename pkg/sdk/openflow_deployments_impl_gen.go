@@ -187,7 +187,7 @@ func ToOpenflowDeploymentParametersDetails(params []*Parameter) (*OpenflowDeploy
 	byKey := parametersByKey(params)
 	var d OpenflowDeploymentParametersDetails
 	if err := errors.Join(
-		fillTypedParameter(byKey["EVENT_TABLE"], ParseSchemaObjectIdentifier, &d.EventTable),
+		byKey["EVENT_TABLE"].fillTyped(ParseSchemaObjectIdentifier, &d.EventTable),
 	); err != nil {
 		return nil, err
 	}

@@ -208,7 +208,6 @@ func getCallerInfo(skip int) (int, string) {
 }
 
 func writeTree(e error, builder *strings.Builder, indent int) {
-	var sdkErr *Error
 	if joinedErr, ok := e.(interface{ Unwrap() []error }); ok { //nolint:all
 		errs := joinedErr.Unwrap()
 		for i, err := range errs {
@@ -217,7 +216,7 @@ func writeTree(e error, builder *strings.Builder, indent int) {
 			}
 			writeTree(err, builder, indent)
 		}
-	} else if errors.As(e, &sdkErr) {
+	} else if sdkErr, ok := errors.AsType[*Error](e); ok {
 		builder.WriteString(strings.Repeat(fmt.Sprintf("%b ", errorIndentRune), indent) + fmt.Sprintf("[%s:%d] %s", sdkErr.file, sdkErr.line, sdkErr.message))
 		for _, err := range sdkErr.nestedErrors {
 			builder.WriteByte('\n')
