@@ -140,12 +140,12 @@ func (r alertsRow) convert() (*Alert, error) {
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		Schedule:     r.Schedule,
 		Condition:    r.Condition,
 		Action:       r.Action,
 	}
 	mapNullString(&result.Comment, r.Comment)
-	mapNullStringToNonNullableField(&result.Warehouse, r.Warehouse)
+	mapNullStringWithMapping(&result.Warehouse, r.Warehouse, ParseAccountObjectIdentifier)
+	mapNullString(&result.Schedule, r.Schedule)
 	mapStringWithMapping(&result.State, r.State, ToAlertState)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	return result, nil
@@ -165,12 +165,12 @@ func (r alertDescRow) convert() (*AlertDetails, error) {
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		Schedule:     r.Schedule,
 		State:        r.State,
 		Condition:    r.Condition,
 		Action:       r.Action,
 	}
 	mapNullString(&result.Comment, r.Comment)
-	mapNullStringToNonNullableField(&result.Warehouse, r.Warehouse)
+	mapNullStringWithMapping(&result.Warehouse, r.Warehouse, ParseAccountObjectIdentifier)
+	mapNullString(&result.Schedule, r.Schedule)
 	return result, nil
 }

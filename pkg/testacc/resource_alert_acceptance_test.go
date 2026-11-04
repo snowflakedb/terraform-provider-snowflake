@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
 	"testing"
@@ -11,9 +12,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -26,15 +30,18 @@ func TestAcc_Alert_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	warehouseName := testClient().Ids.WarehouseId().Name()
 
-	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(5)
 
-	complete := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	complete := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(5).
 		WithEnabled(true).
 		WithComment("initial")
 
-	updated := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 3", "SELECT 2", warehouseName).
+	updated := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 3", "SELECT 2").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(15).
 		WithEnabled(true).
 		WithComment("updated")
@@ -49,16 +56,34 @@ func TestAcc_Alert_BasicUseCase(t *testing.T) {
 			HasActionString("SELECT 1").
 			HasEnabled(false),
 		newAlertObjectAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(sdk.AlertStateSuspended),
 		newAlertDetailAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
+			HasCondition("SELECT 1").
+			HasAction("SELECT 1").
+			HasState(string(sdk.AlertStateSuspended)),
+		resourceshowoutputassert.AlertShowOutput(t, ref).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
+			HasSchedule("5 MINUTE").
+			HasComment("").
+			HasCondition("SELECT 1").
+			HasAction("SELECT 1").
+			HasState(sdk.AlertStateSuspended).
+			HasOwnerRoleType("ROLE"),
+		resourceshowoutputassert.AlertDescribeOutput(t, ref).
+			HasName(id.Name()).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
+			HasSchedule("5 MINUTE").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(string(sdk.AlertStateSuspended)),
@@ -72,14 +97,14 @@ func TestAcc_Alert_BasicUseCase(t *testing.T) {
 			HasActionString("SELECT 1").
 			HasEnabled(true),
 		newAlertObjectAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("initial").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(sdk.AlertStateStarted),
 		newAlertDetailAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("initial").
 			HasCondition("SELECT 1").
@@ -95,14 +120,14 @@ func TestAcc_Alert_BasicUseCase(t *testing.T) {
 			HasActionString("SELECT 3").
 			HasEnabled(true),
 		newAlertObjectAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("15 MINUTE").
 			HasComment("updated").
 			HasCondition("SELECT 2").
 			HasAction("SELECT 3").
 			HasState(sdk.AlertStateStarted),
 		newAlertDetailAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("15 MINUTE").
 			HasComment("updated").
 			HasCondition("SELECT 2").
@@ -235,17 +260,20 @@ func TestAcc_Alert_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	warehouseName := testClient().Ids.WarehouseId().Name()
 
-	complete := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	complete := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleCron("0 0 * * *", "UTC").
 		WithComment("complete").
 		WithEnabled(true)
 
-	updated := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 3", "SELECT 2", warehouseName).
+	updated := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 3", "SELECT 2").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleCron("0 1 * * *", "Europe/Warsaw").
 		WithComment("updated").
 		WithEnabled(false)
 
-	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(5)
 
 	ref := basic.ResourceReference()
@@ -259,14 +287,14 @@ func TestAcc_Alert_CompleteUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasAlertScheduleCron("0 0 * * *", "UTC"),
 		newAlertObjectAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("USING CRON 0 0 * * * UTC").
 			HasComment("complete").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(sdk.AlertStateStarted),
 		newAlertDetailAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("USING CRON 0 0 * * * UTC").
 			HasComment("complete").
 			HasCondition("SELECT 1").
@@ -283,14 +311,14 @@ func TestAcc_Alert_CompleteUseCase(t *testing.T) {
 			HasEnabled(false).
 			HasAlertScheduleCron("0 1 * * *", "Europe/Warsaw"),
 		newAlertObjectAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("USING CRON 0 1 * * * Europe/Warsaw").
 			HasComment("updated").
 			HasCondition("SELECT 2").
 			HasAction("SELECT 3").
 			HasState(sdk.AlertStateSuspended),
 		newAlertDetailAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("USING CRON 0 1 * * * Europe/Warsaw").
 			HasComment("updated").
 			HasCondition("SELECT 2").
@@ -307,14 +335,14 @@ func TestAcc_Alert_CompleteUseCase(t *testing.T) {
 			HasEnabled(false).
 			HasAlertScheduleInterval(5),
 		newAlertObjectAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(sdk.AlertStateSuspended),
 		newAlertDetailAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
@@ -435,13 +463,16 @@ func TestAcc_Alert_Replacement(t *testing.T) {
 	warehouse, cleanupWarehouse := testClient().Warehouse.CreateWarehouse(t)
 	t.Cleanup(cleanupWarehouse)
 
-	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(5)
 
-	renamed := model.Alert("test", renamedId.DatabaseName(), renamedId.SchemaName(), renamedId.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	renamed := model.Alert("test", renamedId.DatabaseName(), renamedId.SchemaName(), renamedId.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(5)
 
-	changedWarehouse := model.Alert("test", renamedId.DatabaseName(), renamedId.SchemaName(), renamedId.Name(), "SELECT 1", "SELECT 1", warehouse.Name).
+	changedWarehouse := model.Alert("test", renamedId.DatabaseName(), renamedId.SchemaName(), renamedId.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouse.Name).
 		WithAlertScheduleInterval(5)
 
 	ref := basic.ResourceReference()
@@ -454,14 +485,14 @@ func TestAcc_Alert_Replacement(t *testing.T) {
 			HasActionString("SELECT 1").
 			HasEnabled(false),
 		newAlertObjectAssertions(t, renamedId).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(sdk.AlertStateSuspended),
 		newAlertDetailAssertions(t, renamedId).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
@@ -477,14 +508,14 @@ func TestAcc_Alert_Replacement(t *testing.T) {
 			HasActionString("SELECT 1").
 			HasEnabled(false),
 		newAlertObjectAssertions(t, renamedId).
-			HasWarehouse(warehouse.Name).
+			HasWarehouse(warehouse.ID()).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(sdk.AlertStateSuspended),
 		newAlertDetailAssertions(t, renamedId).
-			HasWarehouse(warehouse.Name).
+			HasWarehouse(warehouse.ID()).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
@@ -510,11 +541,11 @@ func TestAcc_Alert_Replacement(t *testing.T) {
 				Config: config.FromModels(t, renamed),
 				Check:  assertThat(t, renamedAssertions...),
 			},
-			// Replace - change warehouse
+			// Update - change warehouse in place
 			{
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
 				Config: config.FromModels(t, changedWarehouse),
@@ -528,10 +559,12 @@ func TestAcc_Alert_SQLFormattingAndEmptyComment(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	warehouseName := testClient().Ids.WarehouseId().Name()
 
-	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	basic := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(5)
 
-	formatted := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	formatted := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleInterval(5).
 		WithCondition("select  1").
 		WithActionValue(config.MultilineWrapperVariable("select\n1")).
@@ -548,14 +581,14 @@ func TestAcc_Alert_SQLFormattingAndEmptyComment(t *testing.T) {
 			HasActionString("SELECT 1").
 			HasEnabled(false),
 		newAlertObjectAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
 			HasAction("SELECT 1").
 			HasState(sdk.AlertStateSuspended),
 		newAlertDetailAssertions(t, id).
-			HasWarehouse(warehouseName).
+			HasWarehouse(sdk.NewAccountObjectIdentifier(warehouseName)).
 			HasSchedule("5 MINUTE").
 			HasComment("").
 			HasCondition("SELECT 1").
@@ -592,11 +625,301 @@ func TestAcc_Alert_SQLFormattingAndEmptyComment(t *testing.T) {
 	})
 }
 
+func TestAcc_Alert_BasicUseCase_Serverless(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	warehouseId := testClient().Ids.WarehouseId()
+
+	serverless := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithAlertScheduleInterval(5)
+
+	withWarehouse := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouseSdk(warehouseId).
+		WithAlertScheduleInterval(5)
+
+	ref := serverless.ResourceReference()
+
+	serverlessAssertions := []assert.TestCheckFuncProvider{
+		newAlertResourceAssertions(t, ref, id).
+			HasWarehouseEmpty(),
+		newAlertObjectAssertions(t, id).
+			HasNoWarehouse().
+			HasSchedule("5 MINUTE"),
+		assert.Check(resource.TestCheckResourceAttr(ref, "show_output.0.warehouse", "")),
+	}
+
+	withWarehouseAssertions := []assert.TestCheckFuncProvider{
+		newAlertResourceAssertions(t, ref, id).
+			HasWarehouseString(warehouseId.Name()),
+		newAlertObjectAssertions(t, id).
+			HasWarehouse(warehouseId),
+		resourceshowoutputassert.AlertShowOutput(t, ref).
+			HasWarehouse(warehouseId),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Alert),
+		Steps: []resource.TestStep{
+			// Create - without warehouse
+			{
+				Config: config.FromModels(t, serverless),
+				Check:  assertThat(t, serverlessAssertions...),
+			},
+			// Import - without warehouse
+			{
+				Config:            config.FromModels(t, serverless),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - set warehouse
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withWarehouse),
+				Check:  assertThat(t, withWarehouseAssertions...),
+			},
+			// Update - unset warehouse
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, serverless),
+				Check:  assertThat(t, serverlessAssertions...),
+			},
+			// Update - external warehouse change
+			{
+				PreConfig: func() {
+					testClient().Alert.Alter(t, sdk.NewAlterAlertRequest(id).WithSet(*sdk.NewAlertSetRequest().WithWarehouse(warehouseId)))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, serverless),
+				Check:  assertThat(t, serverlessAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_Alert_CompleteUseCase_Serverless(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	warehouseId := testClient().Ids.WarehouseId()
+
+	serverless := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithAlertScheduleInterval(5)
+
+	withWarehouse := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouseSdk(warehouseId).
+		WithAlertScheduleInterval(5)
+
+	ref := serverless.ResourceReference()
+
+	serverlessAssertions := []assert.TestCheckFuncProvider{
+		newAlertResourceAssertions(t, ref, id).
+			HasWarehouseEmpty(),
+		newAlertObjectAssertions(t, id).
+			HasNoWarehouse().
+			HasSchedule("5 MINUTE"),
+		assert.Check(resource.TestCheckResourceAttr(ref, "show_output.0.warehouse", "")),
+	}
+
+	withWarehouseAssertions := []assert.TestCheckFuncProvider{
+		newAlertResourceAssertions(t, ref, id).
+			HasWarehouseString(warehouseId.Name()),
+		newAlertObjectAssertions(t, id).
+			HasWarehouse(warehouseId),
+		resourceshowoutputassert.AlertShowOutput(t, ref).
+			HasWarehouse(warehouseId),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Alert),
+		Steps: []resource.TestStep{
+			// Create - without warehouse
+			{
+				Config: config.FromModels(t, serverless),
+				Check:  assertThat(t, serverlessAssertions...),
+			},
+			// Import - without warehouse
+			{
+				Config:            config.FromModels(t, serverless),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update - set warehouse
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withWarehouse),
+				Check:  assertThat(t, withWarehouseAssertions...),
+			},
+			// Update - unset warehouse
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, serverless),
+				Check:  assertThat(t, serverlessAssertions...),
+			},
+			// Update - external warehouse change
+			{
+				PreConfig: func() {
+					testClient().Alert.Alter(t, sdk.NewAlterAlertRequest(id).WithSet(*sdk.NewAlertSetRequest().WithWarehouse(warehouseId)))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, serverless),
+				Check:  assertThat(t, serverlessAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_Alert_WithoutSchedule(t *testing.T) {
+	table, tableCleanup := testClient().Table.CreateWithChangeTracking(t)
+	t.Cleanup(tableCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	warehouseId := testClient().Ids.WarehouseId()
+	condition := fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName())
+
+	withoutSchedule := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", condition).
+		WithWarehouseSdk(warehouseId)
+
+	withSchedule := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", condition).
+		WithWarehouseSdk(warehouseId).
+		WithAlertScheduleInterval(5)
+
+	ref := withoutSchedule.ResourceReference()
+
+	withoutScheduleAssertions := []assert.TestCheckFuncProvider{
+		newAlertResourceAssertions(t, ref, id).
+			HasConditionString(condition).
+			HasAlertScheduleEmpty(),
+		newAlertObjectAssertions(t, id).
+			HasNoSchedule(),
+		assert.Check(resource.TestCheckResourceAttr(ref, "show_output.0.schedule", "")),
+	}
+
+	withScheduleAssertions := []assert.TestCheckFuncProvider{
+		newAlertResourceAssertions(t, ref, id).
+			HasAlertScheduleInterval(5),
+		newAlertObjectAssertions(t, id).
+			HasSchedule("5 MINUTE"),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Alert),
+		Steps: []resource.TestStep{
+			// Create - without schedule
+			{
+				Config: config.FromModels(t, withoutSchedule),
+				Check:  assertThat(t, withoutScheduleAssertions...),
+			},
+			// Import - without schedule
+			{
+				Config:            config.FromModels(t, withoutSchedule),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Replace - add schedule
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, withSchedule),
+				Check:  assertThat(t, withScheduleAssertions...),
+			},
+			// Replace - remove schedule
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Config: config.FromModels(t, withoutSchedule),
+				Check:  assertThat(t, withoutScheduleAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_Alert_migrateFromVersion_2_22_1(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	warehouseName := testClient().Ids.WarehouseId().Name()
+
+	alertModel := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
+		WithAlertScheduleInterval(5).
+		WithComment("migration")
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.AlertResource))
+	ref := alertModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Alert),
+		Steps: []resource.TestStep{
+			// Create - previous provider with the pipe-separated id
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.22.1"),
+				Config:            config.FromModels(t, providerModel, alertModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id)),
+				),
+			},
+			// Upgrade - the state upgrader rewrites the id
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, providerModel, alertModel),
+				Check: assertThat(t,
+					newAlertResourceAssertions(t, ref, id).
+						HasCommentString("migration").
+						HasAlertScheduleInterval(5),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", id.FullyQualifiedName())),
+					resourceshowoutputassert.AlertShowOutput(t, ref).
+						HasSchedule("5 MINUTE"),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Alert_Validations(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	warehouseName := testClient().Ids.WarehouseId().Name()
 
-	bothSchedules := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1", warehouseName).
+	bothSchedules := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
 		WithAlertScheduleIntervalAndCron(5, "0 0 * * *", "UTC")
 
 	resource.Test(t, resource.TestCase{
@@ -621,7 +944,8 @@ func TestAcc_Alert_Issue3117(t *testing.T) {
 	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(warehouseId))
 	t.Cleanup(warehouseCleanup)
 
-	alertModel := model.Alert("test_alert", id.DatabaseName(), id.SchemaName(), id.Name(), "select 0 as c", "select 0 as c", warehouse.Name).
+	alertModel := model.Alert("test_alert", id.DatabaseName(), id.SchemaName(), id.Name(), "select 0 as c", "select 0 as c").
+		WithWarehouse(warehouse.Name).
 		WithAlertScheduleInterval(1).
 		WithEnabled(true).
 		WithComment("Alert config for GH issue 3117")
@@ -664,12 +988,14 @@ func TestAcc_Alert_Issue3117_PatternMatching(t *testing.T) {
 
 	warehouseId := testClient().Ids.WarehouseId()
 
-	alertModel1 := model.Alert("test_alert_1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), "select 0 as c", "select 0 as c", warehouseId.Name()).
+	alertModel1 := model.Alert("test_alert_1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), "select 0 as c", "select 0 as c").
+		WithWarehouse(warehouseId.Name()).
 		WithAlertScheduleInterval(1).
 		WithEnabled(true).
 		WithComment("Alert config for GH issue 3117")
 
-	alertModel2 := model.Alert("test_alert_2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), "select 0 as c", "select 0 as c", warehouseId.Name()).
+	alertModel2 := model.Alert("test_alert_2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), "select 0 as c", "select 0 as c").
+		WithWarehouse(warehouseId.Name()).
 		WithAlertScheduleInterval(1).
 		WithEnabled(true).
 		WithComment("Alert config for GH issue 3117")
@@ -713,7 +1039,8 @@ func TestAcc_Alert_Issue3117_IgnoreQuotedIdentifierCase(t *testing.T) {
 
 	id := testClient().Ids.NewSchemaObjectIdentifierInSchema("small_"+testClient().Ids.Alpha(), schema.ID())
 
-	alertModel := model.Alert("test_alert", id.DatabaseName(), id.SchemaName(), id.Name(), "select 0 as c", "select 0 as c", testClient().Ids.WarehouseId().Name()).
+	alertModel := model.Alert("test_alert", id.DatabaseName(), id.SchemaName(), id.Name(), "select 0 as c", "select 0 as c").
+		WithWarehouse(testClient().Ids.WarehouseId().Name()).
 		WithAlertScheduleInterval(1).
 		WithEnabled(true).
 		WithComment("Alert config for GH issue 3117")

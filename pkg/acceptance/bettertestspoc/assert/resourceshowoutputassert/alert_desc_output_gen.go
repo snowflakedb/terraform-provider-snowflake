@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type AlertDescribeOutputAssert struct {
@@ -65,8 +66,8 @@ func (a *AlertDescribeOutputAssert) HasComment(expected string) *AlertDescribeOu
 	return a
 }
 
-func (a *AlertDescribeOutputAssert) HasWarehouse(expected string) *AlertDescribeOutputAssert {
-	a.StringValueSet("warehouse", expected)
+func (a *AlertDescribeOutputAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *AlertDescribeOutputAssert {
+	a.StringValueSet("warehouse", expected.Name())
 	return a
 }
 

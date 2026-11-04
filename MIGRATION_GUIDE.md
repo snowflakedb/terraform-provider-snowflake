@@ -28,6 +28,44 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.22.x ➞ v2.23.0
 
+### *(breaking change)* `snowflake_alert` reworked
+
+The preview [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) resource now follows the same rules as the newest preview resources. This entry lists every change.
+
+#### Identifier format
+
+The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<alert_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<alert_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
+
+If you reference `snowflake_alert.<name>.id` in other resources, the referenced value changes too. Import uses the new format:
+
+```shell
+terraform import snowflake_alert.example '"<database_name>"."<schema_name>"."<alert_name>"'
+```
+
+#### New `show_output` and `describe_output` fields
+
+The resource exposes the results of `SHOW ALERTS` and `DESCRIBE ALERT` in the new computed `show_output` and `describe_output` fields. `show_output.schedule` and `describe_output.schedule` keep the schedule as the string returned by Snowflake, for example `5 MINUTE` or `USING CRON 0 * * * * UTC`. No configuration changes are required. The first plan after the upgrade fills these fields in from the refresh.
+
+#### `warehouse` is optional and can be changed in place
+
+`warehouse` is now optional. Without it, the alert uses [serverless compute](https://docs.snowflake.com/en/user-guide/alerts). Creating, resuming, or switching to a serverless alert requires the `EXECUTE MANAGED ALERT` privilege. Using a named warehouse requires its `USAGE` privilege. Changing `warehouse` used to recreate the alert. It is now `ALTER ALERT ... SET WAREHOUSE`, and removing it from the configuration is `ALTER ALERT ... UNSET WAREHOUSE`, which turns the alert serverless. The field is validated as an identifier, and differences that come only from identifier quoting are suppressed.
+
+No configuration changes are required. Remove `warehouse` only if you want a serverless alert.
+
+#### `alert_schedule` is optional
+
+`alert_schedule` keeps its shape (`cron { expression, time_zone }` or `interval`), and it is now optional. Without it, the alert runs when new rows arrive in the tables of the condition ([alerts on new data](https://docs.snowflake.com/en/user-guide/alerts)). Such tables need change tracking.
+
+Snowflake cannot turn a scheduled alert into an alert on new data, or the other way around. Adding or removing `alert_schedule` therefore recreates the alert. Changing the values inside `alert_schedule` still updates the alert in place.
+
+#### External changes are detected
+
+Each read now sets `warehouse`, `comment`, `alert_schedule`, `condition`, `action`, and `enabled` from `SHOW ALERTS`. A change made outside of Terraform, including resuming or suspending the alert, shows up in the next plan and is reverted on apply. Before, an external change to the schedule was ignored when Snowflake returned no schedule.
+
+#### Import
+
+Import reads the alert with `SHOW ALERTS` and fails when it does not exist. Before, import accepted any id and the failure surfaced only on the next refresh.
+
 ### *(new feature)* Postgres mirror resource and data source
 
 We have added a new preview resource, [`snowflake_postgres_mirror`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_mirror), for managing [Postgres data mirrors](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring), which replicate Postgres tables into a Snowflake database. Changes to `postgres_tables`, `postgres_schemas`, `refresh_interval`, and `warehouse` are applied in place with `ALTER_MIRROR`, without copying the existing tables again. `terraform apply` returns before the initial copy of the tables finishes. Existing mirrors can be imported by name.

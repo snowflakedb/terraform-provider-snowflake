@@ -6,13 +6,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -27,9 +32,36 @@ func Alert() *tfschema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AlertResource), TrackingDeleteWrapper(resources.Alert, DeleteAlert)),
 		Importer:      alertImporterExt,
 
-		CustomizeDiff: alertCustomizeDiffExt,
+		CustomizeDiff: alertCustomizeDiff,
 		Timeouts:      defaultTimeouts,
+		SchemaVersion: 1,
+		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+		StateUpgraders: []tfschema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+			},
+		},
 	}
+}
+
+func ImportAlert(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
+	id, err := alertParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	alert, err := meta.(*provider.Context).Client.Alerts.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := alertSetFieldsNotSetByReadExt(d, id, alert, importPermissiveMode); err != nil {
+		return nil, err
+	}
+	return []*tfschema.ResourceData{d}, nil
 }
 
 func CreateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
@@ -51,7 +83,7 @@ func CreateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeResourceIdentifier(id))
 	afterCreateDiags := alertAfterCreateExt(ctx, d, meta, id)
 	return append(afterCreateDiags, ReadAlertFunc(false)(ctx, d, meta)...)
 }
@@ -77,8 +109,19 @@ func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			}
 			return diag.FromErr(err)
 		}
+		alertDetails, err := meta.(*provider.Context).Client.Alerts.Describe(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
+		if err = setStateToValuesFromConfig(d, alertSchema, []string{
+			"warehouse",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.AlertToSchema(alert)}),
+			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.AlertDetailsToSchema(alertDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			alertSetConfigFieldsExt(ctx, d, meta, alert),
 		)
@@ -106,27 +149,39 @@ func UpdateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	if err := alertAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewAlertUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	afterAlterDiags := alertAfterAlterExt(ctx, d, meta, id)
 	return append(afterAlterDiags, ReadAlertFunc(false)(ctx, d, meta)...)
 }
+
+var alertCustomizeDiff = TrackingCustomDiffWrapper(resources.Alert, customdiff.All(
+	ComputedIfAnyAttributeChanged(alertSchema, ShowOutputAttributeName, "name", "comment", "warehouse", "alert_schedule", "condition", "action"),
+	ComputedIfAnyAttributeChanged(alertSchema, DescribeOutputAttributeName, "name", "comment", "warehouse", "alert_schedule", "condition", "action"),
+	alertForceNewIfScheduleAddedOrRemoved,
+))
 
 func alertParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
 }
 
 func alertParseId(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
+	return sdk.ParseSchemaObjectIdentifier(id)
 }
 
 func alertApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAlertRequest) error {
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+		accountObjectIdentifierAttributeCreateBuilder(d, "warehouse", request.WithWarehouse),
 	)
 }
 
 func DeleteAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	return ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		sdk.ParseSchemaObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.Alerts.DropSafely
 		},

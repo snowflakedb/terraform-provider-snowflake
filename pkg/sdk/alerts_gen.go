@@ -21,16 +21,16 @@ type Alerts interface {
 
 // CreateAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-alert.
 type CreateAlertOptions struct {
-	create      bool                    `ddl:"static" sql:"CREATE"`
-	OrReplace   *bool                   `ddl:"keyword" sql:"OR REPLACE"`
-	alert       bool                    `ddl:"static" sql:"ALERT"`
-	IfNotExists *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name        SchemaObjectIdentifier  `ddl:"identifier"`
-	Warehouse   AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
-	Schedule    string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Comment     *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	condition   AlertCondition          `ddl:"list,parentheses,no_comma" sql:"IF"`
-	action      string                  `ddl:"parameter,no_equals" sql:"THEN"`
+	create      bool                     `ddl:"static" sql:"CREATE"`
+	OrReplace   *bool                    `ddl:"keyword" sql:"OR REPLACE"`
+	alert       bool                     `ddl:"static" sql:"ALERT"`
+	IfNotExists *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name        SchemaObjectIdentifier   `ddl:"identifier"`
+	Warehouse   *AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
+	Schedule    *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
+	Comment     *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	condition   AlertCondition           `ddl:"list,parentheses,no_comma" sql:"IF"`
+	action      string                   `ddl:"parameter,no_equals" sql:"THEN"`
 }
 
 type AlertCondition struct {
@@ -90,7 +90,7 @@ type alertsRow struct {
 	Owner         string         `db:"owner"`
 	Comment       sql.NullString `db:"comment"`
 	Warehouse     sql.NullString `db:"warehouse"`
-	Schedule      string         `db:"schedule"`
+	Schedule      sql.NullString `db:"schedule"`
 	State         string         `db:"state"`
 	Condition     string         `db:"condition"`
 	Action        string         `db:"action"`
@@ -104,8 +104,8 @@ type Alert struct {
 	SchemaName    string
 	Owner         string
 	Comment       *string
-	Warehouse     string
-	Schedule      string
+	Warehouse     *AccountObjectIdentifier
+	Schedule      *string
 	State         AlertState
 	Condition     string
 	Action        string
@@ -135,7 +135,7 @@ type alertDescRow struct {
 	Owner        string         `db:"owner"`
 	Comment      sql.NullString `db:"comment"`
 	Warehouse    sql.NullString `db:"warehouse"`
-	Schedule     string         `db:"schedule"`
+	Schedule     sql.NullString `db:"schedule"`
 	State        string         `db:"state"`
 	Condition    string         `db:"condition"`
 	Action       string         `db:"action"`
@@ -148,8 +148,8 @@ type AlertDetails struct {
 	SchemaName   string
 	Owner        string
 	Comment      *string
-	Warehouse    string
-	Schedule     string
+	Warehouse    *AccountObjectIdentifier
+	Schedule     *string
 	State        string
 	Condition    string
 	Action       string

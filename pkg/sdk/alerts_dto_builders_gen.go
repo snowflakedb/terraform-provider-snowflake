@@ -4,15 +4,11 @@ package sdk
 
 func NewCreateAlertRequest(
 	name SchemaObjectIdentifier,
-	warehouse AccountObjectIdentifier,
-	schedule string,
 	condition AlertConditionRequest,
 	action string,
 ) *CreateAlertRequest {
 	s := CreateAlertRequest{}
 	s.name = name
-	s.Warehouse = warehouse
-	s.Schedule = schedule
 	s.condition = condition
 	s.action = action
 	return &s
@@ -25,6 +21,16 @@ func (s *CreateAlertRequest) WithOrReplace(orReplace bool) *CreateAlertRequest {
 
 func (s *CreateAlertRequest) WithIfNotExists(ifNotExists bool) *CreateAlertRequest {
 	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateAlertRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateAlertRequest {
+	s.Warehouse = &warehouse
+	return s
+}
+
+func (s *CreateAlertRequest) WithSchedule(schedule string) *CreateAlertRequest {
+	s.Schedule = &schedule
 	return s
 }
 

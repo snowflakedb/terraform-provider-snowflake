@@ -97,7 +97,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 	// resources using legacy identifier encoding (with pipes)
 	case resources.AccountAuthenticationPolicyAttachment,
 		resources.AccountPasswordPolicyAttachment,
-		resources.Alert,
 		resources.ApiIntegration,
 		resources.CortexSearchService,
 		resources.DynamicTable,
