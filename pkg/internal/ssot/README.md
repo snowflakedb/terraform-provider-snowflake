@@ -608,6 +608,54 @@ A SHOW pointer is passed through. No matching fields returns nil.
 Skipping a nested block does not panic. An object that also writes `show_output` in this hook, or that copies
 values from DESCRIBE, keeps `ExtCall`.
 
+#### Enabling all generators
+
+`WithAllGenerators(overrides...)` is one `GeneratorOption` that turns on everything an object normally has, then applies
+`overrides` in order. It enables:
+
+| Generator | Sides enabled |
+|---|---|
+| `WithSchema` | SHOW and DESCRIBE |
+| `WithObjectAssert` | SHOW and DESCRIBE |
+| `WithShowOutputAssert` | SHOW and DESCRIBE |
+| `WithResource` | - |
+| `WithModel` | - |
+| `WithResourceAssert` | - |
+| `WithObjectParametersAssert` | - |
+| `WithResourceParametersAssert` | - |
+
+The SDK (`WithSdk`) is not part of it. Pass `WithSdk(...)` next to it in `Generators`.
+
+An enabled generator that has no input for the object is skipped by its selector (no parameters, no SHOW or DESCRIBE
+columns, a `VariantBaseOnly` object, a variant that reuses the base), so the defaults are safe for a finished object. Do
+not use it for an object that is still being migrated: a generator that has input but cannot yet produce valid code for
+it (for example a model with a nested block that needs `ModelRequestType`) fails, and `Table` and `PostgresMirror`
+currently stay on individual settings for that reason.
+
+Overrides modify the defaults:
+
+- A `With*` option adds its settings on top, because every option sets its flag and appends to its lists. The
+  other side of the same generator stays on:
+
+  ```go
+  Generators: []ssot.GeneratorOption{
+      ssot.WithAllGenerators(
+          ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowListFields(&WarehouseInteractiveAttrs.Tables))),
+          ssot.WithModel(ssot.ModelMultiline(&PipeAttrs.CopyStatement)),
+      ),
+      ssot.WithSdk(ssot.SdkDefineFromSsot() /* ... */),
+  },
+  ```
+
+- A `Without*` option turns a generator off, or one side of it, and drops the settings that belong to it, so the
+  validation of skip, manual, list, and reuse settings does not fail on a side that is off. Whole generators:
+  `WithoutSchema`, `WithoutObjectAssert`, `WithoutShowOutputAssert`, `WithoutModel`, `WithoutResource`,
+  `WithoutResourceAssert`, `WithoutObjectParametersAssert`, `WithoutResourceParametersAssert`. One side:
+  `WithoutSchemaShow`, `WithoutSchemaDescribe`, `WithoutObjectAssertShow`, `WithoutObjectAssertDescribe`,
+  `WithoutShowOutputAssertShow`, `WithoutShowOutputAssertDescribe`.
+
+A later override wins over an earlier one, so `WithAllGenerators(WithoutModel(), WithModel())` has the model on.
+
 #### Variants that reuse the base SHOW row
 
 A variant (`VariantOf` set) whose SHOW row is the base's row, such as the catalog integration variants and

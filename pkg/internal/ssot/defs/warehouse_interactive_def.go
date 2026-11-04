@@ -114,18 +114,14 @@ var WarehouseInteractive = ssot.Object{
 	VariantEntityCreateName:    "INTERACTIVE WAREHOUSE",
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		// show_output.tables was released as a list. A set would break indexing, so SHOW stays TypeList.
-		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowListFields(&WarehouseInteractiveAttrs.Tables)), ssot.SchemaDescribe()),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(
-			ssot.ObjectAssertShowFromBase("ShowByIDInteractive"),
-			ssot.ObjectAssertShowSkipFields(&WarehouseInteractiveAttrs.Tables),
-		), ssot.ObjectAssertDescribe()),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
+		ssot.WithAllGenerators(
+			// show_output.tables was released as a list. A set would break indexing, so SHOW stays TypeList.
+			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowListFields(&WarehouseInteractiveAttrs.Tables)), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(
+				ssot.ObjectAssertShowFromBase("ShowByIDInteractive"),
+				ssot.ObjectAssertShowSkipFields(&WarehouseInteractiveAttrs.Tables),
+			), ssot.ObjectAssertDescribe()),
+		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseId(ssot.Generated()),

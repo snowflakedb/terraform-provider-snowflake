@@ -111,25 +111,22 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		CatalogIntegrationAwsGlueAttrs.CatalogSource,
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
-		ssot.WithResource(),
-		ssot.WithSchema(
-			ssot.SchemaShow(ssot.SchemaShowFromBase()),
-			ssot.SchemaDescribe(),
-		),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
-			ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeAwsGlue")),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(
+				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaDescribe(),
+			),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeAwsGlue")),
+			),
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputDescribe(),
+			),
 		),
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
-			ssot.ShowOutputDescribe(),
-		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

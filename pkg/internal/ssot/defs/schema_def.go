@@ -61,14 +61,11 @@ var Schema = ssot.Object{
 	IdentityNamesCreatedBySnowflake:     []string{"PUBLIC"},
 	AttributesModification:              true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(),
-			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+		ssot.WithAllGenerators(
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+				ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+			),
 		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
@@ -93,8 +90,6 @@ var Schema = ssot.Object{
 			ssot.SdkShowParameters(),
 			ssot.SdkShowParametersDetails(),
 		),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
 	},
 	Attributes: []ssot.Attribute{
 		SchemaAttrs.WithManagedAccess,

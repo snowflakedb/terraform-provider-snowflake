@@ -141,12 +141,9 @@ var Pipe = ssot.Object{
 		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithModel(ssot.ModelMultiline(&PipeAttrs.CopyStatement)),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+		ssot.WithAllGenerators(
+			ssot.WithModel(ssot.ModelMultiline(&PipeAttrs.CopyStatement)),
+		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
@@ -163,8 +160,6 @@ var Pipe = ssot.Object{
 			ssot.SdkShowParameters(),
 			ssot.SdkShowParametersDetails(),
 		),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
 	},
 	ComputedAttributes: []ssot.Attribute{
 		PipeAttrs.Owner,

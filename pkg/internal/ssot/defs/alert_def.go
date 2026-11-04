@@ -192,14 +192,7 @@ var Alert = ssot.Object{
 		"alertForceNewIfScheduleAddedOrRemoved",
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
-		ssot.WithResource(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+		ssot.WithAllGenerators(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),

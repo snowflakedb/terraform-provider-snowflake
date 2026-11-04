@@ -60,8 +60,7 @@ var ProjectionPolicy = ssot.Object{
 	IdentityHierarchyForceNew: true,
 	PreviewFeature:            true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
+		ssot.WithAllGenerators(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
@@ -80,12 +79,6 @@ var ProjectionPolicy = ssot.Object{
 				ssot.SdkDescribeDetailsFromIdentifier(),
 			),
 		),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithResource(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	// body is SET BODY -> and cannot share a SET with comment. The setter is WithSetBody.
 	// Generated ApplySetUnset would emit WithBody and put both fields on one request.

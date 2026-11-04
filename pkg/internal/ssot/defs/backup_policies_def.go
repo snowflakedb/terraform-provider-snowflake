@@ -102,8 +102,7 @@ var BackupPolicy = ssot.Object{
 		&BackupPolicyAttrs.ExpireAfterDays,
 	}},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
+		ssot.WithAllGenerators(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
@@ -118,12 +117,6 @@ var BackupPolicy = ssot.Object{
 			ssot.SdkAlter(ssot.SdkAlterWithoutIfExists()),
 			ssot.SdkDescribe(),
 		),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithResource(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	// The schedule is a block in Terraform and a string in SQL and SHOW, so create, set, unset, and read of it are in ext code.
 	// CREATE and SET need it in the same request as the other fields, and UNSET cannot clear schedule and expiration together.
