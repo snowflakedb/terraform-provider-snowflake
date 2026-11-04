@@ -43,7 +43,7 @@ var replicationGroupSecondarySchema = collections.MergeMaps(
 			Computed:    true,
 			Description: "Outputs the result of `SHOW REPLICATION GROUPS` for the given replication group secondary.",
 			Elem: &tfschema.Resource{
-				Schema: schemas.ShowReplicationGroupSecondarySchema,
+				Schema: schemas.ShowReplicationGroupSchema,
 			},
 		},
 	},

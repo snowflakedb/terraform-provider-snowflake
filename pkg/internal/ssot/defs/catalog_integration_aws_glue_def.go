@@ -127,7 +127,7 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
 		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(),
+			ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
 			ssot.ShowOutputDescribe(),
 		),
 	},

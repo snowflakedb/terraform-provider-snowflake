@@ -328,27 +328,26 @@ func Test_objectAssertionDetailsFromSsot_nestedFieldGoTypeOverride(t *testing.T)
 	require.Equal(t, "[]sdk.Custom", desc.Fields[0].ConcreteType)
 }
 
-func Test_objectAssertionDetailsFromSsot_showRowFromBase(t *testing.T) {
+func Test_selectsForObjectAssertShow(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	base := ssot.Object{Name: "Widget"}
-	obj := ssot.Object{
-		Name:      "WidgetGlue",
-		IdType:    "AccountObjectIdentifier",
-		VariantOf: &base,
-		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase())),
-		},
-		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	base := ssot.Object{
+		Name:       "Widget",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+		Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())},
+	}
+	variant := func(opts ...ssot.ObjectAssertShowOption) ssot.Object {
+		return ssot.Object{
+			Name:       "WidgetGlue",
+			VariantOf:  &base,
+			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+			Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow(opts...))},
+		}
 	}
 
-	details := objectAssertionDetailsFromSsot(obj, false)
-	require.Equal(t, "sdk.WidgetGlue", details.Name)
-	require.Equal(t, "sdk.Widget", details.SdkType)
-	require.Equal(t, "Widget", details.ObjectTypeName)
-	require.Equal(t, &genhelpers.ShowProjectionDef{ClientName: "Widget", Method: "Show"}, details.ShowProjection)
-	model := SnowflakeObjectAssertionsFromSsot(obj, false)
-	require.Equal(t, "WidgetGlue", model.Name)
-	require.Equal(t, "sdk.Widget", model.SdkType)
+	require.True(t, selectsForObjectAssertShow(base))
+	require.True(t, selectsForObjectAssertShow(variant()))
+	require.False(t, selectsForObjectAssertShow(variant(ssot.ObjectAssertShowRowFromBase())), "a variant reusing the base assertion is not generated")
+	require.False(t, selectsForObjectAssertShow(ssot.Object{Name: "Empty"}), "no SHOW columns")
 }
 
 func Test_objectAssertionDetailsFromSsot_describeFetch(t *testing.T) {

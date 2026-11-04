@@ -53,8 +53,13 @@ func showOutputDetailsFromSsot(obj ssot.Object, isDescribe bool) SdkObjectShowOu
 	}
 	skip := showOutputSkipNames(skipped)
 	dataSource, _ := dataSourceMappingNormalized[name]
+	reusedBase := ""
+	if !isDescribe && obj.ReusesBaseShowOutputAssertShow() {
+		reusedBase = obj.ShowOutputAssertShowOwnerName()
+	}
 	return SdkObjectShowOutputDetails{
 		dataSourceDef: &dataSource,
+		reusedBase:    reusedBase,
 		SdkObjectDetails: genhelpers.SdkObjectDetails{
 			IsDataSourceOutput: isDescribe,
 			SkipFields:         skip,

@@ -107,7 +107,7 @@ func ReadCatalogIntegrationAwsGlueFunc(withExternalChangesMarking bool) tfschema
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueToSchema(catalogIntegrationAwsGlue)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(catalogIntegrationAwsGlue)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationAwsGlueDetailsToSchema(catalogIntegrationAwsGlueDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			catalogIntegrationAwsGlueSetConfigFieldsExt(ctx, d, meta, catalogIntegrationAwsGlue),

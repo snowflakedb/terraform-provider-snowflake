@@ -26,9 +26,10 @@ func ssotObjectAssertionDetails() []genhelpers.SdkObjectDetails {
 	return details
 }
 
-// selectsForObjectAssertShow is the one filter of the SHOW object assertion generator: the object has SHOW output columns.
+// selectsForObjectAssertShow is the one filter of the SHOW object assertion generator: the object has SHOW output columns
+// and does not reuse the SHOW object assertion of its base (ObjectAssertShowRowFromBase).
 func selectsForObjectAssertShow(obj ssot.Object) bool {
-	return obj.HasShowOutput()
+	return obj.HasShowOutput() && !obj.ReusesBaseObjectAssertShow()
 }
 
 // selectsForObjectAssertDescribe is the one filter of the DESCRIBE object assertion generator: the object has DESCRIBE output columns.

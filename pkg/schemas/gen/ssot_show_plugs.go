@@ -19,9 +19,10 @@ func ssotShowResultSchemaDetails() []ShowResultSchemaDetails {
 	return details
 }
 
-// selectsForSchemaShow is the one filter of the SHOW schema generator: the object has SHOW output columns.
+// selectsForSchemaShow is the one filter of the SHOW schema generator: the object has SHOW output columns
+// and does not reuse the SHOW schema of its base (SchemaShowFromBase).
 func selectsForSchemaShow(obj ssot.Object) bool {
-	return obj.HasShowOutput()
+	return obj.HasShowOutput() && !obj.ReusesBaseSchemaShow()
 }
 
 // selectsForSchemaDescribe is the one filter of the DESCRIBE schema generator: the object has DESCRIBE output columns.

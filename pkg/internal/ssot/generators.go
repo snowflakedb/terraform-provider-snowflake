@@ -145,6 +145,9 @@ type ResourceAssertGenerator struct {
 type ShowOutputAssertGenerator struct {
 	Show     bool
 	Describe bool
+	// ShowRowFromBase makes a variant reuse the SHOW show output assertion of its base. The variant keeps its
+	// constructors, which return the base's assertion type, and no assertion type or attribute methods are generated.
+	ShowRowFromBase bool
 	// ShowSkipFields and DescribeSkipFields are the same *Attribute pointers that sit in Columns.
 	// The column stays in Columns. Has* is not generated.
 	ShowSkipFields     []*Attribute
@@ -236,8 +239,12 @@ func SchemaShow(opts ...SchemaShowOption) SchemaOption {
 	}
 }
 
-// SchemaShowFromBase keeps Show<Variant>Schema and <Variant>ToSchema, and maps *sdk.<VariantOf.Name>.
-// Use it when every variant is one row of the base SHOW type.
+// TODO [next PRs]: the three reuse settings (SchemaShowFromBase, ObjectAssertShowRowFromBase, ShowOutputShowRowFromBase) stay separate
+// on purpose for now. They may merge into one declaration of the variant.
+// SchemaShowFromBase makes a variant reuse the SHOW schema of its base: no Show<Variant>Schema or <Variant>ToSchema is
+// generated, and the variant resource uses Show<VariantOf.Name>Schema and <VariantOf.Name>ToSchema.
+// Use it when every variant is one row of the base SHOW type. The base must generate its SHOW schema, and the variant
+// cannot set show schema options (manual or list fields): drop the setting and configure SHOW to override.
 func SchemaShowFromBase() SchemaShowOption {
 	return func(s *SchemaGenerator) { s.ShowFromBase = true }
 }
@@ -656,6 +663,16 @@ func ShowOutputShow(opts ...ShowOutputShowOption) ShowOutputAssertOption {
 	}
 }
 
+// TODO [next PRs]: see SchemaShowFromBase, the reuse settings may merge into one declaration.
+// ShowOutputShowRowFromBase makes a variant reuse the SHOW show output assertion of its base: only the constructors
+// <Variant>ShowOutput and Imported<Variant>ShowOutput are generated, and they return the base's assertion type, so the
+// variant resource is asserted by resource name while sharing the base's methods (including hand-written ones).
+// Use it when every variant is one row of the base SHOW type. The base must generate its SHOW show output assertion,
+// and the variant cannot set show skip fields: drop the setting and configure SHOW to override.
+func ShowOutputShowRowFromBase() ShowOutputShowOption {
+	return func(s *ShowOutputAssertGenerator) { s.ShowRowFromBase = true }
+}
+
 // ShowOutputShowSkipFields copies SkipFields from the old show output def.
 // Each argument is the *Attribute already listed in Show.Columns.
 func ShowOutputShowSkipFields(attrs ...*Attribute) ShowOutputShowOption {
@@ -730,9 +747,11 @@ func ObjectAssertShowFromBase(projection string) ObjectAssertShowOption {
 	}
 }
 
-// ObjectAssertShowRowFromBase uses sdk.<VariantOf.Name> as the SHOW row and fetches through
-// testClient.<VariantOf.Name>.Show. The assertion name stays the variant.
-// Use it when every variant is one row of the base SHOW type.
+// TODO [next PRs]: see SchemaShowFromBase, the reuse settings may merge into one declaration.
+// ObjectAssertShowRowFromBase makes a variant reuse the SHOW object assertion of its base: no <Variant> assertion is
+// generated, and tests assert the variant through the base's assertion (testClient.<VariantOf.Name>.Show).
+// Use it when every variant is one row of the base SHOW type. The base must generate its SHOW assertion, and the variant
+// cannot set show assertion options (skip fields, nested fields or a projection): drop the setting and configure SHOW to override.
 func ObjectAssertShowRowFromBase() ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) { a.ShowRowFromBase = true }
 }
@@ -759,20 +778,56 @@ func (obj Object) ShowFromBase() (ShowFromBase, bool) {
 	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: g.ShowProjection}, true
 }
 
-// ShowRowFromBase returns the shared SHOW row fetch. ok is false when ObjectAssertShowRowFromBase is not set.
-// ClientName is VariantOf.Name. Method is Show. The row type is sdk.<VariantOf.Name>.
-func (obj Object) ShowRowFromBase() (ShowFromBase, bool) {
+// ReusesBaseSchemaShow is true when this variant takes its SHOW schema from the base (SchemaShowFromBase).
+func (obj Object) ReusesBaseSchemaShow() bool {
+	g := ObjectGenerators(obj.Generators...).Schema
+	return g.Show && g.ShowFromBase
+}
+
+// SchemaShowOwnerName is the name of the object whose SHOW schema this object uses.
+// It is VariantOf.Name when the variant reuses the base's SHOW schema, and Name otherwise.
+func (obj Object) SchemaShowOwnerName() string {
+	if obj.ReusesBaseSchemaShow() {
+		return showReuseBase(obj, "schema SHOW").Name
+	}
+	return obj.Name
+}
+
+// ReusesBaseShowOutputAssertShow is true when this variant takes its SHOW show output assertion from the base (ShowOutputShowRowFromBase).
+func (obj Object) ReusesBaseShowOutputAssertShow() bool {
+	g := ObjectGenerators(obj.Generators...).ShowOutputAssert
+	return g.Show && g.ShowRowFromBase
+}
+
+// ShowOutputAssertShowOwnerName is the name of the object whose SHOW show output assertion type this object uses.
+// It is VariantOf.Name when the variant reuses the base's assertion, and Name otherwise.
+func (obj Object) ShowOutputAssertShowOwnerName() string {
+	if obj.ReusesBaseShowOutputAssertShow() {
+		return showReuseBase(obj, "show output assertion SHOW").Name
+	}
+	return obj.Name
+}
+
+// ReusesBaseObjectAssertShow is true when this variant takes its SHOW object assertion from the base (ObjectAssertShowRowFromBase).
+func (obj Object) ReusesBaseObjectAssertShow() bool {
 	g := ObjectGenerators(obj.Generators...).ObjectAssert
-	if !g.ShowRowFromBase {
-		return ShowFromBase{}, false
+	return g.Show && g.ShowRowFromBase
+}
+
+// ObjectAssertShowOwnerName is the name of the object whose SHOW object assertion this object uses.
+// It is VariantOf.Name when the variant reuses the base's SHOW object assertion, and Name otherwise.
+func (obj Object) ObjectAssertShowOwnerName() string {
+	if obj.ReusesBaseObjectAssertShow() {
+		return showReuseBase(obj, "object assertion SHOW").Name
 	}
-	if g.ShowProjection != "" {
-		panic(fmt.Sprintf("object %q: object assertion show row from base and show projection are both set", obj.Name))
-	}
+	return obj.Name
+}
+
+func showReuseBase(obj Object, label string) *Object {
 	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
-		panic(fmt.Sprintf("object %q: object assertion show row from base requires VariantOf", obj.Name))
+		panic(fmt.Sprintf("object %q: %s reuse requires VariantOf", obj.Name, label))
 	}
-	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: "Show"}, true
+	return obj.VariantOf
 }
 
 // DescribeFetch is the DESCRIBE fetch when it is not testClient.<Object>.Describe.

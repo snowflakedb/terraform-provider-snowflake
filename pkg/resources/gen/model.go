@@ -31,8 +31,10 @@ type ResourceModel struct {
 	VariantOf                           *ssot.Object
 	Attributes                          []ResourceAttribute
 	// ComputedAttributes are the SHOW-sourced computed-only schema fields. ComputedColumns are their SHOW columns.
-	ComputedAttributes       []ResourceAttribute
-	ComputedColumns          []*ssot.Attribute
+	ComputedAttributes []ResourceAttribute
+	ComputedColumns    []*ssot.Attribute
+	// ShowSchemaOwner is the object whose generated SHOW schema and mapper this resource uses. A variant that reuses its base uses the base.
+	ShowSchemaOwner          string
 	AttributesModification   bool
 	ObjectType               string
 	Hooks                    ssot.ResourceHooks
@@ -189,6 +191,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		SdkCreateRequestObjectName:          input.SdkCreateRequestObjectName,
 		VariantOf:                           input.VariantOf,
 		Attributes:                          attributes,
+		ShowSchemaOwner:                     input.SchemaShowOwnerName(),
 		AttributesModification:              input.AttributesModification,
 		ObjectType:                          input.ObjectType(),
 		Hooks:                               hooks,

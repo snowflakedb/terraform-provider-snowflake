@@ -47,24 +47,26 @@ func Test_showResultSchemaDetailsFromSsot_collectsSchemaSkips(t *testing.T) {
 	require.Equal(t, []genhelpers.Field{ssot.ColumnField(obj, name), ssot.ColumnField(obj, actives)}, got.Fields)
 }
 
-func Test_showResultSchemaDetailsFromSsot_showFromBase(t *testing.T) {
+func Test_selectsForSchemaShow(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	base := ssot.Object{Name: "Widget"}
-	obj := ssot.Object{
-		Name:      "WidgetGlue",
-		VariantOf: &base,
-		Generators: []ssot.GeneratorOption{
-			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase())),
-		},
-		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	base := ssot.Object{
+		Name:       "Widget",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+		Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow())},
+	}
+	variant := func(opts ...ssot.SchemaShowOption) ssot.Object {
+		return ssot.Object{
+			Name:       "WidgetGlue",
+			VariantOf:  &base,
+			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+			Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow(opts...))},
+		}
 	}
 
-	got := showResultSchemaDetailsFromSsot(obj, false)
-	require.Equal(t, "sdk.WidgetGlue", got.Name)
-	require.Equal(t, "sdk.Widget", got.SdkType)
-	model := ModelFromStructDetails(got, nil, nil)
-	require.Equal(t, "WidgetGlue", model.Name)
-	require.Equal(t, "sdk.Widget", model.SdkType)
+	require.True(t, selectsForSchemaShow(base))
+	require.True(t, selectsForSchemaShow(variant()))
+	require.False(t, selectsForSchemaShow(variant(ssot.SchemaShowFromBase())), "a variant reusing the base schema is not generated")
+	require.False(t, selectsForSchemaShow(ssot.Object{Name: "Empty"}), "no SHOW columns")
 }
 
 func Test_showResultSchemaDetailsFromSsot_panicsOnNilColumn(t *testing.T) {

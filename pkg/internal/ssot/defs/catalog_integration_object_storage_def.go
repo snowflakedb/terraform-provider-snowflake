@@ -95,7 +95,7 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
 		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(),
+			ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
 			ssot.ShowOutputDescribe(),
 		),
 	},
