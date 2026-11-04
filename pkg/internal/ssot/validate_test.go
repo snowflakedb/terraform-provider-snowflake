@@ -1581,3 +1581,54 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Set: []*Attribute{&attr}})
 	})
 }
+
+func identityNamesCreatedBySnowflakeObject(change func(*Object)) Object {
+	obj := Object{
+		Name:                            "Widget",
+		IdentityNamesCreatedBySnowflake: []string{"PUBLIC"},
+		Alter:                           AlterSpec{Clauses: []AlterClause{AlterSet()}},
+		ResourceHooks:                   []ResourceHookOption{WithBeforeCreate(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_ValidateObject_identityNamesCreatedBySnowflake(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(identityNamesCreatedBySnowflakeObject(func(*Object) {})) })
+	})
+
+	for name, tc := range map[string]struct {
+		change func(*Object)
+		panics string
+	}{
+		"empty name": {
+			func(o *Object) { o.IdentityNamesCreatedBySnowflake = []string{" "} },
+			`object "Widget": IdentityNamesCreatedBySnowflake name " " must be set and must not contain quotes or backslashes`,
+		},
+		"name that breaks the Go string": {
+			func(o *Object) { o.IdentityNamesCreatedBySnowflake = []string{`PUB"LIC`} },
+			`object "Widget": IdentityNamesCreatedBySnowflake name "PUB\"LIC" must be set and must not contain quotes or backslashes`,
+		},
+		"names without the generated hook": {
+			func(o *Object) { o.ResourceHooks = nil },
+			`object "Widget": IdentityNamesCreatedBySnowflake requires WithBeforeCreate(Generated())`,
+		},
+		"generated hook without names": {
+			func(o *Object) { o.IdentityNamesCreatedBySnowflake = nil },
+			`object "Widget": WithBeforeCreate(Generated()) needs IdentityNamesCreatedBySnowflake`,
+		},
+		"identity schema is missing": {
+			func(o *Object) { o.ResourceHooks = append(o.ResourceHooks, WithIdentitySchema(Omitted())) },
+			`object "Widget": IdentityNamesCreatedBySnowflake reads the identity name and needs the identity schema`,
+		},
+		"update is missing": {
+			func(o *Object) { o.Alter = AlterSpec{} },
+			`object "Widget": IdentityNamesCreatedBySnowflake runs Update and needs ALTER to update the object`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.PanicsWithValue(t, tc.panics, func() { ValidateObject(identityNamesCreatedBySnowflakeObject(tc.change)) })
+		})
+	}
+}

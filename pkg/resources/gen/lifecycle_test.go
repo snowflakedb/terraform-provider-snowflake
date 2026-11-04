@@ -41,6 +41,61 @@ func Test_lifecycle_setIdEncoding(t *testing.T) {
 	})
 }
 
+func Test_lifecycle_beforeCreate(t *testing.T) {
+	adopt := func(change func(*ssot.Object)) ResourceModel {
+		return lifecycleModel(withHooks(ssot.WithBeforeCreate(ssot.Generated())), func(obj *ssot.Object) {
+			obj.IdentityNamesCreatedBySnowflake = []string{"PUBLIC"}
+			change(obj)
+		})
+	}
+
+	t.Run("omitted", func(t *testing.T) {
+		require.Empty(t, renderTemplate(t, "beforeCreate", lifecycleModel()))
+	})
+
+	t.Run("ext call", func(t *testing.T) {
+		require.Equal(t, `
+	done, diags := poolBeforeCreateExt(ctx, d, meta, id)
+	if done {
+		return diags
+	}
+
+`, renderTemplate(t, "beforeCreate", lifecycleModel(withHooks(ssot.WithBeforeCreate(ssot.ExtCall())))))
+	})
+
+	t.Run("adopt an object that Snowflake creates", func(t *testing.T) {
+		require.Equal(t, `
+	if strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "PUBLIC") {
+		_, err := meta.(*provider.Context).Client.Pools.ShowByID(ctx, id)
+		if err == nil {
+			log.Printf("[DEBUG] found %s pool during creation, updating...", id.Name())
+			d.SetId(helpers.EncodeResourceIdentifier(id))
+			return UpdatePool(ctx, d, meta)
+		}
+		if !errors.Is(err, sdk.ErrObjectNotFound) {
+			return diag.FromErr(err)
+		}
+	}
+
+`, renderTemplate(t, "beforeCreate", adopt(func(*ssot.Object) {})))
+	})
+
+	t.Run("any of the names", func(t *testing.T) {
+		got := renderTemplate(t, "beforeCreate", adopt(func(obj *ssot.Object) { obj.IdentityNamesCreatedBySnowflake = []string{"PUBLIC", "DEFAULT"} }))
+		require.Contains(t, got, `if strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "PUBLIC") || strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "DEFAULT") {`)
+	})
+
+	t.Run("legacy id", func(t *testing.T) {
+		got := renderTemplate(t, "beforeCreate", adopt(func(obj *ssot.Object) { obj.LegacyIdEncoding = true }))
+		require.Contains(t, got, "d.SetId(helpers.EncodeSnowflakeID(id))")
+	})
+
+	t.Run("the model holds the adopt data", func(t *testing.T) {
+		require.Equal(t, BeforeCreateSteps{AdoptExisting: &BeforeCreateAdoptExisting{Names: []string{"PUBLIC"}, ObjectWords: "pool"}}, adopt(func(*ssot.Object) {}).BeforeCreateSteps)
+		require.Equal(t, BeforeCreateSteps{}, lifecycleModel().BeforeCreateSteps)
+	})
+}
+
 func Test_lifecycle_afterCreate(t *testing.T) {
 	t.Run("omitted", func(t *testing.T) {
 		require.Equal(t, "return ReadPoolFunc(false)(ctx, d, meta)\n", renderTemplate(t, "afterCreate", lifecycleModel()))

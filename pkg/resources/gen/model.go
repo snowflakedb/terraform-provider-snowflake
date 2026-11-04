@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -37,7 +38,23 @@ type ResourceModel struct {
 	Hooks                    ssot.ResourceHooks
 	SchemaStateUpgraders     []ssot.StateUpgraderFunc
 	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
+	BeforeCreateSteps        BeforeCreateSteps
 	*genhelpers.PreambleModel
+}
+
+// BeforeCreateSteps are the data of the generated BeforeCreate. Each kind of step has its own field here and its own block
+// in before_create.tmpl. To run another kind of step before create, add a field and a block.
+type BeforeCreateSteps struct {
+	// AdoptExisting adopts an object that Snowflake creates itself, such as the PUBLIC schema, instead of creating it.
+	AdoptExisting *BeforeCreateAdoptExisting
+}
+
+// BeforeCreateAdoptExisting updates an existing object instead of creating it when the identity name is one of Names.
+type BeforeCreateAdoptExisting struct {
+	// Names are compared to the identity name ignoring case and outer spaces.
+	Names []string
+	// ObjectWords is the lowercase object type for the log, such as schema.
+	ObjectWords string
 }
 
 // ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
@@ -167,6 +184,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		Hooks:                               hooks,
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
+		BeforeCreateSteps:                   beforeCreateSteps(input.Object),
 		PreambleModel:                       preamble,
 	}
 	if computed, columns := showComputedAttributes(input.Object); len(computed) > 0 {
@@ -183,4 +201,15 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	model.ShowExternalChanges()
 	model.DescribeExternalChanges()
 	return model
+}
+
+func beforeCreateSteps(obj ssot.Object) BeforeCreateSteps {
+	var steps BeforeCreateSteps
+	if len(obj.IdentityNamesCreatedBySnowflake) > 0 {
+		steps.AdoptExisting = &BeforeCreateAdoptExisting{
+			Names:       obj.IdentityNamesCreatedBySnowflake,
+			ObjectWords: strings.ToLower(obj.ObjectType()),
+		}
+	}
+	return steps
 }

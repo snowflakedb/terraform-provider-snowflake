@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"slices"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -52,25 +51,6 @@ type schemaAlterRequestsExt struct {
 
 func schemaParseIdExt(id string) (sdk.DatabaseObjectIdentifier, error) {
 	return sdk.ParseDatabaseObjectIdentifier(id)
-}
-
-func schemaBeforeCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.DatabaseObjectIdentifier) (done bool, diags diag.Diagnostics) {
-	name := d.Get("name").(string)
-	if !strings.EqualFold(strings.TrimSpace(name), "PUBLIC") {
-		return false, nil
-	}
-
-	client := meta.(*provider.Context).Client
-	_, err := client.Schemas.ShowByID(ctx, id)
-	if err != nil && !errors.Is(err, sdk.ErrObjectNotFound) {
-		return true, diag.FromErr(err)
-	} else if err == nil {
-		// there is already a PUBLIC schema, so we need to alter it instead
-		log.Printf("[DEBUG] found PUBLIC schema during creation, updating...")
-		d.SetId(helpers.EncodeResourceIdentifier(id))
-		return true, UpdateSchema(ctx, d, meta)
-	}
-	return false, nil
 }
 
 func schemaNewCreateRequestExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier) (*sdk.CreateSchemaRequest, error) {
