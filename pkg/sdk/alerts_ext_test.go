@@ -1,5 +1,40 @@
 package sdk
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func Test_FormatAndParseAlertSchedule(t *testing.T) {
+	t.Run("interval", func(t *testing.T) {
+		formatted := FormatAlertIntervalSchedule(5)
+		require.Equal(t, "5 MINUTE", formatted)
+
+		parsed, err := ParseAlertSchedule(formatted)
+		require.NoError(t, err)
+		require.Equal(t, AlertSchedule{Minutes: 5}, parsed)
+	})
+
+	t.Run("cron", func(t *testing.T) {
+		formatted := FormatAlertCronSchedule("0 0 * * *", "America/Los_Angeles")
+		require.Equal(t, "USING CRON 0 0 * * * America/Los_Angeles", formatted)
+
+		parsed, err := ParseAlertSchedule(formatted)
+		require.NoError(t, err)
+		require.Equal(t, AlertSchedule{CronExpression: "0 0 * * *", TimeZone: "America/Los_Angeles"}, parsed)
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		_, err := ParseAlertSchedule("USING CRON")
+		require.Error(t, err)
+		_, err = ParseAlertSchedule("daily")
+		require.Error(t, err)
+		_, err = ParseAlertSchedule("five MINUTE")
+		require.Error(t, err)
+	})
+}
+
 func init() {
 	id := alertsTestIdSchemaObjectIdentifier
 	warehouse := randomAccountObjectIdentifier()
@@ -12,21 +47,21 @@ func init() {
 		withDefaultOpts(func() *CreateAlertOptions {
 			return &CreateAlertOptions{
 				name:      id,
-				Warehouse: warehouse,
-				Schedule:  schedule,
 				condition: AlertCondition{Condition: []string{existsCondition}},
 				action:    action,
 			}
 		}).
 		withExpectedSqlf(
 			case_Alerts_sql_Create_basic,
-			`CREATE ALERT %s WAREHOUSE = %s SCHEDULE = '%s' IF (EXISTS (%s)) THEN %s`,
-			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, existsCondition, action,
+			`CREATE ALERT %s IF (EXISTS (%s)) THEN %s`,
+			id.FullyQualifiedName(), existsCondition, action,
 		).
 		withModifyAndExpectedSqlf(
 			case_Alerts_sql_Create_all,
 			func(opts *CreateAlertOptions) {
 				opts.IfNotExists = new(true)
+				opts.Warehouse = &warehouse
+				opts.Schedule = &schedule
 				opts.Comment = &comment
 			},
 			`CREATE ALERT IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '%s' COMMENT = '%s' IF (EXISTS (%s)) THEN %s`,
@@ -34,7 +69,11 @@ func init() {
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_orReplace",
-			func(opts *CreateAlertOptions) { opts.OrReplace = new(true) },
+			func(opts *CreateAlertOptions) {
+				opts.OrReplace = new(true)
+				opts.Warehouse = &warehouse
+				opts.Schedule = &schedule
+			},
 			`CREATE OR REPLACE ALERT %s WAREHOUSE = %s SCHEDULE = '%s' IF (EXISTS (%s)) THEN %s`,
 			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, existsCondition, action,
 		)

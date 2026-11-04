@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -20,54 +21,79 @@ func TestInt_Alerts(t *testing.T) {
 	warehouse := testClientHelper().Ids.WarehouseId()
 	currentRole := testClientHelper().Context.CurrentRole(t)
 
-	assertAlert := func(t *testing.T, id sdk.SchemaObjectIdentifier, warehouseName, schedule, comment, condition, action string, state sdk.AlertState) {
+	assertAlert := func(t *testing.T, id sdk.SchemaObjectIdentifier, warehouse *sdk.AccountObjectIdentifier, schedule *string, comment, condition, action string, state sdk.AlertState) {
 		t.Helper()
 
-		assertThatObject(
-			t, objectassert.Alert(t, id).
-				HasCreatedOnNotEmpty().
-				HasName(id.Name()).
-				HasDatabaseName(id.DatabaseName()).
-				HasSchemaName(id.SchemaName()).
-				HasOwner(currentRole.Name()).
-				HasOwnerRoleType("ROLE").
-				HasWarehouse(warehouseName).
-				HasSchedule(schedule).
-				HasComment(comment).
-				HasCondition(condition).
-				HasAction(action).
-				HasState(state),
-		)
-		assertThatObject(
-			t, objectassert.AlertDetails(t, id).
-				HasCreatedOnNotEmpty().
-				HasName(id.Name()).
-				HasDatabaseName(id.DatabaseName()).
-				HasSchemaName(id.SchemaName()).
-				HasOwner(currentRole.Name()).
-				HasWarehouse(warehouseName).
-				HasSchedule(schedule).
-				HasComment(comment).
-				HasCondition(condition).
-				HasAction(action).
-				HasState(string(state)),
-		)
+		alertAssert := objectassert.Alert(t, id).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner(currentRole.Name()).
+			HasOwnerRoleType("ROLE").
+			HasComment(comment).
+			HasCondition(condition).
+			HasAction(action).
+			HasState(state)
+		detailsAssert := objectassert.AlertDetails(t, id).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner(currentRole.Name()).
+			HasComment(comment).
+			HasCondition(condition).
+			HasAction(action).
+			HasState(string(state))
+		if warehouse != nil {
+			alertAssert.HasWarehouse(*warehouse)
+			detailsAssert.HasWarehouse(*warehouse)
+		} else {
+			alertAssert.HasNoWarehouse()
+			detailsAssert.HasNoWarehouse()
+		}
+		if schedule != nil {
+			alertAssert.HasSchedule(*schedule)
+			detailsAssert.HasSchedule(*schedule)
+		} else {
+			alertAssert.HasNoSchedule()
+			detailsAssert.HasNoSchedule()
+		}
+		assertThatObject(t, alertAssert)
+		assertThatObject(t, detailsAssert)
 	}
 
 	t.Run("create: no options", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.CreateWithChangeTracking(t)
+		t.Cleanup(tableCleanup)
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		condition := fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName())
 
+		// Without WAREHOUSE the alert is serverless. Without SCHEDULE it runs when new rows arrive in the table.
 		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
 			id,
-			warehouse,
-			"5 MINUTE",
-			sdk.NewAlertConditionFromString("SELECT 1"),
+			sdk.NewAlertConditionFromString(condition),
 			"SELECT 1",
 		))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Alert.DropAlertFunc(t, id))
 
-		assertAlert(t, id, warehouse.Name(), "5 MINUTE", "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
+		assertAlert(t, id, nil, nil, "", condition, "SELECT 1", sdk.AlertStateSuspended)
+	})
+
+	t.Run("create: serverless with schedule", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
+			id,
+			sdk.NewAlertConditionFromString("SELECT 1"),
+			"SELECT 1",
+		).
+			WithSchedule("5 MINUTE"))
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().Alert.DropAlertFunc(t, id))
+
+		assertAlert(t, id, nil, sdk.String("5 MINUTE"), "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
 	})
 
 	t.Run("create: complete", func(t *testing.T) {
@@ -77,17 +103,17 @@ func TestInt_Alerts(t *testing.T) {
 
 		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
 			id,
-			warehouse,
-			"USING CRON * * * * TUE,THU UTC",
 			sdk.NewAlertConditionFromString("SELECT 1"),
 			action,
 		).
+			WithWarehouse(warehouse).
+			WithSchedule("USING CRON * * * * TUE,THU UTC").
 			WithIfNotExists(true).
 			WithComment(comment))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Alert.DropAlertFunc(t, id))
 
-		assertAlert(t, id, warehouse.Name(), "USING CRON * * * * TUE,THU UTC", comment, "SELECT 1", action, sdk.AlertStateSuspended)
+		assertAlert(t, id, &warehouse, sdk.String("USING CRON * * * * TUE,THU UTC"), comment, "SELECT 1", action, sdk.AlertStateSuspended)
 	})
 
 	t.Run("alter: set and unset", func(t *testing.T) {
@@ -107,7 +133,7 @@ func TestInt_Alerts(t *testing.T) {
 			))
 		require.NoError(t, err)
 
-		assertAlert(t, id, otherWarehouse.Name, "10 MINUTE", "changed", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
+		assertAlert(t, id, sdk.Pointer(otherWarehouse.ID()), sdk.String("10 MINUTE"), "changed", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
 
 		// Commas are required. UNSET WAREHOUSE COMMENT is a syntax error.
 		// Schedule stays: UNSET SCHEDULE is rejected because a scheduled alert cannot become a streaming alert.
@@ -119,7 +145,31 @@ func TestInt_Alerts(t *testing.T) {
 			))
 		require.NoError(t, err)
 
-		assertAlert(t, id, "", "10 MINUTE", "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
+		assertAlert(t, id, nil, sdk.String("10 MINUTE"), "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
+	})
+
+	t.Run("alter: set schedule on an alert without schedule", func(t *testing.T) {
+		table, tableCleanup := testClientHelper().Table.CreateWithChangeTracking(t)
+		t.Cleanup(tableCleanup)
+		alert, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
+			testClientHelper().Ids.RandomSchemaObjectIdentifier(),
+			sdk.NewAlertConditionFromString(fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName())),
+			"SELECT 1",
+		))
+		t.Cleanup(cleanup)
+
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
+			WithSet(*sdk.NewAlertSetRequest().WithSchedule("5 MINUTE")))
+		require.ErrorContains(t, err, "cannot be changed to a scheduled alert")
+	})
+
+	t.Run("alter: unset schedule", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).
+			WithUnset(*sdk.NewAlertUnsetRequest().WithSchedule(true)))
+		require.ErrorContains(t, err, "cannot be changed to a streaming alert")
 	})
 
 	t.Run("alter: modify condition and action", func(t *testing.T) {
@@ -175,7 +225,7 @@ func TestInt_Alerts(t *testing.T) {
 				HasName(alert.Name).
 				HasDatabaseName(alert.DatabaseName).
 				HasSchemaName(alert.SchemaName).
-				HasSchedule(alert.Schedule).
+				HasSchedule(*alert.Schedule).
 				HasState(sdk.AlertStateSuspended).
 				HasCondition(alert.Condition).
 				HasAction(alert.Action).
@@ -261,15 +311,15 @@ func TestInt_Alerts(t *testing.T) {
 		for _, id := range []sdk.SchemaObjectIdentifier{id1, id2} {
 			created, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
 				id,
-				warehouse,
-				"5 MINUTE",
 				sdk.NewAlertConditionFromString("SELECT 1"),
 				"SELECT 1",
-			))
+			).
+				WithWarehouse(warehouse).
+				WithSchedule("5 MINUTE"))
 			t.Cleanup(cleanup)
 
 			assert.Equal(t, id, created.ID())
-			assertAlert(t, id, created.Warehouse, "5 MINUTE", "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
+			assertAlert(t, id, created.Warehouse, sdk.String("5 MINUTE"), "", "SELECT 1", "SELECT 1", sdk.AlertStateSuspended)
 		}
 	})
 
@@ -283,11 +333,11 @@ func TestInt_Alerts(t *testing.T) {
 			id := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(name, schema.ID())
 			_, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
 				id,
-				warehouse,
-				"5 MINUTE",
 				sdk.NewAlertConditionFromString("SELECT 1"),
 				"SELECT 1",
-			))
+			).
+				WithWarehouse(warehouse).
+				WithSchedule("5 MINUTE"))
 			t.Cleanup(cleanup)
 
 			found, err := client.Alerts.ShowByID(ctx, id)

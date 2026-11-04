@@ -1,2 +1,1 @@
-# format is database name | schema name | alert name
-terraform import snowflake_alert.example 'dbName|schemaName|alertName'
+terraform import snowflake_alert.example '"<database_name>"."<schema_name>"."<alert_name>"'

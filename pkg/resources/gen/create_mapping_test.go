@@ -529,6 +529,7 @@ func Test_AlertCreateMappings_skipsNestedParsers(t *testing.T) {
 	require.Equal(t, `func alertApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateAlertRequest) error {
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+		accountObjectIdentifierAttributeCreateBuilder(d, "warehouse", request.WithWarehouse),
 	)
 }
 `, renderTemplate(t, "generatedApplyCreateOptionals", model))

@@ -66,8 +66,8 @@ func (a *AlertShowOutputAssert) HasComment(expected string) *AlertShowOutputAsse
 	return a
 }
 
-func (a *AlertShowOutputAssert) HasWarehouse(expected string) *AlertShowOutputAssert {
-	a.StringValueSet("warehouse", expected)
+func (a *AlertShowOutputAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *AlertShowOutputAssert {
+	a.StringValueSet("warehouse", expected.Name())
 	return a
 }
 

@@ -13,9 +13,9 @@ var (
 type CreateAlertRequest struct {
 	OrReplace   *bool
 	IfNotExists *bool
-	name        SchemaObjectIdentifier  // required
-	Warehouse   AccountObjectIdentifier // required
-	Schedule    string                  // required
+	name        SchemaObjectIdentifier // required
+	Warehouse   *AccountObjectIdentifier
+	Schedule    *string
 	Comment     *string
 	condition   AlertConditionRequest // required
 	action      string                // required
