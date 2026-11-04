@@ -273,6 +273,36 @@ After upgrading:
 
 No configuration changes are required. To keep a value that was changed outside Terraform, add it to your configuration.
 
+### *(breaking change)* `snowflake_pipes` data source reworked
+
+The preview [`snowflake_pipes`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/pipes) data source now follows the same rules as the other data sources.
+
+Filtering changes:
+- The required `database` and `schema` fields are replaced by the optional `in` block, which takes one of `account`, `database`, `schema` (fully qualified, for example `"\"<database_name>\".\"<schema_name>\""`), `application`, or `application_package`. Without `in`, Snowflake returns the pipes of the current database, or of the whole account when no database is in use.
+- `like` is added.
+
+Output changes:
+- Each element of `pipes` now holds `show_output` (the result of `SHOW PIPES`), `describe_output` (the result of `DESCRIBE PIPE`), and `parameters` (the result of `SHOW PARAMETERS FOR PIPE`). The previous flat fields (`name`, `database`, `schema`, `comment`, `integration`) are removed; read them from `pipes.*.show_output.0` instead (`name`, `database_name`, `schema_name`, `comment`, `integration`).
+- `with_describe` (default `true`) runs `DESCRIBE PIPE`, and `with_parameters` (default `true`) runs `SHOW PARAMETERS FOR PIPE`, for every pipe returned. Set them to `false` to limit the number of queries.
+- The data source id changed from `<database>|<schema>` to the static `pipes_read`.
+
+Before:
+```terraform
+data "snowflake_pipes" "example" {
+  database = "<database_name>"
+  schema   = "<schema_name>"
+}
+```
+
+After:
+```terraform
+data "snowflake_pipes" "example" {
+  in {
+    schema = "\"<database_name>\".\"<schema_name>\""
+  }
+}
+```
+
 ### *(breaking change)* `snowflake_pipe` aligned with the newest preview resources
 
 The preview [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) resource now follows the same structure as the newest preview resources. Existing state is migrated by a state upgrader on the next `terraform plan` or `terraform apply`; no manual action is required for the resource ID. The resource is still in preview and may change again before it becomes stable.

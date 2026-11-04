@@ -83,10 +83,10 @@ type DropPipeOptions struct {
 
 // ShowPipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-pipes.
 type ShowPipeOptions struct {
-	show  bool  `ddl:"static" sql:"SHOW"`
-	pipes bool  `ddl:"static" sql:"PIPES"`
-	Like  *Like `ddl:"keyword" sql:"LIKE"`
-	In    *In   `ddl:"keyword" sql:"IN"`
+	show  bool        `ddl:"static" sql:"SHOW"`
+	pipes bool        `ddl:"static" sql:"PIPES"`
+	Like  *Like       `ddl:"keyword" sql:"LIKE"`
+	In    *ExtendedIn `ddl:"keyword" sql:"IN"`
 }
 
 type pipesRow struct {

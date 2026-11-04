@@ -50,7 +50,7 @@ func (v *pipes) Show(ctx context.Context, request *ShowPipeRequest) ([]Pipe, err
 
 func (v *pipes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error) {
 	request := NewShowPipeRequest().
-		WithIn(In{Schema: id.SchemaId()}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	pipes, err := v.Show(ctx, request)
 	if err != nil {

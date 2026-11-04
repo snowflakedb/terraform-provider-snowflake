@@ -255,7 +255,7 @@ func TestInt_Pipes(t *testing.T) {
 
 		t.Run("show: in schema", func(t *testing.T) {
 			pipes, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
-				WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
+				WithIn(sdk.ExtendedIn{Schema: testClientHelper().Ids.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, pipes, 2)
 			assert.Contains(t, pipes, *pipe1)
@@ -279,7 +279,7 @@ func TestInt_Pipes(t *testing.T) {
 
 		t.Run("show: in account", func(t *testing.T) {
 			pipes, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
-				WithIn(sdk.In{Account: sdk.Bool(true)}).
+				WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}).
 				WithLike(sdk.Like{Pattern: sdk.String(pipe1.Name)}))
 			require.NoError(t, err)
 			require.Len(t, pipes, 1)
@@ -291,9 +291,24 @@ func TestInt_Pipes(t *testing.T) {
 				HasDefinition(pipe1.Definition))
 		})
 
+		t.Run("show: in application and application package", func(t *testing.T) {
+			applicationPackage, packageCleanup := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
+			t.Cleanup(packageCleanup)
+
+			inPackage, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
+				WithIn(sdk.ExtendedIn{ApplicationPackage: applicationPackage.ID()}))
+			require.NoError(t, err)
+			assert.Empty(t, inPackage)
+
+			missingApplication := testClientHelper().Ids.RandomAccountObjectIdentifier()
+			_, err = client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
+				WithIn(sdk.ExtendedIn{Application: missingApplication}))
+			require.ErrorContains(t, err, "does not exist or not authorized")
+		})
+
 		t.Run("show: in database", func(t *testing.T) {
 			pipes, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
-				WithIn(sdk.In{Database: testClientHelper().Ids.DatabaseId()}).
+				WithIn(sdk.ExtendedIn{Database: testClientHelper().Ids.DatabaseId()}).
 				WithLike(sdk.Like{Pattern: sdk.String(pipe1.Name)}))
 			require.NoError(t, err)
 			require.Len(t, pipes, 1)

@@ -25,6 +25,16 @@ func (c *PipeClient) client() sdk.Pipes {
 	return c.context.client.Pipes
 }
 
+// PipeCopyStatement creates a table and a stage and returns a COPY INTO statement for them.
+func (c *TestClient) PipeCopyStatement(t *testing.T) string {
+	t.Helper()
+	table, tableCleanup := c.Table.Create(t)
+	t.Cleanup(tableCleanup)
+	stage, stageCleanup := c.Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+	return fmt.Sprintf("COPY INTO %s FROM @%s", table.ID().FullyQualifiedName(), stage.ID().FullyQualifiedName())
+}
+
 func (c *PipeClient) CopyStatement(t *testing.T, table *sdk.Table, stage *sdk.Stage) string {
 	t.Helper()
 	require.NotNil(t, table, "table has to be created")

@@ -58,7 +58,7 @@ type DropPipeRequest struct {
 
 type ShowPipeRequest struct {
 	Like *Like
-	In   *In
+	In   *ExtendedIn
 }
 
 type DescribePipeRequest struct {

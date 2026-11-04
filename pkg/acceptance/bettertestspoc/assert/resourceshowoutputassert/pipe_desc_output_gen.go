@@ -30,6 +30,21 @@ func ImportedPipeDescribeOutput(t *testing.T, id string) *PipeDescribeOutputAsse
 	return &pipeAssert
 }
 
+func PipesDatasourceDescribeOutput(t *testing.T, name string) *PipeDescribeOutputAssert {
+	t.Helper()
+
+	return PipesDatasourceDescribeOutputOnIdx(t, name, 0)
+}
+
+func PipesDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx int) *PipeDescribeOutputAssert {
+	t.Helper()
+
+	pipeAssert := PipeDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceDescribeOutputAssert(name, "pipes", idx),
+	}
+	return &pipeAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

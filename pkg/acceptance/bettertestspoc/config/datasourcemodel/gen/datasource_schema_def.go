@@ -159,6 +159,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.OpenflowRuntimes().Schema,
 	},
 	{
+		name:   "Pipes",
+		schema: datasources.Pipes().Schema,
+	},
+	{
 		name:   "PostgresMirrors",
 		schema: datasources.PostgresMirrors().Schema,
 	},

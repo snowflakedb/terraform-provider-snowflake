@@ -2,6 +2,8 @@ package sdk
 
 func init() {
 	id := pipesTestIdSchemaObjectIdentifier
+	applicationId := NewAccountObjectIdentifier("application_name")
+	applicationPackageId := NewAccountObjectIdentifier("application_package_name")
 	tagId1 := NewAccountObjectIdentifier("tag_name1")
 	tagId2 := NewAccountObjectIdentifier("tag_name2")
 
@@ -159,15 +161,15 @@ func init() {
 		).
 		withAdditionalValidationCase(
 			"validation_Show_In_noScope",
-			func(opts *ShowPipeOptions) { opts.In = &In{} },
-			errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema"),
+			func(opts *ShowPipeOptions) { opts.In = &ExtendedIn{} },
+			errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema", "Application", "ApplicationPackage"),
 		).
 		withAdditionalValidationCase(
 			"validation_Show_In_moreThanOneScope",
 			func(opts *ShowPipeOptions) {
-				opts.In = &In{Account: Bool(true), Database: id.DatabaseId()}
+				opts.In = &ExtendedIn{Account: Bool(true), Database: id.DatabaseId()}
 			},
-			errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema"),
+			errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema", "Application", "ApplicationPackage"),
 		).
 		withExpectedSql(case_Pipes_sql_Show_basic, `SHOW PIPES`).
 		withModifyAndExpectedSqlf(
@@ -177,14 +179,14 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Pipes_sql_Show_In,
-			func(opts *ShowPipeOptions) { opts.In = &In{Account: Bool(true)} },
+			func(opts *ShowPipeOptions) { opts.In = &ExtendedIn{Account: Bool(true)} },
 			`SHOW PIPES IN ACCOUNT`,
 		).
 		withModifyAndExpectedSqlf(
 			case_Pipes_sql_Show_all,
 			func(opts *ShowPipeOptions) {
 				opts.Like = &Like{Pattern: String(id.Name())}
-				opts.In = &In{Schema: id.SchemaId()}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			`SHOW PIPES LIKE '%s' IN SCHEMA %s`, id.Name(), id.SchemaId().FullyQualifiedName(),
 		)
@@ -192,19 +194,19 @@ func init() {
 	pipesTests.Show.
 		withAdditionalSqlCasef(
 			"sql_Show_In_Database",
-			func(opts *ShowPipeOptions) { opts.In = &In{Database: id.DatabaseId()} },
+			func(opts *ShowPipeOptions) { opts.In = &ExtendedIn{Database: id.DatabaseId()} },
 			`SHOW PIPES IN DATABASE %s`, id.DatabaseId().FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Show_In_Schema",
-			func(opts *ShowPipeOptions) { opts.In = &In{Schema: id.SchemaId()} },
+			func(opts *ShowPipeOptions) { opts.In = &ExtendedIn{Schema: id.SchemaId()} },
 			`SHOW PIPES IN SCHEMA %s`, id.SchemaId().FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Show_Like_In_Account",
 			func(opts *ShowPipeOptions) {
 				opts.Like = &Like{Pattern: String(id.Name())}
-				opts.In = &In{Account: Bool(true)}
+				opts.In = &ExtendedIn{Account: Bool(true)}
 			},
 			`SHOW PIPES LIKE '%s' IN ACCOUNT`, id.Name(),
 		).
@@ -212,9 +214,19 @@ func init() {
 			"sql_Show_Like_In_Database",
 			func(opts *ShowPipeOptions) {
 				opts.Like = &Like{Pattern: String(id.Name())}
-				opts.In = &In{Database: id.DatabaseId()}
+				opts.In = &ExtendedIn{Database: id.DatabaseId()}
 			},
 			`SHOW PIPES LIKE '%s' IN DATABASE %s`, id.Name(), id.DatabaseId().FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_In_Application",
+			func(opts *ShowPipeOptions) { opts.In = &ExtendedIn{Application: applicationId} },
+			`SHOW PIPES IN APPLICATION %s`, applicationId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_In_ApplicationPackage",
+			func(opts *ShowPipeOptions) { opts.In = &ExtendedIn{ApplicationPackage: applicationPackageId} },
+			`SHOW PIPES IN APPLICATION PACKAGE %s`, applicationPackageId.FullyQualifiedName(),
 		)
 
 	pipesTests.Describe.
