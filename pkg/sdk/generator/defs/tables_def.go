@@ -116,7 +116,7 @@ var tableSearchOptimizationAction = g.NewQueryStruct("TableSearchOptimizationAct
 
 var (
 	CloneMomentEnumDef    = g.NewEnum("CloneMoment", "CloneMoments", "AT", "BEFORE")
-	ReclusterStateEnumDef = g.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
+	ReclusterStateEnumDef = ssotdefs.ReclusterState
 	MatchTypeEnumDef      = g.NewEnum("MatchType", "MatchTypes", "FULL", "SIMPLE", "PARTIAL")
 )
 
@@ -234,24 +234,7 @@ func tableClonePoint() *g.QueryStruct {
 }
 
 func tableClusteringAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableClusteringAction").
-		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-		OptionalQueryStructField("Recluster", tableReclusterAction(), g.KeywordOptions().SQL("RECLUSTER")).
-		OptionalQueryStructField("ChangeReclusterState", tableReclusterChangeState(), g.KeywordOptions()).
-		OptionalSQL("DROP CLUSTERING KEY").
-		WithValidation(g.ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
-}
-
-func tableReclusterAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableReclusterAction").
-		OptionalNumberAssignment("MAX_SIZE", g.ParameterOptions()).
-		OptionalAssignmentWithFieldName("WHERE", "*string", g.ParameterOptions().NoEquals(), "Condition")
-}
-
-func tableReclusterChangeState() *g.QueryStruct {
-	return g.NewQueryStruct("TableReclusterChangeState").
-		OptionalEnum("State", ReclusterStateEnumDef, g.KeywordOptions()).
-		SQL("RECLUSTER")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableClusteringAction)
 }
 
 func tableColumnAction() *g.QueryStruct {

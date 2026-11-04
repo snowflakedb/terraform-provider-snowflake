@@ -44,6 +44,13 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 	return v.OptionalQueryStructField(name, nested, opts)
 }
 
+// QueryStructFromAttribute builds the query struct of a SqlOnly object attribute. owner is the interface name, and the
+// struct name is that owner plus the attribute name. The SDK definition calls it for one ALTER field and keeps the rest
+// of the operation handwritten.
+func QueryStructFromAttribute(owner string, attr ssot.Attribute) *QueryStruct {
+	return queryStructFromObject(owner, attr)
+}
+
 // queryStructFromObject builds a fresh query struct for a SqlOnly object attribute: the Children are its fields.
 func queryStructFromObject(owner string, attr ssot.Attribute) *QueryStruct {
 	nested := NewQueryStruct(attr.SqlStructName(owner))
