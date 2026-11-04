@@ -2250,7 +2250,7 @@ func TestAcc_Table_SchemaRemovedExternally(t *testing.T) {
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   tableConfig(tableId),
-				ExpectError:              regexp.MustCompile("error creating table"),
+				ExpectError:              regexp.MustCompile("object does not exist or not authorized"),
 			},
 		},
 	})
