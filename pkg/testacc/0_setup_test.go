@@ -114,7 +114,14 @@ func (atc *acceptanceTestContext) initialize() error {
 
 	// TODO [SNOW-1763603]: what do we do with SimplifiedIntegrationTestsSetup
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
+		if err := logCurrentSnowflakeVersion(ctx, atc.defaultTestEnv.testClient, testprofiles.Default); err != nil {
+			return err
+		}
+
 		if err := atc.initializeSnowflakeEnvironment(ctx, testprofiles.Secondary, &atc.secondaryTestEnv); err != nil {
+			return err
+		}
+		if err := logCurrentSnowflakeVersion(ctx, atc.secondaryTestEnv.testClient, testprofiles.Secondary); err != nil {
 			return err
 		}
 
@@ -126,6 +133,13 @@ func (atc *acceptanceTestContext) initialize() error {
 			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Third, &atc.thirdTestEnv),
 			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Azure, &atc.azureTestEnv),
 			atc.initializeSnowflakeEnvironment(ctx, testprofiles.Gcp, &atc.gcpTestEnv),
+		); errs != nil {
+			return errs
+		}
+		if errs := errors.Join(
+			logCurrentSnowflakeVersion(ctx, atc.thirdTestEnv.testClient, testprofiles.Third),
+			logCurrentSnowflakeVersion(ctx, atc.azureTestEnv.testClient, testprofiles.Azure),
+			logCurrentSnowflakeVersion(ctx, atc.gcpTestEnv.testClient, testprofiles.Gcp),
 		); errs != nil {
 			return errs
 		}
@@ -153,6 +167,9 @@ func (atc *acceptanceTestContext) initialize() error {
 
 		if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeNonProdEnvironment {
 			if err := atc.initializeSnowflakeEnvironment(ctx, testprofiles.SnowflakeDefaults, &atc.snowflakeDefaultsTestEnv); err != nil {
+				return err
+			}
+			if err := logCurrentSnowflakeVersion(ctx, atc.snowflakeDefaultsTestEnv.testClient, testprofiles.SnowflakeDefaults); err != nil {
 				return err
 			}
 
@@ -222,6 +239,15 @@ func cleanup() {
 			defer cleanupFunc()
 		}
 	}
+}
+
+func logCurrentSnowflakeVersion(ctx context.Context, tc *helpers.TestClient, profile string) error {
+	version, err := tc.GetCurrentSnowflakeVersion(ctx)
+	if err != nil {
+		return fmt.Errorf("getting current Snowflake version for profile %s: %w", profile, err)
+	}
+	accTestLog.Printf("[INFO] Current Snowflake version for profile %s: %s", profile, version)
+	return nil
 }
 
 func testClient() *helpers.TestClient {

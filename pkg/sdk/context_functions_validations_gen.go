@@ -17,6 +17,7 @@ var (
 	_ validatable = new(CurrentDatabaseOptions)
 	_ validatable = new(CurrentSchemaOptions)
 	_ validatable = new(CurrentWarehouseOptions)
+	_ validatable = new(CurrentVersionOptions)
 	_ validatable = new(IsRoleInSessionOptions)
 )
 
@@ -125,6 +126,14 @@ func (opts *CurrentSchemaOptions) validate() error {
 }
 
 func (opts *CurrentWarehouseOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	return JoinErrors(errs...)
+}
+
+func (opts *CurrentVersionOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
