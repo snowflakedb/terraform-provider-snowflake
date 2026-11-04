@@ -244,6 +244,14 @@ This affects only new imports of these resources. Resources that are already in 
 
 When a resource starts supporting `IMPORT_PERMISSIVE_MODE`, it stops honoring `IMPORT_BOOLEAN_DEFAULT`, and this guide lists it. After all resources are migrated, `IMPORT_BOOLEAN_DEFAULT` will be discontinued.
 
+### *(new feature)* `DATA_CONNECTIVITY_PROXY_EGRESS` mode in `snowflake_network_rule`
+
+[`snowflake_network_rule`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_rule) now accepts `DATA_CONNECTIVITY_PROXY_EGRESS` as a `mode` value. Use it with `type = "HOST_PORT"` and a DNS `host:port` in `value_list` so a [Data Connectivity Proxy](https://docs.snowflake.com/en/user-guide/data-connectivity-proxy-setup) can reach a private destination. Ordinary `EGRESS` rules are not applied to the proxy.
+
+No action is required unless you want to manage a Data Connectivity Proxy network rule with this resource.
+
+Reference: [#5363](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5363).
+
 ### *(bug fix)* `snowflake_object_parameter` unsets a parameter whose Snowflake default is empty
 
 Destroying [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) resets the parameter on the object. When the Snowflake default is an empty string, `SET` does not emit that value, so the parameter stayed set. Destroy now runs `UNSET` in that case. A parameter whose default is not empty is still reset with `SET`.
