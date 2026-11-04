@@ -15,8 +15,6 @@ There are existing guides that this one assumes you are familiar with:
 - Each resource's own documentation lists every field and its behavior: [snowflake_openflow_deployment_snowflake_managed](../resources/openflow_deployment_snowflake_managed), [snowflake_openflow_deployment_byoc](../resources/openflow_deployment_byoc), [snowflake_openflow_runtime](../resources/openflow_runtime), [snowflake_openflow_connector](../resources/openflow_connector).
 - This guide will focus on creating a Snowflake-managed deployment using [snowflake_openflow_deployment_snowflake_managed](../resources/openflow_deployment_snowflake_managed).
 
-!> **Caution: Preview Feature** At the time of writing this guide, all Openflow resources and data sources are preview features. Breaking changes are expected, even without bumping the major version. If they are still preview features, each one has to be enabled by name in `preview_features_enabled`, as shown below.
-
 ## Table of contents
 
 * [How the objects fit together](#how-the-objects-fit-together)
@@ -80,14 +78,14 @@ These grants can also be managed in Terraform with [snowflake_grant_privileges_t
 
 ## Provider configuration
 
-Openflow resources are preview features, so list the ones you use. `snowflake_external_access_integration` is a preview feature too; the database, schema, warehouse, secret, network rule, stage, grant and `snowflake_execute` resources are stable and need no entry.
+At the time of writing, `snowflake_external_access_integration` is still a preview feature, so include it in `preview_features_enabled`.
 
 ```terraform
 terraform {
   required_providers {
     snowflake = {
       source  = "snowflakedb/snowflake"
-      version = "~> 2.21"
+      version = "~> 2.23"
     }
     # only needed if you render a connector's config.json, as shown in step 6
     local = {
@@ -99,12 +97,7 @@ terraform {
 
 provider "snowflake" {
   preview_features_enabled = [
-    "snowflake_openflow_deployment_snowflake_managed_resource",
-    "snowflake_openflow_runtime_resource",
-    "snowflake_openflow_connector_resource",
     "snowflake_external_access_integration_resource",
-    "snowflake_openflow_deployments_datasource",
-    "snowflake_openflow_connector_definitions_datasource",
   ]
 }
 ```

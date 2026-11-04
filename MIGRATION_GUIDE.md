@@ -83,6 +83,32 @@ No changes are required for existing configurations unless you want to adopt the
 
 Reference: [#5229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5229).
 
+### *(improvement)* Openflow resources and data sources promoted to stable
+
+The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be
+used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration
+if present.
+
+**Resources:**
+
+- `snowflake_openflow_connector` (`snowflake_openflow_connector_resource`)
+- `snowflake_openflow_deployment_byoc` (`snowflake_openflow_deployment_byoc_resource`)
+- `snowflake_openflow_deployment_snowflake_managed` (`snowflake_openflow_deployment_snowflake_managed_resource`)
+- `snowflake_openflow_runtime` (`snowflake_openflow_runtime_resource`)
+
+**Data sources:**
+
+- `snowflake_openflow_connector_definitions` (`snowflake_openflow_connector_definitions_datasource`)
+- `snowflake_openflow_connectors` (`snowflake_openflow_connectors_datasource`)
+- `snowflake_openflow_deployments` (`snowflake_openflow_deployments_datasource`)
+- `snowflake_openflow_runtimes` (`snowflake_openflow_runtimes_datasource`)
+
+Provider will issue a warning if a stable feature is still present in the `preview_features_enabled` list. These values
+will be removed in the next major version.
+
+Read more about preview and stable features in
+our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
 ### *(new feature)* Replication group resources and data source
 
 We have added two new preview resources for [replication groups](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group). [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) manages the group in the source account. [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) manages a replica in the target account. `allowed_accounts` is the list of target accounts. Snowflake also includes the source account, and the resource omits that account from state. `object_types` and the allowed-object lists are changed in one ALTER, and `comment`, `replication_schedule`, and `error_integration` are changed in another.
