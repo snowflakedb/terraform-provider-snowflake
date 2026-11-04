@@ -137,6 +137,7 @@ var BackupPolicy = ssot.Object{
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithApplySetUnset(ssot.ExtCall()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),

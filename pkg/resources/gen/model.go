@@ -71,6 +71,16 @@ func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
 }
 
+// HierarchyRenameParents reports whether the generated Update moves a schema object to another database or schema.
+func (m ResourceModel) HierarchyRenameParents() bool {
+	return m.Hooks.HierarchyRename.Generate && m.IdType == "SchemaObjectIdentifier" && !m.IdentityHierarchyForceNew
+}
+
+// HierarchyRenameName reports whether the generated Update renames the object name.
+func (m ResourceModel) HierarchyRenameName() bool {
+	return m.Hooks.HierarchyRename.Generate && !m.IdentityNameForceNew
+}
+
 // ShowObjectName is the SDK type of the SHOW row passed to SetConfigFields.
 // A variant's row is the parent type.
 func (m ResourceModel) ShowObjectName() string {

@@ -33,8 +33,9 @@ func appendDiffEntry(entries []CustomDiffEntry, present bool, key string, attrs 
 }
 
 // CustomDiffCalls is every generated customdiff.All argument, in call order:
-// show_output, describe_output, parameters computed-if, fully_qualified_name,
-// the parameters custom diff, then AdditionalCustomizeDiffs in list order.
+// the hierarchy-rename ForceNew workaround for database and schema when the generated
+// hierarchy rename moves a schema object, then show_output, describe_output, parameters computed-if,
+// fully_qualified_name, the parameters custom diff, then AdditionalCustomizeDiffs in list order.
 func (m ResourceModel) CustomDiffCalls() []string {
 	schema := m.Prefix() + "Schema"
 	calls := make([]string, 0, 6)
@@ -58,6 +59,12 @@ func (m ResourceModel) CustomDiffCalls() []string {
 	}
 	for _, diff := range m.AdditionalCustomizeDiffs {
 		calls = append(calls, string(diff))
+	}
+	if m.HierarchyRenameParents() {
+		calls = append([]string{
+			`TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database")`,
+			`TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema")`,
+		}, calls...)
 	}
 	return calls
 }

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -76,22 +75,6 @@ func authenticationPolicyEnumStrings[T ~string](values []T) []string {
 		out[i] = string(value)
 	}
 	return out
-}
-
-func authenticationPolicyHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta any, id *sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	if d.HasChange("name") {
-		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
-
-		client := meta.(*provider.Context).Client
-		err := client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(*id).WithRenameTo(newId))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		d.SetId(helpers.EncodeResourceIdentifier(newId))
-		*id = newId
-	}
-	return nil
 }
 
 func authenticationPolicyApplySetUnsetExt(d *schema.ResourceData) (*authenticationPolicyAlterRequestsExt, error) {

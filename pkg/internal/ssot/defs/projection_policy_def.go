@@ -102,7 +102,7 @@ var ProjectionPolicy = ssot.Object{
 		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
-		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithApplySetUnset(ssot.ExtCall()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -55,20 +54,6 @@ func backupSetApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.Creat
 		schemaObjectIdentifierAttributeCreate(d, "backup_policy", &request.WithBackupPolicy),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
-}
-
-// Name is not ForceNew. RENAME TO updates the id used by the later SET and UNSET.
-func backupSetHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta any, id *sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	if !d.HasChange("name") || d.GetRawState().IsNull() {
-		return nil
-	}
-	newID := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), d.Get("name").(string))
-	if err := meta.(*provider.Context).Client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(*id).WithRenameTo(newID)); err != nil {
-		return diag.FromErr(err)
-	}
-	d.SetId(helpers.EncodeResourceIdentifier(newID))
-	*id = newID
-	return nil
 }
 
 // backup_policy is APPLY BACKUP POLICY, not SET. The public page has no UNSET BACKUP POLICY.
