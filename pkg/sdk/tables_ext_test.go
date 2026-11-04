@@ -813,7 +813,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_AddStorageLifecyclePolicy,
 			func(opts *AlterTableOptions) {
-				opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+				opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
 					StorageLifecyclePolicy: storageLifecyclePolicyId,
 					On:                     []Column{{Value: "FIRST_COLUMN"}},
 				}
@@ -824,7 +824,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Alter_addStorageLifecyclePolicy_multipleColumns",
 			func(opts *AlterTableOptions) {
-				opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+				opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
 					StorageLifecyclePolicy: storageLifecyclePolicyId,
 					On:                     []Column{{Value: "FIRST_COLUMN"}, {Value: "SECOND_COLUMN"}},
 				}

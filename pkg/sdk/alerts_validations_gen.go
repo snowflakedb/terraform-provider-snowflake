@@ -15,6 +15,9 @@ func (opts *CreateAlertOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if opts.Warehouse != nil && !ValidObjectIdentifier(opts.Warehouse) {
+		errs = append(errs, errInvalidIdentifier("CreateAlertOptions", "Warehouse"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateAlertOptions", "name"))
 	}
@@ -36,6 +39,9 @@ func (opts *AlterAlertOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterAlertOptions", "Resume", "Suspend", "Set", "Unset", "ModifyCondition", "ModifyAction"))
 	}
 	if valueSet(opts.Set) {
+		if opts.Set.Warehouse != nil && !ValidObjectIdentifier(opts.Set.Warehouse) {
+			errs = append(errs, errInvalidIdentifier("AlterAlertOptions.Set", "Warehouse"))
+		}
 		if !anyValueSet(opts.Set.Warehouse, opts.Set.Schedule, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterAlertOptions.Set", "Warehouse", "Schedule", "Comment"))
 		}

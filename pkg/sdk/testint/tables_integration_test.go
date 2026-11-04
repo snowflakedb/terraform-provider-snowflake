@@ -624,7 +624,7 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(tableId))
 
 		addRequest := sdk.NewAlterTableRequest(tableId).WithAddStorageLifecyclePolicy(
-			*sdk.NewTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "COLUMN_1"}}),
+			*sdk.NewTableStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "COLUMN_1"}}),
 		)
 		err = client.Tables.Alter(ctx, addRequest)
 		require.NoError(t, err)

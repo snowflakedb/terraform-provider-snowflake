@@ -588,7 +588,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		}
 	}
 	if r.AddStorageLifecyclePolicy != nil {
-		opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+		opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
 			StorageLifecyclePolicy: r.AddStorageLifecyclePolicy.StorageLifecyclePolicy,
 			On:                     r.AddStorageLifecyclePolicy.On,
 		}

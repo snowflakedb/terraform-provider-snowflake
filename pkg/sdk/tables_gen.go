@@ -214,7 +214,7 @@ type AlterTableOptions struct {
 	DropRowAccessPolicy        *TableDropRowAccessPolicy            `ddl:"keyword"`
 	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicy      `ddl:"list,no_parentheses"`
 	DropAllRowAccessPolicies   *bool                                `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
-	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicy      `ddl:"keyword"`
+	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicy         `ddl:"keyword"`
 	DropStorageLifecyclePolicy *bool                                `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
 }
 
@@ -413,9 +413,8 @@ type TableDropAndAddRowAccessPolicy struct {
 	Add  TableAddRowAccessPolicy  `ddl:"keyword"`
 }
 
-type TableAddStorageLifecyclePolicy struct {
-	add                    bool                   `ddl:"static" sql:"ADD"`
-	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"STORAGE LIFECYCLE POLICY"`
+type TableStorageLifecyclePolicy struct {
+	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ADD STORAGE LIFECYCLE POLICY"`
 	On                     []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 

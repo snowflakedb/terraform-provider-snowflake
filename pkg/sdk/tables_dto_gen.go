@@ -184,7 +184,7 @@ type AlterTableRequest struct {
 	DropRowAccessPolicy        *TableDropRowAccessPolicyRequest
 	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicyRequest
 	DropAllRowAccessPolicies   *bool
-	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicyRequest
+	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicyRequest
 	DropStorageLifecyclePolicy *bool
 }
 
@@ -373,7 +373,7 @@ type TableDropAndAddRowAccessPolicyRequest struct {
 	Add  TableAddRowAccessPolicyRequest  // required
 }
 
-type TableAddStorageLifecyclePolicyRequest struct {
+type TableStorageLifecyclePolicyRequest struct {
 	StorageLifecyclePolicy SchemaObjectIdentifier // required
 	On                     []Column               // required
 }

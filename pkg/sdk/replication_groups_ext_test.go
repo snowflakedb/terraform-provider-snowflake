@@ -102,11 +102,6 @@ func init() {
 			id.FullyQualifiedName(),
 		).
 		withAdditionalValidationCase(
-			"validation_Create_ObjectTypes_required",
-			func(opts *CreateReplicationGroupOptions) { opts.ObjectTypes = nil },
-			NewError("OBJECT_TYPES must be set"),
-		).
-		withAdditionalValidationCase(
 			"validation_Create_Databases_requireAllowedDatabases",
 			func(opts *CreateReplicationGroupOptions) {
 				opts.ObjectTypes = []ReplicationGroupObjectType{ReplicationGroupObjectTypeDatabases}
@@ -546,12 +541,5 @@ func init() {
 			func(opts *CreateSecondaryReplicationGroupOptions) { opts.IfNotExists = new(true) },
 			`CREATE REPLICATION GROUP IF NOT EXISTS %s AS REPLICA OF "myorg"."myaccount"."myrg"`,
 			id.FullyQualifiedName(),
-		).
-		withAdditionalValidationCase(
-			"validation_CreateSecondary_AsReplicaOf_ValidIdentifier",
-			func(opts *CreateSecondaryReplicationGroupOptions) {
-				opts.AsReplicaOf = emptyExternalObjectIdentifier
-			},
-			errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "AsReplicaOf"),
 		)
 }

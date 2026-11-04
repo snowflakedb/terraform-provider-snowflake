@@ -537,6 +537,7 @@ func Test_CreateAlterFromObject(t *testing.T) {
 				IfNotExists().
 				Name().
 				OptionalIdentifier("ForApplication", "AccountObjectIdentifier", IdentifierOptions().SQL("FOR APPLICATION")).
+				WithValidation(ValidIdentifierIfSet, "ForApplication").
 				NumberAssignment("COUNT", ParameterOptions().Required()).
 				EnumAssignment("KIND", family, ParameterOptions().NoQuotes().Required()).
 				OptionalTags().

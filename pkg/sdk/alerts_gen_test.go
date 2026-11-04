@@ -13,6 +13,7 @@ func init() {
 var alertsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
+	case_Alerts_validation_Create_Warehouse_ValidIdentifierIfSet        testCaseName = "validation_Create_Warehouse_ValidIdentifierIfSet"
 	case_Alerts_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Alerts_validation_Create_opts_ConflictingFields                testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Alerts_sql_Create_basic                                        testCaseName = "sql_Create_basic"
@@ -20,6 +21,7 @@ const (
 	case_Alerts_validation_Alter_name_ValidIdentifier                   testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_Alerts_validation_Alter_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Alerts_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Alerts_validation_Alter_Set_Warehouse_ValidIdentifierIfSet     testCaseName = "validation_Alter_Set_Warehouse_ValidIdentifierIfSet"
 	case_Alerts_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Alerts_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Alerts_sql_Alter_Resume                                        testCaseName = "sql_Alter_Resume"
@@ -59,6 +61,13 @@ var alertsTests = AlertsTestsContext{
 			}
 		}).
 		withValidationCases(
+			validationCase[*CreateAlertOptions]{
+				Name:        case_Alerts_validation_Create_Warehouse_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateAlertOptions", "Warehouse"),
+				DefaultModify: func(opts *CreateAlertOptions) {
+					opts.Warehouse = new(emptyAccountObjectIdentifier)
+				},
+			},
 			validationCase[*CreateAlertOptions]{
 				Name:        case_Alerts_validation_Create_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateAlertOptions", "name"),
@@ -118,6 +127,14 @@ var alertsTests = AlertsTestsContext{
 				DefaultModify: func(opts *AlterAlertOptions) {
 					opts.Resume = new(true)
 					opts.Suspend = new(true)
+				},
+			},
+			validationCase[*AlterAlertOptions]{
+				Name:        case_Alerts_validation_Alter_Set_Warehouse_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterAlertOptions.Set", "Warehouse"),
+				DefaultModify: func(opts *AlterAlertOptions) {
+					opts.Set = &AlertSet{}
+					opts.Set.Warehouse = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterAlertOptions]{

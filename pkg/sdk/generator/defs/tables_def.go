@@ -466,12 +466,7 @@ func tableDropAndAddRowAccessPolicy() *g.QueryStruct {
 }
 
 func tableAddStorageLifecyclePolicy() *g.QueryStruct {
-	return g.NewQueryStruct("TableAddStorageLifecyclePolicy").
-		SQL("ADD").
-		Identifier("StorageLifecyclePolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("STORAGE LIFECYCLE POLICY").Required()).
-		ListAssignment("ON", "Column", g.ParameterOptions().NoEquals().Parentheses().Required()).
-		WithValidation(g.ValidIdentifier, "StorageLifecyclePolicy").
-		WithValidation(g.ValidateValueSet, "On")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableStorageLifecyclePolicy)
 }
 
 // DESCRIBE TABLE returns the collation glued onto the "type" column (e.g. "VARCHAR(200) COLLATE 'en-ci'"),
