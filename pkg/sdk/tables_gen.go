@@ -220,8 +220,8 @@ type AlterTableOptions struct {
 
 type TableClusteringAction struct {
 	ClusterBy            []string                   `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	Recluster            *TableReclusterAction      `ddl:"keyword" sql:"RECLUSTER"`
-	ChangeReclusterState *TableReclusterChangeState `ddl:"keyword"`
+	Recluster            *TableReclusterAction      `ddl:"list,no_comma" sql:"RECLUSTER"`
+	ChangeReclusterState *TableReclusterChangeState `ddl:"list,no_comma"`
 	DropClusteringKey    *bool                      `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
 }
 

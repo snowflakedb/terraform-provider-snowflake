@@ -176,6 +176,8 @@ var (
 	TableScope          = ssot.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
 	TableKind           = ssot.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
 	TableConstraintType = ssot.NewEnum("TableConstraintType", "TableConstraintTypes", "PRIMARY KEY", "UNIQUE", "FOREIGN KEY")
+	// ReclusterState is RESUME or SUSPEND before the static RECLUSTER keyword.
+	ReclusterState = ssot.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
 )
 
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,

@@ -267,7 +267,7 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 		}
 		seen[child.Name] = struct{}{}
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
-			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
 		}
 		if child.SqlOnly {
 			validateSqlClause(obj, child, "CREATE", child.CreateSql)
@@ -288,10 +288,10 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 }
 
 // isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword,
-// an identifier, or a nested struct.
+// an identifier, a parameter, or a nested struct.
 func isNestedSqlOnlyClause(child Attribute) bool {
 	switch child.CreateSql.Kind {
-	case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier:
+	case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter:
 		return true
 	case SqlKindObject:
 		return child.Type == AttrObject

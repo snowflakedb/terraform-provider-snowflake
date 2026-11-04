@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -607,4 +608,27 @@ func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T
 			NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newFormat())
 		})
 	})
+}
+
+func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
+	attr := ssotdefs.TableClusteringAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := queryStructFromObject("Table", attr)
+	want := NewQueryStruct("TableClusteringAction").
+		PredefinedQueryStructField("ClusterBy", "[]string", KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+		OptionalQueryStructField("Recluster",
+			NewQueryStruct("TableReclusterAction").
+				OptionalNumberAssignment("MAX_SIZE", ParameterOptions()).
+				OptionalAssignmentWithFieldName("WHERE", "*string", ParameterOptions().NoEquals(), "Condition"),
+			ListOptions().NoComma().SQL("RECLUSTER")).
+		OptionalQueryStructField("ChangeReclusterState",
+			NewQueryStruct("TableReclusterChangeState").
+				OptionalEnum("State", ssotdefs.ReclusterState, KeywordOptions()).
+				SQL("RECLUSTER"),
+			ListOptions().NoComma()).
+		OptionalSQL("DROP CLUSTERING KEY").
+		WithValidation(ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
+	require.Equal(t, want.IntoField(), got.IntoField())
 }

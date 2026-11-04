@@ -362,8 +362,8 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 }
 
 // ObjectParameter is a nested struct clause. On the Elem object of a list it is the shape of each element: Parentheses()
-// puts each element in parentheses. On a SqlOnly object attribute it is a nested struct inside a variant: Sql is the text
-// before it and Parentheses() wraps its fields. The fields are the Children.
+// puts each element in parentheses. On a SqlOnly object attribute it is a nested struct: Sql is the text before it and
+// Parentheses() wraps its fields. The fields are the Children. Without parentheses the nested struct is a list with no commas.
 func ObjectParameter(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindObject, nil, opts)
 }

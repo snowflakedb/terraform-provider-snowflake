@@ -1343,15 +1343,22 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 
 	t.Run("without an object clause", func(t *testing.T) {
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "block", Type: AttrObject, Children: []Attribute{typeOauth, uri}}}})
 		})
 	})
 
-	t.Run("not static", func(t *testing.T) {
-		notStatic := Attribute{Name: "other", SqlOnly: true, CreateSql: StringParameter()}
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, or a nested struct of an object clause`, func() {
-			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{notStatic, uri}})
+	t.Run("sql-only without a clause", func(t *testing.T) {
+		bare := Attribute{Name: "other", SqlOnly: true}
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{bare, uri}})
+		})
+	})
+
+	t.Run("parameter child", func(t *testing.T) {
+		where := Attribute{Name: "other", Type: AttrString, SqlOnly: true, CreateSql: PlainParameter(Sql("WHERE"), NoEquals())}
+		require.NotPanics(t, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{where, uri}})
 		})
 	})
 
