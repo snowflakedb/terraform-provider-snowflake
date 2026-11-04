@@ -106,7 +106,7 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestToSchema(catalogIntegrationIcebergRest)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(catalogIntegrationIcebergRest)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestDetailsToSchema(catalogIntegrationIcebergRestDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			catalogIntegrationIcebergRestSetConfigFieldsExt(ctx, d, meta, catalogIntegrationIcebergRest),

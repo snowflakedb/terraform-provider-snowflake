@@ -55,7 +55,6 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 	var projection *genhelpers.ShowProjectionDef
 	var describeOverride *genhelpers.DescribeOverrideDef
 	objectTypeName := ""
-	sdkType := ""
 	if isDescribe {
 		noIdentifiableObject = g.ObjectAssert.NoIdentifiableObject
 		skip = objectAssertSkipNames(obj, g.ObjectAssert.DescribeSkipFields)
@@ -65,13 +64,6 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 				MethodName: fetch.Method,
 			}
 		}
-	} else if row, ok := obj.ShowRowFromBase(); ok {
-		projection = &genhelpers.ShowProjectionDef{
-			ClientName: row.ClientName,
-			Method:     row.Method,
-		}
-		objectTypeName = row.ClientName
-		sdkType = "sdk." + row.ClientName
 	} else if fromBase, ok := obj.ShowFromBase(); ok {
 		projection = &genhelpers.ShowProjectionDef{
 			ClientName: fromBase.ClientName,
@@ -86,7 +78,6 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 		NoIdentifiableObject: noIdentifiableObject,
 		ShowProjection:       projection,
 		DescribeOverride:     describeOverride,
-		SdkType:              sdkType,
 		SkipFields:           skip,
 		NestedAssertFields:   objectAssertNestedNames(obj, nested),
 		StructDetails: genhelpers.StructDetails{

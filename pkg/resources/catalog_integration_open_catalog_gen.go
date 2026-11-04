@@ -106,7 +106,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogToSchema(catalogIntegrationOpenCatalog)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(catalogIntegrationOpenCatalog)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogDetailsToSchema(catalogIntegrationOpenCatalogDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)

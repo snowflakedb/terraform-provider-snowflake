@@ -13,6 +13,8 @@ import (
 
 type SdkObjectShowOutputDetails struct {
 	dataSourceDef *dataSourceDef
+	// reusedBase is the object whose show output assertion type a reusing variant returns. Empty when the object owns its assertion.
+	reusedBase string
 	genhelpers.SdkObjectDetails
 }
 
@@ -106,7 +108,7 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 	})
 	return collections.Map(filtered, func(d genhelpers.SdkObjectDetails) SdkObjectShowOutputDetails {
 		v, _ := dataSourceMappingNormalized[d.Name]
-		return SdkObjectShowOutputDetails{&v, d}
+		return SdkObjectShowOutputDetails{dataSourceDef: &v, SdkObjectDetails: d}
 	})
 }
 

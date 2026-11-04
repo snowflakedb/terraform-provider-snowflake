@@ -105,7 +105,7 @@ func ReadCatalogIntegrationObjectStorageFunc(withExternalChangesMarking bool) tf
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationObjectStorageToSchema(catalogIntegrationObjectStorage)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(catalogIntegrationObjectStorage)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationObjectStorageDetailsToSchema(catalogIntegrationObjectStorageDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			catalogIntegrationObjectStorageSetConfigFieldsExt(ctx, d, meta, catalogIntegrationObjectStorage),

@@ -1632,3 +1632,114 @@ func Test_ValidateObject_identityNamesCreatedBySnowflake(t *testing.T) {
 		})
 	}
 }
+
+func showReuseBaseObject(opts ...GeneratorOption) *Object {
+	return &Object{Name: "Base", Generators: opts}
+}
+
+func Test_ValidateObject_showReuse(t *testing.T) {
+	baseWithShow := func() *Object {
+		return showReuseBaseObject(WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
+	}
+	variant := func(base *Object, opts ...GeneratorOption) Object {
+		return Object{Name: "Variant", VariantOf: base, Generators: opts}
+	}
+	reuseBoth := []GeneratorOption{
+		WithSchema(SchemaShow(SchemaShowFromBase())),
+		WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase())),
+	}
+
+	t.Run("valid reuse resolves to the base", func(t *testing.T) {
+		obj := variant(baseWithShow(), reuseBoth...)
+		require.NotPanics(t, func() { ValidateObject(obj) })
+		require.True(t, obj.ReusesBaseSchemaShow())
+		require.True(t, obj.ReusesBaseObjectAssertShow())
+		require.Equal(t, "Base", obj.SchemaShowOwnerName())
+		require.Equal(t, "Base", obj.ObjectAssertShowOwnerName())
+	})
+	t.Run("without reuse the object owns its artifacts", func(t *testing.T) {
+		obj := variant(baseWithShow(), WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
+		require.False(t, obj.ReusesBaseSchemaShow())
+		require.False(t, obj.ReusesBaseObjectAssertShow())
+		require.Equal(t, "Variant", obj.SchemaShowOwnerName())
+		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
+	})
+	t.Run("reuse is independent per generator", func(t *testing.T) {
+		obj := variant(baseWithShow(), WithSchema(SchemaShow(SchemaShowFromBase())), WithObjectAssert(ObjectAssertShow()))
+		require.Equal(t, "Base", obj.SchemaShowOwnerName())
+		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
+	})
+	t.Run("requires VariantOf", func(t *testing.T) {
+		require.Panics(t, func() {
+			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithSchema(SchemaShow(SchemaShowFromBase()))}})
+		})
+		require.Panics(t, func() {
+			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))}})
+		})
+	})
+	t.Run("the base must generate the artifact", func(t *testing.T) {
+		require.Panics(t, func() {
+			ValidateObject(variant(showReuseBaseObject(WithObjectAssert(ObjectAssertShow())), WithSchema(SchemaShow(SchemaShowFromBase()))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(variant(showReuseBaseObject(WithSchema(SchemaShow())), WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))))
+		})
+	})
+	t.Run("a reusing variant cannot override show-side options", func(t *testing.T) {
+		tables := Attribute{Name: "tables"}
+		obj := func(opts ...GeneratorOption) Object {
+			return Object{
+				Name:       "Variant",
+				VariantOf:  baseWithShow(),
+				Attributes: []Attribute{tables},
+				Show:       OutputSpec{Columns: []*Attribute{&tables}},
+				Generators: opts,
+			}
+		}
+		require.Panics(t, func() {
+			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowManualFields(&tables)))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowListFields(&tables)))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowSkipFields(&tables)))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowNestedField(&tables)))))
+		})
+	})
+}
+
+func Test_ValidateObject_showOutputAssertReuse(t *testing.T) {
+	base := func(opts ...GeneratorOption) *Object { return &Object{Name: "Base", Generators: opts} }
+	variant := func(b *Object, opts ...ShowOutputShowOption) Object {
+		return Object{Name: "Variant", VariantOf: b, Generators: []GeneratorOption{WithShowOutputAssert(ShowOutputShow(opts...))}}
+	}
+	baseWithShowOutput := func() *Object { return base(WithShowOutputAssert(ShowOutputShow())) }
+
+	t.Run("valid reuse resolves to the base", func(t *testing.T) {
+		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase())
+		require.NotPanics(t, func() { ValidateObject(obj) })
+		require.True(t, obj.ReusesBaseShowOutputAssertShow())
+		require.Equal(t, "Base", obj.ShowOutputAssertShowOwnerName())
+	})
+	t.Run("without reuse the object owns its assertion", func(t *testing.T) {
+		obj := variant(baseWithShowOutput())
+		require.False(t, obj.ReusesBaseShowOutputAssertShow())
+		require.Equal(t, "Variant", obj.ShowOutputAssertShowOwnerName())
+	})
+	t.Run("requires VariantOf", func(t *testing.T) {
+		require.Panics(t, func() { ValidateObject(variant(nil, ShowOutputShowRowFromBase())) })
+	})
+	t.Run("the base must generate the assertion", func(t *testing.T) {
+		require.Panics(t, func() { ValidateObject(variant(base(), ShowOutputShowRowFromBase())) })
+	})
+	t.Run("cannot set skip fields", func(t *testing.T) {
+		tables := Attribute{Name: "tables"}
+		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase(), ShowOutputShowSkipFields(&tables))
+		obj.Attributes = []Attribute{tables}
+		obj.Show = OutputSpec{Columns: []*Attribute{&tables}}
+		require.Panics(t, func() { ValidateObject(obj) })
+	})
+}

@@ -257,8 +257,9 @@ enable nothing.
   `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
   key stays in the generated schema map, and its mapping line is not generated — `*_ext.go` must implement the
   generated `additionalSchemaMapper[T]` stub instead. `SchemaDescribe(SchemaDescribeManualFields(&attrs.Password))`
-  is the describe-side copy. `SchemaShow(SchemaShowFromBase())` keeps `Show<Variant>Schema` and `<Variant>ToSchema`, and maps
-  `*sdk.<VariantOf.Name>`. Use it when every variant is one row of the base SHOW type.
+  is the describe-side copy. `SchemaShow(SchemaShowFromBase())` reuses the base's SHOW schema: no `Show<Variant>Schema` or
+  `<Variant>ToSchema` is generated, and the variant resource uses `Show<VariantOf.Name>Schema` and
+  `<VariantOf.Name>ToSchema`. See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
 - `WithModel()` - resource config model builders (`make generate-resource-model-builders`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-resource-config-model-builders). Fields come
   from `Attributes` and identity, not from [SHOW and DESCRIBE](#show-and-describe) `Columns`. Types are
@@ -291,8 +292,10 @@ enable nothing.
   `ShowOutputShow(ShowOutputShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The argument is
   the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not generated.
   `ShowOutputDescribe(ShowOutputDescribeSkipFields(&attrs.Password))` is the describe-side copy.
-  `ShowOutputShow` does not use the SHOW row Go type, so a variant whose SHOW row is the base type still opts in. The
-  assertion is named after the variant.
+  `ShowOutputShow(ShowOutputShowRowFromBase())` makes a variant whose SHOW row is the base type generate only the
+  constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, which return the base's assertion type. Without it
+  the assertion is named after the variant.
+  See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
 - `WithObjectAssert(ObjectAssertShow(), ObjectAssertDescribe())` - Snowflake object assertions (
   `make generate-snowflake-object-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-assertions). Fields come
@@ -315,8 +318,9 @@ enable nothing.
   `ObjectAssertDescribe(ObjectAssertDescribeFromBase("DescribeAwsGlue"))` fetches through `testClient.<VariantOf.Name>.<method>`. The details type stays `sdk.<Object>Details`.
   Identified rows provide `ID()` in SDK extensions when it is not generated.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
-  slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowRowFromBase())` uses `sdk.<VariantOf.Name>` as the row and fetches through
-  `testClient.<VariantOf.Name>.Show`. The assertion name stays the variant. Use it when every variant is one row of the base SHOW type.
+  slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowRowFromBase())` reuses the base's SHOW object assertion: no `<Variant>`
+  assertion is generated, and tests assert the variant through the base's (`testClient.<VariantOf.Name>.Show`).
+  See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
   `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through
   `testClient.<VariantOf.Name>.ShowByIDAdaptive` and keeps `sdk.<Variant>` as the row. `Object.ShowFromBase` resolves that
   client from `VariantOf`. The object type constant is `sdk.ObjectType<VariantOf.Name>`. These are settings of
@@ -603,6 +607,29 @@ An optional boolean-string uses `booleanStringFromBool`. An identifier uses `Ful
 A SHOW pointer is passed through. No matching fields returns nil.
 Skipping a nested block does not panic. An object that also writes `show_output` in this hook, or that copies
 values from DESCRIBE, keeps `ExtCall`.
+
+#### Variants that reuse the base SHOW row
+
+A variant (`VariantOf` set) whose SHOW row is the base's row, such as the catalog integration variants and
+`ReplicationGroupSecondary`, does not need its own copy of the artifacts that only describe that row. It declares the
+reuse once per generator, and the generators keep separate settings:
+
+| Setting | The variant reuses | Still generated for the variant |
+|---|---|---|
+| `SchemaShow(SchemaShowFromBase())` | `Show<Base>Schema` and `<Base>ToSchema` | DESCRIBE schema |
+| `ObjectAssertShow(ObjectAssertShowRowFromBase())` | the base's SHOW object assertion | DESCRIBE object assertion |
+| `ShowOutputShow(ShowOutputShowRowFromBase())` | the base's SHOW show output assertion type | the constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, and the DESCRIBE assertion |
+
+Artifacts named after the Terraform resource, such as the resource assertions and the show output constructors, are still
+generated per variant, because tests refer to them by resource. Reuse is a deliberate choice: validation panics when the
+object has no `VariantOf`, when the base does not generate the artifact, or when the variant also sets a show-side option
+for that generator (manual or list fields, skip fields, nested fields, or a projection). A variant that needs any such
+override drops the setting and configures SHOW itself, as the warehouse variants do.
+
+`Object.SchemaShowOwnerName`, `Object.ObjectAssertShowOwnerName`, and `Object.ShowOutputAssertShowOwnerName` return the
+base's name when the matching setting is on, and the object's own name otherwise.
+
+TODO [next PRs]: the three settings stay separate on purpose for now. They may merge into one declaration of the variant.
 
 #### Other generators
 

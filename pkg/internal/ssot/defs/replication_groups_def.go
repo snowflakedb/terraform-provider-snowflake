@@ -563,9 +563,9 @@ var ReplicationGroupSecondary = ssot.Object{
 		ssot.WithResource(),
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()), ssot.ShowOutputDescribe()),
 		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase()), ssot.SchemaDescribe()),
-		ssot.WithObjectAssert(ssot.ObjectAssertDescribe()),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()), ssot.ObjectAssertDescribe()),
 	},
 	// SHOW is the base row. The schema is ShowReplicationGroupSchema. Create and alter use the variant methods.
 	ResourceHooks: []ssot.ResourceHookOption{

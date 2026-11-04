@@ -103,7 +103,7 @@ func ReadReplicationGroupSecondaryFunc(withExternalChangesMarking bool) tfschema
 			return diag.FromErr(err)
 		}
 		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ReplicationGroupSecondaryToSchema(replicationGroupSecondary)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ReplicationGroupToSchema(replicationGroupSecondary)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			replicationGroupSecondarySetComputedFields(d, replicationGroupSecondary),
 		)

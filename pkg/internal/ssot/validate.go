@@ -101,6 +101,8 @@ func ValidateObject(obj Object) {
 	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.PairedShowColumns(), g.ShowOutputAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
 	obj.ShowFromBase()
+	validateShowReuse(obj, g)
+	validateShowOutputAssertReuse(obj, g)
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 	validateCustomizeDiff(obj)
@@ -1165,4 +1167,43 @@ func validateSdkString(obj Object, attr Attribute) {
 	case !attr.OptionalInShow && !attr.OptionalInDb:
 		panic(fmt.Sprintf("object %q: SdkString attribute %q needs OptionalInShow or OptionalInDb for its string column", obj.Name, attr.Name))
 	}
+}
+
+// validateShowReuse checks a variant that reuses its base's SHOW schema or SHOW object assertion.
+// Reuse is a deliberate choice. The base must generate the artifact, and a variant that needs any show-side override
+// drops the reuse setting and configures SHOW itself.
+func validateShowReuse(obj Object, g Generators) {
+	if obj.ReusesBaseSchemaShow() {
+		base := validateShowReuseBase(obj, "schema SHOW", func(b Generators) bool { return b.Schema.Show })
+		if len(g.Schema.ShowManualFields) > 0 || len(g.Schema.ShowListFields) > 0 {
+			panic(fmt.Sprintf("object %q: schema SHOW reuses %q and cannot set manual or list fields", obj.Name, base.Name))
+		}
+	}
+	if obj.ReusesBaseObjectAssertShow() {
+		base := validateShowReuseBase(obj, "object assertion SHOW", func(b Generators) bool { return b.ObjectAssert.Show })
+		if len(g.ObjectAssert.ShowSkipFields) > 0 || len(g.ObjectAssert.ShowNestedFields) > 0 {
+			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set skip or nested fields", obj.Name, base.Name))
+		}
+		if g.ObjectAssert.ShowProjection != "" {
+			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set a show projection", obj.Name, base.Name))
+		}
+	}
+}
+
+func validateShowOutputAssertReuse(obj Object, g Generators) {
+	if !obj.ReusesBaseShowOutputAssertShow() {
+		return
+	}
+	base := validateShowReuseBase(obj, "show output assertion SHOW", func(b Generators) bool { return b.ShowOutputAssert.Show })
+	if len(g.ShowOutputAssert.ShowSkipFields) > 0 {
+		panic(fmt.Sprintf("object %q: show output assertion SHOW reuses %q and cannot set skip fields", obj.Name, base.Name))
+	}
+}
+
+func validateShowReuseBase(obj Object, label string, baseGenerates func(Generators) bool) *Object {
+	base := showReuseBase(obj, label)
+	if !baseGenerates(ObjectGenerators(base.Generators...)) {
+		panic(fmt.Sprintf("object %q: %s reuses %q, which does not generate it", obj.Name, label, base.Name))
+	}
+	return base
 }
