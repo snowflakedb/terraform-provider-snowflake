@@ -75,7 +75,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("create: complete", func(t *testing.T) {
 		database, cleanupDatabase := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(cleanupDatabase)
-		share, cleanupShare := testClientHelper().Share.CreateShare(t)
+		share, cleanupShare := testClientHelper().Share.Create(t)
 		t.Cleanup(cleanupShare)
 		externalVolume, cleanupVolume := testClientHelper().ExternalVolume.Create(t)
 		t.Cleanup(cleanupVolume)
@@ -239,7 +239,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("alter: set object types", func(t *testing.T) {
 		database, cleanupDatabase := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(cleanupDatabase)
-		share, cleanupShare := testClientHelper().Share.CreateShare(t)
+		share, cleanupShare := testClientHelper().Share.Create(t)
 		t.Cleanup(cleanupShare)
 		id, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		objectTypes := []sdk.ReplicationGroupObjectType{

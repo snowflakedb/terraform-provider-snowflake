@@ -625,7 +625,7 @@ func TestInt_GrantAndRevokePrivilegesToDatabaseRole(t *testing.T) {
 func TestInt_GrantPrivilegeToShare(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
-	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
+	shareTest, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	assertGrant := func(t *testing.T, grants []sdk.Grant, onId sdk.ObjectIdentifier, privilege sdk.ObjectPrivilege, grantedOn sdk.ObjectType, granteeName sdk.ObjectIdentifier, shareName string) {
@@ -697,7 +697,7 @@ func TestInt_GrantPrivilegeToShare(t *testing.T) {
 	})
 
 	t.Run("with a name containing dots", func(t *testing.T) {
-		shareTest, shareCleanup := testClientHelper().Share.CreateShareWithIdentifier(t, testClientHelper().Ids.RandomAccountObjectIdentifierContaining(".foo.bar"))
+		shareTest, shareCleanup := testClientHelper().Share.CreateWithIdentifier(t, testClientHelper().Ids.RandomAccountObjectIdentifierContaining(".foo.bar"))
 		t.Cleanup(shareCleanup)
 		grantShareOnDatabase(t, shareTest)
 		table, tableCleanup := testClientHelper().Table.Create(t)
@@ -721,7 +721,7 @@ func TestInt_GrantPrivilegeToShare(t *testing.T) {
 func TestInt_RevokePrivilegeFromShare(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
-	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
+	shareTest, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 	err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))
 	require.NoError(t, err)
@@ -1617,7 +1617,7 @@ func TestInt_ShowGrants(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)
 
-	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
+	shareTest, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(shareTest.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))

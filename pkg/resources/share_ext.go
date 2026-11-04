@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -27,7 +28,7 @@ var (
 	shareReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.ShareResource), TrackingReadWrapper(resources.Share, ReadShareFunc(true)))
 	shareUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.ShareResource), TrackingUpdateWrapper(resources.Share, UpdateShare))
 
-	shareDescriptionExt = ""
+	shareDescriptionExt = "Resource used to manage share objects. For more information, check [share documentation](https://docs.snowflake.com/en/sql-reference/sql/create-share)."
 	shareImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.Share, ImportShare),
 	}
@@ -37,12 +38,10 @@ var (
 // Request / mapping / Read-Update helpers
 // =============================================================================
 
-// shareAlterRequestsExt carries what changed, because the accounts are altered with several statements.
+// shareAlterRequestsExt carries the SET and UNSET requests of the generated update. The accounts are altered in shareBeforeAlterExt.
 type shareAlterRequestsExt struct {
-	accountsToAdd    []sdk.AccountIdentifier
-	accountsToRemove []sdk.AccountIdentifier
-	commentChanged   bool
-	comment          string
+	set   *sdk.ShareSetRequest
+	unset *sdk.ShareUnsetRequest
 }
 
 // shareSetFieldsNotSetByReadExt sets what the read does not: the name and secure_objects_only. The comment and the accounts are set by the read.
@@ -57,23 +56,30 @@ func shareSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectI
 	)
 }
 
-func shareApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreateShareRequest) error {
-	if comment := d.Get("comment").(string); comment != "" {
-		req.WithComment(comment)
-	}
-	return booleanStringAttributeCreateBuilder(d, "secure_objects_only", req.WithSecureObjectsOnly)
-}
-
 // shareAfterCreateExt adds the accounts after the share is created. A failure is returned without reading the share.
 func shareAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) diag.Diagnostics {
 	accounts := expandStringList(d.Get("accounts").(*schema.Set).List())
 	if len(accounts) == 0 {
 		return nil
 	}
-	if err := setShareAccounts(ctx, meta.(*provider.Context).Client, id, accountIdentifiersFromSlice(accounts)); err != nil {
+	accountIds, err := accountIdentifiersFromSlice(accounts)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := setShareAccounts(ctx, meta.(*provider.Context).Client, id, accountIds); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+// shareSetDescribeOutputExt sets describe_output, which is a list of rows. A failed DESCRIBE is only logged, because describing
+// a share needs a privilege on it and the rest of the state does not depend on it.
+func shareSetDescribeOutputExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, details []sdk.ShareDetails, describeErr error, _ bool) error {
+	if describeErr != nil {
+		log.Printf("[WARN] describing share: %s, err: %s", id.FullyQualifiedName(), describeErr)
+		return nil
+	}
+	return d.Set(DescribeOutputAttributeName, schemas.ShareDetailsListToSchema(details))
 }
 
 func shareSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, share *sdk.Share) error {
@@ -83,32 +89,19 @@ func shareSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, s
 	return d.Set("accounts", collections.Map(share.To, sdk.AccountIdentifier.Name))
 }
 
-func shareApplySetUnsetExt(d *schema.ResourceData) (*shareAlterRequestsExt, error) {
-	reqs := &shareAlterRequestsExt{}
-	if d.HasChange("accounts") {
-		// The read sets the accounts in state to the recipients that Snowflake reports, so the difference between the state
-		// and the configuration is what the update has to add and remove.
-		o, n := d.GetChange("accounts")
-		oldAccounts := accountIdentifiersFromSlice(expandStringList(o.(*schema.Set).List()))
-		newAccounts := accountIdentifiersFromSlice(expandStringList(n.(*schema.Set).List()))
-		reqs.accountsToAdd = shareAccountsDifference(newAccounts, oldAccounts)
-		reqs.accountsToRemove = shareAccountsDifference(oldAccounts, newAccounts)
-	}
-	if d.HasChange("comment") {
-		reqs.commentChanged = true
-		reqs.comment = d.Get("comment").(string)
-	}
-	return reqs, nil
-}
-
 // =============================================================================
 // SDK incision points
 // =============================================================================
 
+// shareDescribeInSdkExt returns a row for every object granted to the share. The read does not fail when DESCRIBE fails.
+func shareDescribeInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) ([]sdk.ShareDetails, error) {
+	return meta.(*provider.Context).Client.Shares.Describe(ctx, id)
+}
+
 // shareAfterShowByIdExt completes the recipients of the SHOW row. A failed lookup of all the recipients is not an error: the
 // listed recipients are used and a warning is returned.
 func shareAfterShowByIdExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, share *sdk.Share) diag.Diagnostics {
-	recipients, err := shareRecipientsExt(ctx, meta.(*provider.Context).Client, id, share)
+	recipients, err := shareRecipientsExt(ctx, meta.(*provider.Context).Client.Shares.ShowTargetAccounts, id, share)
 	share.To = recipients
 	if err != nil {
 		return diag.Diagnostics{
@@ -126,11 +119,11 @@ func shareAfterShowByIdExt(ctx context.Context, d *schema.ResourceData, meta any
 // shareRecipientsExt returns all the recipients of the share. SHOW SHARES lists at most three recipients and reports the rest
 // only as "... (N TOTAL)", so the full list is merged in from SNOWFLAKE.ACCOUNT_USAGE.SHARES. When that lookup fails, the
 // listed recipients are returned together with the error.
-func shareRecipientsExt(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier, share *sdk.Share) ([]sdk.AccountIdentifier, error) {
+func shareRecipientsExt(ctx context.Context, showTargetAccounts func(context.Context, sdk.AccountObjectIdentifier) ([]sdk.AccountIdentifier, error), id sdk.AccountObjectIdentifier, share *sdk.Share) ([]sdk.AccountIdentifier, error) {
 	if share.ToTotal <= len(share.To) {
 		return share.To, nil
 	}
-	targetAccounts, err := client.Shares.ShowTargetAccounts(ctx, id)
+	targetAccounts, err := showTargetAccounts(ctx, id)
 	if err != nil {
 		return share.To, err
 	}
@@ -146,42 +139,49 @@ func shareRecipientsExt(ctx context.Context, client *sdk.Client, id sdk.AccountO
 	}), nil
 }
 
-// shareAlterSetInSdkExt removes the accounts that are not configured anymore and adds the missing ones.
-func shareAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *shareAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
+// shareBeforeAlterExt makes the recipients equal to the configured accounts: it removes the accounts that are not configured
+// anymore and adds the missing ones. SET and UNSET of the other fields run afterwards in the generated update.
+func shareBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("accounts") {
+		return nil
+	}
+	// The read sets the accounts in state to the recipients that Snowflake reports, so the difference between the state
+	// and the configuration is what the update has to add and remove.
+	o, n := d.GetChange("accounts")
+	oldAccounts, err := accountIdentifiersFromSlice(expandStringList(o.(*schema.Set).List()))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	newAccounts, err := accountIdentifiersFromSlice(expandStringList(n.(*schema.Set).List()))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	accountsToAdd := shareAccountsDifference(newAccounts, oldAccounts)
+	accountsToRemove := shareAccountsDifference(oldAccounts, newAccounts)
 
-	if len(reqs.accountsToRemove) > 0 {
-		err := client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithRemove(sdk.ShareRemoveRequest{Accounts: reqs.accountsToRemove}))
+	client := meta.(*provider.Context).Client
+	if len(accountsToRemove) > 0 {
+		err := client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithRemove(sdk.ShareRemoveRequest{Accounts: accountsToRemove}))
 		if err != nil {
-			return fmt.Errorf("error removing accounts from share (%v) err = %w", id.Name(), err)
+			return diag.FromErr(fmt.Errorf("error removing accounts from share (%v) err = %w", id.Name(), err))
 		}
 	}
-	if len(reqs.accountsToAdd) > 0 {
+	if len(accountsToAdd) > 0 {
 		share, err := client.Shares.ShowByID(ctx, id)
 		if err != nil {
-			return fmt.Errorf("error reading share (%v) err = %w", id.Name(), err)
+			return diag.FromErr(fmt.Errorf("error reading share (%v) err = %w", id.Name(), err))
 		}
 		// If a database is already granted to the share, we can add accounts directly.
 		// The setShareAccounts workaround (which creates a temp database) is only needed
 		// when no database has been granted yet — Snowflake requires at least one database
 		// on a share before accounts can be added.
 		if share.DatabaseName.Name() != "" {
-			err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithAdd(sdk.ShareAddRequest{Accounts: reqs.accountsToAdd}))
+			err = client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithAdd(sdk.ShareAddRequest{Accounts: accountsToAdd}))
 		} else {
-			err = setShareAccounts(ctx, client, id, reqs.accountsToAdd)
+			err = setShareAccounts(ctx, client, id, accountsToAdd)
 		}
 		if err != nil {
-			return err
-		}
-	}
-	if reqs.commentChanged {
-		// SET COMMENT does not accept an empty comment, so clearing the comment is an UNSET.
-		alter := sdk.NewAlterShareRequest(id).WithSet(sdk.ShareSetRequest{Comment: sdk.String(reqs.comment)})
-		if reqs.comment == "" {
-			alter = sdk.NewAlterShareRequest(id).WithUnset(sdk.ShareUnsetRequest{Comment: sdk.Bool(true)})
-		}
-		if err := client.Shares.Alter(ctx, alter); err != nil {
-			return fmt.Errorf("error updating share (%v) comment err = %w", id.Name(), err)
+			return diag.FromErr(err)
 		}
 	}
 	return nil
@@ -202,7 +202,14 @@ func shareAccountsDifference(a, b []sdk.AccountIdentifier) []sdk.AccountIdentifi
 // Pre-existing mappers
 // =============================================================================
 
+// TODO [SNOW-4428377]: Verify if this workaround is still needed. Check if Snowflake still requires a database granted to the share before
+// accounts can be added, and if not, add the accounts directly (and remove the temporary database, the grants and the revokes).
 func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.AccountObjectIdentifier, accounts []sdk.AccountIdentifier) error {
+	// There is nothing to add, so the temporary database is not needed.
+	if len(accounts) == 0 {
+		return nil
+	}
+
 	// There is a race condition where error accounts cannot be added to a
 	// share until after a database is added to the share. Since a database
 	// grant is dependent on the share itself, this is a hack to get the
@@ -260,13 +267,6 @@ func setShareAccounts(ctx context.Context, client *sdk.Client, shareID sdk.Accou
 	return err
 }
 
-func accountIdentifiersFromSlice(accounts []string) []sdk.AccountIdentifier {
-	accountIdentifiers := make([]sdk.AccountIdentifier, len(accounts))
-	for i, account := range accounts {
-		parts := strings.Split(account, ".")
-		orgName := parts[0]
-		accountName := parts[1]
-		accountIdentifiers[i] = sdk.NewAccountIdentifier(orgName, accountName)
-	}
-	return accountIdentifiers
+func accountIdentifiersFromSlice(accounts []string) ([]sdk.AccountIdentifier, error) {
+	return collections.MapErr(accounts, sdk.ParseAccountIdentifier)
 }

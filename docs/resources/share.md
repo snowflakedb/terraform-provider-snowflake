@@ -2,26 +2,23 @@
 page_title: "snowflake_share Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Resource used to manage share objects. For more information, check share documentation https://docs.snowflake.com/en/sql-reference/sql/create-share.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
--> **Note** When adding or updating accounts in the `accounts` field, the provider creates a temporary database as a workaround for a Snowflake race condition. This is because accounts cannot be added to a share until after a database has been granted to the share, but database grants depend on the share existing first.
+-> **Note** When accounts are added to a share that has no database granted yet (on create or on update), the provider creates a temporary database as a workaround for a Snowflake race condition: accounts cannot be added to a share until a database has been granted to it, but database grants depend on the share existing first.
 The provider automatically:
 1. Creates a temporary database (named `TEMP_<share_name>_<timestamp>`)
 2. Grants `USAGE` and `REFERENCE_USAGE` privileges on the temporary database to the share
 3. Adds the specified accounts to the share
 4. Revokes the privileges and drops the temporary database
-This process is fully automated during the creation.
 
-~> **Required warehouse** For a share with more than three accounts, the provider reads the full list of accounts from the `SNOWFLAKE.ACCOUNT_USAGE.SHARES` view, which requires a warehouse in the connection. Please, make sure you have either set a `DEFAULT_WAREHOUSE` for the user, or specified a warehouse in the provider configuration.
-
--> **Note** `SHOW SHARES` lists at most three accounts of a share. For a share with more than three accounts, the provider reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES`, so the role used by the provider needs `SELECT` on that view (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). That view can be up to 3 hours behind, so for up to 3 hours after accounts are added or removed outside the three listed by `SHOW SHARES`, a plan can still show them as changes; applying it does not alter the share. Without the privilege or the warehouse, the provider reports a warning and only the listed accounts are known.
+~> **Shares with more than three accounts** `SHOW SHARES` lists at most three accounts of a share. For a share with more than three accounts, the provider reads the full list from the `SNOWFLAKE.ACCOUNT_USAGE.SHARES` view. This requires a warehouse in the connection (set a `DEFAULT_WAREHOUSE` for the user or specify a warehouse in the provider configuration) and `SELECT` on that view for the role used by the provider (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database). The view can be up to 3 hours behind, so for up to 3 hours after accounts are added or removed outside the three listed by `SHOW SHARES`, a plan can still show them as changes; applying it does not alter the share. Without the warehouse or the privilege, the provider reports a warning and only the listed accounts are known.
 
 # snowflake_share (Resource)
 
-
+Resource used to manage share objects. For more information, check [share documentation](https://docs.snowflake.com/en/sql-reference/sql/create-share).
 
 ## Example Usage
 
@@ -29,15 +26,22 @@ This process is fully automated during the creation.
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
-resource "snowflake_share" "test" {
-  name     = "share_name"
-  comment  = "cool comment"
-  accounts = ["organizationName.accountName"]
+# basic resource
+resource "snowflake_share" "basic" {
+  name = "SHARE_NAME"
+}
+
+# complete resource
+resource "snowflake_share" "complete" {
+  name                = "SHARE_NAME"
+  comment             = "A share."
+  accounts            = ["organizationName.accountName"]
+  secure_objects_only = "false"
 }
 
 resource "snowflake_database" "example" {
   # remember to define dependency between objects on a share, because shared objects have to be dropped before dropping share
-  depends_on = [snowflake_share.test]
+  depends_on = [snowflake_share.complete]
   name       = "test"
 }
 ```
@@ -49,17 +53,18 @@ resource "snowflake_database" "example" {
 
 ### Required
 
-- `name` (String) Specifies the identifier for the share; must be unique for the account in which the share is created.
+- `name` (String) Specifies the identifier for the share; must be unique for the account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 
 ### Optional
 
-- `accounts` (Set of String) A list of accounts to be added to the share. Values should not be the account locator, but in the form of 'organization_name.account_name
+- `accounts` (Set of String) A set of accounts the share is available to, in the form `organization_name.account_name` (not the account locator). The provider reads the recipients from Snowflake, so accounts added outside of Terraform are removed on the next apply.
 - `comment` (String) Specifies a comment for the share.
 - `secure_objects_only` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether only secure objects can be added to the share. Once set to false, it cannot be set back to true. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `describe_output` (List of Object) Outputs the result of `DESCRIBE SHARE` for the given share. DESCRIBE SHARE returns a row for every object granted to the share, including the system objects that Snowflake adds to the shared database. In order to see the rows, the role must have a privilege on the share. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW SHARES` for the given share. (see [below for nested schema](#nestedatt--show_output))
@@ -73,6 +78,16 @@ Optional:
 - `delete` (String)
 - `read` (String)
 - `update` (String)
+
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `kind` (String)
+- `name` (String)
+- `shared_on` (String)
 
 
 <a id="nestedatt--show_output"></a>

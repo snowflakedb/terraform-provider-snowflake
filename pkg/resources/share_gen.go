@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -74,7 +75,7 @@ func CreateShare(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	if err := shareApplyCreateOptionalsExt(d, req); err != nil {
+	if err := shareApplyCreateOptionals(d, req); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -114,6 +115,9 @@ func ReadShareFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			return afterShowByIdDiags
 		}
 		diags = append(diags, afterShowByIdDiags...)
+
+		// Describe is best-effort: log + skip Set, do not fail Read. Uses parsed id.
+		shareDetails, describeErr := shareDescribeInSdkExt(ctx, meta, id)
 		if err = shareHandleExternalChanges(d, share, withExternalChangesMarking); err != nil {
 			return diag.FromErr(err)
 		}
@@ -126,6 +130,7 @@ func ReadShareFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ShareToSchema(share)}),
+			shareSetDescribeOutputExt(d, id, shareDetails, describeErr, withExternalChangesMarking),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			shareSetConfigFieldsExt(ctx, d, meta, share),
 		)
@@ -141,18 +146,31 @@ func UpdateShare(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := shareApplySetUnsetExt(d)
+
+	if diags := shareBeforeAlterExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+
+	setUnset, err := shareApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := shareAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewShareSetRequest()) {
+		if err := meta.(*provider.Context).Client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewShareUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Shares.Alter(ctx, sdk.NewAlterShareRequest(id).WithUnset(*setUnset.unset)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadShareFunc(false)(ctx, d, meta)
 }
 
 var shareCustomizeDiff = TrackingCustomDiffWrapper(resources.Share, customdiff.All(
 	ComputedIfAnyAttributeChanged(shareSchema, ShowOutputAttributeName, "name", "comment", "secure_objects_only"),
+	ComputedIfAnyAttributeChanged(shareSchema, DescribeOutputAttributeName, "name"),
 ))
 
 func shareParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
@@ -165,6 +183,24 @@ func shareParseId(id string) (sdk.AccountObjectIdentifier, error) {
 
 func shareNewCreateRequest(d *tfschema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateShareRequest, error) {
 	return sdk.NewCreateShareRequest(id), nil
+}
+
+func shareApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateShareRequest) error {
+	return errors.Join(
+		booleanStringAttributeCreateBuilder(d, "secure_objects_only", request.WithSecureObjectsOnly),
+		stringAttributeCreateBuilder(d, "comment", request.WithComment),
+	)
+}
+
+func shareApplySetUnset(d *tfschema.ResourceData) (*shareAlterRequestsExt, error) {
+	set, unset := sdk.NewShareSetRequest(), sdk.NewShareUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &shareAlterRequestsExt{set: set, unset: unset}, nil
 }
 
 func shareHandleExternalChanges(d *tfschema.ResourceData, share *sdk.Share, withExternalChangesMarking bool) error {
