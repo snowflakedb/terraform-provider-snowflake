@@ -44,7 +44,7 @@ func TestInt_Shares(t *testing.T) {
 			HasOwner(currentRole.Name()).
 			HasComment("").
 			HasListingGlobalName("").
-			HasSecureObjectsOnly("true").
+			HasSecureObjectsOnly(true).
 			HasToTotal(0),
 		)
 	})
@@ -63,7 +63,7 @@ func TestInt_Shares(t *testing.T) {
 			HasName(id.Name()).
 			HasKind(sdk.ShareKindOutbound).
 			HasComment(comment).
-			HasSecureObjectsOnly("false"),
+			HasSecureObjectsOnly(false),
 		)
 	})
 
@@ -260,7 +260,7 @@ func TestInt_Shares(t *testing.T) {
 			HasName(share.Name).
 			HasKind(sdk.ShareKindOutbound).
 			HasListingGlobalName("").
-			HasSecureObjectsOnly("true"),
+			HasSecureObjectsOnly(true),
 		)
 	})
 
@@ -303,7 +303,7 @@ func TestInt_Shares(t *testing.T) {
 		require.NoError(t, err)
 		for _, share := range shares {
 			if share.Kind == sdk.ShareKindInbound {
-				assert.Empty(t, share.SecureObjectsOnly)
+				assert.Nil(t, share.SecureObjectsOnly)
 			}
 		}
 	})

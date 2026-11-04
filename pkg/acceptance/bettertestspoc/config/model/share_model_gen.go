@@ -4,6 +4,7 @@ package model
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -11,9 +12,10 @@ import (
 )
 
 type ShareModel struct {
-	Name     tfconfig.Variable `json:"name,omitempty"`
-	Accounts tfconfig.Variable `json:"accounts,omitempty"`
-	Comment  tfconfig.Variable `json:"comment,omitempty"`
+	Name              tfconfig.Variable `json:"name,omitempty"`
+	Accounts          tfconfig.Variable `json:"accounts,omitempty"`
+	Comment           tfconfig.Variable `json:"comment,omitempty"`
+	SecureObjectsOnly tfconfig.Variable `json:"secure_objects_only,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -89,6 +91,16 @@ func (s *ShareModel) WithComment(comment string) *ShareModel {
 	return s
 }
 
+func (s *ShareModel) WithSecureObjectsOnly(secureObjectsOnly string) *ShareModel {
+	s.SecureObjectsOnly = tfconfig.StringVariable(secureObjectsOnly)
+	return s
+}
+
+func (s *ShareModel) WithSecureObjectsOnlyBool(secureObjectsOnly bool) *ShareModel {
+	s.SecureObjectsOnly = tfconfig.StringVariable(strconv.FormatBool(secureObjectsOnly))
+	return s
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -105,5 +117,10 @@ func (s *ShareModel) WithAccountsValue(value tfconfig.Variable) *ShareModel {
 
 func (s *ShareModel) WithCommentValue(value tfconfig.Variable) *ShareModel {
 	s.Comment = value
+	return s
+}
+
+func (s *ShareModel) WithSecureObjectsOnlyValue(value tfconfig.Variable) *ShareModel {
+	s.SecureObjectsOnly = value
 	return s
 }

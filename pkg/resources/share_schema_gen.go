@@ -9,10 +9,19 @@ import (
 )
 
 var shareAttributesSchema = shareAttributesModificationExt(map[string]*tfschema.Schema{
+	"secure_objects_only": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("secure_objects_only"),
+		Description:      booleanStringFieldDescription("Specifies whether only secure objects can be added to the share. Once set to false, it cannot be set back to true."),
+		Default:          BooleanDefault,
+	},
 	"comment": {
 		Type:        tfschema.TypeString,
 		Optional:    true,
-		Description: "Specifies a comment for the managed account.",
+		Description: "Specifies a comment for the share.",
 	},
 	"accounts": {
 		Type:     tfschema.TypeSet,
@@ -31,5 +40,15 @@ var shareSchema = collections.MergeMaps(
 	shareAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
+	},
+	map[string]*tfschema.Schema{
+		ShowOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW SHARES` for the given share.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowShareSchema,
+			},
+		},
 	},
 )

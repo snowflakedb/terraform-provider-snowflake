@@ -219,6 +219,7 @@ The experiment is currently supported on the following resources:
 - [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
 - [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume)
 - [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe)
+- [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share)
 - [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse)
 - [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)
 - [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive)
@@ -485,6 +486,30 @@ When `accounts` changes, the provider now adds the configured accounts that are 
 #### The comment can be unset
 
 Previously, removing `comment` from the configuration (or setting it to an empty string) of a share that had a comment made the apply fail, because the provider sent an empty `SET COMMENT`, which the update rejected. The provider now clears the comment with `UNSET COMMENT`, so removing `comment` from the configuration unsets it in Snowflake.
+
+#### `show_output` is added
+
+[`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) now has a computed `show_output` block with the result of `SHOW SHARES` for the share: `created_on`, `kind`, `owner_account`, `name`, `database_name`, `to`, `owner`, `comment`, `listing_global_name`, `secure_objects_only` and `to_total`. The new field has no value in the state yet, so the first plan after upgrading reports an update for every share. Applying it only fills the field. No configuration changes are required.
+
+#### `secure_objects_only` is added
+
+[`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) now has an optional `secure_objects_only` field (`"true"`, `"false"`, or the default `"default"`, which leaves the choice to Snowflake, where it is `true`). Before, the provider could not set it, so every share was created with the Snowflake default. Snowflake cannot change it on an existing share, so changing the field, or a change made outside of Terraform that is visible in `show_output.0.secure_objects_only`, replaces the share. The value is not set by `terraform import` yet. No configuration changes are required: a share that does not set the field keeps the Snowflake default, and existing shares are not replaced by the upgrade. If the share was changed outside of Terraform to `secure_objects_only = false`, the next plan proposes replacing it, because the configuration does not ask for `false`.
+
+#### A share dropped outside of Terraform is recreated
+
+Previously, when a share was dropped outside of Terraform, the refresh failed with an error and the plan could not proceed until the share was removed from the state manually. Now the provider reports a warning, removes the share from the state, and the plan proposes creating it again, as the other resources do. No configuration changes are required.
+
+#### Import sets `secure_objects_only`
+
+`terraform import` for [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) now sets `secure_objects_only` to the value of the share in Snowflake. Before, the import left it empty. Because the field is ForceNew, if the configuration omits it and the share has `secure_objects_only = true` (the Snowflake default), the plan after import proposes replacing the share. To avoid it, set `secure_objects_only` in the configuration to the value of the share, or enable the opt-in `IMPORT_PERMISSIVE_MODE` experiment (see the entry about permissive import mode above), in which the import accepts the value of the share and the plan is empty.
+
+The import also accepts only a share created in your account (`kind = OUTBOUND`). Importing a share provided by another account (`kind = INBOUND`) used to succeed, although the resource cannot manage such a share, and now fails with an error.
+
+#### The resource id is the fully qualified name
+
+The id of [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) was the plain name of the share (for example `MY_SHARE`). It is now the fully qualified name (`"MY_SHARE"`), like in the other resources. The existing state is migrated automatically on the first plan or apply after the upgrade, so no action is needed and the share is not changed.
+
+If you use the id of the resource somewhere (for example in `snowflake_share.example.id`), the value now has the double quotes. For import, use the new format: `terraform import snowflake_share.example '"<share_name>"'`. The plain name still works as the import id.
 
 #### Shares with more than three accounts are read in full
 

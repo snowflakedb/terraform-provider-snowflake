@@ -52,10 +52,11 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
+{{ if or (and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present) .Hooks.AfterShowById.Present -}}
 		var diags diag.Diagnostics
 {{ end -}}
 {{ template "showByIdSafelyInSdk" . -}}
+{{ template "afterShowById" . -}}
 {{ template "describeInSdk" . -}}
 {{ template "showParametersInSdk" . -}}
 {{ template "parametersDetailsFromRaw" . -}}
@@ -73,13 +74,13 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 {{ template "setConfigFields" . }}
 		)
 		if errs != nil {
-{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
+{{ if or (and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present) .Hooks.AfterShowById.Present -}}
 			return append(diags, diag.FromErr(errs)...)
 {{ else -}}
 			return diag.FromErr(errs)
 {{ end }}
 		}
-{{ if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
+{{ if or (and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present) .Hooks.AfterShowById.Present -}}
 		return diags
 {{ else -}}
 		return nil

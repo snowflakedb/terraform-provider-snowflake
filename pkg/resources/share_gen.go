@@ -5,12 +5,18 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,9 +31,36 @@ func Share() *tfschema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ShareResource), TrackingDeleteWrapper(resources.Share, DeleteShare)),
 		Importer:      shareImporterExt,
 
-		CustomizeDiff: shareCustomizeDiffExt,
+		CustomizeDiff: shareCustomizeDiff,
 		Timeouts:      defaultTimeouts,
+		SchemaVersion: 1,
+		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+		StateUpgraders: []tfschema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_23_0_ShareStateUpgrader,
+			},
+		},
 	}
+}
+
+func ImportShare(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
+	id, err := shareParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	share, err := meta.(*provider.Context).Client.Shares.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := shareSetFieldsNotSetByReadExt(d, id, share, importPermissiveMode); err != nil {
+		return nil, err
+	}
+	return []*tfschema.ResourceData{d}, nil
 }
 
 func CreateShare(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
@@ -45,11 +78,11 @@ func CreateShare(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	if diags := shareCreateInSdkExt(ctx, meta, id, req); diags != nil {
-		return diags
+	if err := meta.(*provider.Context).Client.Shares.Create(ctx, req); err != nil {
+		return diag.FromErr(err)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeResourceIdentifier(id))
 	afterCreateDiags := shareAfterCreateExt(ctx, d, meta, id)
 	return append(afterCreateDiags, ReadShareFunc(false)(ctx, d, meta)...)
 }
@@ -61,19 +94,45 @@ func ReadShareFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		share, diags := shareShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		var diags diag.Diagnostics
+		share, err := meta.(*provider.Context).Client.Shares.ShowByIDSafely(ctx, id)
+		if err != nil {
+			if errors.Is(err, sdk.ErrObjectNotFound) {
+				d.SetId("")
+				return diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Warning,
+						Summary:  "Failed to query share. Marking the resource as removed.",
+						Detail:   fmt.Sprintf("Share id: %s, Err: %s", id.FullyQualifiedName(), err),
+					},
+				}
+			}
+			return diag.FromErr(err)
+		}
+		afterShowByIdDiags := shareAfterShowByIdExt(ctx, d, meta, id, share)
+		if afterShowByIdDiags.HasError() {
+			return afterShowByIdDiags
+		}
+		diags = append(diags, afterShowByIdDiags...)
+		if err = shareHandleExternalChanges(d, share, withExternalChangesMarking); err != nil {
+			return diag.FromErr(err)
 		}
 
+		if err = setStateToValuesFromConfig(d, shareSchema, []string{
+			"secure_objects_only",
+			"accounts",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ShareToSchema(share)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			shareSetConfigFieldsExt(ctx, d, meta, share),
 		)
 		if errs != nil {
-			return diag.FromErr(errs)
+			return append(diags, diag.FromErr(errs)...)
 		}
-		return nil
+		return diags
 	}
 }
 
@@ -92,21 +151,36 @@ func UpdateShare(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	return ReadShareFunc(false)(ctx, d, meta)
 }
 
+var shareCustomizeDiff = TrackingCustomDiffWrapper(resources.Share, customdiff.All(
+	ComputedIfAnyAttributeChanged(shareSchema, ShowOutputAttributeName, "name", "comment", "secure_objects_only"),
+))
+
 func shareParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.NewAccountObjectIdentifier(d.Get("name").(string)), nil
 }
 
 func shareParseId(id string) (sdk.AccountObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier](id)
+	return sdk.ParseAccountObjectIdentifier(id)
 }
 
 func shareNewCreateRequest(d *tfschema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateShareRequest, error) {
 	return sdk.NewCreateShareRequest(id), nil
 }
 
+func shareHandleExternalChanges(d *tfschema.ResourceData, share *sdk.Share, withExternalChangesMarking bool) error {
+	if !withExternalChangesMarking {
+		return nil
+	}
+
+	secureObjectsOnlyVal, secureObjectsOnlyStr := optionalBooleanStringOutputMapping(share.SecureObjectsOnly)
+	return handleExternalChangesToObjectInShow(d,
+		outputMapping{"secure_objects_only", "secure_objects_only", secureObjectsOnlyVal, secureObjectsOnlyStr, nil},
+	)
+}
+
 func DeleteShare(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	return ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier],
+		sdk.ParseAccountObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.AccountObjectIdentifier] {
 			return client.Shares.DropSafely
 		},

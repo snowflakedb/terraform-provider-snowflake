@@ -122,6 +122,22 @@ func Test_lifecycle_afterAlter(t *testing.T) {
 	})
 }
 
+func Test_lifecycle_afterShowById(t *testing.T) {
+	t.Run("omitted", func(t *testing.T) {
+		require.Empty(t, renderTemplate(t, "afterShowById", lifecycleModel()))
+	})
+
+	t.Run("ext call", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithAfterShowById(ssot.ExtCall())))
+		require.Equal(t, `afterShowByIdDiags := poolAfterShowByIdExt(ctx, d, meta, id, pool)
+		if afterShowByIdDiags.HasError() {
+			return afterShowByIdDiags
+		}
+		diags = append(diags, afterShowByIdDiags...)
+`, renderTemplate(t, "afterShowById", model))
+	})
+}
+
 func Test_lifecycle_importPermissiveMode(t *testing.T) {
 	got := renderLifecycle(t, lifecycleModel())
 	require.Contains(t, got, "importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)")
