@@ -81,6 +81,11 @@ func init() {
 			case_ContextFunctions_sql_CurrentWarehouse_basic,
 			"SELECT CURRENT_WAREHOUSE() as CURRENT_WAREHOUSE",
 		)
+	contextFunctionsTests.CurrentVersion.
+		withExpectedSql(
+			case_ContextFunctions_sql_CurrentVersion_basic,
+			"SELECT CURRENT_VERSION() as CURRENT_VERSION",
+		)
 	contextFunctionsTests.IsRoleInSession.
 		withDefaultOpts(func() *IsRoleInSessionOptions {
 			return &IsRoleInSessionOptions{

@@ -179,6 +179,10 @@ func (itc *integrationTestContext) initialize() error {
 
 	// TODO [SNOW-1763603]: improve setup; this is a quick workaround for faster local testing
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
+		if err := logCurrentSnowflakeVersion(itc.ctx, itc.testClient, testprofiles.Default); err != nil {
+			return err
+		}
+
 		config, err := sdk.ProfileConfig(testprofiles.Secondary)
 		if err != nil {
 			return err
@@ -203,6 +207,9 @@ func (itc *integrationTestContext) initialize() error {
 			integrationtests.ObjectsSuffix,
 			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
 		)
+		if err := logCurrentSnowflakeVersion(itc.secondaryCtx, itc.secondaryTestClient, testprofiles.Secondary); err != nil {
+			return err
+		}
 
 		secondaryDb, secondaryDbCleanup, err := secondaryTestClientHelper().CreateTestDatabase(itc.ctx, false)
 		itc.secondaryDatabaseCleanup = secondaryDbCleanup
@@ -305,6 +312,15 @@ func testSecondaryClient(t *testing.T) *sdk.Client {
 func testSecondaryContext(t *testing.T) context.Context {
 	t.Helper()
 	return itc.secondaryCtx
+}
+
+func logCurrentSnowflakeVersion(ctx context.Context, tc *helpers.TestClient, profile string) error {
+	version, err := tc.GetCurrentSnowflakeVersion(ctx)
+	if err != nil {
+		return fmt.Errorf("getting current Snowflake version for profile %s: %w", profile, err)
+	}
+	log.Printf("[INFO] Current Snowflake version for profile %s: %s", profile, version)
+	return nil
 }
 
 func testClientHelper() *helpers.TestClient {
