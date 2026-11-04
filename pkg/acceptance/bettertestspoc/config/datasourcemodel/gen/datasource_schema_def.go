@@ -31,6 +31,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.AccountRoles().Schema,
 	},
 	{
+		name:   "Alerts",
+		schema: datasources.Alerts().Schema,
+	},
+	{
 		name:   "ApiIntegrations",
 		schema: datasources.ApiIntegrations().Schema,
 	},

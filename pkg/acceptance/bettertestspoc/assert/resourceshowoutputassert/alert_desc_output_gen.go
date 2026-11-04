@@ -32,6 +32,21 @@ func ImportedAlertDescribeOutput(t *testing.T, id string) *AlertDescribeOutputAs
 	return &alertAssert
 }
 
+func AlertsDatasourceDescribeOutput(t *testing.T, name string) *AlertDescribeOutputAssert {
+	t.Helper()
+
+	return AlertsDatasourceDescribeOutputOnIdx(t, name, 0)
+}
+
+func AlertsDatasourceDescribeOutputOnIdx(t *testing.T, name string, idx int) *AlertDescribeOutputAssert {
+	t.Helper()
+
+	alertAssert := AlertDescribeOutputAssert{
+		ResourceAssert: assert.NewDatasourceDescribeOutputAssert(name, "alerts", idx),
+	}
+	return &alertAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

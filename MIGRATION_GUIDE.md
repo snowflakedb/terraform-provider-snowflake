@@ -66,6 +66,38 @@ Each read now sets `warehouse`, `comment`, `alert_schedule`, `condition`, `actio
 
 Import reads the alert with `SHOW ALERTS` and fails when it does not exist. Before, import accepted any id and the failure surfaced only on the next refresh.
 
+### *(breaking change)* `snowflake_alerts` data source reworked
+
+The preview [`snowflake_alerts`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/alerts) data source now follows the same rules as the other data sources.
+
+Filtering changes:
+- `pattern` is replaced by `like`.
+- `database` and `schema` are replaced by the `in` block, which takes one of `account`, `database`, `schema` (fully qualified, for example `"\"<database_name>\".\"<schema_name>\""`), `application`, or `application_package`. Before, `schema` was ignored when `database` was not set.
+- `starts_with` and `limit` (`rows` and `from`) are added.
+
+Output changes:
+- Each element of `alerts` now holds `show_output` (the result of `SHOW ALERTS`) and `describe_output` (the result of `DESCRIBE ALERT`). The previous flat fields (`name`, `database_name`, `schema_name`, `comment`, `owner`, `condition`, `action`) are removed; read them from `alerts.*.show_output.0` instead. Before, `database_name`, `schema_name`, `condition`, and `action` were always empty.
+- `with_describe` (default `true`) runs `DESCRIBE ALERT` for every alert returned. Set it to `false` to limit the number of queries.
+
+Before:
+```terraform
+data "snowflake_alerts" "example" {
+  database = "<database_name>"
+  schema   = "<schema_name>"
+  pattern  = "<alert_name>"
+}
+```
+
+After:
+```terraform
+data "snowflake_alerts" "example" {
+  like = "<alert_name>"
+  in {
+    schema = "\"<database_name>\".\"<schema_name>\""
+  }
+}
+```
+
 ### *(new feature)* Postgres mirror resource and data source
 
 We have added a new preview resource, [`snowflake_postgres_mirror`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_mirror), for managing [Postgres data mirrors](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring), which replicate Postgres tables into a Snowflake database. Changes to `postgres_tables`, `postgres_schemas`, `refresh_interval`, and `warehouse` are applied in place with `ALTER_MIRROR`, without copying the existing tables again. `terraform apply` returns before the initial copy of the tables finishes. Existing mirrors can be imported by name.

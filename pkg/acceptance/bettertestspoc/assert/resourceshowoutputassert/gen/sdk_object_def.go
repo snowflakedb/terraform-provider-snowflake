@@ -21,6 +21,7 @@ type SdkObjectShowOutputDetails struct {
 var dataSourceMappingNormalized = map[string]dataSourceDef{
 	// Show output - standard:
 	normalized(sdk.Account{}):                     {"Accounts"},
+	normalized(sdk.Alert{}):                       {"Alerts"},
 	normalized(sdk.ApiIntegration{}):              {"ApiIntegrations"},
 	normalized(sdk.AuthenticationPolicy{}):        {"AuthenticationPolicies"},
 	normalized(sdk.BackupPolicy{}):                {"BackupPolicies"},
@@ -74,6 +75,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Warehouse{}):                   {"Warehouses"},
 
 	// Describe output:
+	normalized(sdk.AlertDetails{}):                  {"Alerts"},
 	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
 	normalized(sdk.BackupPolicyDetails{}):           {"BackupPolicies"},
 	normalized(sdk.CatalogIntegrationDetails{}):     {"CatalogIntegrations"},

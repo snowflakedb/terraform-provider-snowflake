@@ -2,131 +2,99 @@ package datasources
 
 import (
 	"context"
-	"log"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var alertsSchema = map[string]*schema.Schema{
-	"database": {
-		Type:        schema.TypeString,
+	"with_describe": {
+		Type:        schema.TypeBool,
 		Optional:    true,
-		Description: "The database from which to return the alerts from.",
+		Default:     true,
+		Description: "Runs DESC ALERT for each alert returned by SHOW ALERTS. The output of describe is saved to the describe_output field. By default this value is set to true.",
 	},
-	"schema": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "The schema from which to return the alerts from.",
-	},
-	"pattern": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Description: "Filters the command output by object name.",
-	},
+	"like":        likeSchema,
+	"in":          extendedInSchema,
+	"starts_with": startsWithSchema,
+	"limit":       limitFromSchema,
 	"alerts": {
 		Type:        schema.TypeList,
 		Computed:    true,
-		Description: "Lists alerts for the current/specified database or schema, or across the entire account.",
+		Description: "Holds the aggregated output of all alert details queries.",
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"name": {
-					Type:        schema.TypeString,
+				resources.ShowOutputAttributeName: {
+					Type:        schema.TypeList,
 					Computed:    true,
-					Description: "Name of the alert.",
+					Description: "Holds the output of SHOW ALERTS.",
+					Elem: &schema.Resource{
+						Schema: schemas.ShowAlertSchema,
+					},
 				},
-				"database_name": {
-					Type:        schema.TypeString,
+				resources.DescribeOutputAttributeName: {
+					Type:        schema.TypeList,
 					Computed:    true,
-					Description: "Database in which the alert is stored.",
-				},
-				"schema_name": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "Schema in which the alert is stored.",
-				},
-				"comment": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "Comment for the alert.",
-				},
-				"owner": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "Role that owns the alert (i.e. has the OWNERSHIP privilege on the alert)",
-				},
-				"condition": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "The text of the SQL statement that serves as the condition when the alert should be triggered.",
-				},
-				"action": {
-					Type:        schema.TypeString,
-					Computed:    true,
-					Description: "The text of the SQL statement that should be executed when the alert is triggered.",
+					Description: "Holds the output of DESCRIBE ALERT.",
+					Elem: &schema.Resource{
+						Schema: schemas.DescribeAlertDetailsSchema,
+					},
 				},
 			},
 		},
 	},
 }
 
-// Alerts Snowflake Roles resource.
 func Alerts() *schema.Resource {
 	return &schema.Resource{
-		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.AlertsDatasource), TrackingReadWrapper(datasources.Alerts, ReadAlerts)),
 		Schema:      alertsSchema,
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered alerts. Filtering is aligned with the current possibilities for [SHOW ALERTS](https://docs.snowflake.com/en/sql-reference/sql/show-alerts) query. " +
+			"The results of SHOW and DESCRIBE are encapsulated in one output collection `alerts`.",
 	}
 }
 
-// ReadAlerts Reads the database metadata information.
 func ReadAlerts(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
+	req := sdk.ShowAlertRequest{}
 
-	d.SetId("alerts_read")
-
-	req := sdk.NewShowAlertRequest()
-
-	if v, ok := d.GetOk("pattern"); ok {
-		req.WithLike(sdk.Like{Pattern: new(v.(string))})
-	}
-
-	if v, ok := d.GetOk("database"); ok {
-		databaseName := v.(string)
-
-		if v, ok := d.GetOk("schema"); ok {
-			schemaName := v.(string)
-			req.WithIn(sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)})
-		} else {
-			req.WithIn(sdk.In{Database: sdk.NewAccountObjectIdentifier(databaseName)})
-		}
-	}
-
-	listAlerts, err := client.Alerts.Show(ctx, req)
-	if err != nil {
-		log.Printf("[DEBUG] failed to list alerts in schema (%s)", d.Id())
-		d.SetId("")
+	handleLike(d, &req.Like)
+	if err := handleExtendedIn(d, &req.In); err != nil {
 		return diag.FromErr(err)
 	}
+	handleStartsWith(d, &req.StartsWith)
+	handleLimitFrom(d, &req.Limit)
 
-	alerts := make([]map[string]any, 0, len(listAlerts))
-	for _, alert := range listAlerts {
-		alertMap := map[string]any{}
-		alertMap["name"] = alert.Name
-		alertMap["comment"] = alert.Comment
-		alertMap["owner"] = alert.Owner
-		alerts = append(alerts, alertMap)
+	alerts, err := client.Alerts.Show(ctx, &req)
+	if err != nil {
+		return diag.FromErr(err)
 	}
+	d.SetId("alerts_read")
 
-	if err := d.Set("alerts", alerts); err != nil {
+	flattened := make([]map[string]any, len(alerts))
+	for i := range alerts {
+		alert := alerts[i]
+		var describeOutput []map[string]any
+		if d.Get("with_describe").(bool) {
+			details, err := client.Alerts.Describe(ctx, alert.ID())
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			describeOutput = []map[string]any{schemas.AlertDetailsToSchema(details)}
+		}
+		flattened[i] = map[string]any{
+			resources.ShowOutputAttributeName:     []map[string]any{schemas.AlertToSchema(&alert)},
+			resources.DescribeOutputAttributeName: describeOutput,
+		}
+	}
+	if err := d.Set("alerts", flattened); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
