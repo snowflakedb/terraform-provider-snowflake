@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -62,10 +61,10 @@ var openflowDeploymentByocSchema = func() map[string]*schema.Schema {
 
 func OpenflowDeploymentByoc() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingCreateWrapper(resources.OpenflowDeploymentByoc, CreateOpenflowDeploymentByoc)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingReadWrapper(resources.OpenflowDeploymentByoc, ReadOpenflowDeploymentByoc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingUpdateWrapper(resources.OpenflowDeploymentByoc, UpdateOpenflowDeploymentByoc)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingDeleteWrapper(resources.OpenflowDeploymentByoc, deleteOpenflowDeployment)),
+		CreateContext: TrackingCreateWrapper(resources.OpenflowDeploymentByoc, CreateOpenflowDeploymentByoc),
+		ReadContext:   TrackingReadWrapper(resources.OpenflowDeploymentByoc, ReadOpenflowDeploymentByoc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.OpenflowDeploymentByoc, UpdateOpenflowDeploymentByoc),
+		DeleteContext: TrackingDeleteWrapper(resources.OpenflowDeploymentByoc, deleteOpenflowDeployment),
 		Description: joinWithSpace(
 			"Resource used to manage BYOC (bring your own cloud) Openflow deployments, which run in your own cloud account.",
 			"Creation finishes when the deployment reaches the INACTIVE state, which is as far as Terraform can take it:",

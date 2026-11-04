@@ -8,7 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -28,10 +27,10 @@ var openflowDeploymentSnowflakeManagedSchema = openflowDeploymentCommonSchema()
 
 func OpenflowDeploymentSnowflakeManaged() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingCreateWrapper(resources.OpenflowDeploymentSnowflakeManaged, CreateOpenflowDeploymentSnowflakeManaged)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingReadWrapper(resources.OpenflowDeploymentSnowflakeManaged, ReadOpenflowDeploymentSnowflakeManaged(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingUpdateWrapper(resources.OpenflowDeploymentSnowflakeManaged, UpdateOpenflowDeploymentSnowflakeManaged)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingDeleteWrapper(resources.OpenflowDeploymentSnowflakeManaged, deleteOpenflowDeployment)),
+		CreateContext: TrackingCreateWrapper(resources.OpenflowDeploymentSnowflakeManaged, CreateOpenflowDeploymentSnowflakeManaged),
+		ReadContext:   TrackingReadWrapper(resources.OpenflowDeploymentSnowflakeManaged, ReadOpenflowDeploymentSnowflakeManaged(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.OpenflowDeploymentSnowflakeManaged, UpdateOpenflowDeploymentSnowflakeManaged),
+		DeleteContext: TrackingDeleteWrapper(resources.OpenflowDeploymentSnowflakeManaged, deleteOpenflowDeployment),
 		Description: joinWithSpace(
 			"Resource used to manage Snowflake-managed Openflow deployments.",
 			"A deployment is the account-level container that Openflow runtimes are created in.",

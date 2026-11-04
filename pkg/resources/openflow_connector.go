@@ -10,7 +10,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -141,10 +140,10 @@ var openflowConnectorSchema = map[string]*schema.Schema{
 
 func OpenflowConnector() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OpenflowConnectorResource), TrackingCreateWrapper(resources.OpenflowConnector, CreateOpenflowConnector)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OpenflowConnectorResource), TrackingReadWrapper(resources.OpenflowConnector, ReadOpenflowConnector(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OpenflowConnectorResource), TrackingUpdateWrapper(resources.OpenflowConnector, UpdateOpenflowConnector)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OpenflowConnectorResource), TrackingDeleteWrapper(resources.OpenflowConnector, DeleteOpenflowConnector)),
+		CreateContext: TrackingCreateWrapper(resources.OpenflowConnector, CreateOpenflowConnector),
+		ReadContext:   TrackingReadWrapper(resources.OpenflowConnector, ReadOpenflowConnector(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.OpenflowConnector, UpdateOpenflowConnector),
+		DeleteContext: TrackingDeleteWrapper(resources.OpenflowConnector, DeleteOpenflowConnector),
 		Description: joinWithSpace(
 			"Resource used to manage Openflow connectors, which run inside an Openflow runtime.",
 			"Every mutating statement is asynchronous, so create and update return once the connector settles.",
