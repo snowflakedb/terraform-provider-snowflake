@@ -201,7 +201,7 @@ func (s *ShowPipeRequest) WithLike(like Like) *ShowPipeRequest {
 	return s
 }
 
-func (s *ShowPipeRequest) WithIn(in In) *ShowPipeRequest {
+func (s *ShowPipeRequest) WithIn(in ExtendedIn) *ShowPipeRequest {
 	s.In = &in
 	return s
 }

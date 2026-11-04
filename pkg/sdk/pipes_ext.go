@@ -20,8 +20,8 @@ func (opts *ShowPipeOptions) additionalValidations() error {
 	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
 		errs = append(errs, ErrPatternRequiredForLikeKeyword)
 	}
-	if valueSet(opts.In) && !exactlyOneValueSet(opts.In.Account, opts.In.Database, opts.In.Schema) {
-		errs = append(errs, errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema"))
+	if valueSet(opts.In) && !exactlyOneValueSet(opts.In.Account, opts.In.Database, opts.In.Schema, opts.In.Application, opts.In.ApplicationPackage) {
+		errs = append(errs, errExactlyOneOf("ShowPipeOptions.In", "Account", "Database", "Schema", "Application", "ApplicationPackage"))
 	}
 	return errors.Join(errs...)
 }

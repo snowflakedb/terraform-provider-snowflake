@@ -773,7 +773,7 @@ func (v *grants) runOnAllPipes(ctx context.Context, inDatabase *AccountObjectIde
 
 	showReq := NewShowPipeRequest()
 	if in != nil {
-		showReq.WithIn(*in)
+		showReq.WithIn(ExtendedIn{In: *in})
 	}
 	pipes, err := v.client.Pipes.Show(ctx, showReq)
 	if err != nil {

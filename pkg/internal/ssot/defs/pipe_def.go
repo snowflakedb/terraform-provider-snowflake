@@ -152,8 +152,9 @@ var Pipe = ssot.Object{
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
 			ssot.SdkShow(
 				ssot.SdkShowOptionalLike(),
-				ssot.SdkShowOptionalIn(),
-				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDIn),
+				ssot.SdkShowOptionalExtendedIn(),
+				// TODO(SNOW-4410188): add STARTS WITH and LIMIT when Snowflake applies them; SHOW PIPES accepts both but ignores them.
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDExtendedIn),
 				ssot.SdkShowAdditionalValidations(),
 			),
 			ssot.SdkDrop(),

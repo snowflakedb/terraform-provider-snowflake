@@ -31,6 +31,21 @@ func ImportedPipeResourceParameters(t *testing.T, id string) *PipeResourceParame
 	return &resourceParameterAssert
 }
 
+func PipesDatasourceParameters(t *testing.T, name string) *PipeResourceParametersAssert {
+	t.Helper()
+
+	return PipesDatasourceParametersOnIdx(t, name, 0)
+}
+
+func PipesDatasourceParametersOnIdx(t *testing.T, name string, idx int) *PipeResourceParametersAssert {
+	t.Helper()
+
+	resourceParameterAssert := PipeResourceParametersAssert{
+		ResourceAssert: assert.NewDatasourceParametersAssert(name, "pipes", idx),
+	}
+	return &resourceParameterAssert
+}
+
 ////////////////////////////
 // Parameter value checks //
 ////////////////////////////
