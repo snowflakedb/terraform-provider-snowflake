@@ -88,6 +88,8 @@ func ValidateObject(obj Object) {
 	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE rows", obj.DescribeRows.Columns, attrs, sqlOnly, nested)
+	validateSchemaKeys(obj, obj.Name, obj.PairedShowColumns())
+	validateSchemaKeys(obj, obj.DescribePlainName(), obj.PairedDescribeColumns())
 	validateDescribeRows(obj)
 	validateDescribeDetails(obj)
 	validateDescribePlainOnlyFields(obj)
@@ -669,10 +671,104 @@ func validateCustomOperationClauses(obj Object, spec CustomOperationSpec, attrs 
 				panic(fmt.Sprintf("object %q: custom operation %q has duplicate predefined %q", obj.Name, spec.Kind, clause.Predefined))
 			}
 			seenPredefined[clause.Predefined] = struct{}{}
+		case CustomOperationClauseStaticField:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q static field is empty", obj.Name, spec.Kind))
+			}
+		case CustomOperationClauseIdentifier:
+			if clause.Field == "" || clause.IdType == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q identifier is empty", obj.Name, spec.Kind))
+			}
+		case CustomOperationClauseText:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q text assignment is empty", obj.Name, spec.Kind))
+			}
 		default:
 			panic(fmt.Sprintf("object %q: custom operation %q clause has kind %q", obj.Name, spec.Kind, clause.Kind))
 		}
 	}
+	if spec.Paired == nil {
+		return
+	}
+	if spec.Paired.DbRow == "" || spec.Paired.Plain == "" || len(spec.Paired.Columns) == 0 {
+		panic(fmt.Sprintf("object %q: custom operation %q paired show needs a db row, a plain struct, and columns", obj.Name, spec.Kind))
+	}
+	for _, column := range spec.Paired.Columns {
+		if column == nil || column.Name == "" {
+			panic(fmt.Sprintf("object %q: custom operation %q paired column is empty", obj.Name, spec.Kind))
+		}
+		if column.PlainOnlyKind != "" {
+			continue
+		}
+		if column.BoolTrueValue != "" && !column.StoredAsText {
+			panic(fmt.Sprintf("object %q: attribute %q sets BoolTrueValue without StoredAsText", obj.Name, column.Name))
+		}
+	}
+	validateSchemaKeys(obj, spec.Paired.Plain, spec.Paired.Columns)
+}
+
+// validateSchemaKeys rejects two columns of one plain struct that emit the same Terraform key,
+// and a SchemaName that collides with another column's generated key.
+func validateSchemaKeys(obj Object, structName string, columns []*Attribute) {
+	if structName == "" {
+		return
+	}
+	emitted := make(map[string]string)
+	generated := make(map[string]*Attribute)
+	for _, column := range columns {
+		if column == nil || column.Name == "" {
+			continue
+		}
+		generated[genhelpers.ToSnakeCase(column.PlainGoName())] = column
+		key := column.SchemaKey()
+		if prev, ok := emitted[key]; ok {
+			panic(fmt.Sprintf("object %q: %s columns %q and %q share schema key %q", obj.Name, structName, prev, column.Name, key))
+		}
+		emitted[key] = column.Name
+	}
+	for _, column := range columns {
+		if column == nil || column.SchemaName == "" {
+			continue
+		}
+		other, ok := generated[column.SchemaName]
+		if ok && other.Name != column.Name {
+			panic(fmt.Sprintf("object %q: %s column %q schema name %q collides with the generated key of %q", obj.Name, structName, column.Name, column.SchemaName, other.Name))
+		}
+	}
+}
+
+// SchemaNameIndex maps "sdk." plus the plain struct name to Go field name to SchemaName.
+// Columns with an empty SchemaName are left out.
+func SchemaNameIndex(objects []Object) map[string]map[string]string {
+	index := make(map[string]map[string]string)
+	add := func(obj Object, structName string, columns []*Attribute) {
+		validateSchemaKeys(obj, structName, columns)
+		for _, column := range columns {
+			if column == nil || column.SchemaName == "" {
+				continue
+			}
+			key := "sdk." + structName
+			if index[key] == nil {
+				index[key] = make(map[string]string)
+			}
+			goName := column.PlainGoName()
+			if prev, ok := index[key][goName]; ok && prev != column.SchemaName {
+				panic(fmt.Sprintf("object %q: %s field %q has schema names %q and %q", obj.Name, structName, goName, prev, column.SchemaName))
+			}
+			index[key][goName] = column.SchemaName
+		}
+	}
+	for _, obj := range objects {
+		add(obj, obj.Name, obj.PairedShowColumns())
+		add(obj, obj.DescribePlainName(), obj.PairedDescribeColumns())
+		for _, spec := range obj.CustomOperations {
+			if spec.Paired == nil {
+				continue
+			}
+			add(obj, spec.Paired.Plain, spec.Paired.Columns)
+		}
+	}
+	return index
 }
 
 func validateSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, clause func(Attribute) SqlClause) {

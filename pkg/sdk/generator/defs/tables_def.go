@@ -114,70 +114,6 @@ var tableSearchOptimizationAction = g.NewQueryStruct("TableSearchOptimizationAct
 	).
 	WithValidation(g.ExactlyOneValueSet, "Add", "Drop")
 
-var tableSearchOptimizationDetails = g.StructPair("tableSearchOptimizationDetailsRow", "TableSearchOptimizationDetails").
-	Number("expression_id").
-	Text("method").
-	Text("target").
-	DataType("target_data_type").
-	BoolFromText("active", g.WithBoolTrueValue("true"))
-
-var tableDescribeSearchOptimization = g.NewQueryStruct("DescribeSearchOptimization").
-	Describe().
-	SQL("SEARCH OPTIMIZATION").
-	SQL("ON").
-	Name().
-	WithValidation(g.ValidIdentifier, "name")
-
-var TableConstraintTypeDef = g.NewEnum(
-	"TableConstraintType", "TableConstraintTypes",
-	"PRIMARY KEY", "UNIQUE", "FOREIGN KEY",
-)
-
-var tableConstraintDetails = g.StructPair("tableConstraintDetailsRow", "TableConstraintDetails").
-	Text("CONSTRAINT_CATALOG").
-	Text("CONSTRAINT_SCHEMA").
-	Text("CONSTRAINT_NAME").
-	Text("TABLE_CATALOG").
-	Text("TABLE_SCHEMA").
-	Text("TABLE_NAME").
-	Enum("CONSTRAINT_TYPE", TableConstraintTypeDef).
-	BoolFromText("IS_DEFERRABLE", g.WithBoolTrueValue("YES")).
-	BoolFromText("INITIALLY_DEFERRED", g.WithBoolTrueValue("YES")).
-	OptionalText("COMMENT").
-	Time("CREATED").
-	Time("LAST_ALTERED").
-	BoolFromText("ENFORCED", g.WithBoolTrueValue("YES")).
-	BoolFromText("RELY", g.WithBoolTrueValue("YES"))
-
-var tableShowConstraints = g.NewQueryStruct("ShowTableConstraints").
-	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
-	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
-	SQLWithCustomFieldName("dot", ".").
-	SQLWithCustomFieldName("informationSchemaTableConstraints", "INFORMATION_SCHEMA.TABLE_CONSTRAINTS").
-	SQLWithCustomFieldName("where", "WHERE").
-	TextAssignment("TABLE_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
-	SQLWithCustomFieldName("and", "AND").
-	TextAssignment("TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
-	WithValidation(g.ValidIdentifier, "Database")
-
-var tableCheckConstraintDetails = g.StructPair("tableCheckConstraintDetailsRow", "TableCheckConstraintDetails").
-	Text("CONSTRAINT_CATALOG").
-	Text("CONSTRAINT_SCHEMA").
-	Text("CONSTRAINT_TABLE").
-	Text("CONSTRAINT_NAME").
-	Text("CHECK_CLAUSE")
-
-var tableSelectCheckConstraints = g.NewQueryStruct("SelectCheckConstraints").
-	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
-	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
-	SQLWithCustomFieldName("dot", ".").
-	SQLWithCustomFieldName("informationSchemaCheckConstraints", "INFORMATION_SCHEMA.CHECK_CONSTRAINTS").
-	SQLWithCustomFieldName("where", "WHERE").
-	TextAssignment("CONSTRAINT_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
-	SQLWithCustomFieldName("and", "AND").
-	TextAssignment("CONSTRAINT_TABLE", g.ParameterOptions().SingleQuotes().Required()).
-	WithValidation(g.ValidIdentifier, "Database")
-
 var (
 	CloneMomentEnumDef    = g.NewEnum("CloneMoment", "CloneMoments", "AT", "BEFORE")
 	ReclusterStateEnumDef = g.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
@@ -557,27 +493,6 @@ func tableAddStorageLifecyclePolicy() *g.QueryStruct {
 
 // DESCRIBE TABLE returns the collation glued onto the "type" column (e.g. "VARCHAR(200) COLLATE 'en-ci'"),
 // so Type is converted manually and Collation is derived from it in additionalConvert().
-var tableColumnDetails = g.StructPair("tableColumnDetailsRow", "TableColumnDetails").
-	Text("name").
-	Field("type", "DataType", "DataType", g.WithManualConvert()).
-	Text("kind").
-	Field("null?", "string", "bool", g.WithDbFieldName("IsNullable"), g.WithPlainFieldName("IsNullable")).
-	OptionalText("default").
-	Field("primary key", "string", "bool", g.WithDbFieldName("IsPrimary"), g.WithPlainFieldName("IsPrimary")).
-	Field("unique key", "string", "bool", g.WithDbFieldName("IsUnique"), g.WithPlainFieldName("IsUnique")).
-	OptionalBoolFromText("check").
-	OptionalText("expression").
-	OptionalText("comment").
-	OptionalText("policy name").
-	PlainOnlyField("Collation", "*string").
-	OptionalText("schema evolution record")
-
-var tableStageDetails = g.StructPair("tableStageDetailsRow", "TableStageDetails").
-	Text("parent_property").
-	Text("property").
-	Text("property_type").
-	Text("property_value").
-	Text("property_default")
 
 // TODO [SNOW-1007542]: add missing features:
 // - show columns (https://docs.snowflake.com/en/sql-reference/sql/show-columns)
@@ -681,52 +596,10 @@ var tablesDef = g.NewInterface(
 	).
 	DropOperationFromObject(ssotdefs.Table).
 	ShowOperationFromObject(ssotdefs.Table).
-	CustomShowOperationWithPairedStructs(
-		"DescribeColumns",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
-		tableColumnDetails,
-		g.NewQueryStruct("DescribeTableColumns").
-			Describe().
-			SQL("TABLE").
-			Name().
-			SQLWithCustomFieldName("columnsType", "TYPE = COLUMNS").
-			WithValidation(g.ValidIdentifier, "name"),
-	).
-	CustomShowOperationWithPairedStructs(
-		"DescribeStage",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
-		tableStageDetails,
-		g.NewQueryStruct("DescribeTableStage").
-			Describe().
-			SQL("TABLE").
-			Name().
-			SQLWithCustomFieldName("stageType", "TYPE = STAGE").
-			WithValidation(g.ValidIdentifier, "name"),
-	).
-	CustomShowOperationWithPairedStructs(
-		"DescribeSearchOptimization",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization",
-		tableSearchOptimizationDetails,
-		tableDescribeSearchOptimization,
-	).
-	CustomShowOperationWithPairedStructs(
-		"SelectTableConstraints",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints",
-		tableConstraintDetails,
-		tableShowConstraints,
-	).
-	CustomShowOperationWithPairedStructs(
-		"SelectCheckConstraints",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/info-schema/check_constraints",
-		tableCheckConstraintDetails,
-		tableSelectCheckConstraints,
-	).
-	WithEnums(TableConstraintTypeDef, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef)
+	// Describe and select come from ssotdefs.Table. CREATE AS SELECT, USING TEMPLATE, LIKE, and CLONE stay handwritten,
+	// so SdkDefineFromSsot stays off. Follow-up: convert those four and turn the setting on.
+	CustomOperationsFromObject(ssotdefs.Table).
+	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").

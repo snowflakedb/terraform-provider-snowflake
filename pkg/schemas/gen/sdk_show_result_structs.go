@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -327,8 +329,9 @@ func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
 		plugged[details.Name] = struct{}{}
 	}
 	allDetails := make([]ShowResultSchemaDetails, 0, len(SdkShowResultStructs)+len(ssotDetails))
+	schemaNames := ssot.SchemaNameIndex(defs.All())
 	for _, d := range SdkShowResultStructs {
-		extracted := genhelpers.ExtractStructDetails(d.ObjectStruct)
+		extracted := stampSchemaNames(genhelpers.ExtractStructDetails(d.ObjectStruct), schemaNames)
 		if _, ok := plugged[extracted.Name]; ok {
 			continue
 		}

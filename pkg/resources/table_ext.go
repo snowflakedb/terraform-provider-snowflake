@@ -584,7 +584,7 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 		flat := map[string]any{}
 		flat["name"] = td.Name
 		flat["type"] = string(td.Type)
-		flat["nullable"] = td.IsNullable
+		flat["nullable"] = td.Null
 
 		if td.Comment != nil {
 			flat["comment"] = *td.Comment

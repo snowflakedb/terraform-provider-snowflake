@@ -3,6 +3,7 @@ package genhelpers
 import (
 	"regexp"
 	"strings"
+	"unicode"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -22,7 +23,13 @@ func SqlToGoName(sql string, exported bool) string {
 	title := cases.Title(language.English)
 	words := splitSQLPattern.Split(sql, -1)
 	for i, word := range words {
-		if word == "=" {
+		word = strings.Map(func(r rune) rune {
+			if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '_' {
+				return r
+			}
+			return -1
+		}, word)
+		if word == "" {
 			words[i] = ""
 			continue
 		}

@@ -658,9 +658,9 @@ func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 	result := &TableColumnDetails{
 		Name:       r.Name,
 		Kind:       r.Kind,
-		IsNullable: r.IsNullable == "Y",
-		IsPrimary:  r.IsPrimary == "Y",
-		IsUnique:   r.IsUnique == "Y",
+		Null:       r.Null == "Y",
+		PrimaryKey: r.PrimaryKey == "Y",
+		UniqueKey:  r.UniqueKey == "Y",
 	}
 	mapNullString(&result.Default, r.Default)
 	mapNullStringToBool(&result.Check, r.Check)

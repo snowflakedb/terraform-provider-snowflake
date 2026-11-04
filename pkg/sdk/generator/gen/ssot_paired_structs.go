@@ -158,8 +158,42 @@ func pairedStructsFromColumns(obj ssot.Object, describe bool, dbName, plainName 
 	return pairs
 }
 
+func pairedShowFromSpec(obj ssot.Object, paired *ssot.CustomPairedShow) *PairedStructs {
+	if paired.DbRow == "" || paired.Plain == "" || len(paired.Columns) == 0 {
+		panic(fmt.Sprintf("object %q: paired custom operation needs a db row, a plain struct, and columns", obj.Name))
+	}
+	pairs := StructPair(paired.DbRow, paired.Plain)
+	for _, column := range paired.Columns {
+		if column == nil {
+			panic(fmt.Sprintf("object %q: paired custom operation column is empty", obj.Name))
+		}
+		if column.PlainOnlyKind != "" {
+			pairs = pairs.PlainOnlyField(column.Name, column.PlainOnlyKind)
+			continue
+		}
+		pairs = appendPairedColumn(pairs, obj, *column)
+	}
+	for _, field := range paired.PlainOnly {
+		pairs = pairs.PlainOnlyField(field.Name, field.Kind)
+	}
+	return pairs
+}
+
 func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribute) *PairedStructs {
 	key := attr.OutputKey()
+	if attr.PairedPlainKind != "" {
+		if attr.OptionalInShow || attr.OptionalInDb {
+			panicPairedColumn(obj, attr, "a paired kind override is a required field")
+		}
+		var opts []PairedFieldOption
+		if attr.ManualConvert {
+			opts = append(opts, WithManualConvert())
+		}
+		if attr.CustomParser != "" {
+			opts = append(opts, WithCustomParser(attr.CustomParser))
+		}
+		return pairs.Field(key, "string", attr.PairedPlainKind, opts...)
+	}
 	switch attr.SdkType() {
 	case ssot.AttrString:
 		switch {

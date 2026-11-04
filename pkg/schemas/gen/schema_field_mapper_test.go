@@ -210,6 +210,13 @@ func Test_MapToSchemaField_identifierSliceMapper(t *testing.T) {
 	assert.Equal(t, "collections.Map(service.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)", genhelpers.RunMapper(schemaField.Mapper, "service.ExternalAccessIntegrations"))
 }
 
+func Test_MapToSchemaField_schemaName(t *testing.T) {
+	schemaField := MapToSchemaField(genhelpers.Field{Name: "Null", ConcreteType: "bool", UnderlyingType: "bool", SchemaName: "is_nullable"})
+	assert.Equal(t, "is_nullable", schemaField.Name)
+	assert.Equal(t, "Null", schemaField.OriginalName)
+	assert.Equal(t, schema.TypeBool, schemaField.SchemaType)
+}
+
 func Test_MapToSchemaField_dataTypeMapper(t *testing.T) {
 	schemaField := MapToSchemaField(genhelpers.Field{Name: "ReturnType", ConcreteType: "datatypes.DataType", UnderlyingType: "interface"})
 	assert.Equal(t, "maskingPolicyDetails.ReturnType.ToSql()", genhelpers.RunMapper(schemaField.Mapper, "maskingPolicyDetails.ReturnType"))

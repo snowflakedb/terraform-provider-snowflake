@@ -69,6 +69,27 @@ func Test_selectsForSchemaShow(t *testing.T) {
 	require.False(t, selectsForSchemaShow(ssot.Object{Name: "Empty"}), "no SHOW columns")
 }
 
+func Test_showResultSchemaDetailsFromSsot_schemaName(t *testing.T) {
+	nullable := ssot.Attribute{Name: "created_on", Type: ssot.AttrString, SchemaName: "created", SkipInSchema: true}
+	obj := ssot.Object{Name: "Widget", Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&nullable}}}
+
+	got := showResultSchemaDetailsFromSsot(obj, false)
+	require.Equal(t, []string{"created"}, got.SkipFields)
+	require.Equal(t, "created", got.Fields[0].SchemaName)
+	model := ModelFromStructDetails(got, nil, nil)
+	require.Equal(t, "created", model.SchemaFields[0].Name)
+	require.Equal(t, "CreatedOn", model.SchemaFields[0].OriginalName)
+	require.True(t, model.SchemaFields[0].Skipped)
+}
+
+func Test_stampSchemaNames_panicsWhenFieldIsMissing(t *testing.T) {
+	require.PanicsWithValue(t, "sdk.TableColumnDetails: schema name for Null is not on the struct", func() {
+		stampSchemaNames(genhelpers.StructDetails{Name: "sdk.TableColumnDetails"}, map[string]map[string]string{
+			"sdk.TableColumnDetails": {"Null": "is_nullable"},
+		})
+	})
+}
+
 func Test_showResultSchemaDetailsFromSsot_panicsOnNilColumn(t *testing.T) {
 	require.Panics(t, func() {
 		showResultSchemaDetailsFromSsot(ssot.Object{

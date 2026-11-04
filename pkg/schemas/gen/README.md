@@ -116,6 +116,8 @@ Then, in this generator:
    values for `MapToSchemaField` (`OptionalInShow` prefixes `*`; `OptionalInDb` does not -
    [ssot OptionalInShow vs OptionalInDb](../../../internal/ssot/README.md#optionalinshow-vs-optionalindb)).
 
+A column `SchemaName` is the public schema key. Empty keeps the snake_case of the Go field. The reflect path stamps it onto the extracted field by the SDK plain struct and Go field name. Skip, manual, and type lists use that emitted key.
+
 `SkipFields` has an ssot equivalent: the `SkipInSchema` attribute mark ([ssot Attribute](../../internal/ssot/README.md#attribute)).
 `ManualFields` has an ssot equivalent too, but as a generator option rather than an attribute mark:
 `SchemaShowManualFields` / `SchemaDescribeManualFields` ([ssot Generators](../../internal/ssot/README.md#generators)).

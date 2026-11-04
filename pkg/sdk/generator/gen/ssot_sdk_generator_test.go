@@ -1408,6 +1408,53 @@ func Test_CustomOperationsFromObject_fakeObject(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_CustomOperationsFromObject_pairedShow(t *testing.T) {
+	column := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	collation := ssot.Attribute{Name: "Collation", PlainOnlyKind: "*string"}
+	kind := ssot.Attribute{Name: "type", PairedPlainKind: "DataType", ManualConvert: true}
+	obj := ssot.Object{
+		Name:   "Fake",
+		IdType: "SchemaObjectIdentifier",
+		CustomOperations: []ssot.CustomOperationSpec{{
+			Kind:            "DescribeColumns",
+			Doc:             "https://docs.snowflake.com/en/sql-reference/sql/desc-table",
+			QueryStructName: "DescribeTableColumns",
+			Clauses: []ssot.CustomOperationClause{
+				ssot.CustomStaticSQL("DESCRIBE"),
+				ssot.CustomStaticSQL("TABLE"),
+				ssot.CustomName(),
+				ssot.CustomStaticField("columnsType", "TYPE = COLUMNS"),
+			},
+			Paired: &ssot.CustomPairedShow{
+				DbRow:     "fakeRow",
+				Plain:     "FakeDetails",
+				Columns:   []*ssot.Attribute{&column, &collation, &kind},
+				PlainOnly: []ssot.SdkPlainOnlyField{{Name: "Extra", Kind: "*string"}},
+			},
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCustomOperations())},
+	}
+	got := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").CustomOperationsFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").
+		CustomShowOperationWithPairedStructs(
+			"DescribeColumns",
+			ShowMappingKindSlice,
+			"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
+			StructPair("fakeRow", "FakeDetails").
+				Text("name").
+				PlainOnlyField("Collation", "*string").
+				Field("type", "string", "DataType", WithManualConvert()).
+				PlainOnlyField("Extra", "*string"),
+			NewQueryStruct("DescribeTableColumns").
+				Describe().
+				SQL("TABLE").
+				Name().
+				SQLWithCustomFieldName("columnsType", "TYPE = COLUMNS").
+				WithValidation(ValidIdentifier, "name"),
+		)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CustomOperationsFromObject_panics(t *testing.T) {
 	transient := ssot.Attribute{
 		Name:      "is_transient",

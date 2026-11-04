@@ -72,6 +72,8 @@ func TestSqlToGoName(t *testing.T) {
 	require.Equal(t, "TimestampDayIsAlways24H", SqlToGoName("TIMESTAMP_DAY_IS_ALWAYS_24H", true))
 	require.Equal(t, "UnsupportedDdlAction", SqlToGoName("UNSUPPORTED_DDL_ACTION", true))
 	require.Equal(t, "dataRetentionTimeInDays", SqlToGoName("DATA_RETENTION_TIME_IN_DAYS", false))
+	require.Equal(t, "Null", SqlToGoName("null?", true))
+	require.Equal(t, "PrimaryKey", SqlToGoName("primary key", true))
 }
 
 func TestSqlToGoNameConcurrent(t *testing.T) {

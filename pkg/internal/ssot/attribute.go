@@ -77,9 +77,19 @@ type Attribute struct {
 	// BoolTrueValue, with StoredAsText, is the text that converts to true, such as Y, YES, or ON.
 	// Empty uses strconv.ParseBool.
 	BoolTrueValue string
+	// PairedPlainKind overrides the plain kind of a required SHOW or DESCRIBE column.
+	// The database column stays a string. Optional columns use the type mapping.
+	// Go names come from the column name, with characters other than letters, digits, and underscores removed.
+	PairedPlainKind string
+	// PlainOnlyKind is a field on the plain struct only. It is not a database column.
+	PlainOnlyKind string
 	ManualConvert bool // paired-struct convert() skips this column; ext additionalConvert fills it
 	CustomParser  string
 	SkipInSchema  bool // column stays on the SDK struct and assertions, and is omitted from the public schema
+	// SchemaName is the Terraform schema key when it differs from the snake_case of the Go field.
+	// null? is published as is_nullable. Empty keeps that snake_case.
+	// It does not change the Go field, the db tag, or OutputKey.
+	SchemaName string
 	// SdkString marks an optional AttrObject that is one nested block in Terraform and one string in SQL, SHOW, and DESCRIBE,
 	// such as the schedule of a backup policy. The resource, the model, and the resource assertions read the Children as a
 	// block. CREATE, SET, UNSET, the SHOW and DESCRIBE columns, and their schemas and assertions read it as a string, see
