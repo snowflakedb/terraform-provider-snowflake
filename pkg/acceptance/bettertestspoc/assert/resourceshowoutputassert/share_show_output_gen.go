@@ -76,8 +76,8 @@ func (s *ShareShowOutputAssert) HasListingGlobalName(expected string) *ShareShow
 	return s
 }
 
-func (s *ShareShowOutputAssert) HasSecureObjectsOnly(expected string) *ShareShowOutputAssert {
-	s.StringValueSet("secure_objects_only", expected)
+func (s *ShareShowOutputAssert) HasSecureObjectsOnly(expected bool) *ShareShowOutputAssert {
+	s.BoolValueSet("secure_objects_only", expected)
 	return s
 }
 

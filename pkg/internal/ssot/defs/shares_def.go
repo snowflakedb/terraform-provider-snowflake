@@ -14,32 +14,36 @@ var shareDescribeKindEnum = ssot.NewEnum("ObjectType", "ObjectTypes").WithSdkTyp
 // object in the share, which is an outbound or an inbound (external) identifier. They are separate attributes.
 // to_total is not a Snowflake column: it is the N of the "... (N TOTAL)" marker that SHOW SHARES appends to the to column.
 var ShareAttrs = struct {
-	SecureObjectsOnly     ssot.Attribute
-	Comment               ssot.Attribute
-	Accounts              ssot.Attribute
-	CreatedOn             ssot.Attribute
-	Kind                  ssot.Attribute
-	OwnerAccount          ssot.Attribute
-	Name                  ssot.Attribute
-	DatabaseName          ssot.Attribute
-	To                    ssot.Attribute
-	Owner                 ssot.Attribute
-	ListingGlobalName     ssot.Attribute
-	ShowSecureObjectsOnly ssot.Attribute
-	ToTotal               ssot.Attribute
-	DescribeKind          ssot.Attribute
-	DescribeName          ssot.Attribute
-	SharedOn              ssot.Attribute
+	SecureObjectsOnly ssot.Attribute
+	Comment           ssot.Attribute
+	Accounts          ssot.Attribute
+	CreatedOn         ssot.Attribute
+	Kind              ssot.Attribute
+	OwnerAccount      ssot.Attribute
+	Name              ssot.Attribute
+	DatabaseName      ssot.Attribute
+	To                ssot.Attribute
+	Owner             ssot.Attribute
+	ListingGlobalName ssot.Attribute
+	ToTotal           ssot.Attribute
+	DescribeKind      ssot.Attribute
+	DescribeName      ssot.Attribute
+	SharedOn          ssot.Attribute
 }{
 	SecureObjectsOnly: ssot.Attribute{
-		Name:        "secure_objects_only",
-		Type:        ssot.AttrBool,
-		Description: "Specifies whether only secure objects can be added to the share. Once set to false, it cannot be set back to true.",
+		Name:     "secure_objects_only",
+		Type:     ssot.AttrBool,
+		ForceNew: true,
+		// The same attribute is the SHOW column. SHOW SHARES returns "true" or "false" as text, and an empty value for an inbound share.
+		StoredAsText:   true,
+		OptionalInShow: true,
+		OptionalInDb:   true,
+		Description:    "Specifies whether only secure objects can be added to the share. Once set to false, it cannot be set back to true.",
 	},
 	Comment: ssot.Attribute{
 		Name:        "comment",
 		Type:        ssot.AttrString,
-		Description: "Specifies a comment for the managed account.",
+		Description: "Specifies a comment for the share.",
 	},
 	Accounts: ssot.Attribute{
 		Name: "accounts",
@@ -65,13 +69,12 @@ var ShareAttrs = struct {
 		ManualConvert: true,
 		Readonly:      true,
 	},
-	Owner:                 ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
-	ListingGlobalName:     ssot.Attribute{Name: "listing_global_name", Type: ssot.AttrString, Readonly: true},
-	ShowSecureObjectsOnly: ssot.Attribute{Name: "secure_objects_only_output", ShowName: "secure_objects_only", Type: ssot.AttrString, Readonly: true},
-	ToTotal:               ssot.Attribute{Name: "to_total", Type: ssot.AttrInt, Readonly: true},
-	DescribeKind:          ssot.Attribute{Name: "kind", Type: ssot.AttrEnum, Enum: shareDescribeKindEnum, ManualConvert: true, Readonly: true},
-	DescribeName:          ssot.Attribute{Name: "name", Type: ssot.AttrIdentifier, IdentifierType: "ObjectIdentifier", ManualConvert: true, Readonly: true},
-	SharedOn:              ssot.Attribute{Name: "shared_on", Type: ssot.AttrTime, Readonly: true},
+	Owner:             ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
+	ListingGlobalName: ssot.Attribute{Name: "listing_global_name", Type: ssot.AttrString, Readonly: true},
+	ToTotal:           ssot.Attribute{Name: "to_total", Type: ssot.AttrInt, Readonly: true},
+	DescribeKind:      ssot.Attribute{Name: "kind", Type: ssot.AttrEnum, Enum: shareDescribeKindEnum, ManualConvert: true, Readonly: true},
+	DescribeName:      ssot.Attribute{Name: "name", Type: ssot.AttrIdentifier, IdentifierType: "ObjectIdentifier", ManualConvert: true, Readonly: true},
+	SharedOn:          ssot.Attribute{Name: "shared_on", Type: ssot.AttrTime, Readonly: true},
 }
 
 // shareAdd and shareRemove are the ADD ACCOUNTS and REMOVE ACCOUNTS blocks of ALTER. They are not Terraform fields.
@@ -102,8 +105,8 @@ var (
 // Checked against create-share, alter-share, drop-share, show-shares, desc-share, and parameters.
 //
 // SHOW SHARES returns a secure_objects_only column ("true" for an outbound share, "" for an inbound one, observed on a live
-// account) that the show-shares page does not list. It is a string, because the inbound value is empty. Separate from the
-// secure_objects_only CREATE attribute, which is a bool, so it has the ShowName.
+// account) that the show-shares page does not list. It is an optional bool, because the inbound value is empty, and it is the
+// same attribute as the secure_objects_only CREATE attribute.
 //
 // CREATE OR ALTER SHARE is documented (COMMENT only) and is not added, because the existing interface did not have it.
 //
@@ -114,36 +117,41 @@ var Share = ssot.Object{
 	Name:                   "Share",
 	NamePlural:             "Shares",
 	IdType:                 "AccountObjectIdentifier",
-	LegacyIdEncoding:       true,
 	PreviewFeature:         true,
 	IdentityNameForceNew:   true,
 	AttributesModification: true,
-	// Create, read and update keep the behavior of the handwritten resource, so most steps are in share_ext.go:
-	// accounts need a temporary database when no database is granted yet, the update makes the recipients equal to
-	// the configured accounts, and the read merges the recipients that SHOW SHARES does not list.
-	// The resource has no show_output and no describe_output.
-	// TODO [next PRs]: update the resource and enable more hooks
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"v2_23_0_ShareStateUpgrader",
+	},
+	// The accounts are the reason for the ext hooks: they need a temporary database when no database is granted yet,
+	// the update makes the recipients equal to the configured accounts, and the read merges the recipients that
+	// SHOW SHARES does not list (AfterShowById).
+	// TODO [next PRs]: Add describe_output. DESCRIBE SHARE returns a row for every object granted to the share (not one value),
+	// so it needs a list of rows and one more DESCRIBE during the read.
+	// TODO [next PRs]: enable the new id format hooks.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithNewCreateRequest(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.ExtCall()),
-		ssot.WithCreateInSdk(ssot.ExtCall()),
+		ssot.WithCreateInSdk(ssot.Generated()),
 		ssot.WithAfterCreate(ssot.ExtCall()),
-		ssot.WithShowByIdSafelyInSdk(ssot.ExtCall()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithAfterShowById(ssot.ExtCall()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
-		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
+		ssot.WithHandleExternalChanges(ssot.Generated()),
+		ssot.WithSetStateToValuesFromConfig(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.ExtCall()),
 		ssot.WithApplySetUnset(ssot.ExtCall()),
 		ssot.WithAlterSetInSdk(ssot.ExtCall()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
-		ssot.WithShowByIdInSdk(ssot.Omitted()),
+		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithIdentitySchema(ssot.ExtCall()),
-		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
+		ssot.WithStateUpgraders(ssot.Generated()),
 	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
@@ -152,7 +160,7 @@ var Share = ssot.Object{
 		ssot.WithModel(),
 		ssot.WithResourceAssert(),
 		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowManualFields(&ShareAttrs.Name)), ssot.SchemaDescribe()),
+		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
 		ssot.WithObjectAssert(
 			ssot.ObjectAssertShow(),
 			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
@@ -196,9 +204,7 @@ var Share = ssot.Object{
 		},
 	},
 	Attributes: []ssot.Attribute{
-		// TODO [next PRs]: Add secure_objects_only to the attributes when the resource gets it. Until then it is only a CREATE clause,
-		// and the resource has no such field.
-		// ShareAttrs.SecureObjectsOnly,
+		ShareAttrs.SecureObjectsOnly,
 		ShareAttrs.Comment,
 		ShareAttrs.Accounts,
 	},
@@ -236,7 +242,7 @@ var Share = ssot.Object{
 			&ShareAttrs.Owner,
 			&ShareAttrs.Comment,
 			&ShareAttrs.ListingGlobalName,
-			&ShareAttrs.ShowSecureObjectsOnly,
+			&ShareAttrs.SecureObjectsOnly,
 			&ShareAttrs.ToTotal,
 		},
 	},

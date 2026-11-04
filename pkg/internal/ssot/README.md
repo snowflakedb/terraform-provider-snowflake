@@ -470,6 +470,12 @@ any other error is returned. The object needs the identity schema and an ALTER s
 `BeforeCreateSteps` ([model.go](../../resources/gen/model.go)), with one block in `before_create.tmpl`; another kind of
 step before create adds a field and a block. Any other before-create behavior stays `ExtCall`.
 
+`AfterShowById` is `Omitted` by default. It runs in Read right after `ShowByIdSafelyInSdk`, as
+`<prefix>AfterShowByIdExt(ctx, d, meta, id, <prefix>) diag.Diagnostics`. It may change the SHOW row (for example to
+complete a column that SHOW truncates) before the external changes, `show_output` and the config fields use it. An
+error stops Read. Warnings are collected and returned by Read, which is the only hook that makes Read return warnings.
+Only `ExtCall` is supported.
+
 `AfterCreate` and `AfterAlter` are `Omitted` by default. They run after `SetId` and after the alters, and their
 diagnostics (usually warnings) are added to the final Read. Use them for a step that must not drop the object from
 state when it fails, such as resuming a created object. `Import<Name>` is generated only when `ShowByIdInSdk` is

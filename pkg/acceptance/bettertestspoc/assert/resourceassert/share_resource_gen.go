@@ -3,6 +3,7 @@
 package resourceassert
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -52,6 +53,16 @@ func (s *ShareResourceAssert) HasFullyQualifiedName(expected string) *ShareResou
 	return s
 }
 
+func (s *ShareResourceAssert) HasSecureObjectsOnly(expected string) *ShareResourceAssert {
+	s.StringValueSet("secure_objects_only", expected)
+	return s
+}
+
+func (s *ShareResourceAssert) HasSecureObjectsOnlyBool(expected bool) *ShareResourceAssert {
+	s.StringValueSet("secure_objects_only", strconv.FormatBool(expected))
+	return s
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -68,6 +79,11 @@ func (s *ShareResourceAssert) HasCommentString(expected string) *ShareResourceAs
 
 func (s *ShareResourceAssert) HasFullyQualifiedNameString(expected string) *ShareResourceAssert {
 	s.ValueSet("fully_qualified_name", expected)
+	return s
+}
+
+func (s *ShareResourceAssert) HasSecureObjectsOnlyString(expected string) *ShareResourceAssert {
+	s.ValueSet("secure_objects_only", expected)
 	return s
 }
 
@@ -90,6 +106,11 @@ func (s *ShareResourceAssert) HasNoFullyQualifiedName() *ShareResourceAssert {
 	return s
 }
 
+func (s *ShareResourceAssert) HasNoSecureObjectsOnly() *ShareResourceAssert {
+	s.ValueNotSet("secure_objects_only")
+	return s
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -109,6 +130,11 @@ func (s *ShareResourceAssert) HasFullyQualifiedNameEmpty() *ShareResourceAssert 
 	return s
 }
 
+func (s *ShareResourceAssert) HasSecureObjectsOnlyEmpty() *ShareResourceAssert {
+	s.ValueSet("secure_objects_only", "")
+	return s
+}
+
 ///////////////////////////////
 // Attribute presence checks //
 ///////////////////////////////
@@ -125,5 +151,10 @@ func (s *ShareResourceAssert) HasCommentNotEmpty() *ShareResourceAssert {
 
 func (s *ShareResourceAssert) HasFullyQualifiedNameNotEmpty() *ShareResourceAssert {
 	s.ValuePresent("fully_qualified_name")
+	return s
+}
+
+func (s *ShareResourceAssert) HasSecureObjectsOnlyNotEmpty() *ShareResourceAssert {
+	s.ValuePresent("secure_objects_only")
 	return s
 }

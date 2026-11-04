@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"slices"
@@ -22,33 +23,15 @@ import (
 // =============================================================================
 
 var (
-	// The warnings of the recipients lookup are collected from the context, because the generated read has no place to return them.
-	shareCreateExt = PreviewFeatureCreateContextWrapper(string(previewfeatures.ShareResource), TrackingCreateWrapper(resources.Share, shareWithReadWarningsExt(CreateShare)))
-	shareReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.ShareResource), TrackingReadWrapper(resources.Share, shareWithReadWarningsExt(ReadShareFunc(true))))
-	shareUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.ShareResource), TrackingUpdateWrapper(resources.Share, shareWithReadWarningsExt(UpdateShare)))
+	shareCreateExt = PreviewFeatureCreateContextWrapper(string(previewfeatures.ShareResource), TrackingCreateWrapper(resources.Share, CreateShare))
+	shareReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.ShareResource), TrackingReadWrapper(resources.Share, ReadShareFunc(true)))
+	shareUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.ShareResource), TrackingUpdateWrapper(resources.Share, UpdateShare))
 
-	shareDescriptionExt   = ""
-	shareCustomizeDiffExt schema.CustomizeDiffFunc
-	shareImporterExt      = &schema.ResourceImporter{
-		StateContext: TrackingImportWrapper(resources.Share, ImportName[sdk.AccountObjectIdentifier]),
+	shareDescriptionExt = ""
+	shareImporterExt    = &schema.ResourceImporter{
+		StateContext: TrackingImportWrapper(resources.Share, ImportShare),
 	}
 )
-
-type shareReadWarningsKey struct{}
-
-// shareWithReadWarningsExt adds the warnings that the read collected in the context to the diagnostics of the wrapped function.
-// The warnings go first, as before.
-// TODO [next PRs]: The generated read stops on any non-nil diagnostics (even a warning) and returns nil at the end, so it cannot
-// return the warning of a failed recipients lookup. The template should let the read return non-fatal warnings: stop only on
-// errors and return the collected diagnostics, as the handwritten share did. Then remove this wrapper and the collector in the
-// context (shareReadWarningsKey, shareShowByIdSafelyInSdkExt), and return the warning from shareShowByIdSafelyInSdkExt.
-func shareWithReadWarningsExt(f func(context.Context, *schema.ResourceData, any) diag.Diagnostics) func(context.Context, *schema.ResourceData, any) diag.Diagnostics {
-	return func(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-		warnings := &diag.Diagnostics{}
-		diags := f(context.WithValue(ctx, shareReadWarningsKey{}, warnings), d, meta)
-		return append(*warnings, diags...)
-	}
-}
 
 // =============================================================================
 // Request / mapping / Read-Update helpers
@@ -62,11 +45,23 @@ type shareAlterRequestsExt struct {
 	comment          string
 }
 
+// shareSetFieldsNotSetByReadExt sets what the read does not: the name and secure_objects_only. The comment and the accounts are set by the read.
+// Only an outbound share (created in this account) can be imported.
+func shareSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, share *sdk.Share, importPermissiveMode bool) error {
+	if share.Kind != sdk.ShareKindOutbound {
+		return fmt.Errorf("invalid share kind, expected %s, got %s: only a share created in this account can be imported", sdk.ShareKindOutbound, share.Kind)
+	}
+	return errors.Join(
+		d.Set("name", id.Name()),
+		importOptionalBooleanStringAttribute(d, "secure_objects_only", importPermissiveMode, share.SecureObjectsOnly),
+	)
+}
+
 func shareApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreateShareRequest) error {
 	if comment := d.Get("comment").(string); comment != "" {
 		req.WithComment(comment)
 	}
-	return nil
+	return booleanStringAttributeCreateBuilder(d, "secure_objects_only", req.WithSecureObjectsOnly)
 }
 
 // shareAfterCreateExt adds the accounts after the share is created. A failure is returned without reading the share.
@@ -110,36 +105,22 @@ func shareApplySetUnsetExt(d *schema.ResourceData) (*shareAlterRequestsExt, erro
 // SDK incision points
 // =============================================================================
 
-func shareCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateShareRequest) diag.Diagnostics {
-	if err := meta.(*provider.Context).Client.Shares.Create(ctx, req); err != nil {
-		// The id is not set yet at this point, so the message has always had an empty id.
-		return diag.FromErr(fmt.Errorf("error creating share (%v) err = %w", "", err))
-	}
-	return nil
-}
-
-// shareShowByIdSafelyInSdkExt keeps the read of the handwritten resource: a share that is not found is an error, not a
-// removal from the state. A failed lookup of all the recipients is not an error: the warning is collected in the context
-// (see shareWithReadWarningsExt) and the listed recipients are used.
-func shareShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (*sdk.Share, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-	share, err := client.Shares.ShowByID(ctx, id)
-	if err != nil {
-		return nil, diag.FromErr(fmt.Errorf("error reading share (%v) err = %w", d.Id(), err))
-	}
-	recipients, err := shareRecipientsExt(ctx, client, id, share)
+// shareAfterShowByIdExt completes the recipients of the SHOW row. A failed lookup of all the recipients is not an error: the
+// listed recipients are used and a warning is returned.
+func shareAfterShowByIdExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, share *sdk.Share) diag.Diagnostics {
+	recipients, err := shareRecipientsExt(ctx, meta.(*provider.Context).Client, id, share)
 	share.To = recipients
 	if err != nil {
-		summary := fmt.Sprintf("Share %s has %d recipients but SHOW SHARES lists only %d", d.Id(), share.ToTotal, len(share.To))
-		detail := "The full list is read from SNOWFLAKE.ACCOUNT_USAGE.SHARES, which failed (the role needs SELECT on that view, for example through IMPORTED PRIVILEGES on the SNOWFLAKE database). " +
-			"Recipients that are not listed are missing from the state and planned as additions. Error: " + err.Error()
-		if warnings, ok := ctx.Value(shareReadWarningsKey{}).(*diag.Diagnostics); ok {
-			*warnings = append(*warnings, diag.Diagnostic{Severity: diag.Warning, Summary: summary, Detail: detail})
-		} else {
-			log.Printf("[WARN] %s. %s", summary, detail)
+		return diag.Diagnostics{
+			diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Share %s has %d recipients but SHOW SHARES lists only %d", d.Id(), share.ToTotal, len(share.To)),
+				Detail: "The full list is read from SNOWFLAKE.ACCOUNT_USAGE.SHARES, which failed (the role needs SELECT on that view, for example through IMPORTED PRIVILEGES on the SNOWFLAKE database). " +
+					"Recipients that are not listed are missing from the state and planned as additions. Error: " + err.Error(),
+			},
 		}
 	}
-	return share, nil
+	return nil
 }
 
 // shareRecipientsExt returns all the recipients of the share. SHOW SHARES lists at most three recipients and reports the rest

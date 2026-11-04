@@ -47,4 +47,6 @@ This process is fully automated during the creation.
 Import is supported using the following syntax:
 
 {{ codefile "shell" (printf "examples/resources/%s/import.sh" .Name)}}
+
+-> **Note** Only a share created in your account (`kind = OUTBOUND`) can be imported; importing a share provided by another account (`kind = INBOUND`) fails. The import sets `secure_objects_only` to the value of the share. Because the field is ForceNew, a configuration that omits it while the share has `secure_objects_only = true` plans a replacement of the share after the import; set the field to the value of the share, or enable the `IMPORT_PERMISSIVE_MODE` experiment to get an empty plan.
 {{- end }}

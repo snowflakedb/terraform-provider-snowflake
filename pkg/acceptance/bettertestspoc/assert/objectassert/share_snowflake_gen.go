@@ -212,22 +212,25 @@ func (s *ShareAssert) HasListingGlobalNameNotEmpty() *ShareAssert {
 	return s
 }
 
-func (s *ShareAssert) HasSecureObjectsOnly(expected string) *ShareAssert {
+func (s *ShareAssert) HasSecureObjectsOnly(expected bool) *ShareAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Share) error {
 		t.Helper()
-		if o.SecureObjectsOnly != expected {
-			return fmt.Errorf("expected secure objects only: %v; got: %v", expected, o.SecureObjectsOnly)
+		if o.SecureObjectsOnly == nil {
+			return fmt.Errorf("expected secure objects only to have value; got: nil")
+		}
+		if *o.SecureObjectsOnly != expected {
+			return fmt.Errorf("expected secure objects only: %v; got: %v", expected, *o.SecureObjectsOnly)
 		}
 		return nil
 	})
 	return s
 }
 
-func (s *ShareAssert) HasSecureObjectsOnlyNotEmpty() *ShareAssert {
+func (s *ShareAssert) HasNoSecureObjectsOnly() *ShareAssert {
 	s.AddAssertion(func(t *testing.T, o *sdk.Share) error {
 		t.Helper()
-		if o.SecureObjectsOnly == "" {
-			return fmt.Errorf("expected secure objects only to be non-empty")
+		if o.SecureObjectsOnly != nil {
+			return fmt.Errorf("expected secure objects only to be nil; got: %v", *o.SecureObjectsOnly)
 		}
 		return nil
 	})

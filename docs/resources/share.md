@@ -54,13 +54,15 @@ resource "snowflake_database" "example" {
 ### Optional
 
 - `accounts` (Set of String) A list of accounts to be added to the share. Values should not be the account locator, but in the form of 'organization_name.account_name
-- `comment` (String) Specifies a comment for the managed account.
+- `comment` (String) Specifies a comment for the share.
+- `secure_objects_only` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether only secure objects can be added to the share. Once set to false, it cannot be set back to true. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
+- `show_output` (List of Object) Outputs the result of `SHOW SHARES` for the given share. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -72,10 +74,30 @@ Optional:
 - `read` (String)
 - `update` (String)
 
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `kind` (String)
+- `listing_global_name` (String)
+- `name` (String)
+- `owner` (String)
+- `owner_account` (String)
+- `secure_objects_only` (Boolean)
+- `to` (List of String)
+- `to_total` (Number)
+
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_share.example name
+terraform import snowflake_share.example '"<share_name>"'
 ```
+
+-> **Note** Only a share created in your account (`kind = OUTBOUND`) can be imported; importing a share provided by another account (`kind = INBOUND`) fails. The import sets `secure_objects_only` to the value of the share. Because the field is ForceNew, a configuration that omits it while the share has `secure_objects_only = true` plans a replacement of the share after the import; set the field to the value of the share, or enable the `IMPORT_PERMISSIVE_MODE` experiment to get an empty plan.
