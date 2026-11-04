@@ -18,7 +18,7 @@ func TestInt_Listings(t *testing.T) {
 	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
 	t.Cleanup(stageCleanup)
 
-	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	share, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 	t.Cleanup(testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 

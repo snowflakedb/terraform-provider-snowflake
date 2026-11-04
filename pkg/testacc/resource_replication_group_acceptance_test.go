@@ -40,7 +40,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 
 	database2, cleanupDatabase2 := testClient().Database.CreateDatabase(t)
 	t.Cleanup(cleanupDatabase2)
-	share, cleanupShare := testClient().Share.CreateShare(t)
+	share, cleanupShare := testClient().Share.Create(t)
 	t.Cleanup(cleanupShare)
 	externalVolume, cleanupExternalVolume := testClient().ExternalVolume.Create(t)
 	t.Cleanup(cleanupExternalVolume)

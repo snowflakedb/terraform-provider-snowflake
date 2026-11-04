@@ -31,12 +31,20 @@ var shareAttributesSchema = shareAttributesModificationExt(map[string]*tfschema.
 			ValidateDiagFunc: IsValidAccountIdentifier(),
 		},
 		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("accounts"),
-		Description:      "A list of accounts to be added to the share. Values should not be the account locator, but in the form of 'organization_name.account_name",
+		Description:      "A set of accounts the share is available to, in the form `organization_name.account_name` (not the account locator). The provider reads the recipients from Snowflake, so accounts added outside of Terraform are removed on the next apply.",
 	},
 })
 
 var shareSchema = collections.MergeMaps(
-	shareIdentitySchemaExt,
+	map[string]*tfschema.Schema{
+		"name": {
+			Type:             tfschema.TypeString,
+			Required:         true,
+			ForceNew:         true,
+			Description:      blocklistedCharactersFieldDescription("Specifies the identifier for the share; must be unique for the account."),
+			DiffSuppressFunc: suppressIdentifierQuoting,
+		},
+	},
 	shareAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
@@ -48,6 +56,16 @@ var shareSchema = collections.MergeMaps(
 			Description: "Outputs the result of `SHOW SHARES` for the given share.",
 			Elem: &tfschema.Resource{
 				Schema: schemas.ShowShareSchema,
+			},
+		},
+	},
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE SHARE` for the given share. DESCRIBE SHARE returns a row for every object granted to the share, including the system objects that Snowflake adds to the shared database. In order to see the rows, the role must have a privilege on the share.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeShareDetailsSchema,
 			},
 		},
 	},

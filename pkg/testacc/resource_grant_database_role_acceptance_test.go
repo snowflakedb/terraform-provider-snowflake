@@ -293,7 +293,7 @@ func TestAcc_GrantDatabaseRole_shareNameContainingDots(t *testing.T) {
 	t.Cleanup(databaseRoleCleanup)
 
 	shareId := testClient().Ids.RandomAccountObjectIdentifierContaining(".foo.bar")
-	_, shareCleanup := testClient().Share.CreateShareWithIdentifier(t, shareId)
+	_, shareCleanup := testClient().Share.CreateWithIdentifier(t, shareId)
 	t.Cleanup(shareCleanup)
 
 	privilegesModel := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeUsage.String()}, shareId.Name()).

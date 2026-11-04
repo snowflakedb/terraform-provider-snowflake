@@ -44,8 +44,10 @@ func mapNullStringToBoolValue(boolField **bool, sqlValue sql.NullString, trueVal
 }
 
 // mapNullStringToBoolParsed maps a sql.NullString to a *bool using strconv.ParseBool.
+// A NULL and an empty string mean that there is no value (for example, SHOW SHARES returns an empty value of
+// secure_objects_only for an inbound share), so the field stays nil and nothing is logged.
 func mapNullStringToBoolParsed(boolField **bool, sqlValue sql.NullString) {
-	if sqlValue.Valid {
+	if sqlValue.Valid && sqlValue.String != "" {
 		if v, err := strconv.ParseBool(sqlValue.String); err == nil {
 			*boolField = &v
 		} else {

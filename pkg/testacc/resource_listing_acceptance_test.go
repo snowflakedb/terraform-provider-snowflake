@@ -42,7 +42,7 @@ func TestAcc_Listing_BasicUseCase_Inlined(t *testing.T) {
 		// Has to be set when a listing is not associated with a share or an application package
 		WithPublish(r.BooleanFalse)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	t.Cleanup(testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
@@ -254,7 +254,7 @@ func TestAcc_Listing_BasicUseCase_FromStage(t *testing.T) {
 		// Has to be set when a listing is not associated with a share or an application package
 		WithPublish(r.BooleanFalse)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	t.Cleanup(testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
@@ -605,7 +605,7 @@ func TestAcc_Listing_CompleteUseCase_NewVersions_Inlined(t *testing.T) {
 	t.Cleanup(stageCleanup)
 	_ = testClient().Stage.PutInLocationWithContent(t, stage.Location()+"/manifest", "manifest.yml", manifest2)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 	t.Cleanup(testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 
@@ -718,7 +718,7 @@ func TestAcc_Listing_CompleteUseCase_NewVersions_FromStage(t *testing.T) {
 	t.Cleanup(stage2Cleanup)
 	_ = testClient().Stage.PutInLocationWithContent(t, stage2.Location()+"/v2", "manifest.yml", manifest2)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 	t.Cleanup(testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 

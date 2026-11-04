@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -31,7 +32,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO [next PRs]: Add the describe output assertions once the share resource has describe_output. A share has no object parameters.
+// A share has no object parameters. The share in this test has no granted database, so describe_output is empty; the rows are
+// asserted in TestAcc_Share_Regression_WithGrantedDatabase.
 func TestAcc_Share_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	resourceId := helpers.EncodeResourceIdentifier(id)
@@ -50,6 +52,11 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 		WithComment(comment).
 		WithAccounts(account.Name()).
 		WithSecureObjectsOnlyBool(false)
+	// The accounts ignore the case, so the same account in a different case is not a change.
+	completeWithLowercasedAccount := model.Share("t", id.Name()).
+		WithComment(comment).
+		WithAccounts(strings.ToLower(account.Name())).
+		WithSecureObjectsOnlyBool(false)
 	ref := basic.ResourceReference()
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -59,6 +66,7 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 			HasSecureObjectsOnlyString(r.BooleanDefault).
 			HasCommentEmpty().
 			HasAccountsEmpty(),
+		assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "0")),
 		resourceshowoutputassert.ShareShowOutput(t, ref).
 			HasName(id.Name()).
 			HasKind(sdk.ShareKindOutbound).
@@ -83,6 +91,7 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 			HasSecureObjectsOnlyString(r.BooleanDefault).
 			HasCommentString(comment).
 			HasAccounts(account.Name()),
+		assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "0")),
 		resourceshowoutputassert.ShareShowOutput(t, ref).
 			HasName(id.Name()).
 			HasKind(sdk.ShareKindOutbound).
@@ -107,6 +116,7 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 			HasSecureObjectsOnlyString("false").
 			HasCommentString(comment).
 			HasAccounts(account.Name()),
+		assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.#", "0")),
 		resourceshowoutputassert.ShareShowOutput(t, ref).
 			HasName(id.Name()).
 			HasKind(sdk.ShareKindOutbound).
@@ -269,6 +279,17 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 						HasToTotal(0),
 				),
 			},
+			// 8b. Update - the same account in a different case is not a change
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, completeWithLowercasedAccount),
+				Check:  assertThat(t, assertComplete...),
+			},
 			// 9. Update - external changes of the updatable fields
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -293,7 +314,7 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
-					testClient().Share.CreateShareWithRequest(t, id, sdk.NewCreateShareRequest(id).WithOrReplace(true).WithSecureObjectsOnly(true))
+					testClient().Share.CreateWithRequest(t, id, sdk.NewCreateShareRequest(id).WithOrReplace(true).WithSecureObjectsOnly(true))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -316,7 +337,7 @@ func TestAcc_Share_BasicUseCase_Import(t *testing.T) {
 	basic := model.Share("t", id.Name())
 	ref := basic.ResourceReference()
 
-	_, cleanup := testClient().Share.CreateShareWithIdentifier(t, id)
+	_, cleanup := testClient().Share.CreateWithIdentifier(t, id)
 	t.Cleanup(cleanup)
 
 	resource.Test(t, resource.TestCase{
@@ -376,7 +397,7 @@ func TestAcc_Share_SecureObjectsOnly(t *testing.T) {
 	ref := unset.ResourceReference()
 
 	replaceShare := func(secureObjectsOnly bool) {
-		testClient().Share.CreateShareWithRequest(t, id, sdk.NewCreateShareRequest(id).WithOrReplace(true).WithSecureObjectsOnly(secureObjectsOnly))
+		testClient().Share.CreateWithRequest(t, id, sdk.NewCreateShareRequest(id).WithOrReplace(true).WithSecureObjectsOnly(secureObjectsOnly))
 	}
 	assertShare := func(configured string, secureObjectsOnly bool) []assert.TestCheckFuncProvider {
 		return []assert.TestCheckFuncProvider{
@@ -479,7 +500,7 @@ func TestAcc_Share_ExternalDeletion(t *testing.T) {
 				Check:  assertThat(t, resourceassert.ShareResource(t, ref).HasNameString(id.Name())),
 			},
 			{
-				PreConfig: testClient().Share.DropShareFunc(t, id),
+				PreConfig: testClient().Share.DropFunc(t, id),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -545,9 +566,57 @@ func TestAcc_Share_migrateFromV2_22_1(t *testing.T) {
 	})
 }
 
+// TestAcc_Share_migrateFromV2_22_1_WithDependentGrant checks that the new id of the share (the fully qualified name) does not
+// recreate a resource that refers to the share by its id.
+func TestAcc_Share_migrateFromV2_22_1_WithDependentGrant(t *testing.T) {
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ShareResource))
+	shareModel := model.Share("t", id.Name())
+	grantModel := model.GrantPrivilegesToShare("g", []string{"USAGE"}, "placeholder").
+		WithToShareValue(accconfig.UnquotedWrapperVariable(shareModel.ResourceReference() + ".id")).
+		WithOnDatabase(database.ID().Name())
+	shareRef := shareModel.ResourceReference()
+	grantRef := grantModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Share),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.22.1"),
+				Config:            accconfig.FromModels(t, providerModel, shareModel, grantModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(shareRef, "id", id.Name())),
+					assert.Check(resource.TestCheckResourceAttr(grantRef, "to_share", id.Name())),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(shareRef, plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(grantRef, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, shareModel, grantModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(shareRef, "id", id.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(grantRef, "to_share", id.Name())),
+				),
+			},
+		},
+	})
+}
+
 // TestAcc_Share_Regression_ThreeAccounts adds two recipients to a share and removes them again.
 func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 	// The prod environment has no setup with three accounts on the same deployment, which is needed to add two recipients.
+	// TODO [SNOW-4428377]: Enable the test on the prod environment when the three accounts on the same deployment are set up there.
 	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeProdEnvironment {
 		t.Skip("Skipping for the prod Snowflake environment: three accounts on the same deployment are required")
 	}
@@ -561,6 +630,8 @@ func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 	noAccounts := model.Share("t", id.Name()).WithComment(comment)
 	twoAccounts := model.Share("t", id.Name()).WithComment(comment).WithAccounts(account2.Name(), account3.Name())
 	oneAccount := model.Share("t", id.Name()).WithComment(comment).WithAccounts(account2.Name())
+	// The accounts are a set that ignores the case, so a different order and case of the same accounts is not a change.
+	twoAccountsReorderedAndLowercased := model.Share("t", id.Name()).WithComment(comment).WithAccounts(strings.ToLower(account3.Name()), account2.Name())
 	ref := noAccounts.ResourceReference()
 
 	noAccountsAssertions := []assert.TestCheckFuncProvider{
@@ -624,6 +695,16 @@ func TestAcc_Share_Regression_ThreeAccounts(t *testing.T) {
 					},
 				},
 				Config: accconfig.FromModels(t, twoAccounts),
+				Check:  assertThat(t, twoAccountsAssertions...),
+			},
+			// Update - the same accounts in a different order and case are not a change
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, twoAccountsReorderedAndLowercased),
 				Check:  assertThat(t, twoAccountsAssertions...),
 			},
 			// Update - remove one account
@@ -764,6 +845,9 @@ func TestAcc_Share_Regression_Issue4398(t *testing.T) {
 					resourceassert.ShareResource(t, ref).
 						HasNameString(id.Name()).
 						HasAccounts(account.Name()),
+					resourceshowoutputassert.ShareDescribeOutputRow(t, ref, 0).
+						HasKind(sdk.ObjectTypeDatabase).
+						HasName(database.ID()),
 					objectassert.Share(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(database.ID()).
@@ -833,6 +917,9 @@ func TestAcc_Share_Regression_WithGrantedDatabase(t *testing.T) {
 					resourceassert.ShareResource(t, ref).
 						HasNameString(id.Name()).
 						HasAccounts(account.Name()),
+					resourceshowoutputassert.ShareDescribeOutputRow(t, ref, 0).
+						HasKind(sdk.ObjectTypeDatabase).
+						HasName(database.ID()),
 					objectassert.Share(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(database.ID()).
@@ -851,6 +938,9 @@ func TestAcc_Share_Regression_WithGrantedDatabase(t *testing.T) {
 					resourceassert.ShareResource(t, ref).
 						HasNameString(id.Name()).
 						HasAccountsEmpty(),
+					resourceshowoutputassert.ShareDescribeOutputRow(t, ref, 0).
+						HasKind(sdk.ObjectTypeDatabase).
+						HasName(database.ID()),
 					objectassert.Share(t, id).
 						HasName(id.Name()).
 						HasDatabaseName(database.ID()).

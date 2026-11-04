@@ -52,10 +52,15 @@ var ShareAttrs = struct {
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountIdentifier",
 		},
-		Description: "A list of accounts to be added to the share. Values should not be the account locator, but " +
-			"in the form of 'organization_name.account_name",
+		Description: "A set of accounts the share is available to, in the form `organization_name.account_name` (not the account locator). " +
+			"The provider reads the recipients from Snowflake, so accounts added outside of Terraform are removed on the next apply.",
+		// TODO [SNOW-4428377]: Add an optional share_restrictions field (SHARE_RESTRICTIONS of ALTER SHARE ... ADD ACCOUNTS, available in the SDK).
+		// It is a statement-time modifier of ADD (default TRUE) that needs the OVERRIDE SHARE RESTRICTIONS privilege and cannot be read back from
+		// SHOW, DESCRIBE or ACCOUNT_USAGE, so it would be applied on add only and its external changes would not be detected.
 		// The ACCOUNTS list has no parentheses and no tag for them. The ADD and REMOVE blocks set the same clause.
 		SetSql: ssot.PlainParameter(),
+		// CREATE SHARE has no ACCOUNTS clause: the accounts are added after the share is created (AfterCreate).
+		SkipCreate: true,
 	},
 	CreatedOn:    ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
 	Kind:         ssot.Attribute{Name: "kind", Type: ssot.AttrEnum, Enum: ShareKind, Readonly: true},
@@ -100,7 +105,8 @@ var (
 	}
 )
 
-// Share is defined for the SDK only: no Generators entry sets WithResource. The whole SDK interface is built from here.
+// Share generates the whole SDK interface, the resource (a preview feature), and their test helpers. The ext parts of the
+// resource are about the accounts (see the comment on ResourceHooks) and the import.
 //
 // Checked against create-share, alter-share, drop-share, show-shares, desc-share, and parameters.
 //
@@ -108,48 +114,50 @@ var (
 // account) that the show-shares page does not list. It is an optional bool, because the inbound value is empty, and it is the
 // same attribute as the secure_objects_only CREATE attribute.
 //
-// CREATE OR ALTER SHARE is documented (COMMENT only) and is not added, because the existing interface did not have it.
+// CREATE OR ALTER SHARE is documented (COMMENT only). It is never added, because our resources do not use CREATE OR ALTER.
 //
 // The docs show DROP SHARE <name> without IF EXISTS. The SDK keeps IF EXISTS.
 //
 // Object parameters: none is documented for a share.
 var Share = ssot.Object{
-	Name:                   "Share",
-	NamePlural:             "Shares",
-	IdType:                 "AccountObjectIdentifier",
-	PreviewFeature:         true,
-	IdentityNameForceNew:   true,
-	AttributesModification: true,
+	Name:                                "Share",
+	NamePlural:                          "Shares",
+	IdType:                              "AccountObjectIdentifier",
+	PreviewFeature:                      true,
+	AdditionalDescribeOutputDescription: "DESCRIBE SHARE returns a row for every object granted to the share, including the system objects that Snowflake adds to the shared database. In order to see the rows, the role must have a privilege on the share.",
+	IdentityNameForceNew:                true,
+	AttributesModification:              true,
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v2_23_0_ShareStateUpgrader",
 	},
 	// The accounts are the reason for the ext hooks: they need a temporary database when no database is granted yet,
-	// the update makes the recipients equal to the configured accounts, and the read merges the recipients that
-	// SHOW SHARES does not list (AfterShowById).
-	// TODO [next PRs]: Add describe_output. DESCRIBE SHARE returns a row for every object granted to the share (not one value),
-	// so it needs a list of rows and one more DESCRIBE during the read.
-	// TODO [next PRs]: enable the new id format hooks.
+	// the update makes the recipients equal to the configured accounts (BeforeAlter; the generated SET and UNSET handle the
+	// comment), and the read merges the recipients that SHOW SHARES does not list (AfterShowById).
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithNewCreateRequest(ssot.Generated()),
-		ssot.WithApplyCreateOptionals(ssot.ExtCall()),
+		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
 		ssot.WithAfterCreate(ssot.ExtCall()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithAfterShowById(ssot.ExtCall()),
-		ssot.WithDescribeInSdk(ssot.Omitted()),
+		ssot.WithDescribeInSdk(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Generated()),
 		ssot.WithSetStateToValuesFromConfig(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.ExtCall()),
-		ssot.WithApplySetUnset(ssot.ExtCall()),
-		ssot.WithAlterSetInSdk(ssot.ExtCall()),
-		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
 		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
-		ssot.WithIdentitySchema(ssot.ExtCall()),
-		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithIdentitySchema(ssot.Generated()),
+		ssot.WithDescribeOutputSchema(ssot.Generated()),
+		// Describe is best-effort and its output is a list of rows, so the ext sets it.
+		ssot.WithDescribeOutputSet(ssot.Omitted()),
+		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 	},

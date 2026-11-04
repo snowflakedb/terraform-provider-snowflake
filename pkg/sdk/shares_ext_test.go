@@ -192,3 +192,35 @@ func Test_showShareTargetAccountsOptions_sql(t *testing.T) {
 	require.NoError(t, err)
 	require.Contains(t, query, `NAME = 'it\'s'`)
 }
+
+func Test_shareDescRow_convert_names(t *testing.T) {
+	testCases := []struct {
+		name     string
+		kind     string
+		rowName  string
+		expected ObjectIdentifier
+	}{
+		{name: "database", kind: "DATABASE", rowName: "DB", expected: NewAccountObjectIdentifier("DB")},
+		{name: "quoted database", kind: "DATABASE", rowName: `"my db"`, expected: NewAccountObjectIdentifier("my db")},
+		{name: "schema", kind: "SCHEMA", rowName: "DB.SCH", expected: NewDatabaseObjectIdentifier("DB", "SCH")},
+		{name: "schema with a dot", kind: "SCHEMA", rowName: `DB."A.B"`, expected: NewDatabaseObjectIdentifier("DB", "A.B")},
+		{name: "table", kind: "TABLE", rowName: "DB.SCH.T", expected: NewSchemaObjectIdentifier("DB", "SCH", "T")},
+		{name: "quoted parts", kind: "TABLE", rowName: `"DB"."A.B"."T.X"`, expected: NewSchemaObjectIdentifier("DB", "A.B", "T.X")},
+		{name: "table in a schema with a dot", kind: "TABLE", rowName: `DB."A.B".T`, expected: NewSchemaObjectIdentifier("DB", "A.B", "T")},
+		{name: "quoted table with a dot", kind: "TABLE", rowName: `DB.SCH."T.X"`, expected: NewSchemaObjectIdentifier("DB", "SCH", "T.X")},
+		{name: "view", kind: "VIEW", rowName: "DB.SCH.V", expected: NewSchemaObjectIdentifier("DB", "SCH", "V")},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			details, err := shareDescRow{Kind: tc.kind, Name: tc.rowName}.convert()
+			require.NoError(t, err)
+			require.Equal(t, ObjectType(tc.kind), details.Kind)
+			require.Equal(t, tc.expected, details.Name)
+		})
+	}
+}
+
+func Test_shareDescRow_convert_invalidName(t *testing.T) {
+	_, err := shareDescRow{Kind: "TABLE", Name: "DB.SCH.T.X"}.convert()
+	require.Error(t, err)
+}

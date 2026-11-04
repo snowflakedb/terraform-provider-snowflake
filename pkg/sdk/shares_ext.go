@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
@@ -49,10 +48,26 @@ func parseShareRecipients(value string) ([]AccountIdentifier, int, error) {
 
 func (r *shareDescRow) additionalConvert(s *ShareDetails) error {
 	s.Kind = ObjectType(r.Kind)
-	trimmedS := strings.Trim(r.Name, "\"")
-	// TODO(SNOW-1229218): Use a common mapper to get object id.
-	s.Name = s.Kind.GetObjectIdentifier(trimmedS)
+	name, err := parseShareDetailsName(s.Kind, r.Name)
+	if err != nil {
+		return err
+	}
+	s.Name = name
 	return nil
+}
+
+// parseShareDetailsName reads the name of a granted object. Snowflake returns it as a fully qualified name, with the parts that need
+// it quoted (for example "DB"."SCHEMA.WITH.DOT".TABLE), so the quote-aware identifier parsers are used.
+// TODO(SNOW-1229218): Use a common mapper to get object id.
+func parseShareDetailsName(kind ObjectType, name string) (ObjectIdentifier, error) {
+	switch kind {
+	case ObjectTypeDatabase:
+		return ParseAccountObjectIdentifier(name)
+	case ObjectTypeSchema:
+		return ParseDatabaseObjectIdentifier(name)
+	default:
+		return ParseSchemaObjectIdentifier(name)
+	}
 }
 
 // showShareTargetAccountsOptions reads the full recipient list of an outbound share. SHOW SHARES and
