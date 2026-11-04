@@ -398,8 +398,8 @@ var Table = ssot.Object{
 	},
 	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.
 	// ShowByIdSafely stays in the extension because Read compares schema retention before describing columns.
-	// Describe uses DescribeColumns. SetConfigFields copies owner and cluster keys. Hierarchy rename, column diffs,
-	// primary key, and tags stay in the extension. Generated HierarchyRename, AfterAlter, and SetDescribeOutput are unimplemented.
+	// Describe uses DescribeColumns. SetConfigFields copies owner and cluster keys. Column diffs,
+	// primary key, and tags stay in the extension. Generated AfterAlter and SetDescribeOutput are unimplemented.
 	// The importer is a passthrough, so ShowByIdInSdk stays omitted.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -411,7 +411,8 @@ var Table = ssot.Object{
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
-		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.Generated()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),

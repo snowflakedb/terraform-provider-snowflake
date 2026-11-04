@@ -183,6 +183,7 @@ var Schema = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithBeforeCreate(ssot.Generated()),
+		// Generated hierarchy rename has no database-object path.
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),

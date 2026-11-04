@@ -268,7 +268,7 @@ var BackupSet = ssot.Object{
 		ssot.WithDescribeInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.Generated()),
-		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),

@@ -130,8 +130,13 @@ func UpdateBackupSet(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	if diags := backupSetHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
-		return diags
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
 	}
 
 	if diags := backupSetBeforeAlterExt(ctx, d, meta, id); diags != nil {

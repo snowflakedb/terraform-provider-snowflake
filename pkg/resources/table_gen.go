@@ -9,10 +9,12 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -27,7 +29,7 @@ func Table() *tfschema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.TableResource), TrackingDeleteWrapper(resources.Table, DeleteTable)),
 		Importer:      tableImporterExt,
 
-		CustomizeDiff: tableCustomizeDiffExt,
+		CustomizeDiff: tableCustomizeDiff,
 		Timeouts:      defaultTimeouts,
 	}
 }
@@ -89,8 +91,34 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	if diags := tableHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
-		return diags
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.Tables.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeSnowflakeID(renamed)
+			},
+			"table",
+		); diags != nil {
+			return diags
+		}
+	}
+
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeSnowflakeID(newId))
+		id = newId
 	}
 	setUnset, err := tableApplySetUnset(d)
 	if err != nil {
@@ -109,6 +137,12 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	afterAlterDiags := tableAfterAlterExt(ctx, d, meta, id)
 	return append(afterAlterDiags, ReadTableFunc(false)(ctx, d, meta)...)
 }
+
+var tableCustomizeDiff = TrackingCustomDiffWrapper(resources.Table, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+	ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
+))
 
 func tableParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil

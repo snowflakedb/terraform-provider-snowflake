@@ -9,6 +9,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -37,6 +38,7 @@ const (
 
 func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	renamedId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(id.SchemaId())
 	comment := random.Comment()
 	const expireAfterDays = 7
 
@@ -47,6 +49,8 @@ func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 		WithExpireAfterDays(expireAfterDays).
 		WithScheduleHours(scheduleHours).
 		WithComment(comment)
+	renamed := model.BackupPolicy("t", renamedId.DatabaseName(), renamedId.SchemaName(), renamedId.Name()).
+		WithExpireAfterDays(expireAfterDays)
 	ref := basic.ResourceReference()
 
 	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
@@ -54,6 +58,9 @@ func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 
 	assertBasic := backupPolicyAssertions(t, ref, id, expireAfterDays, "", "", false)
 	assertWithOptionals := backupPolicyAssertions(t, ref, id, expireAfterDays, schedule, comment, false)
+	assertRenamed := append(backupPolicyAssertions(t, ref, renamedId, expireAfterDays, "", "", false),
+		invokeactionassert.BackupPolicyDoesNotExist(t, id),
+	)
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -105,6 +112,18 @@ func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
+			},
+			// rename
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "name", tfjson.ActionUpdate, sdk.String(id.Name()), sdk.String(renamedId.Name())),
+					},
+				},
+				Config: config.FromModels(t, renamed),
+				Check:  assertThat(t, assertRenamed...),
 			},
 		},
 	})

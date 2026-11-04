@@ -287,3 +287,84 @@ func Test_lifecycle_outputSetHooks(t *testing.T) {
 		})
 	}
 }
+
+func Test_hierarchyRename(t *testing.T) {
+	t.Run("both identity fields force new emits nothing", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdentityNameForceNew = true
+			obj.IdentityHierarchyForceNew = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		require.Empty(t, renderTemplate(t, "hierarchyRename", model))
+	})
+
+	t.Run("hierarchy force new renames name", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdentityHierarchyForceNew = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, `if d.HasChange("name") {`)
+		require.Contains(t, got, `sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))`)
+		require.Contains(t, got, `Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithRenameTo(newId))`)
+		require.Contains(t, got, `d.SetId(helpers.EncodeResourceIdentifier(newId))`)
+		require.NotContains(t, got, `d.HasChange("database")`)
+		require.NotContains(t, got, `d.HasChange("schema")`)
+		require.NotContains(t, got, "handleThreeLevelHierarchyRename")
+		require.NotContains(t, got, "HierarchyRenameExt")
+	})
+
+	t.Run("legacy id encoding", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.LegacyIdEncoding = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, "helpers.EncodeSnowflakeID(newId)")
+		require.Contains(t, got, "helpers.EncodeSnowflakeID(renamed)")
+		require.NotContains(t, got, "EncodeResourceIdentifier")
+	})
+
+	t.Run("neither identity field force new handles database schema and name", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithHierarchyRename(ssot.Generated())))
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, `providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema"))`)
+		require.Contains(t, got, "handleThreeLevelHierarchyRename(")
+		require.Contains(t, got, "client.Pools.ShowByID,")
+		require.Contains(t, got, `"pool",`)
+		require.Contains(t, got, `if d.HasChange("name") {`)
+		require.Contains(t, got, `meta.(*provider.Context).Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithRenameTo(newId))`)
+		require.NotContains(t, got, "HierarchyRenameExt")
+	})
+
+	t.Run("account object renames name", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdType = "AccountObjectIdentifier"
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, `sdk.NewAccountObjectIdentifier(d.Get("name").(string))`)
+		require.Contains(t, got, `Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithRenameTo(newId))`)
+		require.NotContains(t, got, "handleTwoLevelHierarchyRename")
+		require.NotContains(t, got, "handleThreeLevelHierarchyRename")
+		require.NotContains(t, got, `d.HasChange("database")`)
+	})
+
+	t.Run("account object with force new name emits nothing", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdType = "AccountObjectIdentifier"
+			obj.IdentityNameForceNew = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		require.Empty(t, renderTemplate(t, "hierarchyRename", model))
+	})
+
+	t.Run("generated database object is unimplemented", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdType = "DatabaseObjectIdentifier"
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		err := LifecycleTemplate.ExecuteTemplate(&strings.Builder{}, "hierarchyRename", model)
+		require.ErrorContains(t, err, "generated implementation for HierarchyRename is not implemented")
+	})
+}

@@ -127,6 +127,15 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
+	}
 	setUnset, err := backupPolicyApplySetUnsetExt(d)
 	if err != nil {
 		return diag.FromErr(err)

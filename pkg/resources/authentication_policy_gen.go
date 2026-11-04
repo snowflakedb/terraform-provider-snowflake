@@ -145,8 +145,13 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if diags := authenticationPolicyHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
-		return diags
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
 	}
 	setUnset, err := authenticationPolicyApplySetUnsetExt(d)
 	if err != nil {
