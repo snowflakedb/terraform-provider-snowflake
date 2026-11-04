@@ -78,8 +78,8 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 				HasStatusNotEmpty().
 				HasRefreshInterval(refreshInterval).
 				HasTargetTableType(sdk.PostgresMirrorTargetTableTypeSnowflake).
-				HasNoExternalVolume().
-				HasNoWarehouse().
+				HasExternalVolume("").
+				HasWarehouse("").
 				HasPostgresTables(helpers.PostgresMirrorFixtureTable1, helpers.PostgresMirrorFixtureTable2).
 				HasNoPostgresSchemas(),
 			objectassert.PostgresMirrorDetails(t, name).
@@ -147,7 +147,7 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 			HasStatusNotEmpty().
 			HasRefreshInterval("30 seconds").
 			HasTargetTableType(sdk.PostgresMirrorTargetTableTypeIceberg).
-			HasNoExternalVolume().
+			HasExternalVolume("").
 			HasWarehouse(warehouse.ID().Name()).
 			HasPostgresTables(helpers.PostgresMirrorFixtureMixedCaseTable, helpers.PostgresMirrorFixtureTable1).
 			HasPostgresSchemas(helpers.PostgresMirrorFixtureSchemaB),
@@ -460,20 +460,25 @@ func TestAcc_PostgresMirror_ExternalVolume(t *testing.T) {
 					resourceassert.PostgresMirrorResource(t, ref).
 						HasTargetTableTypeString(string(sdk.PostgresMirrorTargetTableTypeIceberg)).
 						HasExternalVolumeString(externalVolumeId.Name()),
+					// Create sends the external volume quoted, and DESCRIBE_MIRROR returns it as sent.
 					resourceshowoutputassert.PostgresMirrorDescribeOutput(t, ref).
 						HasTargetTableType(sdk.PostgresMirrorTargetTableTypeIceberg).
-						HasExternalVolume(externalVolumeId.Name()),
+						HasExternalVolume(externalVolumeId.FullyQualifiedName()),
 					objectassert.PostgresMirrorDetails(t, name).
 						HasTargetTableType(sdk.PostgresMirrorTargetTableTypeIceberg).
-						HasExternalVolume(externalVolumeId.Name()),
+						HasExternalVolume(externalVolumeId.FullyQualifiedName()),
 				),
 			},
-			// Import
+			// Import - the external volume is imported quoted, as DESCRIBE_MIRROR returns it
 			{
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"drop_target_database_on_destroy"},
+				ImportStateVerifyIgnore: []string{"drop_target_database_on_destroy", "external_volume", r.DescribeOutputAttributeName},
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedPostgresMirrorResource(t, name).
+						HasExternalVolumeString(externalVolumeId.FullyQualifiedName()),
+				),
 			},
 		},
 	})
