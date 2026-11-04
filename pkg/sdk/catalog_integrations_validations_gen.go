@@ -43,6 +43,11 @@ func (opts *CreateIcebergRestCatalogIntegrationOptions) validate() error {
 	if !exactlyOneValueSet(opts.OAuthRestAuthentication, opts.BearerRestAuthentication, opts.SigV4RestAuthentication) {
 		errs = append(errs, errExactlyOneOf("CreateIcebergRestCatalogIntegrationOptions", "OAuthRestAuthentication", "BearerRestAuthentication", "SigV4RestAuthentication"))
 	}
+	if valueSet(opts.OAuthRestAuthentication) {
+		if !valueSet(opts.OAuthRestAuthentication.OauthAllowedScopes) {
+			errs = append(errs, errNotSet("CreateIcebergRestCatalogIntegrationOptions.OAuthRestAuthentication", "OauthAllowedScopes"))
+		}
+	}
 	return JoinErrors(errs...)
 }
 
@@ -70,6 +75,11 @@ func (opts *CreateOpenCatalogCatalogIntegrationOptions) validate() error {
 	}
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateOpenCatalogCatalogIntegrationOptions", "OrReplace", "IfNotExists"))
+	}
+	if valueSet(opts.RestAuthentication) {
+		if !valueSet(opts.RestAuthentication.OauthAllowedScopes) {
+			errs = append(errs, errNotSet("CreateOpenCatalogCatalogIntegrationOptions.RestAuthentication", "OauthAllowedScopes"))
+		}
 	}
 	return JoinErrors(errs...)
 }

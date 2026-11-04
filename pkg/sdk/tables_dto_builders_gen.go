@@ -609,7 +609,7 @@ func (s *AlterTableRequest) WithDropAllRowAccessPolicies(dropAllRowAccessPolicie
 	return s
 }
 
-func (s *AlterTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePolicy TableAddStorageLifecyclePolicyRequest) *AlterTableRequest {
+func (s *AlterTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePolicy TableStorageLifecyclePolicyRequest) *AlterTableRequest {
 	s.AddStorageLifecyclePolicy = &addStorageLifecyclePolicy
 	return s
 }
@@ -1219,11 +1219,11 @@ func NewTableDropAndAddRowAccessPolicyRequest(
 	return &s
 }
 
-func NewTableAddStorageLifecyclePolicyRequest(
+func NewTableStorageLifecyclePolicyRequest(
 	storageLifecyclePolicy SchemaObjectIdentifier,
 	on []Column,
-) *TableAddStorageLifecyclePolicyRequest {
-	s := TableAddStorageLifecyclePolicyRequest{}
+) *TableStorageLifecyclePolicyRequest {
+	s := TableStorageLifecyclePolicyRequest{}
 	s.StorageLifecyclePolicy = storageLifecyclePolicy
 	s.On = on
 	return &s

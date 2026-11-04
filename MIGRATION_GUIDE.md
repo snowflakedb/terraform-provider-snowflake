@@ -115,6 +115,17 @@ No changes are required for existing configurations unless you want to adopt the
 
 Reference: [#5229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5229).
 
+### *(improvement)* Empty identifiers are rejected
+
+The provider now checks identifier arguments before it sends the request. An empty identifier is rejected instead of being sent to Snowflake.
+
+- [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) `warehouse` ([alert](https://docs.snowflake.com/en/sql-reference/sql/create-alert))
+- [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) `resource_monitor` ([warehouse](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse))
+- [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) `for_application` ([compute pool](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool))
+- [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) `error_integration` and [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) `primary` ([replication group](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group))
+
+If one of these arguments is empty, set a real identifier or remove the argument. Configurations that already name a real object need no change.
+
 ### *(improvement)* Openflow resources and data sources promoted to stable
 
 The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be

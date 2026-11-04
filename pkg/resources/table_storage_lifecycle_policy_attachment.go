@@ -260,7 +260,7 @@ func addStorageLifecyclePolicyToTable(ctx context.Context, client *sdk.Client, t
 	switch tableType {
 	case sdk.PolicyEntityDomainTable:
 		return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableName).
-			WithAddStorageLifecyclePolicy(*sdk.NewTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyName, columns)))
+			WithAddStorageLifecyclePolicy(*sdk.NewTableStorageLifecyclePolicyRequest(storageLifecyclePolicyName, columns)))
 	case sdk.PolicyEntityDomainDynamicTable:
 		return client.DynamicTables.Alter(ctx, sdk.NewAlterDynamicTableRequest(tableName).
 			WithAddStorageLifecyclePolicy(*sdk.NewDynamicTableAddStorageLifecyclePolicyRequest(storageLifecyclePolicyName, columns)))

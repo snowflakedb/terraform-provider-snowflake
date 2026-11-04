@@ -17,6 +17,21 @@ func (opts *CreateBackupSetOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if opts.ForTable != nil && !ValidObjectIdentifier(opts.ForTable) {
+		errs = append(errs, errInvalidIdentifier("CreateBackupSetOptions", "ForTable"))
+	}
+	if opts.ForDynamicTable != nil && !ValidObjectIdentifier(opts.ForDynamicTable) {
+		errs = append(errs, errInvalidIdentifier("CreateBackupSetOptions", "ForDynamicTable"))
+	}
+	if opts.ForSchema != nil && !ValidObjectIdentifier(opts.ForSchema) {
+		errs = append(errs, errInvalidIdentifier("CreateBackupSetOptions", "ForSchema"))
+	}
+	if opts.ForDatabase != nil && !ValidObjectIdentifier(opts.ForDatabase) {
+		errs = append(errs, errInvalidIdentifier("CreateBackupSetOptions", "ForDatabase"))
+	}
+	if opts.WithBackupPolicy != nil && !ValidObjectIdentifier(opts.WithBackupPolicy) {
+		errs = append(errs, errInvalidIdentifier("CreateBackupSetOptions", "WithBackupPolicy"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateBackupSetOptions", "name"))
 	}
@@ -49,6 +64,11 @@ func (opts *AlterBackupSetOptions) validate() error {
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, errInvalidIdentifier("AlterBackupSetOptions", "RenameTo"))
+	}
+	if valueSet(opts.ApplyBackupPolicy) {
+		if !ValidObjectIdentifier(opts.ApplyBackupPolicy.BackupPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterBackupSetOptions.ApplyBackupPolicy", "BackupPolicy"))
+		}
 	}
 	if valueSet(opts.ModifyBackup) {
 		if !exactlyOneValueSet(opts.ModifyBackup.AddLegalHoldModifyBackupParams, opts.ModifyBackup.RemoveLegalHoldModifyBackupParams, opts.ModifyBackup.SetCommentModifyBackupParams, opts.ModifyBackup.UnsetCommentModifyBackupParams) {

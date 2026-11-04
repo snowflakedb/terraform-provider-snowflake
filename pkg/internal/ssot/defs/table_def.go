@@ -180,6 +180,19 @@ var (
 	ReclusterState = ssot.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
 )
 
+// TableStorageLifecyclePolicy is ADD STORAGE LIFECYCLE POLICY policy ON (columns).
+// DROP STORAGE LIFECYCLE POLICY stays a statement keyword.
+var TableStorageLifecyclePolicy = ssot.Attribute{
+	Name:      "storage_lifecycle_policy",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(),
+	Children: []ssot.Attribute{
+		{Name: "storage_lifecycle_policy", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true, SqlOnly: true, CreateSql: ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ADD STORAGE LIFECYCLE POLICY"), ssot.Required(), ssot.FieldName("StorageLifecyclePolicy"))},
+		{Name: "on", Type: ssot.AttrList, Required: true, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.ListParameter("Column", ssot.Sql("ON"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("On"))},
+	},
+}
+
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
 // resource, model, and assertion generators skip them.
 //

@@ -222,6 +222,8 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		}
 		if required && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 			v = v.WithValidation(AtLeastOneValueSet, name)
+		} else if required {
+			v = v.WithValidation(ValidateValueSet, name)
 		}
 		// ValidIdentifier works only on a list of identifiers, not on item structs like StringListItemWrapper.
 		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && item == attr.Elem.IdentifierType {
@@ -329,9 +331,10 @@ func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.Sq
 		name = clause.Field
 	}
 	if required {
-		return v.Identifier(name, clause.IdType, opts)
+		v = v.Identifier(name, clause.IdType, opts)
+		return v.WithValidation(ValidIdentifier, name)
 	}
-	return v.OptionalIdentifier(name, clause.IdType, opts)
+	return v.OptionalIdentifier(name, clause.IdType, opts).WithValidation(ValidIdentifierIfSet, name)
 }
 
 func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *ParameterTransformer {

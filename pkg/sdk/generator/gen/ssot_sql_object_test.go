@@ -595,6 +595,7 @@ func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T
 			OptionalQueryStructField("StageFileFormat", newFormat(), ListOptions().Parentheses().NoComma().SQL("STAGE_FILE_FORMAT =")).
 			OptionalQueryStructField("RowAccessPolicy", NewQueryStruct("WidgetRowAccessPolicy").
 				Identifier("Name", "SchemaObjectIdentifier", IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+				WithValidation(ValidIdentifier, "Name").
 				NamedList("ON", "string", KeywordOptions().Parentheses().SQL("ON").Required()),
 				ListOptions().NoComma()).
 			WithValidation(ValidIdentifier, "name").
@@ -630,5 +631,19 @@ func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
 			ListOptions().NoComma()).
 		OptionalSQL("DROP CLUSTERING KEY").
 		WithValidation(ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableStorageLifecyclePolicy(t *testing.T) {
+	attr := ssotdefs.TableStorageLifecyclePolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	want := NewQueryStruct("TableStorageLifecyclePolicy").
+		Identifier("StorageLifecyclePolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("ADD STORAGE LIFECYCLE POLICY").Required()).
+		WithValidation(ValidIdentifier, "StorageLifecyclePolicy").
+		ListAssignment("ON", "Column", ParameterOptions().NoEquals().Parentheses().Required()).
+		WithValidation(ValidateValueSet, "On")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }

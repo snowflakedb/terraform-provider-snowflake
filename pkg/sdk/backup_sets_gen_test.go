@@ -13,6 +13,11 @@ func init() {
 var backupSetsTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
+	case_BackupSets_validation_Create_ForTable_ValidIdentifierIfSet                      testCaseName = "validation_Create_ForTable_ValidIdentifierIfSet"
+	case_BackupSets_validation_Create_ForDynamicTable_ValidIdentifierIfSet               testCaseName = "validation_Create_ForDynamicTable_ValidIdentifierIfSet"
+	case_BackupSets_validation_Create_ForSchema_ValidIdentifierIfSet                     testCaseName = "validation_Create_ForSchema_ValidIdentifierIfSet"
+	case_BackupSets_validation_Create_ForDatabase_ValidIdentifierIfSet                   testCaseName = "validation_Create_ForDatabase_ValidIdentifierIfSet"
+	case_BackupSets_validation_Create_WithBackupPolicy_ValidIdentifierIfSet              testCaseName = "validation_Create_WithBackupPolicy_ValidIdentifierIfSet"
 	case_BackupSets_validation_Create_name_ValidIdentifier                               testCaseName = "validation_Create_name_ValidIdentifier"
 	case_BackupSets_validation_Create_opts_ConflictingFields                             testCaseName = "validation_Create_opts_ConflictingFields"
 	case_BackupSets_validation_Create_opts_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
@@ -24,6 +29,7 @@ const (
 	case_BackupSets_validation_Alter_opts_ExactlyOneValueSet_NoneSet                     testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_BackupSets_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet              testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_BackupSets_validation_Alter_RenameTo_ValidIdentifierIfSet                       testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_BackupSets_validation_Alter_ApplyBackupPolicy_BackupPolicy_ValidIdentifier      testCaseName = "validation_Alter_ApplyBackupPolicy_BackupPolicy_ValidIdentifier"
 	case_BackupSets_validation_Alter_opts_ModifyBackup_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_ModifyBackup_ExactlyOneValueSet_NoneSet"
 	case_BackupSets_validation_Alter_opts_ModifyBackup_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ModifyBackup_ExactlyOneValueSet_MoreThanOneSet"
 	case_BackupSets_validation_Alter_opts_Set_AtLeastOneValueSet                         testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
@@ -75,6 +81,41 @@ var backupSetsTests = BackupSetsTestsContext{
 			}
 		}).
 		withValidationCases(
+			validationCase[*CreateBackupSetOptions]{
+				Name:        case_BackupSets_validation_Create_ForTable_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateBackupSetOptions", "ForTable"),
+				DefaultModify: func(opts *CreateBackupSetOptions) {
+					opts.ForTable = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*CreateBackupSetOptions]{
+				Name:        case_BackupSets_validation_Create_ForDynamicTable_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateBackupSetOptions", "ForDynamicTable"),
+				DefaultModify: func(opts *CreateBackupSetOptions) {
+					opts.ForDynamicTable = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*CreateBackupSetOptions]{
+				Name:        case_BackupSets_validation_Create_ForSchema_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateBackupSetOptions", "ForSchema"),
+				DefaultModify: func(opts *CreateBackupSetOptions) {
+					opts.ForSchema = new(emptyDatabaseObjectIdentifier)
+				},
+			},
+			validationCase[*CreateBackupSetOptions]{
+				Name:        case_BackupSets_validation_Create_ForDatabase_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateBackupSetOptions", "ForDatabase"),
+				DefaultModify: func(opts *CreateBackupSetOptions) {
+					opts.ForDatabase = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateBackupSetOptions]{
+				Name:        case_BackupSets_validation_Create_WithBackupPolicy_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateBackupSetOptions", "WithBackupPolicy"),
+				DefaultModify: func(opts *CreateBackupSetOptions) {
+					opts.WithBackupPolicy = new(emptySchemaObjectIdentifier)
+				},
+			},
 			validationCase[*CreateBackupSetOptions]{
 				Name:        case_BackupSets_validation_Create_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateBackupSetOptions", "name"),
@@ -175,6 +216,14 @@ var backupSetsTests = BackupSetsTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterBackupSetOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterBackupSetOptions) {
 					opts.RenameTo = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*AlterBackupSetOptions]{
+				Name:        case_BackupSets_validation_Alter_ApplyBackupPolicy_BackupPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterBackupSetOptions.ApplyBackupPolicy", "BackupPolicy"),
+				DefaultModify: func(opts *AlterBackupSetOptions) {
+					opts.ApplyBackupPolicy = &BackupSetApplyBackupPolicy{}
+					opts.ApplyBackupPolicy.BackupPolicy = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterBackupSetOptions]{
