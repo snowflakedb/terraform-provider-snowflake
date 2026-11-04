@@ -233,6 +233,21 @@ func TestInt_Alerts(t *testing.T) {
 		)
 	})
 
+	t.Run("show: in application and application package", func(t *testing.T) {
+		applicationPackage, packageCleanup := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
+		t.Cleanup(packageCleanup)
+
+		inPackage, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithIn(sdk.ExtendedIn{ApplicationPackage: applicationPackage.ID()}))
+		require.NoError(t, err)
+		assert.Empty(t, inPackage)
+
+		missingApplication := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		_, err = client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
+			WithIn(sdk.ExtendedIn{Application: missingApplication}))
+		require.ErrorContains(t, err, "does not exist or not authorized")
+	})
+
 	t.Run("show: in account, database and schema", func(t *testing.T) {
 		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
 		t.Cleanup(cleanup)
@@ -243,17 +258,17 @@ func TestInt_Alerts(t *testing.T) {
 		}
 
 		inAccount, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithIn(sdk.In{Account: sdk.Bool(true)}))
+			WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}))
 		require.NoError(t, err)
 		assert.Contains(t, names(inAccount), alert.Name)
 
 		inDatabase, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithIn(sdk.In{Database: id.DatabaseId()}))
+			WithIn(sdk.ExtendedIn{Database: id.DatabaseId()}))
 		require.NoError(t, err)
 		assert.Contains(t, names(inDatabase), alert.Name)
 
 		inSchema, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithIn(sdk.In{Schema: id.SchemaId()}))
+			WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		assert.Contains(t, names(inSchema), alert.Name)
 	})
@@ -270,12 +285,12 @@ func TestInt_Alerts(t *testing.T) {
 		assert.Equal(t, alert.Name, alerts[0].Name)
 
 		all, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithIn(sdk.In{Schema: alert.ID().SchemaId()}))
+			WithIn(sdk.ExtendedIn{Schema: alert.ID().SchemaId()}))
 		require.NoError(t, err)
 		require.NotEmpty(t, all)
 
 		limited, err := client.Alerts.Show(ctx, sdk.NewShowAlertRequest().
-			WithIn(sdk.In{Schema: alert.ID().SchemaId()}).
+			WithIn(sdk.ExtendedIn{Schema: alert.ID().SchemaId()}).
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)
 		assert.Len(t, limited, 1)

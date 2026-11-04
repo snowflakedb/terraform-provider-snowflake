@@ -48,7 +48,7 @@ func (v *alerts) Show(ctx context.Context, request *ShowAlertRequest) ([]Alert, 
 
 func (v *alerts) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error) {
 	request := NewShowAlertRequest().
-		WithIn(In{Schema: id.SchemaId()}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	alerts, err := v.Show(ctx, request)
 	if err != nil {

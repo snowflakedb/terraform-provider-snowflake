@@ -201,10 +201,10 @@ var Alert = ssot.Object{
 			ssot.SdkShow(
 				ssot.SdkShowTerse(),
 				ssot.SdkShowOptionalLike(),
-				ssot.SdkShowOptionalIn(),
+				ssot.SdkShowOptionalExtendedIn(),
 				ssot.SdkShowOptionalStartsWith(),
 				ssot.SdkShowOptionalLimitFrom(),
-				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDIn),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDExtendedIn),
 			),
 			ssot.SdkDescribe(),
 		),

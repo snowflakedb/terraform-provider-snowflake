@@ -56,7 +56,7 @@ type DropAlertRequest struct {
 type ShowAlertRequest struct {
 	Terse      *bool
 	Like       *Like
-	In         *In
+	In         *ExtendedIn
 	StartsWith *string
 	Limit      *LimitFrom
 }

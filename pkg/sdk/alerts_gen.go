@@ -73,13 +73,13 @@ type DropAlertOptions struct {
 
 // ShowAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-alerts.
 type ShowAlertOptions struct {
-	show       bool       `ddl:"static" sql:"SHOW"`
-	Terse      *bool      `ddl:"keyword" sql:"TERSE"`
-	alerts     bool       `ddl:"static" sql:"ALERTS"`
-	Like       *Like      `ddl:"keyword" sql:"LIKE"`
-	In         *In        `ddl:"keyword" sql:"IN"`
-	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	show       bool        `ddl:"static" sql:"SHOW"`
+	Terse      *bool       `ddl:"keyword" sql:"TERSE"`
+	alerts     bool        `ddl:"static" sql:"ALERTS"`
+	Like       *Like       `ddl:"keyword" sql:"LIKE"`
+	In         *ExtendedIn `ddl:"keyword" sql:"IN"`
+	StartsWith *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit      *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
 type alertsRow struct {

@@ -37,6 +37,8 @@ func Test_FormatAndParseAlertSchedule(t *testing.T) {
 
 func init() {
 	id := alertsTestIdSchemaObjectIdentifier
+	applicationId := NewAccountObjectIdentifier("application_name")
+	applicationPackageId := NewAccountObjectIdentifier("application_package_name")
 	warehouse := randomAccountObjectIdentifier()
 	schedule := "1 minute"
 	existsCondition := "SELECT 1"
@@ -158,7 +160,7 @@ func init() {
 			func(opts *ShowAlertOptions) {
 				opts.Terse = new(true)
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Account: new(true)}
+				opts.In = &ExtendedIn{Account: new(true)}
 				opts.StartsWith = new("FOO")
 				opts.Limit = &LimitFrom{Rows: new(10)}
 			},
@@ -171,7 +173,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Alerts_sql_Show_In,
-			func(opts *ShowAlertOptions) { opts.In = &In{Account: new(true)} },
+			func(opts *ShowAlertOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			"SHOW ALERTS IN ACCOUNT",
 		).
 		withModifyAndExpectedSqlf(
@@ -193,7 +195,7 @@ func init() {
 			"sql_Show_likeAndInAccount",
 			func(opts *ShowAlertOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Account: new(true)}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW ALERTS LIKE '%s' IN ACCOUNT", id.Name(),
 		).
@@ -201,7 +203,7 @@ func init() {
 			"sql_Show_likeAndInDatabase",
 			func(opts *ShowAlertOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Database: id.DatabaseId()}
+				opts.In = &ExtendedIn{Database: id.DatabaseId()}
 			},
 			"SHOW ALERTS LIKE '%s' IN DATABASE %s", id.Name(), id.DatabaseId().FullyQualifiedName(),
 		).
@@ -209,9 +211,19 @@ func init() {
 			"sql_Show_likeAndInSchema",
 			func(opts *ShowAlertOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Schema: id.SchemaId()}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			"SHOW ALERTS LIKE '%s' IN SCHEMA %s", id.Name(), id.SchemaId().FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_inApplication",
+			func(opts *ShowAlertOptions) { opts.In = &ExtendedIn{Application: applicationId} },
+			"SHOW ALERTS IN APPLICATION %s", applicationId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_inApplicationPackage",
+			func(opts *ShowAlertOptions) { opts.In = &ExtendedIn{ApplicationPackage: applicationPackageId} },
+			"SHOW ALERTS IN APPLICATION PACKAGE %s", applicationPackageId.FullyQualifiedName(),
 		)
 
 	alertsTests.Describe.

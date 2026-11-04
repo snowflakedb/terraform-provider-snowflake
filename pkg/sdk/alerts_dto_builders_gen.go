@@ -160,7 +160,7 @@ func (s *ShowAlertRequest) WithLike(like Like) *ShowAlertRequest {
 	return s
 }
 
-func (s *ShowAlertRequest) WithIn(in In) *ShowAlertRequest {
+func (s *ShowAlertRequest) WithIn(in ExtendedIn) *ShowAlertRequest {
 	s.In = &in
 	return s
 }
