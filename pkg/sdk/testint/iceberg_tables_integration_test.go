@@ -734,7 +734,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasCatalog(catalogForIcebergFilesId.Name()).
 				HasCatalogSync("").
 				HasDataMetricSchedule("60 MINUTES").
-				HasDataRetentionTimeInDays(1).
+				HasDataRetentionTimeInDays(5).
 				HasDefaultDdlCollation("").
 				HasEnableDataCompaction(true).
 				HasEnableIcebergMergeOnRead(true).
@@ -815,7 +815,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasCatalog(catalogForIcebergFilesId.FullyQualifiedName()).
 				HasCatalogSync("").
 				HasDataMetricSchedule("60 MINUTES").
-				HasDataRetentionTimeInDays(1).
+				HasDataRetentionTimeInDays(5).
 				HasDefaultDdlCollation("").
 				HasEnableDataCompaction(true).
 				HasEnableIcebergMergeOnRead(true).

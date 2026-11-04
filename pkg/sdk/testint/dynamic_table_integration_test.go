@@ -95,7 +95,7 @@ func TestInt_DynamicTableCreateAndDrop(t *testing.T) {
 		require.Equal(t, id.Name(), entity.Name)
 		require.Equal(t, testClientHelper().Ids.WarehouseId().Name(), entity.Warehouse)
 		require.Equal(t, "DOWNSTREAM", entity.TargetLag)
-		require.Equal(t, sdk.DynamicTableRefreshModeIncremental, entity.RefreshMode)
+		require.Equal(t, sdk.DynamicTableRefreshModeAdaptive, entity.RefreshMode)
 		require.Contains(t, entity.Text, "initialize = 'ON_CREATE'")
 		require.Contains(t, entity.Text, "refresh_mode = 'AUTO'")
 	})
