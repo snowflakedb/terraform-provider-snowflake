@@ -427,37 +427,33 @@ var AuthenticationPolicy = ssot.Object{
 	// Public describe_output uses the projected AuthenticationPolicyDescribeDetails schema.
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
-		ssot.WithResource(),
-		// describe_output is a block of the raw DESCRIBE strings. The typed columns and the comment are mapped from the original rows in the ext.
-		// target_scopes is plain-only, so the SHOW mapper stays in the schema ext.
-		ssot.WithSchema(
-			ssot.SchemaShow(ssot.SchemaShowManualFields(&AuthenticationPolicyAttrs.TargetScopes)),
-			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
-				&AuthenticationPolicyAttrs.AuthenticationMethods,
-				&AuthenticationPolicyAttrs.ClientTypes,
-				&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
-				&AuthenticationPolicyAttrs.Comment,
-				&AuthenticationPolicyAttrs.DescribeClientPolicy,
-				&AuthenticationPolicyAttrs.DescribeMfaPolicy,
-				&AuthenticationPolicyAttrs.DescribePatPolicy,
-				&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
-			)),
-		),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		// Parameter assertions omitted. The catalog has no AUTHENTICATION_POLICY entries.
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(),
-			ssot.ObjectAssertDescribe(
-				ssot.ObjectAssertDescribeMethod("DescribeDetails"),
-				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations),
-				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeClientPolicy),
-				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeMfaPolicy),
-				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribePatPolicy),
-				ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy),
+		ssot.WithAllGenerators(
+			// describe_output is a block of the raw DESCRIBE strings. The typed columns and the comment are mapped from the original rows in the ext.
+			// target_scopes is plain-only, so the SHOW mapper stays in the schema ext.
+			ssot.WithSchema(
+				ssot.SchemaShow(ssot.SchemaShowManualFields(&AuthenticationPolicyAttrs.TargetScopes)),
+				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+					&AuthenticationPolicyAttrs.AuthenticationMethods,
+					&AuthenticationPolicyAttrs.ClientTypes,
+					&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
+					&AuthenticationPolicyAttrs.Comment,
+					&AuthenticationPolicyAttrs.DescribeClientPolicy,
+					&AuthenticationPolicyAttrs.DescribeMfaPolicy,
+					&AuthenticationPolicyAttrs.DescribePatPolicy,
+					&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
+				)),
+			),
+			// Parameter assertions omitted. The catalog has no AUTHENTICATION_POLICY entries.
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+				ssot.ObjectAssertDescribe(
+					ssot.ObjectAssertDescribeMethod("DescribeDetails"),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeClientPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeMfaPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribePatPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy),
+				),
 			),
 		),
 		ssot.WithSdk(

@@ -94,16 +94,11 @@ var WarehouseAdaptive = ssot.Object{
 	SdkCreateRequestObjectName: "AdaptiveWarehouse",
 	VariantOf:                  &Warehouse,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(
-			ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
-		), ssot.ObjectAssertDescribe()),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
+		ssot.WithAllGenerators(
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(
+				ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
+			), ssot.ObjectAssertDescribe()),
+		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseId(ssot.Generated()),

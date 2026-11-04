@@ -396,8 +396,12 @@ var ReplicationGroup = ssot.Object{
 		ReplicationGroupAttrs.IsPrimary,
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
+		ssot.WithAllGenerators(
+			ssot.WithModel(
+				ssot.ModelRequestType(&ReplicationGroupAttrs.ObjectTypes, "[]string"),
+				ssot.ModelRequestType(&ReplicationGroupAttrs.AllowedAccounts, "[]string"),
+			),
+		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(
@@ -417,15 +421,6 @@ var ReplicationGroup = ssot.Object{
 			),
 			ssot.SdkAlterForVariants(),
 		),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithResource(),
-		ssot.WithModel(
-			ssot.ModelRequestType(&ReplicationGroupAttrs.ObjectTypes, "[]string"),
-			ssot.ModelRequestType(&ReplicationGroupAttrs.AllowedAccounts, "[]string"),
-		),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -558,14 +553,11 @@ var ReplicationGroupSecondary = ssot.Object{
 	SdkCreateRequestObjectName: "SecondaryReplicationGroup",
 	VariantOf:                  &ReplicationGroup,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
-		ssot.WithResource(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()), ssot.ShowOutputDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase()), ssot.SchemaDescribe()),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()), ssot.ObjectAssertDescribe()),
+		ssot.WithAllGenerators(
+			ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()), ssot.ShowOutputDescribe()),
+			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase()), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()), ssot.ObjectAssertDescribe()),
+		),
 	},
 	// SHOW is the base row. The schema is ShowReplicationGroupSchema. Create and alter use the variant methods.
 	ResourceHooks: []ssot.ResourceHookOption{

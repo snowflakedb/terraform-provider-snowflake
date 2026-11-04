@@ -154,16 +154,12 @@ var Share = ssot.Object{
 		ssot.WithStateUpgraders(ssot.Generated()),
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(),
-			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+				ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+			),
 		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),

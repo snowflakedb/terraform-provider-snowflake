@@ -325,20 +325,16 @@ var Warehouse = ssot.Object{
 		},
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(ssot.ShowOutputShowSkipFields(&WarehouseAttrs.Tables)),
-			ssot.ShowOutputDescribe(),
+		ssot.WithAllGenerators(
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(ssot.ShowOutputShowSkipFields(&WarehouseAttrs.Tables)),
+				ssot.ShowOutputDescribe(),
+			),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(ssot.ObjectAssertShowSkipFields(&WarehouseAttrs.Tables)),
+				ssot.ObjectAssertDescribe(),
+			),
 		),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(ssot.ObjectAssertShowSkipFields(&WarehouseAttrs.Tables)),
-			ssot.ObjectAssertDescribe(),
-		),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(

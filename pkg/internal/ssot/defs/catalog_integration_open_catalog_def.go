@@ -167,37 +167,35 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 		CatalogIntegrationOpenCatalogAttrs.CatalogSource,
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
-		ssot.WithResource(),
-		ssot.WithSchema(
-			ssot.SchemaShow(ssot.SchemaShowFromBase()),
-			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
-				&CatalogIntegrationOpenCatalogAttrs.RestConfig,
-				&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
-			)),
-		),
-		ssot.WithModel(
-			ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestConfig, "[]sdk.CatalogIntegrationOpenCatalogRestConfigRequest"),
-			ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication, "[]sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest"),
-		),
-		ssot.WithResourceAssert(),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
-			ssot.ObjectAssertDescribe(
-				ssot.ObjectAssertDescribeFromBase("DescribeOpenCatalog"),
-				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestConfig),
-				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(
+				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+					&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+					&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+				)),
 			),
+			ssot.WithModel(
+				ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestConfig, "[]sdk.CatalogIntegrationOpenCatalogRestConfigRequest"),
+				ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication, "[]sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest"),
+			),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertDescribe(
+					ssot.ObjectAssertDescribeFromBase("DescribeOpenCatalog"),
+					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestConfig),
+					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication),
+				),
+			),
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+					&CatalogIntegrationOpenCatalogAttrs.RestConfig,
+					&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
+				))),
 		),
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
-			ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
-				&CatalogIntegrationOpenCatalogAttrs.RestConfig,
-				&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
-			))),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
