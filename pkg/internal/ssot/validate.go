@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/token"
 	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -103,6 +104,7 @@ func ValidateObject(obj Object) {
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 	validateCustomizeDiff(obj)
+	validateIdentityNamesCreatedBySnowflake(obj)
 }
 
 func validateAttributeRelations(obj Object, a Attribute, siblings []Attribute) {
@@ -197,6 +199,30 @@ func validateCustomizeDiff(obj Object) {
 	}
 	if len(obj.AdditionalCustomizeDiffs) > 0 && !hooks.CustomizeDiff.Generate {
 		panic(fmt.Sprintf("object %q: AdditionalCustomizeDiffs require WithCustomizeDiff(Generated())", obj.Name))
+	}
+}
+
+// validateIdentityNamesCreatedBySnowflake checks the names that the generated BeforeCreate adopts. The generated
+// BeforeCreate is the only user of these names, so the two go together.
+func validateIdentityNamesCreatedBySnowflake(obj Object) {
+	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
+	names := obj.IdentityNamesCreatedBySnowflake
+	for _, name := range names {
+		if strings.TrimSpace(name) == "" || strings.ContainsAny(name, `"\`) {
+			panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake name %q must be set and must not contain quotes or backslashes", obj.Name, name))
+		}
+	}
+	if len(names) > 0 && !hooks.BeforeCreate.Generate {
+		panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake requires WithBeforeCreate(Generated())", obj.Name))
+	}
+	if hooks.BeforeCreate.Generate && len(names) == 0 {
+		panic(fmt.Sprintf("object %q: WithBeforeCreate(Generated()) needs IdentityNamesCreatedBySnowflake", obj.Name))
+	}
+	if len(names) > 0 && !hooks.IdentitySchema.Present {
+		panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake reads the identity name and needs the identity schema", obj.Name))
+	}
+	if len(names) > 0 && !obj.HasAlterSpec() {
+		panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake runs Update and needs ALTER to update the object", obj.Name))
 	}
 }
 

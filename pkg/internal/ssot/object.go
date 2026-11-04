@@ -39,7 +39,11 @@ type Object struct {
 	IdentityHierarchyForceNew bool
 	// AdditionalIdentityNameDescription is appended to the generated name sentence.
 	AdditionalIdentityNameDescription string
-	SdkCreateRequestObjectName        string // SDK CREATE request stem, and the variant CREATE and ALTER query-struct stem. Empty uses Name
+	// IdentityNamesCreatedBySnowflake are names of objects that Snowflake creates itself, such as the PUBLIC schema of a
+	// database. With WithBeforeCreate(Generated()), creating one of them adopts the existing object instead: the generated
+	// code sets the id and runs Update. Names are compared ignoring case and outer spaces.
+	IdentityNamesCreatedBySnowflake []string
+	SdkCreateRequestObjectName      string // SDK CREATE request stem, and the variant CREATE and ALTER query-struct stem. Empty uses Name
 	// VariantOf is the base of this role. Name starts with the base Name, and NamePlural matches the base.
 	// The variant also shares SDK parameter details, SET/UNSET requests, and ParameterType names. Catalog membership still uses Name.
 	VariantOf *Object

@@ -461,6 +461,15 @@ returns an `error`. `Omitted` drops the call. A resource does not list these hoo
 is omitted. `SetDescribeOutput` does not omit it, so that ext only sets what the generated call does not. Warehouse omits `ShowOutputSet` itself because its
 `SetConfigFieldsExt` sets it.
 
+`BeforeCreate` is `Omitted` by default. `WithBeforeCreate(Generated())` adopts an object that Snowflake creates itself
+instead of creating it. List those names in `IdentityNamesCreatedBySnowflake`, such as `PUBLIC` for a schema. When the
+identity name matches one of them, ignoring case and outer spaces, and `ShowByID` finds the object, the generated code
+sets the id, runs the generated `Update`, and returns, so CREATE is skipped. A missing object falls through to CREATE, and
+any other error is returned. The object needs the identity schema and an ALTER spec, so that `Update` exists.
+`ValidateObject` panics when the names and the hook do not go together. The model keeps one field per kind of step in
+`BeforeCreateSteps` ([model.go](../../resources/gen/model.go)), with one block in `before_create.tmpl`; another kind of
+step before create adds a field and a block. Any other before-create behavior stays `ExtCall`.
+
 `AfterCreate` and `AfterAlter` are `Omitted` by default. They run after `SetId` and after the alters, and their
 diagnostics (usually warnings) are added to the final Read. Use them for a step that must not drop the object from
 state when it fails, such as resuming a created object. `Import<Name>` is generated only when `ShowByIdInSdk` is
