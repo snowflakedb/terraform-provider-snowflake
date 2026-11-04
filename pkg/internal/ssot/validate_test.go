@@ -832,6 +832,24 @@ func Test_ValidateObject_customOperations(t *testing.T) {
 	duplicated := valid
 	duplicated.CustomOperations = append(duplicated.CustomOperations, CustomOperationSpec{Kind: "Clone"})
 	require.Panics(t, func() { ValidateObject(duplicated) })
+
+	paired := valid
+	column := Attribute{Name: "name", Type: AttrString}
+	paired.CustomOperations = append(paired.CustomOperations, CustomOperationSpec{
+		Kind: "DescribeColumns",
+		Clauses: []CustomOperationClause{
+			CustomStaticSQL("DESCRIBE"),
+			CustomStaticField("columnsType", "TYPE = COLUMNS"),
+			CustomIdentifier("Database", "AccountObjectIdentifier", true),
+			CustomText("TABLE_NAME"),
+		},
+		Paired: &CustomPairedShow{DbRow: "fakeRow", Plain: "Fake", Columns: []*Attribute{&column}},
+	})
+	require.NotPanics(t, func() { ValidateObject(paired) })
+
+	emptyPaired := paired
+	emptyPaired.CustomOperations[len(emptyPaired.CustomOperations)-1].Paired = &CustomPairedShow{Plain: "Fake"}
+	require.Panics(t, func() { ValidateObject(emptyPaired) })
 }
 
 func Test_ValidateObject_customInterfaceMethods(t *testing.T) {
@@ -1580,6 +1598,44 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat"), SetSql: PreexistingStruct("WidgetFormat")}
 		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Set: []*Attribute{&attr}})
 	})
+}
+
+func Test_ValidateObject_schemaName(t *testing.T) {
+	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "is_nullable"}
+	same := Attribute{Name: "is_nullable", Type: AttrString, Readonly: true}
+	require.PanicsWithValue(t, `object "Widget": TableColumnDetails columns "null?" and "is_nullable" share schema key "is_nullable"`, func() {
+		ValidateObject(widgetWithColumns(&nullable, &same))
+	})
+
+	note := Attribute{Name: "comment", Type: AttrString, Readonly: true, SchemaName: "note"}
+	renamed := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "comment"}
+	require.PanicsWithValue(t, `object "Widget": TableColumnDetails column "null?" schema name "comment" collides with the generated key of "comment"`, func() {
+		ValidateObject(widgetWithColumns(&renamed, &note))
+	})
+}
+
+func Test_SchemaNameIndex(t *testing.T) {
+	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "is_nullable"}
+	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
+	index := SchemaNameIndex([]Object{widgetWithColumns(&nullable, &name)})
+	require.Equal(t, map[string]map[string]string{
+		"sdk.TableColumnDetails": {"Null": "is_nullable"},
+	}, index)
+}
+
+func widgetWithColumns(columns ...*Attribute) Object {
+	return Object{
+		Name: "Widget",
+		CustomOperations: []CustomOperationSpec{{
+			Kind:    "DescribeColumns",
+			Clauses: []CustomOperationClause{CustomStaticSQL("DESCRIBE")},
+			Paired: &CustomPairedShow{
+				DbRow:   "row",
+				Plain:   "TableColumnDetails",
+				Columns: columns,
+			},
+		}},
+	}
 }
 
 func identityNamesCreatedBySnowflakeObject(change func(*Object)) Object {

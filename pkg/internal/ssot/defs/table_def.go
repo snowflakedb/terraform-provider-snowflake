@@ -173,8 +173,9 @@ var TableAttrs = struct {
 // TableScope and TableKind are the CREATE TABLE keywords before TABLE. The SDK Create request holds them,
 // and the resource does not expose them.
 var (
-	TableScope = ssot.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
-	TableKind  = ssot.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
+	TableScope          = ssot.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
+	TableKind           = ssot.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
+	TableConstraintType = ssot.NewEnum("TableConstraintType", "TableConstraintTypes", "PRIMARY KEY", "UNIQUE", "FOREIGN KEY")
 )
 
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
@@ -346,6 +347,7 @@ var Table = ssot.Object{
 				ssot.SdkShowAdditionalValidations(),
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedIn, ssot.SdkShowByIDLike),
 			),
+			ssot.SdkCustomOperations(),
 		),
 	},
 	Create: ssot.CreateSpec{
@@ -423,6 +425,7 @@ var Table = ssot.Object{
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 	},
+	CustomOperations: tableDescribeOperations,
 	Attributes: []ssot.Attribute{
 		TableAttrs.ClusterBy,
 		TableAttrs.Column,

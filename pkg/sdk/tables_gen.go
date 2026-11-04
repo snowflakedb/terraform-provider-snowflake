@@ -511,12 +511,12 @@ type DescribeColumnsTableOptions struct {
 
 type tableColumnDetailsRow struct {
 	Name                  string         `db:"name"`
-	Type                  DataType       `db:"type"`
+	Type                  string         `db:"type"`
 	Kind                  string         `db:"kind"`
-	IsNullable            string         `db:"null?"`
+	Null                  string         `db:"null?"`
 	Default               sql.NullString `db:"default"`
-	IsPrimary             string         `db:"primary key"`
-	IsUnique              string         `db:"unique key"`
+	PrimaryKey            string         `db:"primary key"`
+	UniqueKey             string         `db:"unique key"`
 	Check                 sql.NullString `db:"check"`
 	Expression            sql.NullString `db:"expression"`
 	Comment               sql.NullString `db:"comment"`
@@ -528,10 +528,10 @@ type TableColumnDetails struct {
 	Name                  string
 	Type                  DataType
 	Kind                  string
-	IsNullable            bool
+	Null                  bool
 	Default               *string
-	IsPrimary             bool
-	IsUnique              bool
+	PrimaryKey            bool
+	UniqueKey             bool
 	Check                 *bool
 	Expression            *string
 	Comment               *string

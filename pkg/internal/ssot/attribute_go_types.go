@@ -87,5 +87,24 @@ func ColumnField(obj Object, attr Attribute) genhelpers.Field {
 		Name:           ColumnFieldName(attr),
 		ConcreteType:   concrete,
 		UnderlyingType: underlying,
+		SchemaName:     attr.SchemaName,
 	}
+}
+
+// PlainGoName is the Go field of the SDK plain struct.
+// A plain-only column uses Name. Every other column uses the SQL column, with characters other than letters, digits, and underscores removed.
+func (a Attribute) PlainGoName() string {
+	if a.PlainOnlyKind != "" {
+		return a.Name
+	}
+	return genhelpers.SqlToGoName(a.OutputKey(), true)
+}
+
+// SchemaKey is the Terraform schema key of a SHOW or DESCRIBE column.
+// SchemaName overrides it. Otherwise it is the snake_case of PlainGoName.
+func (a Attribute) SchemaKey() string {
+	if a.SchemaName != "" {
+		return a.SchemaName
+	}
+	return genhelpers.ToSnakeCase(a.PlainGoName())
 }

@@ -742,15 +742,25 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 }
 
 func (i *Interface) customOperationFromSpec(obj ssot.Object, spec ssot.CustomOperationSpec) *Interface {
-	return i.CustomOperation(spec.Kind, obj.CustomOperationDoc(spec), customOperationQueryStruct(obj, spec))
+	query := customOperationQueryStruct(obj, spec)
+	doc := obj.CustomOperationDoc(spec)
+	if spec.Paired == nil {
+		return i.CustomOperation(spec.Kind, doc, query)
+	}
+	return i.CustomShowOperationWithPairedStructs(spec.Kind, ShowMappingKindSlice, doc, pairedShowFromSpec(obj, spec.Paired), query)
 }
 
 func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) *QueryStruct {
-	q := NewQueryStruct(obj.CustomOperationQueryStructName(spec.Kind))
+	name := spec.QueryStructName
+	if name == "" {
+		name = obj.CustomOperationQueryStructName(spec.Kind)
+	}
+	q := NewQueryStruct(name)
 	sawOrReplace := false
 	sawIfNotExists := false
 	sawName := false
 	var attributes []*ssot.Attribute
+	var validIdentifiers []string
 	seen := make(map[ssot.CustomOperationClauseKind]struct{})
 	seenAttr := make(map[string]struct{})
 	seenPredefined := make(map[string]struct{})
@@ -795,12 +805,33 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 			}
 			seenPredefined[clause.Predefined] = struct{}{}
 			q = q.PredefinedQueryStructField(clause.Predefined, clause.Predefined, KeywordOptions())
+		case ssot.CustomOperationClauseStaticField:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q static field is empty", obj.Name, spec.Kind))
+			}
+			q = q.SQLWithCustomFieldName(clause.Field, clause.SQL)
+		case ssot.CustomOperationClauseIdentifier:
+			if clause.Field == "" || clause.IdType == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q identifier is empty", obj.Name, spec.Kind))
+			}
+			q = q.Identifier(clause.Field, clause.IdType, IdentifierOptions().Required())
+			if clause.ValidIdentifier {
+				validIdentifiers = append(validIdentifiers, clause.Field)
+			}
+		case ssot.CustomOperationClauseText:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q text assignment is empty", obj.Name, spec.Kind))
+			}
+			q = q.TextAssignment(clause.SQL, ParameterOptions().SingleQuotes().Required())
 		default:
 			panic(fmt.Sprintf("object %q: custom operation %q clause has kind %q", obj.Name, spec.Kind, clause.Kind))
 		}
 	}
 	if sawName {
 		q = q.WithValidation(ValidIdentifier, "name")
+	}
+	for _, field := range validIdentifiers {
+		q = q.WithValidation(ValidIdentifier, field)
 	}
 	if sawOrReplace && sawIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
