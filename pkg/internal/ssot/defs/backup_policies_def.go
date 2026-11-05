@@ -92,11 +92,10 @@ var BackupPolicyAttrs = struct {
 // The create page documents CREATE OR ALTER. This object does not.
 // The DROP page omits IF EXISTS. A probe on 2026-10-27 accepted the clause, so DROP keeps it.
 var BackupPolicy = ssot.Object{
-	Name:                      "BackupPolicy",
-	NamePlural:                "BackupPolicies",
-	IdType:                    "SchemaObjectIdentifier",
-	IdentityHierarchyForceNew: true,
-	PreviewFeature:            true,
+	Name:           "BackupPolicy",
+	NamePlural:     "BackupPolicies",
+	IdType:         "SchemaObjectIdentifier",
+	PreviewFeature: true,
 	AtLeastOneOf: [][]*ssot.Attribute{{
 		&BackupPolicyAttrs.Schedule,
 		&BackupPolicyAttrs.ExpireAfterDays,

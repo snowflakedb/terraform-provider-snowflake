@@ -116,18 +116,6 @@ func warehouseSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ an
 	)
 }
 
-func warehouseHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta any, id *sdk.AccountObjectIdentifier) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	newID, err := renameAccountLevelResource(ctx, d, *id, func(ctx context.Context, id, newID sdk.AccountObjectIdentifier) error {
-		return client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newID))
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	*id = newID
-	return nil
-}
-
 func warehouseApplySetUnsetExt(d *schema.ResourceData) (*warehouseAlterRequestsExt, error) {
 	set, unset := sdk.NewWarehouseSetRequest(), sdk.NewWarehouseUnsetRequest()
 	if err := errors.Join(

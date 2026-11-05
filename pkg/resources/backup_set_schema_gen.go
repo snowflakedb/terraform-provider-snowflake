@@ -91,14 +91,12 @@ var backupSetSchema = collections.MergeMaps(
 		"database": {
 			Type:             tfschema.TypeString,
 			Required:         true,
-			ForceNew:         true,
 			Description:      blocklistedCharactersFieldDescription("The database in which to create the backup set."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 		"schema": {
 			Type:             tfschema.TypeString,
 			Required:         true,
-			ForceNew:         true,
 			Description:      blocklistedCharactersFieldDescription("The schema in which to create the backup set."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},

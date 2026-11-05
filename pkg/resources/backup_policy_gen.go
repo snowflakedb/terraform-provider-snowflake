@@ -128,6 +128,27 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 		return diag.FromErr(err)
 	}
 
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.BackupPolicies.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeResourceIdentifier(renamed)
+			},
+			"backup policy",
+		); diags != nil {
+			return diags
+		}
+	}
+
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithRenameTo(newId)); err != nil {
@@ -154,9 +175,11 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 }
 
 var backupPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.BackupPolicy, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
 	ComputedIfAnyAttributeChanged(backupPolicySchema, ShowOutputAttributeName, "name", "comment", "schedule", "expire_after_days", "with_retention_lock"),
 	ComputedIfAnyAttributeChanged(backupPolicySchema, DescribeOutputAttributeName, "name", "comment", "schedule", "expire_after_days", "with_retention_lock"),
-	ComputedIfAnyAttributeChanged(backupPolicySchema, FullyQualifiedNameAttributeName, "name"),
+	ComputedIfAnyAttributeChanged(backupPolicySchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 ))
 
 func backupPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {

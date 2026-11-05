@@ -442,6 +442,7 @@ var ReplicationGroup = ssot.Object{
 		// and d.Set cannot write []AccountIdentifier into a list of strings.
 		ssot.WithSetConfigFields(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{

@@ -9,6 +9,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -79,6 +80,12 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 		WithAllowedExternalVolumes([]string{externalVolume.FullyQualifiedName()}).
 		WithAllowedShares([]string{share.ID().FullyQualifiedName()}).
 		WithAllowedIntegrationTypes(replicationGroupEnumStrings(integrationTypes))
+	renamedId := testClient().Ids.RandomAccountObjectIdentifier()
+	renamed := model.ReplicationGroup("t", renamedId.Name(), configAccounts, replicationGroupEnumStrings(objectTypes)).
+		WithAllowedDatabases([]string{database.ID().FullyQualifiedName(), database2.ID().FullyQualifiedName()}).
+		WithAllowedExternalVolumes([]string{externalVolume.FullyQualifiedName()}).
+		WithAllowedShares([]string{share.ID().FullyQualifiedName()}).
+		WithAllowedIntegrationTypes(replicationGroupEnumStrings(integrationTypes))
 	ref := basic.ResourceReference()
 
 	basicState := replicationGroupExpected{
@@ -104,6 +111,9 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 	assertBasic := replicationGroupAssertions(t, ref, id, configAccounts, sourceAccount, basicState)
 	assertAll := replicationGroupAssertions(t, ref, id, configAccounts, sourceAccount, allState)
 	assertObjectLists := replicationGroupAssertions(t, ref, id, configAccounts, sourceAccount, objectListsState)
+	assertRenamed := append(replicationGroupAssertions(t, ref, renamedId, configAccounts, sourceAccount, objectListsState),
+		invokeactionassert.ReplicationGroupDoesNotExist(t, id),
+	)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -182,6 +192,20 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, objectLists),
 				Check:  assertThat(t, assertObjectLists...),
+			},
+			// rename
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "name", tfjson.ActionUpdate, sdk.String(id.Name()), sdk.String(renamedId.Name())),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: config.FromModels(t, renamed),
+				Check:  assertThat(t, assertRenamed...),
 			},
 		},
 	})

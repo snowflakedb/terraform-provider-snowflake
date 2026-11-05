@@ -130,6 +130,27 @@ func UpdateBackupSet(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.BackupSets.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeResourceIdentifier(renamed)
+			},
+			"backup set",
+		); diags != nil {
+			return diags
+		}
+	}
+
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 		if err := meta.(*provider.Context).Client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(id).WithRenameTo(newId)); err != nil {
@@ -161,9 +182,11 @@ func UpdateBackupSet(ctx context.Context, d *tfschema.ResourceData, meta any) di
 }
 
 var backupSetCustomizeDiff = TrackingCustomDiffWrapper(resources.BackupSet, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
 	ComputedIfAnyAttributeChanged(backupSetSchema, ShowOutputAttributeName, "name", "comment"),
 	ComputedIfAnyAttributeChanged(backupSetSchema, DescribeOutputAttributeName, "name", "comment"),
-	ComputedIfAnyAttributeChanged(backupSetSchema, FullyQualifiedNameAttributeName, "name"),
+	ComputedIfAnyAttributeChanged(backupSetSchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 	backupSetOutputsComputedWhenTargetOrPolicyChanges,
 ))
 
