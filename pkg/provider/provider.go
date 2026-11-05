@@ -255,6 +255,12 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Token, nil),
 		},
+		"token_file_path": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Path to a file containing the token for OAuth, programmatic access token, and OIDC workload identity authentication. The driver re-reads this file on every new connection. Cannot be set together with `token`, including when `token` comes from a TOML profile. AWS, GCP, and Azure workload identity do not read this file.", snowflakeenvs.TokenFilePath),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.TokenFilePath, nil),
+		},
 		"token_accessor": {
 			Type:        schema.TypeList,
 			Optional:    true,
@@ -1048,6 +1054,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, experiments experiment
 			}
 			return nil
 		}(),
+		handleStringField(s, "token_file_path", &config.TokenFilePath),
 		handleFieldWithMapping(s, "authenticator", &config.Authenticator, sdk.ToExtendedAuthenticatorType),
 		handleStringField(s, "passcode", &config.Passcode),
 		handleBoolField(s, "passcode_in_password", &config.PasscodeInPassword),
