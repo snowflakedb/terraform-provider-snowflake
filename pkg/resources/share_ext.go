@@ -129,6 +129,7 @@ func shareBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, 
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	// TODO [SNOW-4428377]: Snowflake rejects more than 10 accounts in one ADD or REMOVE statement. Split the accounts into batches of at most 10.
 	accountsToAdd := shareAccountsDifference(newAccounts, oldAccounts)
 	accountsToRemove := shareAccountsDifference(oldAccounts, newAccounts)
 

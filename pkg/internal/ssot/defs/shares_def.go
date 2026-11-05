@@ -12,6 +12,8 @@ var shareDescribeKindEnum = ssot.NewEnum("ObjectType", "ObjectTypes").WithSdkTyp
 //
 // SHOW and DESCRIBE both return a name column, but of different types: SHOW a plain string, DESCRIBE the name of an
 // object in the share, which is an outbound or an inbound (external) identifier. They are separate attributes.
+// The to column of a share linked to a listing holds "ALL ACCOUNTS IN DATA EXCHANGE", which is not an account: the manual
+// conversion in pkg/sdk/shares_ext.go skips it.
 // to_total is not a Snowflake column: it is the N of the "... (N TOTAL)" marker that SHOW SHARES appends to the to column.
 var ShareAttrs = struct {
 	SecureObjectsOnly ssot.Attribute

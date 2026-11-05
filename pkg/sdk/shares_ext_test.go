@@ -162,6 +162,13 @@ func Test_parseShareRecipients(t *testing.T) {
 			},
 			Total: 4,
 		},
+		{Name: "data exchange only (share linked to a listing)", Value: "ALL ACCOUNTS IN DATA EXCHANGE", Result: []AccountIdentifier{}},
+		{Name: "data exchange only, quoted", Value: "'ALL ACCOUNTS IN DATA EXCHANGE'", Result: []AccountIdentifier{}},
+		{
+			Name:   "data exchange next to accounts",
+			Value:  "ALL ACCOUNTS IN DATA EXCHANGE,ORG.ACC1",
+			Result: []AccountIdentifier{NewAccountIdentifier("ORG", "ACC1")},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
