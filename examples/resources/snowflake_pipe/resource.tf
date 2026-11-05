@@ -8,8 +8,7 @@ resource "snowflake_pipe" "pipe" {
   copy_statement = "copy into ${snowflake_table.table.fully_qualified_name} from @${snowflake_stage.stage.fully_qualified_name}"
   auto_ingest    = false
 
-  aws_sns_topic_arn    = "..."
-  notification_channel = "..."
+  aws_sns_topic_arn = "..."
 }
 
 
@@ -42,4 +41,15 @@ resource "snowflake_pipe" "pipe_with_stage_change_trigger" {
       snowflake_stage.stage.encryption,
     ]
   }
+}
+
+# Snowpipe Streaming (high-performance architecture) pipe. It reads rows sent by the Snowpipe Streaming SDK or REST API
+# instead of files from a stage, so auto_ingest, aws_sns_topic_arn, and integration are not set.
+# Read more at https://docs.snowflake.com/en/user-guide/snowpipe-streaming/snowpipe-streaming-pipe-object.
+resource "snowflake_pipe" "streaming_pipe" {
+  database = snowflake_database.database.name
+  schema   = snowflake_schema.schema.name
+  name     = "STREAMING_PIPE"
+
+  copy_statement = "copy into ${snowflake_table.table.fully_qualified_name} from (select $1:id from table(data_source(type => 'STREAMING')))"
 }

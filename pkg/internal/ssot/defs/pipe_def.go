@@ -40,6 +40,7 @@ var PipeAttrs = struct {
 	Pattern             ssot.Attribute
 	OwnerRoleType       ssot.Attribute
 	InvalidReason       ssot.Attribute
+	Kind                ssot.Attribute
 }{
 	Comment: ssot.Attribute{
 		Name:         "comment",
@@ -94,6 +95,8 @@ var PipeAttrs = struct {
 	Pattern:             ssot.Attribute{Name: "pattern", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
 	OwnerRoleType:       ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
 	InvalidReason:       ssot.Attribute{Name: "invalid_reason", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	// kind is STAGE for pipes that load from a stage and STREAMING for Snowpipe Streaming pipes (DATA_SOURCE(TYPE => 'STREAMING')).
+	Kind: ssot.Attribute{Name: "kind", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
 }
 
 var Pipe = ssot.Object{
@@ -180,6 +183,7 @@ var Pipe = ssot.Object{
 			&PipeAttrs.ErrorIntegration,
 			&PipeAttrs.OwnerRoleType,
 			&PipeAttrs.InvalidReason,
+			&PipeAttrs.Kind,
 		},
 	},
 	Describe: ssot.OutputSpec{
@@ -197,6 +201,7 @@ var Pipe = ssot.Object{
 			&PipeAttrs.ErrorIntegration,
 			&PipeAttrs.OwnerRoleType,
 			&PipeAttrs.InvalidReason,
+			&PipeAttrs.Kind,
 		},
 	},
 	Attributes: []ssot.Attribute{

@@ -103,6 +103,7 @@ type pipesRow struct {
 	ErrorIntegration    sql.NullString `db:"error_integration"`
 	OwnerRoleType       sql.NullString `db:"owner_role_type"`
 	InvalidReason       sql.NullString `db:"invalid_reason"`
+	Kind                sql.NullString `db:"kind"`
 }
 
 type Pipe struct {
@@ -119,6 +120,7 @@ type Pipe struct {
 	ErrorIntegration    string
 	OwnerRoleType       string
 	InvalidReason       string
+	Kind                string
 }
 
 func (v *Pipe) ID() SchemaObjectIdentifier {
@@ -150,6 +152,7 @@ type pipeDescRow struct {
 	ErrorIntegration    sql.NullString `db:"error_integration"`
 	OwnerRoleType       sql.NullString `db:"owner_role_type"`
 	InvalidReason       sql.NullString `db:"invalid_reason"`
+	Kind                sql.NullString `db:"kind"`
 }
 
 type PipeDetails struct {
@@ -166,6 +169,7 @@ type PipeDetails struct {
 	ErrorIntegration    string
 	OwnerRoleType       string
 	InvalidReason       string
+	Kind                string
 }
 
 func (v *PipeDetails) ID() SchemaObjectIdentifier {

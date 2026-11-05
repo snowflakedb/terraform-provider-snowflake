@@ -114,6 +114,11 @@ func (p *PipeShowOutputAssert) HasInvalidReason(expected string) *PipeShowOutput
 	return p
 }
 
+func (p *PipeShowOutputAssert) HasKind(expected string) *PipeShowOutputAssert {
+	p.StringValueSet("kind", expected)
+	return p
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -180,5 +185,10 @@ func (p *PipeShowOutputAssert) HasNoOwnerRoleType() *PipeShowOutputAssert {
 
 func (p *PipeShowOutputAssert) HasNoInvalidReason() *PipeShowOutputAssert {
 	p.ValueNotSet("invalid_reason")
+	return p
+}
+
+func (p *PipeShowOutputAssert) HasNoKind() *PipeShowOutputAssert {
+	p.ValueNotSet("kind")
 	return p
 }

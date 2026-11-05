@@ -99,12 +99,17 @@ func quotePlaceholders(s string) (string, error) {
 	return argumentRegex.ReplaceAllString(s, `"$1"`), nil
 }
 
+// jsonHtmlEscapes undoes the HTML escaping of encoding/json, which a heredoc would otherwise keep literally (e.g. `=>` as `=\u003e`).
+var jsonHtmlEscapes = strings.NewReplacer(`\u003c`, `<`, `\u003e`, `>`, `\u0026`, `&`)
+
 // TODO [SNOW-1501905]: fix new lines replacement totally in this method
 func replaceMultilinePlaceholders(s string) (string, error) {
 	argumentRegex := regexp.MustCompile(fmt.Sprintf(`"%[1]s(.*?)%[1]s"`, SnowflakeProviderConfigMultilineMarker))
-	return strings.ReplaceAll(argumentRegex.ReplaceAllString(s, `<<EOT
-$1
-EOT`), `\n`, `
+	replaced := argumentRegex.ReplaceAllStringFunc(s, func(match string) string {
+		content := argumentRegex.FindStringSubmatch(match)[1]
+		return "<<EOT\n" + jsonHtmlEscapes.Replace(content) + "\nEOT"
+	})
+	return strings.ReplaceAll(replaced, `\n`, `
 `), nil
 }
 

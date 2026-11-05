@@ -24,8 +24,7 @@ resource "snowflake_pipe" "pipe" {
   copy_statement = "copy into ${snowflake_table.table.fully_qualified_name} from @${snowflake_stage.stage.fully_qualified_name}"
   auto_ingest    = false
 
-  aws_sns_topic_arn    = "..."
-  notification_channel = "..."
+  aws_sns_topic_arn = "..."
 }
 
 
@@ -59,8 +58,21 @@ resource "snowflake_pipe" "pipe_with_stage_change_trigger" {
     ]
   }
 }
+
+# Snowpipe Streaming (high-performance architecture) pipe. It reads rows sent by the Snowpipe Streaming SDK or REST API
+# instead of files from a stage, so auto_ingest, aws_sns_topic_arn, and integration are not set.
+# Read more at https://docs.snowflake.com/en/user-guide/snowpipe-streaming/snowpipe-streaming-pipe-object.
+resource "snowflake_pipe" "streaming_pipe" {
+  database = snowflake_database.database.name
+  schema   = snowflake_schema.schema.name
+  name     = "STREAMING_PIPE"
+
+  copy_statement = "copy into ${snowflake_table.table.fully_qualified_name} from (select $1:id from table(data_source(type => 'STREAMING')))"
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+
+~> **Note** Use fully qualified names (`"<database_name>"."<schema_name>"."<object_name>"`) for every object referenced in `copy_statement`, e.g. the table, stage, and file format. The `database` and `schema` fields only define where the pipe is created; the provider does not run `USE DATABASE` or `USE SCHEMA` before `CREATE PIPE`. Unqualified names are resolved against the session's current database and schema, which leads to errors like `This session does not have a current database` or `Table '<name>' does not exist`. The `fully_qualified_name` attribute of the referenced resources (as in the examples above) gives the right value.
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
@@ -119,6 +131,7 @@ Read-Only:
 - `error_integration` (String)
 - `integration` (String)
 - `invalid_reason` (String)
+- `kind` (String)
 - `name` (String)
 - `notification_channel` (String)
 - `owner` (String)
@@ -172,6 +185,7 @@ Read-Only:
 - `error_integration` (String)
 - `integration` (String)
 - `invalid_reason` (String)
+- `kind` (String)
 - `name` (String)
 - `notification_channel` (String)
 - `owner` (String)

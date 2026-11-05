@@ -153,6 +153,7 @@ func (r pipesRow) convert() (*Pipe, error) {
 	mapNullStringToNonNullableField(&result.ErrorIntegration, r.ErrorIntegration)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToNonNullableField(&result.InvalidReason, r.InvalidReason)
+	mapNullStringToNonNullableField(&result.Kind, r.Kind)
 	return result, nil
 }
 
@@ -179,6 +180,7 @@ func (r pipeDescRow) convert() (*PipeDetails, error) {
 	mapNullStringToNonNullableField(&result.ErrorIntegration, r.ErrorIntegration)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToNonNullableField(&result.InvalidReason, r.InvalidReason)
+	mapNullStringToNonNullableField(&result.Kind, r.Kind)
 	return result, nil
 }
 
