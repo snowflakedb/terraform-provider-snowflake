@@ -215,6 +215,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Services().Schema,
 	},
 	{
+		name:   "Shares",
+		schema: datasources.Shares().Schema,
+	},
+	{
 		name:   "StorageIntegrations",
 		schema: datasources.StorageIntegrations().Schema,
 	},

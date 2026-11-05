@@ -98,12 +98,8 @@ func shareDescribeInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectId
 	return meta.(*provider.Context).Client.Shares.Describe(ctx, id)
 }
 
-// shareAfterShowByIdExt completes the recipients of the SHOW row. A failed lookup of all the recipients is not an error: the
-// listed recipients are used and a warning is returned.
-func shareAfterShowByIdExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, share *sdk.Share) diag.Diagnostics {
-	recipients, err := shareRecipientsExt(ctx, meta.(*provider.Context).Client.Shares.ShowTargetAccounts, id, share)
-	share.To = recipients
-	if err != nil {
+func shareAfterShowByIdExt(ctx context.Context, d *schema.ResourceData, meta any, _ sdk.AccountObjectIdentifier, share *sdk.Share) diag.Diagnostics {
+	if err := share.CompleteTo(ctx, meta.(*provider.Context).Client.Shares); err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
 				Severity: diag.Warning,
@@ -114,29 +110,6 @@ func shareAfterShowByIdExt(ctx context.Context, d *schema.ResourceData, meta any
 		}
 	}
 	return nil
-}
-
-// shareRecipientsExt returns all the recipients of the share. SHOW SHARES lists at most three recipients and reports the rest
-// only as "... (N TOTAL)", so the full list is merged in from SNOWFLAKE.ACCOUNT_USAGE.SHARES. When that lookup fails, the
-// listed recipients are returned together with the error.
-func shareRecipientsExt(ctx context.Context, showTargetAccounts func(context.Context, sdk.AccountObjectIdentifier) ([]sdk.AccountIdentifier, error), id sdk.AccountObjectIdentifier, share *sdk.Share) ([]sdk.AccountIdentifier, error) {
-	if share.ToTotal <= len(share.To) {
-		return share.To, nil
-	}
-	targetAccounts, err := showTargetAccounts(ctx, id)
-	if err != nil {
-		return share.To, err
-	}
-	// ACCOUNT_USAGE.SHARES can be up to 3 hours behind; SHOW SHARES is real time, so a recipient added since the
-	// view was last refreshed may be among the listed three but not in the view yet.
-	// CompactFunc only collapses adjacent duplicates, so sort by fully qualified name first.
-	recipients := append(slices.Clone(share.To), targetAccounts...)
-	slices.SortFunc(recipients, func(a, b sdk.AccountIdentifier) int {
-		return strings.Compare(a.FullyQualifiedName(), b.FullyQualifiedName())
-	})
-	return slices.CompactFunc(recipients, func(a, b sdk.AccountIdentifier) bool {
-		return a.FullyQualifiedName() == b.FullyQualifiedName()
-	}), nil
 }
 
 // shareBeforeAlterExt makes the recipients equal to the configured accounts: it removes the accounts that are not configured

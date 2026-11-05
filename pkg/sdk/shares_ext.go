@@ -4,13 +4,34 @@ import (
 	"context"
 	"database/sql"
 	"regexp"
+	"slices"
 	"strconv"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 func (v *Share) ExternalID() ExternalObjectIdentifier {
 	return NewExternalObjectIdentifier(NewAccountIdentifierFromFullyQualifiedName(v.OwnerAccount), NewAccountObjectIdentifier(v.Name))
+}
+
+func (v *Share) CompleteTo(ctx context.Context, shares Shares) error {
+	if v.ToTotal <= len(v.To) {
+		return nil
+	}
+	targetAccounts, err := shares.ShowTargetAccounts(ctx, v.ID())
+	if err != nil {
+		return err
+	}
+	// The view lags behind SHOW SHARES, so a recipient listed by SHOW SHARES may be missing in it.
+	recipients := append(slices.Clone(v.To), targetAccounts...)
+	slices.SortFunc(recipients, func(a, b AccountIdentifier) int {
+		return strings.Compare(a.FullyQualifiedName(), b.FullyQualifiedName())
+	})
+	v.To = slices.CompactFunc(recipients, func(a, b AccountIdentifier) bool {
+		return a.FullyQualifiedName() == b.FullyQualifiedName()
+	})
+	return nil
 }
 
 // shareRecipientsTruncationRegexp matches the marker Snowflake appends to the "to" column of SHOW SHARES once a share
