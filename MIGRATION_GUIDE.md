@@ -344,6 +344,14 @@ No action is required unless you want to manage a Data Connectivity Proxy networ
 
 Reference: [#5363](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5363).
 
+### *(bug fix)* Openflow deployment `event_table` identifier quoting
+
+[`snowflake_openflow_deployment_byoc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_byoc) and [`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) read `event_table` from `SHOW PARAMETERS IN OPENFLOW DEPLOYMENT`. That command returns the table in a different identifier format than other Snowflake objects: unquoted parts stay lowercase (`snowflake.db.schema` or `snowflake.db."schema"`) instead of a quoted fully qualified name (`"SNOWFLAKE"."DB"."SCHEMA"`). The provider treated the value as already quoted, so `snowflake.db.schema` became `"snowflake"."db"."schema"` in state. A configuration that used the usual quoted uppercase form then planned an update on every refresh.
+
+The provider now applies Snowflake identifier rules to that parameter: unquoted parts fold to uppercase, quoted parts keep their case, and the value is stored as a quoted fully qualified name. `EVENT_TABLE = NONE` is left as `NONE`.
+
+No configuration changes are required. After upgrading, refresh the Openflow deployments. If `event_table` already names the same table as the configuration, the perpetual update should go away. The same quoted value is used in `parameters.event_table` on the resources and on [`snowflake_openflow_deployments`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/openflow_deployments).
+
 ### *(bug fix)* `snowflake_object_parameter` unsets a parameter whose Snowflake default is empty
 
 Destroying [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) resets the parameter on the object. When the Snowflake default is an empty string, `SET` does not emit that value, so the parameter stayed set. Destroy now runs `UNSET` in that case. A parameter whose default is not empty is still reset with `SET`.
