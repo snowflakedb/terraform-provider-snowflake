@@ -33,17 +33,43 @@ For more examples, head over to our usage guide where we present how to use the 
 {{- end }}
 
 ## Granting ownership on pipes
-To transfer ownership of a pipe, there must be additional conditions met. Otherwise, additional manual work
-will be needed afterward or in some cases, the ownership won't be transferred (resulting in error).
+Snowflake transfers ownership only of a paused pipe. For every pipe (a single pipe, or each pipe when ownership is granted on all pipes in a database or schema), the provider:
+1. Checks the pipe status with [`SYSTEM$PIPE_STATUS`](https://docs.snowflake.com/en/sql-reference/functions/system_pipe_status), and pauses a running pipe with `ALTER PIPE ... SET PIPE_EXECUTION_PAUSED = TRUE`. This needs either OWNERSHIP, or OPERATE and MONITOR on the pipe. Without them, the provider tries the transfer as is, and Snowflake rejects it for a running pipe.
+2. Transfers the ownership.
+3. Resumes the pipe with [`SYSTEM$PIPE_FORCE_RESUME`](https://docs.snowflake.com/en/sql-reference/functions/system_pipe_force_resume), but only when the pipe was running, the current role has OPERATE on the pipe, and `outbound_privileges = "COPY"` keeps that privilege after the transfer. If the pipe inherited [`PIPE_EXECUTION_PAUSED`](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused) from its schema or account before, the provider unsets it again, so the pipe ends as it started.
 
-To transfer ownership of a pipe(s) **fully automatically**, one of the following conditions has to be met:
-- OPERATE and MONITOR privileges are granted to the current role on the pipe(s) and `outbound_privileges` field is set to `COPY`.
-- The pipe(s) running status is paused (additional privileges and fields set are needed to pause and resume the pipe before and after ownership transfer. If it's already paused, nothing additional is needed and the pipe will remain paused after the ownership transfer).
+Otherwise, the pipe stays paused, with `PIPE_EXECUTION_PAUSED = TRUE` set on the pipe. Being the owner of the pipe before the transfer is not enough to resume it, because the current role has no privileges on the pipe after the transfer.
 
-To transfer ownership of a pipe(s) **semi-automatically** you have to:
-1. Pause the pipe(s) you want to transfer ownership of (using [ALTER PIPE](https://docs.snowflake.com/en/sql-reference/sql/alter-pipe#syntax); see PIPE_EXECUTION_PAUSED).
-2. Create Terraform configuration with the `snowflake_grant_ownership` resource and perform ownership transfer with the `terraform apply`.
-3. To resume the pipe(s) after ownership transfer use [PIPE_FORCE_RESUME system function](https://docs.snowflake.com/en/sql-reference/functions/system_pipe_force_resume).
+To keep a running pipe running, grant OPERATE and MONITOR on the pipe to the role used by the provider before the transfer, and set `outbound_privileges = "COPY"`:
+
+```terraform
+resource "snowflake_grant_privileges_to_account_role" "pipe_operate" {
+  account_role_name = "<role used by the provider>"
+  privileges        = ["OPERATE", "MONITOR"]
+  on_schema_object {
+    object_type = "PIPE"
+    object_name = snowflake_pipe.example.fully_qualified_name
+  }
+}
+
+resource "snowflake_grant_ownership" "pipe" {
+  account_role_name   = snowflake_account_role.new_owner.name
+  outbound_privileges = "COPY"
+  on {
+    object_type = "PIPE"
+    object_name = snowflake_pipe.example.fully_qualified_name
+  }
+
+  depends_on = [snowflake_grant_privileges_to_account_role.pipe_operate]
+}
+```
+
+A paused pipe is transferred without a pause and a resume, and it stays paused after the transfer.
+
+If the pipe is managed by the [`snowflake_pipe`](./pipe) resource:
+- With `pipe_execution_paused` not set, or set to `false`, the pipe keeps running when the privileges above are granted. Without them, the pipe stays paused after the transfer, and `snowflake_pipe` reports a difference for `pipe_execution_paused`.
+- With `pipe_execution_paused = true`, the pipe stays paused, and no additional privileges are needed.
+- Setting `pipe_execution_paused = false` after the transfer does not resume a pipe that was paused during the transfer, because Snowflake resumes it this way only if its ownership did not change while it was paused. Resume it with [`SYSTEM$PIPE_FORCE_RESUME`](https://docs.snowflake.com/en/sql-reference/functions/system_pipe_force_resume) instead.
 
 ## Granting ownership on task
 Granting ownership on single task requires:

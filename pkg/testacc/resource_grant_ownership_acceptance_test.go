@@ -11,6 +11,8 @@ import (
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -1004,10 +1006,18 @@ func TestAcc_GrantOwnership_OnPipe(t *testing.T) {
 	tableModel := model.Table("test", tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}})
 	pipeModel := model.PipeWithIdCopyFromStageIntoTable("test", pipeId, tableModel.ResourceReference(), stageModel.ResourceReference()).
 		WithDependsOn(tableModel.ResourceReference(), stageModel.ResourceReference())
+	// With OPERATE and MONITOR on the pipe and outbound_privileges = "COPY", the provider pauses the running pipe
+	// before the ownership transfer and resumes it after.
+	currentRole := testClient().Context.CurrentRole(t)
+	operateGrantModel := model.GrantPrivilegesToAccountRole("test", currentRole.Name()).
+		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeOperate, sdk.SchemaObjectPrivilegeMonitor).
+		WithOnSchemaObjectObject(sdk.ObjectTypePipe, pipeId.FullyQualifiedName()).
+		WithDependsOn(pipeModel.ResourceReference())
 	grantModel := model.GrantOwnershipWithRawOn("test").
 		WithAccountRoleName(accountRoleName).
 		WithOnObject(sdk.ObjectTypePipe, pipeId.FullyQualifiedName()).
-		WithDependsOn(accountRoleModel.ResourceReference(), pipeModel.ResourceReference())
+		WithOutboundPrivileges("COPY").
+		WithDependsOn(accountRoleModel.ResourceReference(), pipeModel.ResourceReference(), operateGrantModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -1017,20 +1027,85 @@ func TestAcc_GrantOwnership_OnPipe(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, accountRoleModel, stageModel, tableModel, pipeModel, grantModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
-					resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypePipe)),
-					resource.TestCheckResourceAttr(resourceName, "on.0.object_name", pipeId.FullyQualifiedName()),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnObject|PIPE|%s", accountRoleFullyQualifiedName, pipeId.FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+				Config: accconfig.FromModels(t, accountRoleModel, stageModel, tableModel, pipeModel, operateGrantModel, grantModel),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName)),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "on.0.object_type", string(sdk.ObjectTypePipe))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "on.0.object_name", pipeId.FullyQualifiedName())),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s|COPY|OnObject|PIPE|%s", accountRoleFullyQualifiedName, pipeId.FullyQualifiedName()))),
+					assert.Check(checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
 						ObjectType: sdk.ObjectTypePipe,
 						Name:       pipeId,
-					})), sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName()),
+					})), sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName())),
+					// The pipe is resumed after the transfer, and PIPE_EXECUTION_PAUSED is inherited again.
+					invokeactionassert.PipeHasExecutionState(t, pipeId, sdk.PipeExecutionStateRunning),
+					objectparametersassert.PipeParameters(t, pipeId).HasPipeExecutionPaused(false).HasPipeExecutionPausedLevel(sdk.ParameterTypeSnowflakeDefault),
 				),
 			},
 		},
 	})
+}
+
+func TestAcc_GrantOwnership_OnPipe_PipeExecutionPausedSet(t *testing.T) {
+	testCases := []struct {
+		pipeExecutionPaused bool
+		expectedState       sdk.PipeExecutionState
+	}{
+		// A paused pipe is transferred without a pause and a resume, so it stays paused.
+		{pipeExecutionPaused: true, expectedState: sdk.PipeExecutionStatePaused},
+		// A running pipe is paused before the transfer and resumed after it. PIPE_EXECUTION_PAUSED stays FALSE on the pipe.
+		{pipeExecutionPaused: false, expectedState: sdk.PipeExecutionStateRunning},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("pipe_execution_paused=%t", tc.pipeExecutionPaused), func(t *testing.T) {
+			stageId := testClient().Ids.RandomSchemaObjectIdentifier()
+			tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+			accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
+			pipeId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+			accountRoleModel := model.AccountRole("test", accountRoleId.Name())
+			stageModel := model.Stage("test", stageId.DatabaseName(), stageId.SchemaName(), stageId.Name())
+			tableModel := model.Table("test", tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}})
+			pipeModel := model.PipeWithIdCopyFromStageIntoTable("test", pipeId, tableModel.ResourceReference(), stageModel.ResourceReference()).
+				WithPipeExecutionPaused(tc.pipeExecutionPaused).
+				WithDependsOn(tableModel.ResourceReference(), stageModel.ResourceReference())
+			// With OPERATE and MONITOR on the pipe and outbound_privileges = "COPY", the provider pauses the running pipe
+			// before the ownership transfer and resumes it after.
+			currentRole := testClient().Context.CurrentRole(t)
+			operateGrantModel := model.GrantPrivilegesToAccountRole("test", currentRole.Name()).
+				WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeOperate, sdk.SchemaObjectPrivilegeMonitor).
+				WithOnSchemaObjectObject(sdk.ObjectTypePipe, pipeId.FullyQualifiedName()).
+				WithDependsOn(pipeModel.ResourceReference())
+			grantModel := model.GrantOwnershipWithRawOn("test").
+				WithAccountRoleName(accountRoleId.Name()).
+				WithOnObject(sdk.ObjectTypePipe, pipeId.FullyQualifiedName()).
+				WithOutboundPrivileges("COPY").
+				WithDependsOn(accountRoleModel.ResourceReference(), pipeModel.ResourceReference(), operateGrantModel.ResourceReference())
+
+			resource.Test(t, resource.TestCase{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+					tfversion.RequireAbove(tfversion.Version1_5_0),
+				},
+				Steps: []resource.TestStep{
+					{
+						Config: accconfig.FromModels(t, accountRoleModel, stageModel, tableModel, pipeModel, operateGrantModel, grantModel),
+						Check: assertThat(
+							t,
+							assert.Check(checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithOn(*sdk.NewShowGrantsOnRequest().WithObject(sdk.Object{
+								ObjectType: sdk.ObjectTypePipe,
+								Name:       pipeId,
+							})), sdk.ObjectTypePipe, accountRoleId.Name(), pipeId.FullyQualifiedName())),
+							invokeactionassert.PipeHasExecutionState(t, pipeId, tc.expectedState),
+							objectparametersassert.PipeParameters(t, pipeId).HasPipeExecutionPaused(tc.pipeExecutionPaused).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe),
+						),
+					},
+				},
+			})
+		})
+	}
 }
 
 func TestAcc_GrantOwnership_OnAllPipes(t *testing.T) {
@@ -1050,10 +1125,22 @@ func TestAcc_GrantOwnership_OnAllPipes(t *testing.T) {
 		WithDependsOn(tableModel.ResourceReference(), stageModel.ResourceReference())
 	secondPipeModel := model.PipeWithIdCopyFromStageIntoTable("second_test", secondPipeId, tableModel.ResourceReference(), stageModel.ResourceReference()).
 		WithDependsOn(tableModel.ResourceReference(), stageModel.ResourceReference())
+	// With OPERATE and MONITOR on the pipe and outbound_privileges = "COPY", the provider pauses the running pipe
+	// before the ownership transfer and resumes it after.
+	currentRole := testClient().Context.CurrentRole(t)
+	operateGrantModel := model.GrantPrivilegesToAccountRole("test", currentRole.Name()).
+		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeOperate, sdk.SchemaObjectPrivilegeMonitor).
+		WithOnSchemaObjectObject(sdk.ObjectTypePipe, pipeId.FullyQualifiedName()).
+		WithDependsOn(pipeModel.ResourceReference())
+	secondOperateGrantModel := model.GrantPrivilegesToAccountRole("second_test", currentRole.Name()).
+		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeOperate, sdk.SchemaObjectPrivilegeMonitor).
+		WithOnSchemaObjectObject(sdk.ObjectTypePipe, secondPipeId.FullyQualifiedName()).
+		WithDependsOn(secondPipeModel.ResourceReference())
 	grantModel := model.GrantOwnershipWithRawOn("test").
 		WithAccountRoleName(accountRoleName).
 		WithOnAllInSchema(sdk.PluralObjectTypePipes, testClient().Ids.SchemaId().FullyQualifiedName()).
-		WithDependsOn(pipeModel.ResourceReference(), secondPipeModel.ResourceReference())
+		WithOutboundPrivileges("COPY").
+		WithDependsOn(pipeModel.ResourceReference(), secondPipeModel.ResourceReference(), operateGrantModel.ResourceReference(), secondOperateGrantModel.ResourceReference())
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
@@ -1063,11 +1150,16 @@ func TestAcc_GrantOwnership_OnAllPipes(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, accountRoleModel, stageModel, tableModel, pipeModel, secondPipeModel, grantModel),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName),
-					resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s||OnAll|PIPES|InSchema|%s", accountRoleFullyQualifiedName, testClient().Ids.SchemaId().FullyQualifiedName())),
-					checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName(), secondPipeId.FullyQualifiedName()),
+				Config: accconfig.FromModels(t, accountRoleModel, stageModel, tableModel, pipeModel, secondPipeModel, operateGrantModel, secondOperateGrantModel, grantModel),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "account_role_name", accountRoleName)),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", fmt.Sprintf("ToAccountRole|%s|COPY|OnAll|PIPES|InSchema|%s", accountRoleFullyQualifiedName, testClient().Ids.SchemaId().FullyQualifiedName()))),
+					assert.Check(checkResourceOwnershipIsGranted(sdk.NewShowGrantsRequest().WithTo(*sdk.NewShowGrantsToRequest().WithRole(accountRoleId)), sdk.ObjectTypePipe, accountRoleName, pipeId.FullyQualifiedName(), secondPipeId.FullyQualifiedName())),
+					invokeactionassert.PipeHasExecutionState(t, pipeId, sdk.PipeExecutionStateRunning),
+					objectparametersassert.PipeParameters(t, pipeId).HasPipeExecutionPaused(false).HasPipeExecutionPausedLevel(sdk.ParameterTypeSnowflakeDefault),
+					invokeactionassert.PipeHasExecutionState(t, secondPipeId, sdk.PipeExecutionStateRunning),
+					objectparametersassert.PipeParameters(t, secondPipeId).HasPipeExecutionPaused(false).HasPipeExecutionPausedLevel(sdk.ParameterTypeSnowflakeDefault),
 				),
 			},
 		},

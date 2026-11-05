@@ -87,9 +87,14 @@ func pipeBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 }
 
 // CREATE PIPE has no parameters, so the configured ones are set with ALTER PIPE right after the create.
+// The values are read from the configuration, not from the changes, so a configured zero value
+// (for example, pipe_execution_paused = false) is set on the pipe too.
 func pipeAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	set, unset := sdk.NewPipeSetRequest(), sdk.NewPipeUnsetRequest()
-	if diags := pipeApplyParametersChanges(d, set, unset); diags != nil {
+	set := sdk.NewPipeSetRequest()
+	if diags := JoinDiags(
+		handleParameterCreateWithMapping(d, "log_event_level", &set.LogEventLevel, sdk.ToLogLevel),
+		handleParameterCreate(d, "pipe_execution_paused", &set.PipeExecutionPaused),
+	); diags != nil {
 		return diags
 	}
 	if !reflect.DeepEqual(*set, *sdk.NewPipeSetRequest()) {

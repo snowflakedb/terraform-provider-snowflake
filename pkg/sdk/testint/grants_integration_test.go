@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -824,6 +825,31 @@ func TestInt_GrantOwnership(t *testing.T) {
 		return ownershipGrantOnObject(sdk.ObjectTypePipe, pipe.ID())
 	}
 
+	checkPipeExecutionState := func(t *testing.T, pipeId sdk.SchemaObjectIdentifier, expectedState sdk.PipeExecutionState) {
+		t.Helper()
+
+		pipeExecutionState, err := client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipeId)))
+		require.NoError(t, err)
+		require.Equal(t, expectedState, pipeExecutionState.ExecutionState)
+	}
+
+	// createPipeOwnedAndOperableByCurrentRole creates a running pipe owned by the current role, grants OPERATE and MONITOR
+	// on it to the current role, and returns the pipe with a role that the ownership can be granted to.
+	// It does not switch roles, so it also works in sessions that do not allow USE ROLE.
+	createPipeOwnedAndOperableByCurrentRole := func(t *testing.T) (*sdk.Pipe, *sdk.Role) {
+		t.Helper()
+
+		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+		t.Cleanup(pipeCleanup)
+		// The role is dropped before the pipe, which gives the ownership back to the current role, so the pipe can be dropped.
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+
+		makeAccountRoleOperableOnPipe(t, testClientHelper().Context.CurrentRole(t), pipe)
+
+		return pipe, role
+	}
+
 	ownershipGrantOnCortexSearchService := func(cortexSearchService *sdk.CortexSearchService) sdk.OwnershipGrantOnRequest {
 		return ownershipGrantOnObject(sdk.ObjectTypeCortexSearchService, cortexSearchService.ID())
 	}
@@ -931,15 +957,17 @@ func TestInt_GrantOwnership(t *testing.T) {
 		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
+		// OWNERSHIP is enough to pause the pipe, but not to resume it after the transfer: that needs OPERATE.
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
 
 		currentRole := testClientHelper().Context.CurrentRole(t)
 
 		grantOwnershipToRole(t, currentRole, ownershipGrantOnPipe(pipe), nil)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), currentRole)
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
-		require.NoError(t, err)
-		require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
 	})
 
 	t.Run("on cortex - with ownership", func(t *testing.T) {
@@ -1135,9 +1163,9 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
-		require.NoError(t, err)
-		require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
+		// REVOKE CURRENT GRANTS removes OPERATE from the current role, so the pipe stays paused.
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
 	})
 
 	t.Run("on pipe - with operate privilege granted and copy current grants option", func(t *testing.T) {
@@ -1182,9 +1210,40 @@ func TestInt_GrantOwnership(t *testing.T) {
 
 		usePreviousRole()
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
+		// PIPE_EXECUTION_PAUSED was set to FALSE on the pipe before the transfer, so it stays set there.
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStateRunning)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(false).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
+	})
+
+	t.Run("on pipe - with ownership, operate and monitor, and copy current grants option, inherited pipe execution paused", func(t *testing.T) {
+		pipe, role := createPipeOwnedAndOperableByCurrentRole(t)
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStateRunning)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(false).HasPipeExecutionPausedLevel(sdk.ParameterTypeSnowflakeDefault))
+
+		err := client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy)))
 		require.NoError(t, err)
-		require.Equal(t, sdk.PipeExecutionStateRunning, pipeExecutionState.ExecutionState)
+		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
+
+		// The pause and resume would leave PIPE_EXECUTION_PAUSED set on the pipe, so it is unset to be inherited again.
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStateRunning)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(false).HasPipeExecutionPausedLevel(sdk.ParameterTypeSnowflakeDefault))
+	})
+
+	t.Run("on pipe - with ownership, operate and monitor, and copy current grants option on paused pipe", func(t *testing.T) {
+		pipe, role := createPipeOwnedAndOperableByCurrentRole(t)
+
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).WithSet(*sdk.NewPipeSetRequest().WithPipeExecutionPaused(true)))
+		require.NoError(t, err)
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
+
+		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())).WithCurrentGrants(*sdk.NewOwnershipCurrentGrantsRequest(sdk.Copy)))
+		require.NoError(t, err)
+		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
+
+		// A paused pipe is not resumed after the transfer.
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
 	})
 
 	t.Run("on pipe - with neither ownership nor operate", func(t *testing.T) {
@@ -1256,6 +1315,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 		err = client.Grants.GrantOwnership(ctx, sdk.NewGrantOwnershipRequest(ownershipGrantOnPipe(pipe), *sdk.NewOwnershipGrantToRequest().WithAccountRoleName(role.ID())))
 		require.NoError(t, err)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), role.ID())
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
 	})
 
 	t.Run("on all pipes", func(t *testing.T) {
@@ -1288,13 +1349,11 @@ func TestInt_GrantOwnership(t *testing.T) {
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(pipe), currentRole)
 		checkOwnershipOnObjectToRole(t, ownershipGrantOnPipe(secondPipe), currentRole)
 
-		pipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
-		require.NoError(t, err)
-		require.Equal(t, sdk.PipeExecutionStatePaused, pipeExecutionState.ExecutionState)
-
-		secondPipeExecutionState, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(secondPipe.ID())))
-		require.NoError(t, err)
-		require.Equal(t, sdk.PipeExecutionStatePaused, secondPipeExecutionState.ExecutionState)
+		// Ownership on all pipes is granted pipe by pipe, the same way as on a single pipe. Without OPERATE, the pipes stay paused.
+		checkPipeExecutionState(t, pipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, pipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
+		checkPipeExecutionState(t, secondPipe.ID(), sdk.PipeExecutionStatePaused)
+		assertThatObject(t, objectparametersassert.PipeParameters(t, secondPipe.ID()).HasPipeExecutionPaused(true).HasPipeExecutionPausedLevel(sdk.ParameterTypePipe))
 	})
 
 	t.Run("on task - with ownership", func(t *testing.T) {

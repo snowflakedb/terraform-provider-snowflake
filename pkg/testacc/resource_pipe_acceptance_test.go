@@ -801,6 +801,8 @@ func TestAcc_Pipe_Parameters(t *testing.T) {
 	updatedParameters := model.PipeWithId("test", id, statement).
 		WithLogEventLevelSdk(sdk.LogLevelWarn).
 		WithPipeExecutionPaused(false)
+	withPipeExecutionPausedFalse := model.PipeWithId("test", id, statement).
+		WithPipeExecutionPaused(false)
 
 	ref := basic.ResourceReference()
 
@@ -867,6 +869,28 @@ func TestAcc_Pipe_Parameters(t *testing.T) {
 					objectparametersassert.PipeParameters(t, id).
 						HasDefaultLogEventLevelValue().
 						HasDefaultPipeExecutionPausedValue(),
+				),
+			},
+			// Destroy
+			{
+				Destroy: true,
+				Config:  config.FromModels(t, basic),
+			},
+			// Create - with pipe_execution_paused set to false, which is the zero value
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, withPipeExecutionPausedFalse),
+				Check: assertThat(t,
+					resourceparametersassert.PipeResourceParameters(t, ref).
+						HasPipeExecutionPaused(false).
+						HasPipeExecutionPausedLevel(sdk.ParameterTypePipe),
+					objectparametersassert.PipeParameters(t, id).
+						HasPipeExecutionPaused(false).
+						HasPipeExecutionPausedLevel(sdk.ParameterTypePipe),
 				),
 			},
 		},
