@@ -16,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -254,6 +255,11 @@ func replicationGroupsShowOutput(
 	schedule string,
 ) resource.TestCheckFunc {
 	t.Helper()
+	// Region group is reported only on the production deployment.
+	expectedRegionGroup := ""
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakeProdEnvironment {
+		expectedRegionGroup = "PUBLIC"
+	}
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[ref]
 		if !ok {
@@ -276,7 +282,7 @@ func replicationGroupsShowOutput(
 		return resourceshowoutputassert.ReplicationGroupsDatasourceShowOutputOnIdx(t, ref, idx).
 			HasCreatedOnNotEmpty().
 			HasSnowflakeRegionNotEmpty().
-			HasRegionGroup("").
+			HasRegionGroup(expectedRegionGroup).
 			HasName(id.Name()).
 			HasType(sdk.ReplicationGroupTypeReplication).
 			HasIsPrimary(true).
