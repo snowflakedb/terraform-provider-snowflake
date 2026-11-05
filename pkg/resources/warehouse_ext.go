@@ -51,13 +51,37 @@ type warehouseAlterRequestsExt struct {
 	unset *sdk.WarehouseUnsetRequest
 }
 
+// warehouseTypeCreateBuilder sends STANDARD when warehouse_type is not set,
+// so the type does not depend on the Snowflake default (which is changing to ADAPTIVE).
+func warehouseTypeCreateBuilder(d *schema.ResourceData, request *sdk.CreateWarehouseRequest) error {
+	if _, ok := d.GetOk("warehouse_type"); !ok {
+		request.WithWarehouseType(sdk.WarehouseTypeStandard)
+		return nil
+	}
+	return attributeMappedValueCreateBuilder(d, "warehouse_type", request.WithWarehouseType, sdk.ToWarehouseTypeUserSettable)
+}
+
+// warehouseTypeUpdate sets STANDARD when warehouse_type is removed from the configuration instead of calling UNSET,
+// because UNSET resets the type to the Snowflake default (which is changing to ADAPTIVE).
+func warehouseTypeUpdate(d *schema.ResourceData, set *sdk.WarehouseSetRequest) error {
+	if !d.HasChange("warehouse_type") {
+		return nil
+	}
+	if _, ok := d.GetOk("warehouse_type"); !ok {
+		set.WithWarehouseType(sdk.WarehouseTypeStandard)
+		return nil
+	}
+	var unused *bool
+	return attributeMappedValueUpdate(d, "warehouse_type", &set.WarehouseType, &unused, sdk.ToWarehouseTypeUserSettable)
+}
+
 func warehouseNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateWarehouseRequest, error) {
 	return sdk.NewCreateWarehouseRequest(id), nil
 }
 
 func warehouseApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateWarehouseRequest) error {
 	return errors.Join(
-		attributeMappedValueCreateBuilder(d, "warehouse_type", request.WithWarehouseType, sdk.ToWarehouseTypeUserSettable),
+		warehouseTypeCreateBuilder(d, request),
 		attributeMappedValueCreateBuilder(d, "warehouse_size", request.WithWarehouseSize, sdk.ToWarehouseSize),
 		intAttributeCreateBuilder(d, "max_cluster_count", request.WithMaxClusterCount),
 		intAttributeCreateBuilder(d, "min_cluster_count", request.WithMinClusterCount),
@@ -119,7 +143,7 @@ func warehouseSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ an
 func warehouseApplySetUnsetExt(d *schema.ResourceData) (*warehouseAlterRequestsExt, error) {
 	set, unset := sdk.NewWarehouseSetRequest(), sdk.NewWarehouseUnsetRequest()
 	if err := errors.Join(
-		attributeMappedValueUpdate(d, "warehouse_type", &set.WarehouseType, &unset.WarehouseType, sdk.ToWarehouseTypeUserSettable),
+		warehouseTypeUpdate(d, set),
 		attributeMappedValueUpdateSetOnlyAlways(d, "warehouse_size", &set.WarehouseSize, sdk.ToWarehouseSize),
 		intAttributeUpdate(d, "max_cluster_count", &set.MaxClusterCount, &unset.MaxClusterCount),
 		intAttributeUpdate(d, "min_cluster_count", &set.MinClusterCount, &unset.MinClusterCount),
