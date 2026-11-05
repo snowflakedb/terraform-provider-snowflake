@@ -1,8 +1,6 @@
 package resources
 
 import (
-	"context"
-	"errors"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -85,50 +83,5 @@ func Test_shareAccountsDifference(t *testing.T) {
 		assert.Empty(t, shareAccountsDifference(nil, []sdk.AccountIdentifier{account("a")}))
 		assert.Equal(t, []sdk.AccountIdentifier{account("a")}, shareAccountsDifference([]sdk.AccountIdentifier{account("a")}, nil))
 		assert.Empty(t, shareAccountsDifference(nil, nil))
-	})
-}
-
-func Test_shareRecipientsExt(t *testing.T) {
-	id := sdk.NewAccountObjectIdentifier("SHARE")
-	account := func(name string) sdk.AccountIdentifier { return sdk.NewAccountIdentifier("org", name) }
-	notCalled := func(context.Context, sdk.AccountObjectIdentifier) ([]sdk.AccountIdentifier, error) {
-		t.Fatal("the target accounts should not be queried")
-		return nil, nil
-	}
-
-	t.Run("all the recipients are listed, so the view is not queried", func(t *testing.T) {
-		share := &sdk.Share{To: []sdk.AccountIdentifier{account("a"), account("b")}, ToTotal: 0}
-		result, err := shareRecipientsExt(context.Background(), notCalled, id, share)
-		require.NoError(t, err)
-		assert.Equal(t, share.To, result)
-
-		share = &sdk.Share{To: []sdk.AccountIdentifier{account("a"), account("b"), account("c")}, ToTotal: 3}
-		result, err = shareRecipientsExt(context.Background(), notCalled, id, share)
-		require.NoError(t, err)
-		assert.Equal(t, share.To, result)
-	})
-
-	t.Run("the listed recipients are merged with the view, sorted and deduplicated", func(t *testing.T) {
-		share := &sdk.Share{To: []sdk.AccountIdentifier{account("c"), account("a"), account("z_new")}, ToTotal: 5}
-		lookup := func(_ context.Context, shareId sdk.AccountObjectIdentifier) ([]sdk.AccountIdentifier, error) {
-			assert.Equal(t, id, shareId)
-			return []sdk.AccountIdentifier{account("a"), account("b"), account("c"), account("d")}, nil
-		}
-		result, err := shareRecipientsExt(context.Background(), lookup, id, share)
-		require.NoError(t, err)
-		assert.Equal(t, []sdk.AccountIdentifier{account("a"), account("b"), account("c"), account("d"), account("z_new")}, result)
-		// the listed recipients of the SHOW row are not modified
-		assert.Equal(t, []sdk.AccountIdentifier{account("c"), account("a"), account("z_new")}, share.To)
-	})
-
-	t.Run("a failed lookup returns the listed recipients with the error", func(t *testing.T) {
-		share := &sdk.Share{To: []sdk.AccountIdentifier{account("a"), account("b"), account("c")}, ToTotal: 4}
-		lookupErr := errors.New("insufficient privileges")
-		lookup := func(context.Context, sdk.AccountObjectIdentifier) ([]sdk.AccountIdentifier, error) {
-			return nil, lookupErr
-		}
-		result, err := shareRecipientsExt(context.Background(), lookup, id, share)
-		require.ErrorIs(t, err, lookupErr)
-		assert.Equal(t, share.To, result)
 	})
 }

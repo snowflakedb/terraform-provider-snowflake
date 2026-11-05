@@ -64,6 +64,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.SemanticView{}):                {"SemanticViews"},
 	normalized(sdk.Service{}):                     {"Services"},
 	normalized(sdk.SessionPolicy{}):               {"SessionPolicies"},
+	normalized(sdk.Share{}):                       {"Shares"},
 	normalized(sdk.Stage{}):                       {"Stages"},
 	normalized(sdk.StorageIntegration{}):          {"StorageIntegrations"},
 	normalized(sdk.StorageLifecyclePolicy{}):      {"StorageLifecyclePolicies"},

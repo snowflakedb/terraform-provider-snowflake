@@ -1,6 +1,7 @@
 package resourceshowoutputassert
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -13,5 +14,13 @@ func ShareDescribeOutputRow(t *testing.T, name string, rowIndex int) *ShareDescr
 
 	return &ShareDescribeOutputAssert{
 		ResourceAssert: assert.NewResourceDescribeOutputAssertAtRow(name, rowIndex),
+	}
+}
+
+func SharesDatasourceDescribeOutputRow(t *testing.T, name string, shareIdx int, rowIndex int) *ShareDescribeOutputAssert {
+	t.Helper()
+
+	return &ShareDescribeOutputAssert{
+		ResourceAssert: assert.NewResourceShowOutputAssertAtRowWithPath(name, fmt.Sprintf("shares.%d.describe_output", shareIdx), rowIndex),
 	}
 }

@@ -32,6 +32,21 @@ func ImportedShareShowOutput(t *testing.T, id string) *ShareShowOutputAssert {
 	return &shareAssert
 }
 
+func SharesDatasourceShowOutput(t *testing.T, name string) *ShareShowOutputAssert {
+	t.Helper()
+
+	return SharesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func SharesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *ShareShowOutputAssert {
+	t.Helper()
+
+	shareAssert := ShareShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "shares", idx),
+	}
+	return &shareAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

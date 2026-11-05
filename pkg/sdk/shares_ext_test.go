@@ -1,6 +1,8 @@
 package sdk
 
 import (
+	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -223,4 +225,47 @@ func Test_shareDescRow_convert_names(t *testing.T) {
 func Test_shareDescRow_convert_invalidName(t *testing.T) {
 	_, err := shareDescRow{Kind: "TABLE", Name: "DB.SCH.T.X"}.convert()
 	require.Error(t, err)
+}
+
+type showTargetAccountsStub struct {
+	Shares
+	accounts []AccountIdentifier
+	err      error
+	called   bool
+}
+
+func (s *showTargetAccountsStub) ShowTargetAccounts(context.Context, AccountObjectIdentifier) ([]AccountIdentifier, error) {
+	s.called = true
+	return s.accounts, s.err
+}
+
+func Test_Share_CompleteTo(t *testing.T) {
+	account := func(name string) AccountIdentifier { return NewAccountIdentifier("org", name) }
+
+	t.Run("all the recipients are listed", func(t *testing.T) {
+		for _, share := range []*Share{
+			{Name: "S", To: []AccountIdentifier{account("a"), account("b")}},
+			{Name: "S", To: []AccountIdentifier{account("a"), account("b"), account("c")}, ToTotal: 3},
+		} {
+			stub := &showTargetAccountsStub{}
+			require.NoError(t, share.CompleteTo(context.Background(), stub))
+			require.False(t, stub.called)
+		}
+	})
+
+	t.Run("merges, sorts and deduplicates the recipients", func(t *testing.T) {
+		share := &Share{Name: "S", To: []AccountIdentifier{account("c"), account("a"), account("z_new")}, ToTotal: 5}
+		stub := &showTargetAccountsStub{accounts: []AccountIdentifier{account("a"), account("b"), account("c"), account("d")}}
+		require.NoError(t, share.CompleteTo(context.Background(), stub))
+		require.True(t, stub.called)
+		require.Equal(t, []AccountIdentifier{account("a"), account("b"), account("c"), account("d"), account("z_new")}, share.To)
+	})
+
+	t.Run("a failed lookup keeps the listed recipients", func(t *testing.T) {
+		listed := []AccountIdentifier{account("a"), account("b"), account("c")}
+		share := &Share{Name: "S", To: listed, ToTotal: 4}
+		lookupErr := errors.New("insufficient privileges")
+		require.ErrorIs(t, share.CompleteTo(context.Background(), &showTargetAccountsStub{err: lookupErr}), lookupErr)
+		require.Equal(t, listed, share.To)
+	})
 }
