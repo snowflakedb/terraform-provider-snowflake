@@ -171,7 +171,8 @@ func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehou
 
 // alterNeedsSuspendedWarehouse reports whether this SET requires a suspended warehouse.
 func alterNeedsSuspendedWarehouse(set *WarehouseSetRequest, warehouse *Warehouse) bool {
-	changesType := set.WarehouseType != nil
+	// Setting the type the warehouse already has changes nothing, so it does not require a suspension.
+	changesType := set.WarehouseType != nil && *set.WarehouseType != warehouse.Type
 	becomesAdaptive := changesType && *set.WarehouseType == WarehouseTypeAdaptive
 	changesSize := set.WarehouseSize != nil
 	return (changesType && !becomesAdaptive) || (changesSize && warehouse.IsInteractiveWarehouse())

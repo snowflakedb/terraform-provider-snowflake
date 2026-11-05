@@ -101,7 +101,7 @@ var WarehouseAttrs = struct {
 		Name:                  "warehouse_type",
 		Type:                  ssot.AttrEnum,
 		Description:           "Specifies warehouse type.",
-		AdditionalDescription: "Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed.",
+		AdditionalDescription: "Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed. When not set, the provider creates the warehouse as `STANDARD` (instead of relying on the Snowflake default type, which is changing to `ADAPTIVE`), and removing the field from the configuration sets the type to `STANDARD` instead of unsetting it. A warehouse whose type was changed outside of Terraform to `ADAPTIVE` is updated back in place, and one changed to `INTERACTIVE` is recreated.",
 		// Resource validation stays WarehouseTypeUserSettable (STANDARD, SNOWPARK-OPTIMIZED).
 		// SHOW type is WarehouseType, which also includes ADAPTIVE and INTERACTIVE.
 		Enum:          WarehouseTypeUserSettable,

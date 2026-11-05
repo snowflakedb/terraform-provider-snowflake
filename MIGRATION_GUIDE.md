@@ -98,6 +98,29 @@ data "snowflake_alerts" "example" {
 }
 ```
 
+### *(behavior change)* Implicit `warehouse_type` in `snowflake_warehouse` is sent as `STANDARD`
+
+Snowflake is changing the default type of a new warehouse from `STANDARD` to `ADAPTIVE`. A `CREATE WAREHOUSE` that does not set `WAREHOUSE_TYPE` follows that default. Warehouses that already exist keep their type, unless the type is unset (`ALTER WAREHOUSE ... UNSET WAREHOUSE_TYPE`), which resets it to the default value.
+
+Starting with v2.23.0, [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse) behaves as follows:
+- When `warehouse_type` is omitted from the configuration, the provider sends `WAREHOUSE_TYPE = 'STANDARD'` on create, so the warehouse does not depend on the Snowflake default.
+- When `warehouse_type` is removed from the configuration of an existing warehouse, the provider sends `SET WAREHOUSE_TYPE = 'STANDARD'` instead of `UNSET WAREHOUSE_TYPE`.
+- Valid values remain `STANDARD` and `SNOWPARK-OPTIMIZED`. If the type of a managed warehouse is changed outside of Terraform to `ADAPTIVE`, the plan updates it back in place with `ALTER WAREHOUSE ... SET WAREHOUSE_TYPE` (to `STANDARD` when `warehouse_type` is not set). If it is changed to `INTERACTIVE`, which cannot be converted with `ALTER`, the plan recreates the resource. Adaptive warehouses are managed with [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive); to keep a warehouse as `ADAPTIVE`, manage it with that resource instead.
+
+**Recommended action:**
+1. Upgrade to v2.23.0 or later. No configuration changes are required, and the provider keeps the warehouse type `STANDARD` when `warehouse_type` is not set.
+2. If you stay on a version older than v2.23.0, set `warehouse_type` explicitly in every `snowflake_warehouse` configuration before the Snowflake default changes, and do not remove it afterwards. Otherwise, new warehouses are created as `ADAPTIVE`, and removing the field issues an `UNSET`, which changes the type to `ADAPTIVE`:
+```terraform
+resource "snowflake_warehouse" "example" {
+  name           = "example"
+  warehouse_type = "STANDARD" # or "SNOWPARK-OPTIMIZED"
+}
+```
+
+Existing `STANDARD` and `SNOWPARK-OPTIMIZED` warehouses require no state changes. Setting the type explicitly is still recommended.
+
+In the next major version, we will consider splitting `snowflake_warehouse` into separate resources for each variant, the same way other resources that have variants are already split (for example, procedures are split into `snowflake_procedure_java`, `snowflake_procedure_javascript`, `snowflake_procedure_python`, `snowflake_procedure_scala`, and `snowflake_procedure_sql`).
+
 ### *(new feature)* `token_file_path` provider field
 
 We have added an optional `token_file_path` provider field. The driver re-reads that file on every new connection for OAuth, programmatic access token, and OIDC workload identity authentication. A process can rewrite the file during a long apply, and later connections use the new token.

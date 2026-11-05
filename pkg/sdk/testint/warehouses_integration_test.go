@@ -701,6 +701,30 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
 	})
 
+	t.Run("alter: set the current warehouse type with started warehouse", func(t *testing.T) {
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t,
+			sdk.NewCreateWarehouseRequest(testClientHelper().Ids.RandomAccountObjectIdentifier()).WithWarehouseType(sdk.WarehouseTypeStandard))
+		t.Cleanup(warehouseCleanup)
+
+		condition := warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
+			return r.State == sdk.WarehouseStateStarted && r.Type == sdk.WarehouseTypeStandard
+		})
+		require.Eventually(t, condition, 5*time.Second, time.Second)
+
+		suspendsBefore := countSuspendIssued(t, warehouse.ID())
+
+		err := client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).
+			WithSet(*sdk.NewWarehouseSetRequest().WithWarehouseType(sdk.WarehouseTypeStandard)))
+		require.NoError(t, err)
+
+		assert.Equal(t, suspendsBefore, countSuspendIssued(t, warehouse.ID()), "setting the current type must not suspend the warehouse")
+
+		returnedWarehouse, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseTypeStandard, returnedWarehouse.Type)
+		assert.Equal(t, sdk.WarehouseStateStarted, returnedWarehouse.State)
+	})
+
 	t.Run("alter: set and unset resource constraint", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose - we need medium to be able to use snowpark-optimized type
