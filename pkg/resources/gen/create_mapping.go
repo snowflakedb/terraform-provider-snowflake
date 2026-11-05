@@ -204,6 +204,11 @@ func constructorArg(scope createScope, src ssot.Attribute, resolved ResourceAttr
 		cast = "int"
 	case ssot.AttrString:
 		cast = "string"
+	case ssot.AttrIdentifier:
+		// An account object name is one string. Nested identifiers stay handwritten.
+		if src.IdentifierType == "AccountObjectIdentifier" {
+			cast = "string"
+		}
 	case ssot.AttrBool:
 		cast = "bool"
 	case ssot.AttrEnum:

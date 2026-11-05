@@ -35,7 +35,7 @@ func (v *postgresMirrors) Describe(ctx context.Context, request *DescribePostgre
 	opts := request.toOpts()
 	result, err := validateAndQueryOne[postgresMirrorDetailsRow](v.client, ctx, opts)
 	if err != nil {
-		return nil, err
+		return nil, errObjectNotFoundOnNoRows(err)
 	}
 	return conversionErrorWrapped(result.convert())
 }

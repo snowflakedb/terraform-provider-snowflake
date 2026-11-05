@@ -123,6 +123,8 @@ We have added a new preview resource, [`snowflake_postgres_mirror`](https://regi
 
 If you manage a mirror with `snowflake_execute` calling `CREATE_MIRROR`, every change to `execute` replaces that resource: it runs your `revert` statement and calls `CREATE_MIRROR` again. With a `revert` that calls `DROP_MIRROR`, this drops the target database and copies all tables again. To move to the new resource without that, remove the `snowflake_execute` resource from the state with `terraform state rm`, remove its block from the configuration, and import the mirror by name into `snowflake_postgres_mirror`.
 
+`snowflake_postgres_mirror` reports `target_table_type = SNOWFLAKE` when the configuration omits it. The attribute forces a new resource, so importing in enforcing mode plans a replacement. Permissive mode leaves the attribute unset, and a configuration that omits it does not replace the mirror. [Opt-in experiment: permissive import mode](#new-feature-opt-in-experiment-permissive-import-mode) describes the two modes.
+
 We have also added a new preview data source, [`snowflake_postgres_mirrors`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/postgres_mirrors), for listing mirrors with `LIST_MIRRORS`. It supports filtering by `postgres_instance`. `with_describe` is on by default and runs `DESCRIBE_MIRROR` for each mirror.
 
 These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
@@ -307,6 +309,7 @@ The experiment is currently supported on the following resources:
 - [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool)
 - [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume)
 - [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe)
+- [`snowflake_postgres_mirror`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_mirror) (preview)
 - [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share)
 - [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse)
 - [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)

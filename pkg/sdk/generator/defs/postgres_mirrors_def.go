@@ -93,8 +93,7 @@ var postgresMirrorsDef = g.NewInterface(
 				WithValidation(g.ValidateValueSet, "PostgresInstance").
 				WithValidation(g.ValidateValueSet, "PostgresDatabase").
 				WithValidation(g.ValidateValueSet, "TargetDatabase").
-				WithValidation(g.AtLeastOneValueSet, "PostgresTables", "PostgresSchemas").
-				WithAdditionalValidations(),
+				WithValidation(g.AtLeastOneValueSet, "PostgresTables", "PostgresSchemas"),
 			g.ListOptions().MustParentheses().Required(),
 		),
 ).CustomOperation(
@@ -134,7 +133,7 @@ var postgresMirrorsDef = g.NewInterface(
 		),
 	// DROP_MIRROR has no IF EXISTS, and DropSafely needs the whole request to pass drop_target_database.
 	g.WithDropSafelySuppressed(),
-).CustomShowOperationWithPairedStructs(
+).CustomShowOperationWithPairedStructsAndOpts(
 	"Describe",
 	g.ShowMappingKindSingleValue,
 	postgresMirrorsDoc,
@@ -147,6 +146,8 @@ var postgresMirrorsDef = g.NewInterface(
 				TextAssignment("mirror_name", g.ParameterOptions().SingleQuotes().ArrowEquals()),
 			g.ListOptions().MustParentheses().Required(),
 		),
+	// DESCRIBE_MIRROR returns no row when the mirror is missing.
+	[]g.CustomOperationOption{g.WithNoRowsAsObjectNotFound()},
 ).CustomShowOperationWithPairedStructs(
 	"List",
 	g.ShowMappingKindSlice,

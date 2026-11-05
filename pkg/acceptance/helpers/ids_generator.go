@@ -164,6 +164,6 @@ func (c *IdsGenerator) WithTestObjectSuffix(text string) string {
 
 func (c *IdsGenerator) RandomPostgresMirrorName() string {
 	suffix := random.PostgresMirrorNameSuffix(c.context.testObjectSuffix)
-	randomPartLength := max(1, min(6, sdk.PostgresMirrorNameMaxLength-len(suffix)))
+	randomPartLength := max(1, min(6, PostgresMirrorNameMaxLength-len(suffix)))
 	return random.AlphaLowerN(randomPartLength) + suffix
 }

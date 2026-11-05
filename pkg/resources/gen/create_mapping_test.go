@@ -66,6 +66,13 @@ func Test_constructorArg(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, &CreateConstructorArg{Var: "minNodes", Get: `d.Get("min_nodes").(int)`}, got)
 
+	got, ok = arg(object, ssot.Attribute{Name: "postgres_instance", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Required: true})
+	require.True(t, ok)
+	require.Equal(t, &CreateConstructorArg{Var: "postgresInstance", Get: `d.Get("postgres_instance").(string)`}, got)
+
+	_, ok = arg(block, ssot.Attribute{Name: "schema_object", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true})
+	require.False(t, ok)
+
 	got, ok = arg(block, ssot.Attribute{Name: "instance_family", Type: ssot.AttrEnum, Required: true, Enum: family})
 	require.True(t, ok)
 	require.Equal(t, &CreateConstructorArg{Var: "instanceFamily", Get: `d.Get(prefix+"instance_family").(string)`, EnumName: "ComputePoolInstanceFamily"}, got)

@@ -11,8 +11,6 @@ import (
 )
 
 func init() {
-	externalVolumeErr := NewError("CreatePostgresMirrorOptions.arguments field: ExternalVolume can only be set when TargetTableType is ICEBERG")
-
 	postgresMirrorsTests.Create.
 		withDefaultOpts(func() *CreatePostgresMirrorOptions {
 			return &CreatePostgresMirrorOptions{
@@ -29,19 +27,6 @@ func init() {
 			"validation_Create_arguments_PostgresTables_emptyList",
 			func(opts *CreatePostgresMirrorOptions) { opts.arguments.PostgresTables = []StringListItemWrapper{} },
 			errAtLeastOneOf("CreatePostgresMirrorOptions.arguments", "PostgresTables", "PostgresSchemas"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_arguments_ExternalVolume_withoutTargetTableType",
-			func(opts *CreatePostgresMirrorOptions) { opts.arguments.ExternalVolume = new("MY_VOLUME") },
-			externalVolumeErr,
-		).
-		withAdditionalValidationCase(
-			"validation_Create_arguments_ExternalVolume_withSnowflakeTargetTableType",
-			func(opts *CreatePostgresMirrorOptions) {
-				opts.arguments.ExternalVolume = new("MY_VOLUME")
-				opts.arguments.TargetTableType = new(PostgresMirrorTargetTableTypeSnowflake)
-			},
-			externalVolumeErr,
 		).
 		withExpectedSql(
 			case_PostgresMirrors_sql_Create_basic,
@@ -372,6 +357,6 @@ func TestParsePostgresMirrorRefreshInterval(t *testing.T) {
 func TestPostgresMirrorRefreshInterval_String(t *testing.T) {
 	assert.Equal(t, "30 seconds", PostgresMirrorRefreshInterval{Seconds: 30}.String())
 	assert.Equal(t, "1 minute", PostgresMirrorRefreshInterval{Minutes: 1}.String())
-	assert.Equal(t, PostgresMirrorDefaultRefreshInterval, PostgresMirrorRefreshInterval{Minutes: 10}.String())
+	assert.Equal(t, "10 minutes", PostgresMirrorRefreshInterval{Minutes: 10}.String())
 	assert.Equal(t, "24 hours", PostgresMirrorRefreshInterval{Hours: 24}.String())
 }

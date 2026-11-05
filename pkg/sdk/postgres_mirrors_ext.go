@@ -52,13 +52,6 @@ func (v *AlterPostgresMirrorArguments) additionalValidations() error {
 	return nil
 }
 
-func (v *CreatePostgresMirrorArguments) additionalValidations() error {
-	if v.ExternalVolume != nil && (v.TargetTableType == nil || *v.TargetTableType != PostgresMirrorTargetTableTypeIceberg) {
-		return NewError("CreatePostgresMirrorOptions.arguments field: ExternalVolume can only be set when TargetTableType is ICEBERG")
-	}
-	return nil
-}
-
 // IsMembershipKnown reports whether DESCRIBE_MIRROR could read PostgresTables and PostgresSchemas from the publication
 // on the source instance. Both are nil, not empty, when the source could not be read (or the SNOWFLAKE application
 // predates these columns), so "unknown" can be told apart from "no tables". Entries use Postgres quoting.

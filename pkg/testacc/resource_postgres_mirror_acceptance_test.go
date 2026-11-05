@@ -17,8 +17,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -65,7 +67,7 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 			HasPostgresTables(helpers.PostgresMirrorFixtureTable1, helpers.PostgresMirrorFixtureTable2).
 			HasPostgresSchemasEmpty().
 			HasNoTargetTableType().
-			HasNoExternalVolume().
+			HasExternalVolumeEmpty().
 			HasDropTargetDatabaseOnDestroyString("true")
 	}
 	basicRemoteAsserts := func(refreshInterval string) []assert.TestCheckFuncProvider {
@@ -96,8 +98,8 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 	}
 	assertBasic := append([]assert.TestCheckFuncProvider{
 		basicResourceAssert().
-			HasNoWarehouse(),
-	}, basicRemoteAsserts(sdk.PostgresMirrorDefaultRefreshInterval)...)
+			HasWarehouseEmpty(),
+	}, basicRemoteAsserts(helpers.PostgresMirrorDefaultRefreshInterval)...)
 	// A value removed from the configuration stays in state as an empty string, unlike one that was never set.
 	// Removing the refresh interval keeps the current interval, because ALTER_MIRROR cannot reset it.
 	assertAfterUnset := append([]assert.TestCheckFuncProvider{
@@ -138,7 +140,7 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 			HasPostgresSchemas(helpers.PostgresMirrorFixtureSchemaB).
 			HasRefreshIntervalSeconds(30).
 			HasTargetTableTypeString(string(sdk.PostgresMirrorTargetTableTypeIceberg)).
-			HasNoExternalVolume().
+			HasExternalVolumeEmpty().
 			HasWarehouseString(warehouse.ID().Name()).
 			HasDropTargetDatabaseOnDestroyString("true"),
 		resourceshowoutputassert.PostgresMirrorDescribeOutput(t, ref).
@@ -161,8 +163,12 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 			HasPostgresSchemas(helpers.PostgresMirrorFixtureSchemaB),
 	}
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+	// The describe output carries the mirror's runtime state (status, lag, last apply), which changes between reads.
+	importVerifyIgnore := []string{r.DescribeOutputAttributeName}
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -170,7 +176,8 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create - without optionals
 			{
-				Config: config.FromModels(t, basic),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, basic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -178,18 +185,18 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, assertBasic...),
 			},
-			// Import - without optionals
+			// Import - without optionals, permissive mode
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// The describe output carries the mirror's runtime state (status, lag, last apply), which changes between reads.
-				ImportStateVerifyIgnore: []string{r.DescribeOutputAttributeName},
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// Update - set optionals and change the tables and schemas in place
 			{
-				Config: config.FromModels(t, withOptionals),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withOptionals),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -199,15 +206,17 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 			},
 			// Import - with optionals
 			{
-				Config:                  config.FromModels(t, withOptionals),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{r.DescribeOutputAttributeName},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withOptionals),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateVerifyIgnore:  importVerifyIgnore,
 			},
 			// Update - unset optionals
 			{
-				Config: config.FromModels(t, basic),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, basic),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -218,11 +227,13 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 			},
 			// Destroy
 			{
-				Destroy: true,
-				Config:  config.FromModels(t, basic),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Destroy:                  true,
+				Config:                   config.FromModels(t, basic),
 			},
 			// Create - with all fields, reusing the target database name the default destroy freed
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					_, err := testClient().Database.Show(t, targetDatabase)
 					require.ErrorIs(t, err, sdk.ErrObjectNotFound)
@@ -237,14 +248,24 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 			},
 			// Import - with all fields
 			{
-				Config:                  config.FromModels(t, complete),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{r.DescribeOutputAttributeName},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, complete),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateVerifyIgnore:  importVerifyIgnore,
+			},
+			// Import - with all fields, permissive mode
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, complete),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// Update - external changes
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().PostgresMirror.Alter(t, sdk.NewAlterPostgresMirrorRequest(*sdk.NewAlterPostgresMirrorArgumentsRequest(name).
 						WithRefreshInterval("5 minutes").
@@ -261,6 +282,89 @@ func TestAcc_PostgresMirror_BasicUseCase(t *testing.T) {
 					},
 				},
 				Check: assertThat(t, assertComplete...),
+			},
+		},
+	})
+}
+
+func TestAcc_PostgresMirror_BasicUseCase_Import(t *testing.T) {
+	instance := testClient().PostgresMirror.FixtureInstance(t)
+	details := testClient().PostgresMirror.CreateWithTables(t, instance, helpers.PostgresMirrorFixtureTable1)
+
+	basic := model.PostgresMirror("test", details.Name, helpers.PostgresMirrorFixtureDatabase, instance, details.TargetDatabase).
+		WithPostgresTables(helpers.PostgresMirrorFixtureTable1)
+	ref := basic.ResourceReference()
+	id := details.Name
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.PostgresMirror),
+		Steps: []resource.TestStep{
+			// Import - without optionals
+			{
+				Config:             config.FromModels(t, basic),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      id,
+				ImportStatePersist: true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedPostgresMirrorResource(t, id).
+						HasNameString(details.Name).
+						HasFullyQualifiedNameString(sdk.NewAccountObjectIdentifier(details.Name).FullyQualifiedName()).
+						HasPostgresInstanceString(instance).
+						HasPostgresDatabaseString(helpers.PostgresMirrorFixtureDatabase).
+						HasTargetDatabaseString(details.TargetDatabase).
+						HasPostgresTables(helpers.PostgresMirrorFixtureTable1).
+						HasPostgresSchemasEmpty().
+						HasRefreshIntervalMinutes(10).
+						HasTargetTableTypeString(string(details.TargetTableType)).
+						HasExternalVolumeEmpty().
+						HasWarehouseEmpty().
+						HasDropTargetDatabaseOnDestroyString("true"),
+					resourceshowoutputassert.ImportedPostgresMirrorDescribeOutput(t, id).
+						HasName(details.Name).
+						HasTargetTableType(details.TargetTableType).
+						HasRefreshInterval(helpers.PostgresMirrorDefaultRefreshInterval).
+						HasPostgresTables(helpers.PostgresMirrorFixtureTable1).
+						HasNoPostgresSchemas().
+						HasNoExternalVolume().
+						HasNoWarehouse(),
+				),
+			},
+			// Applying the basic configuration replaces the mirror: target_table_type is ForceNew, and the configuration omits Snowflake's value.
+			{
+				Config: config.FromModels(t, basic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(ref, "target_table_type", tfjson.ActionDelete, sdk.String(string(details.TargetTableType)), nil),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.PostgresMirrorResource(t, ref).
+						HasNameString(details.Name).
+						HasFullyQualifiedNameString(sdk.NewAccountObjectIdentifier(details.Name).FullyQualifiedName()).
+						HasPostgresInstanceString(instance).
+						HasPostgresDatabaseString(helpers.PostgresMirrorFixtureDatabase).
+						HasTargetDatabaseString(details.TargetDatabase).
+						HasPostgresTables(helpers.PostgresMirrorFixtureTable1).
+						HasPostgresSchemasEmpty().
+						HasRefreshIntervalMinutes(10).
+						HasNoTargetTableType().
+						HasExternalVolumeEmpty().
+						HasWarehouseEmpty().
+						HasDropTargetDatabaseOnDestroyString("true"),
+					objectassert.PostgresMirrorDetails(t, details.Name).
+						HasTargetDatabase(details.TargetDatabase).
+						HasTargetTableType(details.TargetTableType).
+						HasPostgresTables(helpers.PostgresMirrorFixtureTable1),
+				),
 			},
 		},
 	})
@@ -459,7 +563,7 @@ func TestAcc_PostgresMirror_ExternalVolume(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.PostgresMirrorResource(t, ref).
 						HasTargetTableTypeString(string(sdk.PostgresMirrorTargetTableTypeIceberg)).
-						HasExternalVolumeString(externalVolumeId.Name()),
+						HasExternalVolumeString(externalVolumeId.FullyQualifiedName()),
 					// Create sends the external volume quoted, and DESCRIBE_MIRROR returns it as sent.
 					resourceshowoutputassert.PostgresMirrorDescribeOutput(t, ref).
 						HasTargetTableType(sdk.PostgresMirrorTargetTableTypeIceberg).
@@ -471,10 +575,11 @@ func TestAcc_PostgresMirror_ExternalVolume(t *testing.T) {
 			},
 			// Import - the external volume is imported quoted, as DESCRIBE_MIRROR returns it
 			{
+				Config:                  config.FromModels(t, iceberg),
 				ResourceName:            ref,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"drop_target_database_on_destroy", "external_volume", r.DescribeOutputAttributeName},
+				ImportStateVerifyIgnore: []string{r.DescribeOutputAttributeName},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedPostgresMirrorResource(t, name).
 						HasExternalVolumeString(externalVolumeId.FullyQualifiedName()),
@@ -489,7 +594,10 @@ func TestAcc_PostgresMirror_ExternalVolumeWithoutIceberg(t *testing.T) {
 
 	name := testClient().Ids.RandomPostgresMirrorName()
 	targetDatabase := testClient().Ids.RandomAccountObjectIdentifier()
-	externalVolumeId := testClient().Ids.RandomAccountObjectIdentifier()
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.Create(t)
+	t.Cleanup(externalVolumeCleanup)
+	t.Cleanup(testClient().Grant.GrantUsageOnExternalVolumeToSnowflakeApplication(t, externalVolumeId))
 
 	withoutTargetTableType := model.PostgresMirror("test", name, helpers.PostgresMirrorFixtureDatabase, instance, targetDatabase.Name()).
 		WithPostgresTables(helpers.PostgresMirrorFixtureTable1).
@@ -498,6 +606,8 @@ func TestAcc_PostgresMirror_ExternalVolumeWithoutIceberg(t *testing.T) {
 		WithPostgresTables(helpers.PostgresMirrorFixtureTable1).
 		WithTargetTableType(string(sdk.PostgresMirrorTargetTableTypeSnowflake)).
 		WithExternalVolumeSdk(externalVolumeId)
+	// CREATE_MIRROR is a procedure, so the session needs a warehouse before Snowflake can reject the volume.
+	providerModel := providermodel.SnowflakeProvider().WithWarehouse(testClient().Ids.WarehouseId().FullyQualifiedName())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -507,12 +617,12 @@ func TestAcc_PostgresMirror_ExternalVolumeWithoutIceberg(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.PostgresMirror),
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, withoutTargetTableType),
-				ExpectError: regexp.MustCompile("ExternalVolume can only be set when TargetTableType is ICEBERG"),
+				Config:      config.FromModels(t, providerModel, withoutTargetTableType),
+				ExpectError: regexp.MustCompile(`EXTERNAL_VOLUME is only supported for TARGET_TABLE_TYPE = 'ICEBERG'`),
 			},
 			{
-				Config:      config.FromModels(t, withSnowflakeTargetTableType),
-				ExpectError: regexp.MustCompile("ExternalVolume can only be set when TargetTableType is ICEBERG"),
+				Config:      config.FromModels(t, providerModel, withSnowflakeTargetTableType),
+				ExpectError: regexp.MustCompile(`EXTERNAL_VOLUME is only supported for TARGET_TABLE_TYPE = 'ICEBERG'`),
 			},
 		},
 	})

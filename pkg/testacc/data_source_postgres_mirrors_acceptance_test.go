@@ -33,7 +33,7 @@ func TestAcc_PostgresMirrors_CompleteUseCase(t *testing.T) {
 		"show_output.0.postgres_instance": instance,
 		"show_output.0.postgres_database": helpers.PostgresMirrorFixtureDatabase,
 		"show_output.0.target_database":   mirror.TargetDatabase,
-		"show_output.0.refresh_interval":  sdk.PostgresMirrorDefaultRefreshInterval,
+		"show_output.0.refresh_interval":  helpers.PostgresMirrorDefaultRefreshInterval,
 	}
 	withDescribeOutput := func(values map[string]string) map[string]string {
 		result := map[string]string{
@@ -44,7 +44,7 @@ func TestAcc_PostgresMirrors_CompleteUseCase(t *testing.T) {
 			"describe_output.0.target_table_type": string(sdk.PostgresMirrorTargetTableTypeSnowflake),
 			"describe_output.0.postgres_tables.#": "1",
 			"describe_output.0.postgres_tables.0": helpers.PostgresMirrorFixtureTable1,
-			"describe_output.0.refresh_interval":  sdk.PostgresMirrorDefaultRefreshInterval,
+			"describe_output.0.refresh_interval":  helpers.PostgresMirrorDefaultRefreshInterval,
 		}
 		maps.Copy(result, values)
 		return result

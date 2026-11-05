@@ -58,6 +58,25 @@ func ListValueCreate(mapper string) ListValueCreateMapping {
 	return ListValueCreateMapping{Mapper: mapper}
 }
 
+// SetMappedValueCreate is setMappedValueCreateBuilder with the name of the per-element mapper function.
+type SetMappedValueCreateMapping struct {
+	Mapper string
+}
+
+func (m SetMappedValueCreateMapping) CreateCall(objectName string, attr Attribute) CreateCall {
+	if m.Mapper == "" {
+		panic(fmt.Sprintf("object %q: attribute %q SetMappedValueCreate needs a mapper function", objectName, attr.Name))
+	}
+	return CreateCall{
+		Helper: "setMappedValueCreateBuilder",
+		Target: fmt.Sprintf("request.With%s, %s", genhelpers.SnakeCaseToCamel(attr.Name), m.Mapper),
+	}
+}
+
+func SetMappedValueCreate(mapper string) SetMappedValueCreateMapping {
+	return SetMappedValueCreateMapping{Mapper: mapper}
+}
+
 // AttributeMappedValueCreate is attributeMappedValueCreateBuilder.
 // The value is the mapper function name.
 type AttributeMappedValueCreate string
