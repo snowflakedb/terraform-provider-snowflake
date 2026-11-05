@@ -329,6 +329,102 @@ func TestAcc_Share_BasicUseCase(t *testing.T) {
 	})
 }
 
+// TestAcc_Share_CompleteUseCase covers a share with a granted database: the whole show_output and describe_output, and adding
+// an account directly (without the temporary database).
+func TestAcc_Share_CompleteUseCase(t *testing.T) {
+	database, databaseCleanup := testClient().Database.CreateDatabase(t)
+	t.Cleanup(databaseCleanup)
+
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	resourceId := helpers.EncodeResourceIdentifier(id)
+	account := secondaryTestClient().Account.GetAccountIdentifier(t)
+	comment, newComment := random.Comment(), random.Comment()
+
+	withoutAccount := model.Share("t", id.Name()).WithComment(comment).WithSecureObjectsOnlyBool(false)
+	withAccount := model.Share("t", id.Name()).WithComment(newComment).WithAccounts(account.Name()).WithSecureObjectsOnlyBool(false)
+	grant := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeUsage.String()}, id.Name()).
+		WithOnDatabase(database.ID().Name()).
+		WithDependsOn(withoutAccount.ResourceReference())
+	ref := withoutAccount.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Share),
+		Steps: []resource.TestStep{
+			// 1. Create - the share is read before the grant exists, so its outputs are asserted in the next steps
+			{
+				Config: accconfig.FromModels(t, withoutAccount, grant),
+				Check: assertThat(t,
+					resourceassert.ShareResource(t, ref).HasCommentString(comment).HasAccountsEmpty(),
+					objectassert.Share(t, id).HasDatabaseName(database.ID()).HasNoTo(),
+				),
+			},
+			// 2. Update - the comment changes, so show_output is recomputed
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, withAccount, grant),
+				Check: assertThat(t,
+					resourceassert.ShareResource(t, ref).
+						HasNameString(id.Name()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasSecureObjectsOnlyString("false").
+						HasCommentString(newComment).
+						HasAccounts(account.Name()),
+					resourceshowoutputassert.ShareShowOutput(t, ref).
+						HasName(id.Name()).
+						HasKind(sdk.ShareKindOutbound).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasDatabaseName(database.ID()).
+						HasComment(newComment).
+						HasListingGlobalName("").
+						HasSecureObjectsOnly(false).
+						HasToTotal(0),
+					assert.Check(resource.TestCheckResourceAttr(ref, "show_output.0.to.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "show_output.0.to.0", account.Name())),
+					// DESCRIBE returns the granted database first and can add system objects after it
+					resourceshowoutputassert.ShareDescribeOutputRow(t, ref, 0).
+						HasKind(sdk.ObjectTypeDatabase).
+						HasName(database.ID()),
+					assert.Check(resource.TestCheckResourceAttrSet(ref, "describe_output.0.shared_on")),
+					objectassert.Share(t, id).
+						HasName(id.Name()).
+						HasKind(sdk.ShareKindOutbound).
+						HasOwnerAccountNotEmpty().
+						HasDatabaseName(database.ID()).
+						HasComment(newComment).
+						HasSecureObjectsOnly(false).
+						HasTo(account).
+						HasToTotal(0),
+				),
+			},
+			// 3. Import
+			{
+				Config:            accconfig.FromModels(t, withAccount, grant),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedShareResource(t, resourceId).
+						HasNameString(id.Name()).
+						HasSecureObjectsOnlyString("false").
+						HasCommentString(newComment).
+						HasAccounts(account.Name()),
+					resourceshowoutputassert.ImportedShareShowOutput(t, resourceId).
+						HasDatabaseName(database.ID()).
+						HasComment(newComment),
+				),
+			},
+		},
+	})
+}
+
 // TestAcc_Share_BasicUseCase_Import imports a share that is created outside of Terraform (enforcing mode, the default).
 func TestAcc_Share_BasicUseCase_Import(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
