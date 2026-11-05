@@ -145,6 +145,27 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.AuthenticationPolicies.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeResourceIdentifier(renamed)
+			},
+			"authentication policy",
+		); diags != nil {
+			return diags
+		}
+	}
+
 	if d.HasChange("name") {
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 		if err := meta.(*provider.Context).Client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithRenameTo(newId)); err != nil {
@@ -171,9 +192,11 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 }
 
 var authenticationPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.AuthenticationPolicy, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
 	ComputedIfAnyAttributeChanged(authenticationPolicySchema, ShowOutputAttributeName, "name", "comment"),
 	ComputedIfAnyAttributeChanged(authenticationPolicySchema, DescribeOutputAttributeName, "name", "mfa_enrollment", "comment"),
-	ComputedIfAnyAttributeChanged(authenticationPolicySchema, FullyQualifiedNameAttributeName, "name"),
+	ComputedIfAnyAttributeChanged(authenticationPolicySchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 ))
 
 func authenticationPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {

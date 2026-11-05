@@ -419,11 +419,10 @@ var AuthenticationPolicyAttrs = struct {
 }
 
 var AuthenticationPolicy = ssot.Object{
-	Name:                      "AuthenticationPolicy",
-	NamePlural:                "AuthenticationPolicies",
-	DescribeFailRead:          true,
-	IdType:                    "SchemaObjectIdentifier",
-	IdentityHierarchyForceNew: true,
+	Name:             "AuthenticationPolicy",
+	NamePlural:       "AuthenticationPolicies",
+	DescribeFailRead: true,
+	IdType:           "SchemaObjectIdentifier",
 	// Public describe_output uses the projected AuthenticationPolicyDescribeDetails schema.
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{

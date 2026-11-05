@@ -53,12 +53,11 @@ var ProjectionPolicyAttrs = struct {
 }
 
 var ProjectionPolicy = ssot.Object{
-	Name:                      "ProjectionPolicy",
-	NamePlural:                "ProjectionPolicies",
-	DescribeFailRead:          true,
-	IdType:                    "SchemaObjectIdentifier",
-	IdentityHierarchyForceNew: true,
-	PreviewFeature:            true,
+	Name:             "ProjectionPolicy",
+	NamePlural:       "ProjectionPolicies",
+	DescribeFailRead: true,
+	IdType:           "SchemaObjectIdentifier",
+	PreviewFeature:   true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),
 		ssot.WithSdk(

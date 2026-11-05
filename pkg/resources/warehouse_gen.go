@@ -154,8 +154,13 @@ func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	if diags := warehouseHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
-		return diags
+	if d.HasChange("name") {
+		newId := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
 	}
 	setUnset, err := warehouseApplySetUnsetExt(d)
 	if err != nil {

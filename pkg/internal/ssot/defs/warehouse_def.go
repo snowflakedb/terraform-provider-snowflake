@@ -366,7 +366,7 @@ var Warehouse = ssot.Object{
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
-		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
 		ssot.WithShowParametersInSdk(ssot.Generated()),
