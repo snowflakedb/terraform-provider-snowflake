@@ -45,7 +45,6 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.NetworkPolicy{}):               {"NetworkPolicies"},
 	normalized(sdk.NetworkRule{}):                 {"NetworkRules"},
 	normalized(sdk.NetworkRuleDetails{}):          {"NetworkRules"},
-	normalized(sdk.Notebook{}):                    {"Notebooks"},
 	normalized(sdk.OpenflowConnector{}):           {"OpenflowConnectors"},
 	normalized(sdk.OpenflowConnectorDefinition{}): {"OpenflowConnectorDefinitions"},
 	normalized(sdk.OpenflowDeployment{}):          {"OpenflowDeployments"},

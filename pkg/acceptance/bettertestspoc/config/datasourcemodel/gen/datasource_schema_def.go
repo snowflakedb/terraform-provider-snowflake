@@ -143,10 +143,6 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkRules().Schema,
 	},
 	{
-		name:   "Notebooks",
-		schema: datasources.Notebooks().Schema,
-	},
-	{
 		name:   "OpenflowConnectorDefinitions",
 		schema: datasources.OpenflowConnectorDefinitions().Schema,
 	},

@@ -147,6 +147,14 @@ The provider now checks identifier arguments before it sends the request. An emp
 
 If one of these arguments is empty, set a real identifier or remove the argument. Configurations that already name a real object need no change.
 
+### *(deprecation)* `snowflake_notebook` resource and `snowflake_notebooks` data source
+
+The [`snowflake_notebook`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/notebook) resource and the [`snowflake_notebooks`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/notebooks) data source are deprecated and will be removed in a future major version of the provider. Both work with [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks), and Snowflake is [disabling the creation of new Legacy Notebooks](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-disable-legacy-notebooks) in a rollout that started on September 1, 2026. On accounts where the change is rolled out, creating a `snowflake_notebook` resource fails. Snowflake plans to stop the execution and editing of existing Legacy Notebooks in November 2026.
+
+[Code Bundles replace Legacy Notebook objects](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-migrate). The provider supports them with the preview [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle) resource and the preview [`snowflake_code_bundles`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/code_bundles) data source.
+
+No configuration changes are required now. Before Snowflake stops supporting Legacy Notebooks, migrate from `snowflake_notebook` to `snowflake_code_bundle` and from `snowflake_notebooks` to `snowflake_code_bundles`.
+
 ### *(improvement)* Openflow resources and data sources promoted to stable
 
 The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be

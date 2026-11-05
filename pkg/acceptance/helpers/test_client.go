@@ -63,7 +63,6 @@ type TestClient struct {
 	McpServer                    *McpServerClient
 	NetworkPolicy                *NetworkPolicyClient
 	NetworkRule                  *NetworkRuleClient
-	Notebook                     *NotebookClient
 	NotificationIntegration      *NotificationIntegrationClient
 	OpenflowConnector            *OpenflowConnectorClient
 	OpenflowConnectorDefinition  *OpenflowConnectorDefinitionClient
@@ -180,7 +179,6 @@ func NewTestClient(
 		McpServer:                    NewMcpServerClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
-		Notebook:                     NewNotebookClient(context, idsGenerator),
 		NotificationIntegration:      NewNotificationIntegrationClient(context, idsGenerator),
 		OpenflowConnector:            NewOpenflowConnectorClient(context, idsGenerator),
 		OpenflowConnectorDefinition:  NewOpenflowConnectorDefinitionClient(context, idsGenerator),
