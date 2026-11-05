@@ -266,10 +266,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.NetworkPolicyAttachment().Schema,
 	},
 	{
-		name:   "Notebook",
-		schema: resources.Notebook().Schema,
-	},
-	{
 		name:   "ObjectParameter",
 		schema: resources.ObjectParameter().Schema,
 	},
