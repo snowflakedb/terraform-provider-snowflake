@@ -61,6 +61,10 @@ var DescribePipeDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"kind": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = DescribePipeDetailsSchema
@@ -80,6 +84,7 @@ func PipeDetailsToSchema(pipeDetails *sdk.PipeDetails) map[string]any {
 	pipeDetailsSchema["error_integration"] = pipeDetails.ErrorIntegration
 	pipeDetailsSchema["owner_role_type"] = pipeDetails.OwnerRoleType
 	pipeDetailsSchema["invalid_reason"] = pipeDetails.InvalidReason
+	pipeDetailsSchema["kind"] = pipeDetails.Kind
 	return pipeDetailsSchema
 }
 

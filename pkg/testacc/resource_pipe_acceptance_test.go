@@ -63,11 +63,13 @@ func TestAcc_Pipe_BasicUseCase(t *testing.T) {
 			HasOwner(currentRole).
 			HasComment("").
 			HasErrorIntegration("").
-			HasNotificationChannel(""),
+			HasNotificationChannel("").
+			HasKind("STAGE"),
 		resourceshowoutputassert.PipeDescribeOutput(t, ref).
 			HasName(id.Name()).
 			HasDefinition(statement).
-			HasOwner(currentRole),
+			HasOwner(currentRole).
+			HasKind("STAGE"),
 		resourceparametersassert.PipeResourceParameters(t, ref).
 			HasLogEventLevel(sdk.LogLevelOff).
 			HasPipeExecutionPaused(false).
@@ -770,7 +772,8 @@ func newPipeObjectAssertions(t *testing.T, id sdk.SchemaObjectIdentifier) *objec
 		HasSchemaName(id.SchemaName()).
 		HasIntegration("").
 		HasOwnerRoleType("ROLE").
-		HasInvalidReason("")
+		HasInvalidReason("").
+		HasKind("STAGE")
 }
 
 func newPipeDetailsAssertions(t *testing.T, id sdk.SchemaObjectIdentifier) *objectassert.PipeDetailsAssert {
@@ -782,7 +785,8 @@ func newPipeDetailsAssertions(t *testing.T, id sdk.SchemaObjectIdentifier) *obje
 		HasSchemaName(id.SchemaName()).
 		HasIntegration("").
 		HasOwnerRoleType("ROLE").
-		HasInvalidReason("")
+		HasInvalidReason("").
+		HasKind("STAGE")
 }
 
 func TestAcc_Pipe_Parameters(t *testing.T) {
@@ -995,6 +999,90 @@ func TestAcc_Pipe_ExternalRecreateWithDifferentErrorIntegration(t *testing.T) {
 				},
 				Config: config.FromModels(t, withIntegration2),
 				Check:  assertThat(t, objectassert.Pipe(t, id).HasErrorIntegration(integration2.Name)),
+			},
+		},
+	})
+}
+
+// A Snowpipe Streaming (high-performance architecture) pipe reads from DATA_SOURCE(TYPE => 'STREAMING') instead of a stage.
+// The resource manages it like any other pipe; SHOW PIPES reports its kind as STREAMING.
+func TestAcc_Pipe_Streaming(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+	statement := fmt.Sprintf("COPY INTO %s FROM (SELECT $1:id FROM TABLE(DATA_SOURCE(TYPE => 'STREAMING')))", table.ID().FullyQualifiedName())
+
+	currentRole := testClient().Context.CurrentRole(t).Name()
+
+	basic := model.PipeWithId("test", id, statement)
+	complete := model.PipeWithId("test", id, statement).
+		WithComment("streaming").
+		WithLogEventLevelSdk(sdk.LogLevelInfo).
+		WithPipeExecutionPaused(true)
+	ref := basic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Pipe),
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.PipeResource(t, ref).
+						HasNameString(id.Name()).
+						HasCopyStatementString(statement).
+						HasAutoIngest(false),
+					resourceshowoutputassert.PipeShowOutput(t, ref).
+						HasName(id.Name()).
+						HasDefinition(statement).
+						HasOwner(currentRole).
+						HasNotificationChannel("").
+						HasIntegration("").
+						HasKind("STREAMING"),
+					resourceshowoutputassert.PipeDescribeOutput(t, ref).
+						HasKind("STREAMING"),
+					objectassert.Pipe(t, id).
+						HasDefinition(statement).
+						HasKind("STREAMING"),
+				),
+			},
+			{
+				Config:            config.FromModels(t, basic),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check: assertThat(t,
+					resourceshowoutputassert.PipeShowOutput(t, ref).
+						HasComment("streaming").
+						HasKind("STREAMING"),
+					resourceparametersassert.PipeResourceParameters(t, ref).
+						HasLogEventLevel(sdk.LogLevelInfo).
+						HasPipeExecutionPaused(true),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, complete),
 			},
 		},
 	})

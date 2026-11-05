@@ -50,7 +50,8 @@ func TestAcc_Pipes_BasicUseCase(t *testing.T) {
 		HasIntegration("").
 		HasErrorIntegration("").
 		HasNotificationChannel("").
-		HasOwnerRoleType("ROLE")
+		HasOwnerRoleType("ROLE").
+		HasKind("STAGE")
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

@@ -40,7 +40,8 @@ func TestInt_Pipes(t *testing.T) {
 			HasPattern("").
 			HasErrorIntegration("").
 			HasOwnerRoleType("ROLE").
-			HasInvalidReason(""))
+			HasInvalidReason("").
+			HasKind("STAGE"))
 	}
 
 	t.Run("create: schema name contains special characters", func(t *testing.T) {
@@ -337,7 +338,8 @@ func TestInt_Pipes(t *testing.T) {
 				HasPattern("").
 				HasErrorIntegration("").
 				HasOwnerRoleType("ROLE").
-				HasInvalidReason(""))
+				HasInvalidReason("").
+				HasKind("STAGE"))
 		})
 
 		t.Run("describe: non-existing pipe", func(t *testing.T) {
