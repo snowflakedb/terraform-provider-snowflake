@@ -98,6 +98,212 @@ data "snowflake_alerts" "example" {
 }
 ```
 
+### *(breaking change)* `snowflake_pipes` data source reworked
+
+The preview [`snowflake_pipes`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/pipes) data source now follows the same rules as the other data sources.
+
+Filtering changes:
+- The required `database` and `schema` fields are replaced by the optional `in` block, which takes one of `account`, `database`, `schema` (fully qualified, for example `"\"<database_name>\".\"<schema_name>\""`), `application`, or `application_package`. Without `in`, Snowflake returns the pipes of the current database, or of the whole account when no database is in use.
+- `like` is added.
+
+Output changes:
+- Each element of `pipes` now holds `show_output` (the result of `SHOW PIPES`), `describe_output` (the result of `DESCRIBE PIPE`), and `parameters` (the result of `SHOW PARAMETERS FOR PIPE`). The previous flat fields (`name`, `database`, `schema`, `comment`, `integration`) are removed; read them from `pipes.*.show_output.0` instead (`name`, `database_name`, `schema_name`, `comment`, `integration`).
+- `with_describe` (default `true`) runs `DESCRIBE PIPE`, and `with_parameters` (default `true`) runs `SHOW PARAMETERS FOR PIPE`, for every pipe returned. Set them to `false` to limit the number of queries.
+- The data source id changed from `<database>|<schema>` to the static `pipes_read`.
+
+Before:
+```terraform
+data "snowflake_pipes" "example" {
+  database = "<database_name>"
+  schema   = "<schema_name>"
+}
+```
+
+After:
+```terraform
+data "snowflake_pipes" "example" {
+  in {
+    schema = "\"<database_name>\".\"<schema_name>\""
+  }
+}
+```
+
+### *(breaking change)* `snowflake_pipe` aligned with the newest preview resources
+
+The preview [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) resource now follows the same structure as the newest preview resources. Existing state is migrated by a state upgrader on the next `terraform plan` or `terraform apply`; no manual action is required for the resource ID. The resource is still in preview and may change again before it becomes stable.
+
+What changed:
+
+- **Resource ID.** The ID changed from the legacy pipe-separated format (`database|schema|name`) to the fully qualified name format (`"database"."schema"."name"`). The state is migrated automatically. Import now expects the new format:
+
+  ```shell
+  terraform import snowflake_pipe.example '"<database_name>"."<schema_name>"."<pipe_name>"'
+  ```
+
+- **New `show_output` and `describe_output` fields.** They contain the results of `SHOW PIPES` and `DESCRIBE PIPE`, including the `kind` column (`STAGE` for pipes that load from a stage, `STREAMING` for [Snowpipe Streaming](https://docs.snowflake.com/en/user-guide/snowpipe-streaming/snowpipe-streaming-pipe-object) pipes). Snowpipe Streaming pipes are managed like other pipes, with a `copy_statement` that reads from `TABLE(DATA_SOURCE(TYPE => 'STREAMING'))`. They have no value in the state before the first refresh, so the first plan after the upgrade may report an update in place for `show_output`, `describe_output`, and `parameters`. Applying it only refreshes the computed values.
+- **New `parameters` output and `log_event_level` / `pipe_execution_paused` fields.** The pipe-level [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level) and [`PIPE_EXECUTION_PAUSED`](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused) parameters can now be set on the resource. `CREATE PIPE` has no parameters, so they are set with `ALTER PIPE` right after the pipe is created. Removing a field from the configuration unsets the parameter. The `parameters` output shows the value and the level of each parameter.
+- **`pipe_execution_paused` and ownership transfers.** Snowflake transfers ownership only of a paused pipe, so [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) pauses a running pipe before the transfer and sets `PIPE_EXECUTION_PAUSED` to `TRUE` on it. The pipe is resumed after the transfer only when the provider role has `OPERATE` and `MONITOR` on the pipe and `outbound_privileges = "COPY"` is set. Otherwise, it stays paused, and `snowflake_pipe` reports a difference for `pipe_execution_paused`. To keep a pipe running, grant these privileges before the ownership transfer; to keep it paused, set `pipe_execution_paused = true`. See [granting ownership on pipes](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership#granting-ownership-on-pipes).
+- **`owner` and `notification_channel` are deprecated.** Use `show_output.0.owner` and `show_output.0.notification_channel` instead. The deprecated fields are still computed and will be removed in the next major version.
+- **`integration` forces replacement.** Snowflake cannot change the integration of an existing pipe (`ALTER PIPE` does not support it), and the provider silently ignored such changes. Changing `integration` now plans a replacement of the pipe, so the note about undetected `integration` changes was removed from the resource documentation. If you used `replace_triggered_by` as a workaround, it is no longer needed for this field.
+- **`integration` and `error_integration` are no longer refreshed from Snowflake on every read.** The fields follow the other resources that use `show_output`: the configured value is kept in the state, and a plan difference is suppressed when the configured value already equals the value in `show_output`. Changes made outside of Terraform (for example, recreating the pipe with a different integration) are detected: a different `integration` plans a replacement and a different `error_integration` plans an in-place update, unless the configuration was adjusted to the new value. `error_integration` can still be replaced on an existing pipe; the provider clears the current value in Snowflake before setting the new one.
+- **Supports the [`IMPORT_PERMISSIVE_MODE`](#new-feature-opt-in-experiment-permissive-import-mode) experiment.** `integration` and `error_integration` are not refreshed by every read, so they are written to the state only on import. By default (enforcing mode), import stores the values from Snowflake, so the plan after import shows a change when the configuration omits a value that Snowflake already has. With `IMPORT_PERMISSIVE_MODE` enabled, import leaves both empty and the plan shows no change for them.
+
+To migrate:
+
+1. Upgrade the provider and run `terraform plan`. The ID is migrated automatically.
+2. If you reference `owner` or `notification_channel`, switch to `show_output.0.owner` and `show_output.0.notification_channel`.
+3. If you manage `integration`, make sure the configured value matches the pipe in Snowflake. A mismatch now plans a replacement.
+4. If you import pipes with a script, switch to the new ID format shown above.
+
+### *(breaking change)* `snowflake_share` rework
+
+The [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) resource has been reworked to follow the conventions of the other resources. This resource is still in preview and will be reworked in the future. The changes are:
+
+- [`accounts` is a set](#accounts-is-now-a-set),
+- the provider [reads the accounts from Snowflake](#the-accounts-of-a-share-are-read-from-snowflake) and [removes the ones that are not configured](#accounts-that-are-no-longer-configured-are-removed),
+- [the id is the fully qualified name](#the-resource-id-is-the-fully-qualified-name),
+- [the comment can be unset](#the-comment-can-be-unset),
+- [a share dropped outside of Terraform is recreated](#a-share-dropped-outside-of-terraform-is-recreated),
+- [the import](#import-of-a-share) supports the [import modes](#new-feature-opt-in-experiment-permissive-import-mode) and accepts only outbound shares,
+- [`secure_objects_only`](#secure_objects_only-is-added), [`show_output` and `describe_output`](#show_output-and-describe_output-are-added) are added,
+- [shares with more than three accounts are read in full](#shares-with-more-than-three-accounts-are-read-in-full),
+- [shares linked to a listing are read without errors](#shares-linked-to-a-listing-are-read-without-errors),
+- the [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source is [reworked](#the-snowflake_shares-data-source-is-reworked).
+
+#### `accounts` is now a set
+
+`accounts` was a list and is now a set of strings. The recipients of a share have no order in Snowflake, so the order of the accounts in your configuration no longer matters, and changing it plans no changes. Accounts that differ only in case are still treated as the same account. The state is migrated automatically on the first plan or apply after the upgrade.
+
+Terraform handles sets differently from lists, so expressions that rely on `accounts` being a list must be adjusted:
+
+- an account cannot be referenced by its position, so `snowflake_share.example.accounts[0]` is no longer valid; convert the set first, for example `tolist(snowflake_share.example.accounts)[0]`, or iterate with a `for` expression;
+- functions and variables that expect a list, such as `concat(...)` or a module input typed `list(string)`, need `tolist(snowflake_share.example.accounts)`;
+- the order of the elements is not stable, so do not depend on it.
+
+Configurations that only assign a list of accounts to `accounts`, or only use `length(...)` or `for` expressions, keep working.
+
+Before:
+```terraform
+output "first_account" {
+  value = snowflake_share.example.accounts[0]
+}
+```
+
+After:
+```terraform
+output "first_account" {
+  value = tolist(snowflake_share.example.accounts)[0]
+}
+```
+
+#### The resource id is the fully qualified name
+
+The id was the plain name of the share (for example `MY_SHARE`). It is now the fully qualified name (`"MY_SHARE"`), like in the other resources. The state is migrated automatically and the share is not changed. If you use the id of the resource somewhere (for example in `snowflake_share.example.id`), the value now has the double quotes; resources that refer to the share, such as `snowflake_grant_privileges_to_share`, accept both forms and plan no changes.
+
+For import, use the new format: `terraform import snowflake_share.example '"<share_name>"'`. The plain name still works as the import id.
+
+#### The accounts of a share are read from Snowflake
+
+Previously, the read dropped every recipient that was not in the `accounts` of your configuration. This had two effects:
+
+- importing a share left `accounts` empty;
+- a recipient added outside Terraform was invisible, so the plan showed no changes.
+
+The provider now sets `accounts` to the recipients that Snowflake reports. After upgrading, `terraform import` sets `accounts`, and a share with recipients that are not in your configuration plans an update that removes them (see below).
+
+#### Accounts that are no longer configured are removed
+
+Previously, when you changed `accounts` so that it listed fewer accounts, the apply only added the configured accounts. The accounts you removed from the configuration stayed recipients of the share in Snowflake, while the state did not show them.
+
+When `accounts` changes, the provider now adds the configured accounts that are missing and removes every recipient that is not configured. It compares the configuration with the accounts in the state, which the refresh reads from Snowflake. This includes recipients that were added outside Terraform. If you want to keep a recipient, add it to `accounts` before applying.
+
+#### The comment can be unset
+
+Previously, removing `comment` from the configuration (or setting it to an empty string) of a share that had a comment made the apply fail, because the provider sent an empty `SET COMMENT`, which the update rejected. The provider now clears the comment with `UNSET COMMENT`.
+
+#### A share dropped outside of Terraform is recreated
+
+Previously, when a share was dropped outside of Terraform, the refresh failed with an error and the plan could not proceed until the share was removed from the state manually. Now the provider reports a warning, removes the share from the state, and the plan proposes creating it again, as the other resources do.
+
+#### Import of a share
+
+`terraform import` now sets `secure_objects_only` to the value of the share in Snowflake (see the next section for the consequence). Before, it left the field empty.
+
+The import also accepts only a share created in your account (`kind = OUTBOUND`). Importing a share provided by another account (`kind = INBOUND`) used to succeed, although the resource cannot manage such a share, and now fails with an error.
+
+#### `secure_objects_only` is added
+
+The resource now has an optional `secure_objects_only` field (`"true"`, `"false"`, or the default `"default"`, which leaves the choice to Snowflake, where it is `true`). Before, the provider could not set it, so every share was created with the Snowflake default.
+
+Snowflake cannot change it on an existing share, so changing the field, or a change made outside of Terraform that is visible in `show_output.0.secure_objects_only`, replaces the share. No configuration changes are required: a share that does not set the field keeps the Snowflake default, and existing shares are not replaced by the upgrade. If the share was changed outside of Terraform to `secure_objects_only = false`, the next plan proposes replacing it, because the configuration does not ask for `false`.
+
+The same applies to the import: if the configuration omits the field and the share has `secure_objects_only = true`, the plan after the import proposes replacing the share. To avoid it, set `secure_objects_only` in the configuration to the value of the share, or enable the opt-in `IMPORT_PERMISSIVE_MODE` experiment (see the entry about permissive import mode above), in which the import accepts the value of the share and the plan is empty.
+
+#### `show_output` and `describe_output` are added
+
+The resource now has two computed blocks:
+
+- `show_output` with the result of `SHOW SHARES` for the share: `created_on`, `kind`, `owner_account`, `name`, `database_name`, `to`, `owner`, `comment`, `listing_global_name`, `secure_objects_only` and `to_total`;
+- `describe_output` with the result of `DESCRIBE SHARE`: a row (`kind`, `name`, `shared_on`) for every object granted to the share, including the system objects that Snowflake adds to the shared database. The block is empty for a share without a granted database. If `DESCRIBE SHARE` fails (for example because of missing privileges), the provider only logs a warning and leaves the block unset.
+
+The new fields have no value in the state yet, so the first plan after upgrading reports an update for every share. Applying it only fills the fields. No configuration changes are required.
+
+#### Shares with more than three accounts are read in full
+
+`SHOW SHARES` lists at most three accounts in its `to` column and appends `... (N TOTAL)` for the rest. Since v2.19.0, reading a share with more than three accounts failed to parse that column and set `accounts` to an empty list, so `terraform plan` proposed adding every configured account on every run.
+
+The provider now reads the `... (N TOTAL)` marker as a count instead of an account. For a share with more than three accounts, it reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` and combines it with the accounts `SHOW SHARES` lists. That view can be up to 3 hours behind, so for up to 3 hours after a change to the accounts, a plan can still show it.
+
+Reading the view requires:
+
+- `SELECT` on `SNOWFLAKE.ACCOUNT_USAGE.SHARES` for the role used by the provider (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database),
+- a warehouse in the connection: set a `DEFAULT_WAREHOUSE` for the user, or specify a warehouse in the provider configuration.
+
+Without them, the provider reports a warning and only the accounts listed by `SHOW SHARES` are known.
+
+#### Shares linked to a listing are read without errors
+
+A share attached to a public listing has `ALL ACCOUNTS IN DATA EXCHANGE` in the `to` column of `SHOW SHARES`. It is not an account, so previously the provider could not parse the column and read `accounts` (and `to` in the data source) as an empty list, together with any real accounts listed next to the entry. For a share with `accounts` in the configuration, `terraform plan` proposed adding them again on every run (see [#1279](https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/1279)).
+
+The provider now skips that entry: `accounts` and `show_output.0.to` contain only real accounts, so linking a share to a listing no longer causes a diff. The same applies to `shares.*.show_output.0.to` of the `snowflake_shares` data source. If you worked around it with `lifecycle { ignore_changes = [accounts] }`, you can remove the workaround. `ALL ACCOUNTS IN DATA EXCHANGE` still cannot be set in `accounts`; manage the listing outside of this resource.
+
+#### The `snowflake_shares` data source is reworked
+
+The preview [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source now follows the same rules as the other data sources and shows the same information as the resource.
+
+Filtering changes:
+- `pattern` is renamed to `like`. It is a case-insensitive pattern with SQL wildcards (`%` and `_`), as `pattern` was.
+- `starts_with` and `limit` (with `rows` and an optional `from`) are added, as in [SHOW SHARES](https://docs.snowflake.com/en/sql-reference/sql/show-shares).
+
+Output changes:
+- Each element of `shares` now holds `show_output` (the result of `SHOW SHARES`) and `describe_output` (the result of [DESCRIBE SHARE](https://docs.snowflake.com/en/sql-reference/sql/desc-share): a row with `kind`, `name` and `shared_on` for every object granted to the share, including the system objects that Snowflake adds to the shared database). The previous flat fields (`name`, `comment`, `owner`, `kind`, `to`) are removed; read them from `shares.*.show_output.0` instead. `show_output` has more fields: `created_on`, `owner_account`, `database_name`, `listing_global_name`, `secure_objects_only` and `to_total`.
+- `shares.*.show_output.0.to` holds all the accounts of an outbound share. As in the resource, the full list of a share with more than three accounts is read from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (see "Shares with more than three accounts are read in full" above for the required privilege and warehouse). Without them, the data source reports a warning and `to` holds the accounts listed by `SHOW SHARES`. `to_total` is the number of accounts reported by `SHOW SHARES`.
+- `with_describe` (default `true`) runs `DESCRIBE SHARE` for every share returned. A share that cannot be described (for example because of missing privileges) is reported with a warning and has an empty `describe_output`. Set `with_describe` to `false` to limit the number of queries.
+
+Before:
+```terraform
+data "snowflake_shares" "example" {
+  pattern = "share_name"
+}
+
+output "share_comment" {
+  value = data.snowflake_shares.example.shares[0].comment
+}
+```
+
+After:
+```terraform
+data "snowflake_shares" "example" {
+  like = "share_name"
+}
+
+output "share_comment" {
+  value = data.snowflake_shares.example.shares[0].show_output[0].comment
+}
+```
+
+Rename `pattern` to `like` and read the share fields from `show_output` in your configuration.
+
 ### *(behavior change)* Implicit `warehouse_type` in `snowflake_warehouse` is sent as `STANDARD`
 
 Snowflake is changing the default type of a new warehouse from `STANDARD` to `ADAPTIVE`. A `CREATE WAREHOUSE` that does not set `WAREHOUSE_TYPE` follows that default. Warehouses that already exist keep their type, unless the type is unset (`ALTER WAREHOUSE ... UNSET WAREHOUSE_TYPE`), which resets it to the default value.
@@ -158,51 +364,6 @@ These features will be marked as stable in future releases. Breaking changes are
 No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
 
 Reference: [#5229](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5229).
-
-### *(improvement)* Empty identifiers are rejected
-
-The provider now checks identifier arguments before it sends the request. An empty identifier is rejected instead of being sent to Snowflake.
-
-- [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) `warehouse` ([alert](https://docs.snowflake.com/en/sql-reference/sql/create-alert))
-- [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) `resource_monitor` ([warehouse](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse))
-- [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) `for_application` ([compute pool](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool))
-- [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) `error_integration` and [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) `primary` ([replication group](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group))
-
-If one of these arguments is empty, set a real identifier or remove the argument. Configurations that already name a real object need no change.
-
-### *(deprecation)* `snowflake_notebook` resource and `snowflake_notebooks` data source
-
-The [`snowflake_notebook`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/notebook) resource and the [`snowflake_notebooks`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/notebooks) data source are deprecated and will be removed in a future major version of the provider. Both work with [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks), and Snowflake is [disabling the creation of new Legacy Notebooks](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-disable-legacy-notebooks) in a rollout that started on September 1, 2026. On accounts where the change is rolled out, creating a `snowflake_notebook` resource fails. Snowflake plans to stop the execution and editing of existing Legacy Notebooks in November 2026.
-
-[Code Bundles replace Legacy Notebook objects](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-migrate). The provider supports them with the preview [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle) resource and the preview [`snowflake_code_bundles`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/code_bundles) data source.
-
-No configuration changes are required now. Before Snowflake stops supporting Legacy Notebooks, migrate from `snowflake_notebook` to `snowflake_code_bundle` and from `snowflake_notebooks` to `snowflake_code_bundles`.
-
-### *(improvement)* Openflow resources and data sources promoted to stable
-
-The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be
-used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration
-if present.
-
-**Resources:**
-
-- `snowflake_openflow_connector` (`snowflake_openflow_connector_resource`)
-- `snowflake_openflow_deployment_byoc` (`snowflake_openflow_deployment_byoc_resource`)
-- `snowflake_openflow_deployment_snowflake_managed` (`snowflake_openflow_deployment_snowflake_managed_resource`)
-- `snowflake_openflow_runtime` (`snowflake_openflow_runtime_resource`)
-
-**Data sources:**
-
-- `snowflake_openflow_connector_definitions` (`snowflake_openflow_connector_definitions_datasource`)
-- `snowflake_openflow_connectors` (`snowflake_openflow_connectors_datasource`)
-- `snowflake_openflow_deployments` (`snowflake_openflow_deployments_datasource`)
-- `snowflake_openflow_runtimes` (`snowflake_openflow_runtimes_datasource`)
-
-Provider will issue a warning if a stable feature is still present in the `preview_features_enabled` list. These values
-will be removed in the next major version.
-
-Read more about preview and stable features in
-our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
 
 ### *(new feature)* Replication group resources and data source
 
@@ -375,6 +536,86 @@ No action is required unless you want to manage a Data Connectivity Proxy networ
 
 Reference: [#5363](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5363).
 
+### *(new feature)* `token_accessor.min_tls_version` provider configuration
+
+We added an optional `min_tls_version` field to the `token_accessor` block. It sets the minimum TLS version for the HTTP client that block uses to exchange a refresh token. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2).
+
+```terraform
+provider "snowflake" {
+  token_accessor {
+    token_endpoint  = "https://example.com/oauth/token"
+    refresh_token   = var.refresh_token
+    client_id       = var.client_id
+    client_secret   = var.client_secret
+    redirect_uri    = "https://example.com/redirect"
+    min_tls_version = "1.3"
+  }
+}
+```
+
+No configuration changes are required for existing configurations.
+
+### *(new feature)* Opt-in experiment: write-only attributes
+
+We added the `WRITE_ONLY_ATTRIBUTES` opt-in experiment (`experimental_features_enabled = ["WRITE_ONLY_ATTRIBUTES"]`). It is the switch for write-only attributes. Later write-only attributes will use the same experiment.
+
+The first attributes behind it are the [write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only) `rsa_public_key_wo` and `rsa_public_key_2_wo` fields, together with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user), [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user), and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user).
+
+Without the experiment, using `rsa_public_key_wo`, `rsa_public_key_2_wo`, or their version fields results in an error.
+
+The values of the write-only fields are never saved in the Terraform plan or state, so they can be set from an ephemeral resource, like `tls_private_key`. They require Terraform 1.11 or later.
+
+Terraform can not see a write-only value, so it can not detect changes to it either. The key is sent to Snowflake only when the version field changes: increment it whenever you want to rotate the key. For the same reason, external changes to keys set this way are not detected.
+
+To move an existing key out of the state, replace `rsa_public_key` with `rsa_public_key_wo` and set `rsa_public_key_wo_version`. The next apply pushes the key to Snowflake again and removes it from the state. After importing a user, the version field is empty, so the first apply also pushes the key again.
+
+No configuration changes are required for existing configurations.
+
+### *(deprecation)* `snowflake_notebook` resource and `snowflake_notebooks` data source
+
+The [`snowflake_notebook`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/notebook) resource and the [`snowflake_notebooks`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/notebooks) data source are deprecated and will be removed in a future major version of the provider. Both work with [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks), and Snowflake is [disabling the creation of new Legacy Notebooks](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-disable-legacy-notebooks) in a rollout that started on September 1, 2026. On accounts where the change is rolled out, creating a `snowflake_notebook` resource fails. Snowflake plans to stop the execution and editing of existing Legacy Notebooks in November 2026.
+
+[Code Bundles replace Legacy Notebook objects](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-migrate). The provider supports them with the preview [`snowflake_code_bundle`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/code_bundle) resource and the preview [`snowflake_code_bundles`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/code_bundles) data source.
+
+No configuration changes are required now. Before Snowflake stops supporting Legacy Notebooks, migrate from `snowflake_notebook` to `snowflake_code_bundle` and from `snowflake_notebooks` to `snowflake_code_bundles`.
+
+### *(improvement)* Empty identifiers are rejected
+
+The provider now checks identifier arguments before it sends the request. An empty identifier is rejected instead of being sent to Snowflake.
+
+- [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) `warehouse` ([alert](https://docs.snowflake.com/en/sql-reference/sql/create-alert))
+- [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) `resource_monitor` ([warehouse](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse))
+- [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) `for_application` ([compute pool](https://docs.snowflake.com/en/sql-reference/sql/create-compute-pool))
+- [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) `error_integration` and [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) `primary` ([replication group](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group))
+
+If one of these arguments is empty, set a real identifier or remove the argument. Configurations that already name a real object need no change.
+
+### *(improvement)* Openflow resources and data sources promoted to stable
+
+The following resources and data sources are now stable and no longer require the `preview_features_enabled` flag to be
+used. Please remove their corresponding entries from the `preview_features_enabled` list in your provider configuration
+if present.
+
+**Resources:**
+
+- `snowflake_openflow_connector` (`snowflake_openflow_connector_resource`)
+- `snowflake_openflow_deployment_byoc` (`snowflake_openflow_deployment_byoc_resource`)
+- `snowflake_openflow_deployment_snowflake_managed` (`snowflake_openflow_deployment_snowflake_managed_resource`)
+- `snowflake_openflow_runtime` (`snowflake_openflow_runtime_resource`)
+
+**Data sources:**
+
+- `snowflake_openflow_connector_definitions` (`snowflake_openflow_connector_definitions_datasource`)
+- `snowflake_openflow_connectors` (`snowflake_openflow_connectors_datasource`)
+- `snowflake_openflow_deployments` (`snowflake_openflow_deployments_datasource`)
+- `snowflake_openflow_runtimes` (`snowflake_openflow_runtimes_datasource`)
+
+Provider will issue a warning if a stable feature is still present in the `preview_features_enabled` list. These values
+will be removed in the next major version.
+
+Read more about preview and stable features in
+our [documentation](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#support).
+
 ### *(bug fix)* Openflow deployment `event_table` identifier quoting
 
 [`snowflake_openflow_deployment_byoc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_byoc) and [`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) read `event_table` from `SHOW PARAMETERS IN OPENFLOW DEPLOYMENT`. That command returns the table in a different identifier format than other Snowflake objects: unquoted parts stay lowercase (`snowflake.db.schema` or `snowflake.db."schema"`) instead of a quoted fully qualified name (`"SNOWFLAKE"."DB"."SCHEMA"`). The provider treated the value as already quoted, so `snowflake.db.schema` became `"snowflake"."db"."schema"` in state. A configuration that used the usual quoted uppercase form then planned an update on every refresh.
@@ -403,63 +644,6 @@ After upgrading:
 - `mfa_policy`, `pat_policy`, and `workload_identity_policy` are compared through `describe_output`, so only changes made after the upgrade are detected.
 
 No configuration changes are required. To keep a value that was changed outside Terraform, add it to your configuration.
-
-### *(breaking change)* `snowflake_pipes` data source reworked
-
-The preview [`snowflake_pipes`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/pipes) data source now follows the same rules as the other data sources.
-
-Filtering changes:
-- The required `database` and `schema` fields are replaced by the optional `in` block, which takes one of `account`, `database`, `schema` (fully qualified, for example `"\"<database_name>\".\"<schema_name>\""`), `application`, or `application_package`. Without `in`, Snowflake returns the pipes of the current database, or of the whole account when no database is in use.
-- `like` is added.
-
-Output changes:
-- Each element of `pipes` now holds `show_output` (the result of `SHOW PIPES`), `describe_output` (the result of `DESCRIBE PIPE`), and `parameters` (the result of `SHOW PARAMETERS FOR PIPE`). The previous flat fields (`name`, `database`, `schema`, `comment`, `integration`) are removed; read them from `pipes.*.show_output.0` instead (`name`, `database_name`, `schema_name`, `comment`, `integration`).
-- `with_describe` (default `true`) runs `DESCRIBE PIPE`, and `with_parameters` (default `true`) runs `SHOW PARAMETERS FOR PIPE`, for every pipe returned. Set them to `false` to limit the number of queries.
-- The data source id changed from `<database>|<schema>` to the static `pipes_read`.
-
-Before:
-```terraform
-data "snowflake_pipes" "example" {
-  database = "<database_name>"
-  schema   = "<schema_name>"
-}
-```
-
-After:
-```terraform
-data "snowflake_pipes" "example" {
-  in {
-    schema = "\"<database_name>\".\"<schema_name>\""
-  }
-}
-```
-
-### *(breaking change)* `snowflake_pipe` aligned with the newest preview resources
-
-The preview [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe) resource now follows the same structure as the newest preview resources. Existing state is migrated by a state upgrader on the next `terraform plan` or `terraform apply`; no manual action is required for the resource ID. The resource is still in preview and may change again before it becomes stable.
-
-What changed:
-
-- **Resource ID.** The ID changed from the legacy pipe-separated format (`database|schema|name`) to the fully qualified name format (`"database"."schema"."name"`). The state is migrated automatically. Import now expects the new format:
-
-  ```shell
-  terraform import snowflake_pipe.example '"<database_name>"."<schema_name>"."<pipe_name>"'
-  ```
-
-- **New `show_output` and `describe_output` fields.** They contain the results of `SHOW PIPES` and `DESCRIBE PIPE`, including the `kind` column (`STAGE` for pipes that load from a stage, `STREAMING` for [Snowpipe Streaming](https://docs.snowflake.com/en/user-guide/snowpipe-streaming/snowpipe-streaming-pipe-object) pipes). Snowpipe Streaming pipes are managed like other pipes, with a `copy_statement` that reads from `TABLE(DATA_SOURCE(TYPE => 'STREAMING'))`. They have no value in the state before the first refresh, so the first plan after the upgrade may report an update in place for `show_output`, `describe_output`, and `parameters`. Applying it only refreshes the computed values.
-- **New `parameters` output and `log_event_level` / `pipe_execution_paused` fields.** The pipe-level [`LOG_EVENT_LEVEL`](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level) and [`PIPE_EXECUTION_PAUSED`](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused) parameters can now be set on the resource. `CREATE PIPE` has no parameters, so they are set with `ALTER PIPE` right after the pipe is created. Removing a field from the configuration unsets the parameter. The `parameters` output shows the value and the level of each parameter.
-- **`pipe_execution_paused` and ownership transfers.** Snowflake transfers ownership only of a paused pipe, so [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership) pauses a running pipe before the transfer and sets `PIPE_EXECUTION_PAUSED` to `TRUE` on it. The pipe is resumed after the transfer only when the provider role has `OPERATE` and `MONITOR` on the pipe and `outbound_privileges = "COPY"` is set. Otherwise, it stays paused, and `snowflake_pipe` reports a difference for `pipe_execution_paused`. To keep a pipe running, grant these privileges before the ownership transfer; to keep it paused, set `pipe_execution_paused = true`. See [granting ownership on pipes](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership#granting-ownership-on-pipes).
-- **`owner` and `notification_channel` are deprecated.** Use `show_output.0.owner` and `show_output.0.notification_channel` instead. The deprecated fields are still computed and will be removed in the next major version.
-- **`integration` forces replacement.** Snowflake cannot change the integration of an existing pipe (`ALTER PIPE` does not support it), and the provider silently ignored such changes. Changing `integration` now plans a replacement of the pipe, so the note about undetected `integration` changes was removed from the resource documentation. If you used `replace_triggered_by` as a workaround, it is no longer needed for this field.
-- **`integration` and `error_integration` are no longer refreshed from Snowflake on every read.** The fields follow the other resources that use `show_output`: the configured value is kept in the state, and a plan difference is suppressed when the configured value already equals the value in `show_output`. Changes made outside of Terraform (for example, recreating the pipe with a different integration) are detected: a different `integration` plans a replacement and a different `error_integration` plans an in-place update, unless the configuration was adjusted to the new value. `error_integration` can still be replaced on an existing pipe; the provider clears the current value in Snowflake before setting the new one.
-- **Supports the [`IMPORT_PERMISSIVE_MODE`](#new-feature-opt-in-experiment-permissive-import-mode) experiment.** `integration` and `error_integration` are not refreshed by every read, so they are written to the state only on import. By default (enforcing mode), import stores the values from Snowflake, so the plan after import shows a change when the configuration omits a value that Snowflake already has. With `IMPORT_PERMISSIVE_MODE` enabled, import leaves both empty and the plan shows no change for them.
-
-To migrate:
-
-1. Upgrade the provider and run `terraform plan`. The ID is migrated automatically.
-2. If you reference `owner` or `notification_channel`, switch to `show_output.0.owner` and `show_output.0.notification_channel`.
-3. If you manage `integration`, make sure the configured value matches the pipe in Snowflake. A mismatch now plans a replacement.
-4. If you import pipes with a script, switch to the new ID format shown above.
 
 ### *(bug fix)* `snowflake_pipe` can replace `error_integration` on an existing pipe
 
@@ -546,41 +730,6 @@ The provider now reads predecessor identifiers from the task-relations metadata,
 
 No configuration or state changes are required. After upgrading, retry the failed operation with the same configuration.
 
-### *(new feature)* `token_accessor.min_tls_version` provider configuration
-
-We added an optional `min_tls_version` field to the `token_accessor` block. It sets the minimum TLS version for the HTTP client that block uses to exchange a refresh token. If you want to set a minimum TLS version for the Snowflake driver connection, read the [driver documentation](https://pkg.go.dev/github.com/snowflakedb/gosnowflake/v2).
-
-```terraform
-provider "snowflake" {
-  token_accessor {
-    token_endpoint  = "https://example.com/oauth/token"
-    refresh_token   = var.refresh_token
-    client_id       = var.client_id
-    client_secret   = var.client_secret
-    redirect_uri    = "https://example.com/redirect"
-    min_tls_version = "1.3"
-  }
-}
-```
-
-No configuration changes are required for existing configurations.
-
-### *(new feature)* Opt-in experiment: write-only attributes
-
-We added the `WRITE_ONLY_ATTRIBUTES` opt-in experiment (`experimental_features_enabled = ["WRITE_ONLY_ATTRIBUTES"]`). It is the switch for write-only attributes. Later write-only attributes will use the same experiment.
-
-The first attributes behind it are the [write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral/write-only) `rsa_public_key_wo` and `rsa_public_key_2_wo` fields, together with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on [`snowflake_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/user), [`snowflake_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/service_user), and [`snowflake_legacy_service_user`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/legacy_service_user).
-
-Without the experiment, using `rsa_public_key_wo`, `rsa_public_key_2_wo`, or their version fields results in an error.
-
-The values of the write-only fields are never saved in the Terraform plan or state, so they can be set from an ephemeral resource, like `tls_private_key`. They require Terraform 1.11 or later.
-
-Terraform can not see a write-only value, so it can not detect changes to it either. The key is sent to Snowflake only when the version field changes: increment it whenever you want to rotate the key. For the same reason, external changes to keys set this way are not detected.
-
-To move an existing key out of the state, replace `rsa_public_key` with `rsa_public_key_wo` and set `rsa_public_key_wo_version`. The next apply pushes the key to Snowflake again and removes it from the state. After importing a user, the version field is empty, so the first apply also pushes the key again.
-
-No configuration changes are required for existing configurations.
-
 ### *(bug fix)* `snowflake_user_programmatic_access_token` caps `expire_rotated_token_after_hours` at the remaining lifetime
 
 Rotating a programmatic access token failed when `expire_rotated_token_after_hours` was higher than the hours left on the current secret. Snowflake rejects that value.
@@ -588,155 +737,6 @@ Rotating a programmatic access token failed when `expire_rotated_token_after_hou
 On rotation, the provider now caps a positive value at the remaining whole hours and emits a warning during apply. A value equal to those remaining hours is sent unchanged. When less than one hour remains, a positive value is omitted so the existing secret keeps its current expiry instead of being revoked immediately. `0` still expires the current secret immediately.
 
 The configured value stays in state. Only the value sent to Snowflake is adjusted. No configuration changes are required.
-
-### *(breaking change)* `snowflake_share` rework
-
-The [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) resource has been reworked to follow the conventions of the other resources. This resource is still in preview and will be reworked in the future. The changes are:
-
-- [`accounts` is a set](#accounts-is-now-a-set),
-- the provider [reads the accounts from Snowflake](#the-accounts-of-a-share-are-read-from-snowflake) and [removes the ones that are not configured](#accounts-that-are-no-longer-configured-are-removed),
-- [the id is the fully qualified name](#the-resource-id-is-the-fully-qualified-name),
-- [the comment can be unset](#the-comment-can-be-unset),
-- [a share dropped outside of Terraform is recreated](#a-share-dropped-outside-of-terraform-is-recreated),
-- [the import](#import-of-a-share) supports the [import modes](#new-feature-opt-in-experiment-permissive-import-mode) and accepts only outbound shares,
-- [`secure_objects_only`](#secure_objects_only-is-added), [`show_output` and `describe_output`](#show_output-and-describe_output-are-added) are added,
-- [shares with more than three accounts are read in full](#shares-with-more-than-three-accounts-are-read-in-full),
-- [shares linked to a listing are read without errors](#shares-linked-to-a-listing-are-read-without-errors),
-- the [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source is [reworked](#the-snowflake_shares-data-source-is-reworked).
-
-#### `accounts` is now a set
-
-`accounts` was a list and is now a set of strings. The recipients of a share have no order in Snowflake, so the order of the accounts in your configuration no longer matters, and changing it plans no changes. Accounts that differ only in case are still treated as the same account. The state is migrated automatically on the first plan or apply after the upgrade.
-
-Terraform handles sets differently from lists, so expressions that rely on `accounts` being a list must be adjusted:
-
-- an account cannot be referenced by its position, so `snowflake_share.example.accounts[0]` is no longer valid; convert the set first, for example `tolist(snowflake_share.example.accounts)[0]`, or iterate with a `for` expression;
-- functions and variables that expect a list, such as `concat(...)` or a module input typed `list(string)`, need `tolist(snowflake_share.example.accounts)`;
-- the order of the elements is not stable, so do not depend on it.
-
-Configurations that only assign a list of accounts to `accounts`, or only use `length(...)` or `for` expressions, keep working.
-
-Before:
-```terraform
-output "first_account" {
-  value = snowflake_share.example.accounts[0]
-}
-```
-
-After:
-```terraform
-output "first_account" {
-  value = tolist(snowflake_share.example.accounts)[0]
-}
-```
-
-#### The resource id is the fully qualified name
-
-The id was the plain name of the share (for example `MY_SHARE`). It is now the fully qualified name (`"MY_SHARE"`), like in the other resources. The state is migrated automatically and the share is not changed. If you use the id of the resource somewhere (for example in `snowflake_share.example.id`), the value now has the double quotes; resources that refer to the share, such as `snowflake_grant_privileges_to_share`, accept both forms and plan no changes.
-
-For import, use the new format: `terraform import snowflake_share.example '"<share_name>"'`. The plain name still works as the import id.
-
-#### The accounts of a share are read from Snowflake
-
-Previously, the read dropped every recipient that was not in the `accounts` of your configuration. This had two effects:
-
-- importing a share left `accounts` empty;
-- a recipient added outside Terraform was invisible, so the plan showed no changes.
-
-The provider now sets `accounts` to the recipients that Snowflake reports. After upgrading, `terraform import` sets `accounts`, and a share with recipients that are not in your configuration plans an update that removes them (see below).
-
-#### Accounts that are no longer configured are removed
-
-Previously, when you changed `accounts` so that it listed fewer accounts, the apply only added the configured accounts. The accounts you removed from the configuration stayed recipients of the share in Snowflake, while the state did not show them.
-
-When `accounts` changes, the provider now adds the configured accounts that are missing and removes every recipient that is not configured. It compares the configuration with the accounts in the state, which the refresh reads from Snowflake. This includes recipients that were added outside Terraform. If you want to keep a recipient, add it to `accounts` before applying.
-
-#### The comment can be unset
-
-Previously, removing `comment` from the configuration (or setting it to an empty string) of a share that had a comment made the apply fail, because the provider sent an empty `SET COMMENT`, which the update rejected. The provider now clears the comment with `UNSET COMMENT`.
-
-#### A share dropped outside of Terraform is recreated
-
-Previously, when a share was dropped outside of Terraform, the refresh failed with an error and the plan could not proceed until the share was removed from the state manually. Now the provider reports a warning, removes the share from the state, and the plan proposes creating it again, as the other resources do.
-
-#### Import of a share
-
-`terraform import` now sets `secure_objects_only` to the value of the share in Snowflake (see the next section for the consequence). Before, it left the field empty.
-
-The import also accepts only a share created in your account (`kind = OUTBOUND`). Importing a share provided by another account (`kind = INBOUND`) used to succeed, although the resource cannot manage such a share, and now fails with an error.
-
-#### `secure_objects_only` is added
-
-The resource now has an optional `secure_objects_only` field (`"true"`, `"false"`, or the default `"default"`, which leaves the choice to Snowflake, where it is `true`). Before, the provider could not set it, so every share was created with the Snowflake default.
-
-Snowflake cannot change it on an existing share, so changing the field, or a change made outside of Terraform that is visible in `show_output.0.secure_objects_only`, replaces the share. No configuration changes are required: a share that does not set the field keeps the Snowflake default, and existing shares are not replaced by the upgrade. If the share was changed outside of Terraform to `secure_objects_only = false`, the next plan proposes replacing it, because the configuration does not ask for `false`.
-
-The same applies to the import: if the configuration omits the field and the share has `secure_objects_only = true`, the plan after the import proposes replacing the share. To avoid it, set `secure_objects_only` in the configuration to the value of the share, or enable the opt-in `IMPORT_PERMISSIVE_MODE` experiment (see the entry about permissive import mode above), in which the import accepts the value of the share and the plan is empty.
-
-#### `show_output` and `describe_output` are added
-
-The resource now has two computed blocks:
-
-- `show_output` with the result of `SHOW SHARES` for the share: `created_on`, `kind`, `owner_account`, `name`, `database_name`, `to`, `owner`, `comment`, `listing_global_name`, `secure_objects_only` and `to_total`;
-- `describe_output` with the result of `DESCRIBE SHARE`: a row (`kind`, `name`, `shared_on`) for every object granted to the share, including the system objects that Snowflake adds to the shared database. The block is empty for a share without a granted database. If `DESCRIBE SHARE` fails (for example because of missing privileges), the provider only logs a warning and leaves the block unset.
-
-The new fields have no value in the state yet, so the first plan after upgrading reports an update for every share. Applying it only fills the fields. No configuration changes are required.
-
-#### Shares with more than three accounts are read in full
-
-`SHOW SHARES` lists at most three accounts in its `to` column and appends `... (N TOTAL)` for the rest. Since v2.19.0, reading a share with more than three accounts failed to parse that column and set `accounts` to an empty list, so `terraform plan` proposed adding every configured account on every run.
-
-The provider now reads the `... (N TOTAL)` marker as a count instead of an account. For a share with more than three accounts, it reads the full list from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` and combines it with the accounts `SHOW SHARES` lists. That view can be up to 3 hours behind, so for up to 3 hours after a change to the accounts, a plan can still show it.
-
-Reading the view requires:
-
-- `SELECT` on `SNOWFLAKE.ACCOUNT_USAGE.SHARES` for the role used by the provider (for example through `IMPORTED PRIVILEGES` on the `SNOWFLAKE` database),
-- a warehouse in the connection: set a `DEFAULT_WAREHOUSE` for the user, or specify a warehouse in the provider configuration.
-
-Without them, the provider reports a warning and only the accounts listed by `SHOW SHARES` are known.
-
-#### Shares linked to a listing are read without errors
-
-A share attached to a public listing has `ALL ACCOUNTS IN DATA EXCHANGE` in the `to` column of `SHOW SHARES`. It is not an account, so previously the provider could not parse the column and read `accounts` (and `to` in the data source) as an empty list, together with any real accounts listed next to the entry. For a share with `accounts` in the configuration, `terraform plan` proposed adding them again on every run (see [#1279](https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/1279)).
-
-The provider now skips that entry: `accounts` and `show_output.0.to` contain only real accounts, so linking a share to a listing no longer causes a diff. The same applies to `shares.*.show_output.0.to` of the `snowflake_shares` data source. If you worked around it with `lifecycle { ignore_changes = [accounts] }`, you can remove the workaround. `ALL ACCOUNTS IN DATA EXCHANGE` still cannot be set in `accounts`; manage the listing outside of this resource.
-
-#### The `snowflake_shares` data source is reworked
-
-The preview [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source now follows the same rules as the other data sources and shows the same information as the resource.
-
-Filtering changes:
-- `pattern` is renamed to `like`. It is a case-insensitive pattern with SQL wildcards (`%` and `_`), as `pattern` was.
-- `starts_with` and `limit` (with `rows` and an optional `from`) are added, as in [SHOW SHARES](https://docs.snowflake.com/en/sql-reference/sql/show-shares).
-
-Output changes:
-- Each element of `shares` now holds `show_output` (the result of `SHOW SHARES`) and `describe_output` (the result of [DESCRIBE SHARE](https://docs.snowflake.com/en/sql-reference/sql/desc-share): a row with `kind`, `name` and `shared_on` for every object granted to the share, including the system objects that Snowflake adds to the shared database). The previous flat fields (`name`, `comment`, `owner`, `kind`, `to`) are removed; read them from `shares.*.show_output.0` instead. `show_output` has more fields: `created_on`, `owner_account`, `database_name`, `listing_global_name`, `secure_objects_only` and `to_total`.
-- `shares.*.show_output.0.to` holds all the accounts of an outbound share. As in the resource, the full list of a share with more than three accounts is read from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (see "Shares with more than three accounts are read in full" above for the required privilege and warehouse). Without them, the data source reports a warning and `to` holds the accounts listed by `SHOW SHARES`. `to_total` is the number of accounts reported by `SHOW SHARES`.
-- `with_describe` (default `true`) runs `DESCRIBE SHARE` for every share returned. A share that cannot be described (for example because of missing privileges) is reported with a warning and has an empty `describe_output`. Set `with_describe` to `false` to limit the number of queries.
-
-Before:
-```terraform
-data "snowflake_shares" "example" {
-  pattern = "share_name"
-}
-
-output "share_comment" {
-  value = data.snowflake_shares.example.shares[0].comment
-}
-```
-
-After:
-```terraform
-data "snowflake_shares" "example" {
-  like = "share_name"
-}
-
-output "share_comment" {
-  value = data.snowflake_shares.example.shares[0].show_output[0].comment
-}
-```
-
-Rename `pattern` to `like` and read the share fields from `show_output` in your configuration.
 
 ### *(bug fix)* `snowflake_pipe` reads SNS topic ARNs from every AWS partition
 
