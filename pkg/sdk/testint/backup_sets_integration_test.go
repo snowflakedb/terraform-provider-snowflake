@@ -39,6 +39,7 @@ func TestInt_BackupSets(t *testing.T) {
 		return names
 	}
 
+	// SHOW and DESCRIBE return empty strings, not NULL, for columns without a value.
 	assertTableSet := func(t *testing.T, id sdk.SchemaObjectIdentifier, tableId sdk.SchemaObjectIdentifier) {
 		t.Helper()
 		assertThatObject(t, objectassert.BackupSet(t, id).
@@ -50,13 +51,13 @@ func TestInt_BackupSets(t *testing.T) {
 			HasObjectName(tableId.Name()).
 			HasObjectDatabaseName(tableId.DatabaseName()).
 			HasObjectSchemaName(tableId.SchemaName()).
-			HasNoBackupPolicyName().
-			HasNoBackupPolicyDatabaseName().
-			HasNoBackupPolicySchemaName().
+			HasBackupPolicyName("").
+			HasBackupPolicyDatabaseName("").
+			HasBackupPolicySchemaName("").
 			HasNoBackupPolicyState().
 			HasOwnerRole(snowflakeroles.Accountadmin.Name()).
 			HasOwnerRoleType("ROLE").
-			HasNoComment(),
+			HasComment(""),
 		)
 		assertThatObject(t, objectassert.BackupSetDetails(t, id).
 			HasName(id.Name()).
@@ -66,8 +67,8 @@ func TestInt_BackupSets(t *testing.T) {
 			HasObjectName(tableId.Name()).
 			HasObjectDatabaseName(tableId.DatabaseName()).
 			HasObjectSchemaName(tableId.SchemaName()).
-			HasNoBackupPolicyName().
-			HasNoComment(),
+			HasBackupPolicyName("").
+			HasComment(""),
 		)
 	}
 
@@ -110,12 +111,12 @@ func TestInt_BackupSets(t *testing.T) {
 			HasObjectKind("SCHEMA").
 			HasObjectName(schema.ID().Name()).
 			HasObjectDatabaseName(schema.ID().DatabaseName()).
-			HasNoObjectSchemaName(),
+			HasObjectSchemaName(""),
 		)
 		assertThatObject(t, objectassert.BackupSetDetails(t, id).
 			HasObjectKind("SCHEMA").
 			HasObjectName(schema.ID().Name()).
-			HasNoObjectSchemaName(),
+			HasObjectSchemaName(""),
 		)
 	})
 
@@ -129,8 +130,8 @@ func TestInt_BackupSets(t *testing.T) {
 		assertThatObject(t, objectassert.BackupSet(t, id).
 			HasObjectKind("DATABASE").
 			HasObjectName(database.ID().Name()).
-			HasNoObjectDatabaseName().
-			HasNoObjectSchemaName(),
+			HasObjectDatabaseName("").
+			HasObjectSchemaName(""),
 		)
 	})
 
@@ -224,7 +225,7 @@ func TestInt_BackupSets(t *testing.T) {
 
 		err = client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(id).WithUnset(*sdk.NewBackupSetUnsetRequest().WithComment(true)))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.BackupSet(t, id).HasNoComment())
+		assertThatObject(t, objectassert.BackupSet(t, id).HasComment(""))
 	})
 
 	t.Run("alter: set and unset tags", func(t *testing.T) {
@@ -288,9 +289,9 @@ func TestInt_BackupSets(t *testing.T) {
 
 	t.Run("alter: apply policy, suspend, and resume", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		create(t, id, sdk.NewCreateBackupSetRequest(id).WithForTable(tableTarget(t)))
 		policyId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		replacementId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		// Policies are created first, so cleanup drops the backup set before them. A policy attached to a backup set cannot be dropped.
 		require.NoError(t, client.BackupPolicies.Create(ctx, sdk.NewCreateBackupPolicyRequest(policyId).WithExpireAfterDays(7)))
 		t.Cleanup(func() {
 			require.NoError(t, client.BackupPolicies.DropSafely(ctx, policyId))
@@ -299,6 +300,7 @@ func TestInt_BackupSets(t *testing.T) {
 		t.Cleanup(func() {
 			require.NoError(t, client.BackupPolicies.DropSafely(ctx, replacementId))
 		})
+		create(t, id, sdk.NewCreateBackupSetRequest(id).WithForTable(tableTarget(t)))
 
 		err := client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(id).
 			WithApplyBackupPolicy(*sdk.NewBackupSetApplyBackupPolicyRequest(policyId)),

@@ -53,7 +53,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 				HasEnabled(true).
 				HasApiProvider(apiProvider).
-				HasAllowedAuthenticationSecrets("").
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")).
 				HasUsePrivatelinkEndpoint(true).
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitAllowedPrefix).
@@ -63,7 +63,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				HasEnabled(true).
 				HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets("").
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")).
 				HasUsePrivatelinkEndpoint(true).
 				HasAllowedPrefixes(gitAllowedPrefix).
 				HasNoBlockedPrefixes().
@@ -113,7 +113,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 		resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
 			HasEnabled(true).
 			HasApiProvider(apiProvider).
-			HasAllowedAuthenticationSecrets("").
+			HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")).
 			HasUsePrivatelinkEndpoint(true).
 			HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
 			HasAllowedPrefixes(gitAllowedPrefix).
@@ -123,7 +123,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 			HasEnabled(true).
 			HasApiProviderType(sdk.ApiIntegrationGitApiProviderTypeGitHttpsApi).
 			HasNoUserAuthType().
-			HasAllowedAuthenticationSecrets("").
+			HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")).
 			HasUsePrivatelinkEndpoint(true).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
@@ -160,7 +160,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, withOptionals),
 				Check:  assertThat(t, assertWithOptionals...),
 			},
-			// Import - with optionals (auth secrets cannot be read back from Snowflake, so ignore those fields)
+			// Import - with optionals (Read does not set the auth secrets fields from DESCRIBE, so ignore them)
 			{
 				Config:                  config.FromModels(t, withOptionals),
 				ResourceName:            ref,
@@ -240,7 +240,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoNoAllowedAuthenticationSecrets().
 				HasAllowedAuthenticationSecretsEmpty(),
 			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		}
 	}
 	assertNotSetAfterTransition := func() []assert.TestCheckFuncProvider {
@@ -250,7 +250,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecretsEmpty(),
 			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		}
 	}
 	assertAll := func() []assert.TestCheckFuncProvider {
@@ -260,7 +260,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoNoAllowedAuthenticationSecrets().
 				HasAllowedAuthenticationSecretsEmpty(),
 			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")),
 		}
 	}
 	assertAllAfterTransition := func() []assert.TestCheckFuncProvider {
@@ -270,7 +270,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecretsEmpty(),
 			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")),
 		}
 	}
 	assertNone := func() []assert.TestCheckFuncProvider {
@@ -280,7 +280,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllowedAuthenticationSecrets(true).
 				HasAllowedAuthenticationSecretsEmpty(),
 			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		}
 	}
 	assertList := func() []assert.TestCheckFuncProvider {
@@ -290,7 +290,7 @@ func TestAcc_ApiIntegrationGitRepositoryPrivateLink_AllowedSecrets_Update(t *tes
 				HasNoAllowedAuthenticationSecrets(false).
 				HasAllowedAuthenticationSecrets(secretId.FullyQualifiedName()),
 			resourceshowoutputassert.ApiIntegrationGitHttpsApiDescribeOutput(t, ref).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClient().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, fmt.Sprintf(`["%s"."%s".%s]`, secretId.DatabaseName(), secretId.SchemaName(), secretId.Name()))),
 		}
 	}
 

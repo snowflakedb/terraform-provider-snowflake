@@ -82,3 +82,17 @@ func (c *PipeClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk
 	t.Helper()
 	return c.client().Describe(context.Background(), id)
 }
+
+func (c *PipeClient) ExecutionState(t *testing.T, id sdk.SchemaObjectIdentifier) (sdk.PipeExecutionState, error) {
+	t.Helper()
+	status, err := c.context.client.SystemFunctions.PipeStatus(context.Background(), sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(id)))
+	if err != nil {
+		return "", err
+	}
+	return status.ExecutionState, nil
+}
+
+func (c *PipeClient) ShowParametersDetails(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PipeParametersDetails, error) {
+	t.Helper()
+	return c.client().ShowParametersDetails(context.Background(), id)
+}

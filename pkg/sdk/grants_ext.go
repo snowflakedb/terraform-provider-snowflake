@@ -598,11 +598,12 @@ func normalizeShareGranteeName(granteeName string, accountLocator string) string
 //  3. See if the current role can "operate" on the pipe (has either OPERATE or OWNERSHIP privileges granted).
 //  4. If the current role can "operate" on the pipe.
 //     4.1. Check the current execution status of the pipe.
-//     4.2. Pause the pipe execution if it's running.
+//     4.2. Pause the pipe execution if it's running, remembering whether PIPE_EXECUTION_PAUSED was set on the pipe.
 //  5. If it cannot, try to proceed with the grant ownership in case the pipe is already paused.
 //  6. Grant ownership.
 //  7. If the current role could "operate" on the pipe, and the ownership was granted with COPY CURRENT GRANTS option.
-//     6.1. Resume with the use of system function.
+//     7.1. Resume with the use of system function.
+//     7.2. Unset PIPE_EXECUTION_PAUSED if it was not set on the pipe before the pause.
 //  8. If it couldn't, notify the user that the pipe has to be resumed manually with the use of system function.
 func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectIdentifier, request *GrantOwnershipRequest) error {
 	currentRole, err := v.client.ContextFunctions.CurrentRole(ctx)
@@ -633,6 +634,7 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 	hasOwnershipOnPipe := isGrantedWithPrivilege("OWNERSHIP")
 
 	var originalPipeExecutionState *PipeExecutionState
+	var pipeExecutionPausedSetOnPipe bool
 	if hasOwnershipOnPipe || (canOperateOnPipe && canMonitorPipe) {
 		pipeStatus, err := v.client.SystemFunctions.PipeStatus(ctx, NewPipeStatusRequest(*NewPipeStatusArgumentsRequest(pipeId)))
 		if err != nil {
@@ -641,6 +643,12 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 		originalPipeExecutionState = &pipeStatus.ExecutionState
 
 		if pipeStatus.ExecutionState == PipeExecutionStateRunning {
+			parameters, err := v.client.Pipes.ShowParametersDetails(ctx, pipeId)
+			if err != nil {
+				return err
+			}
+			pipeExecutionPausedSetOnPipe = parameters.PipeExecutionPaused.Level == ParameterTypePipe
+
 			if err := v.client.Pipes.Alter(ctx, NewAlterPipeRequest(pipeId).WithSet(*NewPipeSetRequest().WithPipeExecutionPaused(true))); err != nil {
 				return err
 			}
@@ -661,6 +669,13 @@ func (v *grants) grantOwnershipOnPipe(ctx context.Context, pipeId SchemaObjectId
 	if canOperateOnPipe && request.CurrentGrants != nil && request.CurrentGrants.OutboundPrivileges == Copy && originalPipeExecutionState != nil && *originalPipeExecutionState == PipeExecutionStateRunning {
 		if err := v.client.SystemFunctions.PipeForceResume(ctx, NewPipeForceResumeRequest(*NewPipeForceResumeArgumentsRequest(pipeId))); err != nil {
 			return err
+		}
+		// The pause set PIPE_EXECUTION_PAUSED on the pipe, and the resume leaves it set to FALSE there.
+		// Unset it when the pipe inherited the parameter before, so the pipe ends with the original parameter level.
+		if !pipeExecutionPausedSetOnPipe {
+			if err := v.client.Pipes.Alter(ctx, NewAlterPipeRequest(pipeId).WithUnset(*NewPipeUnsetRequest().WithPipeExecutionPaused(true))); err != nil {
+				return err
+			}
 		}
 	} else {
 		log.Printf("[WARN] Insufficient privileges to resume the pipe: %s. Resume has to be done manually with the use of SELECT SYSTEM$PIPE_FORCE_RESUME system function.", pipeId.FullyQualifiedName())
