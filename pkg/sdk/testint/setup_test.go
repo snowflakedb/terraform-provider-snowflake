@@ -156,25 +156,27 @@ func (itc *integrationTestContext) initialize() error {
 		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
 	)
 
+	// Cleanups are registered only after a successful create. Otherwise a create that fails because
+	// the object already exists (e.g. created by a concurrent run with the same suffix) would drop that object.
 	db, dbCleanup, err := testClientHelper().CreateTestDatabase(itc.ctx, false)
-	itc.databaseCleanup = dbCleanup
 	if err != nil {
 		return err
 	}
+	itc.databaseCleanup = dbCleanup
 	itc.database = db
 
 	sc, scCleanup, err := testClientHelper().CreateTestSchema(itc.ctx, false)
-	itc.schemaCleanup = scCleanup
 	if err != nil {
 		return err
 	}
+	itc.schemaCleanup = scCleanup
 	itc.schema = sc
 
 	wh, whCleanup, err := testClientHelper().CreateTestWarehouse(itc.ctx, false)
-	itc.warehouseCleanup = whCleanup
 	if err != nil {
 		return err
 	}
+	itc.warehouseCleanup = whCleanup
 	itc.warehouse = wh
 
 	// TODO [SNOW-1763603]: improve setup; this is a quick workaround for faster local testing
@@ -212,24 +214,24 @@ func (itc *integrationTestContext) initialize() error {
 		}
 
 		secondaryDb, secondaryDbCleanup, err := secondaryTestClientHelper().CreateTestDatabase(itc.ctx, false)
-		itc.secondaryDatabaseCleanup = secondaryDbCleanup
 		if err != nil {
 			return err
 		}
+		itc.secondaryDatabaseCleanup = secondaryDbCleanup
 		itc.secondaryDatabase = secondaryDb
 
 		secondarySchema, secondarySchemaCleanup, err := secondaryTestClientHelper().CreateTestSchema(itc.ctx, false)
-		itc.secondarySchemaCleanup = secondarySchemaCleanup
 		if err != nil {
 			return err
 		}
+		itc.secondarySchemaCleanup = secondarySchemaCleanup
 		itc.secondarySchema = secondarySchema
 
 		secondaryWarehouse, secondaryWarehouseCleanup, err := secondaryTestClientHelper().CreateTestWarehouse(itc.ctx, false)
-		itc.secondaryWarehouseCleanup = secondaryWarehouseCleanup
 		if err != nil {
 			return err
 		}
+		itc.secondaryWarehouseCleanup = secondaryWarehouseCleanup
 		itc.secondaryWarehouse = secondaryWarehouse
 
 		err = errors.Join(
