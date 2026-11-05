@@ -702,40 +702,45 @@ func TestAcc_ServiceUser_WIF_Validations(t *testing.T) {
 		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, userModelWithAwsEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "arn" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithAwsEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "arn" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithGcpEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "subject" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithGcpEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "subject" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithAzureEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithAzureEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithOidcEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithOidcEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithMultipleProviders),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("`default_workload_identity.0.aws,default_workload_identity.0.gcp` were\nspecified"),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithMultipleProviders),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile("`default_workload_identity.0.aws,default_workload_identity.0.gcp` were\nspecified"),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithEmptyBlock),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("one of\n`default_workload_identity.0.aws,default_workload_identity.0.azure,default_workload_identity.0.gcp,default_workload_identity.0.oidc`\nmust be specified"),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithEmptyBlock),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile("one of\n`default_workload_identity.0.aws,default_workload_identity.0.azure,default_workload_identity.0.gcp,default_workload_identity.0.oidc`\nmust be specified"),
 			},
 			{
 				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
