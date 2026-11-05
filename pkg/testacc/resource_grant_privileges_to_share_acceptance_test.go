@@ -554,8 +554,6 @@ func TestAcc_GrantPrivilegesToShare_NoOnOption(t *testing.T) {
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2621 doesn't apply to this resource
 func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
-	t.Skip("Should be addressed in SNOW-2048471 - without this task done, the test cannot be properly asserted in the terraform testing framework")
-
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
@@ -577,7 +575,7 @@ func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
 			{
 				PreConfig:   func() { shareCleanup() },
 				Config:      accconfig.FromModels(t, grantModel),
-				ExpectError: regexp.MustCompile(sdk.ErrObjectNotExistOrAuthorized.Error()),
+				ExpectError: regexp.MustCompile("object does not exist or not authorized"),
 			},
 		},
 	})

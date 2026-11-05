@@ -533,6 +533,7 @@ The [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snow
 - [the import](#import-of-a-share) supports the [import modes](#new-feature-opt-in-experiment-permissive-import-mode) and accepts only outbound shares,
 - [`secure_objects_only`](#secure_objects_only-is-added), [`show_output` and `describe_output`](#show_output-and-describe_output-are-added) are added,
 - [shares with more than three accounts are read in full](#shares-with-more-than-three-accounts-are-read-in-full),
+- [shares linked to a listing are read without errors](#shares-linked-to-a-listing-are-read-without-errors),
 - the [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source is [reworked](#the-snowflake_shares-data-source-is-reworked).
 
 #### `accounts` is now a set
@@ -546,6 +547,20 @@ Terraform handles sets differently from lists, so expressions that rely on `acco
 - the order of the elements is not stable, so do not depend on it.
 
 Configurations that only assign a list of accounts to `accounts`, or only use `length(...)` or `for` expressions, keep working.
+
+Before:
+```terraform
+output "first_account" {
+  value = snowflake_share.example.accounts[0]
+}
+```
+
+After:
+```terraform
+output "first_account" {
+  value = tolist(snowflake_share.example.accounts)[0]
+}
+```
 
 #### The resource id is the fully qualified name
 
@@ -612,6 +627,12 @@ Reading the view requires:
 
 Without them, the provider reports a warning and only the accounts listed by `SHOW SHARES` are known.
 
+#### Shares linked to a listing are read without errors
+
+A share attached to a public listing has `ALL ACCOUNTS IN DATA EXCHANGE` in the `to` column of `SHOW SHARES`. It is not an account, so previously the provider could not parse the column and read `accounts` (and `to` in the data source) as an empty list, together with any real accounts listed next to the entry. For a share with `accounts` in the configuration, `terraform plan` proposed adding them again on every run (see [#1279](https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/1279)).
+
+The provider now skips that entry: `accounts` and `show_output.0.to` contain only real accounts, so linking a share to a listing no longer causes a diff. The same applies to `shares.*.show_output.0.to` of the `snowflake_shares` data source. If you worked around it with `lifecycle { ignore_changes = [accounts] }`, you can remove the workaround. `ALL ACCOUNTS IN DATA EXCHANGE` still cannot be set in `accounts`; manage the listing outside of this resource.
+
 #### The `snowflake_shares` data source is reworked
 
 The preview [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source now follows the same rules as the other data sources and shows the same information as the resource.
@@ -624,7 +645,6 @@ Output changes:
 - Each element of `shares` now holds `show_output` (the result of `SHOW SHARES`) and `describe_output` (the result of [DESCRIBE SHARE](https://docs.snowflake.com/en/sql-reference/sql/desc-share): a row with `kind`, `name` and `shared_on` for every object granted to the share, including the system objects that Snowflake adds to the shared database). The previous flat fields (`name`, `comment`, `owner`, `kind`, `to`) are removed; read them from `shares.*.show_output.0` instead. `show_output` has more fields: `created_on`, `owner_account`, `database_name`, `listing_global_name`, `secure_objects_only` and `to_total`.
 - `shares.*.show_output.0.to` holds all the accounts of an outbound share. As in the resource, the full list of a share with more than three accounts is read from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (see "Shares with more than three accounts are read in full" above for the required privilege and warehouse). Without them, the data source reports a warning and `to` holds the accounts listed by `SHOW SHARES`. `to_total` is the number of accounts reported by `SHOW SHARES`.
 - `with_describe` (default `true`) runs `DESCRIBE SHARE` for every share returned. A share that cannot be described (for example because of missing privileges) is reported with a warning and has an empty `describe_output`. Set `with_describe` to `false` to limit the number of queries.
-- The data source id is now the static `shares_read`.
 
 Before:
 ```terraform

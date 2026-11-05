@@ -49,10 +49,20 @@ func (r sharesRow) additionalConvert(s *Share) error {
 	return nil
 }
 
+// shareDataExchangeRecipient is what SHOW SHARES lists in the "to" column of a share linked to a public listing.
+// It is not an account, so it is never returned as a recipient.
+// TODO [SNOW-4428377]: Verify against a real listing-linked share what "to" holds when the share also has direct recipients, and whether
+// "(N TOTAL)" counts this entry. It cannot be created with SQL (publishing needs a Marketplace review), so there is no acceptance test.
+const shareDataExchangeRecipient = "ALL ACCOUNTS IN DATA EXCHANGE"
+
 // parseShareRecipients parses a comma-separated list of "<organization_name>.<account_name>" recipients. The
 // truncation marker can only be the last element; the returned total is the count it reports, and 0 without it.
+// The "ALL ACCOUNTS IN DATA EXCHANGE" entry (a share linked to a listing) is skipped, because it is not an account.
 func parseShareRecipients(value string) ([]AccountIdentifier, int, error) {
 	items := ParseCommaSeparatedStringArray(value, false)
+	items = slices.DeleteFunc(items, func(item string) bool {
+		return strings.EqualFold(strings.TrimSpace(strings.Trim(item, "'")), shareDataExchangeRecipient)
+	})
 	total := 0
 	if n := len(items); n > 0 {
 		if match := shareRecipientsTruncationRegexp.FindStringSubmatch(items[n-1]); match != nil {
