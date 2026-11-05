@@ -11,10 +11,12 @@ import (
 
 var postgresMirrorAttributesSchema = postgresMirrorAttributesModificationExt(map[string]*tfschema.Schema{
 	"postgres_instance": {
-		Type:        tfschema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "Specifies the source Postgres instance (case-sensitive). The role used by the provider must own the instance.",
+		Type:             tfschema.TypeString,
+		Required:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+		Description:      "Specifies the source Postgres instance (case-sensitive). The role used by the provider must own the instance.",
 	},
 	"postgres_database": {
 		Type:        tfschema.TypeString,
@@ -23,10 +25,12 @@ var postgresMirrorAttributesSchema = postgresMirrorAttributesModificationExt(map
 		Description: "Specifies the source database on the Postgres instance.",
 	},
 	"target_database": {
-		Type:        tfschema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "Specifies the Snowflake database the mirror creates and keeps up to date. The database must not exist yet, and Snowflake uppercases its name. The mirror protects the database, so do not manage it with `snowflake_database`.",
+		Type:             tfschema.TypeString,
+		Required:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: suppressIdentifierQuoting,
+		Description:      "Specifies the Snowflake database the mirror creates and keeps up to date. The database must not exist yet, and Snowflake uppercases its name. The mirror protects the database, so do not manage it with `snowflake_database`.",
 	},
 	"postgres_tables": {
 		Type:     tfschema.TypeSet,

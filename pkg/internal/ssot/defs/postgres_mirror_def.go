@@ -14,8 +14,9 @@ var PostgresMirrorTargetTableType = ssot.NewEnum(
 // refresh_interval is a block for Terraform, and DESCRIBE_MIRROR returns it as one string, so that column is a separate
 // Readonly attribute whose ShowName is refresh_interval.
 // drop_target_database_on_destroy is read only by Delete, so it uses SkipCreate and has no update mapping.
-// The required identifiers are strings so that the generator adds no validation for them. The ext schema modification
-// sets their diff suppression and clears the validation the generator adds to the optional identifiers.
+// postgres_instance and target_database are Snowflake identifiers, so the generator validates them.
+// postgres_database, postgres_tables, and postgres_schemas are Postgres names, so they stay plain strings.
+// The ext schema modification adds case-insensitive comparison for the names the procedures uppercase.
 var PostgresMirrorAttrs = struct {
 	PostgresInstance            ssot.Attribute
 	PostgresDatabase            ssot.Attribute
@@ -45,12 +46,13 @@ var PostgresMirrorAttrs = struct {
 	PostgresStatus              ssot.Attribute
 }{
 	PostgresInstance: ssot.Attribute{
-		Name:         "postgres_instance",
-		Type:         ssot.AttrString,
-		Required:     true,
-		ForceNew:     true,
-		OptionalInDb: true,
-		Description:  "Specifies the source Postgres instance (case-sensitive). The role used by the provider must own the instance.",
+		Name:           "postgres_instance",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
+		Required:       true,
+		ForceNew:       true,
+		OptionalInDb:   true,
+		Description:    "Specifies the source Postgres instance (case-sensitive). The role used by the provider must own the instance.",
 	},
 	PostgresDatabase: ssot.Attribute{
 		Name:         "postgres_database",
@@ -61,25 +63,28 @@ var PostgresMirrorAttrs = struct {
 		Description:  "Specifies the source database on the Postgres instance.",
 	},
 	TargetDatabase: ssot.Attribute{
-		Name:         "target_database",
-		Type:         ssot.AttrString,
-		Required:     true,
-		ForceNew:     true,
-		OptionalInDb: true,
-		Description:  "Specifies the Snowflake database the mirror creates and keeps up to date. The database must not exist yet, and Snowflake uppercases its name. The mirror protects the database, so do not manage it with `snowflake_database`.",
+		Name:           "target_database",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
+		Required:       true,
+		ForceNew:       true,
+		OptionalInDb:   true,
+		Description:    "Specifies the Snowflake database the mirror creates and keeps up to date. The database must not exist yet, and Snowflake uppercases its name. The mirror protects the database, so do not manage it with `snowflake_database`.",
 	},
 	PostgresTables: ssot.Attribute{
-		Name: "postgres_tables",
-		Type: ssot.AttrSet,
-		Elem: &ssot.Attribute{Type: ssot.AttrString},
+		Name:          "postgres_tables",
+		Type:          ssot.AttrSet,
+		Elem:          &ssot.Attribute{Type: ssot.AttrString},
+		CreateMapping: ssot.SetMappedValueCreate("toPostgresMirrorName"),
 		Description: "Specifies the source tables to mirror, as schema-qualified names (`schema.table`) written the way `DESCRIBE_MIRROR` returns them: unquoted and lowercase, " +
 			"except for parts Postgres requires to be quoted, such as `public.\"MixedCase\"`. Other spellings of the same table show as a change on every plan. " +
 			"Tables are added and removed in place, without copying the other tables again.",
 	},
 	PostgresSchemas: ssot.Attribute{
-		Name: "postgres_schemas",
-		Type: ssot.AttrSet,
-		Elem: &ssot.Attribute{Type: ssot.AttrString},
+		Name:          "postgres_schemas",
+		Type:          ssot.AttrSet,
+		Elem:          &ssot.Attribute{Type: ssot.AttrString},
+		CreateMapping: ssot.SetMappedValueCreate("toPostgresMirrorName"),
 		Description: "Specifies the source schemas to mirror. Every current and future table in them is included. Schema names are literal and case-sensitive, written without Postgres quoting, such as `MixedCase` rather than `\"MixedCase\"`. " +
 			"Schemas are added and removed in place.",
 	},

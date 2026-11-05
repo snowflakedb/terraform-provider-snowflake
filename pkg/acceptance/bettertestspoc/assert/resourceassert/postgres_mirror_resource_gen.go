@@ -68,6 +68,11 @@ func (p *PostgresMirrorResourceAssert) HasPostgresInstance(expected string) *Pos
 	return p
 }
 
+func (p *PostgresMirrorResourceAssert) HasPostgresInstanceSdk(expected sdk.AccountObjectIdentifier) *PostgresMirrorResourceAssert {
+	p.StringValueSet("postgres_instance", expected.Name())
+	return p
+}
+
 func (p *PostgresMirrorResourceAssert) HasPostgresSchemas(expected ...string) *PostgresMirrorResourceAssert {
 	p.SetContainsExactlyStringValues("postgres_schemas", expected...)
 	return p
@@ -82,6 +87,11 @@ func (p *PostgresMirrorResourceAssert) HasPostgresTables(expected ...string) *Po
 
 func (p *PostgresMirrorResourceAssert) HasTargetDatabase(expected string) *PostgresMirrorResourceAssert {
 	p.StringValueSet("target_database", expected)
+	return p
+}
+
+func (p *PostgresMirrorResourceAssert) HasTargetDatabaseSdk(expected sdk.AccountObjectIdentifier) *PostgresMirrorResourceAssert {
+	p.StringValueSet("target_database", expected.Name())
 	return p
 }
 

@@ -2,7 +2,6 @@ package resources
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"reflect"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -38,10 +38,11 @@ var (
 		StateContext: TrackingImportWrapper(resources.PostgresMirror, ImportPostgresMirror),
 	}
 
+	// target_table_type stays as configured. Snowflake's SNOWFLAKE default is not copied into state,
+	// because the field is ForceNew and an omitted value must not replace the mirror.
+	// warehouse and external_volume are written from DESCRIBE_MIRROR in Read. They have no Snowflake default.
 	postgresMirrorSetStateToValueFromConfigFieldsExt = []string{
 		"target_table_type",
-		"external_volume",
-		"warehouse",
 	}
 )
 
@@ -70,15 +71,10 @@ var postgresMirrorDescribeOutputSchemaExt = map[string]*schema.Schema{
 	},
 }
 
-// The mirror leaves all checks to create_mirror, so the validation the generator adds to the identifier and enum fields
-// is cleared. The procedures uppercase the target database and the warehouse, so those are compared ignoring case.
+// The procedures uppercase the target database and the warehouse, so those are compared ignoring case.
+// Postgres table and schema names are not Snowflake identifiers, so the generator leaves them unchecked.
 func postgresMirrorAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	s["postgres_instance"].DiffSuppressFunc = suppressIdentifierQuoting
-	s["target_database"].DiffSuppressFunc = SuppressIfAny(suppressIdentifierQuoting, ignoreCaseSuppressFunc)
-
-	s["target_table_type"].ValidateDiagFunc = nil
-	s["external_volume"].ValidateDiagFunc = nil
-	s["warehouse"].ValidateDiagFunc = nil
+	s["target_database"].DiffSuppressFunc = SuppressIfAny(s["target_database"].DiffSuppressFunc, ignoreCaseSuppressFunc)
 	s["warehouse"].DiffSuppressFunc = SuppressIfAny(s["warehouse"].DiffSuppressFunc, ignoreCaseSuppressFunc)
 
 	// Snowflake fills the interval when the block is omitted, and removing the block keeps the current interval.
@@ -103,6 +99,11 @@ func ImportPostgresMirror(ctx context.Context, d *schema.ResourceData, meta any)
 		return nil, fmt.Errorf("DESCRIBE_MIRROR returned no tables or schemas for Postgres mirror %s, either because the source Postgres instance could not be reached or because the SNOWFLAKE application in this account does not report them yet; retry the import later", name)
 	}
 
+	// Tables, schemas, and the refresh interval are read from Snowflake in both modes: Read writes them too.
+	// drop_target_database_on_destroy is not a Snowflake value. The schema default is true, and schema defaults
+	// are not applied to imported state, so both modes write true.
+	// warehouse and external_volume have no Snowflake default. Read writes them, including an empty value when unset.
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
 	if errs := errors.Join(
 		d.Set("name", details.Name),
 		d.Set("postgres_instance", details.PostgresInstance),
@@ -111,27 +112,10 @@ func ImportPostgresMirror(ctx context.Context, d *schema.ResourceData, meta any)
 		d.Set("postgres_tables", details.PostgresTables),
 		d.Set("postgres_schemas", collections.Map(details.PostgresSchemas, unquotePostgresIdentifier)),
 		d.Set("drop_target_database_on_destroy", true),
+		setPostgresMirrorRefreshInterval(d, details.RefreshInterval),
+		importStringAttribute(d, "target_table_type", importPermissiveMode, details.TargetTableType),
 	); errs != nil {
 		return nil, errs
-	}
-	if err := setPostgresMirrorRefreshInterval(d, details.RefreshInterval); err != nil {
-		return nil, err
-	}
-	// Snowflake defaults stay unset, matching a configuration that omits them.
-	if details.TargetTableType != "" && details.TargetTableType != sdk.PostgresMirrorTargetTableTypeSnowflake {
-		if err := d.Set("target_table_type", string(details.TargetTableType)); err != nil {
-			return nil, err
-		}
-	}
-	if details.Warehouse != nil {
-		if err := d.Set("warehouse", *details.Warehouse); err != nil {
-			return nil, err
-		}
-	}
-	if details.ExternalVolume != nil {
-		if err := d.Set("external_volume", *details.ExternalVolume); err != nil {
-			return nil, err
-		}
 	}
 	d.SetId(details.Name)
 	return []*schema.ResourceData{d}, nil
@@ -165,11 +149,7 @@ func postgresMirrorNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObj
 	return arguments, nil
 }
 
-func toPostgresMirrorPostgresTables(value any) (sdk.StringListItemWrapper, error) {
-	return sdk.StringListItemWrapper{Value: value.(string)}, nil
-}
-
-func toPostgresMirrorPostgresSchemas(value any) (sdk.StringListItemWrapper, error) {
+func toPostgresMirrorName(value any) (sdk.StringListItemWrapper, error) {
 	return sdk.StringListItemWrapper{Value: value.(string)}, nil
 }
 
@@ -190,7 +170,7 @@ func postgresMirrorShowByIdSafelyInSdkExt(ctx context.Context, d *schema.Resourc
 	details, err := meta.(*provider.Context).Client.PostgresMirrors.Describe(ctx, sdk.NewDescribePostgresMirrorRequest(*sdk.NewDescribePostgresMirrorArgumentsRequest(id.Name())))
 	if err != nil {
 		// DESCRIBE_MIRROR returns no row for a mirror that does not exist.
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
 			d.SetId("")
 			return nil, diag.Diagnostics{
 				{
@@ -219,20 +199,11 @@ func postgresMirrorHandleExternalChangesExt(d *schema.ResourceData, details *sdk
 	if !withExternalChangesMarking {
 		return nil
 	}
-	var externalVolume, warehouse string
-	if details.ExternalVolume != nil {
-		externalVolume = *details.ExternalVolume
-	}
-	if details.Warehouse != nil {
-		warehouse = *details.Warehouse
-	}
 	return handleExternalChangesToObjectInFlatDescribe(d,
 		outputMapping{"postgres_instance", "postgres_instance", details.PostgresInstance, details.PostgresInstance, nil},
 		outputMapping{"postgres_database", "postgres_database", details.PostgresDatabase, details.PostgresDatabase, nil},
 		outputMapping{"target_database", "target_database", details.TargetDatabase, details.TargetDatabase, nil},
 		outputMapping{"target_table_type", "target_table_type", string(details.TargetTableType), string(details.TargetTableType), nil},
-		outputMapping{"external_volume", "external_volume", externalVolume, externalVolume, nil},
-		outputMapping{"warehouse", "warehouse", warehouse, warehouse, nil},
 	)
 }
 
@@ -240,6 +211,8 @@ func postgresMirrorSetConfigFieldsExt(_ context.Context, d *schema.ResourceData,
 	return errors.Join(
 		d.Set("postgres_tables", details.PostgresTables),
 		d.Set("postgres_schemas", collections.Map(details.PostgresSchemas, unquotePostgresIdentifier)),
+		d.Set("external_volume", derefOrZero(details.ExternalVolume)),
+		d.Set("warehouse", derefOrZero(details.Warehouse)),
 		setPostgresMirrorRefreshInterval(d, details.RefreshInterval),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresMirrorDetailsToSchema(details)}),
 	)

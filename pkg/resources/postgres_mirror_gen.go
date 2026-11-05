@@ -104,8 +104,8 @@ func postgresMirrorParseId(id string) (sdk.AccountObjectIdentifier, error) {
 
 func postgresMirrorApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreatePostgresMirrorArgumentsRequest) error {
 	return errors.Join(
-		setMappedValueCreateBuilder(d, "postgres_tables", request.WithPostgresTables, toPostgresMirrorPostgresTables),
-		setMappedValueCreateBuilder(d, "postgres_schemas", request.WithPostgresSchemas, toPostgresMirrorPostgresSchemas),
+		setMappedValueCreateBuilder(d, "postgres_tables", request.WithPostgresTables, toPostgresMirrorName),
+		setMappedValueCreateBuilder(d, "postgres_schemas", request.WithPostgresSchemas, toPostgresMirrorName),
 		attributeMappedValueCreateBuilder(d, "target_table_type", request.WithTargetTableType, sdk.ToPostgresMirrorTargetTableType),
 		attributeMappedValueCreateBuilder(d, "external_volume", request.WithExternalVolume, quotedAccountObjectName),
 		attributeMappedValueCreateBuilder(d, "warehouse", request.WithWarehouse, bareAccountObjectName),

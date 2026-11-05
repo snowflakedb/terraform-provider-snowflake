@@ -128,6 +128,11 @@ func (p *PostgresMirrorModel) WithPostgresInstance(postgresInstance string) *Pos
 	return p
 }
 
+func (p *PostgresMirrorModel) WithPostgresInstanceSdk(postgresInstance sdk.AccountObjectIdentifier) *PostgresMirrorModel {
+	p.PostgresInstance = tfconfig.StringVariable(postgresInstance.Name())
+	return p
+}
+
 // postgres_schemas attribute type is not yet supported, so WithPostgresSchemas can't be generated
 
 // postgres_tables attribute type is not yet supported, so WithPostgresTables can't be generated
@@ -136,6 +141,11 @@ func (p *PostgresMirrorModel) WithPostgresInstance(postgresInstance string) *Pos
 
 func (p *PostgresMirrorModel) WithTargetDatabase(targetDatabase string) *PostgresMirrorModel {
 	p.TargetDatabase = tfconfig.StringVariable(targetDatabase)
+	return p
+}
+
+func (p *PostgresMirrorModel) WithTargetDatabaseSdk(targetDatabase sdk.AccountObjectIdentifier) *PostgresMirrorModel {
+	p.TargetDatabase = tfconfig.StringVariable(targetDatabase.Name())
 	return p
 }
 
