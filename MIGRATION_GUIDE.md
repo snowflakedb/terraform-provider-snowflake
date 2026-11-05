@@ -98,6 +98,25 @@ data "snowflake_alerts" "example" {
 }
 ```
 
+### *(new feature)* `token_file_path` provider field
+
+We have added an optional `token_file_path` provider field. The driver re-reads that file on every new connection for OAuth, programmatic access token, and OIDC workload identity authentication. A process can rewrite the file during a long apply, and later connections use the new token.
+
+```terraform
+provider "snowflake" {
+  organization_name          = "<organization_name>"
+  account_name               = "<account_name>"
+  user                       = "<user_name>"
+  authenticator              = "WORKLOAD_IDENTITY"
+  workload_identity_provider = "OIDC"
+  token_file_path            = "<token_file_path>"
+}
+```
+
+`token` and `token_file_path` cannot be set together, including when `token` comes from a TOML profile. AWS, GCP, and Azure workload identity do not read this file. A Terraform Cloud/Enterprise token from `tfc_workload_identity_token_tag` still takes precedence and clears `token_file_path`. Leaving the field unset keeps the existing authentication behavior unchanged. The path can also be sourced from `SNOWFLAKE_TOKEN_FILE_PATH` or from `token_file_path` in the TOML configuration file. See the [authentication methods guide](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/authentication_methods) for details.
+
+Reference: [#5364](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5364).
+
 ### *(new feature)* Postgres mirror resource and data source
 
 We have added a new preview resource, [`snowflake_postgres_mirror`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_mirror), for managing [Postgres data mirrors](https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring), which replicate Postgres tables into a Snowflake database. Changes to `postgres_tables`, `postgres_schemas`, `refresh_interval`, and `warehouse` are applied in place with `ALTER_MIRROR`, without copying the existing tables again. `terraform apply` returns before the initial copy of the tables finishes. Existing mirrors can be imported by name.

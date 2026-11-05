@@ -91,6 +91,7 @@ func TestLoadConfigFileWithInvalidFieldTypeFailsLegacy(t *testing.T) {
 		{name: "InsecureMode", fieldName: "insecuremode", wantType: "bool"},
 		{name: "OcspFailOpen", fieldName: "ocspfailopen", wantType: "bool"},
 		{name: "Token", fieldName: "token", wantType: "string"},
+		{name: "TokenFilePath", fieldName: "tokenfilepath", wantType: "string"},
 		{name: "KeepSessionAlive", fieldName: "keepsessionalive", wantType: "bool"},
 		{name: "PrivateKey", fieldName: "privatekey", wantType: "string"},
 		{name: "PrivateKeyPassphrase", fieldName: "privatekeypassphrase", wantType: "string"},
@@ -258,6 +259,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 			WithInsecureMode(true).
 			WithOcspFailOpen(true).
 			WithToken("token").
+			WithTokenFilePath("token_file_path").
 			WithKeepSessionAlive(true).
 			WithPrivateKey(encryptedKey).
 			WithPrivateKeyPassphrase("password").
@@ -332,6 +334,7 @@ func TestProfileConfigLegacy(t *testing.T) {
 		assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 		assert.Equal(t, 1, config.MaxRetryCount)
 		assert.Equal(t, "token", config.Token)
+		assert.Equal(t, "token_file_path", config.TokenFilePath)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 		assert.True(t, config.ServerSessionKeepAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
@@ -447,6 +450,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				WithInsecureMode(true).
 				WithOcspFailOpen(true).
 				WithToken("token").
+				WithTokenFilePath("token_file_path").
 				WithKeepSessionAlive(true).
 				WithPrivateKey(privateKey).
 				WithPrivateKeyPassphrase("passphrase").
@@ -501,6 +505,7 @@ func TestLegacyConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
+				assert.Equal(t, "token_file_path", got.TokenFilePath)
 				assert.True(t, got.ServerSessionKeepAlive)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)

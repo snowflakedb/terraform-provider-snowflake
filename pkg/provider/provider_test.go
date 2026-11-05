@@ -119,6 +119,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Zero(t, config.ExternalBrowserTimeout)
 	assert.Empty(t, config.OCSPFailOpen)
 	assert.Empty(t, config.Token)
+	assert.Empty(t, config.TokenFilePath)
 	assert.Empty(t, config.ServerSessionKeepAlive)
 	assert.Empty(t, config.ClientRequestMfaToken)
 	assert.Empty(t, config.ClientStoreTemporaryCredential)
@@ -201,6 +202,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"oauth_redirect_uri":                     "oauth_redirect_uri",
 		"oauth_scope":                            "oauth_scope",
 		"enable_single_use_refresh_tokens":       "true",
+		"token_file_path":                        "token_file_path",
 		"workload_identity_provider":             "workload_identity_provider",
 		"workload_identity_entra_resource":       "workload_identity_entra_resource",
 		"log_query_text":                         true,
@@ -264,6 +266,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 	assert.Equal(t, "oauth_scope", config.OauthScope)
 	assert.True(t, config.EnableSingleUseRefreshTokens)
+	assert.Equal(t, "token_file_path", config.TokenFilePath)
 	assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 	assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 	assert.True(t, config.LogQueryText)
@@ -281,6 +284,21 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.True(t, config.CrlOnDiskCacheDisabled)
 	assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
+}
+
+func TestGetDriverConfigFromTerraform_TokenAndTokenFilePath(t *testing.T) {
+	t.Setenv(snowflakeenvs.Account, "")
+	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{
+		"token":           "token",
+		"token_file_path": "token_file_path",
+	})
+
+	config, diags := getDriverConfigFromTerraform(d, experimentalfeatures.Experiments{})
+
+	require.Empty(t, diags)
+	assert.Equal(t, "token", config.Token)
+	assert.Equal(t, "token_file_path", config.TokenFilePath)
+	require.ErrorContains(t, config.Validate(), "token and tokenFilePath cannot be specified at the same time")
 }
 
 func TestGetDriverConfigFromTerraform_AccountFallback(t *testing.T) {
