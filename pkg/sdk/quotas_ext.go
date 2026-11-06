@@ -327,6 +327,14 @@ func NewQuotaRemoveSharedResourceArgsRequestFromInstance(domain QuotaSharedResou
 	return request, nil
 }
 
+func NewQuotaUserTagRequestFromTag(tag SchemaObjectIdentifier, value string) *QuotaUserTagRequest {
+	return NewQuotaUserTagRequest(*NewQuotaUserTagReferenceRequest(*NewQuotaUserTagReferenceArgumentsRequest(tag)), value)
+}
+
+func NewQuotaExcludedUserTagRequestFromTag(tag SchemaObjectIdentifier, value string) *QuotaExcludedUserTagRequest {
+	return NewQuotaExcludedUserTagRequest(*NewQuotaExcludedUserTagReferenceRequest(*NewQuotaExcludedUserTagReferenceArgumentsRequest(tag)), value)
+}
+
 func NewQuotaSetAdminEmailsArgsRequestFromEmails(emails ...string) *QuotaSetAdminEmailsArgsRequest {
 	return NewQuotaSetAdminEmailsArgsRequest(strings.Join(emails, ", "))
 }

@@ -128,10 +128,10 @@ type AddSharedResourceQuotaOptions struct {
 type QuotaAddSharedResourceArgs struct {
 	Domain                QuotaSharedResourceDomain `ddl:"keyword,single_quotes"`
 	InstanceName          *string                   `ddl:"keyword,single_quotes"`
-	Warehouse             *AccountObjectIdentifier  `ddl:"identifier,system_reference,subquery" sql:"WAREHOUSE"`
-	CortexAgent           *SchemaObjectIdentifier   `ddl:"identifier,system_reference,subquery" sql:"CORTEX AGENT"`
-	SnowflakeIntelligence *AccountObjectIdentifier  `ddl:"identifier,system_reference,subquery" sql:"SNOWFLAKE INTELLIGENCE"`
-	AiGateway             *AccountObjectIdentifier  `ddl:"identifier,system_reference,subquery" sql:"AI GATEWAY"`
+	Warehouse             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
+	CortexAgent           *SchemaObjectIdentifier   `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
+	SnowflakeIntelligence *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"SNOWFLAKE INTELLIGENCE"`
+	AiGateway             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"AI GATEWAY"`
 }
 
 // RemoveSharedResourceQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas.
@@ -144,10 +144,10 @@ type RemoveSharedResourceQuotaOptions struct {
 type QuotaRemoveSharedResourceArgs struct {
 	Domain                QuotaSharedResourceDomain `ddl:"keyword,single_quotes"`
 	InstanceName          *string                   `ddl:"keyword,single_quotes"`
-	Warehouse             *AccountObjectIdentifier  `ddl:"identifier,system_reference,subquery" sql:"WAREHOUSE"`
-	CortexAgent           *SchemaObjectIdentifier   `ddl:"identifier,system_reference,subquery" sql:"CORTEX AGENT"`
-	SnowflakeIntelligence *AccountObjectIdentifier  `ddl:"identifier,system_reference,subquery" sql:"SNOWFLAKE INTELLIGENCE"`
-	AiGateway             *AccountObjectIdentifier  `ddl:"identifier,system_reference,subquery" sql:"AI GATEWAY"`
+	Warehouse             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
+	CortexAgent           *SchemaObjectIdentifier   `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
+	SnowflakeIntelligence *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"SNOWFLAKE INTELLIGENCE"`
+	AiGateway             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"AI GATEWAY"`
 }
 
 // SetUserTagsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas.
@@ -163,8 +163,20 @@ type QuotaSetUserTagsArgs struct {
 }
 
 type QuotaUserTag struct {
-	Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"TAG,SESSION,APPLYBUDGET"`
-	Value string                 `ddl:"keyword,single_quotes"`
+	Reference QuotaUserTagReference `ddl:"list,no_comma"`
+	Value     string                `ddl:"keyword,single_quotes"`
+}
+
+type QuotaUserTagReference struct {
+	function  bool                           `ddl:"static" sql:"SYSTEM$REFERENCE"`
+	Arguments QuotaUserTagReferenceArguments `ddl:"list,must_parentheses"`
+}
+
+type QuotaUserTagReferenceArguments struct {
+	objectType bool                   `ddl:"static" sql:"'TAG'"`
+	Tag        SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+	scope      bool                   `ddl:"static" sql:"'SESSION'"`
+	privilege  bool                   `ddl:"static" sql:"'APPLYBUDGET'"`
 }
 
 // ExcludeUsersQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas.
@@ -185,8 +197,20 @@ type QuotaExcludeUsersByTag struct {
 }
 
 type QuotaExcludedUserTag struct {
-	Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"TAG,SESSION,APPLYBUDGET"`
-	Value string                 `ddl:"keyword,single_quotes"`
+	Reference QuotaExcludedUserTagReference `ddl:"list,no_comma"`
+	Value     string                        `ddl:"keyword,single_quotes"`
+}
+
+type QuotaExcludedUserTagReference struct {
+	function  bool                                   `ddl:"static" sql:"SYSTEM$REFERENCE"`
+	Arguments QuotaExcludedUserTagReferenceArguments `ddl:"list,must_parentheses"`
+}
+
+type QuotaExcludedUserTagReferenceArguments struct {
+	objectType bool                   `ddl:"static" sql:"'TAG'"`
+	Tag        SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+	scope      bool                   `ddl:"static" sql:"'SESSION'"`
+	privilege  bool                   `ddl:"static" sql:"'APPLYBUDGET'"`
 }
 
 type QuotaExcludeUsersByUser struct {
