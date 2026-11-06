@@ -3,6 +3,8 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -26,11 +28,14 @@ var organizationListingSchema = map[string]*schema.Schema{
 		Type:     schema.TypeList,
 		Required: true,
 		MaxItems: 1,
-		Description: externalChangesNotDetectedFieldDescription(joinWithSpace(
+		Description: joinWithSpace(
 			"Specifies the way manifest is provided for the organization listing. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference).",
 			"An organization listing manifest has to specify `title`, `organization_targets`, and `locations`.",
 			"Publishing an organization listing also requires `organization_profile`.",
-		)),
+			"For `from_string`, the provider compares the manifest returned by `DESCRIBE LISTING` with the configured one and detects external changes to the configured keys; keys that are only set outside of Terraform are not tracked.",
+			"Importing a listing that does not use a stage sets `from_string` to the manifest returned by Snowflake.",
+			"External changes to a manifest from a stage are not detected.",
+		),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"from_string": {
@@ -38,6 +43,7 @@ var organizationListingSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Description:      joinWithSpace("Manifest provided as a string. For more information on manifest syntax, see [Listing manifest reference](https://docs.snowflake.com/en/progaccess/listing-manifest-reference). Also, the [multiline string syntax](https://developer.hashicorp.com/terraform/language/expressions/strings#heredoc-strings) is a must here. A proper YAML indentation (2 spaces) is required.", doubleDollarQuotesDescription()),
 					ValidateDiagFunc: forbidDoubleDollarQuotes,
+					DiffSuppressFunc: suppressEquivalentOrganizationListingManifest,
 					ExactlyOneOf:     []string{"manifest.0.from_string", "manifest.0.from_stage"},
 				},
 				"from_stage": {
@@ -145,7 +151,7 @@ func OrganizationListing() *schema.Resource {
 		Description: "Resource used to manage organization listing objects. For more information, check [CREATE ORGANIZATION LISTING](https://docs.snowflake.com/en/sql-reference/sql/create-organization-listing).",
 
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingCreateWrapper(resources.OrganizationListing, CreateOrganizationListing)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingReadWrapper(resources.OrganizationListing, ReadListing)),
+		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingReadWrapper(resources.OrganizationListing, ReadOrganizationListing)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingUpdateWrapper(resources.OrganizationListing, UpdateOrganizationListing)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OrganizationListingResource), TrackingDeleteWrapper(resources.OrganizationListing, deleteFunc)),
 
@@ -227,7 +233,7 @@ func CreateOrganizationListing(ctx context.Context, d *schema.ResourceData, meta
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
 
-	return ReadListing(ctx, d, meta)
+	return ReadOrganizationListing(ctx, d, meta)
 }
 
 func UpdateOrganizationListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -332,7 +338,81 @@ func UpdateOrganizationListing(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	return ReadListing(ctx, d, meta)
+	return ReadOrganizationListing(ctx, d, meta)
+}
+
+func ReadOrganizationListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	listing, err := client.Listings.ShowByIDSafely(ctx, id)
+	if err != nil {
+		if errors.Is(err, sdk.ErrObjectNotFound) {
+			d.SetId("")
+			return diag.Diagnostics{
+				diag.Diagnostic{
+					Severity: diag.Warning,
+					Summary:  "Failed to query listing. Marking the resource as removed.",
+					Detail:   fmt.Sprintf("Listing id: %s, Err: %s", id.FullyQualifiedName(), err),
+				},
+			}
+		}
+		return diag.FromErr(err)
+	}
+
+	listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if errs := errors.Join(
+		setOrganizationListingManifestFromDescribe(d, listingDetails),
+		setOptionalValueWithMapping(d, "share", listingDetails.Share, (*sdk.AccountObjectIdentifier).FullyQualifiedName),
+		setOptionalValueWithMapping(d, "application_package", listingDetails.ApplicationPackage, (*sdk.AccountObjectIdentifier).FullyQualifiedName),
+		d.Set("publish", booleanStringFromBool(listing.State == sdk.ListingStatePublished)),
+		d.Set("comment", listing.Comment),
+		d.Set(ShowOutputAttributeName, []map[string]any{schemas.ListingToSchema(listing)}),
+		d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
+	); errs != nil {
+		return diag.FromErr(errs)
+	}
+
+	return nil
+}
+
+// setOrganizationListingManifestFromDescribe keeps the inline manifest in the state while Snowflake still has every
+// configured key and value, and replaces it with the manifest returned by DESCRIBE LISTING otherwise, so that the next
+// plan shows the external change. Manifests from a stage are left untouched.
+func setOrganizationListingManifestFromDescribe(d *schema.ResourceData, listingDetails *sdk.ListingDetails) error {
+	describedManifest := listingDetails.ManifestYaml
+	// DESCRIBE LISTING returns no manifest when Snowflake fails to render it.
+	if strings.TrimSpace(describedManifest) == "" {
+		return nil
+	}
+	if fromStage, ok := d.Get("manifest.0.from_stage").([]any); ok && len(fromStage) > 0 {
+		return nil
+	}
+
+	describedManifestValue := []any{map[string]any{"from_string": describedManifest}}
+
+	currentManifest := d.Get("manifest.0.from_string").(string)
+	if currentManifest == "" {
+		// Import: only listings that were never sourced from a stage get the inline manifest.
+		if listingDetails.LiveVersionUri != nil || listingDetails.LastCommittedVersionUri != nil {
+			return nil
+		}
+		return d.Set("manifest", describedManifestValue)
+	}
+
+	contains, err := organizationListingManifestContains(describedManifest, currentManifest)
+	if err != nil || contains {
+		return nil
+	}
+	return d.Set("manifest", describedManifestValue)
 }
 
 // organizationListingPublishForAlterAs returns the PUBLISH value for ALTER LISTING ... AS and whether it should be sent.

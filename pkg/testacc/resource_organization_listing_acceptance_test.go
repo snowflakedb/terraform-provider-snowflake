@@ -98,7 +98,7 @@ func TestAcc_OrganizationListing_BasicUseCase_Inlined(t *testing.T) {
 					t,
 					resourceassert.ImportedOrganizationListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
-						HasNoManifest().
+						HasManifestFromStringNotEmpty().
 						HasShareEmpty().
 						HasApplicationPackageEmpty().
 						HasPublishString(r.BooleanFalse).
@@ -146,7 +146,7 @@ func TestAcc_OrganizationListing_BasicUseCase_Inlined(t *testing.T) {
 					t,
 					resourceassert.ImportedOrganizationListingResource(t, helpers.EncodeResourceIdentifier(id)).
 						HasNameString(id.Name()).
-						HasNoManifest().
+						HasManifestFromStringNotEmpty().
 						HasShareString(share.ID().FullyQualifiedName()).
 						HasApplicationPackageEmpty().
 						HasPublishString(r.BooleanTrue).
@@ -229,6 +229,48 @@ func TestAcc_OrganizationListing_BasicUseCase_Inlined(t *testing.T) {
 						HasComment(""),
 				),
 			},
+			// external change of a configured manifest key is detected and reverted
+			{
+				PreConfig: func() {
+					testClient().Listing.Alter(t, sdk.NewAlterListingRequest(id).WithAlterListingAs(
+						*sdk.NewAlterListingAsRequest(manifest).WithPublish(false).WithReview(false),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(modelUnset.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelUnset),
+				Check: assertThat(
+					t,
+					resourceassert.OrganizationListingResource(t, modelUnset.ResourceReference()).
+						HasManifestFromString(differentSubtitleManifest),
+					resourceshowoutputassert.ListingShowOutput(t, modelUnset.ResourceReference()).
+						HasTitle(differentSubtitleTitle).
+						HasSubtitle("different_subtitle").
+						HasState(sdk.ListingStateUnpublished),
+				),
+			},
+			// external change of a manifest key that is not in the configuration is not detected
+			{
+				PreConfig: func() {
+					manifestWithUsageExamples := differentSubtitleManifest + `usage_examples:
+- title: example
+  description: example
+  query: SELECT 1
+`
+					testClient().Listing.Alter(t, sdk.NewAlterListingRequest(id).WithAlterListingAs(
+						*sdk.NewAlterListingAsRequest(manifestWithUsageExamples).WithPublish(false).WithReview(false),
+					))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Config: accconfig.FromModels(t, modelUnset),
+			},
 		},
 	})
 }
@@ -283,6 +325,19 @@ func TestAcc_OrganizationListing_BasicUseCase_FromStage(t *testing.T) {
 						HasTitle(title).
 						HasState(sdk.ListingStateDraft).
 						HasDistribution("ORGANIZATION"),
+				),
+			},
+			// importing a listing sourced from a stage does not adopt the manifest returned by Snowflake
+			{
+				Config:       accconfig.FromModels(t, modelBasic),
+				ResourceName: modelBasic.ResourceReference(),
+				ImportState:  true,
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedOrganizationListingResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasNameString(id.Name()).
+						HasNoManifest().
+						HasPublishString(r.BooleanFalse),
 				),
 			},
 			{
