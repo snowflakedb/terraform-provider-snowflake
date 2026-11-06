@@ -126,6 +126,7 @@ var RepositoryLabels = []string{
 	"resource:procedure_scala",
 	"resource:procedure_sql",
 	"resource:projection_policy",
+	"resource:quota",
 	"resource:replication_group",
 	"resource:replication_group_secondary",
 	"resource:resource_monitor",

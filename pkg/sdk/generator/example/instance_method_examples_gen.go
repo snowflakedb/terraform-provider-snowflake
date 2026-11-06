@@ -9,6 +9,7 @@ import (
 type InstanceMethodExamples interface {
 	AddNotificationIntegration(ctx context.Context, request *AddNotificationIntegrationInstanceMethodExampleRequest) (*AddNotificationIntegrationResult, error)
 	GetSpendingLimit(ctx context.Context, request *GetSpendingLimitInstanceMethodExampleRequest) error
+	SetScope(ctx context.Context, request *SetScopeInstanceMethodExampleRequest) (*string, error)
 }
 
 // AddNotificationIntegrationInstanceMethodExampleOptions is based on https://docs.snowflake.com/en/sql-reference/classes/budget/method/add_notification_integration.
@@ -38,3 +39,33 @@ type GetSpendingLimitInstanceMethodExampleOptions struct {
 }
 
 type instanceMethodExampleGetSpendingLimitArgs struct{}
+
+// SetScopeInstanceMethodExampleOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas.
+type SetScopeInstanceMethodExampleOptions struct {
+	call bool                              `ddl:"static" sql:"CALL"`
+	name AccountObjectIdentifier           `ddl:"identifier,instance_method" sql:"SET_SCOPE"`
+	args InstanceMethodExampleSetScopeArgs `ddl:"list,must_parentheses"`
+}
+
+type InstanceMethodExampleSetScopeArgs struct {
+	Tags    []ExampleTagValue `ddl:"list,must_brackets,array_elements"`
+	Users   []string          `ddl:"list,must_brackets,single_quotes"`
+	Enabled bool              `ddl:"parameter,no_equals"`
+}
+
+type ExampleTagValue struct {
+	Reference ExampleTagReference `ddl:"list,no_comma"`
+	Value     string              `ddl:"keyword,single_quotes"`
+}
+
+type ExampleTagReference struct {
+	function  bool                         `ddl:"static" sql:"SYSTEM$REFERENCE"`
+	Arguments ExampleTagReferenceArguments `ddl:"list,must_parentheses"`
+}
+
+type ExampleTagReferenceArguments struct {
+	objectType bool                   `ddl:"static" sql:"'TAG'"`
+	Tag        SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+	scope      bool                   `ddl:"static" sql:"'SESSION'"`
+	privilege  bool                   `ddl:"static" sql:"'APPLYBUDGET'"`
+}
