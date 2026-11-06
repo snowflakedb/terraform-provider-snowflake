@@ -28,7 +28,6 @@ const (
 const (
 	instanceMethodClassifier  = "instance_method"
 	systemReferenceClassifier = "system_reference"
-	subqueryClassifier        = "subquery"
 	arrayElementsClassifier   = "array_elements"
 )
 
@@ -433,23 +432,13 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 					}
 					return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
 				}
-				// the sql tag holds the object type, followed by any comma-separated extra arguments (e.g. scope and privileges)
+				// system_reference classifier: render as SYSTEM$REFERENCE('<objectType>', '<fqn>')
 				if hasDdlClassifier(ddlTagParts, systemReferenceClassifier) {
 					objectID, ok := reflectedValue.(ObjectIdentifier)
 					if !ok {
 						return nil, fmt.Errorf("system_reference classifier requires ObjectIdentifier, got %T", reflectedValue)
 					}
-					sqlTagParts := strings.Split(sqlTag, ",")
-					extraArgs := make([]string, 0, len(sqlTagParts)-1)
-					for _, arg := range sqlTagParts[1:] {
-						extraArgs = append(extraArgs, strings.TrimSpace(arg))
-					}
-					return sqlSystemReferenceClause{
-						objectType: strings.TrimSpace(sqlTagParts[0]),
-						object:     objectID,
-						extraArgs:  extraArgs,
-						inSubquery: hasDdlClassifier(ddlTagParts, subqueryClassifier),
-					}, nil
+					return sqlSystemReferenceClause{objectType: sqlTag, object: objectID}, nil
 				}
 				return sqlIdentifierClause{
 					key:   sqlTag,
@@ -842,27 +831,8 @@ func (v sqlInstanceMethodClause) String() (string, error) {
 type sqlSystemReferenceClause struct {
 	objectType string
 	object     ObjectIdentifier
-	extraArgs  []string
-	inSubquery bool
-}
-
-// quoteSystemReferenceArg wraps an argument in single quotes, escaping only the characters that would end the string literal
-// (double quotes inside names are already escaped by FullyQualifiedNameEscaped).
-func quoteSystemReferenceArg(arg string) string {
-	arg = strings.ReplaceAll(arg, `\`, `\\`)
-	arg = strings.ReplaceAll(arg, `'`, `\'`)
-	return fmt.Sprintf("'%s'", arg)
 }
 
 func (v sqlSystemReferenceClause) String() (string, error) {
-	args := make([]string, 0, 2+len(v.extraArgs))
-	args = append(args, quoteSystemReferenceArg(v.objectType), quoteSystemReferenceArg(v.object.FullyQualifiedNameEscaped()))
-	for _, arg := range v.extraArgs {
-		args = append(args, quoteSystemReferenceArg(arg))
-	}
-	s := fmt.Sprintf("SYSTEM$REFERENCE(%s)", strings.Join(args, ", "))
-	if v.inSubquery {
-		return fmt.Sprintf("(SELECT %s)", s), nil
-	}
-	return s, nil
+	return fmt.Sprintf("SYSTEM$REFERENCE(%s, %s)", SingleQuotes.Modify(v.objectType), SingleQuotes.Modify(v.object.FullyQualifiedNameEscaped())), nil
 }

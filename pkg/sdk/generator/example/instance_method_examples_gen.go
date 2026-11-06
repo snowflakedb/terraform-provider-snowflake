@@ -54,6 +54,18 @@ type InstanceMethodExampleSetScopeArgs struct {
 }
 
 type ExampleTagValue struct {
-	Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"TAG,SESSION,APPLYBUDGET"`
-	Value string                 `ddl:"keyword,single_quotes"`
+	Reference ExampleTagReference `ddl:"list,no_comma"`
+	Value     string              `ddl:"keyword,single_quotes"`
+}
+
+type ExampleTagReference struct {
+	function  bool                         `ddl:"static" sql:"SYSTEM$REFERENCE"`
+	Arguments ExampleTagReferenceArguments `ddl:"list,must_parentheses"`
+}
+
+type ExampleTagReferenceArguments struct {
+	objectType bool                   `ddl:"static" sql:"'TAG'"`
+	Tag        SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+	scope      bool                   `ddl:"static" sql:"'SESSION'"`
+	privilege  bool                   `ddl:"static" sql:"'APPLYBUDGET'"`
 }
