@@ -1008,3 +1008,86 @@ func TestAcc_IcebergTable_migrateFromVersion_2_20_0(t *testing.T) {
 		},
 	})
 }
+
+// https://github.com/snowflakedb/terraform-provider-snowflake/issues/5365
+func TestAcc_IcebergTable_PartitionByTimeTransforms_migrateFromVersion_2_23_0(t *testing.T) {
+	awsBaseUrl := testenvs.GetOrSkipTest(t, testenvs.AwsExternalBucketUrl)
+	awsKeyId := testenvs.GetOrSkipTest(t, testenvs.AwsExternalKeyId)
+	awsSecretKey := testenvs.GetOrSkipTest(t, testenvs.AwsExternalSecretKey)
+
+	s3CompatBaseUrl := strings.Replace(awsBaseUrl, "s3://", "s3compat://", 1)
+	s3CompatEndpoint := "s3.us-west-2.amazonaws.com"
+
+	externalVolumeId, externalVolumeCleanup := testClient().ExternalVolume.CreateS3Compat(t, s3CompatBaseUrl, s3CompatEndpoint, awsKeyId, awsSecretKey)
+	t.Cleanup(externalVolumeCleanup)
+
+	db, dbCleanup := testClient().Database.CreateDatabaseWithRequest(t, testClient().Database.TestParametersSet(testClient().Ids.RandomAccountObjectIdentifier()).WithExternalVolume(externalVolumeId))
+	t.Cleanup(dbCleanup)
+	schemaId := sdk.NewDatabaseObjectIdentifier(db.ID().Name(), "PUBLIC")
+
+	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaId)
+
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "YEAR_COL", Type: testdatatypes.DataTypeTimestampNTZ_6},
+		{Name: "MONTH_COL", Type: testdatatypes.DataTypeDate},
+		{Name: "DAY_COL", Type: testdatatypes.DataTypeTimestampNTZ_6},
+		{Name: "HOUR_COL", Type: testdatatypes.DataTypeTimestampNTZ_6},
+	}
+
+	modelWithTimePartitions := model.IcebergTableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithPartitionBy(
+			model.IcebergTablePartitionByYear("YEAR_COL"),
+			model.IcebergTablePartitionByMonth("MONTH_COL"),
+			model.IcebergTablePartitionByDay("DAY_COL"),
+			model.IcebergTablePartitionByHour("HOUR_COL"),
+		)
+	ref := modelWithTimePartitions.ResourceReference()
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.IcebergTableResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.IcebergTable),
+		Steps: []resource.TestStep{
+			// In v2.23.0 the provider panics on create because it reads year/month/day/hour as nested blocks.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.23.0"),
+				Config:            accconfig.FromModels(t, providerModel, modelWithTimePartitions),
+				ExpectError:       regexp.MustCompile(`(?s)(Plugin did not respond|interface conversion: interface \{\} is nil, not string)`),
+			},
+			// The same configuration is applied by the current version.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: accconfig.FromModels(t, modelWithTimePartitions),
+				Check: assertThat(
+					t,
+					resourceassert.IcebergTableResource(t, ref).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasPartitionByLength(4).
+						HasPartitionByYear(0, "YEAR_COL").
+						HasPartitionByMonth(1, "MONTH_COL").
+						HasPartitionByDay(2, "DAY_COL").
+						HasPartitionByHour(3, "HOUR_COL"),
+				),
+			},
+			// Import
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithTimePartitions),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateVerifyIgnore:  []string{"change_tracking", "error_logging", "path_layout", "iceberg_version", "base_location"},
+			},
+		},
+	})
+}

@@ -26,6 +26,28 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.23.x ➞ v2.24.0
+
+### *(bug fix)* `snowflake_iceberg_table` supports `year`, `month`, `day`, and `hour` in `partition_by`
+
+Previously, [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) crashed during `terraform apply` when a `partition_by` entry used `year`, `month`, `day`, or `hour`. The provider plugin failed with `panic: interface conversion: interface {} is nil, not string`, and the table was not created. `identity`, `bucket`, and `truncate` were not affected.
+
+The provider now creates the table with the [partition transform](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-snowflake) you configure. Each of these fields takes the name of the source column, as `identity` does:
+
+```terraform
+resource "snowflake_iceberg_table" "example" {
+  # ...
+
+  partition_by {
+    month = "CREATED_DATE"
+  }
+}
+```
+
+No configuration changes are required. If you worked around the crash by creating the table outside Terraform, import it with `terraform import` and keep the same `partition_by` entry in your configuration.
+
+Reference: [#5365](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5365).
+
 ## v2.22.x ➞ v2.23.0
 
 ### *(breaking change)* `snowflake_alert` reworked
