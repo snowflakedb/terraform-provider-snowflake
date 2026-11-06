@@ -32,11 +32,13 @@ var AlertAttrs = struct {
 	OwnerRoleType ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
-		Name:        "enabled",
-		Type:        ssot.AttrBool,
-		NativeBool:  true,
-		SkipCreate:  true,
-		Description: "Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).",
+		Name:       "enabled",
+		Type:       ssot.AttrBool,
+		NativeBool: true,
+		SkipCreate: true,
+		// Applied after create with the RESUME keyword linked to true.
+		SetAfterCreate: true,
+		Description:    "Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).",
 	},
 	Comment: ssot.Attribute{
 		Name:           "comment",
@@ -170,7 +172,7 @@ var Alert = ssot.Object{
 		ssot.WithNewCreateRequest(ssot.ExtCall()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
-		ssot.WithAfterCreate(ssot.ExtCall()),
+		ssot.WithAfterCreate(ssot.Generated()),
 		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Generated()),
@@ -227,8 +229,8 @@ var Alert = ssot.Object{
 		&AlertAttrs.Comment,
 	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
-		ssot.AlterKeyword("RESUME"),
-		ssot.AlterKeyword("SUSPEND"),
+		ssot.AlterKeywordFor(&AlertAttrs.Enabled, true, "RESUME"),
+		ssot.AlterKeywordFor(&AlertAttrs.Enabled, false, "SUSPEND"),
 		ssot.AlterSet(),
 		ssot.AlterUnset(),
 		ssot.AlterKeywordList("ModifyCondition", "MODIFY CONDITION EXISTS", "string"),

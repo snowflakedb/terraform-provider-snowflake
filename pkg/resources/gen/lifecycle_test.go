@@ -109,6 +109,55 @@ func Test_lifecycle_afterCreate(t *testing.T) {
 	})
 }
 
+func Test_lifecycle_afterCreateSetAfterCreate(t *testing.T) {
+	toggle := func(name string) ssot.Attribute {
+		return ssot.Attribute{Name: name, Type: ssot.AttrBool, NativeBool: true, SkipCreate: true, SetAfterCreate: true}
+	}
+	enabled, managed := toggle("enabled"), toggle("managed")
+	model := func(attributes []ssot.Attribute, clauses ...ssot.AlterClause) ResourceModel {
+		return lifecycleModel(withHooks(ssot.WithAfterCreate(ssot.Generated())), func(obj *ssot.Object) {
+			obj.Attributes = attributes
+			obj.Alter = ssot.AlterSpec{Clauses: clauses}
+		})
+	}
+
+	t.Run("calls the keyword linked to true and warns", func(t *testing.T) {
+		got := renderTemplate(t, "afterCreate", model([]ssot.Attribute{enabled},
+			ssot.AlterKeywordFor(&enabled, false, "SUSPEND"),
+			ssot.AlterKeywordFor(&enabled, true, "RESUME"),
+		))
+		require.Equal(t, `var afterCreateDiags diag.Diagnostics
+	if d.Get("enabled").(bool) {
+		if err := meta.(*provider.Context).Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithResume(true)); err != nil {
+			afterCreateDiags = append(afterCreateDiags, diag.Diagnostic{Severity: diag.Warning, Summary: fmt.Sprintf("RESUME after create: %s", err.Error())})
+		}
+	}
+	return append(afterCreateDiags, ReadPoolFunc(false)(ctx, d, meta)...)
+`, got)
+	})
+
+	t.Run("attributes run in attribute order", func(t *testing.T) {
+		got := renderTemplate(t, "afterCreate", model([]ssot.Attribute{enabled, managed},
+			ssot.AlterKeywordFor(&managed, true, "ENABLE MANAGED ACCESS"),
+			ssot.AlterKeywordFor(&enabled, true, "RESUME"),
+		))
+		require.Less(t, strings.Index(got, "WithResume(true)"), strings.Index(got, "WithEnableManagedAccess(true)"))
+	})
+
+	t.Run("attributes without SetAfterCreate are left out", func(t *testing.T) {
+		plain := enabled
+		plain.SetAfterCreate = false
+		require.Empty(t, model([]ssot.Attribute{plain}, ssot.AlterKeywordFor(&plain, true, "RESUME")).AfterCreateSteps.AlterKeywords)
+	})
+
+	t.Run("the model holds the keyword data", func(t *testing.T) {
+		got := model([]ssot.Attribute{enabled}, ssot.AlterKeywordFor(&enabled, true, "ENABLE MANAGED ACCESS")).AfterCreateSteps
+		require.Equal(t, AfterCreateSteps{AlterKeywords: []AfterCreateAlterKeyword{
+			{Attribute: "enabled", Keyword: "ENABLE MANAGED ACCESS", Field: "EnableManagedAccess"},
+		}}, got)
+	})
+}
+
 func Test_lifecycle_afterAlter(t *testing.T) {
 	t.Run("omitted", func(t *testing.T) {
 		require.Equal(t, "return ReadPoolFunc(false)(ctx, d, meta)\n", renderTemplate(t, "afterAlter", lifecycleModel()))

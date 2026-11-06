@@ -158,12 +158,22 @@ type AlterClause struct {
 	Block *Attribute
 	// BlockKeyword makes the block a keyword clause. Without it the block is a parameter clause.
 	BlockKeyword bool
+	// Attribute and AttributeValue link a keyword to the bool attribute value that selects it, such as RESUME for an
+	// enabled attribute that is true. The SDK ignores them. See AlterKeywordFor.
+	Attribute      *Attribute
+	AttributeValue bool
 }
 
 // AlterKeyword is an optional action keyword, such as RESUME or ENABLE MANAGED ACCESS.
 // It is one branch of ExactlyOneValueSet.
 func AlterKeyword(sql string) AlterClause {
 	return AlterClause{Kind: AlterClauseKeyword, SQL: sql}
+}
+
+// AlterKeywordFor is AlterKeyword selected by a value of a bool attribute, such as RESUME when enabled is true and
+// SUSPEND when it is false. The resource generator reads the link; the SDK sees a plain keyword.
+func AlterKeywordFor(attribute *Attribute, value bool, sql string) AlterClause {
+	return AlterClause{Kind: AlterClauseKeyword, SQL: sql, Attribute: attribute, AttributeValue: value}
 }
 
 // AlterKeywordNotExactlyOne is an optional action keyword that may accompany another branch.
@@ -239,6 +249,16 @@ type AlterSpec struct {
 	Clauses                  []AlterClause
 	// SetConflictingFields are pairs of Set attributes that cannot be set together. SET gets ConflictingFields for each pair.
 	SetConflictingFields [][]*Attribute
+}
+
+// LinkedAlterKeyword returns the ALTER keyword clause linked to the value of the bool attribute with this name.
+func (obj Object) LinkedAlterKeyword(attributeName string, value bool) (AlterClause, bool) {
+	for _, clause := range obj.Alter.Clauses {
+		if clause.Kind == AlterClauseKeyword && clause.Attribute != nil && clause.Attribute.Name == attributeName && clause.AttributeValue == value {
+			return clause, true
+		}
+	}
+	return AlterClause{}, false
 }
 
 // HasAlterSpec reports whether this object defines an ALTER statement.

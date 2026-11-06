@@ -41,7 +41,25 @@ type ResourceModel struct {
 	SchemaStateUpgraders     []ssot.StateUpgraderFunc
 	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
 	BeforeCreateSteps        BeforeCreateSteps
+	AfterCreateSteps         AfterCreateSteps
 	*genhelpers.PreambleModel
+}
+
+// AfterCreateSteps are the data of the generated AfterCreate. Each kind of step has its own list here and its own block
+// in after_create.tmpl. To set another kind of attribute after create, add a list and a block.
+type AfterCreateSteps struct {
+	// AlterKeywords call an ALTER keyword when a bool attribute is true, such as RESUME for enabled.
+	AlterKeywords []AfterCreateAlterKeyword
+}
+
+// AfterCreateAlterKeyword calls ALTER <Keyword> after create when the bool attribute is true.
+type AfterCreateAlterKeyword struct {
+	// Attribute is the Terraform name of the bool attribute.
+	Attribute string
+	// Keyword is the SQL keyword, such as RESUME.
+	Keyword string
+	// Field is the Go field of the ALTER request, such as Resume.
+	Field string
 }
 
 // BeforeCreateSteps are the data of the generated BeforeCreate. Each kind of step has its own field here and its own block
@@ -198,6 +216,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
 		BeforeCreateSteps:                   beforeCreateSteps(input.Object),
+		AfterCreateSteps:                    afterCreateSteps(input.Object, resourceAttributes),
 		PreambleModel:                       preamble,
 	}
 	if computed, columns := showComputedAttributes(input.Object); len(computed) > 0 {
@@ -214,6 +233,25 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	model.ShowExternalChanges()
 	model.DescribeExternalChanges()
 	return model
+}
+
+// afterCreateSteps collects the SetAfterCreate attributes. A bool calls the ALTER keyword linked to true, because CREATE
+// leaves the object in the false state. Validation rejects any other SetAfterCreate attribute for now.
+func afterCreateSteps(obj ssot.Object, attributes []ssot.Attribute) AfterCreateSteps {
+	var steps AfterCreateSteps
+	for _, attribute := range attributes {
+		if !attribute.SetAfterCreate {
+			continue
+		}
+		if clause, ok := obj.LinkedAlterKeyword(attribute.Name, true); ok {
+			steps.AlterKeywords = append(steps.AlterKeywords, AfterCreateAlterKeyword{
+				Attribute: attribute.Name,
+				Keyword:   clause.SQL,
+				Field:     genhelpers.SqlToGoName(clause.SQL, true),
+			})
+		}
+	}
+	return steps
 }
 
 func beforeCreateSteps(obj ssot.Object) BeforeCreateSteps {

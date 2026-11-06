@@ -1806,3 +1806,91 @@ func Test_ValidateObject_showOutputAssertReuse(t *testing.T) {
 		require.Panics(t, func() { ValidateObject(obj) })
 	})
 }
+
+var widgetEnabled = Attribute{Name: "enabled", Type: AttrBool, NativeBool: true, SkipCreate: true, SetAfterCreate: true}
+
+func setAfterCreateObject(change func(*Object)) Object {
+	obj := Object{
+		Name:       "Widget",
+		Attributes: []Attribute{widgetEnabled},
+		Alter: AlterSpec{Clauses: []AlterClause{
+			AlterKeywordFor(&widgetEnabled, true, "RESUME"),
+			AlterKeywordFor(&widgetEnabled, false, "SUSPEND"),
+		}},
+		ResourceHooks: []ResourceHookOption{WithAfterCreate(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_ValidateObject_setAfterCreate(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(setAfterCreateObject(func(*Object) {})) })
+	})
+
+	t.Run("the false link is optional", func(t *testing.T) {
+		require.NotPanics(t, func() {
+			ValidateObject(setAfterCreateObject(func(o *Object) { o.Alter.Clauses = o.Alter.Clauses[:1] }))
+		})
+	})
+
+	for name, tc := range map[string]struct {
+		change func(*Object)
+		panics string
+	}{
+		"SetAfterCreate without SkipCreate": {
+			func(o *Object) { o.Attributes[0].SkipCreate = false },
+			`object "Widget": attribute "enabled" is SetAfterCreate and needs SkipCreate; CREATE would set it`,
+		},
+		"SetAfterCreate on an attribute that is not a native bool": {
+			func(o *Object) {
+				o.Attributes = append(o.Attributes, Attribute{Name: "size", Type: AttrInt, SkipCreate: true, SetAfterCreate: true})
+			},
+			`object "Widget": attribute "size" is SetAfterCreate, which supports only NativeBool attributes for now; another type needs a new kind of AfterCreate step`,
+		},
+		"link to an attribute that is not a native bool": {
+			func(o *Object) { o.Attributes[0].NativeBool = false },
+			`object "Widget": ALTER keyword "RESUME" links "enabled", which is not a NativeBool attribute of the object`,
+		},
+		"SetAfterCreate without a link to true": {
+			func(o *Object) { o.Alter.Clauses = []AlterClause{AlterKeywordFor(&widgetEnabled, false, "SUSPEND")} },
+			`object "Widget": attribute "enabled" is SetAfterCreate and needs an ALTER keyword linked to true (AlterKeywordFor)`,
+		},
+		"link to an attribute that the object does not have": {
+			func(o *Object) {
+				o.Alter.Clauses = append(o.Alter.Clauses, AlterKeywordFor(&Attribute{Name: "paused", Type: AttrBool, NativeBool: true}, true, "PAUSE"))
+			},
+			`object "Widget": ALTER keyword "PAUSE" links "paused", which is not a NativeBool attribute of the object`,
+		},
+		"link on a clause that is not a keyword": {
+			func(o *Object) {
+				o.Alter.Clauses = append(o.Alter.Clauses, AlterClause{Kind: AlterClauseText, SQL: "REMOVE ITEM", Attribute: &widgetEnabled})
+			},
+			`object "Widget": ALTER clause "REMOVE ITEM" links an attribute but is not a keyword`,
+		},
+		"SetAfterCreate without the generated hook": {
+			func(o *Object) { o.ResourceHooks = nil },
+			`object "Widget": SetAfterCreate attributes require WithAfterCreate(Generated())`,
+		},
+		"generated hook without SetAfterCreate": {
+			func(o *Object) { o.Attributes[0].SetAfterCreate = false },
+			`object "Widget": WithAfterCreate(Generated()) needs a SetAfterCreate attribute`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.PanicsWithValue(t, tc.panics, func() { ValidateObject(setAfterCreateObject(tc.change)) })
+		})
+	}
+}
+
+func Test_Object_LinkedAlterKeyword(t *testing.T) {
+	obj := setAfterCreateObject(func(*Object) {})
+	resume, ok := obj.LinkedAlterKeyword("enabled", true)
+	require.True(t, ok)
+	require.Equal(t, "RESUME", resume.SQL)
+	suspend, ok := obj.LinkedAlterKeyword("enabled", false)
+	require.True(t, ok)
+	require.Equal(t, "SUSPEND", suspend.SQL)
+	_, ok = obj.LinkedAlterKeyword("comment", true)
+	require.False(t, ok)
+}

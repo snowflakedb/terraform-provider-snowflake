@@ -146,23 +146,6 @@ func alertApplySetUnsetExt(d *schema.ResourceData) (*alertAlterRequestsExt, erro
 	return reqs, nil
 }
 
-// alertAfterCreateExt resumes the alert after creation when it is enabled. A failure is only a warning.
-func alertAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	if !d.Get("enabled").(bool) {
-		return nil
-	}
-	client := meta.(*provider.Context).Client
-	if err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithResume(true)); err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("Enabling alert: %s", err.Error()),
-			},
-		}
-	}
-	return nil
-}
-
 // alertBeforeAlterExt suspends the alert before any change. A failure is only logged.
 func alertBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
 	if d.HasChanges("enabled", "warehouse", "alert_schedule", "condition", "action", "comment") {
