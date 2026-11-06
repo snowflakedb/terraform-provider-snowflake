@@ -39,8 +39,9 @@ resource "snowflake_openflow_deployment_snowflake_managed" "complete" {
   display_name = "My deployment"
   # an existing event table, created with CREATE EVENT TABLE outside Terraform: the provider has no
   # resource for one, and a regular table will not do because Snowflake requires the event schema
-  event_table = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
-  comment     = "Managed by Terraform."
+  event_table      = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
+  use_private_link = "true"
+  comment          = "Managed by Terraform."
 }
 ```
 
@@ -59,6 +60,7 @@ resource "snowflake_openflow_deployment_snowflake_managed" "complete" {
 - `display_name` (String) A free-text alias for the deployment. Shown in the Openflow UI in place of the deployment's identifier when set.
 - `event_table` (String) Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions). For more information, check [EVENT_TABLE docs](https://docs.snowflake.com/en/sql-reference/parameters#event-table).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `use_private_link` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the deployment is reached over private link. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 ### Read-Only
 

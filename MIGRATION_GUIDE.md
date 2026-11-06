@@ -28,6 +28,18 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.23.x ➞ v2.24.0
 
+### *(new feature)* `use_private_link` on Snowflake-managed Openflow deployments
+
+[`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) now accepts `use_private_link`. Valid values are `"true"` and `"false"`. Leave it unset to keep the Snowflake default (`FALSE`); the provider stores that as `"default"` and omits `USE_PRIVATE_LINK` from `CREATE OPENFLOW DEPLOYMENT`.
+
+`ALTER OPENFLOW DEPLOYMENT ... SET` does not accept `USE_PRIVATE_LINK`, so changing the attribute replaces the deployment. Existing state is upgraded to `use_private_link = "default"`, which does not replace a deployment that was created before this attribute existed.
+
+Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5361).
+
+### *(new feature)* Permissive import mode rolled out to more resources
+
+The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
+
 ### *(bug fix)* `snowflake_iceberg_table` supports `year`, `month`, `day`, and `hour` in `partition_by`
 
 Previously, [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) crashed during `terraform apply` when a `partition_by` entry used `year`, `month`, `day`, or `hour`. The provider plugin failed with `panic: interface conversion: interface {} is nil, not string`, and the table was not created. `identity`, `bucket`, and `truncate` were not affected.

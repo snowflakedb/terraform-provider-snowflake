@@ -62,6 +62,11 @@ func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasType(expected stri
 	return o
 }
 
+func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasUsePrivateLink(expected string) *OpenflowDeploymentSnowflakeManagedResourceAssert {
+	o.StringValueSet("use_private_link", expected)
+	return o
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -93,6 +98,11 @@ func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasFullyQualifiedName
 
 func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasTypeString(expected string) *OpenflowDeploymentSnowflakeManagedResourceAssert {
 	o.ValueSet("type", expected)
+	return o
+}
+
+func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasUsePrivateLinkString(expected string) *OpenflowDeploymentSnowflakeManagedResourceAssert {
+	o.ValueSet("use_private_link", expected)
 	return o
 }
 
@@ -130,6 +140,11 @@ func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasNoType() *Openflow
 	return o
 }
 
+func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasNoUsePrivateLink() *OpenflowDeploymentSnowflakeManagedResourceAssert {
+	o.ValueNotSet("use_private_link")
+	return o
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -156,6 +171,11 @@ func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasFullyQualifiedName
 
 func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasTypeEmpty() *OpenflowDeploymentSnowflakeManagedResourceAssert {
 	o.ValueSet("type", "")
+	return o
+}
+
+func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasUsePrivateLinkEmpty() *OpenflowDeploymentSnowflakeManagedResourceAssert {
+	o.ValueSet("use_private_link", "")
 	return o
 }
 
@@ -190,5 +210,10 @@ func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasFullyQualifiedName
 
 func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasTypeNotEmpty() *OpenflowDeploymentSnowflakeManagedResourceAssert {
 	o.ValuePresent("type")
+	return o
+}
+
+func (o *OpenflowDeploymentSnowflakeManagedResourceAssert) HasUsePrivateLinkNotEmpty() *OpenflowDeploymentSnowflakeManagedResourceAssert {
+	o.ValuePresent("use_private_link")
 	return o
 }
