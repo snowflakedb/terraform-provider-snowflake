@@ -421,7 +421,7 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
 Class objects (e.g. `SNOWFLAKE.CORE.BUDGET`, `SNOWFLAKE.CORE.QUOTA`) are configured with instance methods called as
 `CALL <name>!METHOD(args)`; see `InstanceMethodOperation` / `InstanceMethodOperationScalar` and
 [instance_method_example_def.go](example/defs/instance_method_example_def.go). The argument structs support a few
-list and reference renderings on top of the usual ones:
+list renderings on top of the usual ones:
 
 ```go
 // ['a', 'b'] - MustBrackets renders an empty list as [], Brackets omits it
@@ -430,14 +430,13 @@ List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()
 // [[<element fields>, ...], ...] - each struct element is rendered as an array literal
 ListQueryStructField("Tags", tagValue, g.ListOptions().Required().MustBrackets().ArrayElements())
 
-// (SELECT SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET')) - extra arguments and subquery wrapping
-Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET").InSubquery())
-
 // true / false
 PredefinedQueryStructField("Enabled", "bool", g.ParameterOptions().NoEquals().Required())
 ```
 
 Arguments are positional: an optional argument that is not set is omitted, so only trailing arguments can be optional.
+A reference with more than an object type and a name, like a tag's `SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET')`,
+is built as a function call with these options, as in the example and [system_functions_def.go](defs/system_functions_def.go).
 
 ### Potential Improvements
 
