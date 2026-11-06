@@ -341,7 +341,6 @@ var Table = ssot.Object{
 	Name:                   "Table",
 	NamePlural:             "Tables",
 	IdType:                 "SchemaObjectIdentifier",
-	LegacyIdEncoding:       true,
 	PreviewFeature:         true,
 	DescribeFailRead:       true,
 	AttributesModification: true,
@@ -441,6 +440,11 @@ var Table = ssot.Object{
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithStateUpgraders(ssot.Generated()),
+	},
+	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
 	},
 	CustomOperations: tableDescribeOperations,
 	Attributes: []ssot.Attribute{
