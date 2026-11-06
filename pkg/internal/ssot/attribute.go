@@ -110,6 +110,12 @@ type Attribute struct {
 	// There is no constructor argument, no ApplyCreateOptionals call, and no block parse function.
 	// Ext create code builds the value when CREATE still needs it. The update helper stays.
 	SkipCreate bool
+	// SetAfterCreate applies a SkipCreate attribute with ALTER after the object is created, through
+	// WithAfterCreate(Generated()). A failure is only a warning. Only NativeBool attributes are supported for now: the
+	// generated code calls the ALTER keyword linked to the true value (AlterKeywordFor) when the attribute is true,
+	// because CREATE leaves the object in the false state. Another type needs a new kind of step in the generated
+	// AfterCreate (AfterCreateSteps in pkg/resources/gen).
+	SetAfterCreate bool
 	// UpdateMapping overrides the update helper deduced the same way.
 	// Nil means deduce one. ForceNew and CreateOnly attributes are left out of set/unset.
 	// SkipCreate does not leave the attribute out of set/unset.

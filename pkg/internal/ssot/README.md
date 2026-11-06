@@ -484,8 +484,30 @@ Only `ExtCall` is supported.
 
 `AfterCreate` and `AfterAlter` are `Omitted` by default. They run after `SetId` and after the alters, and their
 diagnostics (usually warnings) are added to the final Read. Use them for a step that must not drop the object from
-state when it fails, such as resuming a created object. `Import<Name>` is generated only when `ShowByIdInSdk` is
-present. A resource with a passthrough importer omits it.
+state when it fails, such as resuming a created object.
+
+`AfterCreate` can be set to `Generated()`. The generator infers the condition and the action from the object:
+
+- Mark an attribute that CREATE cannot set with `SkipCreate` and `SetAfterCreate`. Only `NativeBool` attributes are
+  supported for now. To set another type after create, extend the generated AfterCreate with a new kind of step: a list
+  in `AfterCreateSteps` ([model.go](../../resources/gen/model.go)) and a block in `after_create.tmpl`.
+- Link the ALTER keywords of the object to the values of that attribute with `AlterKeywordFor`, for example
+  `AlterKeywordFor(&AlertAttrs.Enabled, true, "RESUME")` and `AlterKeywordFor(&AlertAttrs.Enabled, false, "SUSPEND")`.
+  The SDK sees plain keywords; the resource generator reads the links.
+
+After `SetId`, the generated code calls the keyword linked to `true` when the attribute is true. CREATE leaves the object
+in the false state, so the `false` link is not used after create; the alter hooks will use both. A failure is only a
+warning, because the object already exists, and it is added to the final Read. It needs no `d.Partial(true)`: that only
+changes what Terraform saves when the function returns an error, and the final Read stores the attribute from Snowflake
+(`enabled` is false while the alert stays suspended), so the next plan shows the difference and applies it. An error
+would instead taint an object that was created. `SkipCreate` alone is not enough,
+because an attribute can also be left out of the generated create when ext code puts it into CREATE, as `alert_schedule`
+does.
+
+`ValidateObject` panics when `Generated()` has no `SetAfterCreate` attribute, when a `SetAfterCreate` attribute has no
+keyword linked to `true`, and when a link points to something that is not a `NativeBool` attribute of the object.
+`ExtCall` is still the way to write any other create behavior. `BeforeCreate`, `BeforeAlter`, and `AfterAlter` are not
+generated yet.
 
 The constructor emits `UpdateContext` only when a field can change in place. An identity field counts when its ForceNew
 flag is off. An attribute counts when `ForceNew` is off. An ext identity schema, an attributes-schema extension, an

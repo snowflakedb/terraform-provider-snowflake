@@ -84,7 +84,12 @@ func CreateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	}
 
 	d.SetId(helpers.EncodeResourceIdentifier(id))
-	afterCreateDiags := alertAfterCreateExt(ctx, d, meta, id)
+	var afterCreateDiags diag.Diagnostics
+	if d.Get("enabled").(bool) {
+		if err := meta.(*provider.Context).Client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithResume(true)); err != nil {
+			afterCreateDiags = append(afterCreateDiags, diag.Diagnostic{Severity: diag.Warning, Summary: fmt.Sprintf("RESUME after create: %s", err.Error())})
+		}
+	}
 	return append(afterCreateDiags, ReadAlertFunc(false)(ctx, d, meta)...)
 }
 

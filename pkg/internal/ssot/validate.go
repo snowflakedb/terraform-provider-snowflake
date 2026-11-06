@@ -108,6 +108,7 @@ func ValidateObject(obj Object) {
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 	validateCustomizeDiff(obj)
+	validateSetAfterCreate(obj)
 	validateIdentityNamesCreatedBySnowflake(obj)
 }
 
@@ -203,6 +204,45 @@ func validateCustomizeDiff(obj Object) {
 	}
 	if len(obj.AdditionalCustomizeDiffs) > 0 && !hooks.CustomizeDiff.Generate {
 		panic(fmt.Sprintf("object %q: AdditionalCustomizeDiffs require WithCustomizeDiff(Generated())", obj.Name))
+	}
+}
+
+// validateSetAfterCreate checks the attributes that ALTER applies after create and the keyword clauses linked to
+// attributes. The generated AfterCreate is the only user of SetAfterCreate, so the two go together.
+func validateSetAfterCreate(obj Object) {
+	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
+	for _, clause := range obj.Alter.Clauses {
+		if clause.Attribute == nil {
+			continue
+		}
+		if clause.Kind != AlterClauseKeyword {
+			panic(fmt.Sprintf("object %q: ALTER clause %q links an attribute but is not a keyword", obj.Name, clause.SQL))
+		}
+		if !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == clause.Attribute.Name && a.Type == AttrBool && a.NativeBool }) {
+			panic(fmt.Sprintf("object %q: ALTER keyword %q links %q, which is not a NativeBool attribute of the object", obj.Name, clause.SQL, clause.Attribute.Name))
+		}
+	}
+	count := 0
+	for _, a := range obj.Attributes {
+		if !a.SetAfterCreate {
+			continue
+		}
+		count++
+		if !a.SkipCreate {
+			panic(fmt.Sprintf("object %q: attribute %q is SetAfterCreate and needs SkipCreate; CREATE would set it", obj.Name, a.Name))
+		}
+		if a.Type != AttrBool || !a.NativeBool {
+			panic(fmt.Sprintf("object %q: attribute %q is SetAfterCreate, which supports only NativeBool attributes for now; another type needs a new kind of AfterCreate step", obj.Name, a.Name))
+		}
+		if _, ok := obj.LinkedAlterKeyword(a.Name, true); !ok {
+			panic(fmt.Sprintf("object %q: attribute %q is SetAfterCreate and needs an ALTER keyword linked to true (AlterKeywordFor)", obj.Name, a.Name))
+		}
+	}
+	if count > 0 && !hooks.AfterCreate.Generate {
+		panic(fmt.Sprintf("object %q: SetAfterCreate attributes require WithAfterCreate(Generated())", obj.Name))
+	}
+	if hooks.AfterCreate.Generate && count == 0 {
+		panic(fmt.Sprintf("object %q: WithAfterCreate(Generated()) needs a SetAfterCreate attribute", obj.Name))
 	}
 }
 
