@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,11 +30,7 @@ func TestInt_Quotas(t *testing.T) {
 		})
 	}
 	userNames := func(users []sdk.QuotaScopeUser) []string {
-		names := make([]string, len(users))
-		for i, user := range users {
-			names[i] = user.UserName
-		}
-		return names
+		return collections.Map(users, func(user sdk.QuotaScopeUser) string { return user.UserName })
 	}
 	describe := func(t *testing.T, id sdk.SchemaObjectIdentifier) *sdk.QuotaDetails {
 		t.Helper()
