@@ -21,16 +21,14 @@ func Test_commonFields(t *testing.T) {
 
 func Test_NewSpanID(t *testing.T) {
 	t.Run("has UUID length", func(t *testing.T) {
-		id, err := NewSpanID()
-		require.NoError(t, err)
+		id := NewSpanID()
 		require.Len(t, id, 36)
 	})
 
 	t.Run("subsequent ids are unique", func(t *testing.T) {
 		ids := make(map[string]struct{})
 		for range 100 {
-			id, err := NewSpanID()
-			require.NoError(t, err)
+			id := NewSpanID()
 			require.NotContains(t, ids, id)
 			ids[id] = struct{}{}
 		}
@@ -50,7 +48,7 @@ func Test_providerInitFields(t *testing.T) {
 	got := providerInitFields(providerCtx)
 	require.Equal(t, string(experimentalfeatures.HierarchyRenames), got["experimental_features_enabled"])
 	require.Equal(t, string(experimentalfeatures.WarehouseShowImprovedPerformance), got["experimental_features_disabled"])
-	require.Equal(t, "GRANTS_IMPORT_VALIDATION,GRANTS_SAFE_DESTROY,GRANTS_STRICT_PRIVILEGE_MANAGEMENT,GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE,HIERARCHY_RENAMES,INHERITED_GRANTS,PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL,TAG_ASSOCIATION_SAFE_DESTROY", got["experimental_features_effective_enabled"])
+	require.Equal(t, "GRANTS_IMPORT_VALIDATION,GRANTS_SAFE_DESTROY,GRANTS_STRICT_PRIVILEGE_MANAGEMENT,GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE,HIERARCHY_RENAMES,INHERITED_GRANTS,PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL,TAG_ASSOCIATION_SAFE_DESTROY,USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY", got["experimental_features_effective_enabled"])
 	require.Equal(t, string(previewfeatures.AlertResource), got["preview_features_enabled"])
 	require.Equal(t, runtime.GOOS, got["os"])
 	require.Equal(t, runtime.GOARCH, got["arch"])

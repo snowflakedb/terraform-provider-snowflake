@@ -322,6 +322,12 @@ func TestSetObjectParameterOnObjectViaCatalog(t *testing.T) {
 			value:     "1",
 		},
 		{
+			name:      "no catalog writer for pipe",
+			object:    Object{ObjectType: ObjectTypePipe, Name: NewSchemaObjectIdentifier("some_db", "some_schema", "some_pipe")},
+			parameter: "LOG_EVENT_LEVEL",
+			value:     "INFO",
+		},
+		{
 			name:      "unknown key falls back for database",
 			object:    Object{ObjectType: ObjectTypeDatabase, Name: NewAccountObjectIdentifier("some_db")},
 			parameter: "NOT_A_REAL_PARAMETER",

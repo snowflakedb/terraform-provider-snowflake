@@ -77,7 +77,7 @@ func (s *CreateExternalTableRequest) WithComment(comment string) *CreateExternal
 	return s
 }
 
-func (s *CreateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateExternalTableRequest {
+func (s *CreateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -340,7 +340,7 @@ func (s *CreateWithManualPartitioningExternalTableRequest) WithComment(comment s
 	return s
 }
 
-func (s *CreateWithManualPartitioningExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateWithManualPartitioningExternalTableRequest {
+func (s *CreateWithManualPartitioningExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateWithManualPartitioningExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -415,7 +415,7 @@ func (s *CreateDeltaLakeExternalTableRequest) WithComment(comment string) *Creat
 	return s
 }
 
-func (s *CreateDeltaLakeExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateDeltaLakeExternalTableRequest {
+func (s *CreateDeltaLakeExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateDeltaLakeExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -495,7 +495,7 @@ func (s *CreateUsingTemplateExternalTableRequest) WithComment(comment string) *C
 	return s
 }
 
-func (s *CreateUsingTemplateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateUsingTemplateExternalTableRequest {
+func (s *CreateUsingTemplateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateUsingTemplateExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }

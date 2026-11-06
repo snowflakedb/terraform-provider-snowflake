@@ -36,7 +36,7 @@ func TestNewTypedParameter_int(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newTypedParameter(tt.raw, strconv.Atoi)
+			got, err := tt.raw.typed(strconv.Atoi)
 			require.NoError(t, err)
 			require.Equal(t, tt.want, got)
 		})
@@ -62,7 +62,7 @@ func TestNewTypedParameter_string(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := newTypedParameter(tt.raw, identityParse)
+			got, err := tt.raw.typed(identityParse)
 			require.NoError(t, err)
 			require.Equal(t, tt.want, got)
 		})
@@ -89,7 +89,7 @@ func TestFillTypedParameter(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var target TypedParameter[string]
-			require.NoError(t, fillTypedParameter(tt.raw, identityParse, &target))
+			require.NoError(t, tt.raw.fillTyped(identityParse, &target))
 			require.Equal(t, tt.want, target.Value)
 		})
 	}

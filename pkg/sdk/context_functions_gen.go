@@ -22,6 +22,7 @@ type ContextFunctions interface {
 	CurrentDatabase(ctx context.Context) (*CurrentDatabase, error)
 	CurrentSchema(ctx context.Context) (*CurrentSchema, error)
 	CurrentWarehouse(ctx context.Context) (*CurrentWarehouse, error)
+	CurrentVersion(ctx context.Context) (*CurrentVersion, error)
 	IsRoleInSession(ctx context.Context, request *IsRoleInSessionRequest) (*IsRoleInSession, error)
 }
 
@@ -217,6 +218,19 @@ type currentWarehouseDBRow struct {
 }
 
 type CurrentWarehouse struct {
+	Value string
+}
+
+// CurrentVersionOptions is based on https://docs.snowflake.com/en/sql-reference/functions/current_version.
+type CurrentVersionOptions struct {
+	selectExpr bool `ddl:"static" sql:"SELECT CURRENT_VERSION() as CURRENT_VERSION"`
+}
+
+type currentVersionDBRow struct {
+	CurrentVersion sql.NullString `db:"CURRENT_VERSION"`
+}
+
+type CurrentVersion struct {
 	Value string
 }
 

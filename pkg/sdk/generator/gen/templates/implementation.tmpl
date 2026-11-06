@@ -101,7 +101,7 @@ func To{{ .NameSingular }}ParametersDetails(params []*Parameter) (*{{ .NameSingu
 	var d {{ .NameSingular }}ParametersDetails
 	if err := errors.Join(
 	{{- range .ParametersDetails.Fields }}
-		fillTypedParameter(byKey["{{ .Key }}"], {{ .Parser }}, &d.{{ .FieldName }}),
+		byKey["{{ .Key }}"].fillTyped({{ .Parser }}, &d.{{ .FieldName }}),
 	{{- end }}
 	); err != nil {
 		return nil, err

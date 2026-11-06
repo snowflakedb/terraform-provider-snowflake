@@ -16,6 +16,10 @@ type ResourceObject struct {
 }
 
 var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings{
+	"Pipe": {
+		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
+		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
+	},
 	"Schema": {
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
@@ -35,19 +39,13 @@ var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings
 }
 
 func GetAllObjects() []ResourceObject {
-	objects := defs.All()
-	if len(objects) == 0 {
+	if len(defs.All()) == 0 {
 		log.Fatal("no object definitions registered")
 	}
 	fmt.Println("resource object definitions:")
+	objects := defs.SelectObjects(func(g ssot.Generators) bool { return g.Resource.Enabled }, selectsForResource)
 	out := make([]ResourceObject, 0, len(objects))
 	for _, def := range objects {
-		if !ssot.ObjectGenerators(def.Generators...).Resource.Enabled {
-			continue
-		}
-		if def.VariantBaseOnly {
-			continue
-		}
 		fmt.Printf(" - %s\n", def.Name)
 		out = append(out, ResourceObject{
 			Object:                   def,
@@ -55,4 +53,9 @@ func GetAllObjects() []ResourceObject {
 		})
 	}
 	return out
+}
+
+// selectsForResource is the one filter of the resource generator: the object is a resource and has attributes.
+func selectsForResource(obj ssot.Object) bool {
+	return !obj.VariantBaseOnly && len(obj.Attributes) > 0
 }

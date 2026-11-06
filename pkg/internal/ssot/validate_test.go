@@ -832,6 +832,24 @@ func Test_ValidateObject_customOperations(t *testing.T) {
 	duplicated := valid
 	duplicated.CustomOperations = append(duplicated.CustomOperations, CustomOperationSpec{Kind: "Clone"})
 	require.Panics(t, func() { ValidateObject(duplicated) })
+
+	paired := valid
+	column := Attribute{Name: "name", Type: AttrString}
+	paired.CustomOperations = append(paired.CustomOperations, CustomOperationSpec{
+		Kind: "DescribeColumns",
+		Clauses: []CustomOperationClause{
+			CustomStaticSQL("DESCRIBE"),
+			CustomStaticField("columnsType", "TYPE = COLUMNS"),
+			CustomIdentifier("Database", "AccountObjectIdentifier", true),
+			CustomText("TABLE_NAME"),
+		},
+		Paired: &CustomPairedShow{DbRow: "fakeRow", Plain: "Fake", Columns: []*Attribute{&column}},
+	})
+	require.NotPanics(t, func() { ValidateObject(paired) })
+
+	emptyPaired := paired
+	emptyPaired.CustomOperations[len(emptyPaired.CustomOperations)-1].Paired = &CustomPairedShow{Plain: "Fake"}
+	require.Panics(t, func() { ValidateObject(emptyPaired) })
 }
 
 func Test_ValidateObject_customInterfaceMethods(t *testing.T) {
@@ -1325,15 +1343,22 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 
 	t.Run("without an object clause", func(t *testing.T) {
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "block", Type: AttrObject, Children: []Attribute{typeOauth, uri}}}})
 		})
 	})
 
-	t.Run("not static", func(t *testing.T) {
-		notStatic := Attribute{Name: "other", SqlOnly: true, CreateSql: StringParameter()}
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword or a nested struct of an object clause`, func() {
-			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{notStatic, uri}})
+	t.Run("sql-only without a clause", func(t *testing.T) {
+		bare := Attribute{Name: "other", SqlOnly: true}
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{bare, uri}})
+		})
+	})
+
+	t.Run("parameter child", func(t *testing.T) {
+		where := Attribute{Name: "other", Type: AttrString, SqlOnly: true, CreateSql: PlainParameter(Sql("WHERE"), NoEquals())}
+		require.NotPanics(t, func() {
+			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{where, uri}})
 		})
 	})
 
@@ -1487,7 +1512,13 @@ func Test_ValidateObject_childrenAtLeastOneValueSet(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_enumKeywordAndNestedStruct(t *testing.T) {
+func Test_ValidateObject_boolTrueValueNeedsStoredAsText(t *testing.T) {
+	require.PanicsWithValue(t, `object "Widget": attribute "flag" sets BoolTrueValue without StoredAsText`, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "flag", Type: AttrBool, BoolTrueValue: "ON"}}})
+	})
+}
+
+func Test_ValidateObject_enumKeywordAndPreexistingStruct(t *testing.T) {
 	driver := NewEnum("WidgetDriver", "WidgetDrivers", "JDBC")
 	version := Attribute{Name: "minimum_version", Type: AttrString}
 	params := Attribute{
@@ -1511,7 +1542,355 @@ func Test_ValidateObject_enumKeywordAndNestedStruct(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrEnum, Enum: driver, CreateSql: EnumKeyword(NoQuotes())})))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, or a list of identifiers`, func() {
+	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects`, func() {
 		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrString, CreateSql: EnumKeyword(NoQuotes())})))
 	})
+}
+
+func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
+	objectWith := func(attr Attribute) Object {
+		return Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}}
+	}
+	clusterBy := Attribute{
+		Name:      "cluster_by",
+		Type:      AttrList,
+		SqlOnly:   true,
+		Elem:      &Attribute{Type: AttrString},
+		CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY")),
+	}
+	policy := Attribute{
+		Name:      "row_access_policy",
+		Type:      AttrObject,
+		SqlOnly:   true,
+		CreateSql: ObjectParameter(),
+		Children: []Attribute{
+			{
+				Name:           "name",
+				Type:           AttrIdentifier,
+				IdentifierType: "SchemaObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      IdentifierKeyword("SchemaObjectIdentifier", Sql("ROW ACCESS POLICY"), FieldName("Name")),
+			},
+			{
+				Name:      "on",
+				Type:      AttrList,
+				Required:  true,
+				SqlOnly:   true,
+				Elem:      &Attribute{Type: AttrString},
+				CreateSql: StringListKeyword(Parentheses(), Sql("ON")),
+			},
+		},
+	}
+
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(clusterBy))
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(policy))
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat", Parentheses(), NoComma())}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects`, func() {
+		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"))}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE string list keyword has quotes or equals`, func() {
+		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, Elem: &Attribute{Type: AttrString}, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"), SingleQuotes())}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting struct clause has no struct name`, func() {
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("")}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting_struct clause is CREATE only`, func() {
+		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat"), SetSql: PreexistingStruct("WidgetFormat")}
+		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Set: []*Attribute{&attr}})
+	})
+}
+
+func Test_ValidateObject_schemaName(t *testing.T) {
+	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "is_nullable"}
+	same := Attribute{Name: "is_nullable", Type: AttrString, Readonly: true}
+	require.PanicsWithValue(t, `object "Widget": TableColumnDetails columns "null?" and "is_nullable" share schema key "is_nullable"`, func() {
+		ValidateObject(widgetWithColumns(&nullable, &same))
+	})
+
+	note := Attribute{Name: "comment", Type: AttrString, Readonly: true, SchemaName: "note"}
+	renamed := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "comment"}
+	require.PanicsWithValue(t, `object "Widget": TableColumnDetails column "null?" schema name "comment" collides with the generated key of "comment"`, func() {
+		ValidateObject(widgetWithColumns(&renamed, &note))
+	})
+}
+
+func Test_SchemaNameIndex(t *testing.T) {
+	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "is_nullable"}
+	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
+	index := SchemaNameIndex([]Object{widgetWithColumns(&nullable, &name)})
+	require.Equal(t, map[string]map[string]string{
+		"sdk.TableColumnDetails": {"Null": "is_nullable"},
+	}, index)
+}
+
+func widgetWithColumns(columns ...*Attribute) Object {
+	return Object{
+		Name: "Widget",
+		CustomOperations: []CustomOperationSpec{{
+			Kind:    "DescribeColumns",
+			Clauses: []CustomOperationClause{CustomStaticSQL("DESCRIBE")},
+			Paired: &CustomPairedShow{
+				DbRow:   "row",
+				Plain:   "TableColumnDetails",
+				Columns: columns,
+			},
+		}},
+	}
+}
+
+func identityNamesCreatedBySnowflakeObject(change func(*Object)) Object {
+	obj := Object{
+		Name:                            "Widget",
+		IdentityNamesCreatedBySnowflake: []string{"PUBLIC"},
+		Alter:                           AlterSpec{Clauses: []AlterClause{AlterSet()}},
+		ResourceHooks:                   []ResourceHookOption{WithBeforeCreate(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_ValidateObject_identityNamesCreatedBySnowflake(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(identityNamesCreatedBySnowflakeObject(func(*Object) {})) })
+	})
+
+	for name, tc := range map[string]struct {
+		change func(*Object)
+		panics string
+	}{
+		"empty name": {
+			func(o *Object) { o.IdentityNamesCreatedBySnowflake = []string{" "} },
+			`object "Widget": IdentityNamesCreatedBySnowflake name " " must be set and must not contain quotes or backslashes`,
+		},
+		"name that breaks the Go string": {
+			func(o *Object) { o.IdentityNamesCreatedBySnowflake = []string{`PUB"LIC`} },
+			`object "Widget": IdentityNamesCreatedBySnowflake name "PUB\"LIC" must be set and must not contain quotes or backslashes`,
+		},
+		"names without the generated hook": {
+			func(o *Object) { o.ResourceHooks = nil },
+			`object "Widget": IdentityNamesCreatedBySnowflake requires WithBeforeCreate(Generated())`,
+		},
+		"generated hook without names": {
+			func(o *Object) { o.IdentityNamesCreatedBySnowflake = nil },
+			`object "Widget": WithBeforeCreate(Generated()) needs IdentityNamesCreatedBySnowflake`,
+		},
+		"identity schema is missing": {
+			func(o *Object) { o.ResourceHooks = append(o.ResourceHooks, WithIdentitySchema(Omitted())) },
+			`object "Widget": IdentityNamesCreatedBySnowflake reads the identity name and needs the identity schema`,
+		},
+		"update is missing": {
+			func(o *Object) { o.Alter = AlterSpec{} },
+			`object "Widget": IdentityNamesCreatedBySnowflake runs Update and needs ALTER to update the object`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.PanicsWithValue(t, tc.panics, func() { ValidateObject(identityNamesCreatedBySnowflakeObject(tc.change)) })
+		})
+	}
+}
+
+func showReuseBaseObject(opts ...GeneratorOption) *Object {
+	return &Object{Name: "Base", Generators: opts}
+}
+
+func Test_ValidateObject_showReuse(t *testing.T) {
+	baseWithShow := func() *Object {
+		return showReuseBaseObject(WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
+	}
+	variant := func(base *Object, opts ...GeneratorOption) Object {
+		return Object{Name: "Variant", VariantOf: base, Generators: opts}
+	}
+	reuseBoth := []GeneratorOption{
+		WithSchema(SchemaShow(SchemaShowFromBase())),
+		WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase())),
+	}
+
+	t.Run("valid reuse resolves to the base", func(t *testing.T) {
+		obj := variant(baseWithShow(), reuseBoth...)
+		require.NotPanics(t, func() { ValidateObject(obj) })
+		require.True(t, obj.ReusesBaseSchemaShow())
+		require.True(t, obj.ReusesBaseObjectAssertShow())
+		require.Equal(t, "Base", obj.SchemaShowOwnerName())
+		require.Equal(t, "Base", obj.ObjectAssertShowOwnerName())
+	})
+	t.Run("without reuse the object owns its artifacts", func(t *testing.T) {
+		obj := variant(baseWithShow(), WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
+		require.False(t, obj.ReusesBaseSchemaShow())
+		require.False(t, obj.ReusesBaseObjectAssertShow())
+		require.Equal(t, "Variant", obj.SchemaShowOwnerName())
+		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
+	})
+	t.Run("reuse is independent per generator", func(t *testing.T) {
+		obj := variant(baseWithShow(), WithSchema(SchemaShow(SchemaShowFromBase())), WithObjectAssert(ObjectAssertShow()))
+		require.Equal(t, "Base", obj.SchemaShowOwnerName())
+		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
+	})
+	t.Run("requires VariantOf", func(t *testing.T) {
+		require.Panics(t, func() {
+			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithSchema(SchemaShow(SchemaShowFromBase()))}})
+		})
+		require.Panics(t, func() {
+			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))}})
+		})
+	})
+	t.Run("the base must generate the artifact", func(t *testing.T) {
+		require.Panics(t, func() {
+			ValidateObject(variant(showReuseBaseObject(WithObjectAssert(ObjectAssertShow())), WithSchema(SchemaShow(SchemaShowFromBase()))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(variant(showReuseBaseObject(WithSchema(SchemaShow())), WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))))
+		})
+	})
+	t.Run("a reusing variant cannot override show-side options", func(t *testing.T) {
+		tables := Attribute{Name: "tables"}
+		obj := func(opts ...GeneratorOption) Object {
+			return Object{
+				Name:       "Variant",
+				VariantOf:  baseWithShow(),
+				Attributes: []Attribute{tables},
+				Show:       OutputSpec{Columns: []*Attribute{&tables}},
+				Generators: opts,
+			}
+		}
+		require.Panics(t, func() {
+			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowManualFields(&tables)))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowListFields(&tables)))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowSkipFields(&tables)))))
+		})
+		require.Panics(t, func() {
+			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowNestedField(&tables)))))
+		})
+	})
+}
+
+func Test_ValidateObject_showOutputAssertReuse(t *testing.T) {
+	base := func(opts ...GeneratorOption) *Object { return &Object{Name: "Base", Generators: opts} }
+	variant := func(b *Object, opts ...ShowOutputShowOption) Object {
+		return Object{Name: "Variant", VariantOf: b, Generators: []GeneratorOption{WithShowOutputAssert(ShowOutputShow(opts...))}}
+	}
+	baseWithShowOutput := func() *Object { return base(WithShowOutputAssert(ShowOutputShow())) }
+
+	t.Run("valid reuse resolves to the base", func(t *testing.T) {
+		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase())
+		require.NotPanics(t, func() { ValidateObject(obj) })
+		require.True(t, obj.ReusesBaseShowOutputAssertShow())
+		require.Equal(t, "Base", obj.ShowOutputAssertShowOwnerName())
+	})
+	t.Run("without reuse the object owns its assertion", func(t *testing.T) {
+		obj := variant(baseWithShowOutput())
+		require.False(t, obj.ReusesBaseShowOutputAssertShow())
+		require.Equal(t, "Variant", obj.ShowOutputAssertShowOwnerName())
+	})
+	t.Run("requires VariantOf", func(t *testing.T) {
+		require.Panics(t, func() { ValidateObject(variant(nil, ShowOutputShowRowFromBase())) })
+	})
+	t.Run("the base must generate the assertion", func(t *testing.T) {
+		require.Panics(t, func() { ValidateObject(variant(base(), ShowOutputShowRowFromBase())) })
+	})
+	t.Run("cannot set skip fields", func(t *testing.T) {
+		tables := Attribute{Name: "tables"}
+		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase(), ShowOutputShowSkipFields(&tables))
+		obj.Attributes = []Attribute{tables}
+		obj.Show = OutputSpec{Columns: []*Attribute{&tables}}
+		require.Panics(t, func() { ValidateObject(obj) })
+	})
+}
+
+var widgetEnabled = Attribute{Name: "enabled", Type: AttrBool, NativeBool: true, SkipCreate: true, SetAfterCreate: true}
+
+func setAfterCreateObject(change func(*Object)) Object {
+	obj := Object{
+		Name:       "Widget",
+		Attributes: []Attribute{widgetEnabled},
+		Alter: AlterSpec{Clauses: []AlterClause{
+			AlterKeywordFor(&widgetEnabled, true, "RESUME"),
+			AlterKeywordFor(&widgetEnabled, false, "SUSPEND"),
+		}},
+		ResourceHooks: []ResourceHookOption{WithAfterCreate(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_ValidateObject_setAfterCreate(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(setAfterCreateObject(func(*Object) {})) })
+	})
+
+	t.Run("the false link is optional", func(t *testing.T) {
+		require.NotPanics(t, func() {
+			ValidateObject(setAfterCreateObject(func(o *Object) { o.Alter.Clauses = o.Alter.Clauses[:1] }))
+		})
+	})
+
+	for name, tc := range map[string]struct {
+		change func(*Object)
+		panics string
+	}{
+		"SetAfterCreate without SkipCreate": {
+			func(o *Object) { o.Attributes[0].SkipCreate = false },
+			`object "Widget": attribute "enabled" is SetAfterCreate and needs SkipCreate; CREATE would set it`,
+		},
+		"SetAfterCreate on an attribute that is not a native bool": {
+			func(o *Object) {
+				o.Attributes = append(o.Attributes, Attribute{Name: "size", Type: AttrInt, SkipCreate: true, SetAfterCreate: true})
+			},
+			`object "Widget": attribute "size" is SetAfterCreate, which supports only NativeBool attributes for now; another type needs a new kind of AfterCreate step`,
+		},
+		"link to an attribute that is not a native bool": {
+			func(o *Object) { o.Attributes[0].NativeBool = false },
+			`object "Widget": ALTER keyword "RESUME" links "enabled", which is not a NativeBool attribute of the object`,
+		},
+		"SetAfterCreate without a link to true": {
+			func(o *Object) { o.Alter.Clauses = []AlterClause{AlterKeywordFor(&widgetEnabled, false, "SUSPEND")} },
+			`object "Widget": attribute "enabled" is SetAfterCreate and needs an ALTER keyword linked to true (AlterKeywordFor)`,
+		},
+		"link to an attribute that the object does not have": {
+			func(o *Object) {
+				o.Alter.Clauses = append(o.Alter.Clauses, AlterKeywordFor(&Attribute{Name: "paused", Type: AttrBool, NativeBool: true}, true, "PAUSE"))
+			},
+			`object "Widget": ALTER keyword "PAUSE" links "paused", which is not a NativeBool attribute of the object`,
+		},
+		"link on a clause that is not a keyword": {
+			func(o *Object) {
+				o.Alter.Clauses = append(o.Alter.Clauses, AlterClause{Kind: AlterClauseText, SQL: "REMOVE ITEM", Attribute: &widgetEnabled})
+			},
+			`object "Widget": ALTER clause "REMOVE ITEM" links an attribute but is not a keyword`,
+		},
+		"SetAfterCreate without the generated hook": {
+			func(o *Object) { o.ResourceHooks = nil },
+			`object "Widget": SetAfterCreate attributes require WithAfterCreate(Generated())`,
+		},
+		"generated hook without SetAfterCreate": {
+			func(o *Object) { o.Attributes[0].SetAfterCreate = false },
+			`object "Widget": WithAfterCreate(Generated()) needs a SetAfterCreate attribute`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.PanicsWithValue(t, tc.panics, func() { ValidateObject(setAfterCreateObject(tc.change)) })
+		})
+	}
+}
+
+func Test_Object_LinkedAlterKeyword(t *testing.T) {
+	obj := setAfterCreateObject(func(*Object) {})
+	resume, ok := obj.LinkedAlterKeyword("enabled", true)
+	require.True(t, ok)
+	require.Equal(t, "RESUME", resume.SQL)
+	suspend, ok := obj.LinkedAlterKeyword("enabled", false)
+	require.True(t, ok)
+	require.Equal(t, "SUSPEND", suspend.SQL)
+	_, ok = obj.LinkedAlterKeyword("comment", true)
+	require.False(t, ok)
 }

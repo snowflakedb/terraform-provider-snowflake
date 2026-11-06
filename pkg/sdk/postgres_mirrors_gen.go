@@ -16,11 +16,6 @@ type PostgresMirrors interface {
 	List(ctx context.Context, request *ListPostgresMirrorRequest) ([]PostgresMirror, error)
 	// DropSafely treats a mirror that no longer exists as dropped.
 	DropSafely(ctx context.Context, request *DropPostgresMirrorRequest) error
-	// WaitForInitialSnapshot polls LIST_MIRRORS until the mirror is ACTIVE, no table is left in its first copy, and at
-	// least minimumTables tables are registered. minimumTables is the number of tables named explicitly on create and
-	// must be at least 1: LIST_MIRRORS reports 0 remaining before registration. Tables reached only through a schema,
-	// or added by a later alter, are included only when the caller counts them. The caller sets the deadline on ctx.
-	WaitForInitialSnapshot(ctx context.Context, postgresInstance string, name string, minimumTables int) error
 }
 
 // CreatePostgresMirrorOptions is based on https://docs.snowflake.com/en/user-guide/snowflake-postgres/postgres-data-mirroring-reference.

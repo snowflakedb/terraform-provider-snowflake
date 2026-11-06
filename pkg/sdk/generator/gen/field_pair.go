@@ -17,8 +17,9 @@ type FieldPair struct {
 	IsJson         bool
 	CustomParser   string
 	ValueAdjuster  string
-	BoolTrueValue  string
-	BoolParsed     bool
+	// BoolTrueValue compares the db text to this value. Empty and Y use the Y helpers.
+	BoolTrueValue string
+	BoolParsed    bool
 
 	manualConvert bool
 }
@@ -180,7 +181,7 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 		switch {
 		case fp.PlainKind == "bool" && fp.BoolParsed:
 			return AssignmentKindStringToBoolParsed
-		case fp.PlainKind == "bool" && fp.BoolTrueValue != "":
+		case fp.PlainKind == "bool" && fp.BoolTrueValue != "" && fp.BoolTrueValue != "Y":
 			return AssignmentKindStringToBoolValue
 		case fp.PlainKind == "bool":
 			return AssignmentKindStringToBool
@@ -206,13 +207,13 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 			return AssignmentKindNullableToStringArray
 		case fp.PlainKind == "*bool" && fp.BoolParsed:
 			return AssignmentKindNullableStringToNullableBoolParsed
-		case fp.PlainKind == "*bool" && fp.BoolTrueValue != "":
+		case fp.PlainKind == "*bool" && fp.BoolTrueValue != "" && fp.BoolTrueValue != "Y":
 			return AssignmentKindNullableStringToNullableBoolValue
 		case fp.PlainKind == "*bool":
 			return AssignmentKindNullableStringToNullableBool
 		case fp.PlainKind == "bool" && fp.BoolParsed:
 			return AssignmentKindNullableStringToRequiredBoolParsed
-		case fp.PlainKind == "bool" && fp.BoolTrueValue != "":
+		case fp.PlainKind == "bool" && fp.BoolTrueValue != "" && fp.BoolTrueValue != "Y":
 			return AssignmentKindNullableStringToRequiredBoolValue
 		case fp.PlainKind == "bool":
 			return AssignmentKindNullableStringToRequiredBool

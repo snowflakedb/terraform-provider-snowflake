@@ -293,7 +293,7 @@ func TestAcc_GrantDatabaseRole_shareNameContainingDots(t *testing.T) {
 	t.Cleanup(databaseRoleCleanup)
 
 	shareId := testClient().Ids.RandomAccountObjectIdentifierContaining(".foo.bar")
-	_, shareCleanup := testClient().Share.CreateShareWithIdentifier(t, shareId)
+	_, shareCleanup := testClient().Share.CreateWithIdentifier(t, shareId)
 	t.Cleanup(shareCleanup)
 
 	privilegesModel := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeUsage.String()}, shareId.Name()).
@@ -511,7 +511,6 @@ func TestAcc_GrantDatabaseRole_issue5323(t *testing.T) {
 		WithParentRoleName(role.ID().Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -524,7 +523,8 @@ func TestAcc_GrantDatabaseRole_issue5323(t *testing.T) {
 				ExpectError:       regexp.MustCompile("Error: Provider produced inconsistent result after apply"),
 			},
 			{
-				Config: accconfig.FromModels(t, grantModel),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, grantModel),
 				Check: assertThat(
 					t,
 					resourceassert.GrantDatabaseRoleResource(t, grantModel.ResourceReference()).
@@ -535,10 +535,11 @@ func TestAcc_GrantDatabaseRole_issue5323(t *testing.T) {
 			},
 			// test import
 			{
-				Config:            accconfig.FromModels(t, grantModel),
-				ResourceName:      grantModel.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, grantModel),
+				ResourceName:             grantModel.ResourceReference(),
+				ImportState:              true,
+				ImportStateVerify:        true,
 			},
 		},
 	})

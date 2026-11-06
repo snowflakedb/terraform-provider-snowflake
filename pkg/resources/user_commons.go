@@ -17,8 +17,8 @@ var defaultWorkloadIdentitySchema = map[string]*schema.Schema{
 		MaxItems: 1,
 		Description: joinWithSpace(
 			"Configures the default workload identity for the user. This is used for workload identity federation to allow third-party services to authenticate as this user. Only applicable for service users and legacy service users.",
-			experimentalFeatureDescription(experimentalfeatures.UserEnableDefaultWorkloadIdentity),
-			"If this feature is not enabled, attempting to set this field will result in an error. The provider will not get WIF information from Snowflake.",
+			experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.UserEnableDefaultWorkloadIdentity),
+			"If this experiment is opted out, attempting to set this field will result in an error. The provider will not get WIF information from Snowflake.",
 		),
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{

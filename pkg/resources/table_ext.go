@@ -8,16 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -30,12 +28,7 @@ var (
 	tableReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.TableResource), TrackingReadWrapper(resources.Table, ReadTableFunc(true)))
 	tableUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.TableResource), TrackingUpdateWrapper(resources.Table, UpdateTable))
 
-	tableDescriptionExt   = ""
-	tableCustomizeDiffExt = TrackingCustomDiffWrapper(resources.Table, customdiff.All(
-		TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
-		TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
-		ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
-	))
+	tableDescriptionExt = docs.WithPreviewFeatureMark()
 
 	tableImporterExt = &schema.ResourceImporter{
 		StateContext: schema.ImportStatePassthroughContext,
@@ -69,7 +62,7 @@ func toTableClusterBy(value []any) ([]string, error) {
 	return expandStringList(value), nil
 }
 
-func tableSetConfigFieldsExt(d *schema.ResourceData, table *sdk.Table) error {
+func tableSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, table *sdk.Table) error {
 	// Set the relevant data in the state
 	toSet := map[string]any{
 		"name":            table.Name,
@@ -91,42 +84,6 @@ func tableSetConfigFieldsExt(d *schema.ResourceData, table *sdk.Table) error {
 
 func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, _ error, _ bool) error {
 	return d.Set("column", toColumnConfig(tableDescription))
-}
-
-func tableHierarchyRenameExt(ctx context.Context, d *schema.ResourceData, meta any, id *sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		tableRenameFn := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, id,
-			tableRenameFn,
-			client.Tables.ShowByID,
-			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(id) },
-			"table",
-		); diags != nil {
-			return diags
-		}
-	}
-
-	if d.HasChange("name") {
-		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
-
-		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(*id).WithRenameTo(newId))
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("error renaming table %v err = %w", d.Id(), err))
-		}
-
-		d.SetId(helpers.EncodeSnowflakeID(newId))
-		*id = newId
-	}
-	return nil
 }
 
 // tableAfterAlterExt runs the ALTER TABLE statements issued after SET/UNSET: clustering, columns, primary key, and tags.
@@ -627,7 +584,7 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 		flat := map[string]any{}
 		flat["name"] = td.Name
 		flat["type"] = string(td.Type)
-		flat["nullable"] = td.IsNullable
+		flat["nullable"] = td.Null
 
 		if td.Comment != nil {
 			flat["comment"] = *td.Comment

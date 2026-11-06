@@ -250,6 +250,15 @@ func parseAuthenticationPolicyPatPolicy(value string) (AuthenticationPolicyPatPo
 			} else {
 				details.RequireRoleRestrictionForServiceUsers = required
 			}
+		case "REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS":
+			if required, err := strconv.ParseBool(pair.value); err != nil {
+				errs = append(errs, fmt.Errorf("REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS: %w", err))
+			} else {
+				details.RequireRoleRestrictionForPersonUsers = required
+			}
+		case "BLOCKED_ROLES_LIST":
+			// DESCRIBE lists the role names unquoted, also the ones that need quotes.
+			details.BlockedRolesList = collections.Map(ParseCommaSeparatedStringArray(pair.value, false), NewAccountObjectIdentifier)
 		}
 	}
 	return details, errors.Join(errs...)

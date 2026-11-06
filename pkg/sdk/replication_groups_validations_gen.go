@@ -18,8 +18,14 @@ func (opts *CreateReplicationGroupOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !valueSet(opts.ObjectTypes) {
+		errs = append(errs, errNotSet("CreateReplicationGroupOptions", "ObjectTypes"))
+	}
 	if !anyValueSet(opts.AllowedAccounts) {
 		errs = append(errs, errAtLeastOneOf("CreateReplicationGroupOptions", "AllowedAccounts"))
+	}
+	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
+		errs = append(errs, errInvalidIdentifier("CreateReplicationGroupOptions", "ErrorIntegration"))
 	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateReplicationGroupOptions", "name"))
@@ -68,6 +74,9 @@ func (opts *CreateSecondaryReplicationGroupOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !ValidObjectIdentifier(opts.AsReplicaOf) {
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "AsReplicaOf"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "name"))
 	}
@@ -91,6 +100,9 @@ func (opts *AlterReplicationGroupOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
+		if opts.Set.ErrorIntegration != nil && !ValidObjectIdentifier(opts.Set.ErrorIntegration) {
+			errs = append(errs, errInvalidIdentifier("AlterReplicationGroupOptions.Set", "ErrorIntegration"))
+		}
 		if !anyValueSet(opts.Set.ObjectTypes, opts.Set.AllowedDatabases, opts.Set.AllowedExternalVolumes, opts.Set.AllowedShares, opts.Set.AllowedIntegrationTypes, opts.Set.Comment, opts.Set.ReplicationSchedule, opts.Set.ErrorIntegration) {
 			errs = append(errs, errAtLeastOneOf("AlterReplicationGroupOptions.Set", "ObjectTypes", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedIntegrationTypes", "Comment", "ReplicationSchedule", "ErrorIntegration"))
 		}
@@ -160,6 +172,9 @@ func (opts *AlterReplicationGroupOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Move) {
+		if !ValidObjectIdentifier(opts.Move.ToReplicationGroup) {
+			errs = append(errs, errInvalidIdentifier("AlterReplicationGroupOptions.Move", "ToReplicationGroup"))
+		}
 		if valueSet(opts.Move.Databases) {
 			for databaseIdx, database := range opts.Move.Databases {
 				if !ValidObjectIdentifier(database) {

@@ -28,6 +28,9 @@ func (opts *CreateTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateTableOptions", "name"))
 	}
+	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
+		errs = append(errs, errOneOf("CreateTableOptions", "OrReplace", "IfNotExists"))
+	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ColumnsAndConstraints) {
 		if valueSet(opts.ColumnsAndConstraints.Columns) {
@@ -85,6 +88,11 @@ func (opts *CreateTableOptions) validate() error {
 	if valueSet(opts.StageFileFormat) {
 		if !exactlyOneValueSet(opts.StageFileFormat.FormatName, opts.StageFileFormat.FileFormatType) {
 			errs = append(errs, errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"))
+		}
+	}
+	if valueSet(opts.RowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
 		}
 	}
 	if valueSet(opts.Tag) {

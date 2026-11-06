@@ -4,6 +4,7 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
 	"time"
 )
 
@@ -85,16 +86,16 @@ type ShowShareOptions struct {
 }
 
 type sharesRow struct {
-	CreatedOn         time.Time `db:"created_on"`
-	Kind              string    `db:"kind"`
-	OwnerAccount      string    `db:"owner_account"`
-	Name              string    `db:"name"`
-	DatabaseName      string    `db:"database_name"`
-	To                string    `db:"to"`
-	Owner             string    `db:"owner"`
-	Comment           string    `db:"comment"`
-	ListingGlobalName string    `db:"listing_global_name"`
-	SecureObjectsOnly string    `db:"secure_objects_only"`
+	CreatedOn         time.Time      `db:"created_on"`
+	Kind              string         `db:"kind"`
+	OwnerAccount      string         `db:"owner_account"`
+	Name              string         `db:"name"`
+	DatabaseName      string         `db:"database_name"`
+	To                string         `db:"to"`
+	Owner             string         `db:"owner"`
+	Comment           string         `db:"comment"`
+	ListingGlobalName string         `db:"listing_global_name"`
+	SecureObjectsOnly sql.NullString `db:"secure_objects_only"`
 }
 
 type Share struct {
@@ -107,7 +108,7 @@ type Share struct {
 	Owner             string
 	Comment           string
 	ListingGlobalName string
-	SecureObjectsOnly string
+	SecureObjectsOnly *bool
 	ToTotal           int
 }
 

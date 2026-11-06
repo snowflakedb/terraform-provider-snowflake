@@ -219,7 +219,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		t.Run("like", func(t *testing.T) {
 			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
 				WithLike(sdk.Like{Pattern: sdk.String("test_session_policy_2_%")}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, sessionPolicies, 1)
 		})
@@ -227,25 +227,25 @@ func TestInt_SessionPolicies(t *testing.T) {
 		t.Run("starts_with", func(t *testing.T) {
 			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
 				WithStartsWith("test_session_policy_").
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, sessionPolicies, 2)
 		})
 
 		t.Run("in_account", func(t *testing.T) {
-			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}))
 			require.NoError(t, err)
 			assert.GreaterOrEqual(t, len(sessionPolicies), 4)
 		})
 
 		t.Run("in_database", func(t *testing.T) {
-			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Database: id1.DatabaseId()}}))
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{Database: id1.DatabaseId()}))
 			require.NoError(t, err)
 			assert.Len(t, sessionPolicies, 3)
 		})
 
 		t.Run("in_schema", func(t *testing.T) {
-			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, sessionPolicies, 3)
 		})
@@ -265,7 +265,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		t.Run("limit", func(t *testing.T) {
 			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
 				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, sessionPolicies, 1)
 		})
@@ -273,7 +273,7 @@ func TestInt_SessionPolicies(t *testing.T) {
 		t.Run("limit from", func(t *testing.T) {
 			sessionPolicies, err := client.SessionPolicies.Show(ctx, sdk.NewShowSessionPolicyRequest().
 				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1), From: sdk.String("test_session_policy_")}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id1.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id1.SchemaId()}))
 			require.NoError(t, err)
 			require.Len(t, sessionPolicies, 1)
 			require.True(t, strings.HasPrefix(sessionPolicies[0].Name, "test_session_policy_2"))

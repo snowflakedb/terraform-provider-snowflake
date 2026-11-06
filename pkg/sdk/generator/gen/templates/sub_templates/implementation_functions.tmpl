@@ -13,7 +13,11 @@
                     {{ if .NoRequest }}opts := &{{ .OptsField.KindNoPtr }}{}{{ else }}opts := request.toOpts(){{ end }}
                     result, err := validateAndQueryOne[{{ .ShowMapping.From.Name }}](v.client, ctx, opts)
                     if err != nil {
+                        {{- if .MapNoRowsToNotFound }}
+                        return nil, errObjectNotFoundOnNoRows(err)
+                        {{- else }}
                         return nil, err
+                        {{- end }}
                     }
                     return conversionErrorWrapped(result.convert())
                 }

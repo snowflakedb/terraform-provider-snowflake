@@ -283,8 +283,11 @@ func (r *SetUserTagsQuotaRequest) toOpts() *SetUserTagsQuotaOptions {
 		tags := make([]QuotaUserTag, len(r.args.Tags))
 		for i, v := range r.args.Tags {
 			tags[i] = QuotaUserTag{
-				Tag:   v.Tag,
 				Value: v.Value,
+			}
+			tags[i].Reference = QuotaUserTagReference{}
+			tags[i].Reference.Arguments = QuotaUserTagReferenceArguments{
+				Tag: v.Reference.Arguments.Tag,
 			}
 		}
 		opts.args.Tags = tags
@@ -303,8 +306,11 @@ func (r *ExcludeUsersQuotaRequest) toOpts() *ExcludeUsersQuotaOptions {
 			tags := make([]QuotaExcludedUserTag, len(r.args.ByTag.Tags))
 			for i, v := range r.args.ByTag.Tags {
 				tags[i] = QuotaExcludedUserTag{
-					Tag:   v.Tag,
 					Value: v.Value,
+				}
+				tags[i].Reference = QuotaExcludedUserTagReference{}
+				tags[i].Reference.Arguments = QuotaExcludedUserTagReferenceArguments{
+					Tag: v.Reference.Arguments.Tag,
 				}
 			}
 			opts.args.ByTag.Tags = tags

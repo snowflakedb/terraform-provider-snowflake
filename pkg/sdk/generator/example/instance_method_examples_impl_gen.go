@@ -69,8 +69,11 @@ func (r *SetScopeInstanceMethodExampleRequest) toOpts() *SetScopeInstanceMethodE
 		tags := make([]ExampleTagValue, len(r.args.Tags))
 		for i, v := range r.args.Tags {
 			tags[i] = ExampleTagValue{
-				Tag:   v.Tag,
 				Value: v.Value,
+			}
+			tags[i].Reference = ExampleTagReference{}
+			tags[i].Reference.Arguments = ExampleTagReferenceArguments{
+				Tag: v.Reference.Arguments.Tag,
 			}
 		}
 		opts.args.Tags = tags

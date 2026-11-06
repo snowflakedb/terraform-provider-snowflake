@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"context"
 	"database/sql"
 	"math"
 	"testing"
@@ -12,8 +11,6 @@ import (
 )
 
 func init() {
-	externalVolumeErr := NewError("CreatePostgresMirrorOptions.arguments field: ExternalVolume can only be set when TargetTableType is ICEBERG")
-
 	postgresMirrorsTests.Create.
 		withDefaultOpts(func() *CreatePostgresMirrorOptions {
 			return &CreatePostgresMirrorOptions{
@@ -30,19 +27,6 @@ func init() {
 			"validation_Create_arguments_PostgresTables_emptyList",
 			func(opts *CreatePostgresMirrorOptions) { opts.arguments.PostgresTables = []StringListItemWrapper{} },
 			errAtLeastOneOf("CreatePostgresMirrorOptions.arguments", "PostgresTables", "PostgresSchemas"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_arguments_ExternalVolume_withoutTargetTableType",
-			func(opts *CreatePostgresMirrorOptions) { opts.arguments.ExternalVolume = new("MY_VOLUME") },
-			externalVolumeErr,
-		).
-		withAdditionalValidationCase(
-			"validation_Create_arguments_ExternalVolume_withSnowflakeTargetTableType",
-			func(opts *CreatePostgresMirrorOptions) {
-				opts.arguments.ExternalVolume = new("MY_VOLUME")
-				opts.arguments.TargetTableType = new(PostgresMirrorTargetTableTypeSnowflake)
-			},
-			externalVolumeErr,
 		).
 		withExpectedSql(
 			case_PostgresMirrors_sql_Create_basic,
@@ -207,49 +191,23 @@ func init() {
 		)
 }
 
-func TestPostgresMirrors_WaitForInitialSnapshot_minimumTables(t *testing.T) {
-	var mirrors *postgresMirrors
-	err := mirrors.WaitForInitialSnapshot(context.Background(), "my-instance", "orders_mirror", 0)
-	require.ErrorContains(t, err, "minimumTables must be at least 1")
-}
-
 func TestPostgresMirrorRow_convert(t *testing.T) {
-	t.Run("keeps unrecognized status", func(t *testing.T) {
+	t.Run("lowercase status", func(t *testing.T) {
 		mirror, err := postgresMirrorRow{
 			MirrorName: "orders_mirror",
-			Status:     sql.NullString{String: "REPAIRING", Valid: true},
+			Status:     sql.NullString{String: "active", Valid: true},
 		}.convert()
 		require.NoError(t, err)
-		assert.Equal(t, PostgresMirrorStatus("REPAIRING"), mirror.Status)
+		assert.Equal(t, PostgresMirrorStatusActive, mirror.Status)
 	})
-}
 
-func TestPostgresMirror_InitialSnapshotCompleted(t *testing.T) {
-	completed := &PostgresMirror{
-		Status:                         PostgresMirrorStatusActive,
-		TableCount:                     Int(2),
-		InitialSnapshotTablesRemaining: Int(0),
-	}
-	assert.True(t, completed.InitialSnapshotCompleted(2))
-	assert.False(t, completed.InitialSnapshotCompleted(3))
-
-	assert.False(t, (&PostgresMirror{
-		Status:                         PostgresMirrorStatusStarting,
-		TableCount:                     Int(2),
-		InitialSnapshotTablesRemaining: Int(0),
-	}).InitialSnapshotCompleted(2))
-
-	assert.False(t, (&PostgresMirror{
-		Status:                         PostgresMirrorStatusActive,
-		TableCount:                     Int(0),
-		InitialSnapshotTablesRemaining: Int(0),
-	}).InitialSnapshotCompleted(1))
-
-	assert.False(t, (&PostgresMirror{
-		Status:                         PostgresMirrorStatusActive,
-		TableCount:                     Int(2),
-		InitialSnapshotTablesRemaining: Int(1),
-	}).InitialSnapshotCompleted(2))
+	t.Run("unknown status", func(t *testing.T) {
+		_, err := postgresMirrorRow{
+			MirrorName: "orders_mirror",
+			Status:     sql.NullString{String: "Repairing", Valid: true},
+		}.convert()
+		require.ErrorContains(t, err, "STATUS")
+	})
 }
 
 func TestPostgresMirrorDetailsRow_convert(t *testing.T) {
@@ -344,6 +302,21 @@ func TestPostgresMirrorDetailsRow_convert(t *testing.T) {
 		require.ErrorContains(t, err, "POSTGRES_TABLES")
 	})
 
+	t.Run("lowercase status", func(t *testing.T) {
+		details, err := postgresMirrorDetailsRow{
+			Status: sql.NullString{String: "active", Valid: true},
+		}.convert()
+		require.NoError(t, err)
+		assert.Equal(t, PostgresMirrorStatusActive, details.Status)
+	})
+
+	t.Run("unknown status", func(t *testing.T) {
+		_, err := postgresMirrorDetailsRow{
+			Status: sql.NullString{String: "Repairing", Valid: true},
+		}.convert()
+		require.ErrorContains(t, err, "STATUS")
+	})
+
 	t.Run("lowercase target table type", func(t *testing.T) {
 		details, err := postgresMirrorDetailsRow{
 			TargetTableType: sql.NullString{String: "snowflake", Valid: true},
@@ -358,4 +331,32 @@ func TestPostgresMirrorDetailsRow_convert(t *testing.T) {
 		}.convert()
 		require.ErrorContains(t, err, "TARGET_TABLE_TYPE")
 	})
+}
+
+func TestParsePostgresMirrorRefreshInterval(t *testing.T) {
+	for input, expected := range map[string]PostgresMirrorRefreshInterval{
+		"30 seconds": {Seconds: 30},
+		"1 minute":   {Minutes: 1},
+		"10 MINUTES": {Minutes: 10},
+		"1 hour":     {Hours: 1},
+		"1 day":      {Hours: 24},
+	} {
+		t.Run(input, func(t *testing.T) {
+			interval, err := ParsePostgresMirrorRefreshInterval(input)
+			require.NoError(t, err)
+			assert.Equal(t, expected, interval)
+		})
+	}
+
+	t.Run("unknown unit", func(t *testing.T) {
+		_, err := ParsePostgresMirrorRefreshInterval("1 week")
+		require.ErrorContains(t, err, `invalid postgres mirror refresh interval: "1 week"`)
+	})
+}
+
+func TestPostgresMirrorRefreshInterval_String(t *testing.T) {
+	assert.Equal(t, "30 seconds", PostgresMirrorRefreshInterval{Seconds: 30}.String())
+	assert.Equal(t, "1 minute", PostgresMirrorRefreshInterval{Minutes: 1}.String())
+	assert.Equal(t, "10 minutes", PostgresMirrorRefreshInterval{Minutes: 10}.String())
+	assert.Equal(t, "24 hours", PostgresMirrorRefreshInterval{Hours: 24}.String())
 }

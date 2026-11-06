@@ -16,6 +16,14 @@ type Pipes interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeDetails, error)
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*PipeParametersDetails, error)
+}
+
+// PipeParametersDetails holds the object's parameters with values parsed into their Go types.
+type PipeParametersDetails struct {
+	LogEventLevel       TypedParameter[LogLevel]
+	PipeExecutionPaused TypedParameter[bool]
 }
 
 // CreatePipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-pipe.
@@ -27,11 +35,10 @@ type CreatePipeOptions struct {
 	name             SchemaObjectIdentifier `ddl:"identifier"`
 	AutoIngest       *bool                  `ddl:"parameter" sql:"AUTO_INGEST"`
 	ErrorIntegration *string                `ddl:"parameter,no_quotes" sql:"ERROR_INTEGRATION"`
-	AwsSnsTopic      *string                `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
+	AwsSnsTopicArn   *string                `ddl:"parameter,single_quotes" sql:"AWS_SNS_TOPIC"`
 	Integration      *string                `ddl:"parameter,single_quotes" sql:"INTEGRATION"`
 	Comment          *string                `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	as               bool                   `ddl:"static" sql:"AS"`
-	copyStatement    string                 `ddl:"keyword,no_quotes"`
+	copyStatement    string                 `ddl:"parameter,no_quotes,no_equals" sql:"AS"`
 }
 
 // AlterPipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-pipe.
@@ -48,13 +55,15 @@ type AlterPipeOptions struct {
 }
 
 type PipeSet struct {
-	ErrorIntegration    *string `ddl:"parameter,no_quotes" sql:"ERROR_INTEGRATION"`
-	PipeExecutionPaused *bool   `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
-	Comment             *string `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	ErrorIntegration    *string   `ddl:"parameter,no_quotes" sql:"ERROR_INTEGRATION"`
+	LogEventLevel       *LogLevel `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
+	PipeExecutionPaused *bool     `ddl:"parameter" sql:"PIPE_EXECUTION_PAUSED"`
+	Comment             *string   `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type PipeUnset struct {
 	ErrorIntegration    *bool `ddl:"keyword" sql:"ERROR_INTEGRATION"`
+	LogEventLevel       *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	PipeExecutionPaused *bool `ddl:"keyword" sql:"PIPE_EXECUTION_PAUSED"`
 	Comment             *bool `ddl:"keyword" sql:"COMMENT"`
 }
@@ -74,13 +83,13 @@ type DropPipeOptions struct {
 
 // ShowPipeOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-pipes.
 type ShowPipeOptions struct {
-	show  bool  `ddl:"static" sql:"SHOW"`
-	pipes bool  `ddl:"static" sql:"PIPES"`
-	Like  *Like `ddl:"keyword" sql:"LIKE"`
-	In    *In   `ddl:"keyword" sql:"IN"`
+	show  bool        `ddl:"static" sql:"SHOW"`
+	pipes bool        `ddl:"static" sql:"PIPES"`
+	Like  *Like       `ddl:"keyword" sql:"LIKE"`
+	In    *ExtendedIn `ddl:"keyword" sql:"IN"`
 }
 
-type pipeDBRow struct {
+type pipesRow struct {
 	CreatedOn           string         `db:"created_on"`
 	Name                string         `db:"name"`
 	DatabaseName        string         `db:"database_name"`
@@ -94,6 +103,7 @@ type pipeDBRow struct {
 	ErrorIntegration    sql.NullString `db:"error_integration"`
 	OwnerRoleType       sql.NullString `db:"owner_role_type"`
 	InvalidReason       sql.NullString `db:"invalid_reason"`
+	Kind                sql.NullString `db:"kind"`
 }
 
 type Pipe struct {
@@ -110,6 +120,7 @@ type Pipe struct {
 	ErrorIntegration    string
 	OwnerRoleType       string
 	InvalidReason       string
+	Kind                string
 }
 
 func (v *Pipe) ID() SchemaObjectIdentifier {
@@ -127,7 +138,7 @@ type DescribePipeOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type pipeDetailRow struct {
+type pipeDescRow struct {
 	CreatedOn           string         `db:"created_on"`
 	Name                string         `db:"name"`
 	DatabaseName        string         `db:"database_name"`
@@ -141,6 +152,7 @@ type pipeDetailRow struct {
 	ErrorIntegration    sql.NullString `db:"error_integration"`
 	OwnerRoleType       sql.NullString `db:"owner_role_type"`
 	InvalidReason       sql.NullString `db:"invalid_reason"`
+	Kind                sql.NullString `db:"kind"`
 }
 
 type PipeDetails struct {
@@ -157,6 +169,7 @@ type PipeDetails struct {
 	ErrorIntegration    string
 	OwnerRoleType       string
 	InvalidReason       string
+	Kind                string
 }
 
 func (v *PipeDetails) ID() SchemaObjectIdentifier {

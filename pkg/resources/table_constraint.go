@@ -11,6 +11,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -182,6 +183,7 @@ var tableConstraintSchema = map[string]*schema.Schema{
 
 func TableConstraint() *schema.Resource {
 	return &schema.Resource{
+		Description:   docs.WithPreviewFeatureMark(),
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.TableConstraintResource), TrackingCreateWrapper(resources.TableConstraint, CreateTableConstraint)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.TableConstraintResource), TrackingReadWrapper(resources.TableConstraint, ReadTableConstraint)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.TableConstraintResource), TrackingUpdateWrapper(resources.TableConstraint, UpdateTableConstraint)),

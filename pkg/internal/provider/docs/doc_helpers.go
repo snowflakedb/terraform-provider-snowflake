@@ -45,6 +45,17 @@ func GetDeprecatedObjectReplacements(deprecationMessage string) []Replacement {
 	})
 }
 
+// PreviewFeatureMark is embedded in a resource or data source description to mark it as a preview
+// feature. It is not rendered. templates/resources.md.tmpl and templates/data-sources.md.tmpl look
+// for it and, when it is set, select subcategory Preview and include the preview caution note.
+// Same approach as the <deprecation> mark added in schema.ResourceDescriptionBuilder.
+const PreviewFeatureMark = "<preview_feature>"
+
+// WithPreviewFeatureMark returns PreviewFeatureMark.
+func WithPreviewFeatureMark() string {
+	return PreviewFeatureMark
+}
+
 // RelativeLink allows us to get relative link to the resource/datasource in the same subtree. Will have to change when we introduce subcategories.
 func RelativeLink(title string, path string) string {
 	return fmt.Sprintf(`[%s](./%s)`, title, path)

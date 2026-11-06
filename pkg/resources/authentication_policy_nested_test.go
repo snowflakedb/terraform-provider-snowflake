@@ -22,6 +22,8 @@ func Test_parseAuthenticationPolicyNestedBlocks(t *testing.T) {
 				"default_expiry_in_days":                     20,
 				"network_policy_evaluation":                  "enforced_not_required",
 				"require_role_restriction_for_service_users": "false",
+				"require_role_restriction_for_person_users":  "true",
+				"blocked_roles_list":                         []any{"ACCOUNTADMIN", "My Role"},
 			},
 		},
 		"workload_identity_policy": []any{
@@ -50,6 +52,9 @@ func Test_parseAuthenticationPolicyNestedBlocks(t *testing.T) {
 	assert.Equal(t, sdk.NetworkPolicyEvaluationOptionEnforcedNotRequired, *pat.NetworkPolicyEvaluation)
 	require.NotNil(t, pat.RequireRoleRestrictionForServiceUsers)
 	assert.False(t, *pat.RequireRoleRestrictionForServiceUsers)
+	require.NotNil(t, pat.RequireRoleRestrictionForPersonUsers)
+	assert.True(t, *pat.RequireRoleRestrictionForPersonUsers)
+	assert.ElementsMatch(t, []sdk.StringListItemWrapper{{Value: `"ACCOUNTADMIN"`}, {Value: `"My Role"`}}, pat.BlockedRolesList)
 
 	workload, err := parseAuthenticationPolicyWorkloadIdentityPolicy(d, "workload_identity_policy.0.")
 	require.NoError(t, err)
@@ -68,6 +73,7 @@ func Test_parseAuthenticationPolicyPatPolicy_leavesRequireRoleRestrictionToSnowf
 			map[string]any{
 				"default_expiry_in_days":                     10,
 				"require_role_restriction_for_service_users": BooleanDefault,
+				"require_role_restriction_for_person_users":  BooleanDefault,
 			},
 		},
 	})
@@ -75,6 +81,8 @@ func Test_parseAuthenticationPolicyPatPolicy_leavesRequireRoleRestrictionToSnowf
 	pat, err := parseAuthenticationPolicyPatPolicy(d, "pat_policy.0.")
 	require.NoError(t, err)
 	assert.Nil(t, pat.RequireRoleRestrictionForServiceUsers)
+	assert.Nil(t, pat.RequireRoleRestrictionForPersonUsers)
+	assert.Nil(t, pat.BlockedRolesList)
 	require.NotNil(t, pat.DefaultExpiryInDays)
 	assert.Equal(t, 10, *pat.DefaultExpiryInDays)
 }
@@ -90,6 +98,7 @@ func Test_authenticationPolicyNestedBlockUpdate(t *testing.T) {
 			"pat_policy.0.max_expiry_in_days":        "0",
 			"pat_policy.0.network_policy_evaluation": "",
 			"pat_policy.0.require_role_restriction_for_service_users": BooleanDefault,
+			"pat_policy.0.require_role_restriction_for_person_users":  BooleanDefault,
 		}, map[string]any{
 			"name":     "n",
 			"database": "db",
@@ -98,6 +107,7 @@ func Test_authenticationPolicyNestedBlockUpdate(t *testing.T) {
 				map[string]any{
 					"default_expiry_in_days":                     30,
 					"require_role_restriction_for_service_users": BooleanDefault,
+					"require_role_restriction_for_person_users":  BooleanDefault,
 				},
 			},
 		})
@@ -112,6 +122,8 @@ func Test_authenticationPolicyNestedBlockUpdate(t *testing.T) {
 		assert.Nil(t, got.MaxExpiryInDays)
 		assert.Nil(t, got.NetworkPolicyEvaluation)
 		assert.Nil(t, got.RequireRoleRestrictionForServiceUsers)
+		assert.Nil(t, got.RequireRoleRestrictionForPersonUsers)
+		assert.Nil(t, got.BlockedRolesList)
 	})
 
 	t.Run("removes the block", func(t *testing.T) {

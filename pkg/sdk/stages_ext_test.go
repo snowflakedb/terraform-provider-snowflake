@@ -1193,7 +1193,7 @@ func init() {
 			case_Stages_sql_Show_all,
 			func(opts *ShowStageOptions) {
 				opts.Like = &Like{Pattern: new("some pattern")}
-				opts.In = &ExtendedIn{In: In{Schema: schemaId}}
+				opts.In = &ExtendedIn{Schema: schemaId}
 			},
 			`SHOW STAGES LIKE 'some pattern' IN SCHEMA %s`, schemaId.FullyQualifiedName(),
 		).
@@ -1204,7 +1204,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Stages_sql_Show_In,
-			func(opts *ShowStageOptions) { opts.In = &ExtendedIn{In: In{Schema: schemaId}} },
+			func(opts *ShowStageOptions) { opts.In = &ExtendedIn{Schema: schemaId} },
 			`SHOW STAGES IN SCHEMA %s`, schemaId.FullyQualifiedName(),
 		)
 }

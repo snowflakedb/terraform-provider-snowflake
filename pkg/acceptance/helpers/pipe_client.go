@@ -25,6 +25,16 @@ func (c *PipeClient) client() sdk.Pipes {
 	return c.context.client.Pipes
 }
 
+// PipeCopyStatement creates a table and a stage and returns a COPY INTO statement for them.
+func (c *TestClient) PipeCopyStatement(t *testing.T) string {
+	t.Helper()
+	table, tableCleanup := c.Table.Create(t)
+	t.Cleanup(tableCleanup)
+	stage, stageCleanup := c.Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+	return fmt.Sprintf("COPY INTO %s FROM @%s", table.ID().FullyQualifiedName(), stage.ID().FullyQualifiedName())
+}
+
 func (c *PipeClient) CopyStatement(t *testing.T, table *sdk.Table, stage *sdk.Stage) string {
 	t.Helper()
 	require.NotNil(t, table, "table has to be created")
@@ -71,4 +81,18 @@ func (c *PipeClient) DropPipeFunc(t *testing.T, id sdk.SchemaObjectIdentifier) f
 func (c *PipeClient) Describe(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PipeDetails, error) {
 	t.Helper()
 	return c.client().Describe(context.Background(), id)
+}
+
+func (c *PipeClient) ExecutionState(t *testing.T, id sdk.SchemaObjectIdentifier) (sdk.PipeExecutionState, error) {
+	t.Helper()
+	status, err := c.context.client.SystemFunctions.PipeStatus(context.Background(), sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(id)))
+	if err != nil {
+		return "", err
+	}
+	return status.ExecutionState, nil
+}
+
+func (c *PipeClient) ShowParametersDetails(t *testing.T, id sdk.SchemaObjectIdentifier) (*sdk.PipeParametersDetails, error) {
+	t.Helper()
+	return c.client().ShowParametersDetails(context.Background(), id)
 }

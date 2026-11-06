@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_openflow_deployment_snowflake_managed Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage Snowflake-managed Openflow deployments. A deployment is the account-level container that Openflow runtimes are created in. Snowflake runs it, so creation is complete once the deployment reaches the ACTIVE state, which takes several minutes. For more information, check Openflow deployment documentation https://docs.snowflake.com/en/sql-reference/sql/create-openflow-deployment.
 ---
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Every mutating statement is asynchronous and the provider waits for the deployment to settle before returning, so applies take minutes rather than seconds. If you encounter timeout errors, use a [`timeouts` block](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts) to set higher limits for your environment.
 
@@ -41,8 +39,9 @@ resource "snowflake_openflow_deployment_snowflake_managed" "complete" {
   display_name = "My deployment"
   # an existing event table, created with CREATE EVENT TABLE outside Terraform: the provider has no
   # resource for one, and a regular table will not do because Snowflake requires the event schema
-  event_table = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
-  comment     = "Managed by Terraform."
+  event_table      = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
+  use_private_link = "true"
+  comment          = "Managed by Terraform."
 }
 ```
 
@@ -61,6 +60,7 @@ resource "snowflake_openflow_deployment_snowflake_managed" "complete" {
 - `display_name` (String) A free-text alias for the deployment. Shown in the Openflow UI in place of the deployment's identifier when set.
 - `event_table` (String) Specifies the name of the event table for logging messages from stored procedures and UDFs contained by the object with which the event table is associated. Associating an event table with a database is available in [Enterprise Edition or higher](https://docs.snowflake.com/en/user-guide/intro-editions). For more information, check [EVENT_TABLE docs](https://docs.snowflake.com/en/sql-reference/parameters#event-table).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `use_private_link` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the deployment is reached over private link. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
 ### Read-Only
 

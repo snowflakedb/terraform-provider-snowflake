@@ -186,6 +186,7 @@ func applyTfcWorkloadIdentityToken(tag string, config *gosnowflake.Config) error
 		return fmt.Errorf("environment variable %s is not set or is empty; it is provided by Terraform Cloud/Enterprise when a workload identity token with the %q tag is configured for the workspace", envName, tag)
 	}
 	config.Token = token
+	config.TokenFilePath = ""
 	return nil
 }
 

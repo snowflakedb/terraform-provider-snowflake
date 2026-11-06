@@ -4,8 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,6 +24,71 @@ func TestProvider(t *testing.T) {
 	if err := Provider().InternalValidate(); err != nil {
 		t.Fatalf("err: %s", err)
 	}
+}
+
+func TestStandardTemplatePreviewMarks(t *testing.T) {
+	p := Provider()
+
+	for _, name := range []string{
+		"snowflake_dynamic_table",
+		"snowflake_email_notification_integration",
+		"snowflake_external_table",
+		"snowflake_failover_group",
+		"snowflake_intelligence_cortex_agent_attachment",
+		"snowflake_managed_account",
+		"snowflake_notification_integration",
+		"snowflake_sequence",
+		"snowflake_table",
+		"snowflake_table_constraint",
+	} {
+		resource, ok := p.ResourcesMap[name]
+		require.Truef(t, ok, "missing resource %s", name)
+		assert.Contains(t, resource.Description, docs.PreviewFeatureMark)
+		assert.Contains(t, previewfeatures.AllPreviewFeatures, name+"_resource")
+	}
+	for _, name := range []string{
+		"snowflake_alerts",
+		"snowflake_cortex_search_services",
+		"snowflake_current_account",
+		"snowflake_current_role",
+		"snowflake_database",
+		"snowflake_database_role",
+		"snowflake_dynamic_tables",
+		"snowflake_external_access_integrations",
+		"snowflake_external_functions",
+		"snowflake_external_tables",
+		"snowflake_failover_groups",
+		"snowflake_functions",
+		"snowflake_hybrid_tables",
+		"snowflake_iceberg_tables",
+		"snowflake_materialized_views",
+		"snowflake_notebooks",
+		"snowflake_parameters",
+		"snowflake_pipes",
+		"snowflake_procedures",
+		"snowflake_sequences",
+		"snowflake_shares",
+		"snowflake_stages",
+		"snowflake_system_generate_scim_access_token",
+		"snowflake_system_get_privatelink_config",
+		"snowflake_system_get_snowflake_platform_info",
+		"snowflake_tables",
+	} {
+		dataSource, ok := p.DataSourcesMap[name]
+		require.Truef(t, ok, "missing data source %s", name)
+		assert.Contains(t, dataSource.Description, docs.PreviewFeatureMark)
+		assert.Contains(t, previewfeatures.AllPreviewFeatures, name+"_datasource")
+	}
+
+	// The mark is part of the resource description.
+	assert.Contains(t, p.ResourcesMap["snowflake_alert"].Description, docs.PreviewFeatureMark)
+	assert.Contains(t, p.ResourcesMap["snowflake_alert"].Description, "Resource used to manage alert objects.")
+
+	// Stable resource, and a preview resource that still has its own template.
+	assert.NotContains(t, p.ResourcesMap["snowflake_warehouse"].Description, docs.PreviewFeatureMark)
+	assert.NotContains(t, p.ResourcesMap["snowflake_semantic_view"].Description, docs.PreviewFeatureMark)
+	assert.NotContains(t, p.DataSourcesMap["snowflake_accounts"].Description, docs.PreviewFeatureMark)
+	assert.NotContains(t, p.DataSourcesMap["snowflake_semantic_views"].Description, docs.PreviewFeatureMark)
 }
 
 func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
@@ -52,6 +119,7 @@ func TestGetDriverConfigFromTerraform_EmptyConfiguration(t *testing.T) {
 	assert.Zero(t, config.ExternalBrowserTimeout)
 	assert.Empty(t, config.OCSPFailOpen)
 	assert.Empty(t, config.Token)
+	assert.Empty(t, config.TokenFilePath)
 	assert.Empty(t, config.ServerSessionKeepAlive)
 	assert.Empty(t, config.ClientRequestMfaToken)
 	assert.Empty(t, config.ClientStoreTemporaryCredential)
@@ -134,6 +202,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 		"oauth_redirect_uri":                     "oauth_redirect_uri",
 		"oauth_scope":                            "oauth_scope",
 		"enable_single_use_refresh_tokens":       "true",
+		"token_file_path":                        "token_file_path",
 		"workload_identity_provider":             "workload_identity_provider",
 		"workload_identity_entra_resource":       "workload_identity_entra_resource",
 		"log_query_text":                         true,
@@ -197,6 +266,7 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.Equal(t, "oauth_redirect_uri", config.OauthRedirectURI)
 	assert.Equal(t, "oauth_scope", config.OauthScope)
 	assert.True(t, config.EnableSingleUseRefreshTokens)
+	assert.Equal(t, "token_file_path", config.TokenFilePath)
 	assert.Equal(t, "workload_identity_provider", config.WorkloadIdentityProvider)
 	assert.Equal(t, "workload_identity_entra_resource", config.WorkloadIdentityEntraResource)
 	assert.True(t, config.LogQueryText)
@@ -214,6 +284,21 @@ func TestGetDriverConfigFromTerraform_AllFields(t *testing.T) {
 	assert.True(t, config.CrlOnDiskCacheDisabled)
 	assert.Equal(t, 30*time.Second, config.CrlHTTPClientTimeout)
 	assert.Equal(t, gosnowflake.ConfigBoolTrue, config.DisableSamlURLCheck)
+}
+
+func TestGetDriverConfigFromTerraform_TokenAndTokenFilePath(t *testing.T) {
+	t.Setenv(snowflakeenvs.Account, "")
+	d := schema.TestResourceDataRaw(t, GetProviderSchema(), map[string]any{
+		"token":           "token",
+		"token_file_path": "token_file_path",
+	})
+
+	config, diags := getDriverConfigFromTerraform(d, experimentalfeatures.Experiments{})
+
+	require.Empty(t, diags)
+	assert.Equal(t, "token", config.Token)
+	assert.Equal(t, "token_file_path", config.TokenFilePath)
+	require.ErrorContains(t, config.Validate(), "token and tokenFilePath cannot be specified at the same time")
 }
 
 func TestGetDriverConfigFromTerraform_AccountFallback(t *testing.T) {

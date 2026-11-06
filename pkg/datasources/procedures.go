@@ -6,6 +6,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -65,6 +66,7 @@ var proceduresSchema = map[string]*schema.Schema{
 
 func Procedures() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ProceduresDatasource), TrackingReadWrapper(datasources.Procedures, ReadContextProcedures)),
 		Schema:      proceduresSchema,
 	}
@@ -77,10 +79,10 @@ func ReadContextProcedures(ctx context.Context, d *schema.ResourceData, meta any
 
 	req := sdk.NewShowProcedureRequest()
 	if databaseName != "" {
-		req.WithIn(sdk.ExtendedIn{In: sdk.In{Database: sdk.NewAccountObjectIdentifier(databaseName)}})
+		req.WithIn(sdk.ExtendedIn{Database: sdk.NewAccountObjectIdentifier(databaseName)})
 	}
 	if schemaName != "" {
-		req.WithIn(sdk.ExtendedIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)}})
+		req.WithIn(sdk.ExtendedIn{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)})
 	}
 	procedures, err := client.Procedures.Show(ctx, req)
 	if err != nil {

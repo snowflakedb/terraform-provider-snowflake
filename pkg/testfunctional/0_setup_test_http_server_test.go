@@ -29,6 +29,8 @@ func setUpTestHttpServer() error {
 		mux.Handle("/"+path, handler)
 	}
 
+	// Reachable from the Terraform plugin subprocess. httptest.NewTestServer is an
+	// in-memory network for testing/synctest and cannot be dialed from another process.
 	server = httptest.NewServer(mux)
 	serverCleanup = func() {
 		functionalTestLog.Printf("[INFO] Closing server at %s", server.URL)

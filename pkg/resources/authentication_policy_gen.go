@@ -113,7 +113,7 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 			return diag.FromErr(err)
 		}
 
-		diags = authenticationPolicyHandleExternalChangesInDescribeExt(d, authenticationPolicyDetails, withExternalChangesMarking)
+		diags = authenticationPolicyHandleExternalChangesInDescribeExt(ctx, d, meta, authenticationPolicyDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
 		}
@@ -145,8 +145,34 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if diags := authenticationPolicyHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
-		return diags
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.AuthenticationPolicies.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeResourceIdentifier(renamed)
+			},
+			"authentication policy",
+		); diags != nil {
+			return diags
+		}
+	}
+
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
 	}
 	setUnset, err := authenticationPolicyApplySetUnsetExt(d)
 	if err != nil {
@@ -166,9 +192,11 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 }
 
 var authenticationPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.AuthenticationPolicy, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
 	ComputedIfAnyAttributeChanged(authenticationPolicySchema, ShowOutputAttributeName, "name", "comment"),
 	ComputedIfAnyAttributeChanged(authenticationPolicySchema, DescribeOutputAttributeName, "name", "mfa_enrollment", "comment"),
-	ComputedIfAnyAttributeChanged(authenticationPolicySchema, FullyQualifiedNameAttributeName, "name"),
+	ComputedIfAnyAttributeChanged(authenticationPolicySchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 ))
 
 func authenticationPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
@@ -208,6 +236,8 @@ func parseAuthenticationPolicyPatPolicy(d *tfschema.ResourceData, prefix string)
 		intAttributeCreateBuilder(d, prefix+"default_expiry_in_days", request.WithDefaultExpiryInDays),
 		intAttributeCreateBuilder(d, prefix+"max_expiry_in_days", request.WithMaxExpiryInDays),
 		booleanStringAttributeCreateBuilder(d, prefix+"require_role_restriction_for_service_users", request.WithRequireRoleRestrictionForServiceUsers),
+		booleanStringAttributeCreateBuilder(d, prefix+"require_role_restriction_for_person_users", request.WithRequireRoleRestrictionForPersonUsers),
+		setMappedValueCreateBuilder(d, prefix+"blocked_roles_list", request.WithBlockedRolesList, toAuthenticationPolicyPatPolicyBlockedRolesList),
 		attributeMappedValueCreateBuilder(d, prefix+"network_policy_evaluation", request.WithNetworkPolicyEvaluation, sdk.ToNetworkPolicyEvaluationOption),
 	)
 	return *request, errs

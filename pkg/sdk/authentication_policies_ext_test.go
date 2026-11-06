@@ -23,7 +23,12 @@ func init() {
 		DefaultExpiryInDays:                   new(30),
 		MaxExpiryInDays:                       new(90),
 		RequireRoleRestrictionForServiceUsers: new(true),
-		NetworkPolicyEvaluation:               new(NetworkPolicyEvaluationOptionEnforcedRequired),
+		RequireRoleRestrictionForPersonUsers:  new(true),
+		BlockedRolesList: []StringListItemWrapper{
+			{Value: `"ACCOUNTADMIN"`},
+			{Value: `"My Role"`},
+		},
+		NetworkPolicyEvaluation: new(NetworkPolicyEvaluationOptionEnforcedRequired),
 	}
 	workloadIdentityPolicy := &AuthenticationPolicyWorkloadIdentityPolicy{
 		AllowedProviders:    []AllowedProviderOptionListItem{{Value: AllowedProviderOptionAll}},
@@ -45,13 +50,13 @@ func init() {
 	createAllSql := "CREATE AUTHENTICATION POLICY IF NOT EXISTS %s AUTHENTICATION_METHODS = ('SAML', 'PASSWORD')" +
 		" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY'))" +
 		" CLIENT_TYPES = ('DRIVERS', 'SNOWSQL') CLIENT_POLICY = (GO_DRIVER = (MINIMUM_VERSION = '1.14.1'), JDBC_DRIVER = (MINIMUM_VERSION = '3.25.0'))" +
-		" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)" +
+		" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS = true BLOCKED_ROLES_LIST = ('\\\"ACCOUNTADMIN\\\"', '\\\"My Role\\\"') NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)" +
 		" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')" +
 		" ALLOWED_OIDC_ISSUERS = ('https://oidc.example.com')) COMMENT = 'some comment'"
 	alterSetAllSql := "ALTER AUTHENTICATION POLICY IF EXISTS %s SET AUTHENTICATION_METHODS = ('SAML')" +
 		" MFA_ENROLLMENT = OPTIONAL MFA_POLICY = (ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION = ALL ALLOWED_METHODS = ('PASSKEY')) CLIENT_TYPES = ('DRIVERS', 'SNOWSQL')" +
 		" CLIENT_POLICY = (GO_DRIVER = (MINIMUM_VERSION = '1.14.1'), JDBC_DRIVER = (MINIMUM_VERSION = '3.25.0'))" +
-		" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)" +
+		" SECURITY_INTEGRATIONS = (\"security_integration\") PAT_POLICY = (DEFAULT_EXPIRY_IN_DAYS = 30 MAX_EXPIRY_IN_DAYS = 90 REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS = true REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS = true BLOCKED_ROLES_LIST = ('\\\"ACCOUNTADMIN\\\"', '\\\"My Role\\\"') NETWORK_POLICY_EVALUATION = ENFORCED_REQUIRED)" +
 		" WORKLOAD_IDENTITY_POLICY = (ALLOWED_PROVIDERS = ('ALL') ALLOWED_AWS_ACCOUNTS = ('1234567890') ALLOWED_AZURE_ISSUERS = ('https://login.microsoftonline.com/1234567890/v2.0')" +
 		" ALLOWED_OIDC_ISSUERS = ('https://oidc.example.com')) COMMENT = 'some comment'"
 
@@ -154,6 +159,15 @@ func init() {
 			},
 			alterSetAllSql, id.FullyQualifiedName(),
 		).
+		withAdditionalSqlCasef(
+			"sql_Alter_Set_patPolicy_emptyBlockedRoles",
+			func(opts *AlterAuthenticationPolicyOptions) {
+				opts.Set = &AuthenticationPolicySet{
+					PatPolicy: &AuthenticationPolicyPatPolicy{BlockedRolesList: []StringListItemWrapper{}},
+				}
+			},
+			"ALTER AUTHENTICATION POLICY %s SET PAT_POLICY = (BLOCKED_ROLES_LIST = ())", id.FullyQualifiedName(),
+		).
 		withModifyAndExpectedSqlf(
 			case_AuthenticationPolicies_sql_Alter_Unset,
 			func(opts *AlterAuthenticationPolicyOptions) {
@@ -203,7 +217,7 @@ func init() {
 			case_AuthenticationPolicies_sql_Show_all,
 			func(opts *ShowAuthenticationPolicyOptions) {
 				opts.Like = &Like{Pattern: new("like-pattern")}
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 				opts.StartsWith = new("starts-with-pattern")
 				opts.Limit = &LimitFrom{Rows: new(10), From: new("limit-from")}
 			},
@@ -218,7 +232,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_AuthenticationPolicies_sql_Show_In,
 			func(opts *ShowAuthenticationPolicyOptions) {
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			"SHOW AUTHENTICATION POLICIES IN SCHEMA %s", id.SchemaId().FullyQualifiedName(),
 		).
@@ -350,6 +364,8 @@ func TestParseAuthenticationPolicyDetails(t *testing.T) {
 				MaxExpiryInDays:                       365,
 				NetworkPolicyEvaluation:               NetworkPolicyEvaluationOptionEnforcedRequired,
 				RequireRoleRestrictionForServiceUsers: true,
+				RequireRoleRestrictionForPersonUsers:  false,
+				BlockedRolesList:                      []AccountObjectIdentifier{},
 			},
 			WorkloadIdentityPolicy: AuthenticationPolicyWorkloadIdentityPolicyDetails{
 				AllowedProviders:    []AllowedProviderOption{AllowedProviderOptionAll},
@@ -371,7 +387,7 @@ func TestParseAuthenticationPolicyDetails(t *testing.T) {
 			{Property: "CLIENT_POLICY", Value: "{JDBC_DRIVER={MINIMUM_VERSION=3.25.0}, GO_DRIVER={MINIMUM_VERSION=1.14.1}}"},
 			{Property: "AUTHENTICATION_METHODS", Value: "[PASSWORD, SAML]"},
 			{Property: "MFA_POLICY", Value: "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}"},
-			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false}"},
+			{Property: "PAT_POLICY", Value: "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=true, BLOCKED_ROLES_LIST=[ACCOUNTADMIN, My Role]}"},
 			{Property: "WORKLOAD_IDENTITY_POLICY", Value: "{ALLOWED_PROVIDERS=[AWS, AZURE], ALLOWED_AWS_ACCOUNTS=[111122223333, 444455556666], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com, https://other.example]}"},
 		}
 		parsed, err := ParseAuthenticationPolicyDescribed(rows)
@@ -402,6 +418,8 @@ func TestParseAuthenticationPolicyDetails(t *testing.T) {
 				MaxExpiryInDays:                       30,
 				NetworkPolicyEvaluation:               NetworkPolicyEvaluationOptionNotEnforced,
 				RequireRoleRestrictionForServiceUsers: false,
+				RequireRoleRestrictionForPersonUsers:  true,
+				BlockedRolesList:                      []AccountObjectIdentifier{NewAccountObjectIdentifier("ACCOUNTADMIN"), NewAccountObjectIdentifier("My Role")},
 			},
 			WorkloadIdentityPolicy: AuthenticationPolicyWorkloadIdentityPolicyDetails{
 				AllowedProviders:    []AllowedProviderOption{AllowedProviderOptionAws, AllowedProviderOptionAzure},

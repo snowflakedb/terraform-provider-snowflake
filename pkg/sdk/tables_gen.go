@@ -48,7 +48,7 @@ type CreateTableOptions struct {
 	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
 	DefaultDdlCollation        *StringAllowEmpty                `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy            *TableRowAccessPolicyLegacy      `ddl:"keyword"`
+	RowAccessPolicy            *TableRowAccessPolicy            `ddl:"list,no_comma"`
 	Tag                        []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment                    *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -132,17 +132,22 @@ type LegacyTableCopyOnErrorOptions struct {
 	AbortStatement *bool   `ddl:"keyword" sql:"ABORT_STATEMENT"`
 }
 
+type TableRowAccessPolicy struct {
+	Name SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
+	On   []string               `ddl:"keyword,parentheses" sql:"ON"`
+}
+
 // CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
 type CreateAsSelectTableOptions struct {
-	create          bool                        `ddl:"static" sql:"CREATE"`
-	OrReplace       *bool                       `ddl:"keyword" sql:"OR REPLACE"`
-	table           bool                        `ddl:"static" sql:"TABLE"`
-	name            SchemaObjectIdentifier      `ddl:"identifier"`
-	Columns         []TableAsSelectColumn       `ddl:"list,parentheses"`
-	ClusterBy       []string                    `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	CopyGrants      *bool                       `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy *TableRowAccessPolicyLegacy `ddl:"keyword"`
-	Query           string                      `ddl:"parameter,no_equals" sql:"AS"`
+	create          bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table           bool                   `ddl:"static" sql:"TABLE"`
+	name            SchemaObjectIdentifier `ddl:"identifier"`
+	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
+	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	CopyGrants      *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+	RowAccessPolicy *TableRowAccessPolicy  `ddl:"keyword"`
+	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
 }
 
 type TableAsSelectColumn struct {
@@ -190,33 +195,33 @@ type ClonePoint struct {
 
 // AlterTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
 type AlterTableOptions struct {
-	alter                      bool                                 `ddl:"static" sql:"ALTER"`
-	table                      bool                                 `ddl:"static" sql:"TABLE"`
-	IfExists                   *bool                                `ddl:"keyword" sql:"IF EXISTS"`
-	name                       SchemaObjectIdentifier               `ddl:"identifier"`
-	RenameTo                   *SchemaObjectIdentifier              `ddl:"identifier" sql:"RENAME TO"`
-	SwapWith                   *SchemaObjectIdentifier              `ddl:"identifier" sql:"SWAP WITH"`
-	ClusteringAction           *TableClusteringAction               `ddl:"keyword"`
-	ColumnAction               *TableColumnAction                   `ddl:"keyword"`
-	ConstraintAction           *TableConstraintAction               `ddl:"keyword"`
-	ExternalTableAction        *TableExternalTableAction            `ddl:"keyword"`
-	SearchOptimizationAction   *TableSearchOptimizationActionLegacy `ddl:"keyword"`
-	Set                        *TableSet                            `ddl:"keyword" sql:"SET"`
-	SetTags                    []TagAssociation                     `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags                  []ObjectIdentifier                   `ddl:"keyword" sql:"UNSET TAG"`
-	Unset                      *TableUnset                          `ddl:"keyword" sql:"UNSET"`
-	AddRowAccessPolicy         *TableAddRowAccessPolicy             `ddl:"keyword"`
-	DropRowAccessPolicy        *TableDropRowAccessPolicy            `ddl:"keyword"`
-	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicy      `ddl:"list,no_parentheses"`
-	DropAllRowAccessPolicies   *bool                                `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
-	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicy      `ddl:"keyword"`
-	DropStorageLifecyclePolicy *bool                                `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
+	alter                      bool                            `ddl:"static" sql:"ALTER"`
+	table                      bool                            `ddl:"static" sql:"TABLE"`
+	IfExists                   *bool                           `ddl:"keyword" sql:"IF EXISTS"`
+	name                       SchemaObjectIdentifier          `ddl:"identifier"`
+	RenameTo                   *SchemaObjectIdentifier         `ddl:"identifier" sql:"RENAME TO"`
+	SwapWith                   *SchemaObjectIdentifier         `ddl:"identifier" sql:"SWAP WITH"`
+	ClusteringAction           *TableClusteringAction          `ddl:"keyword"`
+	ColumnAction               *TableColumnAction              `ddl:"keyword"`
+	ConstraintAction           *TableConstraintAction          `ddl:"keyword"`
+	ExternalTableAction        *TableExternalTableAction       `ddl:"keyword"`
+	SearchOptimizationAction   *TableSearchOptimizationAction  `ddl:"keyword"`
+	Set                        *TableSet                       `ddl:"keyword" sql:"SET"`
+	SetTags                    []TagAssociation                `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags                  []ObjectIdentifier              `ddl:"keyword" sql:"UNSET TAG"`
+	Unset                      *TableUnset                     `ddl:"keyword" sql:"UNSET"`
+	AddRowAccessPolicy         *TableAddRowAccessPolicy        `ddl:"keyword"`
+	DropRowAccessPolicy        *TableDropRowAccessPolicy       `ddl:"keyword"`
+	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicy `ddl:"list,no_parentheses"`
+	DropAllRowAccessPolicies   *bool                           `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
+	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicy    `ddl:"keyword"`
+	DropStorageLifecyclePolicy *bool                           `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
 }
 
 type TableClusteringAction struct {
 	ClusterBy            []string                   `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	Recluster            *TableReclusterAction      `ddl:"keyword" sql:"RECLUSTER"`
-	ChangeReclusterState *TableReclusterChangeState `ddl:"keyword"`
+	Recluster            *TableReclusterAction      `ddl:"list,no_comma" sql:"RECLUSTER"`
+	ChangeReclusterState *TableReclusterChangeState `ddl:"list,no_comma"`
 	DropClusteringKey    *bool                      `ddl:"keyword" sql:"DROP CLUSTERING KEY"`
 }
 
@@ -362,14 +367,35 @@ type TableExternalTableColumnDropAction struct {
 	Names      []string `ddl:"keyword"`
 }
 
-type TableSearchOptimizationActionLegacy struct {
-	Add  *AddSearchOptimization       `ddl:"keyword"`
-	Drop *TableDropSearchOptimization `ddl:"keyword"`
+type TableSearchOptimizationAction struct {
+	Add  *TableAddSearchOptimization  `ddl:"list,no_comma"`
+	Drop *TableDropSearchOptimization `ddl:"list,no_comma"`
 }
 
-type AddSearchOptimization struct {
-	addSearchOptimization bool     `ddl:"static" sql:"ADD SEARCH OPTIMIZATION"`
-	On                    []string `ddl:"keyword" sql:"ON"`
+type TableAddSearchOptimization struct {
+	addSearchOptimization bool                          `ddl:"static" sql:"ADD SEARCH OPTIMIZATION"`
+	On                    []TableSearchMethodWithTarget `ddl:"keyword" sql:"ON"`
+}
+
+type TableSearchMethodWithTarget struct {
+	Method TableSearchMethod     `ddl:"keyword"`
+	Args   TableSearchMethodArgs `ddl:"list,parentheses"`
+}
+
+type TableSearchMethodArgs struct {
+	Targets  []string `ddl:"keyword"`
+	Analyzer *string  `ddl:"parameter,single_quotes,arrow_equals" sql:"ANALYZER"`
+}
+
+type TableDropSearchOptimization struct {
+	dropSearchOptimization bool                            `ddl:"static" sql:"DROP SEARCH OPTIMIZATION"`
+	On                     []TableDropSearchOptimizationOn `ddl:"keyword" sql:"ON"`
+}
+
+type TableDropSearchOptimizationOn struct {
+	SearchMethodWithTarget *TableSearchMethodWithTarget `ddl:"list,no_comma"`
+	ColumnName             *string                      `ddl:"keyword"`
+	ExpressionId           *string                      `ddl:"keyword"`
 }
 
 type TableSet struct {
@@ -408,9 +434,8 @@ type TableDropAndAddRowAccessPolicy struct {
 	Add  TableAddRowAccessPolicy  `ddl:"keyword"`
 }
 
-type TableAddStorageLifecyclePolicy struct {
-	add                    bool                   `ddl:"static" sql:"ADD"`
-	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"STORAGE LIFECYCLE POLICY"`
+type TableStorageLifecyclePolicy struct {
+	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ADD STORAGE LIFECYCLE POLICY"`
 	On                     []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
@@ -436,7 +461,7 @@ type ShowTableOptions struct {
 	Limit      *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
-type tableDBRow struct {
+type tablesRow struct {
 	CreatedOn                  string         `db:"created_on"`
 	Name                       string         `db:"name"`
 	SchemaName                 string         `db:"schema_name"`
@@ -458,6 +483,7 @@ type tableDBRow struct {
 	EnableSchemaEvolution      sql.NullString `db:"enable_schema_evolution"`
 	OwnerRoleType              sql.NullString `db:"owner_role_type"`
 	IsEvent                    sql.NullString `db:"is_event"`
+	IsDynamic                  sql.NullString `db:"is_dynamic"`
 	Budget                     sql.NullString `db:"budget"`
 }
 
@@ -483,6 +509,7 @@ type Table struct {
 	EnableSchemaEvolution      bool
 	OwnerRoleType              string
 	IsEvent                    bool
+	IsDynamic                  bool
 	Budget                     *string
 }
 
@@ -504,12 +531,12 @@ type DescribeColumnsTableOptions struct {
 
 type tableColumnDetailsRow struct {
 	Name                  string         `db:"name"`
-	Type                  DataType       `db:"type"`
+	Type                  string         `db:"type"`
 	Kind                  string         `db:"kind"`
-	IsNullable            string         `db:"null?"`
+	Null                  string         `db:"null?"`
 	Default               sql.NullString `db:"default"`
-	IsPrimary             string         `db:"primary key"`
-	IsUnique              string         `db:"unique key"`
+	PrimaryKey            string         `db:"primary key"`
+	UniqueKey             string         `db:"unique key"`
 	Check                 sql.NullString `db:"check"`
 	Expression            sql.NullString `db:"expression"`
 	Comment               sql.NullString `db:"comment"`
@@ -521,10 +548,10 @@ type TableColumnDetails struct {
 	Name                  string
 	Type                  DataType
 	Kind                  string
-	IsNullable            bool
+	Null                  bool
 	Default               *string
-	IsPrimary             bool
-	IsUnique              bool
+	PrimaryKey            bool
+	UniqueKey             bool
 	Check                 *bool
 	Expression            *string
 	Comment               *string

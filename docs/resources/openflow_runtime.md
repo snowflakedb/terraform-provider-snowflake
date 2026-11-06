@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_openflow_runtime Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage Openflow runtimes, the compute a deployment runs connectors on. Every mutating statement is asynchronous, so create and update return once the runtime reaches the ACTIVE state. For more information, check Openflow runtime documentation https://docs.snowflake.com/en/sql-reference/sql/create-openflow-runtime.
 ---
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Every mutating statement is asynchronous and the provider waits for the runtime to settle before returning, so applies take minutes rather than seconds. If you encounter timeout errors, use a [`timeouts` block](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts) to set higher limits for your environment.
 

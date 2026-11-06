@@ -468,6 +468,20 @@ func TestInt_HybridTables(t *testing.T) {
 				"expected Level=%q (SHOW PARAMETERS returns TABLE for hybrid tables)", sdk.ParameterTypeTable)
 		})
 
+		t.Run("show object parameter", func(t *testing.T) {
+			id, cleanup := testClientHelper().HybridTable.Create(t)
+			t.Cleanup(cleanup)
+
+			err := client.HybridTables.Alter(ctx, sdk.NewAlterHybridTableRequest(id).
+				WithSet(*sdk.NewHybridTableSetPropertiesRequest().WithDataRetentionTimeInDays(3)))
+			require.NoError(t, err)
+
+			parameter, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterDataRetentionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeHybridTable, Name: id})
+			require.NoError(t, err)
+			require.Equal(t, "3", parameter.Value)
+			require.Equal(t, sdk.ParameterTypeTable, parameter.Level)
+		})
+
 		t.Run("unset properties", func(t *testing.T) {
 			// Arrange: create the table with COMMENT and the retention properties set,
 			// so the multi-property UNSET below has all three fields at non-default values.

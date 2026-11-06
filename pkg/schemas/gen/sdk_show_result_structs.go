@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -43,12 +45,10 @@ type ShowResultSchemaDetails struct {
 
 var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Account{}},
-	{ObjectStruct: sdk.Alert{}},
 	{ObjectStruct: sdk.ApiIntegration{}},
 	{ObjectStruct: sdk.ApplicationPackage{}},
 	{ObjectStruct: sdk.ApplicationRole{}},
 	{ObjectStruct: sdk.Application{}},
-	{ObjectStruct: sdk.AuthenticationPolicy{}, ManualFields: []string{"target_scopes"}},
 	{ObjectStruct: sdk.Connection{}},
 	{ObjectStruct: sdk.CortexAgent{}, ManualFields: []string{"profile"}},
 	{ObjectStruct: sdk.DatabaseRole{}},
@@ -89,9 +89,9 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.OrganizationAccount{}},
 	{ObjectStruct: sdk.Parameter{}},
 	{ObjectStruct: sdk.PasswordPolicy{}},
-	{ObjectStruct: sdk.Pipe{}},
 	{ObjectStruct: sdk.PolicyReference{}},
 	{ObjectStruct: sdk.PostgresInstance{}, ManualFields: []string{"is_highly_available"}},
+	{ObjectStruct: sdk.PostgresMirror{}},
 	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments_old", "return_type_old"}},
 	{ObjectStruct: sdk.Quota{}},
 	{ObjectStruct: sdk.ReplicationAccount{}},
@@ -106,7 +106,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Service{}, TypeOverrides: map[string]schema.ValueType{"external_access_integrations": schema.TypeSet}},
 	{ObjectStruct: sdk.Sequence{}},
 	{ObjectStruct: sdk.SessionPolicy{}, ManualFields: []string{"target_scopes"}},
-	{ObjectStruct: sdk.Share{}, ManualFields: []string{"name"}},
 	{ObjectStruct: sdk.Stage{}},
 	{ObjectStruct: sdk.StorageIntegration{}},
 	{ObjectStruct: sdk.StorageLifecyclePolicy{}},
@@ -119,7 +118,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.ProgrammaticAccessToken{}},
 	{ObjectStruct: sdk.View{}},
 	{ObjectStruct: sdk.WarehouseRegular{}},
-	{ObjectStruct: sdk.AlertDetails{}, IsDescribe: true},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// TODO [v3]: flatten to typed scalars (enabled.0.value → enabled) via a details
 	// struct + DescribeApiAuthDetails parse (API/storage-integration analog); native TypeList of the property row is not the end state.
@@ -246,6 +244,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PasswordPolicyDetails{}, IsDescribe: true},
 	// SkipFields omits SDK parse helpers (not DESCRIBE columns; keep omitted).
 	{ObjectStruct: sdk.PostgresInstanceDetails{}, IsDescribe: true, SkipFields: []string{"has_any_running_operations", "operation_errors"}},
+	{ObjectStruct: sdk.PostgresMirrorDetails{}, IsDescribe: true},
 	// SkipFields omits SDK-only identifier/normalized fields (not Snowflake DESCRIBE properties; schema is not wired yet).
 	{ObjectStruct: sdk.ProcedureDetails{}, IsDescribe: true, SkipFields: []string{
 		"id", "normalized_imports", "normalized_target_path",
@@ -335,8 +334,9 @@ func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
 		plugged[details.Name] = struct{}{}
 	}
 	allDetails := make([]ShowResultSchemaDetails, 0, len(SdkShowResultStructs)+len(ssotDetails))
+	schemaNames := ssot.SchemaNameIndex(defs.All())
 	for _, d := range SdkShowResultStructs {
-		extracted := genhelpers.ExtractStructDetails(d.ObjectStruct)
+		extracted := stampSchemaNames(genhelpers.ExtractStructDetails(d.ObjectStruct), schemaNames)
 		if _, ok := plugged[extracted.Name]; ok {
 			continue
 		}

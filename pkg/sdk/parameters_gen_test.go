@@ -14,6 +14,7 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[FunctionParameter]{"FunctionParameter", AllFunctionParameters, ToFunctionParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ProcedureParameter]{"ProcedureParameter", AllProcedureParameters, ToProcedureParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ServiceParameter]{"ServiceParameter", AllServiceParameters, ToServiceParameter})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PipeParameter]{"PipeParameter", AllPipeParameters, ToPipeParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableParameter]{"IcebergTableParameter", AllIcebergTableParameters, ToIcebergTableParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[HybridTableParameter]{"HybridTableParameter", AllHybridTableParameters, ToHybridTableParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OpenflowDeploymentParameter]{"OpenflowDeploymentParameter", AllOpenflowDeploymentParameters, ToOpenflowDeploymentParameter})

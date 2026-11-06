@@ -379,16 +379,13 @@ func TestAcc_Grants_Of_ApplicationRole(t *testing.T) {
 	t.Skip("Skipped until snowflake_application and snowflake_application_role resources are introduced. Currently, behavior tested in application_roles_gen_integration_test.go.")
 }
 
-// TODO [SNOW-1284394]: Unskip the test
 func TestAcc_Grants_Of_Share(t *testing.T) {
-	t.Skip("TestAcc_Share are skipped")
-
 	shareId := testClient().Ids.RandomAccountObjectIdentifier()
 	accountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 	require.NotNil(t, accountId)
 
 	shareModel := model.Share("test", shareId.Name()).
-		WithAccounts(accountId.FullyQualifiedName())
+		WithAccounts(accountId.Name())
 	grantPrivilegesToShareModel := model.GrantPrivilegesToShare("test", []string{"USAGE"}, shareId.Name()).
 		WithOnDatabase(TestDatabaseName).
 		WithDependsOn(shareModel.ResourceReference())

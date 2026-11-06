@@ -443,11 +443,12 @@ type ParametersIn struct {
 	Procedure          SchemaObjectIdentifierWithArguments `ddl:"identifier" sql:"PROCEDURE"`
 	OpenflowDeployment AccountObjectIdentifier             `ddl:"identifier" sql:"OPENFLOW DEPLOYMENT"`
 	Service            SchemaObjectIdentifier              `ddl:"identifier" sql:"SERVICE"`
+	Pipe               SchemaObjectIdentifier              `ddl:"identifier" sql:"PIPE"`
 }
 
 func (v *ParametersIn) validate() error {
-	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure, v.OpenflowDeployment, v.Service) {
-		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment", "Service"))
+	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure, v.OpenflowDeployment, v.Service, v.Pipe) {
+		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment", "Service", "Pipe"))
 	}
 	return nil
 }
@@ -582,7 +583,8 @@ func (v *parameters) ShowObjectParameter(ctx context.Context, parameter ObjectPa
 		opts.In.Schema = object.Name.(DatabaseObjectIdentifier)
 	case ObjectTypeTask:
 		opts.In.Task = object.Name.(SchemaObjectIdentifier)
-	case ObjectTypeTable:
+	// Hybrid and Iceberg tables are shown with IN TABLE. IN HYBRID TABLE and IN ICEBERG TABLE are rejected.
+	case ObjectTypeTable, ObjectTypeHybridTable, ObjectTypeIcebergTable:
 		opts.In.Table = object.Name.(SchemaObjectIdentifier)
 	case ObjectTypeUser:
 		opts.In.User = object.Name.(AccountObjectIdentifier)
@@ -592,6 +594,8 @@ func (v *parameters) ShowObjectParameter(ctx context.Context, parameter ObjectPa
 		opts.In.Procedure = object.Name.(SchemaObjectIdentifierWithArguments)
 	case ObjectTypeService:
 		opts.In.Service = object.Name.(SchemaObjectIdentifier)
+	case ObjectTypePipe:
+		opts.In.Pipe = object.Name.(SchemaObjectIdentifier)
 	default:
 		return nil, fmt.Errorf("unsupported object type %s", object.ObjectType)
 	}

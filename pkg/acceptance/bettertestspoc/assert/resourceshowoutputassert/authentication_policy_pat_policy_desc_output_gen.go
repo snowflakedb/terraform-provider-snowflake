@@ -50,6 +50,11 @@ func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasRequireRoleRestri
 	return a
 }
 
+func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasRequireRoleRestrictionForPersonUsers(expected bool) *AuthenticationPolicyPatPolicyDescribeOutputAssert {
+	a.BoolValueSet("require_role_restriction_for_person_users", expected)
+	return a
+}
+
 func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNetworkPolicyEvaluation(expected sdk.NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyDescribeOutputAssert {
 	a.StringValueSet("network_policy_evaluation", string(expected))
 	return a
@@ -71,6 +76,16 @@ func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoMaxExpiryInDays
 
 func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoRequireRoleRestrictionForServiceUsers() *AuthenticationPolicyPatPolicyDescribeOutputAssert {
 	a.ValueNotSet("require_role_restriction_for_service_users")
+	return a
+}
+
+func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoRequireRoleRestrictionForPersonUsers() *AuthenticationPolicyPatPolicyDescribeOutputAssert {
+	a.ValueNotSet("require_role_restriction_for_person_users")
+	return a
+}
+
+func (a *AuthenticationPolicyPatPolicyDescribeOutputAssert) HasNoBlockedRolesList() *AuthenticationPolicyPatPolicyDescribeOutputAssert {
+	a.ValueSet("blocked_roles_list.#", "0")
 	return a
 }
 

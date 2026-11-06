@@ -59,6 +59,15 @@ func NormalizeAndCompareEnumsInSet[T ~string](key string, enumNormalizer func(st
 	}
 }
 
+// IgnoreCaseInSet is a diff suppression function that should be used at top-level TypeSet fields that hold strings that are
+// the same when they differ only in case, for example "organization_name.account_name". See NormalizeAndCompareIdentifiersInSet.
+func IgnoreCaseInSet(key string) schema.SchemaDiffSuppressFunc {
+	containsFunc := func(a []string, b string) bool {
+		return slices.ContainsFunc(a, func(item string) bool { return strings.EqualFold(item, b) })
+	}
+	return normalizeAndCompareValuesInSet[string](key, containsFunc)
+}
+
 func normalizeAndCompareValuesInSet[T comparable](key string, containsFunc func(a []string, b string) bool) schema.SchemaDiffSuppressFunc {
 	return func(k, oldValue, newValue string, d *schema.ResourceData) bool {
 		if strings.HasSuffix(k, ".#") {
@@ -248,11 +257,11 @@ func suppressIcebergTableBaseLocationSuffix(_, oldValue, newValue string, _ *sch
 }
 
 func NormalizeIcebergTableBaseLocation(value string) string {
-	idx := strings.LastIndex(value, ".")
-	if idx == -1 {
+	before, _, found := strings.CutLast(value, ".")
+	if !found {
 		return value
 	}
-	return value[:idx]
+	return before
 }
 
 // IgnoreNewEmptyListOrSubfields suppresses the diff if `new` list is empty or compared subfield is ignored. Subfields can be nested.

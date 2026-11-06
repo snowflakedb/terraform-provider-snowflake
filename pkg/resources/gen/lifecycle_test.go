@@ -41,6 +41,61 @@ func Test_lifecycle_setIdEncoding(t *testing.T) {
 	})
 }
 
+func Test_lifecycle_beforeCreate(t *testing.T) {
+	adopt := func(change func(*ssot.Object)) ResourceModel {
+		return lifecycleModel(withHooks(ssot.WithBeforeCreate(ssot.Generated())), func(obj *ssot.Object) {
+			obj.IdentityNamesCreatedBySnowflake = []string{"PUBLIC"}
+			change(obj)
+		})
+	}
+
+	t.Run("omitted", func(t *testing.T) {
+		require.Empty(t, renderTemplate(t, "beforeCreate", lifecycleModel()))
+	})
+
+	t.Run("ext call", func(t *testing.T) {
+		require.Equal(t, `
+	done, diags := poolBeforeCreateExt(ctx, d, meta, id)
+	if done {
+		return diags
+	}
+
+`, renderTemplate(t, "beforeCreate", lifecycleModel(withHooks(ssot.WithBeforeCreate(ssot.ExtCall())))))
+	})
+
+	t.Run("adopt an object that Snowflake creates", func(t *testing.T) {
+		require.Equal(t, `
+	if strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "PUBLIC") {
+		_, err := meta.(*provider.Context).Client.Pools.ShowByID(ctx, id)
+		if err == nil {
+			log.Printf("[DEBUG] found %s pool during creation, updating...", id.Name())
+			d.SetId(helpers.EncodeResourceIdentifier(id))
+			return UpdatePool(ctx, d, meta)
+		}
+		if !errors.Is(err, sdk.ErrObjectNotFound) {
+			return diag.FromErr(err)
+		}
+	}
+
+`, renderTemplate(t, "beforeCreate", adopt(func(*ssot.Object) {})))
+	})
+
+	t.Run("any of the names", func(t *testing.T) {
+		got := renderTemplate(t, "beforeCreate", adopt(func(obj *ssot.Object) { obj.IdentityNamesCreatedBySnowflake = []string{"PUBLIC", "DEFAULT"} }))
+		require.Contains(t, got, `if strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "PUBLIC") || strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "DEFAULT") {`)
+	})
+
+	t.Run("legacy id", func(t *testing.T) {
+		got := renderTemplate(t, "beforeCreate", adopt(func(obj *ssot.Object) { obj.LegacyIdEncoding = true }))
+		require.Contains(t, got, "d.SetId(helpers.EncodeSnowflakeID(id))")
+	})
+
+	t.Run("the model holds the adopt data", func(t *testing.T) {
+		require.Equal(t, BeforeCreateSteps{AdoptExisting: &BeforeCreateAdoptExisting{Names: []string{"PUBLIC"}, ObjectWords: "pool"}}, adopt(func(*ssot.Object) {}).BeforeCreateSteps)
+		require.Equal(t, BeforeCreateSteps{}, lifecycleModel().BeforeCreateSteps)
+	})
+}
+
 func Test_lifecycle_afterCreate(t *testing.T) {
 	t.Run("omitted", func(t *testing.T) {
 		require.Equal(t, "return ReadPoolFunc(false)(ctx, d, meta)\n", renderTemplate(t, "afterCreate", lifecycleModel()))
@@ -54,6 +109,55 @@ func Test_lifecycle_afterCreate(t *testing.T) {
 	})
 }
 
+func Test_lifecycle_afterCreateSetAfterCreate(t *testing.T) {
+	toggle := func(name string) ssot.Attribute {
+		return ssot.Attribute{Name: name, Type: ssot.AttrBool, NativeBool: true, SkipCreate: true, SetAfterCreate: true}
+	}
+	enabled, managed := toggle("enabled"), toggle("managed")
+	model := func(attributes []ssot.Attribute, clauses ...ssot.AlterClause) ResourceModel {
+		return lifecycleModel(withHooks(ssot.WithAfterCreate(ssot.Generated())), func(obj *ssot.Object) {
+			obj.Attributes = attributes
+			obj.Alter = ssot.AlterSpec{Clauses: clauses}
+		})
+	}
+
+	t.Run("calls the keyword linked to true and warns", func(t *testing.T) {
+		got := renderTemplate(t, "afterCreate", model([]ssot.Attribute{enabled},
+			ssot.AlterKeywordFor(&enabled, false, "SUSPEND"),
+			ssot.AlterKeywordFor(&enabled, true, "RESUME"),
+		))
+		require.Equal(t, `var afterCreateDiags diag.Diagnostics
+	if d.Get("enabled").(bool) {
+		if err := meta.(*provider.Context).Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithResume(true)); err != nil {
+			afterCreateDiags = append(afterCreateDiags, diag.Diagnostic{Severity: diag.Warning, Summary: fmt.Sprintf("RESUME after create: %s", err.Error())})
+		}
+	}
+	return append(afterCreateDiags, ReadPoolFunc(false)(ctx, d, meta)...)
+`, got)
+	})
+
+	t.Run("attributes run in attribute order", func(t *testing.T) {
+		got := renderTemplate(t, "afterCreate", model([]ssot.Attribute{enabled, managed},
+			ssot.AlterKeywordFor(&managed, true, "ENABLE MANAGED ACCESS"),
+			ssot.AlterKeywordFor(&enabled, true, "RESUME"),
+		))
+		require.Less(t, strings.Index(got, "WithResume(true)"), strings.Index(got, "WithEnableManagedAccess(true)"))
+	})
+
+	t.Run("attributes without SetAfterCreate are left out", func(t *testing.T) {
+		plain := enabled
+		plain.SetAfterCreate = false
+		require.Empty(t, model([]ssot.Attribute{plain}, ssot.AlterKeywordFor(&plain, true, "RESUME")).AfterCreateSteps.AlterKeywords)
+	})
+
+	t.Run("the model holds the keyword data", func(t *testing.T) {
+		got := model([]ssot.Attribute{enabled}, ssot.AlterKeywordFor(&enabled, true, "ENABLE MANAGED ACCESS")).AfterCreateSteps
+		require.Equal(t, AfterCreateSteps{AlterKeywords: []AfterCreateAlterKeyword{
+			{Attribute: "enabled", Keyword: "ENABLE MANAGED ACCESS", Field: "EnableManagedAccess"},
+		}}, got)
+	})
+}
+
 func Test_lifecycle_afterAlter(t *testing.T) {
 	t.Run("omitted", func(t *testing.T) {
 		require.Equal(t, "return ReadPoolFunc(false)(ctx, d, meta)\n", renderTemplate(t, "afterAlter", lifecycleModel()))
@@ -64,6 +168,22 @@ func Test_lifecycle_afterAlter(t *testing.T) {
 		require.Equal(t, `afterAlterDiags := poolAfterAlterExt(ctx, d, meta, id)
 	return append(afterAlterDiags, ReadPoolFunc(false)(ctx, d, meta)...)
 `, renderTemplate(t, "afterAlter", model))
+	})
+}
+
+func Test_lifecycle_afterShowById(t *testing.T) {
+	t.Run("omitted", func(t *testing.T) {
+		require.Empty(t, renderTemplate(t, "afterShowById", lifecycleModel()))
+	})
+
+	t.Run("ext call", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithAfterShowById(ssot.ExtCall())))
+		require.Equal(t, `afterShowByIdDiags := poolAfterShowByIdExt(ctx, d, meta, id, pool)
+		if afterShowByIdDiags.HasError() {
+			return afterShowByIdDiags
+		}
+		diags = append(diags, afterShowByIdDiags...)
+`, renderTemplate(t, "afterShowById", model))
 	})
 }
 
@@ -215,4 +335,85 @@ func Test_lifecycle_outputSetHooks(t *testing.T) {
 			require.Empty(t, renderTemplate(t, tt.template, model))
 		})
 	}
+}
+
+func Test_hierarchyRename(t *testing.T) {
+	t.Run("both identity fields force new emits nothing", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdentityNameForceNew = true
+			obj.IdentityHierarchyForceNew = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		require.Empty(t, renderTemplate(t, "hierarchyRename", model))
+	})
+
+	t.Run("hierarchy force new renames name", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdentityHierarchyForceNew = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, `if d.HasChange("name") {`)
+		require.Contains(t, got, `sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))`)
+		require.Contains(t, got, `Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithRenameTo(newId))`)
+		require.Contains(t, got, `d.SetId(helpers.EncodeResourceIdentifier(newId))`)
+		require.NotContains(t, got, `d.HasChange("database")`)
+		require.NotContains(t, got, `d.HasChange("schema")`)
+		require.NotContains(t, got, "handleThreeLevelHierarchyRename")
+		require.NotContains(t, got, "HierarchyRenameExt")
+	})
+
+	t.Run("legacy id encoding", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.LegacyIdEncoding = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, "helpers.EncodeSnowflakeID(newId)")
+		require.Contains(t, got, "helpers.EncodeSnowflakeID(renamed)")
+		require.NotContains(t, got, "EncodeResourceIdentifier")
+	})
+
+	t.Run("neither identity field force new handles database schema and name", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithHierarchyRename(ssot.Generated())))
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, `providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema"))`)
+		require.Contains(t, got, "handleThreeLevelHierarchyRename(")
+		require.Contains(t, got, "client.Pools.ShowByID,")
+		require.Contains(t, got, `"pool",`)
+		require.Contains(t, got, `if d.HasChange("name") {`)
+		require.Contains(t, got, `meta.(*provider.Context).Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithRenameTo(newId))`)
+		require.NotContains(t, got, "HierarchyRenameExt")
+	})
+
+	t.Run("account object renames name", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdType = "AccountObjectIdentifier"
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		got := renderTemplate(t, "hierarchyRename", model)
+		require.Contains(t, got, `sdk.NewAccountObjectIdentifier(d.Get("name").(string))`)
+		require.Contains(t, got, `Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithRenameTo(newId))`)
+		require.NotContains(t, got, "handleTwoLevelHierarchyRename")
+		require.NotContains(t, got, "handleThreeLevelHierarchyRename")
+		require.NotContains(t, got, `d.HasChange("database")`)
+	})
+
+	t.Run("account object with force new name emits nothing", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdType = "AccountObjectIdentifier"
+			obj.IdentityNameForceNew = true
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		require.Empty(t, renderTemplate(t, "hierarchyRename", model))
+	})
+
+	t.Run("generated database object is unimplemented", func(t *testing.T) {
+		model := lifecycleModel(func(obj *ssot.Object) {
+			obj.IdType = "DatabaseObjectIdentifier"
+			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
+		})
+		err := LifecycleTemplate.ExecuteTemplate(&strings.Builder{}, "hierarchyRename", model)
+		require.ErrorContains(t, err, "generated implementation for HierarchyRename is not implemented")
+	})
 }

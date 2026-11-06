@@ -63,10 +63,7 @@ func (b *BackupPolicyResourceAssert) HasFullyQualifiedName(expected string) *Bac
 	return b
 }
 
-func (b *BackupPolicyResourceAssert) HasSchedule(expected string) *BackupPolicyResourceAssert {
-	b.StringValueSet("schedule", expected)
-	return b
-}
+// typed assert for "schedule" (type: List) is not currently supported
 
 func (b *BackupPolicyResourceAssert) HasWithRetentionLock(expected string) *BackupPolicyResourceAssert {
 	b.StringValueSet("with_retention_lock", expected)
@@ -112,11 +109,6 @@ func (b *BackupPolicyResourceAssert) HasFullyQualifiedNameString(expected string
 	return b
 }
 
-func (b *BackupPolicyResourceAssert) HasScheduleString(expected string) *BackupPolicyResourceAssert {
-	b.ValueSet("schedule", expected)
-	return b
-}
-
 func (b *BackupPolicyResourceAssert) HasWithRetentionLockString(expected string) *BackupPolicyResourceAssert {
 	b.ValueSet("with_retention_lock", expected)
 	return b
@@ -156,11 +148,6 @@ func (b *BackupPolicyResourceAssert) HasNoFullyQualifiedName() *BackupPolicyReso
 	return b
 }
 
-func (b *BackupPolicyResourceAssert) HasNoSchedule() *BackupPolicyResourceAssert {
-	b.ValueNotSet("schedule")
-	return b
-}
-
 func (b *BackupPolicyResourceAssert) HasNoWithRetentionLock() *BackupPolicyResourceAssert {
 	b.ValueNotSet("with_retention_lock")
 	return b
@@ -186,7 +173,7 @@ func (b *BackupPolicyResourceAssert) HasFullyQualifiedNameEmpty() *BackupPolicyR
 }
 
 func (b *BackupPolicyResourceAssert) HasScheduleEmpty() *BackupPolicyResourceAssert {
-	b.ValueSet("schedule", "")
+	b.ValueSet("schedule.#", "0")
 	return b
 }
 
@@ -226,11 +213,6 @@ func (b *BackupPolicyResourceAssert) HasExpireAfterDaysNotEmpty() *BackupPolicyR
 
 func (b *BackupPolicyResourceAssert) HasFullyQualifiedNameNotEmpty() *BackupPolicyResourceAssert {
 	b.ValuePresent("fully_qualified_name")
-	return b
-}
-
-func (b *BackupPolicyResourceAssert) HasScheduleNotEmpty() *BackupPolicyResourceAssert {
-	b.ValuePresent("schedule")
 	return b
 }
 

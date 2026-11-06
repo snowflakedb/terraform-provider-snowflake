@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -39,7 +40,8 @@ func TestInt_Pipes(t *testing.T) {
 			HasPattern("").
 			HasErrorIntegration("").
 			HasOwnerRoleType("ROLE").
-			HasInvalidReason(""))
+			HasInvalidReason("").
+			HasKind("STAGE"))
 	}
 
 	t.Run("create: schema name contains special characters", func(t *testing.T) {
@@ -218,7 +220,7 @@ func TestInt_Pipes(t *testing.T) {
 		// A syntactically valid but unprovisioned SNS topic must surface the Snowflake error.
 		err := client.Pipes.Create(ctx, sdk.NewCreatePipeRequest(id, testClientHelper().Pipe.CopyStatement(t, table, externalStage)).
 			WithAutoIngest(true).
-			WithAwsSnsTopic("arn:aws:sns:us-east-2:123456789012:MissingTopic"))
+			WithAwsSnsTopicArn("arn:aws:sns:us-east-2:123456789012:MissingTopic"))
 		require.ErrorContains(t, err, "Pipe Notifications bind failure")
 	})
 
@@ -254,7 +256,7 @@ func TestInt_Pipes(t *testing.T) {
 
 		t.Run("show: in schema", func(t *testing.T) {
 			pipes, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
-				WithIn(sdk.In{Schema: testClientHelper().Ids.SchemaId()}))
+				WithIn(sdk.ExtendedIn{Schema: testClientHelper().Ids.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, pipes, 2)
 			assert.Contains(t, pipes, *pipe1)
@@ -278,7 +280,7 @@ func TestInt_Pipes(t *testing.T) {
 
 		t.Run("show: in account", func(t *testing.T) {
 			pipes, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
-				WithIn(sdk.In{Account: sdk.Bool(true)}).
+				WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}).
 				WithLike(sdk.Like{Pattern: sdk.String(pipe1.Name)}))
 			require.NoError(t, err)
 			require.Len(t, pipes, 1)
@@ -290,9 +292,24 @@ func TestInt_Pipes(t *testing.T) {
 				HasDefinition(pipe1.Definition))
 		})
 
+		t.Run("show: in application and application package", func(t *testing.T) {
+			applicationPackage, packageCleanup := testClientHelper().ApplicationPackage.CreateApplicationPackage(t)
+			t.Cleanup(packageCleanup)
+
+			inPackage, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
+				WithIn(sdk.ExtendedIn{ApplicationPackage: applicationPackage.ID()}))
+			require.NoError(t, err)
+			assert.Empty(t, inPackage)
+
+			missingApplication := testClientHelper().Ids.RandomAccountObjectIdentifier()
+			_, err = client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
+				WithIn(sdk.ExtendedIn{Application: missingApplication}))
+			require.ErrorContains(t, err, "does not exist or not authorized")
+		})
+
 		t.Run("show: in database", func(t *testing.T) {
 			pipes, err := client.Pipes.Show(ctx, sdk.NewShowPipeRequest().
-				WithIn(sdk.In{Database: testClientHelper().Ids.DatabaseId()}).
+				WithIn(sdk.ExtendedIn{Database: testClientHelper().Ids.DatabaseId()}).
 				WithLike(sdk.Like{Pattern: sdk.String(pipe1.Name)}))
 			require.NoError(t, err)
 			require.Len(t, pipes, 1)
@@ -321,7 +338,8 @@ func TestInt_Pipes(t *testing.T) {
 				HasPattern("").
 				HasErrorIntegration("").
 				HasOwnerRoleType("ROLE").
-				HasInvalidReason(""))
+				HasInvalidReason("").
+				HasKind("STAGE"))
 		})
 
 		t.Run("describe: non-existing pipe", func(t *testing.T) {
@@ -468,6 +486,69 @@ func TestInt_Pipes(t *testing.T) {
 		status, err = client.SystemFunctions.PipeStatus(ctx, sdk.NewPipeStatusRequest(*sdk.NewPipeStatusArgumentsRequest(pipe.ID())))
 		require.NoError(t, err)
 		require.Equal(t, sdk.PipeExecutionStateRunning, status.ExecutionState)
+	})
+
+	t.Run("show parameters", func(t *testing.T) {
+		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+		t.Cleanup(pipeCleanup)
+		id := pipe.ID()
+
+		parameters, err := client.Parameters.ShowParameters(ctx, &sdk.ShowParametersOptions{
+			In: &sdk.ParametersIn{
+				Pipe: id,
+			},
+		})
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, id, parameters).
+			HasAllDefaults().
+			HasAllDefaultsExplicit())
+
+		parameters, err = client.Pipes.ShowParameters(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, id, parameters).
+			HasAllDefaults().
+			HasAllDefaultsExplicit())
+
+		details, err := client.Pipes.ShowParametersDetails(ctx, id)
+		require.NoError(t, err)
+		require.Equal(t, sdk.LogLevelOff, details.LogEventLevel.Value)
+		require.Equal(t, sdk.ParameterTypeSnowflakeDefault, details.LogEventLevel.Level)
+		require.False(t, details.PipeExecutionPaused.Value)
+		require.Equal(t, sdk.ParameterTypeSnowflakeDefault, details.PipeExecutionPaused.Level)
+	})
+
+	t.Run("alter: set and unset log event level", func(t *testing.T) {
+		pipe, pipeCleanup := testClientHelper().Pipe.CreatePipe(t, copyStatement)
+		t.Cleanup(pipeCleanup)
+
+		err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).
+			WithSet(*sdk.NewPipeSetRequest().
+				WithLogEventLevel(sdk.LogLevelInfo)))
+		require.NoError(t, err)
+
+		params, err := client.Pipes.ShowParameters(ctx, pipe.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, pipe.ID(), params).
+			HasLogEventLevel(sdk.LogLevelInfo).
+			HasLogEventLevelLevel(sdk.ParameterTypePipe).
+			HasPipeExecutionPaused(false).
+			HasPipeExecutionPausedLevel(sdk.ParameterTypeSnowflakeDefault))
+
+		details, err := client.Pipes.ShowParametersDetails(ctx, pipe.ID())
+		require.NoError(t, err)
+		require.Equal(t, sdk.LogLevelInfo, details.LogEventLevel.Value)
+		require.Equal(t, sdk.ParameterTypePipe, details.LogEventLevel.Level)
+
+		err = client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(pipe.ID()).
+			WithUnset(*sdk.NewPipeUnsetRequest().
+				WithLogEventLevel(true)))
+		require.NoError(t, err)
+
+		params, err = client.Pipes.ShowParameters(ctx, pipe.ID())
+		require.NoError(t, err)
+		assertThatObject(t, objectparametersassert.PipeParametersPrefetched(t, pipe.ID(), params).
+			HasLogEventLevel(sdk.LogLevelOff).
+			HasLogEventLevelLevel(sdk.ParameterTypeSnowflakeDefault))
 	})
 
 	t.Run("alter: missing object", func(t *testing.T) {

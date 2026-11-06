@@ -4,14 +4,16 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
 	_ Pipes                       = (*pipes)(nil)
-	_ convertibleRow[Pipe]        = new(pipeDBRow)
-	_ convertibleRow[PipeDetails] = new(pipeDetailRow)
+	_ convertibleRow[Pipe]        = new(pipesRow)
+	_ convertibleRow[PipeDetails] = new(pipeDescRow)
 )
 
 type pipes struct {
@@ -39,16 +41,16 @@ func (v *pipes) DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 
 func (v *pipes) Show(ctx context.Context, request *ShowPipeRequest) ([]Pipe, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[pipeDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[pipesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[pipeDBRow, Pipe](dbRows)
+	return convertRows[pipesRow, Pipe](dbRows)
 }
 
 func (v *pipes) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Pipe, error) {
 	request := NewShowPipeRequest().
-		WithIn(In{Schema: id.SchemaId()}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	pipes, err := v.Show(ctx, request)
 	if err != nil {
@@ -65,7 +67,7 @@ func (v *pipes) Describe(ctx context.Context, id SchemaObjectIdentifier) (*PipeD
 	opts := &DescribePipeOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[pipeDetailRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[pipeDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +81,7 @@ func (r *CreatePipeRequest) toOpts() *CreatePipeOptions {
 		name:             r.name,
 		AutoIngest:       r.AutoIngest,
 		ErrorIntegration: r.ErrorIntegration,
-		AwsSnsTopic:      r.AwsSnsTopic,
+		AwsSnsTopicArn:   r.AwsSnsTopicArn,
 		Integration:      r.Integration,
 		Comment:          r.Comment,
 		copyStatement:    r.copyStatement,
@@ -97,6 +99,7 @@ func (r *AlterPipeRequest) toOpts() *AlterPipeOptions {
 	if r.Set != nil {
 		opts.Set = &PipeSet{
 			ErrorIntegration:    r.Set.ErrorIntegration,
+			LogEventLevel:       r.Set.LogEventLevel,
 			PipeExecutionPaused: r.Set.PipeExecutionPaused,
 			Comment:             r.Set.Comment,
 		}
@@ -104,6 +107,7 @@ func (r *AlterPipeRequest) toOpts() *AlterPipeOptions {
 	if r.Unset != nil {
 		opts.Unset = &PipeUnset{
 			ErrorIntegration:    r.Unset.ErrorIntegration,
+			LogEventLevel:       r.Unset.LogEventLevel,
 			PipeExecutionPaused: r.Unset.PipeExecutionPaused,
 			Comment:             r.Unset.Comment,
 		}
@@ -133,7 +137,7 @@ func (r *ShowPipeRequest) toOpts() *ShowPipeOptions {
 	return opts
 }
 
-func (r pipeDBRow) convert() (*Pipe, error) {
+func (r pipesRow) convert() (*Pipe, error) {
 	result := &Pipe{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -149,6 +153,7 @@ func (r pipeDBRow) convert() (*Pipe, error) {
 	mapNullStringToNonNullableField(&result.ErrorIntegration, r.ErrorIntegration)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToNonNullableField(&result.InvalidReason, r.InvalidReason)
+	mapNullStringToNonNullableField(&result.Kind, r.Kind)
 	return result, nil
 }
 
@@ -159,7 +164,7 @@ func (r *DescribePipeRequest) toOpts() *DescribePipeOptions {
 	return opts
 }
 
-func (r pipeDetailRow) convert() (*PipeDetails, error) {
+func (r pipeDescRow) convert() (*PipeDetails, error) {
 	result := &PipeDetails{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -175,5 +180,26 @@ func (r pipeDetailRow) convert() (*PipeDetails, error) {
 	mapNullStringToNonNullableField(&result.ErrorIntegration, r.ErrorIntegration)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToNonNullableField(&result.InvalidReason, r.InvalidReason)
+	mapNullStringToNonNullableField(&result.Kind, r.Kind)
 	return result, nil
+}
+
+func ToPipeParametersDetails(params []*Parameter) (*PipeParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d PipeParametersDetails
+	if err := errors.Join(
+		byKey["LOG_EVENT_LEVEL"].fillTyped(ToLogLevel, &d.LogEventLevel),
+		byKey["PIPE_EXECUTION_PAUSED"].fillTyped(strconv.ParseBool, &d.PipeExecutionPaused),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *pipes) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*PipeParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ToPipeParametersDetails(params)
 }

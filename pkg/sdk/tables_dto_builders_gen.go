@@ -77,7 +77,7 @@ func (s *CreateTableRequest) WithCopyGrants(copyGrants bool) *CreateTableRequest
 	return s
 }
 
-func (s *CreateTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateTableRequest {
+func (s *CreateTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyRequest) *CreateTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -378,6 +378,16 @@ func (s *LegacyTableCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement
 	return s
 }
 
+func NewTableRowAccessPolicyRequest(
+	name SchemaObjectIdentifier,
+	on []string,
+) *TableRowAccessPolicyRequest {
+	s := TableRowAccessPolicyRequest{}
+	s.Name = name
+	s.On = on
+	return &s
+}
+
 func NewCreateAsSelectTableRequest(
 	name SchemaObjectIdentifier,
 	columns []TableAsSelectColumnRequest,
@@ -405,7 +415,7 @@ func (s *CreateAsSelectTableRequest) WithCopyGrants(copyGrants bool) *CreateAsSe
 	return s
 }
 
-func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyLegacy) *CreateAsSelectTableRequest {
+func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateAsSelectTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -554,7 +564,7 @@ func (s *AlterTableRequest) WithExternalTableAction(externalTableAction TableExt
 	return s
 }
 
-func (s *AlterTableRequest) WithSearchOptimizationAction(searchOptimizationAction TableSearchOptimizationActionLegacyRequest) *AlterTableRequest {
+func (s *AlterTableRequest) WithSearchOptimizationAction(searchOptimizationAction TableSearchOptimizationActionRequest) *AlterTableRequest {
 	s.SearchOptimizationAction = &searchOptimizationAction
 	return s
 }
@@ -599,7 +609,7 @@ func (s *AlterTableRequest) WithDropAllRowAccessPolicies(dropAllRowAccessPolicie
 	return s
 }
 
-func (s *AlterTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePolicy TableAddStorageLifecyclePolicyRequest) *AlterTableRequest {
+func (s *AlterTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePolicy TableStorageLifecyclePolicyRequest) *AlterTableRequest {
 	s.AddStorageLifecyclePolicy = &addStorageLifecyclePolicy
 	return s
 }
@@ -1073,28 +1083,83 @@ func (s *TableExternalTableColumnDropActionRequest) WithIfExists(ifExists bool) 
 	return s
 }
 
-func NewTableSearchOptimizationActionLegacyRequest() *TableSearchOptimizationActionLegacyRequest {
-	s := TableSearchOptimizationActionLegacyRequest{}
+func NewTableSearchOptimizationActionRequest() *TableSearchOptimizationActionRequest {
+	s := TableSearchOptimizationActionRequest{}
 	return &s
 }
 
-func (s *TableSearchOptimizationActionLegacyRequest) WithAdd(add AddSearchOptimizationRequest) *TableSearchOptimizationActionLegacyRequest {
+func (s *TableSearchOptimizationActionRequest) WithAdd(add TableAddSearchOptimizationRequest) *TableSearchOptimizationActionRequest {
 	s.Add = &add
 	return s
 }
 
-func (s *TableSearchOptimizationActionLegacyRequest) WithDrop(drop TableDropSearchOptimizationRequest) *TableSearchOptimizationActionLegacyRequest {
+func (s *TableSearchOptimizationActionRequest) WithDrop(drop TableDropSearchOptimizationRequest) *TableSearchOptimizationActionRequest {
 	s.Drop = &drop
 	return s
 }
 
-func NewAddSearchOptimizationRequest() *AddSearchOptimizationRequest {
-	s := AddSearchOptimizationRequest{}
+func NewTableAddSearchOptimizationRequest() *TableAddSearchOptimizationRequest {
+	s := TableAddSearchOptimizationRequest{}
 	return &s
 }
 
-func (s *AddSearchOptimizationRequest) WithOn(on []string) *AddSearchOptimizationRequest {
+func (s *TableAddSearchOptimizationRequest) WithOn(on []TableSearchMethodWithTargetRequest) *TableAddSearchOptimizationRequest {
 	s.On = on
+	return s
+}
+
+func NewTableSearchMethodWithTargetRequest(
+	method TableSearchMethod,
+	args TableSearchMethodArgsRequest,
+) *TableSearchMethodWithTargetRequest {
+	s := TableSearchMethodWithTargetRequest{}
+	s.Method = method
+	s.Args = args
+	return &s
+}
+
+func NewTableSearchMethodArgsRequest() *TableSearchMethodArgsRequest {
+	s := TableSearchMethodArgsRequest{}
+	return &s
+}
+
+func (s *TableSearchMethodArgsRequest) WithTargets(targets []string) *TableSearchMethodArgsRequest {
+	s.Targets = targets
+	return s
+}
+
+func (s *TableSearchMethodArgsRequest) WithAnalyzer(analyzer string) *TableSearchMethodArgsRequest {
+	s.Analyzer = &analyzer
+	return s
+}
+
+func NewTableDropSearchOptimizationRequest() *TableDropSearchOptimizationRequest {
+	s := TableDropSearchOptimizationRequest{}
+	return &s
+}
+
+func (s *TableDropSearchOptimizationRequest) WithOn(on []TableDropSearchOptimizationOnRequest) *TableDropSearchOptimizationRequest {
+	s.On = on
+	return s
+}
+
+func NewTableDropSearchOptimizationOnRequest() *TableDropSearchOptimizationOnRequest {
+	s := TableDropSearchOptimizationOnRequest{}
+	return &s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithSearchMethodWithTarget(searchMethodWithTarget TableSearchMethodWithTargetRequest) *TableDropSearchOptimizationOnRequest {
+	s.SearchMethodWithTarget = &searchMethodWithTarget
+	return s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithColumnName(columnName string) *TableDropSearchOptimizationOnRequest {
+	s.ColumnName = &columnName
+	return s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithExpressionId(expressionId string) *TableDropSearchOptimizationOnRequest {
+	s.ExpressionId = &expressionId
 	return s
 }
 
@@ -1209,11 +1274,11 @@ func NewTableDropAndAddRowAccessPolicyRequest(
 	return &s
 }
 
-func NewTableAddStorageLifecyclePolicyRequest(
+func NewTableStorageLifecyclePolicyRequest(
 	storageLifecyclePolicy SchemaObjectIdentifier,
 	on []Column,
-) *TableAddStorageLifecyclePolicyRequest {
-	s := TableAddStorageLifecyclePolicyRequest{}
+) *TableStorageLifecyclePolicyRequest {
+	s := TableStorageLifecyclePolicyRequest{}
 	s.StorageLifecyclePolicy = storageLifecyclePolicy
 	s.On = on
 	return &s

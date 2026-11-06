@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -163,6 +164,7 @@ func NotificationIntegration() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		Description:   docs.WithPreviewFeatureMark(),
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingCreateWrapper(resources.NotificationIntegration, CreateNotificationIntegration)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingReadWrapper(resources.NotificationIntegration, ReadNotificationIntegration)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.NotificationIntegrationResource), TrackingUpdateWrapper(resources.NotificationIntegration, UpdateNotificationIntegration)),

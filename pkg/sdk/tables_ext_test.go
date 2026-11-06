@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"database/sql"
 	"fmt"
 	"testing"
 
@@ -51,7 +52,7 @@ func init() {
 		withAdditionalValidationCase(
 			"validation_Create_RowAccessPolicy_invalidIdentifier",
 			func(opts *CreateTableOptions) {
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: emptySchemaObjectIdentifier, On: []string{"COLUMN_1"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: emptySchemaObjectIdentifier, On: []string{"COLUMN_1"}}
 			},
 			errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"),
 		).
@@ -284,7 +285,7 @@ func init() {
 				opts.MaxDataExtensionTimeInDays = new(100)
 				opts.ChangeTracking = new(true)
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en"})
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tableTagId1, Value: "v1"},
 					{Name: tableTagId2, Value: "v2"},
@@ -360,7 +361,7 @@ func init() {
 					MaskingPolicy: &maskingPolicyId,
 				}}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
 				opts.Query = "SELECT * FROM ANOTHER_TABLE"
 			},
 			`CREATE OR REPLACE TABLE %s (FIRST_COLUMN VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
@@ -442,12 +443,12 @@ func init() {
 			opts.ClusteringAction = &TableClusteringAction{ClusterBy: []string{"a"}, DropClusteringKey: new(true)}
 		}).
 		withModify(case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
-			opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Drop: &TableDropSearchOptimization{
+			opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
 				On: []TableDropSearchOptimizationOn{{ColumnName: new("c"), ExpressionId: new("e")}},
 			}}
 		}).
 		withModify(case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid, func(opts *AlterTableOptions) {
-			opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Drop: &TableDropSearchOptimization{
+			opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
 				On: []TableDropSearchOptimizationOn{{ColumnName: new("c")}, {}},
 			}}
 		}).
@@ -702,14 +703,21 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_SearchOptimizationAction,
 			func(opts *AlterTableOptions) {
-				opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Add: &AddSearchOptimization{On: []string{"SUBSTRING(*)", "GEO(*)"}}}
+				opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+					Add: &TableAddSearchOptimization{
+						On: []TableSearchMethodWithTarget{
+							{Method: TableSearchMethodSubstring, Args: TableSearchMethodArgs{Targets: []string{"*"}}},
+							{Method: TableSearchMethodEquality, Args: TableSearchMethodArgs{Targets: []string{"COLUMN_1"}}},
+						},
+					},
+				}
 			},
-			`ALTER TABLE %s ADD SEARCH OPTIMIZATION ON SUBSTRING(*), GEO(*)`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD SEARCH OPTIMIZATION ON SUBSTRING (*), EQUALITY (COLUMN_1)`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_dropSearchOptimization",
 			func(opts *AlterTableOptions) {
-				opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Drop: &TableDropSearchOptimization{
+				opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
 					On: []TableDropSearchOptimizationOn{
 						{ColumnName: new("SUBSTRING(*)")},
 						{ColumnName: new("FOO")},
@@ -812,7 +820,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_AddStorageLifecyclePolicy,
 			func(opts *AlterTableOptions) {
-				opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+				opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
 					StorageLifecyclePolicy: storageLifecyclePolicyId,
 					On:                     []Column{{Value: "FIRST_COLUMN"}},
 				}
@@ -823,7 +831,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Alter_addStorageLifecyclePolicy_multipleColumns",
 			func(opts *AlterTableOptions) {
-				opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+				opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
 					StorageLifecyclePolicy: storageLifecyclePolicyId,
 					On:                     []Column{{Value: "FIRST_COLUMN"}, {Value: "SECOND_COLUMN"}},
 				}
@@ -859,7 +867,7 @@ func init() {
 				opts.Terse = new(true)
 				opts.History = new(true)
 				opts.Like = &Like{Pattern: &likePattern}
-				opts.In = &ExtendedIn{In: In{Database: showDatabaseId}}
+				opts.In = &ExtendedIn{Database: showDatabaseId}
 				opts.StartsWith = new("prefix")
 				opts.Limit = &LimitFrom{Rows: new(10)}
 			},
@@ -873,7 +881,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Show_In,
-			func(opts *ShowTableOptions) { opts.In = &ExtendedIn{In: In{Database: showDatabaseId}} },
+			func(opts *ShowTableOptions) { opts.In = &ExtendedIn{Database: showDatabaseId} },
 			`SHOW TABLES IN DATABASE %s`, showDatabaseId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -945,31 +953,31 @@ func tableTestColumn() TableColumn {
 
 func TestTableColumnDetailsRow_SplitTypeAndCollation(t *testing.T) {
 	t.Run("with utf8", func(t *testing.T) {
-		row := tableColumnDetailsRow{Type: DataType("VARCHAR(10) COLLATE 'utf8'")}
+		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'utf8'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
 		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
 		assert.Equal(t, "utf8", *actualCollation)
 	})
 	t.Run("with locale", func(t *testing.T) {
-		row := tableColumnDetailsRow{Type: DataType("VARCHAR(10) COLLATE 'en_US'")}
+		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'en_US'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
 		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
 		assert.Equal(t, "en_US", *actualCollation)
 	})
 	t.Run("with multiple specifiers", func(t *testing.T) {
-		row := tableColumnDetailsRow{Type: DataType("VARCHAR(10) COLLATE 'fr_CA-ai-pi-trim'")}
+		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'fr_CA-ai-pi-trim'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
 		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
 		assert.Equal(t, "fr_CA-ai-pi-trim", *actualCollation)
 	})
 	t.Run("with empty collation", func(t *testing.T) {
-		row := tableColumnDetailsRow{Type: DataType("VARCHAR(10) COLLATE ''")}
+		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE ''"}
 		actualType, actualCollation := row.splitTypeAndCollation()
 		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
 		assert.Equal(t, "", *actualCollation)
 	})
 	t.Run("without collation", func(t *testing.T) {
-		row := tableColumnDetailsRow{Type: DataType("NUMBER(38, 0)")}
+		row := tableColumnDetailsRow{Type: "NUMBER(38, 0)"}
 		actualType, actualCollation := row.splitTypeAndCollation()
 		assert.Equal(t, DataType("NUMBER(38, 0)"), actualType)
 		assert.Nil(t, actualCollation)
@@ -997,5 +1005,27 @@ func TestTable_GetClusterByKeys(t *testing.T) {
 	})
 	t.Run("with nested functions", func(t *testing.T) {
 		assert.Equal(t, []string{"some_func(some_param, some_other_param, other_func(some_param, some_other_param))", "other_param"}, (&Table{ClusterBy: "LINEAR(some_func(some_param, some_other_param, other_func(some_param, some_other_param)),other_param)"}).GetClusterByKeys())
+	})
+}
+
+func Test_Table_convertIsDynamic(t *testing.T) {
+	convert := func(t *testing.T, value sql.NullString) *Table {
+		t.Helper()
+		table, err := (tablesRow{IsDynamic: value}).convert()
+		assert.NoError(t, err)
+		return table
+	}
+
+	t.Run("Y", func(t *testing.T) {
+		assert.True(t, convert(t, sql.NullString{String: "Y", Valid: true}).IsDynamic)
+	})
+	t.Run("N", func(t *testing.T) {
+		assert.False(t, convert(t, sql.NullString{String: "N", Valid: true}).IsDynamic)
+	})
+	t.Run("other text", func(t *testing.T) {
+		assert.False(t, convert(t, sql.NullString{String: "YES", Valid: true}).IsDynamic)
+	})
+	t.Run("unset", func(t *testing.T) {
+		assert.False(t, convert(t, sql.NullString{}).IsDynamic)
 	})
 }

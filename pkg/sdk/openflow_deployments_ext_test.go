@@ -1,6 +1,11 @@
 package sdk
 
-import "testing"
+import (
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
 
 func init() {
 	id := openflowDeploymentsTestIdAccountObjectIdentifier
@@ -198,5 +203,125 @@ func TestOpenflowDeployments_ShowParameters(t *testing.T) {
 			In:   &ParametersIn{OpenflowDeployment: id},
 		}
 		assertOptsValidAndSqlEqualsf(t, opts, "SHOW PARAMETERS LIKE 'EVENT_TABLE' IN OPENFLOW DEPLOYMENT %s", id.FullyQualifiedName())
+	})
+}
+
+func Test_quoteOpenflowEventTableValue(t *testing.T) {
+	testCases := []struct {
+		Input    string
+		Expected string
+		Error    string
+	}{
+		{Input: `snowflake.db.schema`, Expected: `"SNOWFLAKE"."DB"."SCHEMA"`},
+		{Input: `snowflake.db."schema"`, Expected: `"SNOWFLAKE"."DB"."schema"`},
+		{Input: `snowflake.db."sch.ema"`, Expected: `"SNOWFLAKE"."DB"."sch.ema"`},
+		// FullyQualifiedName does not double quotes inside a part, so this cannot round-trip through ParseSchemaObjectIdentifier.
+		{Input: `snowflake.db."Sch""ema"`, Expected: `"SNOWFLAKE"."DB"."Sch"ema"`},
+		{Input: `"snowflake".db."schema"`, Expected: `"snowflake"."DB"."schema"`},
+		{Input: `"SNOWFLAKE"."DB"."SCHEMA"`, Expected: `"SNOWFLAKE"."DB"."SCHEMA"`},
+		{Input: `SNOWFLAKE.TELEMETRY.EVENTS`, Expected: `"SNOWFLAKE"."TELEMETRY"."EVENTS"`},
+		{Input: ``, Expected: ``},
+		{Input: `NONE`, Expected: `NONE`},
+		{Input: `none`, Expected: `none`},
+		{Input: `snowflake.db`, Error: `unexpected number of parts 2 in identifier snowflake.db, expected 3`},
+		{Input: `snowflake.db.schema.extra`, Error: `unexpected number of parts 4 in identifier snowflake.db.schema.extra, expected 3`},
+		{Input: `snowflake..schema`, Error: "empty part"},
+		{Input: `snowflake.db.`, Error: "empty part"},
+		{Input: `snowflake.db.""`, Error: "empty part"},
+		{Input: `.db.schema`, Error: "empty part"},
+		{Input: `snowflake.db."schema`, Error: `extraneous or missing " in quoted-field`},
+		{Input: `snowflake.d"b.schema`, Error: `bare " in non-quoted-field`},
+		{Input: `snowflake.db."schema"extra`, Error: `extraneous or missing " in quoted-field`},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Input, func(t *testing.T) {
+			got, err := quoteOpenflowEventTableValue(testCase.Input)
+			if testCase.Error != "" {
+				require.ErrorContains(t, err, testCase.Error)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, testCase.Expected, got)
+			if got == "" || strings.EqualFold(got, "NONE") || strings.Contains(testCase.Input, `""`) {
+				return
+			}
+			id, err := ParseSchemaObjectIdentifier(got)
+			require.NoError(t, err)
+			require.Equal(t, got, id.FullyQualifiedName())
+		})
+	}
+}
+
+func Test_foldUnquotedIdentifierParts(t *testing.T) {
+	testCases := []struct {
+		Name     string
+		Input    string
+		Expected string
+	}{
+		{Name: "empty", Input: ``, Expected: ``},
+		{Name: "lowercase unquoted", Input: `snowflake.db.schema`, Expected: `SNOWFLAKE.DB.SCHEMA`},
+		{Name: "uppercase unquoted stays", Input: `SNOWFLAKE.DB.SCHEMA`, Expected: `SNOWFLAKE.DB.SCHEMA`},
+		{Name: "digits and underscores", Input: `my_db1.sch_2`, Expected: `MY_DB1.SCH_2`},
+		{Name: "quoted part keeps case", Input: `snowflake."schema"`, Expected: `SNOWFLAKE."schema"`},
+		{Name: "quoted part with dot", Input: `db."sch.ema"`, Expected: `DB."sch.ema"`},
+		{Name: "escaped quote inside quoted part", Input: `db."Sch""ema"`, Expected: `DB."Sch""ema"`},
+		{Name: "escaped quote followed by unquoted", Input: `ab"c""d"e`, Expected: `AB"c""d"E`},
+		{Name: "already quoted parts", Input: `"snowflake"."db"."schema"`, Expected: `"snowflake"."db"."schema"`},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.Name, func(t *testing.T) {
+			require.Equal(t, testCase.Expected, foldUnquotedIdentifierParts(testCase.Input))
+		})
+	}
+}
+
+func Test_quoteOpenflowEventTableParameter(t *testing.T) {
+	param := &Parameter{
+		Key:     "EVENT_TABLE",
+		Value:   `snowflake.db."schema"`,
+		Default: `snowflake.db.schema`,
+		Level:   ParameterTypeSnowflakeDefault,
+	}
+	require.NoError(t, quoteOpenflowEventTableParameter(param))
+	require.Equal(t, `"SNOWFLAKE"."DB"."schema"`, param.Value)
+	require.Equal(t, `"SNOWFLAKE"."DB"."SCHEMA"`, param.Default)
+
+	details, err := ToOpenflowDeploymentParametersDetails([]*Parameter{param})
+	require.NoError(t, err)
+	require.Equal(t, `"SNOWFLAKE"."DB"."schema"`, details.EventTable.Value.FullyQualifiedName())
+	require.Equal(t, `"SNOWFLAKE"."DB"."SCHEMA"`, details.EventTable.Default.FullyQualifiedName())
+
+	t.Run("rewrites value and default independently", func(t *testing.T) {
+		mixed := &Parameter{
+			Key:     "EVENT_TABLE",
+			Value:   `"snowflake".telemetry.events`,
+			Default: `snowflake.db."schema"`,
+		}
+		require.NoError(t, quoteOpenflowEventTableParameter(mixed))
+		require.Equal(t, `"snowflake"."TELEMETRY"."EVENTS"`, mixed.Value)
+		require.Equal(t, `"SNOWFLAKE"."DB"."schema"`, mixed.Default)
+	})
+
+	t.Run("empty and NONE stay unchanged", func(t *testing.T) {
+		unchanged := &Parameter{Key: "EVENT_TABLE", Value: "", Default: "NONE"}
+		require.NoError(t, quoteOpenflowEventTableParameter(unchanged))
+		require.Empty(t, unchanged.Value)
+		require.Equal(t, "NONE", unchanged.Default)
+	})
+
+	t.Run("invalid value keeps default unparsed", func(t *testing.T) {
+		invalid := &Parameter{Key: "EVENT_TABLE", Value: "not-an-id", Default: `snowflake.db.schema`}
+		require.Error(t, quoteOpenflowEventTableParameter(invalid))
+		require.Equal(t, "not-an-id", invalid.Value)
+		require.Equal(t, `snowflake.db.schema`, invalid.Default)
+	})
+
+	t.Run("invalid default keeps value unparsed", func(t *testing.T) {
+		invalid := &Parameter{Key: "EVENT_TABLE", Value: `snowflake.db.schema`, Default: "not-an-id"}
+		require.Error(t, quoteOpenflowEventTableParameter(invalid))
+		require.Equal(t, `snowflake.db.schema`, invalid.Value)
+		require.Equal(t, "not-an-id", invalid.Default)
 	})
 }

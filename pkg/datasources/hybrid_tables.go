@@ -5,6 +5,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -98,7 +99,7 @@ func HybridTables() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.HybridTablesDatasource), TrackingReadWrapper(datasources.HybridTables, ReadHybridTables)),
 		Schema:      hybridTablesSchema,
-		Description: "Data source used to get details of filtered hybrid tables. Filtering is aligned with the current possibilities for [SHOW HYBRID TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables) query (`like`, `in`, `starts_with`, `limit`). The results of SHOW, DESCRIBE, SHOW PARAMETERS, SHOW PRIMARY KEYS, SHOW UNIQUE KEYS, SHOW IMPORTED KEYS, and SHOW INDEXES are encapsulated in one output collection `hybrid_tables`.",
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered hybrid tables. Filtering is aligned with the current possibilities for [SHOW HYBRID TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-hybrid-tables) query (`like`, `in`, `starts_with`, `limit`). The results of SHOW, DESCRIBE, SHOW PARAMETERS, SHOW PRIMARY KEYS, SHOW UNIQUE KEYS, SHOW IMPORTED KEYS, and SHOW INDEXES are encapsulated in one output collection `hybrid_tables`.",
 	}
 }
 

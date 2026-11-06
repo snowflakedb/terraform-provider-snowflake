@@ -607,7 +607,7 @@ func reconcileQuota(ctx context.Context, client *sdk.Client, id sdk.SchemaObject
 		if len(desired.userTags) > 0 {
 			tags := make([]sdk.QuotaUserTagRequest, len(desired.userTags))
 			for i, tag := range desired.userTags {
-				tags[i] = *sdk.NewQuotaUserTagRequest(tag.tag, tag.value)
+				tags[i] = *sdk.NewQuotaUserTagRequestFromTag(tag.tag, tag.value)
 			}
 			operator := sdk.QuotaUserTagsOperatorUnion
 			if desired.userTagsOperator != nil {
@@ -619,7 +619,7 @@ func reconcileQuota(ctx context.Context, client *sdk.Client, id sdk.SchemaObject
 		} else {
 			tags := make([]sdk.QuotaExcludedUserTagRequest, len(desired.excludedUserTags))
 			for i, tag := range desired.excludedUserTags {
-				tags[i] = *sdk.NewQuotaExcludedUserTagRequest(tag.tag, tag.value)
+				tags[i] = *sdk.NewQuotaExcludedUserTagRequestFromTag(tag.tag, tag.value)
 			}
 			args := sdk.NewQuotaExcludeUsersArgsRequest().WithByTag(*sdk.NewQuotaExcludeUsersByTagRequest(tags))
 			if _, err := quotas.ExcludeUsers(ctx, sdk.NewExcludeUsersQuotaRequest(id, *args)); err != nil {

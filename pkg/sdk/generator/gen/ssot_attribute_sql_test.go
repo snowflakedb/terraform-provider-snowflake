@@ -239,3 +239,24 @@ func Test_appendSqlSequence_static(t *testing.T) {
 	want := NewQueryStruct("clauses").SQLWithCustomFieldName("kind", "KIND = 'MINI'")
 	require.Equal(t, want.fields, got.fields)
 }
+
+func Test_appendSqlSequence_listWithoutSqlPrefix(t *testing.T) {
+	databases := ssot.Attribute{
+		Name: "identifiers",
+		Type: ssot.AttrList,
+		Elem: &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql: ssot.ListParameter(
+			"AccountObjectIdentifier",
+			ssot.NoParentheses(),
+			ssot.NoEquals(),
+			ssot.Required(),
+			ssot.FieldName("AllowedDatabases"),
+		),
+	}
+	got := NewQueryStruct("clauses").appendSqlSequence([]*ssot.Attribute{&databases}, attributeSqlCreate)
+	want := NewQueryStruct("clauses").
+		ListAssignmentWithFieldName("", "AccountObjectIdentifier", ParameterOptions().NoParentheses().NoEquals().Required(), "AllowedDatabases").
+		WithValidation(AtLeastOneValueSet, "AllowedDatabases").
+		WithValidation(ValidIdentifier, "AllowedDatabases")
+	require.Equal(t, want.fields, got.fields)
+}

@@ -6,7 +6,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"reflect"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -73,9 +75,16 @@ func CreateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	done, diags := schemaBeforeCreateExt(ctx, d, meta, id)
-	if done {
-		return diags
+	if strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "PUBLIC") {
+		_, err := meta.(*provider.Context).Client.Schemas.ShowByID(ctx, id)
+		if err == nil {
+			log.Printf("[DEBUG] found %s schema during creation, updating...", id.Name())
+			d.SetId(helpers.EncodeResourceIdentifier(id))
+			return UpdateSchema(ctx, d, meta)
+		}
+		if !errors.Is(err, sdk.ErrObjectNotFound) {
+			return diag.FromErr(err)
+		}
 	}
 
 	req, err := schemaNewCreateRequestExt(d, id)
