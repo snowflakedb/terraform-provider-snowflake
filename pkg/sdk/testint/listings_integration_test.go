@@ -630,3 +630,190 @@ func TestInt_Listings(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestInt_Listings_CreateOrganization(t *testing.T) {
+	stage, stageCleanup := testClientHelper().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	share, shareCleanup := testClientHelper().Share.Create(t)
+	t.Cleanup(shareCleanup)
+	t.Cleanup(testClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, testClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
+
+	client := testClient(t)
+	ctx := testContext(t)
+
+	targetAccount := testClientHelper().Context.CurrentAccountId(t)
+	targetAccounts := fmt.Sprintf("%s.%s", targetAccount.OrganizationName(), targetAccount.AccountName())
+
+	manifest, manifestTitle := testClientHelper().Listing.BasicOrganizationManifest(t, targetAccount)
+	testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/organization", "manifest.yml", manifest)
+	manifestStageLocation := sdk.NewStageLocation(stage.ID(), "organization")
+
+	comment := random.Comment()
+
+	assertDraftOrganizationListing := func(t *testing.T, id sdk.AccountObjectIdentifier, withComment bool) {
+		t.Helper()
+
+		listingAssert := objectassert.Listing(t, id).
+			HasGlobalNameNotEmpty().
+			HasName(id.Name()).
+			HasTitle(manifestTitle).
+			HasSubtitle("subtitle").
+			HasProfile("").
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasNoPublishedOn().
+			HasState(sdk.ListingStateDraft).
+			HasNoReviewState().
+			HasNoRegions().
+			HasTargetAccounts(targetAccounts).
+			HasIsMonetized(false).
+			HasIsApplication(false).
+			HasIsTargeted(true).
+			HasIsLimitedTrial(false).
+			HasIsByRequest(false).
+			HasDistribution("ORGANIZATION").
+			HasIsMountlessQueryable(true).
+			HasOrganizationProfileName("INTERNAL").
+			HasUniformListingLocator(fmt.Sprintf("ORGDATACLOUD$INTERNAL$%s", id.Name())).
+			HasDetailedTargetAccountsNotEmpty()
+		if withComment {
+			listingAssert.HasComment(comment)
+		} else {
+			listingAssert.HasNoComment()
+		}
+		assertThatObject(t, listingAssert)
+	}
+
+	t.Run("create from manifest: no optionals", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(manifest).
+			WithReview(false).
+			WithPublish(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertDraftOrganizationListing(t, id, false)
+	})
+
+	t.Run("create from stage: no optionals", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithFrom(manifestStageLocation).
+			WithReview(false).
+			WithPublish(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertDraftOrganizationListing(t, id, false)
+	})
+
+	t.Run("create from manifest: complete with share", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(manifest).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.ListingDetails(t, id).HasShare(share.ID()))
+		assertDraftOrganizationListing(t, id, true)
+	})
+
+	t.Run("create from stage: published with share", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithFrom(manifestStageLocation).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithPublish(true).
+			WithReview(true))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertThatObject(
+			t,
+			objectassert.Listing(t, id).
+				HasState(sdk.ListingStatePublished).
+				HasDistribution("ORGANIZATION").
+				HasOrganizationProfileName("INTERNAL").
+				HasUniformListingLocator(fmt.Sprintf("ORGDATACLOUD$INTERNAL$%s", id.Name())),
+		)
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnpublish(true))
+		assert.NoError(t, err)
+
+		assertThatObject(t, objectassert.Listing(t, id).HasState(sdk.ListingStateUnpublished))
+	})
+
+	t.Run("alter: change manifest with publish set to false", func(t *testing.T) {
+		listing, listingCleanup := testClientHelper().Listing.CreateOrganization(t, targetAccount)
+		t.Cleanup(listingCleanup)
+
+		// Without a share or an application package, both PUBLISH and REVIEW must be false.
+		differentSubtitleManifest, title := testClientHelper().Listing.BasicOrganizationManifestWithDifferentSubtitle(t, targetAccount)
+		err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).
+			WithAlterListingAs(*sdk.NewAlterListingAsRequest(differentSubtitleManifest).
+				WithPublish(false).
+				WithReview(false).
+				WithComment(comment)))
+		assert.NoError(t, err)
+
+		assertThatObject(
+			t,
+			objectassert.Listing(t, listing.ID()).
+				HasTitle(title).
+				HasSubtitle("different_subtitle").
+				HasComment(comment).
+				HasState(sdk.ListingStateDraft),
+		)
+	})
+
+	// Snowflake publishes the listing on ALTER LISTING ... AS when PUBLISH is omitted.
+	t.Run("alter: change manifest without publish", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(manifest).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithPublish(false).
+			WithReview(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertThatObject(t, objectassert.Listing(t, id).HasState(sdk.ListingStateDraft))
+
+		differentSubtitleManifest, _ := testClientHelper().Listing.BasicOrganizationManifestWithDifferentSubtitle(t, targetAccount)
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAlterListingAs(*sdk.NewAlterListingAsRequest(differentSubtitleManifest)))
+		assert.NoError(t, err)
+
+		assertThatObject(t, objectassert.Listing(t, id).HasState(sdk.ListingStatePublished))
+	})
+
+	t.Run("describe: organization listing", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(manifest).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithPublish(false).
+			WithReview(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
+		require.NoError(t, err)
+
+		assert.Equal(t, id.Name(), listingDetails.Name)
+		assert.Equal(t, manifestTitle, listingDetails.Title)
+		assert.Equal(t, sdk.ListingStateDraft, listingDetails.State)
+		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
+		assert.Equal(t, "ORGANIZATION", *listingDetails.Distribution)
+		assert.Equal(t, targetAccounts, *listingDetails.TargetAccounts)
+		assert.True(t, *listingDetails.IsMountlessQueryable)
+		assert.Contains(t, listingDetails.ManifestYaml, "organization_targets:")
+		assert.Contains(t, listingDetails.ManifestYaml, fmt.Sprintf(`- account: "%s"`, targetAccount.AccountName()))
+	})
+}

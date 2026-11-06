@@ -53,6 +53,30 @@ func (c *ListingClient) CreateWithId(t *testing.T, id sdk.AccountObjectIdentifie
 	return listing, c.DropFunc(t, id)
 }
 
+func (c *ListingClient) CreateOrganization(t *testing.T, targetAccount sdk.AccountIdentifier) (*sdk.Listing, func()) {
+	t.Helper()
+	return c.CreateOrganizationWithId(t, c.ids.RandomAccountObjectIdentifier(), targetAccount)
+}
+
+func (c *ListingClient) CreateOrganizationWithId(t *testing.T, id sdk.AccountObjectIdentifier, targetAccount sdk.AccountIdentifier) (*sdk.Listing, func()) {
+	t.Helper()
+	ctx := context.Background()
+
+	manifest, _ := c.BasicOrganizationManifest(t, targetAccount)
+	err := c.client().CreateOrganization(
+		ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(manifest).
+			WithReview(false).
+			WithPublish(false),
+	)
+	assert.NoError(t, err)
+
+	listing, err := c.client().ShowByID(ctx, id)
+	assert.NoError(t, err)
+
+	return listing, c.DropFunc(t, id)
+}
+
 func (c *ListingClient) Alter(t *testing.T, req *sdk.AlterListingRequest) {
 	t.Helper()
 	ctx := context.Background()
@@ -160,6 +184,34 @@ func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccounts(t *test
 func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccountsAndDifferentSubtitle(t *testing.T, targetAccounts ...sdk.AccountIdentifier) (string, string) {
 	t.Helper()
 	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccounts...)
+}
+
+// BasicOrganizationManifest returns a manifest for CREATE ORGANIZATION LISTING that grants access to the given account.
+// Organization listings require organization_targets and locations, and they can only be published with an organization profile.
+func (c *ListingClient) BasicOrganizationManifest(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	return c.basicOrganizationManifest(t, "basic_organization_", "subtitle", targetAccount)
+}
+
+func (c *ListingClient) BasicOrganizationManifestWithDifferentSubtitle(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	return c.basicOrganizationManifest(t, "basic_organization_with_diff_subtitle_", "different_subtitle", targetAccount)
+}
+
+func (c *ListingClient) basicOrganizationManifest(t *testing.T, titleSuffix string, subtitle string, targetAccount sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	title := c.ids.WithTestObjectSuffix(titleSuffix)
+	return fmt.Sprintf(`title: "%s"
+subtitle: "%s"
+description: "description"
+organization_profile: "INTERNAL"
+organization_targets:
+  access:
+  - account: "%s"
+locations:
+  access_regions:
+  - name: "ALL"
+`, title, subtitle, targetAccount.AccountName()), title
 }
 
 func (c *ListingClient) basicManifest(t *testing.T, titleSuffix string, subtitle string) (string, string) {
