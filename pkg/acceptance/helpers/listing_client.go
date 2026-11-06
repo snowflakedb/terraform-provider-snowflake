@@ -198,6 +198,32 @@ func (c *ListingClient) BasicOrganizationManifestWithDifferentSubtitle(t *testin
 	return c.basicOrganizationManifest(t, "basic_organization_with_diff_subtitle_", "different_subtitle", targetAccount)
 }
 
+func (c *ListingClient) BasicOrganizationManifestWithUnquotedValues(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	return c.basicOrganizationManifestWithUnquotedValues(t, "basic_organization_", "subtitle", targetAccount)
+}
+
+func (c *ListingClient) BasicOrganizationManifestWithUnquotedValuesAndDifferentSubtitle(t *testing.T, targetAccount sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	return c.basicOrganizationManifestWithUnquotedValues(t, "basic_organization_with_diff_subtitle_", "different_subtitle", targetAccount)
+}
+
+func (c *ListingClient) basicOrganizationManifestWithUnquotedValues(t *testing.T, titleSuffix string, subtitle string, targetAccount sdk.AccountIdentifier) (string, string) {
+	t.Helper()
+	title := c.ids.WithTestObjectSuffix(titleSuffix)
+	return fmt.Sprintf(`title: %s
+subtitle: %s
+description: description
+organization_profile: INTERNAL
+organization_targets:
+  access:
+  - account: %s
+locations:
+  access_regions:
+  - name: ALL
+`, title, subtitle, targetAccount.AccountName()), title
+}
+
 func (c *ListingClient) basicOrganizationManifest(t *testing.T, titleSuffix string, subtitle string, targetAccount sdk.AccountIdentifier) (string, string) {
 	t.Helper()
 	title := c.ids.WithTestObjectSuffix(titleSuffix)
