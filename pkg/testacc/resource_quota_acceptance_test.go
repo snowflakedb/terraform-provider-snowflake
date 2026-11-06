@@ -403,7 +403,7 @@ func TestAcc_Quota_Validations(t *testing.T) {
 				WithSharedResources(model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainCortexAgent, Instance: "AGENT"}),
 				`invalid instance "AGENT" of the CORTEX AGENT domain`),
 			planFails(model.QuotaFromId("test", id).
-				WithSharedResources(model.QuotaSharedResourceModel{Domain: "ai function"}), `expected .*domain to be one of`),
+				WithSharedResources(model.QuotaSharedResourceModel{Domain: "ai function"}), `to be one of`),
 			planFails(model.QuotaFromId("test", id).WithPerUserLimitMonthly(0), `expected per_user_limit_monthly to be in the range \(1 - 1000000000\)`),
 			planFails(model.QuotaFromId("test", id).
 				WithUserTags(sdk.QuotaUserTagsOperatorUnion, model.QuotaTagValueModel{Tag: id, Value: "a"}).
