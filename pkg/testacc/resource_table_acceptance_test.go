@@ -12,12 +12,17 @@ import (
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	tfjson "github.com/hashicorp/terraform-json"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -156,6 +161,7 @@ func TestAcc_Table(t *testing.T) {
 			{
 				Config: tableConfig(table1Id),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "id", table1Id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", table1Id.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", table1Id.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
@@ -1393,6 +1399,7 @@ func TestAcc_TableRename(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "id", newId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", newId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", newId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
@@ -1952,6 +1959,54 @@ resource "snowflake_table" "test_table" {
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
 }
 
+// TestAcc_Table_migrateFromV2_23_0 checks the state upgrader.
+func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+
+	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.TableResource))
+	tableModel := model.TableWithId("test", id, tableColumns).WithComment(comment)
+	ref := tableModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			// Create - the previous provider with the pipe-separated id
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.23.0"),
+				Config:            accconfig.FromModels(t, providerModel, tableModel),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id))),
+				),
+			},
+			// Upgrade - the state upgrader rewrites the id
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, tableModel),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", id.FullyQualifiedName())),
+					resourceassert.TableResource(t, ref).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasCommentString(comment).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+				),
+			},
+		},
+	})
+}
+
 func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
@@ -1968,6 +2023,7 @@ func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				Config:            providerConfig + tableConfig(tableId),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeID(tableId)),
 					resource.TestCheckResourceAttr(resourceName, "name", tableId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", tableId.FullyQualifiedName()),
 				),
@@ -1977,6 +2033,7 @@ func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   tableConfig(tableId),
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "id", tableId.FullyQualifiedName()),
 					resource.TestCheckResourceAttr(resourceName, "name", tableId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "fully_qualified_name", tableId.FullyQualifiedName()),
 					resource.TestCheckNoResourceAttr(resourceName, "qualified_name"),
