@@ -218,11 +218,7 @@ func validateQuotaSharedResourceInstance(domain QuotaSharedResourceDomain, insta
 		errs = append(errs, err)
 	}
 	if instanceName != nil && !slices.Contains(quotaDomainsWithPlainInstances, domain) {
-		plainDomains := make([]string, len(quotaDomainsWithPlainInstances))
-		for i, plainDomain := range quotaDomainsWithPlainInstances {
-			plainDomains[i] = string(plainDomain)
-		}
-		errs = append(errs, fmt.Errorf("InstanceName can only be set for the %s domains, got %s", strings.Join(plainDomains, ", "), domain))
+		errs = append(errs, fmt.Errorf("InstanceName can only be set for the %s domains, got %s", strings.Join(AsStringList(quotaDomainsWithPlainInstances), ", "), domain))
 	}
 	referenceFields := []struct {
 		name   string
