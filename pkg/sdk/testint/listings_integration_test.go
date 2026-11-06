@@ -773,6 +773,29 @@ func TestInt_Listings_CreateOrganization(t *testing.T) {
 		)
 	})
 
+	t.Run("alter: comment can only be changed with the manifest", func(t *testing.T) {
+		listing, listingCleanup := testClientHelper().Listing.CreateOrganization(t, targetAccount)
+		t.Cleanup(listingCleanup)
+
+		err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithSet(*sdk.NewListingSetRequest().WithComment(comment)))
+		assert.ErrorContains(t, err, "The old apis do not support organization listings")
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithUnset(*sdk.NewListingUnsetRequest().WithComment(true)))
+		assert.ErrorContains(t, err, "The old apis do not support organization listings")
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAlterListingAs(
+			*sdk.NewAlterListingAsRequest(manifest).WithPublish(false).WithReview(false).WithComment(comment),
+		))
+		assert.NoError(t, err)
+		assertThatObject(t, objectassert.Listing(t, listing.ID()).HasComment(comment))
+
+		err = client.Listings.Alter(ctx, sdk.NewAlterListingRequest(listing.ID()).WithAlterListingAs(
+			*sdk.NewAlterListingAsRequest(manifest).WithPublish(false).WithReview(false).WithComment(""),
+		))
+		assert.NoError(t, err)
+		assertThatObject(t, objectassert.Listing(t, listing.ID()).HasComment(""))
+	})
+
 	// Snowflake publishes the listing on ALTER LISTING ... AS when PUBLISH is omitted.
 	t.Run("alter: change manifest without publish", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()

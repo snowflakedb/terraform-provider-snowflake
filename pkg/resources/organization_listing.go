@@ -114,9 +114,13 @@ var organizationListingSchema = map[string]*schema.Schema{
 		),
 	},
 	"comment": {
-		Type:        schema.TypeString,
-		Description: "Specifies a comment for the listing.",
-		Optional:    true,
+		Type: schema.TypeString,
+		Description: joinWithSpace(
+			"Specifies a comment for the listing.",
+			"Snowflake rejects `ALTER LISTING ... SET COMMENT` and `UNSET COMMENT` for organization listings, so the comment is updated together with the inline manifest.",
+			"Changing the comment of a listing with a manifest from a stage recreates the listing.",
+		),
+		Optional: true,
 	},
 	FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	ShowOutputAttributeName: {
@@ -150,8 +154,20 @@ func OrganizationListing() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.OrganizationListing, ImportName[sdk.AccountObjectIdentifier]),
 		},
 
+		CustomizeDiff: TrackingCustomDiffWrapper(resources.OrganizationListing, forceNewCommentForStagedOrganizationListing),
+
 		Timeouts: defaultTimeouts,
 	}
+}
+
+func forceNewCommentForStagedOrganizationListing(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	if diff.Id() == "" || !diff.HasChange("comment") {
+		return nil
+	}
+	if fromStage, ok := diff.Get("manifest.0.from_stage").([]any); ok && len(fromStage) > 0 {
+		return diff.ForceNew("comment")
+	}
+	return nil
 }
 
 func CreateOrganizationListing(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -238,29 +254,29 @@ func UpdateOrganizationListing(ctx context.Context, d *schema.ResourceData, meta
 		id = newId
 	}
 
-	if d.HasChange("manifest") {
-		if d.HasChange("manifest.0.from_string") {
-			if manifest := d.Get("manifest.0.from_string").(string); manifest != "" {
-				req := sdk.NewAlterListingAsRequest(manifest)
+	// The comment can only be changed with ALTER LISTING ... AS, so a comment change resends the inline manifest.
+	// Comment changes on a listing with a staged manifest force a new resource instead (see CustomizeDiff).
+	manifestChanged := d.HasChange("manifest.0.from_string")
+	if manifest := d.Get("manifest.0.from_string").(string); manifest != "" && (manifestChanged || d.HasChange("comment")) {
+		req := sdk.NewAlterListingAsRequest(manifest).WithComment(d.Get("comment").(string))
 
-				// Snowflake publishes the listing when PUBLISH is omitted. REVIEW follows PUBLISH for the same
-				// reason as in create.
-				if publishString := d.Get("publish").(string); publishString != BooleanDefault {
-					publish, err := booleanStringToBool(publishString)
-					if err != nil {
-						d.Partial(true)
-						return diag.FromErr(err)
-					}
-					req.WithPublish(publish).WithReview(publish)
-				}
-
-				if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAlterListingAs(*req)); err != nil {
-					d.Partial(true)
-					return diag.FromErr(err)
-				}
-			}
+		publish, isSet, err := organizationListingPublishForAlterAs(d, manifestChanged)
+		if err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
+		// REVIEW follows PUBLISH for the same reason as in create.
+		if isSet {
+			req.WithPublish(publish).WithReview(publish)
 		}
 
+		if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithAlterListingAs(*req)); err != nil {
+			d.Partial(true)
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("manifest") {
 		if d.HasChange("manifest.0.from_stage") {
 			if fromStage := d.Get("manifest.0.from_stage").([]any); len(fromStage) > 0 {
 				fromStageMap := fromStage[0].(map[string]any)
@@ -316,19 +332,24 @@ func UpdateOrganizationListing(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	if d.HasChange("comment") {
-		if comment := d.Get("comment").(string); comment != "" {
-			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithSet(*sdk.NewListingSetRequest().WithComment(comment))); err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
-		} else {
-			if err := client.Listings.Alter(ctx, sdk.NewAlterListingRequest(id).WithUnset(*sdk.NewListingUnsetRequest().WithComment(true))); err != nil {
-				d.Partial(true)
-				return diag.FromErr(err)
-			}
-		}
-	}
-
 	return ReadListing(ctx, d, meta)
+}
+
+// organizationListingPublishForAlterAs returns the PUBLISH value for ALTER LISTING ... AS and whether it should be sent.
+// An explicitly set publish is always sent. Without it, a manifest change follows the Snowflake default (publish),
+// while a comment-only change keeps the publication state from the last read so that it does not publish the listing.
+func organizationListingPublishForAlterAs(d *schema.ResourceData, manifestChanged bool) (bool, bool, error) {
+	oldPublish, newPublish := d.GetChange("publish")
+	if newPublishString := newPublish.(string); newPublishString != BooleanDefault {
+		publish, err := booleanStringToBool(newPublishString)
+		return publish, true, err
+	}
+	if manifestChanged {
+		return false, false, nil
+	}
+	if oldPublishString := oldPublish.(string); oldPublishString != BooleanDefault {
+		publish, err := booleanStringToBool(oldPublishString)
+		return publish, true, err
+	}
+	return false, false, nil
 }
