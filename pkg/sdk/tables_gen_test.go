@@ -13,6 +13,7 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CloneMoment]{"CloneMoment", AllCloneMoments, ToCloneMoment})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ReclusterState]{"ReclusterState", AllReclusterStates, ToReclusterState})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MatchType]{"MatchType", AllMatchTypes, ToMatchType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableSearchMethod]{"TableSearchMethod", AllTableSearchMethods, ToTableSearchMethod})
 }
 
 var tablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
@@ -904,7 +905,7 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction", "Add", "Drop"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 					opts.SearchOptimizationAction.Add = nil
 					opts.SearchOptimizationAction.Drop = nil
 				},
@@ -913,8 +914,8 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction", "Add", "Drop"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
-					opts.SearchOptimizationAction.Add = &AddSearchOptimization{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
+					opts.SearchOptimizationAction.Add = &TableAddSearchOptimization{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 				},
 			},
@@ -922,7 +923,7 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 					opts.SearchOptimizationAction.Drop.On = []TableDropSearchOptimizationOn{{}}
 				},
@@ -942,7 +943,7 @@ var tablesTests = TablesTestsContext{
 					errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[1]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 				},
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 					opts.SearchOptimizationAction.Drop.On = []TableDropSearchOptimizationOn{{}, {}}
 				},

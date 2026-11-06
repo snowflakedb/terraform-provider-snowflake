@@ -443,12 +443,12 @@ func init() {
 			opts.ClusteringAction = &TableClusteringAction{ClusterBy: []string{"a"}, DropClusteringKey: new(true)}
 		}).
 		withModify(case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
-			opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Drop: &TableDropSearchOptimization{
+			opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
 				On: []TableDropSearchOptimizationOn{{ColumnName: new("c"), ExpressionId: new("e")}},
 			}}
 		}).
 		withModify(case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid, func(opts *AlterTableOptions) {
-			opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Drop: &TableDropSearchOptimization{
+			opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
 				On: []TableDropSearchOptimizationOn{{ColumnName: new("c")}, {}},
 			}}
 		}).
@@ -703,14 +703,21 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_SearchOptimizationAction,
 			func(opts *AlterTableOptions) {
-				opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Add: &AddSearchOptimization{On: []string{"SUBSTRING(*)", "GEO(*)"}}}
+				opts.SearchOptimizationAction = &TableSearchOptimizationAction{
+					Add: &TableAddSearchOptimization{
+						On: []TableSearchMethodWithTarget{
+							{Method: TableSearchMethodSubstring, Args: TableSearchMethodArgs{Targets: []string{"*"}}},
+							{Method: TableSearchMethodEquality, Args: TableSearchMethodArgs{Targets: []string{"COLUMN_1"}}},
+						},
+					},
+				}
 			},
-			`ALTER TABLE %s ADD SEARCH OPTIMIZATION ON SUBSTRING(*), GEO(*)`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD SEARCH OPTIMIZATION ON SUBSTRING (*), EQUALITY (COLUMN_1)`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_dropSearchOptimization",
 			func(opts *AlterTableOptions) {
-				opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{Drop: &TableDropSearchOptimization{
+				opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
 					On: []TableDropSearchOptimizationOn{
 						{ColumnName: new("SUBSTRING(*)")},
 						{ColumnName: new("FOO")},

@@ -468,35 +468,6 @@ type TableSetJoinPolicyRequest struct {
 
 type TableUnsetJoinPolicyRequest struct{}
 
-type TableSearchOptimizationActionRequest struct {
-	Add  *TableAddSearchOptimizationRequest
-	Drop *TableDropSearchOptimizationRequest
-}
-
-type TableAddSearchOptimizationRequest struct {
-	On []TableSearchMethodWithTargetRequest
-}
-
-type TableSearchMethodWithTargetRequest struct {
-	Method TableSearchMethod // required
-	Args   TableSearchMethodArgsRequest
-}
-
-type TableSearchMethodArgsRequest struct {
-	Targets  []string
-	Analyzer *string
-}
-
-type TableDropSearchOptimizationRequest struct {
-	On []TableDropSearchOptimizationOnRequest
-}
-
-type TableDropSearchOptimizationOnRequest struct {
-	SearchMethodWithTarget *TableSearchMethodWithTargetRequest
-	ColumnName             *string
-	ExpressionId           *string
-}
-
 type DropIcebergTableRequest struct {
 	IfExists *bool
 	name     SchemaObjectIdentifier // required

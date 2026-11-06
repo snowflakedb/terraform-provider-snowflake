@@ -324,6 +324,9 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 	}
 	if attr.IsObjectList() {
 		validateObjectVariants(obj, attr)
+		if attr.Elem != nil && attr.Elem.Type == AttrObject && attr.Elem.ChildrenRule != "" {
+			validateNestedShape(obj, *attr.Elem)
+		}
 	}
 }
 
@@ -370,7 +373,7 @@ func validateNestedShape(obj Object, attr Attribute) {
 		if attr.Type != AttrList && attr.Type != AttrSet {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem and needs to be a list or set", obj.Name, attr.Name))
 		}
-		if len(attr.NestedFields()) == 0 {
+		if len(attr.NestedSqlFields()) == 0 {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem with no Children", obj.Name, attr.Name))
 		}
 	}
@@ -932,15 +935,21 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 			}
 			identifiers := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrIdentifier && attr.Elem.IdentifierType != ""
 			stringsList := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrString
+			objectList := attr.IsObjectList()
 			switch {
 			case identifiers:
 			case stringsList:
 				if clause.Quotes != "" || clause.Equals != "" {
 					panic(fmt.Sprintf("object %q: attribute %q %s string list keyword has quotes or equals", obj.Name, attr.Name, statement))
 				}
+			case objectList:
+				if clause.Quotes != "" || clause.Equals != "" {
+					panic(fmt.Sprintf("object %q: attribute %q %s object list keyword has quotes or equals", obj.Name, attr.Name, statement))
+				}
+			case attr.Type == AttrString && clause.Quotes == "" && clause.Parentheses == "" && clause.Equals == "":
 			case attr.Type == AttrEnum && enum != nil && enum.Name != "":
 			default:
-				panic(fmt.Sprintf("object %q: attribute %q %s value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings", obj.Name, attr.Name, statement))
+				panic(fmt.Sprintf("object %q: attribute %q %s value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects", obj.Name, attr.Name, statement))
 			}
 		}
 	case SqlKindIdentifier:

@@ -177,7 +177,8 @@ var (
 	TableKind           = ssot.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
 	TableConstraintType = ssot.NewEnum("TableConstraintType", "TableConstraintTypes", "PRIMARY KEY", "UNIQUE", "FOREIGN KEY")
 	// ReclusterState is RESUME or SUSPEND before the static RECLUSTER keyword.
-	ReclusterState = ssot.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
+	ReclusterState    = ssot.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
+	TableSearchMethod = ssot.NewEnum("TableSearchMethod", "TableSearchMethods", "SUBSTRING", "EQUALITY", "FULL_TEXT")
 )
 
 // TableStorageLifecyclePolicy is ADD STORAGE LIFECYCLE POLICY policy ON (columns).
@@ -198,7 +199,8 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 //
 // The column list, the stage file format, and the stage copy options name query structs by PreexistingStruct. The SDK
 // definition in pkg/sdk/generator/defs/tables_def.go supplies them to CreateOperationFromObject and keeps their fields,
-// because other operations and the request types of the resource use them. The row access policy is generated here as
+// because other operations and the request types of the resource use them. Search optimization, clustering, and storage
+// lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. The row access policy is generated here as
 // TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type.
 var TableCreateAttrs = struct {
 	Scope                      ssot.Attribute

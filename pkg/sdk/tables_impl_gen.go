@@ -511,15 +511,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		}
 	}
 	if r.SearchOptimizationAction != nil {
-		opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
-		if r.SearchOptimizationAction.Add != nil {
-			opts.SearchOptimizationAction.Add = &AddSearchOptimization{
-				On: r.SearchOptimizationAction.Add.On,
-			}
-		}
-		if r.SearchOptimizationAction.Drop != nil {
-			opts.SearchOptimizationAction.Drop = r.SearchOptimizationAction.Drop.toOpts()
-		}
+		opts.SearchOptimizationAction = r.SearchOptimizationAction.toOpts()
 	}
 	if r.Set != nil {
 		opts.Set = &TableSet{
@@ -761,4 +753,47 @@ func (r tableCheckConstraintDetailsRow) convert() (*TableCheckConstraintDetails,
 		CheckClause:       r.CheckClause,
 	}
 	return result, nil
+}
+
+func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimizationAction {
+	opts := &TableSearchOptimizationAction{}
+	if r.Add != nil {
+		opts.Add = &TableAddSearchOptimization{}
+		if r.Add.On != nil {
+			on := make([]TableSearchMethodWithTarget, len(r.Add.On))
+			for i, v := range r.Add.On {
+				on[i] = TableSearchMethodWithTarget{
+					Method: v.Method,
+				}
+				on[i].Args = TableSearchMethodArgs{
+					Targets:  v.Args.Targets,
+					Analyzer: v.Args.Analyzer,
+				}
+			}
+			opts.Add.On = on
+		}
+	}
+	if r.Drop != nil {
+		opts.Drop = &TableDropSearchOptimization{}
+		if r.Drop.On != nil {
+			on := make([]TableDropSearchOptimizationOn, len(r.Drop.On))
+			for i, v := range r.Drop.On {
+				on[i] = TableDropSearchOptimizationOn{
+					ColumnName:   v.ColumnName,
+					ExpressionId: v.ExpressionId,
+				}
+				if v.SearchMethodWithTarget != nil {
+					on[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
+						Method: v.SearchMethodWithTarget.Method,
+					}
+					on[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
+						Targets:  v.SearchMethodWithTarget.Args.Targets,
+						Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
+					}
+				}
+			}
+			opts.Drop.On = on
+		}
+	}
+	return opts
 }

@@ -195,27 +195,27 @@ type ClonePoint struct {
 
 // AlterTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
 type AlterTableOptions struct {
-	alter                      bool                                 `ddl:"static" sql:"ALTER"`
-	table                      bool                                 `ddl:"static" sql:"TABLE"`
-	IfExists                   *bool                                `ddl:"keyword" sql:"IF EXISTS"`
-	name                       SchemaObjectIdentifier               `ddl:"identifier"`
-	RenameTo                   *SchemaObjectIdentifier              `ddl:"identifier" sql:"RENAME TO"`
-	SwapWith                   *SchemaObjectIdentifier              `ddl:"identifier" sql:"SWAP WITH"`
-	ClusteringAction           *TableClusteringAction               `ddl:"keyword"`
-	ColumnAction               *TableColumnAction                   `ddl:"keyword"`
-	ConstraintAction           *TableConstraintAction               `ddl:"keyword"`
-	ExternalTableAction        *TableExternalTableAction            `ddl:"keyword"`
-	SearchOptimizationAction   *TableSearchOptimizationActionLegacy `ddl:"keyword"`
-	Set                        *TableSet                            `ddl:"keyword" sql:"SET"`
-	SetTags                    []TagAssociation                     `ddl:"keyword" sql:"SET TAG"`
-	UnsetTags                  []ObjectIdentifier                   `ddl:"keyword" sql:"UNSET TAG"`
-	Unset                      *TableUnset                          `ddl:"keyword" sql:"UNSET"`
-	AddRowAccessPolicy         *TableAddRowAccessPolicy             `ddl:"keyword"`
-	DropRowAccessPolicy        *TableDropRowAccessPolicy            `ddl:"keyword"`
-	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicy      `ddl:"list,no_parentheses"`
-	DropAllRowAccessPolicies   *bool                                `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
-	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicy         `ddl:"keyword"`
-	DropStorageLifecyclePolicy *bool                                `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
+	alter                      bool                            `ddl:"static" sql:"ALTER"`
+	table                      bool                            `ddl:"static" sql:"TABLE"`
+	IfExists                   *bool                           `ddl:"keyword" sql:"IF EXISTS"`
+	name                       SchemaObjectIdentifier          `ddl:"identifier"`
+	RenameTo                   *SchemaObjectIdentifier         `ddl:"identifier" sql:"RENAME TO"`
+	SwapWith                   *SchemaObjectIdentifier         `ddl:"identifier" sql:"SWAP WITH"`
+	ClusteringAction           *TableClusteringAction          `ddl:"keyword"`
+	ColumnAction               *TableColumnAction              `ddl:"keyword"`
+	ConstraintAction           *TableConstraintAction          `ddl:"keyword"`
+	ExternalTableAction        *TableExternalTableAction       `ddl:"keyword"`
+	SearchOptimizationAction   *TableSearchOptimizationAction  `ddl:"keyword"`
+	Set                        *TableSet                       `ddl:"keyword" sql:"SET"`
+	SetTags                    []TagAssociation                `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags                  []ObjectIdentifier              `ddl:"keyword" sql:"UNSET TAG"`
+	Unset                      *TableUnset                     `ddl:"keyword" sql:"UNSET"`
+	AddRowAccessPolicy         *TableAddRowAccessPolicy        `ddl:"keyword"`
+	DropRowAccessPolicy        *TableDropRowAccessPolicy       `ddl:"keyword"`
+	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicy `ddl:"list,no_parentheses"`
+	DropAllRowAccessPolicies   *bool                           `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
+	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicy    `ddl:"keyword"`
+	DropStorageLifecyclePolicy *bool                           `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
 }
 
 type TableClusteringAction struct {
@@ -367,14 +367,35 @@ type TableExternalTableColumnDropAction struct {
 	Names      []string `ddl:"keyword"`
 }
 
-type TableSearchOptimizationActionLegacy struct {
-	Add  *AddSearchOptimization       `ddl:"keyword"`
-	Drop *TableDropSearchOptimization `ddl:"keyword"`
+type TableSearchOptimizationAction struct {
+	Add  *TableAddSearchOptimization  `ddl:"list,no_comma"`
+	Drop *TableDropSearchOptimization `ddl:"list,no_comma"`
 }
 
-type AddSearchOptimization struct {
-	addSearchOptimization bool     `ddl:"static" sql:"ADD SEARCH OPTIMIZATION"`
-	On                    []string `ddl:"keyword" sql:"ON"`
+type TableAddSearchOptimization struct {
+	addSearchOptimization bool                          `ddl:"static" sql:"ADD SEARCH OPTIMIZATION"`
+	On                    []TableSearchMethodWithTarget `ddl:"keyword" sql:"ON"`
+}
+
+type TableSearchMethodWithTarget struct {
+	Method TableSearchMethod     `ddl:"keyword"`
+	Args   TableSearchMethodArgs `ddl:"list,parentheses"`
+}
+
+type TableSearchMethodArgs struct {
+	Targets  []string `ddl:"keyword"`
+	Analyzer *string  `ddl:"parameter,single_quotes,arrow_equals" sql:"ANALYZER"`
+}
+
+type TableDropSearchOptimization struct {
+	dropSearchOptimization bool                            `ddl:"static" sql:"DROP SEARCH OPTIMIZATION"`
+	On                     []TableDropSearchOptimizationOn `ddl:"keyword" sql:"ON"`
+}
+
+type TableDropSearchOptimizationOn struct {
+	SearchMethodWithTarget *TableSearchMethodWithTarget `ddl:"list,no_comma"`
+	ColumnName             *string                      `ddl:"keyword"`
+	ExpressionId           *string                      `ddl:"keyword"`
 }
 
 type TableSet struct {

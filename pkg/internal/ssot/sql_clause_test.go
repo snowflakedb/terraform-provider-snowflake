@@ -120,6 +120,23 @@ func Test_EnumListItemName(t *testing.T) {
 	require.Equal(t, ListParameter("WidgetFamilyListItem"), set.EffectiveSqlClause(ClauseCreate))
 }
 
+func Test_SqlClause_arrowEqualsAndValueKeyword(t *testing.T) {
+	analyzer := StringParameter(ArrowEquals())
+	require.Equal(t, SqlEqualsArrow, analyzer.Equals)
+	require.Equal(t, "parameter,single_quotes,arrow_equals", analyzer.Ddl())
+
+	on := ValueKeyword(Sql("ON"), FieldName("On"))
+	require.True(t, on.ValueKeyword)
+	require.Equal(t, SqlKindKeyword, on.Kind)
+	require.Equal(t, "ON", on.SQL)
+	require.Equal(t, "On", on.Field)
+
+	args := ObjectParameter(Parentheses(), Required(), Commas())
+	require.False(t, args.NoComma)
+	require.True(t, ObjectParameter().NoComma)
+	require.Equal(t, SqlParensYes, args.Parentheses)
+}
+
 func Test_SqlClause_optionOverridesDefault(t *testing.T) {
 	clause := StringParameter(NoQuotes())
 

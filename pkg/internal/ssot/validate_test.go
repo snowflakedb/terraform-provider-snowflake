@@ -1542,7 +1542,7 @@ func Test_ValidateObject_enumKeywordAndPreexistingStruct(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrEnum, Enum: driver, CreateSql: EnumKeyword(NoQuotes())})))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings`, func() {
+	require.PanicsWithValue(t, `object "Widget": attribute "driver" CREATE value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects`, func() {
 		ValidateObject(obj(entries(Attribute{Name: "driver", Type: AttrString, CreateSql: EnumKeyword(NoQuotes())})))
 	})
 }
@@ -1592,7 +1592,7 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat", Parentheses(), NoComma())}))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE value keyword needs an enum attribute with an Enum, a list of identifiers, or a list of strings`, func() {
+	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects`, func() {
 		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"))}))
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE string list keyword has quotes or equals`, func() {

@@ -553,37 +553,6 @@ type TableUnsetJoinPolicy struct {
 	unsetJoinPolicy bool `ddl:"static" sql:"UNSET JOIN POLICY"`
 }
 
-type TableSearchOptimizationAction struct {
-	Add  *TableAddSearchOptimization  `ddl:"keyword"`
-	Drop *TableDropSearchOptimization `ddl:"keyword"`
-}
-
-type TableAddSearchOptimization struct {
-	addSearchOptimization bool                          `ddl:"static" sql:"ADD SEARCH OPTIMIZATION"`
-	On                    []TableSearchMethodWithTarget `ddl:"keyword" sql:"ON"`
-}
-
-type TableSearchMethodWithTarget struct {
-	Method TableSearchMethod     `ddl:"keyword"`
-	Args   TableSearchMethodArgs `ddl:"list,parentheses"`
-}
-
-type TableSearchMethodArgs struct {
-	Targets  []string `ddl:"keyword"`
-	Analyzer *string  `ddl:"parameter,single_quotes,arrow_equals" sql:"ANALYZER"`
-}
-
-type TableDropSearchOptimization struct {
-	dropSearchOptimization bool                            `ddl:"static" sql:"DROP SEARCH OPTIMIZATION"`
-	On                     []TableDropSearchOptimizationOn `ddl:"keyword" sql:"ON"`
-}
-
-type TableDropSearchOptimizationOn struct {
-	SearchMethodWithTarget *TableSearchMethodWithTarget `ddl:"keyword"`
-	ColumnName             *string                      `ddl:"keyword"`
-	ExpressionId           *string                      `ddl:"keyword"`
-}
-
 // DropIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-iceberg-table.
 type DropIcebergTableOptions struct {
 	drop         bool                   `ddl:"static" sql:"DROP"`
