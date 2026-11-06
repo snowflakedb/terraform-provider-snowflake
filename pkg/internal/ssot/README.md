@@ -168,7 +168,10 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   is a list or set of strings, and it can be a resource attribute (`cluster_by`).
   A struct this definition owns is an `AttrObject` with `Children` and `ObjectParameter()`. The generated struct is named
   after the object and the attribute (`Table` and `row_access_policy` give `TableRowAccessPolicy`). Other operations refer
-  to that type. A `SqlOnly` child of it can be an identifier (`IdentifierKeyword`) or a list of strings (`StringListKeyword`).
+  to that type. A `SqlOnly` child of it can be an identifier (`IdentifierKeyword`) or a value keyword (`ValueKeyword`: an
+  enum, a string, a list of strings, or a list of objects). `QueryStructFromAttribute` builds that struct for a handwritten
+  ALTER field so tables and iceberg tables can share it. `ObjectParameter` joins nested fields without commas; `Commas()`
+  keeps them. `ArrowEquals()` writes `=>`.
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
   object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
   fields and `IsObjectList()` tells a list of objects from a list of scalars, so generators ask the attribute for its fields

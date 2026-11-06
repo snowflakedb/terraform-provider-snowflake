@@ -175,7 +175,7 @@ type AlterTableRequest struct {
 	ColumnAction               *TableColumnActionRequest
 	ConstraintAction           *TableConstraintActionRequest
 	ExternalTableAction        *TableExternalTableActionRequest
-	SearchOptimizationAction   *TableSearchOptimizationActionLegacyRequest
+	SearchOptimizationAction   *TableSearchOptimizationActionRequest
 	Set                        *TableSetRequest
 	SetTags                    []TagAssociation
 	UnsetTags                  []ObjectIdentifier
@@ -330,13 +330,33 @@ type TableExternalTableColumnDropActionRequest struct {
 	Names    []string // required
 }
 
-type TableSearchOptimizationActionLegacyRequest struct {
-	Add  *AddSearchOptimizationRequest
+type TableSearchOptimizationActionRequest struct {
+	Add  *TableAddSearchOptimizationRequest
 	Drop *TableDropSearchOptimizationRequest
 }
 
-type AddSearchOptimizationRequest struct {
-	On []string
+type TableAddSearchOptimizationRequest struct {
+	On []TableSearchMethodWithTargetRequest
+}
+
+type TableSearchMethodWithTargetRequest struct {
+	Method TableSearchMethod            // required
+	Args   TableSearchMethodArgsRequest // required
+}
+
+type TableSearchMethodArgsRequest struct {
+	Targets  []string
+	Analyzer *string
+}
+
+type TableDropSearchOptimizationRequest struct {
+	On []TableDropSearchOptimizationOnRequest
+}
+
+type TableDropSearchOptimizationOnRequest struct {
+	SearchMethodWithTarget *TableSearchMethodWithTargetRequest
+	ColumnName             *string
+	ExpressionId           *string
 }
 
 type TableSetRequest struct {

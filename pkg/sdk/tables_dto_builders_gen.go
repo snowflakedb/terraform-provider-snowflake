@@ -564,7 +564,7 @@ func (s *AlterTableRequest) WithExternalTableAction(externalTableAction TableExt
 	return s
 }
 
-func (s *AlterTableRequest) WithSearchOptimizationAction(searchOptimizationAction TableSearchOptimizationActionLegacyRequest) *AlterTableRequest {
+func (s *AlterTableRequest) WithSearchOptimizationAction(searchOptimizationAction TableSearchOptimizationActionRequest) *AlterTableRequest {
 	s.SearchOptimizationAction = &searchOptimizationAction
 	return s
 }
@@ -1083,28 +1083,83 @@ func (s *TableExternalTableColumnDropActionRequest) WithIfExists(ifExists bool) 
 	return s
 }
 
-func NewTableSearchOptimizationActionLegacyRequest() *TableSearchOptimizationActionLegacyRequest {
-	s := TableSearchOptimizationActionLegacyRequest{}
+func NewTableSearchOptimizationActionRequest() *TableSearchOptimizationActionRequest {
+	s := TableSearchOptimizationActionRequest{}
 	return &s
 }
 
-func (s *TableSearchOptimizationActionLegacyRequest) WithAdd(add AddSearchOptimizationRequest) *TableSearchOptimizationActionLegacyRequest {
+func (s *TableSearchOptimizationActionRequest) WithAdd(add TableAddSearchOptimizationRequest) *TableSearchOptimizationActionRequest {
 	s.Add = &add
 	return s
 }
 
-func (s *TableSearchOptimizationActionLegacyRequest) WithDrop(drop TableDropSearchOptimizationRequest) *TableSearchOptimizationActionLegacyRequest {
+func (s *TableSearchOptimizationActionRequest) WithDrop(drop TableDropSearchOptimizationRequest) *TableSearchOptimizationActionRequest {
 	s.Drop = &drop
 	return s
 }
 
-func NewAddSearchOptimizationRequest() *AddSearchOptimizationRequest {
-	s := AddSearchOptimizationRequest{}
+func NewTableAddSearchOptimizationRequest() *TableAddSearchOptimizationRequest {
+	s := TableAddSearchOptimizationRequest{}
 	return &s
 }
 
-func (s *AddSearchOptimizationRequest) WithOn(on []string) *AddSearchOptimizationRequest {
+func (s *TableAddSearchOptimizationRequest) WithOn(on []TableSearchMethodWithTargetRequest) *TableAddSearchOptimizationRequest {
 	s.On = on
+	return s
+}
+
+func NewTableSearchMethodWithTargetRequest(
+	method TableSearchMethod,
+	args TableSearchMethodArgsRequest,
+) *TableSearchMethodWithTargetRequest {
+	s := TableSearchMethodWithTargetRequest{}
+	s.Method = method
+	s.Args = args
+	return &s
+}
+
+func NewTableSearchMethodArgsRequest() *TableSearchMethodArgsRequest {
+	s := TableSearchMethodArgsRequest{}
+	return &s
+}
+
+func (s *TableSearchMethodArgsRequest) WithTargets(targets []string) *TableSearchMethodArgsRequest {
+	s.Targets = targets
+	return s
+}
+
+func (s *TableSearchMethodArgsRequest) WithAnalyzer(analyzer string) *TableSearchMethodArgsRequest {
+	s.Analyzer = &analyzer
+	return s
+}
+
+func NewTableDropSearchOptimizationRequest() *TableDropSearchOptimizationRequest {
+	s := TableDropSearchOptimizationRequest{}
+	return &s
+}
+
+func (s *TableDropSearchOptimizationRequest) WithOn(on []TableDropSearchOptimizationOnRequest) *TableDropSearchOptimizationRequest {
+	s.On = on
+	return s
+}
+
+func NewTableDropSearchOptimizationOnRequest() *TableDropSearchOptimizationOnRequest {
+	s := TableDropSearchOptimizationOnRequest{}
+	return &s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithSearchMethodWithTarget(searchMethodWithTarget TableSearchMethodWithTargetRequest) *TableDropSearchOptimizationOnRequest {
+	s.SearchMethodWithTarget = &searchMethodWithTarget
+	return s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithColumnName(columnName string) *TableDropSearchOptimizationOnRequest {
+	s.ColumnName = &columnName
+	return s
+}
+
+func (s *TableDropSearchOptimizationOnRequest) WithExpressionId(expressionId string) *TableDropSearchOptimizationOnRequest {
+	s.ExpressionId = &expressionId
 	return s
 }
 

@@ -262,6 +262,12 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrString {
 		return v.appendStringListKeywordClause(attr, clause, required)
 	}
+	if attr.IsObjectList() {
+		return v.appendObjectListKeywordClause(attr, clause, required)
+	}
+	if attr.Type == ssot.AttrString && clause.Quotes == "" && clause.Parentheses == "" && clause.Equals == "" && clause.Enum == nil {
+		return v.appendStringKeywordClause(attr, clause, required)
+	}
 	enum := clause.Enum
 	if enum == nil {
 		enum = attr.ColumnEnum()
@@ -294,18 +300,50 @@ func (v *QueryStruct) appendStringListKeywordClause(attr ssot.Attribute, clause 
 	if clause.Quotes != "" || clause.Equals != "" {
 		panic(fmt.Sprintf("attribute %q: string list keyword has quotes or equals", attr.Name))
 	}
-	opts := KeywordOptions().SQL(clause.SQLText(attr))
+	opts := keywordOptionsFromValueClause(attr, clause, required)
 	if clause.Parentheses == ssot.SqlParensYes {
 		opts = opts.Parentheses()
 	}
 	if clause.NoComma {
 		opts = opts.NoComma()
 	}
+	v.fields = append(v.fields, NewField(clauseGoFieldName(attr, clause), KindOfSlice("string"), Tags().Keyword(), opts))
+	return v
+}
+
+func (v *QueryStruct) appendObjectListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.Quotes != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: object list keyword has quotes or equals", attr.Name))
+	}
+	return v.ListQueryStructField(clauseGoFieldName(attr, clause), queryStructFromObjectList(v.owner, attr), keywordOptionsFromValueClause(attr, clause, required))
+}
+
+func keywordOptionsFromValueClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *KeywordTransformer {
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	} else if clause.Field == "" {
+		opts = opts.SQL(clause.SQLText(attr))
+	}
 	if required {
 		opts = opts.Required()
 	}
-	v.fields = append(v.fields, NewField(clauseGoFieldName(attr, clause), KindOfSlice("string"), Tags().Keyword(), opts))
-	return v
+	return opts
+}
+
+func (v *QueryStruct) appendStringKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.Quotes != "" || clause.Parentheses != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: string keyword has parameter tags", attr.Name))
+	}
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	name := clauseGoFieldName(attr, clause)
+	if required {
+		return v.Text(name, opts.Required())
+	}
+	return v.OptionalText(name, opts)
 }
 
 func (v *QueryStruct) appendIdentifierListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
@@ -363,6 +401,8 @@ func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *Parameter
 	case "":
 	case ssot.SqlEqualsNo:
 		opts = opts.NoEquals()
+	case ssot.SqlEqualsArrow:
+		opts = opts.ArrowEquals()
 	default:
 		panic(fmt.Sprintf("sql clause equals %q", clause.Equals))
 	}

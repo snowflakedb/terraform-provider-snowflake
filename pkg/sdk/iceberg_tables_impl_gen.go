@@ -615,26 +615,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{}
 	}
 	if r.SearchOptimizationAction != nil {
-		opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
-		if r.SearchOptimizationAction.Add != nil {
-			opts.SearchOptimizationAction.Add = &TableAddSearchOptimization{}
-			if r.SearchOptimizationAction.Add.On != nil {
-				on := make([]TableSearchMethodWithTarget, len(r.SearchOptimizationAction.Add.On))
-				for i, v := range r.SearchOptimizationAction.Add.On {
-					on[i] = TableSearchMethodWithTarget{
-						Method: v.Method,
-					}
-					on[i].Args = TableSearchMethodArgs{
-						Targets:  v.Args.Targets,
-						Analyzer: v.Args.Analyzer,
-					}
-				}
-				opts.SearchOptimizationAction.Add.On = on
-			}
-		}
-		if r.SearchOptimizationAction.Drop != nil {
-			opts.SearchOptimizationAction.Drop = r.SearchOptimizationAction.Drop.toOpts()
-		}
+		opts.SearchOptimizationAction = r.SearchOptimizationAction.toOpts()
 	}
 	return opts
 }
@@ -752,30 +733,6 @@ func (r *TableSetColumnMaskingPolicyRequest) toOpts() *TableSetColumnMaskingPoli
 func (r *TableUnsetColumnMaskingPolicyRequest) toOpts() *TableUnsetColumnMaskingPolicy {
 	opts := &TableUnsetColumnMaskingPolicy{
 		Name: r.Name,
-	}
-	return opts
-}
-
-func (r *TableDropSearchOptimizationRequest) toOpts() *TableDropSearchOptimization {
-	opts := &TableDropSearchOptimization{}
-	if r.On != nil {
-		on := make([]TableDropSearchOptimizationOn, len(r.On))
-		for i, v := range r.On {
-			on[i] = TableDropSearchOptimizationOn{
-				ColumnName:   v.ColumnName,
-				ExpressionId: v.ExpressionId,
-			}
-			if v.SearchMethodWithTarget != nil {
-				on[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
-					Method: v.SearchMethodWithTarget.Method,
-				}
-				on[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
-					Targets:  v.SearchMethodWithTarget.Args.Targets,
-					Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
-				}
-			}
-		}
-		opts.On = on
 	}
 	return opts
 }

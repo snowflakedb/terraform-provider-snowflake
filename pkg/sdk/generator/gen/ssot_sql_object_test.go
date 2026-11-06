@@ -634,6 +634,42 @@ func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
 
+func Test_queryStructFromObject_tableSearchOptimizationAction(t *testing.T) {
+	attr := ssotdefs.TableSearchOptimizationAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	searchMethodWithTarget := func() *QueryStruct {
+		return NewQueryStruct("TableSearchMethodWithTarget").
+			Enum("Method", ssotdefs.TableSearchMethod, KeywordOptions().Required()).
+			QueryStructField("Args",
+				NewQueryStruct("TableSearchMethodArgs").
+					PredefinedQueryStructField("Targets", "[]string", KeywordOptions()).
+					OptionalTextAssignment("ANALYZER", ParameterOptions().ArrowEquals().SingleQuotes()),
+				ListOptions().Parentheses().Required())
+	}
+	want := NewQueryStruct("TableSearchOptimizationAction").
+		OptionalQueryStructField("Add",
+			NewQueryStruct("TableAddSearchOptimization").
+				SQL("ADD SEARCH OPTIMIZATION").
+				ListQueryStructField("On", searchMethodWithTarget(), KeywordOptions().SQL("ON")),
+			ListOptions().NoComma()).
+		OptionalQueryStructField("Drop",
+			NewQueryStruct("TableDropSearchOptimization").
+				SQL("DROP SEARCH OPTIMIZATION").
+				ListQueryStructField("On",
+					NewQueryStruct("TableDropSearchOptimizationOn").
+						OptionalQueryStructField("SearchMethodWithTarget", searchMethodWithTarget(), ListOptions().NoComma()).
+						OptionalText("ColumnName", KeywordOptions()).
+						OptionalText("ExpressionId", KeywordOptions()).
+						WithValidation(ExactlyOneValueSet, "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+					KeywordOptions().SQL("ON")),
+			ListOptions().NoComma()).
+		WithValidation(ExactlyOneValueSet, "Add", "Drop")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
 func Test_queryStructFromObject_tableStorageLifecyclePolicy(t *testing.T) {
 	attr := ssotdefs.TableStorageLifecyclePolicy
 	require.NotPanics(t, func() {

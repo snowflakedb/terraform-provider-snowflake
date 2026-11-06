@@ -45,11 +45,6 @@ var tableUnsetColumnTags = g.NewQueryStruct("TableUnsetColumnTags").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	UnsetTags()
 
-var TableSearchMethodEnumDef = g.NewEnum(
-	"TableSearchMethod", "TableSearchMethods",
-	"SUBSTRING", "EQUALITY", "FULL_TEXT",
-)
-
 var tableColumnMaskingPolicy = g.NewQueryStruct("TableColumnMaskingPolicy").
 	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
 	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses()).
@@ -70,49 +65,9 @@ var tableRenameColumnAction = g.NewQueryStruct("TableRenameColumnAction").
 	Text("OldName", g.KeywordOptions().Required().DoubleQuotes()).
 	AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes(), "NewName")
 
-func newTableSearchMethodArgs() *g.QueryStruct {
-	return g.NewQueryStruct("TableSearchMethodArgs").
-		PredefinedQueryStructField("Targets", "[]string", g.KeywordOptions()).
-		OptionalTextAssignment("ANALYZER", g.ParameterOptions().ArrowEquals().SingleQuotes())
+func tableSearchOptimizationAction() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableSearchOptimizationAction).WithSharedToOpts()
 }
-
-func newTableSearchMethodWithTarget() *g.QueryStruct {
-	return g.NewQueryStruct("TableSearchMethodWithTarget").
-		PredefinedQueryStructField("Method", TableSearchMethodEnumDef.Kind(), g.KeywordOptions().Required()).
-		QueryStructField("Args", newTableSearchMethodArgs(), g.ListOptions().Parentheses())
-}
-
-var tableAddSearchOptimization = g.NewQueryStruct("TableAddSearchOptimization").
-	SQL("ADD SEARCH OPTIMIZATION").
-	ListQueryStructField("On", newTableSearchMethodWithTarget(), g.KeywordOptions().SQL("ON"))
-
-func tableDropSearchOptimizationOn() *g.QueryStruct {
-	return g.NewQueryStruct("TableDropSearchOptimizationOn").
-		OptionalQueryStructField("SearchMethodWithTarget", newTableSearchMethodWithTarget(), g.KeywordOptions()).
-		OptionalText("ColumnName", g.KeywordOptions()).
-		OptionalText("ExpressionId", g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "SearchMethodWithTarget", "ColumnName", "ExpressionId")
-}
-
-func tableDropSearchOptimization() *g.QueryStruct {
-	return g.NewQueryStruct("TableDropSearchOptimization").
-		SQL("DROP SEARCH OPTIMIZATION").
-		ListQueryStructField("On", tableDropSearchOptimizationOn(), g.KeywordOptions().SQL("ON")).
-		WithSharedToOpts()
-}
-
-var tableSearchOptimizationAction = g.NewQueryStruct("TableSearchOptimizationAction").
-	OptionalQueryStructField(
-		"Add",
-		tableAddSearchOptimization,
-		g.KeywordOptions(),
-	).
-	OptionalQueryStructField(
-		"Drop",
-		tableDropSearchOptimization(),
-		g.KeywordOptions(),
-	).
-	WithValidation(g.ExactlyOneValueSet, "Add", "Drop")
 
 var (
 	CloneMomentEnumDef    = g.NewEnum("CloneMoment", "CloneMoments", "AT", "BEFORE")
@@ -405,25 +360,6 @@ func tableExternalTableColumnDropAction() *g.QueryStruct {
 		WithValidation(g.ValidateValueSet, "Names")
 }
 
-// legacyTableSearchOptimizationAction duplicates tableSearchOptimizationAction, differing only in
-// that its Add side still needs the legacy helper below.
-// TODO[SNOW-1007542]: reuse tableSearchOptimizationAction
-func legacyTableSearchOptimizationAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableSearchOptimizationActionLegacy").
-		OptionalQueryStructField("Add", legacyTableAddSearchOptimization(), g.KeywordOptions()).
-		OptionalSharedQueryStructField("Drop", tableDropSearchOptimization(), g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "Add", "Drop")
-}
-
-// legacyTableAddSearchOptimization duplicates tableAddSearchOptimization. The shared helper
-// requires a search method per target, so it emits ON EQUALITY(c1) and cannot produce legacy's bare ON c1, c2.
-// TODO[SNOW-1007542]: reuse tableAddSearchOptimization
-func legacyTableAddSearchOptimization() *g.QueryStruct {
-	return g.NewQueryStruct("AddSearchOptimization").
-		SQL("ADD SEARCH OPTIMIZATION").
-		PredefinedQueryStructField("On", "[]string", g.KeywordOptions().SQL("ON"))
-}
-
 func tableSet() *g.QueryStruct {
 	return g.NewQueryStruct("TableSet").
 		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
@@ -555,7 +491,7 @@ var tablesDef = g.NewInterface(
 			OptionalQueryStructField("ColumnAction", tableColumnAction(), g.KeywordOptions()).
 			OptionalQueryStructField("ConstraintAction", tableConstraintAction(), g.KeywordOptions()).
 			OptionalQueryStructField("ExternalTableAction", tableExternalTableAction(), g.KeywordOptions()).
-			OptionalQueryStructField("SearchOptimizationAction", legacyTableSearchOptimizationAction(), g.KeywordOptions()).
+			OptionalQueryStructField("SearchOptimizationAction", tableSearchOptimizationAction(), g.KeywordOptions()).
 			OptionalQueryStructField("Set", tableSet(), g.KeywordOptions().SQL("SET")).
 			OptionalSetTags().
 			OptionalUnsetTags().
@@ -577,7 +513,7 @@ var tablesDef = g.NewInterface(
 	// Describe and select come from ssotdefs.Table. CREATE AS SELECT, USING TEMPLATE, LIKE, and CLONE stay handwritten,
 	// so SdkDefineFromSsot stays off. Follow-up: convert those four and turn the setting on.
 	CustomOperationsFromObject(ssotdefs.Table).
-	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef)
+	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").

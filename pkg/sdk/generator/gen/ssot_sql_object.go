@@ -31,7 +31,10 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 		}
 		return v.OptionalQueryStructField(name, nested, opts)
 	}
-	opts := ListOptions().NoComma()
+	opts := ListOptions()
+	if clause.NoComma {
+		opts = opts.NoComma()
+	}
 	if clause.Parentheses == ssot.SqlParensYes {
 		opts = opts.Parentheses()
 	}
@@ -132,6 +135,17 @@ func queryStructFromObjectList(owner string, list ssot.Attribute) *QueryStruct {
 	}
 	if len(variantFields) > 1 {
 		element = element.WithValidation(ExactlyOneValueSet, variantFields...)
+	}
+	if list.Elem != nil && list.Elem.ChildrenRule != "" {
+		names := collections.Map(list.Elem.RuleFields(), func(child ssot.Attribute) string {
+			return clauseFieldName(child, attributeSqlCreate)
+		})
+		switch list.Elem.ChildrenRule {
+		case ssot.ChildrenAtLeastOne:
+			element = element.WithValidation(AtLeastOneValueSet, names...)
+		case ssot.ChildrenExactlyOne:
+			element = element.WithValidation(ExactlyOneValueSet, names...)
+		}
 	}
 	if clause.Parentheses != ssot.SqlParensYes {
 		return element

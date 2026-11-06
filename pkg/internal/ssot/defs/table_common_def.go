@@ -48,3 +48,111 @@ var TableClusteringAction = ssot.Attribute{
 		},
 	},
 }
+
+var tableSearchMethodArgs = ssot.Attribute{
+	Name:      "search_method_args",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(ssot.Parentheses(), ssot.Required(), ssot.Commas(), ssot.FieldName("Args")),
+	Children: []ssot.Attribute{
+		{
+			Name:      "targets",
+			Type:      ssot.AttrList,
+			SqlOnly:   true,
+			Elem:      &ssot.Attribute{Type: ssot.AttrString},
+			CreateSql: ssot.StringListKeyword(ssot.FieldName("Targets")),
+		},
+		{
+			Name:      "analyzer",
+			Type:      ssot.AttrString,
+			SqlOnly:   true,
+			CreateSql: ssot.StringParameter(ssot.ArrowEquals()),
+		},
+	},
+}
+
+var tableSearchMethodWithTargetFields = []ssot.Attribute{
+	{
+		Name:      "method",
+		Type:      ssot.AttrEnum,
+		Enum:      TableSearchMethod,
+		Required:  true,
+		SqlOnly:   true,
+		CreateSql: ssot.EnumKeyword(ssot.Required()),
+	},
+	tableSearchMethodArgs,
+}
+
+// TableSearchOptimizationAction is ADD or DROP SEARCH OPTIMIZATION. Iceberg tables reuse the same structs.
+var TableSearchOptimizationAction = ssot.Attribute{
+	Name:         "search_optimization_action",
+	Type:         ssot.AttrObject,
+	SqlOnly:      true,
+	ChildrenRule: ssot.ChildrenExactlyOne,
+	CreateSql:    ssot.ObjectParameter(),
+	Children: []ssot.Attribute{
+		{
+			Name:      "add_search_optimization",
+			Type:      ssot.AttrObject,
+			SqlOnly:   true,
+			CreateSql: ssot.ObjectParameter(ssot.FieldName("Add")),
+			Children: []ssot.Attribute{
+				{Name: "add_keyword", SqlOnly: true, CreateSql: ssot.StaticSQL("addSearchOptimization", "ADD SEARCH OPTIMIZATION")},
+				{
+					Name:      "search_method_with_target",
+					Type:      ssot.AttrList,
+					SqlOnly:   true,
+					CreateSql: ssot.ValueKeyword(ssot.Sql("ON"), ssot.FieldName("On")),
+					Elem: &ssot.Attribute{
+						Type:      ssot.AttrObject,
+						SqlOnly:   true,
+						CreateSql: ssot.ObjectParameter(),
+						Children:  tableSearchMethodWithTargetFields,
+					},
+				},
+			},
+		},
+		{
+			Name:      "drop_search_optimization",
+			Type:      ssot.AttrObject,
+			SqlOnly:   true,
+			CreateSql: ssot.ObjectParameter(ssot.FieldName("Drop")),
+			Children: []ssot.Attribute{
+				{Name: "drop_keyword", SqlOnly: true, CreateSql: ssot.StaticSQL("dropSearchOptimization", "DROP SEARCH OPTIMIZATION")},
+				{
+					Name:      "drop_search_optimization_on",
+					Type:      ssot.AttrList,
+					SqlOnly:   true,
+					CreateSql: ssot.ValueKeyword(ssot.Sql("ON"), ssot.FieldName("On")),
+					Elem: &ssot.Attribute{
+						Type:         ssot.AttrObject,
+						SqlOnly:      true,
+						ChildrenRule: ssot.ChildrenExactlyOne,
+						CreateSql:    ssot.ObjectParameter(),
+						Children: []ssot.Attribute{
+							{
+								Name:      "search_method_with_target",
+								Type:      ssot.AttrObject,
+								SqlOnly:   true,
+								CreateSql: ssot.ObjectParameter(),
+								Children:  tableSearchMethodWithTargetFields,
+							},
+							{
+								Name:      "column_name",
+								Type:      ssot.AttrString,
+								SqlOnly:   true,
+								CreateSql: ssot.ValueKeyword(),
+							},
+							{
+								Name:      "expression_id",
+								Type:      ssot.AttrString,
+								SqlOnly:   true,
+								CreateSql: ssot.ValueKeyword(),
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+}

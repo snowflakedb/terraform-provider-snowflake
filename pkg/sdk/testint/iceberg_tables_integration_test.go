@@ -1553,10 +1553,10 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
 				WithAdd(*sdk.NewTableAddSearchOptimizationRequest().
 					WithOn([]sdk.TableSearchMethodWithTargetRequest{
-						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality).
-							WithArgs(*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"})),
-						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodFullText).
-							WithArgs(*sdk.NewTableSearchMethodArgsRequest().
+						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality,
+							*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"})),
+						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodFullText,
+							*sdk.NewTableSearchMethodArgsRequest().
 								WithTargets([]string{"REGION"}).
 								WithAnalyzer("DEFAULT_ANALYZER")),
 					}))))
@@ -1589,8 +1589,8 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
 				WithDrop(*sdk.NewTableDropSearchOptimizationRequest().
 					WithOn([]sdk.TableDropSearchOptimizationOnRequest{
-						*sdk.NewTableDropSearchOptimizationOnRequest().WithSearchMethodWithTarget(*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality).
-							WithArgs(*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"}))),
+						*sdk.NewTableDropSearchOptimizationOnRequest().WithSearchMethodWithTarget(*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality,
+							*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"}))),
 					}))))
 		require.NoError(t, err)
 
