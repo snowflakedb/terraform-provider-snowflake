@@ -189,7 +189,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Default:          string(sdk.QuotaSpendStrategyProjected),
 					Description:      joinWithSpace("Whether the threshold applies to actual or projected spend.", quotaEnumValuesDescription(sdk.AllQuotaSpendStrategies)),
-					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaSpendStrategies),
+					ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllQuotaSpendStrategies), false),
 				},
 				"notify_user": {
 					Type:        schema.TypeBool,
@@ -202,7 +202,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Default:          string(sdk.QuotaCycleMonthly),
 					Description:      joinWithSpace("Cycle the threshold applies to.", quotaEnumValuesDescription(sdk.AllQuotaCycles)),
-					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaCycles),
+					ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllQuotaCycles), false),
 				},
 			},
 		},
@@ -213,9 +213,9 @@ var quotaSchema = map[string]*schema.Schema{
 		Elem: &schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
-		Description: relatedResourceDescription("Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application.", resources.NotificationIntegration),
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("notification_integrations"),
+		Description:      relatedResourceDescription("Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application.", resources.NotificationIntegration),
 	},
 	"admin_emails": {
 		Type:        schema.TypeSet,
