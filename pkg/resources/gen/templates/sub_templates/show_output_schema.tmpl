@@ -6,7 +6,7 @@
 			Computed:    true,
 			Description: "Outputs the result of `SHOW {{ ToUpper (CamelToWords .NamePlural) }}` for the given {{ CamelToWords .Name }}.",
 			Elem: &tfschema.Resource{
-				Schema: schemas.Show{{ .Name }}Schema,
+				Schema: schemas.Show{{ .ShowSchemaOwner }}Schema,
 			},
 		},
 	},

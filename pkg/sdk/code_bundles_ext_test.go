@@ -38,14 +38,14 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_CodeBundles_sql_Show_In,
 			func(opts *ShowCodeBundleOptions) {
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			`SHOW CODE BUNDLES IN ACCOUNT`,
 		).
 		withModifyAndExpectedSqlf(
 			case_CodeBundles_sql_Show_all,
 			func(opts *ShowCodeBundleOptions) {
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			`SHOW CODE BUNDLES IN SCHEMA %s`,
 			id.SchemaId().FullyQualifiedName(),
@@ -53,7 +53,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Show_In_Database",
 			func(opts *ShowCodeBundleOptions) {
-				opts.In = &ExtendedIn{In: In{Database: id.DatabaseId()}}
+				opts.In = &ExtendedIn{Database: id.DatabaseId()}
 			},
 			`SHOW CODE BUNDLES IN DATABASE %s`,
 			id.DatabaseId().FullyQualifiedName(),

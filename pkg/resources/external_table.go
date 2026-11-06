@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -148,6 +149,7 @@ func ExternalTable() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		Description:   docs.WithPreviewFeatureMark(),
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ExternalTableResource), TrackingCreateWrapper(resources.ExternalTable, CreateExternalTable)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ExternalTableResource), TrackingReadWrapper(resources.ExternalTable, ReadExternalTable)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.ExternalTableResource), TrackingUpdateWrapper(resources.ExternalTable, UpdateExternalTable)),

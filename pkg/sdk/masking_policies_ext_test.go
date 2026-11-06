@@ -129,7 +129,7 @@ func init() {
 			case_MaskingPolicies_sql_Show_all,
 			func(opts *ShowMaskingPolicyOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 				opts.Limit = &LimitFrom{Rows: new(10), From: new("foo")}
 			},
 			"SHOW MASKING POLICIES LIKE '%s' IN ACCOUNT LIMIT 10 FROM 'foo'",
@@ -145,7 +145,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_MaskingPolicies_sql_Show_In,
 			func(opts *ShowMaskingPolicyOptions) {
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW MASKING POLICIES IN ACCOUNT",
 		).
@@ -160,7 +160,7 @@ func init() {
 			"sql_Show_Like_In_Account",
 			func(opts *ShowMaskingPolicyOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW MASKING POLICIES LIKE '%s' IN ACCOUNT", id.Name(),
 		).
@@ -168,7 +168,7 @@ func init() {
 			"sql_Show_Like_In_Database",
 			func(opts *ShowMaskingPolicyOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &ExtendedIn{In: In{Database: id.DatabaseId()}}
+				opts.In = &ExtendedIn{Database: id.DatabaseId()}
 			},
 			"SHOW MASKING POLICIES LIKE '%s' IN DATABASE %s",
 			id.Name(), id.DatabaseId().FullyQualifiedName(),
@@ -177,7 +177,7 @@ func init() {
 			"sql_Show_Like_In_Schema",
 			func(opts *ShowMaskingPolicyOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &ExtendedIn{In: In{Schema: id.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			"SHOW MASKING POLICIES LIKE '%s' IN SCHEMA %s",
 			id.Name(), id.SchemaId().FullyQualifiedName(),

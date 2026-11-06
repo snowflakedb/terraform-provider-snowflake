@@ -89,7 +89,7 @@ func warehouseAdaptiveOutputMappingsExt(w *sdk.WarehouseAdaptive) []outputMappin
 	}
 }
 
-func warehouseAdaptiveSetConfigFieldsExt(d *schema.ResourceData, w *sdk.WarehouseAdaptive) error {
+func warehouseAdaptiveSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, w *sdk.WarehouseAdaptive) error {
 	return errors.Join(
 		d.Set("name", w.Name),
 		d.Set("comment", w.Comment),

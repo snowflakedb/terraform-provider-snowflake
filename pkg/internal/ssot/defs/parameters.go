@@ -616,7 +616,7 @@ var (
 	LogEventLevel = ssot.ParameterDef{
 		SqlName:      "LOG_EVENT_LEVEL",
 		Kind:         "LogLevel",
-		Levels:       append(slices.Clone(ssot.ObjectLevels(ssot.ParameterLevelDatabase, ssot.ParameterLevelSchema, ssot.ParameterLevelProject, ssot.ParameterLevelProcedure, ssot.ParameterLevelFunction, ssot.ParameterLevelTable, ssot.ParameterLevelTask)), ssot.ParameterLevelIcebergTable, ssot.ParameterLevelSession, ssot.ParameterLevelUser),
+		Levels:       append(slices.Clone(ssot.ObjectLevels(ssot.ParameterLevelDatabase, ssot.ParameterLevelSchema, ssot.ParameterLevelProject, ssot.ParameterLevelProcedure, ssot.ParameterLevelFunction, ssot.ParameterLevelTable, ssot.ParameterLevelTask, ssot.ParameterLevelPipe)), ssot.ParameterLevelIcebergTable, ssot.ParameterLevelSession, ssot.ParameterLevelUser),
 		Description:  "Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested.",
 		DefaultValue: "sdk.LogLevelOff",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -714,7 +714,7 @@ var (
 	PipeExecutionPaused = ssot.ParameterDef{
 		SqlName:      "PIPE_EXECUTION_PAUSED",
 		Kind:         string(ssot.AttrBool),
-		Levels:       ssot.ObjectLevels(ssot.ParameterLevelSchema),
+		Levels:       ssot.ObjectLevels(ssot.ParameterLevelSchema, ssot.ParameterLevelPipe),
 		Description:  "Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role.",
 		DefaultValue: "false",
 		DefaultLevel: parameterTypeSnowflakeDefault,

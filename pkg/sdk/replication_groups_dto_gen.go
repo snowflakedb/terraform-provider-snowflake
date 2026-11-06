@@ -101,4 +101,6 @@ type DropReplicationGroupRequest struct {
 	name     AccountObjectIdentifier // required
 }
 
-type ShowReplicationGroupRequest struct{}
+type ShowReplicationGroupRequest struct {
+	InAccount *AccountIdentifier
+}

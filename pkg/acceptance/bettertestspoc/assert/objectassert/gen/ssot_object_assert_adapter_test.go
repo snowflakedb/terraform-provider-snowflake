@@ -328,27 +328,26 @@ func Test_objectAssertionDetailsFromSsot_nestedFieldGoTypeOverride(t *testing.T)
 	require.Equal(t, "[]sdk.Custom", desc.Fields[0].ConcreteType)
 }
 
-func Test_objectAssertionDetailsFromSsot_showRowFromBase(t *testing.T) {
+func Test_selectsForObjectAssertShow(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	base := ssot.Object{Name: "Widget"}
-	obj := ssot.Object{
-		Name:      "WidgetGlue",
-		IdType:    "AccountObjectIdentifier",
-		VariantOf: &base,
-		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase())),
-		},
-		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	base := ssot.Object{
+		Name:       "Widget",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+		Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())},
+	}
+	variant := func(opts ...ssot.ObjectAssertShowOption) ssot.Object {
+		return ssot.Object{
+			Name:       "WidgetGlue",
+			VariantOf:  &base,
+			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+			Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow(opts...))},
+		}
 	}
 
-	details := objectAssertionDetailsFromSsot(obj, false)
-	require.Equal(t, "sdk.WidgetGlue", details.Name)
-	require.Equal(t, "sdk.Widget", details.SdkType)
-	require.Equal(t, "Widget", details.ObjectTypeName)
-	require.Equal(t, &genhelpers.ShowProjectionDef{ClientName: "Widget", Method: "Show"}, details.ShowProjection)
-	model := SnowflakeObjectAssertionsFromSsot(obj, false)
-	require.Equal(t, "WidgetGlue", model.Name)
-	require.Equal(t, "sdk.Widget", model.SdkType)
+	require.True(t, selectsForObjectAssertShow(base))
+	require.True(t, selectsForObjectAssertShow(variant()))
+	require.False(t, selectsForObjectAssertShow(variant(ssot.ObjectAssertShowRowFromBase())), "a variant reusing the base assertion is not generated")
+	require.False(t, selectsForObjectAssertShow(ssot.Object{Name: "Empty"}), "no SHOW columns")
 }
 
 func Test_objectAssertionDetailsFromSsot_describeFetch(t *testing.T) {
@@ -399,6 +398,50 @@ func Test_objectAssertionDetailsFromSsot_nestedObjectColumn(t *testing.T) {
 	require.Equal(t, "struct", desc.Fields[0].UnderlyingType)
 	require.Equal(t, "*sdk.WidgetOauthRestAuthenticationDetails", desc.Fields[1].ConcreteType)
 	require.Equal(t, "*struct", desc.Fields[1].UnderlyingType)
+}
+
+func Test_objectAssertionDetailsFromSsot_enumSlicesUseSdkTypes(t *testing.T) {
+	method := ssot.NewEnum("Method", "Methods", "ALL")
+	scope := ssot.NewEnum("Scope", "Scopes", "ACCOUNT")
+	methods := ssot.Attribute{
+		Name: "authentication_methods",
+		Type: ssot.AttrSet,
+		Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: method},
+	}
+	scopes := ssot.Attribute{
+		Name: "target_scopes",
+		Type: ssot.AttrList,
+		Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: scope},
+	}
+	obj := ssot.Object{
+		Name:   "Widget",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+			ssot.WithSdk(
+				ssot.SdkShow(ssot.SdkShowPlainOnly(&scopes, "[]Scope")),
+				ssot.SdkDescribe(ssot.SdkDescribeDetails()),
+			),
+		},
+		Show:     ssot.OutputSpec{Columns: []*ssot.Attribute{&scopes}},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&methods}},
+	}
+
+	show := objectAssertionDetailsFromSsot(obj, false)
+	require.Equal(t, "[]sdk.Scope", show.Fields[0].ConcreteType)
+	require.Equal(t, "slice", show.Fields[0].UnderlyingType)
+
+	desc := objectAssertionDetailsFromSsot(obj, true)
+	require.Equal(t, "[]sdk.Method", desc.Fields[0].ConcreteType)
+	require.Equal(t, "slice", desc.Fields[0].UnderlyingType)
+
+	columnar := obj
+	columnar.Generators = []ssot.GeneratorOption{
+		ssot.WithObjectAssert(ssot.ObjectAssertDescribe()),
+		ssot.WithSdk(ssot.SdkDescribe()),
+	}
+	columnarDesc := objectAssertionDetailsFromSsot(columnar, true)
+	require.Equal(t, "[]string", columnarDesc.Fields[0].ConcreteType)
 }
 
 func fieldByName(t *testing.T, model SnowflakeObjectAssertionsModel, name string) SnowflakeObjectFieldAssertion {

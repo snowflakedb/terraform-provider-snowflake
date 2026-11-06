@@ -396,9 +396,9 @@ var icebergTablesDef = g.NewInterface(
 		// TODO(next PR): add ALTER ICEBERG TABLE ... REFRESH (separate operation; see https://docs.snowflake.com/en/sql-reference/sql/alter-iceberg-table-refresh)
 		OptionalQueryStructField("SetJoinPolicy", tableSetJoinPolicy, g.KeywordOptions()).
 		OptionalQueryStructField("UnsetJoinPolicy", tableUnsetJoinPolicy, g.KeywordOptions()).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"SearchOptimizationAction",
-			tableSearchOptimizationAction,
+			tableSearchOptimizationAction(),
 			g.KeywordOptions(),
 		).
 		WithValidation(g.ValidIdentifier, "name").
@@ -481,7 +481,6 @@ var icebergTablesDef = g.NewInterface(
 		IcebergTableTargetFileSizeEnumDef,
 		IcebergTablePathLayoutEnumDef,
 		IcebergTableDescribeTypeEnumDef,
-		TableSearchMethodEnumDef,
 		IcebergTableTypeEnumDef,
 		IcebergTableCatalogEnumDef,
 		StorageSerializationPolicyEnumDef,

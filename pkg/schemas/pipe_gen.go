@@ -61,6 +61,10 @@ var ShowPipeSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"kind": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = ShowPipeSchema
@@ -80,6 +84,7 @@ func PipeToSchema(pipe *sdk.Pipe) map[string]any {
 	pipeSchema["error_integration"] = pipe.ErrorIntegration
 	pipeSchema["owner_role_type"] = pipe.OwnerRoleType
 	pipeSchema["invalid_reason"] = pipe.InvalidReason
+	pipeSchema["kind"] = pipe.Kind
 	return pipeSchema
 }
 

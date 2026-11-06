@@ -2363,6 +2363,30 @@ func ToServiceParameter(s string) (ServiceParameter, error) {
 	}
 }
 
+type PipeParameter string
+
+const (
+	PipeParameterLogEventLevel       PipeParameter = "LOG_EVENT_LEVEL"
+	PipeParameterPipeExecutionPaused PipeParameter = "PIPE_EXECUTION_PAUSED"
+)
+
+var AllPipeParameters = []PipeParameter{
+	PipeParameterLogEventLevel,
+	PipeParameterPipeExecutionPaused,
+}
+
+func ToPipeParameter(s string) (PipeParameter, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(PipeParameterLogEventLevel):
+		return PipeParameterLogEventLevel, nil
+	case string(PipeParameterPipeExecutionPaused):
+		return PipeParameterPipeExecutionPaused, nil
+	default:
+		return "", fmt.Errorf("invalid pipe parameter: %s", s)
+	}
+}
+
 type IcebergTableParameter string
 
 const (
@@ -2783,6 +2807,7 @@ const (
 	ParameterTypeProcedure          ParameterType = "PROCEDURE"
 	ParameterTypeOpenflowDeployment ParameterType = "OPENFLOW_DEPLOYMENT"
 	ParameterTypeService            ParameterType = "SERVICE"
+	ParameterTypePipe               ParameterType = "PIPE"
 	ParameterTypeSnowflakeDefault   ParameterType = ""
 )
 
@@ -2801,6 +2826,7 @@ var AllParameterTypes = []ParameterType{
 	ParameterTypeProcedure,
 	ParameterTypeOpenflowDeployment,
 	ParameterTypeService,
+	ParameterTypePipe,
 	ParameterTypeSnowflakeDefault,
 }
 
@@ -2835,6 +2861,8 @@ func ToParameterType(s string) (ParameterType, error) {
 		return ParameterTypeOpenflowDeployment, nil
 	case string(ParameterTypeService):
 		return ParameterTypeService, nil
+	case string(ParameterTypePipe):
+		return ParameterTypePipe, nil
 	case string(ParameterTypeSnowflakeDefault):
 		return ParameterTypeSnowflakeDefault, nil
 	default:

@@ -3,6 +3,7 @@ package genhelpers
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -71,6 +72,42 @@ func TestSqlToGoName(t *testing.T) {
 	require.Equal(t, "TimestampDayIsAlways24H", SqlToGoName("TIMESTAMP_DAY_IS_ALWAYS_24H", true))
 	require.Equal(t, "UnsupportedDdlAction", SqlToGoName("UNSUPPORTED_DDL_ACTION", true))
 	require.Equal(t, "dataRetentionTimeInDays", SqlToGoName("DATA_RETENTION_TIME_IN_DAYS", false))
+	require.Equal(t, "Null", SqlToGoName("null?", true))
+	require.Equal(t, "PrimaryKey", SqlToGoName("primary key", true))
+}
+
+func TestSqlToGoNameConcurrent(t *testing.T) {
+	const workers = 8
+	cases := []struct {
+		sql      string
+		exported bool
+		want     string
+	}{
+		{"TIMESTAMP_DAY_IS_ALWAYS_24H", true, "TimestampDayIsAlways24H"},
+		{"UNSUPPORTED_DDL_ACTION", true, "UnsupportedDdlAction"},
+		{"DATA_RETENTION_TIME_IN_DAYS", false, "dataRetentionTimeInDays"},
+	}
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+	var mismatches []string
+	wg.Add(workers)
+	for range workers {
+		go func() {
+			defer wg.Done()
+			for range 200 {
+				for _, tc := range cases {
+					if got := SqlToGoName(tc.sql, tc.exported); got != tc.want {
+						mu.Lock()
+						mismatches = append(mismatches, fmt.Sprintf("%s: got %q, want %q", tc.sql, got, tc.want))
+						mu.Unlock()
+						return
+					}
+				}
+			}
+		}()
+	}
+	wg.Wait()
+	require.Empty(t, mismatches)
 }
 
 func Test_SnakeCaseToCamel(t *testing.T) {

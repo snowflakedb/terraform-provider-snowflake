@@ -101,7 +101,7 @@ var WarehouseAttrs = struct {
 		Name:                  "warehouse_type",
 		Type:                  ssot.AttrEnum,
 		Description:           "Specifies warehouse type.",
-		AdditionalDescription: "Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed.",
+		AdditionalDescription: "Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed. When not set, the provider creates the warehouse as `STANDARD` (instead of relying on the Snowflake default type, which is changing to `ADAPTIVE`), and removing the field from the configuration sets the type to `STANDARD` instead of unsetting it. A warehouse whose type was changed outside of Terraform to `ADAPTIVE` is updated back in place, and one changed to `INTERACTIVE` is recreated.",
 		// Resource validation stays WarehouseTypeUserSettable (STANDARD, SNOWPARK-OPTIMIZED).
 		// SHOW type is WarehouseType, which also includes ADAPTIVE and INTERACTIVE.
 		Enum:          WarehouseTypeUserSettable,
@@ -236,8 +236,8 @@ var WarehouseAttrs = struct {
 	StartedClusters: ssot.Attribute{Name: "started_clusters", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
 	Running:         ssot.Attribute{Name: "running", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
 	Queued:          ssot.Attribute{Name: "queued", Type: ssot.AttrInt, Readonly: true, OptionalInShow: true, OptionalInDb: true},
-	IsDefault:       ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
-	IsCurrent:       ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
+	IsDefault:       ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true, BoolTrueValue: "Y", Readonly: true},
+	IsCurrent:       ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, StoredAsText: true, BoolTrueValue: "Y", Readonly: true},
 	Available:       ssot.Attribute{Name: "available", Type: ssot.AttrFloat, Readonly: true},
 	Provisioning:    ssot.Attribute{Name: "provisioning", Type: ssot.AttrFloat, Readonly: true},
 	Quiescing:       ssot.Attribute{Name: "quiescing", Type: ssot.AttrFloat, Readonly: true},
@@ -325,20 +325,16 @@ var Warehouse = ssot.Object{
 		},
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(ssot.ShowOutputShowSkipFields(&WarehouseAttrs.Tables)),
-			ssot.ShowOutputDescribe(),
+		ssot.WithAllGenerators(
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(ssot.ShowOutputShowSkipFields(&WarehouseAttrs.Tables)),
+				ssot.ShowOutputDescribe(),
+			),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(ssot.ObjectAssertShowSkipFields(&WarehouseAttrs.Tables)),
+				ssot.ObjectAssertDescribe(),
+			),
 		),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(ssot.ObjectAssertShowSkipFields(&WarehouseAttrs.Tables)),
-			ssot.ObjectAssertDescribe(),
-		),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
@@ -370,7 +366,7 @@ var Warehouse = ssot.Object{
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
-		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
 		ssot.WithShowParametersInSdk(ssot.Generated()),

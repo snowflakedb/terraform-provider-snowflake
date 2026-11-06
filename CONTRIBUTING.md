@@ -27,7 +27,7 @@
 
 ## Setting up the development environment
 
-1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on your OS). Go 1.26.3+ is required — see `go.mod` for the exact version.
+1. Install Golang environment (check instructions on the official page https://go.dev/doc/install depending on your OS). Go 1.27.3+ is required — see `go.mod` for the exact version.
 2. Fork this repo and clone it. Base your changes on the [dev](https://github.com/snowflakedb/terraform-provider-snowflake/tree/dev) branch as it contains the latest unreleased changes.
 3. Run `make dev-setup` in the main directory of the cloned repository.
 4. You can clean up the dev setup by running `make dev-cleanup`.
@@ -124,7 +124,7 @@ To run the tests we have the following commands:
 - `make test-unit` run unit tests
 - `make test-acceptance` run acceptance tests (without account-level ones)
 - `make test-integration` run integration tests (without account-level ones)
-- `make test-account-level-features` run both integration and acceptance tests verifying account-level features
+- `make test-account-level` run both integration and acceptance tests verifying account-level features
 - `make test-functional` run functional tests of the underlying terraform libraries (currently SDKv2)
 
 **Run a single test:**

@@ -31,6 +31,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.AccountRoles().Schema,
 	},
 	{
+		name:   "Alerts",
+		schema: datasources.Alerts().Schema,
+	},
+	{
 		name:   "ApiIntegrations",
 		schema: datasources.ApiIntegrations().Schema,
 	},
@@ -139,10 +143,6 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.NetworkRules().Schema,
 	},
 	{
-		name:   "Notebooks",
-		schema: datasources.Notebooks().Schema,
-	},
-	{
 		name:   "OpenflowConnectorDefinitions",
 		schema: datasources.OpenflowConnectorDefinitions().Schema,
 	},
@@ -159,6 +159,14 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.OpenflowRuntimes().Schema,
 	},
 	{
+		name:   "Pipes",
+		schema: datasources.Pipes().Schema,
+	},
+	{
+		name:   "PostgresMirrors",
+		schema: datasources.PostgresMirrors().Schema,
+	},
+	{
 		name:   "Procedures",
 		schema: datasources.Procedures().Schema,
 	},
@@ -169,6 +177,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Quotas",
 		schema: datasources.Quotas().Schema,
+	},
+	{
+		name:   "ReplicationGroups",
+		schema: datasources.ReplicationGroups().Schema,
 	},
 	{
 		name:   "ResourceMonitors",
@@ -201,6 +213,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Services",
 		schema: datasources.Services().Schema,
+	},
+	{
+		name:   "Shares",
+		schema: datasources.Shares().Schema,
 	},
 	{
 		name:   "StorageIntegrations",

@@ -218,8 +218,14 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	if cfg.ShowOptionalIn && cfg.ShowOptionalExtendedIn {
 		panic("SHOW cannot set both plain IN and extended IN")
 	}
+	if cfg.ShowOptionalInAccount && (cfg.ShowOptionalIn || cfg.ShowOptionalExtendedIn) {
+		panic("SHOW cannot set IN ACCOUNT together with plain IN or extended IN")
+	}
 	if cfg.ShowOptionalIn {
 		q = q.OptionalIn()
+	}
+	if cfg.ShowOptionalInAccount {
+		q = q.OptionalInAccount()
 	}
 	if cfg.ShowOptionalExtendedIn {
 		q = q.OptionalExtendedIn()
@@ -235,6 +241,9 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	}
 	if cfg.ShowOptionalLimit {
 		q = q.OptionalLimit()
+	}
+	if cfg.ShowAdditionalValidations {
+		q = q.WithAdditionalValidations()
 	}
 	return q
 }
@@ -342,6 +351,7 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 // Clauses are Create, optional OR REPLACE, Create.KeywordsBefore, SQL, optional IF NOT EXISTS, Name, then Create.Clauses, then ValidIdentifier.
 // helperStructs are query structs the attribute clauses name, other than an enum list item.
 // A list of enums adds its item query struct here. The struct name is the enum name plus ListItem, and its field is Value.
+// Query structs named by a NestedStruct clause are embedded in the statement, not emitted as helper structs.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	if obj.VariantOf != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
@@ -351,7 +361,38 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
 	i.checkStructShapes = true
-	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg), append(helperStructs, enumListItemStructs(obj)...)...)
+	supplied, helpers := splitSuppliedStructs(obj, helperStructs)
+	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg, supplied), append(helpers, enumListItemStructs(obj)...)...)
+}
+
+// splitSuppliedStructs separates the helper structs named by a struct clause of CREATE from the rest.
+func splitSuppliedStructs(obj ssot.Object, helperStructs []IntoField) (map[string]*QueryStruct, []IntoField) {
+	named := make(map[string]struct{})
+	for _, list := range [][]*ssot.Attribute{obj.Create.KeywordsBefore, obj.Create.Clauses} {
+		for _, attr := range list {
+			if attr == nil || attr.IsTags() || attr.IsParameters() {
+				continue
+			}
+			if clause := attr.EffectiveSqlClause(ssot.ClauseCreate); clause.Present && clause.Kind == ssot.SqlKindPreexistingStruct {
+				named[clause.StructName] = struct{}{}
+			}
+		}
+	}
+	supplied := make(map[string]*QueryStruct, len(named))
+	helpers := make([]IntoField, 0, len(helperStructs))
+	for _, helper := range helperStructs {
+		if qs, ok := helper.(*QueryStruct); ok {
+			if _, used := named[qs.name]; used {
+				if _, dup := supplied[qs.name]; dup {
+					panic(fmt.Sprintf("object %q: struct %q is supplied twice", obj.Name, qs.name))
+				}
+				supplied[qs.name] = qs
+				continue
+			}
+		}
+		helpers = append(helpers, helper)
+	}
+	return supplied, helpers
 }
 
 // CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
@@ -373,15 +414,16 @@ func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interfa
 			panic(fmt.Sprintf("object %q: variant CREATE has no spec", variant.Name))
 		}
 		cfg := variant.VariantCreateConfig()
-		q := createQueryStructFromConfig(variant, cfg)
+		q := createQueryStructFromConfig(variant, cfg, nil)
 		i = i.CustomOperation(variant.VariantCreateMethod(base.Name), cfg.CreateDoc, q, enumListItemStructs(variant)...)
 	}
 	return i
 }
 
-func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, supplied map[string]*QueryStruct) *QueryStruct {
 	q := NewQueryStruct(cfg.CreateQueryStructName).Create()
 	q.owner = obj.Name
+	q.suppliedStructs = supplied
 	if !cfg.CreateWithoutOrReplace {
 		q = q.OrReplace()
 	}
@@ -700,15 +742,25 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 }
 
 func (i *Interface) customOperationFromSpec(obj ssot.Object, spec ssot.CustomOperationSpec) *Interface {
-	return i.CustomOperation(spec.Kind, obj.CustomOperationDoc(spec), customOperationQueryStruct(obj, spec))
+	query := customOperationQueryStruct(obj, spec)
+	doc := obj.CustomOperationDoc(spec)
+	if spec.Paired == nil {
+		return i.CustomOperation(spec.Kind, doc, query)
+	}
+	return i.CustomShowOperationWithPairedStructs(spec.Kind, ShowMappingKindSlice, doc, pairedShowFromSpec(obj, spec.Paired), query)
 }
 
 func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) *QueryStruct {
-	q := NewQueryStruct(obj.CustomOperationQueryStructName(spec.Kind))
+	name := spec.QueryStructName
+	if name == "" {
+		name = obj.CustomOperationQueryStructName(spec.Kind)
+	}
+	q := NewQueryStruct(name)
 	sawOrReplace := false
 	sawIfNotExists := false
 	sawName := false
 	var attributes []*ssot.Attribute
+	var validIdentifiers []string
 	seen := make(map[ssot.CustomOperationClauseKind]struct{})
 	seenAttr := make(map[string]struct{})
 	seenPredefined := make(map[string]struct{})
@@ -753,12 +805,33 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 			}
 			seenPredefined[clause.Predefined] = struct{}{}
 			q = q.PredefinedQueryStructField(clause.Predefined, clause.Predefined, KeywordOptions())
+		case ssot.CustomOperationClauseStaticField:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q static field is empty", obj.Name, spec.Kind))
+			}
+			q = q.SQLWithCustomFieldName(clause.Field, clause.SQL)
+		case ssot.CustomOperationClauseIdentifier:
+			if clause.Field == "" || clause.IdType == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q identifier is empty", obj.Name, spec.Kind))
+			}
+			q = q.Identifier(clause.Field, clause.IdType, IdentifierOptions().Required())
+			if clause.ValidIdentifier {
+				validIdentifiers = append(validIdentifiers, clause.Field)
+			}
+		case ssot.CustomOperationClauseText:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q text assignment is empty", obj.Name, spec.Kind))
+			}
+			q = q.TextAssignment(clause.SQL, ParameterOptions().SingleQuotes().Required())
 		default:
 			panic(fmt.Sprintf("object %q: custom operation %q clause has kind %q", obj.Name, spec.Kind, clause.Kind))
 		}
 	}
 	if sawName {
 		q = q.WithValidation(ValidIdentifier, "name")
+	}
+	for _, field := range validIdentifiers {
+		q = q.WithValidation(ValidIdentifier, field)
 	}
 	if sawOrReplace && sawIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
@@ -850,7 +923,7 @@ func enumListItemQueryStructs(obj ssot.Object) []*QueryStruct {
 		if attr == nil {
 			return
 		}
-		if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrEnum && attr.Elem.Enum != nil {
+		if attr.IsEnumCollection() && attr.Elem.Enum != nil {
 			name := ssot.EnumListItemName(attr.Elem.Enum)
 			if _, ok := seen[name]; !ok {
 				seen[name] = struct{}{}
@@ -947,11 +1020,21 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 				panic(fmt.Sprintf("object %q: ALTER list %q has no SQL or item type", obj.Name, clause.SQL))
 			}
 			q = q.ListAssignment(clause.SQL, clause.ListItem, ParameterOptions().Parentheses().NoEquals())
+		case ssot.AlterClauseKeywordList:
+			if clause.Field == "" || clause.SQL == "" || clause.ListItem == "" {
+				panic(fmt.Sprintf("object %q: ALTER keyword list %q needs a field, SQL, and an item type", obj.Name, clause.SQL))
+			}
+			q = q.UnnamedList(clause.Field, clause.ListItem, KeywordOptions().SQL(clause.SQL).Parentheses().NoComma())
 		case ssot.AlterClauseText:
 			if clause.SQL == "" {
 				panic(fmt.Sprintf("object %q: ALTER text is empty", obj.Name))
 			}
 			q = q.OptionalTextAssignment(clause.SQL, ParameterOptions().SingleQuotes().NoEquals())
+		case ssot.AlterClausePlainText:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER plain text %q needs a field and SQL", obj.Name, clause.SQL))
+			}
+			q = q.OptionalAssignmentWithFieldName(clause.SQL, "string", ParameterOptions().NoEquals(), clause.Field)
 		case ssot.AlterClauseBlock:
 			block := queryStructFromBlockAttribute(obj.Name, *clause.Block)
 			var transformer FieldTransformer = ParameterOptions().SQL(clause.SQL)
@@ -1091,6 +1174,8 @@ func alterExactlyOneFields(obj ssot.Object) []string {
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
 		case ssot.AlterClauseList, ssot.AlterClauseText:
 			fields = append(fields, sqlToFieldName(clause.SQL, true))
+		case ssot.AlterClauseKeywordList, ssot.AlterClausePlainText:
+			fields = append(fields, clause.Field)
 		case ssot.AlterClauseBlock:
 			fields = append(fields, clause.Field)
 		case ssot.AlterClauseRenameTo:

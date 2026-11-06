@@ -531,7 +531,7 @@ func init() {
 			case_Functions_sql_Show_all,
 			func(opts *ShowFunctionOptions) {
 				opts.Like = &Like{Pattern: new("pattern")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			`SHOW USER FUNCTIONS LIKE 'pattern' IN ACCOUNT`,
 		).
@@ -542,7 +542,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Functions_sql_Show_In,
-			func(opts *ShowFunctionOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
+			func(opts *ShowFunctionOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			`SHOW USER FUNCTIONS IN ACCOUNT`,
 		)
 

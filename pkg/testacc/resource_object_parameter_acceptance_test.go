@@ -178,6 +178,67 @@ resource "snowflake_object_parameter" "p" {
 `, schemaId.DatabaseName(), schemaId.Name(), value)
 }
 
+func TestAcc_ObjectParameter_EmptyDefaultUnsetOnDestroy(t *testing.T) {
+	task, taskCleanup := testClient().Task.Create(t)
+	t.Cleanup(taskCleanup)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		// QUERY_TAG defaults to an empty string, so destroy has to UNSET it instead of SET to the default.
+		CheckDestroy: checkTaskObjectParameterUnset(t, task.ID(), sdk.TaskParameterQueryTag),
+		Steps: []resource.TestStep{
+			{
+				Config: taskQueryTagConfig(task.ID(), "SOME_TAG"),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr("snowflake_object_parameter.p", "key", string(sdk.TaskParameterQueryTag))),
+					assert.Check(resource.TestCheckResourceAttr("snowflake_object_parameter.p", "value", "SOME_TAG")),
+					objectparametersassert.TaskParameters(t, task.ID()).
+						HasQueryTag("SOME_TAG").
+						HasQueryTagLevel(sdk.ParameterTypeTask),
+				),
+			},
+		},
+	})
+}
+
+func taskQueryTagConfig(taskId sdk.SchemaObjectIdentifier, value string) string {
+	return fmt.Sprintf(`
+resource "snowflake_object_parameter" "p" {
+	key = "QUERY_TAG"
+	value = "%[4]s"
+	object_type = "TASK"
+	object_identifier {
+		database = "%[1]s"
+		schema = "%[2]s"
+		name = "%[3]s"
+	}
+}
+`, taskId.DatabaseName(), taskId.SchemaName(), taskId.Name(), value)
+}
+
+func checkTaskObjectParameterUnset(t *testing.T, taskId sdk.SchemaObjectIdentifier, parameter sdk.TaskParameter) func(state *terraform.State) error {
+	t.Helper()
+
+	return func(s *terraform.State) error {
+		parameters := testClient().Parameter.ShowTaskParameters(t, taskId)
+		param := helpers.FindParameter(t, parameters, parameter)
+		if param == nil {
+			return fmt.Errorf("no %s parameter found", parameter)
+		}
+		if param.Level == sdk.ParameterTypeTask {
+			return fmt.Errorf("expected %s to be unset on task, got value %q on level %s", parameter, param.Value, param.Level)
+		}
+		if param.Value != param.Default {
+			return fmt.Errorf("expected %s to have default value %q, got %q", parameter, param.Default, param.Value)
+		}
+		return nil
+	}
+}
+
 // TODO [SNOW-1501905]: add more generic checks to check destroy (more easy Snowflake state checks)
 func checkSchemaObjectParameterValue(t *testing.T, schemaId sdk.DatabaseObjectIdentifier, value string) func(state *terraform.State) error {
 	t.Helper()

@@ -104,7 +104,7 @@ func withExternalTableFileFormats(qs *g.QueryStruct) *g.QueryStruct {
 func withExternalTablePolicyAndTags(qs *g.QueryStruct) *g.QueryStruct {
 	return qs.
 		OptionalComment().
-		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
+		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
 		OptionalTags()
 }
 

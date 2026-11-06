@@ -179,7 +179,7 @@ func TestInt_CodeBundles(t *testing.T) {
 
 		t.Run("in account", func(t *testing.T) {
 			bundles, err := client.CodeBundles.Show(ctx, sdk.NewShowCodeBundleRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+				WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}))
 			require.NoError(t, err)
 			require.GreaterOrEqual(t, len(bundles), 3)
 			require.Subset(t, bundleNames(bundles), []string{id1.Name(), id2.Name(), id3.Name()})
@@ -187,14 +187,14 @@ func TestInt_CodeBundles(t *testing.T) {
 
 		t.Run("in database", func(t *testing.T) {
 			bundles, err := client.CodeBundles.Show(ctx, sdk.NewShowCodeBundleRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Database: db.ID()}}))
+				WithIn(sdk.ExtendedIn{Database: db.ID()}))
 			require.NoError(t, err)
 			require.ElementsMatch(t, []string{id1.Name(), id2.Name(), id3.Name()}, bundleNames(bundles))
 		})
 
 		t.Run("in schema", func(t *testing.T) {
 			bundles, err := client.CodeBundles.Show(ctx, sdk.NewShowCodeBundleRequest().
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: schema.ID()}}))
+				WithIn(sdk.ExtendedIn{Schema: schema.ID()}))
 			require.NoError(t, err)
 			require.ElementsMatch(t, []string{id1.Name(), id2.Name()}, bundleNames(bundles))
 		})

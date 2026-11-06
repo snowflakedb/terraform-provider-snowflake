@@ -50,7 +50,7 @@ func (v *passwordPolicies) Show(ctx context.Context, request *ShowPasswordPolicy
 
 func (v *passwordPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*PasswordPolicy, error) {
 	request := NewShowPasswordPolicyRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	passwordPolicies, err := v.Show(ctx, request)
 	if err != nil {

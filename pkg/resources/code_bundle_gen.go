@@ -107,7 +107,7 @@ func ReadCodeBundleFunc(withExternalChangesMarking bool) tfschema.ReadContextFun
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CodeBundleToSchema(codeBundle)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CodeBundleDetailsToSchema(codeBundleDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			codeBundleSetConfigFieldsExt(d, codeBundle),
+			codeBundleSetConfigFields(d, codeBundle),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -180,4 +180,10 @@ func DeleteCodeBundle(ctx context.Context, d *tfschema.ResourceData, meta any) d
 			return client.CodeBundles.DropSafely
 		},
 	)(ctx, d, meta)
+}
+
+func codeBundleSetConfigFields(d *tfschema.ResourceData, obj *sdk.CodeBundle) error {
+	return errors.Join(
+		d.Set("comment", obj.Comment),
+	)
 }

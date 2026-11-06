@@ -21,6 +21,7 @@ const (
 	ParameterLevelProcedure            ParameterLevel = "PROCEDURE"
 	ParameterLevelProject              ParameterLevel = "PROJECT"
 	ParameterLevelService              ParameterLevel = "SERVICE"
+	ParameterLevelPipe                 ParameterLevel = "PIPE"
 	ParameterLevelUser                 ParameterLevel = "USER"
 	ParameterLevelSession              ParameterLevel = "SESSION"
 	ParameterLevelOpenflowDeployment   ParameterLevel = "OPENFLOW_DEPLOYMENT"

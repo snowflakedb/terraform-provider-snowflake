@@ -38,7 +38,7 @@ GIT_DIFF_CHECK = diff_output=$$(git diff -- $(1)); \
 default: help
 
 dev-setup: ## setup development dependencies
-	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ./bin v2.12.2
+	@which ./bin/golangci-lint || curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/HEAD/install.sh | sh -s -- -b ./bin v2.15.0
 	cd tools && mkdir -p bin/
 	cd tools && env GOBIN=$$PWD/bin go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 	cd tools && env GOBIN=$$PWD/bin go install mvdan.cc/gofumpt
@@ -85,11 +85,11 @@ lint-fix: ## Run linters and formatters. If linters or formatters support autofi
 	./bin/golangci-lint run -v --fix
 
 mod: ## add missing and remove unused modules
-	go mod tidy -compat=1.26.10
+	go mod tidy -compat=1.27.3
 
 mod-check: ## check if there are any missing/unused modules
 	# -diff causes a non-zero exit status to be returned if changes to go.mod or go.sum are detected (source: https://go.dev/ref/mod#go-mod-tidy)
-	go mod tidy -compat=1.26.10 -diff
+	go mod tidy -compat=1.27.3 -diff
 
 pre-push: terraform-version-check check-compilation generate-all mod fmt generate-docs-additional-files generate-issue-labels docs lint-fix test-architecture ## Run a few checks and generators. It should be used only locally because it modifies or fixes the code.
 
@@ -128,11 +128,17 @@ test-unit: ## run unit tests
 test-acceptance: ## run acceptance tests
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=230m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
 
-test-account-level-features: ## run integration and acceptance test modifying account
+test-account-level: ## run integration and acceptance test modifying account
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=150m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
+
+# Alias kept for backward compatibility with the former target name.
+test-account-level-features: test-account-level
 
 test-integration: ## run SDK integration tests
 	TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 go test --tags=non_account_level_tests -run "^TestInt_" -v -cover -timeout=100m ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
+
+test-openflow: ## run Openflow acceptance and integration tests
+	TF_ACC=1 TEST_SF_TF_TEST_OPENFLOW=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "Openflow" -v -cover -timeout=300m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
 	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional $(ADDITIONAL_TEST_FLAGS)

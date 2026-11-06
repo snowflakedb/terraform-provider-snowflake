@@ -2,14 +2,14 @@
 page_title: "snowflake_alert Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Resource used to manage alert objects. For more information, check alert documentation https://docs.snowflake.com/en/sql-reference/sql/create-alert.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_alert (Resource)
 
-
+Resource used to manage alert objects. For more information, check [alert documentation](https://docs.snowflake.com/en/sql-reference/sql/create-alert).
 
 ## Example Usage
 
@@ -17,18 +17,44 @@ description: |-
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
-resource "snowflake_alert" "alert" {
-  database  = "database"
-  schema    = "schema"
-  name      = "alert"
-  warehouse = "warehouse"
+## Basic resource (serverless, on a schedule)
+resource "snowflake_alert" "basic" {
+  database = "database"
+  schema   = "schema"
+  name     = "alert"
   alert_schedule {
     interval = 10
   }
   condition = "select 1 as c"
   action    = "select 1 as c"
+}
+
+## Complete resource
+resource "snowflake_alert" "complete" {
+  database  = "database"
+  schema    = "schema"
+  name      = "alert"
+  warehouse = "warehouse"
+  alert_schedule {
+    cron {
+      expression = "0 * * * *"
+      time_zone  = "UTC"
+    }
+  }
+  condition = "select 1 as c"
+  action    = "select 1 as c"
   enabled   = true
   comment   = "my alert"
+}
+
+## Alert on new data (no schedule); the condition table needs change tracking
+resource "snowflake_alert" "on_new_data" {
+  database  = "database"
+  schema    = "schema"
+  name      = "alert_on_new_data"
+  warehouse = "warehouse"
+  condition = "select * from database.schema.table"
+  action    = "select 1 as c"
 }
 ```
 
@@ -44,19 +70,21 @@ resource "snowflake_alert" "alert" {
 - `database` (String) The database in which to create the alert. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the alert; must be unique for the schema in which the alert is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the alert. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
-- `warehouse` (String) The warehouse the alert will use.
 
 ### Optional
 
-- `alert_schedule` (Block List, Max: 1) The schedule for periodically running an alert. (see [below for nested schema](#nestedblock--alert_schedule))
+- `alert_schedule` (Block List, Max: 1) The schedule for periodically running an alert. Without it, the alert runs when new rows arrive in the tables of the condition. Adding or removing the schedule recreates the alert. (see [below for nested schema](#nestedblock--alert_schedule))
 - `comment` (String) Specifies a comment for the alert.
 - `enabled` (Boolean) Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `warehouse` (String) The warehouse the alert will use. When not set, the alert uses serverless compute resources. Creating, resuming, or switching to a serverless alert requires the EXECUTE MANAGED ALERT privilege; using a named warehouse requires its USAGE privilege.
 
 ### Read-Only
 
+- `describe_output` (List of Object) Outputs the result of `DESCRIBE ALERT` for the given alert. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
+- `show_output` (List of Object) Outputs the result of `SHOW ALERTS` for the given alert. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--alert_schedule"></a>
 ### Nested Schema for `alert_schedule`
@@ -86,11 +114,47 @@ Optional:
 - `read` (String)
 - `update` (String)
 
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `action` (String)
+- `comment` (String)
+- `condition` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `name` (String)
+- `owner` (String)
+- `schedule` (String)
+- `schema_name` (String)
+- `state` (String)
+- `warehouse` (String)
+
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `action` (String)
+- `comment` (String)
+- `condition` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `name` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `schedule` (String)
+- `schema_name` (String)
+- `state` (String)
+- `warehouse` (String)
+
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-# format is database name | schema name | alert name
-terraform import snowflake_alert.example 'dbName|schemaName|alertName'
+terraform import snowflake_alert.example '"<database_name>"."<schema_name>"."<alert_name>"'
 ```

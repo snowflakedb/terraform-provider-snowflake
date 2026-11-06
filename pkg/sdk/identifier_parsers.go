@@ -189,10 +189,7 @@ func ParseSchemaObjectIdentifierWithArgumentsAndReturnType(fullyQualifiedName st
 	leftParenthesisIndex := strings.IndexRune(functionHeader, '(')
 	functionName := functionHeader[:leftParenthesisIndex]
 	argsRaw := functionHeader[leftParenthesisIndex:]
-	returnTypeIndex := strings.LastIndex(argsRaw, ":")
-	if returnTypeIndex != -1 {
-		argsRaw = argsRaw[:returnTypeIndex]
-	}
+	argsRaw, _, _ = strings.CutLast(argsRaw, ":")
 	parsedArguments, err := ParseFunctionAndProcedureArguments(argsRaw)
 	if err != nil {
 		return SchemaObjectIdentifierWithArguments{}, err

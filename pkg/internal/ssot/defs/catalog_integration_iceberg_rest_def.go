@@ -231,41 +231,41 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		CatalogIntegrationIcebergRestAttrs.CatalogSource,
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(
-			ssot.SchemaShow(ssot.SchemaShowFromBase()),
-			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
-				&CatalogIntegrationIcebergRestAttrs.RestConfig,
-				&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
-				&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
-				&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
-			)),
-		),
-		ssot.WithModel(ssot.ModelRequestType(
-			&CatalogIntegrationIcebergRestAttrs.RestConfig,
-			"[]sdk.CatalogIntegrationIcebergRestRestConfigRequest",
-		)),
-		ssot.WithResourceAssert(),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
-			ssot.ObjectAssertDescribe(
-				ssot.ObjectAssertDescribeFromBase("DescribeIcebergRest"),
-				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.RestConfig),
-				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication),
-				ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication),
-				ssot.ObjectAssertDescribeSkipFields(&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(
+				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+					&CatalogIntegrationIcebergRestAttrs.RestConfig,
+					&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+					&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+					&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+				)),
 			),
+			ssot.WithModel(ssot.ModelRequestType(
+				&CatalogIntegrationIcebergRestAttrs.RestConfig,
+				"[]sdk.CatalogIntegrationIcebergRestRestConfigRequest",
+			)),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertDescribe(
+					ssot.ObjectAssertDescribeFromBase("DescribeIcebergRest"),
+					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.RestConfig),
+					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication),
+					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication),
+					ssot.ObjectAssertDescribeSkipFields(&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication),
+				),
+			),
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+					&CatalogIntegrationIcebergRestAttrs.RestConfig,
+					&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+					&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+					&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+				))),
 		),
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant. The details are parsed in the SDK ext.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(),
-			ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
-				&CatalogIntegrationIcebergRestAttrs.RestConfig,
-				&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
-				&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
-				&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
-			))),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

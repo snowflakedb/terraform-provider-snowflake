@@ -42,6 +42,7 @@ type ConfigDTO struct {
 	InsecureMode                      *bool               `toml:"insecure_mode"`
 	OcspFailOpen                      *bool               `toml:"ocsp_fail_open"`
 	Token                             *string             `toml:"token"`
+	TokenFilePath                     *string             `toml:"token_file_path"`
 	KeepSessionAlive                  *bool               `toml:"keep_session_alive"`
 	PrivateKey                        *string             `toml:"private_key,multiline"`
 	PrivateKeyPassphrase              *string             `toml:"private_key_passphrase"`

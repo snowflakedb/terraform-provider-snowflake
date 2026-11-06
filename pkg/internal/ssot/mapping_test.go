@@ -32,6 +32,16 @@ func Test_CreateCall(t *testing.T) {
 	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "security_integrations" attributeMappedValueCreateBuilder needs a mapper function`, func() {
 		AttributeMappedValueCreate("").CreateCall("AuthenticationPolicy", Attribute{Name: "security_integrations"})
 	})
+
+	call = SetMappedValueCreate("toPostgresMirrorName").CreateCall("PostgresMirror", Attribute{Name: "postgres_tables"})
+	require.Equal(t, CreateCall{
+		Helper: "setMappedValueCreateBuilder",
+		Target: "request.WithPostgresTables, toPostgresMirrorName",
+	}, call)
+
+	require.PanicsWithValue(t, `object "PostgresMirror": attribute "postgres_tables" SetMappedValueCreate needs a mapper function`, func() {
+		SetMappedValueCreate("").CreateCall("PostgresMirror", Attribute{Name: "postgres_tables"})
+	})
 }
 
 func Test_UpdateCall(t *testing.T) {

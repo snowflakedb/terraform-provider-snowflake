@@ -12,6 +12,8 @@ const (
 	SuppressStatement DiffSuppressKind = "statement"
 	SuppressShow      DiffSuppressKind = "show"
 	SuppressDescribe  DiffSuppressKind = "describe"
+	// SuppressAlways ignores every diff. It stands alone: it replaces inferred normalization and is not composed.
+	SuppressAlways DiffSuppressKind = "always"
 )
 
 type DiffSuppressor struct {

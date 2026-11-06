@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/ids"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,7 +24,7 @@ func TestInt_Shares(t *testing.T) {
 		t.Helper()
 		err := client.Shares.Create(ctx, req)
 		require.NoError(t, err)
-		t.Cleanup(testClientHelper().Share.DropShareFunc(t, id))
+		t.Cleanup(testClientHelper().Share.DropFunc(t, id))
 	}
 
 	grantDatabaseUsage := func(t *testing.T, shareId sdk.AccountObjectIdentifier) {
@@ -44,7 +45,7 @@ func TestInt_Shares(t *testing.T) {
 			HasOwner(currentRole.Name()).
 			HasComment("").
 			HasListingGlobalName("").
-			HasSecureObjectsOnly("true").
+			HasSecureObjectsOnly(true).
 			HasToTotal(0),
 		)
 	})
@@ -63,7 +64,7 @@ func TestInt_Shares(t *testing.T) {
 			HasName(id.Name()).
 			HasKind(sdk.ShareKindOutbound).
 			HasComment(comment).
-			HasSecureObjectsOnly("false"),
+			HasSecureObjectsOnly(false),
 		)
 	})
 
@@ -102,7 +103,7 @@ func TestInt_Shares(t *testing.T) {
 	})
 
 	t.Run("alter: add and remove accounts", func(t *testing.T) {
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 		grantDatabaseUsage(t, share.ID())
 
@@ -133,7 +134,7 @@ func TestInt_Shares(t *testing.T) {
 		db, dbCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(dbCleanup)
 
-		share, shareCleanup := secondaryTestClientHelper().Share.CreateShare(t)
+		share, shareCleanup := secondaryTestClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 		t.Cleanup(secondaryTestClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, db.ID(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 
@@ -170,7 +171,7 @@ func TestInt_Shares(t *testing.T) {
 		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
 		t.Cleanup(tagCleanup)
 
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 
 		err := client.Shares.Alter(ctx, sdk.NewAlterShareRequest(share.ID()).WithSetTags([]sdk.TagAssociation{{Name: tag.ID(), Value: "v1"}}))
@@ -200,14 +201,15 @@ func TestInt_Shares(t *testing.T) {
 	})
 
 	t.Run("describe: provider", func(t *testing.T) {
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 		grantDatabaseUsage(t, share.ID())
 
 		rows, err := client.Shares.DescribeProvider(ctx, share.ID())
 		require.NoError(t, err)
-		require.Len(t, rows, 1)
-		assertThatObject(t, objectassert.ShareDetailsFromObject(t, &rows[0]).
+		// Snowflake can add system objects to the shared database, so only the database row is asserted.
+		databaseRow := findShareDetailsOfKind(t, rows, sdk.ObjectTypeDatabase)
+		assertThatObject(t, objectassert.ShareDetailsFromObject(t, databaseRow).
 			HasKind(sdk.ObjectTypeDatabase).
 			HasName(testClientHelper().Ids.DatabaseId()).
 			HasSharedOnNotEmpty(),
@@ -215,7 +217,56 @@ func TestInt_Shares(t *testing.T) {
 
 		described, err := client.Shares.Describe(ctx, share.ID())
 		require.NoError(t, err)
-		require.Equal(t, rows, described)
+		// The system objects can appear between the two calls, so only the database row is compared.
+		require.Equal(t, databaseRow, findShareDetailsOfKind(t, described, sdk.ObjectTypeDatabase))
+	})
+
+	t.Run("describe: provider with a granted table that needs quoting", func(t *testing.T) {
+		share, shareCleanup := testClientHelper().Share.Create(t)
+		t.Cleanup(shareCleanup)
+		grantDatabaseUsage(t, share.ID())
+
+		table, tableCleanup := testClientHelper().Table.CreateWithName(t, random.AlphaN(4)+".dot and space")
+		t.Cleanup(tableCleanup)
+
+		err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(share.ID()).
+			WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}).
+			WithOn(*sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithName(table.ID()))))
+		require.NoError(t, err)
+
+		rows, err := client.Shares.DescribeProvider(ctx, share.ID())
+		require.NoError(t, err)
+		tableRow := findShareDetailsOfKind(t, rows, sdk.ObjectTypeTable)
+		assertThatObject(t, objectassert.ShareDetailsFromObject(t, tableRow).
+			HasKind(sdk.ObjectTypeTable).
+			HasName(table.ID()).
+			HasSharedOnNotEmpty(),
+		)
+	})
+
+	t.Run("describe: provider with a granted table in a schema that needs quoting", func(t *testing.T) {
+		share, shareCleanup := testClientHelper().Share.Create(t)
+		t.Cleanup(shareCleanup)
+		grantDatabaseUsage(t, share.ID())
+
+		schema, schemaCleanup := testClientHelper().Schema.CreateSchemaWithIdentifier(t, sdk.NewDatabaseObjectIdentifier(testClientHelper().Ids.DatabaseId().Name(), random.AlphaN(4)+".dot and space"))
+		t.Cleanup(schemaCleanup)
+		table, tableCleanup := testClientHelper().Table.CreateInSchema(t, schema.ID())
+		t.Cleanup(tableCleanup)
+
+		err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(share.ID()).
+			WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeSelect}).
+			WithOn(*sdk.NewShareGrantOnRequest().WithTable(*sdk.NewOnTableRequest().WithName(table.ID()))))
+		require.NoError(t, err)
+
+		rows, err := client.Shares.DescribeProvider(ctx, share.ID())
+		require.NoError(t, err)
+		tableRow := findShareDetailsOfKind(t, rows, sdk.ObjectTypeTable)
+		assertThatObject(t, objectassert.ShareDetailsFromObject(t, tableRow).
+			HasKind(sdk.ObjectTypeTable).
+			HasName(table.ID()).
+			HasSharedOnNotEmpty(),
+		)
 	})
 
 	t.Run("describe: consumer", func(t *testing.T) {
@@ -223,7 +274,7 @@ func TestInt_Shares(t *testing.T) {
 		db, dbCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(dbCleanup)
 
-		share, shareCleanup := secondaryTestClientHelper().Share.CreateShare(t)
+		share, shareCleanup := secondaryTestClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 		t.Cleanup(secondaryTestClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, db.ID(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 
@@ -234,8 +285,9 @@ func TestInt_Shares(t *testing.T) {
 
 		rows, err := client.Shares.DescribeConsumer(ctx, share.ExternalID())
 		require.NoError(t, err)
-		require.Len(t, rows, 1)
-		assertThatObject(t, objectassert.ShareDetailsFromObject(t, &rows[0]).
+		// Snowflake can add system objects (e.g. the SNOWFLAKE$ schema and its views) to the shared database, so only the database row is asserted.
+		databaseRow := findShareDetailsOfKind(t, rows, sdk.ObjectTypeDatabase)
+		assertThatObject(t, objectassert.ShareDetailsFromObject(t, databaseRow).
 			HasKind(sdk.ObjectTypeDatabase).
 			HasName(ids.DatabasePlaceholder).
 			HasSharedOnNotEmpty(),
@@ -248,9 +300,9 @@ func TestInt_Shares(t *testing.T) {
 	})
 
 	t.Run("show: like", func(t *testing.T) {
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
-		_, shareCleanup2 := testClientHelper().Share.CreateShare(t)
+		_, shareCleanup2 := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup2)
 
 		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest().WithLike(sdk.Like{Pattern: sdk.String(share.Name)}))
@@ -260,14 +312,14 @@ func TestInt_Shares(t *testing.T) {
 			HasName(share.Name).
 			HasKind(sdk.ShareKindOutbound).
 			HasListingGlobalName("").
-			HasSecureObjectsOnly("true"),
+			HasSecureObjectsOnly(true),
 		)
 	})
 
 	t.Run("show: without options", func(t *testing.T) {
-		_, shareCleanup := testClientHelper().Share.CreateShare(t)
+		_, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
-		_, shareCleanup2 := testClientHelper().Share.CreateShare(t)
+		_, shareCleanup2 := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup2)
 
 		shares, err := client.Shares.Show(ctx, sdk.NewShowShareRequest())
@@ -303,13 +355,13 @@ func TestInt_Shares(t *testing.T) {
 		require.NoError(t, err)
 		for _, share := range shares {
 			if share.Kind == sdk.ShareKindInbound {
-				assert.Empty(t, share.SecureObjectsOnly)
+				assert.Nil(t, share.SecureObjectsOnly)
 			}
 		}
 	})
 
 	t.Run("show: target accounts", func(t *testing.T) {
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 		grantDatabaseUsage(t, share.ID())
 
@@ -323,14 +375,17 @@ func TestInt_Shares(t *testing.T) {
 		assertThatObject(t, objectassert.Share(t, share.ID()).HasTo(account).HasToTotal(0))
 
 		// SNOWFLAKE.ACCOUNT_USAGE.SHARES lags SHOW SHARES by up to 3 hours, so a share created here has no row yet.
-		// TODO(SNOW-1348347): add predefined share in our testing env so that we could test ShowTargetAccounts
+		// TODO [SNOW-4428377]: Test a populated ShowTargetAccounts with a predefined long-living share (a fixed name, created once
+		// with the secondary account as the recipient and never dropped) that is older than the view's latency. The test should skip until the view has a row.
+		// The same share would allow an end-to-end test of a share with more than three recipients (SHOW SHARES lists three and the rest comes from this view),
+		// which also needs a fifth account: the test environment has only the secondary, third and fourth accounts to use as recipients.
 		accounts, err := client.Shares.ShowTargetAccounts(ctx, share.ID())
 		require.NoError(t, err)
 		assert.Empty(t, accounts)
 	})
 
 	t.Run("show by id: existing", func(t *testing.T) {
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 
 		found, err := client.Shares.ShowByID(ctx, share.ID())
@@ -363,7 +418,7 @@ func TestInt_Shares(t *testing.T) {
 	})
 
 	t.Run("drop: existing", func(t *testing.T) {
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 
 		err := client.Shares.Drop(ctx, sdk.NewDropShareRequest(share.ID()))
@@ -384,7 +439,7 @@ func TestInt_Shares(t *testing.T) {
 	})
 
 	t.Run("drop safely: existing and non-existing", func(t *testing.T) {
-		share, shareCleanup := testClientHelper().Share.CreateShare(t)
+		share, shareCleanup := testClientHelper().Share.Create(t)
 		t.Cleanup(shareCleanup)
 
 		require.NoError(t, client.Shares.DropSafely(ctx, share.ID()))
@@ -393,4 +448,11 @@ func TestInt_Shares(t *testing.T) {
 
 		require.NoError(t, client.Shares.DropSafely(ctx, share.ID()))
 	})
+}
+
+func findShareDetailsOfKind(t *testing.T, rows []sdk.ShareDetails, kind sdk.ObjectType) *sdk.ShareDetails {
+	t.Helper()
+	row, err := collections.FindFirst(rows, func(row sdk.ShareDetails) bool { return row.Kind == kind })
+	require.NoError(t, err, "no %s row in %v", kind, rows)
+	return row
 }

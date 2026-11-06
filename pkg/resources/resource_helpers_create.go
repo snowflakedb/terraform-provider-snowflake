@@ -118,6 +118,17 @@ func schemaObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, c
 	return nil
 }
 
+func databaseObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, createField **sdk.DatabaseObjectIdentifier) error {
+	if v, ok := d.GetOk(key); ok {
+		objectIdentifier, err := sdk.ParseDatabaseObjectIdentifier(v.(string))
+		if err != nil {
+			return err
+		}
+		*createField = sdk.Pointer(objectIdentifier)
+	}
+	return nil
+}
+
 func accountObjectIdentifierAttributeCreate(d *schema.ResourceData, key string, createField **sdk.AccountObjectIdentifier) error {
 	if v, ok := d.GetOk(key); ok {
 		*createField = sdk.Pointer(sdk.NewAccountObjectIdentifier(v.(string)))

@@ -154,6 +154,17 @@ func (c *TestClient) EnsureOpenflowRuntimeIsProvisioned(ctx context.Context) err
 	return nil
 }
 
+func (c *TestClient) GetCurrentSnowflakeVersion(ctx context.Context) (string, error) {
+	version, err := c.context.client.ContextFunctions.CurrentVersion(ctx)
+	if err != nil {
+		return "", err
+	}
+	if version == nil {
+		return "", fmt.Errorf("current Snowflake version is nil")
+	}
+	return version.Value, nil
+}
+
 func hasGranteeName(grants []sdk.Grant, role sdk.AccountObjectIdentifier) bool {
 	for _, grant := range grants {
 		if grant.GranteeName == role {

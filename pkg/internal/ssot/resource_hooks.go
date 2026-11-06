@@ -14,6 +14,7 @@ type ResourceHooks struct {
 	CreateInSdk                     ResourceHook
 	AfterCreate                     ResourceHook
 	ShowByIdSafelyInSdk             ResourceHook
+	AfterShowById                   ResourceHook
 	DescribeInSdk                   ResourceHook
 	HandleExternalChanges           ResourceHook
 	HandleExternalChangesInDescribe ResourceHook
@@ -75,6 +76,7 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		CreateInSdk:                     ExtCall(),
 		AfterCreate:                     Omitted(),
 		ShowByIdSafelyInSdk:             ExtCall(),
+		AfterShowById:                   Omitted(),
 		DescribeInSdk:                   ExtCall(),
 		HandleExternalChanges:           ExtCall(),
 		HandleExternalChangesInDescribe: Omitted(),
@@ -161,6 +163,10 @@ func WithAfterCreate(h ResourceHook) ResourceHookOption {
 
 func WithShowByIdSafelyInSdk(h ResourceHook) ResourceHookOption {
 	return func(hooks *ResourceHooks) { hooks.ShowByIdSafelyInSdk = h }
+}
+
+func WithAfterShowById(h ResourceHook) ResourceHookOption {
+	return func(hooks *ResourceHooks) { hooks.AfterShowById = h }
 }
 
 func WithDescribeInSdk(h ResourceHook) ResourceHookOption {

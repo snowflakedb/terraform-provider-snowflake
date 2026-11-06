@@ -2,5 +2,5 @@
 {{- if .Hooks.SetConfigFields.Generate -}}
 			{{ .Prefix }}SetConfigFields(d, {{ .Prefix }}),
 {{- else if .Hooks.SetConfigFields.Present -}}
-			{{ .Prefix }}SetConfigFieldsExt(d, {{ .Prefix }}),
+			{{ .Prefix }}SetConfigFieldsExt(ctx, d, meta, {{ .Prefix }}),
 {{ end -}}

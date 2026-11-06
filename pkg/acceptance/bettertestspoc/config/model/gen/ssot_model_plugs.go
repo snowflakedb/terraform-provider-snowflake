@@ -5,6 +5,7 @@ import (
 
 	resourceassertgen "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert/gen"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
@@ -28,14 +29,12 @@ func ModelBuilderModels() []ResourceConfigBuilderModel {
 }
 
 func ssotModelBuilderModels() []ResourceConfigBuilderModel {
-	var models []ResourceConfigBuilderModel
-	for _, obj := range defs.All() {
-		if !ssot.ObjectGenerators(obj.Generators...).Model.Enabled {
-			continue
-		}
-		models = append(models, ModelFromSsotObject(obj))
-	}
-	return models
+	return collections.Map(defs.SelectObjects(func(g ssot.Generators) bool { return g.Model.Enabled }, selectsForModel), ModelFromSsotObject)
+}
+
+// selectsForModel is the one filter of the config model builder generator: the object is a resource and has attributes.
+func selectsForModel(obj ssot.Object) bool {
+	return !obj.VariantBaseOnly && len(obj.Attributes) > 0
 }
 
 func WithPreamble(model ResourceConfigBuilderModel, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceConfigBuilderModel {

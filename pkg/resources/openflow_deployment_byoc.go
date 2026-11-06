@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,8 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// openflowDeploymentByocSchema adds the networking options that only apply when the deployment runs in the
-// customer's own cloud account. All of them are ForceNew: Snowflake has no ALTER for them.
+// openflowDeploymentByocSchema adds the networking options for a deployment that runs in the customer's own
+// cloud account. vpc_type, custom_ingress_hostname and use_user_auth_over_privatelink are BYOC-only.
+// use_private_link is also on the Snowflake-managed resource: CREATE accepts it for both deployment types.
+// All of them are ForceNew: Snowflake has no ALTER for them.
 var openflowDeploymentByocSchema = func() map[string]*schema.Schema {
 	byocSchema := map[string]*schema.Schema{
 		"vpc_type": {
@@ -62,10 +63,10 @@ var openflowDeploymentByocSchema = func() map[string]*schema.Schema {
 
 func OpenflowDeploymentByoc() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingCreateWrapper(resources.OpenflowDeploymentByoc, CreateOpenflowDeploymentByoc)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingReadWrapper(resources.OpenflowDeploymentByoc, ReadOpenflowDeploymentByoc(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingUpdateWrapper(resources.OpenflowDeploymentByoc, UpdateOpenflowDeploymentByoc)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OpenflowDeploymentByocResource), TrackingDeleteWrapper(resources.OpenflowDeploymentByoc, deleteOpenflowDeployment)),
+		CreateContext: TrackingCreateWrapper(resources.OpenflowDeploymentByoc, CreateOpenflowDeploymentByoc),
+		ReadContext:   TrackingReadWrapper(resources.OpenflowDeploymentByoc, ReadOpenflowDeploymentByoc(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.OpenflowDeploymentByoc, UpdateOpenflowDeploymentByoc),
+		DeleteContext: TrackingDeleteWrapper(resources.OpenflowDeploymentByoc, deleteOpenflowDeployment),
 		Description: joinWithSpace(
 			"Resource used to manage BYOC (bring your own cloud) Openflow deployments, which run in your own cloud account.",
 			"Creation finishes when the deployment reaches the INACTIVE state, which is as far as Terraform can take it:",

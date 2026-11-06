@@ -53,13 +53,13 @@ var ProjectionPolicyAttrs = struct {
 }
 
 var ProjectionPolicy = ssot.Object{
-	Name:                      "ProjectionPolicy",
-	NamePlural:                "ProjectionPolicies",
-	DescribeFailRead:          true,
-	IdType:                    "SchemaObjectIdentifier",
-	IdentityHierarchyForceNew: true,
-	PreviewFeature:            true,
+	Name:             "ProjectionPolicy",
+	NamePlural:       "ProjectionPolicies",
+	DescribeFailRead: true,
+	IdType:           "SchemaObjectIdentifier",
+	PreviewFeature:   true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithAllGenerators(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
@@ -78,12 +78,6 @@ var ProjectionPolicy = ssot.Object{
 				ssot.SdkDescribeDetailsFromIdentifier(),
 			),
 		),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithResource(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	// body is SET BODY -> and cannot share a SET with comment. The setter is WithSetBody.
 	// Generated ApplySetUnset would emit WithBody and put both fields on one request.
@@ -100,7 +94,7 @@ var ProjectionPolicy = ssot.Object{
 		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
-		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithApplySetUnset(ssot.ExtCall()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),

@@ -27,6 +27,7 @@ const (
 	OcspFailOpen              = "SNOWFLAKE_OCSP_FAIL_OPEN"
 
 	Token                      = "SNOWFLAKE_TOKEN"
+	TokenFilePath              = "SNOWFLAKE_TOKEN_FILE_PATH"
 	TokenAccessorTokenEndpoint = "SNOWFLAKE_TOKEN_ACCESSOR_TOKEN_ENDPOINT"
 	TokenAccessorRefreshToken  = "SNOWFLAKE_TOKEN_ACCESSOR_REFRESH_TOKEN"
 	TokenAccessorClientId      = "SNOWFLAKE_TOKEN_ACCESSOR_CLIENT_ID"

@@ -49,6 +49,18 @@ func Test_TrackingWrappers_emitOnEveryOperation(t *testing.T) {
 			return TrackingDeleteWrapper(resources.Warehouse, impl)(t.Context(), newResourceData(t), meta)
 		})
 	})
+	t.Run("import error contains resource name and id", func(t *testing.T) {
+		d := newResourceData(t)
+		d.SetId(`"DB"."PUBLIC"."WH"`)
+
+		_, err := TrackingImportWrapper(resources.Warehouse, func(_ context.Context, data *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
+			data.SetId("overwritten")
+			return nil, sdk.ErrObjectNotFound
+		})(t.Context(), d, meta)
+
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+		require.EqualError(t, err, fmt.Sprintf(`failed to import %s with id "\"DB\".\"PUBLIC\".\"WH\"": object does not exist`, resources.Warehouse))
+	})
 	t.Run("import", func(t *testing.T) {
 		testCases := []struct {
 			name      string

@@ -20,6 +20,7 @@ resource "snowflake_openflow_deployment_snowflake_managed" "complete" {
   display_name = "My deployment"
   # an existing event table, created with CREATE EVENT TABLE outside Terraform: the provider has no
   # resource for one, and a regular table will not do because Snowflake requires the event schema
-  event_table = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
-  comment     = "Managed by Terraform."
+  event_table      = "\"<database_name>\".\"<schema_name>\".\"<event_table_name>\""
+  use_private_link = "true"
+  comment          = "Managed by Terraform."
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -34,6 +35,7 @@ var systemGenerateSCIMAccesstokenSchema = map[string]*schema.Schema{
 
 func SystemGenerateSCIMAccessToken() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.SystemGenerateSCIMAccessTokenDatasource), TrackingReadWrapper(datasources.SystemGenerateScimAccessToken, ReadSystemGenerateSCIMAccessToken)),
 		Schema:      systemGenerateSCIMAccesstokenSchema,
 	}

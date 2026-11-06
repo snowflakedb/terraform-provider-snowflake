@@ -208,12 +208,28 @@ func NewQuotaSetUserTagsArgsRequest(
 }
 
 func NewQuotaUserTagRequest(
-	tag SchemaObjectIdentifier,
+	reference QuotaUserTagReferenceRequest,
 	value string,
 ) *QuotaUserTagRequest {
 	s := QuotaUserTagRequest{}
-	s.Tag = tag
+	s.Reference = reference
 	s.Value = value
+	return &s
+}
+
+func NewQuotaUserTagReferenceRequest(
+	arguments QuotaUserTagReferenceArgumentsRequest,
+) *QuotaUserTagReferenceRequest {
+	s := QuotaUserTagReferenceRequest{}
+	s.Arguments = arguments
+	return &s
+}
+
+func NewQuotaUserTagReferenceArgumentsRequest(
+	tag SchemaObjectIdentifier,
+) *QuotaUserTagReferenceArgumentsRequest {
+	s := QuotaUserTagReferenceArgumentsRequest{}
+	s.Tag = tag
 	return &s
 }
 
@@ -251,12 +267,28 @@ func NewQuotaExcludeUsersByTagRequest(
 }
 
 func NewQuotaExcludedUserTagRequest(
-	tag SchemaObjectIdentifier,
+	reference QuotaExcludedUserTagReferenceRequest,
 	value string,
 ) *QuotaExcludedUserTagRequest {
 	s := QuotaExcludedUserTagRequest{}
-	s.Tag = tag
+	s.Reference = reference
 	s.Value = value
+	return &s
+}
+
+func NewQuotaExcludedUserTagReferenceRequest(
+	arguments QuotaExcludedUserTagReferenceArgumentsRequest,
+) *QuotaExcludedUserTagReferenceRequest {
+	s := QuotaExcludedUserTagReferenceRequest{}
+	s.Arguments = arguments
+	return &s
+}
+
+func NewQuotaExcludedUserTagReferenceArgumentsRequest(
+	tag SchemaObjectIdentifier,
+) *QuotaExcludedUserTagReferenceArgumentsRequest {
+	s := QuotaExcludedUserTagReferenceArgumentsRequest{}
+	s.Tag = tag
 	return &s
 }
 

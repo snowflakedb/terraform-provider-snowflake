@@ -52,7 +52,7 @@ func (v *maskingPolicies) Show(ctx context.Context, request *ShowMaskingPolicyRe
 func (v *maskingPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*MaskingPolicy, error) {
 	request := NewShowMaskingPolicyRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(ExtendedIn{Schema: id.SchemaId()})
 	maskingPolicies, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err

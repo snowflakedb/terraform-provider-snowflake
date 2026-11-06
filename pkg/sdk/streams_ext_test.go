@@ -260,7 +260,7 @@ func init() {
 			func(opts *ShowStreamOptions) {
 				opts.Terse = new(true)
 				opts.Like = &Like{Pattern: new("pattern")}
-				opts.In = &ExtendedIn{In: In{Schema: schemaId}}
+				opts.In = &ExtendedIn{Schema: schemaId}
 				opts.StartsWith = new("starts with pattern")
 				opts.Limit = &LimitFrom{Rows: new(123), From: new("from pattern")}
 			},
@@ -274,7 +274,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Streams_sql_Show_In,
-			func(opts *ShowStreamOptions) { opts.In = &ExtendedIn{In: In{Schema: schemaId}} },
+			func(opts *ShowStreamOptions) { opts.In = &ExtendedIn{Schema: schemaId} },
 			`SHOW STREAMS IN SCHEMA %s`, schemaId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

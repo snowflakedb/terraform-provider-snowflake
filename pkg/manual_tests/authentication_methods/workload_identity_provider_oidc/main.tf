@@ -51,3 +51,16 @@ resource "snowflake_execute" "test" {
   execute  = "SELECT CURRENT_USER()"
   revert   = "SELECT CURRENT_USER()"
 }
+
+# Alternate for token_file_path. Replace the wif_auth provider above with this block.
+# The driver re-reads the file on every new connection. Do not set token as well.
+# provider "snowflake" {
+#   alias                      = "wif_auth"
+#   organization_name          = "ORGANIZATION_NAME"
+#   account_name               = "ACCOUNT_NAME"
+#   user                       = snowflake_service_user.auth_test.name
+#   authenticator              = "WORKLOAD_IDENTITY"
+#   workload_identity_provider = "OIDC"
+#   role                       = "ROLE_NAME"
+#   token_file_path            = "<token_file_path>"
+# }

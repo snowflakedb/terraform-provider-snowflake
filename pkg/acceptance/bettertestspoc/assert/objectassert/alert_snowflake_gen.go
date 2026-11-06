@@ -167,22 +167,25 @@ func (a *AlertAssert) HasNoComment() *AlertAssert {
 	return a
 }
 
-func (a *AlertAssert) HasWarehouse(expected string) *AlertAssert {
+func (a *AlertAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *AlertAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Alert) error {
 		t.Helper()
-		if o.Warehouse != expected {
-			return fmt.Errorf("expected warehouse: %v; got: %v", expected, o.Warehouse)
+		if o.Warehouse == nil {
+			return fmt.Errorf("expected warehouse to have value; got: nil")
+		}
+		if (*o.Warehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.Warehouse).FullyQualifiedName())
 		}
 		return nil
 	})
 	return a
 }
 
-func (a *AlertAssert) HasWarehouseNotEmpty() *AlertAssert {
+func (a *AlertAssert) HasNoWarehouse() *AlertAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Alert) error {
 		t.Helper()
-		if o.Warehouse == "" {
-			return fmt.Errorf("expected warehouse to be non-empty")
+		if o.Warehouse != nil {
+			return fmt.Errorf("expected warehouse to be nil; got: %v", *o.Warehouse)
 		}
 		return nil
 	})
@@ -192,19 +195,22 @@ func (a *AlertAssert) HasWarehouseNotEmpty() *AlertAssert {
 func (a *AlertAssert) HasSchedule(expected string) *AlertAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Alert) error {
 		t.Helper()
-		if o.Schedule != expected {
-			return fmt.Errorf("expected schedule: %v; got: %v", expected, o.Schedule)
+		if o.Schedule == nil {
+			return fmt.Errorf("expected schedule to have value; got: nil")
+		}
+		if *o.Schedule != expected {
+			return fmt.Errorf("expected schedule: %v; got: %v", expected, *o.Schedule)
 		}
 		return nil
 	})
 	return a
 }
 
-func (a *AlertAssert) HasScheduleNotEmpty() *AlertAssert {
+func (a *AlertAssert) HasNoSchedule() *AlertAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.Alert) error {
 		t.Helper()
-		if o.Schedule == "" {
-			return fmt.Errorf("expected schedule to be non-empty")
+		if o.Schedule != nil {
+			return fmt.Errorf("expected schedule to be nil; got: %v", *o.Schedule)
 		}
 		return nil
 	})

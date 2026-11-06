@@ -3,66 +3,74 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/invokeactionassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/require"
+)
+
+// The schedule block with 2 hours is the schedule string of SHOW.
+const (
+	scheduleHours = 2
+	schedule      = "2 HOUR"
 )
 
 func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	renamedId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(id.SchemaId())
 	comment := random.Comment()
-	externalComment := random.Comment()
 	const expireAfterDays = 7
-	const schedule = "2 HOUR"
 
-	// CREATE requires a schedule, an expiration, or both. expire_after_days is the one required-by-Snowflake field.
-	// with_retention_lock is ForceNew, so the locked policy is created only after the unlocked one is destroyed.
+	// CREATE requires a schedule, an expiration, or both, so the basic configuration keeps expire_after_days.
 	basic := model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithExpireAfterDays(expireAfterDays).
-		WithWithRetentionLockBool(false)
+		WithExpireAfterDays(expireAfterDays)
 	withOptionals := model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithExpireAfterDays(expireAfterDays).
-		WithSchedule(schedule).
-		WithComment(comment).
-		WithWithRetentionLockBool(false)
-	complete := model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
-		WithExpireAfterDays(expireAfterDays).
-		WithSchedule(schedule).
-		WithComment(comment).
-		WithWithRetentionLockBool(true)
+		WithScheduleHours(scheduleHours).
+		WithComment(comment)
+	renamed := model.BackupPolicy("t", renamedId.DatabaseName(), renamedId.SchemaName(), renamedId.Name()).
+		WithExpireAfterDays(expireAfterDays)
 	ref := basic.ResourceReference()
 
-	assertBasic := backupPolicyAssertions(t, ref, id, expireAfterDays, "", "", false, false)
-	// SDKv2 keeps a string that was set and then unset as "" instead of removing it.
-	assertAfterUnset := backupPolicyAssertions(t, ref, id, expireAfterDays, "", "", false, true)
-	assertWithOptionals := backupPolicyAssertions(t, ref, id, expireAfterDays, schedule, comment, false, false)
-	assertComplete := backupPolicyAssertions(t, ref, id, expireAfterDays, schedule, comment, true, false)
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
+	assertBasic := backupPolicyAssertions(t, ref, id, expireAfterDays, "", "", false)
+	assertWithOptionals := backupPolicyAssertions(t, ref, id, expireAfterDays, schedule, comment, false)
+	assertRenamed := append(backupPolicyAssertions(t, ref, renamedId, expireAfterDays, "", "", false),
+		invokeactionassert.BackupPolicyDoesNotExist(t, id),
+	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.BackupPolicy),
 		Steps: []resource.TestStep{
+			// create with empty optionals
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
@@ -71,70 +79,171 @@ func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
+			// import - permissive mode
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// SHOW leaves schedule nil when it was not set. Read keeps the attribute absent
-				// because the config omits it. Import writes that nil as "".
-				ImportStateVerifyIgnore: []string{"schedule"},
-				ImportStateCheck:        backupPolicyImportChecks(t, id, expireAfterDays, "", "", false),
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, basic),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
+			// set optionals
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, nil, sdk.String(comment)),
-						planchecks.ExpectChange(ref, "schedule", tfjson.ActionUpdate, nil, sdk.String(schedule)),
+						planchecks.ExpectChange(ref, "schedule.0.hours", tfjson.ActionUpdate, nil, sdk.String("2")),
 					},
 				},
 				Config: config.FromModels(t, withOptionals),
 				Check:  assertThat(t, assertWithOptionals...),
 			},
+			// unset optionals
 			{
-				Config:            config.FromModels(t, withOptionals),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateCheck:  backupPolicyImportChecks(t, id, expireAfterDays, schedule, comment, false),
-			},
-			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(comment), nil),
-						planchecks.ExpectChange(ref, "schedule", tfjson.ActionUpdate, sdk.String(schedule), nil),
+						planchecks.ExpectChange(ref, "schedule.0.hours", tfjson.ActionUpdate, sdk.String("2"), nil),
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, assertAfterUnset...),
+				Check:  assertThat(t, assertBasic...),
 			},
+			// rename
 			{
-				Config:  config.FromModels(t, basic),
-				Destroy: true,
-			},
-			{
-				PreConfig: func() {
-					_, err := testClient().BackupPolicy.Show(t, id)
-					require.ErrorIs(t, err, sdk.ErrObjectNotFound)
-				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionCreate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "name", tfjson.ActionUpdate, sdk.String(id.Name()), sdk.String(renamedId.Name())),
+					},
+				},
+				Config: config.FromModels(t, renamed),
+				Check:  assertThat(t, assertRenamed...),
+			},
+		},
+	})
+}
+
+func TestAcc_BackupPolicy_BasicUseCase_Import(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	// The policy has a schedule and no expiration, so the import must leave expire_after_days out of the state instead of writing 0.
+	_, cleanup := testClient().BackupPolicy.CreateWithRequest(t, id, sdk.NewCreateBackupPolicyRequest(id).WithSchedule(schedule))
+	t.Cleanup(cleanup)
+
+	basic := model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithScheduleHours(scheduleHours)
+	ref := basic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.BackupPolicy),
+		Steps: []resource.TestStep{
+			// import - enforcing mode
+			{
+				Config:             config.FromModels(t, basic),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      helpers.EncodeResourceIdentifier(id),
+				ImportStatePersist: true,
+				ImportStateCheck: assertThatImport(t,
+					resourceassert.ImportedBackupPolicyResource(t, helpers.EncodeResourceIdentifier(id)).
+						HasScheduleHours(scheduleHours).
+						HasNoExpireAfterDays(),
+				),
+			},
+			// The plan after the import resets the value that the configuration omits.
+			// with_retention_lock is ForceNew and the import writes "false" while the configuration leaves "default",
+			// so the policy is replaced.
+			{
+				Config: config.FromModels(t, basic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(ref, "with_retention_lock", tfjson.ActionDelete, sdk.String("false"), sdk.String(r.BooleanDefault)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.BackupPolicyResource(t, ref).
+						HasScheduleHours(scheduleHours).
+						HasWithRetentionLock(r.BooleanDefault),
+					objectassert.BackupPolicy(t, id).
+						HasSchedule(schedule).
+						HasNoExpireAfterDays().
+						HasHasRetentionLock(false),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_BackupPolicy_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+	externalComment := random.Comment()
+	const expireAfterDays = 7
+
+	// with_retention_lock cannot be changed after creation.
+	complete := model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).
+		WithExpireAfterDays(expireAfterDays).
+		WithScheduleHours(scheduleHours).
+		WithComment(comment).
+		WithWithRetentionLockBool(true)
+	ref := complete.ResourceReference()
+
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
+	assertComplete := backupPolicyAssertions(t, ref, id, expireAfterDays, schedule, comment, true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.BackupPolicy),
+		Steps: []resource.TestStep{
+			// create with all optionals
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
 					},
 				},
 				Config: config.FromModels(t, complete),
 				Check:  assertThat(t, assertComplete...),
 			},
+			// import - enforcing mode
 			{
-				Config:            config.FromModels(t, complete),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateCheck:  backupPolicyImportChecks(t, id, expireAfterDays, schedule, comment, true),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, complete),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateCheck:         backupPolicyImportChecks(t, id, expireAfterDays, schedule, comment, true),
 			},
+			// import - permissive mode
 			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   config.FromModels(t, providerModelImportPermissiveMode, complete),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
+			},
+			// change the comment externally
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().BackupPolicy.Alter(t, sdk.NewAlterBackupPolicyRequest(id).
 						WithSet(*sdk.NewBackupPolicySetRequest().WithComment(externalComment)),
@@ -142,7 +251,7 @@ func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(complete.ResourceReference(), plancheck.ResourceActionUpdate),
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectDrift(ref, "comment", sdk.String(comment), sdk.String(externalComment)),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(externalComment), sdk.String(comment)),
 					},
@@ -154,7 +263,7 @@ func TestAcc_BackupPolicy_BasicUseCase(t *testing.T) {
 	})
 }
 
-func backupPolicyAssertions(t *testing.T, ref string, id sdk.SchemaObjectIdentifier, expireAfterDays int, schedule, comment string, retentionLock bool, scheduleLeftEmpty bool) []assert.TestCheckFuncProvider {
+func backupPolicyAssertions(t *testing.T, ref string, id sdk.SchemaObjectIdentifier, expireAfterDays int, schedule, comment string, retentionLock bool) []assert.TestCheckFuncProvider {
 	t.Helper()
 
 	resourceCheck := resourceassert.BackupPolicyResource(t, ref).
@@ -162,7 +271,7 @@ func backupPolicyAssertions(t *testing.T, ref string, id sdk.SchemaObjectIdentif
 		HasDatabaseString(id.DatabaseName()).
 		HasSchemaString(id.SchemaName()).
 		HasExpireAfterDays(expireAfterDays).
-		HasWithRetentionLockBool(retentionLock).
+		HasWithRetentionLock(retentionLockConfigValue(retentionLock)).
 		HasFullyQualifiedNameString(id.FullyQualifiedName())
 	showCheck := resourceshowoutputassert.BackupPolicyShowOutput(t, ref).
 		HasName(id.Name()).
@@ -212,17 +321,13 @@ func backupPolicyAssertions(t *testing.T, ref string, id sdk.SchemaObjectIdentif
 		details = details.HasComment(comment)
 	}
 	if schedule == "" {
-		if scheduleLeftEmpty {
-			resourceCheck = resourceCheck.HasScheduleEmpty()
-		} else {
-			resourceCheck = resourceCheck.HasNoSchedule()
-		}
+		resourceCheck = resourceCheck.HasNoSchedule()
 		showCheck = showCheck.HasSchedule("")
 		describeCheck = describeCheck.HasSchedule("")
 		showObject = showObject.HasNoSchedule()
 		details = details.HasNoSchedule()
 	} else {
-		resourceCheck = resourceCheck.HasScheduleString(schedule)
+		resourceCheck = resourceCheck.HasScheduleHours(scheduleHours)
 		showCheck = showCheck.HasSchedule(schedule)
 		describeCheck = describeCheck.HasSchedule(schedule)
 		showObject = showObject.HasSchedule(schedule)
@@ -265,13 +370,260 @@ func backupPolicyImportChecks(t *testing.T, id sdk.SchemaObjectIdentifier, expir
 		describeCheck = describeCheck.HasComment(comment)
 	}
 	if schedule == "" {
-		resourceCheck = resourceCheck.HasScheduleEmpty()
+		resourceCheck = resourceCheck.HasNoSchedule()
 		showCheck = showCheck.HasSchedule("")
 		describeCheck = describeCheck.HasSchedule("")
 	} else {
-		resourceCheck = resourceCheck.HasScheduleString(schedule)
+		resourceCheck = resourceCheck.HasScheduleHours(scheduleHours)
 		showCheck = showCheck.HasSchedule(schedule)
 		describeCheck = describeCheck.HasSchedule(schedule)
 	}
 	return assertThatImport(t, resourceCheck, showCheck, describeCheck)
+}
+
+func TestAcc_BackupPolicy_ScheduleVariants(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	const cron = "0 0 * * * UTC"
+
+	newModel := func() *model.BackupPolicyModel {
+		return model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).WithExpireAfterDays(7).WithWithRetentionLockBool(false)
+	}
+	hours := newModel().WithScheduleHours(2)
+	moreHours := newModel().WithScheduleHours(3)
+	moreMinutes := newModel().WithScheduleMinutes(120)
+	minutes := newModel().WithScheduleMinutes(90)
+	usingCron := newModel().WithScheduleCron(cron)
+	ref := hours.ResourceReference()
+
+	step := func(m *model.BackupPolicyModel, resourceCheck func(*resourceassert.BackupPolicyResourceAssert) *resourceassert.BackupPolicyResourceAssert, showSchedule string) resource.TestStep {
+		return resource.TestStep{
+			ConfigPlanChecks: resource.ConfigPlanChecks{
+				PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+				},
+			},
+			Config: config.FromModels(t, m),
+			Check: assertThat(t,
+				resourceCheck(resourceassert.BackupPolicyResource(t, ref)),
+				resourceshowoutputassert.BackupPolicyShowOutput(t, ref).HasSchedule(showSchedule),
+				resourceshowoutputassert.BackupPolicyDescribeOutput(t, ref).HasSchedule(showSchedule),
+				objectassert.BackupPolicy(t, id).HasSchedule(showSchedule),
+			),
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.BackupPolicy),
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, hours),
+				Check: assertThat(t,
+					resourceassert.BackupPolicyResource(t, ref).HasScheduleHours(2),
+					resourceshowoutputassert.BackupPolicyShowOutput(t, ref).HasSchedule("2 HOUR"),
+					objectassert.BackupPolicy(t, id).HasSchedule("2 HOUR"),
+				),
+			},
+			{
+				Config:            config.FromModels(t, hours),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			step(minutes, func(a *resourceassert.BackupPolicyResourceAssert) *resourceassert.BackupPolicyResourceAssert {
+				return a.HasScheduleMinutes(90)
+			}, "90 MINUTE"),
+			step(usingCron, func(a *resourceassert.BackupPolicyResourceAssert) *resourceassert.BackupPolicyResourceAssert {
+				return a.HasScheduleCron(cron)
+			}, "USING CRON "+cron),
+			{
+				Config:            config.FromModels(t, usingCron),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			step(hours, func(a *resourceassert.BackupPolicyResourceAssert) *resourceassert.BackupPolicyResourceAssert {
+				return a.HasScheduleHours(2)
+			}, "2 HOUR"),
+			// The value of the same sub-attribute changes in place.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "schedule.0.hours", tfjson.ActionUpdate, sdk.String("2"), sdk.String("3")),
+					},
+				},
+				Config: config.FromModels(t, moreHours),
+				Check: assertThat(t,
+					resourceassert.BackupPolicyResource(t, ref).HasScheduleHours(3),
+					resourceshowoutputassert.BackupPolicyShowOutput(t, ref).HasSchedule("3 HOUR"),
+					objectassert.BackupPolicy(t, id).HasSchedule("3 HOUR"),
+				),
+			},
+			step(moreMinutes, func(a *resourceassert.BackupPolicyResourceAssert) *resourceassert.BackupPolicyResourceAssert {
+				return a.HasScheduleMinutes(120)
+			}, "120 MINUTE"),
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectChange(ref, "schedule.0.minutes", tfjson.ActionUpdate, sdk.String("120"), sdk.String("90")),
+					},
+				},
+				Config: config.FromModels(t, minutes),
+				Check:  assertThat(t, resourceassert.BackupPolicyResource(t, ref).HasScheduleMinutes(90)),
+			},
+		},
+	})
+}
+
+func TestAcc_BackupPolicy_ScheduleSchemaValidation(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newModel := func() *model.BackupPolicyModel {
+		return model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).WithExpireAfterDays(7)
+	}
+
+	hoursAndMinutes := newModel().WithScheduleValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"hours":   tfconfig.IntegerVariable(2),
+		"minutes": tfconfig.IntegerVariable(90),
+	}))
+	hoursAndCron := newModel().WithScheduleValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"hours":      tfconfig.IntegerVariable(2),
+		"using_cron": tfconfig.StringVariable("0 0 * * * UTC"),
+	}))
+	minutesAndCron := newModel().WithScheduleValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"minutes":    tfconfig.IntegerVariable(90),
+		"using_cron": tfconfig.StringVariable("0 0 * * * UTC"),
+	}))
+	allOfThem := newModel().WithScheduleValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"hours":      tfconfig.IntegerVariable(2),
+		"minutes":    tfconfig.IntegerVariable(90),
+		"using_cron": tfconfig.StringVariable("0 0 * * * UTC"),
+	}))
+	emptyBlock := newModel().WithScheduleValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
+	}))
+	neither := model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).WithComment("no schedule and no expiration")
+	zeroHours := newModel().WithScheduleHours(0)
+	tooFewMinutes := newModel().WithScheduleMinutes(59)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.BackupPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, hoursAndMinutes),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Conflicting configuration arguments"),
+			},
+			{
+				Config:      config.FromModels(t, hoursAndCron),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Conflicting configuration arguments"),
+			},
+			{
+				Config:      config.FromModels(t, minutesAndCron),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Conflicting configuration arguments"),
+			},
+			{
+				Config:      config.FromModels(t, allOfThem),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Conflicting configuration arguments"),
+			},
+			{
+				Config:      config.FromModels(t, emptyBlock),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Missing required argument"),
+			},
+			{
+				Config:      config.FromModels(t, neither),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("Missing required argument"),
+			},
+			{
+				Config:      config.FromModels(t, zeroHours),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected hours to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, tooFewMinutes),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`expected minutes to be at least \(60\), got 59`),
+			},
+		},
+	})
+}
+
+// Snowflake rejects UNSET of the schedule and the expiration in one statement, and a policy always keeps at least one of them
+// ("Cannot unset expire_after_days if schedule is also not set."). The only way to drop one is to set the other in the same update,
+// so the resource sends SET before UNSET.
+func TestAcc_BackupPolicy_SwitchBetweenScheduleAndExpiration(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	newModel := func() *model.BackupPolicyModel {
+		return model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).WithWithRetentionLockBool(false)
+	}
+	scheduleOnly := newModel().WithScheduleHours(2)
+	expirationOnly := newModel().WithExpireAfterDays(7)
+	ref := scheduleOnly.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.BackupPolicy),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, scheduleOnly),
+				Check: assertThat(t,
+					resourceassert.BackupPolicyResource(t, ref).HasScheduleHours(2),
+					objectassert.BackupPolicy(t, id).HasSchedule("2 HOUR").HasNoExpireAfterDays(),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, expirationOnly),
+				Check: assertThat(t,
+					resourceassert.BackupPolicyResource(t, ref).HasNoSchedule().HasExpireAfterDays(7),
+					objectassert.BackupPolicy(t, id).HasNoSchedule().HasExpireAfterDays(7),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, scheduleOnly),
+				Check: assertThat(t,
+					resourceassert.BackupPolicyResource(t, ref).HasScheduleHours(2),
+					objectassert.BackupPolicy(t, id).HasSchedule("2 HOUR").HasNoExpireAfterDays(),
+				),
+			},
+		},
+	})
+}
+
+// A policy without the retention lock is configured without with_retention_lock, which leaves the special default in the state.
+func retentionLockConfigValue(retentionLock bool) string {
+	if retentionLock {
+		return "true"
+	}
+	return r.BooleanDefault
 }

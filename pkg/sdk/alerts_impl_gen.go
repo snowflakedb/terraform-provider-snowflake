@@ -10,8 +10,8 @@ import (
 
 var (
 	_ Alerts                       = (*alerts)(nil)
-	_ convertibleRow[Alert]        = new(alertDBRow)
-	_ convertibleRow[AlertDetails] = new(alertDetailRow)
+	_ convertibleRow[Alert]        = new(alertsRow)
+	_ convertibleRow[AlertDetails] = new(alertDescRow)
 )
 
 type alerts struct {
@@ -39,16 +39,16 @@ func (v *alerts) DropSafely(ctx context.Context, id SchemaObjectIdentifier) erro
 
 func (v *alerts) Show(ctx context.Context, request *ShowAlertRequest) ([]Alert, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[alertDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[alertsRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[alertDBRow, Alert](dbRows)
+	return convertRows[alertsRow, Alert](dbRows)
 }
 
 func (v *alerts) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error) {
 	request := NewShowAlertRequest().
-		WithIn(In{Schema: id.SchemaId()}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	alerts, err := v.Show(ctx, request)
 	if err != nil {
@@ -65,7 +65,7 @@ func (v *alerts) Describe(ctx context.Context, id SchemaObjectIdentifier) (*Aler
 	opts := &DescribeAlertOptions{
 		name: id,
 	}
-	result, err := validateAndQueryOne[alertDetailRow](v.client, ctx, opts)
+	result, err := validateAndQueryOne[alertDescRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -82,14 +82,8 @@ func (r *CreateAlertRequest) toOpts() *CreateAlertOptions {
 		Comment:     r.Comment,
 		action:      r.action,
 	}
-	if r.condition != nil {
-		condition := make([]AlertCondition, len(r.condition))
-		for i, v := range r.condition {
-			condition[i] = AlertCondition{
-				Condition: v.Condition,
-			}
-		}
-		opts.condition = condition
+	opts.condition = AlertCondition{
+		Condition: r.condition.Condition,
 	}
 	return opts
 }
@@ -98,7 +92,8 @@ func (r *AlterAlertRequest) toOpts() *AlterAlertOptions {
 	opts := &AlterAlertOptions{
 		IfExists:        r.IfExists,
 		name:            r.name,
-		Action:          r.Action,
+		Resume:          r.Resume,
+		Suspend:         r.Suspend,
 		ModifyCondition: r.ModifyCondition,
 		ModifyAction:    r.ModifyAction,
 	}
@@ -138,19 +133,19 @@ func (r *ShowAlertRequest) toOpts() *ShowAlertOptions {
 	return opts
 }
 
-func (r alertDBRow) convert() (*Alert, error) {
+func (r alertsRow) convert() (*Alert, error) {
 	result := &Alert{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		Schedule:     r.Schedule,
 		Condition:    r.Condition,
 		Action:       r.Action,
 	}
 	mapNullString(&result.Comment, r.Comment)
-	mapNullStringToNonNullableField(&result.Warehouse, r.Warehouse)
+	mapNullStringWithMapping(&result.Warehouse, r.Warehouse, ParseAccountObjectIdentifier)
+	mapNullString(&result.Schedule, r.Schedule)
 	mapStringWithMapping(&result.State, r.State, ToAlertState)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	return result, nil
@@ -163,19 +158,19 @@ func (r *DescribeAlertRequest) toOpts() *DescribeAlertOptions {
 	return opts
 }
 
-func (r alertDetailRow) convert() (*AlertDetails, error) {
+func (r alertDescRow) convert() (*AlertDetails, error) {
 	result := &AlertDetails{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
 		DatabaseName: r.DatabaseName,
 		SchemaName:   r.SchemaName,
 		Owner:        r.Owner,
-		Schedule:     r.Schedule,
 		State:        r.State,
 		Condition:    r.Condition,
 		Action:       r.Action,
 	}
 	mapNullString(&result.Comment, r.Comment)
-	mapNullStringToNonNullableField(&result.Warehouse, r.Warehouse)
+	mapNullStringWithMapping(&result.Warehouse, r.Warehouse, ParseAccountObjectIdentifier)
+	mapNullString(&result.Schedule, r.Schedule)
 	return result, nil
 }

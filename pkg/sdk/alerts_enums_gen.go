@@ -7,30 +7,6 @@ import (
 	"strings"
 )
 
-type AlertAction string
-
-const (
-	AlertActionResume  AlertAction = "RESUME"
-	AlertActionSuspend AlertAction = "SUSPEND"
-)
-
-var AllAlertActions = []AlertAction{
-	AlertActionResume,
-	AlertActionSuspend,
-}
-
-func ToAlertAction(s string) (AlertAction, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(AlertActionResume):
-		return AlertActionResume, nil
-	case string(AlertActionSuspend):
-		return AlertActionSuspend, nil
-	default:
-		return "", fmt.Errorf("invalid alert action: %s", s)
-	}
-}
-
 type AlertState string
 
 const (

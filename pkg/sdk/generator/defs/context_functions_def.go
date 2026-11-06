@@ -138,6 +138,14 @@ var contextFunctionsDef = g.NewInterface(
 		OptionalText("CURRENT_WAREHOUSE", g.WithPlainFieldName("Value"), g.WithRequiredInPlain()),
 	contextFunctionSelect("CurrentWarehouse", "SELECT CURRENT_WAREHOUSE() as CURRENT_WAREHOUSE"),
 	[]g.CustomOperationOption{g.WithNoRequest()},
+).CustomShowOperationWithPairedStructsAndOpts(
+	"CurrentVersion",
+	g.ShowMappingKindSingleValue,
+	"https://docs.snowflake.com/en/sql-reference/functions/current_version",
+	g.StructPair("currentVersionDBRow", "CurrentVersion").
+		OptionalText("CURRENT_VERSION", g.WithPlainFieldName("Value"), g.WithRequiredInPlain()),
+	contextFunctionSelect("CurrentVersion", "SELECT CURRENT_VERSION() as CURRENT_VERSION"),
+	[]g.CustomOperationOption{g.WithNoRequest()},
 ).CustomShowOperationWithPairedStructs(
 	"IsRoleInSession",
 	g.ShowMappingKindSingleValue,

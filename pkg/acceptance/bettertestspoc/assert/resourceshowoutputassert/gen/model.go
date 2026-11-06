@@ -12,7 +12,9 @@ type ResourceShowOutputAssertionsModel struct {
 	Name             string
 	DataSourceName   string
 	IsDescribeOutput bool
-	Attributes       []ResourceShowOutputAssertionModel
+	// ReusedBase is set for a variant that reuses its base's SHOW assertion: only its constructors are generated.
+	ReusedBase string
+	Attributes []ResourceShowOutputAssertionModel
 
 	*genhelpers.PreambleModel
 }
@@ -45,6 +47,7 @@ func ModelFromSdkObjectDetails(sdkObject SdkObjectShowOutputDetails, preamble *g
 		Name:             name,
 		DataSourceName:   dataSourceName,
 		IsDescribeOutput: sdkObject.IsDataSourceOutput,
+		ReusedBase:       sdkObject.reusedBase,
 		Attributes:       attributes,
 		PreambleModel:    preamble,
 	}
@@ -61,6 +64,8 @@ func MapToResourceShowOutputAssertion(field genhelpers.Field) ResourceShowOutput
 		assertionCreator = "BoolValueSet"
 	case concreteTypeWithoutPtr == "int":
 		assertionCreator = "IntValueSet"
+	case concreteTypeWithoutPtr == "int64":
+		assertionCreator = "Int64ValueSet"
 	case concreteTypeWithoutPtr == "float64":
 		assertionCreator = "FloatValueSet"
 	case concreteTypeWithoutPtr == "string":

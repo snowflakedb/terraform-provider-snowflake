@@ -33,26 +33,37 @@ var QuotaUserTagsOperatorEnumDef = g.NewEnum(
 // AI FUNCTION and CORTEX CODE instances are plain names; the other domains take object references.
 // Without an instance, the whole domain is used.
 func quotaSharedResourceArgs(name string) *g.QueryStruct {
-	reference := func(objectType string) *g.IdentifierTransformer {
-		return g.IdentifierOptions().SystemReference(objectType).InSubquery()
-	}
 	return g.NewQueryStruct(name).
 		Enum("Domain", QuotaSharedResourceDomainEnumDef, g.KeywordOptions().SingleQuotes().Required()).
 		OptionalText("InstanceName", g.KeywordOptions().SingleQuotes()).
-		OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), reference("WAREHOUSE")).
-		OptionalIdentifier("CortexAgent", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), reference("CORTEX AGENT")).
-		OptionalIdentifier("SnowflakeIntelligence", g.KindOfT[sdkcommons.AccountObjectIdentifier](), reference("SNOWFLAKE INTELLIGENCE")).
+		OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SystemReference("WAREHOUSE")).
+		OptionalIdentifier("CortexAgent", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SystemReference("CORTEX AGENT")).
+		OptionalIdentifier("SnowflakeIntelligence", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SystemReference("SNOWFLAKE INTELLIGENCE")).
 		// the AI Gateway reference follows the guide; only its whole domain is tested, as an instance needs the AI Gateway preview
-		OptionalIdentifier("AiGateway", g.KindOfT[sdkcommons.AccountObjectIdentifier](), reference("AI GATEWAY")).
+		OptionalIdentifier("AiGateway", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SystemReference("AI GATEWAY")).
 		WithValidation(g.MoreThanOneValueSet, "InstanceName", "Warehouse", "CortexAgent", "SnowflakeIntelligence", "AiGateway").
 		WithAdditionalValidations()
 }
 
 func quotaTagValue(name string) *g.QueryStruct {
 	return g.NewQueryStruct(name).
-		Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET").InSubquery()).
-		Text("Value", g.KeywordOptions().SingleQuotes().Required()).
-		WithValidation(g.ValidIdentifier, "Tag")
+		QueryStructField(
+			"Reference",
+			g.NewQueryStruct(name+"Reference").
+				SQLWithCustomFieldName("function", "SYSTEM$REFERENCE").
+				QueryStructField(
+					"Arguments",
+					g.NewQueryStruct(name+"ReferenceArguments").
+						SQLWithCustomFieldName("objectType", "'TAG'").
+						Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SingleQuotes().Required()).
+						SQLWithCustomFieldName("scope", "'SESSION'").
+						SQLWithCustomFieldName("privilege", "'APPLYBUDGET'").
+						WithValidation(g.ValidIdentifier, "Tag"),
+					g.ListOptions().MustParentheses().Required(),
+				),
+			g.ListOptions().NoComma().Required(),
+		).
+		Text("Value", g.KeywordOptions().SingleQuotes().Required())
 }
 
 // SET_USER_TAGS replaces the tags that select the users (and any tags excluded with EXCLUDE_USERS('TAG', ...)).

@@ -72,6 +72,15 @@ func (c *SnowflakeDefaultsClient) DefaultEnableCortexAnalystLevel(t *testing.T) 
 	return sdk.ParameterTypeSnowflakeDefault
 }
 
+// TODO(SNOW-4369006): Adjust once Snowflake environments converge on the returned output.
+func (c *SnowflakeDefaultsClient) ApiIntegrationAllowedAuthenticationSecrets(t *testing.T, expectedValue string) string {
+	t.Helper()
+	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
+		return ""
+	}
+	return expectedValue
+}
+
 // DefaultEnableNotebookCreationInPersonalDbLevel returns the expected parameter
 // level for ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB after unset. Prod accounts
 // surface SYSTEM; non-prod accounts inherit the Snowflake default (empty level).
@@ -81,15 +90,4 @@ func (c *SnowflakeDefaultsClient) DefaultEnableNotebookCreationInPersonalDbLevel
 		return sdk.ParameterTypeSystem
 	}
 	return sdk.ParameterTypeSnowflakeDefault
-}
-
-// DescribeAllowedAuthenticationSecrets returns the DESCRIBE value of
-// ALLOWED_AUTHENTICATION_SECRETS. Prod hides the property, so the value is empty.
-// Non-prod returns the stored display value (for example "[]" or "ALL").
-func (c *SnowflakeDefaultsClient) DescribeAllowedAuthenticationSecrets(t *testing.T, displayed string) string {
-	t.Helper()
-	if c.context.snowflakeEnvironment == testenvs.SnowflakeProdEnvironment {
-		return ""
-	}
-	return displayed
 }

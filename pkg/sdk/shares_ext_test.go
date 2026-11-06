@@ -1,6 +1,8 @@
 package sdk
 
 import (
+	"context"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -160,6 +162,13 @@ func Test_parseShareRecipients(t *testing.T) {
 			},
 			Total: 4,
 		},
+		{Name: "data exchange only (share linked to a listing)", Value: "ALL ACCOUNTS IN DATA EXCHANGE", Result: []AccountIdentifier{}},
+		{Name: "data exchange only, quoted", Value: "'ALL ACCOUNTS IN DATA EXCHANGE'", Result: []AccountIdentifier{}},
+		{
+			Name:   "data exchange next to accounts",
+			Value:  "ALL ACCOUNTS IN DATA EXCHANGE,ORG.ACC1",
+			Result: []AccountIdentifier{NewAccountIdentifier("ORG", "ACC1")},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -191,4 +200,79 @@ func Test_showShareTargetAccountsOptions_sql(t *testing.T) {
 	query, err = structToSQL(&showShareTargetAccountsOptions{name: `it's`})
 	require.NoError(t, err)
 	require.Contains(t, query, `NAME = 'it\'s'`)
+}
+
+func Test_shareDescRow_convert_names(t *testing.T) {
+	testCases := []struct {
+		name     string
+		kind     string
+		rowName  string
+		expected ObjectIdentifier
+	}{
+		{name: "database", kind: "DATABASE", rowName: "DB", expected: NewAccountObjectIdentifier("DB")},
+		{name: "quoted database", kind: "DATABASE", rowName: `"my db"`, expected: NewAccountObjectIdentifier("my db")},
+		{name: "schema", kind: "SCHEMA", rowName: "DB.SCH", expected: NewDatabaseObjectIdentifier("DB", "SCH")},
+		{name: "schema with a dot", kind: "SCHEMA", rowName: `DB."A.B"`, expected: NewDatabaseObjectIdentifier("DB", "A.B")},
+		{name: "table", kind: "TABLE", rowName: "DB.SCH.T", expected: NewSchemaObjectIdentifier("DB", "SCH", "T")},
+		{name: "quoted parts", kind: "TABLE", rowName: `"DB"."A.B"."T.X"`, expected: NewSchemaObjectIdentifier("DB", "A.B", "T.X")},
+		{name: "table in a schema with a dot", kind: "TABLE", rowName: `DB."A.B".T`, expected: NewSchemaObjectIdentifier("DB", "A.B", "T")},
+		{name: "quoted table with a dot", kind: "TABLE", rowName: `DB.SCH."T.X"`, expected: NewSchemaObjectIdentifier("DB", "SCH", "T.X")},
+		{name: "view", kind: "VIEW", rowName: "DB.SCH.V", expected: NewSchemaObjectIdentifier("DB", "SCH", "V")},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			details, err := shareDescRow{Kind: tc.kind, Name: tc.rowName}.convert()
+			require.NoError(t, err)
+			require.Equal(t, ObjectType(tc.kind), details.Kind)
+			require.Equal(t, tc.expected, details.Name)
+		})
+	}
+}
+
+func Test_shareDescRow_convert_invalidName(t *testing.T) {
+	_, err := shareDescRow{Kind: "TABLE", Name: "DB.SCH.T.X"}.convert()
+	require.Error(t, err)
+}
+
+type showTargetAccountsStub struct {
+	Shares
+	accounts []AccountIdentifier
+	err      error
+	called   bool
+}
+
+func (s *showTargetAccountsStub) ShowTargetAccounts(context.Context, AccountObjectIdentifier) ([]AccountIdentifier, error) {
+	s.called = true
+	return s.accounts, s.err
+}
+
+func Test_Share_CompleteTo(t *testing.T) {
+	account := func(name string) AccountIdentifier { return NewAccountIdentifier("org", name) }
+
+	t.Run("all the recipients are listed", func(t *testing.T) {
+		for _, share := range []*Share{
+			{Name: "S", To: []AccountIdentifier{account("a"), account("b")}},
+			{Name: "S", To: []AccountIdentifier{account("a"), account("b"), account("c")}, ToTotal: 3},
+		} {
+			stub := &showTargetAccountsStub{}
+			require.NoError(t, share.CompleteTo(context.Background(), stub))
+			require.False(t, stub.called)
+		}
+	})
+
+	t.Run("merges, sorts and deduplicates the recipients", func(t *testing.T) {
+		share := &Share{Name: "S", To: []AccountIdentifier{account("c"), account("a"), account("z_new")}, ToTotal: 5}
+		stub := &showTargetAccountsStub{accounts: []AccountIdentifier{account("a"), account("b"), account("c"), account("d")}}
+		require.NoError(t, share.CompleteTo(context.Background(), stub))
+		require.True(t, stub.called)
+		require.Equal(t, []AccountIdentifier{account("a"), account("b"), account("c"), account("d"), account("z_new")}, share.To)
+	})
+
+	t.Run("a failed lookup keeps the listed recipients", func(t *testing.T) {
+		listed := []AccountIdentifier{account("a"), account("b"), account("c")}
+		share := &Share{Name: "S", To: listed, ToTotal: 4}
+		lookupErr := errors.New("insufficient privileges")
+		require.ErrorIs(t, share.CompleteTo(context.Background(), &showTargetAccountsStub{err: lookupErr}), lookupErr)
+		require.Equal(t, listed, share.To)
+	})
 }
