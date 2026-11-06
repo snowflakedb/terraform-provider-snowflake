@@ -24,6 +24,7 @@
 - [snowflake_postgres_mirrors](./docs/data-sources/postgres_mirrors)
 - [snowflake_procedures](./docs/data-sources/procedures)
 - [snowflake_projection_policies](./docs/data-sources/projection_policies)
+- [snowflake_quotas](./docs/data-sources/quotas)
 - [snowflake_replication_groups](./docs/data-sources/replication_groups)
 - [snowflake_semantic_views](./docs/data-sources/semantic_views)
 - [snowflake_sequences](./docs/data-sources/sequences)
