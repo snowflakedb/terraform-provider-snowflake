@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"reflect"
 	"slices"
 	"strings"
 
@@ -21,18 +22,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
+// The enums are validated case-sensitively on purpose: most of them live inside sets, where DiffSuppressFunc doesn't apply,
+// so a value normalized on read would otherwise produce a permanent diff against a differently cased configuration.
 func quotaEnumValuesDescription[T ~string](values []T) string {
 	return fmt.Sprintf("Valid values are (case-sensitive): %s.", possibleValuesListed(values))
-}
-
-// quotaEnumValidation is case-sensitive on purpose: most enums below live inside sets, where DiffSuppressFunc doesn't apply,
-// so a value normalized on read would otherwise produce a permanent diff against a differently cased configuration.
-func quotaEnumValidation[T ~string](values []T) schema.SchemaValidateDiagFunc {
-	allowed := make([]string, len(values))
-	for i, value := range values {
-		allowed[i] = string(value)
-	}
-	return validation.ToDiagFunc(validation.StringInSlice(allowed, false))
 }
 
 func quotaTagValueSchema(description string) *schema.Schema {
@@ -116,7 +109,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Type:             schema.TypeString,
 					Required:         true,
 					Description:      joinWithSpace("Monitored domain.", quotaEnumValuesDescription(sdk.AllQuotaSharedResourceDomains)),
-					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaSharedResourceDomains),
+					ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllQuotaSharedResourceDomains), false),
 				},
 				"instance": {
 					Type:     schema.TypeString,
@@ -144,7 +137,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Default:          string(sdk.QuotaUserTagsOperatorUnion),
 					Description:      joinWithSpace("How the tags are combined.", quotaEnumValuesDescription(sdk.AllQuotaUserTagsOperators)),
-					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaUserTagsOperators),
+					ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllQuotaUserTagsOperators), false),
 				},
 				"tag": func() *schema.Schema {
 					s := quotaTagValueSchema("Tag and value pairs that select the users.")
@@ -162,16 +155,18 @@ var quotaSchema = map[string]*schema.Schema{
 		return s
 	}(),
 	"included_users": {
-		Type:        schema.TypeSet,
-		Optional:    true,
-		Elem:        &schema.Schema{Type: schema.TypeString, DiffSuppressFunc: suppressIdentifierQuoting},
-		Description: relatedResourceDescription("Names of individual users the quota applies to. Names are resolved case-insensitively.", resources.User),
+		Type:             schema.TypeSet,
+		Optional:         true,
+		Elem:             &schema.Schema{Type: schema.TypeString},
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("included_users"),
+		Description:      relatedResourceDescription("Names of individual users the quota applies to. Names are resolved case-insensitively.", resources.User),
 	},
 	"excluded_users": {
-		Type:        schema.TypeSet,
-		Optional:    true,
-		Elem:        &schema.Schema{Type: schema.TypeString, DiffSuppressFunc: suppressIdentifierQuoting},
-		Description: relatedResourceDescription("Names of individual users excluded from the quota. Names are resolved case-insensitively.", resources.User),
+		Type:             schema.TypeSet,
+		Optional:         true,
+		Elem:             &schema.Schema{Type: schema.TypeString},
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("excluded_users"),
+		Description:      relatedResourceDescription("Names of individual users excluded from the quota. Names are resolved case-insensitively.", resources.User),
 	},
 	"per_user_limit_monthly": quotaPerUserLimitSchema("monthly"),
 	"per_user_limit_weekly":  quotaPerUserLimitSchema("weekly"),
@@ -205,7 +200,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Default:          string(sdk.QuotaSpendStrategyProjected),
 					Description:      joinWithSpace("Whether the threshold applies to actual or projected spend.", quotaEnumValuesDescription(sdk.AllQuotaSpendStrategies)),
-					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaSpendStrategies),
+					ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllQuotaSpendStrategies), false),
 				},
 				"notify_user": {
 					Type:        schema.TypeBool,
@@ -218,7 +213,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Default:          string(sdk.QuotaCycleMonthly),
 					Description:      joinWithSpace("Cycle the threshold applies to.", quotaEnumValuesDescription(sdk.AllQuotaCycles)),
-					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaCycles),
+					ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllQuotaCycles), false),
 				},
 			},
 		},
@@ -229,9 +224,9 @@ var quotaSchema = map[string]*schema.Schema{
 		Elem: &schema.Schema{
 			Type:             schema.TypeString,
 			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
-		Description: relatedResourceDescription("Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application.", resources.NotificationIntegration),
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("notification_integrations"),
+		Description:      relatedResourceDescription("Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application.", resources.NotificationIntegration),
 	},
 	"admin_emails": {
 		Type:        schema.TypeSet,
@@ -260,7 +255,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Optional:         true,
 					Default:          string(sdk.QuotaSpendStrategyActual),
 					Description:      joinWithSpace("Whether the threshold applies to actual or projected spend.", quotaEnumValuesDescription(sdk.AllQuotaSpendStrategies)),
-					ValidateDiagFunc: quotaEnumValidation(sdk.AllQuotaSpendStrategies),
+					ValidateDiagFunc: StringInSlice(sdk.AsStringList(sdk.AllQuotaSpendStrategies), false),
 				},
 				"threshold": {
 					Type:         schema.TypeInt,
@@ -576,14 +571,18 @@ func UpdateQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		id = newId
 	}
 
-	if d.HasChange("comment") {
-		request := sdk.NewAlterQuotaRequest(id)
-		if comment := d.Get("comment").(string); comment != "" {
-			request.WithSet(*sdk.NewQuotaSetRequest().WithComment(comment))
-		} else {
-			request.WithUnset(*sdk.NewQuotaUnsetRequest().WithComment(true))
+	set := sdk.NewQuotaSetRequest()
+	unset := sdk.NewQuotaUnsetRequest()
+	if err := stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment); err != nil {
+		return diag.FromErr(err)
+	}
+	if !reflect.DeepEqual(*set, *sdk.NewQuotaSetRequest()) {
+		if err := client.Quotas.Alter(ctx, sdk.NewAlterQuotaRequest(id).WithSet(*set)); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating the comment of quota %v, err = %w", id.FullyQualifiedName(), err))
 		}
-		if err := client.Quotas.Alter(ctx, request); err != nil {
+	}
+	if !reflect.DeepEqual(*unset, *sdk.NewQuotaUnsetRequest()) {
+		if err := client.Quotas.Alter(ctx, sdk.NewAlterQuotaRequest(id).WithUnset(*unset)); err != nil {
 			return diag.FromErr(fmt.Errorf("error updating the comment of quota %v, err = %w", id.FullyQualifiedName(), err))
 		}
 	}
