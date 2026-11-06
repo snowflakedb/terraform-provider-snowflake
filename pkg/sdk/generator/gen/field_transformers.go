@@ -1,9 +1,6 @@
 package gen
 
-import (
-	"slices"
-	"strings"
-)
+import "slices"
 
 type FieldTransformer interface {
 	Transform(f *Field) *Field
@@ -283,7 +280,6 @@ type IdentifierTransformer struct {
 	quotes          string
 	equals          string
 	systemReference string
-	inSubquery      bool
 }
 
 func IdentifierOptions() *IdentifierTransformer {
@@ -325,15 +321,8 @@ func (v *IdentifierTransformer) Equals() *IdentifierTransformer {
 	return v
 }
 
-// SystemReference renders the identifier as SYSTEM$REFERENCE('<objectType>', '<fqn>'[, '<extraArg>'...]).
-// Extra arguments are e.g. the reference scope and privileges: SystemReference("TAG", "SESSION", "APPLYBUDGET").
-func (v *IdentifierTransformer) SystemReference(objectType string, extraArgs ...string) *IdentifierTransformer {
-	v.systemReference = strings.Join(append([]string{objectType}, extraArgs...), ",")
-	return v
-}
-
-func (v *IdentifierTransformer) InSubquery() *IdentifierTransformer {
-	v.inSubquery = true
+func (v *IdentifierTransformer) SystemReference(objectType string) *IdentifierTransformer {
+	v.systemReference = objectType
 	return v
 }
 
@@ -344,9 +333,6 @@ func (v *IdentifierTransformer) Transform(f *Field) *Field {
 	}
 	if v.systemReference != "" {
 		addTagIfMissing(f.Tags, "ddl", "system_reference")
-		if v.inSubquery {
-			addTagIfMissing(f.Tags, "ddl", "subquery")
-		}
 		addTagIfMissing(f.Tags, "sql", v.systemReference)
 	} else {
 		addTagIfMissing(f.Tags, "sql", v.sqlPrefix)

@@ -44,6 +44,7 @@ type LegacyConfigDTO struct {
 	InsecureMode                      *bool               `toml:"insecuremode"`
 	OcspFailOpen                      *bool               `toml:"ocspfailopen"`
 	Token                             *string             `toml:"token"`
+	TokenFilePath                     *string             `toml:"tokenfilepath"`
 	KeepSessionAlive                  *bool               `toml:"keepsessionalive"`
 	PrivateKey                        *string             `toml:"privatekey,multiline"`
 	PrivateKeyPassphrase              *string             `toml:"privatekeypassphrase"`

@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -176,6 +177,7 @@ func DynamicTable() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		Description:   docs.WithPreviewFeatureMark(),
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.DynamicTableResource), TrackingCreateWrapper(resources.DynamicTable, CreateDynamicTable)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.DynamicTableResource), TrackingReadWrapper(resources.DynamicTable, ReadDynamicTable)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.DynamicTableResource), TrackingUpdateWrapper(resources.DynamicTable, UpdateDynamicTable)),

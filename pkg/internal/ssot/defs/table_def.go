@@ -41,6 +41,7 @@ var TableAttrs = struct {
 		Description:   "A list of one or more table columns/expressions to be used as clustering key(s) for the table",
 		Elem:          &ssot.Attribute{Type: ssot.AttrString},
 		CreateMapping: ssot.AttributeMappedValueCreate("toTableClusterBy"),
+		CreateSql:     ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("CLUSTER BY")),
 	},
 	Column: ssot.Attribute{
 		Name:        "column",
@@ -129,9 +130,10 @@ var TableAttrs = struct {
 		}),
 	},
 	Comment: ssot.Attribute{
-		Name:        "comment",
-		Type:        ssot.AttrString,
-		Description: "Specifies a comment for the table.",
+		Name:         "comment",
+		Type:         ssot.AttrString,
+		OptionalInDb: true,
+		Description:  "Specifies a comment for the table.",
 	},
 	PrimaryKey: ssot.Attribute{
 		Name:        "primary_key",
@@ -168,21 +170,254 @@ var TableAttrs = struct {
 	},
 }
 
+// TableScope and TableKind are the CREATE TABLE keywords before TABLE. The SDK Create request holds them,
+// and the resource does not expose them.
+var (
+	TableScope          = ssot.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
+	TableKind           = ssot.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
+	TableConstraintType = ssot.NewEnum("TableConstraintType", "TableConstraintTypes", "PRIMARY KEY", "UNIQUE", "FOREIGN KEY")
+	// ReclusterState is RESUME or SUSPEND before the static RECLUSTER keyword.
+	ReclusterState    = ssot.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
+	TableSearchMethod = ssot.NewEnum("TableSearchMethod", "TableSearchMethods", "SUBSTRING", "EQUALITY", "FULL_TEXT")
+)
+
+// TableStorageLifecyclePolicy is ADD STORAGE LIFECYCLE POLICY policy ON (columns).
+// DROP STORAGE LIFECYCLE POLICY stays a statement keyword.
+var TableStorageLifecyclePolicy = ssot.Attribute{
+	Name:      "storage_lifecycle_policy",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(),
+	Children: []ssot.Attribute{
+		{Name: "storage_lifecycle_policy", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true, SqlOnly: true, CreateSql: ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ADD STORAGE LIFECYCLE POLICY"), ssot.Required(), ssot.FieldName("StorageLifecyclePolicy"))},
+		{Name: "on", Type: ssot.AttrList, Required: true, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.ListParameter("Column", ssot.Sql("ON"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("On"))},
+	},
+}
+
+// TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
+// resource, model, and assertion generators skip them.
+//
+// The column list, the stage file format, and the stage copy options name query structs by PreexistingStruct. The SDK
+// definition in pkg/sdk/generator/defs/tables_def.go supplies them to CreateOperationFromObject and keeps their fields,
+// because other operations and the request types of the resource use them. Search optimization, clustering, and storage
+// lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. The row access policy is generated here as
+// TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type.
+var TableCreateAttrs = struct {
+	Scope                      ssot.Attribute
+	Kind                       ssot.Attribute
+	ColumnsAndConstraints      ssot.Attribute
+	EnableSchemaEvolution      ssot.Attribute
+	StageFileFormat            ssot.Attribute
+	StageCopyOptions           ssot.Attribute
+	MaxDataExtensionTimeInDays ssot.Attribute
+	DefaultDdlCollation        ssot.Attribute
+	CopyGrants                 ssot.Attribute
+	RowAccessPolicy            ssot.Attribute
+}{
+	Scope: ssot.Attribute{
+		Name:      "scope",
+		Type:      ssot.AttrEnum,
+		Enum:      TableScope,
+		SqlOnly:   true,
+		CreateSql: ssot.EnumKeyword(),
+	},
+	Kind: ssot.Attribute{
+		Name:      "kind",
+		Type:      ssot.AttrEnum,
+		Enum:      TableKind,
+		SqlOnly:   true,
+		CreateSql: ssot.EnumKeyword(),
+	},
+	ColumnsAndConstraints: ssot.Attribute{
+		Name:      "columns_and_constraints",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.PreexistingStruct("CreateTableColumnsAndConstraints", ssot.Parentheses(), ssot.Required()),
+	},
+	EnableSchemaEvolution: ssot.Attribute{
+		Name:    "enable_schema_evolution",
+		Type:    ssot.AttrBool,
+		SqlOnly: true,
+	},
+	StageFileFormat: ssot.Attribute{
+		Name:      "stage_file_format",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.PreexistingStruct("LegacyFileFormat", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT =")),
+	},
+	StageCopyOptions: ssot.Attribute{
+		Name:      "stage_copy_options",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.PreexistingStruct("LegacyTableCopyOptions", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_COPY_OPTIONS =")),
+	},
+	MaxDataExtensionTimeInDays: ssot.Attribute{
+		Name:    "max_data_extension_time_in_days",
+		Type:    ssot.AttrInt,
+		SqlOnly: true,
+	},
+	DefaultDdlCollation: ssot.Attribute{
+		Name:      "default_ddl_collation",
+		Type:      ssot.AttrString,
+		SqlOnly:   true,
+		CreateSql: ssot.StringParameter(ssot.AllowEmpty()),
+	},
+	CopyGrants: ssot.Attribute{
+		Name:      "copy_grants",
+		Type:      ssot.AttrBool,
+		SqlOnly:   true,
+		CreateSql: ssot.BoolKeyword(ssot.Sql("COPY GRANTS")),
+	},
+	RowAccessPolicy: ssot.Attribute{
+		Name:      "row_access_policy",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children: []ssot.Attribute{
+			{
+				Name:           "name",
+				Type:           ssot.AttrIdentifier,
+				IdentifierType: "SchemaObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ROW ACCESS POLICY"), ssot.FieldName("Name")),
+			},
+			{
+				Name:      "on",
+				Type:      ssot.AttrList,
+				Required:  true,
+				SqlOnly:   true,
+				Elem:      &ssot.Attribute{Type: ssot.AttrString},
+				CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("ON")),
+			},
+		},
+	},
+}
+
+func tableShowString(name string, optionalInDb, optionalInShow bool) ssot.Attribute {
+	return ssot.Attribute{Name: name, Type: ssot.AttrString, Readonly: true, OptionalInDb: optionalInDb, OptionalInShow: optionalInShow}
+}
+
+func tableShowInt(name string, optionalInShow bool) ssot.Attribute {
+	return ssot.Attribute{Name: name, Type: ssot.AttrInt, Readonly: true, OptionalInDb: true, OptionalInShow: optionalInShow}
+}
+
+func tableShowBool(name, trueValue string) ssot.Attribute {
+	return ssot.Attribute{
+		Name: name, Type: ssot.AttrBool, Readonly: true, StoredAsText: true, OptionalInDb: true, BoolTrueValue: trueValue,
+	}
+}
+
+var (
+	tableShowCreatedOn           = tableShowString("created_on", false, false)
+	tableShowName                = tableShowString("name", false, false)
+	tableShowSchemaName          = tableShowString("schema_name", false, false)
+	tableShowDatabaseName        = tableShowString("database_name", false, false)
+	tableShowKind                = tableShowString("kind", false, false)
+	tableShowClusterBy           = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
+	tableShowOwner               = tableShowString("owner", false, false)
+	tableShowRows                = tableShowInt("rows", false)
+	tableShowBytes               = tableShowInt("bytes", true)
+	tableShowRetentionTime       = tableShowInt("retention_time", false)
+	tableShowDroppedOn           = tableShowString("dropped_on", true, true)
+	tableShowAutomaticClustering = tableShowBool("automatic_clustering", "ON")
+	// The resource attribute stays a separate field. Sharing its name would drift-suppress change_tracking.
+	tableShowChangeTracking = ssot.Attribute{
+		Name: "show_change_tracking", ShowName: "change_tracking", Type: ssot.AttrBool, Readonly: true,
+		StoredAsText: true, OptionalInDb: true, BoolTrueValue: "ON",
+	}
+	tableShowSearchOptimization         = tableShowBool("search_optimization", "ON")
+	tableShowSearchOptimizationProgress = tableShowString("search_optimization_progress", true, false)
+	tableShowSearchOptimizationBytes    = tableShowInt("search_optimization_bytes", true)
+	tableShowIsExternal                 = tableShowBool("is_external", "Y")
+	tableShowEnableSchemaEvolution      = tableShowBool("enable_schema_evolution", "Y")
+	tableShowOwnerRoleType              = tableShowString("owner_role_type", true, false)
+	tableShowIsEvent                    = tableShowBool("is_event", "Y")
+	tableShowIsDynamic                  = tableShowBool("is_dynamic", "Y")
+	tableShowBudget                     = tableShowString("budget", true, true)
+)
+
 var Table = ssot.Object{
 	Name:                   "Table",
 	NamePlural:             "Tables",
 	IdType:                 "SchemaObjectIdentifier",
-	LegacyIdEncoding:       true,
 	PreviewFeature:         true,
 	DescribeFailRead:       true,
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
+		ssot.WithSdk(
+			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
+			ssot.SdkDrop(
+				ssot.SdkDropCascadeRestrict(),
+				ssot.SdkDropDoc("https://docs.snowflake.com/en/sql-reference/sql/drop-table"),
+			),
+			ssot.SdkShow(
+				ssot.SdkShowDoc("https://docs.snowflake.com/en/sql-reference/sql/show-tables"),
+				ssot.SdkShowTerse(),
+				ssot.SdkShowOptionalSql("HISTORY"),
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalExtendedIn(),
+				ssot.SdkShowOptionalStartsWith(),
+				ssot.SdkShowOptionalLimitFrom(),
+				ssot.SdkShowAdditionalValidations(),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedIn, ssot.SdkShowByIDLike),
+			),
+			ssot.SdkCustomOperations(),
+		),
+	},
+	Create: ssot.CreateSpec{
+		KeywordsBefore: []*ssot.Attribute{
+			&TableCreateAttrs.Scope,
+			&TableCreateAttrs.Kind,
+		},
+		Clauses: []*ssot.Attribute{
+			&TableCreateAttrs.ColumnsAndConstraints,
+			&TableAttrs.ClusterBy,
+			&TableCreateAttrs.EnableSchemaEvolution,
+			&TableCreateAttrs.StageFileFormat,
+			&TableCreateAttrs.StageCopyOptions,
+			&TableAttrs.DataRetentionTimeInDays,
+			&TableCreateAttrs.MaxDataExtensionTimeInDays,
+			&TableAttrs.ChangeTracking,
+			&TableCreateAttrs.DefaultDdlCollation,
+			&TableCreateAttrs.CopyGrants,
+			&TableCreateAttrs.RowAccessPolicy,
+			ssot.Tags,
+			&TableAttrs.Comment,
+		},
+	},
+	Show: ssot.OutputSpec{
+		Columns: []*ssot.Attribute{
+			&tableShowCreatedOn,
+			&tableShowName,
+			&tableShowSchemaName,
+			&tableShowDatabaseName,
+			&tableShowKind,
+			&TableAttrs.Comment,
+			&tableShowClusterBy,
+			&tableShowRows,
+			&tableShowBytes,
+			&tableShowOwner,
+			&tableShowRetentionTime,
+			&tableShowDroppedOn,
+			&tableShowAutomaticClustering,
+			&tableShowChangeTracking,
+			&tableShowSearchOptimization,
+			&tableShowSearchOptimizationProgress,
+			&tableShowSearchOptimizationBytes,
+			&tableShowIsExternal,
+			&tableShowEnableSchemaEvolution,
+			&tableShowOwnerRoleType,
+			&tableShowIsEvent,
+			&tableShowIsDynamic,
+			&tableShowBudget,
+		},
 	},
 	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.
 	// ShowByIdSafely stays in the extension because Read compares schema retention before describing columns.
-	// Describe uses DescribeColumns. SetConfigFields copies owner and cluster keys. Hierarchy rename, column diffs,
-	// primary key, and tags stay in the extension. Generated HierarchyRename, AfterAlter, and SetDescribeOutput are unimplemented.
+	// Describe uses DescribeColumns. SetConfigFields copies owner and cluster keys. Column diffs,
+	// primary key, and tags stay in the extension. Generated AfterAlter and SetDescribeOutput are unimplemented.
 	// The importer is a passthrough, so ShowByIdInSdk stays omitted.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -194,7 +429,8 @@ var Table = ssot.Object{
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
-		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithHierarchyRename(ssot.Generated()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
@@ -204,7 +440,13 @@ var Table = ssot.Object{
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithStateUpgraders(ssot.Generated()),
 	},
+	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
+	},
+	CustomOperations: tableDescribeOperations,
 	Attributes: []ssot.Attribute{
 		TableAttrs.ClusterBy,
 		TableAttrs.Column,

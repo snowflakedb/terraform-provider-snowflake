@@ -1,7 +1,44 @@
 package sdk
 
+import (
+	"testing"
+
+	"github.com/stretchr/testify/require"
+)
+
+func Test_FormatAndParseAlertSchedule(t *testing.T) {
+	t.Run("interval", func(t *testing.T) {
+		formatted := FormatAlertIntervalSchedule(5)
+		require.Equal(t, "5 MINUTE", formatted)
+
+		parsed, err := ParseAlertSchedule(formatted)
+		require.NoError(t, err)
+		require.Equal(t, AlertSchedule{Minutes: 5}, parsed)
+	})
+
+	t.Run("cron", func(t *testing.T) {
+		formatted := FormatAlertCronSchedule("0 0 * * *", "America/Los_Angeles")
+		require.Equal(t, "USING CRON 0 0 * * * America/Los_Angeles", formatted)
+
+		parsed, err := ParseAlertSchedule(formatted)
+		require.NoError(t, err)
+		require.Equal(t, AlertSchedule{CronExpression: "0 0 * * *", TimeZone: "America/Los_Angeles"}, parsed)
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		_, err := ParseAlertSchedule("USING CRON")
+		require.Error(t, err)
+		_, err = ParseAlertSchedule("daily")
+		require.Error(t, err)
+		_, err = ParseAlertSchedule("five MINUTE")
+		require.Error(t, err)
+	})
+}
+
 func init() {
 	id := alertsTestIdSchemaObjectIdentifier
+	applicationId := NewAccountObjectIdentifier("application_name")
+	applicationPackageId := NewAccountObjectIdentifier("application_package_name")
 	warehouse := randomAccountObjectIdentifier()
 	schedule := "1 minute"
 	existsCondition := "SELECT 1"
@@ -12,21 +49,21 @@ func init() {
 		withDefaultOpts(func() *CreateAlertOptions {
 			return &CreateAlertOptions{
 				name:      id,
-				Warehouse: warehouse,
-				Schedule:  schedule,
-				condition: []AlertCondition{{Condition: []string{existsCondition}}},
+				condition: AlertCondition{Condition: []string{existsCondition}},
 				action:    action,
 			}
 		}).
 		withExpectedSqlf(
 			case_Alerts_sql_Create_basic,
-			`CREATE ALERT %s WAREHOUSE = %s SCHEDULE = '%s' IF (EXISTS (%s)) THEN %s`,
-			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, existsCondition, action,
+			`CREATE ALERT %s IF (EXISTS (%s)) THEN %s`,
+			id.FullyQualifiedName(), existsCondition, action,
 		).
 		withModifyAndExpectedSqlf(
 			case_Alerts_sql_Create_all,
 			func(opts *CreateAlertOptions) {
 				opts.IfNotExists = new(true)
+				opts.Warehouse = &warehouse
+				opts.Schedule = &schedule
 				opts.Comment = &comment
 			},
 			`CREATE ALERT IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '%s' COMMENT = '%s' IF (EXISTS (%s)) THEN %s`,
@@ -34,7 +71,11 @@ func init() {
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_orReplace",
-			func(opts *CreateAlertOptions) { opts.OrReplace = new(true) },
+			func(opts *CreateAlertOptions) {
+				opts.OrReplace = new(true)
+				opts.Warehouse = &warehouse
+				opts.Schedule = &schedule
+			},
 			`CREATE OR REPLACE ALERT %s WAREHOUSE = %s SCHEDULE = '%s' IF (EXISTS (%s)) THEN %s`,
 			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, existsCondition, action,
 		)
@@ -43,18 +84,18 @@ func init() {
 		withModify(
 			case_Alerts_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
 			func(opts *AlterAlertOptions) {
-				opts.Action = new(AlertActionResume)
+				opts.Resume = new(true)
 				opts.Set = &AlertSet{Comment: &comment}
 			},
 		).
 		withModifyAndExpectedSqlf(
-			case_Alerts_sql_Alter_Action,
-			func(opts *AlterAlertOptions) { opts.Action = new(AlertActionResume) },
+			case_Alerts_sql_Alter_Resume,
+			func(opts *AlterAlertOptions) { opts.Resume = new(true) },
 			"ALTER ALERT %s RESUME", id.FullyQualifiedName(),
 		).
-		withAdditionalSqlCasef(
-			"sql_Alter_ActionSuspend",
-			func(opts *AlterAlertOptions) { opts.Action = new(AlertActionSuspend) },
+		withModifyAndExpectedSqlf(
+			case_Alerts_sql_Alter_Suspend,
+			func(opts *AlterAlertOptions) { opts.Suspend = new(true) },
 			"ALTER ALERT %s SUSPEND", id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -83,7 +124,7 @@ func init() {
 					Comment:   new(true),
 				}
 			},
-			"ALTER ALERT %s UNSET WAREHOUSE SCHEDULE COMMENT", id.FullyQualifiedName(),
+			"ALTER ALERT %s UNSET WAREHOUSE, SCHEDULE, COMMENT", id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_UnsetComment",
@@ -119,7 +160,7 @@ func init() {
 			func(opts *ShowAlertOptions) {
 				opts.Terse = new(true)
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Account: new(true)}
+				opts.In = &ExtendedIn{Account: new(true)}
 				opts.StartsWith = new("FOO")
 				opts.Limit = &LimitFrom{Rows: new(10)}
 			},
@@ -132,7 +173,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Alerts_sql_Show_In,
-			func(opts *ShowAlertOptions) { opts.In = &In{Account: new(true)} },
+			func(opts *ShowAlertOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			"SHOW ALERTS IN ACCOUNT",
 		).
 		withModifyAndExpectedSqlf(
@@ -154,7 +195,7 @@ func init() {
 			"sql_Show_likeAndInAccount",
 			func(opts *ShowAlertOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Account: new(true)}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW ALERTS LIKE '%s' IN ACCOUNT", id.Name(),
 		).
@@ -162,7 +203,7 @@ func init() {
 			"sql_Show_likeAndInDatabase",
 			func(opts *ShowAlertOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Database: id.DatabaseId()}
+				opts.In = &ExtendedIn{Database: id.DatabaseId()}
 			},
 			"SHOW ALERTS LIKE '%s' IN DATABASE %s", id.Name(), id.DatabaseId().FullyQualifiedName(),
 		).
@@ -170,9 +211,19 @@ func init() {
 			"sql_Show_likeAndInSchema",
 			func(opts *ShowAlertOptions) {
 				opts.Like = &Like{Pattern: new(id.Name())}
-				opts.In = &In{Schema: id.SchemaId()}
+				opts.In = &ExtendedIn{Schema: id.SchemaId()}
 			},
 			"SHOW ALERTS LIKE '%s' IN SCHEMA %s", id.Name(), id.SchemaId().FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_inApplication",
+			func(opts *ShowAlertOptions) { opts.In = &ExtendedIn{Application: applicationId} },
+			"SHOW ALERTS IN APPLICATION %s", applicationId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_inApplicationPackage",
+			func(opts *ShowAlertOptions) { opts.In = &ExtendedIn{ApplicationPackage: applicationPackageId} },
+			"SHOW ALERTS IN APPLICATION PACKAGE %s", applicationPackageId.FullyQualifiedName(),
 		)
 
 	alertsTests.Describe.

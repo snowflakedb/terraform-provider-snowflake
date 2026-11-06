@@ -50,7 +50,7 @@ func (v *rowAccessPolicies) Show(ctx context.Context, request *ShowRowAccessPoli
 func (v *rowAccessPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*RowAccessPolicy, error) {
 	request := NewShowRowAccessPolicyRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(ExtendedIn{Schema: id.SchemaId()})
 	rowAccessPolicies, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err

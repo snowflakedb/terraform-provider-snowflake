@@ -13,12 +13,15 @@ import (
 
 type SdkObjectShowOutputDetails struct {
 	dataSourceDef *dataSourceDef
+	// reusedBase is the object whose show output assertion type a reusing variant returns. Empty when the object owns its assertion.
+	reusedBase string
 	genhelpers.SdkObjectDetails
 }
 
 var dataSourceMappingNormalized = map[string]dataSourceDef{
 	// Show output - standard:
 	normalized(sdk.Account{}):                     {"Accounts"},
+	normalized(sdk.Alert{}):                       {"Alerts"},
 	normalized(sdk.ApiIntegration{}):              {"ApiIntegrations"},
 	normalized(sdk.AuthenticationPolicy{}):        {"AuthenticationPolicies"},
 	normalized(sdk.BackupPolicy{}):                {"BackupPolicies"},
@@ -42,14 +45,15 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.NetworkPolicy{}):               {"NetworkPolicies"},
 	normalized(sdk.NetworkRule{}):                 {"NetworkRules"},
 	normalized(sdk.NetworkRuleDetails{}):          {"NetworkRules"},
-	normalized(sdk.Notebook{}):                    {"Notebooks"},
 	normalized(sdk.OpenflowConnector{}):           {"OpenflowConnectors"},
 	normalized(sdk.OpenflowConnectorDefinition{}): {"OpenflowConnectorDefinitions"},
 	normalized(sdk.OpenflowDeployment{}):          {"OpenflowDeployments"},
 	normalized(sdk.OpenflowRuntime{}):             {"OpenflowRuntimes"},
 	normalized(sdk.PasswordPolicy{}):              {"PasswordPolicies"},
 	normalized(sdk.ProgrammaticAccessToken{}):     {"UserProgrammaticAccessTokens"},
+	normalized(sdk.Pipe{}):                        {"Pipes"},
 	normalized(sdk.ProjectionPolicy{}):            {"ProjectionPolicies"},
+	normalized(sdk.ReplicationGroup{}):            {"ReplicationGroups"},
 	normalized(sdk.ResourceMonitor{}):             {"ResourceMonitors"},
 	normalized(sdk.Role{}):                        {"AccountRoles"},
 	normalized(sdk.RowAccessPolicy{}):             {"RowAccessPolicies"},
@@ -59,6 +63,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.SemanticView{}):                {"SemanticViews"},
 	normalized(sdk.Service{}):                     {"Services"},
 	normalized(sdk.SessionPolicy{}):               {"SessionPolicies"},
+	normalized(sdk.Share{}):                       {"Shares"},
 	normalized(sdk.Stage{}):                       {"Stages"},
 	normalized(sdk.StorageIntegration{}):          {"StorageIntegrations"},
 	normalized(sdk.StorageLifecyclePolicy{}):      {"StorageLifecyclePolicies"},
@@ -70,6 +75,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Warehouse{}):                   {"Warehouses"},
 
 	// Describe output:
+	normalized(sdk.AlertDetails{}):                  {"Alerts"},
 	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
 	normalized(sdk.BackupPolicyDetails{}):           {"BackupPolicies"},
 	normalized(sdk.CatalogIntegrationDetails{}):     {"CatalogIntegrations"},
@@ -82,6 +88,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.OpenflowDeploymentDetails{}):     {"OpenflowDeployments"},
 	normalized(sdk.OpenflowRuntimeDetails{}):        {"OpenflowRuntimes"},
 	normalized(sdk.PasswordPolicyDetails{}):         {"PasswordPolicies"},
+	normalized(sdk.PipeDetails{}):                   {"Pipes"},
 	normalized(sdk.ProjectionPolicyDetails{}):       {"ProjectionPolicies"},
 	normalized(sdk.SchemaDetails{}):                 {"Schemas"},
 	normalized(sdk.SessionPolicyDetails{}):          {"SessionPolicies"},
@@ -103,7 +110,7 @@ func GetFilteredSdkObjectDetails() []SdkObjectShowOutputDetails {
 	})
 	return collections.Map(filtered, func(d genhelpers.SdkObjectDetails) SdkObjectShowOutputDetails {
 		v, _ := dataSourceMappingNormalized[d.Name]
-		return SdkObjectShowOutputDetails{&v, d}
+		return SdkObjectShowOutputDetails{dataSourceDef: &v, SdkObjectDetails: d}
 	})
 }
 
@@ -117,7 +124,6 @@ var (
 		sdk.CatalogIntegrationOpenCatalogRestConfigDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
 		sdk.PolicyReference{},
-		sdk.PostgresMirrorDetails{},
 		sdk.StorageLocationAzureDetails{},
 		sdk.StorageLocationGcsDetails{},
 		sdk.StorageLocationS3CompatDetails{},

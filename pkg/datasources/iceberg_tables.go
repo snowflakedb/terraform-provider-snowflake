@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -69,7 +70,7 @@ func IcebergTables() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.IcebergTablesDatasource), TrackingReadWrapper(datasources.IcebergTables, ReadIcebergTables)),
 		Schema:      icebergTablesSchema,
-		Description: "Data source used to get details of filtered iceberg tables. Filtering is aligned with the current possibilities for [SHOW ICEBERG TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-iceberg-tables) query (`like`, `in`, `starts_with`, `limit`). The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `iceberg_tables`.",
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered iceberg tables. Filtering is aligned with the current possibilities for [SHOW ICEBERG TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-iceberg-tables) query (`like`, `in`, `starts_with`, `limit`). The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `iceberg_tables`.",
 	}
 }
 

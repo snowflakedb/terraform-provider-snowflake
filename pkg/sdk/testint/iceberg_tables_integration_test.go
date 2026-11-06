@@ -734,7 +734,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasCatalog(catalogForIcebergFilesId.Name()).
 				HasCatalogSync("").
 				HasDataMetricSchedule("60 MINUTES").
-				HasDataRetentionTimeInDays(1).
+				HasDataRetentionTimeInDays(5).
 				HasDefaultDdlCollation("").
 				HasEnableDataCompaction(true).
 				HasEnableIcebergMergeOnRead(true).
@@ -815,7 +815,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasCatalog(catalogForIcebergFilesId.FullyQualifiedName()).
 				HasCatalogSync("").
 				HasDataMetricSchedule("60 MINUTES").
-				HasDataRetentionTimeInDays(1).
+				HasDataRetentionTimeInDays(5).
 				HasDefaultDdlCollation("").
 				HasEnableDataCompaction(true).
 				HasEnableIcebergMergeOnRead(true).
@@ -1349,6 +1349,22 @@ func TestInt_IcebergTables(t *testing.T) {
 				HasAllDefaultsExplicit(),
 		)
 	})
+
+	t.Run("show object parameter", func(t *testing.T) {
+		obj, cleanup := testClientHelper().IcebergTable.Create(t)
+		t.Cleanup(cleanup)
+		id := obj.ID()
+
+		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
+			WithSet(*sdk.NewIcebergTableSetPropertiesRequest().WithMaxDataExtensionTimeInDays(5)))
+		require.NoError(t, err)
+
+		parameter, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMaxDataExtensionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeIcebergTable, Name: id})
+		require.NoError(t, err)
+		require.Equal(t, "5", parameter.Value)
+		require.Equal(t, sdk.ParameterTypeTable, parameter.Level)
+	})
+
 	t.Run("alter: add plus drop row access policy", func(t *testing.T) {
 		rowAccessPolicy, rowAccessPolicyCleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicy(t)
 		t.Cleanup(rowAccessPolicyCleanup)
@@ -1537,10 +1553,10 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
 				WithAdd(*sdk.NewTableAddSearchOptimizationRequest().
 					WithOn([]sdk.TableSearchMethodWithTargetRequest{
-						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality).
-							WithArgs(*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"})),
-						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodFullText).
-							WithArgs(*sdk.NewTableSearchMethodArgsRequest().
+						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality,
+							*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"})),
+						*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodFullText,
+							*sdk.NewTableSearchMethodArgsRequest().
 								WithTargets([]string{"REGION"}).
 								WithAnalyzer("DEFAULT_ANALYZER")),
 					}))))
@@ -1573,8 +1589,8 @@ func TestInt_IcebergTables(t *testing.T) {
 			WithSearchOptimizationAction(*sdk.NewTableSearchOptimizationActionRequest().
 				WithDrop(*sdk.NewTableDropSearchOptimizationRequest().
 					WithOn([]sdk.TableDropSearchOptimizationOnRequest{
-						*sdk.NewTableDropSearchOptimizationOnRequest().WithSearchMethodWithTarget(*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality).
-							WithArgs(*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"}))),
+						*sdk.NewTableDropSearchOptimizationOnRequest().WithSearchMethodWithTarget(*sdk.NewTableSearchMethodWithTargetRequest(sdk.TableSearchMethodEquality,
+							*sdk.NewTableSearchMethodArgsRequest().WithTargets([]string{"REGION"}))),
 					}))))
 		require.NoError(t, err)
 

@@ -105,6 +105,30 @@ func Test_CustomDiffEntries(t *testing.T) {
 		}, got)
 	})
 
+	t.Run("parent hierarchy rename prepends the force new workaround", func(t *testing.T) {
+		got := model(func(obj *ssot.Object) {
+			obj.IdentityHierarchyForceNew = false
+			obj.ResourceHooks = []ssot.ResourceHookOption{
+				ssot.WithCustomizeDiff(ssot.Generated()),
+				ssot.WithHierarchyRename(ssot.Generated()),
+			}
+		}).CustomDiffCalls()
+		require.Equal(t, []string{
+			`TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database")`,
+			`TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema")`,
+			`ComputedIfAnyAttributeChanged(policySchema, ShowOutputAttributeName, "name", "comment")`,
+			`ComputedIfAnyAttributeChanged(policySchema, DescribeOutputAttributeName, "name", "comment")`,
+			`ComputedIfAnyAttributeChanged(policySchema, FullyQualifiedNameAttributeName, "database", "schema", "name")`,
+		}, got)
+	})
+
+	t.Run("name rename does not add the hierarchy workaround", func(t *testing.T) {
+		got := model(func(obj *ssot.Object) {
+			obj.ResourceHooks = append(obj.ResourceHooks, ssot.WithHierarchyRename(ssot.Generated()))
+		}).CustomDiffCalls()
+		require.NotContains(t, got, `TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database")`)
+	})
+
 	t.Run("additional customize diffs follow the generated calls", func(t *testing.T) {
 		got := model(func(obj *ssot.Object) {
 			obj.AdditionalCustomizeDiffs = []ssot.CustomizeDiffFunc{

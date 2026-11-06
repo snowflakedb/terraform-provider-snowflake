@@ -172,7 +172,7 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 	t.Cleanup(catalogCleanup)
 
 	// prepare a database on the secondary account
-	shareTest, shareCleanup := secondaryTestClientHelper().Share.CreateShare(t)
+	shareTest, shareCleanup := secondaryTestClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
@@ -352,7 +352,7 @@ func TestInt_DatabasesCreateFromListing(t *testing.T) {
 	secondaryClient := testSecondaryClient(t)
 	secondaryCtx := testSecondaryContext(t)
 
-	share, shareCleanup := secondaryTestClientHelper().Share.CreateShare(t)
+	share, shareCleanup := secondaryTestClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 	t.Cleanup(secondaryTestClientHelper().Grant.GrantPrivilegeOnDatabaseToShare(t, secondaryTestClientHelper().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 

@@ -114,7 +114,7 @@ func ReadWarehouseAdaptiveFunc(withExternalChangesMarking bool) tfschema.ReadCon
 		errs := errors.Join(
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseAdaptiveParametersToSchema(rawWarehouseAdaptiveParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			warehouseAdaptiveSetConfigFieldsExt(d, warehouseAdaptive),
+			warehouseAdaptiveSetConfigFieldsExt(ctx, d, meta, warehouseAdaptive),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

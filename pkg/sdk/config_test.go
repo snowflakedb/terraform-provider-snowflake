@@ -144,6 +144,7 @@ func TestLoadConfigFileWithInvalidFieldTypeFails(t *testing.T) {
 		{name: "InsecureMode", fieldName: "insecure_mode", wantType: "bool"},
 		{name: "OcspFailOpen", fieldName: "ocsp_fail_open", wantType: "bool"},
 		{name: "Token", fieldName: "token", wantType: "string"},
+		{name: "TokenFilePath", fieldName: "token_file_path", wantType: "string"},
 		{name: "KeepSessionAlive", fieldName: "keep_session_alive", wantType: "bool"},
 		{name: "PrivateKey", fieldName: "private_key", wantType: "string"},
 		{name: "PrivateKeyPassphrase", fieldName: "private_key_passphrase", wantType: "string"},
@@ -318,6 +319,7 @@ func TestProfileConfig(t *testing.T) {
 			WithInsecureMode(false).
 			WithOcspFailOpen(true).
 			WithToken("token").
+			WithTokenFilePath("token_file_path").
 			WithKeepSessionAlive(true).
 			WithPrivateKey(encryptedKey).
 			WithPrivateKeyPassphrase("password").
@@ -402,6 +404,7 @@ func TestProfileConfig(t *testing.T) {
 		assert.Equal(t, 60*time.Second, config.ExternalBrowserTimeout)
 		assert.Equal(t, 1, config.MaxRetryCount)
 		assert.Equal(t, "token", config.Token)
+		assert.Equal(t, "token_file_path", config.TokenFilePath)
 		assert.Equal(t, gosnowflake.OCSPFailOpenTrue, config.OCSPFailOpen)
 		assert.True(t, config.ServerSessionKeepAlive)
 		assert.Equal(t, unencryptedKey, string(gotUnencryptedKey))
@@ -502,6 +505,7 @@ func Test_MergeConfig(t *testing.T) {
 		MaxRetryCount:                     1,
 		OCSPFailOpen:                      1,
 		Token:                             "token1",
+		TokenFilePath:                     "token_file_path1",
 		ServerSessionKeepAlive:            false,
 		PrivateKey:                        random.GenerateRSAPrivateKey(t),
 		Tracing:                           "tracing1",
@@ -564,6 +568,7 @@ func Test_MergeConfig(t *testing.T) {
 		MaxRetryCount:                     2,
 		OCSPFailOpen:                      2,
 		Token:                             "token2",
+		TokenFilePath:                     "token_file_path2",
 		ServerSessionKeepAlive:            true,
 		PrivateKey:                        random.GenerateRSAPrivateKey(t),
 		Tracing:                           "tracing2",
@@ -977,6 +982,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				WithInsecureMode(false).
 				WithOcspFailOpen(true).
 				WithToken("token").
+				WithTokenFilePath("token_file_path").
 				WithKeepSessionAlive(true).
 				WithPrivateKey(privateKey).
 				WithPrivateKeyPassphrase("passphrase").
@@ -1038,6 +1044,7 @@ func TestConfigDTODriverConfig(t *testing.T) {
 				assert.Equal(t, gosnowflake.AuthTypeJwt, got.Authenticator)
 				assert.Equal(t, gosnowflake.OCSPFailOpenTrue, got.OCSPFailOpen)
 				assert.Equal(t, "token", got.Token)
+				assert.Equal(t, "token_file_path", got.TokenFilePath)
 				assert.True(t, got.ServerSessionKeepAlive)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ValidateDefaultParameters)
 				assert.Equal(t, gosnowflake.ConfigBoolTrue, got.ClientRequestMfaToken)

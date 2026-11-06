@@ -24,17 +24,17 @@ func (c *ShareClient) client() sdk.Shares {
 	return c.context.client.Shares
 }
 
-func (c *ShareClient) CreateShare(t *testing.T) (*sdk.Share, func()) {
+func (c *ShareClient) Create(t *testing.T) (*sdk.Share, func()) {
 	t.Helper()
-	return c.CreateShareWithIdentifier(t, c.ids.RandomAccountObjectIdentifier())
+	return c.CreateWithIdentifier(t, c.ids.RandomAccountObjectIdentifier())
 }
 
-func (c *ShareClient) CreateShareWithIdentifier(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Share, func()) {
+func (c *ShareClient) CreateWithIdentifier(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.Share, func()) {
 	t.Helper()
-	return c.CreateShareWithRequest(t, id, sdk.NewCreateShareRequest(id))
+	return c.CreateWithRequest(t, id, sdk.NewCreateShareRequest(id))
 }
 
-func (c *ShareClient) CreateShareWithRequest(t *testing.T, id sdk.AccountObjectIdentifier, req *sdk.CreateShareRequest) (*sdk.Share, func()) {
+func (c *ShareClient) CreateWithRequest(t *testing.T, id sdk.AccountObjectIdentifier, req *sdk.CreateShareRequest) (*sdk.Share, func()) {
 	t.Helper()
 	ctx := context.Background()
 
@@ -44,10 +44,10 @@ func (c *ShareClient) CreateShareWithRequest(t *testing.T, id sdk.AccountObjectI
 	share, err := c.client().ShowByID(ctx, id)
 	require.NoError(t, err)
 
-	return share, c.DropShareFunc(t, id)
+	return share, c.DropFunc(t, id)
 }
 
-func (c *ShareClient) DropShareFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
+func (c *ShareClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()
 
@@ -62,6 +62,22 @@ func (c *ShareClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.S
 	ctx := context.Background()
 
 	return c.client().ShowByID(ctx, id)
+}
+
+// Describe returns a row for every object granted to the share (and for the system objects that Snowflake adds to it).
+func (c *ShareClient) Describe(t *testing.T, id sdk.AccountObjectIdentifier) ([]sdk.ShareDetails, error) {
+	t.Helper()
+	ctx := context.Background()
+
+	return c.client().Describe(ctx, id)
+}
+
+func (c *ShareClient) Alter(t *testing.T, req *sdk.AlterShareRequest) {
+	t.Helper()
+	ctx := context.Background()
+
+	err := c.client().Alter(ctx, req)
+	require.NoError(t, err)
 }
 
 func (c *ShareClient) SetAccountOnShare(t *testing.T, accountId sdk.AccountIdentifier, shareId sdk.AccountObjectIdentifier) {

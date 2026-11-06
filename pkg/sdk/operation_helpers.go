@@ -2,8 +2,17 @@ package sdk
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 )
+
+// errObjectNotFoundOnNoRows maps a query that returned no row to ErrObjectNotFound.
+func errObjectNotFoundOnNoRows(err error) error {
+	if errors.Is(err, sql.ErrNoRows) {
+		return ErrObjectNotFound
+	}
+	return err
+}
 
 // SafeDrop is a helper function that wraps a drop function and handles common error cases that
 // relate to missing high hierarchy objects when dropping lower ones like schemas, tables, views, etc.

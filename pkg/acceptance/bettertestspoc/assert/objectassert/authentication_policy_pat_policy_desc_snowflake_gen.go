@@ -4,9 +4,11 @@ package objectassert
 
 import (
 	"fmt"
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -45,6 +47,41 @@ func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasRequireRoleRestrictionFo
 		t.Helper()
 		if o.RequireRoleRestrictionForServiceUsers != expected {
 			return fmt.Errorf("expected require role restriction for service users: %v; got: %v", expected, o.RequireRoleRestrictionForServiceUsers)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasRequireRoleRestrictionForPersonUsers(expected bool) *AuthenticationPolicyPatPolicyDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyPatPolicyDetails) error {
+		t.Helper()
+		if o.RequireRoleRestrictionForPersonUsers != expected {
+			return fmt.Errorf("expected require role restriction for person users: %v; got: %v", expected, o.RequireRoleRestrictionForPersonUsers)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasBlockedRolesList(expected ...sdk.AccountObjectIdentifier) *AuthenticationPolicyPatPolicyDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyPatPolicyDetails) error {
+		t.Helper()
+		mapped := collections.Map(o.BlockedRolesList, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
+		mappedExpected := collections.Map(expected, func(item sdk.AccountObjectIdentifier) any { return item.FullyQualifiedName() })
+		if !slices.Equal(mapped, mappedExpected) {
+			return fmt.Errorf("expected blocked roles list: %v; got: %v", expected, o.BlockedRolesList)
+		}
+		return nil
+	})
+	return a
+}
+
+func (a *AuthenticationPolicyPatPolicyDetailsAssert) HasNoBlockedRolesList() *AuthenticationPolicyPatPolicyDetailsAssert {
+	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyPatPolicyDetails) error {
+		t.Helper()
+		if len(o.BlockedRolesList) > 0 {
+			return fmt.Errorf("expected blocked roles list to be empty; got: %v", o.BlockedRolesList)
 		}
 		return nil
 	})

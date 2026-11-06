@@ -68,8 +68,7 @@ func checkDestroy(t *testing.T, resource resources.Resource, decodeSnowflakeIdFu
 			if err := showById(ctx, client, id); err == nil {
 				return fmt.Errorf("%s %v still exists", resource, id.FullyQualifiedName())
 			} else {
-				var incorrectIdentifierError *IncorrectIdentifierError
-				if errors.As(err, &incorrectIdentifierError) {
+				if _, ok := errors.AsType[*IncorrectIdentifierError](err); ok {
 					return err
 				} else {
 					t.Logf("resource %s (%v) was dropped successfully in Snowflake, err: %v", resource, id.FullyQualifiedName(), err)
@@ -98,7 +97,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 	// resources using legacy identifier encoding (with pipes)
 	case resources.AccountAuthenticationPolicyAttachment,
 		resources.AccountPasswordPolicyAttachment,
-		resources.Alert,
 		resources.ApiIntegration,
 		resources.CortexSearchService,
 		resources.DynamicTable,
@@ -109,11 +107,9 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.ManagedAccount,
 		resources.MaterializedView,
 		resources.NotificationIntegration,
-		resources.Pipe,
 		resources.Sequence,
 		resources.Share,
-		resources.Stage,
-		resources.Table:
+		resources.Stage:
 		return decodeSnowflakeIdLegacy(rs, resource)
 	// Handling user separately, due to existing test with "." as part of the identifier.
 	case resources.User:
@@ -241,6 +237,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.CodeBundle: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CodeBundles.ShowByID)
+	},
+	resources.BackupSet: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.BackupSets.ShowByID)
 	},
 	resources.ComputePool: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ComputePools.ShowByID)
@@ -419,6 +418,11 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.PostgresInstance: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.PostgresInstances.ShowByID)
 	},
+	// A mirror ID is the plain mirror name, which parses as a single-part identifier. DESCRIBE_MIRROR returns no row for a dropped mirror.
+	resources.PostgresMirror: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		_, err := client.PostgresMirrors.Describe(ctx, sdk.NewDescribePostgresMirrorRequest(*sdk.NewDescribePostgresMirrorArgumentsRequest(id.Name())))
+		return err
+	},
 	resources.ProcedureJava: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Procedures.ShowByID)
 	},
@@ -436,6 +440,12 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	},
 	resources.ProjectionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ProjectionPolicies.ShowByID)
+	},
+	resources.ReplicationGroup: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ReplicationGroups.ShowByID)
+	},
+	resources.ReplicationGroupSecondary: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.ReplicationGroups.ShowByID)
 	},
 	resources.ResourceMonitor: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ResourceMonitors.ShowByID)

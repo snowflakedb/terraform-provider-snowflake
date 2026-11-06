@@ -83,7 +83,7 @@ func TestAcc_Listings_CompleteUseCase(t *testing.T) {
 
 	manifest, title := testClient().Listing.BasicManifestWithUnquotedValuesAndTargetAccounts(t)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 	t.Cleanup(testClient().Grant.GrantPrivilegeOnDatabaseToShare(t, testClient().Ids.DatabaseId(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}))
 

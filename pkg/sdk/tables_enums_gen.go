@@ -162,3 +162,31 @@ func ToMatchType(s string) (MatchType, error) {
 		return "", fmt.Errorf("invalid match type: %s", s)
 	}
 }
+
+type TableSearchMethod string
+
+const (
+	TableSearchMethodSubstring TableSearchMethod = "SUBSTRING"
+	TableSearchMethodEquality  TableSearchMethod = "EQUALITY"
+	TableSearchMethodFullText  TableSearchMethod = "FULL_TEXT"
+)
+
+var AllTableSearchMethods = []TableSearchMethod{
+	TableSearchMethodSubstring,
+	TableSearchMethodEquality,
+	TableSearchMethodFullText,
+}
+
+func ToTableSearchMethod(s string) (TableSearchMethod, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableSearchMethodSubstring):
+		return TableSearchMethodSubstring, nil
+	case string(TableSearchMethodEquality):
+		return TableSearchMethodEquality, nil
+	case string(TableSearchMethodFullText):
+		return TableSearchMethodFullText, nil
+	default:
+		return "", fmt.Errorf("invalid table search method: %s", s)
+	}
+}

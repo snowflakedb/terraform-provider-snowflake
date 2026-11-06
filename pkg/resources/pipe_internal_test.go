@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 )
 
@@ -144,4 +146,50 @@ func TestNotificationChannelIsAwsSnsTopic(t *testing.T) {
 			r.Equal(tc.expected, notificationChannelIsAwsSnsTopic(tc.notificationChannel))
 		})
 	}
+}
+
+func TestPipeHandleExternalChanges(t *testing.T) {
+	newData := func(t *testing.T, configured string, inShow string) *schema.ResourceData {
+		t.Helper()
+		d := schema.TestResourceDataRaw(t, pipeSchema, map[string]any{
+			"name":              "p",
+			"database":          "d",
+			"schema":            "s",
+			"copy_statement":    "copy into t from @s",
+			"integration":       configured,
+			"error_integration": configured,
+		})
+		require.NoError(t, d.Set(ShowOutputAttributeName, []map[string]any{{"integration": inShow, "error_integration": inShow}}))
+		return d
+	}
+
+	t.Run("integrations changed outside of Terraform are written to the state", func(t *testing.T) {
+		d := newData(t, "OLD", "OLD")
+		pipe := &sdk.Pipe{Integration: "NEW", ErrorIntegration: "NEW"}
+
+		require.NoError(t, pipeHandleExternalChanges(d, pipe, true))
+
+		require.Equal(t, "NEW", d.Get("integration"))
+		require.Equal(t, "NEW", d.Get("error_integration"))
+	})
+
+	t.Run("unchanged integrations are left alone", func(t *testing.T) {
+		d := newData(t, "SAME", "SAME")
+		pipe := &sdk.Pipe{Integration: "SAME", ErrorIntegration: "SAME"}
+
+		require.NoError(t, pipeHandleExternalChanges(d, pipe, true))
+
+		require.Equal(t, "SAME", d.Get("integration"))
+		require.Equal(t, "SAME", d.Get("error_integration"))
+	})
+
+	t.Run("nothing is marked without external changes marking", func(t *testing.T) {
+		d := newData(t, "OLD", "OLD")
+		pipe := &sdk.Pipe{Integration: "NEW", ErrorIntegration: "NEW"}
+
+		require.NoError(t, pipeHandleExternalChanges(d, pipe, false))
+
+		require.Equal(t, "OLD", d.Get("integration"))
+		require.Equal(t, "OLD", d.Get("error_integration"))
+	})
 }

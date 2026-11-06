@@ -17,6 +17,9 @@ func (opts *CreateComputePoolOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if opts.ForApplication != nil && !ValidObjectIdentifier(opts.ForApplication) {
+		errs = append(errs, errInvalidIdentifier("CreateComputePoolOptions", "ForApplication"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateComputePoolOptions", "name"))
 	}

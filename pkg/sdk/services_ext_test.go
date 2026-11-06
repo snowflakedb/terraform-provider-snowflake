@@ -366,7 +366,7 @@ func init() {
 			case_Services_sql_Show_all,
 			func(opts *ShowServiceOptions) {
 				opts.Like = &Like{Pattern: new("service_*")}
-				opts.In = &ServiceIn{In: In{Database: NewAccountObjectIdentifier("database")}}
+				opts.In = &ServiceIn{Database: NewAccountObjectIdentifier("database")}
 				opts.StartsWith = new("my_prefix")
 				opts.Limit = &LimitFrom{Rows: new(10), From: new("service1")}
 			},
@@ -380,7 +380,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Services_sql_Show_In,
 			func(opts *ShowServiceOptions) {
-				opts.In = &ServiceIn{In: In{Database: NewAccountObjectIdentifier("database")}}
+				opts.In = &ServiceIn{Database: NewAccountObjectIdentifier("database")}
 			},
 			`SHOW SERVICES IN DATABASE "database"`,
 		).

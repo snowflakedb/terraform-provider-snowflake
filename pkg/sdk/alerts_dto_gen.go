@@ -13,12 +13,12 @@ var (
 type CreateAlertRequest struct {
 	OrReplace   *bool
 	IfNotExists *bool
-	name        SchemaObjectIdentifier  // required
-	Warehouse   AccountObjectIdentifier // required
-	Schedule    string                  // required
+	name        SchemaObjectIdentifier // required
+	Warehouse   *AccountObjectIdentifier
+	Schedule    *string
 	Comment     *string
-	condition   []AlertConditionRequest // required
-	action      string                  // required
+	condition   AlertConditionRequest // required
+	action      string                // required
 }
 
 type AlertConditionRequest struct {
@@ -28,7 +28,8 @@ type AlertConditionRequest struct {
 type AlterAlertRequest struct {
 	IfExists        *bool
 	name            SchemaObjectIdentifier // required
-	Action          *AlertAction
+	Resume          *bool
+	Suspend         *bool
 	Set             *AlertSetRequest
 	Unset           *AlertUnsetRequest
 	ModifyCondition []string
@@ -55,7 +56,7 @@ type DropAlertRequest struct {
 type ShowAlertRequest struct {
 	Terse      *bool
 	Like       *Like
-	In         *In
+	In         *ExtendedIn
 	StartsWith *string
 	Limit      *LimitFrom
 }

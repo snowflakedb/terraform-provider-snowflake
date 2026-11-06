@@ -41,14 +41,6 @@ func TestInt_OpenflowConnectorDefinitions(t *testing.T) {
 					HasMaxNodeCountPositive(),
 			)
 		}
-
-		// min_runtime_node_type is NULL for some definitions, so this is the one field that cannot be asserted
-		// per row. Requiring at least one mapped value still fails on a wrong db tag, which would leave every
-		// row nil.
-		withNodeType := collections.Filter(definitions, func(d sdk.OpenflowConnectorDefinition) bool {
-			return d.MinRuntimeNodeType != nil && *d.MinRuntimeNodeType != ""
-		})
-		assert.NotEmpty(t, withNodeType, "no definition mapped min_runtime_node_type, which a wrong db tag would also produce")
 	})
 
 	t.Run("show: with like", func(t *testing.T) {

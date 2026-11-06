@@ -123,8 +123,34 @@ func UpdateProjectionPolicy(ctx context.Context, d *tfschema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	if diags := projectionPolicyHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
-		return diags
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.ProjectionPolicies.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeResourceIdentifier(renamed)
+			},
+			"projection policy",
+		); diags != nil {
+			return diags
+		}
+	}
+
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
 	}
 
 	if diags := projectionPolicyBeforeAlterExt(ctx, d, meta, id); diags != nil {
@@ -149,9 +175,11 @@ func UpdateProjectionPolicy(ctx context.Context, d *tfschema.ResourceData, meta 
 }
 
 var projectionPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.ProjectionPolicy, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
 	ComputedIfAnyAttributeChanged(projectionPolicySchema, ShowOutputAttributeName, "name", "comment"),
 	ComputedIfAnyAttributeChanged(projectionPolicySchema, DescribeOutputAttributeName, "name", "body"),
-	ComputedIfAnyAttributeChanged(projectionPolicySchema, FullyQualifiedNameAttributeName, "name"),
+	ComputedIfAnyAttributeChanged(projectionPolicySchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 ))
 
 func projectionPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {

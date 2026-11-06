@@ -166,7 +166,7 @@ func init() {
 			case_SessionPolicies_sql_Show_all,
 			func(opts *ShowSessionPolicyOptions) {
 				opts.Like = &Like{Pattern: new("like-pattern")}
-				opts.In = &ExtendedIn{In: In{Schema: showId.SchemaId()}}
+				opts.In = &ExtendedIn{Schema: showId.SchemaId()}
 				opts.StartsWith = new("starts-with-pattern")
 				opts.Limit = &LimitFrom{Rows: new(10), From: new("limit-from")}
 			},
@@ -180,7 +180,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_SessionPolicies_sql_Show_In,
-			func(opts *ShowSessionPolicyOptions) { opts.In = &ExtendedIn{In: In{Schema: showId.SchemaId()}} },
+			func(opts *ShowSessionPolicyOptions) { opts.In = &ExtendedIn{Schema: showId.SchemaId()} },
 			`SHOW SESSION POLICIES IN SCHEMA %s`, showId.SchemaId().FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

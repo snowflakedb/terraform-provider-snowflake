@@ -125,8 +125,8 @@ func ConfigVariablesFromModel(t *testing.T, model ResourceModel) tfconfig.Variab
 	for i := 0; i < rType.NumField(); i++ {
 		field := rType.Field(i)
 		if jsonTag, ok := field.Tag.Lookup("json"); ok {
-			name := strings.Split(jsonTag, ",")[0]
-			if fieldValue, ok := rValue.Field(i).Interface().(tfconfig.Variable); ok {
+			name, _, _ := strings.Cut(jsonTag, ",")
+			if fieldValue, ok := reflect.TypeAssert[tfconfig.Variable](rValue.Field(i)); ok {
 				variables[name] = fieldValue
 			}
 		}

@@ -74,7 +74,7 @@ var catalogIntegrationAwsGlueSchema = collections.MergeMaps(
 			Computed:    true,
 			Description: "Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration aws glue.",
 			Elem: &tfschema.Resource{
-				Schema: schemas.ShowCatalogIntegrationAwsGlueSchema,
+				Schema: schemas.ShowCatalogIntegrationSchema,
 			},
 		},
 	},

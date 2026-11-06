@@ -2,24 +2,87 @@
 page_title: "snowflake_shares Data Source - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Data source used to get details of filtered shares. Filtering is aligned with the current possibilities for SHOW SHARES https://docs.snowflake.com/en/sql-reference/sql/show-shares query. The results of SHOW and DESCRIBE are encapsulated in one output collection shares.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_shares (Data Source)
 
-
+Data source used to get details of filtered shares. Filtering is aligned with the current possibilities for [SHOW SHARES](https://docs.snowflake.com/en/sql-reference/sql/show-shares) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `shares`.
 
 ## Example Usage
 
 ```terraform
-data "snowflake_shares" "this" {
-
+# Simple usage
+data "snowflake_shares" "simple" {
 }
 
-data "snowflake_shares" "ad" {
-  pattern = "usage"
+output "simple_output" {
+  value = data.snowflake_shares.simple.shares
+}
+
+# Filtering (like)
+data "snowflake_shares" "like" {
+  like = "share-name"
+}
+
+output "like_output" {
+  value = data.snowflake_shares.like.shares
+}
+
+# Filtering (starts_with)
+data "snowflake_shares" "starts_with" {
+  starts_with = "prefix-"
+}
+
+output "starts_with_output" {
+  value = data.snowflake_shares.starts_with.shares
+}
+
+# Filtering (limit)
+data "snowflake_shares" "limit" {
+  limit {
+    rows = 10
+    from = "prefix-"
+  }
+}
+
+output "limit_output" {
+  value = data.snowflake_shares.limit.shares
+}
+
+# Without additional data (to limit the number of calls make for every found share)
+data "snowflake_shares" "only_show" {
+  # with_describe is turned on by default and it calls DESCRIBE SHARE for every share found and attaches its output to shares.*.describe_output field
+  with_describe = false
+}
+
+output "only_show_output" {
+  value = data.snowflake_shares.only_show.shares
+}
+
+# Ensure the number of shares is equal to at least one element (with the use of postcondition)
+data "snowflake_shares" "assert_with_postcondition" {
+  starts_with = "prefix-"
+  lifecycle {
+    postcondition {
+      condition     = length(self.shares) > 0
+      error_message = "there should be at least one share"
+    }
+  }
+}
+
+# Ensure the number of shares is equal to exactly one element (with the use of check block)
+check "share_check" {
+  data "snowflake_shares" "assert_with_check_block" {
+    like = "share-name"
+  }
+
+  assert {
+    condition     = length(data.snowflake_shares.assert_with_check_block.shares) == 1
+    error_message = "shares filtered by '${data.snowflake_shares.assert_with_check_block.like}' returned ${length(data.snowflake_shares.assert_with_check_block.shares)} shares where one was expected"
+  }
 }
 ```
 
@@ -30,20 +93,59 @@ data "snowflake_shares" "ad" {
 
 ### Optional
 
-- `pattern` (String) Filters the command output by object name.
+- `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
+- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC SHARE for each share returned by SHOW SHARES. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `shares` (List of Object) List of all the shares available in the system. (see [below for nested schema](#nestedatt--shares))
+- `shares` (List of Object) Holds the aggregated output of all shares details queries. (see [below for nested schema](#nestedatt--shares))
+
+<a id="nestedblock--limit"></a>
+### Nested Schema for `limit`
+
+Required:
+
+- `rows` (Number) The maximum number of rows to return.
+
+Optional:
+
+- `from` (String) Specifies a **case-sensitive** pattern that is used to match object name. After the first match, the limit on the number of rows will be applied.
+
 
 <a id="nestedatt--shares"></a>
 ### Nested Schema for `shares`
 
 Read-Only:
 
-- `comment` (String)
+- `describe_output` (List of Object) (see [below for nested schema](#nestedobjatt--shares--describe_output))
+- `show_output` (List of Object) (see [below for nested schema](#nestedobjatt--shares--show_output))
+
+<a id="nestedobjatt--shares--describe_output"></a>
+### Nested Schema for `shares.describe_output`
+
+Read-Only:
+
 - `kind` (String)
 - `name` (String)
+- `shared_on` (String)
+
+
+<a id="nestedobjatt--shares--show_output"></a>
+### Nested Schema for `shares.show_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `kind` (String)
+- `listing_global_name` (String)
+- `name` (String)
 - `owner` (String)
+- `owner_account` (String)
+- `secure_objects_only` (Boolean)
 - `to` (List of String)
+- `to_total` (Number)

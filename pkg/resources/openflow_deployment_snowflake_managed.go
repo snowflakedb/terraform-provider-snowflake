@@ -8,30 +8,44 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// openflowDeploymentSnowflakeManagedSchema is the common deployment schema with no additions: a
-// Snowflake-managed deployment takes none of the BYOC networking options, which is the main reason the two
-// types are separate resources.
+// openflowDeploymentSnowflakeManagedSchema is the common deployment schema plus use_private_link.
+// vpc_type, custom_ingress_hostname and use_user_auth_over_privatelink stay on the BYOC resource:
+// Snowflake documents those as BYOC-only. USE_PRIVATE_LINK is accepted on every CREATE OPENFLOW
+// DEPLOYMENT and has no ALTER, so it is ForceNew here too.
 //
-// This must stay the base schema only (not merged with openflowDeploymentParametersSchema): that map is
-// populated by an init() in another file, which runs after package-level var initializers, so merging it
-// here at var-init time would silently copy it while still empty. The merge happens in
+// This must stay unmerged with openflowDeploymentParametersSchema: that map is populated by an init()
+// in another file, which runs after package-level var initializers, so merging it here at var-init
+// time would silently copy it while still empty. The merge happens in
 // OpenflowDeploymentSnowflakeManaged's Schema field instead, which runs after all init()s.
-var openflowDeploymentSnowflakeManagedSchema = openflowDeploymentCommonSchema()
+var openflowDeploymentSnowflakeManagedSchema = func() map[string]*schema.Schema {
+	return collections.MergeMaps(openflowDeploymentCommonSchema(), map[string]*schema.Schema{
+		"use_private_link": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: validateBooleanString,
+			DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("use_private_link"),
+			Description:      booleanStringFieldDescription("Specifies whether the deployment is reached over private link."),
+			Default:          BooleanDefault,
+		},
+	})
+}()
 
 func OpenflowDeploymentSnowflakeManaged() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingCreateWrapper(resources.OpenflowDeploymentSnowflakeManaged, CreateOpenflowDeploymentSnowflakeManaged)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingReadWrapper(resources.OpenflowDeploymentSnowflakeManaged, ReadOpenflowDeploymentSnowflakeManaged(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingUpdateWrapper(resources.OpenflowDeploymentSnowflakeManaged, UpdateOpenflowDeploymentSnowflakeManaged)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OpenflowDeploymentSnowflakeManagedResource), TrackingDeleteWrapper(resources.OpenflowDeploymentSnowflakeManaged, deleteOpenflowDeployment)),
+		CreateContext: TrackingCreateWrapper(resources.OpenflowDeploymentSnowflakeManaged, CreateOpenflowDeploymentSnowflakeManaged),
+		ReadContext:   TrackingReadWrapper(resources.OpenflowDeploymentSnowflakeManaged, ReadOpenflowDeploymentSnowflakeManaged(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.OpenflowDeploymentSnowflakeManaged, UpdateOpenflowDeploymentSnowflakeManaged),
+		DeleteContext: TrackingDeleteWrapper(resources.OpenflowDeploymentSnowflakeManaged, deleteOpenflowDeployment),
 		Description: joinWithSpace(
 			"Resource used to manage Snowflake-managed Openflow deployments.",
 			"A deployment is the account-level container that Openflow runtimes are created in.",
@@ -54,6 +68,17 @@ func OpenflowDeploymentSnowflakeManaged() *schema.Resource {
 		},
 
 		Timeouts: openflowDeploymentTimeouts,
+
+		// v0 state has no use_private_link. The attribute is ForceNew, so leaving it empty would plan a
+		// replacement on the next apply solely to fill in the schema default.
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_23_0_OpenflowDeploymentSnowflakeManagedUsePrivateLinkUpgrader,
+			},
+		},
 	}
 }
 
@@ -81,9 +106,14 @@ func ImportOpenflowDeploymentSnowflakeManaged(ctx context.Context, d *schema.Res
 		return nil, errorFromDiagnostics(diags)
 	}
 
+	// use_private_link is ForceNew. Enforcing import writes the SHOW value, so a configuration that
+	// omits the attribute plans a replacement. Permissive import writes "default", which matches an
+	// omitted attribute and leaves the deployment in place.
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
 	if errs := errors.Join(
 		d.Set("name", deployment.Name),
 		importOpenflowDeploymentOptionals(d, deployment),
+		importBooleanStringAttribute(d, "use_private_link", importPermissiveMode, deployment.UsePrivateLink),
 	); errs != nil {
 		return nil, errs
 	}
@@ -95,7 +125,10 @@ func CreateOpenflowDeploymentSnowflakeManaged(ctx context.Context, d *schema.Res
 	id := sdk.NewAccountObjectIdentifier(d.Get("name").(string))
 
 	request := sdk.NewCreateOpenflowDeploymentRequest(id, sdk.OpenflowDeploymentTypeSnowflake)
-	if err := createOpenflowDeploymentCommonFields(d, request); err != nil {
+	if err := errors.Join(
+		createOpenflowDeploymentCommonFields(d, request),
+		booleanStringAttributeCreateBuilder(d, "use_private_link", request.WithUsePrivateLink),
+	); err != nil {
 		return diag.FromErr(err)
 	}
 

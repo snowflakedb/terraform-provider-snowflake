@@ -13,12 +13,14 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CloneMoment]{"CloneMoment", AllCloneMoments, ToCloneMoment})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ReclusterState]{"ReclusterState", AllReclusterStates, ToReclusterState})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MatchType]{"MatchType", AllMatchTypes, ToMatchType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableSearchMethod]{"TableSearchMethod", AllTableSearchMethods, ToTableSearchMethod})
 }
 
 var tablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
 	case_Tables_validation_Create_name_ValidIdentifier                                                                                              testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Tables_validation_Create_opts_ConflictingFields                                                                                            testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet                                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_NoneSet"
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet                                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_ExactlyOneValueSet_MoreThanOneSet"
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields                                        testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_DefaultValue_Identity_ConflictingFields"
@@ -39,6 +41,7 @@ const (
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely_BothInvalid                          testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ConflictingFields_Rely_Norely_BothInvalid"
 	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet                                                                   testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_NoneSet"
 	case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet                                                            testCaseName = "validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                                              testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
 	case_Tables_validation_Create_Tag_ValidIdentifier                                                                                               testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Tables_sql_Create_basic                                                                                                                    testCaseName = "sql_Create_basic"
 	case_Tables_sql_Create_all                                                                                                                      testCaseName = "sql_Create_all"
@@ -174,6 +177,14 @@ var tablesTests = TablesTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateTableOptions", "name"),
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_opts_ConflictingFields,
+				ExpectedErr: errOneOf("CreateTableOptions", "OrReplace", "IfNotExists"),
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.OrReplace = new(true)
+					opts.IfNotExists = new(true)
 				},
 			},
 			validationCase[*CreateTableOptions]{
@@ -382,6 +393,14 @@ var tablesTests = TablesTestsContext{
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"),
+			},
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_RowAccessPolicy_Name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"),
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.RowAccessPolicy = &TableRowAccessPolicy{}
+					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
 			},
 			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_Tag_ValidIdentifier,
@@ -886,7 +905,7 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction", "Add", "Drop"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 					opts.SearchOptimizationAction.Add = nil
 					opts.SearchOptimizationAction.Drop = nil
 				},
@@ -895,8 +914,8 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction", "Add", "Drop"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
-					opts.SearchOptimizationAction.Add = &AddSearchOptimization{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
+					opts.SearchOptimizationAction.Add = &TableAddSearchOptimization{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 				},
 			},
@@ -904,7 +923,7 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet,
 				ExpectedErr: errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[0]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 					opts.SearchOptimizationAction.Drop.On = []TableDropSearchOptimizationOn{{}}
 				},
@@ -924,7 +943,7 @@ var tablesTests = TablesTestsContext{
 					errExactlyOneOf("AlterTableOptions.SearchOptimizationAction.Drop.On[1]", "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
 				},
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
+					opts.SearchOptimizationAction = &TableSearchOptimizationAction{}
 					opts.SearchOptimizationAction.Drop = &TableDropSearchOptimization{}
 					opts.SearchOptimizationAction.Drop.On = []TableDropSearchOptimizationOn{{}, {}}
 				},
@@ -954,7 +973,7 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterTableOptions.AddStorageLifecyclePolicy", "StorageLifecyclePolicy"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{}
+					opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{}
 					opts.AddStorageLifecyclePolicy.StorageLifecyclePolicy = emptySchemaObjectIdentifier
 				},
 			},
@@ -962,7 +981,7 @@ var tablesTests = TablesTestsContext{
 				Name:        case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet,
 				ExpectedErr: errNotSet("AlterTableOptions.AddStorageLifecyclePolicy", "On"),
 				DefaultModify: func(opts *AlterTableOptions) {
-					opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{}
+					opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{}
 					opts.AddStorageLifecyclePolicy.On = nil
 				},
 			},

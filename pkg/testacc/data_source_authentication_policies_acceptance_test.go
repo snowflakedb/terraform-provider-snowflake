@@ -39,6 +39,12 @@ func TestAcc_AuthenticationPolicies_CompleteUseCase(t *testing.T) {
 			*sdk.NewAuthenticationPolicyPatPolicyRequest().
 				WithDefaultExpiryInDays(1).
 				WithMaxExpiryInDays(30).
+				WithRequireRoleRestrictionForServiceUsers(false).
+				WithRequireRoleRestrictionForPersonUsers(true).
+				WithBlockedRolesList([]sdk.StringListItemWrapper{
+					{Value: "ACCOUNTADMIN"},
+					{Value: "SYSADMIN"},
+				}).
 				WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 		).
 		WithWorkloadIdentityPolicy(
@@ -101,7 +107,7 @@ func TestAcc_AuthenticationPolicies_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_enrollment", "REQUIRED")),
 
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.mfa_policy", "{ALLOWED_METHODS=[PASSKEY, DUO], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=ALL}")),
-					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
+					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=1, MAX_EXPIRY_IN_DAYS=30, NETWORK_POLICY_EVALUATION=NOT_ENFORCED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=false, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=true, BLOCKED_ROLES_LIST=[ACCOUNTADMIN, SYSADMIN]}")),
 					assert.Check(resource.TestCheckResourceAttr(authenticationPoliciesModel.DatasourceReference(), "authentication_policies.0.describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[111122223333], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[https://login.microsoftonline.com/tenantid/v2.0], ALLOWED_OIDC_ISSUERS=[https://example.com]}")),
 				),
 			},

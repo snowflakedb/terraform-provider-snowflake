@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -55,7 +56,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				HasDefaultExpiryInDays(15).
 				HasMaxExpiryInDays(365).
 				HasNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionEnforcedRequired).
-				HasRequireRoleRestrictionForServiceUsers(true)).
+				HasRequireRoleRestrictionForServiceUsers(true).
+				HasRequireRoleRestrictionForPersonUsers(false).
+				HasNoBlockedRolesList()).
 			HasWorkloadIdentityPolicyWith(objectassert.NewAuthenticationPolicyWorkloadIdentityPolicyDetailsAssert().
 				HasAllowedProviders(sdk.AllowedProviderOptionAll).
 				HasAllowedAwsAccounts("ALL").
@@ -80,6 +83,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 
 		samlIntegration, cleanupSamlIntegration := testClientHelper().SecurityIntegration.CreateSaml2(t)
 		t.Cleanup(cleanupSamlIntegration)
+
+		quotedRole, cleanupQuotedRole := testClientHelper().Role.CreateRoleWithIdentifier(t, testClientHelper().Ids.RandomAccountObjectIdentifierContaining("a b"))
+		t.Cleanup(cleanupQuotedRole)
 
 		err := client.AuthenticationPolicies.Create(ctx, sdk.NewCreateAuthenticationPolicyRequest(id).
 			WithComment(comment).
@@ -111,6 +117,8 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 					WithDefaultExpiryInDays(1).
 					WithMaxExpiryInDays(30).
 					WithRequireRoleRestrictionForServiceUsers(false).
+					WithRequireRoleRestrictionForPersonUsers(true).
+					WithBlockedRolesList([]sdk.StringListItemWrapper{{Value: snowflakeroles.Accountadmin.FullyQualifiedName()}, {Value: quotedRole.ID().FullyQualifiedName()}}).
 					WithNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced),
 			).
 			WithWorkloadIdentityPolicy(
@@ -167,7 +175,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				HasDefaultExpiryInDays(1).
 				HasMaxExpiryInDays(30).
 				HasNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced).
-				HasRequireRoleRestrictionForServiceUsers(false)).
+				HasRequireRoleRestrictionForServiceUsers(false).
+				HasRequireRoleRestrictionForPersonUsers(true).
+				HasBlockedRolesList(snowflakeroles.Accountadmin, quotedRole.ID())).
 			HasWorkloadIdentityPolicyWith(objectassert.NewAuthenticationPolicyWorkloadIdentityPolicyDetailsAssert().
 				HasAllowedProviders(sdk.AllowedProviderOptionAll).
 				HasAllowedAwsAccounts("111122223333").
@@ -278,7 +288,9 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 				HasDefaultExpiryInDays(1).
 				HasMaxExpiryInDays(30).
 				HasNetworkPolicyEvaluation(sdk.NetworkPolicyEvaluationOptionNotEnforced).
-				HasRequireRoleRestrictionForServiceUsers(true)).
+				HasRequireRoleRestrictionForServiceUsers(true).
+				HasRequireRoleRestrictionForPersonUsers(false).
+				HasNoBlockedRolesList()).
 			HasWorkloadIdentityPolicyWith(objectassert.NewAuthenticationPolicyWorkloadIdentityPolicyDetailsAssert().
 				HasAllowedProviders(sdk.AllowedProviderOptionAll).
 				HasAllowedAwsAccounts("111122223333").
@@ -362,7 +374,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		t.Run("like", func(t *testing.T) {
 			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().
 				WithLike(sdk.Like{Pattern: sdk.String("test_auth_policy_2_%")}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, authenticationPolicies, 1)
 		})
@@ -370,25 +382,25 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		t.Run("starts_with", func(t *testing.T) {
 			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().
 				WithStartsWith("test_auth_policy_").
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, authenticationPolicies, 2)
 		})
 
 		t.Run("in_account", func(t *testing.T) {
-			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}))
+			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}))
 			require.NoError(t, err)
 			assert.Greater(t, len(authenticationPolicies), 3)
 		})
 
 		t.Run("in_database", func(t *testing.T) {
-			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Database: id.DatabaseId()}}))
+			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithIn(sdk.ExtendedIn{Database: id.DatabaseId()}))
 			require.NoError(t, err)
 			assert.Len(t, authenticationPolicies, 3)
 		})
 
 		t.Run("in_schema", func(t *testing.T) {
-			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, authenticationPolicies, 3)
 		})
@@ -409,7 +421,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		t.Run("limit", func(t *testing.T) {
 			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().
 				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 			require.NoError(t, err)
 			assert.Len(t, authenticationPolicies, 1)
 		})
@@ -417,7 +429,7 @@ func TestInt_AuthenticationPolicies(t *testing.T) {
 		t.Run("limit from", func(t *testing.T) {
 			authenticationPolicies, err := client.AuthenticationPolicies.Show(ctx, sdk.NewShowAuthenticationPolicyRequest().
 				WithLimit(sdk.LimitFrom{Rows: sdk.Int(1), From: sdk.String("test_auth_policy_")}).
-				WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+				WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 			require.NoError(t, err)
 			require.Len(t, authenticationPolicies, 1)
 			require.True(t, strings.HasPrefix(authenticationPolicies[0].Name, "test_auth_policy_2"))

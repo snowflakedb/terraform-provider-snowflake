@@ -156,29 +156,35 @@ func (itc *integrationTestContext) initialize() error {
 		testenvs.GetSnowflakeEnvironmentWithProdDefault(),
 	)
 
+	// Cleanups are registered only after a successful create. Otherwise a create that fails because
+	// the object already exists (e.g. created by a concurrent run with the same suffix) would drop that object.
 	db, dbCleanup, err := testClientHelper().CreateTestDatabase(itc.ctx, false)
-	itc.databaseCleanup = dbCleanup
 	if err != nil {
 		return err
 	}
+	itc.databaseCleanup = dbCleanup
 	itc.database = db
 
 	sc, scCleanup, err := testClientHelper().CreateTestSchema(itc.ctx, false)
-	itc.schemaCleanup = scCleanup
 	if err != nil {
 		return err
 	}
+	itc.schemaCleanup = scCleanup
 	itc.schema = sc
 
 	wh, whCleanup, err := testClientHelper().CreateTestWarehouse(itc.ctx, false)
-	itc.warehouseCleanup = whCleanup
 	if err != nil {
 		return err
 	}
+	itc.warehouseCleanup = whCleanup
 	itc.warehouse = wh
 
 	// TODO [SNOW-1763603]: improve setup; this is a quick workaround for faster local testing
 	if os.Getenv(string(testenvs.SimplifiedIntegrationTestsSetup)) == "" {
+		if err := logCurrentSnowflakeVersion(itc.ctx, itc.testClient, testprofiles.Default); err != nil {
+			return err
+		}
+
 		config, err := sdk.ProfileConfig(testprofiles.Secondary)
 		if err != nil {
 			return err
@@ -203,26 +209,29 @@ func (itc *integrationTestContext) initialize() error {
 			integrationtests.ObjectsSuffix,
 			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
 		)
+		if err := logCurrentSnowflakeVersion(itc.secondaryCtx, itc.secondaryTestClient, testprofiles.Secondary); err != nil {
+			return err
+		}
 
 		secondaryDb, secondaryDbCleanup, err := secondaryTestClientHelper().CreateTestDatabase(itc.ctx, false)
-		itc.secondaryDatabaseCleanup = secondaryDbCleanup
 		if err != nil {
 			return err
 		}
+		itc.secondaryDatabaseCleanup = secondaryDbCleanup
 		itc.secondaryDatabase = secondaryDb
 
 		secondarySchema, secondarySchemaCleanup, err := secondaryTestClientHelper().CreateTestSchema(itc.ctx, false)
-		itc.secondarySchemaCleanup = secondarySchemaCleanup
 		if err != nil {
 			return err
 		}
+		itc.secondarySchemaCleanup = secondarySchemaCleanup
 		itc.secondarySchema = secondarySchema
 
 		secondaryWarehouse, secondaryWarehouseCleanup, err := secondaryTestClientHelper().CreateTestWarehouse(itc.ctx, false)
-		itc.secondaryWarehouseCleanup = secondaryWarehouseCleanup
 		if err != nil {
 			return err
 		}
+		itc.secondaryWarehouseCleanup = secondaryWarehouseCleanup
 		itc.secondaryWarehouse = secondaryWarehouse
 
 		err = errors.Join(
@@ -305,6 +314,15 @@ func testSecondaryClient(t *testing.T) *sdk.Client {
 func testSecondaryContext(t *testing.T) context.Context {
 	t.Helper()
 	return itc.secondaryCtx
+}
+
+func logCurrentSnowflakeVersion(ctx context.Context, tc *helpers.TestClient, profile string) error {
+	version, err := tc.GetCurrentSnowflakeVersion(ctx)
+	if err != nil {
+		return fmt.Errorf("getting current Snowflake version for profile %s: %w", profile, err)
+	}
+	log.Printf("[INFO] Current Snowflake version for profile %s: %s", profile, version)
+	return nil
 }
 
 func testClientHelper() *helpers.TestClient {

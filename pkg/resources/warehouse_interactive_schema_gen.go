@@ -78,7 +78,7 @@ var warehouseInteractiveAttributesSchema = warehouseInteractiveAttributesModific
 	},
 	"warehouse_type": {
 		Type:        tfschema.TypeString,
-		Optional:    true,
+		Computed:    true,
 		Description: "Specifies the type for the interactive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
 })

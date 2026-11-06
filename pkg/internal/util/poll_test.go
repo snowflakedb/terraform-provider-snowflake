@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/require"
@@ -27,13 +28,15 @@ func TestPollUntil(t *testing.T) {
 	})
 
 	t.Run("returns context timeout", func(t *testing.T) {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
-		defer cancel()
-		time.Sleep(50 * time.Millisecond)
-		_, err := PollUntil(ctx, time.Millisecond, func() (int, error) {
-			return 0, nil
-		}, func(int) bool { return false }, "still waiting")
-		require.ErrorIs(t, err, context.DeadlineExceeded)
-		require.ErrorContains(t, err, "still waiting")
+		synctest.Test(t, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond)
+			defer cancel()
+			synctest.Sleep(time.Millisecond)
+			_, err := PollUntil(ctx, time.Millisecond, func() (int, error) {
+				return 0, nil
+			}, func(int) bool { return false }, "still waiting")
+			require.ErrorIs(t, err, context.DeadlineExceeded)
+			require.ErrorContains(t, err, "still waiting")
+		})
 	})
 }

@@ -99,6 +99,8 @@ func Test_ColumnField_matchesExtractedStructField(t *testing.T) {
 
 	require.Equal(t, genhelpers.Field{Name: "Options", ConcreteType: "*string", UnderlyingType: "*string"},
 		ColumnField(obj, Attribute{Name: "options", Type: AttrString, OptionalInShow: true}))
+	require.Equal(t, genhelpers.Field{Name: "CreatedOn", ConcreteType: "string", UnderlyingType: "string", SchemaName: "created"},
+		ColumnField(obj, Attribute{Name: "created_on", Type: AttrString, SchemaName: "created"}))
 	require.Equal(t, genhelpers.Field{Name: "MinNodes", ConcreteType: "*int", UnderlyingType: "*int"},
 		ColumnField(obj, Attribute{Name: "min_nodes", Type: AttrInt, OptionalInShow: true}))
 	require.Equal(t, genhelpers.Field{Name: "AutoResume", ConcreteType: "*bool", UnderlyingType: "*bool"},

@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 )
@@ -28,13 +29,15 @@ func parametersForAssertions(enabled func(ssot.Generators) bool) []SnowflakeObje
 }
 
 func ssotObjectParameters(enabled func(ssot.Generators) bool) []SnowflakeObjectParameters {
-	var out []SnowflakeObjectParameters
-	for _, obj := range defs.All() {
-		if enabled(ssot.ObjectGenerators(obj.Generators...)) {
-			out = append(out, objectParametersFromSsot(obj, true))
-		}
-	}
-	return out
+	return collections.Map(defs.SelectObjects(enabled, selectsForParameters), func(obj ssot.Object) SnowflakeObjectParameters {
+		return objectParametersFromSsot(obj, true)
+	})
+}
+
+// selectsForParameters is the one filter of both parameter assertion generators: the catalog has entries at the object's
+// parameter level. An enabled object that fails it is skipped, so the generators can be enabled for every object.
+func selectsForParameters(obj ssot.Object) bool {
+	return len(defs.ParameterDefsForLevel(obj.ParameterLevel())) > 0
 }
 
 // mergeSnowflakeObjectParameters drops hand-written names that ssot emits, then appends the ssot definitions.

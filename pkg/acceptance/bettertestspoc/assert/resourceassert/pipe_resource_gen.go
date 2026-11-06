@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type PipeResourceAssert struct {
@@ -82,6 +83,16 @@ func (p *PipeResourceAssert) HasIntegration(expected string) *PipeResourceAssert
 	return p
 }
 
+func (p *PipeResourceAssert) HasLogEventLevel(expected string) *PipeResourceAssert {
+	p.StringValueSet("log_event_level", expected)
+	return p
+}
+
+func (p *PipeResourceAssert) HasLogEventLevelSdk(expected sdk.LogLevel) *PipeResourceAssert {
+	p.StringValueSet("log_event_level", string(expected))
+	return p
+}
+
 func (p *PipeResourceAssert) HasNotificationChannel(expected string) *PipeResourceAssert {
 	p.StringValueSet("notification_channel", expected)
 	return p
@@ -89,6 +100,11 @@ func (p *PipeResourceAssert) HasNotificationChannel(expected string) *PipeResour
 
 func (p *PipeResourceAssert) HasOwner(expected string) *PipeResourceAssert {
 	p.StringValueSet("owner", expected)
+	return p
+}
+
+func (p *PipeResourceAssert) HasPipeExecutionPaused(expected bool) *PipeResourceAssert {
+	p.BoolValueSet("pipe_execution_paused", expected)
 	return p
 }
 
@@ -146,6 +162,11 @@ func (p *PipeResourceAssert) HasIntegrationString(expected string) *PipeResource
 	return p
 }
 
+func (p *PipeResourceAssert) HasLogEventLevelString(expected string) *PipeResourceAssert {
+	p.ValueSet("log_event_level", expected)
+	return p
+}
+
 func (p *PipeResourceAssert) HasNotificationChannelString(expected string) *PipeResourceAssert {
 	p.ValueSet("notification_channel", expected)
 	return p
@@ -153,6 +174,11 @@ func (p *PipeResourceAssert) HasNotificationChannelString(expected string) *Pipe
 
 func (p *PipeResourceAssert) HasOwnerString(expected string) *PipeResourceAssert {
 	p.ValueSet("owner", expected)
+	return p
+}
+
+func (p *PipeResourceAssert) HasPipeExecutionPausedString(expected string) *PipeResourceAssert {
+	p.ValueSet("pipe_execution_paused", expected)
 	return p
 }
 
@@ -210,6 +236,11 @@ func (p *PipeResourceAssert) HasNoIntegration() *PipeResourceAssert {
 	return p
 }
 
+func (p *PipeResourceAssert) HasNoLogEventLevel() *PipeResourceAssert {
+	p.ValueNotSet("log_event_level")
+	return p
+}
+
 func (p *PipeResourceAssert) HasNoNotificationChannel() *PipeResourceAssert {
 	p.ValueNotSet("notification_channel")
 	return p
@@ -217,6 +248,11 @@ func (p *PipeResourceAssert) HasNoNotificationChannel() *PipeResourceAssert {
 
 func (p *PipeResourceAssert) HasNoOwner() *PipeResourceAssert {
 	p.ValueNotSet("owner")
+	return p
+}
+
+func (p *PipeResourceAssert) HasNoPipeExecutionPaused() *PipeResourceAssert {
+	p.ValueNotSet("pipe_execution_paused")
 	return p
 }
 
@@ -254,6 +290,11 @@ func (p *PipeResourceAssert) HasIntegrationEmpty() *PipeResourceAssert {
 	return p
 }
 
+func (p *PipeResourceAssert) HasLogEventLevelEmpty() *PipeResourceAssert {
+	p.ValueSet("log_event_level", "")
+	return p
+}
+
 func (p *PipeResourceAssert) HasNotificationChannelEmpty() *PipeResourceAssert {
 	p.ValueSet("notification_channel", "")
 	return p
@@ -261,6 +302,11 @@ func (p *PipeResourceAssert) HasNotificationChannelEmpty() *PipeResourceAssert {
 
 func (p *PipeResourceAssert) HasOwnerEmpty() *PipeResourceAssert {
 	p.ValueSet("owner", "")
+	return p
+}
+
+func (p *PipeResourceAssert) HasPipeExecutionPausedEmpty() *PipeResourceAssert {
+	p.ValueSet("pipe_execution_paused", "")
 	return p
 }
 
@@ -318,6 +364,11 @@ func (p *PipeResourceAssert) HasIntegrationNotEmpty() *PipeResourceAssert {
 	return p
 }
 
+func (p *PipeResourceAssert) HasLogEventLevelNotEmpty() *PipeResourceAssert {
+	p.ValuePresent("log_event_level")
+	return p
+}
+
 func (p *PipeResourceAssert) HasNotificationChannelNotEmpty() *PipeResourceAssert {
 	p.ValuePresent("notification_channel")
 	return p
@@ -325,5 +376,10 @@ func (p *PipeResourceAssert) HasNotificationChannelNotEmpty() *PipeResourceAsser
 
 func (p *PipeResourceAssert) HasOwnerNotEmpty() *PipeResourceAssert {
 	p.ValuePresent("owner")
+	return p
+}
+
+func (p *PipeResourceAssert) HasPipeExecutionPausedNotEmpty() *PipeResourceAssert {
+	p.ValuePresent("pipe_execution_paused")
 	return p
 }

@@ -4,6 +4,7 @@ package model
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -11,10 +12,10 @@ import (
 )
 
 type ShareModel struct {
-	Name               tfconfig.Variable `json:"name,omitempty"`
-	Accounts           tfconfig.Variable `json:"accounts,omitempty"`
-	Comment            tfconfig.Variable `json:"comment,omitempty"`
-	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	Name              tfconfig.Variable `json:"name,omitempty"`
+	Accounts          tfconfig.Variable `json:"accounts,omitempty"`
+	Comment           tfconfig.Variable `json:"comment,omitempty"`
+	SecureObjectsOnly tfconfig.Variable `json:"secure_objects_only,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -90,8 +91,13 @@ func (s *ShareModel) WithComment(comment string) *ShareModel {
 	return s
 }
 
-func (s *ShareModel) WithFullyQualifiedName(fullyQualifiedName string) *ShareModel {
-	s.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (s *ShareModel) WithSecureObjectsOnly(secureObjectsOnly string) *ShareModel {
+	s.SecureObjectsOnly = tfconfig.StringVariable(secureObjectsOnly)
+	return s
+}
+
+func (s *ShareModel) WithSecureObjectsOnlyBool(secureObjectsOnly bool) *ShareModel {
+	s.SecureObjectsOnly = tfconfig.StringVariable(strconv.FormatBool(secureObjectsOnly))
 	return s
 }
 
@@ -114,7 +120,7 @@ func (s *ShareModel) WithCommentValue(value tfconfig.Variable) *ShareModel {
 	return s
 }
 
-func (s *ShareModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ShareModel {
-	s.FullyQualifiedName = value
+func (s *ShareModel) WithSecureObjectsOnlyValue(value tfconfig.Variable) *ShareModel {
+	s.SecureObjectsOnly = value
 	return s
 }

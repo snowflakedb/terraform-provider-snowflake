@@ -96,6 +96,8 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendIdentifierClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindStatic:
 		return v.appendStaticClause(attr, clause)
+	case ssot.SqlKindPreexistingStruct:
+		return v.appendPreexistingStructClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindObject:
 		return v.appendObjectClause(attr, clause, clauseRequired(attr, clause, statement))
 	default:
@@ -108,6 +110,37 @@ func (v *QueryStruct) appendStaticClause(attr ssot.Attribute, clause ssot.SqlCla
 		panic(fmt.Sprintf("attribute %q: static clause needs a field name and SQL", attr.Name))
 	}
 	return v.SQLWithCustomFieldName(clause.Field, clause.SQL)
+}
+
+// appendPreexistingStructClause embeds the supplied query struct that the clause names.
+func (v *QueryStruct) appendPreexistingStructClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	nested, ok := v.suppliedStructs[clause.StructName]
+	if !ok {
+		panic(fmt.Sprintf("attribute %q: struct clause names %q, which the SDK definition did not supply", attr.Name, clause.StructName))
+	}
+	opts := ListOptions()
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if clause.NoComma {
+		opts = opts.NoComma()
+	}
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	name := clauseGoFieldName(attr, clause)
+	if required {
+		return v.QueryStructField(name, nested, opts.Required())
+	}
+	return v.OptionalQueryStructField(name, nested, opts)
+}
+
+// clauseGoFieldName is the Go field name of a clause: Field, or the attribute name in camel case.
+func clauseGoFieldName(attr ssot.Attribute, clause ssot.SqlClause) string {
+	if clause.Field != "" {
+		return clause.Field
+	}
+	return genhelpers.SnakeCaseToCamel(attr.Name)
 }
 
 // clauseRequired is Attribute.Required on create when the clause leaves Required nil.
@@ -138,7 +171,7 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		}
 		return "*" + kind
 	}
-	attrType := attr.Type
+	attrType := attr.SdkType()
 	enum := attr.ColumnEnum()
 	if clause.Enum != nil {
 		// The clause makes the attribute an enum parameter, such as a string that is a provider-specific enum.
@@ -177,12 +210,24 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 		if item == "" {
 			panic(fmt.Sprintf("attribute %q: list parameter has no item struct", attr.Name))
 		}
-		v = v.ListAssignment(sql, item, opts)
-		if required && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
-			v = v.WithValidation(AtLeastOneValueSet, sqlToFieldName(sql, true))
+		// FieldName separates the Go name from the SQL text. Empty SQL then stays empty, as on a nested struct.
+		name := sqlToFieldName(sql, true)
+		prefix := sql
+		if clause.Field != "" {
+			name = clause.Field
+			prefix = clause.SQL
+			v = v.ListAssignmentWithFieldName(prefix, item, opts, clause.Field)
+		} else {
+			v = v.ListAssignment(prefix, item, opts)
 		}
-		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
-			v = v.WithValidation(ValidIdentifier, sqlToFieldName(sql, true))
+		if required && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
+			v = v.WithValidation(AtLeastOneValueSet, name)
+		} else if required {
+			v = v.WithValidation(ValidateValueSet, name)
+		}
+		// ValidIdentifier works only on a list of identifiers, not on item structs like StringListItemWrapper.
+		if attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && item == attr.Elem.IdentifierType {
+			v = v.WithValidation(ValidIdentifier, name)
 		}
 		return v
 	default:
@@ -214,6 +259,15 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier {
 		return v.appendIdentifierListKeywordClause(attr, clause)
 	}
+	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrString {
+		return v.appendStringListKeywordClause(attr, clause, required)
+	}
+	if attr.IsObjectList() {
+		return v.appendObjectListKeywordClause(attr, clause, required)
+	}
+	if attr.Type == ssot.AttrString && clause.Quotes == "" && clause.Parentheses == "" && clause.Equals == "" && clause.Enum == nil {
+		return v.appendStringKeywordClause(attr, clause, required)
+	}
 	enum := clause.Enum
 	if enum == nil {
 		enum = attr.ColumnEnum()
@@ -224,10 +278,7 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 	if clause.Parentheses != "" || clause.Equals != "" {
 		panic(fmt.Sprintf("attribute %q: enum keyword has parentheses or equals", attr.Name))
 	}
-	name := clause.Field
-	if name == "" {
-		name = genhelpers.SnakeCaseToCamel(attr.Name)
-	}
+	name := clauseGoFieldName(attr, clause)
 	opts := KeywordOptions()
 	switch clause.Quotes {
 	case "":
@@ -244,11 +295,59 @@ func (v *QueryStruct) appendValueKeywordClause(attr ssot.Attribute, clause ssot.
 	return v.OptionalEnum(name, enum, opts)
 }
 
-func (v *QueryStruct) appendIdentifierListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
-	name := clause.Field
-	if name == "" {
-		name = genhelpers.SnakeCaseToCamel(attr.Name)
+// appendStringListKeywordClause adds a keyword field of []string, such as CLUSTER BY (a, b) or EXISTS ( <condition> ).
+func (v *QueryStruct) appendStringListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.Quotes != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: string list keyword has quotes or equals", attr.Name))
 	}
+	opts := keywordOptionsFromValueClause(attr, clause, required)
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if clause.NoComma {
+		opts = opts.NoComma()
+	}
+	v.fields = append(v.fields, NewField(clauseGoFieldName(attr, clause), KindOfSlice("string"), Tags().Keyword(), opts))
+	return v
+}
+
+func (v *QueryStruct) appendObjectListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.Quotes != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: object list keyword has quotes or equals", attr.Name))
+	}
+	return v.ListQueryStructField(clauseGoFieldName(attr, clause), queryStructFromObjectList(v.owner, attr), keywordOptionsFromValueClause(attr, clause, required))
+}
+
+func keywordOptionsFromValueClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *KeywordTransformer {
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	} else if clause.Field == "" {
+		opts = opts.SQL(clause.SQLText(attr))
+	}
+	if required {
+		opts = opts.Required()
+	}
+	return opts
+}
+
+func (v *QueryStruct) appendStringKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.Quotes != "" || clause.Parentheses != "" || clause.Equals != "" {
+		panic(fmt.Sprintf("attribute %q: string keyword has parameter tags", attr.Name))
+	}
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	name := clauseGoFieldName(attr, clause)
+	if required {
+		return v.Text(name, opts.Required())
+	}
+	return v.OptionalText(name, opts)
+}
+
+func (v *QueryStruct) appendIdentifierListKeywordClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
+	name := clauseGoFieldName(attr, clause)
 	opts := KeywordOptions()
 	if clause.Parentheses == ssot.SqlParensYes {
 		opts = opts.Parentheses()
@@ -266,10 +365,14 @@ func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.Sq
 	sql := clause.SQLText(attr)
 	opts := identifierOptionsFromClause(clause, required).SQL(sql)
 	name := sqlToFieldName(sql, true)
-	if required {
-		return v.Identifier(name, clause.IdType, opts)
+	if clause.Field != "" {
+		name = clause.Field
 	}
-	return v.OptionalIdentifier(name, clause.IdType, opts)
+	if required {
+		v = v.Identifier(name, clause.IdType, opts)
+		return v.WithValidation(ValidIdentifier, name)
+	}
+	return v.OptionalIdentifier(name, clause.IdType, opts).WithValidation(ValidIdentifierIfSet, name)
 }
 
 func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *ParameterTransformer {
@@ -289,6 +392,8 @@ func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *Parameter
 		opts = opts.Parentheses()
 	case ssot.SqlParensNo:
 		opts = opts.NoParentheses()
+	case ssot.SqlParensMust:
+		opts = opts.MustParentheses()
 	default:
 		panic(fmt.Sprintf("sql clause parentheses %q", clause.Parentheses))
 	}
@@ -296,6 +401,8 @@ func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *Parameter
 	case "":
 	case ssot.SqlEqualsNo:
 		opts = opts.NoEquals()
+	case ssot.SqlEqualsArrow:
+		opts = opts.ArrowEquals()
 	default:
 		panic(fmt.Sprintf("sql clause equals %q", clause.Equals))
 	}

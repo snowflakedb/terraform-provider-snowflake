@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -66,7 +67,7 @@ func Test_createQueryStruct_objectListWithVariants(t *testing.T) {
 	}
 	ssot.ValidateObject(obj)
 
-	got := createQueryStructFromConfig(obj, obj.SdkConfig())
+	got := createQueryStructFromConfig(obj, obj.SdkConfig(), nil)
 
 	want := NewQueryStruct("CreateWidget").
 		Create().
@@ -460,6 +461,46 @@ func Test_CreateOperationFromObject_exactlyOneKeywordAndIdentifierList(t *testin
 	requireSameOperations(t, want, got)
 }
 
+func Test_CreateOperationFromObject_keywordStringList(t *testing.T) {
+	condition := ssot.Attribute{
+		Name:      "condition",
+		Type:      ssot.AttrObject,
+		Required:  true,
+		CreateSql: ssot.ObjectParameter(ssot.Sql("IF"), ssot.Parentheses(), ssot.Required(), ssot.FieldName("condition")),
+		Children: []ssot.Attribute{{
+			Name:      "condition",
+			Type:      ssot.AttrList,
+			Elem:      &ssot.Attribute{Type: ssot.AttrString},
+			CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.NoComma(), ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
+		}},
+	}
+	action := ssot.Attribute{
+		Name:      "then_action",
+		Type:      ssot.AttrString,
+		Required:  true,
+		CreateSql: ssot.PlainParameter(ssot.Sql("THEN"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("action")),
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&condition, &action}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate(ssot.SdkCreateWithoutOrReplace(), ssot.SdkCreateWithoutIfNotExists()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			SQL("WIDGET").
+			Name().
+			QueryStructField("condition", NewQueryStruct("WidgetCondition").
+				UnnamedList("Condition", "string", KeywordOptions().Parentheses().NoComma().SQL("EXISTS")),
+				ListOptions().NoComma().Parentheses().SQL("IF").Required()).
+			AssignmentWithFieldName("THEN", "string", ParameterOptions().NoEquals().Required(), "action").
+			WithValidation(ValidIdentifier, "name"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CreateOperationFromObject_objectAsParameter(t *testing.T) {
 	option := ssot.Attribute{
 		Name:      "option",
@@ -486,4 +527,159 @@ func Test_CreateOperationFromObject_objectAsParameter(t *testing.T) {
 			WithValidation(ValidIdentifier, "name"),
 	)
 	requireSameOperations(t, want, got)
+}
+
+func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T) {
+	scope := ssot.NewEnum("WidgetScope", "WidgetScopes", "GLOBAL", "LOCAL")
+	scopeAttr := ssot.Attribute{Name: "scope", Type: ssot.AttrEnum, Enum: scope, SqlOnly: true, CreateSql: ssot.EnumKeyword()}
+	columns := ssot.Attribute{Name: "columns_and_constraints", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("CreateWidgetColumns", ssot.Parentheses(), ssot.Required())}
+	clusterBy := ssot.Attribute{Name: "cluster_by", Type: ssot.AttrList, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("CLUSTER BY"))}
+	format := ssot.Attribute{Name: "stage_file_format", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("WidgetFileFormat", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT ="))}
+	policy := ssot.Attribute{
+		Name:      "row_access_policy",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		Children: []ssot.Attribute{
+			{
+				Name:           "name",
+				Type:           ssot.AttrIdentifier,
+				IdentifierType: "SchemaObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ROW ACCESS POLICY"), ssot.FieldName("Name")),
+			},
+			{
+				Name:      "on",
+				Type:      ssot.AttrList,
+				Required:  true,
+				SqlOnly:   true,
+				Elem:      &ssot.Attribute{Type: ssot.AttrString},
+				CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("ON")),
+			},
+		},
+	}
+	obj := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "SchemaObjectIdentifier",
+		Create: ssot.CreateSpec{
+			KeywordsBefore: []*ssot.Attribute{&scopeAttr},
+			Clauses:        []*ssot.Attribute{&columns, &clusterBy, &format, &policy},
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+	}
+	ssot.ValidateObject(obj)
+
+	newColumns := func() *QueryStruct {
+		return NewQueryStruct("CreateWidgetColumns").Text("Name", KeywordOptions().Required())
+	}
+	newFormat := func() *QueryStruct {
+		return NewQueryStruct("WidgetFileFormat").OptionalTextAssignment("FORMAT_NAME", ParameterOptions().SingleQuotes())
+	}
+	unrelated := NewQueryStruct("WidgetUnrelated").Text("Name", KeywordOptions())
+
+	got := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newColumns(), newFormat(), unrelated)
+
+	want := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
+		NewQueryStruct("CreateWidget").
+			Create().
+			OrReplace().
+			OptionalEnum("Scope", scope, KeywordOptions()).
+			SQL("WIDGET").
+			IfNotExists().
+			Name().
+			QueryStructField("ColumnsAndConstraints", newColumns(), ListOptions().Parentheses().Required()).
+			NamedList("CLUSTER BY", "string", KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+			OptionalQueryStructField("StageFileFormat", newFormat(), ListOptions().Parentheses().NoComma().SQL("STAGE_FILE_FORMAT =")).
+			OptionalQueryStructField("RowAccessPolicy", NewQueryStruct("WidgetRowAccessPolicy").
+				Identifier("Name", "SchemaObjectIdentifier", IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+				WithValidation(ValidIdentifier, "Name").
+				NamedList("ON", "string", KeywordOptions().Parentheses().SQL("ON").Required()),
+				ListOptions().NoComma()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ConflictingFields, "OrReplace", "IfNotExists"),
+		unrelated,
+	)
+	requireSameOperations(t, want, got)
+
+	t.Run("a named struct that is not supplied panics", func(t *testing.T) {
+		require.PanicsWithValue(t, `attribute "columns_and_constraints": struct clause names "CreateWidgetColumns", which the SDK definition did not supply`, func() {
+			NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newFormat())
+		})
+	})
+}
+
+func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
+	attr := ssotdefs.TableClusteringAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := queryStructFromObject("Table", attr)
+	want := NewQueryStruct("TableClusteringAction").
+		PredefinedQueryStructField("ClusterBy", "[]string", KeywordOptions().Parentheses().SQL("CLUSTER BY")).
+		OptionalQueryStructField("Recluster",
+			NewQueryStruct("TableReclusterAction").
+				OptionalNumberAssignment("MAX_SIZE", ParameterOptions()).
+				OptionalAssignmentWithFieldName("WHERE", "*string", ParameterOptions().NoEquals(), "Condition"),
+			ListOptions().NoComma().SQL("RECLUSTER")).
+		OptionalQueryStructField("ChangeReclusterState",
+			NewQueryStruct("TableReclusterChangeState").
+				OptionalEnum("State", ssotdefs.ReclusterState, KeywordOptions()).
+				SQL("RECLUSTER"),
+			ListOptions().NoComma()).
+		OptionalSQL("DROP CLUSTERING KEY").
+		WithValidation(ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableSearchOptimizationAction(t *testing.T) {
+	attr := ssotdefs.TableSearchOptimizationAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	searchMethodWithTarget := func() *QueryStruct {
+		return NewQueryStruct("TableSearchMethodWithTarget").
+			Enum("Method", ssotdefs.TableSearchMethod, KeywordOptions().Required()).
+			QueryStructField("Args",
+				NewQueryStruct("TableSearchMethodArgs").
+					PredefinedQueryStructField("Targets", "[]string", KeywordOptions()).
+					OptionalTextAssignment("ANALYZER", ParameterOptions().ArrowEquals().SingleQuotes()),
+				ListOptions().Parentheses().Required())
+	}
+	want := NewQueryStruct("TableSearchOptimizationAction").
+		OptionalQueryStructField("Add",
+			NewQueryStruct("TableAddSearchOptimization").
+				SQL("ADD SEARCH OPTIMIZATION").
+				ListQueryStructField("On", searchMethodWithTarget(), KeywordOptions().SQL("ON")),
+			ListOptions().NoComma()).
+		OptionalQueryStructField("Drop",
+			NewQueryStruct("TableDropSearchOptimization").
+				SQL("DROP SEARCH OPTIMIZATION").
+				ListQueryStructField("On",
+					NewQueryStruct("TableDropSearchOptimizationOn").
+						OptionalQueryStructField("SearchMethodWithTarget", searchMethodWithTarget(), ListOptions().NoComma()).
+						OptionalText("ColumnName", KeywordOptions()).
+						OptionalText("ExpressionId", KeywordOptions()).
+						WithValidation(ExactlyOneValueSet, "SearchMethodWithTarget", "ColumnName", "ExpressionId"),
+					KeywordOptions().SQL("ON")),
+			ListOptions().NoComma()).
+		WithValidation(ExactlyOneValueSet, "Add", "Drop")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableStorageLifecyclePolicy(t *testing.T) {
+	attr := ssotdefs.TableStorageLifecyclePolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	want := NewQueryStruct("TableStorageLifecyclePolicy").
+		Identifier("StorageLifecyclePolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("ADD STORAGE LIFECYCLE POLICY").Required()).
+		WithValidation(ValidIdentifier, "StorageLifecyclePolicy").
+		ListAssignment("ON", "Column", ParameterOptions().NoEquals().Parentheses().Required()).
+		WithValidation(ValidateValueSet, "On")
+	require.Equal(t, want.IntoField(), got.IntoField())
 }

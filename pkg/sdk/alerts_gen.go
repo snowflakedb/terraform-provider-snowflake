@@ -21,16 +21,16 @@ type Alerts interface {
 
 // CreateAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-alert.
 type CreateAlertOptions struct {
-	create      bool                    `ddl:"static" sql:"CREATE"`
-	OrReplace   *bool                   `ddl:"keyword" sql:"OR REPLACE"`
-	alert       bool                    `ddl:"static" sql:"ALERT"`
-	IfNotExists *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name        SchemaObjectIdentifier  `ddl:"identifier"`
-	Warehouse   AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
-	Schedule    string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
-	Comment     *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	condition   []AlertCondition        `ddl:"keyword,parentheses,no_comma" sql:"IF"`
-	action      string                  `ddl:"parameter,no_equals" sql:"THEN"`
+	create      bool                     `ddl:"static" sql:"CREATE"`
+	OrReplace   *bool                    `ddl:"keyword" sql:"OR REPLACE"`
+	alert       bool                     `ddl:"static" sql:"ALERT"`
+	IfNotExists *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name        SchemaObjectIdentifier   `ddl:"identifier"`
+	Warehouse   *AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
+	Schedule    *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
+	Comment     *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	condition   AlertCondition           `ddl:"list,parentheses,no_comma" sql:"IF"`
+	action      string                   `ddl:"parameter,no_equals" sql:"THEN"`
 }
 
 type AlertCondition struct {
@@ -43,9 +43,10 @@ type AlterAlertOptions struct {
 	alert           bool                   `ddl:"static" sql:"ALERT"`
 	IfExists        *bool                  `ddl:"keyword" sql:"IF EXISTS"`
 	name            SchemaObjectIdentifier `ddl:"identifier"`
-	Action          *AlertAction           `ddl:"keyword"`
+	Resume          *bool                  `ddl:"keyword" sql:"RESUME"`
+	Suspend         *bool                  `ddl:"keyword" sql:"SUSPEND"`
 	Set             *AlertSet              `ddl:"keyword" sql:"SET"`
-	Unset           *AlertUnset            `ddl:"keyword" sql:"UNSET"`
+	Unset           *AlertUnset            `ddl:"list,no_parentheses" sql:"UNSET"`
 	ModifyCondition []string               `ddl:"keyword,parentheses,no_comma" sql:"MODIFY CONDITION EXISTS"`
 	ModifyAction    *string                `ddl:"parameter,no_equals" sql:"MODIFY ACTION"`
 }
@@ -72,16 +73,16 @@ type DropAlertOptions struct {
 
 // ShowAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-alerts.
 type ShowAlertOptions struct {
-	show       bool       `ddl:"static" sql:"SHOW"`
-	Terse      *bool      `ddl:"keyword" sql:"TERSE"`
-	alerts     bool       `ddl:"static" sql:"ALERTS"`
-	Like       *Like      `ddl:"keyword" sql:"LIKE"`
-	In         *In        `ddl:"keyword" sql:"IN"`
-	StartsWith *string    `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit      *LimitFrom `ddl:"keyword" sql:"LIMIT"`
+	show       bool        `ddl:"static" sql:"SHOW"`
+	Terse      *bool       `ddl:"keyword" sql:"TERSE"`
+	alerts     bool        `ddl:"static" sql:"ALERTS"`
+	Like       *Like       `ddl:"keyword" sql:"LIKE"`
+	In         *ExtendedIn `ddl:"keyword" sql:"IN"`
+	StartsWith *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit      *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
 }
 
-type alertDBRow struct {
+type alertsRow struct {
 	CreatedOn     time.Time      `db:"created_on"`
 	Name          string         `db:"name"`
 	DatabaseName  string         `db:"database_name"`
@@ -89,7 +90,7 @@ type alertDBRow struct {
 	Owner         string         `db:"owner"`
 	Comment       sql.NullString `db:"comment"`
 	Warehouse     sql.NullString `db:"warehouse"`
-	Schedule      string         `db:"schedule"`
+	Schedule      sql.NullString `db:"schedule"`
 	State         string         `db:"state"`
 	Condition     string         `db:"condition"`
 	Action        string         `db:"action"`
@@ -103,8 +104,8 @@ type Alert struct {
 	SchemaName    string
 	Owner         string
 	Comment       *string
-	Warehouse     string
-	Schedule      string
+	Warehouse     *AccountObjectIdentifier
+	Schedule      *string
 	State         AlertState
 	Condition     string
 	Action        string
@@ -126,7 +127,7 @@ type DescribeAlertOptions struct {
 	name     SchemaObjectIdentifier `ddl:"identifier"`
 }
 
-type alertDetailRow struct {
+type alertDescRow struct {
 	CreatedOn    time.Time      `db:"created_on"`
 	Name         string         `db:"name"`
 	DatabaseName string         `db:"database_name"`
@@ -134,7 +135,7 @@ type alertDetailRow struct {
 	Owner        string         `db:"owner"`
 	Comment      sql.NullString `db:"comment"`
 	Warehouse    sql.NullString `db:"warehouse"`
-	Schedule     string         `db:"schedule"`
+	Schedule     sql.NullString `db:"schedule"`
 	State        string         `db:"state"`
 	Condition    string         `db:"condition"`
 	Action       string         `db:"action"`
@@ -147,8 +148,8 @@ type AlertDetails struct {
 	SchemaName   string
 	Owner        string
 	Comment      *string
-	Warehouse    string
-	Schedule     string
+	Warehouse    *AccountObjectIdentifier
+	Schedule     *string
 	State        string
 	Condition    string
 	Action       string

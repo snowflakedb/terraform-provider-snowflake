@@ -24,7 +24,7 @@ func init() {
 				opts.ChangeTracking = new(true)
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en_US"})
 				opts.Comment = new("test")
-				opts.RowAccessPolicy = &TableRowAccessPolicyLegacy{
+				opts.RowAccessPolicy = &TableRowAccessPolicy{
 					Name: rowAccessPolicyId,
 					On:   []string{"c1", "c2"},
 				}

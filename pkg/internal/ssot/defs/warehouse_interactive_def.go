@@ -83,16 +83,19 @@ var WarehouseInteractiveAttrs = struct {
 		Description: "Specifies a comment for the interactive warehouse.",
 	},
 	Tables: ssot.Attribute{
-		Name:        "tables",
-		Type:        ssot.AttrSet,
-		Description: "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
+		Name: "tables",
+		Type: ssot.AttrSet,
+		// SHOW reports the tables as one comma-separated string, so it is optional in the database row.
+		OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
+		Description:  "Specifies the fully qualified names of the tables associated with the interactive warehouse. Changes are applied incrementally (ADD TABLES / DROP TABLES) rather than by full re-association.",
 		Elem: &ssot.Attribute{
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "SchemaObjectIdentifier",
 		},
 		CreateSql: ssot.ListParameter("SchemaObjectIdentifier", ssot.Parentheses(), ssot.NoEquals()),
 	},
-	// Computed in Terraform. The generator emits Optional; AttributesModificationExt clears it.
+	// Computed in Terraform: the generator emits it as computed-only.
 	// Computed skips output suppression: SHOW already has a column of this name.
 	WarehouseType: ssot.Attribute{
 		Name:        "warehouse_type",
@@ -100,14 +103,6 @@ var WarehouseInteractiveAttrs = struct {
 		Computed:    true,
 		Description: "Specifies the type for the interactive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
-}
-
-// tables is a writable attribute, so the Readonly WarehouseAttrs column cannot be reused.
-// The resource field is a set; SHOW reports a list.
-var warehouseInteractiveTablesShow = ssot.Attribute{
-	Name: "tables", Type: ssot.AttrList, OptionalInDb: true,
-	CustomParser: "ParseCommaSeparatedSchemaObjectIdentifierArray",
-	Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier"},
 }
 
 var WarehouseInteractive = ssot.Object{
@@ -119,17 +114,14 @@ var WarehouseInteractive = ssot.Object{
 	VariantEntityCreateName:    "INTERACTIVE WAREHOUSE",
 	AttributesModification:     true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow()),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(
-			ssot.ObjectAssertShowFromBase("ShowByIDInteractive"),
-			ssot.ObjectAssertShowSkipFields(&warehouseInteractiveTablesShow),
-		)),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
+		ssot.WithAllGenerators(
+			// show_output.tables was released as a list. A set would break indexing, so SHOW stays TypeList.
+			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowListFields(&WarehouseInteractiveAttrs.Tables)), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(
+				ssot.ObjectAssertShowFromBase("ShowByIDInteractive"),
+				ssot.ObjectAssertShowSkipFields(&WarehouseInteractiveAttrs.Tables),
+			), ssot.ObjectAssertDescribe()),
+		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseId(ssot.Generated()),
@@ -189,7 +181,7 @@ var WarehouseInteractive = ssot.Object{
 			&WarehouseAttrs.Comment,
 			&WarehouseAttrs.ResourceMonitor,
 			&WarehouseAttrs.OwnerRoleType,
-			&warehouseInteractiveTablesShow,
+			&WarehouseInteractiveAttrs.Tables,
 		},
 	},
 	Create: ssot.CreateSpec{

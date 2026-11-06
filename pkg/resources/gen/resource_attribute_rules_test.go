@@ -208,6 +208,28 @@ func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
+func Test_applyResourceAttributeRules_deprecatedSetIgnoresChanges(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:        "mfa_authentication_methods",
+		Type:        ssot.AttrSet,
+		Description: "A list of authentication methods.",
+		Deprecated:  "This field is deprecated and will be removed.",
+		Elem: &ssot.Attribute{
+			Type: ssot.AttrEnum,
+			Enum: defs.ComputePoolInstanceFamily,
+		},
+		DiffSuppress: ssot.SuppressAlways,
+		SkipCreate:   true,
+	}, resourceAttributeRuleContext{})
+
+	require.Equal(t, SchemaTypeSet, got.TfType)
+	require.True(t, got.Optional)
+	require.Equal(t, "ignoreAlwaysSuppressFunc", got.DiffSuppressExpr)
+	require.Equal(t, `"This field is deprecated and will be removed."`, got.DeprecatedExpr)
+	require.Equal(t, `"A list of authentication methods. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies)`, got.DescriptionExpr)
+	require.False(t, setStateField(got))
+}
+
 func Test_applyResourceAttributeRules_setOfString(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "allowed_accounts",
@@ -233,11 +255,11 @@ func Test_isCollection(t *testing.T) {
 	require.False(t, isCollection(ssot.Attribute{Type: ssot.AttrString}))
 	require.False(t, isCollection(ssot.Attribute{Type: ssot.AttrEnum}))
 
-	require.True(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrEnum}}))
-	require.True(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum}}))
-	require.False(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}}))
-	require.False(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrSet}))
-	require.False(t, isCollectionOfEnum(ssot.Attribute{Type: ssot.AttrEnum}))
+	require.True(t, ssot.Attribute{Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrEnum}}.IsEnumCollection())
+	require.True(t, ssot.Attribute{Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum}}.IsEnumCollection())
+	require.False(t, ssot.Attribute{Type: ssot.AttrList, Elem: &ssot.Attribute{Type: ssot.AttrString}}.IsEnumCollection())
+	require.False(t, ssot.Attribute{Type: ssot.AttrSet}.IsEnumCollection())
+	require.False(t, ssot.Attribute{Type: ssot.AttrEnum}.IsEnumCollection())
 }
 
 func Test_sdkEnumSymbols(t *testing.T) {
@@ -354,6 +376,16 @@ func Test_applyResourceAttributeRules_identifierValidationRelatedResourceAndShow
 	require.Equal(t, `SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor"))`, got.DiffSuppressExpr)
 	require.Equal(t, `relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the warehouse.", resources.ResourceMonitor)`, got.DescriptionExpr)
 	require.Equal(t, []string{"generation"}, got.ConflictsWith)
+}
+
+func Test_applyResourceAttributeRules_identifierTypeOverridesObjectIdType(t *testing.T) {
+	got := resolveResourceAttribute(ssot.Attribute{
+		Name:           "for_database",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "AccountObjectIdentifier",
+	}, resourceAttributeRuleContext{IdType: "SchemaObjectIdentifier"})
+
+	require.Equal(t, "IsValidIdentifier[sdk.AccountObjectIdentifier]()", got.ValidateDiagExpr)
 }
 
 func Test_applyResourceAttributeRules_showSuppressOnPlainField(t *testing.T) {
@@ -610,6 +642,25 @@ func Test_applyResourceAttributeRules_setOfIdentifiers(t *testing.T) {
 	require.NotNil(t, got.Elem)
 	require.Equal(t, "IsValidIdentifier[sdk.SchemaObjectIdentifier]()", got.Elem.ValidateDiagExpr)
 	require.Empty(t, got.Elem.DescriptionExpr)
+}
+
+func Test_applyResourceAttributeRules_accountAndExternalIdentifiers(t *testing.T) {
+	accounts := resolveResourceAttribute(ssot.Attribute{
+		Name: "allowed_accounts",
+		Type: ssot.AttrList,
+		Elem: &ssot.Attribute{
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "AccountIdentifier",
+		},
+	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
+	require.Equal(t, "IsValidAccountIdentifier()", accounts.Elem.ValidateDiagExpr)
+
+	primary := resolveResourceAttribute(ssot.Attribute{
+		Name:           "primary",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "ExternalObjectIdentifier",
+	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
+	require.Empty(t, primary.ValidateDiagExpr)
 }
 
 func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 // AttributeGoTypes returns the concrete Go type and underlying kind for one column,
 // without the OptionalInShow pointer. ColumnField applies that pointer.
 func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) {
-	switch attr.Type {
+	switch attr.SdkType() {
 	case AttrString:
 		return "string", "string"
 	case AttrInt:
@@ -29,7 +29,7 @@ func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) 
 		if attr.Elem == nil {
 			panic(fmt.Sprintf("object %q: collection attribute %q has no Elem", obj.Name, attr.Name))
 		}
-		if attr.Elem.Type == AttrEnum {
+		if attr.IsEnumCollection() {
 			// A SHOW row stores an ordinary enum list as []string. A CSV column parsed by CustomParser
 			// stores the enum, the same type the plain SHOW field uses.
 			if attr.CustomParser != "" && !attr.OptionalInShow && attr.OptionalInDb && attr.Elem.ColumnEnum() != nil {
@@ -57,7 +57,7 @@ func NestedObjectDetails(obj Object, attr Attribute) string {
 // IsOptionalColumn reports whether the column is a pointer in the details: it is OptionalInShow, or it is an object
 // that is not required.
 func (a Attribute) IsOptionalColumn() bool {
-	return a.OptionalInShow || (a.Type == AttrObject && !a.Required)
+	return a.OptionalInShow || (a.SdkType() == AttrObject && !a.Required)
 }
 
 // NestedDetailsElem is the element type name of a nested list or set column in the details struct:
@@ -87,5 +87,24 @@ func ColumnField(obj Object, attr Attribute) genhelpers.Field {
 		Name:           ColumnFieldName(attr),
 		ConcreteType:   concrete,
 		UnderlyingType: underlying,
+		SchemaName:     attr.SchemaName,
 	}
+}
+
+// PlainGoName is the Go field of the SDK plain struct.
+// A plain-only column uses Name. Every other column uses the SQL column, with characters other than letters, digits, and underscores removed.
+func (a Attribute) PlainGoName() string {
+	if a.PlainOnlyKind != "" {
+		return a.Name
+	}
+	return genhelpers.SqlToGoName(a.OutputKey(), true)
+}
+
+// SchemaKey is the Terraform schema key of a SHOW or DESCRIBE column.
+// SchemaName overrides it. Otherwise it is the snake_case of PlainGoName.
+func (a Attribute) SchemaKey() string {
+	if a.SchemaName != "" {
+		return a.SchemaName
+	}
+	return genhelpers.ToSnakeCase(a.PlainGoName())
 }

@@ -167,22 +167,25 @@ func (a *AlertDetailsAssert) HasNoComment() *AlertDetailsAssert {
 	return a
 }
 
-func (a *AlertDetailsAssert) HasWarehouse(expected string) *AlertDetailsAssert {
+func (a *AlertDetailsAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *AlertDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AlertDetails) error {
 		t.Helper()
-		if o.Warehouse != expected {
-			return fmt.Errorf("expected warehouse: %v; got: %v", expected, o.Warehouse)
+		if o.Warehouse == nil {
+			return fmt.Errorf("expected warehouse to have value; got: nil")
+		}
+		if (*o.Warehouse).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected warehouse: %v; got: %v", expected.FullyQualifiedName(), (*o.Warehouse).FullyQualifiedName())
 		}
 		return nil
 	})
 	return a
 }
 
-func (a *AlertDetailsAssert) HasWarehouseNotEmpty() *AlertDetailsAssert {
+func (a *AlertDetailsAssert) HasNoWarehouse() *AlertDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AlertDetails) error {
 		t.Helper()
-		if o.Warehouse == "" {
-			return fmt.Errorf("expected warehouse to be non-empty")
+		if o.Warehouse != nil {
+			return fmt.Errorf("expected warehouse to be nil; got: %v", *o.Warehouse)
 		}
 		return nil
 	})
@@ -192,19 +195,22 @@ func (a *AlertDetailsAssert) HasWarehouseNotEmpty() *AlertDetailsAssert {
 func (a *AlertDetailsAssert) HasSchedule(expected string) *AlertDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AlertDetails) error {
 		t.Helper()
-		if o.Schedule != expected {
-			return fmt.Errorf("expected schedule: %v; got: %v", expected, o.Schedule)
+		if o.Schedule == nil {
+			return fmt.Errorf("expected schedule to have value; got: nil")
+		}
+		if *o.Schedule != expected {
+			return fmt.Errorf("expected schedule: %v; got: %v", expected, *o.Schedule)
 		}
 		return nil
 	})
 	return a
 }
 
-func (a *AlertDetailsAssert) HasScheduleNotEmpty() *AlertDetailsAssert {
+func (a *AlertDetailsAssert) HasNoSchedule() *AlertDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AlertDetails) error {
 		t.Helper()
-		if o.Schedule == "" {
-			return fmt.Errorf("expected schedule to be non-empty")
+		if o.Schedule != nil {
+			return fmt.Errorf("expected schedule to be nil; got: %v", *o.Schedule)
 		}
 		return nil
 	})

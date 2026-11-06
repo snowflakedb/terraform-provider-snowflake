@@ -13,8 +13,6 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
-~> **Note** Right now, changes for the `integration` field are not detected. This will be resolved in the [upcoming refactoring](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#preparing-essential-ga-objects-for-the-provider-v1). For now, please try to use the [replace_triggered_by](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#replace_triggered_by) HCL meta-argument.
-
 {{ .Description | trimspace }}
 
 {{ if .HasExample -}}
@@ -22,6 +20,8 @@ description: |-
 
 {{ tffile .ExampleFile }}
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+
+~> **Note** Use fully qualified names (`"<database_name>"."<schema_name>"."<object_name>"`) for every object referenced in `copy_statement`, e.g. the table, stage, and file format. The `database` and `schema` fields only define where the pipe is created; the provider does not run `USE DATABASE` or `USE SCHEMA` before `CREATE PIPE`. Unqualified names are resolved against the session's current database and schema, which leads to errors like `This session does not have a current database` or `Table '<name>' does not exist`. The `fully_qualified_name` attribute of the referenced resources (as in the examples above) gives the right value.
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 {{- end }}

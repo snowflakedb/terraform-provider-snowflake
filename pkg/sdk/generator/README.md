@@ -12,15 +12,15 @@ Generated files (`*_gen.go`) are fully replaced on every run — **never edit th
 
 1. Create `defs/<plural_snake_case>_def.go` (e.g., [sequences_def.go](defs/sequences_def.go)) with `package defs`. Declare one package-level variable (e.g., `var pipesDef = g.NewInterface(...)`). Base it on existing definitions or the [example directory](example).
 2. Register the definition in alphabetical order in [0_init.go](defs/0_init.go).
-3. Run generation scoped to your object — the singular name must match the second argument of `g.NewInterface(...)` exactly:
+3. Run generation scoped to your object — the plural name must match the first argument of `g.NewInterface(...)` exactly (e.g., `Sequences`):
    ```shell
-   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
+   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<PluralName>'
    ```
 4. Verify compilation and idempotency — re-running generation must produce no diff:
    ```shell
    go build ./pkg/sdk/...
    go vet ./pkg/sdk/...
-   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<SingularName>'
+   make generate-sdk SF_TF_GENERATOR_ARGS='--filter-object-names=<PluralName>'
    git diff --stat   # must be empty
    ```
 
@@ -220,9 +220,9 @@ See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for co
 
 When `SdkCreate()` or `SdkAlter()` is passed to [`WithSdk()`](../../internal/ssot/README.md#generators), `CreateOperationFromObject` or `AlterOperationFromObject` builds that method from `Name`. An object with the setting off keeps the handwritten call. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql` on [Attribute](../../internal/ssot/attribute.go). `Create` is a [`CreateSpec`](../../internal/ssot/object.go). `Create.Clauses`, `Set`, and `Unset` are the statement order inside those statements. `Alter.Clauses` is the ALTER order after the name. `Create.KeywordsBefore` is emitted after `OR REPLACE` and before the object words. [`Tags`](../../internal/ssot/attribute.go) is the optional `TAG` clause on `Create.Clauses`. [`Parameters`](../../internal/ssot/attribute.go) spreads the parameter catalog on a CREATE, SET, or UNSET list. CREATE and SET use `WithParameters`. UNSET uses `WithParametersUnset`. An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. Comment stays an attribute clause beside that entry.
 
-`SdkCreate()` includes `OR REPLACE` and `IF NOT EXISTS`. `OR REPLACE` comes before the object words. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those clauses out. When both clauses are present they are marked conflicting. `SdkAlter()` includes `IF EXISTS` and the check that exactly one alter branch is set. The branches are `Alter.Clauses`, in that order: action keywords, `RenameTo`, `SwapWith`, `SET`, `UNSET`, `SET TAG`, and `UNSET TAG`. `RenameTo` and `SwapWith` use the object's identifier type and get `ValidIdentifierIfSet`. `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out. `SdkAlterSetList()` makes `SET` a list with no parentheses. Without it, `SET` is a keyword. `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkCreateAdditionalValidations()` adds that validation call.
+`SdkCreate()` includes `OR REPLACE` and `IF NOT EXISTS`. `OR REPLACE` comes before the object words. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those clauses out. When both clauses are present they are marked conflicting. `SdkAlter()` includes `IF EXISTS` and the check that exactly one alter branch is set. The branches are `Alter.Clauses`, in that order: action keywords, `RenameTo`, `SwapWith`, `SET`, `UNSET`, `SET TAG`, and `UNSET TAG`. `RenameTo` and `SwapWith` use the object's identifier type and get `ValidIdentifierIfSet`. `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out. `SdkAlterSetList()` makes `SET` a list with no parentheses. Without it, `SET` is a keyword. `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkCreateAdditionalValidations()` adds that validation call. `SdkShowAdditionalValidations()` marks the SHOW query struct the same way.
 
-A list parameter writes its SQL text and then the values. `ADD "db1" TO ALLOWED_DATABASES` and `REMOVE "db1" FROM ALLOWED_DATABASES` need the values first. Failover groups and replication groups get that order from the `reverse` DDL tag (`ParameterOptions().Reverse()` in a handwritten def, `Reverse()` on an SSOT list). `reverse` is used only by those two interfaces. TODO [next PRs]: drop `reverse`. Give each allowed-list target its own struct, emit the identifier list with no SQL prefix, and follow it with a static `TO ALLOWED_DATABASES` or `FROM ALLOWED_DATABASES` clause. The same shape covers external volumes, shares, and accounts.
+A list parameter writes its SQL text and then the values. `Reverse()` swaps that order, so the values come first: `ADD "db1" TO ALLOWED_DATABASES` and `REMOVE "db1" FROM ALLOWED_DATABASES`. The `sql` tag stays the clause text. The Go field name is still derived from it (`TO ALLOWED_DATABASES` becomes `ToAllowedDatabases`) unless `FieldName` sets another name. Failover groups use `ListAssignmentWithFieldName` and `ParameterOptions().Reverse()` so the field is `AllowedDatabases` while the SQL text stays `TO ALLOWED_DATABASES`. Replication groups use `Reverse()` on the SSOT list and keep the name taken from the SQL text. `reverse` is a ddl tag on a parameter. It is the way to print an identifier list before its keyword. When a list sets `FieldName`, the SQL prefix is the clause SQL text itself. An empty text omits the prefix. A list without `FieldName` still takes an empty text as the uppercase attribute name.
 
 ---
 
@@ -398,7 +398,7 @@ See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go
 Class objects (e.g. `SNOWFLAKE.CORE.BUDGET`, `SNOWFLAKE.CORE.QUOTA`) are configured with instance methods called as
 `CALL <name>!METHOD(args)`; see `InstanceMethodOperation` / `InstanceMethodOperationScalar` and
 [instance_method_example_def.go](example/defs/instance_method_example_def.go). The argument structs support a few
-list and reference renderings on top of the usual ones:
+list renderings on top of the usual ones:
 
 ```go
 // ['a', 'b'] - MustBrackets renders an empty list as [], Brackets omits it
@@ -407,14 +407,13 @@ List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()
 // [[<element fields>, ...], ...] - each struct element is rendered as an array literal
 ListQueryStructField("Tags", tagValue, g.ListOptions().Required().MustBrackets().ArrayElements())
 
-// (SELECT SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET')) - extra arguments and subquery wrapping
-Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET").InSubquery())
-
 // true / false
 PredefinedQueryStructField("Enabled", "bool", g.ParameterOptions().NoEquals().Required())
 ```
 
 Arguments are positional: an optional argument that is not set is omitted, so only trailing arguments can be optional.
+A reference with more than an object type and a name, like a tag's `SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET')`,
+is built as a function call with these options, as in the example and [system_functions_def.go](defs/system_functions_def.go).
 
 ### Potential Improvements
 

@@ -670,15 +670,15 @@ func TestInt_Secrets(t *testing.T) {
 		secret, secretCleanup := testClientHelper().Secret.CreateWithOAuthClientCredentialsFlow(t, id, integrationId, []sdk.ApiIntegrationScope{{Scope: "foo"}})
 		t.Cleanup(secretCleanup)
 
-		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Pointer(true)}}))
+		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Account: sdk.Pointer(true)}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Database: id.DatabaseId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Database: id.DatabaseId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 	})
@@ -688,15 +688,15 @@ func TestInt_Secrets(t *testing.T) {
 		secret, secretCleanup := testClientHelper().Secret.CreateWithOAuthAuthorizationCodeFlow(t, id, integrationId, "foo", refreshTokenExpiryTime)
 		t.Cleanup(secretCleanup)
 
-		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Pointer(true)}}))
+		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Account: sdk.Pointer(true)}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Database: id.DatabaseId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Database: id.DatabaseId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 	})
@@ -716,21 +716,21 @@ func TestInt_Secrets(t *testing.T) {
 		secretGenericString, secretCleanupWithGenericString := testClientHelper().Secret.CreateWithGenericString(t, testClientHelper().Ids.RandomSchemaObjectIdentifier(), "foo")
 		t.Cleanup(secretCleanupWithGenericString)
 
-		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Pointer(true)}}))
+		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Account: sdk.Pointer(true)}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secretOAuthClientCredentials)
 		require.Contains(t, returnedSecrets, *secretOAuthAuthorizationCode)
 		require.Contains(t, returnedSecrets, *secretBasicAuthentication)
 		require.Contains(t, returnedSecrets, *secretGenericString)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Database: id.DatabaseId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Database: id.DatabaseId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secretOAuthClientCredentials)
 		require.Contains(t, returnedSecrets, *secretOAuthAuthorizationCode)
 		require.Contains(t, returnedSecrets, *secretBasicAuthentication)
 		require.Contains(t, returnedSecrets, *secretGenericString)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secretOAuthClientCredentials)
 		require.Contains(t, returnedSecrets, *secretOAuthAuthorizationCode)
@@ -743,15 +743,15 @@ func TestInt_Secrets(t *testing.T) {
 		secret, secretCleanup := testClientHelper().Secret.CreateWithGenericString(t, id, "foo")
 		t.Cleanup(secretCleanup)
 
-		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Pointer(true)}}))
+		returnedSecrets, err := client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Account: sdk.Pointer(true)}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Database: id.DatabaseId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Database: id.DatabaseId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 
-		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{In: sdk.In{Schema: id.SchemaId()}}))
+		returnedSecrets, err = client.Secrets.Show(ctx, sdk.NewShowSecretRequest().WithIn(sdk.ExtendedIn{Schema: id.SchemaId()}))
 		require.NoError(t, err)
 		require.Contains(t, returnedSecrets, *secret)
 	})

@@ -10,6 +10,34 @@ import (
 )
 
 func TestMappingHelpers(t *testing.T) {
+	t.Run("mapNullStringToBoolParsed", func(t *testing.T) {
+		testCases := []struct {
+			Input          sql.NullString
+			ExpectedOutput *bool
+		}{
+			{Input: sql.NullString{Valid: true, String: "true"}, ExpectedOutput: Bool(true)},
+			{Input: sql.NullString{Valid: true, String: "false"}, ExpectedOutput: Bool(false)},
+			{Input: sql.NullString{Valid: true, String: "TRUE"}, ExpectedOutput: Bool(true)},
+			{Input: sql.NullString{Valid: true, String: ""}, ExpectedOutput: nil},
+			{Input: sql.NullString{Valid: true, String: "not a bool"}, ExpectedOutput: nil},
+			{Input: sql.NullString{Valid: false, String: "true"}, ExpectedOutput: nil},
+			{Input: sql.NullString{Valid: false, String: ""}, ExpectedOutput: nil},
+		}
+
+		for _, tc := range testCases {
+			t.Run(fmt.Sprintf("valid: %t, string: %q", tc.Input.Valid, tc.Input.String), func(t *testing.T) {
+				var output *bool
+				mapNullStringToBoolParsed(&output, tc.Input)
+				if tc.ExpectedOutput != nil {
+					require.NotNil(t, output)
+					assert.Equal(t, *tc.ExpectedOutput, *output)
+				} else {
+					assert.Nil(t, output)
+				}
+			})
+		}
+	})
+
 	t.Run("mapNullString", func(t *testing.T) {
 		testCases := []struct {
 			Input          sql.NullString

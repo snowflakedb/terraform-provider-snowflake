@@ -70,7 +70,7 @@ func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlte
 	set := sdk.NewExternalVolumeSetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
-		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, false),
+		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, true),
 	)
 	if errs != nil {
 		return nil, errs
@@ -78,10 +78,10 @@ func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlte
 	return &externalVolumeAlterRequestsExt{set: set}, nil
 }
 
-func externalVolumeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, externalVolume *sdk.ExternalVolume, _ bool) error {
+func externalVolumeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, externalVolume *sdk.ExternalVolume, importPermissiveMode bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
-		d.Set("allow_writes", booleanStringFromBool(externalVolume.AllowWrites)),
+		importBooleanStringAttribute(d, "allow_writes", importPermissiveMode, externalVolume.AllowWrites),
 	)
 }
 

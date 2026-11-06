@@ -39,13 +39,13 @@ func (opts *AlterPipeOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterPipeOptions", "Set", "Unset", "SetTags", "UnsetTags", "Refresh"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.ErrorIntegration, opts.Set.PipeExecutionPaused, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterPipeOptions.Set", "ErrorIntegration", "PipeExecutionPaused", "Comment"))
+		if !anyValueSet(opts.Set.LogEventLevel, opts.Set.PipeExecutionPaused, opts.Set.ErrorIntegration, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterPipeOptions.Set", "LogEventLevel", "PipeExecutionPaused", "ErrorIntegration", "Comment"))
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.ErrorIntegration, opts.Unset.PipeExecutionPaused, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterPipeOptions.Unset", "ErrorIntegration", "PipeExecutionPaused", "Comment"))
+		if !anyValueSet(opts.Unset.LogEventLevel, opts.Unset.PipeExecutionPaused, opts.Unset.ErrorIntegration, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterPipeOptions.Unset", "LogEventLevel", "PipeExecutionPaused", "ErrorIntegration", "Comment"))
 		}
 	}
 	if valueSet(opts.SetTags) {

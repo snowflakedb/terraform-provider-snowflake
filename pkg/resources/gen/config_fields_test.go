@@ -121,7 +121,7 @@ func Test_setConfigFields_template(t *testing.T) {
 
 	t.Run("ext call", func(t *testing.T) {
 		model := lifecycleModel()
-		require.Contains(t, renderTemplate(t, "setConfigFields", model), "poolSetConfigFieldsExt(d, pool),")
+		require.Contains(t, renderTemplate(t, "setConfigFields", model), "poolSetConfigFieldsExt(ctx, d, meta, pool),")
 		require.NotContains(t, renderLifecycle(t, model), "func poolSetConfigFields(")
 	})
 
