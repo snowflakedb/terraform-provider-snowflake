@@ -189,11 +189,14 @@ func (v *ParameterTransformer) Transform(f *Field) *Field {
 }
 
 type ListTransformer struct {
-	required    bool
-	sqlPrefix   string
-	parentheses string
-	equals      string
-	comma       string
+	required      bool
+	sqlPrefix     string
+	parentheses   string
+	brackets      string
+	quotes        string
+	arrayElements bool
+	equals        string
+	comma         string
 }
 
 func ListOptions() *ListTransformer {
@@ -212,6 +215,30 @@ func (v *ListTransformer) Parentheses() *ListTransformer {
 
 func (v *ListTransformer) NoParentheses() *ListTransformer {
 	v.parentheses = "no_parentheses"
+	return v
+}
+
+// Brackets renders the list as an array literal, e.g. ['a', 'b'], and omits it when empty.
+func (v *ListTransformer) Brackets() *ListTransformer {
+	v.brackets = "brackets"
+	return v
+}
+
+// MustBrackets is Brackets, but an empty list is rendered as [].
+func (v *ListTransformer) MustBrackets() *ListTransformer {
+	v.brackets = "must_brackets"
+	return v
+}
+
+// SingleQuotes quotes each element, not the whole list.
+func (v *ListTransformer) SingleQuotes() *ListTransformer {
+	v.quotes = "single_quotes"
+	return v
+}
+
+// ArrayElements renders each struct element of the list as an array literal, e.g. [['a', 1], ['b', 2]].
+func (v *ListTransformer) ArrayElements() *ListTransformer {
+	v.arrayElements = true
 	return v
 }
 
@@ -237,6 +264,11 @@ func (v *ListTransformer) Transform(f *Field) *Field {
 	}
 	addTagIfMissing(f.Tags, "sql", v.sqlPrefix)
 	addTagIfMissing(f.Tags, "ddl", v.parentheses)
+	addTagIfMissing(f.Tags, "ddl", v.brackets)
+	addTagIfMissing(f.Tags, "ddl", v.quotes)
+	if v.arrayElements {
+		addTagIfMissing(f.Tags, "ddl", "array_elements")
+	}
 	addTagIfMissing(f.Tags, "ddl", v.equals)
 	addTagIfMissing(f.Tags, "ddl", v.comma)
 	return f
