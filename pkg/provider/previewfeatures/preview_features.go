@@ -133,6 +133,7 @@ const (
 	ProceduresDatasource                           feature = "snowflake_procedures_datasource"
 	ProjectionPoliciesDatasource                   feature = "snowflake_projection_policies_datasource"
 	ProjectionPolicyResource                       feature = "snowflake_projection_policy_resource"
+	QuotaResource                                  feature = "snowflake_quota_resource"
 	ReplicationGroupResource                       feature = "snowflake_replication_group_resource"
 	ReplicationGroupSecondaryResource              feature = "snowflake_replication_group_secondary_resource"
 	ReplicationGroupsDatasource                    feature = "snowflake_replication_groups_datasource"
@@ -248,6 +249,7 @@ var allPreviewFeatures = []feature{
 	ProceduresDatasource,
 	ProjectionPoliciesDatasource,
 	ProjectionPolicyResource,
+	QuotaResource,
 	ReplicationGroupResource,
 	ReplicationGroupSecondaryResource,
 	ReplicationGroupsDatasource,
