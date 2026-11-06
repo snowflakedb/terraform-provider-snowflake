@@ -16,8 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// openflowDeploymentByocSchema adds the networking options that only apply when the deployment runs in the
-// customer's own cloud account. All of them are ForceNew: Snowflake has no ALTER for them.
+// openflowDeploymentByocSchema adds the networking options for a deployment that runs in the customer's own
+// cloud account. vpc_type, custom_ingress_hostname and use_user_auth_over_privatelink are BYOC-only.
+// use_private_link is also on the Snowflake-managed resource: CREATE accepts it for both deployment types.
+// All of them are ForceNew: Snowflake has no ALTER for them.
 var openflowDeploymentByocSchema = func() map[string]*schema.Schema {
 	byocSchema := map[string]*schema.Schema{
 		"vpc_type": {

@@ -17,6 +17,7 @@ type OpenflowDeploymentSnowflakeManagedModel struct {
 	EventTable         tfconfig.Variable `json:"event_table,omitempty"`
 	FullyQualifiedName tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	Type_              tfconfig.Variable `json:"type,omitempty"`
+	UsePrivateLink     tfconfig.Variable `json:"use_private_link,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -110,6 +111,11 @@ func (o *OpenflowDeploymentSnowflakeManagedModel) WithType(type_ string) *Openfl
 	return o
 }
 
+func (o *OpenflowDeploymentSnowflakeManagedModel) WithUsePrivateLink(usePrivateLink string) *OpenflowDeploymentSnowflakeManagedModel {
+	o.UsePrivateLink = tfconfig.StringVariable(usePrivateLink)
+	return o
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -141,5 +147,10 @@ func (o *OpenflowDeploymentSnowflakeManagedModel) WithFullyQualifiedNameValue(va
 
 func (o *OpenflowDeploymentSnowflakeManagedModel) WithTypeValue(value tfconfig.Variable) *OpenflowDeploymentSnowflakeManagedModel {
 	o.Type_ = value
+	return o
+}
+
+func (o *OpenflowDeploymentSnowflakeManagedModel) WithUsePrivateLinkValue(value tfconfig.Variable) *OpenflowDeploymentSnowflakeManagedModel {
+	o.UsePrivateLink = value
 	return o
 }
