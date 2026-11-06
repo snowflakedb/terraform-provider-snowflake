@@ -3,6 +3,7 @@ package helpers
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
@@ -62,4 +63,44 @@ func (c *FailoverGroupClient) DropFunc(t *testing.T, id sdk.AccountObjectIdentif
 		err := c.client().Drop(ctx, sdk.NewDropFailoverGroupRequest(id).WithIfExists(true))
 		require.NoError(t, err)
 	}
+}
+
+func (c *FailoverGroupClient) Show(t *testing.T, id sdk.AccountObjectIdentifier) (*sdk.FailoverGroup, error) {
+	t.Helper()
+	return c.client().ShowByID(context.Background(), id)
+}
+
+func (c *FailoverGroupClient) CreateSecondary(t *testing.T, id sdk.AccountObjectIdentifier, primary sdk.ExternalObjectIdentifier) {
+	t.Helper()
+	require.NoError(t, c.client().CreateSecondaryReplicationGroup(context.Background(), sdk.NewCreateSecondaryReplicationGroupFailoverGroupRequest(id, primary)))
+}
+
+// WaitForPrimaryToBeVisible polls SHOW FAILOVER GROUPS on this account until a primary failover group with the given name appears.
+// A new primary is not always visible to the target account immediately.
+func (c *FailoverGroupClient) WaitForPrimaryToBeVisible(t *testing.T, id sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+	t.Logf("Waiting for primary failover group %s to be visible", id.FullyQualifiedName())
+	require.Eventually(t, func() bool {
+		groups, err := c.client().Show(ctx, sdk.NewShowFailoverGroupRequest())
+		if err != nil {
+			t.Logf("Error showing failover groups, retrying: %v", err)
+			return false
+		}
+		for _, group := range groups {
+			if group.IsPrimary && group.ID().Name() == id.Name() {
+				t.Logf("Primary failover group %s is visible", id.FullyQualifiedName())
+				return true
+			}
+		}
+		t.Logf("Primary failover group %s is not visible yet, retrying", id.FullyQualifiedName())
+		return false
+	}, time.Minute, 5*time.Second)
+}
+
+func (c *FailoverGroupClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		return c.client().DropSafely(context.Background(), id) == nil
+	}, 10*time.Second, time.Second)
 }

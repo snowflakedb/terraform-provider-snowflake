@@ -715,8 +715,6 @@ func TestInt_DatabasesAlterFailover(t *testing.T) {
 	})
 
 	t.Run("promote to primary", func(t *testing.T) {
-		t.Skipf("Can be unskipped after [SNOW-1002023]. CI Snowflake Edition doesn't support this feature")
-
 		ctx := testContext(t)
 
 		database, databaseCleanup := testClientHelper().Database.CreateDatabase(t)

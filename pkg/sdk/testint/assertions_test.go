@@ -15,3 +15,8 @@ func assertThatObjectSecondary(t *testing.T, objectAssert assert.InPlaceAssertio
 	t.Helper()
 	assert.AssertThatObject(t, objectAssert, secondaryTestClientHelper())
 }
+
+func assertThatObjectAzure(t *testing.T, objectAssert assert.InPlaceAssertionVerifier) {
+	t.Helper()
+	assert.AssertThatObject(t, objectAssert, azureTestClientHelper())
+}

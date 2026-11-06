@@ -1,4 +1,12 @@
-//go:build non_account_level_tests
+//go:build account_level_tests
+
+// Account object types other than SHARES and DATABASES (e.g. ROLES, INTEGRATIONS, WAREHOUSES) can be a part of only one
+// failover or replication group per account. Snowflake rejects the second group with 500070 "Account object types, other than
+// SHARES and DATABASES, can only be within one failover group or replication group" (documented as "Objects other than databases,
+// external volumes, and shares must be in the same failover group"). The restriction is on the type, so unique names do not help.
+// The tests below use such types (ROLES, INTEGRATIONS).
+// Failover and replication groups share these restrictions, so the tests of both are account-level tests (they cannot run in parallel
+// with each other, other PRs, or the integration/acceptance suites).
 
 package testacc
 

@@ -4,7 +4,7 @@ package testacc
 
 import (
 	"fmt"
-	"slices"
+	"strings"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -26,11 +26,8 @@ import (
 )
 
 func TestAcc_PrimaryConnection_BasicUseCase(t *testing.T) {
-	if slices.Contains([]testenvs.SnowflakeEnvironment{
-		testenvs.SnowflakeProdEnvironment,
-		testenvs.SnowflakePreProdGovEnvironment,
-	}, testenvs.GetSnowflakeEnvironmentWithProdDefault()) {
-		t.Skip("Missing azure configuration on all testing environments")
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakePreProdGovEnvironment {
+		t.Skip("Missing azure configuration on the preprod gov testing environment")
 	}
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -65,7 +62,7 @@ func TestAcc_PrimaryConnection_BasicUseCase(t *testing.T) {
 
 						resourceshowoutputassert.ConnectionShowOutput(t, connectionModel.ResourceReference()).
 							HasName(id.Name()).
-							HasSnowflakeRegion(testClient().Context.CurrentRegion(t)).
+							HasSnowflakeRegion(strings.TrimPrefix(testClient().Context.CurrentRegion(t), "PUBLIC.")).
 							HasAccountLocator(testClient().GetAccountLocator()).
 							HasAccountName(accountId.AccountName()).
 							HasOrganizationName(accountId.OrganizationName()).
@@ -159,11 +156,8 @@ func TestAcc_PrimaryConnection_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_PrimaryConnection_CompleteUseCase_ExternalChanges(t *testing.T) {
-	if slices.Contains([]testenvs.SnowflakeEnvironment{
-		testenvs.SnowflakeProdEnvironment,
-		testenvs.SnowflakePreProdGovEnvironment,
-	}, testenvs.GetSnowflakeEnvironmentWithProdDefault()) {
-		t.Skip("Missing azure configuration on all testing environments")
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakePreProdGovEnvironment {
+		t.Skip("Missing azure configuration on the preprod gov testing environment")
 	}
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
@@ -195,7 +189,7 @@ func TestAcc_PrimaryConnection_CompleteUseCase_ExternalChanges(t *testing.T) {
 
 						resourceshowoutputassert.ConnectionShowOutput(t, connectionModel.ResourceReference()).
 							HasName(id.Name()).
-							HasSnowflakeRegion(testClient().Context.CurrentRegion(t)).
+							HasSnowflakeRegion(strings.TrimPrefix(testClient().Context.CurrentRegion(t), "PUBLIC.")).
 							HasAccountLocator(testClient().GetAccountLocator()).
 							HasAccountName(accountId.AccountName()).
 							HasOrganizationName(accountId.OrganizationName()).

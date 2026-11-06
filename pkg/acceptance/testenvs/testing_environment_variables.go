@@ -12,13 +12,11 @@ import (
 type env string
 
 const (
-	envPrefix                   = "TEST_SF_TF_"
-	BusinessCriticalAccount env = "SNOWFLAKE_BUSINESS_CRITICAL_ACCOUNT"
+	envPrefix = "TEST_SF_TF_"
 
 	// TestNonProdModifiableAccountLocator represents an account locator that can be used for account modification tests.
 	TestNonProdModifiableAccountLocator env = "TEST_SF_TF_NON_PROD_MODIFIABLE_ACCOUNT_LOCATOR"
 	TestAccountCreate                   env = "TEST_SF_TF_TEST_ACCOUNT_CREATE"
-	TestFailoverGroups                  env = "TEST_SF_TF_TEST_FAILOVER_GROUPS"
 	// TestOpenflow gates tests needing an account with the Openflow object model enabled and configured.
 	TestOpenflow env = envPrefix + "TEST_OPENFLOW"
 

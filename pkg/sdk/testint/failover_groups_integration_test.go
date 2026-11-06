@@ -1,4 +1,13 @@
-//go:build non_account_level_tests
+//go:build account_level_tests
+
+// Account object types other than SHARES and DATABASES (e.g. ROLES, INTEGRATIONS, WAREHOUSES) can be a part of only one
+// failover or replication group per account. Snowflake rejects the second group with 500070 "Account object types, other than
+// SHARES and DATABASES, can only be within one failover group or replication group" (documented as "Objects other than databases,
+// external volumes, and shares must be in the same failover group"). The restriction is on the type, so unique names do not help.
+// The tests below use such types (the FailoverGroup test helper creates a ROLES group by default).
+// A database can also be added to only one failover or replication group, and these tests put the shared test database into groups.
+// Failover and replication groups share these restrictions, so the tests of both are account-level tests (they cannot run in parallel
+// with each other, other PRs, or the integration/acceptance suites).
 
 package testint
 
@@ -8,23 +17,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestInt_FailoverGroupsCreate(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	shareTest, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+	secondaryAccountId := secondaryTestClientHelper().Account.GetAccountIdentifier(t)
 
 	t.Run("test complete", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -33,7 +37,7 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 			sdk.PluralObjectTypeDatabases,
 		}
 		allowedAccounts := []sdk.AccountIdentifier{
-			businessCriticalAccountId,
+			secondaryAccountId,
 		}
 		replicationSchedule := "10 MINUTE"
 		err := client.FailoverGroups.Create(ctx, sdk.NewCreateFailoverGroupRequest(id, objectTypes, allowedAccounts).
@@ -87,7 +91,7 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 			sdk.PluralObjectTypeShares,
 		}
 		allowedAccounts := []sdk.AccountIdentifier{
-			businessCriticalAccountId,
+			secondaryAccountId,
 		}
 		err := client.FailoverGroups.Create(ctx, sdk.NewCreateFailoverGroupRequest(id, objectTypes, allowedAccounts).
 			WithAllowedShares([]sdk.AccountObjectIdentifier{shareWithDot.ID()}).
@@ -112,7 +116,7 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 			sdk.PluralObjectTypeRoles,
 		}
 		allowedAccounts := []sdk.AccountIdentifier{
-			businessCriticalAccountId,
+			secondaryAccountId,
 		}
 		allowedIntegrationTypes := []sdk.IntegrationType{
 			sdk.IntegrationTypeSecurityIntegrations,
@@ -139,14 +143,10 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 }
 
 func TestInt_Issue2544(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+	secondaryAccountId := secondaryTestClientHelper().Account.GetAccountIdentifier(t)
 
 	t.Run("alter object types, replication schedule, and allowed integration types at the same time", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -155,7 +155,7 @@ func TestInt_Issue2544(t *testing.T) {
 			sdk.PluralObjectTypeDatabases,
 		}
 		allowedAccounts := []sdk.AccountIdentifier{
-			businessCriticalAccountId,
+			secondaryAccountId,
 		}
 		allowedIntegrationTypes := []sdk.IntegrationType{
 			sdk.IntegrationTypeAPIIntegrations,
@@ -205,9 +205,6 @@ func TestInt_Issue2544(t *testing.T) {
 }
 
 func TestInt_CreateSecondaryReplicationGroup(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	primaryAccountID := testClientHelper().Account.GetAccountIdentifier(t)
@@ -234,7 +231,7 @@ func TestInt_CreateSecondaryReplicationGroup(t *testing.T) {
 	require.NoError(t, err)
 
 	// there is a delay between creating a failover group and it being available for replication
-	time.Sleep(1 * time.Second)
+	secondaryTestClientHelper().FailoverGroup.WaitForPrimaryToBeVisible(t, failoverGroup.ID())
 
 	// create a replica of failover group in target account
 	err = secondaryClient.FailoverGroups.CreateSecondaryReplicationGroup(ctx,
@@ -255,15 +252,13 @@ func TestInt_CreateSecondaryReplicationGroup(t *testing.T) {
 	}
 	t.Cleanup(cleanupFailoverGroups)
 
+	// SHOW is not filtered, so other failover groups may be listed; the primary and the replica of this group are expected.
 	failoverGroups, err := secondaryClient.FailoverGroups.Show(ctx, sdk.NewShowFailoverGroupRequest())
 	require.NoError(t, err)
-	assert.Len(t, failoverGroups, 2)
+	assert.Len(t, slices.DeleteFunc(failoverGroups, func(fg sdk.FailoverGroup) bool { return fg.ID() != failoverGroup.ID() }), 2)
 }
 
 func TestInt_FailoverGroupsAlterSource(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	t.Run("rename the failover group", func(t *testing.T) {
@@ -590,9 +585,6 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 }
 
 func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	primaryAccountID := testClientHelper().Account.GetAccountIdentifier(t)
@@ -619,7 +611,7 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 	require.NoError(t, err)
 
 	// there is a delay between creating a failover group and it being available for replication
-	time.Sleep(1 * time.Second)
+	secondaryTestClientHelper().FailoverGroup.WaitForPrimaryToBeVisible(t, failoverGroup.ID())
 
 	// create a replica of failover group in target account
 	err = secondaryClient.FailoverGroups.CreateSecondaryReplicationGroup(ctx,
@@ -640,9 +632,10 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 	}
 	t.Cleanup(cleanupFailoverGroups)
 
+	// SHOW is not filtered, so other failover groups may be listed; the primary and the replica of this group are expected.
 	failoverGroups, err := secondaryClient.FailoverGroups.Show(ctx, sdk.NewShowFailoverGroupRequest())
 	require.NoError(t, err)
-	assert.Len(t, failoverGroups, 2)
+	assert.Len(t, slices.DeleteFunc(failoverGroups, func(fg sdk.FailoverGroup) bool { return fg.ID() != failoverGroup.ID() }), 2)
 
 	t.Run("perform suspend and resume", func(t *testing.T) {
 		// suspend target failover group
@@ -679,7 +672,7 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 		refresh := func() bool {
 			return secondaryClient.FailoverGroups.AlterTarget(ctx, sdk.NewAlterTargetFailoverGroupRequest(failoverGroup.ID()).WithRefresh(true)) == nil
 		}
-		assert.Eventually(t, refresh, 20*time.Second, 1*time.Second)
+		assert.Eventually(t, refresh, 2*time.Minute, 1*time.Second)
 	})
 
 	t.Run("promote secondary to primary", func(t *testing.T) {
@@ -689,7 +682,7 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 		promote := func() bool {
 			return secondaryClient.FailoverGroups.AlterTarget(ctx, sdk.NewAlterTargetFailoverGroupRequest(failoverGroup.ID()).WithPrimary(true)) == nil
 		}
-		assert.Eventually(t, promote, 20*time.Second, 1*time.Second)
+		assert.Eventually(t, promote, 2*time.Minute, 1*time.Second)
 
 		// verify that target failover group is promoted
 		failoverGroup, err = secondaryClient.FailoverGroups.ShowByID(ctx, failoverGroup.ID())
@@ -699,9 +692,6 @@ func TestInt_FailoverGroupsAlterTarget(t *testing.T) {
 }
 
 func TestInt_FailoverGroupsDrop(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	t.Run("no options", func(t *testing.T) {
@@ -720,9 +710,6 @@ func TestInt_FailoverGroupsDrop(t *testing.T) {
 }
 
 func TestInt_FailoverGroupsShow(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	failoverGroupTest, failoverGroupCleanup := testClientHelper().FailoverGroup.Create(t)
@@ -750,9 +737,6 @@ func TestInt_FailoverGroupsShow(t *testing.T) {
 }
 
 func TestInt_FailoverGroupsShowDatabases(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	failoverGroupTest, failoverGroupCleanup := testClientHelper().FailoverGroup.Create(t)
@@ -771,9 +755,6 @@ func TestInt_FailoverGroupsShowDatabases(t *testing.T) {
 }
 
 func TestInt_FailoverGroupsShowShares(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
 	ctx := testContext(t)
 	failoverGroupTest, failoverGroupCleanup := testClientHelper().FailoverGroup.Create(t)
