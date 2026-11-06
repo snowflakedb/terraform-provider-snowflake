@@ -346,6 +346,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.Listing: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Listings.ShowByID)
 	},
+	resources.OrganizationListing: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Listings.ShowByID)
+	},
 	resources.ManagedAccount: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ManagedAccounts.ShowByID)
 	},

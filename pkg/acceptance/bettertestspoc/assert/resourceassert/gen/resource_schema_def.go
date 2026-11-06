@@ -294,6 +294,10 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.OpenflowRuntime().Schema,
 	},
 	{
+		name:   "OrganizationListing",
+		schema: resources.OrganizationListing().Schema,
+	},
+	{
 		name:   "PasswordPolicy",
 		schema: resources.PasswordPolicy().Schema,
 	},

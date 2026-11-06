@@ -117,6 +117,7 @@ const (
 	OpenflowDeploymentsDatasource                  feature = "snowflake_openflow_deployments_datasource"
 	OpenflowRuntimeResource                        feature = "snowflake_openflow_runtime_resource"
 	OpenflowRuntimesDatasource                     feature = "snowflake_openflow_runtimes_datasource"
+	OrganizationListingResource                    feature = "snowflake_organization_listing_resource"
 	PasswordPoliciesDatasource                     feature = "snowflake_password_policies_datasource"
 	PasswordPolicyResource                         feature = "snowflake_password_policy_resource"
 	PipeResource                                   feature = "snowflake_pipe_resource"
@@ -226,6 +227,7 @@ var allPreviewFeatures = []feature{
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
+	OrganizationListingResource,
 	PipeResource,
 	PipesDatasource,
 	// PostgresForkResource,

@@ -100,6 +100,7 @@ const (
 	OpenflowDeploymentByoc                                 resource = "snowflake_openflow_deployment_byoc"
 	OpenflowDeploymentSnowflakeManaged                     resource = "snowflake_openflow_deployment_snowflake_managed"
 	OpenflowRuntime                                        resource = "snowflake_openflow_runtime"
+	OrganizationListing                                    resource = "snowflake_organization_listing"
 	PasswordPolicy                                         resource = "snowflake_password_policy"
 	Pipe                                                   resource = "snowflake_pipe"
 	PostgresFork                                           resource = "snowflake_postgres_fork"

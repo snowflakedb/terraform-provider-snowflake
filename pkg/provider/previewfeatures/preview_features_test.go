@@ -122,6 +122,7 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_openflow_deployments_datasource", want: OpenflowDeploymentsDatasource},
 		{input: "snowflake_openflow_runtime_resource", want: OpenflowRuntimeResource},
 		{input: "snowflake_openflow_runtimes_datasource", want: OpenflowRuntimesDatasource},
+		{input: "snowflake_organization_listing_resource", want: OrganizationListingResource},
 		{input: "snowflake_password_policies_datasource", want: PasswordPoliciesDatasource},
 		{input: "snowflake_password_policy_resource", want: PasswordPolicyResource},
 		{input: "snowflake_pipe_resource", want: PipeResource},
