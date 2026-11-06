@@ -19,16 +19,19 @@ func init() {
 var warehousesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
+	case_Warehouses_validation_Create_ResourceMonitor_ValidIdentifierIfSet                 testCaseName = "validation_Create_ResourceMonitor_ValidIdentifierIfSet"
 	case_Warehouses_validation_Create_name_ValidIdentifier                                 testCaseName = "validation_Create_name_ValidIdentifier"
 	case_Warehouses_validation_Create_opts_ConflictingFields                               testCaseName = "validation_Create_opts_ConflictingFields"
 	case_Warehouses_validation_Create_Tag_ValidIdentifier                                  testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Warehouses_sql_Create_basic                                                       testCaseName = "sql_Create_basic"
 	case_Warehouses_sql_Create_all                                                         testCaseName = "sql_Create_all"
+	case_Warehouses_validation_CreateAdaptive_ResourceMonitor_ValidIdentifierIfSet         testCaseName = "validation_CreateAdaptive_ResourceMonitor_ValidIdentifierIfSet"
 	case_Warehouses_validation_CreateAdaptive_name_ValidIdentifier                         testCaseName = "validation_CreateAdaptive_name_ValidIdentifier"
 	case_Warehouses_validation_CreateAdaptive_opts_ConflictingFields                       testCaseName = "validation_CreateAdaptive_opts_ConflictingFields"
 	case_Warehouses_validation_CreateAdaptive_Tag_ValidIdentifier                          testCaseName = "validation_CreateAdaptive_Tag_ValidIdentifier"
 	case_Warehouses_sql_CreateAdaptive_basic                                               testCaseName = "sql_CreateAdaptive_basic"
 	case_Warehouses_sql_CreateAdaptive_all                                                 testCaseName = "sql_CreateAdaptive_all"
+	case_Warehouses_validation_CreateInteractive_ResourceMonitor_ValidIdentifierIfSet      testCaseName = "validation_CreateInteractive_ResourceMonitor_ValidIdentifierIfSet"
 	case_Warehouses_validation_CreateInteractive_name_ValidIdentifier                      testCaseName = "validation_CreateInteractive_name_ValidIdentifier"
 	case_Warehouses_validation_CreateInteractive_opts_ConflictingFields                    testCaseName = "validation_CreateInteractive_opts_ConflictingFields"
 	case_Warehouses_validation_CreateInteractive_FallbackWarehouse_ValidIdentifierIfSet    testCaseName = "validation_CreateInteractive_FallbackWarehouse_ValidIdentifierIfSet"
@@ -40,6 +43,7 @@ const (
 	case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_Warehouses_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Warehouses_validation_Alter_RenameTo_ValidIdentifierIfSet                         testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Warehouses_validation_Alter_Set_ResourceMonitor_ValidIdentifierIfSet              testCaseName = "validation_Alter_Set_ResourceMonitor_ValidIdentifierIfSet"
 	case_Warehouses_validation_Alter_opts_Set_AtLeastOneValueSet                           testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Warehouses_validation_Alter_opts_Unset_AtLeastOneValueSet                         testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Warehouses_validation_Alter_SetTags_ValidIdentifier                               testCaseName = "validation_Alter_SetTags_ValidIdentifier"
@@ -55,6 +59,7 @@ const (
 	case_Warehouses_validation_AlterAdaptive_opts_ExactlyOneValueSet_NoneSet               testCaseName = "validation_AlterAdaptive_opts_ExactlyOneValueSet_NoneSet"
 	case_Warehouses_validation_AlterAdaptive_opts_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_AlterAdaptive_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Warehouses_validation_AlterAdaptive_RenameTo_ValidIdentifierIfSet                 testCaseName = "validation_AlterAdaptive_RenameTo_ValidIdentifierIfSet"
+	case_Warehouses_validation_AlterAdaptive_Set_ResourceMonitor_ValidIdentifierIfSet      testCaseName = "validation_AlterAdaptive_Set_ResourceMonitor_ValidIdentifierIfSet"
 	case_Warehouses_validation_AlterAdaptive_opts_Set_AtLeastOneValueSet                   testCaseName = "validation_AlterAdaptive_opts_Set_AtLeastOneValueSet"
 	case_Warehouses_validation_AlterAdaptive_opts_Unset_AtLeastOneValueSet                 testCaseName = "validation_AlterAdaptive_opts_Unset_AtLeastOneValueSet"
 	case_Warehouses_validation_AlterAdaptive_SetTags_ValidIdentifier                       testCaseName = "validation_AlterAdaptive_SetTags_ValidIdentifier"
@@ -67,6 +72,7 @@ const (
 	case_Warehouses_validation_AlterInteractive_opts_ExactlyOneValueSet_NoneSet            testCaseName = "validation_AlterInteractive_opts_ExactlyOneValueSet_NoneSet"
 	case_Warehouses_validation_AlterInteractive_opts_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_AlterInteractive_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_Warehouses_validation_AlterInteractive_RenameTo_ValidIdentifierIfSet              testCaseName = "validation_AlterInteractive_RenameTo_ValidIdentifierIfSet"
+	case_Warehouses_validation_AlterInteractive_Set_ResourceMonitor_ValidIdentifierIfSet   testCaseName = "validation_AlterInteractive_Set_ResourceMonitor_ValidIdentifierIfSet"
 	case_Warehouses_validation_AlterInteractive_Set_FallbackWarehouse_ValidIdentifierIfSet testCaseName = "validation_AlterInteractive_Set_FallbackWarehouse_ValidIdentifierIfSet"
 	case_Warehouses_validation_AlterInteractive_opts_Set_AtLeastOneValueSet                testCaseName = "validation_AlterInteractive_opts_Set_AtLeastOneValueSet"
 	case_Warehouses_validation_AlterInteractive_opts_Unset_AtLeastOneValueSet              testCaseName = "validation_AlterInteractive_opts_Unset_AtLeastOneValueSet"
@@ -115,6 +121,13 @@ var warehousesTests = WarehousesTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateWarehouseOptions]{
+				Name:        case_Warehouses_validation_Create_ResourceMonitor_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateWarehouseOptions", "ResourceMonitor"),
+				DefaultModify: func(opts *CreateWarehouseOptions) {
+					opts.ResourceMonitor = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateWarehouseOptions]{
 				Name:        case_Warehouses_validation_Create_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateWarehouseOptions", "name"),
 				DefaultModify: func(opts *CreateWarehouseOptions) {
@@ -156,6 +169,13 @@ var warehousesTests = WarehousesTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_CreateAdaptive_ResourceMonitor_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateAdaptiveWarehouseOptions", "ResourceMonitor"),
+				DefaultModify: func(opts *CreateAdaptiveWarehouseOptions) {
+					opts.ResourceMonitor = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateAdaptiveWarehouseOptions]{
 				Name:        case_Warehouses_validation_CreateAdaptive_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateAdaptiveWarehouseOptions", "name"),
 				DefaultModify: func(opts *CreateAdaptiveWarehouseOptions) {
@@ -196,6 +216,13 @@ var warehousesTests = WarehousesTestsContext{
 			}
 		}).
 		withValidationCases(
+			validationCase[*CreateInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_CreateInteractive_ResourceMonitor_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateInteractiveWarehouseOptions", "ResourceMonitor"),
+				DefaultModify: func(opts *CreateInteractiveWarehouseOptions) {
+					opts.ResourceMonitor = new(emptyAccountObjectIdentifier)
+				},
+			},
 			validationCase[*CreateInteractiveWarehouseOptions]{
 				Name:        case_Warehouses_validation_CreateInteractive_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateInteractiveWarehouseOptions", "name"),
@@ -285,6 +312,14 @@ var warehousesTests = WarehousesTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterWarehouseOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterWarehouseOptions]{
+				Name:        case_Warehouses_validation_Alter_Set_ResourceMonitor_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterWarehouseOptions.Set", "ResourceMonitor"),
+				DefaultModify: func(opts *AlterWarehouseOptions) {
+					opts.Set = &WarehouseSet{}
+					opts.Set.ResourceMonitor = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterWarehouseOptions]{
@@ -411,6 +446,14 @@ var warehousesTests = WarehousesTestsContext{
 				},
 			},
 			validationCase[*AlterAdaptiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterAdaptive_Set_ResourceMonitor_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterAdaptiveWarehouseOptions.Set", "ResourceMonitor"),
+				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
+					opts.Set = &WarehouseAdaptiveSet{}
+					opts.Set.ResourceMonitor = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterAdaptiveWarehouseOptions]{
 				Name:        case_Warehouses_validation_AlterAdaptive_opts_Set_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("AlterAdaptiveWarehouseOptions.Set", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "Comment", "ResourceMonitor", "MaxQueryPerformanceLevel", "QueryThroughputMultiplier"),
 				DefaultModify: func(opts *AlterAdaptiveWarehouseOptions) {
@@ -505,6 +548,14 @@ var warehousesTests = WarehousesTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterInteractiveWarehouseOptions]{
+				Name:        case_Warehouses_validation_AlterInteractive_Set_ResourceMonitor_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterInteractiveWarehouseOptions.Set", "ResourceMonitor"),
+				DefaultModify: func(opts *AlterInteractiveWarehouseOptions) {
+					opts.Set = &WarehouseInteractiveSet{}
+					opts.Set.ResourceMonitor = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterInteractiveWarehouseOptions]{

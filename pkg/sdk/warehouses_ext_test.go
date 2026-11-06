@@ -642,6 +642,8 @@ func Test_Warehouse_alterNeedsSuspendedWarehouse(t *testing.T) {
 		{"adaptive to standard", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeStandard), adaptive, true},
 		{"standard to snowpark-optimized", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeSnowparkOptimized), standard, true},
 		{"snowpark-optimized to standard", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeStandard), snowpark, true},
+		{"standard set to standard again", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeStandard), standard, false},
+		{"snowpark-optimized set to snowpark-optimized again", NewWarehouseSetRequest().WithWarehouseType(WarehouseTypeSnowparkOptimized), snowpark, false},
 		{"standard resize", NewWarehouseSetRequest().WithWarehouseSize(WarehouseSizeLarge), standard, false},
 		{"interactive resize", NewWarehouseSetRequest().WithWarehouseSize(WarehouseSizeLarge), interactive, true},
 		{"auto_suspend only", NewWarehouseSetRequest().WithAutoSuspend(60), standard, false},

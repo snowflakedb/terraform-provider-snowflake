@@ -71,6 +71,9 @@ var (
 	//go:embed templates/sub_templates/show_by_id_safely_in_sdk.tmpl
 	showByIdSafelyInSdkTemplateContent string
 
+	//go:embed templates/sub_templates/after_show_by_id.tmpl
+	afterShowByIdTemplateContent string
+
 	//go:embed templates/sub_templates/describe_in_sdk.tmpl
 	describeInSdkTemplateContent string
 
@@ -106,6 +109,12 @@ var (
 
 	//go:embed templates/sub_templates/set_config_fields.tmpl
 	setConfigFieldsTemplateContent string
+
+	//go:embed templates/sub_templates/set_computed_fields.tmpl
+	setComputedFieldsTemplateContent string
+
+	//go:embed templates/sub_templates/generated_set_computed_fields.tmpl
+	generatedSetComputedFieldsTemplateContent string
 
 	//go:embed templates/sub_templates/hierarchy_rename.tmpl
 	hierarchyRenameTemplateContent string
@@ -206,6 +215,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("createInSdk").Parse(createInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("afterCreate").Parse(afterCreateTemplateContent)
 	subTemplates, _ = subTemplates.New("afterAlter").Parse(afterAlterTemplateContent)
+	subTemplates, _ = subTemplates.New("afterShowById").Parse(afterShowByIdTemplateContent)
 	subTemplates, _ = subTemplates.New("showByIdSafelyInSdk").Parse(showByIdSafelyInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("describeInSdk").Parse(describeInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("handleExternalChanges").Parse(handleExternalChangesTemplateContent)
@@ -219,6 +229,8 @@ func init() {
 	subTemplates, _ = subTemplates.New("setDescribeOutput").Parse(setDescribeOutputTemplateContent)
 	subTemplates, _ = subTemplates.New("fqnSet").Parse(fqnSetTemplateContent)
 	subTemplates, _ = subTemplates.New("setConfigFields").Parse(setConfigFieldsTemplateContent)
+	subTemplates, _ = subTemplates.New("setComputedFields").Parse(setComputedFieldsTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedSetComputedFields").Parse(generatedSetComputedFieldsTemplateContent)
 	subTemplates, _ = subTemplates.New("hierarchyRename").Parse(hierarchyRenameTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeAlter").Parse(beforeAlterTemplateContent)
 	subTemplates, _ = subTemplates.New("applySetUnset").Parse(applySetUnsetTemplateContent)

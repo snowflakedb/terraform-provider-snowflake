@@ -3,6 +3,7 @@
 package testint
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
@@ -219,7 +220,44 @@ func TestInt_OpenflowConnectors(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("alter: add version from stage", func(t *testing.T) {
+		stage, stageCleanup := testClientHelper().Stage.CreateStageInSchema(t, runtimeId.SchemaId())
+		t.Cleanup(stageCleanup)
+
+		// The two bundles differ only in whitespace: Snowflake checks that config.json names the connector's
+		// definition, and nothing else in it matters for the version to be added.
+		bundleV1 := fmt.Sprintf(`{"configFormatVersion":1,"connectorDefinitionId":%q,"configuration":[]}`, definition.Name)
+		bundleV2 := fmt.Sprintf(`{"configFormatVersion": 1, "connectorDefinitionId": %q, "configuration": []}`, definition.Name)
+		testClientHelper().Stage.PutOnStageWithContent(t, stage.ID(), "config.json", bundleV1)
+
+		var location sdk.Location = sdk.NewStageLocation(stage.ID(), "")
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(runtimeId.SchemaId())
+		_, cleanup := testClientHelper().OpenflowConnector.CreateWithRequest(t, sdk.NewCreateOpenflowConnectorRequest(id, runtimeId).WithFrom(location))
+		t.Cleanup(cleanup)
+
+		before, err := testClientHelper().OpenflowConnector.Describe(t, id)
+		require.NoError(t, err)
+
+		testClientHelper().Stage.PutOnStageWithContent(t, stage.ID(), "config.json", bundleV2)
+
+		// ADD VERSION is accepted only from STOPPED, which is where a new connector settles.
+		err = client.OpenflowConnectors.Alter(ctx, sdk.NewAlterOpenflowConnectorRequest(id).
+			WithAddVersion(*sdk.NewOpenflowConnectorAddVersionRequest(&location)))
+		require.NoError(t, err)
+		connector := testClientHelper().OpenflowConnector.WaitUntilSettled(t, id, helpers.OpenflowConnectorStopTimeout)
+		assert.Equal(t, sdk.OpenflowConnectorStatusStopped, connector.Status)
+
+		after, err := testClientHelper().OpenflowConnector.Describe(t, id)
+		require.NoError(t, err)
+		require.NotNil(t, after.LastVersionName)
+		assert.NotEqual(t, before.LastVersionName, after.LastVersionName, "ADD VERSION should leave a new last version")
+	})
+
 	t.Run("alter: start and stop", func(t *testing.T) {
+		// TODO(SNOW-4418285): START on a committed connector with no uploaded config stays STOPPED for the
+		// whole wait instead of settling on START_FAILED.
+		t.Skip("TODO(SNOW-4418285): START stays STOPPED on an unconfigured connector")
+
 		// Committed, because a connector must have a committed default version before START is even accepted.
 		connector, cleanup := testClientHelper().OpenflowConnector.CreateFromDefinitionAndCommit(t, runtimeId, definition.Name)
 		t.Cleanup(cleanup)

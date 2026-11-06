@@ -93,28 +93,3 @@ func ADiffB(setA []any, setB []any) []string {
 	}
 	return res
 }
-
-func reorderStringList(configured []string, actual []string) []string {
-	// Reorder the actual list to match the configured list
-	// This is necessary because the actual list may not be saved in the same order as the configured list
-	// The actual list may not be the same size as the configured list and may contain items not in the configured list
-
-	// Create a map of the actual list
-	actualMap := make(map[string]bool)
-	for _, v := range actual {
-		actualMap[v] = true
-	}
-	reorderedList := make([]string, 0)
-	for _, v := range configured {
-		if _, ok := actualMap[v]; ok {
-			reorderedList = append(reorderedList, v)
-		}
-	}
-	// add any items in the actual list that are not in the configured list to the end
-	for _, v := range actual {
-		if _, ok := actualMap[v]; !ok {
-			reorderedList = append(reorderedList, v)
-		}
-	}
-	return reorderedList
-}

@@ -87,7 +87,7 @@ func experimentalFeatureEnabledByDefaultDescription(feature experimentalfeatures
 	description := fmt.Sprintf("This field is enabled by default as part of the `%s` experimental feature. You can opt out by listing `%s` in [`experimental_features_disabled`](../#experimental_features_disabled-1) in the provider block.", feature, feature)
 	if experiment, ok := experimentalfeatures.GetExperiment(feature); ok {
 		if versions := experiment.RemoveInVersionsPhrase(); versions != "" {
-			return joinWithSpace(description, fmt.Sprintf("This experiment will be removed in %s.", versions))
+			return joinWithSpace(description, fmt.Sprintf("This experiment will be promoted in %s.", versions))
 		}
 	}
 	return description

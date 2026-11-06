@@ -1738,6 +1738,8 @@ func TestAcc_Provider_Proxy(t *testing.T) {
 
 	var proxyUsed atomic.Bool
 
+	// Real TCP proxy: the handler hijacks the connection and dials Snowflake.
+	// httptest.NewTestServer's in-memory network cannot do that.
 	proxyServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		proxyUsed.Store(true)
 

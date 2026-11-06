@@ -139,10 +139,10 @@ func (r sharesRow) convert() (*Share, error) {
 		Owner:             r.Owner,
 		Comment:           r.Comment,
 		ListingGlobalName: r.ListingGlobalName,
-		SecureObjectsOnly: r.SecureObjectsOnly,
 	}
 	mapStringWithMapping(&result.Kind, r.Kind, ToShareKind)
 	mapStringWithMapping(&result.DatabaseName, r.DatabaseName, ParseAccountObjectIdentifier)
+	mapNullStringToBoolParsed(&result.SecureObjectsOnly, r.SecureObjectsOnly)
 	if err := r.additionalConvert(result); err != nil {
 		return nil, err
 	}

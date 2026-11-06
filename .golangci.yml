@@ -25,6 +25,8 @@ linters:
       disable:
         # Simplify code by using go1.26's new(expr).
         - newexpr
+        # Do not flatten embedded structs such as SdkValueType in composite literals.
+        - embedlit
     misspell:
       locale: US
     revive:

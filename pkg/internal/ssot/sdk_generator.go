@@ -77,6 +77,11 @@ func SdkShowOptionalIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalIn = true }
 }
 
+// SdkShowOptionalInAccount emits only IN ACCOUNT <account>.
+func SdkShowOptionalInAccount() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalInAccount = true }
+}
+
 // SdkShowOptionalExtendedIn emits IN for account, database, schema, application, and application package.
 func SdkShowOptionalExtendedIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalExtendedIn = true }
@@ -118,6 +123,11 @@ func SdkShowOptionalLimitFrom() SdkShowOption {
 
 func SdkShowOptionalLimit() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalLimit = true }
+}
+
+// SdkShowAdditionalValidations marks the SHOW query struct so validate calls additionalValidations.
+func SdkShowAdditionalValidations() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowAdditionalValidations = true }
 }
 
 func SdkShowByIDFiltering(kinds ...SdkShowByIDFilteringKind) SdkShowOption {

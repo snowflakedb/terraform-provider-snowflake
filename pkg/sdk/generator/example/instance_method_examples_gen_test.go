@@ -15,7 +15,7 @@ const (
 	case_InstanceMethodExamples_validation_GetSpendingLimit_name_ValidIdentifier                           testCaseName = "validation_GetSpendingLimit_name_ValidIdentifier"
 	case_InstanceMethodExamples_sql_GetSpendingLimit_basic                                                 testCaseName = "sql_GetSpendingLimit_basic"
 	case_InstanceMethodExamples_validation_SetScope_name_ValidIdentifier                                   testCaseName = "validation_SetScope_name_ValidIdentifier"
-	case_InstanceMethodExamples_validation_SetScope_args_Tags_Tag_ValidIdentifier                          testCaseName = "validation_SetScope_args_Tags_Tag_ValidIdentifier"
+	case_InstanceMethodExamples_validation_SetScope_args_Tags_Reference_Arguments_Tag_ValidIdentifier      testCaseName = "validation_SetScope_args_Tags_Reference_Arguments_Tag_ValidIdentifier"
 	case_InstanceMethodExamples_sql_SetScope_basic                                                         testCaseName = "sql_SetScope_basic"
 )
 
@@ -96,11 +96,11 @@ var instanceMethodExamplesTests = InstanceMethodExamplesTestsContext{
 				},
 			},
 			validationCase[*SetScopeInstanceMethodExampleOptions]{
-				Name:        case_InstanceMethodExamples_validation_SetScope_args_Tags_Tag_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("SetScopeInstanceMethodExampleOptions.args.Tags[0]", "Tag"),
+				Name:        case_InstanceMethodExamples_validation_SetScope_args_Tags_Reference_Arguments_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetScopeInstanceMethodExampleOptions.args.Tags[0].Reference.Arguments", "Tag"),
 				DefaultModify: func(opts *SetScopeInstanceMethodExampleOptions) {
 					opts.args.Tags = []ExampleTagValue{{}}
-					opts.args.Tags[0].Tag = emptySchemaObjectIdentifier
+					opts.args.Tags[0].Reference.Arguments.Tag = emptySchemaObjectIdentifier
 				},
 			},
 		).

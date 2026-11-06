@@ -269,7 +269,7 @@ func TestAcc_CreateSharedDatabase_InvalidValues(t *testing.T) {
 func createShareableDatabase(t *testing.T) sdk.ExternalObjectIdentifier {
 	t.Helper()
 
-	share, shareCleanup := secondaryTestClient().Share.CreateShare(t)
+	share, shareCleanup := secondaryTestClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	sharedDatabase, sharedDatabaseCleanup := secondaryTestClient().Database.CreateDatabaseWithParametersSet(t)

@@ -104,8 +104,16 @@ type QuotaSetUserTagsArgsRequest struct {
 }
 
 type QuotaUserTagRequest struct {
-	Tag   SchemaObjectIdentifier // required
-	Value string                 // required
+	Reference QuotaUserTagReferenceRequest // required
+	Value     string                       // required
+}
+
+type QuotaUserTagReferenceRequest struct {
+	Arguments QuotaUserTagReferenceArgumentsRequest // required
+}
+
+type QuotaUserTagReferenceArgumentsRequest struct {
+	Tag SchemaObjectIdentifier // required
 }
 
 type ExcludeUsersQuotaRequest struct {
@@ -123,8 +131,16 @@ type QuotaExcludeUsersByTagRequest struct {
 }
 
 type QuotaExcludedUserTagRequest struct {
-	Tag   SchemaObjectIdentifier // required
-	Value string                 // required
+	Reference QuotaExcludedUserTagReferenceRequest // required
+	Value     string                               // required
+}
+
+type QuotaExcludedUserTagReferenceRequest struct {
+	Arguments QuotaExcludedUserTagReferenceArgumentsRequest // required
+}
+
+type QuotaExcludedUserTagReferenceArgumentsRequest struct {
+	Tag SchemaObjectIdentifier // required
 }
 
 type QuotaExcludeUsersByUserRequest struct {

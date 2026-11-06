@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type AlertResourceAssert struct {
@@ -76,6 +77,11 @@ func (a *AlertResourceAssert) HasFullyQualifiedName(expected string) *AlertResou
 
 func (a *AlertResourceAssert) HasWarehouse(expected string) *AlertResourceAssert {
 	a.StringValueSet("warehouse", expected)
+	return a
+}
+
+func (a *AlertResourceAssert) HasWarehouseSdk(expected sdk.AccountObjectIdentifier) *AlertResourceAssert {
+	a.StringValueSet("warehouse", expected.Name())
 	return a
 }
 
@@ -198,6 +204,11 @@ func (a *AlertResourceAssert) HasEnabledEmpty() *AlertResourceAssert {
 
 func (a *AlertResourceAssert) HasFullyQualifiedNameEmpty() *AlertResourceAssert {
 	a.ValueSet("fully_qualified_name", "")
+	return a
+}
+
+func (a *AlertResourceAssert) HasWarehouseEmpty() *AlertResourceAssert {
+	a.ValueSet("warehouse", "")
 	return a
 }
 

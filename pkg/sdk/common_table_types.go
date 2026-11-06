@@ -6,12 +6,6 @@ import (
 	"strings"
 )
 
-type TableRowAccessPolicyLegacy struct {
-	rowAccessPolicy bool                   `ddl:"static" sql:"ROW ACCESS POLICY"`
-	Name            SchemaObjectIdentifier `ddl:"identifier"`
-	On              []string               `ddl:"keyword,parentheses" sql:"ON"`
-}
-
 // ColumnInlineConstraint is based on https://docs.snowflake.com/en/sql-reference/sql/create-table-constraint#inline-unique-primary-foreign-key.
 type ColumnInlineConstraint struct {
 	Name       *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`

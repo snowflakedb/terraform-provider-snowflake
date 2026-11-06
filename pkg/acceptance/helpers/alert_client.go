@@ -28,11 +28,11 @@ func (c *AlertClient) CreateAlert(t *testing.T) (*sdk.Alert, func()) {
 	t.Helper()
 	return c.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
 		c.ids.RandomSchemaObjectIdentifier(),
-		c.ids.WarehouseId(),
-		"USING CRON * * * * * UTC",
 		sdk.NewAlertConditionFromString("SELECT 1"),
 		"SELECT 1",
-	))
+	).
+		WithWarehouse(c.ids.WarehouseId()).
+		WithSchedule("USING CRON * * * * * UTC"))
 }
 
 func (c *AlertClient) CreateAlertWithRequest(t *testing.T, req *sdk.CreateAlertRequest) (*sdk.Alert, func()) {
@@ -47,6 +47,12 @@ func (c *AlertClient) CreateAlertWithRequest(t *testing.T, req *sdk.CreateAlertR
 	require.NoError(t, err)
 
 	return alert, c.DropAlertFunc(t, id)
+}
+
+func (c *AlertClient) Alter(t *testing.T, req *sdk.AlterAlertRequest) {
+	t.Helper()
+	err := c.client().Alter(context.Background(), req)
+	require.NoError(t, err)
 }
 
 func (c *AlertClient) DropAlertFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {

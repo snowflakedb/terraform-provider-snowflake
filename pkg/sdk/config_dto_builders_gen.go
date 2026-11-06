@@ -150,6 +150,11 @@ func (s *ConfigDTO) WithToken(Token string) *ConfigDTO {
 	return s
 }
 
+func (s *ConfigDTO) WithTokenFilePath(TokenFilePath string) *ConfigDTO {
+	s.TokenFilePath = &TokenFilePath
+	return s
+}
+
 func (s *ConfigDTO) WithKeepSessionAlive(KeepSessionAlive bool) *ConfigDTO {
 	s.KeepSessionAlive = &KeepSessionAlive
 	return s

@@ -241,7 +241,7 @@ func init() {
 				opts.Terse = new(true)
 				opts.History = new(true)
 				opts.Like = &Like{Pattern: new("schema_pattern")}
-				opts.In = &ExtendedIn{In: In{Database: databaseId}}
+				opts.In = &ExtendedIn{Database: databaseId}
 				opts.StartsWith = new("schema_pattern")
 				opts.Limit = &LimitFrom{Rows: new(3), From: new("name_string")}
 			},
@@ -262,7 +262,7 @@ func init() {
 			func(opts *ShowSchemaOptions) {
 				opts.Terse = new(true)
 				opts.History = new(true)
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			`SHOW TERSE SCHEMAS HISTORY IN ACCOUNT`,
 		).
@@ -271,7 +271,7 @@ func init() {
 			func(opts *ShowSchemaOptions) {
 				opts.Terse = new(true)
 				opts.History = new(true)
-				opts.In = &ExtendedIn{In: In{Database: databaseId}}
+				opts.In = &ExtendedIn{Database: databaseId}
 			},
 			`SHOW TERSE SCHEMAS HISTORY IN DATABASE %s`,
 			databaseId.FullyQualifiedName(),

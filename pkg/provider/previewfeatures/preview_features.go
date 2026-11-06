@@ -123,6 +123,8 @@ const (
 	PipesDatasource                                feature = "snowflake_pipes_datasource"
 	PostgresForkResource                           feature = "snowflake_postgres_fork_resource"
 	PostgresInstanceResource                       feature = "snowflake_postgres_instance_resource"
+	PostgresMirrorResource                         feature = "snowflake_postgres_mirror_resource"
+	PostgresMirrorsDatasource                      feature = "snowflake_postgres_mirrors_datasource"
 	ProcedureJavaResource                          feature = "snowflake_procedure_java_resource"
 	ProcedureJavascriptResource                    feature = "snowflake_procedure_javascript_resource"
 	ProcedurePythonResource                        feature = "snowflake_procedure_python_resource"
@@ -132,6 +134,9 @@ const (
 	ProjectionPoliciesDatasource                   feature = "snowflake_projection_policies_datasource"
 	ProjectionPolicyResource                       feature = "snowflake_projection_policy_resource"
 	QuotaResource                                  feature = "snowflake_quota_resource"
+	ReplicationGroupResource                       feature = "snowflake_replication_group_resource"
+	ReplicationGroupSecondaryResource              feature = "snowflake_replication_group_secondary_resource"
+	ReplicationGroupsDatasource                    feature = "snowflake_replication_groups_datasource"
 	CurrentRoleDatasource                          feature = "snowflake_current_role_datasource"
 	SemanticViewResource                           feature = "snowflake_semantic_view_resource"
 	SemanticViewDatasource                         feature = "snowflake_semantic_views_datasource"
@@ -222,18 +227,12 @@ var allPreviewFeatures = []feature{
 	EmailNotificationIntegrationResource,
 	NotificationIntegrationResource,
 	ObjectParameterResource,
-	OpenflowConnectorDefinitionsDatasource,
-	OpenflowConnectorResource,
-	OpenflowConnectorsDatasource,
-	OpenflowDeploymentByocResource,
-	OpenflowDeploymentSnowflakeManagedResource,
-	OpenflowDeploymentsDatasource,
-	OpenflowRuntimeResource,
-	OpenflowRuntimesDatasource,
 	PipeResource,
 	PipesDatasource,
 	// PostgresForkResource,
 	PostgresInstanceResource,
+	PostgresMirrorResource,
+	PostgresMirrorsDatasource,
 	CurrentRoleDatasource,
 	SemanticViewResource,
 	SemanticViewDatasource,
@@ -251,6 +250,9 @@ var allPreviewFeatures = []feature{
 	ProjectionPoliciesDatasource,
 	ProjectionPolicyResource,
 	QuotaResource,
+	ReplicationGroupResource,
+	ReplicationGroupSecondaryResource,
+	ReplicationGroupsDatasource,
 	StageResource,
 	StagesDatasource,
 	StorageIntegrationResource,
@@ -317,6 +319,14 @@ var promotedFeatures = []feature{
 	McpServersDatasource,
 	NetworkRuleResource,
 	NetworkRulesDatasource,
+	OpenflowConnectorDefinitionsDatasource,
+	OpenflowConnectorResource,
+	OpenflowConnectorsDatasource,
+	OpenflowDeploymentByocResource,
+	OpenflowDeploymentSnowflakeManagedResource,
+	OpenflowDeploymentsDatasource,
+	OpenflowRuntimeResource,
+	OpenflowRuntimesDatasource,
 	PasswordPoliciesDatasource,
 	PasswordPolicyResource,
 	ServiceResource,

@@ -21,6 +21,7 @@ const (
 	case_ContextFunctions_sql_CurrentDatabase_basic                                 testCaseName = "sql_CurrentDatabase_basic"
 	case_ContextFunctions_sql_CurrentSchema_basic                                   testCaseName = "sql_CurrentSchema_basic"
 	case_ContextFunctions_sql_CurrentWarehouse_basic                                testCaseName = "sql_CurrentWarehouse_basic"
+	case_ContextFunctions_sql_CurrentVersion_basic                                  testCaseName = "sql_CurrentVersion_basic"
 	case_ContextFunctions_validation_IsRoleInSession_Arguments_Role_ValidIdentifier testCaseName = "validation_IsRoleInSession_Arguments_Role_ValidIdentifier"
 	case_ContextFunctions_sql_IsRoleInSession_basic                                 testCaseName = "sql_IsRoleInSession_basic"
 )
@@ -40,6 +41,7 @@ type ContextFunctionsTestsContext struct {
 	CurrentDatabase         *sdkTestCtx[*CurrentDatabaseOptions]
 	CurrentSchema           *sdkTestCtx[*CurrentSchemaOptions]
 	CurrentWarehouse        *sdkTestCtx[*CurrentWarehouseOptions]
+	CurrentVersion          *sdkTestCtx[*CurrentVersionOptions]
 	IsRoleInSession         *sdkTestCtx[*IsRoleInSessionOptions]
 }
 
@@ -226,6 +228,19 @@ var contextFunctionsTests = ContextFunctionsTestsContext{
 				NoModifyNeeded: true,
 			},
 		),
+	CurrentVersion: newSdkTestCtx[*CurrentVersionOptions](
+		"ContextFunctions", "CurrentVersion",
+	).
+		withDefaultOpts(func() *CurrentVersionOptions {
+			return &CurrentVersionOptions{}
+		}).
+		withValidationCases().
+		withSqlCases(
+			sqlCase[*CurrentVersionOptions]{
+				Name:           case_ContextFunctions_sql_CurrentVersion_basic,
+				NoModifyNeeded: true,
+			},
+		),
 	IsRoleInSession: newSdkTestCtx[*IsRoleInSessionOptions](
 		"ContextFunctions", "IsRoleInSession",
 	).
@@ -317,6 +332,11 @@ func TestContextFunctions_CurrentSchema(t *testing.T) {
 func TestContextFunctions_CurrentWarehouse(t *testing.T) {
 	contextFunctionsTests.CurrentWarehouse.RunValidationCases(t)
 	contextFunctionsTests.CurrentWarehouse.RunSqlCases(t)
+}
+
+func TestContextFunctions_CurrentVersion(t *testing.T) {
+	contextFunctionsTests.CurrentVersion.RunValidationCases(t)
+	contextFunctionsTests.CurrentVersion.RunSqlCases(t)
 }
 
 func TestContextFunctions_IsRoleInSession(t *testing.T) {

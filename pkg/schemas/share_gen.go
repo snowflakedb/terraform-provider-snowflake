@@ -8,12 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-type shareToSchemaMapper struct{}
-
-var _ additionalSchemaMapper[sdk.Share] = shareToSchemaMapper{}
-
 // ShowShareSchema represents output of SHOW query for the single Share.
-var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
+var ShowShareSchema = map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -26,7 +22,10 @@ var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// name: manual addition and mapping is needed
+	"name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"database_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -49,14 +48,14 @@ var ShowShareSchema = mergeSchema(map[string]*schema.Schema{
 		Computed: true,
 	},
 	"secure_objects_only": {
-		Type:     schema.TypeString,
+		Type:     schema.TypeBool,
 		Computed: true,
 	},
 	"to_total": {
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-}, shareToSchemaMapper{}.additionalSchema())
+}
 
 var _ = ShowShareSchema
 
@@ -65,15 +64,16 @@ func ShareToSchema(share *sdk.Share) map[string]any {
 	shareSchema["created_on"] = share.CreatedOn.String()
 	shareSchema["kind"] = string(share.Kind)
 	shareSchema["owner_account"] = share.OwnerAccount
-	// name: manual addition and mapping is needed
+	shareSchema["name"] = share.Name
 	shareSchema["database_name"] = share.DatabaseName.Name()
 	shareSchema["to"] = collections.Map(share.To, sdk.AccountIdentifier.Name)
 	shareSchema["owner"] = share.Owner
 	shareSchema["comment"] = share.Comment
 	shareSchema["listing_global_name"] = share.ListingGlobalName
-	shareSchema["secure_objects_only"] = share.SecureObjectsOnly
+	if share.SecureObjectsOnly != nil {
+		shareSchema["secure_objects_only"] = (*share.SecureObjectsOnly)
+	}
 	shareSchema["to_total"] = share.ToTotal
-	shareToSchemaMapper{}.additionalToSchema(share, shareSchema)
 	return shareSchema
 }
 

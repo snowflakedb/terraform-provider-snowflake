@@ -42,6 +42,16 @@ func (obj Object) DescribeOutputKeys() []string {
 	return outputKeys(obj.Describe.Columns)
 }
 
+// HasShowOutput is true when the object has SHOW output columns.
+func (obj Object) HasShowOutput() bool {
+	return len(obj.ShowOutputKeys()) > 0
+}
+
+// HasDescribeOutput is true when the object has DESCRIBE output columns.
+func (obj Object) HasDescribeOutput() bool {
+	return len(obj.DescribeOutputKeys()) > 0
+}
+
 func (obj Object) ShowOutputAttributes() []*Attribute {
 	return obj.PairedShowColumns()
 }

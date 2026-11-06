@@ -1,6 +1,7 @@
 package defs
 
 import (
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
@@ -44,11 +45,6 @@ var tableUnsetColumnTags = g.NewQueryStruct("TableUnsetColumnTags").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	UnsetTags()
 
-var TableSearchMethodEnumDef = g.NewEnum(
-	"TableSearchMethod", "TableSearchMethods",
-	"SUBSTRING", "EQUALITY", "FULL_TEXT",
-)
-
 var tableColumnMaskingPolicy = g.NewQueryStruct("TableColumnMaskingPolicy").
 	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
 	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses()).
@@ -69,119 +65,13 @@ var tableRenameColumnAction = g.NewQueryStruct("TableRenameColumnAction").
 	Text("OldName", g.KeywordOptions().Required().DoubleQuotes()).
 	AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes(), "NewName")
 
-func newTableSearchMethodArgs() *g.QueryStruct {
-	return g.NewQueryStruct("TableSearchMethodArgs").
-		PredefinedQueryStructField("Targets", "[]string", g.KeywordOptions()).
-		OptionalTextAssignment("ANALYZER", g.ParameterOptions().ArrowEquals().SingleQuotes())
+func tableSearchOptimizationAction() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableSearchOptimizationAction).WithSharedToOpts()
 }
-
-func newTableSearchMethodWithTarget() *g.QueryStruct {
-	return g.NewQueryStruct("TableSearchMethodWithTarget").
-		PredefinedQueryStructField("Method", TableSearchMethodEnumDef.Kind(), g.KeywordOptions().Required()).
-		QueryStructField("Args", newTableSearchMethodArgs(), g.ListOptions().Parentheses())
-}
-
-var tableAddSearchOptimization = g.NewQueryStruct("TableAddSearchOptimization").
-	SQL("ADD SEARCH OPTIMIZATION").
-	ListQueryStructField("On", newTableSearchMethodWithTarget(), g.KeywordOptions().SQL("ON"))
-
-func tableDropSearchOptimizationOn() *g.QueryStruct {
-	return g.NewQueryStruct("TableDropSearchOptimizationOn").
-		OptionalQueryStructField("SearchMethodWithTarget", newTableSearchMethodWithTarget(), g.KeywordOptions()).
-		OptionalText("ColumnName", g.KeywordOptions()).
-		OptionalText("ExpressionId", g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "SearchMethodWithTarget", "ColumnName", "ExpressionId")
-}
-
-func tableDropSearchOptimization() *g.QueryStruct {
-	return g.NewQueryStruct("TableDropSearchOptimization").
-		SQL("DROP SEARCH OPTIMIZATION").
-		ListQueryStructField("On", tableDropSearchOptimizationOn(), g.KeywordOptions().SQL("ON")).
-		WithSharedToOpts()
-}
-
-var tableSearchOptimizationAction = g.NewQueryStruct("TableSearchOptimizationAction").
-	OptionalQueryStructField(
-		"Add",
-		tableAddSearchOptimization,
-		g.KeywordOptions(),
-	).
-	OptionalQueryStructField(
-		"Drop",
-		tableDropSearchOptimization(),
-		g.KeywordOptions(),
-	).
-	WithValidation(g.ExactlyOneValueSet, "Add", "Drop")
-
-var tableSearchOptimizationDetails = g.StructPair("tableSearchOptimizationDetailsRow", "TableSearchOptimizationDetails").
-	Number("expression_id").
-	Text("method").
-	Text("target").
-	DataType("target_data_type").
-	BoolFromText("active", g.WithBoolTrueValue("true"))
-
-var tableDescribeSearchOptimization = g.NewQueryStruct("DescribeSearchOptimization").
-	Describe().
-	SQL("SEARCH OPTIMIZATION").
-	SQL("ON").
-	Name().
-	WithValidation(g.ValidIdentifier, "name")
-
-var TableConstraintTypeDef = g.NewEnum(
-	"TableConstraintType", "TableConstraintTypes",
-	"PRIMARY KEY", "UNIQUE", "FOREIGN KEY",
-)
-
-var tableConstraintDetails = g.StructPair("tableConstraintDetailsRow", "TableConstraintDetails").
-	Text("CONSTRAINT_CATALOG").
-	Text("CONSTRAINT_SCHEMA").
-	Text("CONSTRAINT_NAME").
-	Text("TABLE_CATALOG").
-	Text("TABLE_SCHEMA").
-	Text("TABLE_NAME").
-	Enum("CONSTRAINT_TYPE", TableConstraintTypeDef).
-	BoolFromText("IS_DEFERRABLE", g.WithBoolTrueValue("YES")).
-	BoolFromText("INITIALLY_DEFERRED", g.WithBoolTrueValue("YES")).
-	OptionalText("COMMENT").
-	Time("CREATED").
-	Time("LAST_ALTERED").
-	BoolFromText("ENFORCED", g.WithBoolTrueValue("YES")).
-	BoolFromText("RELY", g.WithBoolTrueValue("YES"))
-
-var tableShowConstraints = g.NewQueryStruct("ShowTableConstraints").
-	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
-	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
-	SQLWithCustomFieldName("dot", ".").
-	SQLWithCustomFieldName("informationSchemaTableConstraints", "INFORMATION_SCHEMA.TABLE_CONSTRAINTS").
-	SQLWithCustomFieldName("where", "WHERE").
-	TextAssignment("TABLE_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
-	SQLWithCustomFieldName("and", "AND").
-	TextAssignment("TABLE_NAME", g.ParameterOptions().SingleQuotes().Required()).
-	WithValidation(g.ValidIdentifier, "Database")
-
-var tableCheckConstraintDetails = g.StructPair("tableCheckConstraintDetailsRow", "TableCheckConstraintDetails").
-	Text("CONSTRAINT_CATALOG").
-	Text("CONSTRAINT_SCHEMA").
-	Text("CONSTRAINT_TABLE").
-	Text("CONSTRAINT_NAME").
-	Text("CHECK_CLAUSE")
-
-var tableSelectCheckConstraints = g.NewQueryStruct("SelectCheckConstraints").
-	SQLWithCustomFieldName("selectAll", "SELECT * FROM").
-	Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
-	SQLWithCustomFieldName("dot", ".").
-	SQLWithCustomFieldName("informationSchemaCheckConstraints", "INFORMATION_SCHEMA.CHECK_CONSTRAINTS").
-	SQLWithCustomFieldName("where", "WHERE").
-	TextAssignment("CONSTRAINT_SCHEMA", g.ParameterOptions().SingleQuotes().Required()).
-	SQLWithCustomFieldName("and", "AND").
-	TextAssignment("CONSTRAINT_TABLE", g.ParameterOptions().SingleQuotes().Required()).
-	WithValidation(g.ValidIdentifier, "Database")
 
 var (
-	TableScopeEnumDef     = g.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
-	TableKindEnumDef      = g.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
 	CloneMomentEnumDef    = g.NewEnum("CloneMoment", "CloneMoments", "AT", "BEFORE")
-	ReclusterStateEnumDef = g.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
+	ReclusterStateEnumDef = ssotdefs.ReclusterState
 	MatchTypeEnumDef      = g.NewEnum("MatchType", "MatchTypes", "FULL", "SIMPLE", "PARTIAL")
 )
 
@@ -299,24 +189,7 @@ func tableClonePoint() *g.QueryStruct {
 }
 
 func tableClusteringAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableClusteringAction").
-		PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-		OptionalQueryStructField("Recluster", tableReclusterAction(), g.KeywordOptions().SQL("RECLUSTER")).
-		OptionalQueryStructField("ChangeReclusterState", tableReclusterChangeState(), g.KeywordOptions()).
-		OptionalSQL("DROP CLUSTERING KEY").
-		WithValidation(g.ExactlyOneValueSet, "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey")
-}
-
-func tableReclusterAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableReclusterAction").
-		OptionalNumberAssignment("MAX_SIZE", g.ParameterOptions()).
-		OptionalAssignmentWithFieldName("WHERE", "*string", g.ParameterOptions().NoEquals(), "Condition")
-}
-
-func tableReclusterChangeState() *g.QueryStruct {
-	return g.NewQueryStruct("TableReclusterChangeState").
-		OptionalEnum("State", ReclusterStateEnumDef, g.KeywordOptions()).
-		SQL("RECLUSTER")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableClusteringAction)
 }
 
 func tableColumnAction() *g.QueryStruct {
@@ -487,25 +360,6 @@ func tableExternalTableColumnDropAction() *g.QueryStruct {
 		WithValidation(g.ValidateValueSet, "Names")
 }
 
-// legacyTableSearchOptimizationAction duplicates tableSearchOptimizationAction, differing only in
-// that its Add side still needs the legacy helper below.
-// TODO[SNOW-1007542]: reuse tableSearchOptimizationAction
-func legacyTableSearchOptimizationAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableSearchOptimizationActionLegacy").
-		OptionalQueryStructField("Add", legacyTableAddSearchOptimization(), g.KeywordOptions()).
-		OptionalSharedQueryStructField("Drop", tableDropSearchOptimization(), g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "Add", "Drop")
-}
-
-// legacyTableAddSearchOptimization duplicates tableAddSearchOptimization. The shared helper
-// requires a search method per target, so it emits ON EQUALITY(c1) and cannot produce legacy's bare ON c1, c2.
-// TODO[SNOW-1007542]: reuse tableAddSearchOptimization
-func legacyTableAddSearchOptimization() *g.QueryStruct {
-	return g.NewQueryStruct("AddSearchOptimization").
-		SQL("ADD SEARCH OPTIMIZATION").
-		PredefinedQueryStructField("On", "[]string", g.KeywordOptions().SQL("ON"))
-}
-
 func tableSet() *g.QueryStruct {
 	return g.NewQueryStruct("TableSet").
 		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
@@ -548,61 +402,11 @@ func tableDropAndAddRowAccessPolicy() *g.QueryStruct {
 }
 
 func tableAddStorageLifecyclePolicy() *g.QueryStruct {
-	return g.NewQueryStruct("TableAddStorageLifecyclePolicy").
-		SQL("ADD").
-		Identifier("StorageLifecyclePolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("STORAGE LIFECYCLE POLICY").Required()).
-		ListAssignment("ON", "Column", g.ParameterOptions().NoEquals().Parentheses().Required()).
-		WithValidation(g.ValidIdentifier, "StorageLifecyclePolicy").
-		WithValidation(g.ValidateValueSet, "On")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableStorageLifecyclePolicy)
 }
-
-var tableShowOutput = g.StructPair("tableDBRow", "Table").
-	Text("created_on").
-	Text("name").
-	Text("schema_name").
-	Text("database_name").
-	Text("kind").
-	OptionalText("comment", g.WithRequiredInPlain()).
-	OptionalText("cluster_by", g.WithRequiredInPlain()).
-	OptionalNumber("rows", g.WithRequiredInPlain()).
-	OptionalNumber("bytes").
-	Text("owner").
-	OptionalNumber("retention_time", g.WithRequiredInPlain()).
-	OptionalText("dropped_on").
-	OptionalBoolFromText("automatic_clustering", g.WithBoolTrueValue("ON"), g.WithRequiredInPlain()).
-	OptionalBoolFromText("change_tracking", g.WithBoolTrueValue("ON"), g.WithRequiredInPlain()).
-	OptionalBoolFromText("search_optimization", g.WithBoolTrueValue("ON"), g.WithRequiredInPlain()).
-	OptionalText("search_optimization_progress", g.WithRequiredInPlain()).
-	OptionalNumber("search_optimization_bytes").
-	OptionalBoolFromText("is_external", g.WithRequiredInPlain()).
-	OptionalBoolFromText("enable_schema_evolution", g.WithRequiredInPlain()).
-	OptionalText("owner_role_type", g.WithRequiredInPlain()).
-	OptionalBoolFromText("is_event", g.WithRequiredInPlain()).
-	OptionalText("budget")
 
 // DESCRIBE TABLE returns the collation glued onto the "type" column (e.g. "VARCHAR(200) COLLATE 'en-ci'"),
 // so Type is converted manually and Collation is derived from it in additionalConvert().
-var tableColumnDetails = g.StructPair("tableColumnDetailsRow", "TableColumnDetails").
-	Text("name").
-	Field("type", "DataType", "DataType", g.WithManualConvert()).
-	Text("kind").
-	Field("null?", "string", "bool", g.WithDbFieldName("IsNullable"), g.WithPlainFieldName("IsNullable")).
-	OptionalText("default").
-	Field("primary key", "string", "bool", g.WithDbFieldName("IsPrimary"), g.WithPlainFieldName("IsPrimary")).
-	Field("unique key", "string", "bool", g.WithDbFieldName("IsUnique"), g.WithPlainFieldName("IsUnique")).
-	OptionalBoolFromText("check").
-	OptionalText("expression").
-	OptionalText("comment").
-	OptionalText("policy name").
-	PlainOnlyField("Collation", "*string").
-	OptionalText("schema evolution record")
-
-var tableStageDetails = g.StructPair("tableStageDetailsRow", "TableStageDetails").
-	Text("parent_property").
-	Text("property").
-	Text("property_type").
-	Text("property_value").
-	Text("property_default")
 
 // TODO [SNOW-1007542]: add missing features:
 // - show columns (https://docs.snowflake.com/en/sql-reference/sql/show-columns)
@@ -614,34 +418,8 @@ var tablesDef = g.NewInterface(
 	"Table",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
-	CreateOperation(
-		"https://docs.snowflake.com/en/sql-reference/sql/create-table",
-		g.NewQueryStruct("CreateTable").
-			Create().
-			OrReplace().
-			OptionalEnum("Scope", TableScopeEnumDef, g.KeywordOptions()).
-			OptionalEnum("Kind", TableKindEnumDef, g.KeywordOptions()).
-			SQL("TABLE").
-			IfNotExists().
-			Name().
-			QueryStructField("ColumnsAndConstraints", tableColumnsAndConstraints(), g.ListOptions().Parentheses().Required()).
-			PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-			OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-			OptionalQueryStructField("StageFileFormat", tableFileFormat(), g.ListOptions().Parentheses().NoComma().SQL("STAGE_FILE_FORMAT =")).
-			OptionalQueryStructField("StageCopyOptions", tableCopyOptions(), g.ListOptions().Parentheses().NoComma().SQL("STAGE_COPY_OPTIONS =")).
-			OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-			OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-			OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
-			OptionalAssignment("DEFAULT_DDL_COLLATION", g.KindOfT[sdkcommons.StringAllowEmpty](), g.ParameterOptions()).
-			OptionalCopyGrants().
-			PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
-			OptionalTags().
-			OptionalComment().
-			WithValidation(g.ValidIdentifier, "name").
-			// Remaining additionalValidations: empty Columns, inline constraint,
-			// per-element tags, row access policy, out-of-line constraint type/FK.
-			WithAdditionalValidations(),
-	).
+	// CREATE comes from ssotdefs.Table. The structs it names stay here because other operations reuse them.
+	CreateOperationFromObject(ssotdefs.Table, tableColumnsAndConstraints(), tableFileFormat(), tableCopyOptions()).
 	// TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" CreateTableOptions
 	CustomOperation(
 		"CreateAsSelect",
@@ -654,7 +432,7 @@ var tablesDef = g.NewInterface(
 			ListQueryStructField("Columns", tableAsSelectColumn(), g.ListOptions().Parentheses().Required()).
 			PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 			OptionalCopyGrants().
-			PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicyLegacy", g.KeywordOptions()).
+			PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
 			AssignmentWithFieldName("AS", "string", g.ParameterOptions().NoEquals().Required(), "Query").
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidateValueSet, "Columns").
@@ -713,7 +491,7 @@ var tablesDef = g.NewInterface(
 			OptionalQueryStructField("ColumnAction", tableColumnAction(), g.KeywordOptions()).
 			OptionalQueryStructField("ConstraintAction", tableConstraintAction(), g.KeywordOptions()).
 			OptionalQueryStructField("ExternalTableAction", tableExternalTableAction(), g.KeywordOptions()).
-			OptionalQueryStructField("SearchOptimizationAction", legacyTableSearchOptimizationAction(), g.KeywordOptions()).
+			OptionalQueryStructField("SearchOptimizationAction", tableSearchOptimizationAction(), g.KeywordOptions()).
 			OptionalQueryStructField("Set", tableSet(), g.KeywordOptions().SQL("SET")).
 			OptionalSetTags().
 			OptionalUnsetTags().
@@ -730,81 +508,12 @@ var tablesDef = g.NewInterface(
 			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy").
 			WithAdditionalValidations(),
 	).
-	DropOperation(
-		"https://docs.snowflake.com/en/sql-reference/sql/drop-table",
-		g.NewQueryStruct("DropTable").
-			Drop().
-			SQL("TABLE").
-			IfExists().
-			Name().
-			OptionalSQL("CASCADE").
-			OptionalSQL("RESTRICT").
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ConflictingFields, "Cascade", "Restrict"),
-	).
-	ShowOperationWithPairedStructs(
-		"https://docs.snowflake.com/en/sql-reference/sql/show-tables",
-		tableShowOutput,
-		g.NewQueryStruct("ShowTable").
-			Show().
-			Terse().
-			SQL("TABLES").
-			OptionalSQL("HISTORY").
-			OptionalLike().
-			OptionalExtendedIn().
-			OptionalStartsWith().
-			OptionalLimitFrom().
-			// ErrPatternRequiredForLikeKeyword cannot be generated.
-			WithAdditionalValidations(),
-		g.ShowByIDExtendedInFiltering,
-		g.ShowByIDLikeFiltering,
-	).
-	CustomShowOperationWithPairedStructs(
-		"DescribeColumns",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
-		tableColumnDetails,
-		g.NewQueryStruct("DescribeTableColumns").
-			Describe().
-			SQL("TABLE").
-			Name().
-			SQLWithCustomFieldName("columnsType", "TYPE = COLUMNS").
-			WithValidation(g.ValidIdentifier, "name"),
-	).
-	CustomShowOperationWithPairedStructs(
-		"DescribeStage",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
-		tableStageDetails,
-		g.NewQueryStruct("DescribeTableStage").
-			Describe().
-			SQL("TABLE").
-			Name().
-			SQLWithCustomFieldName("stageType", "TYPE = STAGE").
-			WithValidation(g.ValidIdentifier, "name"),
-	).
-	CustomShowOperationWithPairedStructs(
-		"DescribeSearchOptimization",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization",
-		tableSearchOptimizationDetails,
-		tableDescribeSearchOptimization,
-	).
-	CustomShowOperationWithPairedStructs(
-		"SelectTableConstraints",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints",
-		tableConstraintDetails,
-		tableShowConstraints,
-	).
-	CustomShowOperationWithPairedStructs(
-		"SelectCheckConstraints",
-		g.ShowMappingKindSlice,
-		"https://docs.snowflake.com/en/sql-reference/info-schema/check_constraints",
-		tableCheckConstraintDetails,
-		tableSelectCheckConstraints,
-	).
-	WithEnums(TableConstraintTypeDef, TableScopeEnumDef, TableKindEnumDef, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef)
+	DropOperationFromObject(ssotdefs.Table).
+	ShowOperationFromObject(ssotdefs.Table).
+	// Describe and select come from ssotdefs.Table. CREATE AS SELECT, USING TEMPLATE, LIKE, and CLONE stay handwritten,
+	// so SdkDefineFromSsot stays off. Follow-up: convert those four and turn the setting on.
+	CustomOperationsFromObject(ssotdefs.Table).
+	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
 
 var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
 	SQL("SET").

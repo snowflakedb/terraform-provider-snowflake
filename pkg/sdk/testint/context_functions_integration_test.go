@@ -125,6 +125,15 @@ func TestInt_CurrentWarehouse(t *testing.T) {
 	assert.NotEmpty(t, warehouse.Value)
 }
 
+func TestInt_CurrentVersion(t *testing.T) {
+	client := testClient(t)
+	ctx := testContext(t)
+
+	version, err := client.ContextFunctions.CurrentVersion(ctx)
+	require.NoError(t, err)
+	assert.NotEmpty(t, version.Value)
+}
+
 func TestInt_IsRoleInSession(t *testing.T) {
 	client := testClient(t)
 	ctx := testContext(t)

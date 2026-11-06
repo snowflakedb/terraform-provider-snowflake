@@ -2762,7 +2762,7 @@ func createSharedDatabaseOnSecondaryAccount(t *testing.T) sdk.ExternalObjectIden
 	database, databaseCleanup := secondaryTestClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
-	share, shareCleanup := secondaryTestClient().Share.CreateShare(t)
+	share, shareCleanup := secondaryTestClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	_ = secondaryTestClient().Grant.GrantPrivilegeOnDatabaseToShare(t, database.ID(), share.ID(), []sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage, sdk.ObjectPrivilegeReferenceUsage})

@@ -363,7 +363,7 @@ func TestInt_SafeRevokePrivilegeFromShare(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
 
-	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	share, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	// Grant USAGE on the test database to the share (prerequisite for schema-level grants).
@@ -391,7 +391,7 @@ func TestInt_SafeRevokeFromShareOnNonExistingSchemaLevelObjects(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
 
-	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	share, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	// Grant USAGE on the test database to the share (prerequisite for schema-level grants).
@@ -484,7 +484,7 @@ func TestInt_SafeRevokeDatabaseRoleFromShare(t *testing.T) {
 	databaseRole, databaseRoleCleanup := testClientHelper().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
-	share, shareCleanup := testClientHelper().Share.CreateShare(t)
+	share, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	t.Run("revoke non-existing database role from share", func(t *testing.T) {

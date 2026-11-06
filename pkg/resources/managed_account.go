@@ -13,6 +13,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -96,6 +97,7 @@ func ManagedAccount() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		Description:   docs.WithPreviewFeatureMark(),
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.ManagedAccountResource), TrackingCreateWrapper(resources.ManagedAccount, CreateManagedAccount)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.ManagedAccountResource), TrackingReadWrapper(resources.ManagedAccount, ReadManagedAccount)),
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.ManagedAccountResource), TrackingDeleteWrapper(resources.ManagedAccount, deleteFunc)),

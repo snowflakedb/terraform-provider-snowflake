@@ -507,16 +507,16 @@ func parseIcebergTablePartitionBy(d *schema.ResourceData) ([]sdk.IcebergTablePar
 			}),
 			attributeMappedValueCreateBuilderNested(d, prefix+"bucket", req.WithBucket, parseIcebergTablePartitionBucket(prefix+"bucket.0.")),
 			attributeMappedValueCreateBuilderNested(d, prefix+"truncate", req.WithTruncate, parseIcebergTablePartitionTruncate(prefix+"truncate.0.")),
-			attributeMappedValueCreateBuilderNested(d, prefix+"year", req.WithYear, parseIcebergTablePartitionTime(prefix+"year.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionYearRequest {
+			attributeMappedValueCreateBuilderNested(d, prefix+"year", req.WithYear, parseIcebergTablePartitionTime(prefix+"year", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionYearRequest {
 				return *sdk.NewIcebergTablePartitionYearRequest().WithArgs(args)
 			})),
-			attributeMappedValueCreateBuilderNested(d, prefix+"month", req.WithMonth, parseIcebergTablePartitionTime(prefix+"month.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionMonthRequest {
+			attributeMappedValueCreateBuilderNested(d, prefix+"month", req.WithMonth, parseIcebergTablePartitionTime(prefix+"month", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionMonthRequest {
 				return *sdk.NewIcebergTablePartitionMonthRequest().WithArgs(args)
 			})),
-			attributeMappedValueCreateBuilderNested(d, prefix+"day", req.WithDay, parseIcebergTablePartitionTime(prefix+"day.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionDayRequest {
+			attributeMappedValueCreateBuilderNested(d, prefix+"day", req.WithDay, parseIcebergTablePartitionTime(prefix+"day", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionDayRequest {
 				return *sdk.NewIcebergTablePartitionDayRequest().WithArgs(args)
 			})),
-			attributeMappedValueCreateBuilderNested(d, prefix+"hour", req.WithHour, parseIcebergTablePartitionTime(prefix+"hour.0.", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionHourRequest {
+			attributeMappedValueCreateBuilderNested(d, prefix+"hour", req.WithHour, parseIcebergTablePartitionTime(prefix+"hour", func(args sdk.IcebergTablePartitionTimeArgsRequest) sdk.IcebergTablePartitionHourRequest {
 				return *sdk.NewIcebergTablePartitionHourRequest().WithArgs(args)
 			})),
 		)
@@ -547,7 +547,8 @@ func parseIcebergTablePartitionTruncate(prefix string) func(d *schema.ResourceDa
 	}
 }
 
-// parseIcebergTablePartitionTime returns a mapper parsing a time-based (year/month/day/hour) partition block at the given prefix.
+// parseIcebergTablePartitionTime returns a mapper parsing a time-based (year/month/day/hour) partition field at the given key.
+// These fields are plain strings holding the column name (like identity), not nested blocks.
 func parseIcebergTablePartitionTime[T any](key string, build func(sdk.IcebergTablePartitionTimeArgsRequest) T) func(d *schema.ResourceData) (T, error) {
 	return func(d *schema.ResourceData) (T, error) {
 		return build(*sdk.NewIcebergTablePartitionTimeArgsRequest(d.Get(key).(string))), nil

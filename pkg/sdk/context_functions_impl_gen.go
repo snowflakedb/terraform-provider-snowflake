@@ -22,6 +22,7 @@ var (
 	_ convertibleRow[CurrentDatabase]         = new(currentDatabaseDBRow)
 	_ convertibleRow[CurrentSchema]           = new(currentSchemaDBRow)
 	_ convertibleRow[CurrentWarehouse]        = new(currentWarehouseDBRow)
+	_ convertibleRow[CurrentVersion]          = new(currentVersionDBRow)
 	_ convertibleRow[IsRoleInSession]         = new(isRoleInSessionDBRow)
 )
 
@@ -155,6 +156,15 @@ func (v *contextFunctions) CurrentWarehouse(ctx context.Context) (*CurrentWareho
 	return conversionErrorWrapped(result.convert())
 }
 
+func (v *contextFunctions) CurrentVersion(ctx context.Context) (*CurrentVersion, error) {
+	opts := &CurrentVersionOptions{}
+	result, err := validateAndQueryOne[currentVersionDBRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return conversionErrorWrapped(result.convert())
+}
+
 func (v *contextFunctions) IsRoleInSession(ctx context.Context, request *IsRoleInSessionRequest) (*IsRoleInSession, error) {
 	opts := request.toOpts()
 	result, err := validateAndQueryOne[isRoleInSessionDBRow](v.client, ctx, opts)
@@ -263,6 +273,12 @@ func (r currentSchemaDBRow) convert() (*CurrentSchema, error) {
 func (r currentWarehouseDBRow) convert() (*CurrentWarehouse, error) {
 	result := &CurrentWarehouse{}
 	mapNullStringToNonNullableField(&result.Value, r.CurrentWarehouse)
+	return result, nil
+}
+
+func (r currentVersionDBRow) convert() (*CurrentVersion, error) {
+	result := &CurrentVersion{}
+	mapNullStringToNonNullableField(&result.Value, r.CurrentVersion)
 	return result, nil
 }
 

@@ -118,7 +118,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.Read
 		errs := errors.Join(
 			d.Set(ParametersAttributeName, []map[string]any{schemas.WarehouseInteractiveParametersToSchema(rawWarehouseInteractiveParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			warehouseInteractiveSetConfigFieldsExt(d, warehouseInteractive),
+			warehouseInteractiveSetConfigFieldsExt(ctx, d, meta, warehouseInteractive),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)

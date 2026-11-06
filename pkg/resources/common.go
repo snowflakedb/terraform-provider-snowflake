@@ -158,7 +158,13 @@ func TrackingImportWrapper(resourceName resources.Resource, importImplementation
 			}
 			finish(meta, diags, recover())
 		}()
+		// The import ID is captured before the implementation runs, as it may overwrite it.
+		importId := d.Id()
 		result, err = importImplementation(ctx, d, meta)
+		if err != nil {
+			// Terraform does not attach the resource address to import errors, so we add the resource name and ID here.
+			err = fmt.Errorf("failed to import %s with id %q: %w", resourceName, importId, err)
+		}
 		return result, err
 	}
 }

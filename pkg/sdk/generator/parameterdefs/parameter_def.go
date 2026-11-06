@@ -18,6 +18,7 @@ const (
 	ParameterLevelProcedure            = ssot.ParameterLevelProcedure
 	ParameterLevelProject              = ssot.ParameterLevelProject
 	ParameterLevelService              = ssot.ParameterLevelService
+	ParameterLevelPipe                 = ssot.ParameterLevelPipe
 	ParameterLevelUser                 = ssot.ParameterLevelUser
 	ParameterLevelSession              = ssot.ParameterLevelSession
 	ParameterLevelOpenflowDeployment   = ssot.ParameterLevelOpenflowDeployment

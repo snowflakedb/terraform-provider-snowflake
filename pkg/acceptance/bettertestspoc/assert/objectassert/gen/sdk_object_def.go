@@ -81,18 +81,6 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct: sdk.MaskingPolicy{},
 	},
 	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.AuthenticationPolicy{},
-	},
-	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.AuthenticationPolicyDetails{},
-		IsDataSourceOutput: true,
-		NestedAssertFields: []string{"SecurityIntegrations", "ClientPolicy", "MfaPolicy", "PatPolicy", "WorkloadIdentityPolicy"},
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "AuthenticationPolicy", MethodName: "DescribeDetails"},
-		SkipFields:         []string{"descriptions"},
-	},
-	{
 		IdType:             "sdk.SchemaObjectIdentifier",
 		ObjectStruct:       sdk.AuthenticationPolicySecurityIntegrationsDetails{},
 		IsDataSourceOutput: true,
@@ -241,16 +229,6 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct:       sdk.StorageIntegrationAllDetails{},
 		IsDataSourceOutput: true,
 		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "StorageIntegration", MethodName: "DescribeDetails"},
-	},
-	{
-		IdType:       "sdk.SchemaObjectIdentifier",
-		ObjectStruct: sdk.Notebook{},
-	},
-	{
-		IdType:             "sdk.SchemaObjectIdentifier",
-		ObjectStruct:       sdk.NotebookDetails{},
-		IsDataSourceOutput: true,
-		DescribeOverride:   &genhelpers.DescribeOverrideDef{ClientName: "Notebook", MethodName: "Describe"},
 	},
 	{
 		IdType:       "sdk.AccountObjectIdentifier",

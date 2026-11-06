@@ -23,6 +23,7 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 			ssot.SdkShowOptionalIn(),
 			ssot.SdkShowOptionalStartsWith(),
 			ssot.SdkShowOptionalLimit(),
+			ssot.SdkShowAdditionalValidations(),
 			ssot.SdkShowByIDFiltering(ssot.SdkShowByIDIn, ssot.SdkShowByIDLike),
 		))},
 	}
@@ -36,9 +37,32 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 			OptionalLike().
 			OptionalIn().
 			OptionalStartsWith().
-			OptionalLimit(),
+			OptionalLimit().
+			WithAdditionalValidations(),
 		ShowByIDInFiltering,
 		ShowByIDLikeFiltering,
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_ShowOperationFromObject_inAccount(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "AccountObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowOptionalInAccount(),
+			ssot.SdkShowByIDNoFiltering(),
+		))},
+	}
+	got := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").ShowOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "AccountObjectIdentifier").ShowOperationWithPairedStructs(
+		"https://docs.snowflake.com/en/sql-reference/sql/show-fakes",
+		ShowPairedStructs(obj),
+		NewQueryStruct("ShowFakes").Show().SQL("FAKES").OptionalInAccount(),
+		ShowByIDNoFiltering,
 	)
 	requireSameOperations(t, want, got)
 }
@@ -513,6 +537,7 @@ func Test_CreateAlterFromObject(t *testing.T) {
 				IfNotExists().
 				Name().
 				OptionalIdentifier("ForApplication", "AccountObjectIdentifier", IdentifierOptions().SQL("FOR APPLICATION")).
+				WithValidation(ValidIdentifierIfSet, "ForApplication").
 				NumberAssignment("COUNT", ParameterOptions().Required()).
 				EnumAssignment("KIND", family, ParameterOptions().NoQuotes().Required()).
 				OptionalTags().
@@ -1384,6 +1409,53 @@ func Test_CustomOperationsFromObject_fakeObject(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_CustomOperationsFromObject_pairedShow(t *testing.T) {
+	column := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	collation := ssot.Attribute{Name: "Collation", PlainOnlyKind: "*string"}
+	kind := ssot.Attribute{Name: "type", PairedPlainKind: "DataType", ManualConvert: true}
+	obj := ssot.Object{
+		Name:   "Fake",
+		IdType: "SchemaObjectIdentifier",
+		CustomOperations: []ssot.CustomOperationSpec{{
+			Kind:            "DescribeColumns",
+			Doc:             "https://docs.snowflake.com/en/sql-reference/sql/desc-table",
+			QueryStructName: "DescribeTableColumns",
+			Clauses: []ssot.CustomOperationClause{
+				ssot.CustomStaticSQL("DESCRIBE"),
+				ssot.CustomStaticSQL("TABLE"),
+				ssot.CustomName(),
+				ssot.CustomStaticField("columnsType", "TYPE = COLUMNS"),
+			},
+			Paired: &ssot.CustomPairedShow{
+				DbRow:     "fakeRow",
+				Plain:     "FakeDetails",
+				Columns:   []*ssot.Attribute{&column, &collation, &kind},
+				PlainOnly: []ssot.SdkPlainOnlyField{{Name: "Extra", Kind: "*string"}},
+			},
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCustomOperations())},
+	}
+	got := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").CustomOperationsFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "SchemaObjectIdentifier").
+		CustomShowOperationWithPairedStructs(
+			"DescribeColumns",
+			ShowMappingKindSlice,
+			"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
+			StructPair("fakeRow", "FakeDetails").
+				Text("name").
+				PlainOnlyField("Collation", "*string").
+				Field("type", "string", "DataType", WithManualConvert()).
+				PlainOnlyField("Extra", "*string"),
+			NewQueryStruct("DescribeTableColumns").
+				Describe().
+				SQL("TABLE").
+				Name().
+				SQLWithCustomFieldName("columnsType", "TYPE = COLUMNS").
+				WithValidation(ValidIdentifier, "name"),
+		)
+	requireSameOperations(t, want, got)
+}
+
 func Test_CustomOperationsFromObject_panics(t *testing.T) {
 	transient := ssot.Attribute{
 		Name:      "is_transient",
@@ -1665,6 +1737,30 @@ func requireSameOperations(t *testing.T, want, got *Interface) {
 		got.Operations[i].ObjectInterface = nil
 		require.Equal(t, want.Operations[i], got.Operations[i])
 	}
+}
+
+func Test_AlterOperationFromObject_keywordListAndPlainText(t *testing.T) {
+	obj := ssot.Object{
+		Name: "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterKeywordList("ModifyCondition", "MODIFY CONDITION EXISTS", "string"),
+			ssot.AlterPlainText("ModifyAction", "MODIFY ACTION"),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists()))},
+	}
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			Name().
+			UnnamedList("ModifyCondition", "string", KeywordOptions().SQL("MODIFY CONDITION EXISTS").Parentheses().NoComma()).
+			OptionalAssignmentWithFieldName("MODIFY ACTION", "string", ParameterOptions().NoEquals(), "ModifyAction").
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "ModifyCondition", "ModifyAction"),
+	)
+	requireSameOperations(t, want, got)
 }
 
 func Test_AlterOperationFromObject_textAndBlocks(t *testing.T) {

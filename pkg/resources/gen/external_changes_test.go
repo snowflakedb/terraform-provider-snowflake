@@ -84,7 +84,7 @@ func Test_DescribeExternalChanges_catalogIntegrations(t *testing.T) {
 
 	read := renderTemplate(t, "lifecycleTemplate", glue)
 	require.Contains(t, read, "diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribe(d, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)")
-	require.Contains(t, read, "diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)")
+	require.Contains(t, read, "diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(ctx, d, meta, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)")
 }
 
 func Test_DerivedOutputDiffSuppress(t *testing.T) {

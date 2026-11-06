@@ -486,7 +486,7 @@ func init() {
 			case_Procedures_sql_Show_all,
 			func(opts *ShowProcedureOptions) {
 				opts.Like = &Like{Pattern: new("pattern")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW PROCEDURES LIKE 'pattern' IN ACCOUNT",
 		).
@@ -497,7 +497,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Procedures_sql_Show_In,
-			func(opts *ShowProcedureOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
+			func(opts *ShowProcedureOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			"SHOW PROCEDURES IN ACCOUNT",
 		)
 

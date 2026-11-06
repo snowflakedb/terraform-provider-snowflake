@@ -72,7 +72,7 @@ func catalogIntegrationIcebergRestApplyCreateOptionalsExt(d *schema.ResourceData
 	)
 }
 
-func catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails, withExternalChangesMarking bool) diag.Diagnostics {
+func catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(_ context.Context, d *schema.ResourceData, _ any, details *sdk.CatalogIntegrationIcebergRestDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if withExternalChangesMarking {
 		if err := handleExternalChangesToIcebergRestNestedAttrs(d, details); err != nil {
 			return diag.FromErr(err)
@@ -88,7 +88,7 @@ func catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(d *schema.R
 	return nil
 }
 
-func catalogIntegrationIcebergRestSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {
+func catalogIntegrationIcebergRestSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, catalogIntegration *sdk.CatalogIntegration) error {
 	return errors.Join(
 		d.Set("name", catalogIntegration.Name),
 		d.Set("enabled", catalogIntegration.Enabled),

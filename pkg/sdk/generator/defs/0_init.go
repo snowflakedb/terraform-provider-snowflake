@@ -14,7 +14,6 @@ func init() {
 	gen.AllSdkObjectDefinitions = append(
 		gen.AllSdkObjectDefinitions,
 		accountsDef,
-		alertsDef,
 		apiIntegrationsDef,
 		applicationPackagesDef,
 		applicationRolesDef,
@@ -56,7 +55,6 @@ func init() {
 		organizationAccountsDef,
 		parametersDef,
 		passwordPoliciesDef,
-		pipesDef,
 		policyReferencesDef,
 		postgresInstancesDef,
 		postgresMirrorsDef,

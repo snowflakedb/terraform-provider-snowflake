@@ -298,7 +298,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoBlockedPrefixes().
 				HasComment("").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")),
 		)
 	})
 
@@ -328,7 +328,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoBlockedPrefixes().
 				HasComment("").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		)
 	})
 
@@ -369,7 +369,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoBlockedPrefixes().
 				HasComment("").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, fmt.Sprintf(`["%s"."%s".%s]`, secretId.DatabaseName(), secretId.SchemaName(), secretId.Name()))),
 		)
 	})
 
@@ -400,7 +400,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoBlockedPrefixes().
 				HasComment("").
 				HasUserAuthTypeEnum(sdk.ApiIntegrationUserAuthTypeSnowflakeGithubApp).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		)
 	})
 
@@ -438,7 +438,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasOauthClientId(oauthClientId).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
 				HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		)
 	})
 
@@ -479,7 +479,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasOauthRefreshTokenValidity(86400).
 				HasOauthAllowedScopesEnum(sdk.ApiIntegrationOauthAllowedScopeReadApi, sdk.ApiIntegrationOauthAllowedScopeWriteRepository).
 				HasOauthUsername("user@example.com").
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		)
 	})
 
@@ -516,7 +516,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoBlockedPrefixes().
 				HasComment("").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")),
 		)
 	})
 
@@ -564,7 +564,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasBlockedPrefixes(gitOtherPrefix).
 				HasComment("git private link comment").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, fmt.Sprintf(`["%s"."%s".%s]`, authSecretId.DatabaseName(), authSecretId.SchemaName(), authSecretId.Name()))),
 		)
 	})
 
@@ -802,7 +802,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasBlockedPrefixes(gitPrefix).
 				HasComment("changed comment").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, fmt.Sprintf(`["%s"."%s".%s]`, secretId.DatabaseName(), secretId.SchemaName(), secretId.Name()))),
 		)
 	})
 
@@ -846,7 +846,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasBlockedPrefixes(gitPrefix).
 				HasComment("changed comment").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, fmt.Sprintf(`["%s"."%s".%s]`, authSecretId.DatabaseName(), authSecretId.SchemaName(), authSecretId.Name()))),
 		)
 	})
 
@@ -877,7 +877,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasOauthClientId(oauthClientId).
 				HasOauthTokenEndpoint(oauthTokenEndpoint).
 				HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		)
 	})
 
@@ -1036,7 +1036,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "[]")),
 		)
 	})
 
@@ -1062,7 +1062,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 			t, objectassert.ApiIntegrationGitHttpsApiDetails(t, integration.ID()).
 				HasUsePrivatelinkEndpoint(true).
 				HasTlsTrustedCertificates(fmt.Sprintf(`"%s"."%s".%s`, certSecretId.DatabaseName(), certSecretId.SchemaName(), certSecretId.Name())).
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")),
 		)
 
 		err = client.ApiIntegrations.Alter(
@@ -1081,7 +1081,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoTlsTrustedCertificates().
 				HasAllowedPrefixes(gitPrefix).
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")),
 		)
 	})
 
@@ -1348,7 +1348,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasNoBlockedPrefixes().
 				HasComment("").
 				HasNoUserAuthType().
-				HasAllowedAuthenticationSecrets(""),
+				HasAllowedAuthenticationSecrets(testClientHelper().SnowflakeDefaults.ApiIntegrationAllowedAuthenticationSecrets(t, "ALL")),
 		)
 	})
 

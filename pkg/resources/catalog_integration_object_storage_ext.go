@@ -61,7 +61,7 @@ func catalogIntegrationObjectStorageApplyCreateOptionalsExt(d *schema.ResourceDa
 	)
 }
 
-func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails, _ bool) diag.Diagnostics {
+func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(_ context.Context, d *schema.ResourceData, _ any, details *sdk.CatalogIntegrationObjectStorageDetails, _ bool) diag.Diagnostics {
 	// refresh_interval_seconds is a generated external change, not copied here.
 	if err := errors.Join(
 		d.Set("catalog_source", string(details.CatalogSource)),
@@ -72,7 +72,7 @@ func catalogIntegrationObjectStorageHandleExternalChangesInDescribeExt(d *schema
 	return nil
 }
 
-func catalogIntegrationObjectStorageSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {
+func catalogIntegrationObjectStorageSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, catalogIntegration *sdk.CatalogIntegration) error {
 	return errors.Join(
 		d.Set("name", catalogIntegration.Name),
 		d.Set("enabled", catalogIntegration.Enabled),

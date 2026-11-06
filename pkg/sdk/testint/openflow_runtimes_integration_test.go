@@ -240,8 +240,9 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 		id := existingRuntimeId
 
 		// DESCRIBE returns server_url and node_type_tier, which SHOW does not, and omits database_name,
-		// schema_name, created_on and updated_on. The optional columns are asserted as populated rather than
-		// pinned to the fixture's values; "create: complete" pins them on a runtime it owns.
+		// schema_name, created_on and updated_on. The pre-provisioned runtime is MEDIUM, executes as PUBLIC,
+		// and has no comment or external access integrations. "create: complete" pins the values it sets on
+		// a runtime it owns.
 		assertThatObject(
 			t, objectassert.OpenflowRuntimeDetails(t, id).
 				HasName(id.Name()).
@@ -249,14 +250,14 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 				HasDeployment(deploymentId.Name()).
 				HasMinNodes(1).
 				HasMaxNodes(1).
-				HasNodeType(sdk.OpenflowRuntimeNodeTypeSmall).
+				HasNodeType(sdk.OpenflowRuntimeNodeTypeMedium).
 				HasDisplayNameNotEmpty().
-				HasExternalAccessIntegrationsNotEmpty().
+				HasNoExternalAccessIntegrations().
 				HasInitiallySuspended(false).
-				HasExecuteAsRole(executeAsRoleId.Name()).
+				HasExecuteAsRole(snowflakeroles.Public.Name()).
 				HasKeyNotEmpty().
 				HasOwner(currentRole.Name()).
-				HasCommentNotEmpty().
+				HasNoComment().
 				HasServerUrlNotEmpty().
 				HasNodeTypeTierNotEmpty().
 				// Id is threaded in by the caller, since DESCRIBE returns neither database_name nor schema_name.

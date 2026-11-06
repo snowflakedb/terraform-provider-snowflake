@@ -221,6 +221,7 @@ Read-Only:
 - `database_name` (String)
 - `dropped_on` (String)
 - `enable_schema_evolution` (Boolean)
+- `is_dynamic` (Boolean)
 - `is_event` (Boolean)
 - `is_external` (Boolean)
 - `kind` (String)

@@ -24,24 +24,6 @@ type codeBundleAlterRequestsExt struct {
 	unset *sdk.CodeBundleUnsetRequest
 }
 
-// from is not returned by SHOW. Read keeps the configured value.
-var codeBundleSetStateToValueFromConfigFieldsExt = []string{
-	"from",
-}
-
-func codeBundleSetConfigFieldsExt(d *schema.ResourceData, codeBundle *sdk.CodeBundle) error {
-	comment := ""
-	if codeBundle.Comment != nil {
-		comment = *codeBundle.Comment
-	}
-	return errors.Join(
-		d.Set("name", codeBundle.Name),
-		d.Set("database", codeBundle.DatabaseName),
-		d.Set("schema", codeBundle.SchemaName),
-		d.Set("comment", comment),
-	)
-}
-
 func codeBundleSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, codeBundle *sdk.CodeBundle, _ bool) error {
 	comment := ""
 	if codeBundle.Comment != nil {

@@ -14,7 +14,7 @@ var CatalogIntegrationTableFormat = ssot.NewEnum(
 
 var CatalogIntegrationCatalogApiType = ssot.NewEnum(
 	"CatalogIntegrationCatalogApiType", "CatalogIntegrationCatalogApiTypes",
-	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE",
+	"PUBLIC", "PRIVATE", "AWS_API_GATEWAY", "AWS_PRIVATE_API_GATEWAY", "AWS_GLUE", "AWS_PRIVATE_GLUE", "AWS_S3TABLES", "AWS_PRIVATE_S3TABLES",
 )
 
 var CatalogIntegrationAccessDelegationMode = ssot.NewEnum(
@@ -156,29 +156,31 @@ var CatalogIntegration = ssot.Object{
 		CatalogIntegrationCatalogApiType,
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithSchema(
-			ssot.SchemaShow(),
-			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
-				&catalogIntegrationDescribeColumns.RestConfig,
-				&catalogIntegrationDescribeColumns.OauthRestAuthentication,
-				&catalogIntegrationDescribeColumns.BearerRestAuthentication,
-				&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
-			)),
-		),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(),
-			ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
-				&catalogIntegrationDescribeColumns.RestConfig,
-				&catalogIntegrationDescribeColumns.OauthRestAuthentication,
-				&catalogIntegrationDescribeColumns.BearerRestAuthentication,
-				&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
-			)),
-		),
-		// Parameter assertions omitted. The catalog has no CATALOG_INTEGRATION entries.
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(),
-			// Describe returns property rows. The parsed struct is fetched by DescribeDetails.
-			ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeMethod("DescribeDetails")),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(
+				ssot.SchemaShow(),
+				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
+					&catalogIntegrationDescribeColumns.RestConfig,
+					&catalogIntegrationDescribeColumns.OauthRestAuthentication,
+					&catalogIntegrationDescribeColumns.BearerRestAuthentication,
+					&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
+				)),
+			),
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(),
+				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
+					&catalogIntegrationDescribeColumns.RestConfig,
+					&catalogIntegrationDescribeColumns.OauthRestAuthentication,
+					&catalogIntegrationDescribeColumns.BearerRestAuthentication,
+					&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
+				)),
+			),
+			// Parameter assertions omitted. The catalog has no CATALOG_INTEGRATION entries.
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+				// Describe returns property rows. The parsed struct is fetched by DescribeDetails.
+				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeMethod("DescribeDetails")),
+			),
 		),
 		ssot.WithSdk(
 			ssot.SdkCreateForVariants(),

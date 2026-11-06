@@ -79,23 +79,22 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 		CatalogIntegrationObjectStorageAttrs.CatalogSource,
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(
-			ssot.SchemaShow(ssot.SchemaShowFromBase()),
-			ssot.SchemaDescribe(),
-		),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
-			ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeObjectStorage")),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(
+				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaDescribe(),
+			),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeObjectStorage")),
+			),
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputDescribe(),
+			),
 		),
 		// DESCRIBE CATALOG INTEGRATION is shared by every catalog integration variant.
 		ssot.WithSdk(ssot.SdkDescribe(ssot.SdkDescribeSql("CATALOG INTEGRATION"), ssot.SdkDescribeDetails())),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(),
-			ssot.ShowOutputDescribe(),
-		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),

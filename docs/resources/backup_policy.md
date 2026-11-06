@@ -32,10 +32,26 @@ resource "snowflake_backup_policy" "complete" {
   database            = "database_name"
   schema              = "schema_name"
   name                = "backup_policy_name"
-  schedule            = "2 HOUR"
   expire_after_days   = 7
   with_retention_lock = "true"
   comment             = "My backup policy"
+
+  # Exactly one of hours, minutes (at least 60), or using_cron.
+  schedule {
+    hours = 2
+  }
+}
+
+## Complete with a cron schedule
+resource "snowflake_backup_policy" "cron" {
+  database          = "database_name"
+  schema            = "schema_name"
+  name              = "backup_policy_name_cron"
+  expire_after_days = 7
+
+  schedule {
+    using_cron = "0 0 * * * UTC"
+  }
 }
 ```
 
@@ -54,7 +70,7 @@ resource "snowflake_backup_policy" "complete" {
 
 - `comment` (String) Specifies a comment for the backup policy.
 - `expire_after_days` (Number) Specifies the number of days until a backup expires. The minimum is 1. The maximum is 3653 when SCHEDULE is omitted.
-- `schedule` (String) Specifies how often Snowflake creates a backup. The value is an interval of at least 60 minutes (`<num> MINUTE` or `<num> HOUR`) or `USING CRON <expr> <time_zone>`.
+- `schedule` (Block List, Max: 1) Specifies how often Snowflake creates a backup. Either an interval of at least 60 minutes (`hours` or `minutes`) or a cron expression (`using_cron`). Exactly one of the sub-fields has to be set. (see [below for nested schema](#nestedblock--schedule))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `with_retention_lock` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies a retention lock. Backups created under the policy cannot be deleted before they expire, including by a privileged user. The lock cannot be changed on an existing backup policy. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 
@@ -64,6 +80,16 @@ resource "snowflake_backup_policy" "complete" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `show_output` (List of Object) Outputs the result of `SHOW BACKUP POLICIES` for the given backup policy. (see [below for nested schema](#nestedatt--show_output))
+
+<a id="nestedblock--schedule"></a>
+### Nested Schema for `schedule`
+
+Optional:
+
+- `hours` (Number) Specifies an interval (in hours) of wait time inserted between backups. Accepts positive integers. (conflicts with `minutes` and `using_cron`)
+- `minutes` (Number) Specifies an interval (in minutes) of wait time inserted between backups. Accepts integers of at least 60. (conflicts with `hours` and `using_cron`)
+- `using_cron` (String) Specifies a cron expression and time zone for creating backups. Supports a subset of standard cron utility syntax. (conflicts with `hours` and `minutes`)
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

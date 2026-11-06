@@ -4,97 +4,16 @@ package resourceshowoutputassert
 
 import (
 	"testing"
-	"time"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 )
 
-type CatalogIntegrationOpenCatalogShowOutputAssert struct {
-	*assert.ResourceAssert
-}
-
-func CatalogIntegrationOpenCatalogShowOutput(t *testing.T, name string) *CatalogIntegrationOpenCatalogShowOutputAssert {
+func CatalogIntegrationOpenCatalogShowOutput(t *testing.T, name string) *CatalogIntegrationShowOutputAssert {
 	t.Helper()
 
-	catalogIntegrationOpenCatalogAssert := CatalogIntegrationOpenCatalogShowOutputAssert{
-		ResourceAssert: assert.NewResourceShowOutputAssert(name),
-	}
-	return &catalogIntegrationOpenCatalogAssert
+	return CatalogIntegrationShowOutput(t, name)
 }
 
-func ImportedCatalogIntegrationOpenCatalogShowOutput(t *testing.T, id string) *CatalogIntegrationOpenCatalogShowOutputAssert {
+func ImportedCatalogIntegrationOpenCatalogShowOutput(t *testing.T, id string) *CatalogIntegrationShowOutputAssert {
 	t.Helper()
 
-	catalogIntegrationOpenCatalogAssert := CatalogIntegrationOpenCatalogShowOutputAssert{
-		ResourceAssert: assert.NewImportedResourceShowOutputAssert(id),
-	}
-	return &catalogIntegrationOpenCatalogAssert
-}
-
-////////////////////////////
-// Attribute value checks //
-////////////////////////////
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasName(expected string) *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.StringValueSet("name", expected)
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasEnabled(expected bool) *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.BoolValueSet("enabled", expected)
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasType(expected string) *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.StringValueSet("type", expected)
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasCategory(expected string) *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.StringValueSet("category", expected)
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasComment(expected string) *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.StringValueSet("comment", expected)
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasCreatedOn(expected time.Time) *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.StringValueSet("created_on", expected.String())
-	return c
-}
-
-///////////////////////////////
-// Attribute no value checks //
-///////////////////////////////
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasNoName() *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.ValueNotSet("name")
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasNoEnabled() *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.ValueNotSet("enabled")
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasNoType() *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.ValueNotSet("type")
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasNoCategory() *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.ValueNotSet("category")
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasNoComment() *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.ValueNotSet("comment")
-	return c
-}
-
-func (c *CatalogIntegrationOpenCatalogShowOutputAssert) HasNoCreatedOn() *CatalogIntegrationOpenCatalogShowOutputAssert {
-	c.ValueNotSet("created_on")
-	return c
+	return ImportedCatalogIntegrationShowOutput(t, id)
 }

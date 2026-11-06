@@ -81,6 +81,9 @@ type Operation struct {
 	// RequestAdjust, when true, inserts a request.adjust() call in the generated impl before toOpts() is called.
 	// The adjust() method must be implemented manually on the request type in a _ext.go file.
 	RequestAdjust bool
+	// MapNoRowsToNotFound, when true, maps sql.ErrNoRows from a single-value query to ErrObjectNotFound.
+	// A procedure that returns no row for a missing object does not match the phrases decodeDriverError rewrites.
+	MapNoRowsToNotFound bool
 	// NoRequest, when true, omits the request DTO, its constructor, and the request parameter.
 	// The generated method takes only ctx and builds the Options value itself.
 	// Valid only when every query-struct field is static SQL.
@@ -384,6 +387,11 @@ func WithRequestAdjust() CustomOperationOption {
 // WithNoRequest omits the request DTO for a custom show operation whose query struct contains only static SQL.
 func WithNoRequest() CustomOperationOption {
 	return func(op *Operation) { op.NoRequest = true }
+}
+
+// WithNoRowsAsObjectNotFound maps sql.ErrNoRows from a single-value show or describe to ErrObjectNotFound.
+func WithNoRowsAsObjectNotFound() CustomOperationOption {
+	return func(op *Operation) { op.MapNoRowsToNotFound = true }
 }
 
 func (i *Interface) CustomOperation(kind string, doc string, queryStruct *QueryStruct, helperStructs ...IntoField) *Interface {

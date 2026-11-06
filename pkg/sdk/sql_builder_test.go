@@ -627,7 +627,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		}{name: id}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+singleQuotedIdentifier(id)+"')", sql)
 	})
 
 	t.Run("system reference: schema object identifier with one argument", func(t *testing.T) {
@@ -637,7 +637,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		}{name: id}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+singleQuotedIdentifier(id)+"')", sql)
 	})
 
 	t.Run("system reference: schema object identifier with more arguments", func(t *testing.T) {
@@ -647,7 +647,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		}{name: id}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+id.FullyQualifiedName()+"')", sql)
+		assert.Equal(t, "SYSTEM$REFERENCE('PROCEDURE', '"+singleQuotedIdentifier(id)+"')", sql)
 	})
 
 	t.Run("system reference: account object identifier", func(t *testing.T) {
@@ -657,7 +657,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		}{name: id}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, "SYSTEM$REFERENCE('TABLE', '"+id.FullyQualifiedName()+"')", sql)
+		assert.Equal(t, "SYSTEM$REFERENCE('TABLE', '"+singleQuotedIdentifier(id)+"')", sql)
 	})
 
 	t.Run("system reference: object type with a space", func(t *testing.T) {
@@ -667,27 +667,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		}{name: id}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, "SYSTEM$REFERENCE('CORTEX AGENT', '"+id.FullyQualifiedName()+"')", sql)
-	})
-
-	t.Run("system reference: with extra arguments", func(t *testing.T) {
-		id := randomSchemaObjectIdentifier()
-		s := &struct {
-			name SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"TAG,SESSION,APPLYBUDGET"`
-		}{name: id}
-		sql, err := structToSQL(s)
-		require.NoError(t, err)
-		assert.Equal(t, "SYSTEM$REFERENCE('TAG', '"+id.FullyQualifiedName()+"', 'SESSION', 'APPLYBUDGET')", sql)
-	})
-
-	t.Run("system reference: in subquery", func(t *testing.T) {
-		id := randomAccountObjectIdentifier()
-		s := &struct {
-			name AccountObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"WAREHOUSE"`
-		}{name: id}
-		sql, err := structToSQL(s)
-		require.NoError(t, err)
-		assert.Equal(t, "(SELECT SYSTEM$REFERENCE('WAREHOUSE', '"+id.FullyQualifiedName()+"'))", sql)
+		assert.Equal(t, "SYSTEM$REFERENCE('CORTEX AGENT', '"+singleQuotedIdentifier(id)+"')", sql)
 	})
 
 	t.Run("system reference: quotes and backslashes in the name are escaped", func(t *testing.T) {
@@ -697,7 +677,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		}{name: id}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, `SYSTEM$REFERENCE('WAREHOUSE', '"it\'s\\here"')`, sql)
+		assert.Equal(t, `SYSTEM$REFERENCE('WAREHOUSE', '\"it\'s\\here\"')`, sql)
 	})
 
 	t.Run("system reference: double quotes in the name are escaped", func(t *testing.T) {
@@ -706,12 +686,12 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		}{name: NewSchemaObjectIdentifier("db", "sch", `my"agent`)}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, `SYSTEM$REFERENCE('CORTEX AGENT', '"db"."sch"."my""agent"')`, sql)
+		assert.Equal(t, `SYSTEM$REFERENCE('CORTEX AGENT', '\"db\".\"sch\".\"my\"\"agent\"')`, sql)
 	})
 
 	t.Run("system reference: empty identifier is omitted", func(t *testing.T) {
 		s := &struct {
-			name *AccountObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"WAREHOUSE"`
+			name *AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
 		}{}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
@@ -841,18 +821,28 @@ func TestBuilder_arrayLiterals(t *testing.T) {
 		assert.Equal(t, "([])", sql)
 	})
 
-	t.Run("nested arrays with a system reference in a subquery", func(t *testing.T) {
+	t.Run("nested arrays with a function call", func(t *testing.T) {
 		id := randomSchemaObjectIdentifier()
+		type referenceArguments struct {
+			objectType bool                   `ddl:"static" sql:"'TAG'"`
+			Tag        SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
+			scope      bool                   `ddl:"static" sql:"'SESSION'"`
+			privilege  bool                   `ddl:"static" sql:"'APPLYBUDGET'"`
+		}
+		type reference struct {
+			function  bool               `ddl:"static" sql:"SYSTEM$REFERENCE"`
+			Arguments referenceArguments `ddl:"list,must_parentheses"`
+		}
 		type tagValue struct {
-			Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference,subquery" sql:"TAG,SESSION,APPLYBUDGET"`
-			Value string                 `ddl:"keyword,single_quotes"`
+			Reference reference `ddl:"list,no_comma"`
+			Value     string    `ddl:"keyword,single_quotes"`
 		}
 		s := &struct {
 			tags []tagValue `ddl:"list,must_brackets,array_elements"`
-		}{tags: []tagValue{{Tag: id, Value: "finance"}}}
+		}{tags: []tagValue{{Reference: reference{Arguments: referenceArguments{Tag: id}}, Value: "finance"}}}
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
-		assert.Equal(t, "[[(SELECT SYSTEM$REFERENCE('TAG', '"+id.FullyQualifiedName()+"', 'SESSION', 'APPLYBUDGET')), 'finance']]", sql)
+		assert.Equal(t, "[[SYSTEM$REFERENCE ('TAG', '"+singleQuotedIdentifier(id)+"', 'SESSION', 'APPLYBUDGET'), 'finance']]", sql)
 	})
 
 	t.Run("instance method with array and boolean arguments", func(t *testing.T) {

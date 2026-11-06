@@ -102,11 +102,6 @@ func init() {
 			id.FullyQualifiedName(),
 		).
 		withAdditionalValidationCase(
-			"validation_Create_ObjectTypes_required",
-			func(opts *CreateReplicationGroupOptions) { opts.ObjectTypes = nil },
-			NewError("OBJECT_TYPES must be set"),
-		).
-		withAdditionalValidationCase(
 			"validation_Create_Databases_requireAllowedDatabases",
 			func(opts *CreateReplicationGroupOptions) {
 				opts.ObjectTypes = []ReplicationGroupObjectType{ReplicationGroupObjectTypeDatabases}
@@ -171,12 +166,20 @@ func init() {
 			NewError("OBJECT_TYPES must include ROLES when ALLOWED_INTEGRATION_TYPES includes SECURITY INTEGRATIONS"),
 		)
 
+	showAccount := NewAccountIdentifier("MY_ORG", "MY_ACCOUNT")
 	replicationGroupsTests.Show.
 		withExpectedSqlf(case_ReplicationGroups_sql_Show_basic, "SHOW REPLICATION GROUPS").
 		withModifyAndExpectedSqlf(
 			case_ReplicationGroups_sql_Show_all,
-			func(*ShowReplicationGroupOptions) {},
-			"SHOW REPLICATION GROUPS",
+			func(opts *ShowReplicationGroupOptions) { opts.InAccount = &showAccount },
+			"SHOW REPLICATION GROUPS IN ACCOUNT %s",
+			showAccount.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_ReplicationGroups_sql_Show_InAccount,
+			func(opts *ShowReplicationGroupOptions) { opts.InAccount = &showAccount },
+			"SHOW REPLICATION GROUPS IN ACCOUNT %s",
+			showAccount.FullyQualifiedName(),
 		)
 
 	replicationGroupsTests.Drop.
@@ -538,12 +541,5 @@ func init() {
 			func(opts *CreateSecondaryReplicationGroupOptions) { opts.IfNotExists = new(true) },
 			`CREATE REPLICATION GROUP IF NOT EXISTS %s AS REPLICA OF "myorg"."myaccount"."myrg"`,
 			id.FullyQualifiedName(),
-		).
-		withAdditionalValidationCase(
-			"validation_CreateSecondary_AsReplicaOf_ValidIdentifier",
-			func(opts *CreateSecondaryReplicationGroupOptions) {
-				opts.AsReplicaOf = emptyExternalObjectIdentifier
-			},
-			errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "AsReplicaOf"),
 		)
 }

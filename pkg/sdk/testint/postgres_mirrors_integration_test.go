@@ -3,11 +3,9 @@
 package testint
 
 import (
-	"database/sql"
 	"slices"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -52,7 +50,7 @@ func TestInt_PostgresMirrors(t *testing.T) {
 			HasPostgresInstance(instance).
 			HasPostgresDatabase(helpers.PostgresMirrorFixtureDatabase).
 			HasTargetDatabase(targetDatabase.Name()).
-			HasRefreshInterval(sdk.PostgresMirrorDefaultRefreshInterval).
+			HasRefreshInterval(helpers.PostgresMirrorDefaultRefreshInterval).
 			HasTargetTableType(sdk.PostgresMirrorTargetTableTypeSnowflake).
 			HasNoExternalVolume().
 			HasNoWarehouse().
@@ -177,7 +175,7 @@ func TestInt_PostgresMirrors(t *testing.T) {
 		assert.Equal(t, instance, mirror.PostgresInstance)
 		assert.Equal(t, helpers.PostgresMirrorFixtureDatabase, mirror.PostgresDatabase)
 		assert.Equal(t, details.TargetDatabase, mirror.TargetDatabase)
-		assert.Equal(t, sdk.PostgresMirrorDefaultRefreshInterval, mirror.RefreshInterval)
+		assert.Equal(t, helpers.PostgresMirrorDefaultRefreshInterval, mirror.RefreshInterval)
 		assert.NotNil(t, mirror.TableCount)
 		assert.NotNil(t, mirror.InitialSnapshotTablesRemaining)
 
@@ -186,19 +184,24 @@ func TestInt_PostgresMirrors(t *testing.T) {
 		assert.True(t, slices.ContainsFunc(allMirrors, func(mirror sdk.PostgresMirror) bool { return mirror.Name == details.Name }))
 	})
 
-	t.Run("wait for the initial snapshot", func(t *testing.T) {
-		details := testClientHelper().PostgresMirror.CreateWithTables(t, instance, helpers.PostgresMirrorFixtureTable1, helpers.PostgresMirrorFixtureTable2)
+	t.Run("create: external volume without iceberg", func(t *testing.T) {
+		externalVolumeId, cleanup := testClientHelper().ExternalVolume.Create(t)
+		t.Cleanup(cleanup)
+		t.Cleanup(testClientHelper().Grant.GrantUsageOnExternalVolumeToSnowflakeApplication(t, externalVolumeId))
 
-		testClientHelper().PostgresMirror.WaitForInitialSnapshot(t, instance, details.Name, 2, 15*time.Minute)
+		arguments, _ := newCreateArguments()
+		request := sdk.NewCreatePostgresMirrorRequest(*arguments.
+			WithPostgresTables(helpers.PostgresMirrorNames(helpers.PostgresMirrorFixtureTable1)).
+			WithExternalVolume(externalVolumeId.FullyQualifiedName()))
+		t.Cleanup(testClientHelper().PostgresMirror.DropFunc(t, request.GetName()))
 
-		assertThatObject(t, objectassert.PostgresMirrorDetailsFromObject(t, describe(t, details.Name)).
-			HasStatus(sdk.PostgresMirrorStatusActive),
-		)
+		err := client.PostgresMirrors.Create(ctx, request)
+		require.ErrorContains(t, err, "EXTERNAL_VOLUME is only supported for TARGET_TABLE_TYPE = 'ICEBERG'")
 	})
 
 	t.Run("describe: missing mirror", func(t *testing.T) {
 		_, err := client.PostgresMirrors.Describe(ctx, sdk.NewDescribePostgresMirrorRequest(*sdk.NewDescribePostgresMirrorArgumentsRequest(testClientHelper().Ids.RandomPostgresMirrorName())))
-		require.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
 	t.Run("drop: keep the target database", func(t *testing.T) {
@@ -211,7 +214,7 @@ func TestInt_PostgresMirrors(t *testing.T) {
 		t.Cleanup(testClientHelper().PostgresMirror.DropKeptTargetDatabaseFunc(t, targetDatabase))
 
 		_, err = testClientHelper().PostgresMirror.Describe(t, details.Name)
-		require.ErrorIs(t, err, sql.ErrNoRows)
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 		_, err = testClientHelper().Database.Show(t, targetDatabase)
 		require.NoError(t, err)
 

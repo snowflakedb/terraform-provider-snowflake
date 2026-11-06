@@ -93,7 +93,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -122,6 +121,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -170,7 +170,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -199,6 +198,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.spec")),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateSet(helpers.EncodeResourceIdentifier(id), "describe_output.0.dns_name")),
+					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceStateWith(helpers.EncodeResourceIdentifier(id), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.CheckImport(importchecks.TestCheckResourceAttrInstanceState(helpers.EncodeResourceIdentifier(id), "describe_output.0.min_ready_instances", "1")),
@@ -249,7 +249,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -278,6 +277,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -337,7 +337,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -366,6 +365,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -423,7 +423,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -452,6 +451,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -504,7 +504,6 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -533,6 +532,7 @@ func TestAcc_JobService_basic_fromSpecification(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -670,7 +670,6 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -699,6 +698,7 @@ func TestAcc_JobService_fromSpecificationOnStage(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelBasic.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelBasic.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -764,7 +764,6 @@ func TestAcc_JobService_fromSpecificationTemplate(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -793,6 +792,7 @@ func TestAcc_JobService_fromSpecificationTemplate(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -864,7 +864,6 @@ func TestAcc_JobService_fromSpecificationTemplateOnStage(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -893,6 +892,7 @@ func TestAcc_JobService_fromSpecificationTemplateOnStage(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(model.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(model.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(model.ResourceReference(), "describe_output.0.min_ready_instances", "1")),
@@ -1057,7 +1057,6 @@ func TestAcc_JobService_complete(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasComputePool(computePool.ID()).
 						HasDnsNameNotEmpty().
-						HasCurrentInstances(0).
 						HasTargetInstances(1).
 						HasMinReadyInstances(1).
 						HasMinInstances(1).
@@ -1086,6 +1085,7 @@ func TestAcc_JobService_complete(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.compute_pool", computePool.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.spec")),
 					assert.Check(resource.TestCheckResourceAttrSet(modelComplete.ResourceReference(), "describe_output.0.dns_name")),
+					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "show_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.current_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttrWith(modelComplete.ResourceReference(), "describe_output.0.target_instances", customassert.BetweenFunc(0, 1))),
 					assert.Check(resource.TestCheckResourceAttr(modelComplete.ResourceReference(), "describe_output.0.min_ready_instances", "1")),

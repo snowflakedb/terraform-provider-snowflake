@@ -33,8 +33,9 @@ func appendDiffEntry(entries []CustomDiffEntry, present bool, key string, attrs 
 }
 
 // CustomDiffCalls is every generated customdiff.All argument, in call order:
-// show_output, describe_output, parameters computed-if, fully_qualified_name,
-// the parameters custom diff, then AdditionalCustomizeDiffs in list order.
+// the hierarchy-rename ForceNew workaround for database and schema when the generated
+// hierarchy rename moves a schema object, then show_output, describe_output, parameters computed-if,
+// fully_qualified_name, the parameters custom diff, then AdditionalCustomizeDiffs in list order.
 func (m ResourceModel) CustomDiffCalls() []string {
 	schema := m.Prefix() + "Schema"
 	calls := make([]string, 0, 6)
@@ -58,6 +59,12 @@ func (m ResourceModel) CustomDiffCalls() []string {
 	}
 	for _, diff := range m.AdditionalCustomizeDiffs {
 		calls = append(calls, string(diff))
+	}
+	if m.HierarchyRenameParents() {
+		calls = append([]string{
+			`TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database")`,
+			`TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema")`,
+		}, calls...)
 	}
 	return calls
 }
@@ -110,7 +117,7 @@ func (m ResourceModel) changedAttributeKeys(columns []*ssot.Attribute) []string 
 	names := m.diffAttributeNames()
 	keys := make([]string, 0, len(columns))
 	for _, col := range columns {
-		if col == nil || len(col.Children) > 0 {
+		if col == nil || (len(col.Children) > 0 && !col.SdkString) {
 			continue
 		}
 		// For now, the set/list fields have to be excluded.
@@ -139,7 +146,7 @@ func (m ResourceModel) diffAttributeNames() map[string]struct{} {
 		names[field.Name] = struct{}{}
 	}
 	for _, attr := range m.Attributes {
-		if len(attr.Children) > 0 || attr.TfType == SchemaTypeList || attr.TfType == SchemaTypeSet {
+		if !attr.SdkString && (len(attr.Children) > 0 || attr.TfType == SchemaTypeList || attr.TfType == SchemaTypeSet) {
 			continue
 		}
 		names[attr.Name] = struct{}{}

@@ -64,6 +64,7 @@ const (
 	NetworkRuleModeEgress                        NetworkRuleMode = "EGRESS"
 	NetworkRuleModePostgresIngress               NetworkRuleMode = "POSTGRES_INGRESS"
 	NetworkRuleModePostgresEgress                NetworkRuleMode = "POSTGRES_EGRESS"
+	NetworkRuleModeDataConnectivityProxyEgress   NetworkRuleMode = "DATA_CONNECTIVITY_PROXY_EGRESS"
 )
 
 var AllNetworkRuleModes = []NetworkRuleMode{
@@ -73,6 +74,7 @@ var AllNetworkRuleModes = []NetworkRuleMode{
 	NetworkRuleModeEgress,
 	NetworkRuleModePostgresIngress,
 	NetworkRuleModePostgresEgress,
+	NetworkRuleModeDataConnectivityProxyEgress,
 }
 
 func ToNetworkRuleMode(s string) (NetworkRuleMode, error) {
@@ -90,6 +92,8 @@ func ToNetworkRuleMode(s string) (NetworkRuleMode, error) {
 		return NetworkRuleModePostgresIngress, nil
 	case string(NetworkRuleModePostgresEgress):
 		return NetworkRuleModePostgresEgress, nil
+	case string(NetworkRuleModeDataConnectivityProxyEgress):
+		return NetworkRuleModeDataConnectivityProxyEgress, nil
 	default:
 		return "", fmt.Errorf("invalid network rule mode: %s", s)
 	}

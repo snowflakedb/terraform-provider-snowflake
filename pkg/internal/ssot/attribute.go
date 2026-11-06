@@ -74,12 +74,28 @@ type Attribute struct {
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
 	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
-	// BoolParsed, with StoredAsText, parses a bool column with strconv.ParseBool.
-	// Without it, a text bool is true when the column is Y.
-	BoolParsed    bool
+	// BoolTrueValue, with StoredAsText, is the text that converts to true, such as Y, YES, or ON.
+	// Empty uses strconv.ParseBool.
+	BoolTrueValue string
+	// PairedPlainKind overrides the plain kind of a required SHOW or DESCRIBE column.
+	// The database column stays a string. Optional columns use the type mapping.
+	// Go names come from the column name, with characters other than letters, digits, and underscores removed.
+	PairedPlainKind string
+	// PlainOnlyKind is a field on the plain struct only. It is not a database column.
+	PlainOnlyKind string
 	ManualConvert bool // paired-struct convert() skips this column; ext additionalConvert fills it
 	CustomParser  string
 	SkipInSchema  bool // column stays on the SDK struct and assertions, and is omitted from the public schema
+	// SchemaName is the Terraform schema key when it differs from the snake_case of the Go field.
+	// null? is published as is_nullable. Empty keeps that snake_case.
+	// It does not change the Go field, the db tag, or OutputKey.
+	SchemaName string
+	// SdkString marks an optional AttrObject that is one nested block in Terraform and one string in SQL, SHOW, and DESCRIBE,
+	// such as the schedule of a backup policy. The resource, the model, and the resource assertions read the Children as a
+	// block. CREATE, SET, UNSET, the SHOW and DESCRIBE columns, and their schemas and assertions read it as a string, see
+	// SdkType. The generated create (SkipCreate) and update skip it: ext code converts between the block and the string.
+	// Set OptionalInShow or OptionalInDb for the string column.
+	SdkString bool
 	// SqlOnly keeps the attribute on a SQL sequence and out of schema, resource, model, and assertion generation.
 	// ResourceAttributes drops these. A static CREATE value sets CreateSql to StaticSQL.
 	SqlOnly        bool
@@ -94,6 +110,12 @@ type Attribute struct {
 	// There is no constructor argument, no ApplyCreateOptionals call, and no block parse function.
 	// Ext create code builds the value when CREATE still needs it. The update helper stays.
 	SkipCreate bool
+	// SetAfterCreate applies a SkipCreate attribute with ALTER after the object is created, through
+	// WithAfterCreate(Generated()). A failure is only a warning. Only NativeBool attributes are supported for now: the
+	// generated code calls the ALTER keyword linked to the true value (AlterKeywordFor) when the attribute is true,
+	// because CREATE leaves the object in the false state. Another type needs a new kind of step in the generated
+	// AfterCreate (AfterCreateSteps in pkg/resources/gen).
+	SetAfterCreate bool
 	// UpdateMapping overrides the update helper deduced the same way.
 	// Nil means deduce one. ForceNew and CreateOnly attributes are left out of set/unset.
 	// SkipCreate does not leave the attribute out of set/unset.
@@ -102,8 +124,8 @@ type Attribute struct {
 	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.
 	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
 	DiffSuppress  DiffSuppress
-	// Computed marks a field the resource schema ext turns into a computed attribute.
-	// The generator still emits Optional. Drift tracking and output suppression skip it.
+	// Computed marks a computed-only field: the generator emits Computed and neither Optional nor Required.
+	// Drift tracking and output suppression skip it.
 	Computed bool
 	// ServerDefault marks a describe-only field that Snowflake fills in when the configuration omits it.
 	// The generator drift-tracks that field and suppresses a diff against describe_output.
@@ -120,6 +142,10 @@ type Attribute struct {
 	AtLeastOneOf []Attribute
 	// Sensitive marks the Terraform schema field sensitive.
 	Sensitive bool
+	// Deprecated is the schema Deprecated message. Empty means the attribute is not deprecated.
+	// The attribute stays on Attributes, so the schema, model builders, and resource assertions include it.
+	// setStateToValuesFromConfig leaves it out. SkipCreate leaves it out of generated create when the value is not sent.
+	Deprecated string
 	// CreateOnly marks an optional bool that is applied only on create.
 	// The generator emits IgnoreAfterCreation and a create helper, not an update helper.
 	// The Terraform type stays a boolean string unless NativeBool is set.
@@ -139,6 +165,15 @@ var Tags = &Attribute{Name: "tags", Tags: true}
 
 // Parameters is the parameter catalog spread. Put it on a CREATE, SET, or UNSET list. It is not an Attributes entry.
 var Parameters = &Attribute{Name: "parameters", Parameters: true}
+
+// SdkType is the type the SDK holds the attribute as: a string for an SdkString object, the Type otherwise.
+// SQL clauses, SHOW and DESCRIBE columns, and the code generated from them read it. The resource reads Type.
+func (a Attribute) SdkType() AttributeType {
+	if a.SdkString {
+		return AttrString
+	}
+	return a.Type
+}
 
 func (a *Attribute) IsTags() bool {
 	return a != nil && a.Tags
@@ -161,4 +196,9 @@ func (a Attribute) ColumnEnum() *Enum {
 		return a.ShowEnum
 	}
 	return a.Enum
+}
+
+// IsEnumCollection reports a list or set whose element is an enum.
+func (a Attribute) IsEnumCollection() bool {
+	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrEnum
 }

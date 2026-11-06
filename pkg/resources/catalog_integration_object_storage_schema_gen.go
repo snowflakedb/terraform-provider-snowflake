@@ -58,7 +58,7 @@ var catalogIntegrationObjectStorageSchema = collections.MergeMaps(
 			Computed:    true,
 			Description: "Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration object storage.",
 			Elem: &tfschema.Resource{
-				Schema: schemas.ShowCatalogIntegrationObjectStorageSchema,
+				Schema: schemas.ShowCatalogIntegrationSchema,
 			},
 		},
 	},

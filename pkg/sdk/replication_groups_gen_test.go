@@ -16,7 +16,9 @@ func init() {
 var replicationGroupsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
+	case_ReplicationGroups_validation_Create_ObjectTypes_ValidateValueSet                     testCaseName = "validation_Create_ObjectTypes_ValidateValueSet"
 	case_ReplicationGroups_validation_Create_opts_AtLeastOneValueSet                          testCaseName = "validation_Create_opts_AtLeastOneValueSet"
+	case_ReplicationGroups_validation_Create_ErrorIntegration_ValidIdentifierIfSet            testCaseName = "validation_Create_ErrorIntegration_ValidIdentifierIfSet"
 	case_ReplicationGroups_validation_Create_name_ValidIdentifier                             testCaseName = "validation_Create_name_ValidIdentifier"
 	case_ReplicationGroups_validation_Create_AllowedDatabases_ValidIdentifier                 testCaseName = "validation_Create_AllowedDatabases_ValidIdentifier"
 	case_ReplicationGroups_validation_Create_AllowedExternalVolumes_ValidIdentifier           testCaseName = "validation_Create_AllowedExternalVolumes_ValidIdentifier"
@@ -25,6 +27,7 @@ const (
 	case_ReplicationGroups_validation_Create_Tag_ValidIdentifier                              testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_ReplicationGroups_sql_Create_basic                                                   testCaseName = "sql_Create_basic"
 	case_ReplicationGroups_sql_Create_all                                                     testCaseName = "sql_Create_all"
+	case_ReplicationGroups_validation_CreateSecondary_AsReplicaOf_ValidIdentifier             testCaseName = "validation_CreateSecondary_AsReplicaOf_ValidIdentifier"
 	case_ReplicationGroups_validation_CreateSecondary_name_ValidIdentifier                    testCaseName = "validation_CreateSecondary_name_ValidIdentifier"
 	case_ReplicationGroups_sql_CreateSecondary_basic                                          testCaseName = "sql_CreateSecondary_basic"
 	case_ReplicationGroups_sql_CreateSecondary_all                                            testCaseName = "sql_CreateSecondary_all"
@@ -32,6 +35,7 @@ const (
 	case_ReplicationGroups_validation_Alter_opts_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_ReplicationGroups_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_ReplicationGroups_validation_Alter_RenameTo_ValidIdentifierIfSet                     testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_ReplicationGroups_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet         testCaseName = "validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet"
 	case_ReplicationGroups_validation_Alter_opts_Set_AtLeastOneValueSet                       testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_ReplicationGroups_validation_Alter_Set_AllowedDatabases_ValidIdentifier              testCaseName = "validation_Alter_Set_AllowedDatabases_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Set_AllowedExternalVolumes_ValidIdentifier        testCaseName = "validation_Alter_Set_AllowedExternalVolumes_ValidIdentifier"
@@ -42,6 +46,7 @@ const (
 	case_ReplicationGroups_validation_Alter_Add_ToAllowedExternalVolumes_ValidIdentifier      testCaseName = "validation_Alter_Add_ToAllowedExternalVolumes_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Add_ToAllowedShares_ValidIdentifier               testCaseName = "validation_Alter_Add_ToAllowedShares_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Add_ToAllowedAccounts_ValidIdentifier             testCaseName = "validation_Alter_Add_ToAllowedAccounts_ValidIdentifier"
+	case_ReplicationGroups_validation_Alter_Move_ToReplicationGroup_ValidIdentifier           testCaseName = "validation_Alter_Move_ToReplicationGroup_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Move_Databases_ValidIdentifier                    testCaseName = "validation_Alter_Move_Databases_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Move_ExternalVolumes_ValidIdentifier              testCaseName = "validation_Alter_Move_ExternalVolumes_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Move_Shares_ValidIdentifier                       testCaseName = "validation_Alter_Move_Shares_ValidIdentifier"
@@ -68,6 +73,7 @@ const (
 	case_ReplicationGroups_sql_Drop_all                                                       testCaseName = "sql_Drop_all"
 	case_ReplicationGroups_sql_Show_basic                                                     testCaseName = "sql_Show_basic"
 	case_ReplicationGroups_sql_Show_all                                                       testCaseName = "sql_Show_all"
+	case_ReplicationGroups_sql_Show_InAccount                                                 testCaseName = "sql_Show_InAccount"
 )
 
 type ReplicationGroupsTestsContext struct {
@@ -90,10 +96,24 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_Create_ObjectTypes_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateReplicationGroupOptions", "ObjectTypes"),
+				DefaultModify: func(opts *CreateReplicationGroupOptions) {
+					opts.ObjectTypes = nil
+				},
+			},
+			validationCase[*CreateReplicationGroupOptions]{
 				Name:        case_ReplicationGroups_validation_Create_opts_AtLeastOneValueSet,
 				ExpectedErr: errAtLeastOneOf("CreateReplicationGroupOptions", "AllowedAccounts"),
 				DefaultModify: func(opts *CreateReplicationGroupOptions) {
 					opts.AllowedAccounts = nil
+				},
+			},
+			validationCase[*CreateReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_Create_ErrorIntegration_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateReplicationGroupOptions", "ErrorIntegration"),
+				DefaultModify: func(opts *CreateReplicationGroupOptions) {
+					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*CreateReplicationGroupOptions]{
@@ -158,6 +178,13 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateSecondaryReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_CreateSecondary_AsReplicaOf_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "AsReplicaOf"),
+				DefaultModify: func(opts *CreateSecondaryReplicationGroupOptions) {
+					opts.AsReplicaOf = emptyExternalObjectIdentifier
+				},
+			},
+			validationCase[*CreateSecondaryReplicationGroupOptions]{
 				Name:        case_ReplicationGroups_validation_CreateSecondary_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "name"),
 				DefaultModify: func(opts *CreateSecondaryReplicationGroupOptions) {
@@ -217,6 +244,14 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 				ExpectedErr: errInvalidIdentifier("AlterReplicationGroupOptions", "RenameTo"),
 				DefaultModify: func(opts *AlterReplicationGroupOptions) {
 					opts.RenameTo = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterReplicationGroupOptions.Set", "ErrorIntegration"),
+				DefaultModify: func(opts *AlterReplicationGroupOptions) {
+					opts.Set = &ReplicationGroupSet{}
+					opts.Set.ErrorIntegration = new(emptyAccountObjectIdentifier)
 				},
 			},
 			validationCase[*AlterReplicationGroupOptions]{
@@ -305,6 +340,14 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 				DefaultModify: func(opts *AlterReplicationGroupOptions) {
 					opts.Add = &ReplicationGroupAdd{}
 					opts.Add.ToAllowedAccounts = []AccountIdentifier{emptyAccountIdentifier}
+				},
+			},
+			validationCase[*AlterReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_Alter_Move_ToReplicationGroup_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterReplicationGroupOptions.Move", "ToReplicationGroup"),
+				DefaultModify: func(opts *AlterReplicationGroupOptions) {
+					opts.Move = &ReplicationGroupMove{}
+					opts.Move.ToReplicationGroup = emptyAccountObjectIdentifier
 				},
 			},
 			validationCase[*AlterReplicationGroupOptions]{
@@ -475,6 +518,9 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 			},
 			sqlCase[*ShowReplicationGroupOptions]{
 				Name: case_ReplicationGroups_sql_Show_all,
+			},
+			sqlCase[*ShowReplicationGroupOptions]{
+				Name: case_ReplicationGroups_sql_Show_InAccount,
 			},
 		),
 }

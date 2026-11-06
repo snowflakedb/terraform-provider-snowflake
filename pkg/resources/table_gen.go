@@ -9,10 +9,13 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -27,8 +30,17 @@ func Table() *tfschema.Resource {
 		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.TableResource), TrackingDeleteWrapper(resources.Table, DeleteTable)),
 		Importer:      tableImporterExt,
 
-		CustomizeDiff: tableCustomizeDiffExt,
+		CustomizeDiff: tableCustomizeDiff,
 		Timeouts:      defaultTimeouts,
+		SchemaVersion: 1,
+		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
+		StateUpgraders: []tfschema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+			},
+		},
 	}
 }
 
@@ -51,7 +63,7 @@ func CreateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeResourceIdentifier(id))
 	return ReadTableFunc(false)(ctx, d, meta)
 }
 
@@ -74,7 +86,7 @@ func ReadTableFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 		errs := errors.Join(
 			tableSetDescribeOutputExt(d, id, tableDetails, nil, withExternalChangesMarking),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			tableSetConfigFieldsExt(d, table),
+			tableSetConfigFieldsExt(ctx, d, meta, table),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -89,8 +101,34 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	if diags := tableHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
-		return diags
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.Tables.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeResourceIdentifier(renamed)
+			},
+			"table",
+		); diags != nil {
+			return diags
+		}
+	}
+
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
 	}
 	setUnset, err := tableApplySetUnset(d)
 	if err != nil {
@@ -110,12 +148,18 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	return append(afterAlterDiags, ReadTableFunc(false)(ctx, d, meta)...)
 }
 
+var tableCustomizeDiff = TrackingCustomDiffWrapper(resources.Table, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+	ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
+))
+
 func tableParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string)), nil
 }
 
 func tableParseId(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
+	return sdk.ParseSchemaObjectIdentifier(id)
 }
 
 func tableApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateTableRequest) error {
@@ -142,7 +186,7 @@ func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequestsExt, error
 
 func DeleteTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	return ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
+		sdk.ParseSchemaObjectIdentifier,
 		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
 			return client.Tables.DropSafely
 		},

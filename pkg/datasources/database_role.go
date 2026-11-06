@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -40,6 +41,7 @@ var databaseRoleSchema = map[string]*schema.Schema{
 // DatabaseRole Snowflake Database Role resource.
 func DatabaseRole() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.DatabaseRoleDatasource), TrackingReadWrapper(datasources.DatabaseRole, ReadDatabaseRole)),
 		Schema:      databaseRoleSchema,
 	}
