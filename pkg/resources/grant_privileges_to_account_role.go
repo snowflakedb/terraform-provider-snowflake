@@ -7,13 +7,13 @@ import (
 	"log"
 	"slices"
 	"strings"
+	"uuid"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -1017,16 +1017,7 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 		// 2. terraform apply: Create (Read will update it to false)
 		// 3. Update config so that always_apply = true
 		// 4. terraform apply: Read (updated trigger to false) -> change is not detected (no plan; no Update)
-		triggerId, err := uuid.GenerateUUID()
-		if err != nil {
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Error,
-					Summary:  "Failed to generate UUID",
-					Detail:   fmt.Sprintf("Original error: %s", err),
-				},
-			}
-		}
+		triggerId := uuid.NewV4().String()
 
 		// Change the value of always_apply_trigger to produce a plan
 		if err := d.Set("always_apply_trigger", triggerId); err != nil {

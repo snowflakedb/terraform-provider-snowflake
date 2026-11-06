@@ -1,0 +1,4 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .ComputedAttributes -}}
+			{{ .Prefix }}SetComputedFields(d, {{ .Prefix }}),
+{{ end -}}

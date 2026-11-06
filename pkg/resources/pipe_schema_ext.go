@@ -7,15 +7,7 @@ import (
 func pipeAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["copy_statement"].DiffSuppressFunc = pipeCopyStatementDiffSuppress
 	s["auto_ingest"].Default = false
-	s["notification_channel"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "Amazon Resource Name of the Amazon SQS queue for the stage named in the DEFINITION column.",
-	}
-	s["owner"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "Name of the role that owns the pipe.",
-	}
+	s["notification_channel"].Deprecated = "Use the `show_output` field instead (`show_output.0.notification_channel`). It will be removed in the next major version."
+	s["owner"].Deprecated = "Use the `show_output` field instead (`show_output.0.owner`). It will be removed in the next major version."
 	return s
 }

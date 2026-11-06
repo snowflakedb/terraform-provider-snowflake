@@ -125,5 +125,5 @@ func printTo(template *template.Template, model any, path string) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Clean(path), writer.Bytes(), 0o600)
+	return os.WriteFile(filepath.Clean(path), writer.Bytes(), 0o600) // #nosec G703
 }

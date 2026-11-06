@@ -21,6 +21,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -455,6 +456,82 @@ func TestAcc_TagAssociation_Agent(t *testing.T) {
 				ProtoV6ProviderFactories: tagsProviderFactory,
 				Config:                   accconfig.FromModels(t, tagAssociationModel),
 				Destroy:                  true,
+			},
+		},
+	})
+}
+
+// Tags on pipes are managed with snowflake_tag_association; snowflake_pipe has no tag field.
+func TestAcc_TagAssociation_Pipe(t *testing.T) {
+	tag, tagCleanup := testClient().Tag.CreateTag(t)
+	t.Cleanup(tagCleanup)
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+
+	pipeId := testClient().Ids.RandomSchemaObjectIdentifier()
+	pipeModel := model.PipeWithId("test", pipeId, fmt.Sprintf("COPY INTO %s FROM @%s", table.ID().FullyQualifiedName(), stage.ID().FullyQualifiedName()))
+
+	tagId := tag.ID()
+	tagValue := "TAG_VALUE"
+	changedTagValue := "CHANGED_TAG_VALUE"
+
+	tagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{pipeId}, string(sdk.ObjectTypePipe), tagId.FullyQualifiedName(), tagValue).
+		WithDependsOn(pipeModel.ResourceReference())
+	changedTagAssociationModel := model.TagAssociation("test", []sdk.ObjectIdentifier{pipeId}, string(sdk.ObjectTypePipe), tagId.FullyQualifiedName(), changedTagValue).
+		WithDependsOn(pipeModel.ResourceReference())
+
+	expectTagInSnowflake := func(expected string) resource.TestCheckFunc {
+		return func(_ *terraform.State) error {
+			value, err := testClient().Tag.GetForObject(t, tagId, pipeId, sdk.ObjectTypePipe)
+			if err != nil {
+				return err
+			}
+			if value == nil || *value != expected {
+				return fmt.Errorf("expected tag value %q on pipe %s, got %v", expected, pipeId.FullyQualifiedName(), value)
+			}
+			return nil
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: tagsProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Pipe),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, pipeModel, tagAssociationModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypePipe)),
+					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", pipeId.FullyQualifiedName()),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", tagValue),
+					expectTagInSnowflake(tagValue),
+				),
+			},
+			// The tag does not cause a diff on the pipe.
+			{
+				Config: accconfig.FromModels(t, pipeModel, tagAssociationModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(pipeModel.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectResourceAction(tagAssociationModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+			},
+			{
+				Config: accconfig.FromModels(t, pipeModel, changedTagAssociationModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(pipeModel.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(changedTagAssociationModel.ResourceReference(), "tag_value", changedTagValue),
+					expectTagInSnowflake(changedTagValue),
+				),
 			},
 		},
 	})

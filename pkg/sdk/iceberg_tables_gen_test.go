@@ -10,7 +10,6 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableTargetFileSize]{"IcebergTableTargetFileSize", AllIcebergTableTargetFileSizes, ToIcebergTableTargetFileSize})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTablePathLayout]{"IcebergTablePathLayout", AllIcebergTablePathLayouts, ToIcebergTablePathLayout})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableDescribeType]{"IcebergTableDescribeType", AllIcebergTableDescribeTypes, ToIcebergTableDescribeType})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableSearchMethod]{"TableSearchMethod", AllTableSearchMethods, ToTableSearchMethod})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableType]{"IcebergTableType", AllIcebergTableTypes, ToIcebergTableType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableCatalog]{"IcebergTableCatalog", AllIcebergTableCatalogs, ToIcebergTableCatalog})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[StorageSerializationPolicy]{"StorageSerializationPolicy", AllStorageSerializationPolicies, ToStorageSerializationPolicy})

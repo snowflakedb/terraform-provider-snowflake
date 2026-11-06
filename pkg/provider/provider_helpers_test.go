@@ -131,9 +131,11 @@ func Test_Provider_applyTfcWorkloadIdentityToken(t *testing.T) {
 		t.Setenv("TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE", "tfc token")
 		config := oidcConfig()
 		config.Token = "token from the token field"
+		config.TokenFilePath = "/path/to/token"
 
 		require.NoError(t, applyTfcWorkloadIdentityToken("SNOWFLAKE", config))
 		assert.Equal(t, "tfc token", config.Token)
+		assert.Empty(t, config.TokenFilePath)
 	})
 
 	t.Run("tag is upper-cased when building the environment variable name", func(t *testing.T) {

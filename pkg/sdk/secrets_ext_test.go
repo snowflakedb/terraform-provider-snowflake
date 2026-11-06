@@ -241,7 +241,7 @@ func init() {
 			case_Secrets_sql_Show_all,
 			func(opts *ShowSecretOptions) {
 				opts.Like = &Like{Pattern: new("pattern")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			"SHOW SECRETS LIKE 'pattern' IN ACCOUNT",
 		).
@@ -252,7 +252,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Secrets_sql_Show_In,
-			func(opts *ShowSecretOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
+			func(opts *ShowSecretOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			"SHOW SECRETS IN ACCOUNT",
 		)
 

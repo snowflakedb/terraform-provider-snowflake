@@ -18,8 +18,11 @@ func init() {
 	tagId2 := randomSchemaObjectIdentifier()
 	integrationId := randomAccountObjectIdentifier()
 	procedureId := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
+	quotaUserTag := func(tagId SchemaObjectIdentifier, value string) QuotaUserTag {
+		return QuotaUserTag{Reference: QuotaUserTagReference{Arguments: QuotaUserTagReferenceArguments{Tag: tagId}}, Value: value}
+	}
 	tagReference := func(tagId SchemaObjectIdentifier) string {
-		return "(SELECT SYSTEM$REFERENCE('TAG', '" + tagId.FullyQualifiedName() + "', 'SESSION', 'APPLYBUDGET'))"
+		return "SYSTEM$REFERENCE ('TAG', '" + singleQuotedIdentifier(tagId) + "', 'SESSION', 'APPLYBUDGET')"
 	}
 
 	quotasTests.Create.
@@ -127,7 +130,7 @@ func init() {
 				opts.args.Domain = QuotaSharedResourceDomainWarehouse
 				opts.args.Warehouse = &warehouseId
 			},
-			"CALL %s!ADD_SHARED_RESOURCE ('WAREHOUSE', (SELECT SYSTEM$REFERENCE('WAREHOUSE', '%s')))", id.FullyQualifiedName(), warehouseId.FullyQualifiedName(),
+			"CALL %s!ADD_SHARED_RESOURCE ('WAREHOUSE', SYSTEM$REFERENCE('WAREHOUSE', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(warehouseId),
 		).
 		withAdditionalSqlCasef(
 			"sql_AddSharedResource_cortexAgent",
@@ -135,7 +138,7 @@ func init() {
 				opts.args.Domain = QuotaSharedResourceDomainCortexAgent
 				opts.args.CortexAgent = &cortexAgentId
 			},
-			"CALL %s!ADD_SHARED_RESOURCE ('CORTEX AGENT', (SELECT SYSTEM$REFERENCE('CORTEX AGENT', '%s')))", id.FullyQualifiedName(), cortexAgentId.FullyQualifiedName(),
+			"CALL %s!ADD_SHARED_RESOURCE ('CORTEX AGENT', SYSTEM$REFERENCE('CORTEX AGENT', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(cortexAgentId),
 		).
 		withAdditionalSqlCasef(
 			"sql_AddSharedResource_snowflakeIntelligence",
@@ -143,7 +146,7 @@ func init() {
 				opts.args.Domain = QuotaSharedResourceDomainSnowflakeIntelligence
 				opts.args.SnowflakeIntelligence = &snowflakeIntelligenceId
 			},
-			"CALL %s!ADD_SHARED_RESOURCE ('SNOWFLAKE INTELLIGENCE', (SELECT SYSTEM$REFERENCE('SNOWFLAKE INTELLIGENCE', '%s')))", id.FullyQualifiedName(), snowflakeIntelligenceId.FullyQualifiedName(),
+			"CALL %s!ADD_SHARED_RESOURCE ('SNOWFLAKE INTELLIGENCE', SYSTEM$REFERENCE('SNOWFLAKE INTELLIGENCE', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(snowflakeIntelligenceId),
 		).
 		withAdditionalSqlCasef(
 			"sql_AddSharedResource_aiGateway",
@@ -151,7 +154,7 @@ func init() {
 				opts.args.Domain = QuotaSharedResourceDomainAiGateway
 				opts.args.AiGateway = &aiGatewayId
 			},
-			"CALL %s!ADD_SHARED_RESOURCE ('AI GATEWAY', (SELECT SYSTEM$REFERENCE('AI GATEWAY', '%s')))", id.FullyQualifiedName(), aiGatewayId.FullyQualifiedName(),
+			"CALL %s!ADD_SHARED_RESOURCE ('AI GATEWAY', SYSTEM$REFERENCE('AI GATEWAY', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(aiGatewayId),
 		).
 		withAdditionalValidationCase(
 			"validation_AddSharedResource_instanceNameForReferenceDomain",
@@ -186,7 +189,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_RemoveSharedResource_instance",
 			func(opts *RemoveSharedResourceQuotaOptions) { opts.args.CortexAgent = &cortexAgentId },
-			"CALL %s!REMOVE_SHARED_RESOURCE ('CORTEX AGENT', (SELECT SYSTEM$REFERENCE('CORTEX AGENT', '%s')))", id.FullyQualifiedName(), cortexAgentId.FullyQualifiedName(),
+			"CALL %s!REMOVE_SHARED_RESOURCE ('CORTEX AGENT', SYSTEM$REFERENCE('CORTEX AGENT', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(cortexAgentId),
 		).
 		withAdditionalSqlCasef(
 			"sql_RemoveSharedResource_warehouse",
@@ -194,7 +197,7 @@ func init() {
 				opts.args.Domain = QuotaSharedResourceDomainWarehouse
 				opts.args.Warehouse = &warehouseId
 			},
-			"CALL %s!REMOVE_SHARED_RESOURCE ('WAREHOUSE', (SELECT SYSTEM$REFERENCE('WAREHOUSE', '%s')))", id.FullyQualifiedName(), warehouseId.FullyQualifiedName(),
+			"CALL %s!REMOVE_SHARED_RESOURCE ('WAREHOUSE', SYSTEM$REFERENCE('WAREHOUSE', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(warehouseId),
 		).
 		withAdditionalValidationCase(
 			"validation_RemoveSharedResource_referenceForOtherDomain",
@@ -206,7 +209,7 @@ func init() {
 		withDefaultOpts(func() *SetUserTagsQuotaOptions {
 			return &SetUserTagsQuotaOptions{
 				name: id,
-				args: QuotaSetUserTagsArgs{Tags: []QuotaUserTag{{Tag: tagId, Value: "finance"}}, Operator: QuotaUserTagsOperatorUnion},
+				args: QuotaSetUserTagsArgs{Tags: []QuotaUserTag{quotaUserTag(tagId, "finance")}, Operator: QuotaUserTagsOperatorUnion},
 			}
 		}).
 		withExpectedSqlf(
@@ -216,7 +219,7 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_SetUserTags_all",
 			func(opts *SetUserTagsQuotaOptions) {
-				opts.args.Tags = append(opts.args.Tags, QuotaUserTag{Tag: tagId2, Value: "analytics"})
+				opts.args.Tags = append(opts.args.Tags, quotaUserTag(tagId2, "analytics"))
 				opts.args.Operator = QuotaUserTagsOperatorIntersection
 			},
 			"CALL %s!SET_USER_TAGS ([[%s, 'finance'], [%s, 'analytics']], 'INTERSECTION')", id.FullyQualifiedName(), tagReference(tagId), tagReference(tagId2),
@@ -247,7 +250,7 @@ func init() {
 			"sql_ExcludeUsers_byTag",
 			func(opts *ExcludeUsersQuotaOptions) {
 				opts.args.ByUser = nil
-				opts.args.ByTag = &QuotaExcludeUsersByTag{Tags: []QuotaExcludedUserTag{{Tag: tagId, Value: "high"}}}
+				opts.args.ByTag = &QuotaExcludeUsersByTag{Tags: []QuotaExcludedUserTag{{Reference: QuotaExcludedUserTagReference{Arguments: QuotaExcludedUserTagReferenceArguments{Tag: tagId}}, Value: "high"}}}
 			},
 			"CALL %s!EXCLUDE_USERS ('TAG', [[%s, 'high']])", id.FullyQualifiedName(), tagReference(tagId),
 		).
@@ -438,12 +441,12 @@ func init() {
 		}).
 		withExpectedSqlf(
 			case_Quotas_sql_AddCustomAction_basic,
-			"CALL %s!ADD_CUSTOM_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), [], 'ACTUAL', 100)", id.FullyQualifiedName(), procedureId.FullyQualifiedName(),
+			"CALL %s!ADD_CUSTOM_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), [], 'ACTUAL', 100)", id.FullyQualifiedName(), singleQuotedIdentifier(procedureId),
 		).
 		withAdditionalSqlCasef(
 			"sql_AddCustomAction_arguments",
 			func(opts *AddCustomActionQuotaOptions) { opts.args.Arguments = []string{"arg1", "arg2"} },
-			"CALL %s!ADD_CUSTOM_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), ['arg1', 'arg2'], 'ACTUAL', 100)", id.FullyQualifiedName(), procedureId.FullyQualifiedName(),
+			"CALL %s!ADD_CUSTOM_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), ['arg1', 'arg2'], 'ACTUAL', 100)", id.FullyQualifiedName(), singleQuotedIdentifier(procedureId),
 		)
 
 	quotasTests.RemoveCustomActions.
@@ -490,12 +493,12 @@ func init() {
 		}).
 		withExpectedSqlf(
 			case_Quotas_sql_SetCycleStartAction_basic,
-			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), [])", id.FullyQualifiedName(), procedureId.FullyQualifiedName(),
+			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), [])", id.FullyQualifiedName(), singleQuotedIdentifier(procedureId),
 		).
 		withAdditionalSqlCasef(
 			"sql_SetCycleStartAction_arguments",
 			func(opts *SetCycleStartActionQuotaOptions) { opts.args.Arguments = []string{"arg1"} },
-			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), ['arg1'])", id.FullyQualifiedName(), procedureId.FullyQualifiedName(),
+			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), ['arg1'])", id.FullyQualifiedName(), singleQuotedIdentifier(procedureId),
 		)
 
 	quotasTests.RemoveCycleStartAction.

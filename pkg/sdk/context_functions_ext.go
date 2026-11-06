@@ -41,8 +41,8 @@ func (r currentSecondaryRolesDBRow) additionalConvert(result *CurrentSecondaryRo
 func (acc *CurrentSessionDetails) AccountURL() (string, error) {
 	region := acc.Region
 	// CURRENT_REGION() may return a prefixed form like "PUBLIC.AWS_US_EAST_1"; use the last segment.
-	if idx := strings.LastIndex(region, "."); idx >= 0 {
-		region = region[idx+1:]
+	if _, last, ok := strings.CutLast(region, "."); ok {
+		region = last
 	}
 	if regionID, ok := regionMapping[strings.ToLower(region)]; ok {
 		accountID := acc.Account

@@ -238,6 +238,10 @@ func (r *ResourceAssert) IntValueSet(fieldName string, expected int) {
 	r.AddAssertion(ValueSet(fieldName, strconv.Itoa(expected)))
 }
 
+func (r *ResourceAssert) Int64ValueSet(fieldName string, expected int64) {
+	r.AddAssertion(ValueSet(fieldName, strconv.FormatInt(expected, 10)))
+}
+
 func (r *ResourceAssert) FloatValueSet(fieldName string, expected float64) {
 	r.AddAssertion(ValueSet(fieldName, strconv.FormatFloat(expected, 'f', -1, 64)))
 }

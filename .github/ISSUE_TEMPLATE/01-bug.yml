@@ -219,6 +219,7 @@ body:
         - resource:password_policy
         - resource:pipe
         - resource:postgres_instance
+        - resource:postgres_mirror
         - resource:primary_connection
         - resource:procedure
         - resource:procedure_java
@@ -228,6 +229,8 @@ body:
         - resource:procedure_sql
         - resource:projection_policy
         - resource:quota
+        - resource:replication_group
+        - resource:replication_group_secondary
         - resource:resource_monitor
         - resource:role
         - resource:row_access_policy
@@ -330,8 +333,10 @@ body:
         - data_source:parameters
         - data_source:password_policies
         - data_source:pipes
+        - data_source:postgres_mirrors
         - data_source:procedures
         - data_source:projection_policies
+        - data_source:replication_groups
         - data_source:resource_monitors
         - data_source:roles
         - data_source:row_access_policies

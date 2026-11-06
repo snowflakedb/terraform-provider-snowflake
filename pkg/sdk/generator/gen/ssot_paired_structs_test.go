@@ -67,7 +67,7 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 		Text("name").
 		Number("min_nodes").
 		Bool("auto_resume").
-		BoolFromText("is_default").
+		BoolFromText("is_default", WithBoolParsed()).
 		Time("created_on").
 		Enum("state", state).
 		Field("application", "sql.NullString", "*AccountObjectIdentifier", WithPlainFieldName("Application")).
@@ -83,10 +83,14 @@ func Test_PairedStructsFromColumns_matchesHandwrittenChain(t *testing.T) {
 	require.Equal(t, "bool", gotAutoResume.plainKind)
 	require.NotEqual(t, StructPair("fakesRow", "Fake").BoolFromText("auto_resume").fields[0], gotAutoResume)
 	gotDefault := pairedFieldByColumn(showGot, "is_default")
-	require.Equal(t, StructPair("fakesRow", "Fake").BoolFromText("is_default").fields[0], gotDefault)
+	require.Equal(t, StructPair("fakesRow", "Fake").BoolFromText("is_default", WithBoolParsed()).fields[0], gotDefault)
 	require.Equal(t, "string", gotDefault.dbKind)
 	require.Equal(t, "bool", gotDefault.plainKind)
 	require.NotEqual(t, StructPair("fakesRow", "Fake").Bool("is_default").fields[0], gotDefault)
+
+	onOff := ssot.Attribute{Name: "automatic_clustering", Type: ssot.AttrBool, StoredAsText: true, OptionalInDb: true, BoolTrueValue: "ON", Readonly: true}
+	onOffGot := ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &onOff))
+	require.Equal(t, StructPair("fakesRow", "Fake").OptionalBoolFromText("automatic_clustering", WithBoolTrueValue("ON"), WithRequiredInPlain()), onOffGot)
 
 	storedText := ssot.Attribute{Name: "database_name", Type: ssot.AttrString, StoredAsText: true}
 	require.Equal(t, StructPair("fakesRow", "Fake").Text("database_name"), ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &storedText)))
@@ -136,7 +140,6 @@ func Test_ShowPairedStructs_plainOnlyHookAndManualConvert(t *testing.T) {
 
 func Test_PairedStructsFromColumns_panics(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
-	state := NewEnum("FakeState", "FakeStates", "STARTED")
 
 	tests := []struct {
 		name string
@@ -201,14 +204,10 @@ func Test_PairedStructsFromColumns_panics(t *testing.T) {
 			},
 		},
 		{
-			name: "set of enum",
+			name: "set whose element is not an enum",
 			call: func() {
-				families := ssot.Attribute{
-					Name: "families",
-					Type: ssot.AttrSet,
-					Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: state},
-				}
-				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &families))
+				names := ssot.Attribute{Name: "names", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrString}}
+				ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &names))
 			},
 		},
 	}
@@ -253,7 +252,7 @@ func Test_PairedStructsFromColumns_mapsWarehouseColumnShapes(t *testing.T) {
 		OptionalNumber("min_cluster_count").
 		OptionalNumber("auto_suspend", WithRequiredInPlain()).
 		OptionalBool("enable_query_acceleration").
-		OptionalBoolFromText("flag").
+		OptionalBoolFromText("flag", WithBoolParsed()).
 		OptionalEnum("size", size).
 		Field("state", "string", "WarehouseState", WithManualConvert()).
 		OptionalEnum("resource_constraint", size, WithManualConvert()).
@@ -280,6 +279,38 @@ func Test_PairedStructsFromColumns_mapsWarehouseColumnShapes(t *testing.T) {
 	)
 }
 
+func Test_ShowPairedStructs_setMapsLikeList(t *testing.T) {
+	state := NewEnum("FakeState", "FakeStates", "STARTED")
+	families := ssot.Attribute{
+		Name: "families",
+		Type: ssot.AttrSet,
+		Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: state},
+	}
+	accounts := ssot.Attribute{
+		Name:         "allowed_accounts",
+		Type:         ssot.AttrSet,
+		OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedAccountIdentifierArray",
+		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+	}
+	manualIDs := ssot.Attribute{
+		Name:          "to",
+		Type:          ssot.AttrSet,
+		ManualConvert: true,
+		Elem:          &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
+	}
+
+	require.Equal(t, StructPair("fakesRow", "Fake").StringList("families"), ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &families)))
+	require.Equal(t,
+		StructPair("fakesRow", "Fake").Field("allowed_accounts", "sql.NullString", "[]AccountIdentifier", WithCustomParser("ParseCommaSeparatedAccountIdentifierArray")),
+		ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &accounts)),
+	)
+	require.Equal(t,
+		StructPair("fakesRow", "Fake").Field("to", "string", "[]AccountIdentifier", WithManualConvert()),
+		ShowPairedStructs(showPairedObject("AccountObjectIdentifier", &manualIDs)),
+	)
+}
+
 func showPairedObject(idType string, columns ...*ssot.Attribute) ssot.Object {
 	return ssot.Object{
 		Name:       "Fake",
@@ -290,8 +321,8 @@ func showPairedObject(idType string, columns ...*ssot.Attribute) ssot.Object {
 	}
 }
 
-func Test_PairedStructsFromColumns_boolParsed(t *testing.T) {
-	lock := ssot.Attribute{Name: "has_retention_lock", Type: ssot.AttrBool, StoredAsText: true, BoolParsed: true}
+func Test_PairedStructsFromColumns_textBoolParses(t *testing.T) {
+	lock := ssot.Attribute{Name: "has_retention_lock", Type: ssot.AttrBool, StoredAsText: true}
 	got := ShowPairedStructs(showPairedObject("SchemaObjectIdentifier", &lock))
 	want := StructPair("fakesRow", "Fake").BoolFromText("has_retention_lock", WithBoolParsed())
 	require.Equal(t, want, got)

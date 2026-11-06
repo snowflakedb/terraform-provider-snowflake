@@ -1,6 +1,40 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.HierarchyRename.Generate -}}
+{{- if not (or (eq .IdType "AccountObjectIdentifier") (eq .IdType "SchemaObjectIdentifier")) -}}
 {{ Unimplemented "HierarchyRename" }}
+{{- end -}}
+{{- if .HierarchyRenameParents }}
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.{{ .NamePlural }}.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return {{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(renamed){{ else }}helpers.EncodeResourceIdentifier(renamed){{ end }}
+			},
+			{{ Quote (CamelToWords .Name) }},
+		); diags != nil {
+			return diags
+		}
+	}
+{{ end -}}
+{{- if .HierarchyRenameName }}
+	if d.HasChange("name") {
+		newId := {{ if eq .IdType "AccountObjectIdentifier" }}sdk.NewAccountObjectIdentifier(d.Get("name").(string)){{ else }}sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string)){{ end }}
+		if err := meta.(*provider.Context).Client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId({{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(newId){{ else }}helpers.EncodeResourceIdentifier(newId){{ end }})
+		id = newId
+	}
+{{ end -}}
 {{- else if .Hooks.HierarchyRename.Present }}
 	if diags := {{ .Prefix }}HierarchyRenameExt(ctx, d, meta, &id); diags != nil {
 		return diags

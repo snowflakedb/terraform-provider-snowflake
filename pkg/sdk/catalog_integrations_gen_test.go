@@ -17,41 +17,43 @@ func init() {
 var catalogIntegrationsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_CatalogIntegrations_validation_CreateAwsGlue_name_ValidIdentifier                       testCaseName = "validation_CreateAwsGlue_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateAwsGlue_opts_ConflictingFields                     testCaseName = "validation_CreateAwsGlue_opts_ConflictingFields"
-	case_CatalogIntegrations_sql_CreateAwsGlue_basic                                             testCaseName = "sql_CreateAwsGlue_basic"
-	case_CatalogIntegrations_sql_CreateAwsGlue_all                                               testCaseName = "sql_CreateAwsGlue_all"
-	case_CatalogIntegrations_validation_CreateIcebergRest_name_ValidIdentifier                   testCaseName = "validation_CreateIcebergRest_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ConflictingFields                 testCaseName = "validation_CreateIcebergRest_opts_ConflictingFields"
-	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateIcebergRest_opts_ExactlyOneValueSet_NoneSet"
-	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateIcebergRest_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_CatalogIntegrations_sql_CreateIcebergRest_basic                                         testCaseName = "sql_CreateIcebergRest_basic"
-	case_CatalogIntegrations_sql_CreateIcebergRest_all                                           testCaseName = "sql_CreateIcebergRest_all"
-	case_CatalogIntegrations_validation_CreateObjectStorage_name_ValidIdentifier                 testCaseName = "validation_CreateObjectStorage_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateObjectStorage_opts_ConflictingFields               testCaseName = "validation_CreateObjectStorage_opts_ConflictingFields"
-	case_CatalogIntegrations_sql_CreateObjectStorage_basic                                       testCaseName = "sql_CreateObjectStorage_basic"
-	case_CatalogIntegrations_sql_CreateObjectStorage_all                                         testCaseName = "sql_CreateObjectStorage_all"
-	case_CatalogIntegrations_validation_CreateOpenCatalog_name_ValidIdentifier                   testCaseName = "validation_CreateOpenCatalog_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_CreateOpenCatalog_opts_ConflictingFields                 testCaseName = "validation_CreateOpenCatalog_opts_ConflictingFields"
-	case_CatalogIntegrations_sql_CreateOpenCatalog_basic                                         testCaseName = "sql_CreateOpenCatalog_basic"
-	case_CatalogIntegrations_sql_CreateOpenCatalog_all                                           testCaseName = "sql_CreateOpenCatalog_all"
-	case_CatalogIntegrations_validation_Alter_name_ValidIdentifier                               testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields                         testCaseName = "validation_Alter_opts_Set_ConflictingFields"
-	case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                        testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier                            testCaseName = "validation_Alter_SetTags_ValidIdentifier"
-	case_CatalogIntegrations_sql_Alter_Set                                                       testCaseName = "sql_Alter_Set"
-	case_CatalogIntegrations_sql_Alter_SetTags                                                   testCaseName = "sql_Alter_SetTags"
-	case_CatalogIntegrations_sql_Alter_UnsetTags                                                 testCaseName = "sql_Alter_UnsetTags"
-	case_CatalogIntegrations_validation_Drop_name_ValidIdentifier                                testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_CatalogIntegrations_sql_Drop_basic                                                      testCaseName = "sql_Drop_basic"
-	case_CatalogIntegrations_sql_Drop_all                                                        testCaseName = "sql_Drop_all"
-	case_CatalogIntegrations_sql_Show_basic                                                      testCaseName = "sql_Show_basic"
-	case_CatalogIntegrations_sql_Show_all                                                        testCaseName = "sql_Show_all"
-	case_CatalogIntegrations_sql_Show_Like                                                       testCaseName = "sql_Show_Like"
-	case_CatalogIntegrations_validation_Describe_name_ValidIdentifier                            testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_CatalogIntegrations_sql_Describe_basic                                                  testCaseName = "sql_Describe_basic"
+	case_CatalogIntegrations_validation_CreateAwsGlue_name_ValidIdentifier                                            testCaseName = "validation_CreateAwsGlue_name_ValidIdentifier"
+	case_CatalogIntegrations_validation_CreateAwsGlue_opts_ConflictingFields                                          testCaseName = "validation_CreateAwsGlue_opts_ConflictingFields"
+	case_CatalogIntegrations_sql_CreateAwsGlue_basic                                                                  testCaseName = "sql_CreateAwsGlue_basic"
+	case_CatalogIntegrations_sql_CreateAwsGlue_all                                                                    testCaseName = "sql_CreateAwsGlue_all"
+	case_CatalogIntegrations_validation_CreateIcebergRest_name_ValidIdentifier                                        testCaseName = "validation_CreateIcebergRest_name_ValidIdentifier"
+	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ConflictingFields                                      testCaseName = "validation_CreateIcebergRest_opts_ConflictingFields"
+	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_NoneSet                             testCaseName = "validation_CreateIcebergRest_opts_ExactlyOneValueSet_NoneSet"
+	case_CatalogIntegrations_validation_CreateIcebergRest_opts_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_CreateIcebergRest_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_CatalogIntegrations_validation_CreateIcebergRest_OAuthRestAuthentication_OauthAllowedScopes_ValidateValueSet testCaseName = "validation_CreateIcebergRest_OAuthRestAuthentication_OauthAllowedScopes_ValidateValueSet"
+	case_CatalogIntegrations_sql_CreateIcebergRest_basic                                                              testCaseName = "sql_CreateIcebergRest_basic"
+	case_CatalogIntegrations_sql_CreateIcebergRest_all                                                                testCaseName = "sql_CreateIcebergRest_all"
+	case_CatalogIntegrations_validation_CreateObjectStorage_name_ValidIdentifier                                      testCaseName = "validation_CreateObjectStorage_name_ValidIdentifier"
+	case_CatalogIntegrations_validation_CreateObjectStorage_opts_ConflictingFields                                    testCaseName = "validation_CreateObjectStorage_opts_ConflictingFields"
+	case_CatalogIntegrations_sql_CreateObjectStorage_basic                                                            testCaseName = "sql_CreateObjectStorage_basic"
+	case_CatalogIntegrations_sql_CreateObjectStorage_all                                                              testCaseName = "sql_CreateObjectStorage_all"
+	case_CatalogIntegrations_validation_CreateOpenCatalog_name_ValidIdentifier                                        testCaseName = "validation_CreateOpenCatalog_name_ValidIdentifier"
+	case_CatalogIntegrations_validation_CreateOpenCatalog_opts_ConflictingFields                                      testCaseName = "validation_CreateOpenCatalog_opts_ConflictingFields"
+	case_CatalogIntegrations_validation_CreateOpenCatalog_RestAuthentication_OauthAllowedScopes_ValidateValueSet      testCaseName = "validation_CreateOpenCatalog_RestAuthentication_OauthAllowedScopes_ValidateValueSet"
+	case_CatalogIntegrations_sql_CreateOpenCatalog_basic                                                              testCaseName = "sql_CreateOpenCatalog_basic"
+	case_CatalogIntegrations_sql_CreateOpenCatalog_all                                                                testCaseName = "sql_CreateOpenCatalog_all"
+	case_CatalogIntegrations_validation_Alter_name_ValidIdentifier                                                    testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields                                              testCaseName = "validation_Alter_opts_Set_ConflictingFields"
+	case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                                             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier                                                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
+	case_CatalogIntegrations_sql_Alter_Set                                                                            testCaseName = "sql_Alter_Set"
+	case_CatalogIntegrations_sql_Alter_SetTags                                                                        testCaseName = "sql_Alter_SetTags"
+	case_CatalogIntegrations_sql_Alter_UnsetTags                                                                      testCaseName = "sql_Alter_UnsetTags"
+	case_CatalogIntegrations_validation_Drop_name_ValidIdentifier                                                     testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_CatalogIntegrations_sql_Drop_basic                                                                           testCaseName = "sql_Drop_basic"
+	case_CatalogIntegrations_sql_Drop_all                                                                             testCaseName = "sql_Drop_all"
+	case_CatalogIntegrations_sql_Show_basic                                                                           testCaseName = "sql_Show_basic"
+	case_CatalogIntegrations_sql_Show_all                                                                             testCaseName = "sql_Show_all"
+	case_CatalogIntegrations_sql_Show_Like                                                                            testCaseName = "sql_Show_Like"
+	case_CatalogIntegrations_validation_Describe_name_ValidIdentifier                                                 testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_CatalogIntegrations_sql_Describe_basic                                                                       testCaseName = "sql_Describe_basic"
 )
 
 type CatalogIntegrationsTestsContext struct {
@@ -141,6 +143,14 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 					opts.BearerRestAuthentication = &CatalogIntegrationIcebergRestBearerRestAuthentication{}
 				},
 			},
+			validationCase[*CreateIcebergRestCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_CreateIcebergRest_OAuthRestAuthentication_OauthAllowedScopes_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateIcebergRestCatalogIntegrationOptions.OAuthRestAuthentication", "OauthAllowedScopes"),
+				DefaultModify: func(opts *CreateIcebergRestCatalogIntegrationOptions) {
+					opts.OAuthRestAuthentication = &CatalogIntegrationIcebergRestOauthRestAuthentication{}
+					opts.OAuthRestAuthentication.OauthAllowedScopes = nil
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateIcebergRestCatalogIntegrationOptions]{
@@ -207,6 +217,13 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 				DefaultModify: func(opts *CreateOpenCatalogCatalogIntegrationOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateOpenCatalogCatalogIntegrationOptions]{
+				Name:        case_CatalogIntegrations_validation_CreateOpenCatalog_RestAuthentication_OauthAllowedScopes_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateOpenCatalogCatalogIntegrationOptions.RestAuthentication", "OauthAllowedScopes"),
+				DefaultModify: func(opts *CreateOpenCatalogCatalogIntegrationOptions) {
+					opts.RestAuthentication.OauthAllowedScopes = nil
 				},
 			},
 		).

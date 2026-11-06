@@ -71,7 +71,7 @@ func (v *functions) Show(ctx context.Context, request *ShowFunctionRequest) ([]F
 func (v *functions) ShowByID(ctx context.Context, id SchemaObjectIdentifierWithArguments) (*Function, error) {
 	request := NewShowFunctionRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(ExtendedIn{Schema: id.SchemaId()})
 	functions, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -523,11 +523,11 @@ func ToFunctionParametersDetails(params []*Parameter) (*FunctionParametersDetail
 	byKey := parametersByKey(params)
 	var d FunctionParametersDetails
 	if err := errors.Join(
-		fillTypedParameter(byKey["ENABLE_CONSOLE_OUTPUT"], strconv.ParseBool, &d.EnableConsoleOutput),
-		fillTypedParameter(byKey["LOG_EVENT_LEVEL"], ToLogLevel, &d.LogEventLevel),
-		fillTypedParameter(byKey["LOG_LEVEL"], ToLogLevel, &d.LogLevel),
-		fillTypedParameter(byKey["METRIC_LEVEL"], ToMetricLevel, &d.MetricLevel),
-		fillTypedParameter(byKey["TRACE_LEVEL"], ToTraceLevel, &d.TraceLevel),
+		byKey["ENABLE_CONSOLE_OUTPUT"].fillTyped(strconv.ParseBool, &d.EnableConsoleOutput),
+		byKey["LOG_EVENT_LEVEL"].fillTyped(ToLogLevel, &d.LogEventLevel),
+		byKey["LOG_LEVEL"].fillTyped(ToLogLevel, &d.LogLevel),
+		byKey["METRIC_LEVEL"].fillTyped(ToMetricLevel, &d.MetricLevel),
+		byKey["TRACE_LEVEL"].fillTyped(ToTraceLevel, &d.TraceLevel),
 	); err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/stretchr/testify/assert"
@@ -492,29 +493,33 @@ func TestCreateSafely(t *testing.T) {
 	})
 
 	t.Run("returns instance after polling through non-READY states", func(t *testing.T) {
-		stub := &stubPostgresInstances{
-			showStates: []PostgresInstanceState{
-				PostgresInstanceStateCreating,
-				PostgresInstanceStateCreating,
-				PostgresInstanceStateReady,
-			},
-		}
-		instance, err := createSafelyPolling(context.Background(), func() error { return nil }, stub.showByID)
-		require.NoError(t, err)
-		assert.Equal(t, PostgresInstanceStateReady, instance.State)
-		assert.Equal(t, 3, stub.showIdx)
+		synctest.Test(t, func(t *testing.T) {
+			stub := &stubPostgresInstances{
+				showStates: []PostgresInstanceState{
+					PostgresInstanceStateCreating,
+					PostgresInstanceStateCreating,
+					PostgresInstanceStateReady,
+				},
+			}
+			instance, err := createSafelyPolling(context.Background(), func() error { return nil }, stub.showByID)
+			require.NoError(t, err)
+			assert.Equal(t, PostgresInstanceStateReady, instance.State)
+			assert.Equal(t, 3, stub.showIdx)
+		})
 	})
 
 	t.Run("returns error when context is canceled before READY", func(t *testing.T) {
-		stub := &stubPostgresInstances{
-			showStates: []PostgresInstanceState{PostgresInstanceStateCreating},
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
-		defer cancel()
-		time.Sleep(5 * time.Millisecond) // ensure deadline is already exceeded
-		_, err := createSafelyPolling(ctx, func() error { return nil }, stub.showByID)
-		require.Error(t, err)
-		require.ErrorIs(t, err, context.DeadlineExceeded)
+		synctest.Test(t, func(t *testing.T) {
+			stub := &stubPostgresInstances{
+				showStates: []PostgresInstanceState{PostgresInstanceStateCreating},
+			}
+			ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond)
+			defer cancel()
+			synctest.Sleep(time.Millisecond)
+			_, err := createSafelyPolling(ctx, func() error { return nil }, stub.showByID)
+			require.Error(t, err)
+			require.ErrorIs(t, err, context.DeadlineExceeded)
+		})
 	})
 
 	t.Run("propagates ShowByID error", func(t *testing.T) {
@@ -538,17 +543,19 @@ func TestUpdateSafely(t *testing.T) {
 	})
 
 	t.Run("waits then calls update", func(t *testing.T) {
-		stub := &stubPostgresInstances{
-			describeSeq: []*PostgresInstanceDetails{
-				{HasAnyRunningOperations: true},
-				{HasAnyRunningOperations: true},
-				{},
-			},
-		}
-		err := updateSafelyPolling(context.Background(), req, stub.update, stub.describe, stub.showByID)
-		require.NoError(t, err)
-		assert.Equal(t, 1, stub.updateCalled)
-		assert.GreaterOrEqual(t, stub.describeIdx, 3)
+		synctest.Test(t, func(t *testing.T) {
+			stub := &stubPostgresInstances{
+				describeSeq: []*PostgresInstanceDetails{
+					{HasAnyRunningOperations: true},
+					{HasAnyRunningOperations: true},
+					{},
+				},
+			}
+			err := updateSafelyPolling(context.Background(), req, stub.update, stub.describe, stub.showByID)
+			require.NoError(t, err)
+			assert.Equal(t, 1, stub.updateCalled)
+			assert.GreaterOrEqual(t, stub.describeIdx, 3)
+		})
 	})
 
 	t.Run("retries update on must-be-complete error", func(t *testing.T) {
@@ -567,13 +574,15 @@ func TestUpdateSafely(t *testing.T) {
 	})
 
 	t.Run("returns error when context is canceled before operations drain", func(t *testing.T) {
-		stub := &stubPostgresInstances{describeSeq: []*PostgresInstanceDetails{{HasAnyRunningOperations: true}}}
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
-		defer cancel()
-		time.Sleep(5 * time.Millisecond)
-		err := updateSafelyPolling(ctx, req, stub.update, stub.describe, stub.showByID)
-		require.Error(t, err)
-		assert.Equal(t, 0, stub.updateCalled)
+		synctest.Test(t, func(t *testing.T) {
+			stub := &stubPostgresInstances{describeSeq: []*PostgresInstanceDetails{{HasAnyRunningOperations: true}}}
+			ctx, cancel := context.WithTimeout(t.Context(), time.Millisecond)
+			defer cancel()
+			synctest.Sleep(time.Millisecond)
+			err := updateSafelyPolling(ctx, req, stub.update, stub.describe, stub.showByID)
+			require.Error(t, err)
+			assert.Equal(t, 0, stub.updateCalled)
+		})
 	})
 
 	t.Run("returns OperationErrors after ALTER", func(t *testing.T) {
@@ -600,19 +609,21 @@ func TestUpdateSafely(t *testing.T) {
 	})
 
 	t.Run("polls DESCRIBE until network_policy matches after SET", func(t *testing.T) {
-		policy := NewAccountObjectIdentifier("new_policy")
-		npReq := &AlterPostgresInstanceRequest{
-			Set: &PostgresInstanceSetRequest{NetworkPolicy: &policy},
-		}
-		stub := &stubPostgresInstances{
-			describeSeq: []*PostgresInstanceDetails{
-				{},
-				{},
-				{NetworkPolicy: Pointer(NewAccountObjectIdentifier("old_policy"))},
-				{NetworkPolicy: &policy},
-			},
-		}
-		err := updateSafelyPolling(context.Background(), npReq, stub.update, stub.describe, stub.showByID)
-		require.NoError(t, err)
+		synctest.Test(t, func(t *testing.T) {
+			policy := NewAccountObjectIdentifier("new_policy")
+			npReq := &AlterPostgresInstanceRequest{
+				Set: &PostgresInstanceSetRequest{NetworkPolicy: &policy},
+			}
+			stub := &stubPostgresInstances{
+				describeSeq: []*PostgresInstanceDetails{
+					{},
+					{},
+					{NetworkPolicy: Pointer(NewAccountObjectIdentifier("old_policy"))},
+					{NetworkPolicy: &policy},
+				},
+			}
+			err := updateSafelyPolling(context.Background(), npReq, stub.update, stub.describe, stub.showByID)
+			require.NoError(t, err)
+		})
 	})
 }

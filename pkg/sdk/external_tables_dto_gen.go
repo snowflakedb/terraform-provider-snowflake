@@ -31,7 +31,7 @@ type CreateExternalTableRequest struct {
 	AwsSnsTopic         *string
 	CopyGrants          *bool
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicyLegacy
+	RowAccessPolicy     *TableRowAccessPolicy
 	Tag                 []TagAssociation
 }
 
@@ -101,7 +101,7 @@ type CreateWithManualPartitioningExternalTableRequest struct {
 	RawFileFormat       *RawFileFormatRequest
 	CopyGrants          *bool
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicyLegacy
+	RowAccessPolicy     *TableRowAccessPolicy
 	Tag                 []TagAssociation
 }
 
@@ -119,7 +119,7 @@ type CreateDeltaLakeExternalTableRequest struct {
 	RawFileFormat       *RawFileFormatRequest
 	CopyGrants          *bool
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicyLegacy
+	RowAccessPolicy     *TableRowAccessPolicy
 	Tag                 []TagAssociation
 }
 
@@ -138,7 +138,7 @@ type CreateUsingTemplateExternalTableRequest struct {
 	RawFileFormat       *RawFileFormatRequest
 	AwsSnsTopic         *string
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicyLegacy
+	RowAccessPolicy     *TableRowAccessPolicy
 	Tag                 []TagAssociation
 }
 

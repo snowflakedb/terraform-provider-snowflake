@@ -413,10 +413,10 @@ func ToWarehouseParametersDetails(params []*Parameter) (*WarehouseParametersDeta
 	byKey := parametersByKey(params)
 	var d WarehouseParametersDetails
 	if err := errors.Join(
-		fillTypedParameter(byKey["FALLBACK_WAREHOUSE"], ParseAccountObjectIdentifier, &d.FallbackWarehouse),
-		fillTypedParameter(byKey["MAX_CONCURRENCY_LEVEL"], strconv.Atoi, &d.MaxConcurrencyLevel),
-		fillTypedParameter(byKey["STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"], strconv.Atoi, &d.StatementQueuedTimeoutInSeconds),
-		fillTypedParameter(byKey["STATEMENT_TIMEOUT_IN_SECONDS"], strconv.Atoi, &d.StatementTimeoutInSeconds),
+		byKey["FALLBACK_WAREHOUSE"].fillTyped(ParseAccountObjectIdentifier, &d.FallbackWarehouse),
+		byKey["MAX_CONCURRENCY_LEVEL"].fillTyped(strconv.Atoi, &d.MaxConcurrencyLevel),
+		byKey["STATEMENT_QUEUED_TIMEOUT_IN_SECONDS"].fillTyped(strconv.Atoi, &d.StatementQueuedTimeoutInSeconds),
+		byKey["STATEMENT_TIMEOUT_IN_SECONDS"].fillTyped(strconv.Atoi, &d.StatementTimeoutInSeconds),
 	); err != nil {
 		return nil, err
 	}

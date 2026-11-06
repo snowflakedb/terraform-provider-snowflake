@@ -65,19 +65,19 @@ func catalogIntegrationOpenCatalogApplyCreateOptionalsExt(d *schema.ResourceData
 	)
 }
 
-func catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails, withExternalChangesMarking bool) diag.Diagnostics {
+func catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(ctx context.Context, d *schema.ResourceData, meta any, details *sdk.CatalogIntegrationOpenCatalogDetails, withExternalChangesMarking bool) diag.Diagnostics {
 	if withExternalChangesMarking {
 		if err := handleExternalChangesToNestedAttrs(d, details); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if err := catalogIntegrationOpenCatalogSetConfigFieldsExt(d, details); err != nil {
+	if err := catalogIntegrationOpenCatalogSetConfigFieldsExt(ctx, d, meta, details); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
 }
 
-func catalogIntegrationOpenCatalogSetConfigFieldsExt(d *schema.ResourceData, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
+func catalogIntegrationOpenCatalogSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, details *sdk.CatalogIntegrationOpenCatalogDetails) error {
 	return errors.Join(
 		d.Set("name", details.Id.Name()),
 		d.Set("enabled", details.Enabled),

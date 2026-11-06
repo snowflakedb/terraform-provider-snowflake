@@ -14,7 +14,7 @@ func Test_AuthenticationPolicyRead_preservesPropertyReadWarnings(t *testing.T) {
 	require.True(t, model.Hooks.DescribeInSdk.Present)
 
 	hook := renderTemplate(t, "handleExternalChangesInDescribe", model)
-	require.Contains(t, hook, "diags = authenticationPolicyHandleExternalChangesInDescribeExt(d, authenticationPolicyDetails, withExternalChangesMarking)")
+	require.Contains(t, hook, "diags = authenticationPolicyHandleExternalChangesInDescribeExt(ctx, d, meta, authenticationPolicyDetails, withExternalChangesMarking)")
 	require.Contains(t, hook, "if diags.HasError() {")
 	require.Contains(t, hook, "return diags")
 	require.NotContains(t, hook, "diag.FromErr")

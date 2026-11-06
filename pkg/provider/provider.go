@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/url"
 	"slices"
 	"strings"
@@ -40,6 +39,7 @@ func init() {
 			}
 			// <deprecation> tag is a hack to split description into two parts (deprecation/real description) nicely. This tag won't be rendered.
 			// Check resources.md.tmpl for usage example.
+			// A <preview_feature> mark may already be present in the description. Leave it in place; the generic resource and data source templates use it.
 			desc = fmt.Sprintf("~> **Deprecation** %v <deprecation>\n\n%s", deprecationMessage, r.Description)
 		}
 		return strings.TrimSpace(desc)
@@ -254,6 +254,12 @@ func GetProviderSchema() map[string]*schema.Schema {
 			Sensitive:   true,
 			Optional:    true,
 			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.Token, nil),
+		},
+		"token_file_path": {
+			Type:        schema.TypeString,
+			Description: envNameFieldDescription("Path to a file containing the token for OAuth, programmatic access token, and OIDC workload identity authentication. The driver re-reads this file on every new connection. Cannot be set together with `token`, including when `token` comes from a TOML profile. AWS, GCP, and Azure workload identity do not read this file.", snowflakeenvs.TokenFilePath),
+			Optional:    true,
+			DefaultFunc: schema.EnvDefaultFunc(snowflakeenvs.TokenFilePath, nil),
 		},
 		"token_accessor": {
 			Type:        schema.TypeList,
@@ -614,7 +620,7 @@ func GetProviderSchema() map[string]*schema.Schema {
 // TODO(next postgres prs): "snowflake_postgres_fork":                                                resources.PostgresFork(),
 // TODO(next postgres prs): "snowflake_postgres_instance":                                            resources.PostgresInstance(),
 func getResources() map[string]*schema.Resource {
-	return map[string]*schema.Resource{
+	resourcesByName := map[string]*schema.Resource{
 		"snowflake_account": resources.Account(),
 		"snowflake_account_authentication_policy_attachment":                     resources.AccountAuthenticationPolicyAttachment(),
 		"snowflake_account_role":                                                 resources.AccountRole(),
@@ -713,6 +719,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_password_policy":                                              resources.PasswordPolicy(),
 		"snowflake_pipe":                                                         resources.Pipe(),
 		"snowflake_postgres_instance":                                            resources.PostgresInstance(),
+		"snowflake_postgres_mirror":                                              resources.PostgresMirror(),
 		"snowflake_primary_connection":                                           resources.PrimaryConnection(),
 		"snowflake_procedure_java":                                               resources.ProcedureJava(),
 		"snowflake_procedure_javascript":                                         resources.ProcedureJavascript(),
@@ -721,6 +728,8 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_procedure_sql":                                                resources.ProcedureSql(),
 		"snowflake_projection_policy":                                            resources.ProjectionPolicy(),
 		"snowflake_quota":                                                        resources.Quota(),
+		"snowflake_replication_group":                                            resources.ReplicationGroup(),
+		"snowflake_replication_group_secondary":                                  resources.ReplicationGroupSecondary(),
 		"snowflake_resource_monitor":                                             resources.ResourceMonitor(),
 		"snowflake_row_access_policy":                                            resources.RowAccessPolicy(),
 		"snowflake_saml2_integration":                                            resources.SAML2Integration(),
@@ -768,10 +777,11 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_warehouse_adaptive":                                           resources.WarehouseAdaptive(),
 		"snowflake_warehouse_interactive":                                        resources.WarehouseInteractive(),
 	}
+	return resourcesByName
 }
 
 func getDataSources() map[string]*schema.Resource {
-	return map[string]*schema.Resource{
+	dataSourcesByName := map[string]*schema.Resource{
 		"snowflake_accounts":                           datasources.Accounts(),
 		"snowflake_account_roles":                      datasources.AccountRoles(),
 		"snowflake_alerts":                             datasources.Alerts(),
@@ -817,8 +827,10 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_parameters":                         datasources.Parameters(),
 		"snowflake_password_policies":                  datasources.PasswordPolicies(),
 		"snowflake_pipes":                              datasources.Pipes(),
+		"snowflake_postgres_mirrors":                   datasources.PostgresMirrors(),
 		"snowflake_procedures":                         datasources.Procedures(),
 		"snowflake_projection_policies":                datasources.ProjectionPolicies(),
+		"snowflake_replication_groups":                 datasources.ReplicationGroups(),
 		"snowflake_resource_monitors":                  datasources.ResourceMonitors(),
 		"snowflake_row_access_policies":                datasources.RowAccessPolicies(),
 		"snowflake_schemas":                            datasources.Schemas(),
@@ -846,6 +858,7 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_views":                              datasources.Views(),
 		"snowflake_warehouses":                         datasources.Warehouses(),
 	}
+	return dataSourcesByName
 }
 
 func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.Diagnostics) {
@@ -938,13 +951,8 @@ func ConfigureProvider(ctx context.Context, s *schema.ResourceData) (any, diag.D
 
 	providerCtx.Experiments = experiments
 
-	spanID, err := telemetry.NewSpanID()
-	if err != nil {
-		log.Printf("[WARN] failed to generate telemetry span_id: %v", err)
-	} else {
-		providerCtx.SpanID = spanID
-		telemetry.EmitProviderInit(ctx, providerCtx)
-	}
+	providerCtx.SpanID = telemetry.NewSpanID()
+	telemetry.EmitProviderInit(ctx, providerCtx)
 
 	return providerCtx, diags
 }
@@ -1047,6 +1055,7 @@ func getDriverConfigFromTerraform(s *schema.ResourceData, experiments experiment
 			}
 			return nil
 		}(),
+		handleStringField(s, "token_file_path", &config.TokenFilePath),
 		handleFieldWithMapping(s, "authenticator", &config.Authenticator, sdk.ToExtendedAuthenticatorType),
 		handleStringField(s, "passcode", &config.Passcode),
 		handleBoolField(s, "passcode_in_password", &config.PasscodeInPassword),

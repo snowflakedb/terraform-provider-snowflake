@@ -4,6 +4,9 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- range .Attributes }}
 	{{ template "attributeSchemaEntry" . }}
 {{- end }}
+{{- range .ComputedAttributes }}
+	{{ template "attributeSchemaEntry" . }}
+{{- end }}
 }{{ if .AttributesModification }}){{ end }}
 
 {{ end -}}
@@ -16,6 +19,9 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 		Required: true,
 {{- else if .Optional }}
 		Optional: true,
+{{- end }}
+{{- if .Computed }}
+		Computed: true,
 {{- end }}
 {{- if .ForceNew }}
 		ForceNew: true,
@@ -74,6 +80,9 @@ var {{ .Prefix }}AttributesSchema = {{ if .AttributesModification }}{{ .Prefix }
 {{- end }}
 {{- if .DescriptionExpr }}
 		Description: {{ .DescriptionExpr }},
+{{- end }}
+{{- if .DeprecatedExpr }}
+		Deprecated: {{ .DeprecatedExpr }},
 {{- end }}
 {{- if .DefaultExpr }}
 		Default: {{ .DefaultExpr }},

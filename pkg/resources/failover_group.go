@@ -15,6 +15,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -167,6 +168,7 @@ func FailoverGroup() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		Description:   docs.WithPreviewFeatureMark(),
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingCreateWrapper(resources.FailoverGroup, CreateFailoverGroup)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingReadWrapper(resources.FailoverGroup, ReadFailoverGroup)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.FailoverGroupResource), TrackingUpdateWrapper(resources.FailoverGroup, UpdateFailoverGroup)),

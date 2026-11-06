@@ -98,6 +98,7 @@ var CodeBundle = ssot.Object{
 	IdentityHierarchyForceNew: true,
 	PreviewFeature:            true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithAllGenerators(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
@@ -121,15 +122,6 @@ var CodeBundle = ssot.Object{
 				ssot.SdkDescribeDetailsFromIdentifier(),
 			),
 		),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(),
-			ssot.ObjectAssertDescribe(),
-		),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithResource(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -144,6 +136,7 @@ var CodeBundle = ssot.Object{
 		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},

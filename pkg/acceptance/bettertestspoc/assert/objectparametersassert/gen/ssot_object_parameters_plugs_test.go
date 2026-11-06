@@ -69,6 +69,11 @@ func Test_schemaIsOptedIntoBothParameterAssertionGenerators(t *testing.T) {
 	require.Contains(t, parameterObjectNames(SnowflakeResourceParametersForAssertions()), "Schema")
 }
 
+func Test_selectsForParameters(t *testing.T) {
+	require.True(t, selectsForParameters(defs.Schema))
+	require.False(t, selectsForParameters(defs.CodeBundle))
+}
+
 func parameterObjectNames(parameters []SnowflakeObjectParameters) []string {
 	return collections.Map(parameters, func(p SnowflakeObjectParameters) string { return p.ObjectName() })
 }

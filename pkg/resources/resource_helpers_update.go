@@ -3,6 +3,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -356,6 +357,21 @@ func setValueUpdateFallback[T any](d *schema.ResourceData, key string, setField 
 	if unset != nil {
 		*setField = fallback
 	}
+	return nil
+}
+
+func listValueUpdateSetOnlyBuilder[T any, Set any](d *schema.ResourceData, key string, setValue func([]T) Set, mapper func(any) (T, error)) error {
+	if !d.HasChange(key) {
+		return nil
+	}
+	mappedValue, err := collections.MapErr(d.Get(key).([]any), mapper)
+	if err != nil {
+		return err
+	}
+	if len(mappedValue) == 0 {
+		return fmt.Errorf("cannot unset %s", key)
+	}
+	setValue(mappedValue)
 	return nil
 }
 

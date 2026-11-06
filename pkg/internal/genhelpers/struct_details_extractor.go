@@ -19,6 +19,8 @@ type Field struct {
 	Name           string
 	ConcreteType   string
 	UnderlyingType string
+	// SchemaName is the Terraform schema key when it differs from the snake_case of Name.
+	SchemaName string
 }
 
 func (f *Field) IsPointer() bool {
@@ -76,7 +78,11 @@ func ExtractStructDetails(s any) StructDetails {
 		}
 		underlyingType += kind.String()
 
-		fields[i] = Field{currentName, currentType, underlyingType}
+		fields[i] = Field{
+			Name:           currentName,
+			ConcreteType:   currentType,
+			UnderlyingType: underlyingType,
+		}
 	}
 	return StructDetails{v.Type().String(), fields}
 }

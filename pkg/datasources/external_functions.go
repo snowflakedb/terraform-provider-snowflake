@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -62,6 +63,7 @@ var externalFunctionsSchema = map[string]*schema.Schema{
 
 func ExternalFunctions() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ExternalFunctionsDatasource), TrackingReadWrapper(datasources.ExternalFunctions, ReadContextExternalFunctions)),
 		Schema:      externalFunctionsSchema,
 	}

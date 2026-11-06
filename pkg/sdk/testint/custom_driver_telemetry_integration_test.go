@@ -92,11 +92,10 @@ func captureDriverLogs(t *testing.T) *bytes.Buffer {
 
 func lastTelemetryPayload(logs string) (string, bool) {
 	const marker = "telemetry payload being sent: "
-	idx := strings.LastIndex(logs, marker)
-	if idx < 0 {
+	_, payload, ok := strings.CutLast(logs, marker)
+	if !ok {
 		return "", false
 	}
-	payload := logs[idx+len(marker):]
 	if end := strings.IndexByte(payload, '\n'); end >= 0 {
 		payload = payload[:end]
 	}

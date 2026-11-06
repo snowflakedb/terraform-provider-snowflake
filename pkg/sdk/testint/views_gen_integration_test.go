@@ -635,7 +635,7 @@ func TestInt_Views(t *testing.T) {
 
 		showRequest := sdk.NewShowViewRequest().
 			WithLike(sdk.Like{Pattern: &view1.Name}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}).
+			WithIn(sdk.ExtendedIn{Schema: testClientHelper().Ids.SchemaId()}).
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(5)})
 		returnedViews, err := client.Views.Show(ctx, showRequest)
 

@@ -133,6 +133,16 @@ func (s *AuthenticationPolicyPatPolicyRequest) WithRequireRoleRestrictionForServ
 	return s
 }
 
+func (s *AuthenticationPolicyPatPolicyRequest) WithRequireRoleRestrictionForPersonUsers(requireRoleRestrictionForPersonUsers bool) *AuthenticationPolicyPatPolicyRequest {
+	s.RequireRoleRestrictionForPersonUsers = &requireRoleRestrictionForPersonUsers
+	return s
+}
+
+func (s *AuthenticationPolicyPatPolicyRequest) WithBlockedRolesList(blockedRolesList []StringListItemWrapper) *AuthenticationPolicyPatPolicyRequest {
+	s.BlockedRolesList = blockedRolesList
+	return s
+}
+
 func (s *AuthenticationPolicyPatPolicyRequest) WithNetworkPolicyEvaluation(networkPolicyEvaluation NetworkPolicyEvaluationOption) *AuthenticationPolicyPatPolicyRequest {
 	s.NetworkPolicyEvaluation = &networkPolicyEvaluation
 	return s

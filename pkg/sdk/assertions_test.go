@@ -15,8 +15,7 @@ func assertOptsInvalid(t *testing.T, opts validatable, expectedError error) {
 	t.Helper()
 	err := opts.validate()
 	assert.Error(t, err)
-	var sdkErr *Error
-	if errors.As(err, &sdkErr) {
+	if sdkErr, ok := errors.AsType[*Error](err); ok {
 		errorWithoutFileInfo := errorFileInfoRegexp.ReplaceAllString(sdkErr.Error(), "")
 		expectedErrorWithoutFileInfo := errorFileInfoRegexp.ReplaceAllString(expectedError.Error(), "")
 		assert.Equal(t, expectedErrorWithoutFileInfo, errorWithoutFileInfo)
@@ -31,8 +30,7 @@ func assertOptsInvalidJoinedErrors(t *testing.T, opts validatable, expectedError
 	err := opts.validate()
 	assert.Error(t, err)
 	for _, expectedError := range expectedErrors {
-		var sdkErr *Error
-		if errors.As(expectedError, &sdkErr) {
+		if sdkErr, ok := errors.AsType[*Error](expectedError); ok {
 			expectedErrorWithoutFileInfo := errorFileInfoRegexp.ReplaceAllString(sdkErr.Error(), "")
 			assert.Contains(t, err.Error(), expectedErrorWithoutFileInfo)
 		} else {

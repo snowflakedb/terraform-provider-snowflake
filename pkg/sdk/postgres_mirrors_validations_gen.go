@@ -28,7 +28,6 @@ func (opts *CreatePostgresMirrorOptions) validate() error {
 		if !anyValueSet(opts.arguments.PostgresTables, opts.arguments.PostgresSchemas) {
 			errs = append(errs, errAtLeastOneOf("CreatePostgresMirrorOptions.arguments", "PostgresTables", "PostgresSchemas"))
 		}
-		errs = append(errs, opts.arguments.additionalValidations())
 	}
 	return JoinErrors(errs...)
 }

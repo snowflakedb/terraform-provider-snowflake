@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -85,6 +86,7 @@ var parametersSchema = map[string]*schema.Schema{
 
 func Parameters() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ParametersDatasource), TrackingReadWrapper(datasources.Parameters, ReadParameters)),
 		Schema:      parametersSchema,
 	}

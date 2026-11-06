@@ -15,6 +15,9 @@ func (opts *CreateAlertOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if opts.Warehouse != nil && !ValidObjectIdentifier(opts.Warehouse) {
+		errs = append(errs, errInvalidIdentifier("CreateAlertOptions", "Warehouse"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateAlertOptions", "name"))
 	}
@@ -32,8 +35,21 @@ func (opts *AlterAlertOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterAlertOptions", "name"))
 	}
-	if !exactlyOneValueSet(opts.Action, opts.Set, opts.Unset, opts.ModifyCondition, opts.ModifyAction) {
-		errs = append(errs, errExactlyOneOf("AlterAlertOptions", "Action", "Set", "Unset", "ModifyCondition", "ModifyAction"))
+	if !exactlyOneValueSet(opts.Resume, opts.Suspend, opts.Set, opts.Unset, opts.ModifyCondition, opts.ModifyAction) {
+		errs = append(errs, errExactlyOneOf("AlterAlertOptions", "Resume", "Suspend", "Set", "Unset", "ModifyCondition", "ModifyAction"))
+	}
+	if valueSet(opts.Set) {
+		if opts.Set.Warehouse != nil && !ValidObjectIdentifier(opts.Set.Warehouse) {
+			errs = append(errs, errInvalidIdentifier("AlterAlertOptions.Set", "Warehouse"))
+		}
+		if !anyValueSet(opts.Set.Warehouse, opts.Set.Schedule, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterAlertOptions.Set", "Warehouse", "Schedule", "Comment"))
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.Warehouse, opts.Unset.Schedule, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterAlertOptions.Unset", "Warehouse", "Schedule", "Comment"))
+		}
 	}
 	return JoinErrors(errs...)
 }

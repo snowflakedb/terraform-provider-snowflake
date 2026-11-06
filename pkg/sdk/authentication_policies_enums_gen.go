@@ -79,6 +79,34 @@ func ToAuthenticationMethodsOption(s string) (AuthenticationMethodsOption, error
 	}
 }
 
+type MfaAuthenticationMethodsOption string
+
+const (
+	MfaAuthenticationMethodsOptionAll      MfaAuthenticationMethodsOption = "ALL"
+	MfaAuthenticationMethodsOptionSaml     MfaAuthenticationMethodsOption = "SAML"
+	MfaAuthenticationMethodsOptionPassword MfaAuthenticationMethodsOption = "PASSWORD"
+)
+
+var AllMfaAuthenticationMethodsOptions = []MfaAuthenticationMethodsOption{
+	MfaAuthenticationMethodsOptionAll,
+	MfaAuthenticationMethodsOptionSaml,
+	MfaAuthenticationMethodsOptionPassword,
+}
+
+func ToMfaAuthenticationMethodsOption(s string) (MfaAuthenticationMethodsOption, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(MfaAuthenticationMethodsOptionAll):
+		return MfaAuthenticationMethodsOptionAll, nil
+	case string(MfaAuthenticationMethodsOptionSaml):
+		return MfaAuthenticationMethodsOptionSaml, nil
+	case string(MfaAuthenticationMethodsOptionPassword):
+		return MfaAuthenticationMethodsOptionPassword, nil
+	default:
+		return "", fmt.Errorf("invalid mfa authentication methods option: %s", s)
+	}
+}
+
 type MfaEnrollmentOption string
 
 const (
@@ -344,34 +372,6 @@ func ToAllowedProviderOption(s string) (AllowedProviderOption, error) {
 		return AllowedProviderOptionOidc, nil
 	default:
 		return "", fmt.Errorf("invalid allowed provider option: %s", s)
-	}
-}
-
-type MfaAuthenticationMethodsOption string
-
-const (
-	MfaAuthenticationMethodsOptionAll      MfaAuthenticationMethodsOption = "ALL"
-	MfaAuthenticationMethodsOptionSaml     MfaAuthenticationMethodsOption = "SAML"
-	MfaAuthenticationMethodsOptionPassword MfaAuthenticationMethodsOption = "PASSWORD"
-)
-
-var AllMfaAuthenticationMethodsOptions = []MfaAuthenticationMethodsOption{
-	MfaAuthenticationMethodsOptionAll,
-	MfaAuthenticationMethodsOptionSaml,
-	MfaAuthenticationMethodsOptionPassword,
-}
-
-func ToMfaAuthenticationMethodsOption(s string) (MfaAuthenticationMethodsOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(MfaAuthenticationMethodsOptionAll):
-		return MfaAuthenticationMethodsOptionAll, nil
-	case string(MfaAuthenticationMethodsOptionSaml):
-		return MfaAuthenticationMethodsOptionSaml, nil
-	case string(MfaAuthenticationMethodsOptionPassword):
-		return MfaAuthenticationMethodsOptionPassword, nil
-	default:
-		return "", fmt.Errorf("invalid mfa authentication methods option: %s", s)
 	}
 }
 

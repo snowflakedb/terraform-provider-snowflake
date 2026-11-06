@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -112,6 +113,7 @@ var cortexSearchServicesSchema = map[string]*schema.Schema{
 // CortexSearchServices Snowflake Cortex search services resource.
 func CortexSearchServices() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.CortexSearchServicesDatasource), TrackingReadWrapper(datasources.CortexSearchServices, ReadCortexSearchServices)),
 		Schema:      cortexSearchServicesSchema,
 	}

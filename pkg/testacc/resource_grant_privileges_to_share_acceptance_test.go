@@ -23,7 +23,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnDatabase(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	grantModel := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeUsage.String()}, share.ID().Name()).
@@ -63,7 +63,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnSchema(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(database.ID())
@@ -112,7 +112,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnTable(t *testing.T) {
 	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 	t.Cleanup(schemaCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
@@ -161,7 +161,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnDynamicTable(t *testing.T) {
 	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 	t.Cleanup(schemaCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
@@ -213,7 +213,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnAllTablesInSchema(t *testing.
 	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 	t.Cleanup(schemaCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	setupGrantModel := model.GrantPrivilegesToShare("test_setup", []string{"USAGE"}, share.ID().Name()).
@@ -259,7 +259,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnView(t *testing.T) {
 	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 	t.Cleanup(schemaCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
@@ -314,7 +314,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnTag(t *testing.T) {
 	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 	t.Cleanup(schemaCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	tagId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
@@ -358,7 +358,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnTag(t *testing.T) {
 }
 
 func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnFunctionWithArguments(t *testing.T) {
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	function := testClient().Function.CreateSecure(t, sdk.DataTypeFloat)
@@ -398,7 +398,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnFunctionWithArguments(t *test
 }
 
 func TestAcc_GrantPrivilegesToShare_OnSchemaObject_OnFunctionWithoutArguments(t *testing.T) {
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	function := testClient().Function.CreateSecure(t)
@@ -441,7 +441,7 @@ func TestAcc_GrantPrivilegesToShare_OnPrivilegeUpdate(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	grantModelOnePrivilege := model.GrantPrivilegesToShare("test",
@@ -496,7 +496,7 @@ func TestAcc_GrantPrivilegesToShare_OnDatabaseWithReferenceUsagePrivilege(t *tes
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	grantModel := model.GrantPrivilegesToShare("test",
@@ -554,12 +554,10 @@ func TestAcc_GrantPrivilegesToShare_NoOnOption(t *testing.T) {
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2621 doesn't apply to this resource
 func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
-	t.Skip("Should be addressed in SNOW-2048471 - without this task done, the test cannot be properly asserted in the terraform testing framework")
-
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	grantModel := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeUsage.String()}, share.ID().Name()).
@@ -577,7 +575,7 @@ func TestAcc_GrantPrivilegesToShare_RemoveShareOutsideTerraform(t *testing.T) {
 			{
 				PreConfig:   func() { shareCleanup() },
 				Config:      accconfig.FromModels(t, grantModel),
-				ExpectError: regexp.MustCompile(sdk.ErrObjectNotExistOrAuthorized.Error()),
+				ExpectError: regexp.MustCompile("object does not exist or not authorized"),
 			},
 		},
 	})
@@ -591,7 +589,7 @@ func TestAcc_GrantPrivilegesToShareWithNameContainingDots_OnTable(t *testing.T) 
 	t.Cleanup(schemaCleanup)
 
 	shareId := testClient().Ids.RandomAccountObjectIdentifierContaining(".foo.bar")
-	_, shareCleanup := testClient().Share.CreateShareWithIdentifier(t, shareId)
+	_, shareCleanup := testClient().Share.CreateWithIdentifier(t, shareId)
 	t.Cleanup(shareCleanup)
 
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
@@ -643,7 +641,7 @@ func TestAcc_GrantPrivilegesToShare_shareNameContainingDots(t *testing.T) {
 	t.Cleanup(databaseCleanup)
 
 	shareId := testClient().Ids.RandomAccountObjectIdentifierContaining(".foo.bar")
-	_, shareCleanup := testClient().Share.CreateShareWithIdentifier(t, shareId)
+	_, shareCleanup := testClient().Share.CreateWithIdentifier(t, shareId)
 	t.Cleanup(shareCleanup)
 
 	grantModel := model.GrantPrivilegesToShare("test", []string{sdk.ObjectPrivilegeUsage.String()}, shareId.Name()).
@@ -685,7 +683,7 @@ func TestAcc_GrantPrivilegesToShare_migrateFromV0941_ensureSmoothUpgradeWithNewR
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
 	t.Cleanup(databaseCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)

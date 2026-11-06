@@ -267,7 +267,7 @@ func TestInt_Quotas(t *testing.T) {
 		includeUsers(strings.ToLower(includedUser.ID().Name()))
 		excludeUsers(excludedUser.ID().Name())
 		_, err := client.Quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(quotaId, *sdk.NewQuotaSetUserTagsArgsRequest(
-			[]sdk.QuotaUserTagRequest{*sdk.NewQuotaUserTagRequest(tag.ID(), "finance"), *sdk.NewQuotaUserTagRequest(tag.ID(), "Analytics")},
+			[]sdk.QuotaUserTagRequest{*sdk.NewQuotaUserTagRequestFromTag(tag.ID(), "finance"), *sdk.NewQuotaUserTagRequestFromTag(tag.ID(), "Analytics")},
 			sdk.QuotaUserTagsOperatorIntersection,
 		)))
 		require.NoError(t, err)
@@ -284,7 +284,7 @@ func TestInt_Quotas(t *testing.T) {
 
 		// excluding tags replaces the user tags and clears the included and excluded users
 		_, err = client.Quotas.ExcludeUsers(ctx, sdk.NewExcludeUsersQuotaRequest(quotaId, *sdk.NewQuotaExcludeUsersArgsRequest().
-			WithByTag(*sdk.NewQuotaExcludeUsersByTagRequest([]sdk.QuotaExcludedUserTagRequest{*sdk.NewQuotaExcludedUserTagRequest(tag.ID(), "contractor")}))))
+			WithByTag(*sdk.NewQuotaExcludeUsersByTagRequest([]sdk.QuotaExcludedUserTagRequest{*sdk.NewQuotaExcludedUserTagRequestFromTag(tag.ID(), "contractor")}))))
 		require.NoError(t, err)
 
 		scope = describe(t, quotaId).Scope

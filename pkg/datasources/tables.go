@@ -7,6 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -57,7 +58,7 @@ func Tables() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.TablesDatasource), TrackingReadWrapper(datasources.Tables, ReadTables)),
 		Schema:      tablesSchema,
-		Description: "Datasource used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW and DESCRIBE (COLUMNS) are encapsulated in one output collection `tables`.",
+		Description: docs.WithPreviewFeatureMark() + "Datasource used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW and DESCRIBE (COLUMNS) are encapsulated in one output collection `tables`.",
 	}
 }
 

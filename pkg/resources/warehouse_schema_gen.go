@@ -17,7 +17,7 @@ var warehouseAttributesSchema = map[string]*tfschema.Schema{
 		Optional:         true,
 		ValidateDiagFunc: sdkValidation(sdk.ToWarehouseTypeUserSettable),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToWarehouseTypeUserSettable), IgnoreChangeToCurrentSnowflakeValueInShow("type")),
-		Description:      "Specifies warehouse type. " + enumValuesDescription(sdk.AllWarehouseTypesUserSettable) + " Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed.",
+		Description:      "Specifies warehouse type. " + enumValuesDescription(sdk.AllWarehouseTypesUserSettable) + " Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed. When not set, the provider creates the warehouse as `STANDARD` (instead of relying on the Snowflake default type, which is changing to `ADAPTIVE`), and removing the field from the configuration sets the type to `STANDARD` instead of unsetting it. A warehouse whose type was changed outside of Terraform to `ADAPTIVE` is updated back in place, and one changed to `INTERACTIVE` is recreated.",
 	},
 	"warehouse_size": {
 		Type:             tfschema.TypeString,

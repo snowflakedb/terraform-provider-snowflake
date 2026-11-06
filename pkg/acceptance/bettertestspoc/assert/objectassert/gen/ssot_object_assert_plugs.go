@@ -16,14 +16,25 @@ func ssotObjectAssertionDetails() []genhelpers.SdkObjectDetails {
 	var details []genhelpers.SdkObjectDetails
 	for _, obj := range defs.All() {
 		g := ssot.ObjectGenerators(obj.Generators...)
-		if g.ObjectAssert.Show {
+		if g.ObjectAssert.Show && selectsForObjectAssertShow(obj) {
 			details = append(details, objectAssertionDetailsFromSsot(obj, false))
 		}
-		if g.ObjectAssert.Describe {
+		if g.ObjectAssert.Describe && selectsForObjectAssertDescribe(obj) {
 			details = append(details, objectAssertionDetailsFromSsot(obj, true))
 		}
 	}
 	return details
+}
+
+// selectsForObjectAssertShow is the one filter of the SHOW object assertion generator: the object has SHOW output columns
+// and does not reuse the SHOW object assertion of its base (ObjectAssertShowRowFromBase).
+func selectsForObjectAssertShow(obj ssot.Object) bool {
+	return obj.HasShowOutput() && !obj.ReusesBaseObjectAssertShow()
+}
+
+// selectsForObjectAssertDescribe is the one filter of the DESCRIBE object assertion generator: the object has DESCRIBE output columns.
+func selectsForObjectAssertDescribe(obj ssot.Object) bool {
+	return obj.HasDescribeOutput()
 }
 
 // mergeSnowflakeObjectAssertionDetails drops reflected names that ssot emits, then appends the ssot models.

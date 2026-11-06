@@ -16,82 +16,82 @@ func init() {
 var quotasTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_Quotas_validation_Create_name_ValidIdentifier                                       testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Quotas_validation_Create_opts_ConflictingFields                                     testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Quotas_sql_Create_basic                                                             testCaseName = "sql_Create_basic"
-	case_Quotas_sql_Create_all                                                               testCaseName = "sql_Create_all"
-	case_Quotas_validation_Alter_name_ValidIdentifier                                        testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_NoneSet                             testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Quotas_validation_Alter_opts_Set_AtLeastOneValueSet                                 testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Quotas_validation_Alter_opts_Unset_AtLeastOneValueSet                               testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Quotas_sql_Alter_RenameTo                                                           testCaseName = "sql_Alter_RenameTo"
-	case_Quotas_sql_Alter_Set                                                                testCaseName = "sql_Alter_Set"
-	case_Quotas_sql_Alter_Unset                                                              testCaseName = "sql_Alter_Unset"
-	case_Quotas_validation_Drop_name_ValidIdentifier                                         testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Quotas_sql_Drop_basic                                                               testCaseName = "sql_Drop_basic"
-	case_Quotas_sql_Drop_all                                                                 testCaseName = "sql_Drop_all"
-	case_Quotas_sql_Show_basic                                                               testCaseName = "sql_Show_basic"
-	case_Quotas_sql_Show_all                                                                 testCaseName = "sql_Show_all"
-	case_Quotas_sql_Show_Like                                                                testCaseName = "sql_Show_Like"
-	case_Quotas_sql_Show_In                                                                  testCaseName = "sql_Show_In"
-	case_Quotas_sql_Show_Limit                                                               testCaseName = "sql_Show_Limit"
-	case_Quotas_validation_AddSharedResource_name_ValidIdentifier                            testCaseName = "validation_AddSharedResource_name_ValidIdentifier"
-	case_Quotas_validation_AddSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet    testCaseName = "validation_AddSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet"
-	case_Quotas_sql_AddSharedResource_basic                                                  testCaseName = "sql_AddSharedResource_basic"
-	case_Quotas_validation_RemoveSharedResource_name_ValidIdentifier                         testCaseName = "validation_RemoveSharedResource_name_ValidIdentifier"
-	case_Quotas_validation_RemoveSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet testCaseName = "validation_RemoveSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet"
-	case_Quotas_sql_RemoveSharedResource_basic                                               testCaseName = "sql_RemoveSharedResource_basic"
-	case_Quotas_validation_SetUserTags_name_ValidIdentifier                                  testCaseName = "validation_SetUserTags_name_ValidIdentifier"
-	case_Quotas_validation_SetUserTags_args_Tags_Tag_ValidIdentifier                         testCaseName = "validation_SetUserTags_args_Tags_Tag_ValidIdentifier"
-	case_Quotas_sql_SetUserTags_basic                                                        testCaseName = "sql_SetUserTags_basic"
-	case_Quotas_validation_ExcludeUsers_name_ValidIdentifier                                 testCaseName = "validation_ExcludeUsers_name_ValidIdentifier"
-	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet"
-	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet"
-	case_Quotas_validation_ExcludeUsers_args_ByTag_Tags_Tag_ValidIdentifier                  testCaseName = "validation_ExcludeUsers_args_ByTag_Tags_Tag_ValidIdentifier"
-	case_Quotas_sql_ExcludeUsers_basic                                                       testCaseName = "sql_ExcludeUsers_basic"
-	case_Quotas_validation_IncludeUsers_name_ValidIdentifier                                 testCaseName = "validation_IncludeUsers_name_ValidIdentifier"
-	case_Quotas_sql_IncludeUsers_basic                                                       testCaseName = "sql_IncludeUsers_basic"
-	case_Quotas_validation_GetQuotaScope_name_ValidIdentifier                                testCaseName = "validation_GetQuotaScope_name_ValidIdentifier"
-	case_Quotas_sql_GetQuotaScope_basic                                                      testCaseName = "sql_GetQuotaScope_basic"
-	case_Quotas_validation_SetPerUserLimit_name_ValidIdentifier                              testCaseName = "validation_SetPerUserLimit_name_ValidIdentifier"
-	case_Quotas_sql_SetPerUserLimit_basic                                                    testCaseName = "sql_SetPerUserLimit_basic"
-	case_Quotas_validation_UnsetPerUserLimit_name_ValidIdentifier                            testCaseName = "validation_UnsetPerUserLimit_name_ValidIdentifier"
-	case_Quotas_sql_UnsetPerUserLimit_basic                                                  testCaseName = "sql_UnsetPerUserLimit_basic"
-	case_Quotas_validation_SetBlockEnforcementEnabled_name_ValidIdentifier                   testCaseName = "validation_SetBlockEnforcementEnabled_name_ValidIdentifier"
-	case_Quotas_sql_SetBlockEnforcementEnabled_basic                                         testCaseName = "sql_SetBlockEnforcementEnabled_basic"
-	case_Quotas_validation_GetConfig_name_ValidIdentifier                                    testCaseName = "validation_GetConfig_name_ValidIdentifier"
-	case_Quotas_sql_GetConfig_basic                                                          testCaseName = "sql_GetConfig_basic"
-	case_Quotas_validation_AddNotificationThreshold_name_ValidIdentifier                     testCaseName = "validation_AddNotificationThreshold_name_ValidIdentifier"
-	case_Quotas_sql_AddNotificationThreshold_basic                                           testCaseName = "sql_AddNotificationThreshold_basic"
-	case_Quotas_validation_RemoveNotificationThreshold_name_ValidIdentifier                  testCaseName = "validation_RemoveNotificationThreshold_name_ValidIdentifier"
-	case_Quotas_sql_RemoveNotificationThreshold_basic                                        testCaseName = "sql_RemoveNotificationThreshold_basic"
-	case_Quotas_validation_GetNotificationThresholds_name_ValidIdentifier                    testCaseName = "validation_GetNotificationThresholds_name_ValidIdentifier"
-	case_Quotas_sql_GetNotificationThresholds_basic                                          testCaseName = "sql_GetNotificationThresholds_basic"
-	case_Quotas_validation_AddNotificationIntegration_name_ValidIdentifier                   testCaseName = "validation_AddNotificationIntegration_name_ValidIdentifier"
-	case_Quotas_validation_AddNotificationIntegration_args_Integration_ValidIdentifier       testCaseName = "validation_AddNotificationIntegration_args_Integration_ValidIdentifier"
-	case_Quotas_sql_AddNotificationIntegration_basic                                         testCaseName = "sql_AddNotificationIntegration_basic"
-	case_Quotas_validation_RemoveNotificationIntegration_name_ValidIdentifier                testCaseName = "validation_RemoveNotificationIntegration_name_ValidIdentifier"
-	case_Quotas_validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier    testCaseName = "validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier"
-	case_Quotas_sql_RemoveNotificationIntegration_basic                                      testCaseName = "sql_RemoveNotificationIntegration_basic"
-	case_Quotas_validation_GetNotificationIntegrations_name_ValidIdentifier                  testCaseName = "validation_GetNotificationIntegrations_name_ValidIdentifier"
-	case_Quotas_sql_GetNotificationIntegrations_basic                                        testCaseName = "sql_GetNotificationIntegrations_basic"
-	case_Quotas_validation_SetAdminEmails_name_ValidIdentifier                               testCaseName = "validation_SetAdminEmails_name_ValidIdentifier"
-	case_Quotas_sql_SetAdminEmails_basic                                                     testCaseName = "sql_SetAdminEmails_basic"
-	case_Quotas_validation_AddCustomAction_name_ValidIdentifier                              testCaseName = "validation_AddCustomAction_name_ValidIdentifier"
-	case_Quotas_validation_AddCustomAction_args_Procedure_ValidIdentifier                    testCaseName = "validation_AddCustomAction_args_Procedure_ValidIdentifier"
-	case_Quotas_sql_AddCustomAction_basic                                                    testCaseName = "sql_AddCustomAction_basic"
-	case_Quotas_validation_RemoveCustomActions_name_ValidIdentifier                          testCaseName = "validation_RemoveCustomActions_name_ValidIdentifier"
-	case_Quotas_sql_RemoveCustomActions_basic                                                testCaseName = "sql_RemoveCustomActions_basic"
-	case_Quotas_validation_GetCustomActions_name_ValidIdentifier                             testCaseName = "validation_GetCustomActions_name_ValidIdentifier"
-	case_Quotas_sql_GetCustomActions_basic                                                   testCaseName = "sql_GetCustomActions_basic"
-	case_Quotas_validation_SetCycleStartAction_name_ValidIdentifier                          testCaseName = "validation_SetCycleStartAction_name_ValidIdentifier"
-	case_Quotas_validation_SetCycleStartAction_args_Procedure_ValidIdentifier                testCaseName = "validation_SetCycleStartAction_args_Procedure_ValidIdentifier"
-	case_Quotas_sql_SetCycleStartAction_basic                                                testCaseName = "sql_SetCycleStartAction_basic"
-	case_Quotas_validation_RemoveCycleStartAction_name_ValidIdentifier                       testCaseName = "validation_RemoveCycleStartAction_name_ValidIdentifier"
-	case_Quotas_sql_RemoveCycleStartAction_basic                                             testCaseName = "sql_RemoveCycleStartAction_basic"
-	case_Quotas_validation_GetCycleStartAction_name_ValidIdentifier                          testCaseName = "validation_GetCycleStartAction_name_ValidIdentifier"
-	case_Quotas_sql_GetCycleStartAction_basic                                                testCaseName = "sql_GetCycleStartAction_basic"
+	case_Quotas_validation_Create_name_ValidIdentifier                                          testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Quotas_validation_Create_opts_ConflictingFields                                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Quotas_sql_Create_basic                                                                testCaseName = "sql_Create_basic"
+	case_Quotas_sql_Create_all                                                                  testCaseName = "sql_Create_all"
+	case_Quotas_validation_Alter_name_ValidIdentifier                                           testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Quotas_validation_Alter_opts_Set_AtLeastOneValueSet                                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Quotas_validation_Alter_opts_Unset_AtLeastOneValueSet                                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Quotas_sql_Alter_RenameTo                                                              testCaseName = "sql_Alter_RenameTo"
+	case_Quotas_sql_Alter_Set                                                                   testCaseName = "sql_Alter_Set"
+	case_Quotas_sql_Alter_Unset                                                                 testCaseName = "sql_Alter_Unset"
+	case_Quotas_validation_Drop_name_ValidIdentifier                                            testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Quotas_sql_Drop_basic                                                                  testCaseName = "sql_Drop_basic"
+	case_Quotas_sql_Drop_all                                                                    testCaseName = "sql_Drop_all"
+	case_Quotas_sql_Show_basic                                                                  testCaseName = "sql_Show_basic"
+	case_Quotas_sql_Show_all                                                                    testCaseName = "sql_Show_all"
+	case_Quotas_sql_Show_Like                                                                   testCaseName = "sql_Show_Like"
+	case_Quotas_sql_Show_In                                                                     testCaseName = "sql_Show_In"
+	case_Quotas_sql_Show_Limit                                                                  testCaseName = "sql_Show_Limit"
+	case_Quotas_validation_AddSharedResource_name_ValidIdentifier                               testCaseName = "validation_AddSharedResource_name_ValidIdentifier"
+	case_Quotas_validation_AddSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet       testCaseName = "validation_AddSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet"
+	case_Quotas_sql_AddSharedResource_basic                                                     testCaseName = "sql_AddSharedResource_basic"
+	case_Quotas_validation_RemoveSharedResource_name_ValidIdentifier                            testCaseName = "validation_RemoveSharedResource_name_ValidIdentifier"
+	case_Quotas_validation_RemoveSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet    testCaseName = "validation_RemoveSharedResource_opts_args_MoreThanOneValueSet_MoreThanOneSet"
+	case_Quotas_sql_RemoveSharedResource_basic                                                  testCaseName = "sql_RemoveSharedResource_basic"
+	case_Quotas_validation_SetUserTags_name_ValidIdentifier                                     testCaseName = "validation_SetUserTags_name_ValidIdentifier"
+	case_Quotas_validation_SetUserTags_args_Tags_Reference_Arguments_Tag_ValidIdentifier        testCaseName = "validation_SetUserTags_args_Tags_Reference_Arguments_Tag_ValidIdentifier"
+	case_Quotas_sql_SetUserTags_basic                                                           testCaseName = "sql_SetUserTags_basic"
+	case_Quotas_validation_ExcludeUsers_name_ValidIdentifier                                    testCaseName = "validation_ExcludeUsers_name_ValidIdentifier"
+	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet"
+	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet"
+	case_Quotas_validation_ExcludeUsers_args_ByTag_Tags_Reference_Arguments_Tag_ValidIdentifier testCaseName = "validation_ExcludeUsers_args_ByTag_Tags_Reference_Arguments_Tag_ValidIdentifier"
+	case_Quotas_sql_ExcludeUsers_basic                                                          testCaseName = "sql_ExcludeUsers_basic"
+	case_Quotas_validation_IncludeUsers_name_ValidIdentifier                                    testCaseName = "validation_IncludeUsers_name_ValidIdentifier"
+	case_Quotas_sql_IncludeUsers_basic                                                          testCaseName = "sql_IncludeUsers_basic"
+	case_Quotas_validation_GetQuotaScope_name_ValidIdentifier                                   testCaseName = "validation_GetQuotaScope_name_ValidIdentifier"
+	case_Quotas_sql_GetQuotaScope_basic                                                         testCaseName = "sql_GetQuotaScope_basic"
+	case_Quotas_validation_SetPerUserLimit_name_ValidIdentifier                                 testCaseName = "validation_SetPerUserLimit_name_ValidIdentifier"
+	case_Quotas_sql_SetPerUserLimit_basic                                                       testCaseName = "sql_SetPerUserLimit_basic"
+	case_Quotas_validation_UnsetPerUserLimit_name_ValidIdentifier                               testCaseName = "validation_UnsetPerUserLimit_name_ValidIdentifier"
+	case_Quotas_sql_UnsetPerUserLimit_basic                                                     testCaseName = "sql_UnsetPerUserLimit_basic"
+	case_Quotas_validation_SetBlockEnforcementEnabled_name_ValidIdentifier                      testCaseName = "validation_SetBlockEnforcementEnabled_name_ValidIdentifier"
+	case_Quotas_sql_SetBlockEnforcementEnabled_basic                                            testCaseName = "sql_SetBlockEnforcementEnabled_basic"
+	case_Quotas_validation_GetConfig_name_ValidIdentifier                                       testCaseName = "validation_GetConfig_name_ValidIdentifier"
+	case_Quotas_sql_GetConfig_basic                                                             testCaseName = "sql_GetConfig_basic"
+	case_Quotas_validation_AddNotificationThreshold_name_ValidIdentifier                        testCaseName = "validation_AddNotificationThreshold_name_ValidIdentifier"
+	case_Quotas_sql_AddNotificationThreshold_basic                                              testCaseName = "sql_AddNotificationThreshold_basic"
+	case_Quotas_validation_RemoveNotificationThreshold_name_ValidIdentifier                     testCaseName = "validation_RemoveNotificationThreshold_name_ValidIdentifier"
+	case_Quotas_sql_RemoveNotificationThreshold_basic                                           testCaseName = "sql_RemoveNotificationThreshold_basic"
+	case_Quotas_validation_GetNotificationThresholds_name_ValidIdentifier                       testCaseName = "validation_GetNotificationThresholds_name_ValidIdentifier"
+	case_Quotas_sql_GetNotificationThresholds_basic                                             testCaseName = "sql_GetNotificationThresholds_basic"
+	case_Quotas_validation_AddNotificationIntegration_name_ValidIdentifier                      testCaseName = "validation_AddNotificationIntegration_name_ValidIdentifier"
+	case_Quotas_validation_AddNotificationIntegration_args_Integration_ValidIdentifier          testCaseName = "validation_AddNotificationIntegration_args_Integration_ValidIdentifier"
+	case_Quotas_sql_AddNotificationIntegration_basic                                            testCaseName = "sql_AddNotificationIntegration_basic"
+	case_Quotas_validation_RemoveNotificationIntegration_name_ValidIdentifier                   testCaseName = "validation_RemoveNotificationIntegration_name_ValidIdentifier"
+	case_Quotas_validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier       testCaseName = "validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier"
+	case_Quotas_sql_RemoveNotificationIntegration_basic                                         testCaseName = "sql_RemoveNotificationIntegration_basic"
+	case_Quotas_validation_GetNotificationIntegrations_name_ValidIdentifier                     testCaseName = "validation_GetNotificationIntegrations_name_ValidIdentifier"
+	case_Quotas_sql_GetNotificationIntegrations_basic                                           testCaseName = "sql_GetNotificationIntegrations_basic"
+	case_Quotas_validation_SetAdminEmails_name_ValidIdentifier                                  testCaseName = "validation_SetAdminEmails_name_ValidIdentifier"
+	case_Quotas_sql_SetAdminEmails_basic                                                        testCaseName = "sql_SetAdminEmails_basic"
+	case_Quotas_validation_AddCustomAction_name_ValidIdentifier                                 testCaseName = "validation_AddCustomAction_name_ValidIdentifier"
+	case_Quotas_validation_AddCustomAction_args_Procedure_ValidIdentifier                       testCaseName = "validation_AddCustomAction_args_Procedure_ValidIdentifier"
+	case_Quotas_sql_AddCustomAction_basic                                                       testCaseName = "sql_AddCustomAction_basic"
+	case_Quotas_validation_RemoveCustomActions_name_ValidIdentifier                             testCaseName = "validation_RemoveCustomActions_name_ValidIdentifier"
+	case_Quotas_sql_RemoveCustomActions_basic                                                   testCaseName = "sql_RemoveCustomActions_basic"
+	case_Quotas_validation_GetCustomActions_name_ValidIdentifier                                testCaseName = "validation_GetCustomActions_name_ValidIdentifier"
+	case_Quotas_sql_GetCustomActions_basic                                                      testCaseName = "sql_GetCustomActions_basic"
+	case_Quotas_validation_SetCycleStartAction_name_ValidIdentifier                             testCaseName = "validation_SetCycleStartAction_name_ValidIdentifier"
+	case_Quotas_validation_SetCycleStartAction_args_Procedure_ValidIdentifier                   testCaseName = "validation_SetCycleStartAction_args_Procedure_ValidIdentifier"
+	case_Quotas_sql_SetCycleStartAction_basic                                                   testCaseName = "sql_SetCycleStartAction_basic"
+	case_Quotas_validation_RemoveCycleStartAction_name_ValidIdentifier                          testCaseName = "validation_RemoveCycleStartAction_name_ValidIdentifier"
+	case_Quotas_sql_RemoveCycleStartAction_basic                                                testCaseName = "sql_RemoveCycleStartAction_basic"
+	case_Quotas_validation_GetCycleStartAction_name_ValidIdentifier                             testCaseName = "validation_GetCycleStartAction_name_ValidIdentifier"
+	case_Quotas_sql_GetCycleStartAction_basic                                                   testCaseName = "sql_GetCycleStartAction_basic"
 )
 
 type QuotasTestsContext struct {
@@ -350,11 +350,11 @@ var quotasTests = QuotasTestsContext{
 				},
 			},
 			validationCase[*SetUserTagsQuotaOptions]{
-				Name:        case_Quotas_validation_SetUserTags_args_Tags_Tag_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("SetUserTagsQuotaOptions.args.Tags[0]", "Tag"),
+				Name:        case_Quotas_validation_SetUserTags_args_Tags_Reference_Arguments_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetUserTagsQuotaOptions.args.Tags[0].Reference.Arguments", "Tag"),
 				DefaultModify: func(opts *SetUserTagsQuotaOptions) {
 					opts.args.Tags = []QuotaUserTag{{}}
-					opts.args.Tags[0].Tag = emptySchemaObjectIdentifier
+					opts.args.Tags[0].Reference.Arguments.Tag = emptySchemaObjectIdentifier
 				},
 			},
 		).
@@ -397,12 +397,12 @@ var quotasTests = QuotasTestsContext{
 				},
 			},
 			validationCase[*ExcludeUsersQuotaOptions]{
-				Name:        case_Quotas_validation_ExcludeUsers_args_ByTag_Tags_Tag_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("ExcludeUsersQuotaOptions.args.ByTag.Tags[0]", "Tag"),
+				Name:        case_Quotas_validation_ExcludeUsers_args_ByTag_Tags_Reference_Arguments_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("ExcludeUsersQuotaOptions.args.ByTag.Tags[0].Reference.Arguments", "Tag"),
 				DefaultModify: func(opts *ExcludeUsersQuotaOptions) {
 					opts.args.ByTag = &QuotaExcludeUsersByTag{}
 					opts.args.ByTag.Tags = []QuotaExcludedUserTag{{}}
-					opts.args.ByTag.Tags[0].Tag = emptySchemaObjectIdentifier
+					opts.args.ByTag.Tags[0].Reference.Arguments.Tag = emptySchemaObjectIdentifier
 				},
 			},
 		).

@@ -8,8 +8,7 @@ import (
 )
 
 // Nested blocks are generated, including AtLeastOneOf and top-level set diffs.
-// This keeps the deprecated set, the MFA enrollment special case, and the case-sensitive
-// wording on nested enum sets.
+// This keeps the MFA enrollment special case and the case-sensitive wording on nested enum sets.
 func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	s["mfa_enrollment"].DiffSuppressFunc = SuppressIfAny(
 		s["mfa_enrollment"].DiffSuppressFunc,
@@ -26,17 +25,6 @@ func authenticationPolicyAttributesModificationExt(s map[string]*schema.Schema) 
 			return old == sdk.MfaEnrollmentReadOptionRequiredPasswordOnly && new == sdk.MfaEnrollmentOptionOptional
 		},
 	)
-	s["mfa_authentication_methods"] = &schema.Schema{
-		Type: schema.TypeSet,
-		Elem: &schema.Schema{
-			Type:             schema.TypeString,
-			ValidateDiagFunc: sdkValidation(sdk.ToMfaAuthenticationMethodsOption),
-		},
-		Optional:         true,
-		DiffSuppressFunc: ignoreAlwaysSuppressFunc,
-		Description:      fmt.Sprintf("A list of authentication methods that enforce multi-factor authentication (MFA) during login. Authentication methods not listed in this parameter do not prompt for multi-factor authentication. Allowed values are %s.", possibleValuesListed(sdk.AllMfaAuthenticationMethodsOptions)),
-		Deprecated:       "This field is deprecated and will be removed in the future. Currently, it has no effect. Use the new `enforce_mfa_on_external_authentication` field instead. Read our [BCR Migration Guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/SNOWFLAKE_BCR_MIGRATION_GUIDE.md#changes-in-authentication-policies) for more migration steps and more details.",
-	}
 	mfa := s["mfa_policy"].Elem.(*schema.Resource).Schema
 	// Nested enum sets stay case-sensitive. The generator normalizes them.
 	mfa["allowed_methods"].DiffSuppressFunc = nil

@@ -110,7 +110,7 @@ Required:
 Optional:
 
 - `access_delegation_mode` (String) Specifies the access delegation mode for accessing Iceberg table files in your external cloud storage. Valid values are (case-insensitive): `VENDED_CREDENTIALS` | `EXTERNAL_VOLUME_CREDENTIALS`.
-- `catalog_api_type` (String) Specifies how Snowflake connects to Open Catalog. Valid values are (case-insensitive): `PUBLIC` | `PRIVATE` | `AWS_API_GATEWAY` | `AWS_PRIVATE_API_GATEWAY` | `AWS_GLUE` | `AWS_PRIVATE_GLUE`.
+- `catalog_api_type` (String) Specifies how Snowflake connects to Open Catalog. Valid values are (case-insensitive): `PUBLIC` | `PRIVATE` | `AWS_API_GATEWAY` | `AWS_PRIVATE_API_GATEWAY` | `AWS_GLUE` | `AWS_PRIVATE_GLUE` | `AWS_S3TABLES` | `AWS_PRIVATE_S3TABLES`.
 
 
 <a id="nestedblock--timeouts"></a>

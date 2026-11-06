@@ -94,7 +94,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 		if diags.HasError() {
 			return diags
 		}
-		diags = catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(d, catalogIntegrationOpenCatalogDetails, withExternalChangesMarking)
+		diags = catalogIntegrationOpenCatalogHandleExternalChangesInDescribeExt(ctx, d, meta, catalogIntegrationOpenCatalogDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
 		}
@@ -106,7 +106,7 @@ func ReadCatalogIntegrationOpenCatalogFunc(withExternalChangesMarking bool) tfsc
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogToSchema(catalogIntegrationOpenCatalog)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(catalogIntegrationOpenCatalog)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationOpenCatalogDetailsToSchema(catalogIntegrationOpenCatalogDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 		)

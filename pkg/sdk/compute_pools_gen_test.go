@@ -14,6 +14,7 @@ func init() {
 var computePoolsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
+	case_ComputePools_validation_Create_ForApplication_ValidIdentifierIfSet   testCaseName = "validation_Create_ForApplication_ValidIdentifierIfSet"
 	case_ComputePools_validation_Create_name_ValidIdentifier                  testCaseName = "validation_Create_name_ValidIdentifier"
 	case_ComputePools_validation_Create_Tag_ValidIdentifier                   testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_ComputePools_sql_Create_basic                                        testCaseName = "sql_Create_basic"
@@ -61,6 +62,13 @@ var computePoolsTests = ComputePoolsTestsContext{
 			}
 		}).
 		withValidationCases(
+			validationCase[*CreateComputePoolOptions]{
+				Name:        case_ComputePools_validation_Create_ForApplication_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateComputePoolOptions", "ForApplication"),
+				DefaultModify: func(opts *CreateComputePoolOptions) {
+					opts.ForApplication = new(emptyAccountObjectIdentifier)
+				},
+			},
 			validationCase[*CreateComputePoolOptions]{
 				Name:        case_ComputePools_validation_Create_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateComputePoolOptions", "name"),

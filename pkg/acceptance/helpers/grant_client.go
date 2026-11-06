@@ -593,6 +593,30 @@ func (c *GrantClient) RevokeUsageOnWarehouseToSnowflakeApplication(t *testing.T,
 }
 
 // TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) GrantUsageOnExternalVolumeToSnowflakeApplication(t *testing.T, externalVolumeId sdk.AccountObjectIdentifier) func() {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`GRANT USAGE ON EXTERNAL VOLUME %s TO APPLICATION SNOWFLAKE`, externalVolumeId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+
+	return func() {
+		c.RevokeUsageOnExternalVolumeToSnowflakeApplication(t, externalVolumeId)
+	}
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
+func (c *GrantClient) RevokeUsageOnExternalVolumeToSnowflakeApplication(t *testing.T, externalVolumeId sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+
+	query := fmt.Sprintf(`REVOKE USAGE ON EXTERNAL VOLUME %s FROM APPLICATION SNOWFLAKE`, externalVolumeId.FullyQualifiedName())
+	_, err := c.context.client.ExecForTests(ctx, query)
+	require.NoError(t, err)
+}
+
+// TODO [SNOW-1830929]: don't use direct SQL
 func (c *GrantClient) GrantUsageOnSchemaToSnowflakeApplication(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

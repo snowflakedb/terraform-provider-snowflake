@@ -9,9 +9,6 @@ import (
 
 func (opts *CreateReplicationGroupOptions) additionalValidations() error {
 	var errs []error
-	if len(opts.ObjectTypes) == 0 {
-		errs = append(errs, NewError("OBJECT_TYPES must be set"))
-	}
 	errs = append(errs, replicationGroupRequireObjectList(
 		opts.ObjectTypes, ReplicationGroupObjectTypeDatabases, opts.AllowedDatabases,
 		"DATABASES", "ALLOWED_DATABASES",

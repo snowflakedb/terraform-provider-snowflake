@@ -1,11 +1,9 @@
 ---
 page_title: "snowflake_openflow_deployment_byoc Resource - terraform-provider-snowflake"
-subcategory: "Preview"
+subcategory: "Stable"
 description: |-
   Resource used to manage BYOC (bring your own cloud) Openflow deployments, which run in your own cloud account. Creation finishes when the deployment reaches the INACTIVE state, which is as far as Terraform can take it: the deployment only becomes ACTIVE after you apply the deployment's CloudFormation template in your cloud account, at which point it registers itself with Snowflake. That template can only be downloaded from the Snowflake UI - it is not retrievable over SQL - so provisioning that infrastructure is a separate step outside this resource. For more information, check Openflow deployment documentation https://docs.snowflake.com/en/sql-reference/sql/create-openflow-deployment.
 ---
-
-!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 -> **Note** Every mutating statement is asynchronous and the provider waits for the deployment to settle before returning, so applies take minutes rather than seconds. If you encounter timeout errors, use a [`timeouts` block](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts) to set higher limits for your environment.
 

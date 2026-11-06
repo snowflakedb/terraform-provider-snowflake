@@ -60,6 +60,15 @@ func setRequiredFromStringPtr(d *schema.ResourceData, key string, ptr *string) e
 	return nil
 }
 
+// derefOrZero returns the value behind ptr, or the zero value of T when ptr is nil.
+func derefOrZero[T any](ptr *T) T {
+	if ptr == nil {
+		var zero T
+		return zero
+	}
+	return *ptr
+}
+
 func optionalStringOutputMapping[T ~string](value *T) (any, string) {
 	if value != nil {
 		return *value, string(*value)

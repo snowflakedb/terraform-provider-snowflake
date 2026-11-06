@@ -5,14 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// warehouseAdaptiveAttributesModificationExt marks warehouse_type computed.
-// The attribute generator emits Optional and has no Computed flag.
-func warehouseAdaptiveAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	s["warehouse_type"].Optional = false
-	s["warehouse_type"].Computed = true
-	return s
-}
-
 var warehouseAdaptiveShowOutputSchemaExt = map[string]*schema.Schema{
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,

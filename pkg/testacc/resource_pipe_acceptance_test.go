@@ -9,14 +9,20 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 	"github.com/stretchr/testify/require"
 )
 
@@ -48,7 +54,27 @@ func TestAcc_Pipe_BasicUseCase(t *testing.T) {
 			HasCommentString("").
 			HasAutoIngest(false).
 			HasNotificationChannelEmpty().
-			HasErrorIntegrationString(""),
+			HasNoErrorIntegration(),
+		resourceshowoutputassert.PipeShowOutput(t, ref).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasDefinition(statement).
+			HasOwner(currentRole).
+			HasComment("").
+			HasErrorIntegration("").
+			HasNotificationChannel("").
+			HasKind("STAGE"),
+		resourceshowoutputassert.PipeDescribeOutput(t, ref).
+			HasName(id.Name()).
+			HasDefinition(statement).
+			HasOwner(currentRole).
+			HasKind("STAGE"),
+		resourceparametersassert.PipeResourceParameters(t, ref).
+			HasLogEventLevel(sdk.LogLevelOff).
+			HasPipeExecutionPaused(false).
+			HasLogEventLevelLevel("").
+			HasPipeExecutionPausedLevel(""),
 		newPipeObjectAssertions(t, id).
 			HasDefinition(statement).
 			HasComment("").
@@ -67,7 +93,7 @@ func TestAcc_Pipe_BasicUseCase(t *testing.T) {
 			HasCommentString("initial").
 			HasAutoIngest(false).
 			HasNotificationChannelEmpty().
-			HasErrorIntegrationString(""),
+			HasNoErrorIntegration(),
 		newPipeObjectAssertions(t, id).
 			HasDefinition(statement).
 			HasComment("initial").
@@ -86,7 +112,7 @@ func TestAcc_Pipe_BasicUseCase(t *testing.T) {
 			HasCommentString("updated").
 			HasAutoIngest(false).
 			HasNotificationChannelEmpty().
-			HasErrorIntegrationString(""),
+			HasNoErrorIntegration(),
 		newPipeObjectAssertions(t, id).
 			HasDefinition(statement).
 			HasComment("updated").
@@ -119,6 +145,8 @@ func TestAcc_Pipe_BasicUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
 			},
 			// Update - set comment
 			{
@@ -136,6 +164,8 @@ func TestAcc_Pipe_BasicUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
 			},
 			// Update - change comment
 			{
@@ -307,7 +337,8 @@ func TestAcc_Pipe_CompleteUseCase(t *testing.T) {
 			HasNotificationChannel(""),
 	}
 
-	basicAssertions := []assert.TestCheckFuncProvider{
+	// Unsetting error_integration leaves an empty string in the state, while a pipe created without it has no value at all.
+	basicAfterUnsetAssertions := []assert.TestCheckFuncProvider{
 		newPipeResourceAssertions(t, ref, id, currentRole).
 			HasCopyStatementString(statement).
 			HasCommentString("").
@@ -365,6 +396,8 @@ func TestAcc_Pipe_CompleteUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
 			},
 			// Update - change comment
 			{
@@ -392,6 +425,8 @@ func TestAcc_Pipe_CompleteUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
 			},
 			// Update - unset comment and error integration
 			{
@@ -401,7 +436,7 @@ func TestAcc_Pipe_CompleteUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertions...),
+				Check:  assertThat(t, basicAfterUnsetAssertions...),
 			},
 			// Update - set error integration
 			{
@@ -421,7 +456,7 @@ func TestAcc_Pipe_CompleteUseCase(t *testing.T) {
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, basicAssertions...),
+				Check:  assertThat(t, basicAfterUnsetAssertions...),
 			},
 			// Update - external comment and error integration
 			{
@@ -516,7 +551,7 @@ func TestAcc_Pipe_Replacement(t *testing.T) {
 			HasCommentString("").
 			HasAutoIngest(false).
 			HasNotificationChannelEmpty().
-			HasErrorIntegrationString(""),
+			HasNoErrorIntegration(),
 		newPipeObjectAssertions(t, renamedId).
 			HasDefinition(statement).
 			HasComment("").
@@ -535,7 +570,7 @@ func TestAcc_Pipe_Replacement(t *testing.T) {
 			HasCommentString("").
 			HasAutoIngest(false).
 			HasNotificationChannelEmpty().
-			HasErrorIntegrationString(""),
+			HasNoErrorIntegration(),
 		newPipeObjectAssertions(t, renamedId).
 			HasDefinition(changedStatement).
 			HasComment("").
@@ -564,7 +599,7 @@ func TestAcc_Pipe_Replacement(t *testing.T) {
 			HasCommentString("").
 			HasAutoIngest(false).
 			HasNotificationChannelEmpty().
-			HasErrorIntegrationString(""),
+			HasNoErrorIntegration(),
 		newPipeObjectAssertions(t, id).
 			HasDefinition(statement).
 			HasComment("").
@@ -600,6 +635,8 @@ func TestAcc_Pipe_Replacement(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
 			},
 			// Replace - unset auto ingest
 			{
@@ -671,7 +708,7 @@ func TestAcc_Pipe_CopyStatementFormattingAndEmptyComment(t *testing.T) {
 			HasCommentString("").
 			HasAutoIngest(false).
 			HasNotificationChannelEmpty().
-			HasErrorIntegrationString(""),
+			HasNoErrorIntegration(),
 		newPipeObjectAssertions(t, id).
 			HasDefinition(statement).
 			HasComment("").
@@ -708,6 +745,8 @@ func TestAcc_Pipe_CopyStatementFormattingAndEmptyComment(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
 			},
 		},
 	})
@@ -733,7 +772,8 @@ func newPipeObjectAssertions(t *testing.T, id sdk.SchemaObjectIdentifier) *objec
 		HasSchemaName(id.SchemaName()).
 		HasIntegration("").
 		HasOwnerRoleType("ROLE").
-		HasInvalidReason("")
+		HasInvalidReason("").
+		HasKind("STAGE")
 }
 
 func newPipeDetailsAssertions(t *testing.T, id sdk.SchemaObjectIdentifier) *objectassert.PipeDetailsAssert {
@@ -745,5 +785,305 @@ func newPipeDetailsAssertions(t *testing.T, id sdk.SchemaObjectIdentifier) *obje
 		HasSchemaName(id.SchemaName()).
 		HasIntegration("").
 		HasOwnerRoleType("ROLE").
-		HasInvalidReason("")
+		HasInvalidReason("").
+		HasKind("STAGE")
+}
+
+func TestAcc_Pipe_Parameters(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+	statement := fmt.Sprintf("COPY INTO %s FROM @%s", table.ID().FullyQualifiedName(), stage.ID().FullyQualifiedName())
+
+	basic := model.PipeWithId("test", id, statement)
+	withParameters := model.PipeWithId("test", id, statement).
+		WithLogEventLevelSdk(sdk.LogLevelInfo).
+		WithPipeExecutionPaused(true)
+	updatedParameters := model.PipeWithId("test", id, statement).
+		WithLogEventLevelSdk(sdk.LogLevelWarn).
+		WithPipeExecutionPaused(false)
+	withPipeExecutionPausedFalse := model.PipeWithId("test", id, statement).
+		WithPipeExecutionPaused(false)
+
+	ref := basic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Pipe),
+		Steps: []resource.TestStep{
+			// Create - with parameters
+			{
+				Config: config.FromModels(t, withParameters),
+				Check: assertThat(t,
+					resourceparametersassert.PipeResourceParameters(t, ref).
+						HasLogEventLevel(sdk.LogLevelInfo).
+						HasLogEventLevelLevel(sdk.ParameterTypePipe).
+						HasPipeExecutionPaused(true).
+						HasPipeExecutionPausedLevel(sdk.ParameterTypePipe),
+					objectparametersassert.PipeParameters(t, id).
+						HasLogEventLevel(sdk.LogLevelInfo).
+						HasLogEventLevelLevel(sdk.ParameterTypePipe).
+						HasPipeExecutionPaused(true).
+						HasPipeExecutionPausedLevel(sdk.ParameterTypePipe),
+				),
+			},
+			// Import
+			{
+				Config:            config.FromModels(t, withParameters),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
+			},
+			// Update - change parameters
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, updatedParameters),
+				Check: assertThat(t,
+					resourceparametersassert.PipeResourceParameters(t, ref).
+						HasLogEventLevel(sdk.LogLevelWarn).
+						HasPipeExecutionPaused(false),
+					objectparametersassert.PipeParameters(t, id).
+						HasLogEventLevel(sdk.LogLevelWarn).
+						HasPipeExecutionPaused(false),
+				),
+			},
+			// Update - unset parameters
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceparametersassert.PipeResourceParameters(t, ref).
+						HasLogEventLevel(sdk.LogLevelOff).
+						HasLogEventLevelLevel("").
+						HasPipeExecutionPaused(false).
+						HasPipeExecutionPausedLevel(""),
+					objectparametersassert.PipeParameters(t, id).
+						HasDefaultLogEventLevelValue().
+						HasDefaultPipeExecutionPausedValue(),
+				),
+			},
+			// Destroy
+			{
+				Destroy: true,
+				Config:  config.FromModels(t, basic),
+			},
+			// Create - with pipe_execution_paused set to false, which is the zero value
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, withPipeExecutionPausedFalse),
+				Check: assertThat(t,
+					resourceparametersassert.PipeResourceParameters(t, ref).
+						HasPipeExecutionPaused(false).
+						HasPipeExecutionPausedLevel(sdk.ParameterTypePipe),
+					objectparametersassert.PipeParameters(t, id).
+						HasPipeExecutionPaused(false).
+						HasPipeExecutionPausedLevel(sdk.ParameterTypePipe),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Pipe_migrateFromV2_22_1_ensureSmoothUpgradeWithNewResourceId(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+	statement := fmt.Sprintf("COPY INTO %s FROM @%s", table.ID().FullyQualifiedName(), stage.ID().FullyQualifiedName())
+
+	pipeModel := model.PipeWithId("test", id, statement).WithComment("comment")
+	ref := pipeModel.ResourceReference()
+	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.PipeResource))
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Pipe),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.22.1"),
+				Config:            config.FromModels(t, providerModel, pipeModel),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id)),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, pipeModel),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", id.FullyQualifiedName())),
+					resourceassert.PipeResource(t, ref).
+						HasCommentString("comment"),
+					resourceshowoutputassert.PipeShowOutput(t, ref).
+						HasName(id.Name()),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Pipe_ExternalRecreateWithDifferentErrorIntegration(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+	stage, stageCleanup := testClient().Stage.CreateStage(t)
+	t.Cleanup(stageCleanup)
+	statement := fmt.Sprintf("COPY INTO %s FROM @%s", table.ID().FullyQualifiedName(), stage.ID().FullyQualifiedName())
+
+	integration1, integration1Cleanup := testClient().NotificationIntegration.CreateWithAmazonPush(t)
+	t.Cleanup(integration1Cleanup)
+	integration2, integration2Cleanup := testClient().NotificationIntegration.CreateWithAmazonPush(t)
+	t.Cleanup(integration2Cleanup)
+
+	withIntegration1 := model.PipeWithId("test", id, statement).WithErrorIntegration(integration1.Name)
+	withIntegration2 := model.PipeWithId("test", id, statement).WithErrorIntegration(integration2.Name)
+	ref := withIntegration1.ResourceReference()
+
+	recreateWithErrorIntegration := func(errorIntegration string) func() {
+		return func() {
+			require.NoError(t, atc.defaultTestEnv.client.Pipes.Drop(context.Background(), sdk.NewDropPipeRequest(id)))
+			require.NoError(t, atc.defaultTestEnv.client.Pipes.Create(
+				context.Background(),
+				sdk.NewCreatePipeRequest(id, statement).WithErrorIntegration(errorIntegration),
+			))
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Pipe),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, withIntegration1),
+				Check:  assertThat(t, objectassert.Pipe(t, id).HasErrorIntegration(integration1.Name)),
+			},
+			// The pipe is recreated outside of Terraform with a different error integration: the configuration is restored in place.
+			{
+				PreConfig: recreateWithErrorIntegration(integration2.Name),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, withIntegration1),
+				Check:  assertThat(t, objectassert.Pipe(t, id).HasErrorIntegration(integration1.Name)),
+			},
+			// The pipe is recreated outside of Terraform again, and the configuration is adjusted to match: no changes.
+			{
+				PreConfig: recreateWithErrorIntegration(integration2.Name),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, withIntegration2),
+				Check:  assertThat(t, objectassert.Pipe(t, id).HasErrorIntegration(integration2.Name)),
+			},
+		},
+	})
+}
+
+// A Snowpipe Streaming (high-performance architecture) pipe reads from DATA_SOURCE(TYPE => 'STREAMING') instead of a stage.
+// The resource manages it like any other pipe; SHOW PIPES reports its kind as STREAMING.
+func TestAcc_Pipe_Streaming(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	table, tableCleanup := testClient().Table.Create(t)
+	t.Cleanup(tableCleanup)
+	statement := fmt.Sprintf("COPY INTO %s FROM (SELECT $1:id FROM TABLE(DATA_SOURCE(TYPE => 'STREAMING')))", table.ID().FullyQualifiedName())
+
+	currentRole := testClient().Context.CurrentRole(t).Name()
+
+	basic := model.PipeWithId("test", id, statement)
+	complete := model.PipeWithId("test", id, statement).
+		WithComment("streaming").
+		WithLogEventLevelSdk(sdk.LogLevelInfo).
+		WithPipeExecutionPaused(true)
+	ref := basic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Pipe),
+		Steps: []resource.TestStep{
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionCreate),
+					},
+				},
+				Config: config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.PipeResource(t, ref).
+						HasNameString(id.Name()).
+						HasCopyStatementString(statement).
+						HasAutoIngest(false),
+					resourceshowoutputassert.PipeShowOutput(t, ref).
+						HasName(id.Name()).
+						HasDefinition(statement).
+						HasOwner(currentRole).
+						HasNotificationChannel("").
+						HasIntegration("").
+						HasKind("STREAMING"),
+					resourceshowoutputassert.PipeDescribeOutput(t, ref).
+						HasKind("STREAMING"),
+					objectassert.Pipe(t, id).
+						HasDefinition(statement).
+						HasKind("STREAMING"),
+				),
+			},
+			{
+				Config:            config.FromModels(t, basic),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// integration and error_integration are imported as empty strings when they are unset in Snowflake
+				ImportStateVerifyIgnore: []string{"integration", "error_integration"},
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: config.FromModels(t, complete),
+				Check: assertThat(t,
+					resourceshowoutputassert.PipeShowOutput(t, ref).
+						HasComment("streaming").
+						HasKind("STREAMING"),
+					resourceparametersassert.PipeResourceParameters(t, ref).
+						HasLogEventLevel(sdk.LogLevelInfo).
+						HasPipeExecutionPaused(true),
+				),
+			},
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Config: config.FromModels(t, complete),
+			},
+		},
+	})
 }
