@@ -2,21 +2,137 @@
 page_title: "snowflake_alerts Data Source - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Data source used to get details of filtered alerts. Filtering is aligned with the current possibilities for SHOW ALERTS https://docs.snowflake.com/en/sql-reference/sql/show-alerts query. The results of SHOW and DESCRIBE are encapsulated in one output collection alerts.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_alerts (Data Source)
 
-
+Data source used to get details of filtered alerts. Filtering is aligned with the current possibilities for [SHOW ALERTS](https://docs.snowflake.com/en/sql-reference/sql/show-alerts) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `alerts`.
 
 ## Example Usage
 
 ```terraform
-data "snowflake_alerts" "current" {
-  database = "MYDB"
-  schema   = "MYSCHEMA"
+# Simple usage
+data "snowflake_alerts" "simple" {
+}
+
+output "simple_output" {
+  value = data.snowflake_alerts.simple.alerts
+}
+
+# Filtering (like)
+data "snowflake_alerts" "like" {
+  like = "alert-name"
+}
+
+output "like_output" {
+  value = data.snowflake_alerts.like.alerts
+}
+
+# Filtering by prefix (like)
+data "snowflake_alerts" "like_prefix" {
+  like = "prefix%"
+}
+
+output "like_prefix_output" {
+  value = data.snowflake_alerts.like_prefix.alerts
+}
+
+# Filtering (starts_with)
+data "snowflake_alerts" "starts_with" {
+  starts_with = "prefix-"
+}
+
+output "starts_with_output" {
+  value = data.snowflake_alerts.starts_with.alerts
+}
+
+# Filtering (limit)
+data "snowflake_alerts" "limit" {
+  limit {
+    rows = 10
+    from = "prefix-"
+  }
+}
+
+output "limit_output" {
+  value = data.snowflake_alerts.limit.alerts
+}
+
+# Filtering (in)
+data "snowflake_alerts" "in_account" {
+  in {
+    account = true
+  }
+}
+
+data "snowflake_alerts" "in_database" {
+  in {
+    database = "<database_name>"
+  }
+}
+
+data "snowflake_alerts" "in_schema" {
+  in {
+    schema = "\"<database_name>\".\"<schema_name>\""
+  }
+}
+
+data "snowflake_alerts" "in_application" {
+  in {
+    application = "<application_name>"
+  }
+}
+
+data "snowflake_alerts" "in_application_package" {
+  in {
+    application_package = "<application_package_name>"
+  }
+}
+
+output "in_filtered" {
+  value = {
+    "account" : data.snowflake_alerts.in_account.alerts,
+    "database" : data.snowflake_alerts.in_database.alerts,
+    "schema" : data.snowflake_alerts.in_schema.alerts,
+    "application" : data.snowflake_alerts.in_application.alerts,
+    "application_package" : data.snowflake_alerts.in_application_package.alerts,
+  }
+}
+
+# Without additional data (to limit the number of calls made for every found alert)
+data "snowflake_alerts" "only_show" {
+  # with_describe is turned on by default and it calls DESCRIBE ALERT for every alert found and attaches its output to alerts.*.describe_output field
+  with_describe = false
+}
+
+output "only_show_output" {
+  value = data.snowflake_alerts.only_show.alerts
+}
+
+# Ensure the number of alerts is equal to at least one element (with the use of postcondition)
+data "snowflake_alerts" "assert_with_postcondition" {
+  like = "alert-name%"
+  lifecycle {
+    postcondition {
+      condition     = length(self.alerts) > 0
+      error_message = "there should be at least one alert"
+    }
+  }
+}
+
+# Ensure the number of alerts is equal to exactly one element (with the use of check block)
+check "alert_check" {
+  data "snowflake_alerts" "assert_with_check_block" {
+    like = "alert-name"
+  }
+
+  assert {
+    condition     = length(data.snowflake_alerts.assert_with_check_block.alerts) == 1
+    error_message = "alerts filtered by '${data.snowflake_alerts.assert_with_check_block.like}' returned ${length(data.snowflake_alerts.assert_with_check_block.alerts)} alerts where one was expected"
+  }
 }
 ```
 
@@ -27,24 +143,81 @@ data "snowflake_alerts" "current" {
 
 ### Optional
 
-- `database` (String) The database from which to return the alerts from.
-- `pattern` (String) Filters the command output by object name.
-- `schema` (String) The schema from which to return the alerts from.
+- `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
+- `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
+- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC ALERT for each alert returned by SHOW ALERTS. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
 
-- `alerts` (List of Object) Lists alerts for the current/specified database or schema, or across the entire account. (see [below for nested schema](#nestedatt--alerts))
+- `alerts` (List of Object) Holds the aggregated output of all alert details queries. (see [below for nested schema](#nestedatt--alerts))
 - `id` (String) The ID of this resource.
+
+<a id="nestedblock--in"></a>
+### Nested Schema for `in`
+
+Optional:
+
+- `account` (Boolean) Returns records for the entire account.
+- `application` (String) Returns records for the specified application.
+- `application_package` (String) Returns records for the specified application package.
+- `database` (String) Returns records for the current database in use or for a specified database.
+- `schema` (String) Returns records for the current schema in use or a specified schema. Use fully qualified name.
+
+
+<a id="nestedblock--limit"></a>
+### Nested Schema for `limit`
+
+Required:
+
+- `rows` (Number) The maximum number of rows to return.
+
+Optional:
+
+- `from` (String) Specifies a **case-sensitive** pattern that is used to match object name. After the first match, the limit on the number of rows will be applied.
+
 
 <a id="nestedatt--alerts"></a>
 ### Nested Schema for `alerts`
 
 Read-Only:
 
+- `describe_output` (List of Object) (see [below for nested schema](#nestedobjatt--alerts--describe_output))
+- `show_output` (List of Object) (see [below for nested schema](#nestedobjatt--alerts--show_output))
+
+<a id="nestedobjatt--alerts--describe_output"></a>
+### Nested Schema for `alerts.describe_output`
+
+Read-Only:
+
 - `action` (String)
 - `comment` (String)
 - `condition` (String)
+- `created_on` (String)
 - `database_name` (String)
 - `name` (String)
 - `owner` (String)
+- `schedule` (String)
 - `schema_name` (String)
+- `state` (String)
+- `warehouse` (String)
+
+
+<a id="nestedobjatt--alerts--show_output"></a>
+### Nested Schema for `alerts.show_output`
+
+Read-Only:
+
+- `action` (String)
+- `comment` (String)
+- `condition` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `name` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `schedule` (String)
+- `schema_name` (String)
+- `state` (String)
+- `warehouse` (String)

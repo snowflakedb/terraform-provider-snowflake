@@ -115,21 +115,23 @@ var pipesTests = PipesTestsContext{
 			},
 			validationCase[*AlterPipeOptions]{
 				Name:        case_Pipes_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterPipeOptions.Set", "ErrorIntegration", "PipeExecutionPaused", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterPipeOptions.Set", "LogEventLevel", "PipeExecutionPaused", "ErrorIntegration", "Comment"),
 				DefaultModify: func(opts *AlterPipeOptions) {
 					opts.Set = &PipeSet{}
-					opts.Set.ErrorIntegration = nil
+					opts.Set.LogEventLevel = nil
 					opts.Set.PipeExecutionPaused = nil
+					opts.Set.ErrorIntegration = nil
 					opts.Set.Comment = nil
 				},
 			},
 			validationCase[*AlterPipeOptions]{
 				Name:        case_Pipes_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterPipeOptions.Unset", "ErrorIntegration", "PipeExecutionPaused", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterPipeOptions.Unset", "LogEventLevel", "PipeExecutionPaused", "ErrorIntegration", "Comment"),
 				DefaultModify: func(opts *AlterPipeOptions) {
 					opts.Unset = &PipeUnset{}
-					opts.Unset.ErrorIntegration = nil
+					opts.Unset.LogEventLevel = nil
 					opts.Unset.PipeExecutionPaused = nil
+					opts.Unset.ErrorIntegration = nil
 					opts.Unset.Comment = nil
 				},
 			},

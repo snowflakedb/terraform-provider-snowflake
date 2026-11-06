@@ -111,12 +111,12 @@ func (r tableColumnDetailsRow) additionalConvert(result *TableColumnDetails) err
 
 func (r tableColumnDetailsRow) splitTypeAndCollation() (DataType, *string) {
 	collateRegexp := regexp.MustCompile(`COLLATE +'([a-zA-Z0-9_-]*)'`)
-	matches := collateRegexp.FindStringSubmatch(string(r.Type))
+	matches := collateRegexp.FindStringSubmatch(r.Type)
 
 	if len(matches) == 2 {
 		collation := matches[1]
-		type_ := DataType(strings.TrimSpace(collateRegexp.ReplaceAllString(string(r.Type), "")))
+		type_ := DataType(strings.TrimSpace(collateRegexp.ReplaceAllString(r.Type, "")))
 		return type_, &collation
 	}
-	return r.Type, nil
+	return DataType(r.Type), nil
 }

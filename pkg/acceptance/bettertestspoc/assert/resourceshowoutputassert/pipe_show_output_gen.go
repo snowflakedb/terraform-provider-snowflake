@@ -30,6 +30,21 @@ func ImportedPipeShowOutput(t *testing.T, id string) *PipeShowOutputAssert {
 	return &pipeAssert
 }
 
+func PipesDatasourceShowOutput(t *testing.T, name string) *PipeShowOutputAssert {
+	t.Helper()
+
+	return PipesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func PipesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *PipeShowOutputAssert {
+	t.Helper()
+
+	pipeAssert := PipeShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "pipes", idx),
+	}
+	return &pipeAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
@@ -99,6 +114,11 @@ func (p *PipeShowOutputAssert) HasInvalidReason(expected string) *PipeShowOutput
 	return p
 }
 
+func (p *PipeShowOutputAssert) HasKind(expected string) *PipeShowOutputAssert {
+	p.StringValueSet("kind", expected)
+	return p
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -165,5 +185,10 @@ func (p *PipeShowOutputAssert) HasNoOwnerRoleType() *PipeShowOutputAssert {
 
 func (p *PipeShowOutputAssert) HasNoInvalidReason() *PipeShowOutputAssert {
 	p.ValueNotSet("invalid_reason")
+	return p
+}
+
+func (p *PipeShowOutputAssert) HasNoKind() *PipeShowOutputAssert {
+	p.ValueNotSet("kind")
 	return p
 }

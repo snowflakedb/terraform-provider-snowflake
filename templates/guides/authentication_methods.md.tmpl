@@ -556,6 +556,21 @@ Alternatively, the token can be provided with the environment variable `SNOWFLAK
 export SNOWFLAKE_TOKEN=$(cat <token_file_path>)
 ```
 
+`token = file(...)` and `SNOWFLAKE_TOKEN` are read once, when Terraform loads the configuration. For a run that outlives the token, set `token_file_path` instead. The driver re-reads that file on every new connection, so a sidecar can refresh a short-lived token during a long apply:
+
+```terraform
+provider "snowflake" {
+  organization_name          = "<organization_name>"
+  account_name               = "<account_name>"
+  user                       = "<user_name>"
+  authenticator              = "WORKLOAD_IDENTITY"
+  workload_identity_provider = "OIDC"
+  token_file_path            = "<token_file_path>"
+}
+```
+
+The same field is what OAuth and programmatic access token authentication read, and AWS, GCP, and Azure workload identity ignore it. `token` and `token_file_path` cannot be set together, including when `token` comes from a TOML profile or from `SNOWFLAKE_TOKEN`. The path can also be set with `SNOWFLAKE_TOKEN_FILE_PATH` or with `token_file_path` in the TOML configuration file.
+
 #### Using a Terraform Cloud/Enterprise workload identity token
 
 Terraform Cloud and Terraform Enterprise can issue OIDC workload identity tokens for a workspace and
@@ -587,7 +602,7 @@ rather than by the pipeline.
 
 Notes:
 - The tag is upper-cased before the environment variable name is built, so `tfc_workload_identity_token_tag = "snowflake"` also reads `TFC_WORKLOAD_IDENTITY_TOKEN_SNOWFLAKE`.
-- The resulting token takes precedence over a token from any other source, including the `token` field, the `SNOWFLAKE_TOKEN` environment variable, and a TOML profile.
+- The resulting token takes precedence over a token from any other source, including the `token` field, `token_file_path`, the `SNOWFLAKE_TOKEN` environment variable, and a TOML profile.
 - The field requires `authenticator = "WORKLOAD_IDENTITY"` and `workload_identity_provider = "OIDC"`. Any other combination is an error, so that a misconfiguration is not silently ignored.
 - The untagged `TFC_WORKLOAD_IDENTITY_TOKEN` environment variable is not read. Configure a tagged token instead.
 - The tag itself can also be sourced from the `SNOWFLAKE_TFC_WORKLOAD_IDENTITY_TOKEN_TAG` environment variable. It cannot be set in the TOML configuration file, because TFC/TFE runs configure the provider through the Terraform configuration and the environment.

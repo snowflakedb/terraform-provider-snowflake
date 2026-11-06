@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-var warehouseAdaptiveAttributesSchema = warehouseAdaptiveAttributesModificationExt(map[string]*tfschema.Schema{
+var warehouseAdaptiveAttributesSchema = map[string]*tfschema.Schema{
 	"comment": {
 		Type:        tfschema.TypeString,
 		Optional:    true,
@@ -19,7 +19,7 @@ var warehouseAdaptiveAttributesSchema = warehouseAdaptiveAttributesModificationE
 	},
 	"warehouse_type": {
 		Type:        tfschema.TypeString,
-		Optional:    true,
+		Computed:    true,
 		Description: "Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
 	"max_query_performance_level": {
@@ -44,7 +44,7 @@ var warehouseAdaptiveAttributesSchema = warehouseAdaptiveAttributesModificationE
 		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor")),
 		Description:      relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the adaptive warehouse.", resources.ResourceMonitor),
 	},
-})
+}
 
 var warehouseAdaptiveSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{

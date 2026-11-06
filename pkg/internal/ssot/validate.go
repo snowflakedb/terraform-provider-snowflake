@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"go/token"
 	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -42,6 +43,7 @@ func ValidateObject(obj Object) {
 		if a.SqlOnly {
 			sqlOnly[a.Name] = struct{}{}
 		}
+		validateSdkString(obj, a)
 		validateCollectionBounds(obj, a)
 		validateNestedAttribute(obj, a)
 		validateAttribute(obj, a)
@@ -76,6 +78,9 @@ func ValidateObject(obj Object) {
 		if a.NativeBool && a.Type != AttrBool {
 			panic(fmt.Sprintf("object %q: NativeBool attribute %q must be a bool", obj.Name, a.Name))
 		}
+		if a.BoolTrueValue != "" && !a.StoredAsText {
+			panic(fmt.Sprintf("object %q: attribute %q sets BoolTrueValue without StoredAsText", obj.Name, a.Name))
+		}
 		validateAttributeRelations(obj, a, obj.Attributes)
 	}
 	nested := nestedAttributeNames(obj)
@@ -83,6 +88,8 @@ func ValidateObject(obj Object) {
 	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE rows", obj.DescribeRows.Columns, attrs, sqlOnly, nested)
+	validateSchemaKeys(obj, obj.Name, obj.PairedShowColumns())
+	validateSchemaKeys(obj, obj.DescribePlainName(), obj.PairedDescribeColumns())
 	validateDescribeRows(obj)
 	validateDescribeDetails(obj)
 	validateDescribePlainOnlyFields(obj)
@@ -96,9 +103,13 @@ func ValidateObject(obj Object) {
 	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.PairedShowColumns(), g.ShowOutputAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
 	obj.ShowFromBase()
+	validateShowReuse(obj, g)
+	validateShowOutputAssertReuse(obj, g)
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 	validateCustomizeDiff(obj)
+	validateSetAfterCreate(obj)
+	validateIdentityNamesCreatedBySnowflake(obj)
 }
 
 func validateAttributeRelations(obj Object, a Attribute, siblings []Attribute) {
@@ -196,6 +207,69 @@ func validateCustomizeDiff(obj Object) {
 	}
 }
 
+// validateSetAfterCreate checks the attributes that ALTER applies after create and the keyword clauses linked to
+// attributes. The generated AfterCreate is the only user of SetAfterCreate, so the two go together.
+func validateSetAfterCreate(obj Object) {
+	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
+	for _, clause := range obj.Alter.Clauses {
+		if clause.Attribute == nil {
+			continue
+		}
+		if clause.Kind != AlterClauseKeyword {
+			panic(fmt.Sprintf("object %q: ALTER clause %q links an attribute but is not a keyword", obj.Name, clause.SQL))
+		}
+		if !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == clause.Attribute.Name && a.Type == AttrBool && a.NativeBool }) {
+			panic(fmt.Sprintf("object %q: ALTER keyword %q links %q, which is not a NativeBool attribute of the object", obj.Name, clause.SQL, clause.Attribute.Name))
+		}
+	}
+	count := 0
+	for _, a := range obj.Attributes {
+		if !a.SetAfterCreate {
+			continue
+		}
+		count++
+		if !a.SkipCreate {
+			panic(fmt.Sprintf("object %q: attribute %q is SetAfterCreate and needs SkipCreate; CREATE would set it", obj.Name, a.Name))
+		}
+		if a.Type != AttrBool || !a.NativeBool {
+			panic(fmt.Sprintf("object %q: attribute %q is SetAfterCreate, which supports only NativeBool attributes for now; another type needs a new kind of AfterCreate step", obj.Name, a.Name))
+		}
+		if _, ok := obj.LinkedAlterKeyword(a.Name, true); !ok {
+			panic(fmt.Sprintf("object %q: attribute %q is SetAfterCreate and needs an ALTER keyword linked to true (AlterKeywordFor)", obj.Name, a.Name))
+		}
+	}
+	if count > 0 && !hooks.AfterCreate.Generate {
+		panic(fmt.Sprintf("object %q: SetAfterCreate attributes require WithAfterCreate(Generated())", obj.Name))
+	}
+	if hooks.AfterCreate.Generate && count == 0 {
+		panic(fmt.Sprintf("object %q: WithAfterCreate(Generated()) needs a SetAfterCreate attribute", obj.Name))
+	}
+}
+
+// validateIdentityNamesCreatedBySnowflake checks the names that the generated BeforeCreate adopts. The generated
+// BeforeCreate is the only user of these names, so the two go together.
+func validateIdentityNamesCreatedBySnowflake(obj Object) {
+	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
+	names := obj.IdentityNamesCreatedBySnowflake
+	for _, name := range names {
+		if strings.TrimSpace(name) == "" || strings.ContainsAny(name, `"\`) {
+			panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake name %q must be set and must not contain quotes or backslashes", obj.Name, name))
+		}
+	}
+	if len(names) > 0 && !hooks.BeforeCreate.Generate {
+		panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake requires WithBeforeCreate(Generated())", obj.Name))
+	}
+	if hooks.BeforeCreate.Generate && len(names) == 0 {
+		panic(fmt.Sprintf("object %q: WithBeforeCreate(Generated()) needs IdentityNamesCreatedBySnowflake", obj.Name))
+	}
+	if len(names) > 0 && !hooks.IdentitySchema.Present {
+		panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake reads the identity name and needs the identity schema", obj.Name))
+	}
+	if len(names) > 0 && !obj.HasAlterSpec() {
+		panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake runs Update and needs ALTER to update the object", obj.Name))
+	}
+}
+
 func validateSchemaStateUpgraders(obj Object) {
 	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
 	for _, upgrade := range obj.SchemaStateUpgraders {
@@ -233,7 +307,7 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 		}
 		seen[child.Name] = struct{}{}
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
-			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
 		}
 		if child.SqlOnly {
 			validateSqlClause(obj, child, "CREATE", child.CreateSql)
@@ -250,14 +324,17 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 	}
 	if attr.IsObjectList() {
 		validateObjectVariants(obj, attr)
+		if attr.Elem != nil && attr.Elem.Type == AttrObject && attr.Elem.ChildrenRule != "" {
+			validateNestedShape(obj, *attr.Elem)
+		}
 	}
 }
 
-// isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword, or a
-// nested struct.
+// isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword,
+// an identifier, a parameter, or a nested struct.
 func isNestedSqlOnlyClause(child Attribute) bool {
 	switch child.CreateSql.Kind {
-	case SqlKindStatic, SqlKindKeyword:
+	case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter:
 		return true
 	case SqlKindObject:
 		return child.Type == AttrObject
@@ -296,7 +373,7 @@ func validateNestedShape(obj Object, attr Attribute) {
 		if attr.Type != AttrList && attr.Type != AttrSet {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem and needs to be a list or set", obj.Name, attr.Name))
 		}
-		if len(attr.NestedFields()) == 0 {
+		if len(attr.NestedSqlFields()) == 0 {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem with no Children", obj.Name, attr.Name))
 		}
 	}
@@ -506,6 +583,25 @@ func validateAlterSpec(obj Object) {
 				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
 			}
 			seenList[clause.SQL] = struct{}{}
+		case AlterClauseKeywordList:
+			if clause.NotExactlyOne {
+				panic(fmt.Sprintf("object %q: ALTER keyword list %q is an exactly-one branch", obj.Name, clause.SQL))
+			}
+			if clause.Field == "" || clause.SQL == "" || clause.ListItem == "" {
+				panic(fmt.Sprintf("object %q: ALTER keyword list needs a field, SQL, and an item type", obj.Name))
+			}
+			if _, dup := seenList[clause.SQL]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
+			}
+			seenList[clause.SQL] = struct{}{}
+		case AlterClausePlainText:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: ALTER plain text needs a field and SQL", obj.Name))
+			}
+			if _, dup := seenList[clause.SQL]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
+			}
+			seenList[clause.SQL] = struct{}{}
 		case AlterClauseBlock:
 			if clause.Field == "" || clause.SQL == "" || clause.Block == nil {
 				panic(fmt.Sprintf("object %q: ALTER block needs a field, SQL, and an attribute", obj.Name))
@@ -618,10 +714,104 @@ func validateCustomOperationClauses(obj Object, spec CustomOperationSpec, attrs 
 				panic(fmt.Sprintf("object %q: custom operation %q has duplicate predefined %q", obj.Name, spec.Kind, clause.Predefined))
 			}
 			seenPredefined[clause.Predefined] = struct{}{}
+		case CustomOperationClauseStaticField:
+			if clause.Field == "" || clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q static field is empty", obj.Name, spec.Kind))
+			}
+		case CustomOperationClauseIdentifier:
+			if clause.Field == "" || clause.IdType == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q identifier is empty", obj.Name, spec.Kind))
+			}
+		case CustomOperationClauseText:
+			if clause.SQL == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q text assignment is empty", obj.Name, spec.Kind))
+			}
 		default:
 			panic(fmt.Sprintf("object %q: custom operation %q clause has kind %q", obj.Name, spec.Kind, clause.Kind))
 		}
 	}
+	if spec.Paired == nil {
+		return
+	}
+	if spec.Paired.DbRow == "" || spec.Paired.Plain == "" || len(spec.Paired.Columns) == 0 {
+		panic(fmt.Sprintf("object %q: custom operation %q paired show needs a db row, a plain struct, and columns", obj.Name, spec.Kind))
+	}
+	for _, column := range spec.Paired.Columns {
+		if column == nil || column.Name == "" {
+			panic(fmt.Sprintf("object %q: custom operation %q paired column is empty", obj.Name, spec.Kind))
+		}
+		if column.PlainOnlyKind != "" {
+			continue
+		}
+		if column.BoolTrueValue != "" && !column.StoredAsText {
+			panic(fmt.Sprintf("object %q: attribute %q sets BoolTrueValue without StoredAsText", obj.Name, column.Name))
+		}
+	}
+	validateSchemaKeys(obj, spec.Paired.Plain, spec.Paired.Columns)
+}
+
+// validateSchemaKeys rejects two columns of one plain struct that emit the same Terraform key,
+// and a SchemaName that collides with another column's generated key.
+func validateSchemaKeys(obj Object, structName string, columns []*Attribute) {
+	if structName == "" {
+		return
+	}
+	emitted := make(map[string]string)
+	generated := make(map[string]*Attribute)
+	for _, column := range columns {
+		if column == nil || column.Name == "" {
+			continue
+		}
+		generated[genhelpers.ToSnakeCase(column.PlainGoName())] = column
+		key := column.SchemaKey()
+		if prev, ok := emitted[key]; ok {
+			panic(fmt.Sprintf("object %q: %s columns %q and %q share schema key %q", obj.Name, structName, prev, column.Name, key))
+		}
+		emitted[key] = column.Name
+	}
+	for _, column := range columns {
+		if column == nil || column.SchemaName == "" {
+			continue
+		}
+		other, ok := generated[column.SchemaName]
+		if ok && other.Name != column.Name {
+			panic(fmt.Sprintf("object %q: %s column %q schema name %q collides with the generated key of %q", obj.Name, structName, column.Name, column.SchemaName, other.Name))
+		}
+	}
+}
+
+// SchemaNameIndex maps "sdk." plus the plain struct name to Go field name to SchemaName.
+// Columns with an empty SchemaName are left out.
+func SchemaNameIndex(objects []Object) map[string]map[string]string {
+	index := make(map[string]map[string]string)
+	add := func(obj Object, structName string, columns []*Attribute) {
+		validateSchemaKeys(obj, structName, columns)
+		for _, column := range columns {
+			if column == nil || column.SchemaName == "" {
+				continue
+			}
+			key := "sdk." + structName
+			if index[key] == nil {
+				index[key] = make(map[string]string)
+			}
+			goName := column.PlainGoName()
+			if prev, ok := index[key][goName]; ok && prev != column.SchemaName {
+				panic(fmt.Sprintf("object %q: %s field %q has schema names %q and %q", obj.Name, structName, goName, prev, column.SchemaName))
+			}
+			index[key][goName] = column.SchemaName
+		}
+	}
+	for _, obj := range objects {
+		add(obj, obj.Name, obj.PairedShowColumns())
+		add(obj, obj.DescribePlainName(), obj.PairedDescribeColumns())
+		for _, spec := range obj.CustomOperations {
+			if spec.Paired == nil {
+				continue
+			}
+			add(obj, spec.Paired.Plain, spec.Paired.Columns)
+		}
+	}
+	return index
 }
 
 func validateSqlSequence(obj Object, statement string, list []*Attribute, attrs map[string]struct{}, clause func(Attribute) SqlClause) {
@@ -676,6 +866,11 @@ func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[
 		if _, ok := attrs[name]; !ok {
 			validateAttribute(obj, *field)
 			validateSqlClauses(obj, *field)
+			// A CREATE-only object is not an attribute, so its children are checked here.
+			// A PreexistingStruct names a struct the SDK definition supplies and has no Children.
+			if field.EffectiveSqlClause(clauseUse(statement)).Kind == SqlKindObject {
+				validateNestedAttribute(obj, *field)
+			}
 		}
 		validateSqlClause(obj, *field, statement, field.EffectiveSqlClause(clauseUse(statement)))
 	}
@@ -711,12 +906,12 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 	if !clause.Present {
 		return
 	}
-	if clause.AllowEmpty && (clause.Kind != SqlKindParameter || attr.Type != AttrString) {
+	if clause.AllowEmpty && (clause.Kind != SqlKindParameter || attr.SdkType() != AttrString) {
 		panic(fmt.Sprintf("object %q: attribute %q %s clause allows an empty value but is not a string parameter", obj.Name, attr.Name, statement))
 	}
 	switch clause.Kind {
 	case SqlKindParameter:
-		switch attr.Type {
+		switch attr.SdkType() {
 		case AttrInt, AttrBool, AttrString:
 		case AttrIdentifier:
 			// An identifier with a parameter clause is quoted text.
@@ -739,8 +934,22 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 				enum = attr.ColumnEnum()
 			}
 			identifiers := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrIdentifier && attr.Elem.IdentifierType != ""
-			if !identifiers && (attr.Type != AttrEnum || enum == nil || enum.Name == "") {
-				panic(fmt.Sprintf("object %q: attribute %q %s value keyword needs an enum attribute with an Enum, or a list of identifiers", obj.Name, attr.Name, statement))
+			stringsList := (attr.Type == AttrList || attr.Type == AttrSet) && attr.Elem != nil && attr.Elem.Type == AttrString
+			objectList := attr.IsObjectList()
+			switch {
+			case identifiers:
+			case stringsList:
+				if clause.Quotes != "" || clause.Equals != "" {
+					panic(fmt.Sprintf("object %q: attribute %q %s string list keyword has quotes or equals", obj.Name, attr.Name, statement))
+				}
+			case objectList:
+				if clause.Quotes != "" || clause.Equals != "" {
+					panic(fmt.Sprintf("object %q: attribute %q %s object list keyword has quotes or equals", obj.Name, attr.Name, statement))
+				}
+			case attr.Type == AttrString && clause.Quotes == "" && clause.Parentheses == "" && clause.Equals == "":
+			case attr.Type == AttrEnum && enum != nil && enum.Name != "":
+			default:
+				panic(fmt.Sprintf("object %q: attribute %q %s value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects", obj.Name, attr.Name, statement))
 			}
 		}
 	case SqlKindIdentifier:
@@ -755,10 +964,13 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		if clause.AsParameter && (clause.SQL == "" || clause.Parentheses != "") {
 			panic(fmt.Sprintf("object %q: attribute %q %s object clause as a parameter needs Sql and no parentheses", obj.Name, attr.Name, statement))
 		}
-	case SqlKindStatic:
-		if statement != "CREATE" {
-			panic(fmt.Sprintf("object %q: attribute %q static clause is CREATE only", obj.Name, attr.Name))
+	case SqlKindPreexistingStruct:
+		requireCreateOnlyClause(obj, attr, statement, clause)
+		if clause.StructName == "" {
+			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause has no struct name", obj.Name, attr.Name))
 		}
+	case SqlKindStatic:
+		requireCreateOnlyClause(obj, attr, statement, clause)
 		if !attr.SqlOnly {
 			panic(fmt.Sprintf("object %q: attribute %q static clause is SQL-only", obj.Name, attr.Name))
 		}
@@ -773,6 +985,12 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 	}
 }
 
+func requireCreateOnlyClause(obj Object, attr Attribute, statement string, clause SqlClause) {
+	if statement != "CREATE" {
+		panic(fmt.Sprintf("object %q: attribute %q %s clause is CREATE only", obj.Name, attr.Name, clause.Kind))
+	}
+}
+
 func validateAttributeOptions(objectName string, attr Attribute, asElem bool) {
 	if attr.DiffSuppress != nil {
 		for _, suppress := range attr.DiffSuppress.Suppressors() {
@@ -784,6 +1002,10 @@ func validateAttributeOptions(objectName string, attr Attribute, asElem bool) {
 			case SuppressShow, SuppressDescribe:
 				if asElem {
 					panic(fmt.Sprintf("object %q: output suppression on collection elem %q", objectName, attr.Name))
+				}
+			case SuppressAlways:
+				if suppress.Key != "" || len(attr.DiffSuppress.Suppressors()) != 1 {
+					panic(fmt.Sprintf("object %q: ignore-always suppression for attribute %q stands alone", objectName, attr.Name))
 				}
 			default:
 				panic(fmt.Sprintf("object %q: unknown suppression %q for attribute %q", objectName, suppress.Kind, attr.Name))
@@ -834,7 +1056,7 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		// A column that is an object is a nested struct of the details, from the Children of the attribute.
 		// TODO (next PRs): Support the other nested attributes.
 		_, nestedAttr := nested[a.Name]
-		if (nestedAttr || len(a.NestedFields()) > 0) && !(kind == "DESCRIBE" && a.Type == AttrObject && ObjectGenerators(obj.Generators...).Sdk.DescribeDetails) {
+		if !a.SdkString && (nestedAttr || len(a.NestedFields()) > 0) && !(kind == "DESCRIBE" && a.Type == AttrObject && ObjectGenerators(obj.Generators...).Sdk.DescribeDetails) {
 			panic(fmt.Sprintf("object %q: nested attribute %q is not a %s column", obj.Name, a.Name, kind))
 		}
 		seenKey[key] = struct{}{}
@@ -1074,4 +1296,59 @@ func validateGeneratorSkips(obj Object, generator, kind string, enabled bool, co
 		}
 		seen[attr] = struct{}{}
 	}
+}
+
+// validateSdkString allows SdkString on an optional object with a string column nullability: the block is the
+// Terraform side, and the string is what SQL, SHOW, and DESCRIBE hold.
+func validateSdkString(obj Object, attr Attribute) {
+	if !attr.SdkString {
+		return
+	}
+	switch {
+	case attr.Type != AttrObject:
+		panic(fmt.Sprintf("object %q: SdkString attribute %q must be an object", obj.Name, attr.Name))
+	case attr.Required:
+		panic(fmt.Sprintf("object %q: SdkString attribute %q must be optional", obj.Name, attr.Name))
+	case !attr.OptionalInShow && !attr.OptionalInDb:
+		panic(fmt.Sprintf("object %q: SdkString attribute %q needs OptionalInShow or OptionalInDb for its string column", obj.Name, attr.Name))
+	}
+}
+
+// validateShowReuse checks a variant that reuses its base's SHOW schema or SHOW object assertion.
+// Reuse is a deliberate choice. The base must generate the artifact, and a variant that needs any show-side override
+// drops the reuse setting and configures SHOW itself.
+func validateShowReuse(obj Object, g Generators) {
+	if obj.ReusesBaseSchemaShow() {
+		base := validateShowReuseBase(obj, "schema SHOW", func(b Generators) bool { return b.Schema.Show })
+		if len(g.Schema.ShowManualFields) > 0 || len(g.Schema.ShowListFields) > 0 {
+			panic(fmt.Sprintf("object %q: schema SHOW reuses %q and cannot set manual or list fields", obj.Name, base.Name))
+		}
+	}
+	if obj.ReusesBaseObjectAssertShow() {
+		base := validateShowReuseBase(obj, "object assertion SHOW", func(b Generators) bool { return b.ObjectAssert.Show })
+		if len(g.ObjectAssert.ShowSkipFields) > 0 || len(g.ObjectAssert.ShowNestedFields) > 0 {
+			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set skip or nested fields", obj.Name, base.Name))
+		}
+		if g.ObjectAssert.ShowProjection != "" {
+			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set a show projection", obj.Name, base.Name))
+		}
+	}
+}
+
+func validateShowOutputAssertReuse(obj Object, g Generators) {
+	if !obj.ReusesBaseShowOutputAssertShow() {
+		return
+	}
+	base := validateShowReuseBase(obj, "show output assertion SHOW", func(b Generators) bool { return b.ShowOutputAssert.Show })
+	if len(g.ShowOutputAssert.ShowSkipFields) > 0 {
+		panic(fmt.Sprintf("object %q: show output assertion SHOW reuses %q and cannot set skip fields", obj.Name, base.Name))
+	}
+}
+
+func validateShowReuseBase(obj Object, label string, baseGenerates func(Generators) bool) *Object {
+	base := showReuseBase(obj, label)
+	if !baseGenerates(ObjectGenerators(base.Generators...)) {
+		panic(fmt.Sprintf("object %q: %s reuses %q, which does not generate it", obj.Name, label, base.Name))
+	}
+	return base
 }

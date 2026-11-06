@@ -1,0 +1,8 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+func {{ .Prefix }}SetComputedFields(d *tfschema.ResourceData, obj *sdk.{{ .ShowObjectName }}) error {
+	return errors.Join(
+{{- range .ComputedFieldSets }}
+		d.Set({{ printf "%q" .Name }}, {{ .Expr }}),
+{{- end }}
+	)
+}

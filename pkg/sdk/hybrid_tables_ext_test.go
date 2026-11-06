@@ -704,7 +704,7 @@ func init() {
 			case_HybridTables_sql_ShowIndexes_all,
 			func(opts *ShowIndexesHybridTableOptions) {
 				opts.Like = &Like{Pattern: new("idx_pattern")}
-				opts.In = &TableIn{In: In{Schema: NewDatabaseObjectIdentifier("db", "schema")}}
+				opts.In = &TableIn{Schema: NewDatabaseObjectIdentifier("db", "schema")}
 				opts.StartsWith = new("idx_")
 				opts.Limit = &LimitFrom{Rows: new(10)}
 			},
@@ -718,7 +718,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_HybridTables_sql_ShowIndexes_In,
 			func(opts *ShowIndexesHybridTableOptions) {
-				opts.In = &TableIn{In: In{Database: NewAccountObjectIdentifier("test_db")}}
+				opts.In = &TableIn{Database: NewAccountObjectIdentifier("test_db")}
 			},
 			`SHOW INDEXES IN DATABASE "test_db"`,
 		).

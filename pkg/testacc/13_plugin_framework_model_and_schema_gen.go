@@ -73,6 +73,7 @@ type pluginFrameworkPocProviderModelV0 struct {
 	TmpDirectoryPath                   types.String `tfsdk:"tmp_directory_path"`
 	Token                              types.String `tfsdk:"token"`
 	TokenAccessor                      types.List   `tfsdk:"token_accessor"`
+	TokenFilePath                      types.String `tfsdk:"token_file_path"`
 	UseLegacyTomlFile                  types.Bool   `tfsdk:"use_legacy_toml_file"`
 	User                               types.String `tfsdk:"user"`
 	ValidateDefaultParameters          types.String `tfsdk:"validate_default_parameters"`
@@ -413,6 +414,11 @@ var pluginFrameworkPocProviderSchemaV0 = map[string]schema.Attribute{
 	// 	Optional:    true,
 	// 	Sensitive:   false,
 	// },
+	"token_file_path": schema.StringAttribute{
+		Description: existingSchema["token_file_path"].Description,
+		Optional:    true,
+		Sensitive:   false,
+	},
 	"use_legacy_toml_file": schema.BoolAttribute{
 		Description: existingSchema["use_legacy_toml_file"].Description,
 		Optional:    true,

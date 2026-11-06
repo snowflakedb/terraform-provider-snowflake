@@ -194,6 +194,8 @@ func (bm bracketModifier) Modify(v any) string {
 
 // TODO [next PRs]: drop the reverse modifier. One struct per allowed-list target, then a static
 // TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
+// reverseModifier swaps a parameter name and its value so the values print first.
+// ADD "db1" TO ALLOWED_DATABASES is the SQL text TO ALLOWED_DATABASES after the identifier.
 type reverseModifier string
 
 const (
@@ -637,7 +639,7 @@ func (b sqlBuilder) parseField(field reflect.StructField, value reflect.Value) (
 		value = value.Elem()
 	}
 
-	ddlTag := strings.Split(field.Tag.Get("ddl"), ",")[0]
+	ddlTag, _, _ := strings.Cut(field.Tag.Get("ddl"), ",")
 	sqlTag := field.Tag.Get("sql")
 
 	// static must be applied no matter what

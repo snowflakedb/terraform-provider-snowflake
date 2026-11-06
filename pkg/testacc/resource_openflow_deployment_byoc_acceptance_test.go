@@ -13,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -28,6 +27,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// accountEventTable is the quoted account default. An unset deployment reports it with an empty parameter level.
+var accountEventTable = sdk.NewSchemaObjectIdentifier("SNOWFLAKE", "TELEMETRY", "EVENTS").FullyQualifiedName()
+
 // BYOC rather than Snowflake-managed: it settles at INACTIVE in about ninety seconds against six or seven
 // minutes to reach ACTIVE, which makes it the cheaper of the two to exercise across nine steps.
 func TestAcc_OpenflowDeploymentByoc_BasicUseCase(t *testing.T) {
@@ -35,8 +37,6 @@ func TestAcc_OpenflowDeploymentByoc_BasicUseCase(t *testing.T) {
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	currentRole := testClient().Context.CurrentRole(t)
-	// event_table is a parameter, so with none set on the deployment it reports what the account has.
-	accountEventTable := helpers.FindParameter(t, testClient().Parameter.ShowAccountParameters(t), sdk.AccountParameterEventTable).Value
 
 	eventTable, eventTableCleanup := testClient().EventTable.Create(t)
 	t.Cleanup(eventTableCleanup)
@@ -90,7 +90,7 @@ func TestAcc_OpenflowDeploymentByoc_BasicUseCase(t *testing.T) {
 			HasOwner(currentRole.Name()),
 		resourceparametersassert.OpenflowDeploymentResourceParameters(t, ref).
 			HasEventTable(accountEventTable).
-			HasEventTableLevel(sdk.ParameterTypeAccount),
+			HasEventTableLevel(sdk.ParameterTypeSnowflakeDefault),
 	}
 
 	assertOptionalsUnset := []assert.TestCheckFuncProvider{
@@ -117,7 +117,7 @@ func TestAcc_OpenflowDeploymentByoc_BasicUseCase(t *testing.T) {
 			HasUpdatedOnNotEmpty(),
 		resourceparametersassert.OpenflowDeploymentResourceParameters(t, ref).
 			HasEventTable(accountEventTable).
-			HasEventTableLevel(sdk.ParameterTypeAccount),
+			HasEventTableLevel(sdk.ParameterTypeSnowflakeDefault),
 	}
 
 	assertWithOptionals := []assert.TestCheckFuncProvider{

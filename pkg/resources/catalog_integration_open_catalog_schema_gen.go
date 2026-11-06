@@ -136,7 +136,7 @@ var catalogIntegrationOpenCatalogSchema = collections.MergeMaps(
 			Computed:    true,
 			Description: "Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration open catalog.",
 			Elem: &tfschema.Resource{
-				Schema: schemas.ShowCatalogIntegrationOpenCatalogSchema,
+				Schema: schemas.ShowCatalogIntegrationSchema,
 			},
 		},
 	},

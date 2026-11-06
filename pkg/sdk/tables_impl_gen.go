@@ -12,7 +12,7 @@ import (
 
 var (
 	_ Tables                                         = (*tables)(nil)
-	_ convertibleRow[Table]                          = new(tableDBRow)
+	_ convertibleRow[Table]                          = new(tablesRow)
 	_ convertibleRow[TableColumnDetails]             = new(tableColumnDetailsRow)
 	_ convertibleRow[TableStageDetails]              = new(tableStageDetailsRow)
 	_ convertibleRow[TableSearchOptimizationDetails] = new(tableSearchOptimizationDetailsRow)
@@ -65,17 +65,17 @@ func (v *tables) DropSafely(ctx context.Context, id SchemaObjectIdentifier) erro
 
 func (v *tables) Show(ctx context.Context, request *ShowTableRequest) ([]Table, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[tableDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[tablesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[tableDBRow, Table](dbRows)
+	return convertRows[tablesRow, Table](dbRows)
 }
 
 func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	request := NewShowTableRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}})
+		WithIn(ExtendedIn{Schema: id.SchemaId()})
 	tables, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err
@@ -146,7 +146,6 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		ChangeTracking:             r.ChangeTracking,
 		DefaultDdlCollation:        r.DefaultDdlCollation,
 		CopyGrants:                 r.CopyGrants,
-		RowAccessPolicy:            r.RowAccessPolicy,
 		Tag:                        r.Tag,
 		Comment:                    r.Comment,
 	}
@@ -236,6 +235,12 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 				SkipFile:       r.StageCopyOptions.OnError.SkipFile,
 				AbortStatement: r.StageCopyOptions.OnError.AbortStatement,
 			}
+		}
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &TableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
 		}
 	}
 	return opts
@@ -506,15 +511,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		}
 	}
 	if r.SearchOptimizationAction != nil {
-		opts.SearchOptimizationAction = &TableSearchOptimizationActionLegacy{}
-		if r.SearchOptimizationAction.Add != nil {
-			opts.SearchOptimizationAction.Add = &AddSearchOptimization{
-				On: r.SearchOptimizationAction.Add.On,
-			}
-		}
-		if r.SearchOptimizationAction.Drop != nil {
-			opts.SearchOptimizationAction.Drop = r.SearchOptimizationAction.Drop.toOpts()
-		}
+		opts.SearchOptimizationAction = r.SearchOptimizationAction.toOpts()
 	}
 	if r.Set != nil {
 		opts.Set = &TableSet{
@@ -583,7 +580,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		}
 	}
 	if r.AddStorageLifecyclePolicy != nil {
-		opts.AddStorageLifecyclePolicy = &TableAddStorageLifecyclePolicy{
+		opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
 			StorageLifecyclePolicy: r.AddStorageLifecyclePolicy.StorageLifecyclePolicy,
 			On:                     r.AddStorageLifecyclePolicy.On,
 		}
@@ -613,7 +610,7 @@ func (r *ShowTableRequest) toOpts() *ShowTableOptions {
 	return opts
 }
 
-func (r tableDBRow) convert() (*Table, error) {
+func (r tablesRow) convert() (*Table, error) {
 	result := &Table{
 		CreatedOn:    r.CreatedOn,
 		Name:         r.Name,
@@ -637,6 +634,7 @@ func (r tableDBRow) convert() (*Table, error) {
 	mapNullStringToRequiredBool(&result.EnableSchemaEvolution, r.EnableSchemaEvolution)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToRequiredBool(&result.IsEvent, r.IsEvent)
+	mapNullStringToRequiredBool(&result.IsDynamic, r.IsDynamic)
 	mapNullString(&result.Budget, r.Budget)
 	return result, nil
 }
@@ -652,9 +650,9 @@ func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 	result := &TableColumnDetails{
 		Name:       r.Name,
 		Kind:       r.Kind,
-		IsNullable: r.IsNullable == "Y",
-		IsPrimary:  r.IsPrimary == "Y",
-		IsUnique:   r.IsUnique == "Y",
+		Null:       r.Null == "Y",
+		PrimaryKey: r.PrimaryKey == "Y",
+		UniqueKey:  r.UniqueKey == "Y",
 	}
 	mapNullString(&result.Default, r.Default)
 	mapNullStringToBool(&result.Check, r.Check)
@@ -755,4 +753,47 @@ func (r tableCheckConstraintDetailsRow) convert() (*TableCheckConstraintDetails,
 		CheckClause:       r.CheckClause,
 	}
 	return result, nil
+}
+
+func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimizationAction {
+	opts := &TableSearchOptimizationAction{}
+	if r.Add != nil {
+		opts.Add = &TableAddSearchOptimization{}
+		if r.Add.On != nil {
+			on := make([]TableSearchMethodWithTarget, len(r.Add.On))
+			for i, v := range r.Add.On {
+				on[i] = TableSearchMethodWithTarget{
+					Method: v.Method,
+				}
+				on[i].Args = TableSearchMethodArgs{
+					Targets:  v.Args.Targets,
+					Analyzer: v.Args.Analyzer,
+				}
+			}
+			opts.Add.On = on
+		}
+	}
+	if r.Drop != nil {
+		opts.Drop = &TableDropSearchOptimization{}
+		if r.Drop.On != nil {
+			on := make([]TableDropSearchOptimizationOn, len(r.Drop.On))
+			for i, v := range r.Drop.On {
+				on[i] = TableDropSearchOptimizationOn{
+					ColumnName:   v.ColumnName,
+					ExpressionId: v.ExpressionId,
+				}
+				if v.SearchMethodWithTarget != nil {
+					on[i].SearchMethodWithTarget = &TableSearchMethodWithTarget{
+						Method: v.SearchMethodWithTarget.Method,
+					}
+					on[i].SearchMethodWithTarget.Args = TableSearchMethodArgs{
+						Targets:  v.SearchMethodWithTarget.Args.Targets,
+						Analyzer: v.SearchMethodWithTarget.Args.Analyzer,
+					}
+				}
+			}
+			opts.Drop.On = on
+		}
+	}
+	return opts
 }

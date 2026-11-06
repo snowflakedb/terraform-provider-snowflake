@@ -15,8 +15,6 @@ There are existing guides that this one assumes you are familiar with:
 - Each resource's own documentation lists every field and its behavior: [snowflake_openflow_deployment_snowflake_managed](../resources/openflow_deployment_snowflake_managed), [snowflake_openflow_deployment_byoc](../resources/openflow_deployment_byoc), [snowflake_openflow_runtime](../resources/openflow_runtime), [snowflake_openflow_connector](../resources/openflow_connector).
 - This guide will focus on creating a Snowflake-managed deployment using [snowflake_openflow_deployment_snowflake_managed](../resources/openflow_deployment_snowflake_managed).
 
-!> **Caution: Preview Feature** At the time of writing this guide, all Openflow resources and data sources are preview features. Breaking changes are expected, even without bumping the major version. If they are still preview features, each one has to be enabled by name in `preview_features_enabled`, as shown below.
-
 ## Table of contents
 
 * [How the objects fit together](#how-the-objects-fit-together)
@@ -80,14 +78,14 @@ These grants can also be managed in Terraform with [snowflake_grant_privileges_t
 
 ## Provider configuration
 
-Openflow resources are preview features, so list the ones you use. `snowflake_external_access_integration` is a preview feature too; the database, schema, warehouse, secret, network rule, stage, grant and `snowflake_execute` resources are stable and need no entry.
+At the time of writing, `snowflake_external_access_integration` is still a preview feature, so include it in `preview_features_enabled`.
 
 ```terraform
 terraform {
   required_providers {
     snowflake = {
       source  = "snowflakedb/snowflake"
-      version = "~> 2.21"
+      version = "~> 2.23"
     }
     # only needed if you render a connector's config.json, as shown in step 6
     local = {
@@ -99,12 +97,7 @@ terraform {
 
 provider "snowflake" {
   preview_features_enabled = [
-    "snowflake_openflow_deployment_snowflake_managed_resource",
-    "snowflake_openflow_runtime_resource",
-    "snowflake_openflow_connector_resource",
     "snowflake_external_access_integration_resource",
-    "snowflake_openflow_deployments_datasource",
-    "snowflake_openflow_connector_definitions_datasource",
   ]
 }
 ```
@@ -432,6 +425,9 @@ resource "snowflake_openflow_connector" "example" {
     path  = local.bundle_path
   }
 
+  # a change to the rendered config.json loads the bundle again as a new version of this connector
+  version_trigger = local_file.config.content_sha256
+
   timeouts {
     create = "45m"
     update = "45m"
@@ -449,7 +445,7 @@ resource "snowflake_openflow_connector" "example" {
 }
 ```
 
-The connector reads the bundle **once, at create time**. Changing `config.json` afterwards and re-applying uploads the new file but leaves the connector as it was: `from` is create-only, and the contents behind it are not tracked. To pick up a changed configuration, either replace the connector (`terraform apply -replace=snowflake_openflow_connector.example`) or commit a new version.
+The connector reads the bundle **once, at create time**: `from` is create-only, and the contents behind it are not tracked. `version_trigger` is how a changed configuration reaches the same connector. When its value changes from one non-empty value to another, the provider loads the bundle again with `ALTER OPENFLOW CONNECTOR ... ADD VERSION FROM`, stopping a running connector for the load and starting it again afterwards. Adding the field, or removing it, loads nothing, so on an existing connector add it before the bundle next changes. Replacing the connector instead (`terraform apply -replace=snowflake_openflow_connector.example`) also picks up the change, but a new connector starts from nothing, which for a CDC connector means its log position and a fresh snapshot of every table. Whichever you use, the new files have to be on the stage before the connector reads them, so make sure the upload runs again when they change.
 
 Confirm Snowflake actually read the file from the `connector_definition` [output](https://developer.hashicorp.com/terraform/language/values/outputs) after the apply — it reports the definition Snowflake resolved, so `OPENFLOW_POSTGRES_CDC` there means your `config.json` was found and parsed rather than silently skipped.
 
@@ -517,7 +513,7 @@ terraform output connector_definition
 Openflow has a large operational surface that is deliberately not modeled as desired state:
 
 - **Starting and stopping connectors.** Whether a connector is running is an operational decision, not configuration. The current status is reported in `show_output`.
-- **Connector version management.** Committing a configuration version, upgrading a connector, and promoting versions are not modeled here.
+- **Connector version management.** Committing a configuration version, upgrading a connector, and promoting versions are not modeled here. The one exception is `version_trigger`, which loads a changed bundle as a new version.
 - **The BYOC cloud infrastructure.** If you later use a BYOC deployment, the CloudFormation template is downloaded from the Openflow UI and applied in your own cloud account. That path is outside this walkthrough.
 
 ## Things worth knowing

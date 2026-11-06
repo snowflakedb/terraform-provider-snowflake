@@ -48,6 +48,8 @@ type AuthenticationPolicyPatPolicyRequest struct {
 	DefaultExpiryInDays                   *int
 	MaxExpiryInDays                       *int
 	RequireRoleRestrictionForServiceUsers *bool
+	RequireRoleRestrictionForPersonUsers  *bool
+	BlockedRolesList                      []StringListItemWrapper
 	NetworkPolicyEvaluation               *NetworkPolicyEvaluationOption
 }
 

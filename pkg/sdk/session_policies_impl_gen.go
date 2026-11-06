@@ -48,7 +48,7 @@ func (v *sessionPolicies) Show(ctx context.Context, request *ShowSessionPolicyRe
 
 func (v *sessionPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*SessionPolicy, error) {
 	request := NewShowSessionPolicyRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	sessionPolicies, err := v.Show(ctx, request)
 	if err != nil {

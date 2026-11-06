@@ -21,6 +21,9 @@ func (opts *CreateWarehouseOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if opts.ResourceMonitor != nil && !ValidObjectIdentifier(opts.ResourceMonitor) {
+		errs = append(errs, errInvalidIdentifier("CreateWarehouseOptions", "ResourceMonitor"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateWarehouseOptions", "name"))
 	}
@@ -43,6 +46,9 @@ func (opts *CreateAdaptiveWarehouseOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if opts.ResourceMonitor != nil && !ValidObjectIdentifier(opts.ResourceMonitor) {
+		errs = append(errs, errInvalidIdentifier("CreateAdaptiveWarehouseOptions", "ResourceMonitor"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateAdaptiveWarehouseOptions", "name"))
 	}
@@ -65,6 +71,9 @@ func (opts *CreateInteractiveWarehouseOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if opts.ResourceMonitor != nil && !ValidObjectIdentifier(opts.ResourceMonitor) {
+		errs = append(errs, errInvalidIdentifier("CreateInteractiveWarehouseOptions", "ResourceMonitor"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateInteractiveWarehouseOptions", "name"))
 	}
@@ -108,6 +117,9 @@ func (opts *AlterWarehouseOptions) validate() error {
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
+		if opts.Set.ResourceMonitor != nil && !ValidObjectIdentifier(opts.Set.ResourceMonitor) {
+			errs = append(errs, errInvalidIdentifier("AlterWarehouseOptions.Set", "ResourceMonitor"))
+		}
 		if !anyValueSet(opts.Set.MaxConcurrencyLevel, opts.Set.StatementQueuedTimeoutInSeconds, opts.Set.StatementTimeoutInSeconds, opts.Set.WarehouseType, opts.Set.WarehouseSize, opts.Set.WaitForCompletion, opts.Set.MaxClusterCount, opts.Set.MinClusterCount, opts.Set.ScalingPolicy, opts.Set.AutoSuspend, opts.Set.AutoResume, opts.Set.ResourceMonitor, opts.Set.Comment, opts.Set.EnableQueryAcceleration, opts.Set.QueryAccelerationMaxScaleFactor, opts.Set.ResourceConstraint, opts.Set.Generation) {
 			errs = append(errs, errAtLeastOneOf("AlterWarehouseOptions.Set", "MaxConcurrencyLevel", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "WarehouseSize", "WaitForCompletion", "MaxClusterCount", "MinClusterCount", "ScalingPolicy", "AutoSuspend", "AutoResume", "ResourceMonitor", "Comment", "EnableQueryAcceleration", "QueryAccelerationMaxScaleFactor", "ResourceConstraint", "Generation"))
 		}
@@ -143,6 +155,9 @@ func (opts *AlterAdaptiveWarehouseOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("AlterAdaptiveWarehouseOptions", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
+		if opts.Set.ResourceMonitor != nil && !ValidObjectIdentifier(opts.Set.ResourceMonitor) {
+			errs = append(errs, errInvalidIdentifier("AlterAdaptiveWarehouseOptions.Set", "ResourceMonitor"))
+		}
 		if !anyValueSet(opts.Set.StatementQueuedTimeoutInSeconds, opts.Set.StatementTimeoutInSeconds, opts.Set.WarehouseType, opts.Set.Comment, opts.Set.ResourceMonitor, opts.Set.MaxQueryPerformanceLevel, opts.Set.QueryThroughputMultiplier) {
 			errs = append(errs, errAtLeastOneOf("AlterAdaptiveWarehouseOptions.Set", "StatementQueuedTimeoutInSeconds", "StatementTimeoutInSeconds", "WarehouseType", "Comment", "ResourceMonitor", "MaxQueryPerformanceLevel", "QueryThroughputMultiplier"))
 		}
@@ -178,6 +193,9 @@ func (opts *AlterInteractiveWarehouseOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("AlterInteractiveWarehouseOptions", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
+		if opts.Set.ResourceMonitor != nil && !ValidObjectIdentifier(opts.Set.ResourceMonitor) {
+			errs = append(errs, errInvalidIdentifier("AlterInteractiveWarehouseOptions.Set", "ResourceMonitor"))
+		}
 		if opts.Set.FallbackWarehouse != nil && !ValidObjectIdentifier(opts.Set.FallbackWarehouse) {
 			errs = append(errs, errInvalidIdentifier("AlterInteractiveWarehouseOptions.Set", "FallbackWarehouse"))
 		}

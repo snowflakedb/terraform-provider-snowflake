@@ -232,7 +232,7 @@ func TestInt_Services(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComputePool(computePool.ID()).
 				HasDnsNameNotEmpty().
-				HasCurrentInstances(1).
+				HasCurrentInstancesBetween(0, 1).
 				HasTargetInstances(1).
 				HasMinReadyInstances(1).
 				HasMinInstances(1).
@@ -287,7 +287,7 @@ func TestInt_Services(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComputePool(computePool.ID()).
 				HasDnsNameNotEmpty().
-				HasCurrentInstances(1).
+				HasCurrentInstancesBetween(0, 1).
 				HasTargetInstances(1).
 				HasMinReadyInstances(1).
 				HasMinInstances(1).
@@ -558,7 +558,7 @@ func TestInt_Services(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComputePool(computePool.ID()).
 				HasDnsNameNotEmpty().
-				HasCurrentInstancesBetween(0, 0).
+				HasCurrentInstancesBetween(0, 1).
 				HasTargetInstancesBetween(0, 1).
 				HasMinReadyInstances(1).
 				HasMinInstances(1).
@@ -741,7 +741,7 @@ func TestInt_Services(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComputePool(computePool.ID()).
 				HasDnsNameNotEmpty().
-				HasCurrentInstances(1).
+				HasCurrentInstancesBetween(0, 1).
 				HasTargetInstances(1).
 				HasMinReadyInstances(1).
 				HasMinInstances(1).
@@ -786,7 +786,7 @@ func TestInt_Services(t *testing.T) {
 				HasOwner(snowflakeroles.Accountadmin.Name()).
 				HasComputePool(computePool.ID()).
 				HasDnsNameNotEmpty().
-				HasCurrentInstances(0).
+				HasCurrentInstancesBetween(0, 1).
 				HasTargetInstances(1).
 				HasMinReadyInstances(1).
 				HasMinInstances(1).

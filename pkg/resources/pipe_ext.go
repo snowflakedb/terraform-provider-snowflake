@@ -20,13 +20,12 @@ import (
 // =============================================================================
 
 var (
-	pipeCreateExt        = PreviewFeatureCreateContextWrapper(string(previewfeatures.PipeResource), TrackingCreateWrapper(resources.Pipe, CreatePipe))
-	pipeReadExt          = PreviewFeatureReadContextWrapper(string(previewfeatures.PipeResource), TrackingReadWrapper(resources.Pipe, ReadPipeFunc(true)))
-	pipeUpdateExt        = PreviewFeatureUpdateContextWrapper(string(previewfeatures.PipeResource), TrackingUpdateWrapper(resources.Pipe, UpdatePipe))
-	pipeDescriptionExt   = ""
-	pipeCustomizeDiffExt schema.CustomizeDiffFunc
-	pipeImporterExt      = &schema.ResourceImporter{
-		StateContext: schema.ImportStatePassthroughContext,
+	pipeCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.PipeResource), TrackingCreateWrapper(resources.Pipe, CreatePipe))
+	pipeReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.PipeResource), TrackingReadWrapper(resources.Pipe, ReadPipeFunc(true)))
+	pipeUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.PipeResource), TrackingUpdateWrapper(resources.Pipe, UpdatePipe))
+	pipeDescriptionExt = "Resource used to manage pipes. For more information, check [pipe documentation](https://docs.snowflake.com/en/sql-reference/sql/create-pipe)."
+	pipeImporterExt    = &schema.ResourceImporter{
+		StateContext: TrackingImportWrapper(resources.Pipe, ImportPipe),
 	}
 )
 
@@ -35,122 +34,72 @@ var (
 // =============================================================================
 
 type pipeAlterRequestsExt struct {
-	set                   *sdk.PipeSetRequest
-	unset                 *sdk.PipeUnsetRequest
-	resetErrorIntegration bool
+	set   *sdk.PipeSetRequest
+	unset *sdk.PipeUnsetRequest
 }
 
-func pipeApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.CreatePipeRequest) error {
-	if v, ok := d.GetOk("comment"); ok {
-		req.WithComment(v.(string))
-	}
-
-	if v, ok := d.GetOk("auto_ingest"); ok && v.(bool) {
-		req.WithAutoIngest(true)
-	}
-
-	if v, ok := d.GetOk("aws_sns_topic_arn"); ok {
-		req.WithAwsSnsTopic(v.(string))
-	}
-
-	if v, ok := d.GetOk("integration"); ok {
-		req.WithIntegration(v.(string))
-	}
-
-	if v, ok := d.GetOk("error_integration"); ok {
-		req.WithErrorIntegration(v.(string))
-	}
-	return nil
-}
-
-func pipeSetConfigFieldsExt(d *schema.ResourceData, pipe *sdk.Pipe) error {
-	errs := errors.Join(
-		d.Set("name", pipe.Name),
-		d.Set("database", pipe.DatabaseName),
-		d.Set("schema", pipe.SchemaName),
-		d.Set("copy_statement", pipe.Definition),
-		d.Set("owner", pipe.Owner),
-		d.Set("comment", pipe.Comment),
-		d.Set("notification_channel", pipe.NotificationChannel),
-		d.Set("auto_ingest", pipe.NotificationChannel != ""),
-		d.Set("error_integration", pipe.ErrorIntegration),
+// name, database, and schema come from the id. integration and error_integration are not set by Read (they are diff-suppressed against show_output),
+// so import writes them: the Snowflake values in the enforcing mode, and empty values in the permissive mode.
+func pipeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, pipe *sdk.Pipe, importPermissiveMode bool) error {
+	return errors.Join(
+		d.Set("name", id.Name()),
+		d.Set("database", id.DatabaseName()),
+		d.Set("schema", id.SchemaName()),
+		importStringAttribute(d, "integration", importPermissiveMode, pipe.Integration),
+		importStringAttribute(d, "error_integration", importPermissiveMode, pipe.ErrorIntegration),
 	)
-	if errs != nil {
-		return errs
-	}
-	if notificationChannelIsAwsSnsTopic(pipe.NotificationChannel) {
-		return d.Set("aws_sns_topic_arn", pipe.NotificationChannel)
-	}
-	return nil
 }
 
-func pipeApplySetUnsetExt(d *schema.ResourceData) (*pipeAlterRequestsExt, error) {
-	reqs := &pipeAlterRequestsExt{set: sdk.NewPipeSetRequest(), unset: sdk.NewPipeUnsetRequest()}
-
-	if d.HasChange("comment") {
-		if comment, ok := d.GetOk("comment"); ok {
-			reqs.set.WithComment(comment.(string))
-		} else {
-			reqs.unset.WithComment(true)
-		}
+// auto_ingest, aws_sns_topic_arn, and the deprecated owner and notification_channel fields are derived from the notification channel and the owner.
+func pipeSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, details *sdk.PipeDetails, describeErr error, _ bool) error {
+	if describeErr != nil {
+		return describeErr
 	}
-
-	if d.HasChange("error_integration") {
-		if errorIntegration, ok := d.GetOk("error_integration"); ok {
-			oldValue, _ := d.GetChange("error_integration")
-			reqs.resetErrorIntegration = oldValue.(string) != ""
-			reqs.set.WithErrorIntegration(errorIntegration.(string))
-		} else {
-			reqs.unset.WithErrorIntegration(true)
-		}
+	errs := errors.Join(
+		d.Set("owner", details.Owner),
+		d.Set("notification_channel", details.NotificationChannel),
+		d.Set("auto_ingest", details.NotificationChannel != ""),
+	)
+	if notificationChannelIsAwsSnsTopic(details.NotificationChannel) {
+		errs = errors.Join(errs, d.Set("aws_sns_topic_arn", details.NotificationChannel))
 	}
-	return reqs, nil
+	return errs
 }
 
-// =============================================================================
-// SDK incision points
-// =============================================================================
-
-func pipeShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Pipe, diag.Diagnostics) {
+// Snowflake rejects setting another error integration while one is already assigned, so it is cleared first.
+// The current value is read from Snowflake, because error_integration is not refreshed into the state.
+func pipeBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("error_integration") || d.Get("error_integration").(string) == "" {
+		return nil
+	}
 	client := meta.(*provider.Context).Client
-	pipe, err := client.Pipes.ShowByIDSafely(ctx, id)
+	pipe, err := client.Pipes.ShowByID(ctx, id)
 	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query pipe. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Pipe id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
+		return diag.FromErr(err)
 	}
-	return pipe, nil
-}
-
-func pipeAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-	// Snowflake rejects setting another integration while one is already assigned.
-	if reqs.resetErrorIntegration {
-		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithUnset(*sdk.NewPipeUnsetRequest().WithErrorIntegration(true))); err != nil {
-			return fmt.Errorf("error clearing pipe %v error integration: %w", id.Name(), err)
-		}
+	if pipe.ErrorIntegration == "" {
+		return nil
 	}
-	if !reflect.DeepEqual(reqs.set, sdk.NewPipeSetRequest()) {
-		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithSet(*reqs.set)); err != nil {
-			return fmt.Errorf("error updating pipe %v: %w", id.Name(), err)
-		}
+	if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithUnset(*sdk.NewPipeUnsetRequest().WithErrorIntegration(true))); err != nil {
+		return diag.FromErr(fmt.Errorf("error clearing pipe %v error integration: %w", id.Name(), err))
 	}
 	return nil
 }
 
-func pipeAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier, reqs *pipeAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-	if !reflect.DeepEqual(reqs.unset, sdk.NewPipeUnsetRequest()) {
-		if err := client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithUnset(*reqs.unset)); err != nil {
-			return fmt.Errorf("error updating pipe %v: %w", id.Name(), err)
+// CREATE PIPE has no parameters, so the configured ones are set with ALTER PIPE right after the create.
+// The values are read from the configuration, not from the changes, so a configured zero value
+// (for example, pipe_execution_paused = false) is set on the pipe too.
+func pipeAfterCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	set := sdk.NewPipeSetRequest()
+	if diags := JoinDiags(
+		handleParameterCreateWithMapping(d, "log_event_level", &set.LogEventLevel, sdk.ToLogLevel),
+		handleParameterCreate(d, "pipe_execution_paused", &set.PipeExecutionPaused),
+	); diags != nil {
+		return diags
+	}
+	if !reflect.DeepEqual(*set, *sdk.NewPipeSetRequest()) {
+		if err := meta.(*provider.Context).Client.Pipes.Alter(ctx, sdk.NewAlterPipeRequest(id).WithSet(*set)); err != nil {
+			return diag.FromErr(err)
 		}
 	}
 	return nil

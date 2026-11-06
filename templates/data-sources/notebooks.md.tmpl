@@ -1,0 +1,30 @@
+{{- $frontmatter := .Description -}}
+{{- if gt (len (split $frontmatter "<deprecation>")) 1 -}}
+{{- $frontmatter = index (split $frontmatter "<deprecation>") 1 -}}
+{{- end -}}
+{{- $frontmatter = index (split $frontmatter "<preview_feature>") 1 -}}
+{{- $body := printf "%s%s" (index (split .Description "<preview_feature>") 0) (trimspace (index (split .Description "<preview_feature>") 1)) | trimspace -}}
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Preview"
+description: |-
+{{ $frontmatter | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+~> **Deprecation** This data source is deprecated and will be removed in a future major version of the provider. It returns [Legacy Notebooks](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks), and Snowflake is [disabling the creation of new Legacy Notebooks](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/bcr-disable-legacy-notebooks) in a rollout that started on September 1, 2026. Snowflake plans to stop the execution and editing of existing Legacy Notebooks in November 2026. [Code Bundles replace Legacy Notebook objects](https://docs.snowflake.com/en/user-guide/ui-snowsight/notebooks-in-workspaces/notebooks-in-workspaces-migrate), so migrate to the [`snowflake_code_bundles`](./code_bundles) data source.
+
+!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
+# {{.Name}} ({{.Type}})
+
+{{ $body }}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{ tffile (printf "examples/data-sources/%s/data-source.tf" .Name)}}
+{{- end }}
+
+-> **Note** If a field has a default value, it is shown next to the type in the schema.
+
+{{ .SchemaMarkdown | trimspace }}

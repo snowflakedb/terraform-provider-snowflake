@@ -12,9 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
-	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -54,23 +52,18 @@ func TestAcc_Experimental_AccountParameter_CatalogWritePath(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   config.FromModels(t, legacyStringModel, identifierModel, floatModel),
-				ExpectNonEmptyPlan:       true,
-				// The legacy write path requires the quotes as part of the HCL value, but Snowflake reports back the
-				// unquoted value, so refresh always diffs config vs. state for the string-typed parameter and plans an
-				// update (a no-op in Snowflake) — exactly the quoting quirk the experiment fixes.
+				// The default writer quotes string values. A config value that already
+				// includes quotes is stored with those quotes, so refresh matches config.
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(legacyStringModel.ResourceReference(), plancheck.ResourceActionUpdate),
-						plancheck.ExpectKnownValue(legacyStringModel.ResourceReference(), tfjsonpath.New("value"), knownvalue.StringExact("'module_a,module_b'")),
-						plancheck.ExpectResourceAction(identifierModel.ResourceReference(), plancheck.ResourceActionNoop),
-						plancheck.ExpectResourceAction(floatModel.ResourceReference(), plancheck.ResourceActionNoop),
+						plancheck.ExpectEmptyPlan(),
 					},
 				},
 				Check: assertThat(
 					t,
 					resourceassert.AccountParameterResource(t, legacyStringModel.ResourceReference()).
 						HasKeyString(string(stringParam)).
-						HasValueString("module_a,module_b"),
+						HasValueString("'module_a,module_b'"),
 					resourceassert.AccountParameterResource(t, identifierModel.ResourceReference()).
 						HasKeyString(string(identifierParam)).
 						HasValueString(stageName),

@@ -28,6 +28,7 @@ func parameterEnums() []*g.Enum {
 			parameterdefs.ParameterLevelProcedure,
 			parameterdefs.ParameterLevelProject,
 			parameterdefs.ParameterLevelService,
+			parameterdefs.ParameterLevelPipe,
 			parameterdefs.ParameterLevelUser,
 			parameterdefs.ParameterLevelOpenflowDeployment,
 			parameterdefs.ParameterLevelWarehouse,
@@ -53,6 +54,7 @@ func parameterEnums() []*g.Enum {
 		g.NewEnum("FunctionParameter", "FunctionParameters", parameterNamesForLevels(parameterdefs.ParameterLevelFunction)...),
 		g.NewEnum("ProcedureParameter", "ProcedureParameters", parameterNamesForLevels(parameterdefs.ParameterLevelProcedure)...),
 		g.NewEnum("ServiceParameter", "ServiceParameters", parameterNamesForLevels(parameterdefs.ParameterLevelService)...),
+		g.NewEnum("PipeParameter", "PipeParameters", parameterNamesForLevels(parameterdefs.ParameterLevelPipe)...),
 		g.NewEnum("IcebergTableParameter", "IcebergTableParameters", parameterNamesForLevels(parameterdefs.ParameterLevelIcebergTable)...),
 		g.NewEnum("HybridTableParameter", "HybridTableParameters", parameterNamesForLevels(parameterdefs.ParameterLevelHybridTable)...),
 		g.NewEnum("OpenflowDeploymentParameter", "OpenflowDeploymentParameters", parameterNamesForLevels(parameterdefs.ParameterLevelOpenflowDeployment)...),
@@ -69,7 +71,7 @@ func parameterEnums() []*g.Enum {
 		g.NewEnum("ParameterType", "ParameterTypes",
 			"SYSTEM", "ACCOUNT", "USER", "SESSION", "OBJECT", "WAREHOUSE",
 			"DATABASE", "SCHEMA", "TABLE", "TASK", "FUNCTION", "PROCEDURE",
-			"OPENFLOW_DEPLOYMENT", "SERVICE",
+			"OPENFLOW_DEPLOYMENT", "SERVICE", "PIPE",
 		).WithEmptyValue("SnowflakeDefault"),
 	}
 }

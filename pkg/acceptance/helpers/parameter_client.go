@@ -137,6 +137,17 @@ func (c *ParameterClient) ShowTaskParameters(t *testing.T, id sdk.SchemaObjectId
 	return params
 }
 
+func (c *ParameterClient) ShowPipeParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
+	t.Helper()
+	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{
+		In: &sdk.ParametersIn{
+			Pipe: id,
+		},
+	})
+	require.NoError(t, err)
+	return params
+}
+
 func (c *ParameterClient) ShowServiceParameters(t *testing.T, id sdk.SchemaObjectIdentifier) []*sdk.Parameter {
 	t.Helper()
 	params, err := c.client().ShowParameters(context.Background(), &sdk.ShowParametersOptions{

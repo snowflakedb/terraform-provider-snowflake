@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -29,7 +28,6 @@ func TestAcc_OpenflowDeployments_BasicUseCase_DifferentFiltering(t *testing.T) {
 	_ = testenvs.GetOrSkipTest(t, testenvs.TestOpenflow)
 
 	currentRole := testClient().Context.CurrentRole(t)
-	accountEventTable := helpers.FindParameter(t, testClient().Parameter.ShowAccountParameters(t), sdk.AccountParameterEventTable).Value
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
@@ -101,7 +99,7 @@ func TestAcc_OpenflowDeployments_BasicUseCase_DifferentFiltering(t *testing.T) {
 						HasComment(comment).
 						HasKeyNotEmpty(),
 					assert.Check(resource.TestCheckResourceAttr(dsLikeExact.DatasourceReference(), "openflow_deployments.0.parameters.0.event_table.0.value", accountEventTable)),
-					assert.Check(resource.TestCheckResourceAttr(dsLikeExact.DatasourceReference(), "openflow_deployments.0.parameters.0.event_table.0.level", string(sdk.ParameterTypeAccount))),
+					assert.Check(resource.TestCheckResourceAttr(dsLikeExact.DatasourceReference(), "openflow_deployments.0.parameters.0.event_table.0.level", string(sdk.ParameterTypeSnowflakeDefault))),
 				),
 			},
 			// 2. like matching nothing

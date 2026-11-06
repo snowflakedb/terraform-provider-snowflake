@@ -150,6 +150,11 @@ func (s *LegacyConfigDTO) WithToken(Token string) *LegacyConfigDTO {
 	return s
 }
 
+func (s *LegacyConfigDTO) WithTokenFilePath(TokenFilePath string) *LegacyConfigDTO {
+	s.TokenFilePath = &TokenFilePath
+	return s
+}
+
 func (s *LegacyConfigDTO) WithKeepSessionAlive(KeepSessionAlive bool) *LegacyConfigDTO {
 	s.KeepSessionAlive = &KeepSessionAlive
 	return s

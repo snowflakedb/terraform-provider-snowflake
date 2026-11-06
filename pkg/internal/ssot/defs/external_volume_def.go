@@ -286,18 +286,22 @@ var ExternalVolumeObject = ssot.Object{
 	AttributesModification:              true,
 	AdditionalDescribeOutputDescription: "Because of Terraform limitations, the changes on storage_location field do not mark this field as computed.",
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(
-			ssot.SchemaShow(),
-			ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(&ExternalVolumeAttrs.StorageLocations)),
-		),
-		ssot.WithModel(
-			ssot.ModelRequestType(&ExternalVolumeAttrs.StorageLocation, "[]sdk.ExternalVolumeStorageLocationRequest"),
-		),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(
-			ssot.ShowOutputShow(),
-			ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(&ExternalVolumeAttrs.StorageLocations)),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(
+				ssot.SchemaShow(),
+				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(&ExternalVolumeAttrs.StorageLocations)),
+			),
+			ssot.WithModel(
+				ssot.ModelRequestType(&ExternalVolumeAttrs.StorageLocation, "[]sdk.ExternalVolumeStorageLocationRequest"),
+			),
+			ssot.WithShowOutputAssert(
+				ssot.ShowOutputShow(),
+				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(&ExternalVolumeAttrs.StorageLocations)),
+			),
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&ExternalVolumeAttrs.StorageLocations)),
+			),
 		),
 		ssot.WithSdk(
 			ssot.SdkShow(ssot.SdkShowOptionalLike()),
@@ -317,10 +321,6 @@ var ExternalVolumeObject = ssot.Object{
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
 			ssot.SdkAlter(),
-		),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(),
-			ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&ExternalVolumeAttrs.StorageLocations)),
 		),
 	},
 	// The Azure and S3-compatible encryption types are validated by the resource, and the SQL does not send them.

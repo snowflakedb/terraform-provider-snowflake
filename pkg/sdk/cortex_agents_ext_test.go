@@ -82,7 +82,7 @@ func init() {
 			case_CortexAgents_sql_Show_all,
 			func(opts *ShowCortexAgentOptions) {
 				opts.Like = &Like{Pattern: String("like-pattern")}
-				opts.In = &ExtendedIn{In: In{Schema: schemaId}}
+				opts.In = &ExtendedIn{Schema: schemaId}
 				opts.StartsWith = String("starts-with-pattern")
 				opts.Limit = &LimitFrom{Rows: Int(10), From: String("limit-from")}
 			},
@@ -96,7 +96,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_CortexAgents_sql_Show_In,
-			func(opts *ShowCortexAgentOptions) { opts.In = &ExtendedIn{In: In{Schema: schemaId}} },
+			func(opts *ShowCortexAgentOptions) { opts.In = &ExtendedIn{Schema: schemaId} },
 			"SHOW AGENTS IN SCHEMA %s", schemaId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

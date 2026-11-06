@@ -115,10 +115,7 @@ func (b *BackupPolicyModel) WithExpireAfterDays(expireAfterDays int) *BackupPoli
 	return b
 }
 
-func (b *BackupPolicyModel) WithSchedule(schedule string) *BackupPolicyModel {
-	b.Schedule = tfconfig.StringVariable(schedule)
-	return b
-}
+// schedule attribute type is not yet supported, so WithSchedule can't be generated
 
 func (b *BackupPolicyModel) WithWithRetentionLock(withRetentionLock string) *BackupPolicyModel {
 	b.WithRetentionLock = tfconfig.StringVariable(withRetentionLock)

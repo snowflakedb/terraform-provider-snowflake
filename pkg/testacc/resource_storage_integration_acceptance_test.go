@@ -5,6 +5,7 @@ package testacc
 import (
 	"regexp"
 	"testing"
+	"uuid"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
@@ -16,12 +17,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/go-uuid"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
-	"github.com/stretchr/testify/require"
 )
 
 func TestAcc_StorageIntegration_Empty_StorageAllowedLocations(t *testing.T) {
@@ -304,8 +303,7 @@ func TestAcc_StorageIntegration_Azure_Update(t *testing.T) {
 	azureBucketUrl := testenvs.GetOrSkipTest(t, testenvs.AzureExternalBucketUrl)
 	resourceName := "snowflake_storage_integration.test"
 
-	azureTenantId, err := uuid.GenerateUUID()
-	require.NoError(t, err)
+	azureTenantId := uuid.NewV4().String()
 
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 

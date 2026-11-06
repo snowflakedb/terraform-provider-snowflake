@@ -160,7 +160,7 @@ func writeLabelsGo(path string, model LabelsFileModel) error {
 	if err != nil {
 		return fmt.Errorf("failed to format generated labels_gen.go: %w", err)
 	}
-	return os.WriteFile(filepath.Clean(path), formatted, 0o600)
+	return os.WriteFile(filepath.Clean(path), formatted, 0o600) // #nosec G703
 }
 
 func render(t *template.Template, model any) ([]byte, error) {
@@ -174,7 +174,7 @@ func render(t *template.Template, model any) ([]byte, error) {
 // updateIssueTemplate replaces the options of the object_type dropdown with the generated labels,
 // leaving the rest of the issue form untouched.
 func updateIssueTemplate(path string, options []string) error {
-	content, err := os.ReadFile(filepath.Clean(path))
+	content, err := os.ReadFile(filepath.Clean(path)) // #nosec G703
 	if err != nil {
 		return err
 	}

@@ -326,7 +326,7 @@ func init() {
 			func(opts *ShowTaskOptions) {
 				opts.Terse = new(true)
 				opts.Like = &Like{Pattern: new("myaccount")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 				opts.StartsWith = new("abc")
 				opts.RootOnly = new(true)
 				opts.Limit = &LimitFrom{Rows: new(10)}
@@ -340,7 +340,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Tasks_sql_Show_In,
-			func(opts *ShowTaskOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
+			func(opts *ShowTaskOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			"SHOW TASKS IN ACCOUNT",
 		).
 		withAdditionalSqlCasef(

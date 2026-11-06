@@ -13,10 +13,11 @@ type TypedParameter[T any] struct {
 	Level   ParameterType
 }
 
-// newTypedParameter parses a raw string-valued Parameter into a TypedParameter[T] using the supplied
+// typed parses a raw string-valued Parameter into a TypedParameter[T] using the supplied
 // parser (the generated accessors pass the parser matching the parameter's kind). Empty Value/Default
 // are left as the zero value rather than treated as parse errors (SHOW may report empty strings).
-func newTypedParameter[T any](raw *Parameter, parse func(string) (T, error)) (TypedParameter[T], error) {
+// A nil receiver yields the zero TypedParameter.
+func (raw *Parameter) typed[T any](parse func(string) (T, error)) (TypedParameter[T], error) {
 	if raw == nil {
 		return TypedParameter[T]{}, nil
 	}
@@ -38,11 +39,11 @@ func newTypedParameter[T any](raw *Parameter, parse func(string) (T, error)) (Ty
 	return tp, nil
 }
 
-// fillTypedParameter parses raw into *target using parse, returning only an error (nil on success).
+// fillTyped parses raw into *target using parse, returning only an error (nil on success).
 // The generated ShowParametersDetails accessors call one per field and errors.Join the results, so a
 // caller sees every parse failure at once rather than just the first.
-func fillTypedParameter[T any](raw *Parameter, parse func(string) (T, error), target *TypedParameter[T]) error {
-	tp, err := newTypedParameter(raw, parse)
+func (raw *Parameter) fillTyped[T any](parse func(string) (T, error), target *TypedParameter[T]) error {
+	tp, err := raw.typed(parse)
 	if err != nil {
 		return fmt.Errorf("parsing parameter %q: %w", raw.Key, err)
 	}
@@ -50,7 +51,7 @@ func fillTypedParameter[T any](raw *Parameter, parse func(string) (T, error), ta
 	return nil
 }
 
-// assignParsedParameter is the write-direction mirror of fillTypedParameter, used by the generated
+// assignParsedParameter is the write-direction mirror of fillTyped, used by the generated
 // SetParameterFromRaw writers.
 func assignParsedParameter[T any](raw string, parse func(string) (T, error), target **T) error {
 	value, err := parse(raw)

@@ -19,6 +19,8 @@ const (
 	// SqlKindObject is a nested struct: the fields are the Children of the attribute, or the Children of the Elem object
 	// of a list. See ObjectParameter.
 	SqlKindObject SqlKind = "object"
+	// SqlKindPreexistingStruct is a struct that already exists in the SDK definition. See PreexistingStruct.
+	SqlKindPreexistingStruct SqlKind = "preexisting_struct"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -33,16 +35,18 @@ const (
 type SqlParens string
 
 const (
-	SqlParensYes SqlParens = "parentheses"
-	SqlParensNo  SqlParens = "no_parentheses"
+	SqlParensYes  SqlParens = "parentheses"
+	SqlParensNo   SqlParens = "no_parentheses"
+	SqlParensMust SqlParens = "must_parentheses"
 )
 
 // SqlEquals is the equals ddl tag. Zero leaves the identifier default, which has no equals tag.
 type SqlEquals string
 
 const (
-	SqlEqualsYes SqlEquals = "equals"
-	SqlEqualsNo  SqlEquals = "no_equals"
+	SqlEqualsYes   SqlEquals = "equals"
+	SqlEqualsNo    SqlEquals = "no_equals"
+	SqlEqualsArrow SqlEquals = "arrow_equals"
 )
 
 // ClauseUse selects CreateSql, SetSql, or UnsetSql.
@@ -93,6 +97,11 @@ type SqlClause struct {
 	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
 	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
 	Variants []SqlVariant
+	// StructName is the name of the preexisting struct that the SDK definition supplies. PreexistingStruct sets it.
+	StructName string
+	// NoComma separates the elements of a nested struct without commas. NoComma sets it. ObjectParameter defaults to true;
+	// Commas() sets it false so EQUALITY (c1, c2, ANALYZER => '...') keeps commas.
+	NoComma bool
 }
 
 // SqlVariant is one variant of an object, such as a storage provider. Fields are references to attributes, in SQL order.
@@ -182,28 +191,52 @@ func BoolKeyword(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindKeyword, nil, opts)
 }
 
-// EnumKeyword is an enum value written as a bare keyword, such as a driver name before its settings.
-// The enum is the one of the attribute, or the EnumOf option. Pass NoQuotes or SingleQuotes, and Required when it is mandatory.
-func EnumKeyword(opts ...SqlClauseOption) SqlClause {
+// ValueKeyword writes the attribute value as a keyword. The attribute type chooses the field: an enum, a string,
+// a list of strings, a list of identifiers, or a list of objects. EnumKeyword and StringListKeyword call this.
+func ValueKeyword(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindKeyword, func(c *SqlClause) {
 		c.ValueKeyword = true
 	}, opts)
+}
+
+// EnumKeyword is an enum value written as a bare keyword, such as a driver name before its settings.
+// The enum is the one of the attribute, or the EnumOf option. Pass NoQuotes or SingleQuotes, and Required when it is mandatory.
+func EnumKeyword(opts ...SqlClauseOption) SqlClause {
+	return ValueKeyword(opts...)
 }
 
 // IdentifierListKeyword is a list of identifiers written with no name, in parentheses: ('a', 'b').
 // The attribute is a list or set of identifiers.
 func IdentifierListKeyword(opts ...SqlClauseOption) SqlClause {
-	return newClause(SqlKindKeyword, func(c *SqlClause) {
-		c.ValueKeyword = true
-		c.Parentheses = SqlParensYes
-	}, opts)
+	return ValueKeyword(append([]SqlClauseOption{Parentheses()}, opts...)...)
+}
+
+// StringListKeyword is a list of strings written as a keyword, such as CLUSTER BY (a, b) or EXISTS ( <condition> ).
+// Sql is the text before the list. Parentheses() wraps the list, and NoComma() joins the items with a space
+// instead of a comma. The attribute is a list or set of strings, which are not checked as identifiers.
+// The Go field name is FieldName, or the attribute name in camel case. FieldName with empty Sql omits the SQL prefix,
+// as in a list of targets with no name.
+func StringListKeyword(opts ...SqlClauseOption) SqlClause {
+	return ValueKeyword(opts...)
 }
 
 // IdentifierKeyword is an identifier keyword.
 // idType is the identifier type, without a pointer. Pass Sql to set the clause text.
+// FieldName sets the Go field name when it should not be derived from the SQL text.
 func IdentifierKeyword(idType string, opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindIdentifier, func(c *SqlClause) {
 		c.IdType = idType
+	}, opts)
+}
+
+// PreexistingStruct is a field of the query struct structName, which the SDK definition passes to CreateOperationFromObject.
+// The struct and its fields stay in that definition, and the generated statement embeds it.
+// Parentheses() wraps the struct, NoComma() leaves the commas out, Sql is the text before it,
+// and Required makes the field a value rather than a pointer. The Go field name is FieldName,
+// or the attribute name in camel case.
+func PreexistingStruct(structName string, opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindPreexistingStruct, func(c *SqlClause) {
+		c.StructName = structName
 	}, opts)
 }
 
@@ -249,7 +282,7 @@ func (a *Attribute) defaultSqlClause(use ClauseUse) SqlClause {
 	if use == ClauseUnset {
 		return BoolKeyword()
 	}
-	switch a.Type {
+	switch a.SdkType() {
 	case AttrInt:
 		return IntParameter()
 	case AttrBool:
@@ -326,6 +359,9 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.Reverse {
 		base.Reverse = true
 	}
+	if over.NoComma {
+		base.NoComma = true
+	}
 	if len(over.Variants) > 0 {
 		base.Variants = over.Variants
 	}
@@ -333,14 +369,17 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 }
 
 // ObjectParameter is a nested struct clause. On the Elem object of a list it is the shape of each element: Parentheses()
-// puts each element in parentheses. On a SqlOnly object attribute it is a nested struct inside a variant: Sql is the text
-// before it and Parentheses() wraps its fields. The fields are the Children.
+// puts each element in parentheses. On a SqlOnly object attribute it is a nested struct: Sql is the text before it and
+// Parentheses() wraps its fields. The fields are the Children. Fields are joined without commas; Commas() keeps them,
+// as in EQUALITY (c1, c2, ANALYZER => 'DEFAULT_ANALYZER').
 func ObjectParameter(opts ...SqlClauseOption) SqlClause {
-	return newClause(SqlKindObject, nil, opts)
+	return newClause(SqlKindObject, func(c *SqlClause) {
+		c.NoComma = true
+	}, opts)
 }
 
 // ListOfObjects is a parameter clause for a list or set whose Elem is an object. Sql is the text before the list and
-// Parentheses() wraps the whole list.
+// Parentheses() wraps the whole list. A single block such as IF (EXISTS (...)) is an object clause, not this list.
 func ListOfObjects(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindParameter, nil, opts)
 }
@@ -459,6 +498,17 @@ func NoParentheses() SqlClauseOption {
 	return func(c *SqlClause) { c.Parentheses = SqlParensNo }
 }
 
+// MustParentheses keeps an empty list in the statement as NAME = ().
+// Parentheses() omits an empty list.
+func MustParentheses() SqlClauseOption {
+	return func(c *SqlClause) { c.Parentheses = SqlParensMust }
+}
+
+// NoComma leaves the commas out between the elements of a nested struct.
+func NoComma() SqlClauseOption {
+	return func(c *SqlClause) { c.NoComma = true }
+}
+
 func Equals() SqlClauseOption {
 	return func(c *SqlClause) { c.Equals = SqlEqualsYes }
 }
@@ -467,9 +517,19 @@ func NoEquals() SqlClauseOption {
 	return func(c *SqlClause) { c.Equals = SqlEqualsNo }
 }
 
-// Reverse puts a list parameter before its SQL text.
-// TODO [next PRs]: drop reverse. One struct per allowed-list target, the identifier list with no SQL prefix,
-// then a static TO ALLOWED_* or FROM ALLOWED_* clause. See pkg/sdk/generator/README.md#create-and-alter.
+// ArrowEquals writes => between the name and the value, as in ANALYZER => 'DEFAULT_ANALYZER'.
+func ArrowEquals() SqlClauseOption {
+	return func(c *SqlClause) { c.Equals = SqlEqualsArrow }
+}
+
+// Commas keeps commas between the fields of a nested object. ObjectParameter sets NoComma; this clears it.
+func Commas() SqlClauseOption {
+	return func(c *SqlClause) { c.NoComma = false }
+}
+
+// Reverse prints a list parameter's values before its SQL text.
+// ADD "db1" TO ALLOWED_DATABASES is Reverse() with SQL text TO ALLOWED_DATABASES.
+// The Go field name still comes from that text unless FieldName is set.
 func Reverse() SqlClauseOption {
 	return func(c *SqlClause) { c.Reverse = true }
 }

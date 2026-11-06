@@ -1912,7 +1912,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("show function: no matches", func(t *testing.T) {
 		functions, err := client.Functions.Show(ctx, sdk.NewShowFunctionRequest().
-			WithIn(sdk.ExtendedIn{In: sdk.In{Schema: testClientHelper().Ids.SchemaId()}}).
+			WithIn(sdk.ExtendedIn{Schema: testClientHelper().Ids.SchemaId()}).
 			WithLike(sdk.Like{Pattern: sdk.String(NonExistingSchemaObjectIdentifier.Name())}))
 		require.NoError(t, err)
 		require.Empty(t, functions)

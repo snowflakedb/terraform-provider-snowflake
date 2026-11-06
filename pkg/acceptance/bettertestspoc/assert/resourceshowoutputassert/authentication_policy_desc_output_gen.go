@@ -35,11 +35,6 @@ func ImportedAuthenticationPolicyDescribeOutput(t *testing.T, id string) *Authen
 // Attribute value checks //
 ////////////////////////////
 
-func (a *AuthenticationPolicyDescribeOutputAssert) HasId(expected sdk.SchemaObjectIdentifier) *AuthenticationPolicyDescribeOutputAssert {
-	a.StringValueSet("id", expected.FullyQualifiedName())
-	return a
-}
-
 func (a *AuthenticationPolicyDescribeOutputAssert) HasName(expected string) *AuthenticationPolicyDescribeOutputAssert {
 	a.StringValueSet("name", expected)
 	return a
@@ -63,11 +58,6 @@ func (a *AuthenticationPolicyDescribeOutputAssert) HasComment(expected string) *
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
-
-func (a *AuthenticationPolicyDescribeOutputAssert) HasNoId() *AuthenticationPolicyDescribeOutputAssert {
-	a.ValueNotSet("id")
-	return a
-}
 
 func (a *AuthenticationPolicyDescribeOutputAssert) HasNoName() *AuthenticationPolicyDescribeOutputAssert {
 	a.ValueNotSet("name")

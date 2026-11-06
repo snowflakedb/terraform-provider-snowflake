@@ -7,6 +7,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -66,6 +67,7 @@ var functionsSchema = map[string]*schema.Schema{
 
 func Functions() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.FunctionsDatasource), TrackingReadWrapper(datasources.Functions, ReadContextFunctions)),
 		Schema:      functionsSchema,
 	}
@@ -77,7 +79,7 @@ func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta any)
 	schemaName := d.Get("schema").(string)
 
 	request := sdk.NewShowFunctionRequest()
-	request.WithIn(sdk.ExtendedIn{In: sdk.In{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)}})
+	request.WithIn(sdk.ExtendedIn{Schema: sdk.NewDatabaseObjectIdentifier(databaseName, schemaName)})
 	functions, err := client.Functions.Show(ctx, request)
 	if err != nil {
 		id := d.Id()

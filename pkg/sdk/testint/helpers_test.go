@@ -17,7 +17,7 @@ func createDatabaseFromShare(t *testing.T) (*sdk.Database, func()) {
 	secondaryClient := testSecondaryClient(t)
 	ctx := testContext(t)
 
-	shareTest, shareCleanup := secondaryTestClientHelper().Share.CreateShare(t)
+	shareTest, shareCleanup := secondaryTestClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	sharedDatabase, sharedDatabaseCleanup := secondaryTestClientHelper().Database.CreateDatabase(t)
@@ -98,7 +98,7 @@ func createApplicationPackage(t *testing.T) (*sdk.ApplicationPackage, func()) {
 
 func createShare(t *testing.T, ctx context.Context, client *sdk.Client) (*sdk.Share, func()) {
 	t.Helper()
-	object, objectCleanup := testClientHelper().Share.CreateShare(t)
+	object, objectCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(objectCleanup)
 
 	err := client.Grants.GrantPrivilegeToShare(ctx, sdk.NewGrantPrivilegeToShareRequest(object.ID()).WithPrivileges([]sdk.ObjectPrivilege{sdk.ObjectPrivilegeUsage}).WithOn(*sdk.NewShareGrantOnRequest().WithDatabase(testClientHelper().Ids.DatabaseId())))

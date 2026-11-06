@@ -9,7 +9,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -130,10 +129,10 @@ var openflowRuntimeSchema = map[string]*schema.Schema{
 
 func OpenflowRuntime() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.OpenflowRuntimeResource), TrackingCreateWrapper(resources.OpenflowRuntime, CreateOpenflowRuntime)),
-		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.OpenflowRuntimeResource), TrackingReadWrapper(resources.OpenflowRuntime, ReadOpenflowRuntime(true))),
-		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.OpenflowRuntimeResource), TrackingUpdateWrapper(resources.OpenflowRuntime, UpdateOpenflowRuntime)),
-		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.OpenflowRuntimeResource), TrackingDeleteWrapper(resources.OpenflowRuntime, DeleteOpenflowRuntime)),
+		CreateContext: TrackingCreateWrapper(resources.OpenflowRuntime, CreateOpenflowRuntime),
+		ReadContext:   TrackingReadWrapper(resources.OpenflowRuntime, ReadOpenflowRuntime(true)),
+		UpdateContext: TrackingUpdateWrapper(resources.OpenflowRuntime, UpdateOpenflowRuntime),
+		DeleteContext: TrackingDeleteWrapper(resources.OpenflowRuntime, DeleteOpenflowRuntime),
 		Description: joinWithSpace(
 			"Resource used to manage Openflow runtimes, the compute a deployment runs connectors on.",
 			"Every mutating statement is asynchronous, so create and update return once the runtime reaches the ACTIVE state.",

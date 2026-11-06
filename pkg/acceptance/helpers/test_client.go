@@ -23,6 +23,7 @@ type TestClient struct {
 	ApplicationPackage           *ApplicationPackageClient
 	AuthenticationPolicy         *AuthenticationPolicyClient
 	BackupPolicy                 *BackupPolicyClient
+	BackupSet                    *BackupSetClient
 	BcrBundles                   *BcrBundlesClient
 	Budget                       *BudgetClient
 	ComputePool                  *ComputePoolClient
@@ -62,7 +63,6 @@ type TestClient struct {
 	McpServer                    *McpServerClient
 	NetworkPolicy                *NetworkPolicyClient
 	NetworkRule                  *NetworkRuleClient
-	Notebook                     *NotebookClient
 	NotificationIntegration      *NotificationIntegrationClient
 	OpenflowConnector            *OpenflowConnectorClient
 	OpenflowConnectorDefinition  *OpenflowConnectorDefinitionClient
@@ -139,6 +139,7 @@ func NewTestClient(
 		ApplicationPackage:           NewApplicationPackageClient(context, idsGenerator),
 		AuthenticationPolicy:         NewAuthenticationPolicyClient(context, idsGenerator),
 		BackupPolicy:                 NewBackupPolicyClient(context, idsGenerator),
+		BackupSet:                    NewBackupSetClient(context, idsGenerator),
 		BcrBundles:                   NewBcrBundlesClient(context),
 		Budget:                       NewBudgetClient(context, idsGenerator),
 		ComputePool:                  NewComputePoolClient(context, idsGenerator),
@@ -178,7 +179,6 @@ func NewTestClient(
 		McpServer:                    NewMcpServerClient(context, idsGenerator),
 		NetworkPolicy:                NewNetworkPolicyClient(context, idsGenerator),
 		NetworkRule:                  NewNetworkRuleClient(context, idsGenerator),
-		Notebook:                     NewNotebookClient(context, idsGenerator),
 		NotificationIntegration:      NewNotificationIntegrationClient(context, idsGenerator),
 		OpenflowConnector:            NewOpenflowConnectorClient(context, idsGenerator),
 		OpenflowConnectorDefinition:  NewOpenflowConnectorDefinitionClient(context, idsGenerator),

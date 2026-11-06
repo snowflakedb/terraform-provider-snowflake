@@ -202,7 +202,7 @@ func TestAcc_Experimental_GrantPrivilegesToDatabaseRole_SafeDestroy_MissingDatab
 // ReadGrantPrivilegesToShare itself: it always checks share existence via ShowByID first, removes
 // the resource from state, and returns before Delete is ever called — so no experiment is needed.
 func TestAcc_Experimental_GrantPrivilegesToShare_SafeDestroy_MissingShare(t *testing.T) {
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
@@ -225,7 +225,7 @@ func TestAcc_Experimental_GrantPrivilegesToShare_SafeDestroy_MissingShare(t *tes
 			// Drop the share externally, then try to destroy without experiment — expect failure.
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.14.1"),
-				PreConfig:         testClient().Share.DropShareFunc(t, share.ID()),
+				PreConfig:         testClient().Share.DropFunc(t, share.ID()),
 				Config:            config.FromModels(t, grantModel),
 				Destroy:           true,
 				ExpectError:       regexp.MustCompile(`revokePrivilegeFromShareOptions fields`),
@@ -253,7 +253,7 @@ func TestAcc_Experimental_GrantPrivilegesToShare_SafeDestroy_MissingSchema(t *te
 	schema, schemaCleanup := testClient().Schema.CreateSchemaInDatabase(t, database.ID())
 	t.Cleanup(schemaCleanup)
 
-	share, shareCleanup := testClient().Share.CreateShare(t)
+	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	// setup grants USAGE on database to share — required by Snowflake before granting schema objects.

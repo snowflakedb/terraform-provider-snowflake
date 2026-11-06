@@ -49,7 +49,7 @@ func (v *cortexAgents) Show(ctx context.Context, request *ShowCortexAgentRequest
 
 func (v *cortexAgents) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*CortexAgent, error) {
 	request := NewShowCortexAgentRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	cortexAgents, err := v.Show(ctx, request)
 	if err != nil {

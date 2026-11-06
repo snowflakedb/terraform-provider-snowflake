@@ -94,7 +94,7 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 		if diags.HasError() {
 			return diags
 		}
-		diags = catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(d, catalogIntegrationIcebergRestDetails, withExternalChangesMarking)
+		diags = catalogIntegrationIcebergRestHandleExternalChangesInDescribeExt(ctx, d, meta, catalogIntegrationIcebergRestDetails, withExternalChangesMarking)
 		if diags.HasError() {
 			return diags
 		}
@@ -106,10 +106,10 @@ func ReadCatalogIntegrationIcebergRestFunc(withExternalChangesMarking bool) tfsc
 			return append(diags, diag.FromErr(err)...)
 		}
 		errs := errors.Join(
-			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestToSchema(catalogIntegrationIcebergRest)}),
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.CatalogIntegrationToSchema(catalogIntegrationIcebergRest)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.CatalogIntegrationIcebergRestDetailsToSchema(catalogIntegrationIcebergRestDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			catalogIntegrationIcebergRestSetConfigFieldsExt(d, catalogIntegrationIcebergRest),
+			catalogIntegrationIcebergRestSetConfigFieldsExt(ctx, d, meta, catalogIntegrationIcebergRest),
 		)
 		if errs != nil {
 			return append(diags, diag.FromErr(errs)...)

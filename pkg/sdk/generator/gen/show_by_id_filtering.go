@@ -77,15 +77,15 @@ func newShowByIDInFiltering(identifierKind idPrefix) ShowByIDFiltering {
 }
 
 func newShowByIDExtendedInFiltering(identifierKind idPrefix) ShowByIDFiltering {
-	return newShowByIDFiltering("In", "ExtendedIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
+	return newShowByIDFiltering("In", "ExtendedIn", fmt.Sprintf("%[1]v: id.%[1]vId()", identifierKind))
 }
 
 func newShowByIDServiceInFiltering(identifierKind idPrefix) ShowByIDFiltering {
-	return newShowByIDFiltering("In", "ServiceIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
+	return newShowByIDFiltering("In", "ServiceIn", fmt.Sprintf("%[1]v: id.%[1]vId()", identifierKind))
 }
 
 func newShowByIDTableInFiltering(identifierKind idPrefix) ShowByIDFiltering {
-	return newShowByIDFiltering("In", "TableIn", fmt.Sprintf("In: In{%[1]v: id.%[1]vId()}", identifierKind))
+	return newShowByIDFiltering("In", "TableIn", fmt.Sprintf("%[1]v: id.%[1]vId()", identifierKind))
 }
 
 type showByIDApplicationFilter struct {

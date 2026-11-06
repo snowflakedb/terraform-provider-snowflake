@@ -75,7 +75,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("create: complete", func(t *testing.T) {
 		database, cleanupDatabase := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(cleanupDatabase)
-		share, cleanupShare := testClientHelper().Share.CreateShare(t)
+		share, cleanupShare := testClientHelper().Share.Create(t)
 		t.Cleanup(cleanupShare)
 		externalVolume, cleanupVolume := testClientHelper().ExternalVolume.Create(t)
 		t.Cleanup(cleanupVolume)
@@ -136,8 +136,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("create secondary: basic", func(t *testing.T) {
 		primaryID, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		secondaryID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		// A new primary is not always visible to the target account immediately.
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 
 		require.NoError(t, secondaryClient.ReplicationGroups.CreateSecondary(secondaryCtx, sdk.NewCreateSecondaryReplicationGroupRequest(
 			secondaryID,
@@ -154,7 +153,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("create secondary: all", func(t *testing.T) {
 		primaryID, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		secondaryID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 		request := sdk.NewCreateSecondaryReplicationGroupRequest(
 			secondaryID,
 			sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID),
@@ -171,7 +170,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 
 	t.Run("show by id: same name in two accounts", func(t *testing.T) {
 		primaryID, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 		require.NoError(t, secondaryClient.ReplicationGroups.CreateSecondary(secondaryCtx, sdk.NewCreateSecondaryReplicationGroupRequest(
 			primaryID,
 			sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID),
@@ -208,6 +207,16 @@ func TestInt_ReplicationGroups(t *testing.T) {
 		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
 
+	t.Run("show in account", func(t *testing.T) {
+		id, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
+
+		inSource, err := client.ReplicationGroups.Show(ctx, sdk.NewShowReplicationGroupRequest().WithInAccount(sourceAccountID))
+		require.NoError(t, err)
+		require.True(t, slices.ContainsFunc(inSource, func(group sdk.ReplicationGroup) bool {
+			return group.Name == id.Name() && group.IsPrimary
+		}))
+	})
+
 	t.Run("alter: rename", func(t *testing.T) {
 		id, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		newID := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -230,7 +239,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 	t.Run("alter: set object types", func(t *testing.T) {
 		database, cleanupDatabase := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(cleanupDatabase)
-		share, cleanupShare := testClientHelper().Share.CreateShare(t)
+		share, cleanupShare := testClientHelper().Share.Create(t)
 		t.Cleanup(cleanupShare)
 		id, _ := createPrimaryWithDatabase(t, client, ctx, secondaryAccountID)
 		objectTypes := []sdk.ReplicationGroupObjectType{
@@ -340,7 +349,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 			WithSet(*sdk.NewReplicationGroupSetRequest().WithReplicationSchedule("10 MINUTE")),
 		))
 		secondaryID := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		time.Sleep(time.Second)
+		secondaryTestClientHelper().ReplicationGroup.WaitForPrimaryToBeVisible(t, sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID))
 		require.NoError(t, secondaryClient.ReplicationGroups.CreateSecondary(secondaryCtx, sdk.NewCreateSecondaryReplicationGroupRequest(
 			secondaryID,
 			sdk.NewExternalObjectIdentifier(sourceAccountID, primaryID),

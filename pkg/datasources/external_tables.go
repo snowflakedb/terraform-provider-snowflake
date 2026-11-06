@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 
@@ -58,6 +59,7 @@ var externalTablesSchema = map[string]*schema.Schema{
 
 func ExternalTables() *schema.Resource {
 	return &schema.Resource{
+		Description: docs.WithPreviewFeatureMark(),
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.ExternalTablesDatasource), TrackingReadWrapper(datasources.ExternalTables, ReadExternalTables)),
 		Schema:      externalTablesSchema,
 	}

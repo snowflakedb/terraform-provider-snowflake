@@ -20,7 +20,7 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 
 	client := testClient(t)
 	ctx := testContext(t)
-	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
+	shareTest, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
 	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
@@ -79,7 +79,7 @@ func TestInt_FailoverGroupsCreate(t *testing.T) {
 	t.Run("test with identifier containing a dot", func(t *testing.T) {
 		shareId := testClientHelper().Ids.RandomAccountObjectIdentifierContaining(".")
 
-		shareWithDot, shareWithDotCleanup := testClientHelper().Share.CreateShareWithRequest(t, shareId, sdk.NewCreateShareRequest(shareId))
+		shareWithDot, shareWithDotCleanup := testClientHelper().Share.CreateWithRequest(t, shareId, sdk.NewCreateShareRequest(shareId))
 		t.Cleanup(shareWithDotCleanup)
 
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -214,7 +214,7 @@ func TestInt_CreateSecondaryReplicationGroup(t *testing.T) {
 	secondaryClient := testSecondaryClient(t)
 	secondaryClientID := secondaryTestClientHelper().Account.GetAccountIdentifier(t)
 
-	shareTest, cleanupDatabase := testClientHelper().Share.CreateShare(t)
+	shareTest, cleanupDatabase := testClientHelper().Share.Create(t)
 	t.Cleanup(cleanupDatabase)
 
 	id := testClientHelper().Ids.RandomAccountObjectIdentifier()
@@ -418,7 +418,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 	})
 
 	t.Run("add and remove share account object", func(t *testing.T) {
-		shareTest, cleanupDatabase := testClientHelper().Share.CreateShare(t)
+		shareTest, cleanupDatabase := testClientHelper().Share.Create(t)
 		t.Cleanup(cleanupDatabase)
 		failoverGroup, cleanupFailoverGroup := testClientHelper().FailoverGroup.Create(t)
 		t.Cleanup(cleanupFailoverGroup)
@@ -524,7 +524,7 @@ func TestInt_FailoverGroupsAlterSource(t *testing.T) {
 			WithSet(*sdk.NewFailoverGroupSetRequest().WithObjectTypes([]sdk.PluralObjectType{sdk.PluralObjectTypeShares})))
 		require.NoError(t, err)
 
-		shareTest, cleanupShare := testClientHelper().Share.CreateShare(t)
+		shareTest, cleanupShare := testClientHelper().Share.Create(t)
 		t.Cleanup(cleanupShare)
 
 		// now add share to allowed shares of failover group 1
@@ -779,7 +779,7 @@ func TestInt_FailoverGroupsShowShares(t *testing.T) {
 	failoverGroupTest, failoverGroupCleanup := testClientHelper().FailoverGroup.Create(t)
 	t.Cleanup(failoverGroupCleanup)
 
-	shareTest, shareCleanup := testClientHelper().Share.CreateShare(t)
+	shareTest, shareCleanup := testClientHelper().Share.Create(t)
 	t.Cleanup(shareCleanup)
 	err := client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(failoverGroupTest.ID()).
 		WithSet(*sdk.NewFailoverGroupSetRequest().WithObjectTypes([]sdk.PluralObjectType{sdk.PluralObjectTypeShares})))

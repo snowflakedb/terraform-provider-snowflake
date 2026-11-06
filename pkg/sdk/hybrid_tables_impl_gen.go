@@ -446,8 +446,8 @@ func ToHybridTableParametersDetails(params []*Parameter) (*HybridTableParameters
 	byKey := parametersByKey(params)
 	var d HybridTableParametersDetails
 	if err := errors.Join(
-		fillTypedParameter(byKey["DATA_RETENTION_TIME_IN_DAYS"], strconv.Atoi, &d.DataRetentionTimeInDays),
-		fillTypedParameter(byKey["MAX_DATA_EXTENSION_TIME_IN_DAYS"], strconv.Atoi, &d.MaxDataExtensionTimeInDays),
+		byKey["DATA_RETENTION_TIME_IN_DAYS"].fillTyped(strconv.Atoi, &d.DataRetentionTimeInDays),
+		byKey["MAX_DATA_EXTENSION_TIME_IN_DAYS"].fillTyped(strconv.Atoi, &d.MaxDataExtensionTimeInDays),
 	); err != nil {
 		return nil, err
 	}

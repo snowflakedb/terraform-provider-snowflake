@@ -37,12 +37,15 @@ func MapToSchemaField(field genhelpers.Field) SchemaField {
 	isInterface := field.IsInterface()
 	concreteTypeWithoutPtr, _ := strings.CutPrefix(field.ConcreteType, "*")
 	name := genhelpers.ToSnakeCase(field.Name)
+	if field.SchemaName != "" {
+		name = field.SchemaName
+	}
 	switch concreteTypeWithoutPtr {
 	case "string":
 		return schemaField(name, schema.TypeString, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "[]string":
 		return schemaField(name, schema.TypeList, field.Name, isPointer, isInterface, genhelpers.Identity)
-	case "int":
+	case "int", "int64":
 		return schemaField(name, schema.TypeInt, field.Name, isPointer, isInterface, genhelpers.Identity)
 	case "float64":
 		return schemaField(name, schema.TypeFloat, field.Name, isPointer, isInterface, genhelpers.Identity)

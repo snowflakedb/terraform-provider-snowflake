@@ -5,20 +5,22 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.Schema{
+var alertAttributesSchema = map[string]*tfschema.Schema{
 	"comment": {
 		Type:        tfschema.TypeString,
 		Optional:    true,
 		Description: "Specifies a comment for the alert.",
 	},
 	"warehouse": {
-		Type:        tfschema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "The warehouse the alert will use.",
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("warehouse")),
+		Description:      "The warehouse the alert will use. When not set, the alert uses serverless compute resources. Creating, resuming, or switching to a serverless alert requires the EXECUTE MANAGED ALERT privilege; using a named warehouse requires its USAGE privilege.",
 	},
 	"condition": {
 		Type:             tfschema.TypeString,
@@ -71,13 +73,14 @@ var alertAttributesSchema = alertAttributesModificationExt(map[string]*tfschema.
 				},
 			},
 		},
-		Description: "The schedule for periodically running an alert.",
+		Description: "The schedule for periodically running an alert. Without it, the alert runs when new rows arrive in the tables of the condition. Adding or removing the schedule recreates the alert.",
 	},
 	"enabled": {
-		Type:     tfschema.TypeBool,
-		Optional: true,
+		Type:        tfschema.TypeBool,
+		Optional:    true,
+		Description: "Specifies if an alert should be 'started' (enabled) after creation or should remain 'suspended' (default).",
 	},
-})
+}
 
 var alertSchema = collections.MergeMaps(
 	map[string]*tfschema.Schema{
@@ -106,5 +109,25 @@ var alertSchema = collections.MergeMaps(
 	alertAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
+	},
+	map[string]*tfschema.Schema{
+		ShowOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW ALERTS` for the given alert.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowAlertSchema,
+			},
+		},
+	},
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE ALERT` for the given alert.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeAlertDetailsSchema,
+			},
+		},
 	},
 )

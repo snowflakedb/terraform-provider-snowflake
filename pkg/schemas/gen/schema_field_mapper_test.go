@@ -31,6 +31,10 @@ func Test_MapToSchemaField(t *testing.T) {
 			expected: expectedValues{"unexported_int", schema.TypeInt, false, false, genhelpers.Identity},
 		},
 		{
+			field:    genhelpers.Field{Name: "unexportedInt64", ConcreteType: "int64", UnderlyingType: "int64"},
+			expected: expectedValues{"unexported_int64", schema.TypeInt, false, false, genhelpers.Identity},
+		},
+		{
 			field:    genhelpers.Field{Name: "unexportedBool", ConcreteType: "bool", UnderlyingType: "bool"},
 			expected: expectedValues{"unexported_bool", schema.TypeBool, false, false, genhelpers.Identity},
 		},
@@ -45,6 +49,10 @@ func Test_MapToSchemaField(t *testing.T) {
 		{
 			field:    genhelpers.Field{Name: "unexportedIntPtr", ConcreteType: "*int", UnderlyingType: "*int"},
 			expected: expectedValues{"unexported_int_ptr", schema.TypeInt, true, false, genhelpers.Identity},
+		},
+		{
+			field:    genhelpers.Field{Name: "unexportedInt64Ptr", ConcreteType: "*int64", UnderlyingType: "*int64"},
+			expected: expectedValues{"unexported_int64_ptr", schema.TypeInt, true, false, genhelpers.Identity},
 		},
 		{
 			field:    genhelpers.Field{Name: "unexportedBoolPtr", ConcreteType: "*bool", UnderlyingType: "*bool"},
@@ -200,6 +208,13 @@ func Test_MapToSchemaField_identifierSliceMapper(t *testing.T) {
 
 	schemaField = MapToSchemaField(genhelpers.Field{Name: "ExternalAccessIntegrations", ConcreteType: "[]sdk.AccountObjectIdentifier", UnderlyingType: "slice"})
 	assert.Equal(t, "collections.Map(service.ExternalAccessIntegrations, sdk.AccountObjectIdentifier.Name)", genhelpers.RunMapper(schemaField.Mapper, "service.ExternalAccessIntegrations"))
+}
+
+func Test_MapToSchemaField_schemaName(t *testing.T) {
+	schemaField := MapToSchemaField(genhelpers.Field{Name: "Null", ConcreteType: "bool", UnderlyingType: "bool", SchemaName: "is_nullable"})
+	assert.Equal(t, "is_nullable", schemaField.Name)
+	assert.Equal(t, "Null", schemaField.OriginalName)
+	assert.Equal(t, schema.TypeBool, schemaField.SchemaType)
 }
 
 func Test_MapToSchemaField_dataTypeMapper(t *testing.T) {
