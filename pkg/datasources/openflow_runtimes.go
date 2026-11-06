@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -53,7 +52,7 @@ var openflowRuntimesSchema = map[string]*schema.Schema{
 
 func OpenflowRuntimes() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.OpenflowRuntimesDatasource), TrackingReadWrapper(datasources.OpenflowRuntimes, ReadOpenflowRuntimes)),
+		ReadContext: TrackingReadWrapper(datasources.OpenflowRuntimes, ReadOpenflowRuntimes),
 		Schema:      openflowRuntimesSchema,
 		Description: "Data source used to get details of filtered Openflow runtimes. The results of SHOW and DESCRIBE are encapsulated in one output collection `openflow_runtimes`.",
 	}

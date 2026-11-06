@@ -60,7 +60,7 @@ func CreateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 		return diag.FromErr(err)
 	}
 
-	req, err := backupPolicyNewCreateRequest(d, id)
+	req, err := backupPolicyNewCreateRequestExt(d, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -105,7 +105,6 @@ func ReadBackupPolicyFunc(withExternalChangesMarking bool) tfschema.ReadContextF
 
 		if err = setStateToValuesFromConfig(d, backupPolicySchema, []string{
 			"with_retention_lock",
-			"schedule",
 			"expire_after_days",
 		}); err != nil {
 			return diag.FromErr(err)
@@ -114,7 +113,7 @@ func ReadBackupPolicyFunc(withExternalChangesMarking bool) tfschema.ReadContextF
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.BackupPolicyToSchema(backupPolicy)}),
 			d.Set(DescribeOutputAttributeName, []map[string]any{schemas.BackupPolicyDetailsToSchema(backupPolicyDetails)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
-			backupPolicySetConfigFields(d, backupPolicy),
+			backupPolicySetConfigFieldsExt(ctx, d, meta, backupPolicy),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -128,7 +127,37 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := backupPolicyApplySetUnset(d)
+
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
+		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error {
+				return client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(currentId).WithRenameTo(targetId))
+			}
+		}
+		if diags := handleThreeLevelHierarchyRename(
+			ctx, d, client, &id,
+			rename,
+			client.BackupPolicies.ShowByID,
+			func(renamed sdk.SchemaObjectIdentifier) string {
+				return helpers.EncodeResourceIdentifier(renamed)
+			},
+			"backup policy",
+		); diags != nil {
+			return diags
+		}
+	}
+
+	if d.HasChange("name") {
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
+		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithRenameTo(newId)); err != nil {
+			return diag.FromErr(err)
+		}
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
+		id = newId
+	}
+	setUnset, err := backupPolicyApplySetUnsetExt(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -146,9 +175,11 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 }
 
 var backupPolicyCustomizeDiff = TrackingCustomDiffWrapper(resources.BackupPolicy, customdiff.All(
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
 	ComputedIfAnyAttributeChanged(backupPolicySchema, ShowOutputAttributeName, "name", "comment", "schedule", "expire_after_days", "with_retention_lock"),
 	ComputedIfAnyAttributeChanged(backupPolicySchema, DescribeOutputAttributeName, "name", "comment", "schedule", "expire_after_days", "with_retention_lock"),
-	ComputedIfAnyAttributeChanged(backupPolicySchema, FullyQualifiedNameAttributeName, "name"),
+	ComputedIfAnyAttributeChanged(backupPolicySchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 ))
 
 func backupPolicyParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
@@ -159,30 +190,12 @@ func backupPolicyParseId(id string) (sdk.SchemaObjectIdentifier, error) {
 	return sdk.ParseSchemaObjectIdentifier(id)
 }
 
-func backupPolicyNewCreateRequest(d *tfschema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateBackupPolicyRequest, error) {
-	return sdk.NewCreateBackupPolicyRequest(id), nil
-}
-
 func backupPolicyApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateBackupPolicyRequest) error {
 	return errors.Join(
 		booleanStringAttributeCreateBuilder(d, "with_retention_lock", request.WithWithRetentionLock),
-		stringAttributeCreateBuilder(d, "schedule", request.WithSchedule),
 		intAttributeCreateBuilder(d, "expire_after_days", request.WithExpireAfterDays),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
-}
-
-func backupPolicyApplySetUnset(d *tfschema.ResourceData) (*backupPolicyAlterRequestsExt, error) {
-	set, unset := sdk.NewBackupPolicySetRequest(), sdk.NewBackupPolicyUnsetRequest()
-	errs := errors.Join(
-		stringAttributeUpdateBuilder(d, "schedule", set.WithSchedule, unset.WithSchedule),
-		intAttributeUpdateBuilder(d, "expire_after_days", set.WithExpireAfterDays, unset.WithExpireAfterDays),
-		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
-	)
-	if errs != nil {
-		return nil, errs
-	}
-	return &backupPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }
 
 func DeleteBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
@@ -192,10 +205,4 @@ func DeleteBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 			return client.BackupPolicies.DropSafely
 		},
 	)(ctx, d, meta)
-}
-
-func backupPolicySetConfigFields(d *tfschema.ResourceData, obj *sdk.BackupPolicy) error {
-	return errors.Join(
-		d.Set("comment", obj.Comment),
-	)
 }

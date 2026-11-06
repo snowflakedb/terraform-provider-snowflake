@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -18,7 +19,6 @@ type AuthenticationPolicyModel struct {
 	ClientPolicy             tfconfig.Variable `json:"client_policy,omitempty"`
 	ClientTypes              tfconfig.Variable `json:"client_types,omitempty"`
 	Comment                  tfconfig.Variable `json:"comment,omitempty"`
-	FullyQualifiedName       tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	MfaAuthenticationMethods tfconfig.Variable `json:"mfa_authentication_methods,omitempty"`
 	MfaEnrollment            tfconfig.Variable `json:"mfa_enrollment,omitempty"`
 	MfaPolicy                tfconfig.Variable `json:"mfa_policy,omitempty"`
@@ -122,15 +122,15 @@ func (a *AuthenticationPolicyModel) WithComment(comment string) *AuthenticationP
 	return a
 }
 
-func (a *AuthenticationPolicyModel) WithFullyQualifiedName(fullyQualifiedName string) *AuthenticationPolicyModel {
-	a.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
-	return a
-}
-
 // mfa_authentication_methods attribute type is not yet supported, so WithMfaAuthenticationMethods can't be generated
 
 func (a *AuthenticationPolicyModel) WithMfaEnrollment(mfaEnrollment string) *AuthenticationPolicyModel {
 	a.MfaEnrollment = tfconfig.StringVariable(mfaEnrollment)
+	return a
+}
+
+func (a *AuthenticationPolicyModel) WithMfaEnrollmentSdk(mfaEnrollment sdk.MfaEnrollmentOption) *AuthenticationPolicyModel {
+	a.MfaEnrollment = tfconfig.StringVariable(string(mfaEnrollment))
 	return a
 }
 
@@ -178,11 +178,6 @@ func (a *AuthenticationPolicyModel) WithClientTypesValue(value tfconfig.Variable
 
 func (a *AuthenticationPolicyModel) WithCommentValue(value tfconfig.Variable) *AuthenticationPolicyModel {
 	a.Comment = value
-	return a
-}
-
-func (a *AuthenticationPolicyModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *AuthenticationPolicyModel {
-	a.FullyQualifiedName = value
 	return a
 }
 

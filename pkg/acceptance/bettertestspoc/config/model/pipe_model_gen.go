@@ -7,19 +7,22 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
 type PipeModel struct {
-	Database         tfconfig.Variable `json:"database,omitempty"`
-	Schema           tfconfig.Variable `json:"schema,omitempty"`
-	Name             tfconfig.Variable `json:"name,omitempty"`
-	AutoIngest       tfconfig.Variable `json:"auto_ingest,omitempty"`
-	AwsSnsTopicArn   tfconfig.Variable `json:"aws_sns_topic_arn,omitempty"`
-	Comment          tfconfig.Variable `json:"comment,omitempty"`
-	CopyStatement    tfconfig.Variable `json:"copy_statement,omitempty"`
-	ErrorIntegration tfconfig.Variable `json:"error_integration,omitempty"`
-	Integration      tfconfig.Variable `json:"integration,omitempty"`
+	Database            tfconfig.Variable `json:"database,omitempty"`
+	Schema              tfconfig.Variable `json:"schema,omitempty"`
+	Name                tfconfig.Variable `json:"name,omitempty"`
+	AutoIngest          tfconfig.Variable `json:"auto_ingest,omitempty"`
+	AwsSnsTopicArn      tfconfig.Variable `json:"aws_sns_topic_arn,omitempty"`
+	Comment             tfconfig.Variable `json:"comment,omitempty"`
+	CopyStatement       tfconfig.Variable `json:"copy_statement,omitempty"`
+	ErrorIntegration    tfconfig.Variable `json:"error_integration,omitempty"`
+	Integration         tfconfig.Variable `json:"integration,omitempty"`
+	LogEventLevel       tfconfig.Variable `json:"log_event_level,omitempty"`
+	PipeExecutionPaused tfconfig.Variable `json:"pipe_execution_paused,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -140,6 +143,21 @@ func (p *PipeModel) WithIntegration(integration string) *PipeModel {
 	return p
 }
 
+func (p *PipeModel) WithLogEventLevel(logEventLevel string) *PipeModel {
+	p.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return p
+}
+
+func (p *PipeModel) WithLogEventLevelSdk(logEventLevel sdk.LogLevel) *PipeModel {
+	p.LogEventLevel = tfconfig.StringVariable(string(logEventLevel))
+	return p
+}
+
+func (p *PipeModel) WithPipeExecutionPaused(pipeExecutionPaused bool) *PipeModel {
+	p.PipeExecutionPaused = tfconfig.BoolVariable(pipeExecutionPaused)
+	return p
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -186,5 +204,15 @@ func (p *PipeModel) WithErrorIntegrationValue(value tfconfig.Variable) *PipeMode
 
 func (p *PipeModel) WithIntegrationValue(value tfconfig.Variable) *PipeModel {
 	p.Integration = value
+	return p
+}
+
+func (p *PipeModel) WithLogEventLevelValue(value tfconfig.Variable) *PipeModel {
+	p.LogEventLevel = value
+	return p
+}
+
+func (p *PipeModel) WithPipeExecutionPausedValue(value tfconfig.Variable) *PipeModel {
+	p.PipeExecutionPaused = value
 	return p
 }

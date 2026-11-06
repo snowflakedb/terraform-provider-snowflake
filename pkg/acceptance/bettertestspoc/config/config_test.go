@@ -44,6 +44,23 @@ EOT
 		require.Equal(t, expectedOutput, result)
 	})
 
+	t.Run("test html characters in multiline", func(t *testing.T) {
+		someModel := Some("test", "Some Name").
+			WithMultilineField("select a <> b && c\nfrom table(f(x => 1))")
+		expectedOutput := strings.TrimPrefix(`
+resource "snowflake_share" "test" {
+  name = "Some Name"
+  multiline_field = <<EOT
+select a <> b && c
+from table(f(x => 1))
+EOT
+}
+`, "\n")
+		result := config.ResourceFromModel(t, someModel)
+
+		require.Equal(t, expectedOutput, result)
+	})
+
 	t.Run("test full", func(t *testing.T) {
 		someModel := Some("test", "Some Name").
 			WithComment("Some Comment").

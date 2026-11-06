@@ -3,6 +3,7 @@ package gen
 import (
 	"strings"
 	"testing"
+	"text/template"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -132,4 +133,55 @@ func renderShowOutputAssertions(t *testing.T, model ResourceShowOutputAssertions
 	var buf strings.Builder
 	require.NoError(t, AssertionsTemplate.Execute(&buf, model))
 	return buf.String()
+}
+
+func Test_ShowOutputAssertionsFromSsot_showRowFromBase(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	base := ssot.Object{
+		Name:       "Widget",
+		IdType:     "AccountObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+		Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert(ssot.ShowOutputShow())},
+	}
+	variant := func(opts ...ssot.ShowOutputShowOption) ssot.Object {
+		return ssot.Object{
+			Name:       "WidgetGlue",
+			IdType:     "AccountObjectIdentifier",
+			VariantOf:  &base,
+			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+			Generators: []ssot.GeneratorOption{ssot.WithShowOutputAssert(ssot.ShowOutputShow(opts...))},
+		}
+	}
+	render := func(t *testing.T, tmpl *template.Template, model ResourceShowOutputAssertionsModel) string {
+		t.Helper()
+		var buf strings.Builder
+		require.NoError(t, tmpl.Execute(&buf, model))
+		return buf.String()
+	}
+
+	t.Run("a reusing variant gets only constructors returning the base type", func(t *testing.T) {
+		model := ShowOutputAssertionsFromSsot(variant(ssot.ShowOutputShowRowFromBase()), false)
+		require.Equal(t, "Widget", model.ReusedBase)
+		definition := render(t, DefinitionTemplate, model)
+		require.Contains(t, definition, "func WidgetGlueShowOutput(t *testing.T, name string) *WidgetShowOutputAssert {")
+		require.Contains(t, definition, "return WidgetShowOutput(t, name)")
+		require.Contains(t, definition, "func ImportedWidgetGlueShowOutput(t *testing.T, id string) *WidgetShowOutputAssert {")
+		require.Contains(t, definition, "return ImportedWidgetShowOutput(t, id)")
+		require.NotContains(t, definition, "type WidgetGlueShowOutputAssert")
+		require.Empty(t, strings.TrimSpace(render(t, AssertionsTemplate, model)), "no attribute methods on a reusing variant")
+	})
+	t.Run("a variant that does not reuse keeps its own assertion", func(t *testing.T) {
+		model := ShowOutputAssertionsFromSsot(variant(), false)
+		require.Empty(t, model.ReusedBase)
+		require.Contains(t, render(t, DefinitionTemplate, model), "type WidgetGlueShowOutputAssert struct")
+		require.Contains(t, render(t, AssertionsTemplate, model), "HasComment")
+	})
+	t.Run("describe output of a reusing variant is still generated", func(t *testing.T) {
+		obj := variant(ssot.ShowOutputShowRowFromBase())
+		obj.Describe = ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}}
+		obj.Generators = []ssot.GeneratorOption{ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()), ssot.ShowOutputDescribe())}
+		model := ShowOutputAssertionsFromSsot(obj, true)
+		require.Empty(t, model.ReusedBase)
+		require.Contains(t, render(t, DefinitionTemplate, model), "type WidgetGlueDescribeOutputAssert struct")
+	})
 }

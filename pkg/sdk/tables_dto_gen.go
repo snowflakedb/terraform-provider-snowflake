@@ -34,7 +34,7 @@ type CreateTableRequest struct {
 	ChangeTracking             *bool
 	DefaultDdlCollation        *StringAllowEmpty
 	CopyGrants                 *bool
-	RowAccessPolicy            *TableRowAccessPolicyLegacy
+	RowAccessPolicy            *TableRowAccessPolicyRequest
 	Tag                        []TagAssociation
 	Comment                    *string
 }
@@ -117,13 +117,18 @@ type LegacyTableCopyOnErrorOptionsRequest struct {
 	AbortStatement *bool
 }
 
+type TableRowAccessPolicyRequest struct {
+	Name SchemaObjectIdentifier // required
+	On   []string               // required
+}
+
 type CreateAsSelectTableRequest struct {
 	OrReplace       *bool
 	name            SchemaObjectIdentifier       // required
 	Columns         []TableAsSelectColumnRequest // required
 	ClusterBy       []string
 	CopyGrants      *bool
-	RowAccessPolicy *TableRowAccessPolicyLegacy
+	RowAccessPolicy *TableRowAccessPolicy
 	Query           string // required
 }
 
@@ -170,7 +175,7 @@ type AlterTableRequest struct {
 	ColumnAction               *TableColumnActionRequest
 	ConstraintAction           *TableConstraintActionRequest
 	ExternalTableAction        *TableExternalTableActionRequest
-	SearchOptimizationAction   *TableSearchOptimizationActionLegacyRequest
+	SearchOptimizationAction   *TableSearchOptimizationActionRequest
 	Set                        *TableSetRequest
 	SetTags                    []TagAssociation
 	UnsetTags                  []ObjectIdentifier
@@ -179,7 +184,7 @@ type AlterTableRequest struct {
 	DropRowAccessPolicy        *TableDropRowAccessPolicyRequest
 	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicyRequest
 	DropAllRowAccessPolicies   *bool
-	AddStorageLifecyclePolicy  *TableAddStorageLifecyclePolicyRequest
+	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicyRequest
 	DropStorageLifecyclePolicy *bool
 }
 
@@ -325,13 +330,33 @@ type TableExternalTableColumnDropActionRequest struct {
 	Names    []string // required
 }
 
-type TableSearchOptimizationActionLegacyRequest struct {
-	Add  *AddSearchOptimizationRequest
+type TableSearchOptimizationActionRequest struct {
+	Add  *TableAddSearchOptimizationRequest
 	Drop *TableDropSearchOptimizationRequest
 }
 
-type AddSearchOptimizationRequest struct {
-	On []string
+type TableAddSearchOptimizationRequest struct {
+	On []TableSearchMethodWithTargetRequest
+}
+
+type TableSearchMethodWithTargetRequest struct {
+	Method TableSearchMethod            // required
+	Args   TableSearchMethodArgsRequest // required
+}
+
+type TableSearchMethodArgsRequest struct {
+	Targets  []string
+	Analyzer *string
+}
+
+type TableDropSearchOptimizationRequest struct {
+	On []TableDropSearchOptimizationOnRequest
+}
+
+type TableDropSearchOptimizationOnRequest struct {
+	SearchMethodWithTarget *TableSearchMethodWithTargetRequest
+	ColumnName             *string
+	ExpressionId           *string
 }
 
 type TableSetRequest struct {
@@ -368,7 +393,7 @@ type TableDropAndAddRowAccessPolicyRequest struct {
 	Add  TableAddRowAccessPolicyRequest  // required
 }
 
-type TableAddStorageLifecyclePolicyRequest struct {
+type TableStorageLifecyclePolicyRequest struct {
 	StorageLifecyclePolicy SchemaObjectIdentifier // required
 	On                     []Column               // required
 }

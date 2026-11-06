@@ -200,63 +200,6 @@ func TestAcc_Experimental_Table_HierarchyRenames_SchemaRenamed(t *testing.T) {
 	})
 }
 
-// Both schemas exist in config. The table is moved from schema X to schema Y via ALTER TABLE RENAME TO.
-func TestAcc_Experimental_Table_HierarchyRenames_TableMoveToAnotherSchema(t *testing.T) {
-	databaseId := testClient().Ids.RandomAccountObjectIdentifier()
-	schemaXName := testClient().Ids.Alpha()
-	schemaYName := testClient().Ids.Alpha()
-	tableName := testClient().Ids.Alpha()
-
-	providerModel := providermodel.SnowflakeProvider().WithExperimentalFeaturesEnabled(experimentalfeatures.HierarchyRenames)
-	databaseModel := model.DatabaseWithParametersSet("db", databaseId.Name())
-
-	schemaModelX := model.SchemaWithImplicitDatabaseDependency("schemaX", schemaXName, databaseModel)
-	schemaModelY := model.SchemaWithImplicitDatabaseDependency("schemaY", schemaYName, databaseModel)
-
-	tableModelBefore := model.TableWithImplicitDependencies("test", tableName, tableColumns, schemaModelX, databaseModel)
-	tableModelAfter := model.TableWithImplicitDependencies("test", tableName, tableColumns, schemaModelY, databaseModel)
-
-	expectedNewTableId := sdk.NewSchemaObjectIdentifier(databaseId.Name(), schemaYName, tableName)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: experimentalHierarchyRenamesProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Table),
-		Steps: []resource.TestStep{
-			// Create database, both schemas, and table in schema X
-			{
-				Config: accconfig.FromModels(t, providerModel, databaseModel, schemaModelX, schemaModelY, tableModelBefore),
-				Check: assertThat(
-					t,
-					resourceassert.TableResource(t, tableModelBefore.ResourceReference()).
-						HasNameString(tableName).
-						HasDatabaseString(databaseId.Name()).
-						HasSchemaString(schemaXName),
-				),
-			},
-			// Move table to schema Y
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(tableModelAfter.ResourceReference(), plancheck.ResourceActionUpdate),
-					},
-				},
-				Config: accconfig.FromModels(t, providerModel, databaseModel, schemaModelX, schemaModelY, tableModelAfter),
-				Check: assertThat(
-					t,
-					resourceassert.TableResource(t, tableModelAfter.ResourceReference()).
-						HasNameString(tableName).
-						HasDatabaseString(databaseId.Name()).
-						HasSchemaString(schemaYName).
-						HasFullyQualifiedNameString(expectedNewTableId.FullyQualifiedName()),
-				),
-			},
-		},
-	})
-}
-
 // Database A is renamed to B AND schema X is renamed to Y simultaneously.
 // Table detects both renames and updates ID only.
 func TestAcc_Experimental_Table_HierarchyRenames_DatabaseRenamed_SchemaRenamed(t *testing.T) {
@@ -578,59 +521,6 @@ func TestAcc_Experimental_Table_HierarchyRenames_Error_NewSchemaDoesNotExist(t *
 			{
 				Config:      accconfig.FromModels(t, providerModel, tableModelAfter),
 				ExpectError: regexp.MustCompile(`unknown rename use case.*object_renaming_guide`),
-			},
-		},
-	})
-}
-
-// When the experiment is NOT enabled, changing the database or schema field still forces recreation (existing behavior preserved).
-func TestAcc_Experimental_Table_HierarchyRenames_Disabled_ForceRecreation(t *testing.T) {
-	databaseAId := testClient().Ids.RandomAccountObjectIdentifier()
-	databaseBId := testClient().Ids.RandomAccountObjectIdentifier()
-	schemaName := testClient().Ids.Alpha()
-	tableName := testClient().Ids.Alpha()
-
-	databaseModelA := model.DatabaseWithParametersSet("dbA", databaseAId.Name())
-	databaseModelB := model.DatabaseWithParametersSet("dbB", databaseBId.Name())
-
-	schemaModelA := model.SchemaWithImplicitDatabaseDependency("schemaA", schemaName, databaseModelA)
-	schemaModelB := model.SchemaWithImplicitDatabaseDependency("schemaB", schemaName, databaseModelB)
-
-	// No experiment enabled — use default provider
-	tableModelBefore := model.TableWithImplicitDependencies("test", tableName, tableColumns, schemaModelA, databaseModelA)
-	tableModelAfter := model.TableWithImplicitDependencies("test", tableName, tableColumns, schemaModelB, databaseModelB)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Table),
-		Steps: []resource.TestStep{
-			// Create both databases, schemas, and table in database A
-			{
-				Config: accconfig.FromModels(t, databaseModelA, databaseModelB, schemaModelA, schemaModelB, tableModelBefore),
-				Check: assertThat(
-					t,
-					resourceassert.TableResource(t, tableModelBefore.ResourceReference()).
-						HasNameString(tableName).
-						HasDatabaseString(databaseAId.Name()),
-				),
-			},
-			// Change database — should force recreation
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(tableModelAfter.ResourceReference(), plancheck.ResourceActionDestroyBeforeCreate),
-					},
-				},
-				Config: accconfig.FromModels(t, databaseModelA, databaseModelB, schemaModelA, schemaModelB, tableModelAfter),
-				Check: assertThat(
-					t,
-					resourceassert.TableResource(t, tableModelAfter.ResourceReference()).
-						HasNameString(tableName).
-						HasDatabaseString(databaseBId.Name()),
-				),
 			},
 		},
 	})

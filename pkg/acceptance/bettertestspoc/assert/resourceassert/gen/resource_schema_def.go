@@ -94,10 +94,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.ApiIntegrationGoogleCloudApiGateway().Schema,
 	},
 	{
-		name:   "AuthenticationPolicy",
-		schema: resources.AuthenticationPolicy().Schema,
-	},
-	{
 		name:   "CortexAgent",
 		schema: resources.CortexAgent().Schema,
 	},
@@ -270,10 +266,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 		schema: resources.NetworkPolicyAttachment().Schema,
 	},
 	{
-		name:   "Notebook",
-		schema: resources.Notebook().Schema,
-	},
-	{
 		name:   "ObjectParameter",
 		schema: resources.ObjectParameter().Schema,
 	},
@@ -400,10 +392,6 @@ var allResourceSchemaDefs = []ResourceSchemaDef{
 	{
 		name:   "SharedDatabase",
 		schema: resources.SharedDatabase().Schema,
-	},
-	{
-		name:   "Share",
-		schema: resources.Share().Schema,
 	},
 	{
 		name:   "Streamlit",

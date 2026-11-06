@@ -161,6 +161,25 @@ curl --request POST \
    ```
 5. You can now use WIF authentication in the provider.
 
+## WIF + OIDC `token_file_path` test
+
+This checks `token_file_path` on the same custom OIDC setup as the section above. There is no automated provider OIDC test. Do not run this unless that setup already exists.
+
+Use the user from the custom OIDC section above, and write the OIDC token to a file with mode `0600`. Point the provider at that file instead of `token`:
+
+```hcl
+provider "snowflake" {
+  organization_name          = "ORGANIZATION_NAME"
+  account_name               = "ACCOUNT_NAME"
+  user                       = "USER_NAME"
+  authenticator              = "WORKLOAD_IDENTITY"
+  workload_identity_provider = "OIDC"
+  token_file_path            = "<token_file_path>"
+}
+```
+
+The same block is commented in [workload_identity_provider_oidc/main.tf](./workload_identity_provider_oidc/main.tf). Swap it in for the `wif_auth` provider. Rewrite the file with a new token and open another connection; the driver reads the file again. `token` and `token_file_path` cannot be set together.
+
 ## WIF + Terraform Cloud/Enterprise OIDC token test
 
 This test checks the `tfc_workload_identity_token_tag` field, which reads the JWT from the

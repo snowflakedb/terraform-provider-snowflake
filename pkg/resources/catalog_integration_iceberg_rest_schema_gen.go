@@ -202,7 +202,7 @@ var catalogIntegrationIcebergRestSchema = collections.MergeMaps(
 			Computed:    true,
 			Description: "Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration iceberg rest.",
 			Elem: &tfschema.Resource{
-				Schema: schemas.ShowCatalogIntegrationIcebergRestSchema,
+				Schema: schemas.ShowCatalogIntegrationSchema,
 			},
 		},
 	},

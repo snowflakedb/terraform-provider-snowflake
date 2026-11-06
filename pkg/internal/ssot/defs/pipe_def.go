@@ -2,6 +2,17 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
+// pipeRefresh is the ALTER REFRESH block. Its children are the PREFIX and MODIFIED_AFTER parameters.
+var pipeRefresh = ssot.Attribute{
+	Name:    "refresh",
+	Type:    ssot.AttrObject,
+	SqlOnly: true,
+	Children: []ssot.Attribute{
+		{Name: "prefix", Type: ssot.AttrString},
+		{Name: "modified_after", Type: ssot.AttrString},
+	},
+}
+
 // PipeAttrs holds reusable pipe fields.
 //
 // Omitted from Attributes and added in pipeAttributesModificationExt:
@@ -9,7 +20,10 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 //
 // pipeAttributesModificationExt also sets the Default of auto_ingest and the custom DiffSuppressFunc of copy_statement.
 // integration and error_integration stay strings: the resource never suppressed identifier quoting on them.
-// The resource has no show_output and no describe_output.
+// SHOW and DESCRIBE schemas and assertions are generated. The resource hooks omit show_output and
+// describe_output, so the resource schema does not expose them.
+// ALTER SET and UNSET spread the parameter catalog for pipes: LOG_EVENT_LEVEL and PIPE_EXECUTION_PAUSED.
+// Those stay off Attributes, so the resource schema does not gain parameter fields.
 var PipeAttrs = struct {
 	Comment             ssot.Attribute
 	CopyStatement       ssot.Attribute
@@ -26,11 +40,13 @@ var PipeAttrs = struct {
 	Pattern             ssot.Attribute
 	OwnerRoleType       ssot.Attribute
 	InvalidReason       ssot.Attribute
+	Kind                ssot.Attribute
 }{
 	Comment: ssot.Attribute{
-		Name:        "comment",
-		Type:        ssot.AttrString,
-		Description: "Specifies a comment for the pipe.",
+		Name:         "comment",
+		Type:         ssot.AttrString,
+		OptionalInDb: true,
+		Description:  "Specifies a comment for the pipe.",
 	},
 	CopyStatement: ssot.Attribute{
 		Name:        "copy_statement",
@@ -39,6 +55,7 @@ var PipeAttrs = struct {
 		Required:    true,
 		ForceNew:    true,
 		Description: "Specifies the copy statement for the pipe.",
+		CreateSql:   ssot.StringParameter(ssot.Sql("AS"), ssot.NoEquals(), ssot.NoQuotes(), ssot.Required(), ssot.FieldName("copyStatement")),
 	},
 	AutoIngest: ssot.Attribute{
 		Name:        "auto_ingest",
@@ -52,61 +69,100 @@ var PipeAttrs = struct {
 		Type:        ssot.AttrString,
 		ForceNew:    true,
 		Description: "Specifies the Amazon Resource Name (ARN) for the SNS topic for your S3 bucket.",
+		CreateSql:   ssot.StringParameter(ssot.Sql("AWS_SNS_TOPIC"), ssot.FieldName("AwsSnsTopicArn")),
 	},
 	Integration: ssot.Attribute{
-		Name:        "integration",
-		Type:        ssot.AttrString,
-		Description: "Specifies an integration for the pipe.",
+		Name:         "integration",
+		Type:         ssot.AttrString,
+		ForceNew:     true,
+		OptionalInDb: true,
+		Description:  "Specifies an integration for the pipe.",
 	},
 	ErrorIntegration: ssot.Attribute{
-		Name:        "error_integration",
-		Type:        ssot.AttrString,
-		Description: "Specifies the name of the notification integration used for error notifications.",
+		Name:         "error_integration",
+		Type:         ssot.AttrString,
+		OptionalInDb: true,
+		Description:  "Specifies the name of the notification integration used for error notifications.",
+		CreateSql:    ssot.StringParameter(ssot.NoQuotes()),
+		SetSql:       ssot.StringParameter(ssot.NoQuotes()),
 	},
 	CreatedOn:           ssot.Attribute{Name: "created_on", Type: ssot.AttrString, Readonly: true},
 	Name:                ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
 	DatabaseName:        ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
 	SchemaName:          ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, Readonly: true},
-	Owner:               ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
-	NotificationChannel: ssot.Attribute{Name: "notification_channel", Type: ssot.AttrString, Readonly: true},
-	Pattern:             ssot.Attribute{Name: "pattern", Type: ssot.AttrString, Readonly: true},
-	OwnerRoleType:       ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, Readonly: true},
-	InvalidReason:       ssot.Attribute{Name: "invalid_reason", Type: ssot.AttrString, Readonly: true},
+	Owner:               ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true, Description: "Name of the role that owns the pipe."},
+	NotificationChannel: ssot.Attribute{Name: "notification_channel", Type: ssot.AttrString, OptionalInDb: true, Readonly: true, Description: "Amazon Resource Name of the Amazon SQS queue for the stage named in the DEFINITION column."},
+	Pattern:             ssot.Attribute{Name: "pattern", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	OwnerRoleType:       ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	InvalidReason:       ssot.Attribute{Name: "invalid_reason", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	// kind is STAGE for pipes that load from a stage and STREAMING for Snowpipe Streaming pipes (DATA_SOURCE(TYPE => 'STREAMING')).
+	Kind: ssot.Attribute{Name: "kind", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
 }
 
 var Pipe = ssot.Object{
 	Name:                      "Pipe",
 	NamePlural:                "Pipes",
 	IdType:                    "SchemaObjectIdentifier",
-	LegacyIdEncoding:          true,
+	DescribeFailRead:          true,
 	PreviewFeature:            true,
 	IdentityNameForceNew:      true,
 	IdentityHierarchyForceNew: true,
 	AttributesModification:    true,
-	// The importer is a passthrough (pipeImporterExt). With ShowByIdInSdk omitted, no Import function is generated.
-	// ApplyCreateOptionals and ApplySetUnset stay in the extension: aws_sns_topic_arn maps to WithAwsSnsTopic,
-	// auto_ingest has no create mapping, and integration is not part of SET/UNSET.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithNewCreateRequest(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
-		ssot.WithDescribeInSdk(ssot.Omitted()),
-		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithDescribeInSdk(ssot.Generated()),
+		ssot.WithHandleExternalChanges(ssot.Generated()),
 		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
-		ssot.WithShowByIdInSdk(ssot.Omitted()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
-		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
-		ssot.WithShowOutputSchema(ssot.Omitted()),
-		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithSetDescribeOutput(ssot.ExtCall()),
+		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithBeforeAlter(ssot.ExtCall()),
+		ssot.WithAfterCreate(ssot.ExtCall()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
+		ssot.WithAlterUnsetInSdk(ssot.Generated()),
+		ssot.WithShowParametersInSdk(ssot.Generated()),
+		ssot.WithParametersDetailsFromRaw(ssot.Generated()),
+		ssot.WithSetParametersFields(ssot.Generated()),
+		ssot.WithParametersOutputSet(ssot.Generated()),
+		ssot.WithApplyParametersChanges(ssot.Generated()),
+		ssot.WithParametersAttributesSchema(ssot.Generated()),
+		ssot.WithParametersOutputSchema(ssot.Generated()),
+		ssot.WithParametersFieldNames(ssot.Generated()),
+		ssot.WithParametersCustomDiff(ssot.Generated()),
+		ssot.WithStateUpgraders(ssot.Generated()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
+	},
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
 	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithModel(ssot.ModelMultiline(&PipeAttrs.CopyStatement)),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+		ssot.WithAllGenerators(
+			ssot.WithModel(ssot.ModelMultiline(&PipeAttrs.CopyStatement)),
+		),
+		ssot.WithSdk(
+			ssot.SdkDefineFromSsot(),
+			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
+			ssot.SdkShow(
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalExtendedIn(),
+				// TODO(SNOW-4410188): add STARTS WITH and LIMIT when Snowflake applies them; SHOW PIPES accepts both but ignores them.
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDExtendedIn),
+				ssot.SdkShowAdditionalValidations(),
+			),
+			ssot.SdkDrop(),
+			ssot.SdkAlter(ssot.SdkAlterSetList()),
+			ssot.SdkDescribe(ssot.SdkDescribeQueryStructName("DescribePipe")),
+			ssot.SdkShowParameters(),
+			ssot.SdkShowParametersDetails(),
+		),
 	},
 	ComputedAttributes: []ssot.Attribute{
 		PipeAttrs.Owner,
@@ -127,6 +183,7 @@ var Pipe = ssot.Object{
 			&PipeAttrs.ErrorIntegration,
 			&PipeAttrs.OwnerRoleType,
 			&PipeAttrs.InvalidReason,
+			&PipeAttrs.Kind,
 		},
 	},
 	Describe: ssot.OutputSpec{
@@ -144,6 +201,7 @@ var Pipe = ssot.Object{
 			&PipeAttrs.ErrorIntegration,
 			&PipeAttrs.OwnerRoleType,
 			&PipeAttrs.InvalidReason,
+			&PipeAttrs.Kind,
 		},
 	},
 	Attributes: []ssot.Attribute{
@@ -154,4 +212,29 @@ var Pipe = ssot.Object{
 		PipeAttrs.Integration,
 		PipeAttrs.ErrorIntegration,
 	},
+	Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{
+		&PipeAttrs.AutoIngest,
+		&PipeAttrs.ErrorIntegration,
+		&PipeAttrs.AwsSnsTopicArn,
+		&PipeAttrs.Integration,
+		&PipeAttrs.Comment,
+		&PipeAttrs.CopyStatement,
+	}},
+	Set: []*ssot.Attribute{
+		&PipeAttrs.ErrorIntegration,
+		ssot.Parameters,
+		&PipeAttrs.Comment,
+	},
+	Unset: []*ssot.Attribute{
+		&PipeAttrs.ErrorIntegration,
+		ssot.Parameters,
+		&PipeAttrs.Comment,
+	},
+	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+		ssot.AlterSet(),
+		ssot.AlterUnset(),
+		ssot.AlterSetTags(),
+		ssot.AlterUnsetTags(),
+		ssot.AlterKeywordBlock("Refresh", "REFRESH", &pipeRefresh),
+	}},
 }

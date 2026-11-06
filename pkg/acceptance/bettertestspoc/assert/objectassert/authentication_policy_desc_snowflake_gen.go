@@ -33,17 +33,6 @@ func AuthenticationPolicyDetailsFromObject(t *testing.T, authenticationPolicyDet
 	}
 }
 
-func (a *AuthenticationPolicyDetailsAssert) HasId(expected sdk.SchemaObjectIdentifier) *AuthenticationPolicyDetailsAssert {
-	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyDetails) error {
-		t.Helper()
-		if o.Id.FullyQualifiedName() != expected.FullyQualifiedName() {
-			return fmt.Errorf("expected id: %v; got: %v", expected.FullyQualifiedName(), o.Id.FullyQualifiedName())
-		}
-		return nil
-	})
-	return a
-}
-
 func (a *AuthenticationPolicyDetailsAssert) HasName(expected string) *AuthenticationPolicyDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.AuthenticationPolicyDetails) error {
 		t.Helper()

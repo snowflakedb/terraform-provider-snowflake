@@ -1,6 +1,15 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.AfterCreate.Generate -}}
-{{ Unimplemented "AfterCreate" }}
+	var afterCreateDiags diag.Diagnostics
+{{- /* One block per kind of AfterCreateSteps list. */ -}}
+{{- range .AfterCreateSteps.AlterKeywords }}
+	if d.Get("{{ .Attribute }}").(bool) {
+		if err := meta.(*provider.Context).Client.{{ $.NamePlural }}.Alter(ctx, sdk.NewAlter{{ $.Name }}Request(id).With{{ .Field }}(true)); err != nil {
+			afterCreateDiags = append(afterCreateDiags, diag.Diagnostic{Severity: diag.Warning, Summary: fmt.Sprintf("{{ .Keyword }} after create: %s", err.Error())})
+		}
+	}
+{{- end }}
+	return append(afterCreateDiags, Read{{ .Name }}Func(false)(ctx, d, meta)...)
 {{- else if .Hooks.AfterCreate.Present -}}
 	afterCreateDiags := {{ .Prefix }}AfterCreateExt(ctx, d, meta, id)
 	return append(afterCreateDiags, Read{{ .Name }}Func(false)(ctx, d, meta)...)

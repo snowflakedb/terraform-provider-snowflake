@@ -16,7 +16,7 @@ type CreatePipeRequest struct {
 	name             SchemaObjectIdentifier // required
 	AutoIngest       *bool
 	ErrorIntegration *string
-	AwsSnsTopic      *string
+	AwsSnsTopicArn   *string
 	Integration      *string
 	Comment          *string
 	copyStatement    string // required
@@ -34,12 +34,14 @@ type AlterPipeRequest struct {
 
 type PipeSetRequest struct {
 	ErrorIntegration    *string
+	LogEventLevel       *LogLevel
 	PipeExecutionPaused *bool
 	Comment             *string
 }
 
 type PipeUnsetRequest struct {
 	ErrorIntegration    *bool
+	LogEventLevel       *bool
 	PipeExecutionPaused *bool
 	Comment             *bool
 }
@@ -56,7 +58,7 @@ type DropPipeRequest struct {
 
 type ShowPipeRequest struct {
 	Like *Like
-	In   *In
+	In   *ExtendedIn
 }
 
 type DescribePipeRequest struct {

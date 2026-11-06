@@ -7,6 +7,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
@@ -37,7 +38,6 @@ func Alert(
 	name string,
 	action string,
 	condition string,
-	warehouse string,
 ) *AlertModel {
 	a := &AlertModel{ResourceModelMeta: config.Meta(resourceName, resources.Alert)}
 	a.WithDatabase(database)
@@ -45,7 +45,6 @@ func Alert(
 	a.WithName(name)
 	a.WithAction(action)
 	a.WithCondition(condition)
-	a.WithWarehouse(warehouse)
 	return a
 }
 
@@ -55,7 +54,6 @@ func AlertWithDefaultMeta(
 	name string,
 	action string,
 	condition string,
-	warehouse string,
 ) *AlertModel {
 	a := &AlertModel{ResourceModelMeta: config.DefaultMeta(resources.Alert)}
 	a.WithDatabase(database)
@@ -63,7 +61,6 @@ func AlertWithDefaultMeta(
 	a.WithName(name)
 	a.WithAction(action)
 	a.WithCondition(condition)
-	a.WithWarehouse(warehouse)
 	return a
 }
 
@@ -142,6 +139,11 @@ func (a *AlertModel) WithEnabled(enabled bool) *AlertModel {
 
 func (a *AlertModel) WithWarehouse(warehouse string) *AlertModel {
 	a.Warehouse = tfconfig.StringVariable(warehouse)
+	return a
+}
+
+func (a *AlertModel) WithWarehouseSdk(warehouse sdk.AccountObjectIdentifier) *AlertModel {
+	a.Warehouse = tfconfig.StringVariable(warehouse.Name())
 	return a
 }
 

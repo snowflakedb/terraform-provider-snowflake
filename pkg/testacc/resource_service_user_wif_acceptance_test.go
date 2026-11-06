@@ -19,7 +19,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testvars"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -31,9 +30,6 @@ import (
 func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
-
-	providerModelWithWIF := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
 
 	userModelWithOIDC := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
@@ -57,7 +53,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 	userModelWithoutWIF := model.ServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -65,7 +61,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 		Steps: []resource.TestStep{
 			// create optional
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
+				Config: config.FromModels(t, userModelWithOIDC),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
@@ -88,7 +84,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
+				Config: config.FromModels(t, userModelWithoutWIF),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
@@ -108,7 +104,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			},
 			// UPDATE - ADD WIF BACK
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceList),
+				Config: config.FromModels(t, userModelWithOIDCAndAudienceList),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDCAndAudienceList.ResourceReference()).
@@ -132,7 +128,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetOidcWorkloadIdentity(t, id, testvars.OidcIssuer, subject, testvars.OidcIssuer+"/o/oauth2/changed")
 				},
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceList),
+				Config: config.FromModels(t, userModelWithOIDCAndAudienceList),
 				Check: assertThat(
 					t,
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
@@ -145,7 +141,7 @@ func TestAcc_ServiceUser_WIF_OIDC(t *testing.T) {
 			},
 			// ALTER - CHANGE AUDIENCE LIST
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDCAndAudienceListTwoItems),
+				Config: config.FromModels(t, userModelWithOIDCAndAudienceListTwoItems),
 				Check: assertThat(
 					t,
 					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
@@ -173,9 +169,6 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", accountNumber)
 	issuer := fmt.Sprintf("https://%s.tokens.sts.global.api.aws", accountNumber)
 
-	providerModelWithWIF := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
-
 	userModelWithAWS := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityAws(arn)
 
@@ -187,7 +180,7 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 	userModelWithoutWIF := model.ServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -195,7 +188,7 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE WITH AWS WIF
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWS),
+				Config: config.FromModels(t, userModelWithAWS),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithAWS.ResourceReference()).
@@ -226,7 +219,7 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 			},
 			// UPDATE - SWITCH TO JWT-BASED (arn + issuer)
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWSAndIssuer),
+				Config: config.FromModels(t, userModelWithAWSAndIssuer),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithAWSAndIssuer.ResourceReference()).
@@ -251,7 +244,7 @@ func TestAcc_ServiceUser_WIF_AWS(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
+				Config: config.FromModels(t, userModelWithoutWIF),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
@@ -270,16 +263,13 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 	subject := random.NumericN(10)
 	changedSubject := random.NumericN(10)
 
-	providerModelWithWIF := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
-
 	userModelWithGCP := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityGcp(subject)
 
 	userModelWithoutWIF := model.ServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -287,7 +277,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE WITH GCP WIF
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
+				Config: config.FromModels(t, userModelWithGCP),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithGCP.ResourceReference()).
@@ -308,7 +298,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
+				Config: config.FromModels(t, userModelWithoutWIF),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
@@ -328,7 +318,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 			},
 			// UPDATE - ADD WIF BACK
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
+				Config: config.FromModels(t, userModelWithGCP),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithGCP.ResourceReference()).
@@ -352,7 +342,7 @@ func TestAcc_ServiceUser_WIF_GCP(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetGcpWorkloadIdentity(t, id, changedSubject)
 				},
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithGCP),
+				Config: config.FromModels(t, userModelWithGCP),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -392,9 +382,6 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 	subject := random.AlphaN(10)
 	changedSubject := random.AlphaN(10)
 
-	providerModelWithWIF := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
-
 	userModelWithAzure := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityAzure(
 			testvars.MicrosoftIssuer,
@@ -404,7 +391,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 	userModelWithoutWIF := model.ServiceUser("w", id.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -412,7 +399,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 		Steps: []resource.TestStep{
 			// CREATE WITH Azure WIF
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
+				Config: config.FromModels(t, userModelWithAzure),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithAzure.ResourceReference()).
@@ -434,7 +421,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 			},
 			// UPDATE - REMOVE WIF
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
+				Config: config.FromModels(t, userModelWithoutWIF),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
@@ -454,7 +441,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 			},
 			// UPDATE - ADD WIF BACK
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
+				Config: config.FromModels(t, userModelWithAzure),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithAzure.ResourceReference()).
@@ -479,7 +466,7 @@ func TestAcc_ServiceUser_WIF_Azure(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetAzureWorkloadIdentity(t, id, testvars.MicrosoftIssuer, changedSubject)
 				},
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithAzure),
+				Config: config.FromModels(t, userModelWithAzure),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -520,9 +507,6 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
 	arn := fmt.Sprintf("arn:aws:iam::%s:role/test-role", random.NumericN(12))
 
-	providerModelWithWIF := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
-
 	userModelWithOIDC := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
 			testvars.OidcIssuer,
@@ -534,7 +518,7 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 		WithDefaultWorkloadIdentityAws(arn)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -542,7 +526,7 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Start with OIDC
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
+				Config: config.FromModels(t, userModelWithOIDC),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
@@ -565,7 +549,7 @@ func TestAcc_ServiceUser_WIF_SwitchProvider(t *testing.T) {
 			},
 			// Switch to AWS
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithAWS),
+				Config: config.FromModels(t, userModelWithAWS),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithAWS.ResourceReference()).
@@ -590,9 +574,6 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
 	gcpSubject := random.NumericN(10)
 
-	providerModelWithWIF := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
-
 	userModelWithOIDC := model.ServiceUser("w", id.Name()).
 		WithDefaultWorkloadIdentityOidc(
 			testvars.OidcIssuer,
@@ -601,14 +582,14 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 		)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: userEnableDefaultWorkloadIdentityProviderFactory,
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
+				Config: config.FromModels(t, userModelWithOIDC),
 				Check: assertThat(
 					t,
 					resourceassert.ServiceUserResource(t, userModelWithOIDC.ResourceReference()).
@@ -634,7 +615,7 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.Alter(t, sdk.NewAlterUserRequest(id).WithUnset(*sdk.NewUserUnsetRequest().WithObjectProperties(*sdk.NewUserObjectPropertiesUnsetRequest().WithWorkloadIdentity(true))))
 				},
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
+				Config: config.FromModels(t, userModelWithOIDC),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -666,7 +647,7 @@ func TestAcc_ServiceUser_WIF_ExternalChange(t *testing.T) {
 				PreConfig: func() {
 					testClient().User.SetGcpWorkloadIdentity(t, id, gcpSubject)
 				},
-				Config: config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
+				Config: config.FromModels(t, userModelWithOIDC),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
@@ -717,47 +698,55 @@ func TestAcc_ServiceUser_WIF_Validations(t *testing.T) {
 			testvars.MicrosoftIssuer,
 			"subject",
 		)
+	providerModelWithExperimentDisabled := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, userModelWithAwsEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "arn" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithAwsEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "arn" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithGcpEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "subject" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithGcpEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "subject" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithAzureEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithAzureEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithOidcEmpty),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithOidcEmpty),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile(`The argument "issuer" is required, but no definition was found.`),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithMultipleProviders),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("`default_workload_identity.0.aws,default_workload_identity.0.gcp` were\nspecified"),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithMultipleProviders),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile("`default_workload_identity.0.aws,default_workload_identity.0.gcp` were\nspecified"),
 			},
 			{
-				Config:      config.FromModels(t, userModelWithEmptyBlock),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("one of\n`default_workload_identity.0.aws,default_workload_identity.0.azure,default_workload_identity.0.gcp,default_workload_identity.0.oidc`\nmust be specified"),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithEmptyBlock),
+				PlanOnly:                 true,
+				ExpectError:              regexp.MustCompile("one of\n`default_workload_identity.0.aws,default_workload_identity.0.azure,default_workload_identity.0.gcp,default_workload_identity.0.oidc`\nmust be specified"),
 			},
 			{
-				Config: config.FromModels(t, userModelWithoutEnabledFlag),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, providerModelWithExperimentDisabled, userModelWithoutEnabledFlag),
 				// PlanOnly is not set because the validation happens during resource operations.
-				ExpectError: regexp.MustCompile("to use `default_workload_identity`, you need to first specify the `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` feature in the `experimental_features_enabled` field at the provider level"),
+				ExpectError: regexp.MustCompile("to use `default_workload_identity`, you need the .*USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY.* experiment to be enabled. Remove it from the `experimental_features_disabled` list"),
 			},
 		},
 	})
@@ -773,8 +762,8 @@ func TestAcc_ServiceUser_WIF_MigrateFrom_v2_12_0(t *testing.T) {
 			testvars.OidcIssuer,
 			subject,
 		)
-	providerModelWithWIF := providermodel.SnowflakeProvider().
-		WithExperimentalFeaturesEnabled(experimentalfeatures.UserEnableDefaultWorkloadIdentity)
+	providerModelWithExperimentDisabled := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -794,13 +783,13 @@ func TestAcc_ServiceUser_WIF_MigrateFrom_v2_12_0(t *testing.T) {
 						HasHasWorkloadIdentity(false),
 				),
 			},
-			// Externally add WIF, upgrade to current provider (without experimental flag) - expect empty plan
+			// Externally add WIF, current provider with the experiment opted out. Expect an empty plan.
 			{
 				PreConfig: func() {
 					testClient().User.SetOidcWorkloadIdentity(t, id, testvars.OidcIssuer, subject)
 				},
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   config.FromModels(t, userModelWithoutWIF),
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, providerModelWithExperimentDisabled, userModelWithoutWIF),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
@@ -822,25 +811,84 @@ func TestAcc_ServiceUser_WIF_MigrateFrom_v2_12_0(t *testing.T) {
 						}),
 				),
 			},
-			// Current provider WITH experimental flag AND config with WIF - expect empty plan
+			// Experiment enabled by default and config includes WIF. Expect an empty plan.
 			{
-				ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_ServiceUser_WIF_MigrateFrom_v2_12_0"),
-				Config:                   config.FromModels(t, providerModelWithWIF, userModelWithOIDC),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithOIDC),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
 			},
-			// Current provider WITH experimental flag, plan only - expect non-empty plan
+			// Experiment enabled by default and config omits WIF. Expect a non-empty plan.
 			{
-				ProtoV6ProviderFactories: providerFactoryUsingCache("TestAcc_ServiceUser_WIF_MigrateFrom_v2_12_0"),
-				Config:                   config.FromModels(t, providerModelWithWIF, userModelWithoutWIF),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, userModelWithoutWIF),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectNonEmptyPlan(),
 					},
 				},
+			},
+		},
+	})
+}
+
+func TestAcc_ServiceUser_WIF_OptOut(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	subject := fmt.Sprintf("system:serviceaccount:namespace:%s", random.AlphaN(10))
+
+	userModelWithoutWIF := model.ServiceUser("w", id.Name())
+	providerModelWithExperimentDisabled := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ServiceUser),
+		Steps: []resource.TestStep{
+			// Opt out. The provider does not manage workload identity.
+			{
+				Config: config.FromModels(t, providerModelWithExperimentDisabled, userModelWithoutWIF),
+				Check: assertThat(
+					t,
+					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityEmpty(),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).
+						HasHasWorkloadIdentity(false),
+				),
+			},
+			// A workload identity set outside Terraform stays in place and does not plan a change.
+			{
+				PreConfig: func() {
+					testClient().User.SetOidcWorkloadIdentity(t, id, testvars.OidcIssuer, subject)
+				},
+				Config: config.FromModels(t, providerModelWithExperimentDisabled, userModelWithoutWIF),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.ServiceUserResource(t, userModelWithoutWIF.ResourceReference()).
+						HasNameString(id.Name()).
+						HasDefaultWorkloadIdentityEmpty(),
+					resourceshowoutputassert.UserShowOutput(t, userModelWithoutWIF.ResourceReference()).
+						HasHasWorkloadIdentity(true),
+					objectassert.UserDefaultWorkloadIdentityAuthenticationMethods(t, id).
+						HasName("DEFAULT").
+						HasType(sdk.WIFTypeOidc).
+						HasOidcAdditionalInfo(sdk.UserWorkloadIdentityAuthenticationMethodsOidcAdditionalInfo{
+							Issuer:       testvars.OidcIssuer,
+							Subject:      subject,
+							AudienceList: []string{},
+						}),
+				),
 			},
 		},
 	})

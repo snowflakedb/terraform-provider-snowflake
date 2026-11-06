@@ -4,13 +4,19 @@ import (
 	"context"
 	"errors"
 	"testing"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
+
+// PostgresMirrorNameMaxLength is enforced by the procedures because the name also becomes the Postgres publication and
+// replication slot name. Test name generation stays inside it.
+const PostgresMirrorNameMaxLength = 50
+
+// PostgresMirrorDefaultRefreshInterval is what CREATE_MIRROR uses when refresh_interval is omitted.
+const PostgresMirrorDefaultRefreshInterval = "10 minutes"
 
 // The source objects the fixture instance must hold.
 const (
@@ -123,14 +129,5 @@ func (c *PostgresMirrorClient) Alter(t *testing.T, request *sdk.AlterPostgresMir
 	ctx := context.Background()
 
 	err := c.client().Alter(ctx, request)
-	require.NoError(t, err)
-}
-
-func (c *PostgresMirrorClient) WaitForInitialSnapshot(t *testing.T, instance string, name string, minimumTables int, timeout time.Duration) {
-	t.Helper()
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	err := c.client().WaitForInitialSnapshot(ctx, instance, name, minimumTables)
 	require.NoError(t, err)
 }

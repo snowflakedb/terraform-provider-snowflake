@@ -40,8 +40,8 @@ var SchemaAttrs = struct {
 	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
 	DroppedOn:     ssot.Attribute{Name: "dropped_on", Type: ssot.AttrTime, OptionalInDb: true, Readonly: true},
 	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
-	IsDefault:     ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
-	IsCurrent:     ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, StoredAsText: true, Readonly: true},
+	IsDefault:     ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true, BoolTrueValue: "Y", Readonly: true},
+	IsCurrent:     ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, StoredAsText: true, BoolTrueValue: "Y", Readonly: true},
 	DatabaseName:  ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
 	Owner:         ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
 	Options:       ssot.Attribute{Name: "options", Type: ssot.AttrString, OptionalInShow: true, OptionalInDb: true, Readonly: true},
@@ -58,16 +58,14 @@ var Schema = ssot.Object{
 	AdditionalDescribeOutputDescription: "In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema.",
 	IdType:                              "DatabaseObjectIdentifier",
 	AdditionalIdentityNameDescription:   "When the name is `PUBLIC`, during creation the provider checks if this schema has already been created and, in such case, `ALTER` is used to match the desired state.",
+	IdentityNamesCreatedBySnowflake:     []string{"PUBLIC"},
 	AttributesModification:              true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
-		ssot.WithObjectAssert(
-			ssot.ObjectAssertShow(),
-			ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+		ssot.WithAllGenerators(
+			ssot.WithObjectAssert(
+				ssot.ObjectAssertShow(),
+				ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
+			),
 		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
@@ -92,8 +90,6 @@ var Schema = ssot.Object{
 			ssot.SdkShowParameters(),
 			ssot.SdkShowParametersDetails(),
 		),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
 	},
 	Attributes: []ssot.Attribute{
 		SchemaAttrs.WithManagedAccess,
@@ -181,7 +177,8 @@ var Schema = ssot.Object{
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
-		ssot.WithBeforeCreate(ssot.ExtCall()),
+		ssot.WithBeforeCreate(ssot.Generated()),
+		// Generated hierarchy rename has no database-object path.
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),

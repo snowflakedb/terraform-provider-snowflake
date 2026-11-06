@@ -82,7 +82,7 @@ func detailsFieldKind(obj ssot.Object, attr ssot.Attribute, nested []*ssot.Attri
 // detailsGoType is the Go type of a column in a details struct. A list or set of enums is a slice of the enum there,
 // unlike in a SHOW row, where it is []string.
 func detailsGoType(obj ssot.Object, attr ssot.Attribute) string {
-	if (attr.Type == ssot.AttrList || attr.Type == ssot.AttrSet) && attr.Elem != nil && attr.Elem.Type == ssot.AttrEnum && attr.Elem.ColumnEnum() != nil {
+	if attr.IsEnumCollection() && attr.Elem.ColumnEnum() != nil {
 		return "[]" + attr.Elem.ColumnEnum().Name
 	}
 	concrete, _ := ssot.AttributeGoTypes(obj, attr)
@@ -94,7 +94,7 @@ func detailsGoType(obj ssot.Object, attr ssot.Attribute) string {
 func DescribeNestedPlains(obj ssot.Object) []*Plain {
 	var plains []*Plain
 	for _, column := range obj.Describe.Columns {
-		if column == nil || column.Type != ssot.AttrObject {
+		if column == nil || column.SdkType() != ssot.AttrObject {
 			continue
 		}
 		plain := PlainStruct(ssot.NestedObjectDetails(obj, *column))
@@ -158,9 +158,43 @@ func pairedStructsFromColumns(obj ssot.Object, describe bool, dbName, plainName 
 	return pairs
 }
 
+func pairedShowFromSpec(obj ssot.Object, paired *ssot.CustomPairedShow) *PairedStructs {
+	if paired.DbRow == "" || paired.Plain == "" || len(paired.Columns) == 0 {
+		panic(fmt.Sprintf("object %q: paired custom operation needs a db row, a plain struct, and columns", obj.Name))
+	}
+	pairs := StructPair(paired.DbRow, paired.Plain)
+	for _, column := range paired.Columns {
+		if column == nil {
+			panic(fmt.Sprintf("object %q: paired custom operation column is empty", obj.Name))
+		}
+		if column.PlainOnlyKind != "" {
+			pairs = pairs.PlainOnlyField(column.Name, column.PlainOnlyKind)
+			continue
+		}
+		pairs = appendPairedColumn(pairs, obj, *column)
+	}
+	for _, field := range paired.PlainOnly {
+		pairs = pairs.PlainOnlyField(field.Name, field.Kind)
+	}
+	return pairs
+}
+
 func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribute) *PairedStructs {
 	key := attr.OutputKey()
-	switch attr.Type {
+	if attr.PairedPlainKind != "" {
+		if attr.OptionalInShow || attr.OptionalInDb {
+			panicPairedColumn(obj, attr, "a paired kind override is a required field")
+		}
+		var opts []PairedFieldOption
+		if attr.ManualConvert {
+			opts = append(opts, WithManualConvert())
+		}
+		if attr.CustomParser != "" {
+			opts = append(opts, WithCustomParser(attr.CustomParser))
+		}
+		return pairs.Field(key, "string", attr.PairedPlainKind, opts...)
+	}
+	switch attr.SdkType() {
 	case ssot.AttrString:
 		switch {
 		case !attr.OptionalInShow && !attr.OptionalInDb:
@@ -227,7 +261,8 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 			panicPairedColumn(obj, attr, "an identifier maps only when it is required in SHOW and in the DB row, or optional in both")
 		}
 		return pairs.Field(key, "sql.NullString", "*"+kind, WithPlainFieldName(sqlToFieldName(key, true)))
-	case ssot.AttrList:
+	case ssot.AttrList, ssot.AttrSet:
+		// A set is the same SHOW value as a list. The database column is a string and the plain field is a slice.
 		if attr.ManualConvert && attr.Elem != nil && attr.Elem.Type == ssot.AttrIdentifier && !attr.OptionalInShow && !attr.OptionalInDb {
 			return pairs.Field(key, "string", "[]"+attr.Elem.IdentifierType, WithManualConvert())
 		}
@@ -235,18 +270,16 @@ func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribu
 			return pairs.Field(key, "sql.NullString", "[]"+kind, WithCustomParser(attr.CustomParser))
 		}
 		if attr.OptionalInShow || attr.OptionalInDb || attr.Elem == nil || attr.Elem.Type != ssot.AttrEnum {
-			panicPairedColumn(obj, attr, "only a list of enum maps to StringList")
+			panicPairedColumn(obj, attr, "only a list or set of enum maps to StringList")
 		}
 		return pairs.StringList(key)
-	case ssot.AttrSet:
-		panicPairedColumn(obj, attr, "a set has no paired struct mapping")
 	default:
 		panicPairedColumn(obj, attr, fmt.Sprintf("type %q has no paired struct mapping", attr.Type))
 	}
 	return pairs
 }
 
-// customListElementKind is the element type of a CSV list parsed by CustomParser.
+// customListElementKind is the element type of a CSV list or set parsed by CustomParser.
 // The column is optional in the database row and required in the plain struct.
 // The parser is func(string) ([]T, error). An identifier element uses IdentifierType.
 // An enum element uses the enum's SDK type name.
@@ -272,11 +305,13 @@ func customListElementKind(attr ssot.Attribute) (string, bool) {
 }
 
 func boolFromTextOpts(attr ssot.Attribute) []PairedFieldOption {
-	if attr.BoolParsed && !attr.StoredAsText {
-		panic(fmt.Sprintf("column %q sets BoolParsed without StoredAsText", attr.OutputKey()))
+	if attr.BoolTrueValue != "" && !attr.StoredAsText {
+		panic(fmt.Sprintf("column %q sets BoolTrueValue without StoredAsText", attr.OutputKey()))
 	}
 	opts := plainRequiredOpt(attr)
-	if attr.BoolParsed {
+	if attr.BoolTrueValue != "" {
+		opts = append(opts, WithBoolTrueValue(attr.BoolTrueValue))
+	} else {
 		opts = append(opts, WithBoolParsed())
 	}
 	return opts

@@ -316,3 +316,25 @@ func (p *PipeDetailsAssert) HasInvalidReasonNotEmpty() *PipeDetailsAssert {
 	})
 	return p
 }
+
+func (p *PipeDetailsAssert) HasKind(expected string) *PipeDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PipeDetails) error {
+		t.Helper()
+		if o.Kind != expected {
+			return fmt.Errorf("expected kind: %v; got: %v", expected, o.Kind)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *PipeDetailsAssert) HasKindNotEmpty() *PipeDetailsAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.PipeDetails) error {
+		t.Helper()
+		if o.Kind == "" {
+			return fmt.Errorf("expected kind to be non-empty")
+		}
+		return nil
+	})
+	return p
+}

@@ -51,7 +51,7 @@ func (v *authenticationPolicies) Show(ctx context.Context, request *ShowAuthenti
 
 func (v *authenticationPolicies) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*AuthenticationPolicy, error) {
 	request := NewShowAuthenticationPolicyRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	authenticationPolicies, err := v.Show(ctx, request)
 	if err != nil {
@@ -114,6 +114,8 @@ func (r *CreateAuthenticationPolicyRequest) toOpts() *CreateAuthenticationPolicy
 			DefaultExpiryInDays:                   r.PatPolicy.DefaultExpiryInDays,
 			MaxExpiryInDays:                       r.PatPolicy.MaxExpiryInDays,
 			RequireRoleRestrictionForServiceUsers: r.PatPolicy.RequireRoleRestrictionForServiceUsers,
+			RequireRoleRestrictionForPersonUsers:  r.PatPolicy.RequireRoleRestrictionForPersonUsers,
+			BlockedRolesList:                      r.PatPolicy.BlockedRolesList,
 			NetworkPolicyEvaluation:               r.PatPolicy.NetworkPolicyEvaluation,
 		}
 	}
@@ -170,6 +172,8 @@ func (r *AlterAuthenticationPolicyRequest) toOpts() *AlterAuthenticationPolicyOp
 				DefaultExpiryInDays:                   r.Set.PatPolicy.DefaultExpiryInDays,
 				MaxExpiryInDays:                       r.Set.PatPolicy.MaxExpiryInDays,
 				RequireRoleRestrictionForServiceUsers: r.Set.PatPolicy.RequireRoleRestrictionForServiceUsers,
+				RequireRoleRestrictionForPersonUsers:  r.Set.PatPolicy.RequireRoleRestrictionForPersonUsers,
+				BlockedRolesList:                      r.Set.PatPolicy.BlockedRolesList,
 				NetworkPolicyEvaluation:               r.Set.PatPolicy.NetworkPolicyEvaluation,
 			}
 		}

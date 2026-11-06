@@ -295,6 +295,24 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 			if key == ReplicableWithFailoverGroups {
 				defaultValue = "YES"
 			}
+
+			// If empty string is a default value, we cannot use it as it won't be emitted, in such case UNSET has to be used.
+			if defaultValue == "" {
+				if err := alterObjectParameter(
+					parseOnSetEnabled,
+					func() (bool, error) {
+						return client.Parameters.UnsetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter)
+					},
+					func() error {
+						return client.Parameters.UnsetObjectParameterOnObject(ctx, o, objectParameter)
+					},
+				); err != nil {
+					return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))
+				}
+				d.SetId("")
+				return nil
+			}
+
 			if err := alterObjectParameter(
 				parseOnSetEnabled,
 				func() (bool, error) {

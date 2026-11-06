@@ -124,11 +124,15 @@ var resourceAttributeRules = []resourceAttributeRule{
 	},
 	{
 		Name:        RuleIdentifierValidates,
-		Description: "Identifier fields validate with IsValidIdentifier. A collection element uses its IdentifierType. A top-level field uses the object id type.",
+		Description: "Identifier fields validate with IsValidIdentifier. A collection element uses its IdentifierType. A top-level field uses its IdentifierType when that is set, and the object id type otherwise.",
 		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
 			return in.Type == ssot.AttrIdentifier && identifierSchemaType(in, ctx) != ""
 		},
 		Then: func(in ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
+			if idType := identifierSchemaType(in, ctx); idType == "AccountIdentifier" {
+				out.ValidateDiagExpr = "IsValidAccountIdentifier()"
+				return
+			}
 			out.ValidateDiagExpr = fmt.Sprintf("IsValidIdentifier[sdk.%s]()", identifierSchemaType(in, ctx))
 		},
 	},
@@ -159,7 +163,7 @@ var resourceAttributeRules = []resourceAttributeRule{
 			if ctx.AsCollectionElem || in.Description == "" || ctx.sdkEnumAll(in) == "" {
 				return false
 			}
-			return in.Type == ssot.AttrEnum || isCollectionOfEnum(in)
+			return in.Type == ssot.AttrEnum || in.IsEnumCollection()
 		},
 		Then: func(in ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
 			expr := fmt.Sprintf("%s + enumValuesDescription(%s)", strconv.Quote(in.Description+" "), ctx.sdkEnumAll(in))
@@ -183,7 +187,7 @@ var resourceAttributeRules = []resourceAttributeRule{
 		Name:        RuleCollectionOfEnumNormalizes,
 		Description: "A top-level set of enums uses NormalizeAndCompareEnumsInSet. A list, and a nested set, use NormalizeAndCompare on the collection field.",
 		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
-			return isCollectionOfEnum(in) && ctx.sdkEnumTo(in) != "" && !ctx.AsCollectionElem
+			return in.IsEnumCollection() && ctx.sdkEnumTo(in) != "" && !ctx.AsCollectionElem
 		},
 		Then: func(in ssot.Attribute, ctx resourceAttributeRuleContext, out *ResourceAttribute) {
 			if in.Type == ssot.AttrSet && !ctx.InBlock {
@@ -219,12 +223,17 @@ var resourceAttributeRules = []resourceAttributeRule{
 	},
 	{
 		Name:        RuleConfiguredDiffSuppress,
-		Description: "Configured suppressors compose with inferred normalization.",
+		Description: "Configured suppressors compose with inferred normalization. Ignore-always replaces that normalization and stands alone.",
 		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
 			return in.DiffSuppress != nil
 		},
 		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
-			for _, suppress := range in.DiffSuppress.Suppressors() {
+			suppressors := in.DiffSuppress.Suppressors()
+			if len(suppressors) == 1 && suppressors[0].Kind == ssot.SuppressAlways {
+				out.DiffSuppressExpr = "ignoreAlwaysSuppressFunc"
+				return
+			}
+			for _, suppress := range suppressors {
 				key := suppress.Key
 				if key == "" {
 					key = in.OutputKey()
@@ -237,6 +246,8 @@ var resourceAttributeRules = []resourceAttributeRule{
 					expression = fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInShow(%q)", key)
 				case ssot.SuppressDescribe:
 					expression = fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInDescribe(%q)", key)
+				case ssot.SuppressAlways:
+					panic(fmt.Sprintf("ignore-always suppression for attribute %q stands alone", in.Name))
 				default:
 					panic(fmt.Sprintf("unknown diff suppression %q", suppress.Kind))
 				}
@@ -250,28 +261,32 @@ func isCollection(in ssot.Attribute) bool {
 	return in.Type == ssot.AttrList || in.Type == ssot.AttrSet
 }
 
-func isCollectionOfEnum(in ssot.Attribute) bool {
-	return isCollection(in) && in.Elem != nil && in.Elem.Type == ssot.AttrEnum
-}
-
 func isSetOfIdentifiers(in ssot.Attribute) bool {
 	return in.Type == ssot.AttrSet && in.Elem != nil && in.Elem.Type == ssot.AttrIdentifier
 }
 
 // identifierSchemaType is the SDK identifier type used for schema validation.
 // Collection elements use their own IdentifierType. Nested block fields are left alone.
-// A top-level field uses the object id type, then IdentifierType.
+// A top-level field uses its IdentifierType when that is set, so a schema object can
+// point at a database or account object. Otherwise it uses the object id type.
 func identifierSchemaType(in ssot.Attribute, ctx resourceAttributeRuleContext) string {
+	// External identifiers are not parsed by IsValidIdentifier. Account identifiers use IsValidAccountIdentifier.
+	if in.IdentifierType == "ExternalObjectIdentifier" {
+		return ""
+	}
 	if ctx.AsCollectionElem {
 		return in.IdentifierType
 	}
 	if ctx.InBlock {
 		return ""
 	}
+	if in.IdentifierType != "" {
+		return in.IdentifierType
+	}
 	if ctx.IdType != "" {
 		return ctx.IdType
 	}
-	return in.IdentifierType
+	return ""
 }
 
 func relationPaths(prefix string, attrs []ssot.Attribute) []string {
@@ -375,12 +390,13 @@ func resolveResourceAttribute(in ssot.Attribute, ctx resourceAttributeRuleContex
 
 func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleContext) ResourceAttribute {
 	out := ResourceAttribute{
-		Name:   in.Name,
-		TfType: tfTypeFor(in.Type),
+		Name:      in.Name,
+		TfType:    tfTypeFor(in.Type),
+		SdkString: in.SdkString,
 	}
 	if !ctx.AsCollectionElem {
 		out.Required = in.Required
-		out.Optional = !in.Required
+		out.Optional = !in.Required && !in.Computed
 		out.Computed = in.Computed
 		out.ForceNew = in.ForceNew
 		out.Sensitive = in.Sensitive
@@ -391,6 +407,9 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 	}
 	if in.Description != "" {
 		out.DescriptionExpr = strconv.Quote(in.Description)
+	}
+	if in.Deprecated != "" {
+		out.DeprecatedExpr = strconv.Quote(in.Deprecated)
 	}
 	switch {
 	case in.Min != nil && in.Max != nil:

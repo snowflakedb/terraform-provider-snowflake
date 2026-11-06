@@ -53,11 +53,27 @@ func NewInstanceMethodExampleSetScopeArgsRequest(
 }
 
 func NewExampleTagValueRequest(
-	tag SchemaObjectIdentifier,
+	reference ExampleTagReferenceRequest,
 	value string,
 ) *ExampleTagValueRequest {
 	s := ExampleTagValueRequest{}
-	s.Tag = tag
+	s.Reference = reference
 	s.Value = value
+	return &s
+}
+
+func NewExampleTagReferenceRequest(
+	arguments ExampleTagReferenceArgumentsRequest,
+) *ExampleTagReferenceRequest {
+	s := ExampleTagReferenceRequest{}
+	s.Arguments = arguments
+	return &s
+}
+
+func NewExampleTagReferenceArgumentsRequest(
+	tag SchemaObjectIdentifier,
+) *ExampleTagReferenceArgumentsRequest {
+	s := ExampleTagReferenceArgumentsRequest{}
+	s.Tag = tag
 	return &s
 }

@@ -226,7 +226,7 @@ func init() {
 		withAdditionalValidationCase(
 			"validation_Show_In_moreThanOneScope",
 			func(opts *ShowTagOptions) {
-				opts.In = &ExtendedIn{In: In{Account: new(true), Database: id.DatabaseId()}}
+				opts.In = &ExtendedIn{Account: new(true), Database: id.DatabaseId()}
 			},
 			errExactlyOneOf("ShowTagOptions.In", "Account", "Database", "Schema"),
 		).
@@ -238,14 +238,14 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_Tags_sql_Show_In,
-			func(opts *ShowTagOptions) { opts.In = &ExtendedIn{In: In{Account: new(true)}} },
+			func(opts *ShowTagOptions) { opts.In = &ExtendedIn{Account: new(true)} },
 			`SHOW TAGS IN ACCOUNT`,
 		).
 		withModifyAndExpectedSqlf(
 			case_Tags_sql_Show_all,
 			func(opts *ShowTagOptions) {
 				opts.Like = &Like{Pattern: new("test")}
-				opts.In = &ExtendedIn{In: In{Account: new(true)}}
+				opts.In = &ExtendedIn{Account: new(true)}
 			},
 			`SHOW TAGS LIKE 'test' IN ACCOUNT`,
 		)

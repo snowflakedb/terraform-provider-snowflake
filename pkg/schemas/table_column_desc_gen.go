@@ -71,12 +71,12 @@ func TableColumnDetailsToSchema(tableColumnDetails *sdk.TableColumnDetails) map[
 	tableColumnDetailsSchema["name"] = tableColumnDetails.Name
 	tableColumnDetailsSchema["type"] = string(tableColumnDetails.Type)
 	tableColumnDetailsSchema["kind"] = tableColumnDetails.Kind
-	tableColumnDetailsSchema["is_nullable"] = tableColumnDetails.IsNullable
+	tableColumnDetailsSchema["is_nullable"] = tableColumnDetails.Null
 	if tableColumnDetails.Default != nil {
 		tableColumnDetailsSchema["default"] = (*tableColumnDetails.Default)
 	}
-	tableColumnDetailsSchema["is_primary"] = tableColumnDetails.IsPrimary
-	tableColumnDetailsSchema["is_unique"] = tableColumnDetails.IsUnique
+	tableColumnDetailsSchema["is_primary"] = tableColumnDetails.PrimaryKey
+	tableColumnDetailsSchema["is_unique"] = tableColumnDetails.UniqueKey
 	// check: manual addition and mapping is needed
 	if tableColumnDetails.Expression != nil {
 		tableColumnDetailsSchema["expression"] = (*tableColumnDetails.Expression)

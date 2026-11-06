@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -78,6 +79,7 @@ func Sequence() *schema.Resource {
 	)
 
 	return &schema.Resource{
+		Description:   docs.WithPreviewFeatureMark(),
 		CreateContext: PreviewFeatureCreateContextWrapper(string(previewfeatures.SequenceResource), TrackingCreateWrapper(resources.Sequence, CreateSequence)),
 		ReadContext:   PreviewFeatureReadContextWrapper(string(previewfeatures.SequenceResource), TrackingReadWrapper(resources.Sequence, ReadSequence)),
 		UpdateContext: PreviewFeatureUpdateContextWrapper(string(previewfeatures.SequenceResource), TrackingUpdateWrapper(resources.Sequence, UpdateSequence)),

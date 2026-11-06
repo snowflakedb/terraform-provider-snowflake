@@ -4,15 +4,11 @@ package sdk
 
 func NewCreateAlertRequest(
 	name SchemaObjectIdentifier,
-	warehouse AccountObjectIdentifier,
-	schedule string,
-	condition []AlertConditionRequest,
+	condition AlertConditionRequest,
 	action string,
 ) *CreateAlertRequest {
 	s := CreateAlertRequest{}
 	s.name = name
-	s.Warehouse = warehouse
-	s.Schedule = schedule
 	s.condition = condition
 	s.action = action
 	return &s
@@ -25,6 +21,16 @@ func (s *CreateAlertRequest) WithOrReplace(orReplace bool) *CreateAlertRequest {
 
 func (s *CreateAlertRequest) WithIfNotExists(ifNotExists bool) *CreateAlertRequest {
 	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *CreateAlertRequest) WithWarehouse(warehouse AccountObjectIdentifier) *CreateAlertRequest {
+	s.Warehouse = &warehouse
+	return s
+}
+
+func (s *CreateAlertRequest) WithSchedule(schedule string) *CreateAlertRequest {
+	s.Schedule = &schedule
 	return s
 }
 
@@ -56,8 +62,13 @@ func (s *AlterAlertRequest) WithIfExists(ifExists bool) *AlterAlertRequest {
 	return s
 }
 
-func (s *AlterAlertRequest) WithAction(action AlertAction) *AlterAlertRequest {
-	s.Action = &action
+func (s *AlterAlertRequest) WithResume(resume bool) *AlterAlertRequest {
+	s.Resume = &resume
+	return s
+}
+
+func (s *AlterAlertRequest) WithSuspend(suspend bool) *AlterAlertRequest {
+	s.Suspend = &suspend
 	return s
 }
 
@@ -149,7 +160,7 @@ func (s *ShowAlertRequest) WithLike(like Like) *ShowAlertRequest {
 	return s
 }
 
-func (s *ShowAlertRequest) WithIn(in In) *ShowAlertRequest {
+func (s *ShowAlertRequest) WithIn(in ExtendedIn) *ShowAlertRequest {
 	s.In = &in
 	return s
 }

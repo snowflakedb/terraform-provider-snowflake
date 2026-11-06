@@ -136,8 +136,12 @@ func (opts *SetUserTagsQuotaOptions) validate() error {
 	if valueSet(opts.args) {
 		if valueSet(opts.args.Tags) {
 			for tagIdx, tag := range opts.args.Tags {
-				if !ValidObjectIdentifier(tag.Tag) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetUserTagsQuotaOptions.args.Tags[%d]", tagIdx), "Tag"))
+				if valueSet(tag.Reference) {
+					if valueSet(tag.Reference.Arguments) {
+						if !ValidObjectIdentifier(tag.Reference.Arguments.Tag) {
+							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetUserTagsQuotaOptions.args.Tags[%d].Reference.Arguments", tagIdx), "Tag"))
+						}
+					}
 				}
 			}
 		}
@@ -160,8 +164,12 @@ func (opts *ExcludeUsersQuotaOptions) validate() error {
 		if valueSet(opts.args.ByTag) {
 			if valueSet(opts.args.ByTag.Tags) {
 				for tagIdx, tag := range opts.args.ByTag.Tags {
-					if !ValidObjectIdentifier(tag.Tag) {
-						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("ExcludeUsersQuotaOptions.args.ByTag.Tags[%d]", tagIdx), "Tag"))
+					if valueSet(tag.Reference) {
+						if valueSet(tag.Reference.Arguments) {
+							if !ValidObjectIdentifier(tag.Reference.Arguments.Tag) {
+								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("ExcludeUsersQuotaOptions.args.ByTag.Tags[%d].Reference.Arguments", tagIdx), "Tag"))
+							}
+						}
 					}
 				}
 			}

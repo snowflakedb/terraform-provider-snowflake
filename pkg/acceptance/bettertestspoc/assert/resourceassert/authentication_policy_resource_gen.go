@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type AuthenticationPolicyResourceAssert struct {
@@ -52,7 +53,7 @@ func (a *AuthenticationPolicyResourceAssert) HasAuthenticationMethods(expected .
 	return a
 }
 
-// typed assert for "client_policy" (type: Set, subtype: Map) is not currently supported
+// typed assert for "client_policy" (type: Set) is not currently supported
 
 func (a *AuthenticationPolicyResourceAssert) HasClientTypes(expected ...string) *AuthenticationPolicyResourceAssert {
 	a.SetContainsExactlyStringValues("client_types", expected...)
@@ -79,16 +80,21 @@ func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollment(expected string) *
 	return a
 }
 
-// typed assert for "mfa_policy" (type: List, subtype: Map) is not currently supported
+func (a *AuthenticationPolicyResourceAssert) HasMfaEnrollmentSdk(expected sdk.MfaEnrollmentOption) *AuthenticationPolicyResourceAssert {
+	a.StringValueSet("mfa_enrollment", string(expected))
+	return a
+}
 
-// typed assert for "pat_policy" (type: List, subtype: Map) is not currently supported
+// typed assert for "mfa_policy" (type: List) is not currently supported
+
+// typed assert for "pat_policy" (type: List) is not currently supported
 
 func (a *AuthenticationPolicyResourceAssert) HasSecurityIntegrations(expected ...string) *AuthenticationPolicyResourceAssert {
 	a.SetContainsExactlyStringValues("security_integrations", expected...)
 	return a
 }
 
-// typed assert for "workload_identity_policy" (type: List, subtype: Map) is not currently supported
+// typed assert for "workload_identity_policy" (type: List) is not currently supported
 
 ///////////////////////////////////
 // Attribute value string checks //

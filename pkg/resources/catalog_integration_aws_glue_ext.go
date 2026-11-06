@@ -61,7 +61,7 @@ type catalogIntegrationAwsGlueAlterRequestsExt struct {
 	set *sdk.CatalogIntegrationSetRequest
 }
 
-func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d *schema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails, _ bool) diag.Diagnostics {
+func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(_ context.Context, d *schema.ResourceData, _ any, details *sdk.CatalogIntegrationAwsGlueDetails, _ bool) diag.Diagnostics {
 	// refresh_interval_seconds and glue_region are generated external changes, not copied here.
 	if err := errors.Join(
 		d.Set("catalog_source", string(details.CatalogSource)),
@@ -74,7 +74,7 @@ func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(d *schema.Resou
 	return nil
 }
 
-func catalogIntegrationAwsGlueSetConfigFieldsExt(d *schema.ResourceData, catalogIntegration *sdk.CatalogIntegration) error {
+func catalogIntegrationAwsGlueSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, catalogIntegration *sdk.CatalogIntegration) error {
 	return errors.Join(
 		d.Set("name", catalogIntegration.Name),
 		d.Set("enabled", catalogIntegration.Enabled),

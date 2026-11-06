@@ -187,6 +187,10 @@ func ForceNewIfNotDefault(key string) schema.CustomizeDiffFunc {
 	})
 }
 
+// TODO [SNOW-4428377]: Handle set and list attributes that have element-level diff suppressors. The suppressor is called once with the computed
+// key and the collection printed with %v, but such suppressors (IgnoreCaseInSet, NormalizeAndCompareIdentifiersInSet, ...) expect one call per element
+// (k = "<field>.<index>", skipping "<field>.#"), so they never suppress and every change counts as real. Call them per added/removed element, add tests
+// for sets and lists, and then lift the set/list exclusion in the generated changed keys (TODO [SNOW-1648997] in pkg/resources/gen/custom_diff.go).
 // ComputedIfAnyAttributeChanged marks the given fields as computed if any of the listed fields changes.
 // It takes field-level diffSuppress into consideration based on the schema passed.
 // If the field is not found in the given schema, it continues without error. Only top level schema fields should be used.

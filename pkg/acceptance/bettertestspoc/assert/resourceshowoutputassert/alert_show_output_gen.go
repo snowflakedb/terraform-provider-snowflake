@@ -32,6 +32,21 @@ func ImportedAlertShowOutput(t *testing.T, id string) *AlertShowOutputAssert {
 	return &alertAssert
 }
 
+func AlertsDatasourceShowOutput(t *testing.T, name string) *AlertShowOutputAssert {
+	t.Helper()
+
+	return AlertsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func AlertsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *AlertShowOutputAssert {
+	t.Helper()
+
+	alertAssert := AlertShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "alerts", idx),
+	}
+	return &alertAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
@@ -66,8 +81,8 @@ func (a *AlertShowOutputAssert) HasComment(expected string) *AlertShowOutputAsse
 	return a
 }
 
-func (a *AlertShowOutputAssert) HasWarehouse(expected string) *AlertShowOutputAssert {
-	a.StringValueSet("warehouse", expected)
+func (a *AlertShowOutputAssert) HasWarehouse(expected sdk.AccountObjectIdentifier) *AlertShowOutputAssert {
+	a.StringValueSet("warehouse", expected.Name())
 	return a
 }
 

@@ -133,6 +133,23 @@ func TestInt_OpenflowDeployments(t *testing.T) {
 		assertOpenflowDeploymentParametersDetails(t, id, eventTable.ID().FullyQualifiedName(), sdk.Pointer(sdk.ParameterTypeOpenflowDeployment))
 	})
 
+	t.Run("create: with event table none", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		request := sdk.NewCreateOpenflowDeploymentRequest(id, sdk.OpenflowDeploymentTypeByoc).
+			WithVpcType(sdk.OpenflowVpcTypeManaged).
+			WithEventTable(*sdk.NewOpenflowDeploymentEventTableRequest().WithNone(true))
+
+		err := client.OpenflowDeployments.Create(ctx, request)
+		require.NoError(t, err)
+		t.Cleanup(testClientHelper().OpenflowDeployment.DropFunc(t, id))
+
+		testClientHelper().OpenflowDeployment.WaitUntilSettled(t, id, helpers.OpenflowDeploymentActiveTimeout)
+
+		// SHOW PARAMETERS returns NONE as a bare keyword, not an identifier. Assert the raw row:
+		// ToOpenflowDeploymentParametersDetails still cannot parse NONE.
+		assertOpenflowDeploymentParametersDetails(t, id, "NONE", sdk.Pointer(sdk.ParameterTypeOpenflowDeployment))
+	})
+
 	t.Run("alter: set and unset", func(t *testing.T) {
 		eventTable, eventTableCleanup := testClientHelper().EventTable.Create(t)
 		t.Cleanup(eventTableCleanup)

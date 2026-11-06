@@ -63,7 +63,7 @@ func (v *secrets) Show(ctx context.Context, request *ShowSecretRequest) ([]Secre
 
 func (v *secrets) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Secret, error) {
 	request := NewShowSecretRequest().
-		WithIn(ExtendedIn{In: In{Schema: id.SchemaId()}}).
+		WithIn(ExtendedIn{Schema: id.SchemaId()}).
 		WithLike(Like{Pattern: String(id.Name())})
 	secrets, err := v.Show(ctx, request)
 	if err != nil {

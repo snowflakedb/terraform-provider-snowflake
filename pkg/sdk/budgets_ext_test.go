@@ -108,7 +108,7 @@ func init() {
 		withExpectedSqlf(
 			case_Budgets_sql_SetCycleStartAction_basic,
 			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1)",
-			id.FullyQualifiedName(), procedureId.FullyQualifiedName(),
+			id.FullyQualifiedName(), singleQuotedIdentifier(procedureId),
 		).
 		withAdditionalSqlCasef(
 			"sql_SetCycleStartAction_moreArgs",
@@ -116,7 +116,7 @@ func init() {
 				opts.args = BudgetSetCycleStartActionArgs{Procedure: procedureId2, Arguments: []string{"arg1", "arg2"}}
 			},
 			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), arg1, arg2)",
-			id.FullyQualifiedName(), procedureId2.FullyQualifiedName(),
+			id.FullyQualifiedName(), singleQuotedIdentifier(procedureId2),
 		)
 
 	budgetsTests.GetCycleStartAction.

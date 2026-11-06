@@ -6,11 +6,9 @@ import (
 )
 
 // warehouseInteractiveAttributesModificationExt applies schema details the attribute generator does not emit.
-// warehouse_type is computed. auto_suspend keeps the IntDefault sentinel even though 0 is invalid (min 1).
+// auto_suspend keeps the IntDefault sentinel even though 0 is invalid (min 1).
 // A top-level set of identifiers, including tables, is generated.
 func warehouseInteractiveAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
-	s["warehouse_type"].Optional = false
-	s["warehouse_type"].Computed = true
 	s["auto_suspend"].Default = IntDefault
 	return s
 }

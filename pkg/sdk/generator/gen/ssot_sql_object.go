@@ -2,7 +2,6 @@ package gen
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
 
@@ -13,7 +12,8 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 	if name == "" {
 		name = sqlToFieldName(clause.SQLText(attr), true)
 	}
-	v = v.ListQueryStructField(name, queryStructFromObjectList(v.owner, attr), parameterOptionsFromClause(clause, required).SQL(clause.SQLText(attr)))
+	transformer := parameterOptionsFromClause(clause, required).SQL(clause.SQLText(attr))
+	v = v.ListQueryStructField(name, queryStructFromObjectList(v.owner, attr), transformer)
 	if required {
 		v = v.WithValidation(ValidateValueSet, name)
 	}
@@ -23,10 +23,7 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 // appendObjectClause adds a SqlOnly nested struct, such as ENCRYPTION = (...), whose fields are the Children of attr.
 func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
 	nested := queryStructFromObject(v.owner, attr)
-	name := clause.Field
-	if name == "" {
-		name = genhelpers.SnakeCaseToCamel(attr.Name)
-	}
+	name := clauseGoFieldName(attr, clause)
 	if clause.AsParameter {
 		opts := ParameterOptions().SQL(clause.SQL)
 		if required {
@@ -34,7 +31,10 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 		}
 		return v.OptionalQueryStructField(name, nested, opts)
 	}
-	opts := ListOptions().NoComma()
+	opts := ListOptions()
+	if clause.NoComma {
+		opts = opts.NoComma()
+	}
 	if clause.Parentheses == ssot.SqlParensYes {
 		opts = opts.Parentheses()
 	}
@@ -45,6 +45,13 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 		return v.QueryStructField(name, nested, opts.Required())
 	}
 	return v.OptionalQueryStructField(name, nested, opts)
+}
+
+// QueryStructFromAttribute builds the query struct of a SqlOnly object attribute. owner is the interface name, and the
+// struct name is that owner plus the attribute name. The SDK definition calls it for one ALTER field and keeps the rest
+// of the operation handwritten.
+func QueryStructFromAttribute(owner string, attr ssot.Attribute) *QueryStruct {
+	return queryStructFromObject(owner, attr)
 }
 
 // queryStructFromObject builds a fresh query struct for a SqlOnly object attribute: the Children are its fields.
@@ -128,6 +135,17 @@ func queryStructFromObjectList(owner string, list ssot.Attribute) *QueryStruct {
 	}
 	if len(variantFields) > 1 {
 		element = element.WithValidation(ExactlyOneValueSet, variantFields...)
+	}
+	if list.Elem != nil && list.Elem.ChildrenRule != "" {
+		names := collections.Map(list.Elem.RuleFields(), func(child ssot.Attribute) string {
+			return clauseFieldName(child, attributeSqlCreate)
+		})
+		switch list.Elem.ChildrenRule {
+		case ssot.ChildrenAtLeastOne:
+			element = element.WithValidation(AtLeastOneValueSet, names...)
+		case ssot.ChildrenExactlyOne:
+			element = element.WithValidation(ExactlyOneValueSet, names...)
+		}
 	}
 	if clause.Parentheses != ssot.SqlParensYes {
 		return element

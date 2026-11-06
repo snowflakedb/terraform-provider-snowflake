@@ -39,7 +39,11 @@ type Object struct {
 	IdentityHierarchyForceNew bool
 	// AdditionalIdentityNameDescription is appended to the generated name sentence.
 	AdditionalIdentityNameDescription string
-	SdkCreateRequestObjectName        string // SDK CREATE request stem, and the variant CREATE and ALTER query-struct stem. Empty uses Name
+	// IdentityNamesCreatedBySnowflake are names of objects that Snowflake creates itself, such as the PUBLIC schema of a
+	// database. With WithBeforeCreate(Generated()), creating one of them adopts the existing object instead: the generated
+	// code sets the id and runs Update. Names are compared ignoring case and outer spaces.
+	IdentityNamesCreatedBySnowflake []string
+	SdkCreateRequestObjectName      string // SDK CREATE request stem, and the variant CREATE and ALTER query-struct stem. Empty uses Name
 	// VariantOf is the base of this role. Name starts with the base Name, and NamePlural matches the base.
 	// The variant also shares SDK parameter details, SET/UNSET requests, and ParameterType names. Catalog membership still uses Name.
 	VariantOf *Object
@@ -125,16 +129,18 @@ func (obj Object) ParameterLevelsFor(string) []ParameterLevel {
 type AlterClauseKind string
 
 const (
-	AlterClauseKeyword   AlterClauseKind = "keyword"
-	AlterClauseRenameTo  AlterClauseKind = "rename_to"
-	AlterClauseSwapWith  AlterClauseKind = "swap_with"
-	AlterClauseSet       AlterClauseKind = "set"
-	AlterClauseUnset     AlterClauseKind = "unset"
-	AlterClauseSetTags   AlterClauseKind = "set_tags"
-	AlterClauseUnsetTags AlterClauseKind = "unset_tags"
-	AlterClauseList      AlterClauseKind = "list"
-	AlterClauseText      AlterClauseKind = "text"
-	AlterClauseBlock     AlterClauseKind = "block"
+	AlterClauseKeyword     AlterClauseKind = "keyword"
+	AlterClauseRenameTo    AlterClauseKind = "rename_to"
+	AlterClauseSwapWith    AlterClauseKind = "swap_with"
+	AlterClauseSet         AlterClauseKind = "set"
+	AlterClauseUnset       AlterClauseKind = "unset"
+	AlterClauseSetTags     AlterClauseKind = "set_tags"
+	AlterClauseUnsetTags   AlterClauseKind = "unset_tags"
+	AlterClauseList        AlterClauseKind = "list"
+	AlterClauseKeywordList AlterClauseKind = "keyword_list"
+	AlterClauseText        AlterClauseKind = "text"
+	AlterClausePlainText   AlterClauseKind = "plain_text"
+	AlterClauseBlock       AlterClauseKind = "block"
 )
 
 // AlterClause is one ALTER entry. Keyword and list use SQL. The other kinds are the SET, UNSET, SET TAG, and UNSET TAG blocks.
@@ -152,12 +158,22 @@ type AlterClause struct {
 	Block *Attribute
 	// BlockKeyword makes the block a keyword clause. Without it the block is a parameter clause.
 	BlockKeyword bool
+	// Attribute and AttributeValue link a keyword to the bool attribute value that selects it, such as RESUME for an
+	// enabled attribute that is true. The SDK ignores them. See AlterKeywordFor.
+	Attribute      *Attribute
+	AttributeValue bool
 }
 
 // AlterKeyword is an optional action keyword, such as RESUME or ENABLE MANAGED ACCESS.
 // It is one branch of ExactlyOneValueSet.
 func AlterKeyword(sql string) AlterClause {
 	return AlterClause{Kind: AlterClauseKeyword, SQL: sql}
+}
+
+// AlterKeywordFor is AlterKeyword selected by a value of a bool attribute, such as RESUME when enabled is true and
+// SUSPEND when it is false. The resource generator reads the link; the SDK sees a plain keyword.
+func AlterKeywordFor(attribute *Attribute, value bool, sql string) AlterClause {
+	return AlterClause{Kind: AlterClauseKeyword, SQL: sql, Attribute: attribute, AttributeValue: value}
 }
 
 // AlterKeywordNotExactlyOne is an optional action keyword that may accompany another branch.
@@ -177,6 +193,19 @@ func AlterList(sql, itemType string) AlterClause {
 // It is one branch of ExactlyOneValueSet.
 func AlterText(sql string) AlterClause {
 	return AlterClause{Kind: AlterClauseText, SQL: sql}
+}
+
+// AlterKeywordList is an optional keyword list in parentheses with no comma, such as MODIFY CONDITION EXISTS.
+// field is the Go field name. itemType is the element Go type, without a pointer.
+// The elements are not checked as identifiers. It is one branch of ExactlyOneValueSet.
+func AlterKeywordList(field, sql, itemType string) AlterClause {
+	return AlterClause{Kind: AlterClauseKeywordList, Field: field, SQL: sql, ListItem: itemType}
+}
+
+// AlterPlainText is an optional unquoted value with no equals, such as MODIFY ACTION.
+// field is the Go field name. It is one branch of ExactlyOneValueSet.
+func AlterPlainText(field, sql string) AlterClause {
+	return AlterClause{Kind: AlterClausePlainText, Field: field, SQL: sql}
 }
 
 // AlterParameterBlock is an optional nested block after the name, as a parameter clause, such as ADD STORAGE_LOCATION.
@@ -220,6 +249,16 @@ type AlterSpec struct {
 	Clauses                  []AlterClause
 	// SetConflictingFields are pairs of Set attributes that cannot be set together. SET gets ConflictingFields for each pair.
 	SetConflictingFields [][]*Attribute
+}
+
+// LinkedAlterKeyword returns the ALTER keyword clause linked to the value of the bool attribute with this name.
+func (obj Object) LinkedAlterKeyword(attributeName string, value bool) (AlterClause, bool) {
+	for _, clause := range obj.Alter.Clauses {
+		if clause.Kind == AlterClauseKeyword && clause.Attribute != nil && clause.Attribute.Name == attributeName && clause.AttributeValue == value {
+			return clause, true
+		}
+	}
+	return AlterClause{}, false
 }
 
 // HasAlterSpec reports whether this object defines an ALTER statement.

@@ -90,7 +90,7 @@ If the object is still on the SDK-struct path, change the show output struct in 
 
 If the object is plugged from ssot, change `Show` / `Describe` `Columns` ([ssot SHOW and DESCRIBE](../../../internal/ssot/README.md#show-and-describe))
 instead of relying on reflect. `ToSchema` still compiles against `*sdk.<Type>` / `*sdk.<Type>Details` from SDK paired
-structs until [ssot later work](../../../internal/ssot/README.md#later). `SchemaShow(SchemaShowFromBase())` maps `*sdk.<VariantOf.Name>` when every variant is one row of the base SHOW type. The schema variable stays `Show<Variant>Schema`.
+structs until [ssot later work](../../../internal/ssot/README.md#later). `SchemaShow(SchemaShowFromBase())` makes a variant reuse the base's SHOW schema when every variant is one row of the base SHOW type: no `Show<Variant>Schema` is generated, and the variant resource uses `Show<VariantOf.Name>Schema`.
 
 ##### Adding a new object to the SDK
 
@@ -115,6 +115,8 @@ Then, in this generator:
 2. Run generation according to [instructions](#invoking-the-generation). The adapter synthesizes `genhelpers.Field`
    values for `MapToSchemaField` (`OptionalInShow` prefixes `*`; `OptionalInDb` does not -
    [ssot OptionalInShow vs OptionalInDb](../../../internal/ssot/README.md#optionalinshow-vs-optionalindb)).
+
+A column `SchemaName` is the public schema key. Empty keeps the snake_case of the Go field. The reflect path stamps it onto the extracted field by the SDK plain struct and Go field name. Skip, manual, and type lists use that emitted key.
 
 `SkipFields` has an ssot equivalent: the `SkipInSchema` attribute mark ([ssot Attribute](../../internal/ssot/README.md#attribute)).
 `ManualFields` has an ssot equivalent too, but as a generator option rather than an attribute mark:

@@ -2,16 +2,14 @@
 page_title: "snowflake_pipe Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Resource used to manage pipes. For more information, check pipe documentation https://docs.snowflake.com/en/sql-reference/sql/create-pipe.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_pipe (Resource)
 
-~> **Note** Right now, changes for the `integration` field are not detected. This will be resolved in the [upcoming refactoring](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/ROADMAP.md#preparing-essential-ga-objects-for-the-provider-v1). For now, please try to use the [replace_triggered_by](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle#replace_triggered_by) HCL meta-argument.
-
-
+Resource used to manage pipes. For more information, check [pipe documentation](https://docs.snowflake.com/en/sql-reference/sql/create-pipe).
 
 ## Example Usage
 
@@ -26,8 +24,7 @@ resource "snowflake_pipe" "pipe" {
   copy_statement = "copy into ${snowflake_table.table.fully_qualified_name} from @${snowflake_stage.stage.fully_qualified_name}"
   auto_ingest    = false
 
-  aws_sns_topic_arn    = "..."
-  notification_channel = "..."
+  aws_sns_topic_arn = "..."
 }
 
 
@@ -61,8 +58,21 @@ resource "snowflake_pipe" "pipe_with_stage_change_trigger" {
     ]
   }
 }
+
+# Snowpipe Streaming (high-performance architecture) pipe. It reads rows sent by the Snowpipe Streaming SDK or REST API
+# instead of files from a stage, so auto_ingest, aws_sns_topic_arn, and integration are not set.
+# Read more at https://docs.snowflake.com/en/user-guide/snowpipe-streaming/snowpipe-streaming-pipe-object.
+resource "snowflake_pipe" "streaming_pipe" {
+  database = snowflake_database.database.name
+  schema   = snowflake_schema.schema.name
+  name     = "STREAMING_PIPE"
+
+  copy_statement = "copy into ${snowflake_table.table.fully_qualified_name} from (select $1:id from table(data_source(type => 'STREAMING')))"
+}
 ```
 -> **Note** Instead of using fully_qualified_name, you can reference objects managed outside Terraform by constructing a correct ID, consult [identifiers guide](../guides/identifiers_rework_design_decisions#new-computed-fully-qualified-name-field-in-resources).
+
+~> **Note** Use fully qualified names (`"<database_name>"."<schema_name>"."<object_name>"`) for every object referenced in `copy_statement`, e.g. the table, stage, and file format. The `database` and `schema` fields only define where the pipe is created; the provider does not run `USE DATABASE` or `USE SCHEMA` before `CREATE PIPE`. Unqualified names are resolved against the session's current database and schema, which leads to errors like `This session does not have a current database` or `Table '<name>' does not exist`. The `fully_qualified_name` attribute of the referenced resources (as in the examples above) gives the right value.
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
@@ -84,14 +94,19 @@ resource "snowflake_pipe" "pipe_with_stage_change_trigger" {
 - `comment` (String) Specifies a comment for the pipe.
 - `error_integration` (String) Specifies the name of the notification integration used for error notifications.
 - `integration` (String) Specifies an integration for the pipe.
+- `log_event_level` (String) Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. For more information, check [LOG_EVENT_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level).
+- `pipe_execution_paused` (Boolean) Specifies whether to pause a running pipe, primarily in preparation for transferring ownership of the pipe to a different role. For more information, check [PIPE_EXECUTION_PAUSED docs](https://docs.snowflake.com/en/sql-reference/parameters#pipe-execution-paused).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `describe_output` (List of Object) Outputs the result of `DESCRIBE PIPE` for the given pipe. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `notification_channel` (String) Amazon Resource Name of the Amazon SQS queue for the stage named in the DEFINITION column.
-- `owner` (String) Name of the role that owns the pipe.
+- `notification_channel` (String, Deprecated) Amazon Resource Name of the Amazon SQS queue for the stage named in the DEFINITION column.
+- `owner` (String, Deprecated) Name of the role that owns the pipe.
+- `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN PIPE` for the given pipe. (see [below for nested schema](#nestedatt--parameters))
+- `show_output` (List of Object) Outputs the result of `SHOW PIPES` for the given pipe. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -103,11 +118,85 @@ Optional:
 - `read` (String)
 - `update` (String)
 
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `definition` (String)
+- `error_integration` (String)
+- `integration` (String)
+- `invalid_reason` (String)
+- `kind` (String)
+- `name` (String)
+- `notification_channel` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `pattern` (String)
+- `schema_name` (String)
+
+
+<a id="nestedatt--parameters"></a>
+### Nested Schema for `parameters`
+
+Read-Only:
+
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
+- `pipe_execution_paused` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--pipe_execution_paused))
+
+<a id="nestedobjatt--parameters--log_event_level"></a>
+### Nested Schema for `parameters.log_event_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--pipe_execution_paused"></a>
+### Nested Schema for `parameters.pipe_execution_paused`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `definition` (String)
+- `error_integration` (String)
+- `integration` (String)
+- `invalid_reason` (String)
+- `kind` (String)
+- `name` (String)
+- `notification_channel` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `pattern` (String)
+- `schema_name` (String)
+
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-# format is database name | schema name | pipe name
-terraform import snowflake_pipe.example 'dbName|schemaName|pipeName'
+terraform import snowflake_pipe.example '"<database_name>"."<schema_name>"."<pipe_name>"'
 ```

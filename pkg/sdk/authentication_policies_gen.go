@@ -77,6 +77,8 @@ type AuthenticationPolicyPatPolicy struct {
 	DefaultExpiryInDays                   *int                           `ddl:"parameter,no_quotes" sql:"DEFAULT_EXPIRY_IN_DAYS"`
 	MaxExpiryInDays                       *int                           `ddl:"parameter,no_quotes" sql:"MAX_EXPIRY_IN_DAYS"`
 	RequireRoleRestrictionForServiceUsers *bool                          `ddl:"parameter" sql:"REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS"`
+	RequireRoleRestrictionForPersonUsers  *bool                          `ddl:"parameter" sql:"REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS"`
+	BlockedRolesList                      []StringListItemWrapper        `ddl:"parameter,must_parentheses" sql:"BLOCKED_ROLES_LIST"`
 	NetworkPolicyEvaluation               *NetworkPolicyEvaluationOption `ddl:"parameter,no_quotes" sql:"NETWORK_POLICY_EVALUATION"`
 }
 
@@ -225,6 +227,8 @@ type AuthenticationPolicyPatPolicyDetails struct {
 	DefaultExpiryInDays                   int
 	MaxExpiryInDays                       int
 	RequireRoleRestrictionForServiceUsers bool
+	RequireRoleRestrictionForPersonUsers  bool
+	BlockedRolesList                      []AccountObjectIdentifier
 	NetworkPolicyEvaluation               NetworkPolicyEvaluationOption
 }
 

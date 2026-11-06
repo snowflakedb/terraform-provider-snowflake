@@ -13,12 +13,12 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	tfjson "github.com/hashicorp/terraform-json"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -359,6 +359,9 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 	}
 	comment := random.Comment()
 
+	providerModel := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportBooleanDefault)
+
 	basicStorageIntegrationAzureModel := model.StorageIntegrationAzure("w1", basicId.Name(), azureTenantId, false, allowedLocations)
 
 	completeStorageIntegrationAzureModel := model.StorageIntegrationAzure("w2", completeId.Name(), azureTenantId, false, allowedLocations).
@@ -382,7 +385,7 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 	t.Cleanup(storageIntegrationCleanup)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: importBooleanDefaultProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -390,7 +393,7 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Import basic object
 			{
-				Config:             config.FromModels(t, basicStorageIntegrationAzureModel),
+				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAzureModel),
 				ResourceName:       basicRef,
 				ImportState:        true,
 				ImportStateId:      basicId.FullyQualifiedName(),
@@ -398,22 +401,17 @@ func TestAcc_StorageIntegrationAzure_Import(t *testing.T) {
 			},
 			// Import complete object
 			{
-				Config:             config.FromModels(t, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
+				Config:             config.FromModels(t, providerModel, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
 				ResourceName:       completeRef,
 				ImportState:        true,
 				ImportStateId:      completeId.FullyQualifiedName(),
 				ImportStatePersist: true,
 			},
-			// The basic config omits use_privatelink_endpoint, so the plan resets it to the Snowflake default; the complete config matches Snowflake
+			// Expect empty plan
 			{
-				Config: config.FromModels(t, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
+				Config: config.FromModels(t, providerModel, basicStorageIntegrationAzureModel, completeStorageIntegrationAzureModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(basicRef, plancheck.ResourceActionUpdate),
-						planchecks.ExpectChange(basicRef, "use_privatelink_endpoint", tfjson.ActionUpdate, sdk.String(r.BooleanFalse), sdk.String(r.BooleanDefault)),
-						plancheck.ExpectResourceAction(completeRef, plancheck.ResourceActionNoop),
-					},
-					PostApplyPostRefresh: []plancheck.PlanCheck{
 						plancheck.ExpectEmptyPlan(),
 					},
 				},

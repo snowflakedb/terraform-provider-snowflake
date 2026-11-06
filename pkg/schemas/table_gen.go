@@ -93,6 +93,10 @@ var ShowTableSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	"is_dynamic": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
 	"budget": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -130,6 +134,7 @@ func TableToSchema(table *sdk.Table) map[string]any {
 	tableSchema["enable_schema_evolution"] = table.EnableSchemaEvolution
 	tableSchema["owner_role_type"] = table.OwnerRoleType
 	tableSchema["is_event"] = table.IsEvent
+	tableSchema["is_dynamic"] = table.IsDynamic
 	if table.Budget != nil {
 		tableSchema["budget"] = (*table.Budget)
 	}

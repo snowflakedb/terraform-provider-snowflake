@@ -13,8 +13,8 @@ var PostgresMirrorTargetTableTypeEnumDef = g.NewEnum(
 	"SNOWFLAKE", "ICEBERG",
 )
 
-// PostgresMirrorStatusEnumDef lists the statuses DESCRIBE_MIRROR returns today. additionalConvert keeps an unrecognized
-// value instead of calling ToPostgresMirrorStatus, so a new status does not fail Describe.
+// PostgresMirrorStatusEnumDef lists the statuses DESCRIBE_MIRROR returns today. additionalConvert converts with
+// ToPostgresMirrorStatus, so an unrecognized status fails List and Describe.
 var PostgresMirrorStatusEnumDef = g.NewEnum(
 	"PostgresMirrorStatus", "PostgresMirrorStatuses",
 	"STARTING", "ACTIVE", "SUSPENDED",
@@ -93,8 +93,7 @@ var postgresMirrorsDef = g.NewInterface(
 				WithValidation(g.ValidateValueSet, "PostgresInstance").
 				WithValidation(g.ValidateValueSet, "PostgresDatabase").
 				WithValidation(g.ValidateValueSet, "TargetDatabase").
-				WithValidation(g.AtLeastOneValueSet, "PostgresTables", "PostgresSchemas").
-				WithAdditionalValidations(),
+				WithValidation(g.AtLeastOneValueSet, "PostgresTables", "PostgresSchemas"),
 			g.ListOptions().MustParentheses().Required(),
 		),
 ).CustomOperation(
@@ -134,7 +133,7 @@ var postgresMirrorsDef = g.NewInterface(
 		),
 	// DROP_MIRROR has no IF EXISTS, and DropSafely needs the whole request to pass drop_target_database.
 	g.WithDropSafelySuppressed(),
-).CustomShowOperationWithPairedStructs(
+).CustomShowOperationWithPairedStructsAndOpts(
 	"Describe",
 	g.ShowMappingKindSingleValue,
 	postgresMirrorsDoc,
@@ -147,6 +146,8 @@ var postgresMirrorsDef = g.NewInterface(
 				TextAssignment("mirror_name", g.ParameterOptions().SingleQuotes().ArrowEquals()),
 			g.ListOptions().MustParentheses().Required(),
 		),
+	// DESCRIBE_MIRROR returns no row when the mirror is missing.
+	[]g.CustomOperationOption{g.WithNoRowsAsObjectNotFound()},
 ).CustomShowOperationWithPairedStructs(
 	"List",
 	g.ShowMappingKindSlice,
@@ -164,18 +165,6 @@ var postgresMirrorsDef = g.NewInterface(
 	"DropSafely",
 	"DropSafely treats a mirror that no longer exists as dropped.",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*DropPostgresMirrorRequest")},
-	"error",
-).WithCustomInterfaceMethod(
-	"WaitForInitialSnapshot",
-	"WaitForInitialSnapshot polls LIST_MIRRORS until the mirror is ACTIVE, no table is left in its first copy, and at\n"+
-		"least minimumTables tables are registered. minimumTables is the number of tables named explicitly on create and\n"+
-		"must be at least 1: LIST_MIRRORS reports 0 remaining before registration. Tables reached only through a schema,\n"+
-		"or added by a later alter, are included only when the caller counts them. The caller sets the deadline on ctx.",
-	[]*g.MethodParameter{
-		g.NewMethodParameter("postgresInstance", "string"),
-		g.NewMethodParameter("name", "string"),
-		g.NewMethodParameter("minimumTables", "int"),
-	},
 	"error",
 ).
 	WithEnums(PostgresMirrorTargetTableTypeEnumDef, PostgresMirrorStatusEnumDef)

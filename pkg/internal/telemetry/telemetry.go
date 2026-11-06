@@ -4,10 +4,10 @@ import (
 	"context"
 	"log"
 	"maps"
+	"uuid"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 )
 
@@ -43,8 +43,8 @@ func getOperationStatus(diags diag.Diagnostics, recovered any) operationStatus {
 }
 
 // NewSpanID returns a UUID used to correlate events for one provider configure/run.
-func NewSpanID() (string, error) {
-	return uuid.GenerateUUID()
+func NewSpanID() string {
+	return uuid.NewV4().String()
 }
 
 func commonFields(eventType eventType, spanID string) map[string]string {

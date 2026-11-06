@@ -509,7 +509,7 @@ func TestInt_Schemas(t *testing.T) {
 			WithTerse(true).
 			WithHistory(true).
 			WithLike(sdk.Like{Pattern: sdk.String(schema1.Name)}).
-			WithIn(sdk.ExtendedIn{In: sdk.In{Account: sdk.Bool(true)}}).
+			WithIn(sdk.ExtendedIn{Account: sdk.Bool(true)}).
 			WithStartsWith(schema1.Name).
 			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
 		require.NoError(t, err)

@@ -98,11 +98,11 @@ func Test_identitySchema_hierarchyForceNew(t *testing.T) {
 }
 
 func TestIdentitySchema_hierarchyForceNew(t *testing.T) {
-	model := ModelFromInputObject(ResourceObject{Object: defs.AuthenticationPolicy}, nil, nil)
+	model := ModelFromInputObject(ResourceObject{Object: defs.Alert}, nil, nil)
 	require.True(t, model.Hooks.IdentitySchema.Generate)
 
 	got := renderSchemaTemplate(t, "identitySchema", model)
-	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"Specifies the identifier for the authentication policy; must be unique for the schema in which the authentication policy is created.\")")
+	require.Contains(t, got, "blocklistedCharactersFieldDescription(\"Specifies the identifier for the alert; must be unique for the schema in which the alert is created.\")")
 	require.Contains(t, got, "\"database\"")
 	require.Contains(t, got, "\"schema\"")
 	require.Contains(t, got, "ForceNew:         true")

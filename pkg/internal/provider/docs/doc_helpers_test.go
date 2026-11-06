@@ -30,6 +30,10 @@ func Test_PossibleValuesListed_empty(t *testing.T) {
 	assert.Empty(t, result)
 }
 
+func Test_WithPreviewFeatureMark(t *testing.T) {
+	assert.Equal(t, PreviewFeatureMark, WithPreviewFeatureMark())
+}
+
 func Test_GetDeprecatedObjectReplacements(t *testing.T) {
 	testCases := []struct {
 		Name               string
