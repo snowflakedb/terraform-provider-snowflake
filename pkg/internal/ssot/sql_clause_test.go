@@ -3,6 +3,7 @@ package ssot
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/stretchr/testify/require"
 )
 
@@ -142,4 +143,31 @@ func Test_SqlClause_optionOverridesDefault(t *testing.T) {
 
 	require.Equal(t, "parameter,no_quotes", clause.Ddl())
 	require.Equal(t, SqlQuotesNo, clause.Quotes)
+}
+
+func Test_NestedSqlFieldsFor_createSetUnset(t *testing.T) {
+	shared := IdentifierKeyword("SchemaObjectIdentifier", Sql("AGGREGATION POLICY"))
+	attr := Attribute{
+		Name:      "aggregation_policy",
+		Type:      AttrObject,
+		CreateSql: ObjectParameter(),
+		SetSql:    ObjectParameter(FieldName("SetAggregationPolicy")),
+		UnsetSql:  ObjectParameter(FieldName("UnsetAggregationPolicy")),
+		Children: []Attribute{
+			{Name: "set", SqlOnly: true, SetSql: StaticSQL("set", "SET")},
+			{Name: "aggregation_policy", Type: AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", CreateSql: shared, SetSql: shared},
+			{Name: "entity_key", Type: AttrList, Elem: &Attribute{Type: AttrString}, CreateSql: ListParameter("Column")},
+			{Name: "force", Type: AttrBool, SetSql: BoolKeyword(Sql("FORCE"))},
+			{Name: "unset_aggregation_policy", SqlOnly: true, UnsetSql: StaticSQL("unsetAggregationPolicy", "UNSET AGGREGATION POLICY")},
+		},
+	}
+	names := func(use ClauseUse) []string {
+		return collections.Map(attr.NestedSqlFieldsFor(use), func(child Attribute) string { return child.Name })
+	}
+	require.Equal(t, []string{"aggregation_policy", "entity_key"}, names(ClauseCreate))
+	require.Equal(t, []string{"set", "aggregation_policy", "force"}, names(ClauseSet))
+	require.Equal(t, []string{"unset_aggregation_policy"}, names(ClauseUnset))
+	require.Equal(t, "TableAggregationPolicy", attr.SqlStructNameFor("Table", ClauseCreate))
+	require.Equal(t, "TableSetAggregationPolicy", attr.SqlStructNameFor("Table", ClauseSet))
+	require.Equal(t, "TableUnsetAggregationPolicy", attr.SqlStructNameFor("Table", ClauseUnset))
 }

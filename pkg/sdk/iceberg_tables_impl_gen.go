@@ -118,6 +118,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		Comment:                    r.Comment,
 		IcebergVersion:             r.IcebergVersion,
 		EnableIcebergMergeOnRead:   r.EnableIcebergMergeOnRead,
+		AggregationPolicy:          r.AggregationPolicy,
 		Tag:                        r.Tag,
 		EnableDataCompaction:       r.EnableDataCompaction,
 		Contact:                    r.Contact,
@@ -307,12 +308,6 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{
 			Name: r.RowAccessPolicy.Name,
 			On:   r.RowAccessPolicy.On,
-		}
-	}
-	if r.AggregationPolicy != nil {
-		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
-			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
-			EntityKey:         r.AggregationPolicy.EntityKey,
 		}
 	}
 	return opts
@@ -606,13 +601,10 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		opts.UnsetAggregationPolicy = r.UnsetAggregationPolicy.toOpts()
 	}
 	if r.SetJoinPolicy != nil {
-		opts.SetJoinPolicy = &TableSetJoinPolicy{
-			JoinPolicy: r.SetJoinPolicy.JoinPolicy,
-			Force:      r.SetJoinPolicy.Force,
-		}
+		opts.SetJoinPolicy = r.SetJoinPolicy.toOpts()
 	}
 	if r.UnsetJoinPolicy != nil {
-		opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{}
+		opts.UnsetJoinPolicy = r.UnsetJoinPolicy.toOpts()
 	}
 	if r.SearchOptimizationAction != nil {
 		opts.SearchOptimizationAction = r.SearchOptimizationAction.toOpts()

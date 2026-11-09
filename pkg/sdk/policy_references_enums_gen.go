@@ -61,6 +61,7 @@ const (
 	PolicyKindAggregationPolicy      PolicyKind = "AGGREGATION_POLICY"
 	PolicyKindAuthenticationPolicy   PolicyKind = "AUTHENTICATION_POLICY"
 	PolicyKindFeaturePolicy          PolicyKind = "FEATURE_POLICY"
+	PolicyKindJoinPolicy             PolicyKind = "JOIN_POLICY"
 	PolicyKindMaskingPolicy          PolicyKind = "MASKING_POLICY"
 	PolicyKindPackagesPolicy         PolicyKind = "PACKAGES_POLICY"
 	PolicyKindPasswordPolicy         PolicyKind = "PASSWORD_POLICY"
@@ -74,6 +75,7 @@ var AllPolicyKinds = []PolicyKind{
 	PolicyKindAggregationPolicy,
 	PolicyKindAuthenticationPolicy,
 	PolicyKindFeaturePolicy,
+	PolicyKindJoinPolicy,
 	PolicyKindMaskingPolicy,
 	PolicyKindPackagesPolicy,
 	PolicyKindPasswordPolicy,
@@ -92,6 +94,8 @@ func ToPolicyKind(s string) (PolicyKind, error) {
 		return PolicyKindAuthenticationPolicy, nil
 	case string(PolicyKindFeaturePolicy):
 		return PolicyKindFeaturePolicy, nil
+	case string(PolicyKindJoinPolicy):
+		return PolicyKindJoinPolicy, nil
 	case string(PolicyKindMaskingPolicy):
 		return PolicyKindMaskingPolicy, nil
 	case string(PolicyKindPackagesPolicy):

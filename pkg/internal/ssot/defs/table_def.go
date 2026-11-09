@@ -201,7 +201,9 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 // definition in pkg/sdk/generator/defs/tables_def.go supplies them to CreateOperationFromObject and keeps their fields,
 // because other operations and the request types of the resource use them. Search optimization, clustering, and storage
 // lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. The row access policy is generated here as
-// TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type.
+// TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type. Aggregation and join
+// policies are TableAggregationPolicy and TableJoinPolicy in table_common_def.go. Iceberg CREATE reuses the CREATE
+// structs; iceberg ALTER reuses the SET/UNSET projections.
 var TableCreateAttrs = struct {
 	Scope                      ssot.Attribute
 	Kind                       ssot.Attribute
@@ -213,6 +215,8 @@ var TableCreateAttrs = struct {
 	DefaultDdlCollation        ssot.Attribute
 	CopyGrants                 ssot.Attribute
 	RowAccessPolicy            ssot.Attribute
+	AggregationPolicy          ssot.Attribute
+	JoinPolicy                 ssot.Attribute
 }{
 	Scope: ssot.Attribute{
 		Name:      "scope",
@@ -292,6 +296,8 @@ var TableCreateAttrs = struct {
 			},
 		},
 	},
+	AggregationPolicy: TableAggregationPolicy,
+	JoinPolicy:        TableJoinPolicy,
 }
 
 func tableShowString(name string, optionalInDb, optionalInShow bool) ssot.Attribute {
@@ -383,6 +389,8 @@ var Table = ssot.Object{
 			&TableCreateAttrs.DefaultDdlCollation,
 			&TableCreateAttrs.CopyGrants,
 			&TableCreateAttrs.RowAccessPolicy,
+			&TableCreateAttrs.AggregationPolicy,
+			&TableCreateAttrs.JoinPolicy,
 			ssot.Tags,
 			&TableAttrs.Comment,
 		},

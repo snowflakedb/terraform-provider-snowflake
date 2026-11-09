@@ -49,6 +49,8 @@ type CreateTableOptions struct {
 	DefaultDdlCollation        *StringAllowEmpty                `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
 	RowAccessPolicy            *TableRowAccessPolicy            `ddl:"list,no_comma"`
+	AggregationPolicy          *TableAggregationPolicy          `ddl:"list,no_comma"`
+	JoinPolicy                 *TableJoinPolicy                 `ddl:"list,no_comma"`
 	Tag                        []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment                    *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -137,6 +139,16 @@ type TableRowAccessPolicy struct {
 	On   []string               `ddl:"keyword,parentheses" sql:"ON"`
 }
 
+type TableAggregationPolicy struct {
+	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
+	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
+}
+
+type TableJoinPolicy struct {
+	JoinPolicy      SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
+	AllowedJoinKeys []Column               `ddl:"parameter,parentheses,no_equals" sql:"ALLOWED JOIN KEYS"`
+}
+
 // CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
 type CreateAsSelectTableOptions struct {
 	create          bool                   `ddl:"static" sql:"CREATE"`
@@ -216,6 +228,10 @@ type AlterTableOptions struct {
 	DropAllRowAccessPolicies   *bool                           `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
 	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicy    `ddl:"keyword"`
 	DropStorageLifecyclePolicy *bool                           `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
+	SetAggregationPolicy       *TableSetAggregationPolicy      `ddl:"keyword"`
+	UnsetAggregationPolicy     *TableUnsetAggregationPolicy    `ddl:"keyword"`
+	SetJoinPolicy              *TableSetJoinPolicy             `ddl:"keyword"`
+	UnsetJoinPolicy            *TableUnsetJoinPolicy           `ddl:"keyword"`
 }
 
 type TableClusteringAction struct {
@@ -437,6 +453,27 @@ type TableDropAndAddRowAccessPolicy struct {
 type TableStorageLifecyclePolicy struct {
 	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ADD STORAGE LIFECYCLE POLICY"`
 	On                     []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
+}
+
+type TableSetAggregationPolicy struct {
+	set               bool                   `ddl:"static" sql:"SET"`
+	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
+	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
+	Force             *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetAggregationPolicy struct {
+	unsetAggregationPolicy bool `ddl:"static" sql:"UNSET AGGREGATION POLICY"`
+}
+
+type TableSetJoinPolicy struct {
+	set        bool                   `ddl:"static" sql:"SET"`
+	JoinPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
+	Force      *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetJoinPolicy struct {
+	unsetJoinPolicy bool `ddl:"static" sql:"UNSET JOIN POLICY"`
 }
 
 // DropTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.

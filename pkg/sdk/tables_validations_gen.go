@@ -95,6 +95,16 @@ func (opts *CreateTableOptions) validate() error {
 			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
 		}
 	}
+	if valueSet(opts.AggregationPolicy) {
+		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.AggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.JoinPolicy) {
+		if !ValidObjectIdentifier(opts.JoinPolicy.JoinPolicy) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.JoinPolicy", "JoinPolicy"))
+		}
+	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
 			if !ValidObjectIdentifier(tag.Name) {
@@ -175,8 +185,8 @@ func (opts *AlterTableOptions) validate() error {
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "SwapWith"))
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy) {
-		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy) {
+		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ClusteringAction) {
@@ -311,6 +321,16 @@ func (opts *AlterTableOptions) validate() error {
 		}
 		if !valueSet(opts.AddStorageLifecyclePolicy.On) {
 			errs = append(errs, errNotSet("AlterTableOptions.AddStorageLifecyclePolicy", "On"))
+		}
+	}
+	if valueSet(opts.SetAggregationPolicy) {
+		if !ValidObjectIdentifier(opts.SetAggregationPolicy.AggregationPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.SetAggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.SetJoinPolicy) {
+		if !ValidObjectIdentifier(opts.SetJoinPolicy.JoinPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.SetJoinPolicy", "JoinPolicy"))
 		}
 	}
 	return JoinErrors(errs...)

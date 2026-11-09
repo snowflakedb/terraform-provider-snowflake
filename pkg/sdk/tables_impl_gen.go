@@ -243,6 +243,18 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 			On:   r.RowAccessPolicy.On,
 		}
 	}
+	if r.AggregationPolicy != nil {
+		opts.AggregationPolicy = &TableAggregationPolicy{
+			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
+			EntityKey:         r.AggregationPolicy.EntityKey,
+		}
+	}
+	if r.JoinPolicy != nil {
+		opts.JoinPolicy = &TableJoinPolicy{
+			JoinPolicy:      r.JoinPolicy.JoinPolicy,
+			AllowedJoinKeys: r.JoinPolicy.AllowedJoinKeys,
+		}
+	}
 	return opts
 }
 
@@ -585,6 +597,18 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			On:                     r.AddStorageLifecyclePolicy.On,
 		}
 	}
+	if r.SetAggregationPolicy != nil {
+		opts.SetAggregationPolicy = r.SetAggregationPolicy.toOpts()
+	}
+	if r.UnsetAggregationPolicy != nil {
+		opts.UnsetAggregationPolicy = r.UnsetAggregationPolicy.toOpts()
+	}
+	if r.SetJoinPolicy != nil {
+		opts.SetJoinPolicy = r.SetJoinPolicy.toOpts()
+	}
+	if r.UnsetJoinPolicy != nil {
+		opts.UnsetJoinPolicy = r.UnsetJoinPolicy.toOpts()
+	}
 	return opts
 }
 
@@ -795,5 +819,32 @@ func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimization
 			opts.Drop.On = on
 		}
 	}
+	return opts
+}
+
+func (r *TableSetAggregationPolicyRequest) toOpts() *TableSetAggregationPolicy {
+	opts := &TableSetAggregationPolicy{
+		AggregationPolicy: r.AggregationPolicy,
+		EntityKey:         r.EntityKey,
+		Force:             r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetAggregationPolicyRequest) toOpts() *TableUnsetAggregationPolicy {
+	opts := &TableUnsetAggregationPolicy{}
+	return opts
+}
+
+func (r *TableSetJoinPolicyRequest) toOpts() *TableSetJoinPolicy {
+	opts := &TableSetJoinPolicy{
+		JoinPolicy: r.JoinPolicy,
+		Force:      r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetJoinPolicyRequest) toOpts() *TableUnsetJoinPolicy {
+	opts := &TableUnsetJoinPolicy{}
 	return opts
 }

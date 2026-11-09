@@ -169,8 +169,12 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   A struct this definition owns is an `AttrObject` with `Children` and `ObjectParameter()`. The generated struct is named
   after the object and the attribute (`Table` and `row_access_policy` give `TableRowAccessPolicy`). Other operations refer
   to that type. A `SqlOnly` child of it can be an identifier (`IdentifierKeyword`) or a value keyword (`ValueKeyword`: an
-  enum, a string, a list of strings, or a list of objects). `QueryStructFromAttribute` builds that struct for a handwritten
-  ALTER field so tables and iceberg tables can share it. `ObjectParameter` joins nested fields without commas; `Commas()`
+  enum, a string, a list of strings, or a list of objects). `QueryStructFromAttribute` builds the CREATE struct for a
+  handwritten ALTER field so tables and iceberg tables can share it. `QueryStructFromAttributeUse` builds the SET or UNSET
+  projection of the same attribute: SET and UNSET children set `SetSql` or `UnsetSql`, shared children set both `CreateSql`
+  and `SetSql` to the same clause, and `FieldName` on the parent's SET/UNSET object clause names the generated struct
+  (`TableSetAggregationPolicy`). SET/UNSET here are sibling ALTER actions (`SET AGGREGATION POLICY`), not fields of the
+  properties `SET` block. `ObjectParameter` joins nested fields without commas; `Commas()`
   keeps them. `ArrowEquals()` writes `=>`.
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
   object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
@@ -201,7 +205,9 @@ How an attribute models a collection or a nested object. The Terraform side (sch
     A nested struct is named after the object and the attribute, never the statement, so CREATE and ALTER SET that use the same
     attribute share one struct and one Request type. The generator keeps the first definition of a name, and generation panics when
     the same name is defined twice with a different shape (this check runs for interfaces built from ssot).
-  - Each field's SQL is the `CreateSql` the child attribute already has, in `Children` order.
+  - Each field's SQL is the `CreateSql` the child attribute already has, in `Children` order. A SqlOnly object that is
+    also ALTER SET/UNSET uses `NestedSqlFieldsFor` so CREATE, SET, and UNSET keep different children. List elements stay
+    CREATE-only.
   - Provider-like alternatives are variants of the element: `WithVariants(Variant("S3", &a, &b, ...), ...)` lists, for each
     one, the attributes it consists of, as pointers, in SQL order. Exactly one variant is set. A child that is in no variant
     is a field of the element itself.

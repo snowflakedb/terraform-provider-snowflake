@@ -616,7 +616,7 @@ func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
-	got := queryStructFromObject("Table", attr)
+	got := QueryStructFromAttribute("Table", attr)
 	want := NewQueryStruct("TableClusteringAction").
 		PredefinedQueryStructField("ClusterBy", "[]string", KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 		OptionalQueryStructField("Recluster",
@@ -667,6 +667,83 @@ func Test_queryStructFromObject_tableSearchOptimizationAction(t *testing.T) {
 					KeywordOptions().SQL("ON")),
 			ListOptions().NoComma()).
 		WithValidation(ExactlyOneValueSet, "Add", "Drop")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableAggregationPolicy(t *testing.T) {
+	attr := ssotdefs.TableCreateAttrs.AggregationPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	want := NewQueryStruct("TableAggregationPolicy").
+		Identifier("AggregationPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+		WithValidation(ValidIdentifier, "AggregationPolicy").
+		ListAssignment("ENTITY KEY", "Column", ParameterOptions().NoEquals().Parentheses())
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableJoinPolicy(t *testing.T) {
+	attr := ssotdefs.TableCreateAttrs.JoinPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	want := NewQueryStruct("TableJoinPolicy").
+		Identifier("JoinPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("JOIN POLICY").Required()).
+		WithValidation(ValidIdentifier, "JoinPolicy").
+		ListAssignment("ALLOWED JOIN KEYS", "Column", ParameterOptions().NoEquals().Parentheses())
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableSetAggregationPolicy(t *testing.T) {
+	attr := ssotdefs.TableAggregationPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseSet)
+	want := NewQueryStruct("TableSetAggregationPolicy").
+		SQL("SET").
+		Identifier("AggregationPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+		WithValidation(ValidIdentifier, "AggregationPolicy").
+		ListAssignment("ENTITY KEY", "Column", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("FORCE")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableUnsetAggregationPolicy(t *testing.T) {
+	attr := ssotdefs.TableAggregationPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseUnset)
+	want := NewQueryStruct("TableUnsetAggregationPolicy").
+		SQL("UNSET AGGREGATION POLICY")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableSetJoinPolicy(t *testing.T) {
+	attr := ssotdefs.TableJoinPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseSet)
+	want := NewQueryStruct("TableSetJoinPolicy").
+		SQL("SET").
+		Identifier("JoinPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("JOIN POLICY").Required()).
+		WithValidation(ValidIdentifier, "JoinPolicy").
+		OptionalSQL("FORCE")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableUnsetJoinPolicy(t *testing.T) {
+	attr := ssotdefs.TableJoinPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseUnset)
+	want := NewQueryStruct("TableUnsetJoinPolicy").
+		SQL("UNSET JOIN POLICY")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
 

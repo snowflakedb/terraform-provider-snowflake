@@ -296,7 +296,9 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 		return
 	}
 	// The fields of an object element carry their own CREATE clause when the element has an object clause.
-	sqlFields := (attr.IsObjectList() && attr.Elem.CreateSql.Kind == SqlKindObject) || (attr.Type == AttrObject && attr.CreateSql.Kind == SqlKindObject)
+	// A SqlOnly object may also project SET and UNSET from the same Children.
+	parentObjectClause := attr.CreateSql.Kind == SqlKindObject || attr.SetSql.Kind == SqlKindObject || attr.UnsetSql.Kind == SqlKindObject
+	sqlFields := (attr.IsObjectList() && attr.Elem.CreateSql.Kind == SqlKindObject) || (attr.Type == AttrObject && parentObjectClause)
 	seen := make(map[string]struct{}, len(fields))
 	for _, child := range fields {
 		if child.Name == "" {
@@ -309,14 +311,14 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
 			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
 		}
-		if child.SqlOnly {
-			validateSqlClause(obj, child, "CREATE", child.CreateSql)
-		} else {
-			validateExplicitSqlClause(obj, child, "CREATE", child.CreateSql)
-		}
+		validateSqlClauses(obj, child)
 		if statement, ok := sqlClauseStatement(child); ok {
-			if !sqlFields || statement != "CREATE" || child.SetSql.Present || child.UnsetSql.Present {
+			if !sqlFields {
 				panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, statement))
+			}
+			if attr.IsObjectList() && (child.SetSql.Present || child.UnsetSql.Present) {
+				setOrUnset, _ := sqlClauseStatement(Attribute{SetSql: child.SetSql, UnsetSql: child.UnsetSql})
+				panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, setOrUnset))
 			}
 		}
 		validateCollectionBounds(obj, child)
@@ -331,16 +333,22 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 }
 
 // isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword,
-// an identifier, a parameter, or a nested struct.
+// an identifier, a parameter, or a nested struct. Any of CreateSql, SetSql, and UnsetSql may carry that shape.
 func isNestedSqlOnlyClause(child Attribute) bool {
-	switch child.CreateSql.Kind {
-	case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter:
-		return true
-	case SqlKindObject:
-		return child.Type == AttrObject
-	default:
-		return false
+	for _, clause := range []SqlClause{child.CreateSql, child.SetSql, child.UnsetSql} {
+		if !clause.Present {
+			continue
+		}
+		switch clause.Kind {
+		case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter:
+			return true
+		case SqlKindObject:
+			if child.Type == AttrObject {
+				return true
+			}
+		}
 	}
+	return false
 }
 
 // validateNestedShape allows two shapes for a nested block: an object, which is a single block, and a list or set whose Elem
@@ -986,6 +994,9 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 }
 
 func requireCreateOnlyClause(obj Object, attr Attribute, statement string, clause SqlClause) {
+	if clause.Kind == SqlKindStatic {
+		return
+	}
 	if statement != "CREATE" {
 		panic(fmt.Sprintf("object %q: attribute %q %s clause is CREATE only", obj.Name, attr.Name, clause.Kind))
 	}

@@ -156,3 +156,85 @@ var TableSearchOptimizationAction = ssot.Attribute{
 		},
 	},
 }
+
+var (
+	tableAggregationPolicyIdentifier = ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("AGGREGATION POLICY"), ssot.Required(), ssot.FieldName("AggregationPolicy"))
+	tableAggregationPolicyEntityKey  = ssot.ListParameter("Column", ssot.Sql("ENTITY KEY"), ssot.NoEquals())
+	tableJoinPolicyIdentifier        = ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("JOIN POLICY"), ssot.Required(), ssot.FieldName("JoinPolicy"))
+)
+
+// TableAggregationPolicy is CREATE ... AGGREGATION POLICY and ALTER ... SET/UNSET AGGREGATION POLICY.
+// Iceberg CREATE reuses the CREATE struct; iceberg ALTER reuses the SET and UNSET projections.
+var TableAggregationPolicy = ssot.Attribute{
+	Name:      "aggregation_policy",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(),
+	SetSql:    ssot.ObjectParameter(ssot.FieldName("SetAggregationPolicy")),
+	UnsetSql:  ssot.ObjectParameter(ssot.FieldName("UnsetAggregationPolicy")),
+	Children: []ssot.Attribute{
+		{Name: "set", SqlOnly: true, SetSql: ssot.StaticSQL("set", "SET")},
+		{
+			Name:           "aggregation_policy",
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
+			Required:       true,
+			SqlOnly:        true,
+			CreateSql:      tableAggregationPolicyIdentifier,
+			SetSql:         tableAggregationPolicyIdentifier,
+		},
+		{
+			Name:      "entity_key",
+			Type:      ssot.AttrList,
+			SqlOnly:   true,
+			Elem:      &ssot.Attribute{Type: ssot.AttrString},
+			CreateSql: tableAggregationPolicyEntityKey,
+			SetSql:    tableAggregationPolicyEntityKey,
+		},
+		{
+			Name:    "force",
+			Type:    ssot.AttrBool,
+			SqlOnly: true,
+			SetSql:  ssot.BoolKeyword(ssot.Sql("FORCE")),
+		},
+		{Name: "unset_aggregation_policy", SqlOnly: true, UnsetSql: ssot.StaticSQL("unsetAggregationPolicy", "UNSET AGGREGATION POLICY")},
+	},
+}
+
+// TableJoinPolicy is CREATE ... JOIN POLICY and ALTER ... SET/UNSET JOIN POLICY.
+// ALLOWED JOIN KEYS is documented on CREATE TABLE and in an ALTER TABLE example, but not in the ALTER TABLE syntax.
+// Iceberg ALTER reuses the SET and UNSET projections.
+var TableJoinPolicy = ssot.Attribute{
+	Name:      "join_policy",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(),
+	SetSql:    ssot.ObjectParameter(ssot.FieldName("SetJoinPolicy")),
+	UnsetSql:  ssot.ObjectParameter(ssot.FieldName("UnsetJoinPolicy")),
+	Children: []ssot.Attribute{
+		{Name: "set", SqlOnly: true, SetSql: ssot.StaticSQL("set", "SET")},
+		{
+			Name:           "join_policy",
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
+			Required:       true,
+			SqlOnly:        true,
+			CreateSql:      tableJoinPolicyIdentifier,
+			SetSql:         tableJoinPolicyIdentifier,
+		},
+		{
+			Name:      "allowed_join_keys",
+			Type:      ssot.AttrList,
+			SqlOnly:   true,
+			Elem:      &ssot.Attribute{Type: ssot.AttrString},
+			CreateSql: ssot.ListParameter("Column", ssot.Sql("ALLOWED JOIN KEYS"), ssot.NoEquals()),
+		},
+		{
+			Name:    "force",
+			Type:    ssot.AttrBool,
+			SqlOnly: true,
+			SetSql:  ssot.BoolKeyword(ssot.Sql("FORCE")),
+		},
+		{Name: "unset_join_policy", SqlOnly: true, UnsetSql: ssot.StaticSQL("unsetJoinPolicy", "UNSET JOIN POLICY")},
+	},
+}
