@@ -93,7 +93,31 @@ var ShowTableSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
+	"is_hybrid": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"is_iceberg": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
 	"is_dynamic": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"is_immutable": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"is_interactive": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"row_timestamp": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"error_logging": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
@@ -134,7 +158,13 @@ func TableToSchema(table *sdk.Table) map[string]any {
 	tableSchema["enable_schema_evolution"] = table.EnableSchemaEvolution
 	tableSchema["owner_role_type"] = table.OwnerRoleType
 	tableSchema["is_event"] = table.IsEvent
+	tableSchema["is_hybrid"] = table.IsHybrid
+	tableSchema["is_iceberg"] = table.IsIceberg
 	tableSchema["is_dynamic"] = table.IsDynamic
+	tableSchema["is_immutable"] = table.IsImmutable
+	tableSchema["is_interactive"] = table.IsInteractive
+	tableSchema["row_timestamp"] = table.RowTimestamp
+	tableSchema["error_logging"] = table.ErrorLogging
 	if table.Budget != nil {
 		tableSchema["budget"] = (*table.Budget)
 	}

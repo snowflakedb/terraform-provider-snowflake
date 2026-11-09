@@ -325,7 +325,13 @@ var (
 	tableShowEnableSchemaEvolution      = tableShowBool("enable_schema_evolution", "Y")
 	tableShowOwnerRoleType              = tableShowString("owner_role_type", true, false)
 	tableShowIsEvent                    = tableShowBool("is_event", "Y")
+	tableShowIsHybrid                   = tableShowBool("is_hybrid", "Y")
+	tableShowIsIceberg                  = tableShowBool("is_iceberg", "Y")
 	tableShowIsDynamic                  = tableShowBool("is_dynamic", "Y")
+	tableShowIsImmutable                = tableShowBool("is_immutable", "Y")
+	tableShowIsInteractive              = tableShowBool("is_interactive", "Y")
+	tableShowRowTimestamp               = tableShowBool("row_timestamp", "ON")
+	tableShowErrorLogging               = tableShowBool("error_logging", "ON")
 	tableShowBudget                     = tableShowString("budget", true, true)
 )
 
@@ -338,6 +344,7 @@ var Table = ssot.Object{
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
 		ssot.WithSdk(
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
 			ssot.SdkDrop(
@@ -402,7 +409,13 @@ var Table = ssot.Object{
 			&tableShowEnableSchemaEvolution,
 			&tableShowOwnerRoleType,
 			&tableShowIsEvent,
+			&tableShowIsHybrid,
+			&tableShowIsIceberg,
 			&tableShowIsDynamic,
+			&tableShowIsImmutable,
+			&tableShowIsInteractive,
+			&tableShowRowTimestamp,
+			&tableShowErrorLogging,
 			&tableShowBudget,
 		},
 	},

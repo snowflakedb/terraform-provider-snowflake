@@ -56,15 +56,23 @@ func TestInt_Table(t *testing.T) {
 	assertTable := func(t *testing.T, table *sdk.Table, id sdk.SchemaObjectIdentifier) {
 		t.Helper()
 		assert.Equal(t, id, table.ID())
-		assert.NotEmpty(t, table.CreatedOn)
-		assert.Equal(t, id.Name(), table.Name)
-		assert.Equal(t, testClientHelper().Ids.DatabaseId().Name(), table.DatabaseName)
-		assert.Equal(t, testClientHelper().Ids.SchemaId().Name(), table.SchemaName)
-		assert.Equal(t, "TABLE", table.Kind)
-		assert.False(t, table.IsDynamic)
-		assert.Equal(t, 0, table.Rows)
-		assert.Equal(t, "ACCOUNTADMIN", table.Owner)
-		assert.Equal(t, "ROLE", table.OwnerRoleType)
+		assertThatObject(t, objectassert.TableFromObject(t, table).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+			HasKind("TABLE").
+			HasRows(0).
+			HasOwner("ACCOUNTADMIN").
+			HasOwnerRoleType("ROLE").
+			HasIsEvent(false).
+			HasIsHybrid(false).
+			HasIsIceberg(false).
+			HasIsDynamic(false).
+			HasIsImmutable(false).
+			HasIsInteractive(false).
+			HasRowTimestamp(false).
+			HasErrorLogging(false))
 	}
 
 	assertTableTerse := func(t *testing.T, table *sdk.Table, id sdk.SchemaObjectIdentifier) {
@@ -118,8 +126,14 @@ func TestInt_Table(t *testing.T) {
 
 		table, err := client.Tables.ShowByID(ctx, dynamicID)
 		require.NoError(t, err)
-		assert.Equal(t, "TABLE", table.Kind)
-		assert.True(t, table.IsDynamic)
+		assertThatObject(t, objectassert.TableFromObject(t, table).
+			HasKind("TABLE").
+			HasIsDynamic(true).
+			HasIsHybrid(false).
+			HasIsIceberg(false).
+			HasIsEvent(false).
+			HasIsImmutable(false).
+			HasIsInteractive(false))
 	})
 
 	t.Run("create table: DECFLOAT", func(t *testing.T) {

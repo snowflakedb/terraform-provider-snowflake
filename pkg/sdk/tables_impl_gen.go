@@ -608,7 +608,13 @@ func (r tablesRow) convert() (*Table, error) {
 	mapNullStringToRequiredBool(&result.EnableSchemaEvolution, r.EnableSchemaEvolution)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToRequiredBool(&result.IsEvent, r.IsEvent)
+	mapNullStringToRequiredBool(&result.IsHybrid, r.IsHybrid)
+	mapNullStringToRequiredBool(&result.IsIceberg, r.IsIceberg)
 	mapNullStringToRequiredBool(&result.IsDynamic, r.IsDynamic)
+	mapNullStringToRequiredBool(&result.IsImmutable, r.IsImmutable)
+	mapNullStringToRequiredBool(&result.IsInteractive, r.IsInteractive)
+	mapNullStringToRequiredBoolValue(&result.RowTimestamp, r.RowTimestamp, "ON")
+	mapNullStringToRequiredBoolValue(&result.ErrorLogging, r.ErrorLogging, "ON")
 	mapNullString(&result.Budget, r.Budget)
 	return result, nil
 }
