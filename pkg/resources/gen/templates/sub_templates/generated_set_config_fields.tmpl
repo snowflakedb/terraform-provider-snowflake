@@ -3,7 +3,11 @@ func {{ .Prefix }}SetConfigFields(d *tfschema.ResourceData, obj *sdk.{{ .ShowObj
 {{- if .ConfigFieldSets }}
 	return errors.Join(
 {{- range .ConfigFieldSets }}
+{{- if .List }}
+		setListKeepingNull(d, {{ printf "%q" .Name }}, {{ .Expr }}),
+{{- else }}
 		d.Set({{ printf "%q" .Name }}, {{ .Expr }}),
+{{- end }}
 {{- end }}
 	)
 {{- else }}

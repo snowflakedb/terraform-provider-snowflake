@@ -65,7 +65,7 @@ func Test_configFieldSets(t *testing.T) {
 		{Name: "comment", Expr: "obj.Comment"},
 		{Name: "min_nodes", Expr: "obj.MinNodes"},
 		{Name: "warehouse_size", Expr: "obj.Size"},
-		{Name: "backup_instance_families", Expr: "obj.BackupInstanceFamilies"},
+		{Name: "backup_instance_families", Expr: "obj.BackupInstanceFamilies", List: true},
 		{Name: "resource_monitor", Expr: "obj.ResourceMonitor.FullyQualifiedName()"},
 		{Name: "enabled", Expr: "obj.Enabled"},
 	}, model.ConfigFieldSets())
@@ -93,6 +93,7 @@ func Test_setConfigFields_template(t *testing.T) {
 		require.Contains(t, got, `d.Set("comment", obj.Comment),`)
 		require.Contains(t, got, `d.Set("warehouse_size", obj.Size),`)
 		require.Contains(t, got, `d.Set("resource_monitor", obj.ResourceMonitor.FullyQualifiedName()),`)
+		require.Contains(t, got, `setListKeepingNull(d, "backup_instance_families", obj.BackupInstanceFamilies),`)
 		require.NotContains(t, got, "var resourceMonitor")
 		call := renderTemplate(t, "setConfigFields", model)
 		require.Contains(t, call, "poolSetConfigFields(d, pool),")

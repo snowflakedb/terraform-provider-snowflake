@@ -16,13 +16,18 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -579,6 +584,57 @@ func TestAcc_ComputePool_CompleteUseCase(t *testing.T) {
 				ResourceName:             modelCompleteWithApplicationName.ResourceReference(),
 				ImportState:              true,
 				ImportStateKind:          resource.ImportBlockWithID,
+			},
+		},
+	})
+}
+
+func TestAcc_ComputePool_BackupInstanceFamiliesNotSet_NoChangeOnRefresh(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	modelBasic := model.ComputePool("test", id.Name(), string(sdk.ComputePoolInstanceFamilyCpuX64S), 1, 1).
+		WithInitiallySuspended("true")
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ComputePoolResource))
+	ref := modelBasic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ComputePool),
+		Steps: []resource.TestStep{
+			// create with the previous provider version
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.22.0"),
+				Config:            accconfig.FromModels(t, providerModel, modelBasic),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(ref, tfjsonpath.New("backup_instance_families"), knownvalue.Null()),
+				},
+			},
+			// the previous provider version reports a drift
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.22.0"),
+				Config:            accconfig.FromModels(t, providerModel, modelBasic),
+				PlanOnly:          true,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						planchecks.ExpectDrift(ref, "backup_instance_families", nil, sdk.String("[]")),
+					},
+				},
+			},
+			// the drift is gone after the upgrade
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, providerModel, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(ref, tfjsonpath.New("backup_instance_families"), knownvalue.Null()),
+				},
 			},
 		},
 	})

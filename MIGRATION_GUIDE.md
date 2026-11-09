@@ -68,6 +68,14 @@ No configuration changes are required. If you worked around the crash by creatin
 
 Reference: [#5365](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5365).
 
+### *(bug fix)* `snowflake_compute_pool` no longer reports `backup_instance_families` as changed after create
+
+Previously, after [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) created a pool without `backup_instance_families`, every `terraform plan -refresh-only` reported `+ backup_instance_families = []` until the next `terraform apply`, although nothing changed in Snowflake.
+
+The provider now leaves `backup_instance_families` unset in state when Snowflake returns no backup instance families and the state holds none. Backup instance families added or removed outside Terraform are still detected.
+
+No configuration changes are required.
+
 ## v2.22.x ➞ v2.23.0
 
 ### *(breaking change)* `snowflake_alert` reworked
