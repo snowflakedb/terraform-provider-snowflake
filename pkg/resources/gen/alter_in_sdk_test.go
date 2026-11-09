@@ -206,7 +206,8 @@ func Test_ModelFromInputObject_alterStatementsFollowDeclarationOrder(t *testing.
 	// The main group is sent where it is declared.
 	model := newModel(ssot.AlterSet(ssot.AlterGroup(ssot.MainAlterGroup, &comment), ssot.AlterGroup("Body", &body)))
 	require.Equal(t, []string{"set", "setBody"}, model.Set)
-	require.Equal(t, []string{"unset"}, model.Unset)
+	// An object whose ALTER spec has no UNSET block has no unset request, because the SDK has no such type.
+	require.Empty(t, model.Unset)
 
 	// A block of named groups only still has the main request, last, for the parameters.
 	model = newModel(ssot.AlterSet(ssot.AlterGroup("Body", &body), ssot.AlterGroup("Comment", &comment)))

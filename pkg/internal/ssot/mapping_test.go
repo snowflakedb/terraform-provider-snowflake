@@ -106,3 +106,11 @@ func Test_UpdateCall_booleanStringSetOnly(t *testing.T) {
 		UpdateCall{Helper: "booleanStringAttributeUpdateSetOnly", Set: true, Fields: true},
 		BooleanStringAttributeUpdateSetOnly.UpdateCall("Widget", Attribute{Name: "enabled"}))
 }
+
+func Test_UpdateCall_setOnlyFieldsStyle(t *testing.T) {
+	call := StringAttributeUpdateSetOnlyNotEmpty("SetBody").UpdateCall("ProjectionPolicy", Attribute{Name: "body"})
+	require.Equal(t, UpdateCall{Helper: "stringAttributeUpdateSetOnlyNotEmpty", Set: true, Fields: true, Field: "SetBody"}, call)
+
+	call = BooleanStringAttributeUnsetFallbackUpdate(true).UpdateCall("ExternalVolume", Attribute{Name: "allow_writes"})
+	require.Equal(t, UpdateCall{Helper: "booleanStringAttributeUnsetFallbackUpdate", Set: true, Fields: true, Mapper: "true"}, call)
+}

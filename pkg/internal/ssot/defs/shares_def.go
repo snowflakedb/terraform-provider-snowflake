@@ -222,19 +222,17 @@ var Share = ssot.Object{
 			&ShareAttrs.Comment,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&ShareAttrs.Accounts,
-		&ShareAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		&ShareAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterKeywordBlock("Add", "ADD", &shareAddAccounts),
 			ssot.AlterKeywordBlock("Remove", "REMOVE", &shareRemoveAccounts),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&ShareAttrs.Accounts,
+				&ShareAttrs.Comment,
+			),
+			ssot.AlterUnset(
+				&ShareAttrs.Comment,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		},

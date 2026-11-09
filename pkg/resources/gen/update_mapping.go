@@ -48,6 +48,12 @@ func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceA
 			}
 			continue
 		}
+		if call.Set && obj.HasAlterSpec() && !obj.HasAlterSetBlock() {
+			panic(fmt.Sprintf("object %q: attribute %q is updated with SET, but the ALTER spec has no SET block", objectName, src[i].Name))
+		}
+		if call.Unset && obj.HasAlterSpec() && !obj.HasAlterUnsetBlock() {
+			panic(fmt.Sprintf("object %q: attribute %q is updated with UNSET, but the ALTER spec has no UNSET block, so give it a set-only UpdateMapping or SkipUpdate", objectName, src[i].Name))
+		}
 		setRequest := "set" + groupOf(setGroups, src[i])
 		unsetRequest := "unset" + groupOf(unsetGroups, src[i])
 		dst[i].UpdateCall = &UpdateCall{Helper: call.Helper, Target: updateTarget(call, src[i], setRequest, unsetRequest)}
@@ -86,6 +92,9 @@ func groupOf(groups []ssot.AlterGroupSpec, attr ssot.Attribute) string {
 // takes pointers.
 func updateTarget(call ssot.UpdateCall, attr ssot.Attribute, setRequest, unsetRequest string) string {
 	goName := genhelpers.SnakeCaseToCamel(attr.Name)
+	if call.Field != "" {
+		goName = call.Field
+	}
 	setter := func(request string) string {
 		if call.Fields {
 			return "&" + request + "." + goName
@@ -138,7 +147,9 @@ func deduceUpdateCall(objectName string, src ssot.Attribute, resolved ResourceAt
 		return ssot.BooleanStringAttributeUpdateSetOnly.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault":
 		return ssot.BooleanStringAttributeUpdateBuilder.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrString && !setOnly:
+	case src.Type == ssot.AttrString && setOnly:
+		return ssot.StringAttributeUpdateSetOnlyNotEmpty(src.SetSql.Field).UpdateCall(objectName, src), true
+	case src.Type == ssot.AttrString:
 		return ssot.StringAttributeUpdateBuilder.UpdateCall(objectName, src), true
 	case src.Type == ssot.AttrEnum && resolved.EnumName != "" && !setOnly:
 		return ssot.AttributeMappedValueUpdate("sdk.To"+resolved.EnumName).UpdateCall(objectName, src), true

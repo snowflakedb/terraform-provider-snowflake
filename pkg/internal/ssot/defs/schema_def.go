@@ -105,19 +105,17 @@ var Schema = ssot.Object{
 			ssot.Tags,
 		},
 	},
-	Set: []*ssot.Attribute{
-		ssot.Parameters,
-		&SchemaAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		ssot.Parameters,
-		&SchemaAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterRenameTo(),
 		ssot.AlterSwapWith(),
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			ssot.Parameters,
+			&SchemaAttrs.Comment,
+		),
+		ssot.AlterUnset(
+			ssot.Parameters,
+			&SchemaAttrs.Comment,
+		),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 		ssot.AlterKeyword("ENABLE MANAGED ACCESS"),
@@ -181,6 +179,7 @@ var Schema = ssot.Object{
 		// Generated hierarchy rename has no database-object path.
 		ssot.WithHierarchyRename(ssot.ExtCall()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		// Describe is best-effort and its output is a list, so the ext sets it.
