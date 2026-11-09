@@ -31,10 +31,12 @@ generators will follow. Ultimately, all the generators should default to using s
   `ExactlyOneOf`. SDK CREATE adds `AtLeastOneValueSet` over the Go fields of a group that is entirely in `Create.Clauses`.
   A custom operation that includes every attribute of a group gets the same check. The schema-side `AtLeastOneOf` is not
   generated from it.
-- `Alter.SetConflictingFields` - pairs of `Set` attributes that cannot be set together. The SET struct gets `ConflictingFields`
-  for each pair, with the Go field names of the clauses.
-- `UnsetConflicts` - groups of `Unset` attributes that cannot be set together. Each group has at least two attributes from
-  `Unset`. SDK UNSET adds `ConflictingFields` for the group.
+- `Alter.SetConflictingFields` - pairs of SET attributes that cannot be set together. The SET struct gets `ConflictingFields`
+  for each pair, with the Go field names of the clauses. A pair sits in different groups of the SET block.
+- `UnsetConflicts` - groups of UNSET attributes that cannot be set together. Each group has at least two attributes from
+  the UNSET block. SDK UNSET adds `ConflictingFields` for the group, and its members sit in different groups of the UNSET block.
+- `Alter.Clauses` SET and UNSET blocks - `ssot.AlterSet(...)` and `ssot.AlterUnset(...)` take the attributes of the block, or
+  `ssot.AlterGroup(...)` values when Snowflake needs several ALTER statements. See [ALTER statements](#alter-statements).
 - `AdditionalEnums` - SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field the
   resource validates but the SQL does not send. They are emitted with the enums the object refers to, which
   `SdkDefineFromSsot()` needs so the hand-written SDK definition has nothing left to list
@@ -381,7 +383,7 @@ enable nothing.
   on each element. It does not spell a list that comes before its keyword. `Reverse()` on that list parameter prints the values first, such as `ADD "db1" TO ALLOWED_DATABASES`. The Go field name still comes from the SQL text (`ToAllowedDatabases`). `FieldName` sets a different Go name and leaves the SQL text as the prefix. An empty SQL text with `FieldName` omits the prefix. A list without `FieldName` still takes an empty text as the uppercase attribute name. `AlterKeywordList(field, sql, itemType)` is a keyword list in parentheses with no comma and no identifier
   check, such as `MODIFY CONDITION EXISTS`. `AlterPlainText(field, sql)` is an optional unquoted value with no equals, such as
   `MODIFY ACTION`. `SdkAlterAdditionalValidations()` marks the ALTER query struct. `RenameTo` and `SwapWith` use the
-  object's `IdType` and get `ValidIdentifierIfSet`. `Set` and `Unset` are the fields inside those blocks. [`Tags`](attribute.go) is the
+  object's `IdType` and get `ValidIdentifierIfSet`. The attributes of the SET and UNSET blocks are passed to `AlterSet` and `AlterUnset`, directly or in groups. [`Tags`](attribute.go) is the
   optional `TAG` clause and belongs on `Create.Clauses`, not on `KeywordsBefore`. [`Parameters`](attribute.go) spreads
   the parameter catalog for `ParameterLevel()`. `ShowParametersDetailsAdditionalLevels` adds parameters from more levels
   onto `ShowParametersDetails`. ALTER SET and UNSET stay `ParameterLevel()`. The union is emitted in catalog order, and a name already present is kept once. CREATE does not
@@ -391,7 +393,7 @@ enable nothing.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
   and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
-  functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of `Unset`
+  functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of the UNSET block
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
   keyword.
@@ -407,7 +409,7 @@ enable nothing.
   [Lists and nested objects](#lists-and-nested-objects). A `Clause(...)` on a child takes `Sql`, `Required`, `FieldName(name)`
   for the Go field name, and `EnumOf(enum)`. An identifier child with a parameter clause is quoted text. `AllowEmpty()` on a
   string parameter makes the SDK field `StringAllowEmpty`, which takes an empty string and quotes itself, so SET can clear it.
-  A SET block that changes part of a nested struct is a `SqlOnly` object in `Set` with a `SetSql` object clause and the changed
+  A SET block that changes part of a nested struct is a `SqlOnly` object in the SET block with a `SetSql` object clause and the changed
   fields as `Children`.
   When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. A variant does not set `SdkCreate()` or `SdkAlter()`. Calling either on a variant panics. `SdkCreateForVariants()` emits
   each variant CREATE as a method on the base interface. The variant fills `Create` (`Doc`, clauses,
@@ -621,6 +623,34 @@ and requests containing slices remain supported. SET runs before UNSET; either f
 and marks partial state when `HasPartialOnUpdate` is set. Keep `ExtCall` for suspend-aware alters, additional
 operations, custom diagnostics, or request names that differ from the object name. Omit UNSET for SET-only objects.
 
+##### ALTER statements
+
+`ssot.AlterSet(...)` and `ssot.AlterUnset(...)` in `Alter.Clauses` take the attributes of the block in one of two forms:
+
+```go
+// One ALTER statement sends every attribute: pass the attributes.
+ssot.AlterSet(&WidgetAttrs.Size, &WidgetAttrs.Comment, ssot.Parameters)
+
+// Snowflake needs several statements: enclose every attribute in a group.
+ssot.AlterSet(
+    ssot.AlterGroup("ObjectLists", &WidgetAttrs.ObjectTypes, &WidgetAttrs.AllowedDatabases),
+    ssot.AlterGroup(ssot.MainAlterGroup, &WidgetAttrs.Comment, &WidgetAttrs.Schedule),
+)
+```
+
+The two forms cannot be mixed in one call. Attributes passed directly are one main group. Each `ssot.AlterGroup(name, ...)` is one ALTER statement:
+
+- `ssot.MainAlterGroup` as the name is the main group. It is the `set` (`unset`) request of the ext file, and the generated update also sends the parameters and every attribute that no group holds with it. A block has at most one main group. A block without one still gets an empty `set` (`unset`) request, sent last.
+- Any other name is a Go identifier that starts with a capital letter, such as `Body`. The request field is `set<Name>` (`unset<Name>`), such as `setBody`.
+
+A block sends its groups in declaration order and skips a group with no values. Declare a group order that respects what Snowflake requires: a group that must run first goes first.
+
+`Object.SetAttributes()` and `Object.UnsetAttributes()` are the union of the groups in declaration order. The SDK SET and UNSET structs hold all of them, so a caller can still send several attributes in one request. The split is declared, not derived: an `Alter.SetConflictingFields` pair and an `UnsetConflicts` group must not share a group, because one statement cannot hold both. Group when a probe or the public page shows that Snowflake rejects the attributes in one statement, and record that in the definition comment. Validation rejects a block that mixes attributes and groups, a group name that is not an exported Go identifier or is repeated, more than one main group, an empty group, an attribute in two groups, and a conflicting pair in one group.
+
+An object that has not moved yet lists its attributes in `Object.Set` and `Object.Unset`, keeps `ssot.AlterSet()` and `ssot.AlterUnset()` without items, and gets one main statement. Validation rejects an object that declares both forms for the same block. TODO [next PRs]: remove `Set` and `Unset`.
+
+The request struct in the ext file has one field per group, named `set<Name>` or `unset<Name>` (`setBody`, `unsetSchedule`, `setObjectLists`), next to `set` and `unset`. A missing field is a compile error in the generated code. `ApplySetUnset(Generated())` creates the requests and routes each attribute to the request of its group; an `ExtCall` `ApplySetUnset` fills them. `AlterSetInSdk(Generated())` and `AlterUnsetInSdk(Generated())` send the groups in order, skipping an empty request. Parameters stay in `set` and `unset`.
+
 `SetStateToValuesFromConfig` defaults to `Generated`. Read inlines the field names in `setStateToValuesFromConfig`.
 The names are optional attributes in `Attributes` order that the helper can copy: string (an optional bool, an enum,
 an identifier, or a float), int, and a set of string or int. An optional bool element is stored as a string, so a set
@@ -760,8 +790,8 @@ The old path for an object that is not opted in stays byte-identical. Do not edi
 
 Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 
-- Order is membership in a slice, and the slice order is the emission order. SHOW and DESCRIBE use `Columns`. CREATE uses [`CreateSpec`](object.go). ALTER uses [`AlterSpec`](object.go). `Set` and `Unset` are the fields inside those blocks.
-- `Set` is one struct. Snowflake can require two exclusive `SET` statements, and a statement that mixes them is a syntax error. Replication groups are that case: `OBJECT_TYPES` with the allowed-object lists is one statement, and `COMMENT`, `REPLICATION_SCHEDULE`, and `ERROR_INTEGRATION` are the other. SSOT still emits every `Set` attribute in the one struct. TODO [next PRs]: dedicated SET grouping that keeps those attributes ordinary.
+- Order is membership in a slice, and the slice order is the emission order. SHOW and DESCRIBE use `Columns`. CREATE uses [`CreateSpec`](object.go). ALTER uses [`AlterSpec`](object.go). The SET and UNSET blocks hold their attributes as groups.
+- The SET struct holds every SET attribute, but a statement that mixes two exclusive attributes is a syntax error. Replication groups are that case: `OBJECT_TYPES` with the allowed-object lists is one statement, and `COMMENT`, `REPLICATION_SCHEDULE`, and `ERROR_INTEGRATION` are the other. Declare the split as `AlterGroup` values in the SET block; the generated update sends each group on its own.
 - A new position or switch on a statement is a field of that statement's spec. `KeywordsBefore` is the CREATE field for clauses between `OR REPLACE` and the object words.
 - `KeywordsBefore` holds attributes. `TRANSIENT` is the `is_transient` attribute. An alter keyword that is not an attribute, such as `RESUME` or `STOP ALL`, is an `AlterKeyword` entry on `Alter.Clauses`.
 - A SQL constructor does not take an `Attribute`. Set the clause on the attribute. `ValidateObject` checks it while walking the object.
@@ -793,7 +823,7 @@ Until a piece has moved, do not assume it is already in ssot:
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
   handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
   object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
-  ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). `Set` and `Unset` are the statement order. A
+  ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). The SET and UNSET groups are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
   When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is
   off, they stay in the SDK def. When `SdkCustomInterfaceMethods()` is on, those declarations come from
@@ -818,8 +848,8 @@ Until a piece has moved, do not assume it is already in ssot:
   alias does not mean every enum is defined in ssot yet.
 
 These are the model, not missing coverage. Identity (`Name`, `IdType`, `IdentityNameForceNew`) is not an `Attribute`.
-A `Readonly` column must not sit on `Attributes`. It may still appear in `Set` or `Unset` when that SHOW column is also
-an ALTER field. A field in `Create`, `Set`, or `Unset` may be absent from `Attributes` when it is not a resource
+A `Readonly` column must not sit on `Attributes`. It may still appear in a SET or UNSET block when that SHOW column is also
+an ALTER field. A field in `Create`, or in a SET or UNSET block, may be absent from `Attributes` when it is not a resource
 attribute. A CREATE-only field is an `Attribute` and is absent from `Columns`.
 A paired-field option that ssot does not map panics. There is no silent fallback. `StoredAsText` is mapped for a bool
 with neither optional flag. Anything else panics. A list of enums is plain `[]string` in a SHOW row, and a slice of
@@ -851,7 +881,7 @@ the enum type in a details struct (also in its nested structs).
 #### Why Show and Describe columns are explicit
 
 `Attributes` is the resource schema sequence. `Create.KeywordsBefore` is the CREATE order between `OR REPLACE` and the
-object words. `Create.Clauses`, `Set`, and `Unset` are the SQL field order inside those statements. `Alter.Clauses` is the ALTER order
+object words. `Create.Clauses`, and the groups of the SET and UNSET blocks, are the SQL field order inside those statements. `Alter.Clauses` is the ALTER order
 after the name.
 `OutputSpec.Columns` is membership and Snowflake order for one operation.
 Presence in that slice is the only membership. The same `Attribute` var is pointed at from `Columns` so the snake_case
@@ -984,7 +1014,7 @@ When a public page shows ALTER and does not list SET, UNSET, or RENAME, those cl
 
 Each step enables one generator flag, or one operation setting inside `WithSdk()`. SHOW and DESCRIBE are separate settings of schema generation, object assertions, and show-output assertions. Regenerate with `--filter-object-names` after reading that generator's `--help`. `make generate-sdk` filters on `NamePlural`. The resource generator, model builders, resource assertions, and parameter assertions filter on `Name`. Snowflake object assertions, show-output assertions, and show-output schemas filter on `sdk.<Name>` for SHOW and `sdk.<Name>Details` for DESCRIBE. Do not edit `*_gen.go`. Extension files hold hook bodies and other custom code. A `-check` target restores uncommitted generated diffs, so run it only after those files are committed.
 
-1. **Definition.** Add `defs/<plural_snake_case>_def.go` and register the object in `All()`. Read an existing handwritten SDK definition first, as the paragraph above describes, including a closely related object's definition when this object has none. Registration runs `ValidateObject`, so the definition is valid with every generator still off. Attributes, [`Create`](object.go) / [`Alter`](object.go) clauses, and `Show` / `Describe` `Columns` may be filled before the generator that reads them is enabled. A `Readonly` SHOW or DESCRIBE column stays off `Attributes`. A writable output column is that same attribute. An explicit SQL clause is listed on that statement. Leave out a clause the current SQL helpers would misspell, and record it. `AlterList` emits a parentheses list with no equals after the SQL text. A list that comes before its keyword uses `Reverse()` on the list parameter. The values print first and the SQL text follows. No `Generators` entry yet. A dedicated CREATE and ALTER per role is another object in `All()`, as the variants paragraph describes. That object sets no generators.
+1. **Definition.** Add `defs/<plural_snake_case>_def.go` and register the object in `All()`. Read an existing handwritten SDK definition first, as the paragraph above describes, including a closely related object's definition when this object has none. Registration runs `ValidateObject`, so the definition is valid with every generator still off. Attributes, [`Create`](object.go) / [`Alter`](object.go) clauses, and `Show` / `Describe` `Columns` may be filled before the generator that reads them is enabled. A `Readonly` SHOW or DESCRIBE column stays off `Attributes`. A writable output column is that same attribute. An explicit SQL clause is listed on that statement. Leave out a clause the current SQL helpers would misspell, and record it. `AlterList` emits a parentheses list with no equals after the SQL text. A list that comes before its keyword uses `Reverse()` on the list parameter. The values print first and the SQL text follows. SET and UNSET attributes go to `ssot.AlterSet(...)` and `ssot.AlterUnset(...)`; enclose them in `ssot.AlterGroup(...)` values only when Snowflake rejects them in one statement, as [ALTER statements](#alter-statements) describes. No `Generators` entry yet. A dedicated CREATE and ALTER per role is another object in `All()`, as the variants paragraph describes. That object sets no generators.
 2. **SDK.** One operation at a time: `SdkCreate()`, `SdkShow()`, `SdkDrop()`, `SdkAlter()` (`make generate-sdk`). `SdkCreateForVariants()` and `SdkAlterForVariants()` are their own settings, one each, after the base CREATE and ALTER. Turning one on also removes the base clauses or the custom operation the variant now emits, and moves that operation's ext tests. A new object also sets `SdkDefineFromSsot()`. An existing handwritten SDK definition does not. It replaces that one operation with the matching `FromObject` call, as the paragraph above describes, and diffs the generated files. Show needs `Columns` first. Enabling show or describe without `Columns` panics. The generator does not add the interface to `Client`; that field and its constructor stay in `pkg/sdk/client.go`. Show emits `ObjectType()` as `ObjectType<Name>`. That constant, its plural, and the singular-to-plural map stay in `pkg/sdk/object_types.go`. `SdkShowOptionalIn` emits `IN` for account, database, and schema, and `SdkShowByIDIn` is the matching ShowByID filter. `SdkShowOptionalInAccount` emits only `IN ACCOUNT <account>`. `SdkShowOptionalExtendedIn` also emits application and application package. An empty ShowByID filter list emits `LIKE`. `SdkShowByIDNoFiltering()` emits ShowByID with no filter and cannot be combined with another filter. `SdkShowByIDPredicate` selects the FindFirst match: name, full id, account name, or name and account locator. Empty keeps the default, which is name, or full id for a schema object with arguments. When the public page omits `IF EXISTS`, probe the clause before leaving it out. `SdkDrop()` still emits `IF EXISTS`. Add an opt-out only after Snowflake rejects the clause. `SdkDropSafelyHook()` is for a pre-drop step the public page shows. Leave it off when the page shows none. `DropSafely` then drops directly. Write the SDK ext for hook bodies and the `*_ext_test.go` companion for the operation just enabled.
 3. **DESCRIBE.** When the published page lists columns, enable `SdkDescribe()` from that list. When the page has the command and no columns, use the uncommitted probe above, then enable `SdkDescribe()` from that output. `SdkDescribeDoc()` points at the page that shows the command. The default result is one value. A property-list result uses `DescribeRows` and `SdkDescribeMapping(SdkDescriptionMappingSlice)`, then `SdkDescribeDetails` and `SdkDescribeDetailsMethod()`. That path does not use `SdkDescribeDetailsFromIdentifier()`. When a columnar DESCRIBE omits `database_name` or `schema_name` and `ID()` needs them, add each with `SdkDescribePlainOnlyField` (`DatabaseName` or `SchemaName`, kind `string`) and turn on `SdkDescribeDetailsFromIdentifier()`. It is not a `Columns` entry. `convert` skips it. The generated `DescribeDetails` copies it from the identifier. `SchemaObjectIdentifier` allows both names. `DatabaseObjectIdentifier` allows `DatabaseName`. When every plain-only field is one of those, `additionalConvert` is not generated. A plain-only field outside that set is filled by `additionalConvert`. When the details struct has the identifier parts, the generator emits `ID()`. Otherwise write `ID()` in the SDK ext file. When the row already has every column `ID()` needs, the generator emits `ID()` from those fields. Do not write that method in the SDK ext file. Do not add plain-only fields for them. The test client `Describe` calls the SDK `Describe`.
 4. **Object assertions.** `WithObjectAssert(ObjectAssertShow())` (`make generate-snowflake-object-assertions`). `ObjectAssertDescribe()` is its own step, and only when describe columns exist. The generated show fetch calls `testClient.<Name>.Show`, which is `ShowByID`. The describe fetch calls `testClient.<Name>.Describe`. Each method has to exist on the test client or the assertion package does not compile. The details value needs `ID()`, from the DESCRIBE step: the row columns when they are present, or the plain-only fields when a column is missing. `WithNoIdentifiableObject()` is for a describe value that still has no `ID()`, such as a property-list row. Creating and dropping the object stays with the integration tests. `WithObjectParametersAssert()` (`make generate-snowflake-object-parameters-assertions`). It is a no-op until the [catalog](defs/parameters.go) has entries for `ParameterLevel()`, so it is on from the start.

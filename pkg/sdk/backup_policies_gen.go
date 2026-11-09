@@ -52,8 +52,8 @@ type BackupPolicySet struct {
 }
 
 type BackupPolicyUnset struct {
-	Comment         *bool `ddl:"keyword" sql:"COMMENT"`
 	Schedule        *bool `ddl:"keyword" sql:"SCHEDULE"`
+	Comment         *bool `ddl:"keyword" sql:"COMMENT"`
 	ExpireAfterDays *bool `ddl:"keyword" sql:"EXPIRE_AFTER_DAYS"`
 }
 

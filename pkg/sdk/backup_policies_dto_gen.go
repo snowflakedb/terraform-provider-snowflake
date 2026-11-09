@@ -37,8 +37,8 @@ type BackupPolicySetRequest struct {
 }
 
 type BackupPolicyUnsetRequest struct {
-	Comment         *bool
 	Schedule        *bool
+	Comment         *bool
 	ExpireAfterDays *bool
 }
 

@@ -102,8 +102,8 @@ func (r *AlterBackupPolicyRequest) toOpts() *AlterBackupPolicyOptions {
 	}
 	if r.Unset != nil {
 		opts.Unset = &BackupPolicyUnset{
-			Comment:         r.Unset.Comment,
 			Schedule:        r.Unset.Schedule,
+			Comment:         r.Unset.Comment,
 			ExpireAfterDays: r.Unset.ExpireAfterDays,
 		}
 	}

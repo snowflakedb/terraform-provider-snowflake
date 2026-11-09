@@ -726,8 +726,8 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 	}
 	addList(obj.Create.KeywordsBefore)
 	addList(obj.Create.Clauses)
-	addList(obj.Set)
-	addList(obj.Unset)
+	addList(obj.SetAttributes())
+	addList(obj.UnsetAttributes())
 	for _, enum := range obj.AdditionalEnums {
 		addEnum(enum)
 	}
@@ -941,8 +941,8 @@ func enumListItemQueryStructs(obj ssot.Object) []*QueryStruct {
 	}
 	add(obj.Create.KeywordsBefore)
 	add(obj.Create.Clauses)
-	add(obj.Set)
-	add(obj.Unset)
+	add(obj.SetAttributes())
+	add(obj.UnsetAttributes())
 	return out
 }
 
@@ -1063,10 +1063,10 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 }
 
 func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
-	setParams := parametersForStatement(obj, obj.Set, "SET")
+	setParams := parametersForStatement(obj, obj.SetAttributes(), "SET")
 	setStruct := NewQueryStruct(obj.Name + "Set")
 	setStruct.owner = obj.Name
-	setStruct = setStruct.appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
+	setStruct = setStruct.appendSqlSequenceParams(obj.SetAttributes(), attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
 	for _, pair := range obj.Alter.SetConflictingFields {
 		setStruct = setStruct.WithValidation(ConflictingFields, collections.Map(pair, func(attr *ssot.Attribute) string {
@@ -1085,8 +1085,8 @@ func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *Que
 }
 
 func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
-	unsetParams := parametersForStatement(obj, obj.Unset, "UNSET")
-	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.Unset, attributeSqlUnset, unsetParams)
+	unsetParams := parametersForStatement(obj, obj.UnsetAttributes(), "UNSET")
+	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.UnsetAttributes(), attributeSqlUnset, unsetParams)
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
 	for _, group := range obj.UnsetConflicts {
 		names := collections.Map(group, func(member *ssot.Attribute) string {

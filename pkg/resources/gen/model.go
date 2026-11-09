@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -42,6 +43,7 @@ type ResourceModel struct {
 	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
 	BeforeCreateSteps        BeforeCreateSteps
 	AfterCreateSteps         AfterCreateSteps
+	AlterStatements          AlterStatementsModel
 	*genhelpers.PreambleModel
 }
 
@@ -75,6 +77,44 @@ type BeforeCreateAdoptExisting struct {
 	Names []string
 	// ObjectWords is the lowercase object type for the log, such as schema.
 	ObjectWords string
+}
+
+// AlterStatementsModel lists the fields of the resource ext request struct that hold one ALTER statement each.
+// Set and Unset are in send order: the statements of the SSOT definition first, the main set and unset last.
+// Requests is Set, then Unset, with the SDK request kind of each field.
+type AlterStatementsModel struct {
+	Set      []string
+	Unset    []string
+	Requests []AlterStatementRequest
+}
+
+type AlterStatementRequest struct {
+	Field string
+	// Kind is the SDK request stem: Set or Unset.
+	Kind string
+}
+
+func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
+	// A group is a field in declaration order. The main group is the bare set (unset). A block without one sends an empty
+	// main request last, which carries the parameters.
+	fields := func(main string, groups []ssot.AlterGroupSpec) []string {
+		names := collections.Map(groups, func(group ssot.AlterGroupSpec) string { return main + group.Name })
+		if !slices.ContainsFunc(groups, func(group ssot.AlterGroupSpec) bool { return group.Name == ssot.MainAlterGroup }) {
+			names = append(names, main)
+		}
+		return names
+	}
+	model := AlterStatementsModel{
+		Set:   fields("set", obj.AlterSetGroups()),
+		Unset: fields("unset", obj.AlterUnsetGroups()),
+	}
+	for _, field := range model.Set {
+		model.Requests = append(model.Requests, AlterStatementRequest{Field: field, Kind: "Set"})
+	}
+	for _, field := range model.Unset {
+		model.Requests = append(model.Requests, AlterStatementRequest{Field: field, Kind: "Unset"})
+	}
+	return model
 }
 
 // ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
@@ -188,7 +228,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		attachCreateMappings(input.Name, resourceAttributes, attributes)
 	}
 	if hooks.ApplySetUnset.Generate {
-		attachUpdateMappings(input.Name, resourceAttributes, attributes)
+		attachUpdateMappings(input.Object, resourceAttributes, attributes)
 	}
 	model := ResourceModel{
 		Name:                                input.Name,
@@ -217,6 +257,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
 		BeforeCreateSteps:                   beforeCreateSteps(input.Object),
 		AfterCreateSteps:                    afterCreateSteps(input.Object, resourceAttributes),
+		AlterStatements:                     newAlterStatementsModel(input.Object),
 		PreambleModel:                       preamble,
 	}
 	if computed, columns := showComputedAttributes(input.Object); len(computed) > 0 {

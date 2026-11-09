@@ -166,6 +166,11 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 			return diag.FromErr(err)
 		}
 	}
+	if !reflect.DeepEqual(*setUnset.unsetSchedule, *sdk.NewBackupPolicyUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithUnset(*setUnset.unsetSchedule)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewBackupPolicyUnsetRequest()) {
 		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithUnset(*setUnset.unset)); err != nil {
 			return diag.FromErr(err)

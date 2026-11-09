@@ -99,7 +99,7 @@ func init() {
 					Schedule: new(true),
 				}
 			},
-			"ALTER BACKUP POLICY %s UNSET COMMENT, SCHEDULE", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+			"ALTER BACKUP POLICY %s UNSET SCHEDULE, COMMENT", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_BackupPolicies_sql_Alter_UnsetTags,

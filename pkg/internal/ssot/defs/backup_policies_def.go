@@ -152,24 +152,24 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.Comment,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&BackupPolicyAttrs.Comment,
-		&BackupPolicyAttrs.Schedule,
-		&BackupPolicyAttrs.ExpireAfterDays,
-	},
-	Unset: []*ssot.Attribute{
-		&BackupPolicyAttrs.Comment,
-		&BackupPolicyAttrs.Schedule,
-		&BackupPolicyAttrs.ExpireAfterDays,
-	},
 	UnsetConflicts: [][]*ssot.Attribute{{
 		&BackupPolicyAttrs.Schedule,
 		&BackupPolicyAttrs.ExpireAfterDays,
 	}},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterRenameTo(),
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			&BackupPolicyAttrs.Comment,
+			&BackupPolicyAttrs.Schedule,
+			&BackupPolicyAttrs.ExpireAfterDays,
+		),
+		ssot.AlterUnset(
+			ssot.AlterGroup("Schedule", &BackupPolicyAttrs.Schedule),
+			ssot.AlterGroup(ssot.MainAlterGroup,
+				&BackupPolicyAttrs.Comment,
+				&BackupPolicyAttrs.ExpireAfterDays,
+			),
+		),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 	}},

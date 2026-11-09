@@ -103,13 +103,13 @@ func NewBackupPolicyUnsetRequest() *BackupPolicyUnsetRequest {
 	return &s
 }
 
-func (s *BackupPolicyUnsetRequest) WithComment(comment bool) *BackupPolicyUnsetRequest {
-	s.Comment = &comment
+func (s *BackupPolicyUnsetRequest) WithSchedule(schedule bool) *BackupPolicyUnsetRequest {
+	s.Schedule = &schedule
 	return s
 }
 
-func (s *BackupPolicyUnsetRequest) WithSchedule(schedule bool) *BackupPolicyUnsetRequest {
-	s.Schedule = &schedule
+func (s *BackupPolicyUnsetRequest) WithComment(comment bool) *BackupPolicyUnsetRequest {
+	s.Comment = &comment
 	return s
 }
 

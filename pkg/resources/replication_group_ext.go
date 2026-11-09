@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -25,9 +24,9 @@ var (
 )
 
 type replicationGroupAlterRequestsExt struct {
-	objectLists *sdk.ReplicationGroupSetRequest
-	properties  *sdk.ReplicationGroupSetRequest
-	unset       *sdk.ReplicationGroupUnsetRequest
+	set            *sdk.ReplicationGroupSetRequest
+	setObjectLists *sdk.ReplicationGroupSetRequest
+	unset          *sdk.ReplicationGroupUnsetRequest
 }
 
 func replicationGroupApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateReplicationGroupRequest) error {
@@ -53,43 +52,29 @@ func replicationGroupNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountO
 	return sdk.NewCreateReplicationGroupRequest(id, nil, nil), nil
 }
 
+// TODO [next PR]: ApplySetUnset is generated from the definition, so this function goes away.
 func replicationGroupApplySetUnsetExt(d *schema.ResourceData) (*replicationGroupAlterRequestsExt, error) {
-	objectLists := sdk.NewReplicationGroupSetRequest()
-	properties := sdk.NewReplicationGroupSetRequest()
+	setObjectLists := sdk.NewReplicationGroupSetRequest()
+	set := sdk.NewReplicationGroupSetRequest()
 	unset := sdk.NewReplicationGroupUnsetRequest()
 	errs := errors.Join(
-		listValueUpdateSetOnlyBuilder(d, "object_types", objectLists.WithObjectTypes, toReplicationGroupObjectTypes),
-		listValueUpdateSetOnlyBuilder(d, "allowed_databases", objectLists.WithAllowedDatabases, toReplicationGroupAllowedDatabases),
-		listValueUpdateSetOnlyBuilder(d, "allowed_external_volumes", objectLists.WithAllowedExternalVolumes, toReplicationGroupAllowedExternalVolumes),
-		listValueUpdateSetOnlyBuilder(d, "allowed_shares", objectLists.WithAllowedShares, toReplicationGroupAllowedShares),
-		listValueUpdateSetOnlyBuilder(d, "allowed_integration_types", objectLists.WithAllowedIntegrationTypes, toReplicationGroupAllowedIntegrationTypes),
-		stringAttributeUpdateBuilder(d, "comment", properties.WithComment, unset.WithComment),
-		stringAttributeUpdateBuilder(d, "replication_schedule", properties.WithReplicationSchedule, unset.WithReplicationSchedule),
-		accountObjectIdentifierAttributeUpdate(d, "error_integration", &properties.ErrorIntegration, &unset.ErrorIntegration),
+		listValueUpdateSetOnlyBuilder(d, "object_types", setObjectLists.WithObjectTypes, toReplicationGroupObjectTypes),
+		listValueUpdateSetOnlyBuilder(d, "allowed_databases", setObjectLists.WithAllowedDatabases, toReplicationGroupAllowedDatabases),
+		listValueUpdateSetOnlyBuilder(d, "allowed_external_volumes", setObjectLists.WithAllowedExternalVolumes, toReplicationGroupAllowedExternalVolumes),
+		listValueUpdateSetOnlyBuilder(d, "allowed_shares", setObjectLists.WithAllowedShares, toReplicationGroupAllowedShares),
+		listValueUpdateSetOnlyBuilder(d, "allowed_integration_types", setObjectLists.WithAllowedIntegrationTypes, toReplicationGroupAllowedIntegrationTypes),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+		stringAttributeUpdateBuilder(d, "replication_schedule", set.WithReplicationSchedule, unset.WithReplicationSchedule),
+		accountObjectIdentifierAttributeUpdate(d, "error_integration", &set.ErrorIntegration, &unset.ErrorIntegration),
 	)
 	if errs != nil {
 		return nil, errs
 	}
 	return &replicationGroupAlterRequestsExt{
-		objectLists: objectLists,
-		properties:  properties,
-		unset:       unset,
+		set:            set,
+		setObjectLists: setObjectLists,
+		unset:          unset,
 	}, nil
-}
-
-func replicationGroupAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, setUnset *replicationGroupAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-	if !reflect.DeepEqual(*setUnset.objectLists, *sdk.NewReplicationGroupSetRequest()) {
-		if err := client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.objectLists)); err != nil {
-			return err
-		}
-	}
-	if !reflect.DeepEqual(*setUnset.properties, *sdk.NewReplicationGroupSetRequest()) {
-		if err := client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.properties)); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, group *sdk.ReplicationGroup) error {

@@ -47,7 +47,7 @@ func Test_ValidateObject_sdkString(t *testing.T) {
 				Name:       "Policy",
 				Attributes: []Attribute{schedule},
 				Create:     CreateSpec{Clauses: []*Attribute{&schedule}},
-				Set:        []*Attribute{&schedule},
+				Alter:      AlterSpec{Clauses: []AlterClause{AlterSet(&schedule)}},
 				Show:       OutputSpec{Columns: []*Attribute{&schedule}},
 			})
 		})
