@@ -174,7 +174,7 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
-	setUnset, err := authenticationPolicyApplySetUnsetExt(d)
+	setUnset, err := authenticationPolicyApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -252,6 +252,31 @@ func parseAuthenticationPolicyWorkloadIdentityPolicy(d *tfschema.ResourceData, p
 		setMappedValueCreateBuilder(d, prefix+"allowed_oidc_issuers", request.WithAllowedOidcIssuers, toAuthenticationPolicyWorkloadIdentityPolicyAllowedOidcIssuers),
 	)
 	return *request, errs
+}
+
+// authenticationPolicyAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type authenticationPolicyAlterRequests struct {
+	set   *sdk.AuthenticationPolicySetRequest
+	unset *sdk.AuthenticationPolicyUnsetRequest
+}
+
+func authenticationPolicyApplySetUnset(d *tfschema.ResourceData) (*authenticationPolicyAlterRequests, error) {
+	set, unset := sdk.NewAuthenticationPolicySetRequest(), sdk.NewAuthenticationPolicyUnsetRequest()
+	errs := errors.Join(
+		setValueUpdate(d, "authentication_methods", &set.AuthenticationMethods, &unset.AuthenticationMethods, toAuthenticationPolicyAuthenticationMethods),
+		attributeMappedValueUpdate(d, "mfa_enrollment", &set.MfaEnrollment, &unset.MfaEnrollment, sdk.ToMfaEnrollmentOption),
+		setValueUpdate(d, "client_types", &set.ClientTypes, &unset.ClientTypes, toAuthenticationPolicyClientTypes),
+		setValueUpdate(d, "client_policy", &set.ClientPolicy, &unset.ClientPolicy, toAuthenticationPolicyClientPolicy),
+		singleBlockAttributeUpdate(d, "mfa_policy", &set.MfaPolicy, &unset.MfaPolicy, applyMfaPolicyUpdate),
+		singleBlockAttributeUpdate(d, "pat_policy", &set.PatPolicy, &unset.PatPolicy, applyPatPolicyUpdate),
+		singleBlockAttributeUpdate(d, "workload_identity_policy", &set.WorkloadIdentityPolicy, &unset.WorkloadIdentityPolicy, applyWorkloadIdentityPolicyUpdate),
+		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &authenticationPolicyAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

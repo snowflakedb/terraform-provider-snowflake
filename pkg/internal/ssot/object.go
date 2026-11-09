@@ -85,17 +85,12 @@ type Object struct {
 	// When ShowByID is generated, that suffix also emits ShowByIDAdaptive and ShowByIDSafelyAdaptive.
 	// TODO [next PRs]: Emit these structs from ShowOperationFromObject. Show() still returns the union row.
 	ShowVariants []*Object
-	// Create, Set, Unset, and Alter are the SQL field order for those statements.
+	// Create and Alter are the SQL field order for those statements.
 	// Presence in a slice is membership. The slice order is the order generation emits.
 	// Alter is the order of the blocks and action keywords after the name. The SET and UNSET blocks carry their fields
 	// as groups, see SetAttributes and UnsetAttributes.
 	// A field in those slices may be absent from Attributes when it is not a resource attribute.
 	Create CreateSpec
-	// Set and Unset are the SET and UNSET fields of an object that has not moved to groups yet. They are one
-	// main statement each. An object declares them or the groups of its SET (UNSET) block, never both.
-	// TODO [next PRs]: Remove Set and Unset once every object declares groups.
-	Set   []*Attribute
-	Unset []*Attribute
 	// UnsetConflicts are groups of UNSET attributes that cannot be set together.
 	// Each group has at least two attributes from the UNSET groups. SDK UNSET adds ConflictingFields.
 	UnsetConflicts [][]*Attribute
@@ -247,13 +242,11 @@ func (AlterGroupSpec) alterItem() {}
 
 // AlterSet is the SET block. Pass its attributes when one ALTER statement sends all of them. When Snowflake needs
 // several statements, enclose every attribute in an AlterGroup instead. The two forms cannot be mixed in one call.
-// Without items the block holds Object.Set as one statement.
 func AlterSet(items ...AlterItem) AlterClause {
 	return alterBlock(AlterClauseSet, items)
 }
 
 // AlterUnset is the UNSET block. It takes attributes or groups the same way as AlterSet.
-// Without items the block holds Object.Unset as one statement.
 func AlterUnset(items ...AlterItem) AlterClause {
 	return alterBlock(AlterClauseUnset, items)
 }
@@ -328,24 +321,18 @@ func (obj Object) LinkedAlterKeyword(attributeName string, value bool) (AlterCla
 	return AlterClause{}, false
 }
 
-// SetAttributes are the SET attributes, in the order of the groups of the SET block, or Object.Set when the block has no groups.
+// SetAttributes are the SET attributes, in the order of the groups of the SET block.
 func (obj Object) SetAttributes() []*Attribute {
-	if groups := obj.alterGroups(AlterClauseSet); len(groups) > 0 {
-		return alterGroupAttributes(groups)
-	}
-	return obj.Set
+	return alterGroupAttributes(obj.alterGroups(AlterClauseSet))
 }
 
-// UnsetAttributes are the UNSET attributes, in the order of the groups of the UNSET block, or Object.Unset when the block has no groups.
+// UnsetAttributes are the UNSET attributes, in the order of the groups of the UNSET block.
 func (obj Object) UnsetAttributes() []*Attribute {
-	if groups := obj.alterGroups(AlterClauseUnset); len(groups) > 0 {
-		return alterGroupAttributes(groups)
-	}
-	return obj.Unset
+	return alterGroupAttributes(obj.alterGroups(AlterClauseUnset))
 }
 
 // AlterSetGroups are the groups of the SET block in declaration order, the main group included. A block that lists its
-// attributes directly has one main group. An object that still uses Object.Set has none.
+// attributes directly has one main group.
 func (obj Object) AlterSetGroups() []AlterGroupSpec {
 	return obj.alterGroups(AlterClauseSet)
 }
