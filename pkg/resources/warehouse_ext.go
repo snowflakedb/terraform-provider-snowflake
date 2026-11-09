@@ -46,11 +46,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-type warehouseAlterRequestsExt struct {
-	set   *sdk.WarehouseSetRequest
-	unset *sdk.WarehouseUnsetRequest
-}
-
 // warehouseTypeCreateBuilder sends STANDARD when warehouse_type is not set,
 // so the type does not depend on the Snowflake default (which is changing to ADAPTIVE).
 func warehouseTypeCreateBuilder(d *schema.ResourceData, request *sdk.CreateWarehouseRequest) error {
@@ -62,8 +57,9 @@ func warehouseTypeCreateBuilder(d *schema.ResourceData, request *sdk.CreateWareh
 }
 
 // warehouseTypeUpdate sets STANDARD when warehouse_type is removed from the configuration instead of calling UNSET,
-// because UNSET resets the type to the Snowflake default (which is changing to ADAPTIVE).
-func warehouseTypeUpdate(d *schema.ResourceData, set *sdk.WarehouseSetRequest) error {
+// because UNSET resets the type to the Snowflake default (which is changing to ADAPTIVE). The generated update calls it
+// through CustomUpdate, which also passes the UNSET request; it is never used.
+func warehouseTypeUpdate(d *schema.ResourceData, set *sdk.WarehouseSetRequest, _ *sdk.WarehouseUnsetRequest) error {
 	if !d.HasChange("warehouse_type") {
 		return nil
 	}
@@ -140,33 +136,6 @@ func warehouseSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ an
 	)
 }
 
-func warehouseApplySetUnsetExt(d *schema.ResourceData) (*warehouseAlterRequestsExt, error) {
-	set, unset := sdk.NewWarehouseSetRequest(), sdk.NewWarehouseUnsetRequest()
-	if err := errors.Join(
-		warehouseTypeUpdate(d, set),
-		attributeMappedValueUpdateSetOnlyAlways(d, "warehouse_size", &set.WarehouseSize, sdk.ToWarehouseSize),
-		intAttributeUpdate(d, "max_cluster_count", &set.MaxClusterCount, &unset.MaxClusterCount),
-		intAttributeUpdate(d, "min_cluster_count", &set.MinClusterCount, &unset.MinClusterCount),
-		attributeMappedValueUpdate(d, "scaling_policy", &set.ScalingPolicy, &unset.ScalingPolicy, sdk.ToScalingPolicy),
-		// TODO [SNOW-1473453]: UNSET of auto suspend works incorrectly, so removal falls back to 600.
-		intAttributeWithSpecialDefaultUnsetFallbackUpdate(d, "auto_suspend", &set.AutoSuspend, 600),
-		booleanStringAttributeUpdate(d, "auto_resume", &set.AutoResume, &unset.AutoResume),
-		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
-		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-		booleanStringAttributeUpdate(d, "enable_query_acceleration", &set.EnableQueryAcceleration, &unset.EnableQueryAcceleration),
-		intAttributeWithSpecialDefaultUpdate(d, "query_acceleration_max_scale_factor", &set.QueryAccelerationMaxScaleFactor, &unset.QueryAccelerationMaxScaleFactor),
-		warehouseResourceConstraintUpdate(d, set, unset),
-		warehouseGenerationUpdate(d, set, unset),
-	); err != nil {
-		return nil, err
-	}
-	if set.WarehouseSize != nil {
-		// For now, we always want to wait for the resize completion. In the future, we may parametrize it.
-		set.WithWaitForCompletion(true)
-	}
-	return &warehouseAlterRequestsExt{set: set, unset: unset}, nil
-}
-
 func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, warehouse *sdk.WarehouseRegular, importPermissiveMode bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
@@ -182,6 +151,18 @@ func warehouseSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObj
 		importOptionalStringAttribute(d, "resource_constraint", importPermissiveMode, warehouse.ResourceConstraint),
 		importOptionalStringAttribute(d, "generation", importPermissiveMode, warehouse.Generation),
 	)
+}
+
+// warehouseSizeUpdate sets the size, which is never unset, and waits for the resize to complete, for now always.
+// In the future, we may parametrize it. The size cannot be unset, so the UNSET request is never used.
+func warehouseSizeUpdate(d *schema.ResourceData, set *sdk.WarehouseSetRequest, _ *sdk.WarehouseUnsetRequest) error {
+	if err := attributeMappedValueUpdateSetOnlyAlways(d, "warehouse_size", &set.WarehouseSize, sdk.ToWarehouseSize); err != nil {
+		return err
+	}
+	if set.WarehouseSize != nil {
+		set.WithWaitForCompletion(true)
+	}
+	return nil
 }
 
 func warehouseResourceConstraintUpdate(d *schema.ResourceData, set *sdk.WarehouseSetRequest, unset *sdk.WarehouseUnsetRequest) error {
@@ -251,7 +232,7 @@ func warehouseShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObje
 	return showWarehouseRegularByID(ctx, meta.(*provider.Context), id)
 }
 
-func warehouseAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequestsExt) error {
+func warehouseAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequests) error {
 	if *reqs.set != *sdk.NewWarehouseSetRequest() {
 		client := meta.(*provider.Context).Client
 		return client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*reqs.set))

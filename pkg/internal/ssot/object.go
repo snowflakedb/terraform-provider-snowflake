@@ -85,15 +85,14 @@ type Object struct {
 	// When ShowByID is generated, that suffix also emits ShowByIDAdaptive and ShowByIDSafelyAdaptive.
 	// TODO [next PRs]: Emit these structs from ShowOperationFromObject. Show() still returns the union row.
 	ShowVariants []*Object
-	// Create, Set, Unset, and Alter are the SQL field order for those statements.
+	// Create and Alter are the SQL field order for those statements.
 	// Presence in a slice is membership. The slice order is the order generation emits.
-	// Set and Unset are the fields inside those blocks. Alter is the order of the blocks and action keywords after the name.
+	// Alter is the order of the blocks and action keywords after the name. The SET and UNSET blocks carry their fields
+	// as groups, see SetAttributes and UnsetAttributes.
 	// A field in those slices may be absent from Attributes when it is not a resource attribute.
 	Create CreateSpec
-	Set    []*Attribute
-	Unset  []*Attribute
-	// UnsetConflicts are groups of Unset attributes that cannot be set together.
-	// Each group has at least two attributes from Unset. SDK UNSET adds ConflictingFields.
+	// UnsetConflicts are groups of UNSET attributes that cannot be set together.
+	// Each group has at least two attributes from the UNSET groups. SDK UNSET adds ConflictingFields.
 	UnsetConflicts [][]*Attribute
 	Alter          AlterSpec
 	// AdditionalEnums are SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field
@@ -162,6 +161,10 @@ type AlterClause struct {
 	// enabled attribute that is true. The SDK ignores them. See AlterKeywordFor.
 	Attribute      *Attribute
 	AttributeValue bool
+	// Groups are the statements of a SET or UNSET block. See AlterGroup.
+	Groups []AlterGroupSpec
+	// MixedForms records an AlterSet or AlterUnset call that mixed attributes and groups. Validation rejects it.
+	MixedForms bool
 }
 
 // AlterKeyword is an optional action keyword, such as RESUME or ENABLE MANAGED ACCESS.
@@ -227,11 +230,67 @@ func AlterRenameTo() AlterClause { return AlterClause{Kind: AlterClauseRenameTo}
 // AlterSwapWith is SWAP WITH. The identifier type is the object's IdType.
 func AlterSwapWith() AlterClause { return AlterClause{Kind: AlterClauseSwapWith} }
 
-// AlterSet is the SET block. Its fields are Object.Set.
-func AlterSet() AlterClause { return AlterClause{Kind: AlterClauseSet} }
+// MainAlterGroup is the name of the main group of a SET or UNSET block. Its request is set (unset) in the resource ext
+// struct, and the generated update also sends the parameters and every attribute that no other group holds with it.
+const MainAlterGroup = ""
 
-// AlterUnset is the UNSET block. Its fields are Object.Unset.
-func AlterUnset() AlterClause { return AlterClause{Kind: AlterClauseUnset} }
+// AlterItem is what AlterSet and AlterUnset accept: an attribute, or a group made by AlterGroup.
+type AlterItem interface{ alterItem() }
+
+func (*Attribute) alterItem()     {}
+func (AlterGroupSpec) alterItem() {}
+
+// AlterSet is the SET block. Pass its attributes when one ALTER statement sends all of them. When Snowflake needs
+// several statements, enclose every attribute in an AlterGroup instead. The two forms cannot be mixed in one call.
+func AlterSet(items ...AlterItem) AlterClause {
+	return alterBlock(AlterClauseSet, items)
+}
+
+// AlterUnset is the UNSET block. It takes attributes or groups the same way as AlterSet.
+func AlterUnset(items ...AlterItem) AlterClause {
+	return alterBlock(AlterClauseUnset, items)
+}
+
+// alterBlock builds a SET or UNSET block. Attributes passed directly become one main group.
+// A call that mixes attributes and groups is recorded, and ValidateObject rejects it with the object name.
+func alterBlock(kind AlterClauseKind, items []AlterItem) AlterClause {
+	clause := AlterClause{Kind: kind}
+	var direct []*Attribute
+	hasDirect := false
+	for _, item := range items {
+		switch typed := item.(type) {
+		case *Attribute:
+			direct = append(direct, typed)
+			hasDirect = true
+		case AlterGroupSpec:
+			clause.Groups = append(clause.Groups, typed)
+		case nil:
+			direct = append(direct, nil)
+			hasDirect = true
+		}
+	}
+	switch {
+	case hasDirect && len(clause.Groups) > 0:
+		clause.MixedForms = true
+	case hasDirect:
+		clause.Groups = []AlterGroupSpec{{Name: MainAlterGroup, Attributes: direct}}
+	}
+	return clause
+}
+
+// AlterGroupSpec is a set of SET (or UNSET) attributes that one ALTER statement sends. Make it with AlterGroup.
+type AlterGroupSpec struct {
+	Name       string
+	Attributes []*Attribute
+}
+
+// AlterGroup is one ALTER statement of a SET or UNSET block. A block sends its groups in declaration order, and
+// skips a group with no values. Name is MainAlterGroup for the main group, whose request is set (unset). Any other
+// name is a Go identifier that starts with a capital letter, and its request field is set<Name> (unset<Name>),
+// such as setBody. A block has at most one main group. When it has none, an empty one is sent last.
+func AlterGroup(name string, attributes ...*Attribute) AlterGroupSpec {
+	return AlterGroupSpec{Name: name, Attributes: attributes}
+}
 
 // AlterSetTags is the SET TAG block.
 func AlterSetTags() AlterClause { return AlterClause{Kind: AlterClauseSetTags} }
@@ -247,7 +306,8 @@ type AlterSpec struct {
 	AdditionalValidations    bool
 	SetAdditionalValidations bool
 	Clauses                  []AlterClause
-	// SetConflictingFields are pairs of Set attributes that cannot be set together. SET gets ConflictingFields for each pair.
+	// SetConflictingFields are pairs of SET attributes that cannot be set together. SET gets ConflictingFields for each pair.
+	// A pair must sit in different groups of the SET block, see validateAlterGroups.
 	SetConflictingFields [][]*Attribute
 }
 
@@ -259,6 +319,63 @@ func (obj Object) LinkedAlterKeyword(attributeName string, value bool) (AlterCla
 		}
 	}
 	return AlterClause{}, false
+}
+
+// SetAttributes are the SET attributes, in the order of the groups of the SET block.
+func (obj Object) SetAttributes() []*Attribute {
+	return alterGroupAttributes(obj.alterGroups(AlterClauseSet))
+}
+
+// UnsetAttributes are the UNSET attributes, in the order of the groups of the UNSET block.
+func (obj Object) UnsetAttributes() []*Attribute {
+	return alterGroupAttributes(obj.alterGroups(AlterClauseUnset))
+}
+
+// AlterSetGroups are the groups of the SET block in declaration order, the main group included. A block that lists its
+// attributes directly has one main group.
+func (obj Object) AlterSetGroups() []AlterGroupSpec {
+	return obj.alterGroups(AlterClauseSet)
+}
+
+// AlterUnsetGroups are the groups of the UNSET block, the same way as AlterSetGroups.
+func (obj Object) AlterUnsetGroups() []AlterGroupSpec {
+	return obj.alterGroups(AlterClauseUnset)
+}
+
+// HasAlterSetBlock reports whether the ALTER spec has a SET block.
+func (obj Object) HasAlterSetBlock() bool {
+	_, ok := obj.alterClause(AlterClauseSet)
+	return ok
+}
+
+// HasAlterUnsetBlock reports whether the ALTER spec has an UNSET block.
+func (obj Object) HasAlterUnsetBlock() bool {
+	_, ok := obj.alterClause(AlterClauseUnset)
+	return ok
+}
+
+// alterClause is the SET or UNSET block, if the object has one.
+func (obj Object) alterClause(kind AlterClauseKind) (AlterClause, bool) {
+	for _, clause := range obj.Alter.Clauses {
+		if clause.Kind == kind {
+			return clause, true
+		}
+	}
+	return AlterClause{}, false
+}
+
+// alterGroups are the groups of the SET or UNSET block, or nil when the object has no such block.
+func (obj Object) alterGroups(kind AlterClauseKind) []AlterGroupSpec {
+	clause, _ := obj.alterClause(kind)
+	return clause.Groups
+}
+
+func alterGroupAttributes(groups []AlterGroupSpec) []*Attribute {
+	var out []*Attribute
+	for _, group := range groups {
+		out = append(out, group.Attributes...)
+	}
+	return out
 }
 
 // HasAlterSpec reports whether this object defines an ALTER statement.

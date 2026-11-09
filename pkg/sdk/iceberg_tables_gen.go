@@ -75,7 +75,7 @@ type CreateIcebergTableOptions struct {
 	IcebergVersion             *int                              `ddl:"parameter" sql:"ICEBERG_VERSION"`
 	EnableIcebergMergeOnRead   *bool                             `ddl:"parameter" sql:"ENABLE_ICEBERG_MERGE_ON_READ"`
 	RowAccessPolicy            *IcebergTableRowAccessPolicy      `ddl:"keyword"`
-	AggregationPolicy          *IcebergTableAggregationPolicy    `ddl:"keyword"`
+	AggregationPolicy          *TableAggregationPolicy           `ddl:"keyword"`
 	Tag                        []TagAssociation                  `ddl:"keyword,parentheses" sql:"TAG"`
 	EnableDataCompaction       *bool                             `ddl:"parameter" sql:"ENABLE_DATA_COMPACTION"`
 	Contact                    []TableContact                    `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
@@ -275,11 +275,6 @@ type IcebergTableRowAccessPolicy struct {
 	On   []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
-type IcebergTableAggregationPolicy struct {
-	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
-	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
-}
-
 // CreateFromIcebergFilesIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-iceberg-files.
 type CreateFromIcebergFilesIcebergTableOptions struct {
 	create                   bool                     `ddl:"static" sql:"CREATE"`
@@ -379,8 +374,8 @@ type AlterIcebergTableOptions struct {
 	DropRowAccessPolicy           *ViewDropRowAccessPolicy               `ddl:"keyword"`
 	DropAndAddRowAccessPolicy     *IcebergTableDropAndAddRowAccessPolicy `ddl:"list,no_parentheses"`
 	DropAllRowAccessPolicies      *bool                                  `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
-	SetAggregationPolicy          *ViewSetAggregationPolicy              `ddl:"keyword"`
-	UnsetAggregationPolicy        *ViewUnsetAggregationPolicy            `ddl:"keyword"`
+	SetAggregationPolicy          *TableSetAggregationPolicy             `ddl:"keyword"`
+	UnsetAggregationPolicy        *TableUnsetAggregationPolicy           `ddl:"keyword"`
 	SetJoinPolicy                 *TableSetJoinPolicy                    `ddl:"keyword"`
 	UnsetJoinPolicy               *TableUnsetJoinPolicy                  `ddl:"keyword"`
 	SearchOptimizationAction      *TableSearchOptimizationAction         `ddl:"keyword"`
@@ -541,16 +536,6 @@ type IcebergTableAddRowAccessPolicy struct {
 	add             bool                   `ddl:"static" sql:"ADD"`
 	RowAccessPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
 	On              []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
-}
-
-type TableSetJoinPolicy struct {
-	set        bool                   `ddl:"static" sql:"SET"`
-	JoinPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
-	Force      *bool                  `ddl:"keyword" sql:"FORCE"`
-}
-
-type TableUnsetJoinPolicy struct {
-	unsetJoinPolicy bool `ddl:"static" sql:"UNSET JOIN POLICY"`
 }
 
 // DropIcebergTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-iceberg-table.

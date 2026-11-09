@@ -20,14 +20,12 @@ var fileFormatCommonSchema = map[string]*schema.Schema{
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the file format."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the file format."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},

@@ -85,14 +85,19 @@ func (opts *CreateTableOptions) validate() error {
 			}
 		}
 	}
-	if valueSet(opts.StageFileFormat) {
-		if !exactlyOneValueSet(opts.StageFileFormat.FormatName, opts.StageFileFormat.FileFormatType) {
-			errs = append(errs, errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"))
-		}
-	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
+		}
+	}
+	if valueSet(opts.AggregationPolicy) {
+		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.AggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.JoinPolicy) {
+		if !ValidObjectIdentifier(opts.JoinPolicy.JoinPolicy) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.JoinPolicy", "JoinPolicy"))
 		}
 	}
 	if valueSet(opts.Tag) {
@@ -175,8 +180,8 @@ func (opts *AlterTableOptions) validate() error {
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "SwapWith"))
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy) {
-		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy) {
+		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ClusteringAction) {
@@ -291,13 +296,6 @@ func (opts *AlterTableOptions) validate() error {
 			}
 		}
 	}
-	if valueSet(opts.Set) {
-		if valueSet(opts.Set.StageFileFormat) {
-			if !exactlyOneValueSet(opts.Set.StageFileFormat.FormatName, opts.Set.StageFileFormat.FileFormatType) {
-				errs = append(errs, errExactlyOneOf("AlterTableOptions.Set.StageFileFormat", "FormatName", "FileFormatType"))
-			}
-		}
-	}
 	if valueSet(opts.SetTags) {
 		for setTagIdx, setTag := range opts.SetTags {
 			if !ValidObjectIdentifier(setTag.Name) {
@@ -311,6 +309,16 @@ func (opts *AlterTableOptions) validate() error {
 		}
 		if !valueSet(opts.AddStorageLifecyclePolicy.On) {
 			errs = append(errs, errNotSet("AlterTableOptions.AddStorageLifecyclePolicy", "On"))
+		}
+	}
+	if valueSet(opts.SetAggregationPolicy) {
+		if !ValidObjectIdentifier(opts.SetAggregationPolicy.AggregationPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.SetAggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.SetJoinPolicy) {
+		if !ValidObjectIdentifier(opts.SetJoinPolicy.JoinPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.SetJoinPolicy", "JoinPolicy"))
 		}
 	}
 	return JoinErrors(errs...)

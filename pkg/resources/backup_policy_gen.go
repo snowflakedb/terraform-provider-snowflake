@@ -157,12 +157,17 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
-	setUnset, err := backupPolicyApplySetUnsetExt(d)
+	setUnset, err := backupPolicyApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 	if !reflect.DeepEqual(*setUnset.set, *sdk.NewBackupPolicySetRequest()) {
 		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.unsetSchedule, *sdk.NewBackupPolicyUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithUnset(*setUnset.unsetSchedule)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -196,6 +201,26 @@ func backupPolicyApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.Cre
 		intAttributeCreateBuilder(d, "expire_after_days", request.WithExpireAfterDays),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
+}
+
+// backupPolicyAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type backupPolicyAlterRequests struct {
+	set           *sdk.BackupPolicySetRequest
+	unsetSchedule *sdk.BackupPolicyUnsetRequest
+	unset         *sdk.BackupPolicyUnsetRequest
+}
+
+func backupPolicyApplySetUnset(d *tfschema.ResourceData) (*backupPolicyAlterRequests, error) {
+	set, unsetSchedule, unset := sdk.NewBackupPolicySetRequest(), sdk.NewBackupPolicyUnsetRequest(), sdk.NewBackupPolicyUnsetRequest()
+	errs := errors.Join(
+		attributeMappedValueUpdate(d, "schedule", &set.Schedule, &unsetSchedule.Schedule, toBackupPolicySchedule),
+		intAttributeUpdateBuilder(d, "expire_after_days", set.WithExpireAfterDays, unset.WithExpireAfterDays),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &backupPolicyAlterRequests{set: set, unsetSchedule: unsetSchedule, unset: unset}, nil
 }
 
 func DeleteBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

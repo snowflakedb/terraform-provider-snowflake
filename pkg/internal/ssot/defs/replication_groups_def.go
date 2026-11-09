@@ -139,7 +139,6 @@ var ReplicationGroupAttrs = struct {
 		Type:          ssot.AttrList,
 		Required:      true,
 		CreateMapping: ssot.ListValueCreate("toReplicationGroupObjectTypes"),
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toReplicationGroupObjectTypes"),
 		Description:   "Types of objects replicated from the source account to the target accounts.",
 		Elem:          &ssot.Attribute{Type: ssot.AttrEnum, Enum: ReplicationGroupObjectType},
 		// CSV. NULL or empty when a secondary group lists none. The plain field stays a slice.
@@ -185,12 +184,11 @@ var ReplicationGroupAttrs = struct {
 		// SHOW prints short tokens such as API and EXTERNAL_ACCESS. Those tokens are mapped to the
 		// create-page values. Any other token is left unchanged.
 		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
-		OptionalInDb:  true,
-		SkipInSchema:  true,
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toReplicationGroupAllowedIntegrationTypes"),
-		CustomParser:  "ParseCommaSeparatedReplicationGroupIntegrationTypeArray",
-		CreateSql:     replicationGroupEnumList(ReplicationGroupIntegrationType, false),
-		SetSql:        replicationGroupEnumList(ReplicationGroupIntegrationType, false),
+		OptionalInDb: true,
+		SkipInSchema: true,
+		CustomParser: "ParseCommaSeparatedReplicationGroupIntegrationTypeArray",
+		CreateSql:    replicationGroupEnumList(ReplicationGroupIntegrationType, false),
+		SetSql:       replicationGroupEnumList(ReplicationGroupIntegrationType, false),
 	},
 	AllowedAccounts: ssot.Attribute{
 		Name:          "allowed_accounts",
@@ -434,9 +432,9 @@ var ReplicationGroup = ssot.Object{
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		// OBJECT_TYPES and the allowed lists cannot share a SET with COMMENT, REPLICATION_SCHEDULE,
-		// or ERROR_INTEGRATION. The extension builds one request per group and issues two ALTER SET calls.
-		ssot.WithApplySetUnset(ssot.ExtCall()),
-		ssot.WithAlterSetInSdk(ssot.ExtCall()),
+		// or ERROR_INTEGRATION. The extension fills one request per SET statement (set and setObjectLists).
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		// SHOW stores identifier lists as SDK values. Generated SetConfigFields passes that slice through,
 		// and d.Set cannot write []AccountIdentifier into a list of strings.
@@ -475,28 +473,11 @@ var ReplicationGroup = ssot.Object{
 			&ReplicationGroupAttrs.ErrorIntegration,
 		},
 	},
-	// TODO [next PRs]: these fields are two exclusive SET groups, and SSOT emits them as one struct.
-	// OBJECT_TYPES and the allowed-object lists are one statement. COMMENT, REPLICATION_SCHEDULE, and
-	// ERROR_INTEGRATION are the other. Snowflake rejects a statement that mixes them. Dedicated SSOT handling
-	// should keep the attributes ordinary and emit two groups. Until then, ReplicationGroupSet.additionalValidations
-	// rejects a mixed SET.
-	Set: []*ssot.Attribute{
-		&ReplicationGroupAttrs.ObjectTypes,
-		&ReplicationGroupAttrs.AllowedDatabases,
-		&ReplicationGroupAttrs.AllowedExternalVolumes,
-		&ReplicationGroupAttrs.AllowedShares,
-		&ReplicationGroupAttrs.AllowedIntegrationTypes,
-		&ReplicationGroupAttrs.Comment,
-		&ReplicationGroupAttrs.ReplicationSchedule,
-		&ReplicationGroupAttrs.ErrorIntegration,
-	},
+	// OBJECT_TYPES and the allowed-object lists are their own SET statement (the ObjectLists group), because
+	// Snowflake rejects a SET that mixes them with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION.
+	// The SDK SET struct still holds all of them, so ReplicationGroupSet.additionalValidations rejects a mixed SET.
 	// The page allows several of these in one UNSET, separated by commas.
 	// Failover's handwritten UNSET allows exactly one field.
-	Unset: []*ssot.Attribute{
-		&ReplicationGroupAttrs.Comment,
-		&ReplicationGroupAttrs.ReplicationSchedule,
-		&ReplicationGroupAttrs.ErrorIntegration,
-	},
 	Alter: ssot.AlterSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/alter-replication-group",
 		// SET: allowed lists require the matching OBJECT_TYPES value.
@@ -506,8 +487,24 @@ var ReplicationGroup = ssot.Object{
 		AdditionalValidations: true,
 		Clauses: []ssot.AlterClause{
 			ssot.AlterRenameTo(),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				ssot.AlterGroup("ObjectLists",
+					&ReplicationGroupAttrs.ObjectTypes,
+					&ReplicationGroupAttrs.AllowedDatabases,
+					&ReplicationGroupAttrs.AllowedExternalVolumes,
+					&ReplicationGroupAttrs.AllowedShares,
+					&ReplicationGroupAttrs.AllowedIntegrationTypes,
+				),
+				ssot.AlterGroup(ssot.MainAlterGroup,
+					&ReplicationGroupAttrs.Comment,
+					&ReplicationGroupAttrs.ReplicationSchedule,
+					&ReplicationGroupAttrs.ErrorIntegration,
+				)),
+			ssot.AlterUnset(
+				&ReplicationGroupAttrs.Comment,
+				&ReplicationGroupAttrs.ReplicationSchedule,
+				&ReplicationGroupAttrs.ErrorIntegration,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 			ssot.AlterKeywordBlock("Add", "ADD", &replicationGroupAdd),

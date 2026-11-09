@@ -133,6 +133,8 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 {{- end }}
 {{- if .Hooks.ApplySetUnset.Generate }}
 
+{{ template "generatedAlterRequests" . }}
+
 {{ template "generatedApplySetUnset" . }}
 {{- end }}
 {{- if .Hooks.HandleExternalChanges.Generate }}

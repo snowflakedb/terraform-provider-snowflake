@@ -197,22 +197,24 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
 // resource, model, and assertion generators skip them.
 //
-// The column list, the stage file format, and the stage copy options name query structs by PreexistingStruct. The SDK
+// The column list names a query struct by PreexistingStruct. The SDK
 // definition in pkg/sdk/generator/defs/tables_def.go supplies them to CreateOperationFromObject and keeps their fields,
 // because other operations and the request types of the resource use them. Search optimization, clustering, and storage
 // lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. The row access policy is generated here as
-// TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type.
+// TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type. Aggregation and join
+// policies are TableAggregationPolicy and TableJoinPolicy in table_common_def.go. Iceberg CREATE reuses the CREATE
+// structs; iceberg ALTER reuses the SET/UNSET projections.
 var TableCreateAttrs = struct {
 	Scope                      ssot.Attribute
 	Kind                       ssot.Attribute
 	ColumnsAndConstraints      ssot.Attribute
 	EnableSchemaEvolution      ssot.Attribute
-	StageFileFormat            ssot.Attribute
-	StageCopyOptions           ssot.Attribute
 	MaxDataExtensionTimeInDays ssot.Attribute
 	DefaultDdlCollation        ssot.Attribute
 	CopyGrants                 ssot.Attribute
 	RowAccessPolicy            ssot.Attribute
+	AggregationPolicy          ssot.Attribute
+	JoinPolicy                 ssot.Attribute
 }{
 	Scope: ssot.Attribute{
 		Name:      "scope",
@@ -238,18 +240,6 @@ var TableCreateAttrs = struct {
 		Name:    "enable_schema_evolution",
 		Type:    ssot.AttrBool,
 		SqlOnly: true,
-	},
-	StageFileFormat: ssot.Attribute{
-		Name:      "stage_file_format",
-		Type:      ssot.AttrObject,
-		SqlOnly:   true,
-		CreateSql: ssot.PreexistingStruct("LegacyFileFormat", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT =")),
-	},
-	StageCopyOptions: ssot.Attribute{
-		Name:      "stage_copy_options",
-		Type:      ssot.AttrObject,
-		SqlOnly:   true,
-		CreateSql: ssot.PreexistingStruct("LegacyTableCopyOptions", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_COPY_OPTIONS =")),
 	},
 	MaxDataExtensionTimeInDays: ssot.Attribute{
 		Name:    "max_data_extension_time_in_days",
@@ -292,6 +282,8 @@ var TableCreateAttrs = struct {
 			},
 		},
 	},
+	AggregationPolicy: TableAggregationPolicy,
+	JoinPolicy:        TableJoinPolicy,
 }
 
 func tableShowString(name string, optionalInDb, optionalInShow bool) ssot.Attribute {
@@ -333,7 +325,13 @@ var (
 	tableShowEnableSchemaEvolution      = tableShowBool("enable_schema_evolution", "Y")
 	tableShowOwnerRoleType              = tableShowString("owner_role_type", true, false)
 	tableShowIsEvent                    = tableShowBool("is_event", "Y")
+	tableShowIsHybrid                   = tableShowBool("is_hybrid", "Y")
+	tableShowIsIceberg                  = tableShowBool("is_iceberg", "Y")
 	tableShowIsDynamic                  = tableShowBool("is_dynamic", "Y")
+	tableShowIsImmutable                = tableShowBool("is_immutable", "Y")
+	tableShowIsInteractive              = tableShowBool("is_interactive", "Y")
+	tableShowRowTimestamp               = tableShowBool("row_timestamp", "ON")
+	tableShowErrorLogging               = tableShowBool("error_logging", "ON")
 	tableShowBudget                     = tableShowString("budget", true, true)
 )
 
@@ -341,12 +339,12 @@ var Table = ssot.Object{
 	Name:                   "Table",
 	NamePlural:             "Tables",
 	IdType:                 "SchemaObjectIdentifier",
-	LegacyIdEncoding:       true,
 	PreviewFeature:         true,
 	DescribeFailRead:       true,
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithResource(),
+		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
 		ssot.WithSdk(
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
 			ssot.SdkDrop(
@@ -376,14 +374,14 @@ var Table = ssot.Object{
 			&TableCreateAttrs.ColumnsAndConstraints,
 			&TableAttrs.ClusterBy,
 			&TableCreateAttrs.EnableSchemaEvolution,
-			&TableCreateAttrs.StageFileFormat,
-			&TableCreateAttrs.StageCopyOptions,
 			&TableAttrs.DataRetentionTimeInDays,
 			&TableCreateAttrs.MaxDataExtensionTimeInDays,
 			&TableAttrs.ChangeTracking,
 			&TableCreateAttrs.DefaultDdlCollation,
 			&TableCreateAttrs.CopyGrants,
 			&TableCreateAttrs.RowAccessPolicy,
+			&TableCreateAttrs.AggregationPolicy,
+			&TableCreateAttrs.JoinPolicy,
 			ssot.Tags,
 			&TableAttrs.Comment,
 		},
@@ -411,7 +409,13 @@ var Table = ssot.Object{
 			&tableShowEnableSchemaEvolution,
 			&tableShowOwnerRoleType,
 			&tableShowIsEvent,
+			&tableShowIsHybrid,
+			&tableShowIsIceberg,
 			&tableShowIsDynamic,
+			&tableShowIsImmutable,
+			&tableShowIsInteractive,
+			&tableShowRowTimestamp,
+			&tableShowErrorLogging,
 			&tableShowBudget,
 		},
 	},
@@ -441,6 +445,11 @@ var Table = ssot.Object{
 		ssot.WithShowOutputSchema(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithStateUpgraders(ssot.Generated()),
+	},
+	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
 	},
 	CustomOperations: tableDescribeOperations,
 	Attributes: []ssot.Attribute{

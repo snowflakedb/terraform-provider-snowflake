@@ -67,7 +67,6 @@ const (
 	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid                                                              testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_OneValidOneInvalid"
 	case_IcebergTables_validation_Create_opts_PartitionBy_ExactlyOneValueSet_BothInvalid                                                                     testCaseName = "validation_Create_opts_PartitionBy_ExactlyOneValueSet_BothInvalid"
 	case_IcebergTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                                                testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
-	case_IcebergTables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier                                                                 testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
 	case_IcebergTables_validation_Create_Tag_ValidIdentifier                                                                                                 testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_IcebergTables_sql_Create_basic                                                                                                                      testCaseName = "sql_Create_basic"
 	case_IcebergTables_sql_Create_all                                                                                                                        testCaseName = "sql_Create_all"
@@ -647,14 +646,6 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				DefaultModify: func(opts *CreateIcebergTableOptions) {
 					opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{}
 					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
-				},
-			},
-			validationCase[*CreateIcebergTableOptions]{
-				Name:        case_IcebergTables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.AggregationPolicy", "AggregationPolicy"),
-				DefaultModify: func(opts *CreateIcebergTableOptions) {
-					opts.AggregationPolicy = &IcebergTableAggregationPolicy{}
-					opts.AggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
@@ -1281,7 +1272,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				Name:        case_IcebergTables_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.SetAggregationPolicy", "AggregationPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
-					opts.SetAggregationPolicy = &ViewSetAggregationPolicy{}
+					opts.SetAggregationPolicy = &TableSetAggregationPolicy{}
 					opts.SetAggregationPolicy.AggregationPolicy = emptySchemaObjectIdentifier
 				},
 			},

@@ -28,6 +28,41 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.23.x ➞ v2.24.0
 
+### *(breaking change)* `snowflake_table` reworked
+
+The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) resource now follows the same rules as the other resources. This entry lists every change.
+
+#### Table id is the fully qualified name
+
+The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
+
+### *(new feature)* Hierarchy renames rolled out to more resources
+
+The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.
+
+Newly supported resources:
+
+- [`snowflake_file_format_avro`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro)
+- [`snowflake_file_format_csv`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_csv)
+- [`snowflake_file_format_json`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json)
+- [`snowflake_file_format_orc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc)
+- [`snowflake_file_format_parquet`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_parquet)
+- [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml)
+
+Without the experiment, changing `database` or `schema` on these resources still recreates the object. No configuration changes are required unless you want to enable the experiment.
+
+### *(new feature)* `use_private_link` on Snowflake-managed Openflow deployments
+
+[`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) now accepts `use_private_link`. Valid values are `"true"` and `"false"`. Leave it unset to keep the Snowflake default (`FALSE`); the provider stores that as `"default"` and omits `USE_PRIVATE_LINK` from `CREATE OPENFLOW DEPLOYMENT`.
+
+`ALTER OPENFLOW DEPLOYMENT ... SET` does not accept `USE_PRIVATE_LINK`, so changing the attribute replaces the deployment. Existing state is upgraded to `use_private_link = "default"`, which does not replace a deployment that was created before this attribute existed.
+
+Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5361).
+
+### *(new feature)* Permissive import mode rolled out to more resources
+
+The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
+
 ### *(bug fix)* `snowflake_iceberg_table` supports `year`, `month`, `day`, and `hour` in `partition_by`
 
 Previously, [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) crashed during `terraform apply` when a `partition_by` entry used `year`, `month`, `day`, or `hour`. The provider plugin failed with `panic: interface conversion: interface {} is nil, not string`, and the table was not created. `identity`, `bucket`, and `truncate` were not affected.
@@ -47,6 +82,14 @@ resource "snowflake_iceberg_table" "example" {
 No configuration changes are required. If you worked around the crash by creating the table outside Terraform, import it with `terraform import` and keep the same `partition_by` entry in your configuration.
 
 Reference: [#5365](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5365).
+
+### *(bug fix)* `snowflake_compute_pool` no longer reports `backup_instance_families` as changed after create
+
+Previously, after [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) created a pool without `backup_instance_families`, every `terraform plan -refresh-only` reported `+ backup_instance_families = []` until the next `terraform apply`, although nothing changed in Snowflake.
+
+The provider now leaves `backup_instance_families` unset in state when Snowflake returns no backup instance families and the state holds none. Backup instance families added or removed outside Terraform are still detected.
+
+No configuration changes are required.
 
 ## v2.22.x ➞ v2.23.0
 

@@ -41,14 +41,14 @@ type CreateTableOptions struct {
 	ColumnsAndConstraints      CreateTableColumnsAndConstraints `ddl:"list,parentheses"`
 	ClusterBy                  []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	EnableSchemaEvolution      *bool                            `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *LegacyFileFormat                `ddl:"list,parentheses,no_comma" sql:"STAGE_FILE_FORMAT ="`
-	StageCopyOptions           *LegacyTableCopyOptions          `ddl:"list,parentheses,no_comma" sql:"STAGE_COPY_OPTIONS ="`
 	DataRetentionTimeInDays    *int                             `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                             `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
 	DefaultDdlCollation        *StringAllowEmpty                `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
 	RowAccessPolicy            *TableRowAccessPolicy            `ddl:"list,no_comma"`
+	AggregationPolicy          *TableAggregationPolicy          `ddl:"list,no_comma"`
+	JoinPolicy                 *TableJoinPolicy                 `ddl:"list,no_comma"`
 	Tag                        []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment                    *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
@@ -109,32 +109,19 @@ type OutOfLineForeignKey struct {
 	On          *ForeignKeyOnAction    `ddl:"keyword"`
 }
 
-type LegacyFileFormat struct {
-	FormatName     *string                      `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
-	FileFormatType *FileFormatType              `ddl:"parameter" sql:"TYPE"`
-	Options        *FileFormatTypeOptionsLegacy `ddl:"list,no_comma"`
-}
-
-type LegacyTableCopyOptions struct {
-	OnError           *LegacyTableCopyOnErrorOptions `ddl:"parameter" sql:"ON_ERROR"`
-	SizeLimit         *int                           `ddl:"parameter" sql:"SIZE_LIMIT"`
-	Purge             *bool                          `ddl:"parameter" sql:"PURGE"`
-	ReturnFailedOnly  *bool                          `ddl:"parameter" sql:"RETURN_FAILED_ONLY"`
-	MatchByColumnName *StageCopyColumnMapOption      `ddl:"parameter" sql:"MATCH_BY_COLUMN_NAME"`
-	EnforceLength     *bool                          `ddl:"parameter" sql:"ENFORCE_LENGTH"`
-	Truncatecolumns   *bool                          `ddl:"parameter" sql:"TRUNCATECOLUMNS"`
-	Force             *bool                          `ddl:"parameter" sql:"FORCE"`
-}
-
-type LegacyTableCopyOnErrorOptions struct {
-	Continue_      *bool   `ddl:"keyword" sql:"CONTINUE"`
-	SkipFile       *string `ddl:"keyword" sql:"SKIP_FILE"`
-	AbortStatement *bool   `ddl:"keyword" sql:"ABORT_STATEMENT"`
-}
-
 type TableRowAccessPolicy struct {
 	Name SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
 	On   []string               `ddl:"keyword,parentheses" sql:"ON"`
+}
+
+type TableAggregationPolicy struct {
+	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
+	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
+}
+
+type TableJoinPolicy struct {
+	JoinPolicy      SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
+	AllowedJoinKeys []Column               `ddl:"parameter,parentheses,no_equals" sql:"ALLOWED JOIN KEYS"`
 }
 
 // CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
@@ -216,6 +203,10 @@ type AlterTableOptions struct {
 	DropAllRowAccessPolicies   *bool                           `ddl:"keyword" sql:"DROP ALL ROW ACCESS POLICIES"`
 	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicy    `ddl:"keyword"`
 	DropStorageLifecyclePolicy *bool                           `ddl:"keyword" sql:"DROP STORAGE LIFECYCLE POLICY"`
+	SetAggregationPolicy       *TableSetAggregationPolicy      `ddl:"keyword"`
+	UnsetAggregationPolicy     *TableUnsetAggregationPolicy    `ddl:"keyword"`
+	SetJoinPolicy              *TableSetJoinPolicy             `ddl:"keyword"`
+	UnsetJoinPolicy            *TableUnsetJoinPolicy           `ddl:"keyword"`
 }
 
 type TableClusteringAction struct {
@@ -399,14 +390,12 @@ type TableDropSearchOptimizationOn struct {
 }
 
 type TableSet struct {
-	EnableSchemaEvolution      *bool                   `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *LegacyFileFormat       `ddl:"list,parentheses" sql:"STAGE_FILE_FORMAT ="`
-	StageCopyOptions           *LegacyTableCopyOptions `ddl:"list,parentheses" sql:"STAGE_COPY_OPTIONS ="`
-	DataRetentionTimeInDays    *int                    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool                   `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *StringAllowEmpty       `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
-	Comment                    *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	EnableSchemaEvolution      *bool             `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	DataRetentionTimeInDays    *int              `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int              `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool             `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *StringAllowEmpty `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
+	Comment                    *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 type TableUnset struct {
@@ -437,6 +426,27 @@ type TableDropAndAddRowAccessPolicy struct {
 type TableStorageLifecyclePolicy struct {
 	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ADD STORAGE LIFECYCLE POLICY"`
 	On                     []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
+}
+
+type TableSetAggregationPolicy struct {
+	set               bool                   `ddl:"static" sql:"SET"`
+	AggregationPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"AGGREGATION POLICY"`
+	EntityKey         []Column               `ddl:"parameter,parentheses,no_equals" sql:"ENTITY KEY"`
+	Force             *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetAggregationPolicy struct {
+	unsetAggregationPolicy bool `ddl:"static" sql:"UNSET AGGREGATION POLICY"`
+}
+
+type TableSetJoinPolicy struct {
+	set        bool                   `ddl:"static" sql:"SET"`
+	JoinPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
+	Force      *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetJoinPolicy struct {
+	unsetJoinPolicy bool `ddl:"static" sql:"UNSET JOIN POLICY"`
 }
 
 // DropTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
@@ -483,7 +493,13 @@ type tablesRow struct {
 	EnableSchemaEvolution      sql.NullString `db:"enable_schema_evolution"`
 	OwnerRoleType              sql.NullString `db:"owner_role_type"`
 	IsEvent                    sql.NullString `db:"is_event"`
+	IsHybrid                   sql.NullString `db:"is_hybrid"`
+	IsIceberg                  sql.NullString `db:"is_iceberg"`
 	IsDynamic                  sql.NullString `db:"is_dynamic"`
+	IsImmutable                sql.NullString `db:"is_immutable"`
+	IsInteractive              sql.NullString `db:"is_interactive"`
+	RowTimestamp               sql.NullString `db:"row_timestamp"`
+	ErrorLogging               sql.NullString `db:"error_logging"`
 	Budget                     sql.NullString `db:"budget"`
 }
 
@@ -509,7 +525,13 @@ type Table struct {
 	EnableSchemaEvolution      bool
 	OwnerRoleType              string
 	IsEvent                    bool
+	IsHybrid                   bool
+	IsIceberg                  bool
 	IsDynamic                  bool
+	IsImmutable                bool
+	IsInteractive              bool
+	RowTimestamp               bool
+	ErrorLogging               bool
 	Budget                     *string
 }
 

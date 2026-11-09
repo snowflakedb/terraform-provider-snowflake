@@ -42,16 +42,6 @@ func (s *CreateTableRequest) WithEnableSchemaEvolution(enableSchemaEvolution boo
 	return s
 }
 
-func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *CreateTableRequest {
-	s.StageFileFormat = &stageFileFormat
-	return s
-}
-
-func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *CreateTableRequest {
-	s.StageCopyOptions = &stageCopyOptions
-	return s
-}
-
 func (s *CreateTableRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateTableRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
@@ -79,6 +69,16 @@ func (s *CreateTableRequest) WithCopyGrants(copyGrants bool) *CreateTableRequest
 
 func (s *CreateTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyRequest) *CreateTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
+	return s
+}
+
+func (s *CreateTableRequest) WithAggregationPolicy(aggregationPolicy TableAggregationPolicyRequest) *CreateTableRequest {
+	s.AggregationPolicy = &aggregationPolicy
+	return s
+}
+
+func (s *CreateTableRequest) WithJoinPolicy(joinPolicy TableJoinPolicyRequest) *CreateTableRequest {
+	s.JoinPolicy = &joinPolicy
 	return s
 }
 
@@ -293,91 +293,6 @@ func (s *OutOfLineForeignKeyRequest) WithOn(on ForeignKeyOnAction) *OutOfLineFor
 	return s
 }
 
-func NewLegacyFileFormatRequest() *LegacyFileFormatRequest {
-	s := LegacyFileFormatRequest{}
-	return &s
-}
-
-func (s *LegacyFileFormatRequest) WithFormatName(formatName string) *LegacyFileFormatRequest {
-	s.FormatName = &formatName
-	return s
-}
-
-func (s *LegacyFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *LegacyFileFormatRequest {
-	s.FileFormatType = &fileFormatType
-	return s
-}
-
-func (s *LegacyFileFormatRequest) WithOptions(options FileFormatTypeOptionsLegacy) *LegacyFileFormatRequest {
-	s.Options = &options
-	return s
-}
-
-func NewLegacyTableCopyOptionsRequest() *LegacyTableCopyOptionsRequest {
-	s := LegacyTableCopyOptionsRequest{}
-	return &s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithOnError(onError LegacyTableCopyOnErrorOptionsRequest) *LegacyTableCopyOptionsRequest {
-	s.OnError = &onError
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithSizeLimit(sizeLimit int) *LegacyTableCopyOptionsRequest {
-	s.SizeLimit = &sizeLimit
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithPurge(purge bool) *LegacyTableCopyOptionsRequest {
-	s.Purge = &purge
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *LegacyTableCopyOptionsRequest {
-	s.ReturnFailedOnly = &returnFailedOnly
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *LegacyTableCopyOptionsRequest {
-	s.MatchByColumnName = &matchByColumnName
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithEnforceLength(enforceLength bool) *LegacyTableCopyOptionsRequest {
-	s.EnforceLength = &enforceLength
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *LegacyTableCopyOptionsRequest {
-	s.Truncatecolumns = &truncatecolumns
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithForce(force bool) *LegacyTableCopyOptionsRequest {
-	s.Force = &force
-	return s
-}
-
-func NewLegacyTableCopyOnErrorOptionsRequest() *LegacyTableCopyOnErrorOptionsRequest {
-	s := LegacyTableCopyOnErrorOptionsRequest{}
-	return &s
-}
-
-func (s *LegacyTableCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *LegacyTableCopyOnErrorOptionsRequest {
-	s.Continue_ = &continue_
-	return s
-}
-
-func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFile(skipFile string) *LegacyTableCopyOnErrorOptionsRequest {
-	s.SkipFile = &skipFile
-	return s
-}
-
-func (s *LegacyTableCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *LegacyTableCopyOnErrorOptionsRequest {
-	s.AbortStatement = &abortStatement
-	return s
-}
-
 func NewTableRowAccessPolicyRequest(
 	name SchemaObjectIdentifier,
 	on []string,
@@ -386,6 +301,32 @@ func NewTableRowAccessPolicyRequest(
 	s.Name = name
 	s.On = on
 	return &s
+}
+
+func NewTableAggregationPolicyRequest(
+	aggregationPolicy SchemaObjectIdentifier,
+) *TableAggregationPolicyRequest {
+	s := TableAggregationPolicyRequest{}
+	s.AggregationPolicy = aggregationPolicy
+	return &s
+}
+
+func (s *TableAggregationPolicyRequest) WithEntityKey(entityKey []Column) *TableAggregationPolicyRequest {
+	s.EntityKey = entityKey
+	return s
+}
+
+func NewTableJoinPolicyRequest(
+	joinPolicy SchemaObjectIdentifier,
+) *TableJoinPolicyRequest {
+	s := TableJoinPolicyRequest{}
+	s.JoinPolicy = joinPolicy
+	return &s
+}
+
+func (s *TableJoinPolicyRequest) WithAllowedJoinKeys(allowedJoinKeys []Column) *TableJoinPolicyRequest {
+	s.AllowedJoinKeys = allowedJoinKeys
+	return s
 }
 
 func NewCreateAsSelectTableRequest(
@@ -616,6 +557,26 @@ func (s *AlterTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePol
 
 func (s *AlterTableRequest) WithDropStorageLifecyclePolicy(dropStorageLifecyclePolicy bool) *AlterTableRequest {
 	s.DropStorageLifecyclePolicy = &dropStorageLifecyclePolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithSetAggregationPolicy(setAggregationPolicy TableSetAggregationPolicyRequest) *AlterTableRequest {
+	s.SetAggregationPolicy = &setAggregationPolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithUnsetAggregationPolicy(unsetAggregationPolicy TableUnsetAggregationPolicyRequest) *AlterTableRequest {
+	s.UnsetAggregationPolicy = &unsetAggregationPolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithSetJoinPolicy(setJoinPolicy TableSetJoinPolicyRequest) *AlterTableRequest {
+	s.SetJoinPolicy = &setJoinPolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithUnsetJoinPolicy(unsetJoinPolicy TableUnsetJoinPolicyRequest) *AlterTableRequest {
+	s.UnsetJoinPolicy = &unsetJoinPolicy
 	return s
 }
 
@@ -1173,16 +1134,6 @@ func (s *TableSetRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) 
 	return s
 }
 
-func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *TableSetRequest {
-	s.StageFileFormat = &stageFileFormat
-	return s
-}
-
-func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
-	s.StageCopyOptions = &stageCopyOptions
-	return s
-}
-
 func (s *TableSetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *TableSetRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
@@ -1281,6 +1232,47 @@ func NewTableStorageLifecyclePolicyRequest(
 	s := TableStorageLifecyclePolicyRequest{}
 	s.StorageLifecyclePolicy = storageLifecyclePolicy
 	s.On = on
+	return &s
+}
+
+func NewTableSetAggregationPolicyRequest(
+	aggregationPolicy SchemaObjectIdentifier,
+) *TableSetAggregationPolicyRequest {
+	s := TableSetAggregationPolicyRequest{}
+	s.AggregationPolicy = aggregationPolicy
+	return &s
+}
+
+func (s *TableSetAggregationPolicyRequest) WithEntityKey(entityKey []Column) *TableSetAggregationPolicyRequest {
+	s.EntityKey = entityKey
+	return s
+}
+
+func (s *TableSetAggregationPolicyRequest) WithForce(force bool) *TableSetAggregationPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetAggregationPolicyRequest() *TableUnsetAggregationPolicyRequest {
+	s := TableUnsetAggregationPolicyRequest{}
+	return &s
+}
+
+func NewTableSetJoinPolicyRequest(
+	joinPolicy SchemaObjectIdentifier,
+) *TableSetJoinPolicyRequest {
+	s := TableSetJoinPolicyRequest{}
+	s.JoinPolicy = joinPolicy
+	return &s
+}
+
+func (s *TableSetJoinPolicyRequest) WithForce(force bool) *TableSetJoinPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetJoinPolicyRequest() *TableUnsetJoinPolicyRequest {
+	s := TableUnsetJoinPolicyRequest{}
 	return &s
 }
 

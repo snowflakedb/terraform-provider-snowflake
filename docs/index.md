@@ -1050,7 +1050,7 @@ By default, imports use the enforcing mode: the plan after import shows a change
 
 When enabled, the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.
 
-Note: this is currently supported on the `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, `snowflake_compute_pool`, `snowflake_external_volume`, `snowflake_pipe`, `snowflake_postgres_mirror`, `snowflake_share`, `snowflake_warehouse`, `snowflake_warehouse_adaptive`, and `snowflake_warehouse_interactive` resources.
+Note: this is currently supported on the `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, `snowflake_compute_pool`, `snowflake_external_volume`, `snowflake_openflow_deployment_snowflake_managed`, `snowflake_pipe`, `snowflake_postgres_mirror`, `snowflake_share`, `snowflake_warehouse`, `snowflake_warehouse_adaptive`, and `snowflake_warehouse_interactive` resources.
 
 #### GRANT_ACCOUNT_ROLE_SHOW_CACHING
 Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.
@@ -1090,7 +1090,7 @@ Intended for large configurations (thousands of grant resources) where plan and 
 #### HIERARCHY_RENAMES
 When enabled, allows in-place handling of hierarchy renames and moves for supported resources.
 
-Currently supported by: `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_hybrid_table`, `snowflake_projection_policy`, `snowflake_schema`, `snowflake_table`.
+Currently supported by: `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_file_format_avro`, `snowflake_file_format_csv`, `snowflake_file_format_json`, `snowflake_file_format_orc`, `snowflake_file_format_parquet`, `snowflake_file_format_xml`, `snowflake_hybrid_table`, `snowflake_projection_policy`, `snowflake_schema`, `snowflake_table`.
 
 Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on the other supported resources forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.
 

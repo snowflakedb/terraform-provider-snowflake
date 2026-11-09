@@ -109,8 +109,7 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.NotificationIntegration,
 		resources.Sequence,
 		resources.Share,
-		resources.Stage,
-		resources.Table:
+		resources.Stage:
 		return decodeSnowflakeIdLegacy(rs, resource)
 	// Handling user separately, due to existing test with "." as part of the identifier.
 	case resources.User:

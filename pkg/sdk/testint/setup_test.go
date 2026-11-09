@@ -99,6 +99,9 @@ type integrationTestContext struct {
 	secondaryClient *sdk.Client
 	secondaryCtx    context.Context
 
+	// azureClient is an account in a different region than the default and secondary ones (e.g. for connection failover).
+	azureClient *sdk.Client
+
 	secondaryDatabase         *sdk.Database
 	secondaryDatabaseCleanup  func()
 	secondarySchema           *sdk.Schema
@@ -108,6 +111,7 @@ type integrationTestContext struct {
 
 	testClient          *helpers.TestClient
 	secondaryTestClient *helpers.TestClient
+	azureTestClient     *helpers.TestClient
 }
 
 func (itc *integrationTestContext) initialize() error {
@@ -213,6 +217,27 @@ func (itc *integrationTestContext) initialize() error {
 			return err
 		}
 
+		azureConfig, err := sdk.ProfileConfig(testprofiles.Azure)
+		if err != nil {
+			return err
+		}
+		azureClient, err := sdk.NewClient(azureConfig)
+		if err != nil {
+			return err
+		}
+		itc.azureClient = azureClient
+		itc.azureTestClient = helpers.NewTestClient(
+			azureClient,
+			TestDatabaseName,
+			TestSchemaName,
+			TestWarehouseName,
+			integrationtests.ObjectsSuffix,
+			testenvs.GetSnowflakeEnvironmentWithProdDefault(),
+		)
+		if err := logCurrentSnowflakeVersion(itc.ctx, itc.azureTestClient, testprofiles.Azure); err != nil {
+			return err
+		}
+
 		secondaryDb, secondaryDbCleanup, err := secondaryTestClientHelper().CreateTestDatabase(itc.ctx, false)
 		if err != nil {
 			return err
@@ -311,6 +336,11 @@ func testSecondaryClient(t *testing.T) *sdk.Client {
 	return itc.secondaryClient
 }
 
+func testAzureClient(t *testing.T) *sdk.Client {
+	t.Helper()
+	return itc.azureClient
+}
+
 func testSecondaryContext(t *testing.T) context.Context {
 	t.Helper()
 	return itc.secondaryCtx
@@ -331,4 +361,8 @@ func testClientHelper() *helpers.TestClient {
 
 func secondaryTestClientHelper() *helpers.TestClient {
 	return itc.secondaryTestClient
+}
+
+func azureTestClientHelper() *helpers.TestClient {
+	return itc.azureTestClient
 }

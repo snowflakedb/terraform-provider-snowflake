@@ -65,10 +65,11 @@ func ValidateObject(obj Object) {
 	case obj.VariantEntityAlterName != "":
 		panic(fmt.Sprintf("object %q: VariantEntityAlterName is for a variant", obj.Name))
 	}
-	validateSqlSequence(obj, "SET", obj.Set, attrs, func(attr Attribute) SqlClause { return attr.SetSql })
-	validateSqlSequence(obj, "UNSET", obj.Unset, attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
+	validateSqlSequence(obj, "SET", obj.SetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.SetSql })
+	validateSqlSequence(obj, "UNSET", obj.UnsetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
 	validateUnsetConflicts(obj)
 	validateAlterSpec(obj)
+	validateAlterGroups(obj)
 	validateCustomOperations(obj, attrs)
 	validateCustomInterfaceMethods(obj)
 	for _, a := range obj.Attributes {
@@ -296,7 +297,9 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 		return
 	}
 	// The fields of an object element carry their own CREATE clause when the element has an object clause.
-	sqlFields := (attr.IsObjectList() && attr.Elem.CreateSql.Kind == SqlKindObject) || (attr.Type == AttrObject && attr.CreateSql.Kind == SqlKindObject)
+	// A SqlOnly object may also project SET and UNSET from the same Children.
+	parentObjectClause := attr.CreateSql.Kind == SqlKindObject || attr.SetSql.Kind == SqlKindObject || attr.UnsetSql.Kind == SqlKindObject
+	sqlFields := (attr.IsObjectList() && attr.Elem.CreateSql.Kind == SqlKindObject) || (attr.Type == AttrObject && parentObjectClause)
 	seen := make(map[string]struct{}, len(fields))
 	for _, child := range fields {
 		if child.Name == "" {
@@ -309,14 +312,14 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
 			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
 		}
-		if child.SqlOnly {
-			validateSqlClause(obj, child, "CREATE", child.CreateSql)
-		} else {
-			validateExplicitSqlClause(obj, child, "CREATE", child.CreateSql)
-		}
+		validateSqlClauses(obj, child)
 		if statement, ok := sqlClauseStatement(child); ok {
-			if !sqlFields || statement != "CREATE" || child.SetSql.Present || child.UnsetSql.Present {
+			if !sqlFields {
 				panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, statement))
+			}
+			if attr.IsObjectList() && (child.SetSql.Present || child.UnsetSql.Present) {
+				setOrUnset, _ := sqlClauseStatement(Attribute{SetSql: child.SetSql, UnsetSql: child.UnsetSql})
+				panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, setOrUnset))
 			}
 		}
 		validateCollectionBounds(obj, child)
@@ -331,16 +334,22 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 }
 
 // isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword,
-// an identifier, a parameter, or a nested struct.
+// an identifier, a parameter, or a nested struct. Any of CreateSql, SetSql, and UnsetSql may carry that shape.
 func isNestedSqlOnlyClause(child Attribute) bool {
-	switch child.CreateSql.Kind {
-	case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter:
-		return true
-	case SqlKindObject:
-		return child.Type == AttrObject
-	default:
-		return false
+	for _, clause := range []SqlClause{child.CreateSql, child.SetSql, child.UnsetSql} {
+		if !clause.Present {
+			continue
+		}
+		switch clause.Kind {
+		case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter:
+			return true
+		case SqlKindObject:
+			if child.Type == AttrObject {
+				return true
+			}
+		}
 	}
+	return false
 }
 
 // validateNestedShape allows two shapes for a nested block: an object, which is a single block, and a list or set whose Elem
@@ -508,8 +517,9 @@ func validateAttributeGroups(obj Object, label string, groups [][]*Attribute) {
 }
 
 func validateUnsetConflicts(obj Object) {
-	inUnset := make(map[string]struct{}, len(obj.Unset))
-	for _, attr := range obj.Unset {
+	unsetAttributes := obj.UnsetAttributes()
+	inUnset := make(map[string]struct{}, len(unsetAttributes))
+	for _, attr := range unsetAttributes {
 		if attr != nil {
 			inUnset[attr.Name] = struct{}{}
 		}
@@ -534,6 +544,68 @@ func validateUnsetConflicts(obj Object) {
 	}
 }
 
+// validateAlterGroups checks the groups of the SET and UNSET blocks. A block does not mix attributes and groups.
+// Each attribute is in one group. A named group has an exported Go identifier name that no other group repeats, and a
+// block has at most one main group. A conflicting pair cannot share a group, because one ALTER statement cannot hold
+// both attributes.
+func validateAlterGroups(obj Object) {
+	validateAlterBlockGroups(obj, "SET", AlterClauseSet, obj.Alter.SetConflictingFields)
+	validateAlterBlockGroups(obj, "UNSET", AlterClauseUnset, obj.UnsetConflicts)
+}
+
+func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind, conflicts [][]*Attribute) {
+	if clause, _ := obj.alterClause(kind); clause.MixedForms {
+		panic(fmt.Sprintf("object %q: %s mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)", obj.Name, block))
+	}
+	if clause, ok := obj.alterClause(kind); ok && len(clause.Groups) == 0 {
+		panic(fmt.Sprintf("object %q: %s has no attributes", obj.Name, block))
+	}
+	names := make(map[string]struct{})
+	owner := make(map[string]string)
+	mains := 0
+	for _, group := range obj.alterGroups(kind) {
+		label := "main " + block + " group"
+		if group.Name == MainAlterGroup {
+			mains++
+			if mains > 1 {
+				panic(fmt.Sprintf("object %q: %s has more than one main group", obj.Name, block))
+			}
+		} else {
+			if !token.IsIdentifier(group.Name) || !token.IsExported(group.Name) {
+				panic(fmt.Sprintf("object %q: %s group name %q is not an exported Go identifier", obj.Name, block, group.Name))
+			}
+			if _, dup := names[group.Name]; dup {
+				panic(fmt.Sprintf("object %q: %s group name %q is repeated", obj.Name, block, group.Name))
+			}
+			names[group.Name] = struct{}{}
+			label = fmt.Sprintf("%s group %q", block, group.Name)
+		}
+		if len(group.Attributes) == 0 {
+			panic(fmt.Sprintf("object %q: %s has no attributes", obj.Name, label))
+		}
+		for _, member := range group.Attributes {
+			if member == nil {
+				panic(fmt.Sprintf("object %q: %s has a nil attribute", obj.Name, label))
+			}
+			if other, ok := owner[member.Name]; ok {
+				panic(fmt.Sprintf("object %q: %s attribute %q is in both %s and %s", obj.Name, block, member.Name, other, label))
+			}
+			owner[member.Name] = label
+		}
+		for _, pair := range conflicts {
+			inGroup := 0
+			for _, member := range pair {
+				if member != nil && slices.ContainsFunc(group.Attributes, func(attr *Attribute) bool { return attr != nil && attr.Name == member.Name }) {
+					inGroup++
+				}
+			}
+			if inGroup > 1 {
+				panic(fmt.Sprintf("object %q: %s holds attributes that cannot be sent together", obj.Name, label))
+			}
+		}
+	}
+}
+
 func validateCreateSpec(obj Object, attrs map[string]struct{}) {
 	seen := make(map[string]struct{})
 	clause := func(attr Attribute) SqlClause { return attr.CreateSql }
@@ -548,7 +620,7 @@ func validateAlterSpec(obj Object) {
 			panic(fmt.Sprintf("object %q: SetConflictingFields entry %d needs exactly two attributes", obj.Name, i))
 		}
 		for _, member := range pair {
-			if member == nil || !slices.ContainsFunc(obj.Set, func(set *Attribute) bool { return set != nil && set.Name == member.Name }) {
+			if member == nil || !slices.ContainsFunc(obj.SetAttributes(), func(set *Attribute) bool { return set != nil && set.Name == member.Name }) {
 				panic(fmt.Sprintf("object %q: SetConflictingFields entry %d has an attribute that is not in Set", obj.Name, i))
 			}
 		}
@@ -986,6 +1058,9 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 }
 
 func requireCreateOnlyClause(obj Object, attr Attribute, statement string, clause SqlClause) {
+	if clause.Kind == SqlKindStatic {
+		return
+	}
 	if statement != "CREATE" {
 		panic(fmt.Sprintf("object %q: attribute %q %s clause is CREATE only", obj.Name, attr.Name, clause.Kind))
 	}

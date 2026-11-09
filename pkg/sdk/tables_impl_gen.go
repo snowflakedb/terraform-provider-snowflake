@@ -212,35 +212,22 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
-	if r.StageFileFormat != nil {
-		opts.StageFileFormat = &LegacyFileFormat{
-			FormatName:     r.StageFileFormat.FormatName,
-			FileFormatType: r.StageFileFormat.FileFormatType,
-			Options:        r.StageFileFormat.Options,
-		}
-	}
-	if r.StageCopyOptions != nil {
-		opts.StageCopyOptions = &LegacyTableCopyOptions{
-			SizeLimit:         r.StageCopyOptions.SizeLimit,
-			Purge:             r.StageCopyOptions.Purge,
-			ReturnFailedOnly:  r.StageCopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.StageCopyOptions.MatchByColumnName,
-			EnforceLength:     r.StageCopyOptions.EnforceLength,
-			Truncatecolumns:   r.StageCopyOptions.Truncatecolumns,
-			Force:             r.StageCopyOptions.Force,
-		}
-		if r.StageCopyOptions.OnError != nil {
-			opts.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
-				Continue_:      r.StageCopyOptions.OnError.Continue_,
-				SkipFile:       r.StageCopyOptions.OnError.SkipFile,
-				AbortStatement: r.StageCopyOptions.OnError.AbortStatement,
-			}
-		}
-	}
 	if r.RowAccessPolicy != nil {
 		opts.RowAccessPolicy = &TableRowAccessPolicy{
 			Name: r.RowAccessPolicy.Name,
 			On:   r.RowAccessPolicy.On,
+		}
+	}
+	if r.AggregationPolicy != nil {
+		opts.AggregationPolicy = &TableAggregationPolicy{
+			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
+			EntityKey:         r.AggregationPolicy.EntityKey,
+		}
+	}
+	if r.JoinPolicy != nil {
+		opts.JoinPolicy = &TableJoinPolicy{
+			JoinPolicy:      r.JoinPolicy.JoinPolicy,
+			AllowedJoinKeys: r.JoinPolicy.AllowedJoinKeys,
 		}
 	}
 	return opts
@@ -522,31 +509,6 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
 			Comment:                    r.Set.Comment,
 		}
-		if r.Set.StageFileFormat != nil {
-			opts.Set.StageFileFormat = &LegacyFileFormat{
-				FormatName:     r.Set.StageFileFormat.FormatName,
-				FileFormatType: r.Set.StageFileFormat.FileFormatType,
-				Options:        r.Set.StageFileFormat.Options,
-			}
-		}
-		if r.Set.StageCopyOptions != nil {
-			opts.Set.StageCopyOptions = &LegacyTableCopyOptions{
-				SizeLimit:         r.Set.StageCopyOptions.SizeLimit,
-				Purge:             r.Set.StageCopyOptions.Purge,
-				ReturnFailedOnly:  r.Set.StageCopyOptions.ReturnFailedOnly,
-				MatchByColumnName: r.Set.StageCopyOptions.MatchByColumnName,
-				EnforceLength:     r.Set.StageCopyOptions.EnforceLength,
-				Truncatecolumns:   r.Set.StageCopyOptions.Truncatecolumns,
-				Force:             r.Set.StageCopyOptions.Force,
-			}
-			if r.Set.StageCopyOptions.OnError != nil {
-				opts.Set.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
-					Continue_:      r.Set.StageCopyOptions.OnError.Continue_,
-					SkipFile:       r.Set.StageCopyOptions.OnError.SkipFile,
-					AbortStatement: r.Set.StageCopyOptions.OnError.AbortStatement,
-				}
-			}
-		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &TableUnset{
@@ -584,6 +546,18 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			StorageLifecyclePolicy: r.AddStorageLifecyclePolicy.StorageLifecyclePolicy,
 			On:                     r.AddStorageLifecyclePolicy.On,
 		}
+	}
+	if r.SetAggregationPolicy != nil {
+		opts.SetAggregationPolicy = r.SetAggregationPolicy.toOpts()
+	}
+	if r.UnsetAggregationPolicy != nil {
+		opts.UnsetAggregationPolicy = r.UnsetAggregationPolicy.toOpts()
+	}
+	if r.SetJoinPolicy != nil {
+		opts.SetJoinPolicy = r.SetJoinPolicy.toOpts()
+	}
+	if r.UnsetJoinPolicy != nil {
+		opts.UnsetJoinPolicy = r.UnsetJoinPolicy.toOpts()
 	}
 	return opts
 }
@@ -634,7 +608,13 @@ func (r tablesRow) convert() (*Table, error) {
 	mapNullStringToRequiredBool(&result.EnableSchemaEvolution, r.EnableSchemaEvolution)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToRequiredBool(&result.IsEvent, r.IsEvent)
+	mapNullStringToRequiredBool(&result.IsHybrid, r.IsHybrid)
+	mapNullStringToRequiredBool(&result.IsIceberg, r.IsIceberg)
 	mapNullStringToRequiredBool(&result.IsDynamic, r.IsDynamic)
+	mapNullStringToRequiredBool(&result.IsImmutable, r.IsImmutable)
+	mapNullStringToRequiredBool(&result.IsInteractive, r.IsInteractive)
+	mapNullStringToRequiredBoolValue(&result.RowTimestamp, r.RowTimestamp, "ON")
+	mapNullStringToRequiredBoolValue(&result.ErrorLogging, r.ErrorLogging, "ON")
 	mapNullString(&result.Budget, r.Budget)
 	return result, nil
 }
@@ -795,5 +775,32 @@ func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimization
 			opts.Drop.On = on
 		}
 	}
+	return opts
+}
+
+func (r *TableSetAggregationPolicyRequest) toOpts() *TableSetAggregationPolicy {
+	opts := &TableSetAggregationPolicy{
+		AggregationPolicy: r.AggregationPolicy,
+		EntityKey:         r.EntityKey,
+		Force:             r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetAggregationPolicyRequest) toOpts() *TableUnsetAggregationPolicy {
+	opts := &TableUnsetAggregationPolicy{}
+	return opts
+}
+
+func (r *TableSetJoinPolicyRequest) toOpts() *TableSetJoinPolicy {
+	opts := &TableSetJoinPolicy{
+		JoinPolicy: r.JoinPolicy,
+		Force:      r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetJoinPolicyRequest) toOpts() *TableUnsetJoinPolicy {
+	opts := &TableUnsetJoinPolicy{}
 	return opts
 }
