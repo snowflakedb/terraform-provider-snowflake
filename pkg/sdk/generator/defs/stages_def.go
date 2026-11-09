@@ -399,7 +399,9 @@ var stagesDef = g.NewInterface(
 			Name().
 			OptionalQueryStructField(
 				"SetDirectory",
-				g.NewQueryStruct("DirectoryTableSet").BooleanAssignment("ENABLE", g.ParameterOptions().Required()),
+				g.NewQueryStruct("DirectoryTableSet").
+					BooleanAssignment("ENABLE", g.ParameterOptions().Required()).
+					OptionalTextAssignment("NOTIFICATION_INTEGRATION", g.ParameterOptions().SingleQuotes()),
 				g.ListOptions().Parentheses().NoComma().SQL("SET DIRECTORY ="),
 			).
 			OptionalQueryStructField(

@@ -322,7 +322,8 @@ type AlterDirectoryTableStageOptions struct {
 }
 
 type DirectoryTableSet struct {
-	Enable bool `ddl:"parameter" sql:"ENABLE"`
+	Enable                  bool    `ddl:"parameter" sql:"ENABLE"`
+	NotificationIntegration *string `ddl:"parameter,single_quotes" sql:"NOTIFICATION_INTEGRATION"`
 }
 
 type DirectoryTableRefresh struct {
@@ -366,6 +367,7 @@ type StageDirectoryTable struct {
 	DirectoryNotificationChannel *string
 	LastRefreshedOn              *string
 	AwsSnsTopic                  *string
+	NotificationIntegration      *string
 }
 
 type StagePrivateLink struct {

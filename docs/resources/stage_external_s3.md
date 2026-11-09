@@ -512,6 +512,7 @@ Read-Only:
 - `directory_notification_channel` (String)
 - `enable` (Boolean)
 - `last_refreshed_on` (String)
+- `notification_integration` (String)
 
 
 <a id="nestedobjatt--describe_output--file_format"></a>

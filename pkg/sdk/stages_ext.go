@@ -197,6 +197,10 @@ func parseDirectoryTable(properties []StageProperty) *StageDirectoryTable {
 			}
 		case "AWS_SNS_TOPIC":
 			dt.AwsSnsTopic = &prop.Value
+		case "NOTIFICATION_INTEGRATION":
+			if prop.Value != "" {
+				dt.NotificationIntegration = &prop.Value
+			}
 		}
 	}
 

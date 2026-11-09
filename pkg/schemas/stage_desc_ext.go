@@ -37,6 +37,10 @@ func stageDirectoryTableDescribeSchema() *schema.Schema {
 					Type:     schema.TypeString,
 					Computed: true,
 				},
+				"notification_integration": {
+					Type:     schema.TypeString,
+					Computed: true,
+				},
 			},
 		},
 		Computed: true,
@@ -136,6 +140,10 @@ func mapStageCommonDescribe(src *sdk.StageCommon, dst map[string]any) {
 		if src.DirectoryTable.AwsSnsTopic != nil {
 			awsSnsTopic = *src.DirectoryTable.AwsSnsTopic
 		}
+		notificationIntegration := ""
+		if src.DirectoryTable.NotificationIntegration != nil {
+			notificationIntegration = *src.DirectoryTable.NotificationIntegration
+		}
 		dst["directory_table"] = []map[string]any{
 			{
 				"enable":                         src.DirectoryTable.Enable,
@@ -143,6 +151,7 @@ func mapStageCommonDescribe(src *sdk.StageCommon, dst map[string]any) {
 				"last_refreshed_on":              src.DirectoryTable.LastRefreshedOn,
 				"directory_notification_channel": directoryNotificationChannel,
 				"aws_sns_topic":                  awsSnsTopic,
+				"notification_integration":       notificationIntegration,
 			},
 		}
 	}

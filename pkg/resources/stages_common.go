@@ -93,6 +93,9 @@ func handleStageDirectoryTable(ctx context.Context, client *sdk.Client, d *schem
 		}
 		directoryConfig := directoryList[0].(map[string]any)
 		directoryReq := sdk.NewDirectoryTableSetRequest(directoryConfig["enable"].(bool))
+		if notificationIntegration, ok := directoryConfig["notification_integration"]; ok && notificationIntegration.(string) != "" {
+			directoryReq.WithNotificationIntegration(notificationIntegration.(string))
+		}
 		return *directoryReq, nil
 	}
 	err := attributeMappedValueUpdateSetOnly(d, "directory", &setDirectoryTable.SetDirectory, parseDirectoryTable)
@@ -117,20 +120,37 @@ func DeleteStage(resource resources.Resource) schema.DeleteContextFunc {
 	)
 }
 
-func directoryTableToSet(directoryTable sdk.StageDirectoryTable) []any {
-	return []any{
-		map[string]any{
-			"enable":       directoryTable.Enable,
-			"auto_refresh": booleanStringFromBool(directoryTable.AutoRefresh),
-		},
+func directoryTableToSet(d *schema.ResourceData, directoryTable sdk.StageDirectoryTable) []any {
+	directory := map[string]any{
+		"enable":       directoryTable.Enable,
+		"auto_refresh": booleanStringFromBool(directoryTable.AutoRefresh),
 	}
+	if directoryTable.NotificationIntegration != nil {
+		directory["notification_integration"] = *directoryTable.NotificationIntegration
+	} else if d != nil {
+		if current, ok := d.GetOk("directory.0.notification_integration"); ok {
+			directory["notification_integration"] = current.(string)
+		}
+		if current, ok := d.GetOk("directory.0.refresh_on_create"); ok {
+			directory["refresh_on_create"] = current.(string)
+		}
+	}
+	return []any{directory}
+}
+
+func directoryNotificationIntegration(directoryTable sdk.StageDirectoryTable) string {
+	if directoryTable.NotificationIntegration == nil {
+		return ""
+	}
+	return *directoryTable.NotificationIntegration
 }
 
 func directoryTableToCompare(directoryTable sdk.StageDirectoryTable) []any {
 	return []any{
 		map[string]any{
-			"enable":       directoryTable.Enable,
-			"auto_refresh": directoryTable.AutoRefresh,
+			"enable":                   directoryTable.Enable,
+			"auto_refresh":             directoryTable.AutoRefresh,
+			"notification_integration": directoryNotificationIntegration(directoryTable),
 		},
 	}
 }
@@ -144,18 +164,40 @@ func normalizeDirectoryTableForExternalChangeCompare(value any) any {
 	if !ok {
 		return value
 	}
+	notificationIntegration, _ := directoryTable["notification_integration"].(string)
 	return []any{
 		map[string]any{
-			"enable":       directoryTable["enable"],
-			"auto_refresh": directoryTable["auto_refresh"],
+			"enable":                   directoryTable["enable"],
+			"auto_refresh":             directoryTable["auto_refresh"],
+			"notification_integration": notificationIntegration,
 		},
 	}
 }
 
-func directoryTableOutputMapping(directoryTable sdk.StageDirectoryTable) outputMapping {
+func directoryTableOutputMapping(d *schema.ResourceData, directoryTable sdk.StageDirectoryTable) outputMapping {
 	return outputMapping{
-		"directory_table", "directory", directoryTableToCompare(directoryTable), directoryTableToSet(directoryTable), normalizeDirectoryTableForExternalChangeCompare,
+		"directory_table", "directory", directoryTableToCompare(directoryTable), directoryTableToSet(d, directoryTable), normalizeDirectoryTableForExternalChangeCompare,
 	}
+}
+
+func setImportedDirectoryNotificationIntegration(d *schema.ResourceData, details *sdk.StageDetails) error {
+	if details == nil || details.DirectoryTable == nil || details.DirectoryTable.NotificationIntegration == nil || *details.DirectoryTable.NotificationIntegration == "" {
+		return nil
+	}
+	directory, ok := d.Get("directory").([]any)
+	if !ok || len(directory) != 1 {
+		return nil
+	}
+	current, ok := directory[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+	updated := make(map[string]any, len(current)+1)
+	for key, value := range current {
+		updated[key] = value
+	}
+	updated["notification_integration"] = *details.DirectoryTable.NotificationIntegration
+	return d.Set("directory", []any{updated})
 }
 
 func importStageCommonFields(d *schema.ResourceData, details *sdk.StageDetails, setDefaults bool) error {

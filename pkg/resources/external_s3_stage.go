@@ -379,7 +379,7 @@ func ReadExternalS3StageFunc(withExternalChangesMarking bool) schema.ReadContext
 			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
 				d,
-				directoryTableOutputMapping(*details.DirectoryTable),
+				directoryTableOutputMapping(d, *details.DirectoryTable),
 				outputMapping{"location.0.aws_access_point_arn", "aws_access_point_arn", details.Location.AwsAccessPointArn, details.Location.AwsAccessPointArn, nil},
 			); err != nil {
 				return diag.FromErr(err)

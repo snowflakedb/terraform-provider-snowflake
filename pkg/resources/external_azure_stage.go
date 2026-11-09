@@ -128,7 +128,6 @@ var externalAzureStageSchema = func() map[string]*schema.Schema {
 					"notification_integration": {
 						Type:             schema.TypeString,
 						Optional:         true,
-						ForceNew:         true,
 						Description:      blocklistedCharactersFieldDescription("Specifies the name of the notification integration used to automatically refresh the directory table metadata."),
 						DiffSuppressFunc: suppressIdentifierQuoting,
 						ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
@@ -209,6 +208,9 @@ func ImportExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 	setDefaults := providerCtx.Experiments.IsEnabled(experimentalfeatures.ImportBooleanDefault)
 
 	if err := importStageCommonFields(d, details, setDefaults); err != nil {
+		return nil, err
+	}
+	if err := setImportedDirectoryNotificationIntegration(d, details); err != nil {
 		return nil, err
 	}
 
@@ -315,7 +317,7 @@ func ReadExternalAzureStageFunc(withExternalChangesMarking bool) schema.ReadCont
 			}
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
 				d,
-				directoryTableOutputMapping(*details.DirectoryTable),
+				directoryTableOutputMapping(d, *details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)
 			}
