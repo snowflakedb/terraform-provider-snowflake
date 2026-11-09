@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -272,7 +271,6 @@ func init() {
 				}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
 				opts.EnableSchemaEvolution = new(true)
-				opts.StageCopyOptions = &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")}}
 				opts.DataRetentionTimeInDays = new(10)
 				opts.MaxDataExtensionTimeInDays = new(100)
 				opts.ChangeTracking = new(true)
@@ -286,7 +284,7 @@ func init() {
 				}
 				opts.Comment = &tableComment
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -315,22 +313,6 @@ func init() {
 				opts.CopyGrants = new(true)
 			},
 			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR) COPY GRANTS`,
-			id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Create_skipFileX",
-			func(opts *CreateTableOptions) {
-				opts.StageCopyOptions = &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new(fmt.Sprintf("SKIP_FILE_%d", 5))}}
-			},
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE_5)`,
-			id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Create_skipFileXPercent",
-			func(opts *CreateTableOptions) {
-				opts.StageCopyOptions = &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new(fmt.Sprintf("'SKIP_FILE_%d%%'", 10))}}
-			},
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = 'SKIP_FILE_10%%')`,
 			id.FullyQualifiedName(),
 		)
 
@@ -724,7 +706,6 @@ func init() {
 			func(opts *AlterTableOptions) {
 				opts.Set = &TableSet{
 					EnableSchemaEvolution:      new(true),
-					StageCopyOptions:           &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")}},
 					DataRetentionTimeInDays:    new(30),
 					MaxDataExtensionTimeInDays: new(90),
 					ChangeTracking:             new(false),
@@ -732,7 +713,7 @@ func init() {
 					Comment:                    &tableComment,
 				}
 			},
-			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
+			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
 			id.FullyQualifiedName(), tableComment,
 		).
 		withAdditionalSqlCasef(

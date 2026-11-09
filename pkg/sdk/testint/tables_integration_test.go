@@ -180,9 +180,7 @@ func TestInt_Table(t *testing.T) {
 				WithMatch(sdk.MatchTypeFull).
 				WithOn(*sdk.NewForeignKeyOnAction().
 					WithOnDelete(sdk.Pointer(sdk.ForeignKeySetNullAction)).WithOnUpdate(sdk.Pointer(sdk.ForeignKeyRestrictAction))))
-		legacyTableCopyOptions := sdk.NewLegacyTableCopyOptionsRequest().WithOnError(*sdk.NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFile("SKIP_FILE"))
 		request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint([]sdk.OutOfLineConstraintRequest{*outOfLineConstraint})).
-			WithStageCopyOptions(*legacyTableCopyOptions).
 			WithComment(comment).
 			WithDataRetentionTimeInDays(30).
 			WithMaxDataExtensionTimeInDays(30)
@@ -1031,12 +1029,9 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 		t.Cleanup(cleanupTableProvider(id))
 
-		legacyTableCopyOptions := *sdk.NewLegacyTableCopyOptionsRequest().
-			WithOnError(*sdk.NewLegacyTableCopyOnErrorOptionsRequest().WithSkipFile("SKIP_FILE"))
 		alterRequest := sdk.NewAlterTableRequest(id).
 			WithSet(*sdk.NewTableSetRequest().
 				WithEnableSchemaEvolution(true).
-				WithStageCopyOptions(legacyTableCopyOptions).
 				WithDataRetentionTimeInDays(30).
 				WithMaxDataExtensionTimeInDays(90).
 				WithChangeTracking(false).

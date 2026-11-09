@@ -149,25 +149,6 @@ func tableOutOfLineForeignKey() *g.QueryStruct {
 		PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
 }
 
-func tableCopyOptions() *g.QueryStruct {
-	return g.NewQueryStruct("LegacyTableCopyOptions").
-		OptionalQueryStructField("OnError", tableCopyOnErrorOptions(), g.ParameterOptions().SQL("ON_ERROR")).
-		OptionalNumberAssignment("SIZE_LIMIT", g.ParameterOptions()).
-		OptionalBooleanAssignment("PURGE", g.ParameterOptions()).
-		OptionalBooleanAssignment("RETURN_FAILED_ONLY", g.ParameterOptions()).
-		OptionalAssignment("MATCH_BY_COLUMN_NAME", "*StageCopyColumnMapOption", g.ParameterOptions()).
-		OptionalBooleanAssignment("ENFORCE_LENGTH", g.ParameterOptions()).
-		OptionalBooleanAssignment("TRUNCATECOLUMNS", g.ParameterOptions()).
-		OptionalBooleanAssignment("FORCE", g.ParameterOptions())
-}
-
-func tableCopyOnErrorOptions() *g.QueryStruct {
-	return g.NewQueryStruct("LegacyTableCopyOnErrorOptions").
-		OptionalSQLWithCustomFieldName("Continue_", "CONTINUE").
-		OptionalText("SkipFile", g.KeywordOptions().SQL("SKIP_FILE")).
-		OptionalSQL("ABORT_STATEMENT")
-}
-
 func tableAsSelectColumn() *g.QueryStruct {
 	return g.NewQueryStruct("TableAsSelectColumn").
 		Text("Name", g.KeywordOptions().Required()).
@@ -356,7 +337,6 @@ func tableExternalTableColumnDropAction() *g.QueryStruct {
 func tableSet() *g.QueryStruct {
 	return g.NewQueryStruct("TableSet").
 		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-		OptionalQueryStructField("StageCopyOptions", tableCopyOptions(), g.ListOptions().Parentheses().SQL("STAGE_COPY_OPTIONS =")).
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
@@ -427,7 +407,7 @@ var tablesDef = g.NewInterface(
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	// CREATE comes from ssotdefs.Table. The structs it names stay here because other operations reuse them.
-	CreateOperationFromObject(ssotdefs.Table, tableColumnsAndConstraints(), tableCopyOptions()).
+	CreateOperationFromObject(ssotdefs.Table, tableColumnsAndConstraints()).
 	// TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" CreateTableOptions
 	CustomOperation(
 		"CreateAsSelect",
