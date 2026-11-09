@@ -47,12 +47,14 @@ func FileFormatOrc() *schema.Resource {
 		Description:   "Resource used to manage ORC file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatOrc, customdiff.All(
-			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
 				"name", "type", "trim_space", "replace_invalid_characters", "null_if",
 			),
-			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeOrc, sdk.ToFileFormatType),
 		)),
 
@@ -182,6 +184,17 @@ func UpdateFileFormatOrc(ctx context.Context, d *schema.ResourceData, meta any) 
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.FileFormats.AlterOrc(ctx, sdk.NewAlterOrcFileFormatRequest(currentId).WithRenameTo(targetId))
+		},
+		client.FileFormats.ShowByID,
+		"file format",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

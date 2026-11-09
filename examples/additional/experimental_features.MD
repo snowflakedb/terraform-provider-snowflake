@@ -85,7 +85,7 @@ Intended for large configurations (thousands of grant resources) where plan and 
 #### HIERARCHY_RENAMES
 When enabled, allows in-place handling of hierarchy renames and moves for supported resources.
 
-Currently supported by: `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_hybrid_table`, `snowflake_projection_policy`, `snowflake_schema`, `snowflake_table`.
+Currently supported by: `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_file_format_avro`, `snowflake_file_format_csv`, `snowflake_file_format_json`, `snowflake_file_format_orc`, `snowflake_file_format_parquet`, `snowflake_file_format_xml`, `snowflake_hybrid_table`, `snowflake_projection_policy`, `snowflake_schema`, `snowflake_table`.
 
 Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on the other supported resources forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.
 

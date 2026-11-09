@@ -54,7 +54,9 @@ func FileFormatCsv() *schema.Resource {
 		Description:   "Resource used to manage CSV file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatCsv, customdiff.All(
-			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
 				"name", "type", "compression", "record_delimiter", "field_delimiter", "multi_line", "file_extension",
@@ -63,7 +65,7 @@ func FileFormatCsv() *schema.Resource {
 				"null_if", "error_on_column_count_mismatch", "replace_invalid_characters", "empty_field_as_null",
 				"skip_byte_order_mark", "encoding",
 			),
-			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeCsv, sdk.ToFileFormatType),
 		)),
 
@@ -218,6 +220,17 @@ func UpdateFileFormatCsv(ctx context.Context, d *schema.ResourceData, meta any) 
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.FileFormats.AlterCsv(ctx, sdk.NewAlterCsvFileFormatRequest(currentId).WithRenameTo(targetId))
+		},
+		client.FileFormats.ShowByID,
+		"file format",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

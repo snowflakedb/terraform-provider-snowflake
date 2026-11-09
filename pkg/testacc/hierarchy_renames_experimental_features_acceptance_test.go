@@ -61,6 +61,54 @@ func hierarchyRenameSchemaObjectTestCases(t *testing.T) []hierarchyRenameSchemaO
 			exists: showError(testClient().BackupSet.Show),
 		},
 		{
+			name:     "FileFormatAvro",
+			resource: resources.FileFormatAvro,
+			model: func(id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.FileFormatAvro("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists: showError(testClient().FileFormat.Show),
+		},
+		{
+			name:     "FileFormatCsv",
+			resource: resources.FileFormatCsv,
+			model: func(id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.FileFormatCsv("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists: showError(testClient().FileFormat.Show),
+		},
+		{
+			name:     "FileFormatJson",
+			resource: resources.FileFormatJson,
+			model: func(id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.FileFormatJson("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists: showError(testClient().FileFormat.Show),
+		},
+		{
+			name:     "FileFormatOrc",
+			resource: resources.FileFormatOrc,
+			model: func(id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.FileFormatOrc("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists: showError(testClient().FileFormat.Show),
+		},
+		{
+			name:     "FileFormatParquet",
+			resource: resources.FileFormatParquet,
+			model: func(id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.FileFormatParquet("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists: showError(testClient().FileFormat.Show),
+		},
+		{
+			name:     "FileFormatXml",
+			resource: resources.FileFormatXml,
+			model: func(id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.FileFormatXml("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists: showError(testClient().FileFormat.Show),
+		},
+		{
 			name:     "HybridTable",
 			resource: resources.HybridTable,
 			model: func(id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {

@@ -47,12 +47,14 @@ func FileFormatAvro() *schema.Resource {
 		Description:   "Resource used to manage AVRO file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatAvro, customdiff.All(
-			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
 				"name", "type", "compression", "trim_space", "replace_invalid_characters", "null_if",
 			),
-			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeAvro, sdk.ToFileFormatType),
 		)),
 
@@ -189,6 +191,17 @@ func UpdateFileFormatAvro(ctx context.Context, d *schema.ResourceData, meta any)
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.FileFormats.AlterAvro(ctx, sdk.NewAlterAvroFileFormatRequest(currentId).WithRenameTo(targetId))
+		},
+		client.FileFormats.ShowByID,
+		"file format",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

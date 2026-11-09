@@ -54,13 +54,15 @@ func FileFormatXml() *schema.Resource {
 		Description:   "Resource used to manage XML file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatXml, customdiff.All(
-			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
 				"name", "type", "compression", "ignore_utf8_errors", "preserve_space", "strip_outer_element",
 				"disable_auto_convert", "replace_invalid_characters", "skip_byte_order_mark",
 			),
-			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeXml, sdk.ToFileFormatType),
 		)),
 
@@ -194,6 +196,17 @@ func UpdateFileFormatXml(ctx context.Context, d *schema.ResourceData, meta any) 
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.FileFormats.AlterXml(ctx, sdk.NewAlterXmlFileFormatRequest(currentId).WithRenameTo(targetId))
+		},
+		client.FileFormats.ShowByID,
+		"file format",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

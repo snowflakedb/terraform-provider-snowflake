@@ -6,6 +6,9 @@ import (
 	"log"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -53,6 +56,33 @@ func handleTwoLevelHierarchyRename[OR any](
 
 	*id = newObjectId
 	return nil
+}
+
+// handleThreeLevelHierarchyRenameIfEnabled runs handleThreeLevelHierarchyRename when the HIERARCHY_RENAMES
+// experiment is enabled and database or schema changed; otherwise it does nothing.
+// OR is the return type of objectShowByIDFn.
+func handleThreeLevelHierarchyRenameIfEnabled[OR any](
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta any,
+	id *sdk.SchemaObjectIdentifier,
+	objectRenameFn func(currentId, targetId sdk.SchemaObjectIdentifier) error,
+	objectShowByIDFn func(context.Context, sdk.SchemaObjectIdentifier) (OR, error),
+	leafLevelName string,
+) diag.Diagnostics {
+	providerCtx := meta.(*provider.Context)
+	if !providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) || (!d.HasChange("database") && !d.HasChange("schema")) {
+		return nil
+	}
+	return handleThreeLevelHierarchyRename(
+		ctx, d, providerCtx.Client, id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
+			return func() error { return objectRenameFn(currentId, targetId) }
+		},
+		objectShowByIDFn,
+		func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
+		leafLevelName,
+	)
 }
 
 // handleThreeLevelHierarchyRename handles the full 3-level hierarchy rename/move
