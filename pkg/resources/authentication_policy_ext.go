@@ -31,11 +31,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-type authenticationPolicyAlterRequestsExt struct {
-	set   *sdk.AuthenticationPolicySetRequest
-	unset *sdk.AuthenticationPolicyUnsetRequest
-}
-
 func authenticationPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateAuthenticationPolicyRequest, error) {
 	return sdk.NewCreateAuthenticationPolicyRequest(id), nil
 }
@@ -75,25 +70,6 @@ func authenticationPolicyEnumStrings[T ~string](values []T) []string {
 		out[i] = string(value)
 	}
 	return out
-}
-
-func authenticationPolicyApplySetUnsetExt(d *schema.ResourceData) (*authenticationPolicyAlterRequestsExt, error) {
-	set, unset := sdk.NewAuthenticationPolicySetRequest(), sdk.NewAuthenticationPolicyUnsetRequest()
-
-	if err := errors.Join(
-		setValueUpdate(d, "authentication_methods", &set.AuthenticationMethods, &unset.AuthenticationMethods, toAuthenticationPolicyAuthenticationMethods),
-		attributeMappedValueUpdate(d, "mfa_enrollment", &set.MfaEnrollment, &unset.MfaEnrollment, sdk.ToMfaEnrollmentOption),
-		setValueUpdate(d, "client_types", &set.ClientTypes, &unset.ClientTypes, toAuthenticationPolicyClientTypes),
-		setValueUpdate(d, "client_policy", &set.ClientPolicy, &unset.ClientPolicy, toAuthenticationPolicyClientPolicy),
-		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-		attributeMappedValueUpdate(d, "security_integrations", &set.SecurityIntegrations, &unset.SecurityIntegrations, ToSecurityIntegrationsRequest),
-		singleBlockAttributeUpdate(d, "mfa_policy", &set.MfaPolicy, &unset.MfaPolicy, applyMfaPolicyUpdate),
-		singleBlockAttributeUpdate(d, "pat_policy", &set.PatPolicy, &unset.PatPolicy, applyPatPolicyUpdate),
-		singleBlockAttributeUpdate(d, "workload_identity_policy", &set.WorkloadIdentityPolicy, &unset.WorkloadIdentityPolicy, applyWorkloadIdentityPolicyUpdate),
-	); err != nil {
-		return nil, err
-	}
-	return &authenticationPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }
 
 func authenticationPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, details *sdk.AuthenticationPolicyDetails, importPermissiveMode bool) error {

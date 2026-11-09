@@ -369,3 +369,54 @@ func (m CustomUpdateMapping) UpdateCall(objectName string, attr Attribute) Updat
 func CustomUpdate(function string) CustomUpdateMapping {
 	return CustomUpdateMapping{Function: function}
 }
+
+// SetValueUpdateMapping is setValueUpdate with the name of the function that turns one element of the Terraform set into
+// the SDK value. An empty set unsets the attribute. It updates a nested attribute as one value, so the generator does not
+// skip it.
+type SetValueUpdateMapping struct {
+	Mapper string
+}
+
+func (m SetValueUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Mapper == "" {
+		panic(fmt.Sprintf("object %q: attribute %q SetValueUpdate needs a mapper function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "setValueUpdate",
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+		Mapper: m.Mapper,
+	}
+}
+
+func (SetValueUpdateMapping) updatesWholeValue() {}
+
+func SetValueUpdate(mapper string) SetValueUpdateMapping {
+	return SetValueUpdateMapping{Mapper: mapper}
+}
+
+// SingleBlockAttributeUpdateMapping is singleBlockAttributeUpdate with the name of the function that fills the SDK request
+// from the nested fields of the block. A removed block unsets the attribute. It updates a nested attribute as one value.
+type SingleBlockAttributeUpdateMapping struct {
+	Fill string
+}
+
+func (m SingleBlockAttributeUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Fill == "" {
+		panic(fmt.Sprintf("object %q: attribute %q SingleBlockAttributeUpdate needs a fill function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "singleBlockAttributeUpdate",
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+		Mapper: m.Fill,
+	}
+}
+
+func (SingleBlockAttributeUpdateMapping) updatesWholeValue() {}
+
+func SingleBlockAttributeUpdate(fill string) SingleBlockAttributeUpdateMapping {
+	return SingleBlockAttributeUpdateMapping{Fill: fill}
+}

@@ -446,7 +446,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(Object{
 			Name:  "Widget",
-			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterUnsetTags(), AlterKeyword("ENABLE MANAGED ACCESS")}},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()}), AlterUnsetTags(), AlterKeyword("ENABLE MANAGED ACCESS")}},
 		})
 	})
 	require.PanicsWithValue(t, `object "Widget": ALTER keyword is empty`, func() {
@@ -470,7 +470,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": duplicate ALTER set`, func() {
 		ValidateObject(Object{
 			Name:  "Widget",
-			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterSet()}},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()}), AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()})}},
 		})
 	})
 	require.NotPanics(t, func() {
@@ -1525,6 +1525,12 @@ func Test_ValidateObject_alterGroups(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": SET group "Lists" has no attributes`, func() {
 		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists"))}}, nil))
 	})
+	require.PanicsWithValue(t, `object "Widget": SET has no attributes`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet()}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": UNSET has no attributes`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset()}}, nil))
+	})
 	require.PanicsWithValue(t, `object "Widget": main SET group has no attributes`, func() {
 		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup))}}, nil))
 	})
@@ -1737,7 +1743,7 @@ func identityNamesCreatedBySnowflakeObject(change func(*Object)) Object {
 	obj := Object{
 		Name:                            "Widget",
 		IdentityNamesCreatedBySnowflake: []string{"PUBLIC"},
-		Alter:                           AlterSpec{Clauses: []AlterClause{AlterSet()}},
+		Alter:                           AlterSpec{Clauses: []AlterClause{AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()})}},
 		ResourceHooks:                   []ResourceHookOption{WithBeforeCreate(Generated())},
 	}
 	change(&obj)
@@ -1981,46 +1987,4 @@ func Test_Object_LinkedAlterKeyword(t *testing.T) {
 	require.Equal(t, "SUSPEND", suspend.SQL)
 	_, ok = obj.LinkedAlterKeyword("comment", true)
 	require.False(t, ok)
-}
-
-func Test_Object_legacySetAndUnset(t *testing.T) {
-	one := Attribute{Name: "one", Type: AttrString}
-	two := Attribute{Name: "two", Type: AttrString}
-	legacy := Object{
-		Set:   []*Attribute{&one, &two},
-		Unset: []*Attribute{&one},
-		Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterUnset()}},
-	}
-	require.Equal(t, []*Attribute{&one, &two}, legacy.SetAttributes())
-	require.Equal(t, []*Attribute{&one}, legacy.UnsetAttributes())
-	require.Empty(t, legacy.AlterSetGroups())
-	require.Empty(t, legacy.AlterUnsetGroups())
-
-	grouped := Object{Alter: AlterSpec{Clauses: []AlterClause{
-		AlterSet(AlterGroup("One", &one), AlterGroup(MainAlterGroup, &two)),
-		AlterUnset(&one),
-	}}}
-	require.Equal(t, []*Attribute{&one, &two}, grouped.SetAttributes())
-	require.Equal(t, []*Attribute{&one}, grouped.UnsetAttributes())
-}
-
-func Test_ValidateObject_setAndGroupsAreExclusive(t *testing.T) {
-	one := Attribute{Name: "one", Type: AttrString}
-	two := Attribute{Name: "two", Type: AttrString}
-	newObject := func(set, unset []*Attribute, clauses ...AlterClause) Object {
-		return Object{Name: "Widget", Attributes: []Attribute{one, two}, Set: set, Unset: unset, Alter: AlterSpec{Clauses: clauses}}
-	}
-
-	require.NotPanics(t, func() {
-		ValidateObject(newObject([]*Attribute{&one}, []*Attribute{&two}, AlterSet(), AlterUnset()))
-	})
-	require.NotPanics(t, func() {
-		ValidateObject(newObject(nil, nil, AlterSet(&one), AlterUnset(&two)))
-	})
-	require.PanicsWithValue(t, `object "Widget": Set and the groups of the SET block are both declared`, func() {
-		ValidateObject(newObject([]*Attribute{&one}, nil, AlterSet(&two)))
-	})
-	require.PanicsWithValue(t, `object "Widget": Unset and the groups of the UNSET block are both declared`, func() {
-		ValidateObject(newObject(nil, []*Attribute{&one}, AlterUnset(&two)))
-	})
 }

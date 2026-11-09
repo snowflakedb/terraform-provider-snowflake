@@ -137,3 +137,24 @@ func Test_UpdateCall_warehouseMappings(t *testing.T) {
 		CustomUpdate("").UpdateCall("Warehouse", attr)
 	})
 }
+
+func Test_UpdateCall_nestedValueMappings(t *testing.T) {
+	attr := Attribute{Name: "mfa_policy"}
+	require.Equal(t,
+		UpdateCall{Helper: "setValueUpdate", Set: true, Unset: true, Fields: true, Mapper: "toAuthenticationPolicyClientTypes"},
+		SetValueUpdate("toAuthenticationPolicyClientTypes").UpdateCall("AuthenticationPolicy", attr))
+	require.Equal(t,
+		UpdateCall{Helper: "singleBlockAttributeUpdate", Set: true, Unset: true, Fields: true, Mapper: "applyMfaPolicyUpdate"},
+		SingleBlockAttributeUpdate("applyMfaPolicyUpdate").UpdateCall("AuthenticationPolicy", attr))
+
+	// Both update a nested attribute as one value.
+	require.True(t, UpdatesWholeValue(SetValueUpdate("toAuthenticationPolicyClientTypes")))
+	require.True(t, UpdatesWholeValue(SingleBlockAttributeUpdate("applyMfaPolicyUpdate")))
+
+	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "mfa_policy" SetValueUpdate needs a mapper function`, func() {
+		SetValueUpdate("").UpdateCall("AuthenticationPolicy", attr)
+	})
+	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "mfa_policy" SingleBlockAttributeUpdate needs a fill function`, func() {
+		SingleBlockAttributeUpdate("").UpdateCall("AuthenticationPolicy", attr)
+	})
+}

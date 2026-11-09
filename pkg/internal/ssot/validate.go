@@ -549,12 +549,6 @@ func validateUnsetConflicts(obj Object) {
 // block has at most one main group. A conflicting pair cannot share a group, because one ALTER statement cannot hold
 // both attributes.
 func validateAlterGroups(obj Object) {
-	if len(obj.Set) > 0 && len(obj.alterGroups(AlterClauseSet)) > 0 {
-		panic(fmt.Sprintf("object %q: Set and the groups of the SET block are both declared", obj.Name))
-	}
-	if len(obj.Unset) > 0 && len(obj.alterGroups(AlterClauseUnset)) > 0 {
-		panic(fmt.Sprintf("object %q: Unset and the groups of the UNSET block are both declared", obj.Name))
-	}
 	validateAlterBlockGroups(obj, "SET", AlterClauseSet, obj.Alter.SetConflictingFields)
 	validateAlterBlockGroups(obj, "UNSET", AlterClauseUnset, obj.UnsetConflicts)
 }
@@ -562,6 +556,9 @@ func validateAlterGroups(obj Object) {
 func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind, conflicts [][]*Attribute) {
 	if clause, _ := obj.alterClause(kind); clause.MixedForms {
 		panic(fmt.Sprintf("object %q: %s mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)", obj.Name, block))
+	}
+	if clause, ok := obj.alterClause(kind); ok && len(clause.Groups) == 0 {
+		panic(fmt.Sprintf("object %q: %s has no attributes", obj.Name, block))
 	}
 	names := make(map[string]struct{})
 	owner := make(map[string]string)
