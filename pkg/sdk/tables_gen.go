@@ -41,7 +41,6 @@ type CreateTableOptions struct {
 	ColumnsAndConstraints      CreateTableColumnsAndConstraints `ddl:"list,parentheses"`
 	ClusterBy                  []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
 	EnableSchemaEvolution      *bool                            `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *LegacyFileFormat                `ddl:"list,parentheses,no_comma" sql:"STAGE_FILE_FORMAT ="`
 	StageCopyOptions           *LegacyTableCopyOptions          `ddl:"list,parentheses,no_comma" sql:"STAGE_COPY_OPTIONS ="`
 	DataRetentionTimeInDays    *int                             `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                             `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
@@ -109,12 +108,6 @@ type OutOfLineForeignKey struct {
 	ColumnNames []Column               `ddl:"parameter,parentheses,no_equals"`
 	Match       *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
 	On          *ForeignKeyOnAction    `ddl:"keyword"`
-}
-
-type LegacyFileFormat struct {
-	FormatName     *string                      `ddl:"parameter,single_quotes" sql:"FORMAT_NAME"`
-	FileFormatType *FileFormatType              `ddl:"parameter" sql:"TYPE"`
-	Options        *FileFormatTypeOptionsLegacy `ddl:"list,no_comma"`
 }
 
 type LegacyTableCopyOptions struct {
@@ -416,7 +409,6 @@ type TableDropSearchOptimizationOn struct {
 
 type TableSet struct {
 	EnableSchemaEvolution      *bool                   `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	StageFileFormat            *LegacyFileFormat       `ddl:"list,parentheses" sql:"STAGE_FILE_FORMAT ="`
 	StageCopyOptions           *LegacyTableCopyOptions `ddl:"list,parentheses" sql:"STAGE_COPY_OPTIONS ="`
 	DataRetentionTimeInDays    *int                    `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int                    `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`

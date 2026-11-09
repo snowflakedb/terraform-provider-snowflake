@@ -27,7 +27,6 @@ type CreateTableRequest struct {
 	ColumnsAndConstraints      CreateTableColumnsAndConstraintsRequest // required
 	ClusterBy                  []string
 	EnableSchemaEvolution      *bool
-	StageFileFormat            *LegacyFileFormatRequest
 	StageCopyOptions           *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
@@ -94,12 +93,6 @@ type OutOfLineForeignKeyRequest struct {
 	ColumnNames []Column
 	Match       *MatchType
 	On          *ForeignKeyOnAction
-}
-
-type LegacyFileFormatRequest struct {
-	FormatName     *string
-	FileFormatType *FileFormatType
-	Options        *FileFormatTypeOptionsLegacy
 }
 
 type LegacyTableCopyOptionsRequest struct {
@@ -377,7 +370,6 @@ type TableDropSearchOptimizationOnRequest struct {
 
 type TableSetRequest struct {
 	EnableSchemaEvolution      *bool
-	StageFileFormat            *LegacyFileFormatRequest
 	StageCopyOptions           *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int

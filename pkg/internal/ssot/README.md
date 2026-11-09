@@ -160,7 +160,7 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ChildrenExactlyOne` requires one of the two).
 - **Clauses the SDK defines outside the statement.** An object that keeps a handwritten SDK definition has CREATE fields
   whose structs stay in that definition because other operations and the request types use them.
-  `PreexistingStruct("LegacyFileFormat", Parentheses(), NoComma(), Sql("STAGE_FILE_FORMAT ="))` embeds a query struct by name.
+  `PreexistingStruct("CreateTableColumnsAndConstraints", Parentheses(), Required())` embeds a query struct by name.
   The handwritten definition passes that struct to `CreateOperationFromObject` as a helper struct, and the call embeds
   the struct whose name a clause names instead of emitting it beside the statement. A named struct that is not passed panics.
   An attribute with this clause is `SqlOnly`. Its `Type` is not read.

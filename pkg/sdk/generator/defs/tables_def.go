@@ -149,14 +149,6 @@ func tableOutOfLineForeignKey() *g.QueryStruct {
 		PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
 }
 
-func tableFileFormat() *g.QueryStruct {
-	return g.NewQueryStruct("LegacyFileFormat").
-		OptionalTextAssignment("FORMAT_NAME", g.ParameterOptions().SingleQuotes()).
-		OptionalAssignmentWithFieldName("TYPE", "*FileFormatType", g.ParameterOptions(), "FileFormatType").
-		PredefinedQueryStructField("Options", "*FileFormatTypeOptionsLegacy", g.ListOptions().NoComma()).
-		WithValidation(g.ExactlyOneValueSet, "FormatName", "FileFormatType")
-}
-
 func tableCopyOptions() *g.QueryStruct {
 	return g.NewQueryStruct("LegacyTableCopyOptions").
 		OptionalQueryStructField("OnError", tableCopyOnErrorOptions(), g.ParameterOptions().SQL("ON_ERROR")).
@@ -364,7 +356,6 @@ func tableExternalTableColumnDropAction() *g.QueryStruct {
 func tableSet() *g.QueryStruct {
 	return g.NewQueryStruct("TableSet").
 		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-		OptionalQueryStructField("StageFileFormat", tableFileFormat(), g.ListOptions().Parentheses().SQL("STAGE_FILE_FORMAT =")).
 		OptionalQueryStructField("StageCopyOptions", tableCopyOptions(), g.ListOptions().Parentheses().SQL("STAGE_COPY_OPTIONS =")).
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
@@ -436,7 +427,7 @@ var tablesDef = g.NewInterface(
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).
 	// CREATE comes from ssotdefs.Table. The structs it names stay here because other operations reuse them.
-	CreateOperationFromObject(ssotdefs.Table, tableColumnsAndConstraints(), tableFileFormat(), tableCopyOptions()).
+	CreateOperationFromObject(ssotdefs.Table, tableColumnsAndConstraints(), tableCopyOptions()).
 	// TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" CreateTableOptions
 	CustomOperation(
 		"CreateAsSelect",
