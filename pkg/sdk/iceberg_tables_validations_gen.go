@@ -174,11 +174,6 @@ func (opts *CreateIcebergTableOptions) validate() error {
 			errs = append(errs, errInvalidIdentifier("CreateIcebergTableOptions.RowAccessPolicy", "Name"))
 		}
 	}
-	if valueSet(opts.AggregationPolicy) {
-		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
-			errs = append(errs, errInvalidIdentifier("CreateIcebergTableOptions.AggregationPolicy", "AggregationPolicy"))
-		}
-	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
 			if !ValidObjectIdentifier(tag.Name) {

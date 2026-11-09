@@ -82,6 +82,16 @@ func (s *CreateTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessP
 	return s
 }
 
+func (s *CreateTableRequest) WithAggregationPolicy(aggregationPolicy TableAggregationPolicyRequest) *CreateTableRequest {
+	s.AggregationPolicy = &aggregationPolicy
+	return s
+}
+
+func (s *CreateTableRequest) WithJoinPolicy(joinPolicy TableJoinPolicyRequest) *CreateTableRequest {
+	s.JoinPolicy = &joinPolicy
+	return s
+}
+
 func (s *CreateTableRequest) WithTag(tag []TagAssociation) *CreateTableRequest {
 	s.Tag = tag
 	return s
@@ -388,6 +398,32 @@ func NewTableRowAccessPolicyRequest(
 	return &s
 }
 
+func NewTableAggregationPolicyRequest(
+	aggregationPolicy SchemaObjectIdentifier,
+) *TableAggregationPolicyRequest {
+	s := TableAggregationPolicyRequest{}
+	s.AggregationPolicy = aggregationPolicy
+	return &s
+}
+
+func (s *TableAggregationPolicyRequest) WithEntityKey(entityKey []Column) *TableAggregationPolicyRequest {
+	s.EntityKey = entityKey
+	return s
+}
+
+func NewTableJoinPolicyRequest(
+	joinPolicy SchemaObjectIdentifier,
+) *TableJoinPolicyRequest {
+	s := TableJoinPolicyRequest{}
+	s.JoinPolicy = joinPolicy
+	return &s
+}
+
+func (s *TableJoinPolicyRequest) WithAllowedJoinKeys(allowedJoinKeys []Column) *TableJoinPolicyRequest {
+	s.AllowedJoinKeys = allowedJoinKeys
+	return s
+}
+
 func NewCreateAsSelectTableRequest(
 	name SchemaObjectIdentifier,
 	columns []TableAsSelectColumnRequest,
@@ -616,6 +652,26 @@ func (s *AlterTableRequest) WithAddStorageLifecyclePolicy(addStorageLifecyclePol
 
 func (s *AlterTableRequest) WithDropStorageLifecyclePolicy(dropStorageLifecyclePolicy bool) *AlterTableRequest {
 	s.DropStorageLifecyclePolicy = &dropStorageLifecyclePolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithSetAggregationPolicy(setAggregationPolicy TableSetAggregationPolicyRequest) *AlterTableRequest {
+	s.SetAggregationPolicy = &setAggregationPolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithUnsetAggregationPolicy(unsetAggregationPolicy TableUnsetAggregationPolicyRequest) *AlterTableRequest {
+	s.UnsetAggregationPolicy = &unsetAggregationPolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithSetJoinPolicy(setJoinPolicy TableSetJoinPolicyRequest) *AlterTableRequest {
+	s.SetJoinPolicy = &setJoinPolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithUnsetJoinPolicy(unsetJoinPolicy TableUnsetJoinPolicyRequest) *AlterTableRequest {
+	s.UnsetJoinPolicy = &unsetJoinPolicy
 	return s
 }
 
@@ -1281,6 +1337,47 @@ func NewTableStorageLifecyclePolicyRequest(
 	s := TableStorageLifecyclePolicyRequest{}
 	s.StorageLifecyclePolicy = storageLifecyclePolicy
 	s.On = on
+	return &s
+}
+
+func NewTableSetAggregationPolicyRequest(
+	aggregationPolicy SchemaObjectIdentifier,
+) *TableSetAggregationPolicyRequest {
+	s := TableSetAggregationPolicyRequest{}
+	s.AggregationPolicy = aggregationPolicy
+	return &s
+}
+
+func (s *TableSetAggregationPolicyRequest) WithEntityKey(entityKey []Column) *TableSetAggregationPolicyRequest {
+	s.EntityKey = entityKey
+	return s
+}
+
+func (s *TableSetAggregationPolicyRequest) WithForce(force bool) *TableSetAggregationPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetAggregationPolicyRequest() *TableUnsetAggregationPolicyRequest {
+	s := TableUnsetAggregationPolicyRequest{}
+	return &s
+}
+
+func NewTableSetJoinPolicyRequest(
+	joinPolicy SchemaObjectIdentifier,
+) *TableSetJoinPolicyRequest {
+	s := TableSetJoinPolicyRequest{}
+	s.JoinPolicy = joinPolicy
+	return &s
+}
+
+func (s *TableSetJoinPolicyRequest) WithForce(force bool) *TableSetJoinPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetJoinPolicyRequest() *TableUnsetJoinPolicyRequest {
+	s := TableUnsetJoinPolicyRequest{}
 	return &s
 }
 

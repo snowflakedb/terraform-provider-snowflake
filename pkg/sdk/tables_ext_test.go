@@ -19,6 +19,8 @@ func init() {
 	maskingPolicyId := randomSchemaObjectIdentifier()
 	rowAccessPolicyId := randomSchemaObjectIdentifier()
 	rowAccessPolicyId2 := randomSchemaObjectIdentifier()
+	aggregationPolicyId := randomSchemaObjectIdentifier()
+	joinPolicyId := randomSchemaObjectIdentifier()
 	storageLifecyclePolicyId := randomSchemaObjectIdentifier()
 	columnTagId1 := randomSchemaObjectIdentifier()
 	columnTagId2 := randomSchemaObjectIdentifierInSchema(columnTagId1.SchemaId())
@@ -286,13 +288,15 @@ func init() {
 				opts.ChangeTracking = new(true)
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en"})
 				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.AggregationPolicy = &TableAggregationPolicy{AggregationPolicy: aggregationPolicyId, EntityKey: []Column{{Value: "COLUMN_1"}}}
+				opts.JoinPolicy = &TableJoinPolicy{JoinPolicy: joinPolicyId, AllowedJoinKeys: []Column{{Value: "COLUMN_1"}}}
 				opts.Tag = []TagAssociation{
 					{Name: tableTagId1, Value: "v1"},
 					{Name: tableTagId2, Value: "v2"},
 				}
 				opts.Comment = &tableComment
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV COMPRESSION = AUTO) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV COMPRESSION = AUTO) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -300,6 +304,8 @@ func init() {
 			columnComment,
 			fkRefId.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
+			aggregationPolicyId.FullyQualifiedName(),
+			joinPolicyId.FullyQualifiedName(),
 			tableTagId1.FullyQualifiedName(),
 			tableTagId2.FullyQualifiedName(),
 			tableComment,
@@ -843,6 +849,36 @@ func init() {
 			case_Tables_sql_Alter_DropStorageLifecyclePolicy,
 			func(opts *AlterTableOptions) { opts.DropStorageLifecyclePolicy = new(true) },
 			`ALTER TABLE %s DROP STORAGE LIFECYCLE POLICY`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_SetAggregationPolicy,
+			func(opts *AlterTableOptions) {
+				opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+					AggregationPolicy: aggregationPolicyId,
+					EntityKey:         []Column{{Value: "FIRST_COLUMN"}},
+					Force:             new(true),
+				}
+			},
+			`ALTER TABLE %s SET AGGREGATION POLICY %s ENTITY KEY ("FIRST_COLUMN") FORCE`,
+			id.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_UnsetAggregationPolicy,
+			func(opts *AlterTableOptions) { opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{} },
+			`ALTER TABLE %s UNSET AGGREGATION POLICY`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_SetJoinPolicy,
+			func(opts *AlterTableOptions) {
+				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, Force: new(true)}
+			},
+			`ALTER TABLE %s SET JOIN POLICY %s FORCE`,
+			id.FullyQualifiedName(), joinPolicyId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_UnsetJoinPolicy,
+			func(opts *AlterTableOptions) { opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{} },
+			`ALTER TABLE %s UNSET JOIN POLICY`, id.FullyQualifiedName(),
 		)
 
 	tablesTests.Drop.

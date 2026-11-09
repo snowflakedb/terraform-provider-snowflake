@@ -35,6 +35,8 @@ type CreateTableRequest struct {
 	DefaultDdlCollation        *StringAllowEmpty
 	CopyGrants                 *bool
 	RowAccessPolicy            *TableRowAccessPolicyRequest
+	AggregationPolicy          *TableAggregationPolicyRequest
+	JoinPolicy                 *TableJoinPolicyRequest
 	Tag                        []TagAssociation
 	Comment                    *string
 }
@@ -122,6 +124,16 @@ type TableRowAccessPolicyRequest struct {
 	On   []string               // required
 }
 
+type TableAggregationPolicyRequest struct {
+	AggregationPolicy SchemaObjectIdentifier // required
+	EntityKey         []Column
+}
+
+type TableJoinPolicyRequest struct {
+	JoinPolicy      SchemaObjectIdentifier // required
+	AllowedJoinKeys []Column
+}
+
 type CreateAsSelectTableRequest struct {
 	OrReplace       *bool
 	name            SchemaObjectIdentifier       // required
@@ -186,6 +198,10 @@ type AlterTableRequest struct {
 	DropAllRowAccessPolicies   *bool
 	AddStorageLifecyclePolicy  *TableStorageLifecyclePolicyRequest
 	DropStorageLifecyclePolicy *bool
+	SetAggregationPolicy       *TableSetAggregationPolicyRequest
+	UnsetAggregationPolicy     *TableUnsetAggregationPolicyRequest
+	SetJoinPolicy              *TableSetJoinPolicyRequest
+	UnsetJoinPolicy            *TableUnsetJoinPolicyRequest
 }
 
 type TableClusteringActionRequest struct {
@@ -397,6 +413,21 @@ type TableStorageLifecyclePolicyRequest struct {
 	StorageLifecyclePolicy SchemaObjectIdentifier // required
 	On                     []Column               // required
 }
+
+type TableSetAggregationPolicyRequest struct {
+	AggregationPolicy SchemaObjectIdentifier // required
+	EntityKey         []Column
+	Force             *bool
+}
+
+type TableUnsetAggregationPolicyRequest struct{}
+
+type TableSetJoinPolicyRequest struct {
+	JoinPolicy SchemaObjectIdentifier // required
+	Force      *bool
+}
+
+type TableUnsetJoinPolicyRequest struct{}
 
 type DropTableRequest struct {
 	IfExists *bool

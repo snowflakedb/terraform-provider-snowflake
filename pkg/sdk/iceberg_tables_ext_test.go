@@ -107,7 +107,7 @@ func init() {
 					Name: rowAccessPolicyId,
 					On:   []Column{{"ID"}, {"NAME"}},
 				}
-				opts.AggregationPolicy = &IcebergTableAggregationPolicy{
+				opts.AggregationPolicy = &TableAggregationPolicy{
 					AggregationPolicy: aggregationPolicyId,
 					EntityKey:         []Column{{"ID"}},
 				}
@@ -1026,7 +1026,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_SetAggregationPolicy,
 			func(opts *AlterIcebergTableOptions) {
-				opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
+				opts.SetAggregationPolicy = &TableSetAggregationPolicy{
 					AggregationPolicy: aggregationPolicyId,
 					EntityKey:         []Column{{"col1"}, {"col2"}},
 					Force:             new(true),
@@ -1036,7 +1036,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_UnsetAggregationPolicy,
-			func(opts *AlterIcebergTableOptions) { opts.UnsetAggregationPolicy = &ViewUnsetAggregationPolicy{} },
+			func(opts *AlterIcebergTableOptions) { opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{} },
 			`ALTER ICEBERG TABLE %s UNSET AGGREGATION POLICY`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

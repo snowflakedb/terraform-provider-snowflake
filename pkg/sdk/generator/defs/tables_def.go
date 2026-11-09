@@ -1,6 +1,7 @@
 package defs
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
@@ -405,6 +406,22 @@ func tableAddStorageLifecyclePolicy() *g.QueryStruct {
 	return g.QueryStructFromAttribute("Table", ssotdefs.TableStorageLifecyclePolicy)
 }
 
+func tableSetAggregationPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableAggregationPolicy, ssot.ClauseSet).WithSharedToOpts()
+}
+
+func tableUnsetAggregationPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableAggregationPolicy, ssot.ClauseUnset).WithSharedToOpts()
+}
+
+func tableSetJoinPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableJoinPolicy, ssot.ClauseSet).WithSharedToOpts()
+}
+
+func tableUnsetJoinPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableJoinPolicy, ssot.ClauseUnset).WithSharedToOpts()
+}
+
 // DESCRIBE TABLE returns the collation glued onto the "type" column (e.g. "VARCHAR(200) COLLATE 'en-ci'"),
 // so Type is converted manually and Collation is derived from it in additionalConvert().
 
@@ -502,10 +519,14 @@ var tablesDef = g.NewInterface(
 			OptionalSQL("DROP ALL ROW ACCESS POLICIES").
 			OptionalQueryStructField("AddStorageLifecyclePolicy", tableAddStorageLifecyclePolicy(), g.KeywordOptions()).
 			OptionalSQL("DROP STORAGE LIFECYCLE POLICY").
+			OptionalQueryStructField("SetAggregationPolicy", tableSetAggregationPolicy(), g.KeywordOptions()).
+			OptionalQueryStructField("UnsetAggregationPolicy", tableUnsetAggregationPolicy(), g.KeywordOptions()).
+			OptionalQueryStructField("SetJoinPolicy", tableSetJoinPolicy(), g.KeywordOptions()).
+			OptionalQueryStructField("UnsetJoinPolicy", tableUnsetJoinPolicy(), g.KeywordOptions()).
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 			WithValidation(g.ValidIdentifierIfSet, "SwapWith").
-			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy").
+			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy").
 			WithAdditionalValidations(),
 	).
 	DropOperationFromObject(ssotdefs.Table).
@@ -514,25 +535,6 @@ var tablesDef = g.NewInterface(
 	// so SdkDefineFromSsot stays off. Follow-up: convert those four and turn the setting on.
 	CustomOperationsFromObject(ssotdefs.Table).
 	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
-
-var tableSetAggregationPolicy = g.NewQueryStruct("TableSetAggregationPolicy").
-	SQL("SET").
-	Identifier("AggregationPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
-	ListAssignment("ENTITY KEY", "Column", g.ParameterOptions().NoEquals().Parentheses()).
-	OptionalSQL("FORCE").
-	WithValidation(g.ValidIdentifier, "AggregationPolicy")
-
-var tableUnsetAggregationPolicy = g.NewQueryStruct("TableUnsetAggregationPolicy").
-	SQL("UNSET AGGREGATION POLICY")
-
-var tableSetJoinPolicy = g.NewQueryStruct("TableSetJoinPolicy").
-	SQL("SET").
-	Identifier("JoinPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("JOIN POLICY").Required()).
-	OptionalSQL("FORCE").
-	WithValidation(g.ValidIdentifier, "JoinPolicy")
-
-var tableUnsetJoinPolicy = g.NewQueryStruct("TableUnsetJoinPolicy").
-	SQL("UNSET JOIN POLICY")
 
 func tableOutOfLineUniquePK() *g.QueryStruct {
 	return withOutOfLineConstraintTail(

@@ -655,6 +655,110 @@ func TestInt_Table(t *testing.T) {
 		require.Empty(t, references)
 	})
 
+	t.Run("create table: aggregation and join policies", func(t *testing.T) {
+		aggregationPolicy, aggregationPolicyCleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
+		t.Cleanup(aggregationPolicyCleanup)
+		joinPolicy, joinPolicyCleanup := testClientHelper().JoinPolicy.Create(t)
+		t.Cleanup(joinPolicyCleanup)
+
+		tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(tableId, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
+		})).
+			WithAggregationPolicy(*sdk.NewTableAggregationPolicyRequest(aggregationPolicy).WithEntityKey([]sdk.Column{{Value: "COLUMN_1"}})).
+			WithJoinPolicy(*sdk.NewTableJoinPolicyRequest(joinPolicy).WithAllowedJoinKeys([]sdk.Column{{Value: "COLUMN_1"}})))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(tableId))
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 2)
+	})
+
+	t.Run("alter table: set and unset aggregation policy", func(t *testing.T) {
+		aggregationPolicy, aggregationPolicyCleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
+		t.Cleanup(aggregationPolicyCleanup)
+		aggregationPolicy2, aggregationPolicy2Cleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
+		t.Cleanup(aggregationPolicy2Cleanup)
+
+		tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(tableId, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+		})))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(tableId))
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy).
+				WithEntityKey([]sdk.Column{{Value: "COLUMN_1"}})))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assert.Equal(t, aggregationPolicy.Name(), references[0].PolicyName)
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy2).
+				WithEntityKey([]sdk.Column{{Value: "COLUMN_1"}}).
+				WithForce(true)))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assert.Equal(t, aggregationPolicy2.Name(), references[0].PolicyName)
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
+			WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Empty(t, references)
+	})
+
+	t.Run("alter table: set and unset join policy", func(t *testing.T) {
+		joinPolicy1, joinPolicy1Cleanup := testClientHelper().JoinPolicy.Create(t)
+		t.Cleanup(joinPolicy1Cleanup)
+		joinPolicy2, joinPolicy2Cleanup := testClientHelper().JoinPolicy.Create(t)
+		t.Cleanup(joinPolicy2Cleanup)
+
+		tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(tableId, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+		})))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(tableId))
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
+			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy1)))
+		require.NoError(t, err)
+
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assert.Equal(t, joinPolicy1.Name(), references[0].PolicyName)
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
+			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy2).WithForce(true)))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assert.Equal(t, joinPolicy2.Name(), references[0].PolicyName)
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
+			WithUnsetJoinPolicy(*sdk.NewTableUnsetJoinPolicyRequest()))
+		require.NoError(t, err)
+
+		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Empty(t, references)
+	})
+
 	t.Run("alter table: drop columns", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		columns := []sdk.TableColumnRequest{

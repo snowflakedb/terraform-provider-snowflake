@@ -518,7 +518,7 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).
 						WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
 					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).
-						WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest()))
+						WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
