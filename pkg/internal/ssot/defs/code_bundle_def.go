@@ -150,16 +150,14 @@ var CodeBundle = ssot.Object{
 			&CodeBundleAttrs.Comment,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&CodeBundleAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		&CodeBundleAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterText("ADD VERSION FROM"),
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			&CodeBundleAttrs.Comment,
+		),
+		ssot.AlterUnset(
+			&CodeBundleAttrs.Comment,
+		),
 	}},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

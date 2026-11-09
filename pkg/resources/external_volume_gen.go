@@ -126,7 +126,7 @@ func UpdateExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta an
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := externalVolumeApplySetUnsetExt(d)
+	setUnset, err := externalVolumeApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -149,6 +149,23 @@ func externalVolumeApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.C
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		booleanStringAttributeCreateBuilder(d, "allow_writes", request.WithAllowWrites),
 	)
+}
+
+// externalVolumeAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type externalVolumeAlterRequests struct {
+	set *sdk.ExternalVolumeSetRequest
+}
+
+func externalVolumeApplySetUnset(d *tfschema.ResourceData) (*externalVolumeAlterRequests, error) {
+	set := sdk.NewExternalVolumeSetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
+		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, true),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &externalVolumeAlterRequests{set: set}, nil
 }
 
 func DeleteExternalVolume(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -152,14 +152,14 @@ func UpdateProjectionPolicy(ctx context.Context, d *tfschema.ResourceData, meta 
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
-
-	if diags := projectionPolicyBeforeAlterExt(ctx, d, meta, id); diags != nil {
-		return diags
-	}
-
-	setUnset, err := projectionPolicyApplySetUnsetExt(d)
+	setUnset, err := projectionPolicyApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+	if !reflect.DeepEqual(*setUnset.setBody, *sdk.NewProjectionPolicySetRequest()) {
+		if err := meta.(*provider.Context).Client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(id).WithSet(*setUnset.setBody)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if !reflect.DeepEqual(*setUnset.set, *sdk.NewProjectionPolicySetRequest()) {
 		if err := meta.(*provider.Context).Client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(id).WithSet(*setUnset.set)); err != nil {
@@ -199,6 +199,25 @@ func projectionPolicyApplyCreateOptionals(d *tfschema.ResourceData, request *sdk
 	return errors.Join(
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 	)
+}
+
+// projectionPolicyAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type projectionPolicyAlterRequests struct {
+	setBody *sdk.ProjectionPolicySetRequest
+	set     *sdk.ProjectionPolicySetRequest
+	unset   *sdk.ProjectionPolicyUnsetRequest
+}
+
+func projectionPolicyApplySetUnset(d *tfschema.ResourceData) (*projectionPolicyAlterRequests, error) {
+	setBody, set, unset := sdk.NewProjectionPolicySetRequest(), sdk.NewProjectionPolicySetRequest(), sdk.NewProjectionPolicyUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateSetOnlyNotEmpty(d, "body", &setBody.SetBody),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &projectionPolicyAlterRequests{setBody: setBody, set: set, unset: unset}, nil
 }
 
 func DeleteProjectionPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

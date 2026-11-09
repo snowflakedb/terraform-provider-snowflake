@@ -69,16 +69,20 @@ func Test_attachUpdateMappings_skipsNested(t *testing.T) {
 	require.Nil(t, dst[0].Children[0].UpdateCall)
 }
 
-func Test_SchemaUpdateMappings_stayExt(t *testing.T) {
+func Test_SchemaUpdateMappings_generated(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
-	require.False(t, model.Hooks.ApplySetUnset.Generate)
-	require.True(t, model.Hooks.ApplySetUnset.Present)
-	require.Equal(t, `setUnset, err := schemaApplySetUnsetExt(d)
-	if err != nil {
-		d.Partial(true)
-		return diag.FromErr(err)
+	require.True(t, model.Hooks.ApplySetUnset.Generate)
+	require.Contains(t, renderTemplate(t, "applySetUnset", model), "schemaApplySetUnset(d)")
+	require.Equal(t, "schemaAlterRequests", model.AlterRequestsType())
+	for _, attr := range model.Attributes {
+		// with_managed_access is a keyword clause that BeforeAlter sends. It is in neither block, so the update leaves it out.
+		switch attr.Name {
+		case "comment":
+			require.NotNil(t, attr.UpdateCall)
+		case "with_managed_access":
+			require.Nil(t, attr.UpdateCall)
+		}
 	}
-`, renderTemplate(t, "applySetUnset", model))
 }
 
 func Test_attachUpdateMappings_routesToStatements(t *testing.T) {
@@ -311,4 +315,59 @@ func Test_attachUpdateMappings_setOnlyPerType(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": attribute "monitor" is in the SET or UNSET block, but no update helper can be deduced for it, so give it an UpdateMapping or SkipUpdate`, func() {
 		attachUpdateMappings(setOnlyObject, identifier, dst)
 	})
+}
+
+func Test_attachUpdateMappings_fieldNameOverrideAndSetOnlyObject(t *testing.T) {
+	src := []ssot.Attribute{
+		{Name: "body", Type: ssot.AttrString, UpdateMapping: ssot.StringAttributeUpdateSetOnlyNotEmpty("SetBody")},
+		{Name: "allow_writes", Type: ssot.AttrBool, UpdateMapping: ssot.BooleanStringAttributeUnsetFallbackUpdate(true)},
+	}
+	obj := ssot.Object{
+		Name:  "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet(&src[0], &src[1])}},
+	}
+	dst := applyResourceAttributeRules("", src)
+	attachUpdateMappings(obj, src, dst)
+	require.Equal(t, "&set.SetBody", dst[0].UpdateCall.Target)
+	require.Equal(t, "&set.AllowWrites, true", dst[1].UpdateCall.Target)
+}
+
+func Test_attachUpdateMappings_rejectsAnUnsetTheObjectDoesNotHave(t *testing.T) {
+	// A deduced helper never unsets what the object cannot unset, so the mapping here is explicit.
+	src := []ssot.Attribute{{Name: "comment", Type: ssot.AttrString, UpdateMapping: ssot.StringAttributeUpdateBuilder}}
+	obj := ssot.Object{
+		Name:  "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet(&src[0])}},
+	}
+	dst := applyResourceAttributeRules("", src)
+	require.PanicsWithValue(t, `object "Widget": attribute "comment" is updated with UNSET, but the ALTER spec has no UNSET block, so give it a set-only UpdateMapping or SkipUpdate`, func() {
+		attachUpdateMappings(obj, src, dst)
+	})
+
+	// SkipUpdate leaves the attribute out, so there is nothing to reject.
+	src[0].SkipUpdate = true
+	dst = applyResourceAttributeRules("", src)
+	attachUpdateMappings(obj, src, dst)
+	require.Nil(t, dst[0].UpdateCall)
+}
+
+func Test_attachUpdateMappings_deducesASetOnlyString(t *testing.T) {
+	src := []ssot.Attribute{
+		{Name: "body", Type: ssot.AttrString, SetSql: ssot.StringParameter(ssot.FieldName("SetBody"))},
+		{Name: "label", Type: ssot.AttrString},
+	}
+	obj := ssot.Object{
+		Name: "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterSet(ssot.AlterGroup("Body", &src[0]), ssot.AlterGroup(ssot.MainAlterGroup, &src[1])),
+			ssot.AlterUnset(&src[1]),
+		}},
+	}
+	dst := applyResourceAttributeRules("", src)
+	attachUpdateMappings(obj, src, dst)
+
+	// body is not in the UNSET block, so it is only set, and the request field is the one of its SET clause.
+	require.Equal(t, "stringAttributeUpdateSetOnlyNotEmpty", dst[0].UpdateCall.Helper)
+	require.Equal(t, "&setBody.SetBody", dst[0].UpdateCall.Target)
+	require.Equal(t, "stringAttributeUpdateBuilder", dst[1].UpdateCall.Helper)
 }

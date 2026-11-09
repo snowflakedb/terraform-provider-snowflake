@@ -147,7 +147,12 @@ func Test_SchemaCreateMappings_stayExt(t *testing.T) {
 	for _, attr := range model.Attributes {
 		require.Nil(t, attr.CreateConstructorArg)
 		require.Nil(t, attr.CreateOptionalCall)
-		require.Nil(t, attr.UpdateCall)
+		// Only the comment is updated by the generated ApplySetUnset. with_managed_access is sent by BeforeAlter.
+		if attr.Name == "comment" {
+			require.NotNil(t, attr.UpdateCall)
+		} else {
+			require.Nil(t, attr.UpdateCall)
+		}
 	}
 }
 

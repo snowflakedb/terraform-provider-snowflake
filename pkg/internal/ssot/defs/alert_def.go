@@ -218,21 +218,19 @@ var Alert = ssot.Object{
 		&alertConditionSql,
 		&alertActionSql,
 	}},
-	Set: []*ssot.Attribute{
-		&AlertAttrs.Warehouse,
-		&AlertAttrs.AlertSchedule,
-		&AlertAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		&AlertAttrs.Warehouse,
-		&AlertAttrs.AlertSchedule,
-		&AlertAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterKeywordFor(&AlertAttrs.Enabled, true, "RESUME"),
 		ssot.AlterKeywordFor(&AlertAttrs.Enabled, false, "SUSPEND"),
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			&AlertAttrs.Warehouse,
+			&AlertAttrs.AlertSchedule,
+			&AlertAttrs.Comment,
+		),
+		ssot.AlterUnset(
+			&AlertAttrs.Warehouse,
+			&AlertAttrs.AlertSchedule,
+			&AlertAttrs.Comment,
+		),
 		ssot.AlterKeywordList("ModifyCondition", "MODIFY CONDITION EXISTS", "string"),
 		ssot.AlterPlainText("ModifyAction", "MODIFY ACTION"),
 	}},

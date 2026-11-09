@@ -217,6 +217,8 @@ var ExternalVolumeAttrs = struct {
 		Type:          ssot.AttrBool,
 		Description:   "Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog.",
 		CreateMapping: ssot.BooleanStringAttributeCreateBuilder,
+		// The object has no UNSET for it, so a removed value is set to the default, which is true.
+		UpdateMapping: ssot.BooleanStringAttributeUnsetFallbackUpdate(true),
 	},
 	StorageLocation: ssot.Attribute{
 		Name:      "storage_location",
@@ -337,14 +339,13 @@ var ExternalVolumeObject = ssot.Object{
 			&ExternalVolumeAttrs.Comment,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&ExternalVolumeAttrs.AllowWrites,
-		&ExternalVolumeAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterText("REMOVE STORAGE_LOCATION"),
-			ssot.AlterSet(),
+			ssot.AlterSet(
+				&ExternalVolumeAttrs.AllowWrites,
+				&ExternalVolumeAttrs.Comment,
+			),
 			ssot.AlterParameterBlock("AddStorageLocation", "ADD STORAGE_LOCATION", &ExternalVolumeAttrs.StorageLocation),
 			ssot.AlterKeywordBlock("UpdateStorageLocation", "UPDATE", &externalVolumeUpdateStorageLocation),
 		},
@@ -378,6 +379,7 @@ var ExternalVolumeObject = ssot.Object{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithStateUpgraders(ssot.Generated()),

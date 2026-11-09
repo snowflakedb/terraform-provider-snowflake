@@ -97,7 +97,11 @@ type AlterStatementRequest struct {
 func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
 	// A group is a field in declaration order. The main group is the bare set (unset). A block without one sends an empty
 	// main request last, which carries the parameters.
-	fields := func(main string, groups []ssot.AlterGroupSpec) []string {
+	fields := func(main string, groups []ssot.AlterGroupSpec, hasBlock bool) []string {
+		// An object whose ALTER spec has no such block has no such request, such as a SET-only object.
+		if obj.HasAlterSpec() && !hasBlock {
+			return nil
+		}
 		names := collections.Map(groups, func(group ssot.AlterGroupSpec) string { return main + group.Name })
 		if !slices.ContainsFunc(groups, func(group ssot.AlterGroupSpec) bool { return group.Name == ssot.MainAlterGroup }) {
 			names = append(names, main)
@@ -105,8 +109,8 @@ func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
 		return names
 	}
 	model := AlterStatementsModel{
-		Set:   fields("set", obj.AlterSetGroups()),
-		Unset: fields("unset", obj.AlterUnsetGroups()),
+		Set:   fields("set", obj.AlterSetGroups(), obj.HasAlterSetBlock()),
+		Unset: fields("unset", obj.AlterUnsetGroups(), obj.HasAlterUnsetBlock()),
 	}
 	for _, field := range model.Set {
 		model.Requests = append(model.Requests, AlterStatementRequest{Field: field, Kind: "Set"})

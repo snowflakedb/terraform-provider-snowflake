@@ -181,7 +181,7 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 		return diags
 	}
 
-	setUnset, err := schemaApplySetUnsetExt(d)
+	setUnset, err := schemaApplySetUnset(d)
 	if err != nil {
 		d.Partial(true)
 		return diag.FromErr(err)
@@ -207,6 +207,23 @@ func UpdateSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.
 
 func schemaParseIdFromConfig(d *tfschema.ResourceData) (sdk.DatabaseObjectIdentifier, error) {
 	return sdk.NewDatabaseObjectIdentifier(d.Get("database").(string), d.Get("name").(string)), nil
+}
+
+// schemaAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type schemaAlterRequests struct {
+	set   *sdk.SchemaSetRequest
+	unset *sdk.SchemaUnsetRequest
+}
+
+func schemaApplySetUnset(d *tfschema.ResourceData) (*schemaAlterRequests, error) {
+	set, unset := sdk.NewSchemaSetRequest(), sdk.NewSchemaUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &schemaAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteSchema(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

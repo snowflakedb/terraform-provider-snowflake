@@ -91,14 +91,16 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   matching `...Builder` helper, an enum uses `AttributeMappedValueUpdate("sdk.To<Enum>")`, an `AccountObjectIdentifier` uses
   `AccountObjectIdentifierAttributeUpdate`, and a list of enums or account object identifiers uses `ListValueUpdate` with the mapper
   `to<Object><Field>`. An attribute that is in the SET block and not in the UNSET block is only ever set. An int, a native bool, a
-  boolean string, and a list of enums or account object identifiers get the set-only helper (`IntAttributeUpdateSetOnlyBuilder`,
-  `BooleanAttributeUpdateSetOnlyBuilder`, `BooleanStringAttributeUpdateSetOnly`, `ListValueUpdateSetOnly`). A set-only string, enum, or
-  `AccountObjectIdentifier` has no deduced helper, so generation fails until it gets an `UpdateMapping`: an enum has two set-only
+  boolean string, a string, and a list of enums or account object identifiers get the set-only helper (`IntAttributeUpdateSetOnlyBuilder`,
+  `BooleanAttributeUpdateSetOnlyBuilder`, `BooleanStringAttributeUpdateSetOnly`, `StringAttributeUpdateSetOnlyNotEmpty`,
+  `ListValueUpdateSetOnly`). A set-only enum or `AccountObjectIdentifier` has no deduced helper, so generation fails until it gets an
+  `UpdateMapping`: an enum has two set-only
   helpers that treat a removed value differently (`attributeMappedValueUpdateSetOnly`, `attributeMappedValueUpdateSetOnlyAlways`), and
   an identifier has none. Declare an `UpdateMapping` only where the behaviour differs from
   that: a `SetOnlyMapping` constant, a `SetUnsetMapping` constant, a `SetUnsetFieldsMapping` constant for a helper that takes the
   request fields instead of the setter methods, `ListValueUpdate("<mapperFunc>")`, `ListValueUpdateSetOnly("<mapperFunc>")`, or
   `AttributeMappedValueUpdate("<mapperFunc>")`, which maps the Terraform value to the SDK value and unsets the attribute when it is removed.
+  A string that the object cannot unset gets `StringAttributeUpdateSetOnlyNotEmpty`, with the request field of its `SetSql` (`SetBody`). Declare `BooleanStringAttributeUnsetFallbackUpdate(<fallback>)` for a boolean string that is set to the fallback when the value is removed, because the object has no UNSET for it.
   A helper is passed the setters of the request that holds the attribute, so an attribute in a named group of the SET or UNSET block
   is routed to that group's request without any change to the mapping. An object whose ALTER spec has a SET or UNSET block updates the
   attributes of those blocks and no others, so an attribute that a hook updates, such as a keyword clause, needs nothing. An attribute of
@@ -670,6 +672,8 @@ A block sends its groups in declaration order and skips a group with no values. 
 An object that has not moved yet lists its attributes in `Object.Set` and `Object.Unset`, keeps `ssot.AlterSet()` and `ssot.AlterUnset()` without items, and gets one main statement. Validation rejects an object that declares both forms for the same block. TODO [next PRs]: remove `Set` and `Unset`.
 
 The requests live in a struct with one field per group, named `set<Name>` or `unset<Name>` (`setBody`, `unsetSchedule`, `setObjectLists`), next to `set` and `unset`. `ApplySetUnset(Generated())` generates the struct (`<prefix>AlterRequests`) in the generated file, creates the requests, and routes each attribute to the request of its group, so adding a group to the definition needs no other edit. An object whose update needs more than the mappings can express, such as a request outside SET and UNSET, a custom request type, or a value that depends on another attribute, keeps `ApplySetUnset` as `ExtCall`. It declares the struct `<prefix>AlterRequestsExt` in the ext file with the fields its ext code needs, and a missing field is a compile error in the generated code. `AlterSetInSdk(Generated())` and `AlterUnsetInSdk(Generated())` send the groups in order, skipping an empty request. Parameters stay in `set` and `unset`.
+
+An object whose ALTER spec has no UNSET block has no `unset` request, because the SDK has no such type. The same holds for SET. The generator rejects an update mapping that needs a request the object does not have.
 
 `SetStateToValuesFromConfig` defaults to `Generated`. Read inlines the field names in `setStateToValuesFromConfig`.
 The names are optional attributes in `Attributes` order that the helper can copy: string (an optional bool, an enum,

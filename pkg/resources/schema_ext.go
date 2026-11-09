@@ -44,11 +44,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-type schemaAlterRequestsExt struct {
-	set   *sdk.SchemaSetRequest
-	unset *sdk.SchemaUnsetRequest
-}
-
 func schemaParseIdExt(id string) (sdk.DatabaseObjectIdentifier, error) {
 	return sdk.ParseDatabaseObjectIdentifier(id)
 }
@@ -169,19 +164,6 @@ func schemaBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any,
 		}
 	}
 	return nil
-}
-
-func schemaApplySetUnsetExt(d *schema.ResourceData) (*schemaAlterRequestsExt, error) {
-	set, unset := sdk.NewSchemaSetRequest(), sdk.NewSchemaUnsetRequest()
-	if d.HasChange("comment") {
-		comment := d.Get("comment").(string)
-		if len(comment) > 0 {
-			set.Comment = &comment
-		} else {
-			unset.Comment = sdk.Bool(true)
-		}
-	}
-	return &schemaAlterRequestsExt{set: set, unset: unset}, nil
 }
 
 func schemaSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.DatabaseObjectIdentifier, s *sdk.Schema, _ bool) error {

@@ -2,6 +2,7 @@ package ssot
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
@@ -100,12 +101,15 @@ type UpdateMapping interface {
 // UpdateCall is one generated ApplySetUnset call.
 // Set and Unset say which setters the helper receives from the SET and UNSET request that holds the attribute: the
 // With<Field> methods, or with Fields the request fields (&set.<Field>). Mapper is the extra argument after the setters,
-// if any. The generator writes the final arguments, because only it knows which request each attribute belongs to.
+// if any, such as a literal. The generator writes the final arguments, because only it knows which request each
+// attribute belongs to.
 type UpdateCall struct {
 	Helper string
 	Set    bool
 	Unset  bool
 	Fields bool
+	// Field is the name of the request field or setter when it differs from the attribute, such as SetBody for body.
+	Field  string
 	Mapper string
 }
 
@@ -255,4 +259,42 @@ func (AttributeMappedValueUpdateMapping) updatesWholeValue() {}
 func UpdatesWholeValue(mapping UpdateMapping) bool {
 	_, ok := mapping.(WholeValueUpdateMapping)
 	return ok
+}
+
+// StringAttributeUpdateSetOnlyNotEmptyMapping is stringAttributeUpdateSetOnlyNotEmpty: the value is set when it changes,
+// and it is never unset. Field is the request field when it differs from the attribute.
+type StringAttributeUpdateSetOnlyNotEmptyMapping struct {
+	Field string
+}
+
+func (m StringAttributeUpdateSetOnlyNotEmptyMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: "stringAttributeUpdateSetOnlyNotEmpty",
+		Set:    true,
+		Fields: true,
+		Field:  m.Field,
+	}
+}
+
+func StringAttributeUpdateSetOnlyNotEmpty(field string) StringAttributeUpdateSetOnlyNotEmptyMapping {
+	return StringAttributeUpdateSetOnlyNotEmptyMapping{Field: field}
+}
+
+// BooleanStringAttributeUnsetFallbackUpdateMapping is booleanStringAttributeUnsetFallbackUpdate. A boolean string that is
+// removed from the configuration is set to Fallback, because the object has no UNSET for it.
+type BooleanStringAttributeUnsetFallbackUpdateMapping struct {
+	Fallback bool
+}
+
+func (m BooleanStringAttributeUnsetFallbackUpdateMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: "booleanStringAttributeUnsetFallbackUpdate",
+		Set:    true,
+		Fields: true,
+		Mapper: strconv.FormatBool(m.Fallback),
+	}
+}
+
+func BooleanStringAttributeUnsetFallbackUpdate(fallback bool) BooleanStringAttributeUnsetFallbackUpdateMapping {
+	return BooleanStringAttributeUnsetFallbackUpdateMapping{Fallback: fallback}
 }
