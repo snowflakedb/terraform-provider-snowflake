@@ -258,7 +258,8 @@ type AlterDirectoryTableStageRequest struct {
 }
 
 type DirectoryTableSetRequest struct {
-	Enable bool // required
+	Enable                  bool // required
+	NotificationIntegration *string
 }
 
 type DirectoryTableRefreshRequest struct {

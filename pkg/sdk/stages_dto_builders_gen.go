@@ -794,6 +794,11 @@ func NewDirectoryTableSetRequest(
 	return &s
 }
 
+func (s *DirectoryTableSetRequest) WithNotificationIntegration(notificationIntegration string) *DirectoryTableSetRequest {
+	s.NotificationIntegration = &notificationIntegration
+	return s
+}
+
 func NewDirectoryTableRefreshRequest() *DirectoryTableRefreshRequest {
 	s := DirectoryTableRefreshRequest{}
 	return &s

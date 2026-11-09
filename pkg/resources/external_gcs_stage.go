@@ -100,7 +100,6 @@ var externalGcsStageSchema = func() map[string]*schema.Schema {
 					"notification_integration": {
 						Type:             schema.TypeString,
 						Optional:         true,
-						ForceNew:         true,
 						Description:      blocklistedCharactersFieldDescription("Specifies the name of the notification integration used to automatically refresh the directory table metadata."),
 						DiffSuppressFunc: suppressIdentifierQuoting,
 						ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
@@ -178,6 +177,9 @@ func ImportExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 	setDefaults := providerCtx.Experiments.IsEnabled(experimentalfeatures.ImportBooleanDefault)
 
 	if err := importStageCommonFields(d, details, setDefaults); err != nil {
+		return nil, err
+	}
+	if err := setImportedDirectoryNotificationIntegration(d, details); err != nil {
 		return nil, err
 	}
 
@@ -264,7 +266,7 @@ func ReadExternalGcsStageFunc(withExternalChangesMarking bool) schema.ReadContex
 		if withExternalChangesMarking {
 			if err = handleExternalChangesToObjectInFlatDescribeDeepEqual(
 				d,
-				directoryTableOutputMapping(*details.DirectoryTable),
+				directoryTableOutputMapping(d, *details.DirectoryTable),
 			); err != nil {
 				return diag.FromErr(err)
 			}
