@@ -63,8 +63,43 @@ func Test_warehouseTypeUpdate(t *testing.T) {
 			require.NoError(t, err)
 
 			set := sdk.NewWarehouseSetRequest()
-			require.NoError(t, warehouseTypeUpdate(d, set))
+			require.NoError(t, warehouseTypeUpdate(d, set, sdk.NewWarehouseUnsetRequest()))
 			assert.Equal(t, tt.want, set.WarehouseType)
 		})
 	}
+}
+
+func Test_warehouseApplySetUnset_waitsForTheResize(t *testing.T) {
+	t.Run("a size change waits for completion", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, warehouseSchema, map[string]any{"warehouse_size": "SMALL"})
+		requests, err := warehouseApplySetUnset(d)
+		require.NoError(t, err)
+		require.NotNil(t, requests.set.WarehouseSize)
+		require.NotNil(t, requests.set.WaitForCompletion)
+		require.True(t, *requests.set.WaitForCompletion)
+	})
+
+	t.Run("without a size change it does not", func(t *testing.T) {
+		d := schema.TestResourceDataRaw(t, warehouseSchema, map[string]any{"comment": "c"})
+		requests, err := warehouseApplySetUnset(d)
+		require.NoError(t, err)
+		require.Nil(t, requests.set.WarehouseSize)
+		require.Nil(t, requests.set.WaitForCompletion)
+		require.NotNil(t, requests.set.Comment)
+	})
+}
+
+func Test_warehouseApplySetUnset_removedTypeSetsStandard(t *testing.T) {
+	state := &terraform.InstanceState{ID: "wh", Attributes: map[string]string{"name": "wh", "warehouse_type": "SNOWPARK-OPTIMIZED"}}
+	diff, err := schema.InternalMap(warehouseSchema).Diff(context.Background(), state, terraform.NewResourceConfigRaw(map[string]any{"name": "wh"}), nil, nil, true)
+	require.NoError(t, err)
+	d, err := schema.InternalMap(warehouseSchema).Data(state, diff)
+	require.NoError(t, err)
+
+	requests, err := warehouseApplySetUnset(d)
+	require.NoError(t, err)
+	// UNSET WAREHOUSE_TYPE would reset the type to the Snowflake default, so the generated update sets STANDARD.
+	require.NotNil(t, requests.set.WarehouseType)
+	assert.Equal(t, sdk.WarehouseTypeStandard, *requests.set.WarehouseType)
+	assert.Nil(t, requests.unset.WarehouseType)
 }

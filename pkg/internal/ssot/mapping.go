@@ -108,6 +108,9 @@ type UpdateCall struct {
 	Set    bool
 	Unset  bool
 	Fields bool
+	// Requests passes the requests themselves, set and unset, to a function of the object, and no attribute key.
+	// It is for an update that depends on more than one attribute.
+	Requests bool
 	// Field is the name of the request field or setter when it differs from the attribute, such as SetBody for body.
 	Field  string
 	Mapper string
@@ -297,4 +300,72 @@ func (m BooleanStringAttributeUnsetFallbackUpdateMapping) UpdateCall(_ string, _
 
 func BooleanStringAttributeUnsetFallbackUpdate(fallback bool) BooleanStringAttributeUnsetFallbackUpdateMapping {
 	return BooleanStringAttributeUnsetFallbackUpdateMapping{Fallback: fallback}
+}
+
+// AttributeMappedValueUpdateSetOnlyAlwaysMapping is attributeMappedValueUpdateSetOnlyAlways: the mapped value is set
+// whenever the attribute changes, and it is never unset.
+type AttributeMappedValueUpdateSetOnlyAlwaysMapping struct {
+	Mapper string
+}
+
+func (m AttributeMappedValueUpdateSetOnlyAlwaysMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Mapper == "" {
+		panic(fmt.Sprintf("object %q: attribute %q AttributeMappedValueUpdateSetOnlyAlways needs a mapper function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "attributeMappedValueUpdateSetOnlyAlways",
+		Set:    true,
+		Fields: true,
+		Mapper: m.Mapper,
+	}
+}
+
+func AttributeMappedValueUpdateSetOnlyAlways(mapper string) AttributeMappedValueUpdateSetOnlyAlwaysMapping {
+	return AttributeMappedValueUpdateSetOnlyAlwaysMapping{Mapper: mapper}
+}
+
+// IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping is intAttributeWithSpecialDefaultUnsetFallbackUpdate. A value
+// that is removed from the configuration is set to Fallback, because the UNSET of the attribute does not work.
+// Fallback is a Go expression, such as a number or a constant.
+type IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping struct {
+	Fallback string
+}
+
+func (m IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Fallback == "" {
+		panic(fmt.Sprintf("object %q: attribute %q IntAttributeWithSpecialDefaultUnsetFallbackUpdate needs a fallback", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "intAttributeWithSpecialDefaultUnsetFallbackUpdate",
+		Set:    true,
+		Fields: true,
+		Mapper: m.Fallback,
+	}
+}
+
+func IntAttributeWithSpecialDefaultUnsetFallbackUpdate(fallback string) IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping {
+	return IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping{Fallback: fallback}
+}
+
+// CustomUpdateMapping calls a function of package resources with the data and the SET and UNSET requests that hold the
+// attribute: function(d, set, unset). It is for an update that decides by other attributes, such as one that only
+// applies to some warehouse types. The function does the whole update of the attribute.
+type CustomUpdateMapping struct {
+	Function string
+}
+
+func (m CustomUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Function == "" {
+		panic(fmt.Sprintf("object %q: attribute %q CustomUpdate needs a function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper:   m.Function,
+		Set:      true,
+		Unset:    true,
+		Requests: true,
+	}
+}
+
+func CustomUpdate(function string) CustomUpdateMapping {
+	return CustomUpdateMapping{Function: function}
 }

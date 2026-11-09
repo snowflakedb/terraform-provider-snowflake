@@ -42,11 +42,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-type warehouseAdaptiveAlterRequestsExt struct {
-	set   *sdk.WarehouseAdaptiveSetRequest
-	unset *sdk.WarehouseAdaptiveUnsetRequest
-}
-
 func warehouseAdaptiveParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 }
@@ -111,25 +106,6 @@ func warehouseAdaptiveHierarchyRenameExt(ctx context.Context, d *schema.Resource
 	return nil
 }
 
-func warehouseAdaptiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseAdaptiveAlterRequestsExt, error) {
-	set := sdk.NewWarehouseAdaptiveSetRequest()
-	unset := sdk.NewWarehouseAdaptiveUnsetRequest()
-
-	if d.HasChange("warehouse_type") {
-		set.WithWarehouseType(sdk.WarehouseTypeAdaptive)
-	}
-
-	if err := errors.Join(
-		intAttributeWithSpecialDefaultUpdate(d, "query_throughput_multiplier", &set.QueryThroughputMultiplier, &unset.QueryThroughputMultiplier),
-		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-		attributeMappedValueUpdate(d, "max_query_performance_level", &set.MaxQueryPerformanceLevel, &unset.MaxQueryPerformanceLevel, sdk.ToMaxQueryPerformanceLevel),
-		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
-	); err != nil {
-		return nil, err
-	}
-	return &warehouseAdaptiveAlterRequestsExt{set: set, unset: unset}, nil
-}
-
 func warehouseAdaptiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseAdaptive, importPermissiveMode bool) error {
 	// Warehouses of other types can be imported and converted to ADAPTIVE with an in-place ALTER during the next update.
 	// INTERACTIVE is the exception and Snowflake rejects it.
@@ -178,7 +154,7 @@ func warehouseAdaptiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.Acc
 	return showWarehouseAdaptiveByID(ctx, meta.(*provider.Context), id)
 }
 
-func warehouseAdaptiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequestsExt) error {
+func warehouseAdaptiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequests) error {
 	if *reqs.set != *sdk.NewWarehouseAdaptiveSetRequest() {
 		client := meta.(*provider.Context).Client
 		if err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
@@ -188,12 +164,21 @@ func warehouseAdaptiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceDa
 	return nil
 }
 
-func warehouseAdaptiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequestsExt) error {
+func warehouseAdaptiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAdaptiveAlterRequests) error {
 	if *reqs.unset != *sdk.NewWarehouseAdaptiveUnsetRequest() {
 		client := meta.(*provider.Context).Client
 		if err := client.Warehouses.AlterAdaptive(ctx, sdk.NewAlterAdaptiveWarehouseRequest(id).WithUnset(*reqs.unset)); err != nil {
 			return fmt.Errorf("error unsetting adaptive warehouse properties: %w", err)
 		}
+	}
+	return nil
+}
+
+// warehouseAdaptiveTypeUpdate sets the warehouse type to ADAPTIVE when it changes, whatever its value.
+// The type is never unset, so the UNSET request is never used.
+func warehouseAdaptiveTypeUpdate(d *schema.ResourceData, set *sdk.WarehouseAdaptiveSetRequest, _ *sdk.WarehouseAdaptiveUnsetRequest) error {
+	if d.HasChange("warehouse_type") {
+		set.WithWarehouseType(sdk.WarehouseTypeAdaptive)
 	}
 	return nil
 }

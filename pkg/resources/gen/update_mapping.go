@@ -14,6 +14,8 @@ import (
 type UpdateCall struct {
 	Helper string
 	Target string
+	// NoKey leaves the attribute key out of the call, for a function that takes the requests and decides itself.
+	NoKey bool
 }
 
 func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceAttribute) {
@@ -56,7 +58,7 @@ func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceA
 		}
 		setRequest := "set" + groupOf(setGroups, src[i])
 		unsetRequest := "unset" + groupOf(unsetGroups, src[i])
-		dst[i].UpdateCall = &UpdateCall{Helper: call.Helper, Target: updateTarget(call, src[i], setRequest, unsetRequest)}
+		dst[i].UpdateCall = &UpdateCall{Helper: call.Helper, Target: updateTarget(call, src[i], setRequest, unsetRequest), NoKey: call.Requests}
 	}
 }
 
@@ -94,6 +96,16 @@ func updateTarget(call ssot.UpdateCall, attr ssot.Attribute, setRequest, unsetRe
 	goName := genhelpers.SnakeCaseToCamel(attr.Name)
 	if call.Field != "" {
 		goName = call.Field
+	}
+	if call.Requests {
+		var requests []string
+		if call.Set {
+			requests = append(requests, setRequest)
+		}
+		if call.Unset {
+			requests = append(requests, unsetRequest)
+		}
+		return strings.Join(requests, ", ")
 	}
 	setter := func(request string) string {
 		if call.Fields {

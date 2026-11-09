@@ -3,7 +3,7 @@ func {{ .Prefix }}ApplySetUnset(d *tfschema.ResourceData) (*{{ .AlterRequestsTyp
 	{{ range $i, $r := .AlterStatements.Requests }}{{ if $i }}, {{ end }}{{ $r.Field }}{{ end }} := {{ range $i, $r := .AlterStatements.Requests }}{{ if $i }}, {{ end }}sdk.New{{ $.Name }}{{ $r.Kind }}Request(){{ end }}
 {{- if .HasUpdateCalls }}
 	errs := errors.Join({{ range .Attributes }}{{ if .UpdateCall }}
-		{{ .UpdateCall.Helper }}(d, "{{ .Name }}", {{ .UpdateCall.Target }}),{{ end }}{{ end }}
+		{{ .UpdateCall.Helper }}(d, {{ if not .UpdateCall.NoKey }}"{{ .Name }}", {{ end }}{{ .UpdateCall.Target }}),{{ end }}{{ end }}
 	)
 	if errs != nil {
 		return nil, errs
