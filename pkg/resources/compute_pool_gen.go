@@ -175,7 +175,13 @@ func computePoolApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.Crea
 	)
 }
 
-func computePoolApplySetUnset(d *tfschema.ResourceData) (*computePoolAlterRequestsExt, error) {
+// computePoolAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type computePoolAlterRequests struct {
+	set   *sdk.ComputePoolSetRequest
+	unset *sdk.ComputePoolUnsetRequest
+}
+
+func computePoolApplySetUnset(d *tfschema.ResourceData) (*computePoolAlterRequests, error) {
 	set, unset := sdk.NewComputePoolSetRequest(), sdk.NewComputePoolUnsetRequest()
 	errs := errors.Join(
 		intAttributeUpdateSetOnlyBuilder(d, "min_nodes", set.WithMinNodes),
@@ -188,7 +194,7 @@ func computePoolApplySetUnset(d *tfschema.ResourceData) (*computePoolAlterReques
 	if errs != nil {
 		return nil, errs
 	}
-	return &computePoolAlterRequestsExt{set: set, unset: unset}, nil
+	return &computePoolAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteComputePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -75,3 +75,34 @@ func Test_UpdateCall_listValueUpdateSetOnly(t *testing.T) {
 	call := ListValueUpdateSetOnly("toWidgetObjectTypes").UpdateCall("Widget", Attribute{Name: "object_types"})
 	require.Equal(t, UpdateCall{Helper: "listValueUpdateSetOnlyBuilder", Set: true, Mapper: "toWidgetObjectTypes"}, call)
 }
+
+func Test_UpdateCall_fieldsStyle(t *testing.T) {
+	call := AccountObjectIdentifierAttributeUpdate.UpdateCall("ReplicationGroup", Attribute{Name: "error_integration"})
+	require.Equal(t, UpdateCall{Helper: "accountObjectIdentifierAttributeUpdate", Set: true, Unset: true, Fields: true}, call)
+
+	call = AttributeMappedValueUpdate("toBackupPolicySchedule").UpdateCall("BackupPolicy", Attribute{Name: "schedule"})
+	require.Equal(t, UpdateCall{
+		Helper: "attributeMappedValueUpdate",
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+		Mapper: "toBackupPolicySchedule",
+	}, call)
+
+	require.PanicsWithValue(t, `object "BackupPolicy": attribute "schedule" AttributeMappedValueUpdate needs a mapper function`, func() {
+		AttributeMappedValueUpdate("").UpdateCall("BackupPolicy", Attribute{Name: "schedule"})
+	})
+}
+
+func Test_UpdatesWholeValue(t *testing.T) {
+	require.True(t, UpdatesWholeValue(AttributeMappedValueUpdate("toBackupPolicySchedule")))
+	require.False(t, UpdatesWholeValue(StringAttributeUpdateBuilder))
+	require.False(t, UpdatesWholeValue(AccountObjectIdentifierAttributeUpdate))
+	require.False(t, UpdatesWholeValue(nil))
+}
+
+func Test_UpdateCall_booleanStringSetOnly(t *testing.T) {
+	require.Equal(t,
+		UpdateCall{Helper: "booleanStringAttributeUpdateSetOnly", Set: true, Fields: true},
+		BooleanStringAttributeUpdateSetOnly.UpdateCall("Widget", Attribute{Name: "enabled"}))
+}

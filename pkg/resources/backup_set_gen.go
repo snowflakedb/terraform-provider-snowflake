@@ -202,7 +202,13 @@ func backupSetNewCreateRequest(d *tfschema.ResourceData, id sdk.SchemaObjectIden
 	return sdk.NewCreateBackupSetRequest(id), nil
 }
 
-func backupSetApplySetUnset(d *tfschema.ResourceData) (*backupSetAlterRequestsExt, error) {
+// backupSetAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type backupSetAlterRequests struct {
+	set   *sdk.BackupSetSetRequest
+	unset *sdk.BackupSetUnsetRequest
+}
+
+func backupSetApplySetUnset(d *tfschema.ResourceData) (*backupSetAlterRequests, error) {
 	set, unset := sdk.NewBackupSetSetRequest(), sdk.NewBackupSetUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
@@ -210,7 +216,7 @@ func backupSetApplySetUnset(d *tfschema.ResourceData) (*backupSetAlterRequestsEx
 	if errs != nil {
 		return nil, errs
 	}
-	return &backupSetAlterRequestsExt{set: set, unset: unset}, nil
+	return &backupSetAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteBackupSet(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

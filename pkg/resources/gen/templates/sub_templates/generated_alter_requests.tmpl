@@ -1,0 +1,7 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+// {{ .AlterRequestsType }} holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type {{ .AlterRequestsType }} struct {
+{{- range .AlterStatements.Requests }}
+	{{ .Field }} *sdk.{{ $.Name }}{{ .Kind }}Request
+{{- end }}
+}

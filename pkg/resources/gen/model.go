@@ -131,6 +131,16 @@ func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
 }
 
+// AlterRequestsType is the struct that holds the SET and UNSET requests of the update. The generated ApplySetUnset
+// declares it in the generated file, with one field per group of the ALTER spec. An object that keeps ApplySetUnset
+// in the ext file declares the struct there, because it may carry more than the groups.
+func (m ResourceModel) AlterRequestsType() string {
+	if m.Hooks.ApplySetUnset.Generate {
+		return m.Prefix() + "AlterRequests"
+	}
+	return m.Prefix() + "AlterRequestsExt"
+}
+
 // HierarchyRenameParents reports whether the generated Update moves a schema object to another database or schema.
 func (m ResourceModel) HierarchyRenameParents() bool {
 	return m.Hooks.HierarchyRename.Generate && m.IdType == "SchemaObjectIdentifier" && !m.IdentityHierarchyForceNew

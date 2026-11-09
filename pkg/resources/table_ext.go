@@ -39,11 +39,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-type tableAlterRequestsExt struct {
-	set   *sdk.TableSetRequest
-	unset *sdk.TableUnsetRequest
-}
-
 func tableNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateTableRequest, error) {
 	tableColumnRequests, err := getTableColumnRequests(d.Get("column").([]any))
 	if err != nil {

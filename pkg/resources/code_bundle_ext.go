@@ -19,11 +19,6 @@ var (
 	}
 )
 
-type codeBundleAlterRequestsExt struct {
-	set   *sdk.CodeBundleSetRequest
-	unset *sdk.CodeBundleUnsetRequest
-}
-
 func codeBundleSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, codeBundle *sdk.CodeBundle, _ bool) error {
 	comment := ""
 	if codeBundle.Comment != nil {

@@ -33,11 +33,6 @@ var (
 // Request / mapping / Read-Update helpers
 // =============================================================================
 
-type pipeAlterRequestsExt struct {
-	set   *sdk.PipeSetRequest
-	unset *sdk.PipeUnsetRequest
-}
-
 // name, database, and schema come from the id. integration and error_integration are not set by Read (they are diff-suppressed against show_output),
 // so import writes them: the Snowflake values in the enforcing mode, and empty values in the permissive mode.
 func pipeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, pipe *sdk.Pipe, importPermissiveMode bool) error {

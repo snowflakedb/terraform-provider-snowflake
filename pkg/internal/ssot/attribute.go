@@ -116,6 +116,9 @@ type Attribute struct {
 	// because CREATE leaves the object in the false state. Another type needs a new kind of step in the generated
 	// AfterCreate (AfterCreateSteps in pkg/resources/gen).
 	SetAfterCreate bool
+	// SkipUpdate leaves the attribute out of generated ApplySetUnset, and out of the deduction. Use it for an attribute of the
+	// SET or UNSET block that the update changes some other way, such as an object that a BeforeAlter hook adds or removes.
+	SkipUpdate bool
 	// UpdateMapping overrides the update helper deduced the same way.
 	// Nil means deduce one. ForceNew and CreateOnly attributes are left out of set/unset.
 	// SkipCreate does not leave the attribute out of set/unset.

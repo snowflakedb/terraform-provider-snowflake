@@ -49,7 +49,9 @@ var ShareAttrs = struct {
 	},
 	Accounts: ssot.Attribute{
 		Name: "accounts",
-		Type: ssot.AttrSet,
+		// shareBeforeAlterExt adds and removes the accounts, because they are not a SET or UNSET field.
+		SkipUpdate: true,
+		Type:       ssot.AttrSet,
 		Elem: &ssot.Attribute{
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountIdentifier",

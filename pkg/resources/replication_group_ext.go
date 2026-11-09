@@ -23,12 +23,6 @@ var (
 	replicationGroupRecreateWhenNotPrimary = RecreateWhenResourceBoolFieldChangedExternally("is_primary", true)
 )
 
-type replicationGroupAlterRequestsExt struct {
-	set            *sdk.ReplicationGroupSetRequest
-	setObjectLists *sdk.ReplicationGroupSetRequest
-	unset          *sdk.ReplicationGroupUnsetRequest
-}
-
 func replicationGroupApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateReplicationGroupRequest) error {
 	// CREATE has no COMMENT clause. Comment is set with ALTER.
 	return errors.Join(
@@ -50,31 +44,6 @@ func replicationGroupApplyCreateOptionalsExt(d *schema.ResourceData, request *sd
 func replicationGroupNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateReplicationGroupRequest, error) {
 	// OBJECT_TYPES and ALLOWED_ACCOUNTS are constructor arguments. ApplyCreateOptionals fills them.
 	return sdk.NewCreateReplicationGroupRequest(id, nil, nil), nil
-}
-
-// TODO [next PR]: ApplySetUnset is generated from the definition, so this function goes away.
-func replicationGroupApplySetUnsetExt(d *schema.ResourceData) (*replicationGroupAlterRequestsExt, error) {
-	setObjectLists := sdk.NewReplicationGroupSetRequest()
-	set := sdk.NewReplicationGroupSetRequest()
-	unset := sdk.NewReplicationGroupUnsetRequest()
-	errs := errors.Join(
-		listValueUpdateSetOnlyBuilder(d, "object_types", setObjectLists.WithObjectTypes, toReplicationGroupObjectTypes),
-		listValueUpdateSetOnlyBuilder(d, "allowed_databases", setObjectLists.WithAllowedDatabases, toReplicationGroupAllowedDatabases),
-		listValueUpdateSetOnlyBuilder(d, "allowed_external_volumes", setObjectLists.WithAllowedExternalVolumes, toReplicationGroupAllowedExternalVolumes),
-		listValueUpdateSetOnlyBuilder(d, "allowed_shares", setObjectLists.WithAllowedShares, toReplicationGroupAllowedShares),
-		listValueUpdateSetOnlyBuilder(d, "allowed_integration_types", setObjectLists.WithAllowedIntegrationTypes, toReplicationGroupAllowedIntegrationTypes),
-		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
-		stringAttributeUpdateBuilder(d, "replication_schedule", set.WithReplicationSchedule, unset.WithReplicationSchedule),
-		accountObjectIdentifierAttributeUpdate(d, "error_integration", &set.ErrorIntegration, &unset.ErrorIntegration),
-	)
-	if errs != nil {
-		return nil, errs
-	}
-	return &replicationGroupAlterRequestsExt{
-		set:            set,
-		setObjectLists: setObjectLists,
-		unset:          unset,
-	}, nil
 }
 
 func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, group *sdk.ReplicationGroup) error {

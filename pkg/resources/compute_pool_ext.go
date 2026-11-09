@@ -37,11 +37,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-type computePoolAlterRequestsExt struct {
-	set   *sdk.ComputePoolSetRequest
-	unset *sdk.ComputePoolUnsetRequest
-}
-
 func computePoolHandleExternalChangesExt(d *schema.ResourceData, computePool *sdk.ComputePool, withExternalChangesMarking bool) error {
 	if !withExternalChangesMarking {
 		return nil

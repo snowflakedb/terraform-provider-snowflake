@@ -31,6 +31,7 @@ var BackupPolicyAttrs = struct {
 	Schedule: ssot.Attribute{
 		Name:           "schedule",
 		Type:           ssot.AttrObject,
+		UpdateMapping:  ssot.AttributeMappedValueUpdate("toBackupPolicySchedule"),
 		SdkString:      true,
 		SkipCreate:     true,
 		OptionalInShow: true,
@@ -130,7 +131,7 @@ var BackupPolicy = ssot.Object{
 		ssot.WithDescribeInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithHierarchyRename(ssot.Generated()),
-		ssot.WithApplySetUnset(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.ExtCall()),
