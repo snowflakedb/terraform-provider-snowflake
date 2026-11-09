@@ -141,7 +141,7 @@ func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 		return diags
 	}
 
-	setUnset, err := warehouseInteractiveApplySetUnsetExt(d)
+	setUnset, err := warehouseInteractiveApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -159,6 +159,29 @@ func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 
 func warehouseInteractiveParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+// warehouseInteractiveAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type warehouseInteractiveAlterRequests struct {
+	set   *sdk.WarehouseInteractiveSetRequest
+	unset *sdk.WarehouseInteractiveUnsetRequest
+}
+
+func warehouseInteractiveApplySetUnset(d *tfschema.ResourceData) (*warehouseInteractiveAlterRequests, error) {
+	set, unset := sdk.NewWarehouseInteractiveSetRequest(), sdk.NewWarehouseInteractiveUnsetRequest()
+	errs := errors.Join(
+		attributeMappedValueUpdateSetOnlyAlways(d, "warehouse_size", &set.WarehouseSize, sdk.ToWarehouseSize),
+		intAttributeUpdateBuilder(d, "max_cluster_count", set.WithMaxClusterCount, unset.WithMaxClusterCount),
+		intAttributeUpdateBuilder(d, "min_cluster_count", set.WithMinClusterCount, unset.WithMinClusterCount),
+		intAttributeWithSpecialDefaultUnsetFallbackUpdate(d, "auto_suspend", &set.AutoSuspend, interactiveWarehouseDefaultAutoSuspend),
+		booleanStringAttributeUpdateBuilder(d, "auto_resume", set.WithAutoResume, unset.WithAutoResume),
+		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &warehouseInteractiveAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -114,3 +114,26 @@ func Test_UpdateCall_setOnlyFieldsStyle(t *testing.T) {
 	call = BooleanStringAttributeUnsetFallbackUpdate(true).UpdateCall("ExternalVolume", Attribute{Name: "allow_writes"})
 	require.Equal(t, UpdateCall{Helper: "booleanStringAttributeUnsetFallbackUpdate", Set: true, Fields: true, Mapper: "true"}, call)
 }
+
+func Test_UpdateCall_warehouseMappings(t *testing.T) {
+	attr := Attribute{Name: "auto_suspend"}
+	require.Equal(t,
+		UpdateCall{Helper: "attributeMappedValueUpdateSetOnlyAlways", Set: true, Fields: true, Mapper: "sdk.ToWarehouseSize"},
+		AttributeMappedValueUpdateSetOnlyAlways("sdk.ToWarehouseSize").UpdateCall("Warehouse", attr))
+	require.Equal(t,
+		UpdateCall{Helper: "intAttributeWithSpecialDefaultUnsetFallbackUpdate", Set: true, Fields: true, Mapper: "600"},
+		IntAttributeWithSpecialDefaultUnsetFallbackUpdate("600").UpdateCall("Warehouse", attr))
+	require.Equal(t,
+		UpdateCall{Helper: "warehouseGenerationUpdate", Set: true, Unset: true, Requests: true},
+		CustomUpdate("warehouseGenerationUpdate").UpdateCall("Warehouse", attr))
+
+	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" AttributeMappedValueUpdateSetOnlyAlways needs a mapper function`, func() {
+		AttributeMappedValueUpdateSetOnlyAlways("").UpdateCall("Warehouse", attr)
+	})
+	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" IntAttributeWithSpecialDefaultUnsetFallbackUpdate needs a fallback`, func() {
+		IntAttributeWithSpecialDefaultUnsetFallbackUpdate("").UpdateCall("Warehouse", attr)
+	})
+	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" CustomUpdate needs a function`, func() {
+		CustomUpdate("").UpdateCall("Warehouse", attr)
+	})
+}

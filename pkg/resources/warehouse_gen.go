@@ -162,7 +162,7 @@ func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
-	setUnset, err := warehouseApplySetUnsetExt(d)
+	setUnset, err := warehouseApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -195,6 +195,35 @@ func warehouseParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIden
 
 func warehouseParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+// warehouseAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type warehouseAlterRequests struct {
+	set   *sdk.WarehouseSetRequest
+	unset *sdk.WarehouseUnsetRequest
+}
+
+func warehouseApplySetUnset(d *tfschema.ResourceData) (*warehouseAlterRequests, error) {
+	set, unset := sdk.NewWarehouseSetRequest(), sdk.NewWarehouseUnsetRequest()
+	errs := errors.Join(
+		warehouseTypeUpdate(d, set, unset),
+		warehouseSizeUpdate(d, set, unset),
+		intAttributeUpdateBuilder(d, "max_cluster_count", set.WithMaxClusterCount, unset.WithMaxClusterCount),
+		intAttributeUpdateBuilder(d, "min_cluster_count", set.WithMinClusterCount, unset.WithMinClusterCount),
+		attributeMappedValueUpdate(d, "scaling_policy", &set.ScalingPolicy, &unset.ScalingPolicy, sdk.ToScalingPolicy),
+		intAttributeWithSpecialDefaultUnsetFallbackUpdate(d, "auto_suspend", &set.AutoSuspend, 600),
+		booleanStringAttributeUpdateBuilder(d, "auto_resume", set.WithAutoResume, unset.WithAutoResume),
+		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+		booleanStringAttributeUpdateBuilder(d, "enable_query_acceleration", set.WithEnableQueryAcceleration, unset.WithEnableQueryAcceleration),
+		intAttributeWithSpecialDefaultUpdateBuilder(d, "query_acceleration_max_scale_factor", set.WithQueryAccelerationMaxScaleFactor, unset.WithQueryAccelerationMaxScaleFactor),
+		warehouseResourceConstraintUpdate(d, set, unset),
+		warehouseGenerationUpdate(d, set, unset),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &warehouseAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

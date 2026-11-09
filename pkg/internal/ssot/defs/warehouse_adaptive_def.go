@@ -32,10 +32,11 @@ var WarehouseAdaptiveAttrs = struct {
 	// Computed in Terraform: the generator emits it as computed-only.
 	// Computed skips output suppression: SHOW already has a column of this name.
 	WarehouseType: ssot.Attribute{
-		Name:        "warehouse_type",
-		Type:        ssot.AttrString,
-		Computed:    true,
-		Description: "Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.",
+		Name:          "warehouse_type",
+		Type:          ssot.AttrString,
+		Computed:      true,
+		UpdateMapping: ssot.CustomUpdate("warehouseAdaptiveTypeUpdate"),
+		Description:   "Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
 	MaxQueryPerformanceLevel: ssot.Attribute{
 		Name:        "max_query_performance_level",
@@ -101,6 +102,7 @@ var WarehouseAdaptive = ssot.Object{
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
@@ -165,29 +167,27 @@ var WarehouseAdaptive = ssot.Object{
 			ssot.Tags,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&WarehouseAttrs.WarehouseType,
-		&WarehouseAdaptiveAttrs.Comment,
-		&WarehouseAdaptiveAttrs.ResourceMonitor,
-		&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
-		&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
-		ssot.Parameters,
-	},
-	Unset: []*ssot.Attribute{
-		&WarehouseAttrs.WarehouseType,
-		&WarehouseAdaptiveAttrs.Comment,
-		&WarehouseAdaptiveAttrs.ResourceMonitor,
-		&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
-		&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
-		ssot.Parameters,
-	},
 	Alter: ssot.AlterSpec{
 		Doc:                      "https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
 		SetAdditionalValidations: true,
 		Clauses: []ssot.AlterClause{
 			ssot.AlterRenameTo(),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&WarehouseAttrs.WarehouseType,
+				&WarehouseAdaptiveAttrs.Comment,
+				&WarehouseAdaptiveAttrs.ResourceMonitor,
+				&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
+				&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
+				ssot.Parameters,
+			),
+			ssot.AlterUnset(
+				&WarehouseAttrs.WarehouseType,
+				&WarehouseAdaptiveAttrs.Comment,
+				&WarehouseAdaptiveAttrs.ResourceMonitor,
+				&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
+				&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
+				ssot.Parameters,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		},

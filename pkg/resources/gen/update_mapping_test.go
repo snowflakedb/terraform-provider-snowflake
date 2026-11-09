@@ -371,3 +371,30 @@ func Test_attachUpdateMappings_deducesASetOnlyString(t *testing.T) {
 	require.Equal(t, "&setBody.SetBody", dst[0].UpdateCall.Target)
 	require.Equal(t, "stringAttributeUpdateBuilder", dst[1].UpdateCall.Helper)
 }
+
+func Test_WidgetApplySetUnset_customUpdate(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	generation := ssot.Attribute{Name: "generation", Type: ssot.AttrString, UpdateMapping: ssot.CustomUpdate("widgetGenerationUpdate")}
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name:          "Widget",
+		NamePlural:    "Widgets",
+		IdType:        "AccountObjectIdentifier",
+		Attributes:    []ssot.Attribute{comment, generation},
+		ResourceHooks: []ssot.ResourceHookOption{ssot.WithApplySetUnset(ssot.Generated())},
+		Alter:         ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet(&comment, &generation), ssot.AlterUnset(&comment, &generation)}},
+	}}, nil, nil)
+
+	// A custom update gets the requests and no attribute key.
+	require.Equal(t, `func widgetApplySetUnset(d *tfschema.ResourceData) (*widgetAlterRequests, error) {
+	set, unset := sdk.NewWidgetSetRequest(), sdk.NewWidgetUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+		widgetGenerationUpdate(d, set, unset),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &widgetAlterRequests{set: set, unset: unset}, nil
+}
+`, renderTemplate(t, "generatedApplySetUnset", model))
+}

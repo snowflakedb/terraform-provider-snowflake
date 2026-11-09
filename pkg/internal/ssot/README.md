@@ -101,6 +101,10 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   request fields instead of the setter methods, `ListValueUpdate("<mapperFunc>")`, `ListValueUpdateSetOnly("<mapperFunc>")`, or
   `AttributeMappedValueUpdate("<mapperFunc>")`, which maps the Terraform value to the SDK value and unsets the attribute when it is removed.
   A string that the object cannot unset gets `StringAttributeUpdateSetOnlyNotEmpty`, with the request field of its `SetSql` (`SetBody`). Declare `BooleanStringAttributeUnsetFallbackUpdate(<fallback>)` for a boolean string that is set to the fallback when the value is removed, because the object has no UNSET for it.
+  `AttributeMappedValueUpdateSetOnlyAlways("<mapperFunc>")` and `IntAttributeWithSpecialDefaultUnsetFallbackUpdate("<fallback>")` set a value and never unset it,
+  and `CustomUpdate("<function>")` calls `function(d, set, unset)` of package resources with the requests that hold the attribute, for an update that
+  decides by other attributes or that sets another field with it, such as `wait_for_completion` with the warehouse size.
+  The function does the whole update of the attribute.
   A helper is passed the setters of the request that holds the attribute, so an attribute in a named group of the SET or UNSET block
   is routed to that group's request without any change to the mapping. An object whose ALTER spec has a SET or UNSET block updates the
   attributes of those blocks and no others, so an attribute that a hook updates, such as a keyword clause, needs nothing. An attribute of
