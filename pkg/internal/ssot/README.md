@@ -87,8 +87,27 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   a schema object.
 - `SkipCreate` - leaves the attribute out of generated create, including a list block whose fields could be mapped and a scalar that type deduction would otherwise emit. There is no constructor argument, no `ApplyCreateOptionals` call, and no parse function. Ext create code builds the value when CREATE still needs it. The update helper stays.
 - `UpdateMapping` - the update helper from `pkg/resources/resource_helpers_update.go` used by a generated
-  `ApplySetUnset`. Use a `SetOnlyMapping` constant (`IntAttributeUpdateSetOnlyBuilder`, `BooleanAttributeUpdateSetOnlyBuilder`), a `SetUnsetMapping` constant
-  (`StringAttributeUpdateBuilder`, ...), or `ListValueUpdate("<mapperFunc>")`. `ForceNew` and `CreateOnly` are left out of set/unset. `SkipCreate` is not. An optional `NativeBool` with no mapping uses `BooleanAttributeUpdateSetOnlyBuilder`. A boolean-string whose default is `BooleanDefault` uses `BooleanStringAttributeUpdateBuilder`.
+  `ApplySetUnset`. Leave it nil whenever the helper can be deduced, as create does: a string, an int, or a boolean string uses the
+  matching `...Builder` helper, an enum uses `AttributeMappedValueUpdate("sdk.To<Enum>")`, an `AccountObjectIdentifier` uses
+  `AccountObjectIdentifierAttributeUpdate`, and a list of enums or account object identifiers uses `ListValueUpdate` with the mapper
+  `to<Object><Field>`. An attribute that is in the SET block and not in the UNSET block is only ever set. An int, a native bool, a
+  boolean string, and a list of enums or account object identifiers get the set-only helper (`IntAttributeUpdateSetOnlyBuilder`,
+  `BooleanAttributeUpdateSetOnlyBuilder`, `BooleanStringAttributeUpdateSetOnly`, `ListValueUpdateSetOnly`). A set-only string, enum, or
+  `AccountObjectIdentifier` has no deduced helper, so generation fails until it gets an `UpdateMapping`: an enum has two set-only
+  helpers that treat a removed value differently (`attributeMappedValueUpdateSetOnly`, `attributeMappedValueUpdateSetOnlyAlways`), and
+  an identifier has none. Declare an `UpdateMapping` only where the behaviour differs from
+  that: a `SetOnlyMapping` constant, a `SetUnsetMapping` constant, a `SetUnsetFieldsMapping` constant for a helper that takes the
+  request fields instead of the setter methods, `ListValueUpdate("<mapperFunc>")`, `ListValueUpdateSetOnly("<mapperFunc>")`, or
+  `AttributeMappedValueUpdate("<mapperFunc>")`, which maps the Terraform value to the SDK value and unsets the attribute when it is removed.
+  A helper is passed the setters of the request that holds the attribute, so an attribute in a named group of the SET or UNSET block
+  is routed to that group's request without any change to the mapping. An object whose ALTER spec has a SET or UNSET block updates the
+  attributes of those blocks and no others, so an attribute that a hook updates, such as a keyword clause, needs nothing. An attribute of
+  a block that has no mapping and no deducible helper fails generation: give it an `UpdateMapping`, or `SkipUpdate` when another hook
+  updates it. An `UpdateMapping` on an attribute that is in neither block fails too. `ForceNew` and `CreateOnly` are left out of set/unset.
+  `SkipCreate` is not. An optional `NativeBool` with no mapping uses `BooleanAttributeUpdateSetOnlyBuilder`. A boolean-string whose default is
+  `BooleanDefault` uses `BooleanStringAttributeUpdateBuilder`.
+- `SkipUpdate` - leaves the attribute out of the generated `ApplySetUnset` and out of the deduction. Use it for an attribute of the SET or
+  UNSET block that the update changes some other way, such as the accounts of a share, which a `BeforeAlter` hook adds and removes.
 - `NativeBool` - an optional bool stays Terraform `TypeBool`. Without the mark, an optional bool is a boolean string.
 - `IncludeAliasedInTheDescription` - the resource description lists enum aliases. Without the mark, the description
   lists canonical values. Warehouse size sets it.
@@ -227,7 +246,8 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   index for the prefix. It uses the set rule of `CreateMapping`. A list block stays out of generated create when it is
   required or any field has no create mapping, including a required field the constructor cannot take or a `SkipCreate` field. Keep such a block
   in an ext `ApplyCreateOptionals`, or set `SkipCreate` on the block. Resource update generation (`ApplySetUnset`) skips nested
-  attributes.
+  attributes, unless the attribute's `UpdateMapping` updates it as one value (`AttributeMappedValueUpdate`), as a block that the SDK takes as a
+  string does.
 - **Where each part is used.** CREATE reads the list attribute through `Create.Clauses`. ALTER reuses the same element with
   `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), or a `SqlOnly` object with
   `AlterKeywordBlock(field, sql, &object)`. Enums on the children, on their clauses (`EnumOf`), and in variants are emitted
@@ -649,7 +669,7 @@ A block sends its groups in declaration order and skips a group with no values. 
 
 An object that has not moved yet lists its attributes in `Object.Set` and `Object.Unset`, keeps `ssot.AlterSet()` and `ssot.AlterUnset()` without items, and gets one main statement. Validation rejects an object that declares both forms for the same block. TODO [next PRs]: remove `Set` and `Unset`.
 
-The request struct in the ext file has one field per group, named `set<Name>` or `unset<Name>` (`setBody`, `unsetSchedule`, `setObjectLists`), next to `set` and `unset`. A missing field is a compile error in the generated code. `ApplySetUnset(Generated())` creates the requests and routes each attribute to the request of its group; an `ExtCall` `ApplySetUnset` fills them. `AlterSetInSdk(Generated())` and `AlterUnsetInSdk(Generated())` send the groups in order, skipping an empty request. Parameters stay in `set` and `unset`.
+The requests live in a struct with one field per group, named `set<Name>` or `unset<Name>` (`setBody`, `unsetSchedule`, `setObjectLists`), next to `set` and `unset`. `ApplySetUnset(Generated())` generates the struct (`<prefix>AlterRequests`) in the generated file, creates the requests, and routes each attribute to the request of its group, so adding a group to the definition needs no other edit. An object whose update needs more than the mappings can express, such as a request outside SET and UNSET, a custom request type, or a value that depends on another attribute, keeps `ApplySetUnset` as `ExtCall`. It declares the struct `<prefix>AlterRequestsExt` in the ext file with the fields its ext code needs, and a missing field is a compile error in the generated code. `AlterSetInSdk(Generated())` and `AlterUnsetInSdk(Generated())` send the groups in order, skipping an empty request. Parameters stay in `set` and `unset`.
 
 `SetStateToValuesFromConfig` defaults to `Generated`. Read inlines the field names in `setStateToValuesFromConfig`.
 The names are optional attributes in `Attributes` order that the helper can copy: string (an optional bool, an enum,

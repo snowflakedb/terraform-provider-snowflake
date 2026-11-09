@@ -355,6 +355,18 @@ func (obj Object) AlterUnsetGroups() []AlterGroupSpec {
 	return obj.alterGroups(AlterClauseUnset)
 }
 
+// HasAlterSetBlock reports whether the ALTER spec has a SET block.
+func (obj Object) HasAlterSetBlock() bool {
+	_, ok := obj.alterClause(AlterClauseSet)
+	return ok
+}
+
+// HasAlterUnsetBlock reports whether the ALTER spec has an UNSET block.
+func (obj Object) HasAlterUnsetBlock() bool {
+	_, ok := obj.alterClause(AlterClauseUnset)
+	return ok
+}
+
 // alterClause is the SET or UNSET block, if the object has one.
 func (obj Object) alterClause(kind AlterClauseKind) (AlterClause, bool) {
 	for _, clause := range obj.Alter.Clauses {

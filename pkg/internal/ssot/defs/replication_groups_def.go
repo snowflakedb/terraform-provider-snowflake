@@ -139,7 +139,6 @@ var ReplicationGroupAttrs = struct {
 		Type:          ssot.AttrList,
 		Required:      true,
 		CreateMapping: ssot.ListValueCreate("toReplicationGroupObjectTypes"),
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toReplicationGroupObjectTypes"),
 		Description:   "Types of objects replicated from the source account to the target accounts.",
 		Elem:          &ssot.Attribute{Type: ssot.AttrEnum, Enum: ReplicationGroupObjectType},
 		// CSV. NULL or empty when a secondary group lists none. The plain field stays a slice.
@@ -185,12 +184,11 @@ var ReplicationGroupAttrs = struct {
 		// SHOW prints short tokens such as API and EXTERNAL_ACCESS. Those tokens are mapped to the
 		// create-page values. Any other token is left unchanged.
 		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
-		OptionalInDb:  true,
-		SkipInSchema:  true,
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toReplicationGroupAllowedIntegrationTypes"),
-		CustomParser:  "ParseCommaSeparatedReplicationGroupIntegrationTypeArray",
-		CreateSql:     replicationGroupEnumList(ReplicationGroupIntegrationType, false),
-		SetSql:        replicationGroupEnumList(ReplicationGroupIntegrationType, false),
+		OptionalInDb: true,
+		SkipInSchema: true,
+		CustomParser: "ParseCommaSeparatedReplicationGroupIntegrationTypeArray",
+		CreateSql:    replicationGroupEnumList(ReplicationGroupIntegrationType, false),
+		SetSql:       replicationGroupEnumList(ReplicationGroupIntegrationType, false),
 	},
 	AllowedAccounts: ssot.Attribute{
 		Name:          "allowed_accounts",
@@ -435,7 +433,7 @@ var ReplicationGroup = ssot.Object{
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		// OBJECT_TYPES and the allowed lists cannot share a SET with COMMENT, REPLICATION_SCHEDULE,
 		// or ERROR_INTEGRATION. The extension fills one request per SET statement (set and setObjectLists).
-		ssot.WithApplySetUnset(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		// SHOW stores identifier lists as SDK values. Generated SetConfigFields passes that slice through,
