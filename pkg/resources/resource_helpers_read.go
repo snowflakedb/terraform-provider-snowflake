@@ -11,6 +11,14 @@ func setStringIfNotEmpty(d *schema.ResourceData, key, value string) error {
 	return nil
 }
 
+// setListKeepingNull skips d.Set when Snowflake and state hold no items, because d.Set stores an empty list instead of null.
+func setListKeepingNull[T any](d *schema.ResourceData, key string, value []T) error {
+	if len(value) == 0 && len(d.Get(key).([]any)) == 0 {
+		return nil
+	}
+	return d.Set(key, value)
+}
+
 func attributeMappedValueReadOrDefault[T, R any](d *schema.ResourceData, key string, value *T, mapper func(*T) (R, error), defaultValue *R) error {
 	if value != nil {
 		mappedValue, err := mapper(value)

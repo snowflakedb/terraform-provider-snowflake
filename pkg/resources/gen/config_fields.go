@@ -8,9 +8,11 @@ import (
 )
 
 // ConfigFieldSet is one d.Set inside the generated SetConfigFields function.
+// A list uses setListKeepingNull instead, so an unset list stays null in state.
 type ConfigFieldSet struct {
 	Name string
 	Expr string
+	List bool
 }
 
 // ConfigFieldSets is the SHOW values copied into state.
@@ -38,7 +40,7 @@ func (m ResourceModel) ConfigFieldSets() []ConfigFieldSet {
 		if _, skip := excluded[attr.Name]; skip {
 			continue
 		}
-		sets = append(sets, ConfigFieldSet{Name: attr.Name, Expr: configFieldCode(ssot.Object{Name: m.Name, IdType: m.IdType}, col)})
+		sets = append(sets, ConfigFieldSet{Name: attr.Name, Expr: configFieldCode(ssot.Object{Name: m.Name, IdType: m.IdType}, col), List: attr.TfType == SchemaTypeList})
 	}
 	if len(sets) == 0 {
 		return nil

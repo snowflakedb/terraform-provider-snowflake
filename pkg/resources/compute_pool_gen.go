@@ -205,7 +205,7 @@ func computePoolSetConfigFields(d *tfschema.ResourceData, obj *sdk.ComputePool) 
 		d.Set("min_nodes", obj.MinNodes),
 		d.Set("max_nodes", obj.MaxNodes),
 		d.Set("instance_family", obj.InstanceFamily),
-		d.Set("backup_instance_families", obj.BackupInstanceFamilies),
+		setListKeepingNull(d, "backup_instance_families", obj.BackupInstanceFamilies),
 		d.Set("comment", obj.Comment),
 	)
 }

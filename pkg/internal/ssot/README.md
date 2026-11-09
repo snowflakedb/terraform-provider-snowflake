@@ -636,6 +636,7 @@ Read passes the SHOW row. A variant's row uses the parent type. A field is set w
 `Show.Columns`, not in the set-state list, not `CreateOnly`, and not a nested block. Membership matches `Name`.
 The SDK field is `obj.` plus the camel-case of the show column's output key (`ShowName`, otherwise `Name`).
 A string, int, float, enum, native bool, list, or set is passed through, including a SHOW pointer such as `comment`.
+A list is written with `setListKeepingNull`, so an unset list stays null in state when SHOW returns no items.
 An optional boolean-string uses `booleanStringFromBool`. An identifier uses `FullyQualifiedName()`.
 A SHOW pointer is passed through. No matching fields returns nil.
 Skipping a nested block does not panic. An object that also writes `show_output` in this hook, or that copies
