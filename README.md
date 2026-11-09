@@ -1,3 +1,4 @@
+<!-- test -->
 # Snowflake Terraform Provider
 
 [![Unit tests](https://github.com/snowflakedb/terraform-provider-snowflake/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/snowflakedb/terraform-provider-snowflake/actions/workflows/unit-tests.yml)
