@@ -85,11 +85,6 @@ func (opts *CreateTableOptions) validate() error {
 			}
 		}
 	}
-	if valueSet(opts.StageFileFormat) {
-		if !exactlyOneValueSet(opts.StageFileFormat.FormatName, opts.StageFileFormat.FileFormatType) {
-			errs = append(errs, errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"))
-		}
-	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
@@ -298,13 +293,6 @@ func (opts *AlterTableOptions) validate() error {
 						errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterTableOptions.SearchOptimizationAction.Drop.On[%d]", onIdx), "SearchMethodWithTarget", "ColumnName", "ExpressionId"))
 					}
 				}
-			}
-		}
-	}
-	if valueSet(opts.Set) {
-		if valueSet(opts.Set.StageFileFormat) {
-			if !exactlyOneValueSet(opts.Set.StageFileFormat.FormatName, opts.Set.StageFileFormat.FileFormatType) {
-				errs = append(errs, errExactlyOneOf("AlterTableOptions.Set.StageFileFormat", "FormatName", "FileFormatType"))
 			}
 		}
 	}

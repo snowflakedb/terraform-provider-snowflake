@@ -212,13 +212,6 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
-	if r.StageFileFormat != nil {
-		opts.StageFileFormat = &LegacyFileFormat{
-			FormatName:     r.StageFileFormat.FormatName,
-			FileFormatType: r.StageFileFormat.FileFormatType,
-			Options:        r.StageFileFormat.Options,
-		}
-	}
 	if r.StageCopyOptions != nil {
 		opts.StageCopyOptions = &LegacyTableCopyOptions{
 			SizeLimit:         r.StageCopyOptions.SizeLimit,
@@ -533,13 +526,6 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			ChangeTracking:             r.Set.ChangeTracking,
 			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
 			Comment:                    r.Set.Comment,
-		}
-		if r.Set.StageFileFormat != nil {
-			opts.Set.StageFileFormat = &LegacyFileFormat{
-				FormatName:     r.Set.StageFileFormat.FormatName,
-				FileFormatType: r.Set.StageFileFormat.FileFormatType,
-				Options:        r.Set.StageFileFormat.Options,
-			}
 		}
 		if r.Set.StageCopyOptions != nil {
 			opts.Set.StageCopyOptions = &LegacyTableCopyOptions{

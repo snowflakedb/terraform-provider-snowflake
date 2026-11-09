@@ -40,12 +40,6 @@ func init() {
 				},
 			}
 		}).
-		withModify(case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateTableOptions) {
-			opts.StageFileFormat = &LegacyFileFormat{
-				FormatName:     new("fmt"),
-				FileFormatType: new(FileFormatTypeCsv),
-			}
-		}).
 		withAdditionalValidationCase(
 			"validation_Create_noColumns",
 			func(opts *CreateTableOptions) { opts.ColumnsAndConstraints.Columns = nil },
@@ -278,10 +272,6 @@ func init() {
 				}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
 				opts.EnableSchemaEvolution = new(true)
-				opts.StageFileFormat = &LegacyFileFormat{
-					FileFormatType: new(FileFormatTypeCsv),
-					Options:        &FileFormatTypeOptionsLegacy{CSVCompression: new(CsvCompressionAuto)},
-				}
 				opts.StageCopyOptions = &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")}}
 				opts.DataRetentionTimeInDays = new(10)
 				opts.MaxDataExtensionTimeInDays = new(100)
@@ -296,7 +286,7 @@ func init() {
 				}
 				opts.Comment = &tableComment
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV COMPRESSION = AUTO) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -457,9 +447,6 @@ func init() {
 			opts.SearchOptimizationAction = &TableSearchOptimizationAction{Drop: &TableDropSearchOptimization{
 				On: []TableDropSearchOptimizationOn{{ColumnName: new("c")}, {}},
 			}}
-		}).
-		withModify(case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
-			opts.Set = &TableSet{StageFileFormat: &LegacyFileFormat{FormatName: new("fmt"), FileFormatType: new(FileFormatTypeCsv)}}
 		}).
 		withModify(case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
 			opts.ColumnAction = &TableColumnAction{Alter: []TableColumnAlterAction{{
@@ -737,7 +724,6 @@ func init() {
 			func(opts *AlterTableOptions) {
 				opts.Set = &TableSet{
 					EnableSchemaEvolution:      new(true),
-					StageFileFormat:            &LegacyFileFormat{FileFormatType: new(FileFormatTypeCsv)},
 					StageCopyOptions:           &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")}},
 					DataRetentionTimeInDays:    new(30),
 					MaxDataExtensionTimeInDays: new(90),
@@ -746,7 +732,7 @@ func init() {
 					Comment:                    &tableComment,
 				}
 			},
-			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
+			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
 			id.FullyQualifiedName(), tableComment,
 		).
 		withAdditionalSqlCasef(

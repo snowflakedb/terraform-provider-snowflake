@@ -42,11 +42,6 @@ func (s *CreateTableRequest) WithEnableSchemaEvolution(enableSchemaEvolution boo
 	return s
 }
 
-func (s *CreateTableRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *CreateTableRequest {
-	s.StageFileFormat = &stageFileFormat
-	return s
-}
-
 func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *CreateTableRequest {
 	s.StageCopyOptions = &stageCopyOptions
 	return s
@@ -300,26 +295,6 @@ func (s *OutOfLineForeignKeyRequest) WithMatch(match MatchType) *OutOfLineForeig
 
 func (s *OutOfLineForeignKeyRequest) WithOn(on ForeignKeyOnAction) *OutOfLineForeignKeyRequest {
 	s.On = &on
-	return s
-}
-
-func NewLegacyFileFormatRequest() *LegacyFileFormatRequest {
-	s := LegacyFileFormatRequest{}
-	return &s
-}
-
-func (s *LegacyFileFormatRequest) WithFormatName(formatName string) *LegacyFileFormatRequest {
-	s.FormatName = &formatName
-	return s
-}
-
-func (s *LegacyFileFormatRequest) WithFileFormatType(fileFormatType FileFormatType) *LegacyFileFormatRequest {
-	s.FileFormatType = &fileFormatType
-	return s
-}
-
-func (s *LegacyFileFormatRequest) WithOptions(options FileFormatTypeOptionsLegacy) *LegacyFileFormatRequest {
-	s.Options = &options
 	return s
 }
 
@@ -1226,11 +1201,6 @@ func NewTableSetRequest() *TableSetRequest {
 
 func (s *TableSetRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *TableSetRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
-	return s
-}
-
-func (s *TableSetRequest) WithStageFileFormat(stageFileFormat LegacyFileFormatRequest) *TableSetRequest {
-	s.StageFileFormat = &stageFileFormat
 	return s
 }
 
