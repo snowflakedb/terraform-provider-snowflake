@@ -197,7 +197,7 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
 // resource, model, and assertion generators skip them.
 //
-// The column list and the stage copy options name query structs by PreexistingStruct. The SDK
+// The column list names a query struct by PreexistingStruct. The SDK
 // definition in pkg/sdk/generator/defs/tables_def.go supplies them to CreateOperationFromObject and keeps their fields,
 // because other operations and the request types of the resource use them. Search optimization, clustering, and storage
 // lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. The row access policy is generated here as
@@ -209,7 +209,6 @@ var TableCreateAttrs = struct {
 	Kind                       ssot.Attribute
 	ColumnsAndConstraints      ssot.Attribute
 	EnableSchemaEvolution      ssot.Attribute
-	StageCopyOptions           ssot.Attribute
 	MaxDataExtensionTimeInDays ssot.Attribute
 	DefaultDdlCollation        ssot.Attribute
 	CopyGrants                 ssot.Attribute
@@ -241,12 +240,6 @@ var TableCreateAttrs = struct {
 		Name:    "enable_schema_evolution",
 		Type:    ssot.AttrBool,
 		SqlOnly: true,
-	},
-	StageCopyOptions: ssot.Attribute{
-		Name:      "stage_copy_options",
-		Type:      ssot.AttrObject,
-		SqlOnly:   true,
-		CreateSql: ssot.PreexistingStruct("LegacyTableCopyOptions", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_COPY_OPTIONS =")),
 	},
 	MaxDataExtensionTimeInDays: ssot.Attribute{
 		Name:    "max_data_extension_time_in_days",
@@ -374,7 +367,6 @@ var Table = ssot.Object{
 			&TableCreateAttrs.ColumnsAndConstraints,
 			&TableAttrs.ClusterBy,
 			&TableCreateAttrs.EnableSchemaEvolution,
-			&TableCreateAttrs.StageCopyOptions,
 			&TableAttrs.DataRetentionTimeInDays,
 			&TableCreateAttrs.MaxDataExtensionTimeInDays,
 			&TableAttrs.ChangeTracking,

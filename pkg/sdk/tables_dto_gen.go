@@ -27,7 +27,6 @@ type CreateTableRequest struct {
 	ColumnsAndConstraints      CreateTableColumnsAndConstraintsRequest // required
 	ClusterBy                  []string
 	EnableSchemaEvolution      *bool
-	StageCopyOptions           *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
@@ -93,23 +92,6 @@ type OutOfLineForeignKeyRequest struct {
 	ColumnNames []Column
 	Match       *MatchType
 	On          *ForeignKeyOnAction
-}
-
-type LegacyTableCopyOptionsRequest struct {
-	OnError           *LegacyTableCopyOnErrorOptionsRequest
-	SizeLimit         *int
-	Purge             *bool
-	ReturnFailedOnly  *bool
-	MatchByColumnName *StageCopyColumnMapOption
-	EnforceLength     *bool
-	Truncatecolumns   *bool
-	Force             *bool
-}
-
-type LegacyTableCopyOnErrorOptionsRequest struct {
-	Continue_      *bool
-	SkipFile       *string
-	AbortStatement *bool
 }
 
 type TableRowAccessPolicyRequest struct {
@@ -370,7 +352,6 @@ type TableDropSearchOptimizationOnRequest struct {
 
 type TableSetRequest struct {
 	EnableSchemaEvolution      *bool
-	StageCopyOptions           *LegacyTableCopyOptionsRequest
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool

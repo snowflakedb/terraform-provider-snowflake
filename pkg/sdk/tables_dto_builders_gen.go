@@ -42,11 +42,6 @@ func (s *CreateTableRequest) WithEnableSchemaEvolution(enableSchemaEvolution boo
 	return s
 }
 
-func (s *CreateTableRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *CreateTableRequest {
-	s.StageCopyOptions = &stageCopyOptions
-	return s
-}
-
 func (s *CreateTableRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *CreateTableRequest {
 	s.DataRetentionTimeInDays = &dataRetentionTimeInDays
 	return s
@@ -295,71 +290,6 @@ func (s *OutOfLineForeignKeyRequest) WithMatch(match MatchType) *OutOfLineForeig
 
 func (s *OutOfLineForeignKeyRequest) WithOn(on ForeignKeyOnAction) *OutOfLineForeignKeyRequest {
 	s.On = &on
-	return s
-}
-
-func NewLegacyTableCopyOptionsRequest() *LegacyTableCopyOptionsRequest {
-	s := LegacyTableCopyOptionsRequest{}
-	return &s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithOnError(onError LegacyTableCopyOnErrorOptionsRequest) *LegacyTableCopyOptionsRequest {
-	s.OnError = &onError
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithSizeLimit(sizeLimit int) *LegacyTableCopyOptionsRequest {
-	s.SizeLimit = &sizeLimit
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithPurge(purge bool) *LegacyTableCopyOptionsRequest {
-	s.Purge = &purge
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithReturnFailedOnly(returnFailedOnly bool) *LegacyTableCopyOptionsRequest {
-	s.ReturnFailedOnly = &returnFailedOnly
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithMatchByColumnName(matchByColumnName StageCopyColumnMapOption) *LegacyTableCopyOptionsRequest {
-	s.MatchByColumnName = &matchByColumnName
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithEnforceLength(enforceLength bool) *LegacyTableCopyOptionsRequest {
-	s.EnforceLength = &enforceLength
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithTruncatecolumns(truncatecolumns bool) *LegacyTableCopyOptionsRequest {
-	s.Truncatecolumns = &truncatecolumns
-	return s
-}
-
-func (s *LegacyTableCopyOptionsRequest) WithForce(force bool) *LegacyTableCopyOptionsRequest {
-	s.Force = &force
-	return s
-}
-
-func NewLegacyTableCopyOnErrorOptionsRequest() *LegacyTableCopyOnErrorOptionsRequest {
-	s := LegacyTableCopyOnErrorOptionsRequest{}
-	return &s
-}
-
-func (s *LegacyTableCopyOnErrorOptionsRequest) WithContinue_(continue_ bool) *LegacyTableCopyOnErrorOptionsRequest {
-	s.Continue_ = &continue_
-	return s
-}
-
-func (s *LegacyTableCopyOnErrorOptionsRequest) WithSkipFile(skipFile string) *LegacyTableCopyOnErrorOptionsRequest {
-	s.SkipFile = &skipFile
-	return s
-}
-
-func (s *LegacyTableCopyOnErrorOptionsRequest) WithAbortStatement(abortStatement bool) *LegacyTableCopyOnErrorOptionsRequest {
-	s.AbortStatement = &abortStatement
 	return s
 }
 
@@ -1201,11 +1131,6 @@ func NewTableSetRequest() *TableSetRequest {
 
 func (s *TableSetRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *TableSetRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
-	return s
-}
-
-func (s *TableSetRequest) WithStageCopyOptions(stageCopyOptions LegacyTableCopyOptionsRequest) *TableSetRequest {
-	s.StageCopyOptions = &stageCopyOptions
 	return s
 }
 

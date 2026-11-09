@@ -212,24 +212,6 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
-	if r.StageCopyOptions != nil {
-		opts.StageCopyOptions = &LegacyTableCopyOptions{
-			SizeLimit:         r.StageCopyOptions.SizeLimit,
-			Purge:             r.StageCopyOptions.Purge,
-			ReturnFailedOnly:  r.StageCopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.StageCopyOptions.MatchByColumnName,
-			EnforceLength:     r.StageCopyOptions.EnforceLength,
-			Truncatecolumns:   r.StageCopyOptions.Truncatecolumns,
-			Force:             r.StageCopyOptions.Force,
-		}
-		if r.StageCopyOptions.OnError != nil {
-			opts.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
-				Continue_:      r.StageCopyOptions.OnError.Continue_,
-				SkipFile:       r.StageCopyOptions.OnError.SkipFile,
-				AbortStatement: r.StageCopyOptions.OnError.AbortStatement,
-			}
-		}
-	}
 	if r.RowAccessPolicy != nil {
 		opts.RowAccessPolicy = &TableRowAccessPolicy{
 			Name: r.RowAccessPolicy.Name,
@@ -526,24 +508,6 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			ChangeTracking:             r.Set.ChangeTracking,
 			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
 			Comment:                    r.Set.Comment,
-		}
-		if r.Set.StageCopyOptions != nil {
-			opts.Set.StageCopyOptions = &LegacyTableCopyOptions{
-				SizeLimit:         r.Set.StageCopyOptions.SizeLimit,
-				Purge:             r.Set.StageCopyOptions.Purge,
-				ReturnFailedOnly:  r.Set.StageCopyOptions.ReturnFailedOnly,
-				MatchByColumnName: r.Set.StageCopyOptions.MatchByColumnName,
-				EnforceLength:     r.Set.StageCopyOptions.EnforceLength,
-				Truncatecolumns:   r.Set.StageCopyOptions.Truncatecolumns,
-				Force:             r.Set.StageCopyOptions.Force,
-			}
-			if r.Set.StageCopyOptions.OnError != nil {
-				opts.Set.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
-					Continue_:      r.Set.StageCopyOptions.OnError.Continue_,
-					SkipFile:       r.Set.StageCopyOptions.OnError.SkipFile,
-					AbortStatement: r.Set.StageCopyOptions.OnError.AbortStatement,
-				}
-			}
 		}
 	}
 	if r.Unset != nil {
