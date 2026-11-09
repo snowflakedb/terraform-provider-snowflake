@@ -98,20 +98,24 @@ type UpdateMapping interface {
 }
 
 // UpdateCall is one generated ApplySetUnset call.
-// Target is the argument after the attribute key.
+// Set and Unset say which setters the helper receives: the With<Field> methods of the SET and UNSET request that holds
+// the attribute. Mapper is the extra argument after the setters, if any. The generator writes the final arguments,
+// because only it knows which request each attribute belongs to.
 type UpdateCall struct {
 	Helper string
-	Target string
+	Set    bool
+	Unset  bool
+	Mapper string
 }
 
-// SetOnlyMapping is an update helper called with set.With<Field>.
+// SetOnlyMapping is an update helper called with the SET setter.
 // The value is the helper function name.
 type SetOnlyMapping string
 
 func (m SetOnlyMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
 	return UpdateCall{
 		Helper: string(m),
-		Target: "set.With" + genhelpers.SnakeCaseToCamel(attr.Name),
+		Set:    true,
 	}
 }
 
@@ -120,15 +124,15 @@ const (
 	BooleanAttributeUpdateSetOnlyBuilder SetOnlyMapping = "booleanAttributeUpdateSetOnlyBuilder"
 )
 
-// SetUnsetMapping is an update helper called with set.With<Field>, unset.With<Field>.
+// SetUnsetMapping is an update helper called with the SET and UNSET setters.
 // The value is the helper function name.
 type SetUnsetMapping string
 
 func (m SetUnsetMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
-	goName := genhelpers.SnakeCaseToCamel(attr.Name)
 	return UpdateCall{
 		Helper: string(m),
-		Target: fmt.Sprintf("set.With%s, unset.With%s", goName, goName),
+		Set:    true,
+		Unset:  true,
 	}
 }
 
@@ -148,10 +152,11 @@ func (m ListValueUpdateMapping) UpdateCall(objectName string, attr Attribute) Up
 	if m.Mapper == "" {
 		panic(fmt.Sprintf("object %q: attribute %q ListValueUpdate needs a mapper function", objectName, attr.Name))
 	}
-	goName := genhelpers.SnakeCaseToCamel(attr.Name)
 	return UpdateCall{
 		Helper: "listValueUpdateBuilder",
-		Target: fmt.Sprintf("set.With%s, unset.With%s, %s", goName, goName, m.Mapper),
+		Set:    true,
+		Unset:  true,
+		Mapper: m.Mapper,
 	}
 }
 
@@ -170,7 +175,8 @@ func (m ListValueUpdateSetOnlyMapping) UpdateCall(objectName string, attr Attrib
 	}
 	return UpdateCall{
 		Helper: "listValueUpdateSetOnlyBuilder",
-		Target: fmt.Sprintf("set.With%s, %s", genhelpers.SnakeCaseToCamel(attr.Name), m.Mapper),
+		Set:    true,
+		Mapper: m.Mapper,
 	}
 }
 

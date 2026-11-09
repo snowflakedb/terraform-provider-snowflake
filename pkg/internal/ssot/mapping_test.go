@@ -46,24 +46,32 @@ func Test_CreateCall(t *testing.T) {
 
 func Test_UpdateCall(t *testing.T) {
 	call := IntAttributeUpdateSetOnlyBuilder.UpdateCall("ComputePool", Attribute{Name: "min_nodes"})
-	require.Equal(t, UpdateCall{Helper: "intAttributeUpdateSetOnlyBuilder", Target: "set.WithMinNodes"}, call)
+	require.Equal(t, UpdateCall{Helper: "intAttributeUpdateSetOnlyBuilder", Set: true}, call)
 
 	call = BooleanAttributeUpdateSetOnlyBuilder.UpdateCall("Table", Attribute{Name: "change_tracking"})
-	require.Equal(t, UpdateCall{Helper: "booleanAttributeUpdateSetOnlyBuilder", Target: "set.WithChangeTracking"}, call)
+	require.Equal(t, UpdateCall{Helper: "booleanAttributeUpdateSetOnlyBuilder", Set: true}, call)
 
 	call = BooleanStringAttributeUpdateBuilder.UpdateCall("ComputePool", Attribute{Name: "auto_resume"})
 	require.Equal(t, UpdateCall{
 		Helper: "booleanStringAttributeUpdateBuilder",
-		Target: "set.WithAutoResume, unset.WithAutoResume",
+		Set:    true,
+		Unset:  true,
 	}, call)
 
 	call = ListValueUpdate("toComputePoolBackupInstanceFamilies").UpdateCall("ComputePool", Attribute{Name: "backup_instance_families"})
 	require.Equal(t, UpdateCall{
 		Helper: "listValueUpdateBuilder",
-		Target: "set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies",
+		Set:    true,
+		Unset:  true,
+		Mapper: "toComputePoolBackupInstanceFamilies",
 	}, call)
 
 	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueUpdate needs a mapper function`, func() {
 		ListValueUpdate("").UpdateCall("ComputePool", Attribute{Name: "items"})
 	})
+}
+
+func Test_UpdateCall_listValueUpdateSetOnly(t *testing.T) {
+	call := ListValueUpdateSetOnly("toWidgetObjectTypes").UpdateCall("Widget", Attribute{Name: "object_types"})
+	require.Equal(t, UpdateCall{Helper: "listValueUpdateSetOnlyBuilder", Set: true, Mapper: "toWidgetObjectTypes"}, call)
 }

@@ -136,8 +136,15 @@ func UpdateReplicationGroup(ctx context.Context, d *tfschema.ResourceData, meta 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := replicationGroupAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.setObjectLists, *sdk.NewReplicationGroupSetRequest()) {
+		if err := meta.(*provider.Context).Client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.setObjectLists)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewReplicationGroupSetRequest()) {
+		if err := meta.(*provider.Context).Client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewReplicationGroupUnsetRequest()) {
 		if err := meta.(*provider.Context).Client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithUnset(*setUnset.unset)); err != nil {

@@ -22,8 +22,9 @@ var (
 )
 
 type backupPolicyAlterRequestsExt struct {
-	set   *sdk.BackupPolicySetRequest
-	unset *sdk.BackupPolicyUnsetRequest
+	set           *sdk.BackupPolicySetRequest
+	unset         *sdk.BackupPolicyUnsetRequest
+	unsetSchedule *sdk.BackupPolicyUnsetRequest
 }
 
 func backupPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateBackupPolicyRequest, error) {
@@ -38,8 +39,9 @@ func backupPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObject
 	return req, nil
 }
 
+// TODO [next PR]: ApplySetUnset is generated from the definition, so this function goes away.
 func backupPolicyApplySetUnsetExt(d *schema.ResourceData) (*backupPolicyAlterRequestsExt, error) {
-	set, unset := sdk.NewBackupPolicySetRequest(), sdk.NewBackupPolicyUnsetRequest()
+	set, unset, unsetSchedule := sdk.NewBackupPolicySetRequest(), sdk.NewBackupPolicyUnsetRequest(), sdk.NewBackupPolicyUnsetRequest()
 	errs := errors.Join(
 		intAttributeUpdateBuilder(d, "expire_after_days", set.WithExpireAfterDays, unset.WithExpireAfterDays),
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
@@ -52,13 +54,13 @@ func backupPolicyApplySetUnsetExt(d *schema.ResourceData) (*backupPolicyAlterReq
 		case schedule != nil:
 			set.WithSchedule(*schedule)
 		default:
-			unset.WithSchedule(true)
+			unsetSchedule.WithSchedule(true)
 		}
 	}
 	if errs != nil {
 		return nil, errs
 	}
-	return &backupPolicyAlterRequestsExt{set: set, unset: unset}, nil
+	return &backupPolicyAlterRequestsExt{set: set, unset: unset, unsetSchedule: unsetSchedule}, nil
 }
 
 func backupPolicySetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, backupPolicy *sdk.BackupPolicy) error {

@@ -289,9 +289,11 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 		Name:       "Widget",
 		NamePlural: "Widgets",
 		IdType:     "AccountObjectIdentifier",
-		Set:        []*ssot.Attribute{&setOauth, &setBearer, &comment},
 		Alter: ssot.AlterSpec{
-			Clauses:              []ssot.AlterClause{ssot.AlterSet()},
+			Clauses: []ssot.AlterClause{ssot.AlterSet(
+				ssot.AlterGroup("Oauth", &setOauth),
+				ssot.AlterGroup(ssot.MainAlterGroup, &setBearer, &comment),
+			)},
 			SetConflictingFields: [][]*ssot.Attribute{{&setOauth, &setBearer}},
 		},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
