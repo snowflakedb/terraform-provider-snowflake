@@ -493,7 +493,13 @@ type tablesRow struct {
 	EnableSchemaEvolution      sql.NullString `db:"enable_schema_evolution"`
 	OwnerRoleType              sql.NullString `db:"owner_role_type"`
 	IsEvent                    sql.NullString `db:"is_event"`
+	IsHybrid                   sql.NullString `db:"is_hybrid"`
+	IsIceberg                  sql.NullString `db:"is_iceberg"`
 	IsDynamic                  sql.NullString `db:"is_dynamic"`
+	IsImmutable                sql.NullString `db:"is_immutable"`
+	IsInteractive              sql.NullString `db:"is_interactive"`
+	RowTimestamp               sql.NullString `db:"row_timestamp"`
+	ErrorLogging               sql.NullString `db:"error_logging"`
 	Budget                     sql.NullString `db:"budget"`
 }
 
@@ -519,7 +525,13 @@ type Table struct {
 	EnableSchemaEvolution      bool
 	OwnerRoleType              string
 	IsEvent                    bool
+	IsHybrid                   bool
+	IsIceberg                  bool
 	IsDynamic                  bool
+	IsImmutable                bool
+	IsInteractive              bool
+	RowTimestamp               bool
+	ErrorLogging               bool
 	Budget                     *string
 }
 
