@@ -36,6 +36,21 @@ The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflak
 
 The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
 
+### *(new feature)* Hierarchy renames rolled out to more resources
+
+The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.
+
+Newly supported resources:
+
+- [`snowflake_file_format_avro`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro)
+- [`snowflake_file_format_csv`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_csv)
+- [`snowflake_file_format_json`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json)
+- [`snowflake_file_format_orc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc)
+- [`snowflake_file_format_parquet`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_parquet)
+- [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml)
+
+Without the experiment, changing `database` or `schema` on these resources still recreates the object. No configuration changes are required unless you want to enable the experiment.
+
 ### *(new feature)* `use_private_link` on Snowflake-managed Openflow deployments
 
 [`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) now accepts `use_private_link`. Valid values are `"true"` and `"false"`. Leave it unset to keep the Snowflake default (`FALSE`); the provider stores that as `"default"` and omits `USE_PRIVATE_LINK` from `CREATE OPENFLOW DEPLOYMENT`.
