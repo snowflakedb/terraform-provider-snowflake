@@ -405,6 +405,7 @@ var FailoverGroup = ssot.Object{
 	IdType:         "AccountObjectIdentifier",
 	PreviewFeature: true,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
@@ -599,6 +600,7 @@ var FailoverGroupSecondary = ssot.Object{
 	SdkCreateRequestObjectName: "SecondaryFailoverGroup",
 	VariantOf:                  &FailoverGroup,
 	Generators: []ssot.GeneratorOption{
+		ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase())),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
 	},
