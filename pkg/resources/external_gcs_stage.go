@@ -128,9 +128,11 @@ func ExternalGcsStage() *schema.Resource {
 		Description:   "Resource used to manage external GCS stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalGcsStage, customdiff.All(
-			ComputedIfAnyAttributeChanged(externalGcsStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(externalGcsStageSchema, ShowOutputAttributeName, "name", "database", "schema", "comment", "url", "storage_integration", "encryption"),
 			ComputedIfAnyAttributeChanged(externalGcsStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
-			ComputedIfAnyAttributeChanged(externalGcsStageSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(externalGcsStageSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("encryption"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
@@ -308,10 +310,9 @@ func UpdateExternalGcsStage(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.FromErr(err)
 	}
 
-	id, err = handleStageRename(ctx, client, d, id)
-	if err != nil {
+	if diags := handleStageRename(ctx, meta, d, &id); diags != nil {
 		d.Partial(true)
-		return diag.FromErr(err)
+		return diags
 	}
 
 	err = handleStageDirectoryTable(ctx, client, d, id)

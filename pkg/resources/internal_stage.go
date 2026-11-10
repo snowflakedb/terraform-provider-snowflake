@@ -92,9 +92,11 @@ func InternalStage() *schema.Resource {
 		Description:   "Resource used to manage internal stages. For more information, check [internal stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#internal-stage-parameters-internalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.InternalStage, customdiff.All(
-			ComputedIfAnyAttributeChanged(internalStageSchema, ShowOutputAttributeName, "name", "comment"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(internalStageSchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
 			ComputedIfAnyAttributeChanged(internalStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh"),
-			ComputedIfAnyAttributeChanged(internalStageSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(internalStageSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
 			RecreateWhenStageTypeChangedExternally(sdk.StageTypeInternal),
@@ -274,10 +276,9 @@ func UpdateInternalStage(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(err)
 	}
 
-	id, err = handleStageRename(ctx, client, d, id)
-	if err != nil {
+	if diags := handleStageRename(ctx, meta, d, &id); diags != nil {
 		d.Partial(true)
-		return diag.FromErr(err)
+		return diags
 	}
 
 	err = handleStageDirectoryTable(ctx, client, d, id)
