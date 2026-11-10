@@ -48,13 +48,22 @@ Newly supported resources:
 - [`snowflake_file_format_orc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc)
 - [`snowflake_file_format_parquet`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_parquet)
 - [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml)
+- [`snowflake_openflow_runtime`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_runtime)
+- [`snowflake_password_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/password_policy)
+- [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy)
+- [`snowflake_semantic_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/semantic_view)
+- [`snowflake_session_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy)
 - [`snowflake_stage_external_azure`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_azure)
 - [`snowflake_stage_external_gcs`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_gcs)
 - [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3)
 - [`snowflake_stage_external_s3_compatible`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3_compatible)
 - [`snowflake_stage_internal`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_internal)
+- [`snowflake_storage_lifecycle_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy)
+- [`snowflake_streamlit`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/streamlit)
+- [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag)
+- [`snowflake_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/view)
 
-Without the experiment, changing `database` or `schema` on these resources still recreates the object. No configuration changes are required unless you want to enable the experiment.
+Without the experiment, the behavior of these resources does not change. No configuration changes are required unless you want to enable the experiment.
 
 ### *(new feature)* `use_private_link` on Snowflake-managed Openflow deployments
 

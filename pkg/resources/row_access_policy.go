@@ -29,14 +29,12 @@ var rowAccessPolicySchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the row access policy."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the row access policy."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"argument": {
@@ -121,9 +119,11 @@ func RowAccessPolicy() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.RowAccessPolicy, customdiff.All(
-			ComputedIfAnyAttributeChanged(rowAccessPolicySchema, ShowOutputAttributeName, "comment", "name"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(rowAccessPolicySchema, ShowOutputAttributeName, "comment", "name", "database", "schema"),
 			ComputedIfAnyAttributeChanged(rowAccessPolicySchema, DescribeOutputAttributeName, "body", "name", "signature"),
-			ComputedIfAnyAttributeChanged(rowAccessPolicySchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(rowAccessPolicySchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 		)),
 
 		StateUpgraders: []schema.StateUpgrader{
@@ -278,6 +278,17 @@ func UpdateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.RowAccessPolicies.ShowByID,
+		"row access policy",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

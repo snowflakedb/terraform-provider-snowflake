@@ -28,6 +28,9 @@ type hierarchyRenameSchemaObjectTestCase struct {
 	resource resources.Resource
 	model    func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel
 	exists   func(t *testing.T, id sdk.SchemaObjectIdentifier) error
+	// movesWithoutExperiment marks resources that move between schemas in place even with the experiment disabled.
+	// This is a known bug: they should be recreated instead.
+	movesWithoutExperiment bool
 }
 
 func hierarchyRenameSchemaObjectTestCases(t *testing.T) []hierarchyRenameSchemaObjectTestCase {
@@ -35,6 +38,9 @@ func hierarchyRenameSchemaObjectTestCases(t *testing.T) []hierarchyRenameSchemaO
 
 	table, cleanupTable := testClient().Table.CreateWithPredefinedColumns(t)
 	t.Cleanup(cleanupTable)
+
+	stage, cleanupStage := testClient().Stage.CreateStage(t)
+	t.Cleanup(cleanupStage)
 
 	return []hierarchyRenameSchemaObjectTestCase{
 		{
@@ -166,6 +172,27 @@ func hierarchyRenameSchemaObjectTestCases(t *testing.T) []hierarchyRenameSchemaO
 			exists: showError(testClient().Stage.Show),
 		},
 		{
+			name:     "OpenflowRuntime",
+			resource: resources.OpenflowRuntime,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				_ = testenvs.GetOrSkipTest(t, testenvs.TestOpenflow)
+				deploymentId := testClient().OpenflowDeployment.ActiveDeploymentForRuntimes(t)
+				currentRole := testClient().Context.CurrentRole(t)
+				return model.OpenflowRuntime("t", id.DatabaseName(), id.SchemaName(), id.Name(),
+					deploymentId.Name(), currentRole.Name(), 1, 1, string(sdk.OpenflowRuntimeNodeTypeSmall))
+			},
+			exists: showError(testClient().OpenflowRuntime.Show),
+		},
+		{
+			name:     "PasswordPolicy",
+			resource: resources.PasswordPolicy,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.PasswordPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists:                 showError(testClient().PasswordPolicy.Show),
+			movesWithoutExperiment: true,
+		},
+		{
 			name:     "ProjectionPolicy",
 			resource: resources.ProjectionPolicy,
 			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
@@ -174,12 +201,78 @@ func hierarchyRenameSchemaObjectTestCases(t *testing.T) []hierarchyRenameSchemaO
 			exists: showError(testClient().ProjectionPolicy.Show),
 		},
 		{
+			name:     "RowAccessPolicy",
+			resource: resources.RowAccessPolicy,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.RowAccessPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name(),
+					[]sdk.TableColumnSignature{{Name: "A", Type: testdatatypes.DataTypeVarchar}}, "true")
+			},
+			exists: showError(testClient().RowAccessPolicy.Show),
+		},
+		{
+			name:     "SemanticView",
+			resource: resources.SemanticView,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				logicalTable := sdk.LogicalTable{}
+				logicalTable.WithLogicalTableAlias("lt1").WithTableName(table.ID())
+				semanticExpression := sdk.SemanticExpression{}
+				semanticExpression.WithQualifiedExpressionName(`"lt1"."m1"`).WithSqlExpression(`SUM("lt1"."ID")`)
+				metric := sdk.MetricDefinition{}
+				metric.WithSemanticExpression(&semanticExpression)
+				return model.SemanticViewWithMetrics("t", id, []sdk.LogicalTable{logicalTable}, []sdk.MetricDefinition{metric})
+			},
+			exists:                 showError(testClient().SemanticView.Show),
+			movesWithoutExperiment: true,
+		},
+		{
+			name:     "SessionPolicy",
+			resource: resources.SessionPolicy,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.SessionPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists:                 showError(testClient().SessionPolicy.Show),
+			movesWithoutExperiment: true,
+		},
+		{
+			name:     "StorageLifecyclePolicy",
+			resource: resources.StorageLifecyclePolicy,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.StorageLifecyclePolicy("t", id.DatabaseName(), id.SchemaName(), id.Name(),
+					[]sdk.TableColumnSignature{{Name: "VAL", Type: testdatatypes.DataTypeVarchar_200}}, "LENGTH(VAL) > 0")
+			},
+			exists: showError(testClient().StorageLifecyclePolicy.Show),
+		},
+		{
+			name:     "Streamlit",
+			resource: resources.Streamlit,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.Streamlit("t", id.DatabaseName(), id.SchemaName(), id.Name(), "streamlit_app.py", stage.ID().FullyQualifiedName())
+			},
+			exists: showError(testClient().Streamlit.Show),
+		},
+		{
 			name:     "Table",
 			resource: resources.Table,
 			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
 				return model.Table("t", id.DatabaseName(), id.SchemaName(), id.Name(), []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeNumber}})
 			},
 			exists: showError(testClient().Table.Show),
+		},
+		{
+			name:     "Tag",
+			resource: resources.Tag,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.Tag("t", id.DatabaseName(), id.SchemaName(), id.Name())
+			},
+			exists: showError(testClient().Tag.Show),
+		},
+		{
+			name:     "View",
+			resource: resources.View,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.View("t", id.DatabaseName(), id.SchemaName(), id.Name(), fmt.Sprintf("SELECT ID FROM %s", table.ID().FullyQualifiedName()))
+			},
+			exists: showError(testClient().View.Show),
 		},
 	}
 }
@@ -245,6 +338,10 @@ func TestAcc_Experimental_HierarchyRenames_Disabled_ForceRecreation(t *testing.T
 			before := tc.model(t, id)
 			after := tc.model(t, movedId)
 			ref := before.ResourceReference()
+			expectedAction := plancheck.ResourceActionDestroyBeforeCreate
+			if tc.movesWithoutExperiment {
+				expectedAction = plancheck.ResourceActionUpdate
+			}
 
 			resource.Test(t, resource.TestCase{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -260,7 +357,7 @@ func TestAcc_Experimental_HierarchyRenames_Disabled_ForceRecreation(t *testing.T
 					{
 						ConfigPlanChecks: resource.ConfigPlanChecks{
 							PostApplyPostRefresh: []plancheck.PlanCheck{
-								plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+								plancheck.ExpectResourceAction(ref, expectedAction),
 							},
 						},
 						Config:             accconfig.FromModels(t, after),

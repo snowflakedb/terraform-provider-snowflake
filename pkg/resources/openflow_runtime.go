@@ -35,14 +35,12 @@ var openflowRuntimeSchema = map[string]*schema.Schema{
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the Openflow runtime."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the Openflow runtime."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -140,9 +138,11 @@ func OpenflowRuntime() *schema.Resource {
 		),
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OpenflowRuntime, customdiff.All(
-			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, ShowOutputAttributeName, "name", "display_name", "comment", "min_nodes", "max_nodes", "execute_as_role", "external_access_integrations"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, ShowOutputAttributeName, "name", "database", "schema", "display_name", "comment", "min_nodes", "max_nodes", "execute_as_role", "external_access_integrations"),
 			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, DescribeOutputAttributeName, "name", "display_name", "comment", "min_nodes", "max_nodes", "execute_as_role", "external_access_integrations"),
-			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 		)),
 
 		Schema:   openflowRuntimeSchema,
@@ -309,6 +309,20 @@ func UpdateOpenflowRuntime(ctx context.Context, d *schema.ResourceData, meta any
 	// change is still in flight has to let it settle first.
 	if err := waitForOpenflowRuntimeSettled(ctx, client, id, timeout); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			if err := client.OpenflowRuntimes.Alter(ctx, sdk.NewAlterOpenflowRuntimeRequest(currentId).WithRenameTo(targetId)); err != nil {
+				return err
+			}
+			return waitForOpenflowRuntimeUpdated(ctx, client, targetId, timeout)
+		},
+		client.OpenflowRuntimes.ShowByID,
+		"Openflow runtime",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

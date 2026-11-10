@@ -8,6 +8,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
@@ -507,14 +508,27 @@ func ReadSemanticView(ctx context.Context, d *schema.ResourceData, meta any) dia
 }
 
 func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("name") || d.HasChange("schema") || d.HasChange("database") {
+	hierarchyRenamesEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames)
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(currentId).WithRenameTo(targetId))
+		},
+		client.SemanticViews.ShowByID,
+		"semantic view",
+	); diags != nil {
+		return diags
+	}
+
+	if d.HasChange("name") || (!hierarchyRenamesEnabled && (d.HasChange("schema") || d.HasChange("database"))) {
 		databaseName := d.Get("database").(string)
 		schemaName := d.Get("schema").(string)
 		name := d.Get("name").(string)
@@ -525,7 +539,7 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 			return diag.FromErr(err)
 		}
 
-		d.SetId(newId.FullyQualifiedName())
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
 

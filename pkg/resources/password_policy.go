@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -303,13 +304,26 @@ func ReadPasswordPolicyFunc(withExternalChangesMarking bool) schema.ReadContextF
 }
 
 func UpdatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("database") || d.HasChange("schema") || d.HasChange("name") {
+	hierarchyRenamesEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames)
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.PasswordPolicies.ShowByID,
+		"password policy",
+	); diags != nil {
+		return diags
+	}
+
+	if d.HasChange("name") || (!hierarchyRenamesEnabled && (d.HasChange("database") || d.HasChange("schema"))) {
 		newId := sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string))
 		if err := client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming password policy from %v to %v, err = %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))

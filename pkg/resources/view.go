@@ -35,14 +35,12 @@ var viewSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the view."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the view."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"copy_grants": {
@@ -249,8 +247,10 @@ func View() *schema.Resource {
 		Description:   "Resource used to manage view objects. For more information, check [view documentation](https://docs.snowflake.com/en/sql-reference/sql/create-view).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.View, customdiff.All(
-			ComputedIfAnyAttributeChanged(viewSchema, ShowOutputAttributeName, "comment", "change_tracking", "is_secure", "is_temporary", "is_recursive", "statement"),
-			ComputedIfAnyAttributeChanged(viewSchema, FullyQualifiedNameAttributeName, "name"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(viewSchema, ShowOutputAttributeName, "database", "schema", "comment", "change_tracking", "is_secure", "is_temporary", "is_recursive", "statement"),
+			ComputedIfAnyAttributeChanged(viewSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 		)),
 
 		Schema: viewSchema,
@@ -713,6 +713,17 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.Views.Alter(ctx, sdk.NewAlterViewRequest(currentId).WithRenameTo(targetId))
+		},
+		client.Views.ShowByID,
+		"view",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

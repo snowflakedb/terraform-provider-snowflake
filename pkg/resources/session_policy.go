@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -237,13 +238,26 @@ func ReadSessionPolicyFunc(withExternalChangesMarking bool) schema.ReadContextFu
 }
 
 func UpdateSessionPolicy(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if d.HasChange("database") || d.HasChange("schema") || d.HasChange("name") {
+	hierarchyRenamesEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames)
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.SessionPolicies.Alter(ctx, sdk.NewAlterSessionPolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.SessionPolicies.ShowByID,
+		"session policy",
+	); diags != nil {
+		return diags
+	}
+
+	if d.HasChange("name") || (!hierarchyRenamesEnabled && (d.HasChange("database") || d.HasChange("schema"))) {
 		newID := sdk.NewSchemaObjectIdentifier(d.Get("database").(string), d.Get("schema").(string), d.Get("name").(string))
 		if err := client.SessionPolicies.Alter(ctx, sdk.NewAlterSessionPolicyRequest(id).WithRenameTo(newID)); err != nil {
 			return diag.FromErr(fmt.Errorf("error renaming session policy from %v to %v, err = %w", id.FullyQualifiedName(), newID.FullyQualifiedName(), err))
