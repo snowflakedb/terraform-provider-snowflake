@@ -397,7 +397,8 @@ var failoverGroupSuspend = ssot.Attribute{
 }
 
 // FailoverGroup is the source-account role and the shared SDK interface.
-// No generator is on yet, except the two parameter assertions, which select nothing while the object has no parameters.
+// The resource generator is off: the model builders, assertions and SHOW schema describe the resource the SSoT would generate.
+// The two parameter assertions select nothing while the object has no parameters.
 // SHOW stays here: SHOW FAILOVER GROUPS returns both roles. FailoverGroupSecondary holds the target-account CREATE and ALTER.
 var FailoverGroup = ssot.Object{
 	Name:           "FailoverGroup",
@@ -406,6 +407,13 @@ var FailoverGroup = ssot.Object{
 	PreviewFeature: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
+		ssot.WithSchema(ssot.SchemaShow()),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithResourceAssert(),
+		ssot.WithModel(
+			ssot.ModelRequestType(&FailoverGroupAttrs.ObjectTypes, "[]string"),
+			ssot.ModelRequestType(&FailoverGroupAttrs.AllowedAccounts, "[]string"),
+		),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
@@ -601,6 +609,9 @@ var FailoverGroupSecondary = ssot.Object{
 	VariantOf:                  &FailoverGroup,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase())),
+		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase())),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase())),
+		ssot.WithResourceAssert(),
 		ssot.WithObjectParametersAssert(),
 		ssot.WithResourceParametersAssert(),
 	},

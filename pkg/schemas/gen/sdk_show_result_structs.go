@@ -59,8 +59,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// SkipFields `arguments`: unused TypeInvalid (`[]sdk.DataType`). Un-skip with native DataType slices.
 	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
 	{ObjectStruct: sdk.ExternalTable{}},
-	// SkipFields unused TypeInvalid: `object_types` / `allowed_integration_types` (enum slices).
-	{ObjectStruct: sdk.FailoverGroup{}, SkipFields: []string{"object_types", "allowed_integration_types"}},
 	{ObjectStruct: sdk.FileFormat{}},
 	// SkipFields `options`: unused TypeInvalid (nested `FileFormatTypeOptionsLegacy`). Un-skip with native nested structs.
 	{ObjectStruct: sdk.FileFormatLegacy{}, SkipFields: []string{"options"}},
