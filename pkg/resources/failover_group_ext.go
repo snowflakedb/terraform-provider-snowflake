@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -52,6 +53,7 @@ func failoverGroupParseIdExt(id string) (sdk.AccountObjectIdentifier, error) {
 }
 
 // failoverGroupBeforeCreateExt creates the secondary failover group (from_replica); the primary one is created by the regular Create flow.
+// TODO [next PRs]: the from_replica path has no acceptance test (only the SDK integration tests cover the secondary CREATE); add it with the use case tests.
 func failoverGroupBeforeCreateExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier) (bool, diag.Diagnostics) {
 	client := meta.(*provider.Context).Client
 	name := id.Name()
@@ -63,7 +65,7 @@ func failoverGroupBeforeCreateExt(ctx context.Context, d *schema.ResourceData, m
 		sourceFailoverGroupName := fromReplica["name"].(string)
 
 		primaryFailoverGroupID := sdk.NewExternalObjectIdentifier(sdk.NewAccountIdentifier(organizationName, sourceAccountName), sdk.NewAccountObjectIdentifier(sourceFailoverGroupName))
-		err := client.FailoverGroups.CreateSecondaryReplicationGroup(ctx, sdk.NewCreateSecondaryReplicationGroupFailoverGroupRequest(id, primaryFailoverGroupID))
+		err := client.FailoverGroups.CreateSecondary(ctx, sdk.NewCreateSecondaryFailoverGroupRequest(id, primaryFailoverGroupID))
 		if err != nil {
 			return true, diag.FromErr(err)
 		}
@@ -79,13 +81,13 @@ func failoverGroupNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObje
 		return nil, errors.New("object_types field is required when from_replica is not set")
 	}
 	objectTypesList := expandStringList(d.Get("object_types").(*schema.Set).List())
-	objectTypes := make([]sdk.PluralObjectType, len(objectTypesList))
+	objectTypes := make([]sdk.FailoverGroupObjectType, len(objectTypesList))
 	for i, v := range objectTypesList {
 		objectType, err := sdk.ToPluralObjectType(v)
 		if err != nil {
 			return nil, err
 		}
-		objectTypes[i] = objectType
+		objectTypes[i] = sdk.FailoverGroupObjectType(objectType)
 	}
 
 	if _, ok := d.GetOk("allowed_accounts"); !ok {
@@ -127,9 +129,9 @@ func failoverGroupApplyCreateOptionalsExt(d *schema.ResourceData, req *sdk.Creat
 
 	if v, ok := d.GetOk("allowed_integration_types"); ok {
 		allowedIntegrationTypesList := expandStringList(v.(*schema.Set).List())
-		allowedIntegrationTypes := make([]sdk.IntegrationType, len(allowedIntegrationTypesList))
+		allowedIntegrationTypes := make([]sdk.FailoverGroupIntegrationType, len(allowedIntegrationTypesList))
 		for i, v := range allowedIntegrationTypesList {
-			allowedIntegrationTypes[i] = sdk.IntegrationType(v)
+			allowedIntegrationTypes[i] = sdk.FailoverGroupIntegrationType(v)
 		}
 		req.WithAllowedIntegrationTypes(allowedIntegrationTypes)
 	}
@@ -172,7 +174,7 @@ func failoverGroupAfterCreateExt(ctx context.Context, d *schema.ResourceData, me
 	client := meta.(*provider.Context).Client
 
 	if v, ok := d.GetOk("rpo_assurance"); ok && v.(bool) {
-		if err := client.FailoverGroups.AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(id).
+		if err := client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
 			WithSet(*sdk.NewFailoverGroupSetRequest().WithRpoAssurance(true))); err != nil {
 			return diag.FromErr(err)
 		}
@@ -209,7 +211,7 @@ func failoverGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData
 		return err
 	}
 
-	replicationSchedule := failoverGroup.ReplicationSchedule
+	replicationSchedule := util.DerefOrZero(failoverGroup.ReplicationSchedule)
 	if replicationSchedule != "" {
 		if strings.Contains(replicationSchedule, "MINUTE") {
 			interval, err := strconv.Atoi(strings.TrimSuffix(replicationSchedule, " MINUTE"))
@@ -322,20 +324,20 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 	if d.HasChange("object_types") {
 		_, n := d.GetChange("object_types")
 		newObjectTypes := expandStringList(n.(*schema.Set).List())
-		objectTypes := make([]sdk.PluralObjectType, len(newObjectTypes))
+		objectTypes := make([]sdk.FailoverGroupObjectType, len(newObjectTypes))
 		for i, v := range newObjectTypes {
 			objectType, err := sdk.ToPluralObjectType(v)
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			objectTypes[i] = objectType
+			objectTypes[i] = sdk.FailoverGroupObjectType(objectType)
 		}
 		set.WithObjectTypes(objectTypes)
-		if slices.Contains(objectTypes, sdk.PluralObjectTypeIntegrations) {
+		if slices.Contains(objectTypes, sdk.FailoverGroupObjectTypeIntegrations) {
 			ait := expandStringList(d.Get("allowed_integration_types").(*schema.Set).List())
-			allowedIntegrationTypes := make([]sdk.IntegrationType, len(ait))
+			allowedIntegrationTypes := make([]sdk.FailoverGroupIntegrationType, len(ait))
 			for i, v := range ait {
-				allowedIntegrationTypes[i] = sdk.IntegrationType(v)
+				allowedIntegrationTypes[i] = sdk.FailoverGroupIntegrationType(v)
 			}
 			set.WithAllowedIntegrationTypes(allowedIntegrationTypes)
 		}
@@ -344,38 +346,38 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 	if d.HasChange("allowed_integration_types") {
 		_, n := d.GetChange("allowed_integration_types")
 		newAllowedIntegrationTypes := expandStringList(n.(*schema.Set).List())
-		allowedIntegrationTypes := make([]sdk.IntegrationType, len(newAllowedIntegrationTypes))
+		allowedIntegrationTypes := make([]sdk.FailoverGroupIntegrationType, len(newAllowedIntegrationTypes))
 		for i, v := range newAllowedIntegrationTypes {
-			allowedIntegrationTypes[i] = sdk.IntegrationType(v)
+			allowedIntegrationTypes[i] = sdk.FailoverGroupIntegrationType(v)
 		}
 		set.WithAllowedIntegrationTypes(allowedIntegrationTypes)
 	}
 	if !reflect.DeepEqual(set, sdk.NewFailoverGroupSetRequest()) {
-		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithSet(*set)
-		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+		req := sdk.NewAlterFailoverGroupRequest(id).WithSet(*set)
+		if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("rpo_assurance") && !d.Get("rpo_assurance").(bool) {
-		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithRpoAssurance(true))
-		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+		req := sdk.NewAlterFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithRpoAssurance(true))
+		if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
 		// RPO auto-enables Optimized Refresh and leaves it on after UNSET RPO.
 		// Read stores optimized_refresh as false while RPO is on, so HasChange
 		// may not fire even though SHOW still reports it enabled.
 		if !d.Get("optimized_refresh").(bool) {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
 	if d.HasChange("optimized_refresh") && !d.Get("optimized_refresh").(bool) {
-		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true))
-		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+		req := sdk.NewAlterFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true))
+		if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -400,28 +402,28 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 			} else {
 				updatedReplicationSchedule = fmt.Sprintf("%d MINUTE", replicationSchedule["interval"].(int))
 			}
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithReplicationSchedule(updatedReplicationSchedule))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithReplicationSchedule(updatedReplicationSchedule))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
 		} else {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReplicationSchedule(true))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReplicationSchedule(true))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
 
 	if d.HasChange("optimized_refresh") && d.Get("optimized_refresh").(bool) {
-		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithOptimizedRefresh(true))
-		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+		req := sdk.NewAlterFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithOptimizedRefresh(true))
+		if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("rpo_assurance") && d.Get("rpo_assurance").(bool) {
-		req := sdk.NewAlterSourceFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithRpoAssurance(true))
-		if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+		req := sdk.NewAlterFailoverGroupRequest(id).WithSet(*sdk.NewFailoverGroupSetRequest().WithRpoAssurance(true))
+		if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -446,8 +448,8 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if len(removedDatabases) > 0 {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedDatabases(removedDatabases))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedDatabases(removedDatabases))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(fmt.Errorf("error removing allowed databases for failover group %v err = %w", id.Name(), err))
 			}
 		}
@@ -459,8 +461,8 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if len(addedDatabases) > 0 {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithAdd(*sdk.NewFailoverGroupAddRequest().WithAllowedDatabases(addedDatabases))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithAdd(*sdk.NewFailoverGroupAddRequest().WithAllowedDatabases(addedDatabases))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(fmt.Errorf("error removing allowed databases for failover group %v err = %w", id.Name(), err))
 			}
 		}
@@ -486,8 +488,8 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if len(removedShares) > 0 {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedShares(removedShares))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedShares(removedShares))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(fmt.Errorf("error removing allowed shares for failover group %v err = %w", id.Name(), err))
 			}
 		}
@@ -499,8 +501,8 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if len(addedShares) > 0 {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithAdd(*sdk.NewFailoverGroupAddRequest().WithAllowedShares(addedShares))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithAdd(*sdk.NewFailoverGroupAddRequest().WithAllowedShares(addedShares))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(fmt.Errorf("error removing allowed shares for failover group %v err = %w", id.Name(), err))
 			}
 		}
@@ -528,8 +530,8 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if len(removedAccounts) > 0 {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(removedAccounts))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(removedAccounts))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(fmt.Errorf("error removing allowed accounts for failover group %v err = %w", id.Name(), err))
 			}
 		}
@@ -541,8 +543,8 @@ func failoverGroupAlterStepsExt(ctx context.Context, d *schema.ResourceData, met
 			}
 		}
 		if len(addedAccounts) > 0 {
-			req := sdk.NewAlterSourceFailoverGroupRequest(id).WithAdd(*sdk.NewFailoverGroupAddRequest().WithAllowedAccounts(addedAccounts))
-			if err := client.FailoverGroups.AlterSource(ctx, req); err != nil {
+			req := sdk.NewAlterFailoverGroupRequest(id).WithAdd(*sdk.NewFailoverGroupAddRequest().WithAllowedAccounts(addedAccounts))
+			if err := client.FailoverGroups.Alter(ctx, req); err != nil {
 				return diag.FromErr(fmt.Errorf("error adding allowed accounts for failover group %v err = %w", id.Name(), err))
 			}
 		}

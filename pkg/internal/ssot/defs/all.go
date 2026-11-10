@@ -27,6 +27,8 @@ func All() []ssot.Object {
 		Share,
 		ReplicationGroup,
 		ReplicationGroupSecondary,
+		FailoverGroup,
+		FailoverGroupSecondary,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)

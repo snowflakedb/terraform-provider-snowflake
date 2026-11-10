@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -211,8 +212,8 @@ func postgresMirrorSetConfigFieldsExt(_ context.Context, d *schema.ResourceData,
 	return errors.Join(
 		d.Set("postgres_tables", details.PostgresTables),
 		d.Set("postgres_schemas", collections.Map(details.PostgresSchemas, unquotePostgresIdentifier)),
-		d.Set("external_volume", derefOrZero(details.ExternalVolume)),
-		d.Set("warehouse", derefOrZero(details.Warehouse)),
+		d.Set("external_volume", util.DerefOrZero(details.ExternalVolume)),
+		d.Set("warehouse", util.DerefOrZero(details.Warehouse)),
 		setPostgresMirrorRefreshInterval(d, details.RefreshInterval),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.PostgresMirrorDetailsToSchema(details)}),
 	)

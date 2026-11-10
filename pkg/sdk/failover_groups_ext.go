@@ -17,52 +17,17 @@ func (v *FailoverGroup) ExternalID() ExternalObjectIdentifier {
 
 func (v *FailoverGroupSet) additionalValidations() error {
 	if len(v.AllowedIntegrationTypes) > 0 {
-		if !slices.Contains(v.ObjectTypes, PluralObjectTypeIntegrations) {
+		if !slices.Contains(v.ObjectTypes, FailoverGroupObjectTypeIntegrations) {
 			return errors.New("INTEGRATIONS must be set in OBJECT_TYPES when setting allowed integration types")
 		}
 	}
 	return nil
 }
 
-func (row failoverGroupDBRow) additionalConvert(result *FailoverGroup) error {
-	result.Primary = NewExternalObjectIdentifierFromFullyQualifiedName(row.Primary)
-
-	ots := strings.Split(row.ObjectTypes, ",")
-	result.ObjectTypes = make([]PluralObjectType, 0, len(ots))
-	for _, ot := range ots {
-		pot := PluralObjectType(strings.TrimSpace(ot))
-		if pot == PluralObjectTypeParameters {
-			result.ObjectTypes = append(result.ObjectTypes, PluralObjectType("ACCOUNT PARAMETERS"))
-		} else {
-			result.ObjectTypes = append(result.ObjectTypes, pot)
-		}
+func (opts *CreateSecondaryFailoverGroupOptions) additionalValidations() error {
+	if opts.AsReplicaOf.objectIdentifier == nil || !ValidObjectIdentifier(opts.AsReplicaOf) {
+		return errInvalidIdentifier("CreateSecondaryFailoverGroupOptions", "AsReplicaOf")
 	}
-
-	its := strings.Split(row.AllowedIntegrationTypes, ",")
-	result.AllowedIntegrationTypes = make([]IntegrationType, 0, len(its))
-	for _, it := range its {
-		if it == "" {
-			continue
-		}
-		result.AllowedIntegrationTypes = append(result.AllowedIntegrationTypes, IntegrationType(strings.ReplaceAll(strings.TrimSpace(it), "_", " ")+" INTEGRATIONS"))
-	}
-
-	aas := strings.Split(row.AllowedAccounts, ",")
-	result.AllowedAccounts = make([]AccountIdentifier, 0, len(aas))
-	for _, aa := range aas {
-		s := strings.TrimSpace(aa)
-		p := strings.Split(s, ".")
-		if len(p) != 2 {
-			continue
-		}
-		result.AllowedAccounts = append(result.AllowedAccounts, NewAccountIdentifier(p[0], p[1]))
-	}
-
-	result.SecondaryState = FailoverGroupSecondaryStateNull
-	if row.SecondaryState.Valid {
-		result.SecondaryState = FailoverGroupSecondaryState(row.SecondaryState.String)
-	}
-
 	return nil
 }
 
@@ -91,6 +56,51 @@ func (v *failoverGroups) ShowShares(ctx context.Context, id AccountObjectIdentif
 	for i, s := range shares {
 		// TODO [SNOW-1348343]: change during failover groups rework; this was not working correctly with identifiers containing `.` character
 		result[i] = NewExternalObjectIdentifier(NewAccountIdentifierFromFullyQualifiedName(s.OwnerAccount), NewAccountObjectIdentifier(s.Name)).objectIdentifier.(AccountObjectIdentifier)
+	}
+	return result, nil
+}
+
+// The SHOW converters below keep the leniency of the handwritten converter: a value they do not know is not an error,
+// because a SHOW row that cannot be read breaks the read of every failover group (see GH #1418).
+
+// SHOW prints PARAMETERS for the ACCOUNT PARAMETERS object type. Any other token is left unchanged.
+func ParseCommaSeparatedFailoverGroupObjectTypeArray(value string) ([]FailoverGroupObjectType, error) {
+	var result []FailoverGroupObjectType
+	for part := range strings.SplitSeq(value, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if strings.EqualFold(part, "PARAMETERS") {
+			part = string(FailoverGroupObjectTypeAccountParameters)
+		}
+		result = append(result, FailoverGroupObjectType(part))
+	}
+	return result, nil
+}
+
+// SHOW prints short tokens such as API and EXTERNAL_ACCESS. They become the create-page values (API INTEGRATIONS, EXTERNAL ACCESS INTEGRATIONS).
+func ParseCommaSeparatedFailoverGroupIntegrationTypeArray(value string) ([]FailoverGroupIntegrationType, error) {
+	var result []FailoverGroupIntegrationType
+	for part := range strings.SplitSeq(value, ",") {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		result = append(result, FailoverGroupIntegrationType(strings.ReplaceAll(part, "_", " ")+" INTEGRATIONS"))
+	}
+	return result, nil
+}
+
+// SHOW prints org.account. A value that has not exactly two parts is skipped.
+func ParseCommaSeparatedFailoverGroupAllowedAccountArray(value string) ([]AccountIdentifier, error) {
+	var result []AccountIdentifier
+	for part := range strings.SplitSeq(value, ",") {
+		parts := strings.Split(strings.TrimSpace(part), ".")
+		if len(parts) != 2 {
+			continue
+		}
+		result = append(result, NewAccountIdentifier(parts[0], parts[1]))
 	}
 	return result, nil
 }

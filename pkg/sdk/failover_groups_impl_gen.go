@@ -4,13 +4,14 @@ package sdk
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
 	_ FailoverGroups                        = (*failoverGroups)(nil)
-	_ convertibleRow[FailoverGroup]         = new(failoverGroupDBRow)
+	_ convertibleRow[FailoverGroup]         = new(failoverGroupsRow)
 	_ convertibleRow[FailoverGroupDatabase] = new(failoverGroupDatabaseDBRow)
 	_ convertibleRow[FailoverGroupShare]    = new(failoverGroupShareDBRow)
 )
@@ -24,17 +25,17 @@ func (v *failoverGroups) Create(ctx context.Context, request *CreateFailoverGrou
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *failoverGroups) CreateSecondaryReplicationGroup(ctx context.Context, request *CreateSecondaryReplicationGroupFailoverGroupRequest) error {
+func (v *failoverGroups) CreateSecondary(ctx context.Context, request *CreateSecondaryFailoverGroupRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *failoverGroups) AlterSource(ctx context.Context, request *AlterSourceFailoverGroupRequest) error {
+func (v *failoverGroups) Alter(ctx context.Context, request *AlterFailoverGroupRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *failoverGroups) AlterTarget(ctx context.Context, request *AlterTargetFailoverGroupRequest) error {
+func (v *failoverGroups) AlterSecondary(ctx context.Context, request *AlterSecondaryFailoverGroupRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -50,11 +51,11 @@ func (v *failoverGroups) DropSafely(ctx context.Context, id AccountObjectIdentif
 
 func (v *failoverGroups) Show(ctx context.Context, request *ShowFailoverGroupRequest) ([]FailoverGroup, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[failoverGroupDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[failoverGroupsRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[failoverGroupDBRow, FailoverGroup](dbRows)
+	return convertRows[failoverGroupsRow, FailoverGroup](dbRows)
 }
 
 func (v *failoverGroups) ShowByID(ctx context.Context, id AccountObjectIdentifier) (*FailoverGroup, error) {
@@ -96,80 +97,101 @@ func (r *CreateFailoverGroupRequest) toOpts() *CreateFailoverGroupOptions {
 		name:                    r.name,
 		ObjectTypes:             r.ObjectTypes,
 		AllowedDatabases:        r.AllowedDatabases,
+		AllowedExternalVolumes:  r.AllowedExternalVolumes,
 		AllowedShares:           r.AllowedShares,
 		AllowedIntegrationTypes: r.AllowedIntegrationTypes,
 		AllowedAccounts:         r.AllowedAccounts,
 		IgnoreEditionCheck:      r.IgnoreEditionCheck,
 		ReplicationSchedule:     r.ReplicationSchedule,
 		OptimizedRefresh:        r.OptimizedRefresh,
+		Tag:                     r.Tag,
+		ErrorIntegration:        r.ErrorIntegration,
 	}
 	return opts
 }
 
-func (r *CreateSecondaryReplicationGroupFailoverGroupRequest) toOpts() *CreateSecondaryReplicationGroupFailoverGroupOptions {
-	opts := &CreateSecondaryReplicationGroupFailoverGroupOptions{
-		IfNotExists:          r.IfNotExists,
-		name:                 r.name,
-		PrimaryFailoverGroup: r.PrimaryFailoverGroup,
+func (r *CreateSecondaryFailoverGroupRequest) toOpts() *CreateSecondaryFailoverGroupOptions {
+	opts := &CreateSecondaryFailoverGroupOptions{
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		AsReplicaOf: r.AsReplicaOf,
 	}
 	return opts
 }
 
-func (r *AlterSourceFailoverGroupRequest) toOpts() *AlterSourceFailoverGroupOptions {
-	opts := &AlterSourceFailoverGroupOptions{
-		IfExists: r.IfExists,
-		name:     r.name,
-		RenameTo: r.RenameTo,
+func (r *AlterFailoverGroupRequest) toOpts() *AlterFailoverGroupOptions {
+	opts := &AlterFailoverGroupOptions{
+		IfExists:  r.IfExists,
+		name:      r.name,
+		RenameTo:  r.RenameTo,
+		SetTags:   r.SetTags,
+		UnsetTags: r.UnsetTags,
 	}
 	if r.Set != nil {
 		opts.Set = &FailoverGroupSet{
 			ObjectTypes:             r.Set.ObjectTypes,
+			AllowedDatabases:        r.Set.AllowedDatabases,
+			AllowedExternalVolumes:  r.Set.AllowedExternalVolumes,
+			AllowedShares:           r.Set.AllowedShares,
 			AllowedIntegrationTypes: r.Set.AllowedIntegrationTypes,
+			Comment:                 r.Set.Comment,
 			ReplicationSchedule:     r.Set.ReplicationSchedule,
 			OptimizedRefresh:        r.Set.OptimizedRefresh,
 			RpoAssurance:            r.Set.RpoAssurance,
+			ErrorIntegration:        r.Set.ErrorIntegration,
+			ReadOnly:                r.Set.ReadOnly,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &FailoverGroupUnset{
+			Comment:             r.Unset.Comment,
 			ReplicationSchedule: r.Unset.ReplicationSchedule,
 			OptimizedRefresh:    r.Unset.OptimizedRefresh,
 			RpoAssurance:        r.Unset.RpoAssurance,
+			ErrorIntegration:    r.Unset.ErrorIntegration,
+			ReadOnly:            r.Unset.ReadOnly,
 		}
 	}
 	if r.Add != nil {
 		opts.Add = &FailoverGroupAdd{
-			AllowedDatabases:   r.Add.AllowedDatabases,
-			AllowedShares:      r.Add.AllowedShares,
-			AllowedAccounts:    r.Add.AllowedAccounts,
-			IgnoreEditionCheck: r.Add.IgnoreEditionCheck,
+			AllowedDatabases:       r.Add.AllowedDatabases,
+			AllowedExternalVolumes: r.Add.AllowedExternalVolumes,
+			AllowedShares:          r.Add.AllowedShares,
+			AllowedAccounts:        r.Add.AllowedAccounts,
+			IgnoreEditionCheck:     r.Add.IgnoreEditionCheck,
 		}
 	}
 	if r.Move != nil {
 		opts.Move = &FailoverGroupMove{
-			Databases: r.Move.Databases,
-			Shares:    r.Move.Shares,
-			To:        r.Move.To,
+			Databases:       r.Move.Databases,
+			ExternalVolumes: r.Move.ExternalVolumes,
+			Shares:          r.Move.Shares,
+			To:              r.Move.To,
 		}
 	}
 	if r.Remove != nil {
 		opts.Remove = &FailoverGroupRemove{
-			AllowedDatabases: r.Remove.AllowedDatabases,
-			AllowedShares:    r.Remove.AllowedShares,
-			AllowedAccounts:  r.Remove.AllowedAccounts,
+			AllowedDatabases:       r.Remove.AllowedDatabases,
+			AllowedExternalVolumes: r.Remove.AllowedExternalVolumes,
+			AllowedShares:          r.Remove.AllowedShares,
+			AllowedAccounts:        r.Remove.AllowedAccounts,
 		}
 	}
 	return opts
 }
 
-func (r *AlterTargetFailoverGroupRequest) toOpts() *AlterTargetFailoverGroupOptions {
-	opts := &AlterTargetFailoverGroupOptions{
+func (r *AlterSecondaryFailoverGroupRequest) toOpts() *AlterSecondaryFailoverGroupOptions {
+	opts := &AlterSecondaryFailoverGroupOptions{
 		IfExists: r.IfExists,
 		name:     r.name,
 		Refresh:  r.Refresh,
 		Primary:  r.Primary,
-		Suspend:  r.Suspend,
 		Resume:   r.Resume,
+	}
+	if r.Suspend != nil {
+		opts.Suspend = &FailoverGroupSecondarySuspend{
+			Immediate: r.Suspend.Immediate,
+		}
 	}
 	return opts
 }
@@ -189,33 +211,59 @@ func (r *ShowFailoverGroupRequest) toOpts() *ShowFailoverGroupOptions {
 	return opts
 }
 
-func (r failoverGroupDBRow) convert() (*FailoverGroup, error) {
+func (r failoverGroupsRow) convert() (*FailoverGroup, error) {
 	result := &FailoverGroup{
-		RegionGroup:               r.RegionGroup,
-		SnowflakeRegion:           r.SnowflakeRegion,
-		CreatedOn:                 r.CreatedOn,
-		AccountName:               r.AccountName,
-		Name:                      r.Name,
-		Type:                      r.Type,
-		IsPrimary:                 r.IsPrimary,
-		OrganizationName:          r.OrganizationName,
-		AccountLocator:            r.AccountLocator,
-		IsOptimizedRefreshEnabled: r.IsOptimizedRefreshEnabled,
-		RpoAssurance:              r.RpoAssurance,
+		RegionGroup:                   r.RegionGroup,
+		SnowflakeRegion:               r.SnowflakeRegion,
+		CreatedOn:                     r.CreatedOn,
+		AccountName:                   r.AccountName,
+		Name:                          r.Name,
+		Type:                          r.Type,
+		IsPrimary:                     r.IsPrimary,
+		OrganizationName:              r.OrganizationName,
+		AccountLocator:                r.AccountLocator,
+		IsListingAutoFulfillmentGroup: r.IsListingAutoFulfillmentGroup,
+		IsOptimizedRefreshEnabled:     r.IsOptimizedRefreshEnabled,
+		RpoAssurance:                  r.RpoAssurance,
 	}
-	mapNullStringToNonNullableField(&result.Comment, r.Comment)
-	mapNullStringToNonNullableField(&result.ReplicationSchedule, r.ReplicationSchedule)
+	mapNullString(&result.Comment, r.Comment)
+	if v, err := ParseExternalObjectIdentifier(r.Primary); err != nil {
+		return nil, fmt.Errorf("parsing external object identifier: %w", err)
+	} else {
+		result.Primary = v
+	}
+	if r.ObjectTypes.Valid {
+		if v, err := ParseCommaSeparatedFailoverGroupObjectTypeArray(r.ObjectTypes.String); err != nil {
+			return nil, fmt.Errorf("parsing failover group object type: %w", err)
+		} else {
+			result.ObjectTypes = v
+		}
+	}
+	if r.AllowedIntegrationTypes.Valid {
+		if v, err := ParseCommaSeparatedFailoverGroupIntegrationTypeArray(r.AllowedIntegrationTypes.String); err != nil {
+			return nil, fmt.Errorf("parsing failover group integration type: %w", err)
+		} else {
+			result.AllowedIntegrationTypes = v
+		}
+	}
+	if r.AllowedAccounts.Valid {
+		if v, err := ParseCommaSeparatedFailoverGroupAllowedAccountArray(r.AllowedAccounts.String); err != nil {
+			return nil, fmt.Errorf("parsing account identifier: %w", err)
+		} else {
+			result.AllowedAccounts = v
+		}
+	}
+	mapNullString(&result.ReplicationSchedule, r.ReplicationSchedule)
+	mapNullStringWithMapping(&result.SecondaryState, r.SecondaryState, ToFailoverGroupSecondaryState)
 	mapNullStringToNonNullableField(&result.NextScheduledRefresh, r.NextScheduledRefresh)
-	mapNullStringToNonNullableField(&result.Owner, r.Owner)
-	if err := r.additionalConvert(result); err != nil {
-		return nil, err
-	}
+	mapNullString(&result.Owner, r.Owner)
+	mapNullBool(&result.ReadOnly, r.ReadOnly)
 	return result, nil
 }
 
 func (r *ShowFailoverGroupDatabasesFailoverGroupRequest) toOpts() *ShowFailoverGroupDatabasesFailoverGroupOptions {
 	opts := &ShowFailoverGroupDatabasesFailoverGroupOptions{
-		In: r.In,
+		name: r.name,
 	}
 	return opts
 }
@@ -229,7 +277,7 @@ func (r failoverGroupDatabaseDBRow) convert() (*FailoverGroupDatabase, error) {
 
 func (r *ShowFailoverGroupSharesFailoverGroupRequest) toOpts() *ShowFailoverGroupSharesFailoverGroupOptions {
 	opts := &ShowFailoverGroupSharesFailoverGroupOptions{
-		In: r.In,
+		name: r.name,
 	}
 	return opts
 }
