@@ -75,12 +75,22 @@ func (c *FailoverGroupClient) CreateSecondary(t *testing.T, id sdk.AccountObject
 	require.NoError(t, c.client().CreateSecondary(context.Background(), sdk.NewCreateSecondaryFailoverGroupRequest(id, primary)))
 }
 
-// WaitForPrimaryToBeVisible polls SHOW FAILOVER GROUPS on this account until a primary failover group with the given name appears.
+func (c *FailoverGroupClient) Alter(t *testing.T, request *sdk.AlterFailoverGroupRequest) {
+	t.Helper()
+	require.NoError(t, c.client().Alter(context.Background(), request))
+}
+
+func (c *FailoverGroupClient) AlterSecondary(t *testing.T, request *sdk.AlterSecondaryFailoverGroupRequest) {
+	t.Helper()
+	require.NoError(t, c.client().AlterSecondary(context.Background(), request))
+}
+
+// WaitForPrimaryToBeVisible polls SHOW FAILOVER GROUPS on this account until the primary appears.
 // A new primary is not always visible to the target account immediately.
-func (c *FailoverGroupClient) WaitForPrimaryToBeVisible(t *testing.T, id sdk.AccountObjectIdentifier) {
+func (c *FailoverGroupClient) WaitForPrimaryToBeVisible(t *testing.T, primary sdk.ExternalObjectIdentifier) {
 	t.Helper()
 	ctx := context.Background()
-	t.Logf("Waiting for primary failover group %s to be visible", id.FullyQualifiedName())
+	t.Logf("Waiting for primary failover group %s to be visible", primary.FullyQualifiedName())
 	require.Eventually(t, func() bool {
 		groups, err := c.client().Show(ctx, sdk.NewShowFailoverGroupRequest())
 		if err != nil {
@@ -88,12 +98,12 @@ func (c *FailoverGroupClient) WaitForPrimaryToBeVisible(t *testing.T, id sdk.Acc
 			return false
 		}
 		for _, group := range groups {
-			if group.IsPrimary && group.ID().Name() == id.Name() {
-				t.Logf("Primary failover group %s is visible", id.FullyQualifiedName())
+			if group.IsPrimary && group.Name == primary.Name() && sameAccount(group.Primary.AccountIdentifier(), primary.AccountIdentifier()) {
+				t.Logf("Primary failover group %s is visible", primary.FullyQualifiedName())
 				return true
 			}
 		}
-		t.Logf("Primary failover group %s is not visible yet, retrying", id.FullyQualifiedName())
+		t.Logf("Primary failover group %s is not visible yet, retrying", primary.FullyQualifiedName())
 		return false
 	}, time.Minute, 5*time.Second)
 }
@@ -103,4 +113,9 @@ func (c *FailoverGroupClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier)
 	require.Eventually(t, func() bool {
 		return c.client().DropSafely(context.Background(), id) == nil
 	}, 10*time.Second, time.Second)
+}
+
+// SHOW prints the primary without the account locator, while FailoverGroup.ExternalID carries it.
+func sameAccount(a, b sdk.AccountIdentifier) bool {
+	return a.OrganizationName() == b.OrganizationName() && a.AccountName() == b.AccountName()
 }
