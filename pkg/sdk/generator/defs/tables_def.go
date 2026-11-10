@@ -343,22 +343,15 @@ func tableUnset() *g.QueryStruct {
 }
 
 func tableAddRowAccessPolicy() *g.QueryStruct {
-	return g.NewQueryStruct("TableAddRowAccessPolicy").
-		SQL("ADD").
-		Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
-		PredefinedQueryStructField("On", "[]string", g.KeywordOptions().Parentheses().SQL("ON"))
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableAddRowAccessPolicy).WithSharedToOpts()
 }
 
 func tableDropRowAccessPolicy() *g.QueryStruct {
-	return g.NewQueryStruct("TableDropRowAccessPolicy").
-		SQL("DROP").
-		Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required())
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableDropRowAccessPolicy).WithSharedToOpts()
 }
 
 func tableDropAndAddRowAccessPolicy() *g.QueryStruct {
-	return g.NewQueryStruct("TableDropAndAddRowAccessPolicy").
-		QueryStructField("Drop", tableDropRowAccessPolicy(), g.KeywordOptions().Required()).
-		QueryStructField("Add", tableAddRowAccessPolicy(), g.KeywordOptions().Required())
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableDropAndAddRowAccessPolicy).WithSharedToOpts()
 }
 
 func tableAddStorageLifecyclePolicy() *g.QueryStruct {

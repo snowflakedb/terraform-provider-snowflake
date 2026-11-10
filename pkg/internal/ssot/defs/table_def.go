@@ -200,8 +200,9 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 // The column list names a query struct by PreexistingStruct. The SDK
 // definition in pkg/sdk/generator/defs/tables_def.go supplies them to CreateOperationFromObject and keeps their fields,
 // because other operations and the request types of the resource use them. Search optimization, clustering, and storage
-// lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. The row access policy is generated here as
-// TableRowAccessPolicy. CREATE AS SELECT, event tables, and external tables refer to that type. Aggregation and join
+// lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. CREATE row access policy is generated
+// here as TableRowAccessPolicy. ALTER add, drop, and drop-and-add are TableAddRowAccessPolicy, TableDropRowAccessPolicy,
+// and TableDropAndAddRowAccessPolicy in table_common_def.go; iceberg ALTER reuses those structs. Aggregation and join
 // policies are TableAggregationPolicy and TableJoinPolicy in table_common_def.go. Iceberg CREATE reuses the CREATE
 // structs; iceberg ALTER reuses the SET/UNSET projections.
 var TableCreateAttrs = struct {

@@ -372,14 +372,14 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 		alterReq := sdk.NewAlterIcebergTableRequest(id)
 		switch {
 		case addReq != nil && dropReq != nil:
-			alterReq.WithDropAndAddRowAccessPolicy(*sdk.NewIcebergTableDropAndAddRowAccessPolicyRequest(
-				*sdk.NewIcebergTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy),
-				*sdk.NewIcebergTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
+			alterReq.WithDropAndAddRowAccessPolicy(*sdk.NewTableDropAndAddRowAccessPolicyRequest(
+				*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy),
+				*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
 			))
 		case addReq != nil:
-			alterReq.WithAddRowAccessPolicy(*addReq)
+			alterReq.WithAddRowAccessPolicy(*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On))
 		case dropReq != nil:
-			alterReq.WithDropRowAccessPolicy(*dropReq)
+			alterReq.WithDropRowAccessPolicy(*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy))
 		}
 		if err := client.IcebergTables.Alter(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error updating row access policy on %v err = %w", d.Id(), err))

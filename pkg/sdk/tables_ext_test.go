@@ -761,9 +761,9 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_AddRowAccessPolicy,
 			func(opts *AlterTableOptions) {
-				opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId, On: []string{"FIRST_COLUMN"}}
+				opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId, On: []Column{{"FIRST_COLUMN"}}}
 			},
-			`ALTER TABLE %s ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`,
+			`ALTER TABLE %s ADD ROW ACCESS POLICY %s ON ("FIRST_COLUMN")`,
 			id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -779,10 +779,10 @@ func init() {
 			func(opts *AlterTableOptions) {
 				opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{
 					Drop: TableDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId},
-					Add:  TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId2, On: []string{"FIRST_COLUMN"}},
+					Add:  TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId2, On: []Column{{"FIRST_COLUMN"}}},
 				}
 			},
-			`ALTER TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`,
+			`ALTER TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON ("FIRST_COLUMN")`,
 			id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), rowAccessPolicyId2.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

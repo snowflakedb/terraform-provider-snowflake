@@ -1224,7 +1224,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				Name:        case_IcebergTables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.AddRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
-					opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{}
+					opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{}
 					opts.AddRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
 				},
 			},
@@ -1232,7 +1232,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				Name:        case_IcebergTables_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet,
 				ExpectedErr: errNotSet("AlterIcebergTableOptions.AddRowAccessPolicy", "On"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
-					opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{}
+					opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{}
 					opts.AddRowAccessPolicy.On = nil
 				},
 			},
@@ -1240,7 +1240,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				Name:        case_IcebergTables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.DropRowAccessPolicy", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
-					opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{}
+					opts.DropRowAccessPolicy = &TableDropRowAccessPolicy{}
 					opts.DropRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
 				},
 			},
@@ -1248,7 +1248,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				Name:        case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
-					opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy = emptySchemaObjectIdentifier
 				},
 			},
@@ -1256,7 +1256,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				Name:        case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
-					opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier
 				},
 			},
@@ -1264,7 +1264,7 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				Name:        case_IcebergTables_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet,
 				ExpectedErr: errNotSet("AlterIcebergTableOptions.DropAndAddRowAccessPolicy.Add", "On"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
-					opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
 					opts.DropAndAddRowAccessPolicy.Add.On = nil
 				},
 			},

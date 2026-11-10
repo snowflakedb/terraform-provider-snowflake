@@ -313,6 +313,34 @@ func (opts *AlterTableOptions) validate() error {
 			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
 		}
 	}
+	if valueSet(opts.AddRowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.AddRowAccessPolicy", "RowAccessPolicy"))
+		}
+		if !valueSet(opts.AddRowAccessPolicy.On) {
+			errs = append(errs, errNotSet("AlterTableOptions.AddRowAccessPolicy", "On"))
+		}
+	}
+	if valueSet(opts.DropRowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.DropRowAccessPolicy.RowAccessPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.DropRowAccessPolicy", "RowAccessPolicy"))
+		}
+	}
+	if valueSet(opts.DropAndAddRowAccessPolicy) {
+		if valueSet(opts.DropAndAddRowAccessPolicy.Drop) {
+			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"))
+			}
+		}
+		if valueSet(opts.DropAndAddRowAccessPolicy.Add) {
+			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"))
+			}
+			if !valueSet(opts.DropAndAddRowAccessPolicy.Add.On) {
+				errs = append(errs, errNotSet("AlterTableOptions.DropAndAddRowAccessPolicy.Add", "On"))
+			}
+		}
+	}
 	if valueSet(opts.AddStorageLifecyclePolicy) {
 		if !ValidObjectIdentifier(opts.AddStorageLifecyclePolicy.StorageLifecyclePolicy) {
 			errs = append(errs, errInvalidIdentifier("AlterTableOptions.AddStorageLifecyclePolicy", "StorageLifecyclePolicy"))

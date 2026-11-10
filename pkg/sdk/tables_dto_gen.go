@@ -370,7 +370,7 @@ type TableUnsetRequest struct {
 
 type TableAddRowAccessPolicyRequest struct {
 	RowAccessPolicy SchemaObjectIdentifier // required
-	On              []string
+	On              []Column               // required
 }
 
 type TableDropRowAccessPolicyRequest struct {

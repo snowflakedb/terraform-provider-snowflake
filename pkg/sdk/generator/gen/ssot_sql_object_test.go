@@ -787,3 +787,34 @@ func Test_queryStructFromObject_tableStorageLifecyclePolicy(t *testing.T) {
 		WithValidation(ValidateValueSet, "On")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
+
+func Test_queryStructFromObject_tableRowAccessPolicy(t *testing.T) {
+	for _, attr := range []ssot.Attribute{
+		ssotdefs.TableAddRowAccessPolicy,
+		ssotdefs.TableDropRowAccessPolicy,
+		ssotdefs.TableDropAndAddRowAccessPolicy,
+	} {
+		require.NotPanics(t, func() {
+			ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+		})
+	}
+	add := QueryStructFromAttribute("Table", ssotdefs.TableAddRowAccessPolicy)
+	require.Equal(t, NewQueryStruct("TableAddRowAccessPolicy").
+		SQLWithCustomFieldName("add", "ADD").
+		Identifier("RowAccessPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+		WithValidation(ValidIdentifier, "RowAccessPolicy").
+		ListAssignmentWithFieldName("ON", "Column", ParameterOptions().NoEquals().Parentheses().Required(), "On").
+		WithValidation(ValidateValueSet, "On").
+		IntoField(), add.IntoField())
+	drop := QueryStructFromAttribute("Table", ssotdefs.TableDropRowAccessPolicy)
+	require.Equal(t, NewQueryStruct("TableDropRowAccessPolicy").
+		SQLWithCustomFieldName("drop", "DROP").
+		Identifier("RowAccessPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+		WithValidation(ValidIdentifier, "RowAccessPolicy").
+		IntoField(), drop.IntoField())
+	got := QueryStructFromAttribute("Table", ssotdefs.TableDropAndAddRowAccessPolicy)
+	want := NewQueryStruct("TableDropAndAddRowAccessPolicy").
+		QueryStructField("Drop", drop, ListOptions().NoComma().Required()).
+		QueryStructField("Add", add, ListOptions().NoComma().Required())
+	require.Equal(t, want.IntoField(), got.IntoField())
+}

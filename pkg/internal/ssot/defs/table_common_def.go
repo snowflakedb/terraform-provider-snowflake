@@ -157,6 +157,76 @@ var TableSearchOptimizationAction = ssot.Attribute{
 	},
 }
 
+func tableRowAccessPolicyIdentifier() ssot.Attribute {
+	return ssot.Attribute{
+		Name:           "row_access_policy",
+		Type:           ssot.AttrIdentifier,
+		IdentifierType: "SchemaObjectIdentifier",
+		Required:       true,
+		SqlOnly:        true,
+		CreateSql:      ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ROW ACCESS POLICY"), ssot.Required(), ssot.FieldName("RowAccessPolicy")),
+	}
+}
+
+// TableAddRowAccessPolicy is ADD ROW ACCESS POLICY policy ON (columns). Iceberg tables reuse it.
+var TableAddRowAccessPolicy = ssot.Attribute{
+	Name:      "add_row_access_policy",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(),
+	Children: []ssot.Attribute{
+		{Name: "add_keyword", SqlOnly: true, CreateSql: ssot.StaticSQL("add", "ADD")},
+		tableRowAccessPolicyIdentifier(),
+		{
+			Name:      "on",
+			Type:      ssot.AttrList,
+			Required:  true,
+			SqlOnly:   true,
+			Elem:      &ssot.Attribute{Type: ssot.AttrString},
+			CreateSql: ssot.ListParameter("Column", ssot.Sql("ON"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("On")),
+		},
+	},
+}
+
+// TableDropRowAccessPolicy is DROP ROW ACCESS POLICY policy. Iceberg tables reuse it.
+var TableDropRowAccessPolicy = ssot.Attribute{
+	Name:      "drop_row_access_policy",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(),
+	Children: []ssot.Attribute{
+		{Name: "drop_keyword", SqlOnly: true, CreateSql: ssot.StaticSQL("drop", "DROP")},
+		tableRowAccessPolicyIdentifier(),
+	},
+}
+
+// TableDropAndAddRowAccessPolicy replaces one row access policy with another in one statement. Iceberg tables reuse it.
+// DROP ALL ROW ACCESS POLICIES stays a statement keyword on ALTER.
+var TableDropAndAddRowAccessPolicy = ssot.Attribute{
+	Name:      "drop_and_add_row_access_policy",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(),
+	Children: []ssot.Attribute{
+		{
+			Name:      "drop_row_access_policy",
+			Type:      ssot.AttrObject,
+			Required:  true,
+			SqlOnly:   true,
+			CreateSql: ssot.ObjectParameter(ssot.Required(), ssot.FieldName("Drop")),
+			Children:  TableDropRowAccessPolicy.Children,
+		},
+		{
+			Name:      "add_row_access_policy",
+			Type:      ssot.AttrObject,
+			Required:  true,
+			SqlOnly:   true,
+			CreateSql: ssot.ObjectParameter(ssot.Required(), ssot.FieldName("Add")),
+			Children:  TableAddRowAccessPolicy.Children,
+		},
+	},
+}
+
 var (
 	tableAggregationPolicyIdentifier = ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("AGGREGATION POLICY"), ssot.Required(), ssot.FieldName("AggregationPolicy"))
 	tableAggregationPolicyEntityKey  = ssot.ListParameter("Column", ssot.Sql("ENTITY KEY"), ssot.NoEquals())
