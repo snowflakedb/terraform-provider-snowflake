@@ -29,7 +29,7 @@ func (c *FailoverGroupClient) Create(t *testing.T) (*sdk.FailoverGroup, func()) 
 	t.Helper()
 	return c.CreateWithRequest(t, sdk.NewCreateFailoverGroupRequest(
 		c.ids.RandomAccountObjectIdentifier(),
-		[]sdk.PluralObjectType{sdk.PluralObjectTypeRoles},
+		[]sdk.FailoverGroupObjectType{sdk.FailoverGroupObjectTypeRoles},
 		[]sdk.AccountIdentifier{c.ids.AccountIdentifierWithLocator()},
 	))
 }
@@ -51,7 +51,7 @@ func (c *FailoverGroupClient) RemoveAllowedAccounts(t *testing.T, id sdk.Account
 	t.Helper()
 	ctx := context.Background()
 
-	err := c.client().AlterSource(ctx, sdk.NewAlterSourceFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(accounts)))
+	err := c.client().Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).WithRemove(*sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(accounts)))
 	require.NoError(t, err)
 }
 
@@ -72,7 +72,7 @@ func (c *FailoverGroupClient) Show(t *testing.T, id sdk.AccountObjectIdentifier)
 
 func (c *FailoverGroupClient) CreateSecondary(t *testing.T, id sdk.AccountObjectIdentifier, primary sdk.ExternalObjectIdentifier) {
 	t.Helper()
-	require.NoError(t, c.client().CreateSecondaryReplicationGroup(context.Background(), sdk.NewCreateSecondaryReplicationGroupFailoverGroupRequest(id, primary)))
+	require.NoError(t, c.client().CreateSecondary(context.Background(), sdk.NewCreateSecondaryFailoverGroupRequest(id, primary)))
 }
 
 // WaitForPrimaryToBeVisible polls SHOW FAILOVER GROUPS on this account until a primary failover group with the given name appears.

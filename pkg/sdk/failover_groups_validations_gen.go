@@ -6,9 +6,9 @@ import "fmt"
 
 var (
 	_ validatable = new(CreateFailoverGroupOptions)
-	_ validatable = new(CreateSecondaryReplicationGroupFailoverGroupOptions)
-	_ validatable = new(AlterSourceFailoverGroupOptions)
-	_ validatable = new(AlterTargetFailoverGroupOptions)
+	_ validatable = new(CreateSecondaryFailoverGroupOptions)
+	_ validatable = new(AlterFailoverGroupOptions)
+	_ validatable = new(AlterSecondaryFailoverGroupOptions)
 	_ validatable = new(DropFailoverGroupOptions)
 	_ validatable = new(ShowFailoverGroupOptions)
 	_ validatable = new(ShowFailoverGroupDatabasesFailoverGroupOptions)
@@ -20,6 +20,15 @@ func (opts *CreateFailoverGroupOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !valueSet(opts.ObjectTypes) {
+		errs = append(errs, errNotSet("CreateFailoverGroupOptions", "ObjectTypes"))
+	}
+	if !anyValueSet(opts.AllowedAccounts) {
+		errs = append(errs, errAtLeastOneOf("CreateFailoverGroupOptions", "AllowedAccounts"))
+	}
+	if opts.ErrorIntegration != nil && !ValidObjectIdentifier(opts.ErrorIntegration) {
+		errs = append(errs, errInvalidIdentifier("CreateFailoverGroupOptions", "ErrorIntegration"))
+	}
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateFailoverGroupOptions", "name"))
 	}
@@ -27,6 +36,13 @@ func (opts *CreateFailoverGroupOptions) validate() error {
 		for allowedDatabaseIdx, allowedDatabase := range opts.AllowedDatabases {
 			if !ValidObjectIdentifier(allowedDatabase) {
 				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFailoverGroupOptions.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+			}
+		}
+	}
+	if valueSet(opts.AllowedExternalVolumes) {
+		for allowedExternalVolumeIdx, allowedExternalVolume := range opts.AllowedExternalVolumes {
+			if !ValidObjectIdentifier(allowedExternalVolume) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFailoverGroupOptions.AllowedExternalVolumes[%d]", allowedExternalVolumeIdx), "AllowedExternalVolumes"))
 			}
 		}
 	}
@@ -44,83 +60,139 @@ func (opts *CreateFailoverGroupOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.Tag) {
+		for tagIdx, tag := range opts.Tag {
+			if !ValidObjectIdentifier(tag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateFailoverGroupOptions.Tag[%d]", tagIdx), "Name"))
+			}
+		}
+	}
 	return JoinErrors(errs...)
 }
 
-func (opts *CreateSecondaryReplicationGroupFailoverGroupOptions) validate() error {
+func (opts *CreateSecondaryFailoverGroupOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.AsReplicaOf) {
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryFailoverGroupOptions", "AsReplicaOf"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CreateSecondaryFailoverGroupOptions", "name"))
+	}
+	errs = append(errs, opts.additionalValidations())
+	return JoinErrors(errs...)
+}
+
+func (opts *AlterFailoverGroupOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "name"))
+		errs = append(errs, errInvalidIdentifier("AlterFailoverGroupOptions", "name"))
 	}
-	if !ValidObjectIdentifier(opts.PrimaryFailoverGroup) {
-		errs = append(errs, errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "PrimaryFailoverGroup"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.SetTags, opts.UnsetTags, opts.Add, opts.Move, opts.Remove) {
+		errs = append(errs, errExactlyOneOf("AlterFailoverGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove"))
 	}
-	return JoinErrors(errs...)
-}
-
-func (opts *AlterSourceFailoverGroupOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("AlterSourceFailoverGroupOptions", "name"))
-	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.Set, opts.Unset, opts.Add, opts.Move, opts.Remove) {
-		errs = append(errs, errExactlyOneOf("AlterSourceFailoverGroupOptions", "RenameTo", "Set", "Unset", "Add", "Move", "Remove"))
+	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
+		errs = append(errs, errInvalidIdentifier("AlterFailoverGroupOptions", "RenameTo"))
 	}
 	if valueSet(opts.Set) {
-		if everyValueSet(opts.Set.OptimizedRefresh, opts.Set.RpoAssurance) {
-			errs = append(errs, errOneOf("AlterSourceFailoverGroupOptions.Set", "OptimizedRefresh", "RpoAssurance"))
+		if opts.Set.ErrorIntegration != nil && !ValidObjectIdentifier(opts.Set.ErrorIntegration) {
+			errs = append(errs, errInvalidIdentifier("AlterFailoverGroupOptions.Set", "ErrorIntegration"))
+		}
+		if !anyValueSet(opts.Set.ObjectTypes, opts.Set.AllowedDatabases, opts.Set.AllowedExternalVolumes, opts.Set.AllowedShares, opts.Set.AllowedIntegrationTypes, opts.Set.Comment, opts.Set.ReplicationSchedule, opts.Set.OptimizedRefresh, opts.Set.RpoAssurance, opts.Set.ErrorIntegration, opts.Set.ReadOnly) {
+			errs = append(errs, errAtLeastOneOf("AlterFailoverGroupOptions.Set", "ObjectTypes", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedIntegrationTypes", "Comment", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance", "ErrorIntegration", "ReadOnly"))
 		}
 		errs = append(errs, opts.Set.additionalValidations())
+		if valueSet(opts.Set.AllowedDatabases) {
+			for allowedDatabaseIdx, allowedDatabase := range opts.Set.AllowedDatabases {
+				if !ValidObjectIdentifier(allowedDatabase) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Set.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+				}
+			}
+		}
+		if valueSet(opts.Set.AllowedExternalVolumes) {
+			for allowedExternalVolumeIdx, allowedExternalVolume := range opts.Set.AllowedExternalVolumes {
+				if !ValidObjectIdentifier(allowedExternalVolume) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Set.AllowedExternalVolumes[%d]", allowedExternalVolumeIdx), "AllowedExternalVolumes"))
+				}
+			}
+		}
+		if valueSet(opts.Set.AllowedShares) {
+			for allowedShareIdx, allowedShare := range opts.Set.AllowedShares {
+				if !ValidObjectIdentifier(allowedShare) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Set.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
+				}
+			}
+		}
 	}
 	if valueSet(opts.Unset) {
-		if !exactlyOneValueSet(opts.Unset.ReplicationSchedule, opts.Unset.OptimizedRefresh, opts.Unset.RpoAssurance) {
-			errs = append(errs, errExactlyOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"))
+		if !anyValueSet(opts.Unset.Comment, opts.Unset.ReplicationSchedule, opts.Unset.OptimizedRefresh, opts.Unset.RpoAssurance, opts.Unset.ErrorIntegration, opts.Unset.ReadOnly) {
+			errs = append(errs, errAtLeastOneOf("AlterFailoverGroupOptions.Unset", "Comment", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance", "ErrorIntegration", "ReadOnly"))
+		}
+	}
+	if valueSet(opts.SetTags) {
+		for setTagIdx, setTag := range opts.SetTags {
+			if !ValidObjectIdentifier(setTag.Name) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.SetTags[%d]", setTagIdx), "Name"))
+			}
 		}
 	}
 	if valueSet(opts.Add) {
 		if valueSet(opts.Add.AllowedDatabases) {
 			for allowedDatabaseIdx, allowedDatabase := range opts.Add.AllowedDatabases {
 				if !ValidObjectIdentifier(allowedDatabase) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Add.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Add.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+				}
+			}
+		}
+		if valueSet(opts.Add.AllowedExternalVolumes) {
+			for allowedExternalVolumeIdx, allowedExternalVolume := range opts.Add.AllowedExternalVolumes {
+				if !ValidObjectIdentifier(allowedExternalVolume) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Add.AllowedExternalVolumes[%d]", allowedExternalVolumeIdx), "AllowedExternalVolumes"))
 				}
 			}
 		}
 		if valueSet(opts.Add.AllowedShares) {
 			for allowedShareIdx, allowedShare := range opts.Add.AllowedShares {
 				if !ValidObjectIdentifier(allowedShare) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Add.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Add.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
 				}
 			}
 		}
 		if valueSet(opts.Add.AllowedAccounts) {
 			for allowedAccountIdx, allowedAccount := range opts.Add.AllowedAccounts {
 				if !ValidObjectIdentifier(allowedAccount) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Add.AllowedAccounts[%d]", allowedAccountIdx), "AllowedAccounts"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Add.AllowedAccounts[%d]", allowedAccountIdx), "AllowedAccounts"))
 				}
 			}
 		}
 	}
 	if valueSet(opts.Move) {
 		if !ValidObjectIdentifier(opts.Move.To) {
-			errs = append(errs, errInvalidIdentifier("AlterSourceFailoverGroupOptions.Move", "To"))
+			errs = append(errs, errInvalidIdentifier("AlterFailoverGroupOptions.Move", "To"))
 		}
 		if valueSet(opts.Move.Databases) {
 			for databaseIdx, database := range opts.Move.Databases {
 				if !ValidObjectIdentifier(database) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Move.Databases[%d]", databaseIdx), "Databases"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Move.Databases[%d]", databaseIdx), "Databases"))
+				}
+			}
+		}
+		if valueSet(opts.Move.ExternalVolumes) {
+			for externalVolumeIdx, externalVolume := range opts.Move.ExternalVolumes {
+				if !ValidObjectIdentifier(externalVolume) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Move.ExternalVolumes[%d]", externalVolumeIdx), "ExternalVolumes"))
 				}
 			}
 		}
 		if valueSet(opts.Move.Shares) {
 			for shareIdx, share := range opts.Move.Shares {
 				if !ValidObjectIdentifier(share) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Move.Shares[%d]", shareIdx), "Shares"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Move.Shares[%d]", shareIdx), "Shares"))
 				}
 			}
 		}
@@ -129,21 +201,28 @@ func (opts *AlterSourceFailoverGroupOptions) validate() error {
 		if valueSet(opts.Remove.AllowedDatabases) {
 			for allowedDatabaseIdx, allowedDatabase := range opts.Remove.AllowedDatabases {
 				if !ValidObjectIdentifier(allowedDatabase) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Remove.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Remove.AllowedDatabases[%d]", allowedDatabaseIdx), "AllowedDatabases"))
+				}
+			}
+		}
+		if valueSet(opts.Remove.AllowedExternalVolumes) {
+			for allowedExternalVolumeIdx, allowedExternalVolume := range opts.Remove.AllowedExternalVolumes {
+				if !ValidObjectIdentifier(allowedExternalVolume) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Remove.AllowedExternalVolumes[%d]", allowedExternalVolumeIdx), "AllowedExternalVolumes"))
 				}
 			}
 		}
 		if valueSet(opts.Remove.AllowedShares) {
 			for allowedShareIdx, allowedShare := range opts.Remove.AllowedShares {
 				if !ValidObjectIdentifier(allowedShare) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Remove.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Remove.AllowedShares[%d]", allowedShareIdx), "AllowedShares"))
 				}
 			}
 		}
 		if valueSet(opts.Remove.AllowedAccounts) {
 			for allowedAccountIdx, allowedAccount := range opts.Remove.AllowedAccounts {
 				if !ValidObjectIdentifier(allowedAccount) {
-					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterSourceFailoverGroupOptions.Remove.AllowedAccounts[%d]", allowedAccountIdx), "AllowedAccounts"))
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterFailoverGroupOptions.Remove.AllowedAccounts[%d]", allowedAccountIdx), "AllowedAccounts"))
 				}
 			}
 		}
@@ -151,16 +230,16 @@ func (opts *AlterSourceFailoverGroupOptions) validate() error {
 	return JoinErrors(errs...)
 }
 
-func (opts *AlterTargetFailoverGroupOptions) validate() error {
+func (opts *AlterSecondaryFailoverGroupOptions) validate() error {
 	if opts == nil {
 		return ErrNilOptions
 	}
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("AlterTargetFailoverGroupOptions", "name"))
+		errs = append(errs, errInvalidIdentifier("AlterSecondaryFailoverGroupOptions", "name"))
 	}
 	if !exactlyOneValueSet(opts.Refresh, opts.Primary, opts.Suspend, opts.Resume) {
-		errs = append(errs, errExactlyOneOf("AlterTargetFailoverGroupOptions", "Refresh", "Primary", "Suspend", "Resume"))
+		errs = append(errs, errExactlyOneOf("AlterSecondaryFailoverGroupOptions", "Refresh", "Primary", "Suspend", "Resume"))
 	}
 	return JoinErrors(errs...)
 }
@@ -189,6 +268,9 @@ func (opts *ShowFailoverGroupDatabasesFailoverGroupOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("ShowFailoverGroupDatabasesFailoverGroupOptions", "name"))
+	}
 	return JoinErrors(errs...)
 }
 
@@ -197,5 +279,8 @@ func (opts *ShowFailoverGroupSharesFailoverGroupOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("ShowFailoverGroupSharesFailoverGroupOptions", "name"))
+	}
 	return JoinErrors(errs...)
 }

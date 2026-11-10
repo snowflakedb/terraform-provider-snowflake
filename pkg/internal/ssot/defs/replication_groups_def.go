@@ -270,7 +270,8 @@ var ReplicationGroupAttrs = struct {
 	// The page calls this a date and time. Failover stores the same SHOW column as text.
 	// A nullable time is OptionalInDb only, so the plain field stays time.Time.
 	NextScheduledRefresh: ssot.Attribute{Name: "next_scheduled_refresh", Type: ssot.AttrTime, Readonly: true, OptionalInDb: true},
-	Owner:                ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true, OptionalInShow: true, OptionalInDb: true, Description: "Role with OWNERSHIP on the group. NULL when the group is in a different region."},
+	// Usually owner is not null, but the page says it is NULL when the group is in a different region.
+	Owner: ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true, OptionalInShow: true, OptionalInDb: true, Description: "Role with OWNERSHIP on the group. NULL when the group is in a different region."},
 	// Failover's handwritten SHOW row does not include these two columns. The replication group page does.
 	// TRUE/FALSE is a bool, matching is_primary on the same SHOW command.
 	IsListingAutoFulfillmentGroup: ssot.Attribute{Name: "is_listing_auto_fulfillment_group", Type: ssot.AttrBool, Readonly: true, Description: "TRUE when the group is used for Cross-Cloud Auto-Fulfillment."},
