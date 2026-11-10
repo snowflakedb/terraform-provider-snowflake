@@ -36,6 +36,14 @@ The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflak
 
 The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
 
+### *(behavior change)* `attributes` in `snowflake_cortex_search_service` is updated in place
+
+Changing `attributes` in the [`snowflake_cortex_search_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_search_service) resource no longer recreates the service. The provider runs `ALTER CORTEX SEARCH SERVICE ... SET ATTRIBUTES`, or `UNSET ATTRIBUTES` when the field is removed from the configuration. As described in the [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search), the new attributes take effect after the next index refresh.
+
+Attribute columns must still be present in `query`. A change that also modifies `query` recreates the service, as before.
+
+No configuration changes are required.
+
 ### *(new feature)* Hierarchy renames rolled out to more resources
 
 The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.
