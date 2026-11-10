@@ -196,7 +196,7 @@ type AlterTableOptions struct {
 	Set                        *TableSet                       `ddl:"keyword" sql:"SET"`
 	SetTags                    []TagAssociation                `ddl:"keyword" sql:"SET TAG"`
 	UnsetTags                  []ObjectIdentifier              `ddl:"keyword" sql:"UNSET TAG"`
-	Unset                      *TableUnset                     `ddl:"keyword" sql:"UNSET"`
+	Unset                      *TableUnset                     `ddl:"list,no_parentheses" sql:"UNSET"`
 	AddRowAccessPolicy         *TableAddRowAccessPolicy        `ddl:"keyword"`
 	DropRowAccessPolicy        *TableDropRowAccessPolicy       `ddl:"keyword"`
 	DropAndAddRowAccessPolicy  *TableDropAndAddRowAccessPolicy `ddl:"list,no_parentheses"`

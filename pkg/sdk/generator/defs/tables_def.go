@@ -335,23 +335,11 @@ func tableExternalTableColumnDropAction() *g.QueryStruct {
 }
 
 func tableSet() *g.QueryStruct {
-	return g.NewQueryStruct("TableSet").
-		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", g.ParameterOptions()).
-		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", g.ParameterOptions()).
-		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", g.ParameterOptions()).
-		OptionalBooleanAssignment("CHANGE_TRACKING", g.ParameterOptions()).
-		OptionalAssignment("DEFAULT_DDL_COLLATION", g.KindOfT[sdkcommons.StringAllowEmpty](), g.ParameterOptions()).
-		OptionalComment()
+	return g.AlterSetQueryStruct(ssotdefs.Table, ssot.SdkGenerator{})
 }
 
 func tableUnset() *g.QueryStruct {
-	return g.NewQueryStruct("TableUnset").
-		OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
-		OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
-		OptionalSQL("CHANGE_TRACKING").
-		OptionalSQL("DEFAULT_DDL_COLLATION").
-		OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
-		OptionalSQL("COMMENT")
+	return g.AlterUnsetQueryStruct(ssotdefs.Table)
 }
 
 func tableAddRowAccessPolicy() *g.QueryStruct {
@@ -483,7 +471,7 @@ var tablesDef = g.NewInterface(
 			OptionalQueryStructField("Set", tableSet(), g.KeywordOptions().SQL("SET")).
 			OptionalSetTags().
 			OptionalUnsetTags().
-			OptionalQueryStructField("Unset", tableUnset(), g.KeywordOptions().SQL("UNSET")).
+			OptionalQueryStructField("Unset", tableUnset(), g.ListOptions().NoParentheses().SQL("UNSET")).
 			OptionalQueryStructField("AddRowAccessPolicy", tableAddRowAccessPolicy(), g.KeywordOptions()).
 			OptionalQueryStructField("DropRowAccessPolicy", tableDropRowAccessPolicy(), g.KeywordOptions()).
 			OptionalQueryStructField("DropAndAddRowAccessPolicy", tableDropAndAddRowAccessPolicy(), g.ListOptions().NoParentheses()).

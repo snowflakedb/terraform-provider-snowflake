@@ -102,7 +102,9 @@ const (
 	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet                                            testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_MoreThanOneSet"
 	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid                                        testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid                                               testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_BothInvalid"
+	case_Tables_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                        testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Tables_validation_Alter_SetTags_ValidIdentifier                                                                                            testCaseName = "validation_Alter_SetTags_ValidIdentifier"
+	case_Tables_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                      testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier                                                   testCaseName = "validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier"
 	case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet                                                                      testCaseName = "validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet"
 	case_Tables_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier                                                             testCaseName = "validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier"
@@ -960,10 +962,36 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.Set = &TableSet{}
+					opts.Set.EnableSchemaEvolution = nil
+					opts.Set.DataRetentionTimeInDays = nil
+					opts.Set.MaxDataExtensionTimeInDays = nil
+					opts.Set.ChangeTracking = nil
+					opts.Set.DefaultDdlCollation = nil
+					opts.Set.Comment = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_SetTags_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterTableOptions.SetTags[0]", "Name"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.Unset = &TableUnset{}
+					opts.Unset.DataRetentionTimeInDays = nil
+					opts.Unset.MaxDataExtensionTimeInDays = nil
+					opts.Unset.ChangeTracking = nil
+					opts.Unset.DefaultDdlCollation = nil
+					opts.Unset.EnableSchemaEvolution = nil
+					opts.Unset.Comment = nil
 				},
 			},
 			validationCase[*AlterTableOptions]{

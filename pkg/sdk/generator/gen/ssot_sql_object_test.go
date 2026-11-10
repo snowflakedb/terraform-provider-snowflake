@@ -749,6 +749,31 @@ func Test_queryStructFromObject_tableUnsetJoinPolicy(t *testing.T) {
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
 
+func Test_alterSetQueryStruct_table(t *testing.T) {
+	require.NotPanics(t, func() { ssot.ValidateObject(ssotdefs.Table) })
+	got := AlterSetQueryStruct(ssotdefs.Table, ssot.SdkGenerator{})
+	want := NewQueryStruct("TableSet").
+		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", ParameterOptions()).
+		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", ParameterOptions()).
+		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", ParameterOptions()).
+		OptionalBooleanAssignment("CHANGE_TRACKING", ParameterOptions()).
+		OptionalAssignment("DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
+		OptionalComment().
+		WithValidation(AtLeastOneValueSet, "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment")
+	require.Equal(t, want.IntoField(), got.IntoField())
+
+	unset := AlterUnsetQueryStruct(ssotdefs.Table)
+	wantUnset := NewQueryStruct("TableUnset").
+		OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
+		OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
+		OptionalSQL("CHANGE_TRACKING").
+		OptionalSQL("DEFAULT_DDL_COLLATION").
+		OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
+		OptionalSQL("COMMENT").
+		WithValidation(AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
+	require.Equal(t, wantUnset.IntoField(), unset.IntoField())
+}
+
 func Test_queryStructFromObject_tableStorageLifecyclePolicy(t *testing.T) {
 	attr := ssotdefs.TableStorageLifecyclePolicy
 	require.NotPanics(t, func() {
