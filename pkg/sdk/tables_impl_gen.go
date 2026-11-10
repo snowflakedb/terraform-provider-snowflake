@@ -329,6 +329,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				Name:        r.ColumnAction.Add.Name,
 				ColumnType:  r.ColumnAction.Add.ColumnType,
 				Collate:     r.ColumnAction.Add.Collate,
+				NotNull:     r.ColumnAction.Add.NotNull,
 				Tag:         r.ColumnAction.Add.Tag,
 				Comment:     r.ColumnAction.Add.Comment,
 			}
@@ -346,15 +347,54 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				}
 			}
 			if r.ColumnAction.Add.InlineConstraint != nil {
-				opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{
-					NotNull:        r.ColumnAction.Add.InlineConstraint.NotNull,
-					Name:           r.ColumnAction.Add.InlineConstraint.Name,
-					ConstraintType: r.ColumnAction.Add.InlineConstraint.ConstraintType,
+				opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
+				if r.ColumnAction.Add.InlineConstraint.UniquePK != nil {
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{
+						Name:               r.ColumnAction.Add.InlineConstraint.UniquePK.Name,
+						Unique:             r.ColumnAction.Add.InlineConstraint.UniquePK.Unique,
+						PrimaryKey:         r.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey,
+						Enforced:           r.ColumnAction.Add.InlineConstraint.UniquePK.Enforced,
+						NotEnforced:        r.ColumnAction.Add.InlineConstraint.UniquePK.NotEnforced,
+						Deferrable:         r.ColumnAction.Add.InlineConstraint.UniquePK.Deferrable,
+						NotDeferrable:      r.ColumnAction.Add.InlineConstraint.UniquePK.NotDeferrable,
+						InitiallyDeferred:  r.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyDeferred,
+						InitiallyImmediate: r.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyImmediate,
+						Enable:             r.ColumnAction.Add.InlineConstraint.UniquePK.Enable,
+						Disable:            r.ColumnAction.Add.InlineConstraint.UniquePK.Disable,
+						Validate:           r.ColumnAction.Add.InlineConstraint.UniquePK.Validate,
+						Novalidate:         r.ColumnAction.Add.InlineConstraint.UniquePK.Novalidate,
+						Rely:               r.ColumnAction.Add.InlineConstraint.UniquePK.Rely,
+						Norely:             r.ColumnAction.Add.InlineConstraint.UniquePK.Norely,
+					}
 				}
-				if r.ColumnAction.Add.InlineConstraint.ForeignKey != nil {
-					opts.ColumnAction.Add.InlineConstraint.ForeignKey = &ColumnAddForeignKey{
-						TableName:  r.ColumnAction.Add.InlineConstraint.ForeignKey.TableName,
-						ColumnName: r.ColumnAction.Add.InlineConstraint.ForeignKey.ColumnName,
+				if r.ColumnAction.Add.InlineConstraint.FK != nil {
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{
+						Name:               r.ColumnAction.Add.InlineConstraint.FK.Name,
+						ForeignKey:         r.ColumnAction.Add.InlineConstraint.FK.ForeignKey,
+						References:         r.ColumnAction.Add.InlineConstraint.FK.References,
+						RefColumn:          r.ColumnAction.Add.InlineConstraint.FK.RefColumn,
+						Match:              r.ColumnAction.Add.InlineConstraint.FK.Match,
+						On:                 r.ColumnAction.Add.InlineConstraint.FK.On,
+						Enforced:           r.ColumnAction.Add.InlineConstraint.FK.Enforced,
+						NotEnforced:        r.ColumnAction.Add.InlineConstraint.FK.NotEnforced,
+						Deferrable:         r.ColumnAction.Add.InlineConstraint.FK.Deferrable,
+						NotDeferrable:      r.ColumnAction.Add.InlineConstraint.FK.NotDeferrable,
+						InitiallyDeferred:  r.ColumnAction.Add.InlineConstraint.FK.InitiallyDeferred,
+						InitiallyImmediate: r.ColumnAction.Add.InlineConstraint.FK.InitiallyImmediate,
+						Enable:             r.ColumnAction.Add.InlineConstraint.FK.Enable,
+						Disable:            r.ColumnAction.Add.InlineConstraint.FK.Disable,
+						Validate:           r.ColumnAction.Add.InlineConstraint.FK.Validate,
+						Novalidate:         r.ColumnAction.Add.InlineConstraint.FK.Novalidate,
+						Rely:               r.ColumnAction.Add.InlineConstraint.FK.Rely,
+						Norely:             r.ColumnAction.Add.InlineConstraint.FK.Norely,
+					}
+				}
+				if r.ColumnAction.Add.InlineConstraint.CH != nil {
+					opts.ColumnAction.Add.InlineConstraint.CH = &TableColumnAddInlineCH{
+						Name:             r.ColumnAction.Add.InlineConstraint.CH.Name,
+						Expression:       r.ColumnAction.Add.InlineConstraint.CH.Expression,
+						EnableValidate:   r.ColumnAction.Add.InlineConstraint.CH.EnableValidate,
+						EnableNovalidate: r.ColumnAction.Add.InlineConstraint.CH.EnableNovalidate,
 					}
 				}
 			}

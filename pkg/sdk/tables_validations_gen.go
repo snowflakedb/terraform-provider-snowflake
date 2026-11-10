@@ -204,6 +204,62 @@ func (opts *AlterTableOptions) validate() error {
 					}
 				}
 			}
+			if valueSet(opts.ColumnAction.Add.InlineConstraint) {
+				if !exactlyOneValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK, opts.ColumnAction.Add.InlineConstraint.FK, opts.ColumnAction.Add.InlineConstraint.CH) {
+					errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint", "UniquePK", "FK", "CH"))
+				}
+				if valueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK) {
+					if !exactlyOneValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Unique, opts.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey) {
+						errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Enforced, opts.ColumnAction.Add.InlineConstraint.UniquePK.NotEnforced) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Deferrable, opts.ColumnAction.Add.InlineConstraint.UniquePK.NotDeferrable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyDeferred, opts.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyImmediate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Enable, opts.ColumnAction.Add.InlineConstraint.UniquePK.Disable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Enable", "Disable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Validate, opts.ColumnAction.Add.InlineConstraint.UniquePK.Novalidate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Validate", "Novalidate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Rely, opts.ColumnAction.Add.InlineConstraint.UniquePK.Norely) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Rely", "Norely"))
+					}
+				}
+				if valueSet(opts.ColumnAction.Add.InlineConstraint.FK) {
+					if !ValidObjectIdentifier(opts.ColumnAction.Add.InlineConstraint.FK.References) {
+						errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "References"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Enforced, opts.ColumnAction.Add.InlineConstraint.FK.NotEnforced) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Deferrable, opts.ColumnAction.Add.InlineConstraint.FK.NotDeferrable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.InitiallyDeferred, opts.ColumnAction.Add.InlineConstraint.FK.InitiallyImmediate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Enable, opts.ColumnAction.Add.InlineConstraint.FK.Disable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Enable", "Disable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Validate, opts.ColumnAction.Add.InlineConstraint.FK.Novalidate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Validate", "Novalidate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Rely, opts.ColumnAction.Add.InlineConstraint.FK.Norely) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Rely", "Norely"))
+					}
+				}
+				if valueSet(opts.ColumnAction.Add.InlineConstraint.CH) {
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.CH.EnableValidate, opts.ColumnAction.Add.InlineConstraint.CH.EnableNovalidate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
+					}
+				}
+			}
 			if valueSet(opts.ColumnAction.Add.MaskingPolicy) {
 				if !ValidObjectIdentifier(opts.ColumnAction.Add.MaskingPolicy.MaskingPolicy) {
 					errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.MaskingPolicy", "MaskingPolicy"))

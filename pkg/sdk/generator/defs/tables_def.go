@@ -187,27 +187,11 @@ func tableColumnAddAction() *g.QueryStruct {
 		PredefinedQueryStructField("ColumnType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
 		OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 		OptionalQueryStructField("DefaultValue", tableColumnDefaultValue(), g.KeywordOptions()).
-		OptionalQueryStructField("InlineConstraint", legacyTableColumnAddInlineConstraint(), g.KeywordOptions()).
+		OptionalSQL("NOT NULL").
+		OptionalQueryStructField("InlineConstraint", tableColumnAddInlineConstraint(), g.KeywordOptions()).
 		OptionalSharedQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
 		OptionalTags().
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
-}
-
-// legacyTableColumnAddInlineConstraint duplicates tableColumnInlineConstraint: legacy does not double-quote
-// the constraint name and takes the foreign key target as string.
-// TODO[SNOW-1007542]: reuse tableColumnInlineConstraint
-func legacyTableColumnAddInlineConstraint() *g.QueryStruct {
-	return g.NewQueryStruct("TableColumnAddInlineConstraint").
-		OptionalSQL("NOT NULL").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals(), "Name").
-		WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("ConstraintType", g.KeywordOptions().Required())).
-		OptionalQueryStructField("ForeignKey", tableColumnAddForeignKey(), g.KeywordOptions())
-}
-
-func tableColumnAddForeignKey() *g.QueryStruct {
-	return g.NewQueryStruct("ColumnAddForeignKey").
-		Text("TableName", g.KeywordOptions().SQL("REFERENCES").Required()).
-		Text("ColumnName", g.KeywordOptions().Parentheses().Required())
 }
 
 // legacyTableColumnRenameAction duplicates tableRenameColumnAction: legacy does not double-quote
@@ -561,17 +545,29 @@ func withOutOfLineConstraintTail(qs *g.QueryStruct) *g.QueryStruct {
 		WithValidation(g.ConflictingFields, "Rely", "Norely")
 }
 
+// tableColumnInlineConstraint is used by iceberg tables (CREATE and ADD COLUMN).
 func tableColumnInlineConstraint() *g.QueryStruct {
-	return g.NewQueryStruct("TableColumnInlineConstraint").
-		OptionalQueryStructField("UniquePK", tableColumnInlineUniquePK(), g.KeywordOptions()).
-		OptionalQueryStructField("FK", tableColumnInlineFK(), g.KeywordOptions()).
-		OptionalQueryStructField("CH", tableColumnInlineCH(), g.KeywordOptions()).
+	return tableColumnInlineConstraintNamed("TableColumnInlineConstraint", "TableColumnInlineUniquePK", "TableColumnInlineFK", "TableColumnInlineCH")
+}
+
+// tableColumnAddInlineConstraint is the ALTER TABLE ADD COLUMN variant of tableColumnInlineConstraint. It has its own
+// query structs (distinct names) so the generator can emit its toOpts mapping inline in the ALTER TABLE mapping, which
+// a struct shared with iceberg tables cannot use. The SQL it renders is the same as tableColumnInlineConstraint's.
+func tableColumnAddInlineConstraint() *g.QueryStruct {
+	return tableColumnInlineConstraintNamed("TableColumnAddInlineConstraint", "TableColumnAddInlineUniquePK", "TableColumnAddInlineFK", "TableColumnAddInlineCH")
+}
+
+func tableColumnInlineConstraintNamed(name, uniquePKName, fkName, chName string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		OptionalQueryStructField("UniquePK", tableColumnInlineUniquePK(uniquePKName), g.KeywordOptions()).
+		OptionalQueryStructField("FK", tableColumnInlineFK(fkName), g.KeywordOptions()).
+		OptionalQueryStructField("CH", tableColumnInlineCH(chName), g.KeywordOptions()).
 		WithValidation(g.ExactlyOneValueSet, "UniquePK", "FK", "CH")
 }
 
-func tableColumnInlineUniquePK() *g.QueryStruct {
+func tableColumnInlineUniquePK(name string) *g.QueryStruct {
 	return withInlineConstraintTail(
-		g.NewQueryStruct("TableColumnInlineUniquePK").
+		g.NewQueryStruct(name).
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 			OptionalSQL("UNIQUE").
 			OptionalSQL("PRIMARY KEY").
@@ -579,9 +575,9 @@ func tableColumnInlineUniquePK() *g.QueryStruct {
 	)
 }
 
-func tableColumnInlineFK() *g.QueryStruct {
+func tableColumnInlineFK(name string) *g.QueryStruct {
 	return withInlineConstraintTail(
-		g.NewQueryStruct("TableColumnInlineFK").
+		g.NewQueryStruct(name).
 			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 			OptionalSQL("FOREIGN KEY").
 			Identifier("References", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REFERENCES").Required()).
@@ -592,8 +588,8 @@ func tableColumnInlineFK() *g.QueryStruct {
 	)
 }
 
-func tableColumnInlineCH() *g.QueryStruct {
-	return g.NewQueryStruct("TableColumnInlineCH").
+func tableColumnInlineCH(name string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
 		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
 		SQL("CHECK").
 		SQLWithCustomFieldName("openParen", "(").
