@@ -49,7 +49,7 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 	// object_types is skipped and won't be generated
 	// allowed_integration_types is skipped and won't be generated
 	"allowed_accounts": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
