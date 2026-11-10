@@ -4,6 +4,7 @@ import (
     "context"
 
     "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+    "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
 {{ $impl := .NameLowerCased }}
@@ -92,6 +93,38 @@ func (v *{{ $.NameLowerCased }}) DescribeDetails(ctx context.Context, id {{ $.Id
 	details.{{ . }} = id.{{ . }}()
 	{{- end }}
 	return details, nil
+}
+{{- end }}
+{{- if .SuspendIfStartedConfig }}
+
+func (v *{{ .NameLowerCased }}) SuspendIfStarted(ctx context.Context, id {{ .IdentifierKind }}) (func(context.Context) error, error) {
+	noResume := func(context.Context) error { return nil }
+	object, err := v.ShowByID(ctx, id)
+	if err != nil {
+		return noResume, err
+	}
+	if object.{{ .SuspendIfStartedConfig.StateField }} != {{ .SuspendIfStartedConfig.StartedConstant }} {
+		return noResume, nil
+	}
+	if err := v.Alter(ctx, NewAlter{{ .NameSingular }}Request(id).WithSuspend(true)); err != nil {
+		return noResume, err
+	}
+	resume := func(ctx context.Context) error {
+		return v.Alter(ctx, NewAlter{{ .NameSingular }}Request(id).WithResume(true){{ if .SuspendIfStartedConfig.ResumeIfSuspended }}.WithIfSuspended(true){{ end }})
+	}
+	var suspensionErrs []error
+	err = util.Retry(5, time.Second, func() (error, bool) {
+		object, err := v.ShowByID(ctx, id)
+		if err != nil {
+			suspensionErrs = append(suspensionErrs, err)
+			return nil, false
+		}
+		return nil, object.{{ .SuspendIfStartedConfig.StateField }} == {{ .SuspendIfStartedConfig.SuspendedConstant }}
+	})
+	if err != nil {
+		return resume, fmt.Errorf("suspension of %s failed, err: %w, original errors: %w", id.FullyQualifiedName(), err, errors.Join(suspensionErrs...))
+	}
+	return resume, nil
 }
 {{- end }}
 {{- if .ParametersDetails }}

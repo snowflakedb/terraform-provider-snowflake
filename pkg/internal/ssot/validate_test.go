@@ -1988,3 +1988,183 @@ func Test_Object_LinkedAlterKeyword(t *testing.T) {
 	_, ok = obj.LinkedAlterKeyword("comment", true)
 	require.False(t, ok)
 }
+
+func suspendForAlterObject(change func(*Object)) Object {
+	state := Attribute{Name: "state", Type: AttrEnum, Enum: NewEnum("WidgetState", "WidgetStates", "started", "suspended"), Readonly: true}
+	enabled := Attribute{Name: "enabled", Type: AttrBool, NativeBool: true}
+	comment := Attribute{Name: "comment", Type: AttrString}
+	obj := Object{
+		Name:       "Widget",
+		Attributes: []Attribute{enabled, comment},
+		Show:       OutputSpec{Columns: []*Attribute{&state}},
+		Alter:      AlterSpec{Clauses: []AlterClause{AlterKeyword("SUSPEND"), AlterKeyword("RESUME")}},
+		SuspendForAlter: &SuspendForAlter{
+			When: []*Attribute{&comment}, State: &state, Started: "started", Suspended: "suspended", Enabled: &enabled,
+		},
+		Generators:    []GeneratorOption{WithSdk(SdkSuspendIfStarted())},
+		ResourceHooks: []ResourceHookOption{WithSuspendForAlter(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func suspendForAlterVariant(change func(*Object)) Object {
+	base := suspendForAlterObject(func(*Object) {})
+	size := Attribute{Name: "size", Type: AttrInt}
+	obj := Object{
+		Name:            "WidgetSmall",
+		VariantOf:       &base,
+		Attributes:      []Attribute{size},
+		SuspendForAlter: &SuspendForAlter{When: []*Attribute{&size}},
+		ResourceHooks:   []ResourceHookOption{WithSuspendForAlter(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_ValidateObject_suspendForAlter(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterObject(func(*Object) {})) })
+	})
+
+	t.Run("valid without enabled", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterObject(func(o *Object) { o.SuspendForAlter.Enabled = nil })) })
+	})
+
+	t.Run("valid with ext before and after alter hooks", func(t *testing.T) {
+		require.NotPanics(t, func() {
+			ValidateObject(suspendForAlterObject(func(o *Object) {
+				o.ResourceHooks = append(o.ResourceHooks, WithBeforeAlter(ExtCall()), WithAfterAlter(ExtCall()))
+			}))
+		})
+	})
+
+	t.Run("valid without when", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterObject(func(o *Object) { o.SuspendForAlter.When = nil })) })
+	})
+
+	t.Run("valid variant that uses the base method", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterVariant(func(*Object) {})) })
+	})
+
+	for name, tc := range map[string]struct {
+		object func() Object
+		panics string
+	}{
+		"ext call": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.ResourceHooks = []ResourceHookOption{WithSuspendForAlter(ExtCall())} })
+			},
+			`object "Widget": WithSuspendForAlter is Generated or Omitted, there is no ext call`,
+		},
+		"the SDK option without the declaration": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter, o.ResourceHooks = nil, nil })
+			},
+			`object "Widget": SdkSuspendIfStarted needs SuspendForAlter`,
+		},
+		"the generated hook without the declaration": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter, o.Generators = nil, nil })
+			},
+			`object "Widget": WithSuspendForAlter(Generated()) needs SuspendForAlter`,
+		},
+		"the declaration without the generated hook": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.ResourceHooks = nil }) },
+			`object "Widget": SuspendForAlter requires WithSuspendForAlter(Generated())`,
+		},
+		"the declaration without the SDK option": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.Generators = nil }) },
+			`object "Widget": SuspendForAlter needs SdkSuspendIfStarted, because the resource calls the SDK method`,
+		},
+		"state that is not an enum": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.State = &Attribute{Name: "state", Type: AttrString} })
+			},
+			`object "Widget": SuspendForAlter.State must be an enum column`,
+		},
+		"state that is not a SHOW column": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.Show = OutputSpec{} }) },
+			`object "Widget": SuspendForAlter.State "state" is not a SHOW column`,
+		},
+		"started value that the enum does not have": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.Started = "running" }) },
+			`object "Widget": SuspendForAlter value "running" is not a value of the WidgetState enum`,
+		},
+		"without the SUSPEND keyword": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.Alter = AlterSpec{Clauses: []AlterClause{AlterKeyword("RESUME")}} })
+			},
+			`object "Widget": SuspendForAlter needs the SUSPEND ALTER keyword`,
+		},
+		"without an attribute that changes in place": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) {
+					o.SuspendForAlter.When, o.SuspendForAlter.Enabled = nil, nil
+					o.Attributes = []Attribute{{Name: "size", Type: AttrInt, ForceNew: true}}
+				})
+			},
+			`object "Widget": SuspendForAlter needs an attribute that changes in place`,
+		},
+		"trigger that is not an attribute": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.When = []*Attribute{{Name: "size", Type: AttrInt}} })
+			},
+			`object "Widget": SuspendForAlter.When attribute "size" is not an attribute that changes in place`,
+		},
+		"trigger that never changes in place": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.Attributes[1].ForceNew = true }) },
+			`object "Widget": SuspendForAlter.When attribute "comment" is not an attribute that changes in place`,
+		},
+		"enabled that is not a native bool": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.Enabled = &Attribute{Name: "comment", Type: AttrString} })
+			},
+			`object "Widget": SuspendForAlter.Enabled "comment" is not a NativeBool attribute of the object`,
+		},
+		"variant that sets the state": {
+			func() Object {
+				return suspendForAlterVariant(func(o *Object) { o.SuspendForAlter.Started = "started" })
+			},
+			`object "WidgetSmall": a variant uses SuspendIfStarted of "Widget", so SuspendForAlter sets only When and Enabled`,
+		},
+		"variant of a base without the SDK method": {
+			func() Object {
+				return suspendForAlterVariant(func(o *Object) {
+					base := *o.VariantOf
+					base.SuspendForAlter = nil
+					o.VariantOf = &base
+				})
+			},
+			`object "WidgetSmall": SuspendForAlter needs SuspendIfStarted on the base "Widget"`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.PanicsWithValue(t, tc.panics, func() { ValidateObject(tc.object()) })
+		})
+	}
+}
+
+func Test_Object_SuspendForAlterWhen(t *testing.T) {
+	t.Run("the declared attributes", func(t *testing.T) {
+		require.Equal(t, []string{"comment"}, suspendForAlterObject(func(*Object) {}).SuspendForAlterWhen())
+	})
+
+	t.Run("every attribute that changes in place by default", func(t *testing.T) {
+		obj := suspendForAlterObject(func(o *Object) {
+			o.SuspendForAlter.When = nil
+			o.Attributes = append(o.Attributes,
+				Attribute{Name: "kind", Type: AttrString, ForceNew: true},
+				Attribute{Name: "created_on", Type: AttrString, Readonly: true},
+				Attribute{Name: "fingerprint", Type: AttrString, Computed: true},
+				Attribute{Name: "initially_suspended", Type: AttrBool, CreateOnly: true},
+				Attribute{Name: "then_action", Type: AttrString, SqlOnly: true},
+			)
+		})
+		require.Equal(t, []string{"enabled", "comment"}, obj.SuspendForAlterWhen())
+	})
+
+	t.Run("nil without the declaration", func(t *testing.T) {
+		require.Nil(t, Object{}.SuspendForAlterWhen())
+	})
+}

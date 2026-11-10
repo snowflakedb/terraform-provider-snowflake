@@ -113,8 +113,10 @@ var WarehouseInteractive = ssot.Object{
 	IdType:                     "AccountObjectIdentifier",
 	SdkCreateRequestObjectName: "InteractiveWarehouse",
 	VariantOf:                  &Warehouse,
-	VariantEntityCreateName:    "INTERACTIVE WAREHOUSE",
-	AttributesModification:     true,
+	// A started interactive warehouse is suspended while its size changes, through SuspendIfStarted of the base warehouse.
+	SuspendForAlter:         &ssot.SuspendForAlter{When: []*ssot.Attribute{&WarehouseInteractiveAttrs.WarehouseSize}},
+	VariantEntityCreateName: "INTERACTIVE WAREHOUSE",
+	AttributesModification:  true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			// show_output.tables was released as a list. A set would break indexing, so SHOW stays TypeList.
@@ -133,6 +135,7 @@ var WarehouseInteractive = ssot.Object{
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithSuspendForAlter(ssot.Generated()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),

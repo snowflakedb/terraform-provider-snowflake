@@ -25,6 +25,7 @@ func init() {
 		DropSafelyForceExampleDef,
 		DropSafelySuppressedExampleDef,
 		ShowProjectionExampleDef,
+		SuspendIfStartedExampleDef,
 	)
 	fmt.Println("SDK object definitions:")
 	for _, def := range gen.AllSdkObjectDefinitions {

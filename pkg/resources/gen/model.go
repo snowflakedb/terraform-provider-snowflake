@@ -42,9 +42,24 @@ type ResourceModel struct {
 	SchemaStateUpgraders     []ssot.StateUpgraderFunc
 	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
 	BeforeCreateSteps        BeforeCreateSteps
-	AfterCreateSteps         AfterCreateSteps
-	AlterStatements          AlterStatementsModel
+	// SuspendForAlter is the data of WithSuspendForAlter(Generated()). See SuspendForAlterModel.
+	SuspendForAlter  *SuspendForAlterModel
+	AfterCreateSteps AfterCreateSteps
+	AlterStatements  AlterStatementsModel
 	*genhelpers.PreambleModel
+}
+
+// SuspendForAlterModel is the data of the generated suspend guard of Update. suspend_for_alter.tmpl calls SuspendForAlter
+// (suspend_for_alter_commons.go in package resources), which suspends the object through the SDK when one of the attributes
+// changes, and resume_after_alter.tmpl brings it back before the final Read.
+type SuspendForAlterModel struct {
+	// When are the Terraform names of the attributes whose change needs the suspension, see ssot.Object.SuspendForAlterWhen.
+	When []string
+	// Enabled is the Terraform name of the bool attribute that owns the state. After a successful update the object is resumed
+	// when it is true. Empty restores the state the object had before, through the function the SDK returned.
+	Enabled string
+	// NeededExt calls <prefix>SuspendForAlterNeededExt(d) to decide whether the change needs the suspension.
+	NeededExt bool
 }
 
 // AfterCreateSteps are the data of the generated AfterCreate. Each kind of step has its own list here and its own block
@@ -270,6 +285,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
 		BeforeCreateSteps:                   beforeCreateSteps(input.Object),
+		SuspendForAlter:                     suspendForAlterModel(input.Object),
 		AfterCreateSteps:                    afterCreateSteps(input.Object, resourceAttributes),
 		AlterStatements:                     newAlterStatementsModel(input.Object),
 		PreambleModel:                       preamble,
@@ -318,4 +334,15 @@ func beforeCreateSteps(obj ssot.Object) BeforeCreateSteps {
 		}
 	}
 	return steps
+}
+
+func suspendForAlterModel(obj ssot.Object) *SuspendForAlterModel {
+	if obj.SuspendForAlter == nil {
+		return nil
+	}
+	model := &SuspendForAlterModel{When: obj.SuspendForAlterWhen(), NeededExt: obj.SuspendForAlter.NeededExt}
+	if obj.SuspendForAlter.Enabled != nil {
+		model.Enabled = obj.SuspendForAlter.Enabled.Name
+	}
+	return model
 }

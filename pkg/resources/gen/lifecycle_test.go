@@ -417,3 +417,105 @@ func Test_hierarchyRename(t *testing.T) {
 		require.ErrorContains(t, err, "generated implementation for HierarchyRename is not implemented")
 	})
 }
+
+func guardedPoolModel(enabled bool, hooks ...ssot.ResourceHookOption) ResourceModel {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	flag := ssot.Attribute{Name: "enabled", Type: ssot.AttrBool, NativeBool: true}
+	suspend := &ssot.SuspendForAlter{When: []*ssot.Attribute{&flag, &comment}}
+	if enabled {
+		suspend.Enabled = &flag
+	}
+	return lifecycleModel(withHooks(append([]ssot.ResourceHookOption{ssot.WithSuspendForAlter(ssot.Generated())}, hooks...)...), func(obj *ssot.Object) {
+		obj.SuspendForAlter = suspend
+	})
+}
+
+func Test_lifecycle_suspendForAlter(t *testing.T) {
+	t.Run("the guard suspends once and cleans up on every path", func(t *testing.T) {
+		require.Equal(t, `
+	suspension, err := SuspendForAlter(ctx, d, meta.(*provider.Context).Client.Pools.SuspendIfStarted, id, "enabled", "comment")
+	defer suspension.CleanUp(ctx, d, &diags)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+`, renderTemplate(t, "suspendForAlter", guardedPoolModel(true)))
+	})
+
+	t.Run("the guard asks the resource when it decides whether the change needs the suspension", func(t *testing.T) {
+		model := guardedPoolModel(false)
+		model.SuspendForAlter.NeededExt = true
+		require.Equal(t, `
+	suspension, err := SuspendForAlterIf(ctx, d, poolSuspendForAlterNeededExt(d), meta.(*provider.Context).Client.Pools.SuspendIfStarted, id, "enabled", "comment")
+	defer suspension.CleanUp(ctx, d, &diags)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+`, renderTemplate(t, "suspendForAlter", model))
+	})
+
+	t.Run("the resume follows the enabled attribute", func(t *testing.T) {
+		require.Equal(t, `
+	diags = append(diags, suspension.RestoreIfEnabled(ctx, d.Get("enabled").(bool), func(ctx context.Context) error {
+		return meta.(*provider.Context).Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithResume(true))
+	})...)
+
+`, renderTemplate(t, "resumeAfterAlter", guardedPoolModel(true)))
+	})
+
+	t.Run("the resume restores the previous state without an enabled attribute", func(t *testing.T) {
+		require.Equal(t, `
+	diags = append(diags, suspension.Restore(ctx)...)
+
+`, renderTemplate(t, "resumeAfterAlter", guardedPoolModel(false)))
+	})
+
+	t.Run("after alter returns the guard diagnostics", func(t *testing.T) {
+		require.Equal(t, "return append(diags, ReadPoolFunc(false)(ctx, d, meta)...)\n", renderTemplate(t, "afterAlter", guardedPoolModel(true)))
+		require.Equal(t, `afterAlterDiags := poolAfterAlterExt(ctx, d, meta, id)
+	return append(append(diags, afterAlterDiags...), ReadPoolFunc(false)(ctx, d, meta)...)
+`, renderTemplate(t, "afterAlter", guardedPoolModel(true, ssot.WithAfterAlter(ssot.ExtCall()))))
+	})
+
+	t.Run("ext before and after alter hooks run inside the guard", func(t *testing.T) {
+		got := renderLifecycle(t, guardedPoolModel(true, ssot.WithBeforeAlter(ssot.ExtCall()), ssot.WithAfterAlter(ssot.ExtCall())))
+		suspend := strings.Index(got, "SuspendIfStarted(ctx, id)")
+		before := strings.Index(got, "poolBeforeAlterExt(ctx, d, meta, id)")
+		resume := strings.Index(got, "suspension.RestoreIfEnabled(ctx")
+		after := strings.Index(got, "poolAfterAlterExt(ctx, d, meta, id)")
+		require.True(t, suspend < before && before < resume && resume < after, "order: suspend, before alter, resume, after alter")
+	})
+
+	t.Run("update has a named result only with the guard", func(t *testing.T) {
+		require.Contains(t, renderLifecycle(t, guardedPoolModel(true)), "func UpdatePool(ctx context.Context, d *tfschema.ResourceData, meta any) (diags diag.Diagnostics) {")
+		without := lifecycleModel(func(obj *ssot.Object) {
+			obj.Attributes = []ssot.Attribute{{Name: "comment", Type: ssot.AttrString}}
+		})
+		require.Contains(t, renderLifecycle(t, without), "func UpdatePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {")
+	})
+
+	t.Run("a generated before alter hook is still unimplemented", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithBeforeAlter(ssot.Generated())))
+		var b strings.Builder
+		require.ErrorContains(t, LifecycleTemplate.ExecuteTemplate(&b, "beforeAlter", model), "BeforeAlter")
+	})
+
+	t.Run("the model holds the trigger and the enabled attribute", func(t *testing.T) {
+		require.Equal(t, &SuspendForAlterModel{When: []string{"enabled", "comment"}, Enabled: "enabled"}, guardedPoolModel(true).SuspendForAlter)
+		require.Equal(t, &SuspendForAlterModel{When: []string{"enabled", "comment"}}, guardedPoolModel(false).SuspendForAlter)
+		require.Nil(t, lifecycleModel().SuspendForAlter)
+	})
+
+	t.Run("without when the model holds every attribute that changes in place", func(t *testing.T) {
+		model := lifecycleModel(withHooks(ssot.WithSuspendForAlter(ssot.Generated())), func(obj *ssot.Object) {
+			obj.Attributes = []ssot.Attribute{
+				{Name: "comment", Type: ssot.AttrString},
+				{Name: "kind", Type: ssot.AttrString, ForceNew: true},
+				{Name: "size", Type: ssot.AttrInt},
+			}
+			obj.SuspendForAlter = &ssot.SuspendForAlter{}
+		})
+		require.Equal(t, &SuspendForAlterModel{When: []string{"comment", "size"}}, model.SuspendForAlter)
+	})
+}

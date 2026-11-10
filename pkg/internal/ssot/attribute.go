@@ -193,6 +193,12 @@ func (a *Attribute) OutputKey() string {
 	return a.Name
 }
 
+// ChangesInPlace reports a resource attribute whose change Update applies: it is not ForceNew, Readonly, Computed,
+// CreateOnly, or SqlOnly.
+func (a Attribute) ChangesInPlace() bool {
+	return !a.ForceNew && !a.Readonly && !a.Computed && !a.CreateOnly && !a.SqlOnly
+}
+
 // ColumnEnum is the enum used for a SHOW, DESCRIBE, or CREATE/SET column.
 func (a Attribute) ColumnEnum() *Enum {
 	if a.ShowEnum != nil {

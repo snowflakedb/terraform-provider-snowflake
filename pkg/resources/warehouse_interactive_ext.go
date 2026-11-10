@@ -214,11 +214,9 @@ func warehouseInteractiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.
 
 func warehouseInteractiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequests) error {
 	if *reqs.set != *sdk.NewWarehouseInteractiveSetRequest() {
-		// AlterInteractiveWithSuspend suspends and resumes the warehouse around the alter when it changes the
-		// size, because an interactive warehouse cannot be resized while running. Other SET changes
-		// are applied without a suspend.
+		// A size change runs while the warehouse is suspended: the generated update suspends it (SuspendForAlter).
 		client := meta.(*provider.Context).Client
-		if err := client.Warehouses.AlterInteractiveWithSuspend(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
+		if err := client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
 			return fmt.Errorf("error setting interactive warehouse properties: %w", err)
 		}
 	}

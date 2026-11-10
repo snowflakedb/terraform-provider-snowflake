@@ -153,3 +153,12 @@ func TestEnum_IsLowercase(t *testing.T) {
 		require.False(t, enum.IsLowercase())
 	})
 }
+
+func Test_Enum_ConstantName(t *testing.T) {
+	enum := NewEnum("AlertState", "AlertStates", "started", "suspended")
+	name, ok := enum.ConstantName("started")
+	require.True(t, ok)
+	require.Equal(t, "AlertStateStarted", name)
+	_, ok = enum.ConstantName("running")
+	require.False(t, ok)
+}

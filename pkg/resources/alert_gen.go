@@ -137,14 +137,16 @@ func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 	}
 }
 
-func UpdateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+func UpdateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) (diags diag.Diagnostics) {
 	id, err := alertParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if diags := alertBeforeAlterExt(ctx, d, meta, id); diags != nil {
-		return diags
+	suspension, err := SuspendForAlter(ctx, d, meta.(*provider.Context).Client.Alerts.SuspendIfStarted, id, "comment", "warehouse", "condition", "action", "alert_schedule", "enabled")
+	defer suspension.CleanUp(ctx, d, &diags)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	setUnset, err := alertApplySetUnsetExt(d)
@@ -159,8 +161,12 @@ func UpdateAlert(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 			return diag.FromErr(err)
 		}
 	}
-	afterAlterDiags := alertAfterAlterExt(ctx, d, meta, id)
-	return append(afterAlterDiags, ReadAlertFunc(false)(ctx, d, meta)...)
+
+	diags = append(diags, suspension.RestoreIfEnabled(ctx, d.Get("enabled").(bool), func(ctx context.Context) error {
+		return meta.(*provider.Context).Client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithResume(true))
+	})...)
+
+	return append(diags, ReadAlertFunc(false)(ctx, d, meta)...)
 }
 
 var alertCustomizeDiff = TrackingCustomDiffWrapper(resources.Alert, customdiff.All(

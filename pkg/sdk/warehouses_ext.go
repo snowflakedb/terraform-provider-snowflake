@@ -2,17 +2,14 @@ package sdk
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 	"uuid"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
 // Backward-compatible enum constant aliases.
@@ -160,8 +157,12 @@ func (v *warehouses) AlterWithSuspend(ctx context.Context, request *AlterWarehou
 	}
 
 	if alterNeedsSuspendedWarehouse(request.Set, warehouse) {
-		cleanup, err := v.suspendStartedWarehouse(ctx, request.name)
-		defer cleanup()
+		resume, err := v.SuspendIfStarted(ctx, request.name)
+		defer func() {
+			if err := resume(ctx); err != nil {
+				log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
+			}
+		}()
 		if err != nil {
 			return err
 		}
@@ -183,51 +184,16 @@ func (v *warehouses) AlterInteractiveWithSuspend(ctx context.Context, request *A
 	if !changesSize {
 		return v.AlterInteractive(ctx, request)
 	}
-	cleanup, err := v.suspendStartedWarehouse(ctx, request.name)
-	defer cleanup()
+	resume, err := v.SuspendIfStarted(ctx, request.name)
+	defer func() {
+		if err := resume(ctx); err != nil {
+			log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
+		}
+	}()
 	if err != nil {
 		return err
 	}
 	return v.AlterInteractive(ctx, request)
-}
-
-// suspendStartedWarehouse suspends id if started. The returned cleanup resumes it and is never nil.
-// Callers must run the cleanup even when an error is returned.
-func (v *warehouses) suspendStartedWarehouse(ctx context.Context, id AccountObjectIdentifier) (func(), error) {
-	noop := func() {}
-	warehouse, err := v.ShowByID(ctx, id)
-	if err != nil {
-		return noop, err
-	}
-	if warehouse.State != WarehouseStateStarted {
-		return noop, nil
-	}
-	err = v.Alter(ctx, NewAlterWarehouseRequest(id).WithSuspend(true))
-	if err != nil {
-		return noop, err
-	}
-	cleanup := func() {
-		err := v.Alter(ctx, NewAlterWarehouseRequest(id).WithResume(true).WithIfSuspended(true))
-		if err != nil {
-			log.Printf("[DEBUG] error occurred during warehouse resumption, err=%v", err)
-		}
-	}
-	var warehouseSuspensionErrs []error
-	err = util.Retry(5, 1*time.Second, func() (error, bool) {
-		warehouse, err = v.ShowByID(ctx, id)
-		if err != nil {
-			warehouseSuspensionErrs = append(warehouseSuspensionErrs, err)
-			return nil, false
-		}
-		if warehouse.State != WarehouseStateSuspended {
-			return nil, false
-		}
-		return nil, true
-	})
-	if err != nil {
-		return cleanup, fmt.Errorf("warehouse suspension failed, err: %w, original errors: %w", err, errors.Join(warehouseSuspensionErrs...))
-	}
-	return cleanup, nil
 }
 
 // CreateInteractivePreservingSession wraps CreateInteractive to work around a known Snowflake behavior:

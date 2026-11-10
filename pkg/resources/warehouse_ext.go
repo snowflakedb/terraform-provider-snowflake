@@ -56,6 +56,22 @@ func warehouseTypeCreateBuilder(d *schema.ResourceData, request *sdk.CreateWareh
 	return attributeMappedValueCreateBuilder(d, "warehouse_type", request.WithWarehouseType, sdk.ToWarehouseTypeUserSettable)
 }
 
+// warehouseSuspendForAlterNeededExt says whether a warehouse_type change needs the suspension: the type has to change in
+// Snowflake. A removed warehouse_type sets STANDARD (see warehouseTypeUpdate), so removing STANDARD keeps the type.
+// A value that cannot be parsed suspends, which is the safe choice.
+func warehouseSuspendForAlterNeededExt(d *schema.ResourceData) bool {
+	oldValue, newValue := d.GetChange("warehouse_type")
+	effectiveType := func(value any) (sdk.WarehouseType, error) {
+		if value.(string) == "" {
+			return sdk.WarehouseTypeStandard, nil
+		}
+		return sdk.ToWarehouseType(value.(string))
+	}
+	oldType, oldErr := effectiveType(oldValue)
+	newType, newErr := effectiveType(newValue)
+	return oldErr != nil || newErr != nil || oldType != newType
+}
+
 // warehouseTypeUpdate sets STANDARD when warehouse_type is removed from the configuration instead of calling UNSET,
 // because UNSET resets the type to the Snowflake default (which is changing to ADAPTIVE). The generated update calls it
 // through CustomUpdate, which also passes the UNSET request; it is never used.
@@ -230,14 +246,6 @@ func warehouseShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData
 
 func warehouseShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {
 	return showWarehouseRegularByID(ctx, meta.(*provider.Context), id)
-}
-
-func warehouseAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseAlterRequests) error {
-	if *reqs.set != *sdk.NewWarehouseSetRequest() {
-		client := meta.(*provider.Context).Client
-		return client.Warehouses.AlterWithSuspend(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*reqs.set))
-	}
-	return nil
 }
 
 func showWarehouseRegularByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {

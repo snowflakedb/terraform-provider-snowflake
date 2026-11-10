@@ -4,17 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
-	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -146,17 +142,6 @@ func alertApplySetUnsetExt(d *schema.ResourceData) (*alertAlterRequestsExt, erro
 	return reqs, nil
 }
 
-// alertBeforeAlterExt suspends the alert before any change. A failure is only logged.
-func alertBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	if d.HasChanges("enabled", "warehouse", "alert_schedule", "condition", "action", "comment") {
-		client := meta.(*provider.Context).Client
-		if err := waitSuspendAlert(ctx, client, id); err != nil {
-			log.Printf("[WARN] failed to suspend alert %s", id.Name())
-		}
-	}
-	return nil
-}
-
 // alertAlterSetInSdkExt runs SET, then MODIFY CONDITION and MODIFY ACTION, which are separate ALTER statements.
 func alertAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier, reqs *alertAlterRequestsExt) error {
 	client := meta.(*provider.Context).Client
@@ -176,59 +161,4 @@ func alertAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any
 		}
 	}
 	return nil
-}
-
-// alertAfterAlterExt resumes or suspends the alert to match enabled. A failure is only a warning.
-func alertAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
-	if d.Get("enabled").(bool) {
-		if err := waitResumeAlert(ctx, client, id); err != nil {
-			return diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  fmt.Sprintf("failed to resume alert %s", id.Name()),
-				},
-			}
-		}
-		return nil
-	}
-	if err := waitSuspendAlert(ctx, client, id); err != nil {
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  fmt.Sprintf("failed to suspend alert %s", id.Name()),
-			},
-		}
-	}
-	return nil
-}
-
-func waitResumeAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
-	resumeAlert := func() (error, bool) {
-		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithResume(true))
-		if err != nil {
-			return fmt.Errorf("error resuming alert %v err = %w", id.Name(), err), false
-		}
-		alert, err := client.Alerts.ShowByID(ctx, id)
-		if err != nil {
-			return err, false
-		}
-		return nil, alert.State == sdk.AlertStateStarted
-	}
-	return util.Retry(5, 10*time.Second, resumeAlert)
-}
-
-func waitSuspendAlert(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier) error {
-	suspendAlert := func() (error, bool) {
-		err := client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(id).WithSuspend(true))
-		if err != nil {
-			return fmt.Errorf("error suspending alert %v err = %w", id.Name(), err), false
-		}
-		alert, err := client.Alerts.ShowByID(ctx, id)
-		if err != nil {
-			return err, false
-		}
-		return nil, alert.State == sdk.AlertStateSuspended
-	}
-	return util.Retry(5, 10*time.Second, suspendAlert)
 }

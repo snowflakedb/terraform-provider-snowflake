@@ -628,6 +628,38 @@ func TestInt_Warehouses(t *testing.T) {
 		assert.Equal(t, "172800", helpers.FindParameter(t, parametersAfterUnset, sdk.AccountParameterStatementTimeoutInSeconds).Value)
 	})
 
+	t.Run("suspend if started: a started warehouse is suspended and the returned function resumes it", func(t *testing.T) {
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(warehouseCleanup)
+		require.Eventually(t, warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool { return r.State == sdk.WarehouseStateStarted }), 5*time.Second, time.Second)
+
+		resume, err := client.Warehouses.SuspendIfStarted(ctx, warehouse.ID())
+		require.NoError(t, err)
+		require.NotNil(t, resume)
+		returned, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseStateSuspended, returned.State)
+
+		require.NoError(t, resume(ctx))
+		require.Eventually(t, warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool {
+			return r.State == sdk.WarehouseStateStarted || r.State == sdk.WarehouseStateResuming
+		}), 10*time.Second, time.Second)
+	})
+
+	t.Run("suspend if started: a suspended warehouse is left alone", func(t *testing.T) {
+		warehouse, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouse(t)
+		t.Cleanup(warehouseCleanup)
+		require.NoError(t, client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(warehouse.ID()).WithSuspend(true)))
+		require.Eventually(t, warehouseCondition(warehouse.ID(), func(r *sdk.Warehouse) bool { return r.State == sdk.WarehouseStateSuspended }), 10*time.Second, time.Second)
+
+		resume, err := client.Warehouses.SuspendIfStarted(ctx, warehouse.ID())
+		require.NoError(t, err)
+		require.NoError(t, resume(ctx))
+		returned, err := client.Warehouses.ShowByID(ctx, warehouse.ID())
+		require.NoError(t, err)
+		assert.Equal(t, sdk.WarehouseStateSuspended, returned.State)
+	})
+
 	t.Run("alter: set and unset warehouse type with started warehouse", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		// new warehouse created on purpose - we need medium to be able to use snowpark-optimized type

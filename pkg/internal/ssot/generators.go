@@ -119,6 +119,7 @@ type SdkGenerator struct {
 	CustomInterfaceMethods bool
 	ShowParameters         bool
 	ShowParametersDetails  bool
+	SuspendIfStarted       bool
 }
 
 type ModelGenerator struct {
@@ -578,6 +579,12 @@ func SdkShowParameters() SdkOption {
 // The struct name is Name plus ParametersDetails. The generated body calls ShowParameters.
 func SdkShowParametersDetails() SdkOption {
 	return func(s *SdkGenerator) { s.ShowParametersDetails = true }
+}
+
+// SdkSuspendIfStarted emits SuspendIfStarted from Object.SuspendForAlter. The method suspends the object when SHOW says
+// it is started, waits until SHOW says it is suspended, and returns the function that resumes it.
+func SdkSuspendIfStarted() SdkOption {
+	return func(s *SdkGenerator) { s.SuspendIfStarted = true }
 }
 
 func WithSdk(opts ...SdkOption) GeneratorOption {

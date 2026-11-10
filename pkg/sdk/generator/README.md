@@ -118,6 +118,7 @@ Additional example definitions covering specific generator features:
 - [enum_example_def.go](example/defs/enum_examples_def.go) — enum definitions with `Enum` and `OptionalEnum`
 - [property_list_example_def.go](example/defs/property_list_example_def.go) — a property-list `DESCRIBE`: raw rows, the details struct, the generated `Parse...Described` and `DescribeDetails` (see [Property-list DESCRIBE](#property-list-describe) below), with the hand-written hooks in [property_list_examples_ext.go](example/property_list_examples_ext.go)
 - [show_projection_example_def.go](example/defs/show_projection_example_def.go) — `ShowProjection` and `ShowByIDProjection`
+- [suspend_if_started_example_def.go](example/defs/suspend_if_started_example_def.go) — `SuspendIfStarted` (see [SuspendIfStarted](#suspendifstarted) below)
 
 The commands follow the same format as the official SDK ones:
 
@@ -213,6 +214,28 @@ Example usage:
 ```
 
 See [drop_safely_example_def.go](example/defs/drop_safely_example_def.go) for complete examples.
+
+---
+
+### SuspendIfStarted
+
+`SuspendIfStarted(config)` emits `SuspendIfStarted(ctx, id) (func(context.Context) error, error)` on the interface and its implementation. It is for an object that has to be suspended while it is altered. The method calls `ShowByID`; when the state is not started, it returns a no-op function. Otherwise it sends `Alter` with `WithSuspend(true)` and checks `ShowByID` five times, one second apart, until the state is suspended. The returned function sends `Alter` with `WithResume(true)`, plus `WithIfSuspended(true)` when `ResumeIfSuspended` is set. The function is never nil, and the caller has to call it on every path once the method returned, even with an error.
+
+`SuspendIfStartedConfig` names the SHOW field with the state (`StateField`) and the enum constants for started and suspended (`StartedConstant`, `SuspendedConstant`). Generation panics when one of them is empty. Declare it after `Show`, so `ShowByID` exists, and with an `Alter` that has the `Suspend` and `Resume` (and `IfSuspended`) fields.
+
+From ssot, `SdkSuspendIfStarted()` builds the config from [`Object.SuspendForAlter`](../../internal/ssot/README.md): the state column, its enum values, and `IF SUSPENDED` when the ALTER declares it.
+
+```go
+).ShowOperationWithPairedStructs("https://...", pairs, showStruct, g.ShowByIDLikeFiltering).
+	SuspendIfStarted(g.SuspendIfStartedConfig{
+		StateField:        "State",
+		StartedConstant:   "XxxStateStarted",
+		SuspendedConstant: "XxxStateSuspended",
+		ResumeIfSuspended: true,
+	})
+```
+
+See [suspend_if_started_example_def.go](example/defs/suspend_if_started_example_def.go).
 
 ---
 

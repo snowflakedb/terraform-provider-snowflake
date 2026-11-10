@@ -103,3 +103,31 @@ func Test_warehouseApplySetUnset_removedTypeSetsStandard(t *testing.T) {
 	assert.Equal(t, sdk.WarehouseTypeStandard, *requests.set.WarehouseType)
 	assert.Nil(t, requests.unset.WarehouseType)
 }
+
+func Test_warehouseSuspendForAlterNeededExt(t *testing.T) {
+	testResource := &schema.Resource{
+		Schema: map[string]*schema.Schema{"warehouse_type": {Type: schema.TypeString, Optional: true}},
+	}
+	tests := []struct {
+		name   string
+		state  map[string]string
+		config map[string]any
+		want   bool
+	}{
+		{name: "removed STANDARD sets the type the warehouse has", state: map[string]string{"warehouse_type": "STANDARD"}, config: map[string]any{}, want: false},
+		{name: "a different case is the same type", state: map[string]string{"warehouse_type": "standard"}, config: map[string]any{"warehouse_type": "STANDARD"}, want: false},
+		{name: "removed SNOWPARK-OPTIMIZED changes the type", state: map[string]string{"warehouse_type": "SNOWPARK-OPTIMIZED"}, config: map[string]any{}, want: true},
+		{name: "not set before, now SNOWPARK-OPTIMIZED", state: map[string]string{}, config: map[string]any{"warehouse_type": "SNOWPARK-OPTIMIZED"}, want: true},
+		{name: "changed outside Terraform to ADAPTIVE, brought back", state: map[string]string{"warehouse_type": "ADAPTIVE"}, config: map[string]any{}, want: true},
+		{name: "a value that cannot be parsed suspends", state: map[string]string{"warehouse_type": "unknown"}, config: map[string]any{}, want: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			diff, err := testResource.Diff(context.Background(), &terraform.InstanceState{ID: "wh", Attributes: tt.state}, &terraform.ResourceConfig{Config: tt.config}, nil)
+			require.NoError(t, err)
+			d, err := schema.InternalMap(testResource.Schema).Data(&terraform.InstanceState{ID: "wh", Attributes: tt.state}, diff)
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, warehouseSuspendForAlterNeededExt(d))
+		})
+	}
+}

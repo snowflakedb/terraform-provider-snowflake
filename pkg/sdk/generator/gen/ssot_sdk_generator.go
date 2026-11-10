@@ -588,6 +588,28 @@ func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface 
 	return i.ShowParametersDetails(parametersForLevels(levels)...)
 }
 
+// SuspendIfStartedFromObject adds SuspendIfStarted, built from Object.SuspendForAlter.
+// The state field, the enum constants, and IF SUSPENDED come from the definition. The body is generated.
+func (i *Interface) SuspendIfStartedFromObject(obj ssot.Object) *Interface {
+	if !obj.SdkConfig().SuspendIfStarted || obj.SuspendForAlter == nil {
+		panic(fmt.Sprintf("object %q is not enabled for SDK SuspendIfStarted generation", obj.Name))
+	}
+	suspend := obj.SuspendForAlter
+	started, okStarted := suspend.State.Enum.ConstantName(suspend.Started)
+	suspended, okSuspended := suspend.State.Enum.ConstantName(suspend.Suspended)
+	if !okStarted || !okSuspended {
+		panic(fmt.Sprintf("object %q: SuspendForAlter values are not values of the %s enum", obj.Name, suspend.State.Enum.Name))
+	}
+	return i.SuspendIfStarted(SuspendIfStartedConfig{
+		StateField:        ssot.ColumnFieldName(*suspend.State),
+		StartedConstant:   started,
+		SuspendedConstant: suspended,
+		ResumeIfSuspended: slices.ContainsFunc(obj.Alter.Clauses, func(c ssot.AlterClause) bool {
+			return c.Kind == ssot.AlterClauseKeyword && c.SQL == "IF SUSPENDED"
+		}),
+	})
+}
+
 // InterfaceFromObject builds one SDK interface from the operations whose flags are on.
 // A flag that is off is absent. The existing FromObject helpers still panic if called while their flag is off.
 // Order is Create, Alter, Drop, Show, Describe, ShowParameters, ShowParametersDetails, custom operations, then custom interface methods.
@@ -623,6 +645,9 @@ func InterfaceFromObject(obj ssot.Object) *Interface {
 	}
 	if cfg.ShowParametersDetails {
 		iface = iface.ShowParametersDetailsFromObject(obj)
+	}
+	if cfg.SuspendIfStarted {
+		iface = iface.SuspendIfStartedFromObject(obj)
 	}
 	if cfg.CustomOperations {
 		iface = iface.CustomOperationsFromObject(obj)

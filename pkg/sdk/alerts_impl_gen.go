@@ -4,8 +4,12 @@ package sdk
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
 var (
@@ -173,4 +177,34 @@ func (r alertDescRow) convert() (*AlertDetails, error) {
 	mapNullStringWithMapping(&result.Warehouse, r.Warehouse, ParseAccountObjectIdentifier)
 	mapNullString(&result.Schedule, r.Schedule)
 	return result, nil
+}
+
+func (v *alerts) SuspendIfStarted(ctx context.Context, id SchemaObjectIdentifier) (func(context.Context) error, error) {
+	noResume := func(context.Context) error { return nil }
+	object, err := v.ShowByID(ctx, id)
+	if err != nil {
+		return noResume, err
+	}
+	if object.State != AlertStateStarted {
+		return noResume, nil
+	}
+	if err := v.Alter(ctx, NewAlterAlertRequest(id).WithSuspend(true)); err != nil {
+		return noResume, err
+	}
+	resume := func(ctx context.Context) error {
+		return v.Alter(ctx, NewAlterAlertRequest(id).WithResume(true))
+	}
+	var suspensionErrs []error
+	err = util.Retry(5, time.Second, func() (error, bool) {
+		object, err := v.ShowByID(ctx, id)
+		if err != nil {
+			suspensionErrs = append(suspensionErrs, err)
+			return nil, false
+		}
+		return nil, object.State == AlertStateSuspended
+	})
+	if err != nil {
+		return resume, fmt.Errorf("suspension of %s failed, err: %w, original errors: %w", id.FullyQualifiedName(), err, errors.Join(suspensionErrs...))
+	}
+	return resume, nil
 }
