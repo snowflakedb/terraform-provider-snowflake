@@ -244,6 +244,7 @@ type TableColumnAddAction struct {
 	ColumnType       DataType                        `ddl:"keyword"`
 	Collate          *string                         `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 	DefaultValue     *ColumnDefaultValue             `ddl:"keyword"`
+	NotNull          *bool                           `ddl:"keyword" sql:"NOT NULL"`
 	InlineConstraint *TableColumnAddInlineConstraint `ddl:"keyword"`
 	MaskingPolicy    *TableColumnMaskingPolicy       `ddl:"keyword"`
 	Tag              []TagAssociation                `ddl:"keyword,parentheses" sql:"TAG"`
@@ -251,15 +252,58 @@ type TableColumnAddAction struct {
 }
 
 type TableColumnAddInlineConstraint struct {
-	NotNull        *bool                `ddl:"keyword" sql:"NOT NULL"`
-	Name           *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
-	ConstraintType ColumnConstraintType `ddl:"keyword"`
-	ForeignKey     *ColumnAddForeignKey `ddl:"keyword"`
+	UniquePK *TableColumnAddInlineUniquePK `ddl:"keyword"`
+	FK       *TableColumnAddInlineFK       `ddl:"keyword"`
+	CH       *TableColumnAddInlineCH       `ddl:"keyword"`
 }
 
-type ColumnAddForeignKey struct {
-	TableName  string `ddl:"keyword" sql:"REFERENCES"`
-	ColumnName string `ddl:"keyword,parentheses"`
+type TableColumnAddInlineUniquePK struct {
+	Name               *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	Unique             *bool   `ddl:"keyword" sql:"UNIQUE"`
+	PrimaryKey         *bool   `ddl:"keyword" sql:"PRIMARY KEY"`
+	Enforced           *bool   `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool   `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool   `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool   `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool   `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool   `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool   `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool   `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool   `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool   `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool   `ddl:"keyword" sql:"RELY"`
+	Norely             *bool   `ddl:"keyword" sql:"NORELY"`
+}
+
+type TableColumnAddInlineFK struct {
+	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
+	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
+	RefColumn          []Column               `ddl:"keyword,parentheses"`
+	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
+	On                 *ForeignKeyOnAction    `ddl:"keyword"`
+	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
+	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
+}
+
+type TableColumnAddInlineCH struct {
+	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	check            bool    `ddl:"static" sql:"CHECK"`
+	openParen        bool    `ddl:"static" sql:"("`
+	Expression       string  `ddl:"keyword,no_quotes"`
+	closeParen       bool    `ddl:"static" sql:")"`
+	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
+	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
 }
 
 type TableColumnRenameAction struct {

@@ -522,6 +522,17 @@ func init() {
 			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
+			"sql_Alter_addColumn_notNull",
+			func(opts *AlterTableOptions) {
+				*opts = *NewAlterTableRequest(id).WithColumnAction(
+					*NewTableColumnActionRequest().WithAdd(
+						*NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).WithNotNull(true),
+					),
+				).toOpts()
+			},
+			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR NOT NULL`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
 			"sql_Alter_renameColumn",
 			func(opts *AlterTableOptions) {
 				opts.ColumnAction = &TableColumnAction{Rename: &TableColumnRenameAction{OldName: "OLD_NAME", NewName: "NEW_NAME"}}

@@ -700,6 +700,11 @@ func (s *TableColumnAddActionRequest) WithDefaultValue(defaultValue ColumnDefaul
 	return s
 }
 
+func (s *TableColumnAddActionRequest) WithNotNull(notNull bool) *TableColumnAddActionRequest {
+	s.NotNull = &notNull
+	return s
+}
+
 func (s *TableColumnAddActionRequest) WithInlineConstraint(inlineConstraint TableColumnAddInlineConstraintRequest) *TableColumnAddActionRequest {
 	s.InlineConstraint = &inlineConstraint
 	return s
@@ -720,37 +725,220 @@ func (s *TableColumnAddActionRequest) WithComment(comment string) *TableColumnAd
 	return s
 }
 
-func NewTableColumnAddInlineConstraintRequest(
-	constraintType ColumnConstraintType,
-) *TableColumnAddInlineConstraintRequest {
+func NewTableColumnAddInlineConstraintRequest() *TableColumnAddInlineConstraintRequest {
 	s := TableColumnAddInlineConstraintRequest{}
-	s.ConstraintType = constraintType
 	return &s
 }
 
-func (s *TableColumnAddInlineConstraintRequest) WithNotNull(notNull bool) *TableColumnAddInlineConstraintRequest {
-	s.NotNull = &notNull
+func (s *TableColumnAddInlineConstraintRequest) WithUniquePK(uniquePK TableColumnAddInlineUniquePKRequest) *TableColumnAddInlineConstraintRequest {
+	s.UniquePK = &uniquePK
 	return s
 }
 
-func (s *TableColumnAddInlineConstraintRequest) WithName(name string) *TableColumnAddInlineConstraintRequest {
+func (s *TableColumnAddInlineConstraintRequest) WithFK(fK TableColumnAddInlineFKRequest) *TableColumnAddInlineConstraintRequest {
+	s.FK = &fK
+	return s
+}
+
+func (s *TableColumnAddInlineConstraintRequest) WithCH(cH TableColumnAddInlineCHRequest) *TableColumnAddInlineConstraintRequest {
+	s.CH = &cH
+	return s
+}
+
+func NewTableColumnAddInlineUniquePKRequest() *TableColumnAddInlineUniquePKRequest {
+	s := TableColumnAddInlineUniquePKRequest{}
+	return &s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithName(name string) *TableColumnAddInlineUniquePKRequest {
 	s.Name = &name
 	return s
 }
 
-func (s *TableColumnAddInlineConstraintRequest) WithForeignKey(foreignKey ColumnAddForeignKeyRequest) *TableColumnAddInlineConstraintRequest {
+func (s *TableColumnAddInlineUniquePKRequest) WithUnique(unique bool) *TableColumnAddInlineUniquePKRequest {
+	s.Unique = &unique
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithPrimaryKey(primaryKey bool) *TableColumnAddInlineUniquePKRequest {
+	s.PrimaryKey = &primaryKey
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithEnforced(enforced bool) *TableColumnAddInlineUniquePKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithNotEnforced(notEnforced bool) *TableColumnAddInlineUniquePKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithDeferrable(deferrable bool) *TableColumnAddInlineUniquePKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnAddInlineUniquePKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnAddInlineUniquePKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnAddInlineUniquePKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithEnable(enable bool) *TableColumnAddInlineUniquePKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithDisable(disable bool) *TableColumnAddInlineUniquePKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithValidate(validate bool) *TableColumnAddInlineUniquePKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithNovalidate(novalidate bool) *TableColumnAddInlineUniquePKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithRely(rely bool) *TableColumnAddInlineUniquePKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableColumnAddInlineUniquePKRequest) WithNorely(norely bool) *TableColumnAddInlineUniquePKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func NewTableColumnAddInlineFKRequest(
+	references SchemaObjectIdentifier,
+) *TableColumnAddInlineFKRequest {
+	s := TableColumnAddInlineFKRequest{}
+	s.References = references
+	return &s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithName(name string) *TableColumnAddInlineFKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithForeignKey(foreignKey bool) *TableColumnAddInlineFKRequest {
 	s.ForeignKey = &foreignKey
 	return s
 }
 
-func NewColumnAddForeignKeyRequest(
-	tableName string,
-	columnName string,
-) *ColumnAddForeignKeyRequest {
-	s := ColumnAddForeignKeyRequest{}
-	s.TableName = tableName
-	s.ColumnName = columnName
+func (s *TableColumnAddInlineFKRequest) WithRefColumn(refColumn []Column) *TableColumnAddInlineFKRequest {
+	s.RefColumn = refColumn
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithMatch(match MatchType) *TableColumnAddInlineFKRequest {
+	s.Match = &match
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithOn(on ForeignKeyOnAction) *TableColumnAddInlineFKRequest {
+	s.On = &on
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithEnforced(enforced bool) *TableColumnAddInlineFKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithNotEnforced(notEnforced bool) *TableColumnAddInlineFKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithDeferrable(deferrable bool) *TableColumnAddInlineFKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnAddInlineFKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnAddInlineFKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnAddInlineFKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithEnable(enable bool) *TableColumnAddInlineFKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithDisable(disable bool) *TableColumnAddInlineFKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithValidate(validate bool) *TableColumnAddInlineFKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithNovalidate(novalidate bool) *TableColumnAddInlineFKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithRely(rely bool) *TableColumnAddInlineFKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableColumnAddInlineFKRequest) WithNorely(norely bool) *TableColumnAddInlineFKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func NewTableColumnAddInlineCHRequest(
+	expression string,
+) *TableColumnAddInlineCHRequest {
+	s := TableColumnAddInlineCHRequest{}
+	s.Expression = expression
 	return &s
+}
+
+func (s *TableColumnAddInlineCHRequest) WithName(name string) *TableColumnAddInlineCHRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnAddInlineCHRequest) WithEnableValidate(enableValidate bool) *TableColumnAddInlineCHRequest {
+	s.EnableValidate = &enableValidate
+	return s
+}
+
+func (s *TableColumnAddInlineCHRequest) WithEnableNovalidate(enableNovalidate bool) *TableColumnAddInlineCHRequest {
+	s.EnableNovalidate = &enableNovalidate
+	return s
 }
 
 func NewTableColumnRenameActionRequest(

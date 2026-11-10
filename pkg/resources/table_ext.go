@@ -117,8 +117,10 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 		}
 
 		for _, cA := range added {
-			addRequest := sdk.NewTableColumnAddActionRequest(cA.name, sdk.DataType(cA.dataType)).
-				WithInlineConstraint(*sdk.NewTableColumnAddInlineConstraintRequest("").WithNotNull(!cA.nullable))
+			addRequest := sdk.NewTableColumnAddActionRequest(cA.name, sdk.DataType(cA.dataType))
+			if !cA.nullable {
+				addRequest.WithNotNull(true)
+			}
 
 			if cA._default != nil {
 				if cA._default._type() != "constant" {

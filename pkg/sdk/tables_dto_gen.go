@@ -212,6 +212,7 @@ type TableColumnAddActionRequest struct {
 	ColumnType       DataType // required
 	Collate          *string
 	DefaultValue     *ColumnDefaultValueRequest
+	NotNull          *bool
 	InlineConstraint *TableColumnAddInlineConstraintRequest
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
 	Tag              []TagAssociation
@@ -219,15 +220,55 @@ type TableColumnAddActionRequest struct {
 }
 
 type TableColumnAddInlineConstraintRequest struct {
-	NotNull        *bool
-	Name           *string
-	ConstraintType ColumnConstraintType // required
-	ForeignKey     *ColumnAddForeignKeyRequest
+	UniquePK *TableColumnAddInlineUniquePKRequest
+	FK       *TableColumnAddInlineFKRequest
+	CH       *TableColumnAddInlineCHRequest
 }
 
-type ColumnAddForeignKeyRequest struct {
-	TableName  string // required
-	ColumnName string // required
+type TableColumnAddInlineUniquePKRequest struct {
+	Name               *string
+	Unique             *bool
+	PrimaryKey         *bool
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnAddInlineFKRequest struct {
+	Name               *string
+	ForeignKey         *bool
+	References         SchemaObjectIdentifier // required
+	RefColumn          []Column
+	Match              *MatchType
+	On                 *ForeignKeyOnAction
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnAddInlineCHRequest struct {
+	Name             *string
+	Expression       string // required
+	EnableValidate   *bool
+	EnableNovalidate *bool
 }
 
 type TableColumnRenameActionRequest struct {
