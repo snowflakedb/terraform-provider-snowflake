@@ -1196,15 +1196,12 @@ func (s *TableUnsetRequest) WithComment(comment bool) *TableUnsetRequest {
 
 func NewTableAddRowAccessPolicyRequest(
 	rowAccessPolicy SchemaObjectIdentifier,
+	on []Column,
 ) *TableAddRowAccessPolicyRequest {
 	s := TableAddRowAccessPolicyRequest{}
 	s.RowAccessPolicy = rowAccessPolicy
-	return &s
-}
-
-func (s *TableAddRowAccessPolicyRequest) WithOn(on []string) *TableAddRowAccessPolicyRequest {
 	s.On = on
-	return s
+	return &s
 }
 
 func NewTableDropRowAccessPolicyRequest(

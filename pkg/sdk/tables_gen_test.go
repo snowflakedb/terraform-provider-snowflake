@@ -105,6 +105,12 @@ const (
 	case_Tables_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                        testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Tables_validation_Alter_SetTags_ValidIdentifier                                                                                            testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Tables_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                      testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Tables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                 testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_Tables_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet                                                                             testCaseName = "validation_Alter_AddRowAccessPolicy_On_ValidateValueSet"
+	case_Tables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
+	case_Tables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier                                                     testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier"
+	case_Tables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier                                                      testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier"
+	case_Tables_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet                                                                  testCaseName = "validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet"
 	case_Tables_validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier                                                   testCaseName = "validation_Alter_AddStorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier"
 	case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet                                                                      testCaseName = "validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet"
 	case_Tables_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier                                                             testCaseName = "validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier"
@@ -992,6 +998,54 @@ var tablesTests = TablesTestsContext{
 					opts.Unset.DefaultDdlCollation = nil
 					opts.Unset.EnableSchemaEvolution = nil
 					opts.Unset.Comment = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.AddRowAccessPolicy", "RowAccessPolicy"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{}
+					opts.AddRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.AddRowAccessPolicy", "On"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{}
+					opts.AddRowAccessPolicy.On = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.DropRowAccessPolicy", "RowAccessPolicy"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.DropRowAccessPolicy = &TableDropRowAccessPolicy{}
+					opts.DropRowAccessPolicy.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_DropAndAddRowAccessPolicy_Drop_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_DropAndAddRowAccessPolicy_Add_RowAccessPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_DropAndAddRowAccessPolicy_Add_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.DropAndAddRowAccessPolicy.Add", "On"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
+					opts.DropAndAddRowAccessPolicy.Add.On = nil
 				},
 			},
 			validationCase[*AlterTableOptions]{

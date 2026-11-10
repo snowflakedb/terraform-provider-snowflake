@@ -585,14 +585,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		opts.DropRowAccessPolicy = r.DropRowAccessPolicy.toOpts()
 	}
 	if r.DropAndAddRowAccessPolicy != nil {
-		opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
-		opts.DropAndAddRowAccessPolicy.Drop = IcebergTableDropRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy,
-		}
-		opts.DropAndAddRowAccessPolicy.Add = IcebergTableAddRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Add.RowAccessPolicy,
-			On:              r.DropAndAddRowAccessPolicy.Add.On,
-		}
+		opts.DropAndAddRowAccessPolicy = r.DropAndAddRowAccessPolicy.toOpts()
 	}
 	if r.SetAggregationPolicy != nil {
 		opts.SetAggregationPolicy = r.SetAggregationPolicy.toOpts()

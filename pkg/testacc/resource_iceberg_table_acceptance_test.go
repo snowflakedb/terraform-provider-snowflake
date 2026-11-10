@@ -516,7 +516,7 @@ func TestAcc_IcebergTable_BasicUseCase(t *testing.T) {
 							WithEnableIcebergMergeOnRead(false),
 					))
 					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).
-						WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
+						WithDropRowAccessPolicy(*sdk.NewTableDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
 					testClient().IcebergTable.Alter(t, sdk.NewAlterIcebergTableRequest(id).
 						WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
 				},

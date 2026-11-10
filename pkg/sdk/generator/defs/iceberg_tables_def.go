@@ -161,25 +161,6 @@ var tableRowAccessPolicy = g.NewQueryStruct("IcebergTableRowAccessPolicy").
 	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
 	WithValidation(g.ValidIdentifier, "Name")
 
-var icebergTableAddRowAccessPolicy = g.NewQueryStruct("IcebergTableAddRowAccessPolicy").
-	SQL("ADD").
-	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
-	ListAssignment("ON", "Column", g.ParameterOptions().Required().NoEquals().Parentheses()).
-	WithValidation(g.ValidIdentifier, "RowAccessPolicy").
-	WithValidation(g.ValidateValueSet, "On")
-
-var icebergTableDropRowAccessPolicy = g.NewQueryStruct("IcebergTableDropRowAccessPolicy").
-	SQL("DROP").
-	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
-	WithValidation(g.ValidIdentifier, "RowAccessPolicy")
-
-// TODO [next PRs]: this duplicates ViewDropAndAddRowAccessPolicy in views_def.go because the generator's
-// sharing mechanism (WithSharedToOpts/OptionalSharedQueryStructField) doesn't yet support composing shared
-// query structs into another composite one.
-var icebergTableDropAndAddRowAccessPolicy = g.NewQueryStruct("IcebergTableDropAndAddRowAccessPolicy").
-	QueryStructField("Drop", icebergTableDropRowAccessPolicy, g.KeywordOptions().Required()).
-	QueryStructField("Add", icebergTableAddRowAccessPolicy, g.KeywordOptions().Required())
-
 var icebergTablesDef = g.NewInterface(
 	"IcebergTables",
 	"IcebergTable",
@@ -382,9 +363,9 @@ var icebergTablesDef = g.NewInterface(
 		).
 		OptionalSetTags().
 		OptionalUnsetTags().
-		OptionalSharedQueryStructField("AddRowAccessPolicy", viewAddRowAccessPolicy, g.KeywordOptions()).
-		OptionalSharedQueryStructField("DropRowAccessPolicy", viewDropRowAccessPolicy, g.KeywordOptions()).
-		OptionalQueryStructField("DropAndAddRowAccessPolicy", icebergTableDropAndAddRowAccessPolicy, g.ListOptions().NoParentheses()).
+		OptionalSharedQueryStructField("AddRowAccessPolicy", tableAddRowAccessPolicy(), g.KeywordOptions()).
+		OptionalSharedQueryStructField("DropRowAccessPolicy", tableDropRowAccessPolicy(), g.KeywordOptions()).
+		OptionalSharedQueryStructField("DropAndAddRowAccessPolicy", tableDropAndAddRowAccessPolicy(), g.ListOptions().NoParentheses()).
 		OptionalSQL("DROP ALL ROW ACCESS POLICIES").
 		OptionalSharedQueryStructField("SetAggregationPolicy", tableSetAggregationPolicy(), g.KeywordOptions()).
 		OptionalSharedQueryStructField("UnsetAggregationPolicy", tableUnsetAggregationPolicy(), g.KeywordOptions()).

@@ -410,7 +410,7 @@ type TableUnset struct {
 type TableAddRowAccessPolicy struct {
 	add             bool                   `ddl:"static" sql:"ADD"`
 	RowAccessPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
-	On              []string               `ddl:"keyword,parentheses" sql:"ON"`
+	On              []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
 type TableDropRowAccessPolicy struct {
@@ -419,8 +419,8 @@ type TableDropRowAccessPolicy struct {
 }
 
 type TableDropAndAddRowAccessPolicy struct {
-	Drop TableDropRowAccessPolicy `ddl:"keyword"`
-	Add  TableAddRowAccessPolicy  `ddl:"keyword"`
+	Drop TableDropRowAccessPolicy `ddl:"list,no_comma"`
+	Add  TableAddRowAccessPolicy  `ddl:"list,no_comma"`
 }
 
 type TableStorageLifecyclePolicy struct {

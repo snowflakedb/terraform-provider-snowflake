@@ -521,25 +521,13 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		}
 	}
 	if r.AddRowAccessPolicy != nil {
-		opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{
-			RowAccessPolicy: r.AddRowAccessPolicy.RowAccessPolicy,
-			On:              r.AddRowAccessPolicy.On,
-		}
+		opts.AddRowAccessPolicy = r.AddRowAccessPolicy.toOpts()
 	}
 	if r.DropRowAccessPolicy != nil {
-		opts.DropRowAccessPolicy = &TableDropRowAccessPolicy{
-			RowAccessPolicy: r.DropRowAccessPolicy.RowAccessPolicy,
-		}
+		opts.DropRowAccessPolicy = r.DropRowAccessPolicy.toOpts()
 	}
 	if r.DropAndAddRowAccessPolicy != nil {
-		opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
-		opts.DropAndAddRowAccessPolicy.Drop = TableDropRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy,
-		}
-		opts.DropAndAddRowAccessPolicy.Add = TableAddRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Add.RowAccessPolicy,
-			On:              r.DropAndAddRowAccessPolicy.Add.On,
-		}
+		opts.DropAndAddRowAccessPolicy = r.DropAndAddRowAccessPolicy.toOpts()
 	}
 	if r.AddStorageLifecyclePolicy != nil {
 		opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
@@ -774,6 +762,33 @@ func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimization
 			}
 			opts.Drop.On = on
 		}
+	}
+	return opts
+}
+
+func (r *TableAddRowAccessPolicyRequest) toOpts() *TableAddRowAccessPolicy {
+	opts := &TableAddRowAccessPolicy{
+		RowAccessPolicy: r.RowAccessPolicy,
+		On:              r.On,
+	}
+	return opts
+}
+
+func (r *TableDropRowAccessPolicyRequest) toOpts() *TableDropRowAccessPolicy {
+	opts := &TableDropRowAccessPolicy{
+		RowAccessPolicy: r.RowAccessPolicy,
+	}
+	return opts
+}
+
+func (r *TableDropAndAddRowAccessPolicyRequest) toOpts() *TableDropAndAddRowAccessPolicy {
+	opts := &TableDropAndAddRowAccessPolicy{}
+	opts.Drop = TableDropRowAccessPolicy{
+		RowAccessPolicy: r.Drop.RowAccessPolicy,
+	}
+	opts.Add = TableAddRowAccessPolicy{
+		RowAccessPolicy: r.Add.RowAccessPolicy,
+		On:              r.Add.On,
 	}
 	return opts
 }

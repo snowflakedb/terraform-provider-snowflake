@@ -1133,17 +1133,17 @@ func (s *AlterIcebergTableRequest) WithUnsetTags(unsetTags []ObjectIdentifier) *
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithAddRowAccessPolicy(addRowAccessPolicy ViewAddRowAccessPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithAddRowAccessPolicy(addRowAccessPolicy TableAddRowAccessPolicyRequest) *AlterIcebergTableRequest {
 	s.AddRowAccessPolicy = &addRowAccessPolicy
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithDropRowAccessPolicy(dropRowAccessPolicy ViewDropRowAccessPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithDropRowAccessPolicy(dropRowAccessPolicy TableDropRowAccessPolicyRequest) *AlterIcebergTableRequest {
 	s.DropRowAccessPolicy = &dropRowAccessPolicy
 	return s
 }
 
-func (s *AlterIcebergTableRequest) WithDropAndAddRowAccessPolicy(dropAndAddRowAccessPolicy IcebergTableDropAndAddRowAccessPolicyRequest) *AlterIcebergTableRequest {
+func (s *AlterIcebergTableRequest) WithDropAndAddRowAccessPolicy(dropAndAddRowAccessPolicy TableDropAndAddRowAccessPolicyRequest) *AlterIcebergTableRequest {
 	s.DropAndAddRowAccessPolicy = &dropAndAddRowAccessPolicy
 	return s
 }
@@ -1692,34 +1692,6 @@ func (s *IcebergTableUnsetPropertiesRequest) UnsetParameterFromRaw(key string) e
 		return ErrParameterNotSupported
 	}
 	return nil
-}
-
-func NewIcebergTableDropAndAddRowAccessPolicyRequest(
-	drop IcebergTableDropRowAccessPolicyRequest,
-	add IcebergTableAddRowAccessPolicyRequest,
-) *IcebergTableDropAndAddRowAccessPolicyRequest {
-	s := IcebergTableDropAndAddRowAccessPolicyRequest{}
-	s.Drop = drop
-	s.Add = add
-	return &s
-}
-
-func NewIcebergTableDropRowAccessPolicyRequest(
-	rowAccessPolicy SchemaObjectIdentifier,
-) *IcebergTableDropRowAccessPolicyRequest {
-	s := IcebergTableDropRowAccessPolicyRequest{}
-	s.RowAccessPolicy = rowAccessPolicy
-	return &s
-}
-
-func NewIcebergTableAddRowAccessPolicyRequest(
-	rowAccessPolicy SchemaObjectIdentifier,
-	on []Column,
-) *IcebergTableAddRowAccessPolicyRequest {
-	s := IcebergTableAddRowAccessPolicyRequest{}
-	s.RowAccessPolicy = rowAccessPolicy
-	s.On = on
-	return &s
 }
 
 func NewDropIcebergTableRequest(
