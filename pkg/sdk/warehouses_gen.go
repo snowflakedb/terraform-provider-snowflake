@@ -29,6 +29,8 @@ type Warehouses interface {
 	Describe(ctx context.Context, id AccountObjectIdentifier) (*WarehouseDetails, error)
 	ShowParameters(ctx context.Context, id AccountObjectIdentifier) ([]*Parameter, error)
 	ShowParametersDetails(ctx context.Context, id AccountObjectIdentifier) (*WarehouseParametersDetails, error)
+	// SuspendIfStarted suspends the object when it is started and waits until it is suspended. The returned function resumes it; it is never nil and has to be called even when an error is returned.
+	SuspendIfStarted(ctx context.Context, id AccountObjectIdentifier) (func(context.Context) error, error)
 	// ShowByIDExperimental is a show by id function with improved performance (using starts with and limit)
 	ShowByIDExperimental(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)
 	ShowByIDExperimentalSafely(ctx context.Context, id AccountObjectIdentifier) (*Warehouse, error)

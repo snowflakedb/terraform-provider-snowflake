@@ -64,7 +64,10 @@ type Object struct {
 	Generators               []GeneratorOption
 	SchemaStateUpgraders     []StateUpgraderFunc
 	AdditionalCustomizeDiffs []CustomizeDiffFunc
-	Show                     OutputSpec
+	// SuspendForAlter says the object must be suspended while it is altered. SdkSuspendIfStarted generates the SDK method
+	// that does it, and WithSuspendForAlter(Generated()) calls it once per update.
+	SuspendForAlter *SuspendForAlter
+	Show            OutputSpec
 	// ShowGeneric is the temporary union of every variant SHOW column.
 	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
 	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
@@ -442,4 +445,34 @@ func (obj Object) ParameterAssertionNames() ParameterAssertionNames {
 		ConstantPrefix: obj.VariantOf.Name,
 		ObjectTypeName: obj.VariantOf.Name,
 	}
+}
+
+// SuspendForAlter describes an object that has to be suspended while it is altered, such as an alert or a warehouse that
+// changes its type. It reuses the SHOW state column, its enum, and the object's SUSPEND and RESUME keyword clauses.
+type SuspendForAlter struct {
+	// When lists the attributes whose change needs the suspension. Empty means every attribute that changes in place.
+	When []*Attribute
+	// State is the SHOW column with the state of the object. Started and Suspended are values of its enum.
+	State              *Attribute
+	Started, Suspended string
+	// Enabled is the bool attribute that says whether the object runs, such as an alert's enabled. After a successful
+	// update the object is resumed when it is true and stays suspended otherwise. Nil restores the state it had before.
+	Enabled *Attribute
+	// NeededExt makes the guard also ask <prefix>SuspendForAlterNeededExt(d) of package resources whether the change needs
+	// the suspension, after one of the When attributes changed. Use it when a change in Terraform can leave Snowflake as it
+	// is, such as a removed warehouse_type that sets the type the warehouse already has.
+	NeededExt bool
+}
+
+// SuspendForAlterWhen returns the names of the attributes whose change suspends the object: SuspendForAlter.When, or every
+// attribute that changes in place when When is empty. It is nil without SuspendForAlter.
+func (obj Object) SuspendForAlterWhen() []string {
+	if obj.SuspendForAlter == nil {
+		return nil
+	}
+	if len(obj.SuspendForAlter.When) > 0 {
+		return collections.Map(obj.SuspendForAlter.When, func(attr *Attribute) string { return attr.Name })
+	}
+	inPlace := collections.Filter(obj.ResourceAttributes(), Attribute.ChangesInPlace)
+	return collections.Map(inPlace, func(attr Attribute) string { return attr.Name })
 }

@@ -98,6 +98,14 @@ No configuration changes are required.
 
 ## v2.22.x ➞ v2.23.0
 
+### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails
+
+Snowflake rejects property changes on a started alert, and it requires a warehouse to be suspended while its type changes, or an interactive warehouse while its size changes. [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert), [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) suspend the object for the update. Until now, an update that failed after the suspension could leave the object suspended.
+
+The object is now resumed whenever it was started before the update, also when the update fails, and the values that were not applied stay in the state, so the next plan shows them again. A failed resume is reported together with the original error. The suspension happens once per update, and it is skipped when the object is already suspended.
+
+`snowflake_alert` used to ignore a failed suspension and then fail on the change itself. It now fails the update with the suspension error. No changes are required in your configuration.
+
 ### *(breaking change)* `snowflake_alert` reworked
 
 The preview [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert) resource now follows the same rules as the newest preview resources. This entry lists every change.

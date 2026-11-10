@@ -1,6 +1,8 @@
 package defs
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+)
 
 // WarehouseTypeUserSettable excludes ADAPTIVE and INTERACTIVE. Those types are separate resources.
 // SdkType is WarehouseType: sdk.ToWarehouseTypeUserSettable returns that type.
@@ -44,10 +46,16 @@ var WarehouseType = ssot.NewEnum(
 	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE", "INTERACTIVE",
 )
 
+// warehouseStateStarted and warehouseStateSuspended are the SHOW state values. SuspendForAlter uses them too.
+const (
+	warehouseStateStarted   = "STARTED"
+	warehouseStateSuspended = "SUSPENDED"
+)
+
 // ENABLED is reported for adaptive warehouses, which have no suspend/resume lifecycle.
 var WarehouseState = ssot.NewEnum(
 	"WarehouseState", "WarehouseStates",
-	"SUSPENDED", "SUSPENDING", "STARTED", "RESIZING", "RESUMING", "ENABLED",
+	warehouseStateSuspended, "SUSPENDING", warehouseStateStarted, "RESIZING", "RESUMING", "ENABLED",
 )
 
 // WarehouseAttrs holds reusable warehouse fields.
@@ -342,6 +350,7 @@ var Warehouse = ssot.Object{
 		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
+			ssot.SdkSuspendIfStarted(),
 			ssot.SdkShow(
 				ssot.SdkShowOptionalLike(),
 				ssot.SdkShowOptionalStartsWith(),
@@ -367,6 +376,8 @@ var Warehouse = ssot.Object{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
+		ssot.WithSuspendForAlter(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
@@ -386,6 +397,15 @@ var Warehouse = ssot.Object{
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+	},
+	// A started warehouse is suspended while its type changes and is resumed afterwards.
+	SuspendForAlter: &ssot.SuspendForAlter{
+		When:      []*ssot.Attribute{&WarehouseAttrs.WarehouseType},
+		State:     &WarehouseAttrs.State,
+		Started:   warehouseStateStarted,
+		Suspended: warehouseStateSuspended,
+		// A removed warehouse_type sets STANDARD, which can be the type the warehouse already has.
+		NeededExt: true,
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v092WarehouseSizeStateUpgrader",

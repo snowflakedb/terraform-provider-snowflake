@@ -458,7 +458,8 @@ enable nothing.
   declaration: an empty doc, `id` of `IdType`, and returns `[]*Parameter` and `error`. The body stays in the SDK ext
   file. `SdkShowParametersDetails()` emits `ShowParametersDetails` and the `{Name}ParametersDetails` struct. The fields
   come from `ParameterLevel()` plus `ShowParametersDetailsAdditionalLevels`. The generated body calls `ShowParameters`.
-  When either setting is off, that call stays in the SDK def. `SdkDefineFromSsot()` defines this object's SDK
+  When either setting is off, that call stays in the SDK def. `SdkSuspendIfStarted()` emits `SuspendIfStarted` from
+  `SuspendForAlter`; the body is generated. `SdkDefineFromSsot()` defines this object's SDK
   interface from this ssot object alone. The interface contains the operation parts whose flags are on. An object
   without it stays on the handwritten SDK def. An object that already has one does not set this flag. It replaces one
   operation at a time with the matching `FromObject` call. See [Adding a new entity](#adding-a-new-entity).
@@ -649,6 +650,38 @@ and `Deprecated` are emitted on the schema field. See [Attribute](#attribute).
 and requests containing slices remain supported. SET runs before UNSET; either failure returns `diag.FromErr`
 and marks partial state when `HasPartialOnUpdate` is set. Keep `ExtCall` for suspend-aware alters, additional
 operations, custom diagnostics, or request names that differ from the object name. Omit UNSET for SET-only objects.
+
+An object that must be suspended while it is altered declares `SuspendForAlter` (an alert, or a warehouse that changes its
+type; Snowflake rejects property changes on a started alert with "since it is not suspended"). It reuses the SHOW `State`
+column and its enum (`Started` and `Suspended` are enum values), and the object's `SUSPEND` and `RESUME` ALTER keywords
+(`IF SUSPENDED` makes the resume safe when it is declared). `When` lists the attributes whose in-place change needs the
+suspension; empty means every attribute that changes in place (not `ForceNew`, `Readonly`, `Computed`, `CreateOnly`, or
+`SqlOnly`, see `Object.SuspendForAlterWhen`). `Enabled` is the bool attribute that owns the state (an alert's `enabled`).
+The SDK checks SHOW five times, one second apart, after the SUSPEND. Two generators use the declaration, so it needs
+`SdkSuspendIfStarted()` and `WithSuspendForAlter(Generated())`. The hook is generated or omitted; it has no ext call.
+`NeededExt` makes the guard also ask `<prefix>SuspendForAlterNeededExt(d)` whether the change needs the suspension, for a
+change in Terraform that can leave Snowflake as it is: a removed `warehouse_type` sets `STANDARD`, which can be the type the
+warehouse already has. A
+variant uses `SuspendIfStarted` of its base, because they share the SDK interface, so its declaration sets only `When`
+and `Enabled`:
+
+- The SDK generator emits `SuspendIfStarted(ctx, id) (resume func(context.Context) error, err error)`. It suspends the
+  object when SHOW says it is started, waits until SHOW says it is suspended, and returns the function that resumes it. The
+  function is never nil, and the caller has to call it on every path once the method returned, even with an error.
+- The resource generator calls it once per update, after the rename and before `BeforeAlter`. `suspend_for_alter.tmpl`
+  only calls `SuspendForAlter` from `pkg/resources/suspend_for_alter_commons.go` with the SDK method and the `When` names,
+  and defers `CleanUp`. It suspends only when one of the `When` attributes changed, so SUSPEND and RESUME run once however
+  many ALTER statements the update sends. The `Update` has a named result. When the update fails after the suspension,
+  `CleanUp` calls `d.Partial(true)` so Terraform keeps the old values, resumes the object, and adds a failed resume to the
+  diagnostics next to the original error. After a successful update `resume_after_alter.tmpl` restores the object before
+  the final Read and before `AfterAlter`: `RestoreIfEnabled` resumes it when `Enabled` is true, and `Restore` brings back
+  the state it had before when `Enabled` is not declared. A failed resume after a successful update is a warning. The
+  restore runs before the Read, so `show_output` has the final state; the deferred `CleanUp` would run after the Read.
+
+`BeforeAlter` and `AfterAlter` stay ext calls that fill what the generated update cannot send yet, such as an ALTER
+statement outside SET and UNSET. They run inside the guard: interactive warehouse sends its tables diff from
+`BeforeAlter` while it is suspended for a size change. `WithBeforeAlter(Generated())` and `WithAfterAlter(Generated())`
+are still unimplemented.
 
 ##### ALTER statements
 

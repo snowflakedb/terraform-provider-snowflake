@@ -25,6 +25,7 @@ type ResourceHooks struct {
 	FqnSet                          ResourceHook
 	SetConfigFields                 ResourceHook
 	HierarchyRename                 ResourceHook
+	SuspendForAlter                 ResourceHook
 	BeforeAlter                     ResourceHook
 	ApplySetUnset                   ResourceHook
 	AlterSetInSdk                   ResourceHook
@@ -87,6 +88,7 @@ func DefaultResourceExtHooks(opts ...ResourceHookOption) ResourceHooks {
 		FqnSet:                          Generated(),
 		SetConfigFields:                 ExtCall(),
 		HierarchyRename:                 Omitted(),
+		SuspendForAlter:                 Omitted(),
 		BeforeAlter:                     Omitted(),
 		ApplySetUnset:                   ExtCall(),
 		AlterSetInSdk:                   ExtCall(),
@@ -207,6 +209,12 @@ func WithSetConfigFields(h ResourceHook) ResourceHookOption {
 
 func WithHierarchyRename(h ResourceHook) ResourceHookOption {
 	return func(hooks *ResourceHooks) { hooks.HierarchyRename = h }
+}
+
+// WithSuspendForAlter switches the generated suspend guard of Update. It is generated or omitted: Generated suspends the
+// object declared in Object.SuspendForAlter before the alters and brings it back after them.
+func WithSuspendForAlter(h ResourceHook) ResourceHookOption {
+	return func(hooks *ResourceHooks) { hooks.SuspendForAlter = h }
 }
 
 func WithBeforeAlter(h ResourceHook) ResourceHookOption {

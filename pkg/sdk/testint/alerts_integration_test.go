@@ -204,6 +204,56 @@ func TestInt_Alerts(t *testing.T) {
 		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateSuspended)
 	})
 
+	t.Run("suspend if started: a started alert is suspended and the returned function resumes it", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+		require.NoError(t, client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).WithResume(true)))
+
+		resume, err := client.Alerts.SuspendIfStarted(ctx, alert.ID())
+		require.NoError(t, err)
+		require.NotNil(t, resume)
+		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateSuspended)
+
+		require.NoError(t, resume(ctx))
+		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateStarted)
+	})
+
+	t.Run("suspend if started: a suspended alert is left alone", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+
+		resume, err := client.Alerts.SuspendIfStarted(ctx, alert.ID())
+		require.NoError(t, err)
+		require.NotNil(t, resume)
+
+		require.NoError(t, resume(ctx))
+		assertAlert(t, alert.ID(), alert.Warehouse, alert.Schedule, "", alert.Condition, alert.Action, sdk.AlertStateSuspended)
+	})
+
+	t.Run("suspend if started: an alert that does not exist", func(t *testing.T) {
+		resume, err := client.Alerts.SuspendIfStarted(ctx, testClientHelper().Ids.RandomSchemaObjectIdentifier())
+		require.ErrorIs(t, err, sdk.ErrObjectNotFound)
+		require.NotNil(t, resume)
+		require.NoError(t, resume(ctx))
+	})
+
+	// The ALTER ALERT documentation does not say it, but Snowflake rejects every property change on a started alert.
+	// This is why the resource suspends the alert for the whole update.
+	t.Run("alter: a started alert is rejected", func(t *testing.T) {
+		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
+		t.Cleanup(cleanup)
+		require.NoError(t, client.Alerts.Alter(ctx, sdk.NewAlterAlertRequest(alert.ID()).WithResume(true)))
+
+		for name, request := range map[string]*sdk.AlterAlertRequest{
+			"set":              sdk.NewAlterAlertRequest(alert.ID()).WithSet(*sdk.NewAlertSetRequest().WithComment("altered while started")),
+			"modify condition": sdk.NewAlterAlertRequest(alert.ID()).WithModifyCondition([]string{"SELECT 1"}),
+			"modify action":    sdk.NewAlterAlertRequest(alert.ID()).WithModifyAction("SELECT 2"),
+		} {
+			err := client.Alerts.Alter(ctx, request)
+			require.ErrorContains(t, err, "since it is not suspended", name)
+		}
+	})
+
 	t.Run("describe", func(t *testing.T) {
 		alert, cleanup := testClientHelper().Alert.CreateAlert(t)
 		t.Cleanup(cleanup)

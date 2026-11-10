@@ -2254,3 +2254,77 @@ func Test_DescribeOperationFromObject_detailsParseParsedAndRows(t *testing.T) {
 		},
 	}, got.DescribeParse)
 }
+
+func suspendIfStartedObject(change func(*ssot.Object)) ssot.Object {
+	state := ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: ssot.NewEnum("WidgetState", "WidgetStates", "STARTED", "SUSPENDED"), Readonly: true}
+	obj := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&state}},
+		Alter:      ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterKeyword("SUSPEND"), ssot.AlterKeyword("RESUME")}},
+		SuspendForAlter: &ssot.SuspendForAlter{
+			State: &state, Started: "STARTED", Suspended: "SUSPENDED",
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot(), ssot.SdkSuspendIfStarted())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_SuspendIfStartedFromObject(t *testing.T) {
+	t.Run("config from the definition", func(t *testing.T) {
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(suspendIfStartedObject(func(*ssot.Object) {}))
+		require.Equal(t, &SuspendIfStartedConfig{
+			StateField: "State", StartedConstant: "WidgetStateStarted", SuspendedConstant: "WidgetStateSuspended",
+		}, got.SuspendIfStartedConfig)
+		require.Len(t, got.CustomMethods, 1)
+		require.Equal(t, "SuspendIfStarted", got.CustomMethods[0].Name)
+	})
+
+	t.Run("IF SUSPENDED", func(t *testing.T) {
+		obj := suspendIfStartedObject(func(o *ssot.Object) {
+			o.Alter.Clauses = append(o.Alter.Clauses, ssot.AlterKeywordNotExactlyOne("IF SUSPENDED"))
+		})
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(obj)
+		require.True(t, got.SuspendIfStartedConfig.ResumeIfSuspended)
+	})
+
+	t.Run("native declaration panics without the state", func(t *testing.T) {
+		require.PanicsWithValue(t, `interface "Widgets": SuspendIfStarted needs StateField, StartedConstant, and SuspendedConstant`, func() {
+			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStarted(SuspendIfStartedConfig{StateField: "State"})
+		})
+	})
+
+	t.Run("panics when the object is not enabled", func(t *testing.T) {
+		obj := suspendIfStartedObject(func(o *ssot.Object) { o.Generators = nil })
+		require.Panics(t, func() { NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(obj) })
+	})
+
+	t.Run("InterfaceFromObject adds it only when the option is on", func(t *testing.T) {
+		require.NotNil(t, InterfaceFromObject(suspendIfStartedObject(func(*ssot.Object) {})).SuspendIfStartedConfig)
+		off := suspendIfStartedObject(func(o *ssot.Object) {
+			o.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot())}
+			o.SuspendForAlter = nil
+		})
+		require.Nil(t, InterfaceFromObject(off).SuspendIfStartedConfig)
+	})
+
+	t.Run("rendered interface and implementation", func(t *testing.T) {
+		obj := suspendIfStartedObject(func(o *ssot.Object) {
+			o.Alter.Clauses = append(o.Alter.Clauses, ssot.AlterKeywordNotExactlyOne("IF SUSPENDED"))
+		})
+		iface := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(obj)
+		var ifaceOut, implOut strings.Builder
+		require.NoError(t, InterfaceTemplate.Execute(&ifaceOut, iface))
+		require.NoError(t, ImplementationTemplate.Execute(&implOut, iface))
+		require.Contains(t, ifaceOut.String(), "SuspendIfStarted(ctx context.Context, id AccountObjectIdentifier) (func(context.Context) error, error)")
+		impl := implOut.String()
+		require.Contains(t, impl, "func (v *widgets) SuspendIfStarted(ctx context.Context, id AccountObjectIdentifier) (func(context.Context) error, error) {")
+		require.Contains(t, impl, "if object.State != WidgetStateStarted {")
+		require.Contains(t, impl, "NewAlterWidgetRequest(id).WithSuspend(true)")
+		require.Contains(t, impl, "NewAlterWidgetRequest(id).WithResume(true).WithIfSuspended(true)")
+		require.Contains(t, impl, "util.Retry(5, time.Second")
+		require.Contains(t, impl, "object.State == WidgetStateSuspended")
+	})
+}

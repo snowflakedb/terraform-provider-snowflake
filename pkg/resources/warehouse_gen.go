@@ -148,7 +148,7 @@ func ReadWarehouseFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc
 	}
 }
 
-func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) (diags diag.Diagnostics) {
 	id, err := warehouseParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -162,6 +162,13 @@ func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
+
+	suspension, err := SuspendForAlterIf(ctx, d, warehouseSuspendForAlterNeededExt(d), meta.(*provider.Context).Client.Warehouses.SuspendIfStarted, id, "warehouse_type")
+	defer suspension.CleanUp(ctx, d, &diags)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	setUnset, err := warehouseApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -169,15 +176,20 @@ func UpdateWarehouse(ctx context.Context, d *tfschema.ResourceData, meta any) di
 	if diags := warehouseApplyParametersChanges(d, setUnset.set, setUnset.unset); diags != nil {
 		return diags
 	}
-	if err := warehouseAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewWarehouseSetRequest()) {
+		if err := meta.(*provider.Context).Client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewWarehouseUnsetRequest()) {
 		if err := meta.(*provider.Context).Client.Warehouses.Alter(ctx, sdk.NewAlterWarehouseRequest(id).WithUnset(*setUnset.unset)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	return ReadWarehouseFunc(false)(ctx, d, meta)
+
+	diags = append(diags, suspension.Restore(ctx)...)
+
+	return append(diags, ReadWarehouseFunc(false)(ctx, d, meta)...)
 }
 
 var warehouseCustomizeDiff = TrackingCustomDiffWrapper(resources.Warehouse, customdiff.All(

@@ -127,7 +127,7 @@ func ReadWarehouseInteractiveFunc(withExternalChangesMarking bool) tfschema.Read
 	}
 }
 
-func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, meta any) (diags diag.Diagnostics) {
 	id, err := warehouseInteractiveParseId(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -135,6 +135,12 @@ func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 
 	if diags := warehouseInteractiveHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
 		return diags
+	}
+
+	suspension, err := SuspendForAlter(ctx, d, meta.(*provider.Context).Client.Warehouses.SuspendIfStarted, id, "warehouse_size")
+	defer suspension.CleanUp(ctx, d, &diags)
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	if diags := warehouseInteractiveBeforeAlterExt(ctx, d, meta, id); diags != nil {
@@ -154,7 +160,10 @@ func UpdateWarehouseInteractive(ctx context.Context, d *tfschema.ResourceData, m
 	if err := warehouseInteractiveAlterUnsetInSdkExt(ctx, meta, id, setUnset); err != nil {
 		return diag.FromErr(err)
 	}
-	return ReadWarehouseInteractiveFunc(false)(ctx, d, meta)
+
+	diags = append(diags, suspension.Restore(ctx)...)
+
+	return append(diags, ReadWarehouseInteractiveFunc(false)(ctx, d, meta)...)
 }
 
 func warehouseInteractiveParseId(id string) (sdk.AccountObjectIdentifier, error) {

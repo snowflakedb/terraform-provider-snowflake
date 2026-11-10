@@ -111,6 +111,7 @@ func ValidateObject(obj Object) {
 	validateCustomizeDiff(obj)
 	validateSetAfterCreate(obj)
 	validateIdentityNamesCreatedBySnowflake(obj)
+	validateSuspendForAlter(obj)
 }
 
 func validateAttributeRelations(obj Object, a Attribute, siblings []Attribute) {
@@ -268,6 +269,68 @@ func validateIdentityNamesCreatedBySnowflake(obj Object) {
 	}
 	if len(names) > 0 && !obj.HasAlterSpec() {
 		panic(fmt.Sprintf("object %q: IdentityNamesCreatedBySnowflake runs Update and needs ALTER to update the object", obj.Name))
+	}
+}
+
+// validateSuspendForAlter checks the declaration of an object that is suspended while it is altered. The SDK method and the
+// generated suspend guard are its users, so they go together. A variant shares the SDK interface of its base, so it uses
+// the base's SuspendIfStarted and declares only its own triggers.
+func validateSuspendForAlter(obj Object) {
+	hooks := DefaultResourceExtHooks(obj.ResourceHooks...)
+	suspend := obj.SuspendForAlter
+	if hooks.SuspendForAlter.Present && !hooks.SuspendForAlter.Generate {
+		panic(fmt.Sprintf("object %q: WithSuspendForAlter is Generated or Omitted, there is no ext call", obj.Name))
+	}
+	if suspend == nil {
+		if obj.SdkConfig().SuspendIfStarted {
+			panic(fmt.Sprintf("object %q: SdkSuspendIfStarted needs SuspendForAlter", obj.Name))
+		}
+		if hooks.SuspendForAlter.Generate {
+			panic(fmt.Sprintf("object %q: WithSuspendForAlter(Generated()) needs SuspendForAlter", obj.Name))
+		}
+		return
+	}
+	if !hooks.SuspendForAlter.Generate {
+		panic(fmt.Sprintf("object %q: SuspendForAlter requires WithSuspendForAlter(Generated())", obj.Name))
+	}
+	for _, attribute := range suspend.When {
+		if !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == attribute.Name && a.ChangesInPlace() }) {
+			panic(fmt.Sprintf("object %q: SuspendForAlter.When attribute %q is not an attribute that changes in place", obj.Name, attribute.Name))
+		}
+	}
+	if len(obj.SuspendForAlterWhen()) == 0 {
+		panic(fmt.Sprintf("object %q: SuspendForAlter needs an attribute that changes in place", obj.Name))
+	}
+	if suspend.Enabled != nil && !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == suspend.Enabled.Name && a.Type == AttrBool && a.NativeBool }) {
+		panic(fmt.Sprintf("object %q: SuspendForAlter.Enabled %q is not a NativeBool attribute of the object", obj.Name, suspend.Enabled.Name))
+	}
+	if obj.VariantOf != nil {
+		if suspend.State != nil || suspend.Started != "" || suspend.Suspended != "" {
+			panic(fmt.Sprintf("object %q: a variant uses SuspendIfStarted of %q, so SuspendForAlter sets only When and Enabled", obj.Name, obj.VariantOf.Name))
+		}
+		if obj.VariantOf.SuspendForAlter == nil || !obj.VariantOf.SdkConfig().SuspendIfStarted {
+			panic(fmt.Sprintf("object %q: SuspendForAlter needs SuspendIfStarted on the base %q", obj.Name, obj.VariantOf.Name))
+		}
+		return
+	}
+	if !obj.SdkConfig().SuspendIfStarted {
+		panic(fmt.Sprintf("object %q: SuspendForAlter needs SdkSuspendIfStarted, because the resource calls the SDK method", obj.Name))
+	}
+	if suspend.State == nil || suspend.State.Type != AttrEnum || suspend.State.Enum == nil {
+		panic(fmt.Sprintf("object %q: SuspendForAlter.State must be an enum column", obj.Name))
+	}
+	if !slices.ContainsFunc(obj.Show.Columns, func(c *Attribute) bool { return c.Name == suspend.State.Name }) {
+		panic(fmt.Sprintf("object %q: SuspendForAlter.State %q is not a SHOW column", obj.Name, suspend.State.Name))
+	}
+	for _, value := range []string{suspend.Started, suspend.Suspended} {
+		if _, ok := suspend.State.Enum.ConstantName(value); !ok {
+			panic(fmt.Sprintf("object %q: SuspendForAlter value %q is not a value of the %s enum", obj.Name, value, suspend.State.Enum.Name))
+		}
+	}
+	for _, keyword := range []string{"SUSPEND", "RESUME"} {
+		if !slices.ContainsFunc(obj.Alter.Clauses, func(c AlterClause) bool { return c.Kind == AlterClauseKeyword && c.SQL == keyword }) {
+			panic(fmt.Sprintf("object %q: SuspendForAlter needs the %s ALTER keyword", obj.Name, keyword))
+		}
 	}
 }
 

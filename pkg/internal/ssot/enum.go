@@ -127,6 +127,14 @@ func (e *Enum) KindPtr() string {
 	return "*" + e.Kind()
 }
 
+// ConstantName returns the Go constant name of a declared value, such as AlertStateStarted for "started".
+func (e *Enum) ConstantName(value string) (string, bool) {
+	if !slices.Contains(e.Values, value) {
+		return "", false
+	}
+	return e.valueName(value), true
+}
+
 // valueName returns the constant name for a given enum value.
 // E.g. for type ProgrammaticAccessTokenStatus and value "ACTIVE_VALUE" -> "ProgrammaticAccessTokenStatusActiveValue".
 // A lowercase-to-uppercase boundary is split first, so "GeoJSON" becomes "GeoJson" while the SQL value stays "GeoJSON".
