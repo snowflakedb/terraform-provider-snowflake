@@ -296,11 +296,21 @@ func (opts *AlterTableOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.Set) {
+		if !anyValueSet(opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment"))
+		}
+	}
 	if valueSet(opts.SetTags) {
 		for setTagIdx, setTag := range opts.SetTags {
 			if !ValidObjectIdentifier(setTag.Name) {
 				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.SetTags[%d]", setTagIdx), "Name"))
 			}
+		}
+	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ChangeTracking, opts.Unset.DefaultDdlCollation, opts.Unset.EnableSchemaEvolution, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
 		}
 	}
 	if valueSet(opts.AddStorageLifecyclePolicy) {

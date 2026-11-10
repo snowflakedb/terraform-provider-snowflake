@@ -251,6 +251,7 @@ var TableCreateAttrs = struct {
 		Type:      ssot.AttrString,
 		SqlOnly:   true,
 		CreateSql: ssot.StringParameter(ssot.AllowEmpty()),
+		SetSql:    ssot.StringParameter(ssot.AllowEmpty()),
 	},
 	CopyGrants: ssot.Attribute{
 		Name:      "copy_grants",
@@ -384,6 +385,28 @@ var Table = ssot.Object{
 			&TableCreateAttrs.JoinPolicy,
 			ssot.Tags,
 			&TableAttrs.Comment,
+		},
+	},
+	// SET and UNSET are the alter-table parameters. UNSET is comma-separated: the alter-table
+	// grammar repeats the properties with [ , ... ].
+	Alter: ssot.AlterSpec{
+		Clauses: []ssot.AlterClause{
+			ssot.AlterSet(
+				&TableCreateAttrs.EnableSchemaEvolution,
+				&TableAttrs.DataRetentionTimeInDays,
+				&TableCreateAttrs.MaxDataExtensionTimeInDays,
+				&TableAttrs.ChangeTracking,
+				&TableCreateAttrs.DefaultDdlCollation,
+				&TableAttrs.Comment,
+			),
+			ssot.AlterUnset(
+				&TableAttrs.DataRetentionTimeInDays,
+				&TableCreateAttrs.MaxDataExtensionTimeInDays,
+				&TableAttrs.ChangeTracking,
+				&TableCreateAttrs.DefaultDdlCollation,
+				&TableCreateAttrs.EnableSchemaEvolution,
+				&TableAttrs.Comment,
+			),
 		},
 	},
 	Show: ssot.OutputSpec{

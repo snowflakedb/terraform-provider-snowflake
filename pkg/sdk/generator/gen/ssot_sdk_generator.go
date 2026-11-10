@@ -1063,6 +1063,15 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 }
 
 func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+	var setOptions FieldTransformer = KeywordOptions().SQL("SET")
+	if cfg.AlterSetList {
+		setOptions = ListOptions().NoParentheses().SQL("SET")
+	}
+	return q.OptionalQueryStructField("Set", AlterSetQueryStruct(obj, cfg), setOptions)
+}
+
+// AlterSetQueryStruct builds the SET struct. An object can call it before ALTER itself is generated.
+func AlterSetQueryStruct(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
 	setParams := parametersForStatement(obj, obj.SetAttributes(), "SET")
 	setStruct := NewQueryStruct(obj.Name + "Set")
 	setStruct.owner = obj.Name
@@ -1077,16 +1086,20 @@ func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *Que
 	if cfg.AlterSetAdditionalValidations {
 		setStruct = setStruct.WithAdditionalValidations()
 	}
-	var setOptions FieldTransformer = KeywordOptions().SQL("SET")
-	if cfg.AlterSetList {
-		setOptions = ListOptions().NoParentheses().SQL("SET")
-	}
-	return q.OptionalQueryStructField("Set", setStruct, setOptions)
+	return setStruct
 }
 
 func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
+	return q.OptionalQueryStructField("Unset", AlterUnsetQueryStruct(obj), ListOptions().NoParentheses().SQL("UNSET"))
+}
+
+// AlterUnsetQueryStruct builds the UNSET struct. The statement embeds it as a list with no parentheses,
+// so the fields are comma-separated. An object can call it before ALTER itself is generated.
+func AlterUnsetQueryStruct(obj ssot.Object) *QueryStruct {
 	unsetParams := parametersForStatement(obj, obj.UnsetAttributes(), "UNSET")
-	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.UnsetAttributes(), attributeSqlUnset, unsetParams)
+	unsetStruct := NewQueryStruct(obj.Name + "Unset")
+	unsetStruct.owner = obj.Name
+	unsetStruct = unsetStruct.appendSqlSequenceParams(obj.UnsetAttributes(), attributeSqlUnset, unsetParams)
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
 	for _, group := range obj.UnsetConflicts {
 		names := collections.Map(group, func(member *ssot.Attribute) string {
@@ -1094,7 +1107,7 @@ func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
 		})
 		unsetStruct = unsetStruct.WithValidation(ConflictingFields, names...)
 	}
-	return q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
+	return unsetStruct
 }
 
 func parametersForStatement(obj ssot.Object, list []*ssot.Attribute, statement string) []ssot.ParameterDef {
