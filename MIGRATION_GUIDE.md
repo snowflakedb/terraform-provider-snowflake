@@ -48,6 +48,11 @@ Newly supported resources:
 - [`snowflake_file_format_orc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc)
 - [`snowflake_file_format_parquet`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_parquet)
 - [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml)
+- [`snowflake_stage_external_azure`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_azure)
+- [`snowflake_stage_external_gcs`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_gcs)
+- [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3)
+- [`snowflake_stage_external_s3_compatible`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3_compatible)
+- [`snowflake_stage_internal`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_internal)
 
 Without the experiment, changing `database` or `schema` on these resources still recreates the object. No configuration changes are required unless you want to enable the experiment.
 
