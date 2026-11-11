@@ -151,6 +151,7 @@ Read-Only:
 
 Read-Only:
 
+- `sigv4_external_id` (String)
 - `sigv4_iam_role` (String)
 - `sigv4_signing_region` (String)
 

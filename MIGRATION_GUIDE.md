@@ -105,6 +105,14 @@ The provider now leaves `backup_instance_families` unset in state when Snowflake
 
 No configuration changes are required.
 
+### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` reads the SigV4 external ID
+
+Previously, the provider did not read the external ID of a SigV4 REST authentication, which Snowflake returns in `DESCRIBE CATALOG INTEGRATION` as a separate `API_AWS_EXTERNAL_ID` property. After importing a [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) whose configuration sets `sigv4_rest_authentication.0.sigv4_external_id`, the plan changed it from an empty value, which forces a replacement.
+
+The provider now reads `API_AWS_EXTERNAL_ID` into the new `describe_output.0.sigv4_rest_authentication.0.sigv4_external_id` field in the resource and in `snowflake_catalog_integrations`. A difference in `sigv4_external_id` is suppressed when the configured value matches the value in `describe_output`. External changes to `sigv4_external_id` are still not detected.
+
+No configuration changes are required. If you added `ignore_changes` for `sigv4_external_id` as a workaround, you can remove it.
+
 ## v2.22.x ➞ v2.23.0
 
 ### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails

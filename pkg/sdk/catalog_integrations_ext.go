@@ -223,6 +223,9 @@ func ParseCatalogIntegrationIcebergRestDescribed(properties []CatalogIntegration
 			}
 		}
 	}
+	if details.Sigv4RestAuthentication != nil {
+		details.Sigv4RestAuthentication.Sigv4ExternalId = parseApiAwsExternalId(properties)
+	}
 	return details, errors.Join(errs...)
 }
 
@@ -277,7 +280,21 @@ func ParseCatalogIntegrationDescribed(properties []CatalogIntegrationProperty) (
 			}
 		}
 	}
+	if details.Sigv4RestAuthentication != nil {
+		details.Sigv4RestAuthentication.Sigv4ExternalId = parseApiAwsExternalId(properties)
+	}
 	return details, errors.Join(errs...)
+}
+
+// parseApiAwsExternalId returns the external ID of a SIGV4 REST authentication.
+// Snowflake returns it as a separate API_AWS_EXTERNAL_ID property, not inside REST_AUTHENTICATION.
+func parseApiAwsExternalId(properties []CatalogIntegrationProperty) string {
+	for _, prop := range properties {
+		if prop.Property == "API_AWS_EXTERNAL_ID" {
+			return prop.PropertyValue
+		}
+	}
+	return ""
 }
 
 func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (CatalogIntegrationOpenCatalogRestConfigDetails, error) {
@@ -406,7 +423,7 @@ func parseSigV4RestAuthenticationProperty(parts []string) (*CatalogIntegrationIc
 			// SIGV4_SIGNING_REGION is always returned, even if unset
 			restAuthentication.Sigv4SigningRegion = v
 		}
-		// SIGV4_EXTERNAL_ID not returned
+		// SIGV4_EXTERNAL_ID is returned as a separate API_AWS_EXTERNAL_ID property, see parseApiAwsExternalId
 	}
 	return restAuthentication, nil
 }
