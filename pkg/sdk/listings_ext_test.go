@@ -115,6 +115,76 @@ func init() {
 			id.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name(),
 		)
 
+	listingsTests.CreateOrganization.
+		withModify(
+			case_Listings_validation_CreateOrganization_opts_ExactlyOneValueSet_MoreThanOneSet,
+			func(opts *CreateOrganizationListingOptions) {
+				opts.As = &manifest
+				opts.From = &from
+			},
+		).
+		withModify(
+			case_Listings_validation_CreateOrganization_opts_With_ExactlyOneValueSet_NoneSet,
+			func(opts *CreateOrganizationListingOptions) {
+				opts.As = &manifest
+				opts.With = &ListingWith{}
+			},
+		).
+		withModify(
+			case_Listings_validation_CreateOrganization_opts_With_ExactlyOneValueSet_MoreThanOneSet,
+			func(opts *CreateOrganizationListingOptions) {
+				opts.As = &manifest
+				opts.With = &ListingWith{
+					Share:              &shareId,
+					ApplicationPackage: &applicationPackageId,
+				}
+			},
+		).
+		withModifyAndExpectedSqlf(
+			case_Listings_sql_CreateOrganization_basic,
+			func(opts *CreateOrganizationListingOptions) { opts.As = &manifest },
+			"CREATE ORGANIZATION LISTING %s AS $$%s$$", id.FullyQualifiedName(), manifest,
+		).
+		withModifyAndExpectedSqlf(
+			case_Listings_sql_CreateOrganization_all,
+			func(opts *CreateOrganizationListingOptions) {
+				opts.IfNotExists = new(true)
+				opts.With = &ListingWith{Share: &shareId}
+				opts.As = &manifest
+				opts.Publish = new(true)
+			},
+			"CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true",
+			id.FullyQualifiedName(), shareId.FullyQualifiedName(), manifest,
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOrganization_From",
+			func(opts *CreateOrganizationListingOptions) { opts.From = &from },
+			`CREATE ORGANIZATION LISTING %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir'`,
+			id.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name(),
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOrganization_all_As_applicationPackage",
+			func(opts *CreateOrganizationListingOptions) {
+				opts.IfNotExists = new(true)
+				opts.With = &ListingWith{ApplicationPackage: &applicationPackageId}
+				opts.As = &manifest
+				opts.Publish = new(false)
+			},
+			"CREATE ORGANIZATION LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = false",
+			id.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), manifest,
+		).
+		withAdditionalSqlCasef(
+			"sql_CreateOrganization_all_From_share",
+			func(opts *CreateOrganizationListingOptions) {
+				opts.IfNotExists = new(true)
+				opts.With = &ListingWith{Share: &shareId}
+				opts.From = &from
+				opts.Publish = new(true)
+			},
+			`CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' PUBLISH = true`,
+			id.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name(),
+		)
+
 	listingsTests.Alter.
 		withModifyAndExpectedSqlf(
 			case_Listings_sql_Alter_Publish,

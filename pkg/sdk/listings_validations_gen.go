@@ -4,6 +4,7 @@ package sdk
 
 var (
 	_ validatable = new(CreateListingOptions)
+	_ validatable = new(CreateOrganizationListingOptions)
 	_ validatable = new(AlterListingOptions)
 	_ validatable = new(DropListingOptions)
 	_ validatable = new(ShowListingOptions)
@@ -28,6 +29,28 @@ func (opts *CreateListingOptions) validate() error {
 	if valueSet(opts.With) {
 		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
 			errs = append(errs, errExactlyOneOf("CreateListingOptions.With", "Share", "ApplicationPackage"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateOrganizationListingOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CreateOrganizationListingOptions", "name"))
+	}
+	if !exactlyOneValueSet(opts.As, opts.From) {
+		errs = append(errs, errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"))
+	}
+	if opts.As != nil && containsDoubleDollarQuotes(*opts.As) {
+		errs = append(errs, errDoubleDollarQuotesNotAllowed("CreateOrganizationListingOptions", "As"))
+	}
+	if valueSet(opts.With) {
+		if !exactlyOneValueSet(opts.With.Share, opts.With.ApplicationPackage) {
+			errs = append(errs, errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"))
 		}
 	}
 	return JoinErrors(errs...)

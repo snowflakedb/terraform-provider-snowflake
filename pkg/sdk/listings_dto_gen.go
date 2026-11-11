@@ -3,12 +3,13 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateListingOptions]       = new(CreateListingRequest)
-	_ optionsProvider[AlterListingOptions]        = new(AlterListingRequest)
-	_ optionsProvider[DropListingOptions]         = new(DropListingRequest)
-	_ optionsProvider[ShowListingOptions]         = new(ShowListingRequest)
-	_ optionsProvider[DescribeListingOptions]     = new(DescribeListingRequest)
-	_ optionsProvider[ShowVersionsListingOptions] = new(ShowVersionsListingRequest)
+	_ optionsProvider[CreateListingOptions]             = new(CreateListingRequest)
+	_ optionsProvider[CreateOrganizationListingOptions] = new(CreateOrganizationListingRequest)
+	_ optionsProvider[AlterListingOptions]              = new(AlterListingRequest)
+	_ optionsProvider[DropListingOptions]               = new(DropListingRequest)
+	_ optionsProvider[ShowListingOptions]               = new(ShowListingRequest)
+	_ optionsProvider[DescribeListingOptions]           = new(DescribeListingRequest)
+	_ optionsProvider[ShowVersionsListingOptions]       = new(ShowVersionsListingRequest)
 )
 
 type CreateListingRequest struct {
@@ -25,6 +26,15 @@ type CreateListingRequest struct {
 type ListingWithRequest struct {
 	Share              *AccountObjectIdentifier
 	ApplicationPackage *AccountObjectIdentifier
+}
+
+type CreateOrganizationListingRequest struct {
+	IfNotExists *bool
+	name        AccountObjectIdentifier // required
+	With        *ListingWithRequest
+	As          *string
+	From        *Location
+	Publish     *bool
 }
 
 type AlterListingRequest struct {
