@@ -105,6 +105,14 @@ The provider now leaves `backup_instance_families` unset in state when Snowflake
 
 No configuration changes are required.
 
+### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` reads the REST authentication type case-insensitively
+
+Previously, the provider matched the `TYPE` in the `REST_AUTHENTICATION` property of `DESCRIBE CATALOG INTEGRATION` case-sensitively. Snowflake can return the type in lowercase (for example, `TYPE=sigv4`), so the authentication details were not read. After importing such a [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest), `sigv4_rest_authentication` and `describe_output.0.sigv4_rest_authentication` were empty, and the next plan replaced the resource because `sigv4_rest_authentication` is force-new. The same applied to `describe_output` in `snowflake_catalog_integrations`.
+
+The provider now matches the type case-insensitively.
+
+No configuration changes are required. If you added `ignore_changes = [sigv4_rest_authentication]` as a workaround, you can remove it.
+
 ## v2.22.x ➞ v2.23.0
 
 ### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails

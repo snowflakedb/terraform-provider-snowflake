@@ -347,20 +347,21 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*Cata
 	for _, part := range parts {
 		k, v, _ := strings.Cut(part, "=")
 		if k == "TYPE" {
-			switch v {
-			case string(CatalogIntegrationRestAuthenticationTypeOauth):
+			// Snowflake may return the type in lowercase (e.g. TYPE=sigv4).
+			switch CatalogIntegrationRestAuthenticationType(strings.ToUpper(v)) {
+			case CatalogIntegrationRestAuthenticationTypeOauth:
 				if restAuth, err := parseOAuthRestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
 					oAuthRestAuthentication = restAuth
 				}
-			case string(CatalogIntegrationRestAuthenticationTypeBearer):
+			case CatalogIntegrationRestAuthenticationTypeBearer:
 				if restAuth, err := parseBearerRestAuthenticationProperty(); err != nil {
 					errs = append(errs, err)
 				} else {
 					bearerRestAuthentication = restAuth
 				}
-			case string(CatalogIntegrationRestAuthenticationTypeSigv4):
+			case CatalogIntegrationRestAuthenticationTypeSigv4:
 				if restAuth, err := parseSigV4RestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
