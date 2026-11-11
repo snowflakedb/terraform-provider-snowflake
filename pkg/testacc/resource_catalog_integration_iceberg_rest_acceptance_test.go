@@ -974,9 +974,13 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportSigV4(t *testing.T) {
 						plancheck.ExpectEmptyPlan(),
 					},
 				},
-				Check: assertThat(t,
-					resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
-						HasSigv4RestAuthenticationSigv4ExternalId(sigV4ExternalId),
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
+							HasSigv4RestAuthenticationSigv4ExternalId(sigV4ExternalId),
+					),
+					// Snowflake assigns the IAM user, so only its presence is checked.
+					resource.TestCheckResourceAttrSet(ref, "describe_output.0.api_aws_iam_user_arn"),
 				),
 			},
 		},
