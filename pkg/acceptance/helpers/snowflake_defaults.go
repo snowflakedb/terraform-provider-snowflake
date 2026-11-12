@@ -72,15 +72,6 @@ func (c *SnowflakeDefaultsClient) DefaultEnableCortexAnalystLevel(t *testing.T) 
 	return sdk.ParameterTypeSnowflakeDefault
 }
 
-// TODO(SNOW-4369006): Adjust once Snowflake environments converge on the returned output.
-func (c *SnowflakeDefaultsClient) ApiIntegrationAllowedAuthenticationSecrets(t *testing.T, expectedValue string) string {
-	t.Helper()
-	if c.context.snowflakeEnvironment != testenvs.SnowflakeProdEnvironment {
-		return ""
-	}
-	return expectedValue
-}
-
 // DefaultEnableNotebookCreationInPersonalDbLevel returns the expected parameter
 // level for ENABLE_NOTEBOOK_CREATION_IN_PERSONAL_DB after unset. Prod accounts
 // surface SYSTEM; non-prod accounts inherit the Snowflake default (empty level).
