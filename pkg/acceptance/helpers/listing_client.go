@@ -162,6 +162,11 @@ func (c *ListingClient) BasicManifestWithUnquotedValuesAndTargetAccountsAndDiffe
 	return c.basicManifestWithUnquotedValuesAndTargetAccount(t, "with_target_accounts_and_different_subtitle_", "different_subtitle", targetAccounts...)
 }
 
+func (c *ListingClient) OrganizationBasicManifest(t *testing.T) (string, string) {
+	t.Helper()
+	return c.organizationBasicManifest(t, "organization_basic_", "subtitle")
+}
+
 func (c *ListingClient) basicManifest(t *testing.T, titleSuffix string, subtitle string) (string, string) {
 	t.Helper()
 	title := c.ids.WithTestObjectSuffix(titleSuffix)
@@ -171,6 +176,28 @@ description: "description"
 listing_terms:
   type: "STANDARD"
 `, title, subtitle), title
+}
+
+func (c *ListingClient) organizationBasicManifest(t *testing.T, titleSuffix string, subtitle string) (string, string) {
+	t.Helper()
+	title := c.ids.WithTestObjectSuffix(titleSuffix)
+	currentRegion, err := c.context.client.ContextFunctions.CurrentRegion(context.Background())
+	require.NoError(t, err)
+	region := currentRegion.Value
+	if !strings.Contains(region, ".") {
+		region = "PUBLIC." + region
+	}
+	return fmt.Sprintf(`title: "%s"
+subtitle: "%s"
+description: "description"
+organization_profile: "INTERNAL"
+organization_targets:
+  access:
+  - all_internal_accounts: true
+locations:
+  access_regions:
+  - name: "%s"
+`, title, subtitle, region), title
 }
 
 func (c *ListingClient) basicManifestWithUnquotedValues(t *testing.T, titleSuffix string, subtitle string) (string, string) {

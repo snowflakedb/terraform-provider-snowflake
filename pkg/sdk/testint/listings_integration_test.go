@@ -233,6 +233,158 @@ func TestInt_Listings(t *testing.T) {
 		assertCompleteWithApplicationPackage(t, id)
 	})
 
+	organizationManifest, organizationManifestTitle := testClientHelper().Listing.OrganizationBasicManifest(t)
+	testClientHelper().Stage.PutInLocationWithContent(t, stage.Location()+"/organization", "manifest.yml", organizationManifest)
+	organizationManifestStageLocation := sdk.NewStageLocation(stage.ID(), "organization")
+
+	organizationListingAssert := func(t *testing.T, id sdk.AccountObjectIdentifier) *objectassert.ListingAssert {
+		t.Helper()
+
+		return objectassert.Listing(t, id).
+			HasGlobalNameNotEmpty().
+			HasName(id.Name()).
+			HasTitle(organizationManifestTitle).
+			HasSubtitle("subtitle").
+			HasProfile("").
+			HasCreatedOnNotEmpty().
+			HasUpdatedOnNotEmpty().
+			HasNoReviewState().
+			HasNoRegions().
+			HasTargetAccounts("").
+			HasIsMonetized(false).
+			HasIsTargeted(true).
+			HasIsLimitedTrial(false).
+			HasIsByRequest(false).
+			HasDistribution("ORGANIZATION").
+			HasOrganizationProfileName("INTERNAL").
+			HasUniformListingLocator(fmt.Sprintf("ORGDATACLOUD$INTERNAL$%s", id.Name())).
+			HasNoDetailedTargetAccounts()
+	}
+
+	assertOrganizationListingDraft := func(t *testing.T, id sdk.AccountObjectIdentifier) *objectassert.ListingAssert {
+		t.Helper()
+
+		return organizationListingAssert(t, id).
+			HasState(sdk.ListingStateDraft).
+			HasNoPublishedOn()
+	}
+
+	t.Run("create organization listing from manifest: no optionals", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(organizationManifest).
+			WithReview(false).
+			WithPublish(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertThatObject(t, assertOrganizationListingDraft(t, id).
+			HasNoComment().
+			HasIsApplication(false).
+			HasIsMountlessQueryable(true),
+		)
+	})
+
+	t.Run("create organization listing from stage: no optionals", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithFrom(organizationManifestStageLocation).
+			WithReview(false).
+			WithPublish(false))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertThatObject(t, assertOrganizationListingDraft(t, id).
+			HasNoComment().
+			HasIsApplication(false).
+			HasIsMountlessQueryable(true),
+		)
+	})
+
+	assertOrganizationListingCompleteWithShare := func(t *testing.T, id sdk.AccountObjectIdentifier) {
+		t.Helper()
+
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
+		assert.NoError(t, err)
+		assert.Equal(t, share.ID().Name(), listingDetails.Share.Name())
+
+		assertThatObject(t, assertOrganizationListingDraft(t, id).
+			HasComment(comment).
+			HasIsApplication(false).
+			HasIsMountlessQueryable(true),
+		)
+	}
+
+	t.Run("create organization listing from manifest: complete with share", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(organizationManifest).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertOrganizationListingCompleteWithShare(t, id)
+	})
+
+	t.Run("create organization listing from stage: complete with share", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithFrom(organizationManifestStageLocation).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertOrganizationListingCompleteWithShare(t, id)
+	})
+
+	t.Run("create organization listing from manifest: complete with application package", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(organizationManifest).
+			WithWith(*sdk.NewListingWithRequest().WithApplicationPackage(applicationPackage.ID())).
+			WithIfNotExists(true).
+			WithPublish(false).
+			WithReview(false).
+			WithComment(comment))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		listingDetails, err := client.Listings.Describe(ctx, sdk.NewDescribeListingRequest(id))
+		assert.NoError(t, err)
+		assert.Equal(t, applicationPackage.ID().Name(), listingDetails.ApplicationPackage.Name())
+
+		assertThatObject(t, assertOrganizationListingDraft(t, id).
+			HasComment(comment).
+			HasIsApplication(true).
+			HasIsMountlessQueryable(false),
+		)
+	})
+
+	t.Run("create organization listing: published", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		err := client.Listings.CreateOrganization(ctx, sdk.NewCreateOrganizationListingRequest(id).
+			WithAs(organizationManifest).
+			WithWith(*sdk.NewListingWithRequest().WithShare(share.ID())).
+			WithPublish(true))
+		assert.NoError(t, err)
+		t.Cleanup(testClientHelper().Listing.DropFunc(t, id))
+
+		assertThatObject(t, organizationListingAssert(t, id).
+			HasState(sdk.ListingStatePublished).
+			HasNoComment().
+			HasIsApplication(false).
+			HasIsMountlessQueryable(true),
+		)
+	})
+
 	t.Run("alter: change state", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Listings.Create(ctx, sdk.NewCreateListingRequest(id).
