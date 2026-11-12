@@ -347,20 +347,24 @@ func parseRestAuthenticationProperty(property CatalogIntegrationProperty) (*Cata
 	for _, part := range parts {
 		k, v, _ := strings.Cut(part, "=")
 		if k == "TYPE" {
-			switch v {
-			case string(CatalogIntegrationRestAuthenticationTypeOauth):
+			restAuthType, err := ToCatalogIntegrationRestAuthenticationType(v)
+			if err != nil {
+				continue
+			}
+			switch restAuthType {
+			case CatalogIntegrationRestAuthenticationTypeOauth:
 				if restAuth, err := parseOAuthRestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
 					oAuthRestAuthentication = restAuth
 				}
-			case string(CatalogIntegrationRestAuthenticationTypeBearer):
+			case CatalogIntegrationRestAuthenticationTypeBearer:
 				if restAuth, err := parseBearerRestAuthenticationProperty(); err != nil {
 					errs = append(errs, err)
 				} else {
 					bearerRestAuthentication = restAuth
 				}
-			case string(CatalogIntegrationRestAuthenticationTypeSigv4):
+			case CatalogIntegrationRestAuthenticationTypeSigv4:
 				if restAuth, err := parseSigV4RestAuthenticationProperty(parts); err != nil {
 					errs = append(errs, err)
 				} else {
