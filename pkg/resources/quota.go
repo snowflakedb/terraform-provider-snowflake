@@ -119,6 +119,71 @@ var quotaSchema = map[string]*schema.Schema{
 	"per_user_limit_monthly": quotaPerUserLimitSchema("monthly"),
 	"per_user_limit_weekly":  quotaPerUserLimitSchema("weekly"),
 	"per_user_limit_daily":   quotaPerUserLimitSchema("daily"),
+	"block_enforcement_enabled": {
+		Type:     schema.TypeBool,
+		Optional: true,
+		Default:  false,
+		Description: joinWithSpace(
+			"Blocks new requests of users who reached their limit.",
+			"It applies only to the AI domains; Snowflake accepts it for the WAREHOUSE domain too, but it has no effect there.",
+		),
+	},
+	"notify_blocked_users": {
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: "Sends an email to users when they are blocked. Used only when `block_enforcement_enabled` is true.",
+	},
+	"notification_threshold": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Set:      quotaNotificationThresholdHash,
+		Description: joinWithSpace(
+			"Thresholds (percentages of the limit) at which notifications are sent.",
+			"Snowflake keeps one threshold per threshold, spend strategy, and cycle, so two of them differing only in `notify_user` produce a permanent diff.",
+		),
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"threshold": {
+					Type:        schema.TypeInt,
+					Required:    true,
+					Description: "Percentage of the limit.",
+				},
+				"spend_strategy": quotaSpendStrategySchema(sdk.QuotaSpendStrategyProjected),
+				"notify_user": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     true,
+					Description: "Notifies the user who crossed the threshold.",
+				},
+				"cycle": {
+					Type:             schema.TypeString,
+					Optional:         true,
+					Default:          string(sdk.QuotaCycleMonthly),
+					Description:      joinWithSpace("Cycle the threshold applies to.", enumValuesDescription(sdk.AllQuotaCycles)),
+					ValidateDiagFunc: sdkValidation(sdk.ToQuotaCycle),
+					DiffSuppressFunc: NormalizeAndCompare(sdk.ToQuotaCycle),
+				},
+			},
+		},
+	},
+	"notification_integrations": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type:             schema.TypeString,
+			ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
+		},
+		DiffSuppressFunc: NormalizeAndCompareIdentifiersInSet("notification_integrations"),
+		Description:      relatedResourceDescription("Webhook or queue notification integrations used to send admin summaries; email integrations aren't accepted (use `admin_emails` for email recipients). USAGE on each integration must be granted to the SNOWFLAKE application.", resources.NotificationIntegration),
+	},
+	"admin_emails": {
+		Type:             schema.TypeSet,
+		Optional:         true,
+		Elem:             &schema.Schema{Type: schema.TypeString},
+		DiffSuppressFunc: IgnoreCaseInSet("admin_emails"),
+		Description:      "Email addresses that receive admin summary notifications. Each must be the verified email of a user in the account.",
+	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
@@ -170,6 +235,17 @@ func quotaPerUserLimitSchema(cycle string) *schema.Schema {
 	}
 }
 
+func quotaSpendStrategySchema(defaultValue sdk.QuotaSpendStrategy) *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          string(defaultValue),
+		Description:      joinWithSpace("Whether the threshold applies to actual or projected spend.", enumValuesDescription(sdk.AllQuotaSpendStrategies)),
+		ValidateDiagFunc: sdkValidation(sdk.ToQuotaSpendStrategy),
+		DiffSuppressFunc: NormalizeAndCompare(sdk.ToQuotaSpendStrategy),
+	}
+}
+
 func Quota() *schema.Resource {
 	deleteFunc := ResourceDeleteContextFunc(
 		sdk.ParseSchemaObjectIdentifier,
@@ -205,6 +281,8 @@ func Quota() *schema.Resource {
 				"per_user_limit_monthly",
 				"per_user_limit_weekly",
 				"per_user_limit_daily",
+				"block_enforcement_enabled",
+				"notify_blocked_users",
 			),
 			ComputedIfAnyAttributeChanged(quotaSchema, FullyQualifiedNameAttributeName, "name", "schema", "database"),
 		)),
@@ -283,6 +361,11 @@ func ReadQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		d.Set("per_user_limit_monthly", quotaPerUserLimit(details.Config.PerUserLimit)),
 		d.Set("per_user_limit_weekly", quotaPerUserLimit(details.Config.PerUserLimitWeekly)),
 		d.Set("per_user_limit_daily", quotaPerUserLimit(details.Config.PerUserLimitDaily)),
+		d.Set("block_enforcement_enabled", details.Config.BlockEnforcementEnabled),
+		d.Set("notify_blocked_users", details.Config.PerUserBlockNotificationsEnabled),
+		d.Set("notification_threshold", quotaNotificationThresholdsToSchema(details.NotificationThresholds)),
+		d.Set("notification_integrations", quotaNotificationIntegrationNames(details.NotificationIntegrations)),
+		d.Set("admin_emails", details.Config.AdminEmails),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.QuotaToSchema(quota)}),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.QuotaDetailsToSchema(details)}),
 	)
@@ -350,9 +433,28 @@ func UpdateQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 }
 
 // applyQuotaConfiguration calls the instance methods for the attributes that changed, which on create are the configured ones.
-// The calls aren't transactional: if one fails, the quota is left partially configured.
+// Block enforcement is disabled before the other changes and enabled after them, so that users aren't blocked by a partially
+// applied configuration. The calls aren't transactional: if one fails, the quota is left partially configured.
 func applyQuotaConfiguration(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) error {
+	blockEnforcementEnabled := d.Get("block_enforcement_enabled").(bool)
+	blockEnforcementChanged := d.HasChange("block_enforcement_enabled") || d.HasChange("notify_blocked_users")
+	if d.IsNewResource() {
+		// a new quota has block enforcement disabled and the user notifications enabled
+		blockEnforcementChanged = blockEnforcementEnabled || !d.Get("notify_blocked_users").(bool)
+	}
+	setBlockEnforcement := func() error {
+		args := sdk.NewQuotaSetBlockEnforcementEnabledArgsRequest(blockEnforcementEnabled).WithNotifyUsers(d.Get("notify_blocked_users").(bool))
+		_, err := quotas.SetBlockEnforcementEnabled(ctx, sdk.NewSetBlockEnforcementEnabledQuotaRequest(id, *args))
+		return err
+	}
+
 	steps := []func() error{
+		func() error {
+			if blockEnforcementChanged && !blockEnforcementEnabled {
+				return setBlockEnforcement()
+			}
+			return nil
+		},
 		func() error { return updateQuotaSharedResources(ctx, d, quotas, id) },
 		func() error { return updateQuotaUserTags(ctx, d, quotas, id) },
 		func() error { return updateQuotaExcludedUserTags(ctx, d, quotas, id) },
@@ -370,6 +472,22 @@ func applyQuotaConfiguration(ctx context.Context, d *schema.ResourceData, quotas
 			})
 		},
 		func() error { return updateQuotaPerUserLimits(ctx, d, quotas, id) },
+		func() error { return updateQuotaNotificationThresholds(ctx, d, quotas, id) },
+		func() error { return updateQuotaNotificationIntegrations(ctx, d, quotas, id) },
+		func() error {
+			if !d.HasChange("admin_emails") {
+				return nil
+			}
+			args := sdk.NewQuotaSetAdminEmailsArgsRequestFromEmails(expandStringList(d.Get("admin_emails").(*schema.Set).List())...)
+			_, err := quotas.SetAdminEmails(ctx, sdk.NewSetAdminEmailsQuotaRequest(id, *args))
+			return err
+		},
+		func() error {
+			if blockEnforcementChanged && blockEnforcementEnabled {
+				return setBlockEnforcement()
+			}
+			return nil
+		},
 	}
 	for _, step := range steps {
 		if err := step(); err != nil {
@@ -515,10 +633,82 @@ func updateQuotaPerUserLimits(ctx context.Context, d *schema.ResourceData, quota
 	return nil
 }
 
+func updateQuotaNotificationThresholds(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) error {
+	if !d.HasChange("notification_threshold") {
+		return nil
+	}
+	removed, added := quotaSetChange(d, "notification_threshold")
+	return removeThenAdd(removed, added,
+		func(raw any) error {
+			threshold, err := quotaNotificationThresholdFromRaw(raw)
+			if err != nil {
+				return err
+			}
+			args := sdk.NewQuotaRemoveNotificationThresholdArgsRequest(threshold.Threshold, threshold.SpendStrategy).WithCycle(threshold.Cycle)
+			_, err = quotas.RemoveNotificationThreshold(ctx, sdk.NewRemoveNotificationThresholdQuotaRequest(id, *args))
+			return err
+		},
+		func(raw any) error {
+			threshold, err := quotaNotificationThresholdFromRaw(raw)
+			if err != nil {
+				return err
+			}
+			args := sdk.NewQuotaAddNotificationThresholdArgsRequest(threshold.Threshold, threshold.SpendStrategy, threshold.NotifyUser, threshold.Cycle)
+			_, err = quotas.AddNotificationThreshold(ctx, sdk.NewAddNotificationThresholdQuotaRequest(id, *args))
+			return err
+		},
+	)
+}
+
+func updateQuotaNotificationIntegrations(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) error {
+	if !d.HasChange("notification_integrations") {
+		return nil
+	}
+	removed, added := quotaSetChange(d, "notification_integrations")
+	return removeThenAdd(removed, added,
+		func(raw any) error {
+			integrationId, err := sdk.ParseAccountObjectIdentifier(raw.(string))
+			if err != nil {
+				return err
+			}
+			args := sdk.NewQuotaRemoveNotificationIntegrationArgsRequest(integrationId)
+			_, err = quotas.RemoveNotificationIntegration(ctx, sdk.NewRemoveNotificationIntegrationQuotaRequest(id, *args))
+			return err
+		},
+		func(raw any) error {
+			integrationId, err := sdk.ParseAccountObjectIdentifier(raw.(string))
+			if err != nil {
+				return err
+			}
+			args := sdk.NewQuotaAddNotificationIntegrationArgsRequest(integrationId)
+			_, err = quotas.AddNotificationIntegration(ctx, sdk.NewAddNotificationIntegrationQuotaRequest(id, *args))
+			return err
+		},
+	)
+}
+
 func quotaTagValueFromRaw(raw any) (sdk.SchemaObjectIdentifier, string, error) {
 	tagValue := raw.(map[string]any)
 	tag, err := sdk.ParseSchemaObjectIdentifier(tagValue["tag"].(string))
 	return tag, tagValue["value"].(string), err
+}
+
+func quotaNotificationThresholdFromRaw(raw any) (sdk.QuotaNotificationThreshold, error) {
+	threshold := raw.(map[string]any)
+	spendStrategy, err := sdk.ToQuotaSpendStrategy(threshold["spend_strategy"].(string))
+	if err != nil {
+		return sdk.QuotaNotificationThreshold{}, err
+	}
+	cycle, err := sdk.ToQuotaCycle(threshold["cycle"].(string))
+	if err != nil {
+		return sdk.QuotaNotificationThreshold{}, err
+	}
+	return sdk.QuotaNotificationThreshold{
+		Threshold:     threshold["threshold"].(int),
+		SpendStrategy: spendStrategy,
+		NotifyUser:    threshold["notify_user"].(bool),
+		Cycle:         cycle,
+	}, nil
 }
 
 func quotaSharedResourcesToSchema(scope sdk.QuotaScope) ([]map[string]any, []string) {
@@ -574,6 +764,27 @@ func quotaPerUserLimit(limit *int) int {
 	return *limit
 }
 
+func quotaNotificationThresholdsToSchema(thresholds []sdk.QuotaNotificationThreshold) []map[string]any {
+	result := make([]map[string]any, len(thresholds))
+	for i, threshold := range thresholds {
+		result[i] = map[string]any{
+			"threshold":      threshold.Threshold,
+			"spend_strategy": string(threshold.SpendStrategy),
+			"notify_user":    threshold.NotifyUser,
+			"cycle":          string(threshold.Cycle),
+		}
+	}
+	return result
+}
+
+func quotaNotificationIntegrationNames(integrations []sdk.QuotaNotificationIntegration) []string {
+	names := make([]string, len(integrations))
+	for i, integration := range integrations {
+		names[i] = integration.IntegrationName
+	}
+	return names
+}
+
 var quotaDomainsWithPlainInstances = []sdk.QuotaSharedResourceDomain{sdk.QuotaSharedResourceDomainAiFunction, sdk.QuotaSharedResourceDomainCortexCode}
 
 // quotaInstanceKey normalizes an instance of a shared resource domain, so that its equivalent spellings hash and compare the same.
@@ -614,4 +825,14 @@ func quotaTagValueHash(v any) int {
 		tag = id.FullyQualifiedName()
 	}
 	return schema.HashString(tag + "=" + tagValue["value"].(string))
+}
+
+func quotaNotificationThresholdHash(v any) int {
+	threshold := v.(map[string]any)
+	return schema.HashString(fmt.Sprintf("%d/%s/%t/%s",
+		threshold["threshold"].(int),
+		strings.ToUpper(threshold["spend_strategy"].(string)),
+		threshold["notify_user"].(bool),
+		strings.ToUpper(threshold["cycle"].(string)),
+	))
 }

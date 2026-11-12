@@ -38,6 +38,14 @@ func (f *fakeQuotas) SetPerUserLimit(context.Context, *sdk.SetPerUserLimitQuotaR
 	return f.record("SET_PER_USER_LIMIT")
 }
 
+func (f *fakeQuotas) SetBlockEnforcementEnabled(context.Context, *sdk.SetBlockEnforcementEnabledQuotaRequest) (*string, error) {
+	return f.record("SET_BLOCK_ENFORCEMENT_ENABLED")
+}
+
+func (f *fakeQuotas) AddNotificationThreshold(context.Context, *sdk.AddNotificationThresholdQuotaRequest) (*string, error) {
+	return f.record("ADD_NOTIFICATION_THRESHOLD")
+}
+
 func Test_applyQuotaConfiguration(t *testing.T) {
 	id := sdk.NewSchemaObjectIdentifier("DB", "SCH", "QUOTA")
 	apply := func(t *testing.T, config map[string]any) []string {
@@ -54,18 +62,22 @@ func Test_applyQuotaConfiguration(t *testing.T) {
 		assert.Empty(t, apply(t, map[string]any{}))
 	})
 
-	t.Run("the configured attributes are applied in order", func(t *testing.T) {
+	t.Run("block enforcement is enabled after the other changes", func(t *testing.T) {
 		calls := apply(t, map[string]any{
-			"shared_resource":        []any{map[string]any{"domain": "AI FUNCTION", "instance": ""}},
-			"user_tags":              []any{map[string]any{"operator": "UNION", "tag": []any{map[string]any{"tag": "DB.SCH.TAG", "value": "a"}}}},
-			"included_users":         []any{"ALICE"},
-			"per_user_limit_monthly": 1000,
+			"shared_resource":           []any{map[string]any{"domain": "AI FUNCTION", "instance": ""}},
+			"user_tags":                 []any{map[string]any{"operator": "UNION", "tag": []any{map[string]any{"tag": "DB.SCH.TAG", "value": "a"}}}},
+			"included_users":            []any{"ALICE"},
+			"per_user_limit_monthly":    1000,
+			"block_enforcement_enabled": true,
+			"notification_threshold":    []any{map[string]any{"threshold": 80, "spend_strategy": "PROJECTED", "notify_user": true, "cycle": "MONTHLY"}},
 		})
 		assert.Equal(t, []string{
 			"ADD_SHARED_RESOURCE",
 			"SET_USER_TAGS",
 			"INCLUDE_USERS",
 			"SET_PER_USER_LIMIT",
+			"ADD_NOTIFICATION_THRESHOLD",
+			"SET_BLOCK_ENFORCEMENT_ENABLED",
 		}, calls)
 	})
 }
@@ -84,6 +96,11 @@ func Test_quotaSetHashes(t *testing.T) {
 		{"quoted warehouse", quotaSharedResourceHash, sharedResource("WAREHOUSE", `"WH"`), sharedResource("WAREHOUSE", "WH")},
 		{"quoted agent", quotaSharedResourceHash, sharedResource("CORTEX AGENT", `"DB"."SCH"."AGENT"`), sharedResource("CORTEX AGENT", "DB.SCH.AGENT")},
 		{"quoted tag", quotaTagValueHash, map[string]any{"tag": `"DB"."SCH"."TAG"`, "value": "a"}, map[string]any{"tag": "DB.SCH.TAG", "value": "a"}},
+		{
+			"threshold enum case", quotaNotificationThresholdHash,
+			map[string]any{"threshold": 80, "spend_strategy": "projected", "notify_user": true, "cycle": "monthly"},
+			map[string]any{"threshold": 80, "spend_strategy": "PROJECTED", "notify_user": true, "cycle": "MONTHLY"},
+		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
