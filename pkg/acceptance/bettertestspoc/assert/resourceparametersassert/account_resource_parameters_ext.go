@@ -14,8 +14,12 @@ var parametersAbsentFromShow = map[string]struct{}{
 // TODO(SNOW-4173331): generate HasAllParametersPresent from the parameter assertion generator once it can assert that every catalog parameter is present without checking values.
 // HasAllParametersPresent checks that every account parameter from the catalog is present.
 // Values are not checked, because they depend on the connected account.
+// Deprecated parameters are not checked, because SHOW PARAMETERS may not return them.
 func (a *AccountResourceParametersAssert) HasAllParametersPresent() *AccountResourceParametersAssert {
 	for _, def := range defs.ParameterDefsForLevel(ssot.ParameterLevelAccountExt) {
+		if def.Deprecated {
+			continue
+		}
 		if _, absent := parametersAbsentFromShow[def.SqlName]; absent {
 			a.CollectionLength(def.FieldName(), 0)
 			continue

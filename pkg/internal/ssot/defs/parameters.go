@@ -407,9 +407,10 @@ var (
 		Description: "Specifies whether Snowflake generates a per-account private connectivity URL for the Snowflake App Service. For more information, see [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters#enable-per-account-app-service-privatelink-url).",
 	}
 	EnablePersonalDatabase = ssot.ParameterDef{
-		SqlName: "ENABLE_PERSONAL_DATABASE",
-		Kind:    string(ssot.AttrBool),
-		Levels:  []ssot.ParameterLevel{ssot.ParameterLevelAccountExt},
+		SqlName:    "ENABLE_PERSONAL_DATABASE",
+		Kind:       string(ssot.AttrBool),
+		Levels:     []ssot.ParameterLevel{ssot.ParameterLevelAccountExt},
+		Deprecated: true,
 	}
 	EnableSpcsBlockStorageSnowflakeFullEncryptionEnforcement = ssot.ParameterDef{
 		SqlName:     "ENABLE_SPCS_BLOCK_STORAGE_SNOWFLAKE_FULL_ENCRYPTION_ENFORCEMENT",
