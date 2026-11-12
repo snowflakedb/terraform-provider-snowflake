@@ -29,14 +29,12 @@ var storageLifecyclePolicySchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the storage lifecycle policy."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the storage lifecycle policy."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"argument": {
@@ -136,6 +134,8 @@ func StorageLifecyclePolicy() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.StorageLifecyclePolicy, customdiff.All(
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
 			ForceNewIfChangedFromNonEmptyString("archive_tier"),
 			ComputedIfAnyAttributeChanged(storageLifecyclePolicySchema, ShowOutputAttributeName, "name", "schema", "database", "comment"),
 			ComputedIfAnyAttributeChanged(storageLifecyclePolicySchema, DescribeOutputAttributeName, "name", "schema", "database", "body", "archive_tier", "archive_for_days"),
@@ -234,6 +234,17 @@ func UpdateStorageLifecyclePolicy(ctx context.Context, d *schema.ResourceData, m
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.StorageLifecyclePolicies.ShowByID,
+		"storage lifecycle policy",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

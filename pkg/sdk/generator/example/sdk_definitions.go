@@ -49,10 +49,11 @@ type (
 )
 
 const (
-	ObjectTypeSequence                         = sdk.ObjectTypeSequence
-	ObjectTypeStreamlit                        = sdk.ObjectTypeStreamlit
-	ObjectTypePairedStructExample   ObjectType = "PAIRED_STRUCT_EXAMPLE"
-	ObjectTypeShowProjectionExample ObjectType = "SHOW_PROJECTION_EXAMPLE"
+	ObjectTypeSequence                           = sdk.ObjectTypeSequence
+	ObjectTypeStreamlit                          = sdk.ObjectTypeStreamlit
+	ObjectTypePairedStructExample     ObjectType = "PAIRED_STRUCT_EXAMPLE"
+	ObjectTypeShowProjectionExample   ObjectType = "SHOW_PROJECTION_EXAMPLE"
+	ObjectTypeSuspendIfStartedExample ObjectType = "SUSPEND_IF_STARTED_EXAMPLE"
 )
 
 func NewSchemaObjectIdentifier(_, _, _ string) SchemaObjectIdentifier {

@@ -38,12 +38,6 @@ var (
 // Request / mapping / Read-Update helpers
 // =============================================================================
 
-// shareAlterRequestsExt carries the SET and UNSET requests of the generated update. The accounts are altered in shareBeforeAlterExt.
-type shareAlterRequestsExt struct {
-	set   *sdk.ShareSetRequest
-	unset *sdk.ShareUnsetRequest
-}
-
 // shareSetFieldsNotSetByReadExt sets what the read does not: the name and secure_objects_only. The comment and the accounts are set by the read.
 // Only an outbound share (created in this account) can be imported.
 func shareSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, share *sdk.Share, importPermissiveMode bool) error {

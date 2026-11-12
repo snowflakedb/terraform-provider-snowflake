@@ -107,9 +107,11 @@ func ExternalS3CompatibleStage() *schema.Resource {
 		Description:   "Resource used to manage external S3-compatible stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalS3CompatibleStage, customdiff.All(
-			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, ShowOutputAttributeName, "name", "comment", "url", "endpoint"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, ShowOutputAttributeName, "name", "database", "schema", "comment", "url", "endpoint"),
 			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url"),
-			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(externalS3CompatStageSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
 			ForceNewIfNotDefault("directory.0.auto_refresh"),
@@ -288,10 +290,9 @@ func UpdateExternalS3CompatStage(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	id, err = handleStageRename(ctx, client, d, id)
-	if err != nil {
+	if diags := handleStageRename(ctx, meta, d, &id); diags != nil {
 		d.Partial(true)
-		return diag.FromErr(err)
+		return diags
 	}
 
 	err = handleStageDirectoryTable(ctx, client, d, id)

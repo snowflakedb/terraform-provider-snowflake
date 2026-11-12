@@ -2,15 +2,15 @@ package datasources
 
 import (
 	"context"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
-
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -150,7 +150,7 @@ func ReadFailoverGroups(ctx context.Context, d *schema.ResourceData, meta any) d
 		m["created_on"] = failoverGroup.CreatedOn.String()
 		m["account_name"] = failoverGroup.AccountName
 		m["type"] = failoverGroup.Type
-		m["comment"] = failoverGroup.Comment
+		m["comment"] = util.DerefOrZero(failoverGroup.Comment)
 		m["is_primary"] = failoverGroup.IsPrimary
 		m["primary"] = failoverGroup.Primary.FullyQualifiedName()
 
@@ -171,14 +171,22 @@ func ReadFailoverGroups(ctx context.Context, d *schema.ResourceData, meta any) d
 		m["allowed_accounts"] = aa
 		m["organization_name"] = failoverGroup.OrganizationName
 		m["account_locator"] = failoverGroup.AccountLocator
-		m["replication_schedule"] = failoverGroup.ReplicationSchedule
-		m["secondary_state"] = string(failoverGroup.SecondaryState)
+		m["replication_schedule"] = util.DerefOrZero(failoverGroup.ReplicationSchedule)
+		m["secondary_state"] = failoverGroupSecondaryStateOutput(failoverGroup.SecondaryState)
 		m["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh
-		m["owner"] = failoverGroup.Owner
+		m["owner"] = util.DerefOrZero(failoverGroup.Owner)
 		failoverGroupsFlatten = append(failoverGroupsFlatten, m)
 	}
 	if err := d.Set("failover_groups", failoverGroupsFlatten); err != nil {
 		return diag.FromErr(err)
 	}
 	return nil
+}
+
+// failoverGroupSecondaryStateOutput keeps the output of the data source: the state in upper case, and NULL when SHOW returns no state.
+func failoverGroupSecondaryStateOutput(state *sdk.FailoverGroupSecondaryState) string {
+	if state == nil {
+		return "NULL"
+	}
+	return strings.ToUpper(string(*state))
 }

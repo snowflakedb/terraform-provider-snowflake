@@ -204,7 +204,13 @@ func pipeApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreatePipeR
 	)
 }
 
-func pipeApplySetUnset(d *tfschema.ResourceData) (*pipeAlterRequestsExt, error) {
+// pipeAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type pipeAlterRequests struct {
+	set   *sdk.PipeSetRequest
+	unset *sdk.PipeUnsetRequest
+}
+
+func pipeApplySetUnset(d *tfschema.ResourceData) (*pipeAlterRequests, error) {
 	set, unset := sdk.NewPipeSetRequest(), sdk.NewPipeUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
@@ -213,7 +219,7 @@ func pipeApplySetUnset(d *tfschema.ResourceData) (*pipeAlterRequestsExt, error) 
 	if errs != nil {
 		return nil, errs
 	}
-	return &pipeAlterRequestsExt{set: set, unset: unset}, nil
+	return &pipeAlterRequests{set: set, unset: unset}, nil
 }
 
 func pipeHandleExternalChanges(d *tfschema.ResourceData, pipe *sdk.Pipe, withExternalChangesMarking bool) error {

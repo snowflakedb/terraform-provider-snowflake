@@ -467,7 +467,7 @@ func TestInt_IcebergTables(t *testing.T) {
 				Name: rowAccessPolicy.ID(),
 				On:   []sdk.Column{{Value: "ID"}},
 			}).
-			WithAggregationPolicy(sdk.IcebergTableAggregationPolicyRequest{
+			WithAggregationPolicy(sdk.TableAggregationPolicy{
 				AggregationPolicy: aggregationPolicyId,
 			}).
 			WithContact([]sdk.TableContact{
@@ -1375,7 +1375,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// add
 		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithAddRowAccessPolicy(*sdk.NewViewAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []sdk.Column{{Value: "ID"}})))
+			WithAddRowAccessPolicy(*sdk.NewTableAddRowAccessPolicyRequest(rowAccessPolicy.ID(), []sdk.Column{{Value: "ID"}})))
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1385,7 +1385,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// drop
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithDropRowAccessPolicy(*sdk.NewViewDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
+			WithDropRowAccessPolicy(*sdk.NewTableDropRowAccessPolicyRequest(rowAccessPolicy.ID())))
 		require.NoError(t, err)
 
 		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
@@ -1410,9 +1410,9 @@ func TestInt_IcebergTables(t *testing.T) {
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithDropAndAddRowAccessPolicy(*sdk.NewIcebergTableDropAndAddRowAccessPolicyRequest(
-				*sdk.NewIcebergTableDropRowAccessPolicyRequest(rowAccessPolicy1.ID()),
-				*sdk.NewIcebergTableAddRowAccessPolicyRequest(rowAccessPolicy2.ID(), []sdk.Column{{Value: "ID"}}),
+			WithDropAndAddRowAccessPolicy(*sdk.NewTableDropAndAddRowAccessPolicyRequest(
+				*sdk.NewTableDropRowAccessPolicyRequest(rowAccessPolicy1.ID()),
+				*sdk.NewTableAddRowAccessPolicyRequest(rowAccessPolicy2.ID(), []sdk.Column{{Value: "ID"}}),
 			)))
 		require.NoError(t, err)
 
@@ -1456,7 +1456,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// set with an explicit entity key
 		err := client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithSetAggregationPolicy(*sdk.NewViewSetAggregationPolicyRequest(aggregationPolicy).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy).
 				WithEntityKey([]sdk.Column{{Value: "ID"}})))
 		require.NoError(t, err)
 
@@ -1467,7 +1467,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// set with FORCE atomically replaces the existing aggregation policy
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithSetAggregationPolicy(*sdk.NewViewSetAggregationPolicyRequest(aggregationPolicy2).
+			WithSetAggregationPolicy(*sdk.NewTableSetAggregationPolicyRequest(aggregationPolicy2).
 				WithEntityKey([]sdk.Column{{Value: "ID"}}).
 				WithForce(true)))
 		require.NoError(t, err)
@@ -1479,7 +1479,7 @@ func TestInt_IcebergTables(t *testing.T) {
 
 		// unset
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithUnsetAggregationPolicy(*sdk.NewViewUnsetAggregationPolicyRequest()))
+			WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
 		require.NoError(t, err)
 
 		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)

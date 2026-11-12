@@ -20,9 +20,9 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 	return v
 }
 
-// appendObjectClause adds a SqlOnly nested struct, such as ENCRYPTION = (...), whose fields are the Children of attr.
+// appendObjectClause adds a SqlOnly nested struct, such as ENCRYPTION = (...), whose fields are the CREATE Children of attr.
 func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
-	nested := queryStructFromObject(v.owner, attr)
+	nested := queryStructFromObjectUse(v.owner, attr, ssot.ClauseCreate)
 	name := clauseGoFieldName(attr, clause)
 	if clause.AsParameter {
 		opts := ParameterOptions().SQL(clause.SQL)
@@ -47,25 +47,46 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 	return v.OptionalQueryStructField(name, nested, opts)
 }
 
-// QueryStructFromAttribute builds the query struct of a SqlOnly object attribute. owner is the interface name, and the
+// QueryStructFromAttribute builds the CREATE query struct of a SqlOnly object attribute. owner is the interface name, and the
 // struct name is that owner plus the attribute name. The SDK definition calls it for one ALTER field and keeps the rest
-// of the operation handwritten.
+// of the operation handwritten. SET and UNSET projections use QueryStructFromAttributeUse.
 func QueryStructFromAttribute(owner string, attr ssot.Attribute) *QueryStruct {
-	return queryStructFromObject(owner, attr)
+	return QueryStructFromAttributeUse(owner, attr, ssot.ClauseCreate)
 }
 
-// queryStructFromObject builds a fresh query struct for a SqlOnly object attribute: the Children are its fields.
-func queryStructFromObject(owner string, attr ssot.Attribute) *QueryStruct {
-	nested := NewQueryStruct(attr.SqlStructName(owner))
+// QueryStructFromAttributeUse builds the query struct of a SqlOnly object attribute for one statement projection.
+// CREATE is QueryStructFromAttribute. SET and UNSET keep FieldName on that clause for the struct name, and only the
+// children that have that clause. Handwritten ALTER calls this so tables and iceberg tables share SET/UNSET structs.
+func QueryStructFromAttributeUse(owner string, attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
+	return queryStructFromObjectUse(owner, attr, use)
+}
+
+func clauseUseStatement(use ssot.ClauseUse) attributeSqlStatement {
+	switch use {
+	case ssot.ClauseCreate:
+		return attributeSqlCreate
+	case ssot.ClauseSet:
+		return attributeSqlSet
+	case ssot.ClauseUnset:
+		return attributeSqlUnset
+	default:
+		panic("unknown sql clause")
+	}
+}
+
+// queryStructFromObjectUse builds a fresh query struct for a SqlOnly object attribute: the projection's Children are its fields.
+func queryStructFromObjectUse(owner string, attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
+	nested := NewQueryStruct(attr.SqlStructNameFor(owner, use))
 	nested.owner = owner
-	fields := attr.NestedSqlFields()
+	statement := clauseUseStatement(use)
+	fields := attr.NestedSqlFieldsFor(use)
 	for i := range fields {
 		child := &fields[i]
-		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(ssot.ClauseCreate), attributeSqlCreate)
+		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(use), statement)
 	}
 	if attr.ChildrenRule != "" {
-		names := collections.Map(attr.RuleFields(), func(child ssot.Attribute) string {
-			return clauseFieldName(child, attributeSqlCreate)
+		names := collections.Map(attr.RuleFieldsFor(use), func(child ssot.Attribute) string {
+			return clauseFieldName(child, statement)
 		})
 		switch attr.ChildrenRule {
 		case ssot.ChildrenAtLeastOne:
@@ -78,11 +99,12 @@ func queryStructFromObject(owner string, attr ssot.Attribute) *QueryStruct {
 }
 
 // queryStructFromBlockAttribute builds the struct of an ALTER block: one element of a list of objects, or a SqlOnly object.
+// ALTER blocks keep CREATE children, the same as QueryStructFromAttribute.
 func queryStructFromBlockAttribute(owner string, attr ssot.Attribute) *QueryStruct {
 	if attr.IsObjectList() {
 		return queryStructFromObjectList(owner, attr)
 	}
-	return queryStructFromObject(owner, attr)
+	return queryStructFromObjectUse(owner, attr, ssot.ClauseCreate)
 }
 
 // queryStructFromObjectList builds a fresh query struct for the element of the list, because a query struct has one parent.

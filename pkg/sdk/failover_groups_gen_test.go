@@ -6,67 +6,91 @@ import (
 	"testing"
 )
 
+func init() {
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[FailoverGroupObjectType]{"FailoverGroupObjectType", AllFailoverGroupObjectTypes, ToFailoverGroupObjectType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[FailoverGroupIntegrationType]{"FailoverGroupIntegrationType", AllFailoverGroupIntegrationTypes, ToFailoverGroupIntegrationType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[FailoverGroupSecondaryState]{"FailoverGroupSecondaryState", AllFailoverGroupSecondaryStates, ToFailoverGroupSecondaryState})
+}
+
 var failoverGroupsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_FailoverGroups_validation_Create_name_ValidIdentifier                                          testCaseName = "validation_Create_name_ValidIdentifier"
-	case_FailoverGroups_validation_Create_AllowedDatabases_ValidIdentifier                              testCaseName = "validation_Create_AllowedDatabases_ValidIdentifier"
-	case_FailoverGroups_validation_Create_AllowedShares_ValidIdentifier                                 testCaseName = "validation_Create_AllowedShares_ValidIdentifier"
-	case_FailoverGroups_validation_Create_AllowedAccounts_ValidIdentifier                               testCaseName = "validation_Create_AllowedAccounts_ValidIdentifier"
-	case_FailoverGroups_sql_Create_basic                                                                testCaseName = "sql_Create_basic"
-	case_FailoverGroups_sql_Create_all                                                                  testCaseName = "sql_Create_all"
-	case_FailoverGroups_validation_CreateSecondaryReplicationGroup_name_ValidIdentifier                 testCaseName = "validation_CreateSecondaryReplicationGroup_name_ValidIdentifier"
-	case_FailoverGroups_validation_CreateSecondaryReplicationGroup_PrimaryFailoverGroup_ValidIdentifier testCaseName = "validation_CreateSecondaryReplicationGroup_PrimaryFailoverGroup_ValidIdentifier"
-	case_FailoverGroups_sql_CreateSecondaryReplicationGroup_basic                                       testCaseName = "sql_CreateSecondaryReplicationGroup_basic"
-	case_FailoverGroups_sql_CreateSecondaryReplicationGroup_all                                         testCaseName = "sql_CreateSecondaryReplicationGroup_all"
-	case_FailoverGroups_validation_AlterSource_name_ValidIdentifier                                     testCaseName = "validation_AlterSource_name_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_AlterSource_opts_ExactlyOneValueSet_NoneSet"
-	case_FailoverGroups_validation_AlterSource_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_AlterSource_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_FailoverGroups_validation_AlterSource_opts_Set_ConflictingFields                               testCaseName = "validation_AlterSource_opts_Set_ConflictingFields"
-	case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_AlterSource_opts_Unset_ExactlyOneValueSet_NoneSet"
-	case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_AlterSource_opts_Unset_ExactlyOneValueSet_MoreThanOneSet"
-	case_FailoverGroups_validation_AlterSource_Add_AllowedDatabases_ValidIdentifier                     testCaseName = "validation_AlterSource_Add_AllowedDatabases_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Add_AllowedShares_ValidIdentifier                        testCaseName = "validation_AlterSource_Add_AllowedShares_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Add_AllowedAccounts_ValidIdentifier                      testCaseName = "validation_AlterSource_Add_AllowedAccounts_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Move_To_ValidIdentifier                                  testCaseName = "validation_AlterSource_Move_To_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Move_Databases_ValidIdentifier                           testCaseName = "validation_AlterSource_Move_Databases_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Move_Shares_ValidIdentifier                              testCaseName = "validation_AlterSource_Move_Shares_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Remove_AllowedDatabases_ValidIdentifier                  testCaseName = "validation_AlterSource_Remove_AllowedDatabases_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Remove_AllowedShares_ValidIdentifier                     testCaseName = "validation_AlterSource_Remove_AllowedShares_ValidIdentifier"
-	case_FailoverGroups_validation_AlterSource_Remove_AllowedAccounts_ValidIdentifier                   testCaseName = "validation_AlterSource_Remove_AllowedAccounts_ValidIdentifier"
-	case_FailoverGroups_sql_AlterSource_RenameTo                                                        testCaseName = "sql_AlterSource_RenameTo"
-	case_FailoverGroups_sql_AlterSource_Set                                                             testCaseName = "sql_AlterSource_Set"
-	case_FailoverGroups_sql_AlterSource_Unset                                                           testCaseName = "sql_AlterSource_Unset"
-	case_FailoverGroups_sql_AlterSource_Add                                                             testCaseName = "sql_AlterSource_Add"
-	case_FailoverGroups_sql_AlterSource_Move                                                            testCaseName = "sql_AlterSource_Move"
-	case_FailoverGroups_sql_AlterSource_Remove                                                          testCaseName = "sql_AlterSource_Remove"
-	case_FailoverGroups_validation_AlterTarget_name_ValidIdentifier                                     testCaseName = "validation_AlterTarget_name_ValidIdentifier"
-	case_FailoverGroups_validation_AlterTarget_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_AlterTarget_opts_ExactlyOneValueSet_NoneSet"
-	case_FailoverGroups_validation_AlterTarget_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_AlterTarget_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_FailoverGroups_sql_AlterTarget_Refresh                                                         testCaseName = "sql_AlterTarget_Refresh"
-	case_FailoverGroups_sql_AlterTarget_Primary                                                         testCaseName = "sql_AlterTarget_Primary"
-	case_FailoverGroups_sql_AlterTarget_Suspend                                                         testCaseName = "sql_AlterTarget_Suspend"
-	case_FailoverGroups_sql_AlterTarget_Resume                                                          testCaseName = "sql_AlterTarget_Resume"
-	case_FailoverGroups_validation_Drop_name_ValidIdentifier                                            testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_FailoverGroups_sql_Drop_basic                                                                  testCaseName = "sql_Drop_basic"
-	case_FailoverGroups_sql_Drop_all                                                                    testCaseName = "sql_Drop_all"
-	case_FailoverGroups_sql_Show_basic                                                                  testCaseName = "sql_Show_basic"
-	case_FailoverGroups_sql_Show_all                                                                    testCaseName = "sql_Show_all"
-	case_FailoverGroups_sql_ShowFailoverGroupDatabases_basic                                            testCaseName = "sql_ShowFailoverGroupDatabases_basic"
-	case_FailoverGroups_sql_ShowFailoverGroupDatabases_all                                              testCaseName = "sql_ShowFailoverGroupDatabases_all"
-	case_FailoverGroups_sql_ShowFailoverGroupShares_basic                                               testCaseName = "sql_ShowFailoverGroupShares_basic"
-	case_FailoverGroups_sql_ShowFailoverGroupShares_all                                                 testCaseName = "sql_ShowFailoverGroupShares_all"
+	case_FailoverGroups_validation_Create_ObjectTypes_ValidateValueSet                   testCaseName = "validation_Create_ObjectTypes_ValidateValueSet"
+	case_FailoverGroups_validation_Create_opts_AtLeastOneValueSet                        testCaseName = "validation_Create_opts_AtLeastOneValueSet"
+	case_FailoverGroups_validation_Create_ErrorIntegration_ValidIdentifierIfSet          testCaseName = "validation_Create_ErrorIntegration_ValidIdentifierIfSet"
+	case_FailoverGroups_validation_Create_name_ValidIdentifier                           testCaseName = "validation_Create_name_ValidIdentifier"
+	case_FailoverGroups_validation_Create_AllowedDatabases_ValidIdentifier               testCaseName = "validation_Create_AllowedDatabases_ValidIdentifier"
+	case_FailoverGroups_validation_Create_AllowedExternalVolumes_ValidIdentifier         testCaseName = "validation_Create_AllowedExternalVolumes_ValidIdentifier"
+	case_FailoverGroups_validation_Create_AllowedShares_ValidIdentifier                  testCaseName = "validation_Create_AllowedShares_ValidIdentifier"
+	case_FailoverGroups_validation_Create_AllowedAccounts_ValidIdentifier                testCaseName = "validation_Create_AllowedAccounts_ValidIdentifier"
+	case_FailoverGroups_validation_Create_Tag_ValidIdentifier                            testCaseName = "validation_Create_Tag_ValidIdentifier"
+	case_FailoverGroups_sql_Create_basic                                                 testCaseName = "sql_Create_basic"
+	case_FailoverGroups_sql_Create_all                                                   testCaseName = "sql_Create_all"
+	case_FailoverGroups_validation_CreateSecondary_AsReplicaOf_ValidIdentifier           testCaseName = "validation_CreateSecondary_AsReplicaOf_ValidIdentifier"
+	case_FailoverGroups_validation_CreateSecondary_name_ValidIdentifier                  testCaseName = "validation_CreateSecondary_name_ValidIdentifier"
+	case_FailoverGroups_sql_CreateSecondary_basic                                        testCaseName = "sql_CreateSecondary_basic"
+	case_FailoverGroups_sql_CreateSecondary_all                                          testCaseName = "sql_CreateSecondary_all"
+	case_FailoverGroups_validation_Alter_name_ValidIdentifier                            testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_opts_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_FailoverGroups_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_FailoverGroups_validation_Alter_RenameTo_ValidIdentifierIfSet                   testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_FailoverGroups_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet       testCaseName = "validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet"
+	case_FailoverGroups_validation_Alter_opts_Set_AtLeastOneValueSet                     testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_FailoverGroups_validation_Alter_Set_AllowedDatabases_ValidIdentifier            testCaseName = "validation_Alter_Set_AllowedDatabases_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Set_AllowedExternalVolumes_ValidIdentifier      testCaseName = "validation_Alter_Set_AllowedExternalVolumes_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Set_AllowedShares_ValidIdentifier               testCaseName = "validation_Alter_Set_AllowedShares_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_opts_Unset_AtLeastOneValueSet                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_FailoverGroups_validation_Alter_SetTags_ValidIdentifier                         testCaseName = "validation_Alter_SetTags_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Add_AllowedDatabases_ValidIdentifier            testCaseName = "validation_Alter_Add_AllowedDatabases_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Add_AllowedExternalVolumes_ValidIdentifier      testCaseName = "validation_Alter_Add_AllowedExternalVolumes_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Add_AllowedShares_ValidIdentifier               testCaseName = "validation_Alter_Add_AllowedShares_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Add_AllowedAccounts_ValidIdentifier             testCaseName = "validation_Alter_Add_AllowedAccounts_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Move_To_ValidIdentifier                         testCaseName = "validation_Alter_Move_To_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Move_Databases_ValidIdentifier                  testCaseName = "validation_Alter_Move_Databases_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Move_ExternalVolumes_ValidIdentifier            testCaseName = "validation_Alter_Move_ExternalVolumes_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Move_Shares_ValidIdentifier                     testCaseName = "validation_Alter_Move_Shares_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Remove_AllowedDatabases_ValidIdentifier         testCaseName = "validation_Alter_Remove_AllowedDatabases_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Remove_AllowedExternalVolumes_ValidIdentifier   testCaseName = "validation_Alter_Remove_AllowedExternalVolumes_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Remove_AllowedShares_ValidIdentifier            testCaseName = "validation_Alter_Remove_AllowedShares_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_Remove_AllowedAccounts_ValidIdentifier          testCaseName = "validation_Alter_Remove_AllowedAccounts_ValidIdentifier"
+	case_FailoverGroups_sql_Alter_RenameTo                                               testCaseName = "sql_Alter_RenameTo"
+	case_FailoverGroups_sql_Alter_Set                                                    testCaseName = "sql_Alter_Set"
+	case_FailoverGroups_sql_Alter_Unset                                                  testCaseName = "sql_Alter_Unset"
+	case_FailoverGroups_sql_Alter_SetTags                                                testCaseName = "sql_Alter_SetTags"
+	case_FailoverGroups_sql_Alter_UnsetTags                                              testCaseName = "sql_Alter_UnsetTags"
+	case_FailoverGroups_sql_Alter_Add                                                    testCaseName = "sql_Alter_Add"
+	case_FailoverGroups_sql_Alter_Move                                                   testCaseName = "sql_Alter_Move"
+	case_FailoverGroups_sql_Alter_Remove                                                 testCaseName = "sql_Alter_Remove"
+	case_FailoverGroups_validation_AlterSecondary_name_ValidIdentifier                   testCaseName = "validation_AlterSecondary_name_ValidIdentifier"
+	case_FailoverGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_NoneSet        testCaseName = "validation_AlterSecondary_opts_ExactlyOneValueSet_NoneSet"
+	case_FailoverGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_AlterSecondary_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_FailoverGroups_sql_AlterSecondary_Refresh                                       testCaseName = "sql_AlterSecondary_Refresh"
+	case_FailoverGroups_sql_AlterSecondary_Primary                                       testCaseName = "sql_AlterSecondary_Primary"
+	case_FailoverGroups_sql_AlterSecondary_Suspend                                       testCaseName = "sql_AlterSecondary_Suspend"
+	case_FailoverGroups_sql_AlterSecondary_Resume                                        testCaseName = "sql_AlterSecondary_Resume"
+	case_FailoverGroups_validation_Drop_name_ValidIdentifier                             testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_FailoverGroups_sql_Drop_basic                                                   testCaseName = "sql_Drop_basic"
+	case_FailoverGroups_sql_Drop_all                                                     testCaseName = "sql_Drop_all"
+	case_FailoverGroups_sql_Show_basic                                                   testCaseName = "sql_Show_basic"
+	case_FailoverGroups_sql_Show_all                                                     testCaseName = "sql_Show_all"
+	case_FailoverGroups_sql_Show_InAccount                                               testCaseName = "sql_Show_InAccount"
+	case_FailoverGroups_validation_ShowFailoverGroupDatabases_name_ValidIdentifier       testCaseName = "validation_ShowFailoverGroupDatabases_name_ValidIdentifier"
+	case_FailoverGroups_sql_ShowFailoverGroupDatabases_basic                             testCaseName = "sql_ShowFailoverGroupDatabases_basic"
+	case_FailoverGroups_sql_ShowFailoverGroupDatabases_all                               testCaseName = "sql_ShowFailoverGroupDatabases_all"
+	case_FailoverGroups_validation_ShowFailoverGroupShares_name_ValidIdentifier          testCaseName = "validation_ShowFailoverGroupShares_name_ValidIdentifier"
+	case_FailoverGroups_sql_ShowFailoverGroupShares_basic                                testCaseName = "sql_ShowFailoverGroupShares_basic"
+	case_FailoverGroups_sql_ShowFailoverGroupShares_all                                  testCaseName = "sql_ShowFailoverGroupShares_all"
 )
 
 type FailoverGroupsTestsContext struct {
-	Create                          *sdkTestCtx[*CreateFailoverGroupOptions]
-	CreateSecondaryReplicationGroup *sdkTestCtx[*CreateSecondaryReplicationGroupFailoverGroupOptions]
-	AlterSource                     *sdkTestCtx[*AlterSourceFailoverGroupOptions]
-	AlterTarget                     *sdkTestCtx[*AlterTargetFailoverGroupOptions]
-	Drop                            *sdkTestCtx[*DropFailoverGroupOptions]
-	Show                            *sdkTestCtx[*ShowFailoverGroupOptions]
-	ShowFailoverGroupDatabases      *sdkTestCtx[*ShowFailoverGroupDatabasesFailoverGroupOptions]
-	ShowFailoverGroupShares         *sdkTestCtx[*ShowFailoverGroupSharesFailoverGroupOptions]
+	Create                     *sdkTestCtx[*CreateFailoverGroupOptions]
+	CreateSecondary            *sdkTestCtx[*CreateSecondaryFailoverGroupOptions]
+	Alter                      *sdkTestCtx[*AlterFailoverGroupOptions]
+	AlterSecondary             *sdkTestCtx[*AlterSecondaryFailoverGroupOptions]
+	Drop                       *sdkTestCtx[*DropFailoverGroupOptions]
+	Show                       *sdkTestCtx[*ShowFailoverGroupOptions]
+	ShowFailoverGroupDatabases *sdkTestCtx[*ShowFailoverGroupDatabasesFailoverGroupOptions]
+	ShowFailoverGroupShares    *sdkTestCtx[*ShowFailoverGroupSharesFailoverGroupOptions]
 }
 
 var failoverGroupsTests = FailoverGroupsTestsContext{
@@ -80,6 +104,27 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 		}).
 		withValidationCases(
 			validationCase[*CreateFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Create_ObjectTypes_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateFailoverGroupOptions", "ObjectTypes"),
+				DefaultModify: func(opts *CreateFailoverGroupOptions) {
+					opts.ObjectTypes = nil
+				},
+			},
+			validationCase[*CreateFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Create_opts_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("CreateFailoverGroupOptions", "AllowedAccounts"),
+				DefaultModify: func(opts *CreateFailoverGroupOptions) {
+					opts.AllowedAccounts = nil
+				},
+			},
+			validationCase[*CreateFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Create_ErrorIntegration_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateFailoverGroupOptions", "ErrorIntegration"),
+				DefaultModify: func(opts *CreateFailoverGroupOptions) {
+					opts.ErrorIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*CreateFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_Create_name_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateFailoverGroupOptions", "name"),
 				DefaultModify: func(opts *CreateFailoverGroupOptions) {
@@ -91,6 +136,13 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 				ExpectedErr: errInvalidIdentifier("CreateFailoverGroupOptions.AllowedDatabases[0]", "AllowedDatabases"),
 				DefaultModify: func(opts *CreateFailoverGroupOptions) {
 					opts.AllowedDatabases = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*CreateFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Create_AllowedExternalVolumes_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFailoverGroupOptions.AllowedExternalVolumes[0]", "AllowedExternalVolumes"),
+				DefaultModify: func(opts *CreateFailoverGroupOptions) {
+					opts.AllowedExternalVolumes = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
 			validationCase[*CreateFailoverGroupOptions]{
@@ -107,6 +159,13 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 					opts.AllowedAccounts = []AccountIdentifier{emptyAccountIdentifier}
 				},
 			},
+			validationCase[*CreateFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Create_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateFailoverGroupOptions.Tag[0]", "Name"),
+				DefaultModify: func(opts *CreateFailoverGroupOptions) {
+					opts.Tag = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*CreateFailoverGroupOptions]{
@@ -117,243 +176,324 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 				Name: case_FailoverGroups_sql_Create_all,
 			},
 		),
-	CreateSecondaryReplicationGroup: newSdkTestCtx[*CreateSecondaryReplicationGroupFailoverGroupOptions](
-		"FailoverGroups", "CreateSecondaryReplicationGroup",
+	CreateSecondary: newSdkTestCtx[*CreateSecondaryFailoverGroupOptions](
+		"FailoverGroups", "CreateSecondary",
 	).
-		withDefaultOpts(func() *CreateSecondaryReplicationGroupFailoverGroupOptions {
-			return &CreateSecondaryReplicationGroupFailoverGroupOptions{
+		withDefaultOpts(func() *CreateSecondaryFailoverGroupOptions {
+			return &CreateSecondaryFailoverGroupOptions{
 				name: failoverGroupsTestIdAccountObjectIdentifier,
 			}
 		}).
 		withValidationCases(
-			validationCase[*CreateSecondaryReplicationGroupFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_CreateSecondaryReplicationGroup_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "name"),
-				DefaultModify: func(opts *CreateSecondaryReplicationGroupFailoverGroupOptions) {
-					opts.name = emptyAccountObjectIdentifier
+			validationCase[*CreateSecondaryFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_CreateSecondary_AsReplicaOf_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryFailoverGroupOptions", "AsReplicaOf"),
+				DefaultModify: func(opts *CreateSecondaryFailoverGroupOptions) {
+					opts.AsReplicaOf = emptyExternalObjectIdentifier
 				},
 			},
-			validationCase[*CreateSecondaryReplicationGroupFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_CreateSecondaryReplicationGroup_PrimaryFailoverGroup_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateSecondaryReplicationGroupFailoverGroupOptions", "PrimaryFailoverGroup"),
-				DefaultModify: func(opts *CreateSecondaryReplicationGroupFailoverGroupOptions) {
-					opts.PrimaryFailoverGroup = emptyExternalObjectIdentifier
+			validationCase[*CreateSecondaryFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_CreateSecondary_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateSecondaryFailoverGroupOptions", "name"),
+				DefaultModify: func(opts *CreateSecondaryFailoverGroupOptions) {
+					opts.name = emptyAccountObjectIdentifier
 				},
 			},
 		).
 		withSqlCases(
-			sqlCase[*CreateSecondaryReplicationGroupFailoverGroupOptions]{
-				Name:           case_FailoverGroups_sql_CreateSecondaryReplicationGroup_basic,
+			sqlCase[*CreateSecondaryFailoverGroupOptions]{
+				Name:           case_FailoverGroups_sql_CreateSecondary_basic,
 				NoModifyNeeded: true,
 			},
-			sqlCase[*CreateSecondaryReplicationGroupFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_CreateSecondaryReplicationGroup_all,
+			sqlCase[*CreateSecondaryFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_CreateSecondary_all,
 			},
 		),
-	AlterSource: newSdkTestCtx[*AlterSourceFailoverGroupOptions](
-		"FailoverGroups", "AlterSource",
+	Alter: newSdkTestCtx[*AlterFailoverGroupOptions](
+		"FailoverGroups", "Alter",
 	).
-		withDefaultOpts(func() *AlterSourceFailoverGroupOptions {
-			return &AlterSourceFailoverGroupOptions{
+		withDefaultOpts(func() *AlterFailoverGroupOptions {
+			return &AlterFailoverGroupOptions{
 				name: failoverGroupsTestIdAccountObjectIdentifier,
 			}
 		}).
 		withValidationCases(
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions", "name"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions", "name"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterSourceFailoverGroupOptions", "RenameTo", "Set", "Unset", "Add", "Move", "Remove"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterFailoverGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.RenameTo = nil
 					opts.Set = nil
 					opts.Unset = nil
+					opts.SetTags = nil
+					opts.UnsetTags = nil
 					opts.Add = nil
 					opts.Move = nil
 					opts.Remove = nil
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterSourceFailoverGroupOptions", "RenameTo", "Set", "Unset", "Add", "Move", "Remove"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterFailoverGroupOptions", "RenameTo", "Set", "Unset", "SetTags", "UnsetTags", "Add", "Move", "Remove"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.RenameTo = new(randomAccountObjectIdentifier())
 					opts.Set = &FailoverGroupSet{}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_opts_Set_ConflictingFields,
-				ExpectedErr: errOneOf("AlterSourceFailoverGroupOptions.Set", "OptimizedRefresh", "RpoAssurance"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
-					opts.Set = &FailoverGroupSet{}
-					opts.Set.OptimizedRefresh = new(true)
-					opts.Set.RpoAssurance = new(true)
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_RenameTo_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions", "RenameTo"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.RenameTo = new(emptyAccountObjectIdentifier)
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Set", "ErrorIntegration"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Set = &FailoverGroupSet{}
+					opts.Set.ErrorIntegration = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_opts_Set_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterFailoverGroupOptions.Set", "ObjectTypes", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedIntegrationTypes", "Comment", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance", "ErrorIntegration", "ReadOnly"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Set = &FailoverGroupSet{}
+					opts.Set.ObjectTypes = nil
+					opts.Set.AllowedDatabases = nil
+					opts.Set.AllowedExternalVolumes = nil
+					opts.Set.AllowedShares = nil
+					opts.Set.AllowedIntegrationTypes = nil
+					opts.Set.Comment = nil
+					opts.Set.ReplicationSchedule = nil
+					opts.Set.OptimizedRefresh = nil
+					opts.Set.RpoAssurance = nil
+					opts.Set.ErrorIntegration = nil
+					opts.Set.ReadOnly = nil
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Set_AllowedDatabases_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Set.AllowedDatabases[0]", "AllowedDatabases"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Set = &FailoverGroupSet{}
+					opts.Set.AllowedDatabases = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Set_AllowedExternalVolumes_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Set.AllowedExternalVolumes[0]", "AllowedExternalVolumes"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Set = &FailoverGroupSet{}
+					opts.Set.AllowedExternalVolumes = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Set_AllowedShares_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Set.AllowedShares[0]", "AllowedShares"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Set = &FailoverGroupSet{}
+					opts.Set.AllowedShares = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_opts_Unset_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AlterFailoverGroupOptions.Unset", "Comment", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance", "ErrorIntegration", "ReadOnly"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Unset = &FailoverGroupUnset{}
+					opts.Unset.Comment = nil
 					opts.Unset.ReplicationSchedule = nil
 					opts.Unset.OptimizedRefresh = nil
 					opts.Unset.RpoAssurance = nil
+					opts.Unset.ErrorIntegration = nil
+					opts.Unset.ReadOnly = nil
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_opts_Unset_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterSourceFailoverGroupOptions.Unset", "ReplicationSchedule", "OptimizedRefresh", "RpoAssurance"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
-					opts.Unset = &FailoverGroupUnset{}
-					opts.Unset.ReplicationSchedule = new(true)
-					opts.Unset.OptimizedRefresh = new(true)
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_SetTags_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.SetTags[0]", "Name"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Add_AllowedDatabases_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Add.AllowedDatabases[0]", "AllowedDatabases"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Add_AllowedDatabases_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Add.AllowedDatabases[0]", "AllowedDatabases"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Add = &FailoverGroupAdd{}
 					opts.Add.AllowedDatabases = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Add_AllowedShares_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Add.AllowedShares[0]", "AllowedShares"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Add_AllowedExternalVolumes_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Add.AllowedExternalVolumes[0]", "AllowedExternalVolumes"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Add = &FailoverGroupAdd{}
+					opts.Add.AllowedExternalVolumes = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Add_AllowedShares_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Add.AllowedShares[0]", "AllowedShares"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Add = &FailoverGroupAdd{}
 					opts.Add.AllowedShares = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Add_AllowedAccounts_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Add.AllowedAccounts[0]", "AllowedAccounts"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Add_AllowedAccounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Add.AllowedAccounts[0]", "AllowedAccounts"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Add = &FailoverGroupAdd{}
 					opts.Add.AllowedAccounts = []AccountIdentifier{emptyAccountIdentifier}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Move_To_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Move", "To"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Move_To_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Move", "To"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Move = &FailoverGroupMove{}
 					opts.Move.To = emptyAccountObjectIdentifier
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Move_Databases_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Move.Databases[0]", "Databases"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Move_Databases_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Move.Databases[0]", "Databases"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Move = &FailoverGroupMove{}
 					opts.Move.Databases = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Move_Shares_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Move.Shares[0]", "Shares"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Move_ExternalVolumes_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Move.ExternalVolumes[0]", "ExternalVolumes"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Move = &FailoverGroupMove{}
+					opts.Move.ExternalVolumes = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Move_Shares_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Move.Shares[0]", "Shares"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Move = &FailoverGroupMove{}
 					opts.Move.Shares = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Remove_AllowedDatabases_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Remove.AllowedDatabases[0]", "AllowedDatabases"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Remove_AllowedDatabases_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Remove.AllowedDatabases[0]", "AllowedDatabases"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Remove = &FailoverGroupRemove{}
 					opts.Remove.AllowedDatabases = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Remove_AllowedShares_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Remove.AllowedShares[0]", "AllowedShares"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Remove_AllowedExternalVolumes_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Remove.AllowedExternalVolumes[0]", "AllowedExternalVolumes"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Remove = &FailoverGroupRemove{}
+					opts.Remove.AllowedExternalVolumes = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Remove_AllowedShares_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Remove.AllowedShares[0]", "AllowedShares"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Remove = &FailoverGroupRemove{}
 					opts.Remove.AllowedShares = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
 			},
-			validationCase[*AlterSourceFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterSource_Remove_AllowedAccounts_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterSourceFailoverGroupOptions.Remove.AllowedAccounts[0]", "AllowedAccounts"),
-				DefaultModify: func(opts *AlterSourceFailoverGroupOptions) {
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_Remove_AllowedAccounts_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterFailoverGroupOptions.Remove.AllowedAccounts[0]", "AllowedAccounts"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
 					opts.Remove = &FailoverGroupRemove{}
 					opts.Remove.AllowedAccounts = []AccountIdentifier{emptyAccountIdentifier}
 				},
 			},
 		).
 		withSqlCases(
-			sqlCase[*AlterSourceFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterSource_RenameTo,
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_RenameTo,
 			},
-			sqlCase[*AlterSourceFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterSource_Set,
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_Set,
 			},
-			sqlCase[*AlterSourceFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterSource_Unset,
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_Unset,
 			},
-			sqlCase[*AlterSourceFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterSource_Add,
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_SetTags,
 			},
-			sqlCase[*AlterSourceFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterSource_Move,
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_UnsetTags,
 			},
-			sqlCase[*AlterSourceFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterSource_Remove,
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_Add,
+			},
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_Move,
+			},
+			sqlCase[*AlterFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Alter_Remove,
 			},
 		),
-	AlterTarget: newSdkTestCtx[*AlterTargetFailoverGroupOptions](
-		"FailoverGroups", "AlterTarget",
+	AlterSecondary: newSdkTestCtx[*AlterSecondaryFailoverGroupOptions](
+		"FailoverGroups", "AlterSecondary",
 	).
-		withDefaultOpts(func() *AlterTargetFailoverGroupOptions {
-			return &AlterTargetFailoverGroupOptions{
+		withDefaultOpts(func() *AlterSecondaryFailoverGroupOptions {
+			return &AlterSecondaryFailoverGroupOptions{
 				name: failoverGroupsTestIdAccountObjectIdentifier,
 			}
 		}).
 		withValidationCases(
-			validationCase[*AlterTargetFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterTarget_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("AlterTargetFailoverGroupOptions", "name"),
-				DefaultModify: func(opts *AlterTargetFailoverGroupOptions) {
+			validationCase[*AlterSecondaryFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_AlterSecondary_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterSecondaryFailoverGroupOptions", "name"),
+				DefaultModify: func(opts *AlterSecondaryFailoverGroupOptions) {
 					opts.name = emptyAccountObjectIdentifier
 				},
 			},
-			validationCase[*AlterTargetFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterTarget_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterTargetFailoverGroupOptions", "Refresh", "Primary", "Suspend", "Resume"),
-				DefaultModify: func(opts *AlterTargetFailoverGroupOptions) {
+			validationCase[*AlterSecondaryFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecondaryFailoverGroupOptions", "Refresh", "Primary", "Suspend", "Resume"),
+				DefaultModify: func(opts *AlterSecondaryFailoverGroupOptions) {
 					opts.Refresh = nil
 					opts.Primary = nil
 					opts.Suspend = nil
 					opts.Resume = nil
 				},
 			},
-			validationCase[*AlterTargetFailoverGroupOptions]{
-				Name:        case_FailoverGroups_validation_AlterTarget_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterTargetFailoverGroupOptions", "Refresh", "Primary", "Suspend", "Resume"),
-				DefaultModify: func(opts *AlterTargetFailoverGroupOptions) {
+			validationCase[*AlterSecondaryFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_AlterSecondary_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterSecondaryFailoverGroupOptions", "Refresh", "Primary", "Suspend", "Resume"),
+				DefaultModify: func(opts *AlterSecondaryFailoverGroupOptions) {
 					opts.Refresh = new(true)
 					opts.Primary = new(true)
 				},
 			},
 		).
 		withSqlCases(
-			sqlCase[*AlterTargetFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterTarget_Refresh,
+			sqlCase[*AlterSecondaryFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_AlterSecondary_Refresh,
 			},
-			sqlCase[*AlterTargetFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterTarget_Primary,
+			sqlCase[*AlterSecondaryFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_AlterSecondary_Primary,
 			},
-			sqlCase[*AlterTargetFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterTarget_Suspend,
+			sqlCase[*AlterSecondaryFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_AlterSecondary_Suspend,
 			},
-			sqlCase[*AlterTargetFailoverGroupOptions]{
-				Name: case_FailoverGroups_sql_AlterTarget_Resume,
+			sqlCase[*AlterSecondaryFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_AlterSecondary_Resume,
 			},
 		),
 	Drop: newSdkTestCtx[*DropFailoverGroupOptions](
@@ -397,14 +537,27 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 			sqlCase[*ShowFailoverGroupOptions]{
 				Name: case_FailoverGroups_sql_Show_all,
 			},
+			sqlCase[*ShowFailoverGroupOptions]{
+				Name: case_FailoverGroups_sql_Show_InAccount,
+			},
 		),
 	ShowFailoverGroupDatabases: newSdkTestCtx[*ShowFailoverGroupDatabasesFailoverGroupOptions](
 		"FailoverGroups", "ShowFailoverGroupDatabases",
 	).
 		withDefaultOpts(func() *ShowFailoverGroupDatabasesFailoverGroupOptions {
-			return &ShowFailoverGroupDatabasesFailoverGroupOptions{}
+			return &ShowFailoverGroupDatabasesFailoverGroupOptions{
+				name: failoverGroupsTestIdAccountObjectIdentifier,
+			}
 		}).
-		withValidationCases().
+		withValidationCases(
+			validationCase[*ShowFailoverGroupDatabasesFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_ShowFailoverGroupDatabases_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowFailoverGroupDatabasesFailoverGroupOptions", "name"),
+				DefaultModify: func(opts *ShowFailoverGroupDatabasesFailoverGroupOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
 		withSqlCases(
 			sqlCase[*ShowFailoverGroupDatabasesFailoverGroupOptions]{
 				Name:           case_FailoverGroups_sql_ShowFailoverGroupDatabases_basic,
@@ -418,9 +571,19 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 		"FailoverGroups", "ShowFailoverGroupShares",
 	).
 		withDefaultOpts(func() *ShowFailoverGroupSharesFailoverGroupOptions {
-			return &ShowFailoverGroupSharesFailoverGroupOptions{}
+			return &ShowFailoverGroupSharesFailoverGroupOptions{
+				name: failoverGroupsTestIdAccountObjectIdentifier,
+			}
 		}).
-		withValidationCases().
+		withValidationCases(
+			validationCase[*ShowFailoverGroupSharesFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_ShowFailoverGroupShares_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("ShowFailoverGroupSharesFailoverGroupOptions", "name"),
+				DefaultModify: func(opts *ShowFailoverGroupSharesFailoverGroupOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+		).
 		withSqlCases(
 			sqlCase[*ShowFailoverGroupSharesFailoverGroupOptions]{
 				Name:           case_FailoverGroups_sql_ShowFailoverGroupShares_basic,
@@ -437,19 +600,19 @@ func TestFailoverGroups_Create(t *testing.T) {
 	failoverGroupsTests.Create.RunSqlCases(t)
 }
 
-func TestFailoverGroups_CreateSecondaryReplicationGroup(t *testing.T) {
-	failoverGroupsTests.CreateSecondaryReplicationGroup.RunValidationCases(t)
-	failoverGroupsTests.CreateSecondaryReplicationGroup.RunSqlCases(t)
+func TestFailoverGroups_CreateSecondary(t *testing.T) {
+	failoverGroupsTests.CreateSecondary.RunValidationCases(t)
+	failoverGroupsTests.CreateSecondary.RunSqlCases(t)
 }
 
-func TestFailoverGroups_AlterSource(t *testing.T) {
-	failoverGroupsTests.AlterSource.RunValidationCases(t)
-	failoverGroupsTests.AlterSource.RunSqlCases(t)
+func TestFailoverGroups_Alter(t *testing.T) {
+	failoverGroupsTests.Alter.RunValidationCases(t)
+	failoverGroupsTests.Alter.RunSqlCases(t)
 }
 
-func TestFailoverGroups_AlterTarget(t *testing.T) {
-	failoverGroupsTests.AlterTarget.RunValidationCases(t)
-	failoverGroupsTests.AlterTarget.RunSqlCases(t)
+func TestFailoverGroups_AlterSecondary(t *testing.T) {
+	failoverGroupsTests.AlterSecondary.RunValidationCases(t)
+	failoverGroupsTests.AlterSecondary.RunSqlCases(t)
 }
 
 func TestFailoverGroups_Drop(t *testing.T) {

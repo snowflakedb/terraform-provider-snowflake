@@ -60,6 +60,9 @@ type ParameterDef struct {
 	Description  string
 	DefaultValue string
 	DefaultLevel string
+	// Deprecated marks a parameter that Snowflake deprecated. SHOW PARAMETERS may not return it,
+	// and Snowflake may reject setting or unsetting it.
+	Deprecated bool
 }
 
 // FieldName is the Terraform attribute name: the SQL name in lowercase.

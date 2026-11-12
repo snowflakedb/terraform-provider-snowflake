@@ -6,21 +6,17 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
 
-const ConnectionFailoverToAccountInSameRegionErrorMessage = "The connection cannot be failed over to an account in the same region"
-
 func TestInt_Connections(t *testing.T) {
-	// TODO: [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	client := testClient(t)
-	secondaryClient := testSecondaryClient(t)
+	// Connection failover needs an account in a different region, so the Azure account is used (the default and secondary accounts share a region).
+	azureClient := testAzureClient(t)
 	ctx := testContext(t)
 
 	sessionDetails, err := client.ContextFunctions.CurrentSessionDetails(ctx)
@@ -38,7 +34,7 @@ func TestInt_Connections(t *testing.T) {
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
 		assertThatObject(
 			t, objectassert.Connection(t, id).
-				HasSnowflakeRegion(sessionDetails.Region).
+				HasSnowflakeRegion(strings.TrimPrefix(sessionDetails.Region, "PUBLIC.")).
 				HasAccountName(sessionDetails.AccountName).
 				HasName(id.Name()).
 				HasNoComment().
@@ -66,7 +62,7 @@ func TestInt_Connections(t *testing.T) {
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
 		assertThatObject(
 			t, objectassert.Connection(t, id).
-				HasSnowflakeRegion(sessionDetails.Region).
+				HasSnowflakeRegion(strings.TrimPrefix(sessionDetails.Region, "PUBLIC.")).
 				HasAccountName(sessionDetails.AccountName).
 				HasName(id.Name()).
 				HasComment("test comment for connection").
@@ -86,7 +82,7 @@ func TestInt_Connections(t *testing.T) {
 	t.Run("Alter enable failover", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 
-		secondaryAccountId := secondaryTestClientHelper().Account.GetAccountIdentifier(t)
+		azureAccountId := azureTestClientHelper().Account.GetAccountIdentifier(t)
 
 		_, connectionCleanup := testClientHelper().Connection.CreateWithIdentifier(t, id)
 		t.Cleanup(connectionCleanup)
@@ -94,25 +90,23 @@ func TestInt_Connections(t *testing.T) {
 		err := client.Connections.Alter(
 			ctx, sdk.NewAlterConnectionRequest(id).
 				WithEnableConnectionFailover(
-					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId}),
+					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{azureAccountId}),
 				),
 		)
-		// TODO: [SNOW-1763442]
-		// require.NoError(t, err)
-		require.ErrorContains(t, err, ConnectionFailoverToAccountInSameRegionErrorMessage)
+		require.NoError(t, err)
 
 		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
 		assertThatObject(
 			t, objectassert.Connection(t, id).
-				HasSnowflakeRegion(sessionDetails.Region).
+				HasSnowflakeRegion(strings.TrimPrefix(sessionDetails.Region, "PUBLIC.")).
 				HasAccountName(sessionDetails.AccountName).
 				HasName(id.Name()).
 				HasNoComment().
 				HasIsPrimary(true).
 				HasPrimary(externalObjectIdentifier).
-				HasFailoverAllowedToAccounts(
+				HasFailoverAllowedToAccountsInAnyOrder(
 					accountId,
-					secondaryAccountId,
+					azureAccountId,
 				).
 				HasOrganizationName(sessionDetails.OrganizationName).
 				HasAccountLocator(client.GetAccountLocator()).
@@ -125,69 +119,57 @@ func TestInt_Connections(t *testing.T) {
 	})
 
 	t.Run("Create as replica of", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		secondaryAccountId := secondaryTestClientHelper().Ids.AccountIdentifierWithLocator()
+		azureAccountId := azureTestClientHelper().Account.GetAccountIdentifier(t)
 
 		primaryConn, connectionCleanup := testClientHelper().Connection.CreateWithIdentifier(t, testClientHelper().Ids.RandomAccountObjectIdentifier())
 		t.Cleanup(connectionCleanup)
+		id := primaryConn.ID()
 
 		err := client.Connections.Alter(
-			ctx, sdk.NewAlterConnectionRequest(primaryConn.ID()).
+			ctx, sdk.NewAlterConnectionRequest(id).
 				WithEnableConnectionFailover(
-					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId}),
+					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{azureAccountId}),
 				),
 		)
-		require.ErrorContains(t, err, ConnectionFailoverToAccountInSameRegionErrorMessage)
-		// TODO: [SNOW-1763442]
-		//
-		// require.NoError(t, err)
-
-		// create replica on secondary account
-		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
-		err = secondaryClient.Connections.Create(ctx, sdk.NewCreateConnectionRequest(id).WithAsReplicaOf(externalObjectIdentifier))
-		t.Cleanup(testClientHelper().Connection.DropFunc(t, id))
 		require.NoError(t, err)
 
-		assertThatObject(
+		// create replica on the Azure account (the failover permission may take a moment to propagate)
+		externalObjectIdentifier := sdk.NewExternalObjectIdentifier(accountId, id)
+		require.Eventually(t, func() bool {
+			err := azureClient.Connections.Create(ctx, sdk.NewCreateConnectionRequest(id).WithAsReplicaOf(externalObjectIdentifier))
+			if err != nil {
+				t.Logf("waiting for connection failover to propagate: %s", err)
+			}
+			return err == nil
+		}, 3*time.Minute, 10*time.Second)
+		t.Cleanup(azureTestClientHelper().Connection.DropFunc(t, id))
+
+		assertThatObjectAzure(
 			t, objectassert.Connection(t, id).
-				HasSnowflakeRegion(sessionDetails.Region).
-				HasAccountName(sessionDetails.AccountName).
 				HasName(id.Name()).
 				HasNoComment().
 				HasIsPrimary(false).
 				HasPrimary(externalObjectIdentifier).
-				HasFailoverAllowedToAccounts(
-					accountId,
-					secondaryAccountId,
-				).
 				HasOrganizationName(sessionDetails.OrganizationName).
-				HasAccountLocator(client.GetAccountLocator()).
-				HasConnectionUrl(
-					strings.ToLower(
-						fmt.Sprintf("%s-%s.snowflakecomputing.com", sessionDetails.OrganizationName, id.Name()),
-					),
-				),
+				HasAccountLocator(azureClient.GetAccountLocator()),
 		)
 	})
 
 	t.Run("Alter disable failover", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		secondaryAccountId := secondaryTestClientHelper().Account.GetAccountIdentifier(t)
+		azureAccountId := azureTestClientHelper().Account.GetAccountIdentifier(t)
 
 		primaryConn, connectionCleanup := testClientHelper().Connection.CreateWithIdentifier(t, id)
 		t.Cleanup(connectionCleanup)
 
-		// Add secondary account to failover list
+		// Add the Azure account to failover list
 		err := client.Connections.Alter(
 			ctx, sdk.NewAlterConnectionRequest(id).
 				WithEnableConnectionFailover(
-					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{secondaryAccountId}),
+					*sdk.NewEnableConnectionFailoverRequest([]sdk.AccountIdentifier{azureAccountId}),
 				),
 		)
-		require.ErrorContains(t, err, ConnectionFailoverToAccountInSameRegionErrorMessage)
-		// TODO: [SNOW-1763442]
-		//
-		// require.NoError(t, err)
+		require.NoError(t, err)
 
 		// Disable promotion of this connection
 		err = client.Connections.Alter(ctx, sdk.NewAlterConnectionRequest(id).
@@ -202,9 +184,17 @@ func TestInt_Connections(t *testing.T) {
 				HasFailoverAllowedToAccounts(accountId),
 		)
 
-		// Try to create repllication on secondary account
-		err = secondaryClient.Connections.Create(ctx, sdk.NewCreateConnectionRequest(id).WithAsReplicaOf(externalObjectIdentifier))
-		require.ErrorContains(t, err, "This account is not authorized to create a secondary connection of this primary connection")
+		// Try to create replication on the Azure account (disabling failover may take a moment to propagate,
+		// so a replica that slips through is dropped and the attempt is repeated)
+		require.Eventually(t, func() bool {
+			err := azureClient.Connections.Create(ctx, sdk.NewCreateConnectionRequest(id).WithAsReplicaOf(externalObjectIdentifier))
+			if err == nil {
+				t.Log("replica was created before disabling failover propagated; dropping it and retrying")
+				azureTestClientHelper().Connection.DropFunc(t, id)()
+				return false
+			}
+			return strings.Contains(err.Error(), "This account is not authorized to create a secondary connection of this primary connection")
+		}, 3*time.Minute, 10*time.Second)
 	})
 
 	t.Run("Alter comment", func(t *testing.T) {

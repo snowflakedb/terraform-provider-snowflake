@@ -176,8 +176,8 @@ func ListParameter(itemStruct string, opts ...SqlClauseOption) SqlClause {
 	}, opts)
 }
 
-// StaticSQL is a private static CREATE field.
-// field is the unexported Go name. sql is the ddl text, such as WAREHOUSE_TYPE = 'ADAPTIVE'.
+// StaticSQL is a private static field of a SQL struct.
+// field is the unexported Go name. sql is the ddl text, such as WAREHOUSE_TYPE = 'ADAPTIVE' or SET.
 // The attribute is SqlOnly so schema, resource, model, and assertion generation skip it.
 func StaticSQL(field, sql string) SqlClause {
 	return newClause(SqlKindStatic, func(c *SqlClause) {
@@ -420,6 +420,32 @@ func (a Attribute) SqlStructName(owner string) string {
 	return owner + genhelpers.SnakeCaseToCamel(a.Name)
 }
 
+// SqlStructNameFor is the nested struct name for one statement projection.
+// CREATE is SqlStructName. SET and UNSET use FieldName on that clause, so Table aggregation_policy SET is TableSetAggregationPolicy.
+func (a Attribute) SqlStructNameFor(owner string, use ClauseUse) string {
+	if use == ClauseCreate {
+		return a.SqlStructName(owner)
+	}
+	clause := a.rawSqlClause(use)
+	if clause.Field == "" {
+		panic(fmt.Sprintf("attribute %q: %s nested struct needs FieldName", a.Name, clauseUseName(use)))
+	}
+	return owner + clause.Field
+}
+
+func clauseUseName(use ClauseUse) string {
+	switch use {
+	case ClauseCreate:
+		return "CREATE"
+	case ClauseSet:
+		return "SET"
+	case ClauseUnset:
+		return "UNSET"
+	default:
+		return "sql"
+	}
+}
+
 // SqlVariantStructName is the Go struct name of a variant of a list of objects: GCS and storage_location give
 // GCSStorageLocationParams.
 func (a Attribute) SqlVariantStructName(key string) string {
@@ -445,11 +471,44 @@ func (a Attribute) NestedSqlFields() []Attribute {
 	}
 }
 
-// RuleFields are the Children that ChildrenRule is applied to: the fields of the SQL struct that are not a fixed text, in
-// Children order. A child with no explicit clause uses the type default.
-func (a Attribute) RuleFields() []Attribute {
+// NestedSqlFieldsFor are the NestedSqlFields that belong to one statement projection.
+// CREATE includes a child with CreateSql, or with no Create, Set, or Unset clause (the type default).
+// SET includes only SetSql. UNSET includes only UnsetSql. There is no inherit from CREATE into SET.
+func (a Attribute) NestedSqlFieldsFor(use ClauseUse) []Attribute {
 	return collections.Filter(a.NestedSqlFields(), func(child Attribute) bool {
-		return child.CreateSql.Kind != SqlKindStatic
+		return child.inSqlProjection(use)
+	})
+}
+
+func (a Attribute) inSqlProjection(use ClauseUse) bool {
+	create, set, unset := a.CreateSql.Present, a.SetSql.Present, a.UnsetSql.Present
+	none := !create && !set && !unset
+	switch use {
+	case ClauseCreate:
+		return create || none
+	case ClauseSet:
+		return set
+	case ClauseUnset:
+		return unset
+	default:
+		panic(fmt.Sprintf("attribute %q: unknown sql clause", a.Name))
+	}
+}
+
+// RuleFields are the Children that ChildrenRule is applied to: the CREATE fields of the SQL struct that are not a fixed
+// text, in Children order. A child with no explicit clause uses the type default.
+func (a Attribute) RuleFields() []Attribute {
+	return a.RuleFieldsFor(ClauseCreate)
+}
+
+// RuleFieldsFor is RuleFields for one statement projection.
+func (a Attribute) RuleFieldsFor(use ClauseUse) []Attribute {
+	return collections.Filter(a.NestedSqlFieldsFor(use), func(child Attribute) bool {
+		clause := child.rawSqlClause(use)
+		if use == ClauseCreate && !clause.Present {
+			return true
+		}
+		return clause.Kind != SqlKindStatic
 	})
 }
 

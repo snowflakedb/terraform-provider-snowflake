@@ -1,11 +1,13 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
 )
 
@@ -107,17 +109,33 @@ func Test_backupPolicyRequestsExt(t *testing.T) {
 			"expire_after_days": 7,
 			"comment":           "c",
 		})
-		requests, err := backupPolicyApplySetUnsetExt(d)
+		requests, err := backupPolicyApplySetUnset(d)
 		require.NoError(t, err)
 		require.Equal(t, sdk.NewBackupPolicySetRequest().WithSchedule("USING CRON 0 0 * * * UTC").WithExpireAfterDays(7).WithComment("c"), requests.set)
 		require.Equal(t, sdk.NewBackupPolicyUnsetRequest(), requests.unset)
+	})
+
+	t.Run("removing the schedule unsets it in its own request", func(t *testing.T) {
+		state := &terraform.InstanceState{
+			ID:         "id",
+			Attributes: map[string]string{"schedule.#": "1", "schedule.0.hours": "2", "schedule.0.minutes": "0", "schedule.0.using_cron": ""},
+		}
+		diff, err := schema.InternalMap(backupPolicySchema).Diff(context.Background(), state, terraform.NewResourceConfigRaw(map[string]any{}), nil, nil, true)
+		require.NoError(t, err)
+		d, err := schema.InternalMap(backupPolicySchema).Data(state, diff)
+		require.NoError(t, err)
+		requests, err := backupPolicyApplySetUnset(d)
+		require.NoError(t, err)
+		require.Equal(t, sdk.NewBackupPolicySetRequest(), requests.set)
+		require.Equal(t, sdk.NewBackupPolicyUnsetRequest(), requests.unset)
+		require.Equal(t, sdk.NewBackupPolicyUnsetRequest().WithSchedule(true), requests.unsetSchedule)
 	})
 
 	t.Run("invalid schedule fails the update", func(t *testing.T) {
 		d := schema.TestResourceDataRaw(t, backupPolicySchema, map[string]any{
 			"schedule": []any{map[string]any{}},
 		})
-		_, err := backupPolicyApplySetUnsetExt(d)
+		_, err := backupPolicyApplySetUnset(d)
 		require.ErrorContains(t, err, "one of hours, minutes, or using_cron")
 	})
 }
@@ -153,4 +171,26 @@ func Test_backupPolicySetFieldsNotSetByReadExt(t *testing.T) {
 		require.Equal(t, "0", attributes["expire_after_days"])
 		require.Equal(t, BooleanDefault, attributes["with_retention_lock"])
 	})
+}
+
+func Test_toBackupPolicySchedule(t *testing.T) {
+	block := func(fields map[string]any) []any { return []any{fields} }
+
+	schedule, err := toBackupPolicySchedule(block(map[string]any{"hours": 2, "minutes": 0, "using_cron": ""}))
+	require.NoError(t, err)
+	require.Equal(t, "2 HOUR", schedule)
+
+	schedule, err = toBackupPolicySchedule(block(map[string]any{"hours": 0, "minutes": 90, "using_cron": ""}))
+	require.NoError(t, err)
+	require.Equal(t, "90 MINUTE", schedule)
+
+	schedule, err = toBackupPolicySchedule(block(map[string]any{"hours": 0, "minutes": 0, "using_cron": "0 * * * * UTC"}))
+	require.NoError(t, err)
+	require.Equal(t, "USING CRON 0 * * * * UTC", schedule)
+
+	_, err = toBackupPolicySchedule(block(map[string]any{"hours": 0, "minutes": 0, "using_cron": ""}))
+	require.ErrorContains(t, err, "one of hours, minutes, or using_cron field should be set")
+
+	_, err = toBackupPolicySchedule(nil)
+	require.ErrorContains(t, err, "one of hours, minutes, or using_cron field should be set")
 }

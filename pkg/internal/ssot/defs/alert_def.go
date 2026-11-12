@@ -1,6 +1,8 @@
 package defs
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+)
 
 // AlertAttrs holds reusable alert fields.
 //
@@ -10,8 +12,8 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // neither way: UNSET SCHEDULE fails with 392026 and SET SCHEDULE on such an alert fails with 392025.
 // Adding or removing the block recreates the alert.
 //
-// enabled uses SkipCreate. CREATE has no ENABLED clause. Resume and suspend stay in the ext
-// after-create and after-alter hooks.
+// enabled uses SkipCreate. CREATE has no ENABLED clause. The ext after-create hook resumes the alert, and the generated
+// SuspendForAlter guard applies enabled on update.
 //
 // Without warehouse the alert is serverless. SHOW returns null for it, and SET and UNSET WAREHOUSE switch
 // between the two. condition and action come back from SHOW as written.
@@ -129,8 +131,14 @@ var AlertAttrs = struct {
 	OwnerRoleType: ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
 }
 
+// alertStateStarted and alertStateSuspended are the SHOW state values. SuspendForAlter uses them too.
+const (
+	alertStateStarted   = "started"
+	alertStateSuspended = "suspended"
+)
+
 // alertStateEnum is the SHOW state column. RESUME and SUSPEND are ALTER keywords, not this enum.
-var alertStateEnum = ssot.NewEnum("AlertState", "AlertStates", "started", "suspended")
+var alertStateEnum = ssot.NewEnum("AlertState", "AlertStates", alertStateStarted, alertStateSuspended)
 
 // SQL clauses that are not resource attributes. condition and action are statement text.
 // CREATE uses IF (EXISTS (...)) and THEN.
@@ -158,11 +166,18 @@ var (
 )
 
 var Alert = ssot.Object{
-	Name:                      "Alert",
-	NamePlural:                "Alerts",
-	IdType:                    "SchemaObjectIdentifier",
-	PreviewFeature:            true,
-	IdentityNameForceNew:      true,
+	Name:                 "Alert",
+	NamePlural:           "Alerts",
+	IdType:               "SchemaObjectIdentifier",
+	PreviewFeature:       true,
+	IdentityNameForceNew: true,
+	// An alert is suspended while any of its attributes changes and is resumed afterwards when enabled is true.
+	SuspendForAlter: &ssot.SuspendForAlter{
+		State:     &AlertAttrs.State,
+		Started:   alertStateStarted,
+		Suspended: alertStateSuspended,
+		Enabled:   &AlertAttrs.Enabled,
+	},
 	IdentityHierarchyForceNew: true,
 	// The CREATE request takes the condition and action SQL clauses, not resource attributes, and the alert_schedule
 	// string. Set and unset of alert_schedule, MODIFY CONDITION, and MODIFY ACTION are ext code too.
@@ -178,11 +193,10 @@ var Alert = ssot.Object{
 		ssot.WithDescribeInSdk(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.ExtCall()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithBeforeAlter(ssot.ExtCall()),
+		ssot.WithSuspendForAlter(ssot.Generated()),
 		ssot.WithApplySetUnset(ssot.ExtCall()),
 		ssot.WithAlterSetInSdk(ssot.ExtCall()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
-		ssot.WithAfterAlter(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
@@ -197,6 +211,7 @@ var Alert = ssot.Object{
 		ssot.WithAllGenerators(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
+			ssot.SdkSuspendIfStarted(),
 			ssot.SdkCreate(),
 			ssot.SdkAlter(),
 			ssot.SdkDrop(),
@@ -218,21 +233,19 @@ var Alert = ssot.Object{
 		&alertConditionSql,
 		&alertActionSql,
 	}},
-	Set: []*ssot.Attribute{
-		&AlertAttrs.Warehouse,
-		&AlertAttrs.AlertSchedule,
-		&AlertAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		&AlertAttrs.Warehouse,
-		&AlertAttrs.AlertSchedule,
-		&AlertAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterKeywordFor(&AlertAttrs.Enabled, true, "RESUME"),
 		ssot.AlterKeywordFor(&AlertAttrs.Enabled, false, "SUSPEND"),
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			&AlertAttrs.Warehouse,
+			&AlertAttrs.AlertSchedule,
+			&AlertAttrs.Comment,
+		),
+		ssot.AlterUnset(
+			&AlertAttrs.Warehouse,
+			&AlertAttrs.AlertSchedule,
+			&AlertAttrs.Comment,
+		),
 		ssot.AlterKeywordList("ModifyCondition", "MODIFY CONDITION EXISTS", "string"),
 		ssot.AlterPlainText("ModifyAction", "MODIFY ACTION"),
 	}},
