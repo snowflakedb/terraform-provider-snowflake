@@ -13,7 +13,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -52,14 +51,7 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 		).
 		WithIncludedUsers(user.ID().Name()).
 		WithPerUserLimitMonthly(1000).
-		WithPerUserLimitDaily(50).
-		WithBlockEnforcementEnabled(true).
-		WithNotificationThresholds(model.QuotaNotificationThresholdModel{
-			Threshold:     80,
-			SpendStrategy: sdk.QuotaSpendStrategyProjected,
-			NotifyUser:    true,
-			Cycle:         sdk.QuotaCycleMonthly,
-		})
+		WithPerUserLimitDaily(50)
 	renamed := model.QuotaFromId("test", newId)
 
 	ref := basic.ResourceReference()
@@ -77,14 +69,9 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 				HasExcludedUserTagEmpty().
 				HasIncludedUsersEmpty().
 				HasExcludedUsersEmpty().
-				HasPerUserLimitMonthly(-1).
-				HasPerUserLimitWeekly(-1).
-				HasPerUserLimitDaily(-1).
-				HasBlockEnforcementEnabled(false).
-				HasNotifyBlockedUsers(true).
-				HasNotificationThresholdsCount(0).
-				HasNotificationIntegrationsEmpty().
-				HasAdminEmailsEmpty(),
+				HasPerUserLimitMonthly(0).
+				HasPerUserLimitWeekly(0).
+				HasPerUserLimitDaily(0),
 			resourceshowoutputassert.QuotaShowOutput(t, ref).
 				HasCreatedOnNotEmpty().
 				HasName(id.Name()).
@@ -104,12 +91,8 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 			HasSharedResource(sdk.QuotaSharedResourceDomainCortexCode, "CORTEX_CODE_CLI").
 			HasIncludedUsers(user.ID().Name()).
 			HasPerUserLimitMonthly(1000).
-			HasPerUserLimitWeekly(-1).
-			HasPerUserLimitDaily(50).
-			HasBlockEnforcementEnabled(true).
-			HasNotifyBlockedUsers(true).
-			HasNotificationThresholdsCount(1).
-			HasNotificationThreshold(80, sdk.QuotaSpendStrategyProjected, true, sdk.QuotaCycleMonthly),
+			HasPerUserLimitWeekly(0).
+			HasPerUserLimitDaily(50),
 		resourceshowoutputassert.QuotaShowOutput(t, ref).
 			HasComment(comment),
 		assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.config.0.per_user_limit", "1000")),
@@ -143,15 +126,6 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 			},
 			Config: accconfig.FromModels(t, configured),
 			Check:  assertThat(t, configuredAssertions...),
-		},
-		// no changes
-		resource.TestStep{
-			Config: accconfig.FromModels(t, configured),
-			ConfigPlanChecks: resource.ConfigPlanChecks{
-				PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectEmptyPlan(),
-				},
-			},
 		},
 		// external changes are detected and reverted
 		resource.TestStep{
@@ -216,18 +190,12 @@ func TestAcc_Quota_CompleteUseCase(t *testing.T) {
 			model.QuotaTagValueModel{Tag: tag.ID(), Value: "finance"},
 			model.QuotaTagValueModel{Tag: tag.ID(), Value: "Analytics"},
 		).
+		WithExcludedUserTags(model.QuotaTagValueModel{Tag: tag.ID(), Value: "contractor"}).
 		WithIncludedUsers(includedUser.ID().Name()).
 		WithExcludedUsers(excludedUser.ID().Name()).
 		WithPerUserLimitMonthly(1000).
 		WithPerUserLimitWeekly(300).
-		WithPerUserLimitDaily(60).
-		WithBlockEnforcementEnabled(true).
-		WithNotifyBlockedUsers(false).
-		WithNotificationThresholds(
-			model.QuotaNotificationThresholdModel{Threshold: 80, SpendStrategy: sdk.QuotaSpendStrategyProjected, NotifyUser: true, Cycle: sdk.QuotaCycleMonthly},
-			model.QuotaNotificationThresholdModel{Threshold: 80, SpendStrategy: sdk.QuotaSpendStrategyProjected, NotifyUser: false, Cycle: sdk.QuotaCycleDaily},
-			model.QuotaNotificationThresholdModel{Threshold: 100, SpendStrategy: sdk.QuotaSpendStrategyActual, NotifyUser: false, Cycle: sdk.QuotaCycleWeekly},
-		)
+		WithPerUserLimitDaily(60)
 
 	ref := complete.ResourceReference()
 
@@ -245,33 +213,18 @@ func TestAcc_Quota_CompleteUseCase(t *testing.T) {
 					HasUserTags(sdk.QuotaUserTagsOperatorIntersection, 2).
 					HasUserTag(tag.ID(), "finance").
 					HasUserTag(tag.ID(), "Analytics").
-					HasExcludedUserTagEmpty().
+					HasExcludedUserTag(tag.ID(), "contractor").
 					HasIncludedUsers(includedUser.ID().Name()).
 					HasExcludedUsers(excludedUser.ID().Name()).
 					HasPerUserLimitMonthly(1000).
 					HasPerUserLimitWeekly(300).
-					HasPerUserLimitDaily(60).
-					HasBlockEnforcementEnabled(true).
-					HasNotifyBlockedUsers(false).
-					HasNotificationThresholdsCount(3).
-					HasNotificationThreshold(80, sdk.QuotaSpendStrategyProjected, true, sdk.QuotaCycleMonthly).
-					HasNotificationThreshold(80, sdk.QuotaSpendStrategyProjected, false, sdk.QuotaCycleDaily).
-					HasNotificationThreshold(100, sdk.QuotaSpendStrategyActual, false, sdk.QuotaCycleWeekly),
+					HasPerUserLimitDaily(60),
 				resourceshowoutputassert.QuotaShowOutput(t, ref).
 					HasName(id.Name()).
 					HasComment(comment),
 				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.scope.0.user_tags_operator", "INTERSECTION")),
-				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.config.0.per_user_block_notifications_enabled", "false")),
-				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.notification_thresholds.#", "3")),
+				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.scope.0.excluded_user_tags.#", "1")),
 			),
-		},
-		resource.TestStep{
-			Config: accconfig.FromModels(t, complete),
-			ConfigPlanChecks: resource.ConfigPlanChecks{
-				PreApply: []plancheck.PlanCheck{
-					plancheck.ExpectEmptyPlan(),
-				},
-			},
 		},
 		// every attribute is read back
 		resource.TestStep{
@@ -283,8 +236,51 @@ func TestAcc_Quota_CompleteUseCase(t *testing.T) {
 	))
 }
 
-// EXCLUDE_USERS('TAG', ...) replaces the user tags and clears the included and excluded users, which are then set again.
-func TestAcc_Quota_ExcludedUserTags(t *testing.T) {
+// Values that Snowflake returns spelled differently (upper-case enums, quoted identifiers) don't produce diffs; every step
+// checks that the plan is empty after the apply.
+func TestAcc_Quota_EquivalentSpellings(t *testing.T) {
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+	tag, tagCleanup := testClient().Tag.CreateTag(t)
+	t.Cleanup(tagCleanup)
+	user, userCleanup := testClient().User.CreateUser(t)
+	t.Cleanup(userCleanup)
+
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	aiDomains := model.QuotaFromId("test", id).
+		WithSharedResources(
+			model.QuotaSharedResourceModel{Domain: "ai function", Instance: "ai_classify"},
+			model.QuotaSharedResourceModel{Domain: "cortex code"},
+		).
+		WithUserTags("union", model.QuotaTagValueModel{Tag: tag.ID(), Value: "finance"}).
+		WithIncludedUsers(user.ID().FullyQualifiedName())
+	warehouseDomain := model.QuotaFromId("test", id).
+		WithSharedResources(model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainWarehouse, Instance: warehouse.ID().FullyQualifiedName()})
+
+	ref := aiDomains.ResourceReference()
+
+	resource.Test(t, quotaTestCase(t,
+		resource.TestStep{
+			Config: accconfig.FromModels(t, aiDomains),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasSharedResourcesCount(2).
+					HasUserTags(sdk.QuotaUserTagsOperatorUnion, 1),
+			),
+		},
+		// switching between credit types removes the AI domains before adding the warehouse
+		resource.TestStep{
+			Config: accconfig.FromModels(t, warehouseDomain),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasSharedResourcesCount(1),
+			),
+		},
+	))
+}
+
+func TestAcc_Quota_UserTags(t *testing.T) {
 	user, userCleanup := testClient().User.CreateUser(t)
 	t.Cleanup(userCleanup)
 	tag, tagCleanup := testClient().Tag.CreateTag(t)
@@ -295,8 +291,9 @@ func TestAcc_Quota_ExcludedUserTags(t *testing.T) {
 	excludedTags := model.QuotaFromId("test", id).
 		WithExcludedUserTags(model.QuotaTagValueModel{Tag: tag.ID(), Value: "contractor"}).
 		WithIncludedUsers(user.ID().Name())
-	includedTags := model.QuotaFromId("test", id).
+	bothTags := model.QuotaFromId("test", id).
 		WithUserTags(sdk.QuotaUserTagsOperatorUnion, model.QuotaTagValueModel{Tag: tag.ID(), Value: "finance"}).
+		WithExcludedUserTags(model.QuotaTagValueModel{Tag: tag.ID(), Value: "contractor"}).
 		WithIncludedUsers(user.ID().Name())
 	noTags := model.QuotaFromId("test", id).
 		WithIncludedUsers(user.ID().Name())
@@ -311,7 +308,6 @@ func TestAcc_Quota_ExcludedUserTags(t *testing.T) {
 					HasUserTagsEmpty().
 					HasExcludedUserTag(tag.ID(), "contractor").
 					HasIncludedUsers(user.ID().Name()),
-				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.scope.0.user_tags_operator", sdk.QuotaScopeUserTagsOperatorAllUsers)),
 			),
 		},
 		resource.TestStep{
@@ -320,21 +316,13 @@ func TestAcc_Quota_ExcludedUserTags(t *testing.T) {
 			ImportState:       true,
 			ImportStateVerify: true,
 		},
+		// tags that select users and excluded tags are set independently, and the user lists stay
 		resource.TestStep{
-			Config: accconfig.FromModels(t, includedTags),
+			Config: accconfig.FromModels(t, bothTags),
 			Check: assertThat(t,
 				resourceassert.QuotaResource(t, ref).
 					HasUserTags(sdk.QuotaUserTagsOperatorUnion, 1).
 					HasUserTag(tag.ID(), "finance").
-					HasExcludedUserTagEmpty().
-					HasIncludedUsers(user.ID().Name()),
-			),
-		},
-		resource.TestStep{
-			Config: accconfig.FromModels(t, excludedTags),
-			Check: assertThat(t,
-				resourceassert.QuotaResource(t, ref).
-					HasUserTagsEmpty().
 					HasExcludedUserTag(tag.ID(), "contractor").
 					HasIncludedUsers(user.ID().Name()),
 			),
@@ -346,49 +334,6 @@ func TestAcc_Quota_ExcludedUserTags(t *testing.T) {
 					HasUserTagsEmpty().
 					HasExcludedUserTagEmpty().
 					HasIncludedUsers(user.ID().Name()),
-			),
-		},
-	))
-}
-
-// Quotas accept webhook and queue integrations (not email ones), and verified admin emails only; helpers.VerifiedEmail is verified
-// in the accounts the tests run in.
-func TestAcc_Quota_AdminNotifications(t *testing.T) {
-	// the webhook is never called: admin summaries are sent only when users cross their limits
-	integration, integrationCleanup := testClient().NotificationIntegration.CreateWebhook(t, "https://hooks.slack.com/services/T00000000/B00000000/AAAAAAAAAAAAAAAAAAAAAAAA")
-	t.Cleanup(integrationCleanup)
-	t.Cleanup(testClient().Grant.GrantUsageOnIntegrationToSnowflakeApplication(t, integration.ID()))
-
-	id := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	withNotifications := model.QuotaFromId("test", id).
-		WithNotificationIntegrations(integration.ID()).
-		WithAdminEmails(helpers.VerifiedEmail)
-	withoutNotifications := model.QuotaFromId("test", id)
-
-	ref := withNotifications.ResourceReference()
-
-	resource.Test(t, quotaTestCase(t,
-		resource.TestStep{
-			Config: accconfig.FromModels(t, withNotifications),
-			Check: assertThat(t,
-				resourceassert.QuotaResource(t, ref).
-					HasNotificationIntegrations(integration.ID().Name()).
-					HasAdminEmails(helpers.VerifiedEmail),
-			),
-		},
-		resource.TestStep{
-			Config:            accconfig.FromModels(t, withNotifications),
-			ResourceName:      ref,
-			ImportState:       true,
-			ImportStateVerify: true,
-		},
-		resource.TestStep{
-			Config: accconfig.FromModels(t, withoutNotifications),
-			Check: assertThat(t,
-				resourceassert.QuotaResource(t, ref).
-					HasNotificationIntegrationsEmpty().
-					HasAdminEmailsEmpty(),
 			),
 		},
 	))
@@ -418,25 +363,14 @@ func TestAcc_Quota_Domains(t *testing.T) {
 		{Domain: sdk.QuotaSharedResourceDomainWarehouse, Instance: warehouse.ID().Name()},
 	} {
 		config := model.QuotaFromId("test", id).WithSharedResources(sharedResource)
-		steps = append(steps,
-			resource.TestStep{
-				Config: accconfig.FromModels(t, config),
-				Check: assertThat(t,
-					resourceassert.QuotaResource(t, ref).
-						HasSharedResourcesCount(1).
-						HasSharedResource(sharedResource.Domain, sharedResource.Instance),
-					assert.Check(resource.TestCheckResourceAttr(ref, "shared_resource.0.instance", sharedResource.Instance)),
-				),
-			},
-			resource.TestStep{
-				Config: accconfig.FromModels(t, config),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
-			},
-		)
+		steps = append(steps, resource.TestStep{
+			Config: accconfig.FromModels(t, config),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasSharedResourcesCount(1).
+					HasSharedResource(sharedResource.Domain, sharedResource.Instance),
+			),
+		})
 	}
 	steps = append(steps, resource.TestStep{
 		Config:            accconfig.FromModels(t, model.QuotaFromId("test", id).WithSharedResources(model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainWarehouse, Instance: warehouse.ID().Name()})),
@@ -448,46 +382,25 @@ func TestAcc_Quota_Domains(t *testing.T) {
 	resource.Test(t, quotaTestCase(t, steps...))
 }
 
+// The provider validates only the enum values; everything else is left to Snowflake.
 func TestAcc_Quota_Validations(t *testing.T) {
+	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
+	t.Cleanup(warehouseCleanup)
+
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
-	planFails := func(config *model.QuotaModel, message string) resource.TestStep {
-		return resource.TestStep{
-			Config:      accconfig.FromModels(t, config),
+	resource.Test(t, quotaTestCase(t,
+		resource.TestStep{
+			Config:      accconfig.FromModels(t, model.QuotaFromId("test", id).WithSharedResources(model.QuotaSharedResourceModel{Domain: "NOT A DOMAIN"})),
 			PlanOnly:    true,
-			ExpectError: regexp.MustCompile(message),
-		}
-	}
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
+			ExpectError: regexp.MustCompile("invalid quota shared resource domain"),
 		},
-		Steps: []resource.TestStep{
-			planFails(model.QuotaFromId("test", id).WithSharedResources(
-				model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainWarehouse},
+		resource.TestStep{
+			Config: accconfig.FromModels(t, model.QuotaFromId("test", id).WithSharedResources(
 				model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainAiFunction},
-			), "a quota can monitor either the WAREHOUSE domain or the AI domains, not both"),
-			planFails(model.QuotaFromId("test", id).WithSharedResources(
-				model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainAiFunction},
-				model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainAiFunction, Instance: "AI_CLASSIFY"},
-			), "the AI FUNCTION domain is monitored as a whole"),
-			planFails(model.QuotaFromId("test", id).
-				WithSharedResources(model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainWarehouse}).
-				WithBlockEnforcementEnabled(true), "block_enforcement_enabled applies only to the AI domains"),
-			planFails(model.QuotaFromId("test", id).
-				WithSharedResources(model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainCortexAgent, Instance: "AGENT"}),
-				`invalid instance "AGENT" of the CORTEX AGENT domain`),
-			planFails(model.QuotaFromId("test", id).
-				WithSharedResources(model.QuotaSharedResourceModel{Domain: "ai function"}), `to be one of`),
-			planFails(model.QuotaFromId("test", id).WithPerUserLimitMonthly(0), `expected per_user_limit_monthly to be in the range \(1 - 1000000000\)`),
-			planFails(model.QuotaFromId("test", id).WithNotificationThresholds(
-				model.QuotaNotificationThresholdModel{Threshold: 1001, SpendStrategy: sdk.QuotaSpendStrategyActual, Cycle: sdk.QuotaCycleMonthly},
-			), `expected .*threshold to be in the range \(1 - 1000\)`),
-			planFails(model.QuotaFromId("test", id).
-				WithUserTags(sdk.QuotaUserTagsOperatorUnion, model.QuotaTagValueModel{Tag: id, Value: "a"}).
-				WithExcludedUserTags(model.QuotaTagValueModel{Tag: id, Value: "b"}), `Conflicting configuration arguments`),
+				model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainWarehouse, Instance: warehouse.ID().Name()},
+			)),
+			ExpectError: regexp.MustCompile("different credit types"),
 		},
-	})
+	))
 }

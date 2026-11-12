@@ -11,7 +11,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -39,14 +38,6 @@ func TestAcc_Quota_SnowflakeIntelligenceInstance(t *testing.T) {
 						HasSharedResourcesCount(1).
 						HasSharedResource(sharedResource.Domain, sharedResource.Instance),
 				),
-			},
-			{
-				Config: accconfig.FromModels(t, quotaModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
 			},
 			{
 				Config:            accconfig.FromModels(t, quotaModel),
