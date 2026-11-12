@@ -574,11 +574,10 @@ func TestParseQuotaScope(t *testing.T) {
 		assert.False(t, scope.SharedResources[1].IsWholeDomain())
 		assert.Equal(t, "CORTEX_CODE_CLI", scope.SharedResources[1].Name)
 
-		require.NotNil(t, scope.UserTags)
-		assert.False(t, scope.UserTags.AreExclusions())
-		require.Len(t, scope.UserTags.Tags, 1)
-		assert.Equal(t, NewSchemaObjectIdentifier("DB", "S1", "COST_CENTER"), scope.UserTags.Tags[0].TagId())
-		assert.Equal(t, []string{"Analytics", "finance"}, scope.UserTags.Tags[0].TagValues)
+		require.Len(t, scope.SelectionTags(), 1)
+		assert.Equal(t, NewSchemaObjectIdentifier("DB", "S1", "COST_CENTER"), scope.SelectionTags()[0].TagId())
+		assert.Equal(t, []string{"Analytics", "finance"}, scope.SelectionTags()[0].TagValues)
+		assert.Empty(t, scope.ExclusionTags())
 	})
 
 	t.Run("captured output of a new quota", func(t *testing.T) {
@@ -593,16 +592,25 @@ func TestParseQuotaScope(t *testing.T) {
 }`)
 		require.NoError(t, err)
 		assert.Empty(t, scope.SharedResources)
-		require.NotNil(t, scope.UserTags)
-		assert.True(t, scope.UserTags.AreExclusions())
-		assert.Empty(t, scope.UserTags.Tags)
+		assert.Empty(t, scope.SelectionTags())
+		assert.Empty(t, scope.ExclusionTags())
 	})
 
-	t.Run("captured output with excluded tags", func(t *testing.T) {
+	t.Run("captured output with selection and excluded tags", func(t *testing.T) {
+		scope, err := ParseQuotaScope(`{"excluded_user_tags": [{"tagDatabase": "DB", "tagId": 11, "tagName": "T", "tagSchema": "S1", "tagValues": ["contractor"]}], "excluded_users": [], "included_users": [], "shared_resources": [], "user_tags": {"operator": "UNION", "tags": [{"tagDatabase": "DB", "tagId": 11, "tagName": "T", "tagSchema": "S1", "tagValues": ["finance"]}]}}`)
+		require.NoError(t, err)
+		require.Len(t, scope.SelectionTags(), 1)
+		assert.Equal(t, []string{"finance"}, scope.SelectionTags()[0].TagValues)
+		require.Len(t, scope.ExclusionTags(), 1)
+		assert.Equal(t, []string{"contractor"}, scope.ExclusionTags()[0].TagValues)
+	})
+
+	t.Run("excluded tags in the older format", func(t *testing.T) {
 		scope, err := ParseQuotaScope(`{"excluded_users": [], "included_users": [], "shared_resources": [], "user_tags": {"operator": "ALL_USERS", "tags": [{"tagDatabase": "DB", "tagId": 11, "tagName": "COST_CENTER", "tagSchema": "S1", "tagValues": ["contractor"]}]}}`)
 		require.NoError(t, err)
-		assert.True(t, scope.UserTags.AreExclusions())
-		assert.Equal(t, []string{"contractor"}, scope.UserTags.Tags[0].TagValues)
+		assert.Empty(t, scope.SelectionTags())
+		require.Len(t, scope.ExclusionTags(), 1)
+		assert.Equal(t, []string{"contractor"}, scope.ExclusionTags()[0].TagValues)
 	})
 
 	t.Run("invalid json", func(t *testing.T) {
