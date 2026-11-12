@@ -138,7 +138,6 @@ func Test_StringToFeature(t *testing.T) {
 		{input: "snowflake_procedures_datasource", want: ProceduresDatasource},
 		{input: "snowflake_projection_policies_datasource", want: ProjectionPoliciesDatasource},
 		{input: "snowflake_projection_policy_resource", want: ProjectionPolicyResource},
-		{input: "snowflake_quota_resource", want: QuotaResource},
 		{input: "snowflake_quotas_datasource", want: QuotasDatasource},
 		{input: "snowflake_replication_group_resource", want: ReplicationGroupResource},
 		{input: "snowflake_replication_group_secondary_resource", want: ReplicationGroupSecondaryResource},

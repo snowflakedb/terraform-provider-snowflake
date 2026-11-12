@@ -42,7 +42,6 @@
 - [snowflake_procedure_scala](./docs/resources/procedure_scala)
 - [snowflake_procedure_sql](./docs/resources/procedure_sql)
 - [snowflake_projection_policy](./docs/resources/projection_policy)
-- [snowflake_quota](./docs/resources/quota)
 - [snowflake_replication_group](./docs/resources/replication_group)
 - [snowflake_replication_group_secondary](./docs/resources/replication_group_secondary)
 - [snowflake_semantic_view](./docs/resources/semantic_view)
