@@ -10,9 +10,9 @@ import (
 
 type FailoverGroups interface {
 	Create(ctx context.Context, request *CreateFailoverGroupRequest) error
-	CreateSecondaryReplicationGroup(ctx context.Context, request *CreateSecondaryReplicationGroupFailoverGroupRequest) error
-	AlterSource(ctx context.Context, request *AlterSourceFailoverGroupRequest) error
-	AlterTarget(ctx context.Context, request *AlterTargetFailoverGroupRequest) error
+	CreateSecondary(ctx context.Context, request *CreateSecondaryFailoverGroupRequest) error
+	Alter(ctx context.Context, request *AlterFailoverGroupRequest) error
+	AlterSecondary(ctx context.Context, request *AlterSecondaryFailoverGroupRequest) error
 	Drop(ctx context.Context, request *DropFailoverGroupRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
 	Show(ctx context.Context, request *ShowFailoverGroupRequest) ([]FailoverGroup, error)
@@ -28,31 +28,42 @@ type FailoverGroups interface {
 
 // CreateFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-failover-group.
 type CreateFailoverGroupOptions struct {
-	create                  bool                      `ddl:"static" sql:"CREATE"`
-	failoverGroup           bool                      `ddl:"static" sql:"FAILOVER GROUP"`
-	IfNotExists             *bool                     `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                    AccountObjectIdentifier   `ddl:"identifier"`
-	ObjectTypes             []PluralObjectType        `ddl:"parameter" sql:"OBJECT_TYPES"`
-	AllowedDatabases        []AccountObjectIdentifier `ddl:"parameter" sql:"ALLOWED_DATABASES"`
-	AllowedShares           []AccountObjectIdentifier `ddl:"parameter" sql:"ALLOWED_SHARES"`
-	AllowedIntegrationTypes []IntegrationType         `ddl:"parameter" sql:"ALLOWED_INTEGRATION_TYPES"`
-	AllowedAccounts         []AccountIdentifier       `ddl:"parameter" sql:"ALLOWED_ACCOUNTS"`
-	IgnoreEditionCheck      *bool                     `ddl:"keyword" sql:"IGNORE EDITION CHECK"`
-	ReplicationSchedule     *string                   `ddl:"parameter,single_quotes" sql:"REPLICATION_SCHEDULE"`
-	OptimizedRefresh        *bool                     `ddl:"parameter" sql:"OPTIMIZED_REFRESH"`
+	create                  bool                           `ddl:"static" sql:"CREATE"`
+	failoverGroup           bool                           `ddl:"static" sql:"FAILOVER GROUP"`
+	IfNotExists             *bool                          `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                    AccountObjectIdentifier        `ddl:"identifier"`
+	ObjectTypes             []FailoverGroupObjectType      `ddl:"parameter,no_parentheses" sql:"OBJECT_TYPES"`
+	AllowedDatabases        []AccountObjectIdentifier      `ddl:"parameter,no_parentheses" sql:"ALLOWED_DATABASES"`
+	AllowedExternalVolumes  []AccountObjectIdentifier      `ddl:"parameter,no_parentheses" sql:"ALLOWED_EXTERNAL_VOLUMES"`
+	AllowedShares           []AccountObjectIdentifier      `ddl:"parameter,no_parentheses" sql:"ALLOWED_SHARES"`
+	AllowedIntegrationTypes []FailoverGroupIntegrationType `ddl:"parameter,no_parentheses" sql:"ALLOWED_INTEGRATION_TYPES"`
+	AllowedAccounts         []AccountIdentifier            `ddl:"parameter,no_parentheses" sql:"ALLOWED_ACCOUNTS"`
+	IgnoreEditionCheck      *bool                          `ddl:"keyword" sql:"IGNORE EDITION CHECK"`
+	ReplicationSchedule     *string                        `ddl:"parameter,single_quotes" sql:"REPLICATION_SCHEDULE"`
+	OptimizedRefresh        *bool                          `ddl:"parameter" sql:"OPTIMIZED_REFRESH"`
+	Tag                     []TagAssociation               `ddl:"keyword,parentheses" sql:"TAG"`
+	ErrorIntegration        *AccountObjectIdentifier       `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
 }
 
-// CreateSecondaryReplicationGroupFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-failover-group.
-type CreateSecondaryReplicationGroupFailoverGroupOptions struct {
-	create               bool                     `ddl:"static" sql:"CREATE"`
-	failoverGroup        bool                     `ddl:"static" sql:"FAILOVER GROUP"`
-	IfNotExists          *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                 AccountObjectIdentifier  `ddl:"identifier"`
-	PrimaryFailoverGroup ExternalObjectIdentifier `ddl:"identifier" sql:"AS REPLICA OF"`
+type FailoverGroupObjectTypeListItem struct {
+	Value FailoverGroupObjectType `ddl:"keyword,single_quotes"`
 }
 
-// AlterSourceFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-failover-group.
-type AlterSourceFailoverGroupOptions struct {
+type FailoverGroupIntegrationTypeListItem struct {
+	Value FailoverGroupIntegrationType `ddl:"keyword,single_quotes"`
+}
+
+// CreateSecondaryFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-failover-group.
+type CreateSecondaryFailoverGroupOptions struct {
+	create        bool                     `ddl:"static" sql:"CREATE"`
+	failoverGroup bool                     `ddl:"static" sql:"FAILOVER GROUP"`
+	IfNotExists   *bool                    `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name          AccountObjectIdentifier  `ddl:"identifier"`
+	AsReplicaOf   ExternalObjectIdentifier `ddl:"identifier" sql:"AS REPLICA OF"`
+}
+
+// AlterFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-failover-group.
+type AlterFailoverGroupOptions struct {
 	alter         bool                     `ddl:"static" sql:"ALTER"`
 	failoverGroup bool                     `ddl:"static" sql:"FAILOVER GROUP"`
 	IfExists      *bool                    `ddl:"keyword" sql:"IF EXISTS"`
@@ -60,54 +71,72 @@ type AlterSourceFailoverGroupOptions struct {
 	RenameTo      *AccountObjectIdentifier `ddl:"identifier" sql:"RENAME TO"`
 	Set           *FailoverGroupSet        `ddl:"keyword" sql:"SET"`
 	Unset         *FailoverGroupUnset      `ddl:"list,no_parentheses" sql:"UNSET"`
+	SetTags       []TagAssociation         `ddl:"keyword" sql:"SET TAG"`
+	UnsetTags     []ObjectIdentifier       `ddl:"keyword" sql:"UNSET TAG"`
 	Add           *FailoverGroupAdd        `ddl:"keyword" sql:"ADD"`
 	Move          *FailoverGroupMove       `ddl:"keyword" sql:"MOVE"`
 	Remove        *FailoverGroupRemove     `ddl:"keyword" sql:"REMOVE"`
 }
 
 type FailoverGroupSet struct {
-	ObjectTypes             []PluralObjectType `ddl:"parameter" sql:"OBJECT_TYPES"`
-	AllowedIntegrationTypes []IntegrationType  `ddl:"parameter" sql:"ALLOWED_INTEGRATION_TYPES"`
-	ReplicationSchedule     *string            `ddl:"parameter,single_quotes" sql:"REPLICATION_SCHEDULE"`
-	OptimizedRefresh        *bool              `ddl:"parameter" sql:"OPTIMIZED_REFRESH"`
-	RpoAssurance            *bool              `ddl:"parameter" sql:"RPO_ASSURANCE"`
+	ObjectTypes             []FailoverGroupObjectType      `ddl:"parameter,no_parentheses" sql:"OBJECT_TYPES"`
+	AllowedDatabases        []AccountObjectIdentifier      `ddl:"parameter,no_parentheses" sql:"ALLOWED_DATABASES"`
+	AllowedExternalVolumes  []AccountObjectIdentifier      `ddl:"parameter,no_parentheses" sql:"ALLOWED_EXTERNAL_VOLUMES"`
+	AllowedShares           []AccountObjectIdentifier      `ddl:"parameter,no_parentheses" sql:"ALLOWED_SHARES"`
+	AllowedIntegrationTypes []FailoverGroupIntegrationType `ddl:"parameter,no_parentheses" sql:"ALLOWED_INTEGRATION_TYPES"`
+	Comment                 *string                        `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	ReplicationSchedule     *string                        `ddl:"parameter,single_quotes" sql:"REPLICATION_SCHEDULE"`
+	OptimizedRefresh        *bool                          `ddl:"parameter" sql:"OPTIMIZED_REFRESH"`
+	RpoAssurance            *bool                          `ddl:"parameter" sql:"RPO_ASSURANCE"`
+	ErrorIntegration        *AccountObjectIdentifier       `ddl:"identifier,equals" sql:"ERROR_INTEGRATION"`
+	ReadOnly                *bool                          `ddl:"parameter" sql:"READ_ONLY"`
 }
 
 type FailoverGroupUnset struct {
+	Comment             *bool `ddl:"keyword" sql:"COMMENT"`
 	ReplicationSchedule *bool `ddl:"keyword" sql:"REPLICATION_SCHEDULE"`
 	OptimizedRefresh    *bool `ddl:"keyword" sql:"OPTIMIZED_REFRESH"`
 	RpoAssurance        *bool `ddl:"keyword" sql:"RPO_ASSURANCE"`
+	ErrorIntegration    *bool `ddl:"keyword" sql:"ERROR_INTEGRATION"`
+	ReadOnly            *bool `ddl:"keyword" sql:"READ_ONLY"`
 }
 
 type FailoverGroupAdd struct {
-	AllowedDatabases   []AccountObjectIdentifier `ddl:"parameter,reverse" sql:"TO ALLOWED_DATABASES"`
-	AllowedShares      []AccountObjectIdentifier `ddl:"parameter,reverse" sql:"TO ALLOWED_SHARES"`
-	AllowedAccounts    []AccountIdentifier       `ddl:"parameter,reverse" sql:"TO ALLOWED_ACCOUNTS"`
-	IgnoreEditionCheck *bool                     `ddl:"keyword" sql:"IGNORE_EDITION_CHECK"`
+	AllowedDatabases       []AccountObjectIdentifier `ddl:"parameter,no_parentheses,reverse" sql:"TO ALLOWED_DATABASES"`
+	AllowedExternalVolumes []AccountObjectIdentifier `ddl:"parameter,no_parentheses,reverse" sql:"TO ALLOWED_EXTERNAL_VOLUMES"`
+	AllowedShares          []AccountObjectIdentifier `ddl:"parameter,no_parentheses,reverse" sql:"TO ALLOWED_SHARES"`
+	AllowedAccounts        []AccountIdentifier       `ddl:"parameter,no_parentheses,reverse" sql:"TO ALLOWED_ACCOUNTS"`
+	IgnoreEditionCheck     *bool                     `ddl:"keyword" sql:"IGNORE EDITION CHECK"`
 }
 
 type FailoverGroupMove struct {
-	Databases []AccountObjectIdentifier `ddl:"parameter,no_equals" sql:"DATABASES"`
-	Shares    []AccountObjectIdentifier `ddl:"parameter,no_equals" sql:"SHARES"`
-	To        AccountObjectIdentifier   `ddl:"identifier" sql:"TO FAILOVER GROUP"`
+	Databases       []AccountObjectIdentifier `ddl:"parameter,no_parentheses,no_equals" sql:"DATABASES"`
+	ExternalVolumes []AccountObjectIdentifier `ddl:"parameter,no_parentheses,no_equals" sql:"EXTERNAL VOLUMES"`
+	Shares          []AccountObjectIdentifier `ddl:"parameter,no_parentheses,no_equals" sql:"SHARES"`
+	To              AccountObjectIdentifier   `ddl:"identifier" sql:"TO FAILOVER GROUP"`
 }
 
 type FailoverGroupRemove struct {
-	AllowedDatabases []AccountObjectIdentifier `ddl:"parameter,reverse" sql:"FROM ALLOWED_DATABASES"`
-	AllowedShares    []AccountObjectIdentifier `ddl:"parameter,reverse" sql:"FROM ALLOWED_SHARES"`
-	AllowedAccounts  []AccountIdentifier       `ddl:"parameter,reverse" sql:"FROM ALLOWED_ACCOUNTS"`
+	AllowedDatabases       []AccountObjectIdentifier `ddl:"parameter,no_parentheses,reverse" sql:"FROM ALLOWED_DATABASES"`
+	AllowedExternalVolumes []AccountObjectIdentifier `ddl:"parameter,no_parentheses,reverse" sql:"FROM ALLOWED_EXTERNAL_VOLUMES"`
+	AllowedShares          []AccountObjectIdentifier `ddl:"parameter,no_parentheses,reverse" sql:"FROM ALLOWED_SHARES"`
+	AllowedAccounts        []AccountIdentifier       `ddl:"parameter,no_parentheses,reverse" sql:"FROM ALLOWED_ACCOUNTS"`
 }
 
-// AlterTargetFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-failover-group.
-type AlterTargetFailoverGroupOptions struct {
-	alter         bool                    `ddl:"static" sql:"ALTER"`
-	failoverGroup bool                    `ddl:"static" sql:"FAILOVER GROUP"`
-	IfExists      *bool                   `ddl:"keyword" sql:"IF EXISTS"`
-	name          AccountObjectIdentifier `ddl:"identifier"`
-	Refresh       *bool                   `ddl:"keyword" sql:"REFRESH"`
-	Primary       *bool                   `ddl:"keyword" sql:"PRIMARY"`
-	Suspend       *bool                   `ddl:"keyword" sql:"SUSPEND"`
-	Resume        *bool                   `ddl:"keyword" sql:"RESUME"`
+// AlterSecondaryFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-failover-group.
+type AlterSecondaryFailoverGroupOptions struct {
+	alter         bool                           `ddl:"static" sql:"ALTER"`
+	failoverGroup bool                           `ddl:"static" sql:"FAILOVER GROUP"`
+	IfExists      *bool                          `ddl:"keyword" sql:"IF EXISTS"`
+	name          AccountObjectIdentifier        `ddl:"identifier"`
+	Refresh       *bool                          `ddl:"keyword" sql:"REFRESH"`
+	Primary       *bool                          `ddl:"keyword" sql:"PRIMARY"`
+	Suspend       *FailoverGroupSecondarySuspend `ddl:"keyword" sql:"SUSPEND"`
+	Resume        *bool                          `ddl:"keyword" sql:"RESUME"`
+}
+
+type FailoverGroupSecondarySuspend struct {
+	Immediate *bool `ddl:"keyword" sql:"IMMEDIATE"`
 }
 
 // DropFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-failover-group.
@@ -120,55 +149,59 @@ type DropFailoverGroupOptions struct {
 
 // ShowFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups.
 type ShowFailoverGroupOptions struct {
-	show           bool              `ddl:"static" sql:"SHOW"`
-	failoverGroups bool              `ddl:"static" sql:"FAILOVER GROUPS"`
-	InAccount      AccountIdentifier `ddl:"identifier" sql:"IN ACCOUNT"`
+	show           bool               `ddl:"static" sql:"SHOW"`
+	failoverGroups bool               `ddl:"static" sql:"FAILOVER GROUPS"`
+	InAccount      *AccountIdentifier `ddl:"identifier" sql:"IN ACCOUNT"`
 }
 
-type failoverGroupDBRow struct {
-	RegionGroup               string         `db:"region_group"`
-	SnowflakeRegion           string         `db:"snowflake_region"`
-	CreatedOn                 time.Time      `db:"created_on"`
-	AccountName               string         `db:"account_name"`
-	Name                      string         `db:"name"`
-	Type                      string         `db:"type"`
-	Comment                   sql.NullString `db:"comment"`
-	IsPrimary                 bool           `db:"is_primary"`
-	Primary                   string         `db:"primary"`
-	ObjectTypes               string         `db:"object_types"`
-	AllowedIntegrationTypes   string         `db:"allowed_integration_types"`
-	AllowedAccounts           string         `db:"allowed_accounts"`
-	OrganizationName          string         `db:"organization_name"`
-	AccountLocator            string         `db:"account_locator"`
-	ReplicationSchedule       sql.NullString `db:"replication_schedule"`
-	SecondaryState            sql.NullString `db:"secondary_state"`
-	NextScheduledRefresh      sql.NullString `db:"next_scheduled_refresh"`
-	Owner                     sql.NullString `db:"owner"`
-	IsOptimizedRefreshEnabled bool           `db:"is_optimized_refresh_enabled"`
-	RpoAssurance              bool           `db:"rpo_assurance"`
+type failoverGroupsRow struct {
+	RegionGroup                   string         `db:"region_group"`
+	SnowflakeRegion               string         `db:"snowflake_region"`
+	CreatedOn                     time.Time      `db:"created_on"`
+	AccountName                   string         `db:"account_name"`
+	Name                          string         `db:"name"`
+	Type                          string         `db:"type"`
+	Comment                       sql.NullString `db:"comment"`
+	IsPrimary                     bool           `db:"is_primary"`
+	Primary                       string         `db:"primary"`
+	ObjectTypes                   sql.NullString `db:"object_types"`
+	AllowedIntegrationTypes       sql.NullString `db:"allowed_integration_types"`
+	AllowedAccounts               sql.NullString `db:"allowed_accounts"`
+	OrganizationName              string         `db:"organization_name"`
+	AccountLocator                string         `db:"account_locator"`
+	ReplicationSchedule           sql.NullString `db:"replication_schedule"`
+	SecondaryState                sql.NullString `db:"secondary_state"`
+	NextScheduledRefresh          sql.NullString `db:"next_scheduled_refresh"`
+	Owner                         sql.NullString `db:"owner"`
+	IsListingAutoFulfillmentGroup bool           `db:"is_listing_auto_fulfillment_group"`
+	IsOptimizedRefreshEnabled     bool           `db:"is_optimized_refresh_enabled"`
+	RpoAssurance                  bool           `db:"rpo_assurance"`
+	ReadOnly                      sql.NullBool   `db:"read_only"`
 }
 
 type FailoverGroup struct {
-	RegionGroup               string
-	SnowflakeRegion           string
-	CreatedOn                 time.Time
-	AccountName               string
-	Name                      string
-	Type                      string
-	Comment                   string
-	IsPrimary                 bool
-	Primary                   ExternalObjectIdentifier
-	ObjectTypes               []PluralObjectType
-	AllowedIntegrationTypes   []IntegrationType
-	AllowedAccounts           []AccountIdentifier
-	OrganizationName          string
-	AccountLocator            string
-	ReplicationSchedule       string
-	SecondaryState            FailoverGroupSecondaryState
-	NextScheduledRefresh      string
-	Owner                     string
-	IsOptimizedRefreshEnabled bool
-	RpoAssurance              bool
+	RegionGroup                   string
+	SnowflakeRegion               string
+	CreatedOn                     time.Time
+	AccountName                   string
+	Name                          string
+	Type                          string
+	Comment                       *string
+	IsPrimary                     bool
+	Primary                       ExternalObjectIdentifier
+	ObjectTypes                   []FailoverGroupObjectType
+	AllowedIntegrationTypes       []FailoverGroupIntegrationType
+	AllowedAccounts               []AccountIdentifier
+	OrganizationName              string
+	AccountLocator                string
+	ReplicationSchedule           *string
+	SecondaryState                *FailoverGroupSecondaryState
+	NextScheduledRefresh          string
+	Owner                         *string
+	IsListingAutoFulfillmentGroup bool
+	IsOptimizedRefreshEnabled     bool
+	RpoAssurance                  bool
+	ReadOnly                      *bool
 }
 
 func (v *FailoverGroup) ID() AccountObjectIdentifier {
@@ -181,9 +214,10 @@ func (v *FailoverGroup) ObjectType() ObjectType {
 
 // ShowFailoverGroupDatabasesFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-databases-in-failover-group.
 type ShowFailoverGroupDatabasesFailoverGroupOptions struct {
-	show      bool                    `ddl:"static" sql:"SHOW"`
-	databases bool                    `ddl:"static" sql:"DATABASES"`
-	In        AccountObjectIdentifier `ddl:"identifier" sql:"IN FAILOVER GROUP"`
+	show            bool                    `ddl:"static" sql:"SHOW"`
+	databases       bool                    `ddl:"static" sql:"DATABASES"`
+	inFailoverGroup bool                    `ddl:"static" sql:"IN FAILOVER GROUP"`
+	name            AccountObjectIdentifier `ddl:"identifier"`
 }
 
 type failoverGroupDatabaseDBRow struct {
@@ -196,9 +230,10 @@ type FailoverGroupDatabase struct {
 
 // ShowFailoverGroupSharesFailoverGroupOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-shares-in-failover-group.
 type ShowFailoverGroupSharesFailoverGroupOptions struct {
-	show   bool                    `ddl:"static" sql:"SHOW"`
-	shares bool                    `ddl:"static" sql:"SHARES"`
-	In     AccountObjectIdentifier `ddl:"identifier" sql:"IN FAILOVER GROUP"`
+	show            bool                    `ddl:"static" sql:"SHOW"`
+	shares          bool                    `ddl:"static" sql:"SHARES"`
+	inFailoverGroup bool                    `ddl:"static" sql:"IN FAILOVER GROUP"`
+	name            AccountObjectIdentifier `ddl:"identifier"`
 }
 
 type failoverGroupShareDBRow struct {

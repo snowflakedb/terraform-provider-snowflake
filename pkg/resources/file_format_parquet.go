@@ -47,13 +47,15 @@ func FileFormatParquet() *schema.Resource {
 		Description:   "Resource used to manage Parquet file formats. For more information, check [file format documentation](https://docs.snowflake.com/en/sql-reference/sql/create-file-format).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.FileFormatParquet, customdiff.All(
-			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "comment"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(resourceSchema, ShowOutputAttributeName, "name", "database", "schema", "comment"),
 			ComputedIfAnyAttributeChanged(
 				resourceSchema, DescribeOutputAttributeName,
 				"name", "type", "compression", "binary_as_text", "use_logical_type",
 				"trim_space", "use_vectorized_scanner", "replace_invalid_characters", "null_if",
 			),
-			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(resourceSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			RecreateWhenResourceTypeChangedExternally("type", sdk.FileFormatTypeParquet, sdk.ToFileFormatType),
 		)),
 
@@ -187,6 +189,17 @@ func UpdateFileFormatParquet(ctx context.Context, d *schema.ResourceData, meta a
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.FileFormats.AlterParquet(ctx, sdk.NewAlterParquetFileFormatRequest(currentId).WithRenameTo(targetId))
+		},
+		client.FileFormats.ShowByID,
+		"file format",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

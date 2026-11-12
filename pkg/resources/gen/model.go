@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -41,8 +42,24 @@ type ResourceModel struct {
 	SchemaStateUpgraders     []ssot.StateUpgraderFunc
 	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
 	BeforeCreateSteps        BeforeCreateSteps
-	AfterCreateSteps         AfterCreateSteps
+	// SuspendForAlter is the data of WithSuspendForAlter(Generated()). See SuspendForAlterModel.
+	SuspendForAlter  *SuspendForAlterModel
+	AfterCreateSteps AfterCreateSteps
+	AlterStatements  AlterStatementsModel
 	*genhelpers.PreambleModel
+}
+
+// SuspendForAlterModel is the data of the generated suspend guard of Update. suspend_for_alter.tmpl calls SuspendForAlter
+// (suspend_for_alter_commons.go in package resources), which suspends the object through the SDK when one of the attributes
+// changes, and resume_after_alter.tmpl brings it back before the final Read.
+type SuspendForAlterModel struct {
+	// When are the Terraform names of the attributes whose change needs the suspension, see ssot.Object.SuspendForAlterWhen.
+	When []string
+	// Enabled is the Terraform name of the bool attribute that owns the state. After a successful update the object is resumed
+	// when it is true. Empty restores the state the object had before, through the function the SDK returned.
+	Enabled string
+	// NeededExt calls <prefix>SuspendForAlterNeededExt(d) to decide whether the change needs the suspension.
+	NeededExt bool
 }
 
 // AfterCreateSteps are the data of the generated AfterCreate. Each kind of step has its own list here and its own block
@@ -77,6 +94,48 @@ type BeforeCreateAdoptExisting struct {
 	ObjectWords string
 }
 
+// AlterStatementsModel lists the fields of the resource ext request struct that hold one ALTER statement each.
+// Set and Unset are in send order: the statements of the SSOT definition first, the main set and unset last.
+// Requests is Set, then Unset, with the SDK request kind of each field.
+type AlterStatementsModel struct {
+	Set      []string
+	Unset    []string
+	Requests []AlterStatementRequest
+}
+
+type AlterStatementRequest struct {
+	Field string
+	// Kind is the SDK request stem: Set or Unset.
+	Kind string
+}
+
+func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
+	// A group is a field in declaration order. The main group is the bare set (unset). A block without one sends an empty
+	// main request last, which carries the parameters.
+	fields := func(main string, groups []ssot.AlterGroupSpec, hasBlock bool) []string {
+		// An object whose ALTER spec has no such block has no such request, such as a SET-only object.
+		if obj.HasAlterSpec() && !hasBlock {
+			return nil
+		}
+		names := collections.Map(groups, func(group ssot.AlterGroupSpec) string { return main + group.Name })
+		if !slices.ContainsFunc(groups, func(group ssot.AlterGroupSpec) bool { return group.Name == ssot.MainAlterGroup }) {
+			names = append(names, main)
+		}
+		return names
+	}
+	model := AlterStatementsModel{
+		Set:   fields("set", obj.AlterSetGroups(), obj.HasAlterSetBlock()),
+		Unset: fields("unset", obj.AlterUnsetGroups(), obj.HasAlterUnsetBlock()),
+	}
+	for _, field := range model.Set {
+		model.Requests = append(model.Requests, AlterStatementRequest{Field: field, Kind: "Set"})
+	}
+	for _, field := range model.Unset {
+		model.Requests = append(model.Requests, AlterStatementRequest{Field: field, Kind: "Unset"})
+	}
+	return model
+}
+
 // ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
 func (m ResourceModel) ParameterHooks() []ParameterHookModel {
 	parameters := ssotdefs.ParameterDefsForLevel(ssot.Object{Name: m.Name}.ParameterLevel())
@@ -89,6 +148,16 @@ func (m ResourceModel) ParameterHooks() []ParameterHookModel {
 
 func (m ResourceModel) Prefix() string {
 	return genhelpers.FirstLetterLowercase(m.Name)
+}
+
+// AlterRequestsType is the struct that holds the SET and UNSET requests of the update. The generated ApplySetUnset
+// declares it in the generated file, with one field per group of the ALTER spec. An object that keeps ApplySetUnset
+// in the ext file declares the struct there, because it may carry more than the groups.
+func (m ResourceModel) AlterRequestsType() string {
+	if m.Hooks.ApplySetUnset.Generate {
+		return m.Prefix() + "AlterRequests"
+	}
+	return m.Prefix() + "AlterRequestsExt"
 }
 
 // HierarchyRenameParents reports whether the generated Update moves a schema object to another database or schema.
@@ -188,7 +257,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		attachCreateMappings(input.Name, resourceAttributes, attributes)
 	}
 	if hooks.ApplySetUnset.Generate {
-		attachUpdateMappings(input.Name, resourceAttributes, attributes)
+		attachUpdateMappings(input.Object, resourceAttributes, attributes)
 	}
 	model := ResourceModel{
 		Name:                                input.Name,
@@ -216,7 +285,9 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
 		BeforeCreateSteps:                   beforeCreateSteps(input.Object),
+		SuspendForAlter:                     suspendForAlterModel(input.Object),
 		AfterCreateSteps:                    afterCreateSteps(input.Object, resourceAttributes),
+		AlterStatements:                     newAlterStatementsModel(input.Object),
 		PreambleModel:                       preamble,
 	}
 	if computed, columns := showComputedAttributes(input.Object); len(computed) > 0 {
@@ -263,4 +334,15 @@ func beforeCreateSteps(obj ssot.Object) BeforeCreateSteps {
 		}
 	}
 	return steps
+}
+
+func suspendForAlterModel(obj ssot.Object) *SuspendForAlterModel {
+	if obj.SuspendForAlter == nil {
+		return nil
+	}
+	model := &SuspendForAlterModel{When: obj.SuspendForAlterWhen(), NeededExt: obj.SuspendForAlter.NeededExt}
+	if obj.SuspendForAlter.Enabled != nil {
+		model.Enabled = obj.SuspendForAlter.Enabled.Name
+	}
+	return model
 }

@@ -3,7 +3,9 @@
 {{ Unimplemented "AfterAlter" }}
 {{- else if .Hooks.AfterAlter.Present -}}
 	afterAlterDiags := {{ .Prefix }}AfterAlterExt(ctx, d, meta, id)
-	return append(afterAlterDiags, Read{{ .Name }}Func(false)(ctx, d, meta)...)
+	return append({{ if .Hooks.SuspendForAlter.Generate }}append(diags, afterAlterDiags...){{ else }}afterAlterDiags{{ end }}, Read{{ .Name }}Func(false)(ctx, d, meta)...)
+{{- else if .Hooks.SuspendForAlter.Generate -}}
+	return append(diags, Read{{ .Name }}Func(false)(ctx, d, meta)...)
 {{- else -}}
 	return Read{{ .Name }}Func(false)(ctx, d, meta)
 {{- end }}

@@ -153,11 +153,11 @@ var backupPoliciesTests = BackupPoliciesTestsContext{
 			},
 			validationCase[*AlterBackupPolicyOptions]{
 				Name:        case_BackupPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Comment", "Schedule", "ExpireAfterDays"),
+				ExpectedErr: errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "Comment", "ExpireAfterDays"),
 				DefaultModify: func(opts *AlterBackupPolicyOptions) {
 					opts.Unset = &BackupPolicyUnset{}
-					opts.Unset.Comment = nil
 					opts.Unset.Schedule = nil
+					opts.Unset.Comment = nil
 					opts.Unset.ExpireAfterDays = nil
 				},
 			},

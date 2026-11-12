@@ -3,7 +3,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -23,12 +22,6 @@ var (
 	// Listed on the replication group SSOT object and appended to the generated customdiff.All.
 	replicationGroupRecreateWhenNotPrimary = RecreateWhenResourceBoolFieldChangedExternally("is_primary", true)
 )
-
-type replicationGroupAlterRequestsExt struct {
-	objectLists *sdk.ReplicationGroupSetRequest
-	properties  *sdk.ReplicationGroupSetRequest
-	unset       *sdk.ReplicationGroupUnsetRequest
-}
 
 func replicationGroupApplyCreateOptionalsExt(d *schema.ResourceData, request *sdk.CreateReplicationGroupRequest) error {
 	// CREATE has no COMMENT clause. Comment is set with ALTER.
@@ -51,45 +44,6 @@ func replicationGroupApplyCreateOptionalsExt(d *schema.ResourceData, request *sd
 func replicationGroupNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateReplicationGroupRequest, error) {
 	// OBJECT_TYPES and ALLOWED_ACCOUNTS are constructor arguments. ApplyCreateOptionals fills them.
 	return sdk.NewCreateReplicationGroupRequest(id, nil, nil), nil
-}
-
-func replicationGroupApplySetUnsetExt(d *schema.ResourceData) (*replicationGroupAlterRequestsExt, error) {
-	objectLists := sdk.NewReplicationGroupSetRequest()
-	properties := sdk.NewReplicationGroupSetRequest()
-	unset := sdk.NewReplicationGroupUnsetRequest()
-	errs := errors.Join(
-		listValueUpdateSetOnlyBuilder(d, "object_types", objectLists.WithObjectTypes, toReplicationGroupObjectTypes),
-		listValueUpdateSetOnlyBuilder(d, "allowed_databases", objectLists.WithAllowedDatabases, toReplicationGroupAllowedDatabases),
-		listValueUpdateSetOnlyBuilder(d, "allowed_external_volumes", objectLists.WithAllowedExternalVolumes, toReplicationGroupAllowedExternalVolumes),
-		listValueUpdateSetOnlyBuilder(d, "allowed_shares", objectLists.WithAllowedShares, toReplicationGroupAllowedShares),
-		listValueUpdateSetOnlyBuilder(d, "allowed_integration_types", objectLists.WithAllowedIntegrationTypes, toReplicationGroupAllowedIntegrationTypes),
-		stringAttributeUpdateBuilder(d, "comment", properties.WithComment, unset.WithComment),
-		stringAttributeUpdateBuilder(d, "replication_schedule", properties.WithReplicationSchedule, unset.WithReplicationSchedule),
-		accountObjectIdentifierAttributeUpdate(d, "error_integration", &properties.ErrorIntegration, &unset.ErrorIntegration),
-	)
-	if errs != nil {
-		return nil, errs
-	}
-	return &replicationGroupAlterRequestsExt{
-		objectLists: objectLists,
-		properties:  properties,
-		unset:       unset,
-	}, nil
-}
-
-func replicationGroupAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, setUnset *replicationGroupAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-	if !reflect.DeepEqual(*setUnset.objectLists, *sdk.NewReplicationGroupSetRequest()) {
-		if err := client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.objectLists)); err != nil {
-			return err
-		}
-	}
-	if !reflect.DeepEqual(*setUnset.properties, *sdk.NewReplicationGroupSetRequest()) {
-		if err := client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.properties)); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, group *sdk.ReplicationGroup) error {

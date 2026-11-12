@@ -294,12 +294,6 @@ var BackupSet = ssot.Object{
 			&BackupSetAttrs.Comment,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&BackupSetAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		&BackupSetAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/alter-backup-set",
 		Clauses: []ssot.AlterClause{
@@ -314,8 +308,12 @@ var BackupSet = ssot.Object{
 			ssot.AlterText("DELETE BACKUP IDENTIFIER"),
 			ssot.AlterKeywordBlock("ModifyBackup", "MODIFY", &backupSetModifyBackup),
 			ssot.AlterRenameTo(),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&BackupSetAttrs.Comment,
+			),
+			ssot.AlterUnset(
+				&BackupSetAttrs.Comment,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		},

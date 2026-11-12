@@ -45,6 +45,10 @@ var DescribeCatalogIntegrationIcebergRestDetailsSchema = mergeSchema(map[string]
 	// oauth_rest_authentication: manual addition and mapping is needed
 	// bearer_rest_authentication: manual addition and mapping is needed
 	// sigv4_rest_authentication: manual addition and mapping is needed
+	"api_aws_iam_user_arn": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }, catalogIntegrationIcebergRestDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCatalogIntegrationIcebergRestDetailsSchema
@@ -62,6 +66,7 @@ func CatalogIntegrationIcebergRestDetailsToSchema(catalogIntegrationIcebergRestD
 	// oauth_rest_authentication: manual addition and mapping is needed
 	// bearer_rest_authentication: manual addition and mapping is needed
 	// sigv4_rest_authentication: manual addition and mapping is needed
+	catalogIntegrationIcebergRestDetailsSchema["api_aws_iam_user_arn"] = catalogIntegrationIcebergRestDetails.ApiAwsIamUserArn
 	catalogIntegrationIcebergRestDetailsToSchemaMapper{}.additionalToSchema(catalogIntegrationIcebergRestDetails, catalogIntegrationIcebergRestDetailsSchema)
 	return catalogIntegrationIcebergRestDetailsSchema
 }

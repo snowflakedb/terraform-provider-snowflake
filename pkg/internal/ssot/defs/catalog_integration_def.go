@@ -219,6 +219,7 @@ var CatalogIntegration = ssot.Object{
 			&catalogIntegrationDescribeColumns.OauthRestAuthentication,
 			&catalogIntegrationDescribeColumns.BearerRestAuthentication,
 			&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
+			&CatalogIntegrationIcebergRestAttrs.ApiAwsIamUserArn,
 		},
 	},
 	DescribeRows: ssot.OutputSpec{
@@ -229,15 +230,20 @@ var CatalogIntegration = ssot.Object{
 			&catalogIntegrationDescribeRowAttrs.PropertyDefault,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&catalogIntegrationSetAttrs.OauthRestAuthentication,
-		&catalogIntegrationSetAttrs.BearerRestAuthentication,
-		&catalogIntegrationSetAttrs.Enabled,
-		&catalogIntegrationSetAttrs.RefreshIntervalSeconds,
-		&catalogIntegrationSetAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{
-		Clauses: []ssot.AlterClause{ssot.AlterSet(), ssot.AlterSetTags(), ssot.AlterUnsetTags()},
+		Clauses: []ssot.AlterClause{
+			ssot.AlterSet(
+				ssot.AlterGroup("OauthRestAuthentication", &catalogIntegrationSetAttrs.OauthRestAuthentication),
+				ssot.AlterGroup(ssot.MainAlterGroup,
+					&catalogIntegrationSetAttrs.BearerRestAuthentication,
+					&catalogIntegrationSetAttrs.Enabled,
+					&catalogIntegrationSetAttrs.RefreshIntervalSeconds,
+					&catalogIntegrationSetAttrs.Comment,
+				),
+			),
+			ssot.AlterSetTags(),
+			ssot.AlterUnsetTags(),
+		},
 		SetConflictingFields: [][]*ssot.Attribute{{
 			&catalogIntegrationSetAttrs.OauthRestAuthentication,
 			&catalogIntegrationSetAttrs.BearerRestAuthentication,

@@ -118,6 +118,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		Comment:                    r.Comment,
 		IcebergVersion:             r.IcebergVersion,
 		EnableIcebergMergeOnRead:   r.EnableIcebergMergeOnRead,
+		AggregationPolicy:          r.AggregationPolicy,
 		Tag:                        r.Tag,
 		EnableDataCompaction:       r.EnableDataCompaction,
 		Contact:                    r.Contact,
@@ -307,12 +308,6 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 		opts.RowAccessPolicy = &IcebergTableRowAccessPolicy{
 			Name: r.RowAccessPolicy.Name,
 			On:   r.RowAccessPolicy.On,
-		}
-	}
-	if r.AggregationPolicy != nil {
-		opts.AggregationPolicy = &IcebergTableAggregationPolicy{
-			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
-			EntityKey:         r.AggregationPolicy.EntityKey,
 		}
 	}
 	return opts
@@ -590,14 +585,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		opts.DropRowAccessPolicy = r.DropRowAccessPolicy.toOpts()
 	}
 	if r.DropAndAddRowAccessPolicy != nil {
-		opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{}
-		opts.DropAndAddRowAccessPolicy.Drop = IcebergTableDropRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy,
-		}
-		opts.DropAndAddRowAccessPolicy.Add = IcebergTableAddRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Add.RowAccessPolicy,
-			On:              r.DropAndAddRowAccessPolicy.Add.On,
-		}
+		opts.DropAndAddRowAccessPolicy = r.DropAndAddRowAccessPolicy.toOpts()
 	}
 	if r.SetAggregationPolicy != nil {
 		opts.SetAggregationPolicy = r.SetAggregationPolicy.toOpts()
@@ -606,13 +594,10 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		opts.UnsetAggregationPolicy = r.UnsetAggregationPolicy.toOpts()
 	}
 	if r.SetJoinPolicy != nil {
-		opts.SetJoinPolicy = &TableSetJoinPolicy{
-			JoinPolicy: r.SetJoinPolicy.JoinPolicy,
-			Force:      r.SetJoinPolicy.Force,
-		}
+		opts.SetJoinPolicy = r.SetJoinPolicy.toOpts()
 	}
 	if r.UnsetJoinPolicy != nil {
-		opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{}
+		opts.UnsetJoinPolicy = r.UnsetJoinPolicy.toOpts()
 	}
 	if r.SearchOptimizationAction != nil {
 		opts.SearchOptimizationAction = r.SearchOptimizationAction.toOpts()
