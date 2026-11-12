@@ -93,6 +93,16 @@ func (s *CreateOrganizationListingRequest) WithPublish(publish bool) *CreateOrga
 	return s
 }
 
+func (s *CreateOrganizationListingRequest) WithReview(review bool) *CreateOrganizationListingRequest {
+	s.Review = &review
+	return s
+}
+
+func (s *CreateOrganizationListingRequest) WithComment(comment string) *CreateOrganizationListingRequest {
+	s.Comment = &comment
+	return s
+}
+
 func NewAlterListingRequest(
 	name AccountObjectIdentifier,
 ) *AlterListingRequest {

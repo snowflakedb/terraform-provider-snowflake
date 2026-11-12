@@ -113,6 +113,8 @@ func (r *CreateOrganizationListingRequest) toOpts() *CreateOrganizationListingOp
 		As:          r.As,
 		From:        r.From,
 		Publish:     r.Publish,
+		Review:      r.Review,
+		Comment:     r.Comment,
 	}
 	if r.With != nil {
 		opts.With = &ListingWith{

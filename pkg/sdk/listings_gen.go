@@ -50,6 +50,8 @@ type CreateOrganizationListingOptions struct {
 	As                  *string                 `ddl:"parameter,double_dollar_quotes,no_equals" sql:"AS"`
 	From                *Location               `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
 	Publish             *bool                   `ddl:"parameter" sql:"PUBLISH"`
+	Review              *bool                   `ddl:"parameter" sql:"REVIEW"`
+	Comment             *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-listing.

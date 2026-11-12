@@ -162,6 +162,8 @@ var listingsDef = g.NewInterface(
 			OptionalTextAssignment("AS", g.ParameterOptions().NoEquals().DoubleDollarQuotes()).
 			PredefinedQueryStructField("From", g.KindOfTPointer[sdkcommons.Location](), g.ParameterOptions().SingleQuotes().NoEquals().SQL("FROM")).
 			OptionalBooleanAssignment("PUBLISH", g.ParameterOptions()).
+			OptionalBooleanAssignment("REVIEW", g.ParameterOptions()).
+			OptionalComment().
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ExactlyOneValueSet, "As", "From").
 			WithValidation(g.NoDoubleDollarQuotesIfSet, "As"),

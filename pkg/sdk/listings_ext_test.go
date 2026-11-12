@@ -152,8 +152,10 @@ func init() {
 				opts.With = &ListingWith{Share: &shareId}
 				opts.As = &manifest
 				opts.Publish = new(true)
+				opts.Review = new(true)
+				opts.Comment = new("comment")
 			},
-			"CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true",
+			"CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s AS $$%s$$ PUBLISH = true REVIEW = true COMMENT = 'comment'",
 			id.FullyQualifiedName(), shareId.FullyQualifiedName(), manifest,
 		).
 		withAdditionalSqlCasef(
@@ -169,8 +171,10 @@ func init() {
 				opts.With = &ListingWith{ApplicationPackage: &applicationPackageId}
 				opts.As = &manifest
 				opts.Publish = new(false)
+				opts.Review = new(false)
+				opts.Comment = new("comment")
 			},
-			"CREATE ORGANIZATION LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = false",
+			"CREATE ORGANIZATION LISTING IF NOT EXISTS %s APPLICATION PACKAGE %s AS $$%s$$ PUBLISH = false REVIEW = false COMMENT = 'comment'",
 			id.FullyQualifiedName(), applicationPackageId.FullyQualifiedName(), manifest,
 		).
 		withAdditionalSqlCasef(
@@ -180,8 +184,10 @@ func init() {
 				opts.With = &ListingWith{Share: &shareId}
 				opts.From = &from
 				opts.Publish = new(true)
+				opts.Review = new(true)
+				opts.Comment = new("comment")
 			},
-			`CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' PUBLISH = true`,
+			`CREATE ORGANIZATION LISTING IF NOT EXISTS %s SHARE %s FROM '@\"%s\".\"%s\".\"%s\"/dir/subdir' PUBLISH = true REVIEW = true COMMENT = 'comment'`,
 			id.FullyQualifiedName(), shareId.FullyQualifiedName(), stageId.DatabaseName(), stageId.SchemaName(), stageId.Name(),
 		)
 

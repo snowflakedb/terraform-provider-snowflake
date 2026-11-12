@@ -35,6 +35,8 @@ type CreateOrganizationListingRequest struct {
 	As          *string
 	From        *Location
 	Publish     *bool
+	Review      *bool
+	Comment     *string
 }
 
 type AlterListingRequest struct {
