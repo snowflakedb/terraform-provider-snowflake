@@ -184,6 +184,52 @@ var quotaSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: IgnoreCaseInSet("admin_emails"),
 		Description:      "Email addresses that receive admin summary notifications. Each must be the verified email of a user in the account.",
 	},
+	"custom_action": {
+		Type:        schema.TypeSet,
+		Optional:    true,
+		Set:         quotaCustomActionHash,
+		Description: "Stored procedures called when users cross a threshold of their monthly limit.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"procedure": quotaProcedureSchema(joinWithSpace(
+					"Fully qualified name of the procedure with its argument types, e.g. `\"<database>\".\"<schema>\".\"<procedure>\"(VARCHAR)`.",
+					"The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application; its first argument receives the IDs of the users who crossed the threshold.",
+				)),
+				"arguments": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Description: "Additional arguments passed to the procedure.",
+				},
+				"spend_strategy": quotaSpendStrategySchema(sdk.QuotaSpendStrategyActual),
+				"threshold": {
+					Type:        schema.TypeInt,
+					Required:    true,
+					Description: "Percentage of the monthly limit.",
+				},
+			},
+		},
+	},
+	"cycle_start_action": {
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Description: "Stored procedure called at the start of each monthly cycle.",
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"procedure": quotaProcedureSchema(joinWithSpace(
+					"Fully qualified name of the procedure with its argument types, e.g. `\"<database>\".\"<schema>\".\"<procedure>\"()`.",
+					"The procedure must use EXECUTE AS OWNER and be granted to the SNOWFLAKE application.",
+				)),
+				"arguments": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					Elem:        &schema.Schema{Type: schema.TypeString},
+					Description: "Arguments passed to the procedure.",
+				},
+			},
+		},
+	},
 	ShowOutputAttributeName: {
 		Type:        schema.TypeList,
 		Computed:    true,
@@ -243,6 +289,18 @@ func quotaSpendStrategySchema(defaultValue sdk.QuotaSpendStrategy) *schema.Schem
 		Description:      joinWithSpace("Whether the threshold applies to actual or projected spend.", enumValuesDescription(sdk.AllQuotaSpendStrategies)),
 		ValidateDiagFunc: sdkValidation(sdk.ToQuotaSpendStrategy),
 		DiffSuppressFunc: NormalizeAndCompare(sdk.ToQuotaSpendStrategy),
+	}
+}
+
+func quotaProcedureSchema(description string) *schema.Schema {
+	return &schema.Schema{
+		Type:             schema.TypeString,
+		Required:         true,
+		Description:      description,
+		ValidateDiagFunc: sdkValidation(sdk.ParseSchemaObjectIdentifierWithArguments),
+		DiffSuppressFunc: NormalizeAndCompareUsingFunc(sdk.ParseSchemaObjectIdentifierWithArguments, func(a, b sdk.SchemaObjectIdentifierWithArguments) bool {
+			return a.FullyQualifiedName() == b.FullyQualifiedName()
+		}),
 	}
 }
 
@@ -366,6 +424,8 @@ func ReadQuota(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		d.Set("notification_threshold", quotaNotificationThresholdsToSchema(details.NotificationThresholds)),
 		d.Set("notification_integrations", quotaNotificationIntegrationNames(details.NotificationIntegrations)),
 		d.Set("admin_emails", details.Config.AdminEmails),
+		d.Set("custom_action", quotaCustomActionsToSchema(details.CustomActions)),
+		d.Set("cycle_start_action", quotaCycleStartActionToSchema(details.CycleStartAction)),
 		d.Set(ShowOutputAttributeName, []map[string]any{schemas.QuotaToSchema(quota)}),
 		d.Set(DescribeOutputAttributeName, []map[string]any{schemas.QuotaDetailsToSchema(details)}),
 	)
@@ -482,6 +542,8 @@ func applyQuotaConfiguration(ctx context.Context, d *schema.ResourceData, quotas
 			_, err := quotas.SetAdminEmails(ctx, sdk.NewSetAdminEmailsQuotaRequest(id, *args))
 			return err
 		},
+		func() error { return updateQuotaCustomActions(ctx, d, quotas, id) },
+		func() error { return updateQuotaCycleStartAction(ctx, d, quotas, id) },
 		func() error {
 			if blockEnforcementChanged && blockEnforcementEnabled {
 				return setBlockEnforcement()
@@ -687,6 +749,94 @@ func updateQuotaNotificationIntegrations(ctx context.Context, d *schema.Resource
 	)
 }
 
+// REMOVE_CUSTOM_ACTIONS(<threshold>, <procedure>) removes the actions of both spend strategies, so the removal is done once per
+// threshold and procedure, with the procedure passed back exactly as GET_CUSTOM_ACTIONS returns it, and the configured actions
+// that shared it are added again.
+func updateQuotaCustomActions(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) error {
+	if !d.HasChange("custom_action") {
+		return nil
+	}
+	removed, added := quotaSetChange(d, "custom_action")
+	removedGroups := make(map[string]quotaCustomAction)
+	for _, raw := range removed {
+		action, err := quotaCustomActionFromRaw(raw)
+		if err != nil {
+			return err
+		}
+		removedGroups[quotaCustomActionGroup(action.Procedure, action.Threshold)] = action
+	}
+	if len(removedGroups) > 0 {
+		registered, err := quotas.GetCustomActions(ctx, sdk.NewGetCustomActionsQuotaRequest(id))
+		if err != nil {
+			return err
+		}
+		for _, registeredAction := range registered {
+			procedure, err := registeredAction.ProcedureId()
+			if err != nil {
+				return err
+			}
+			group := quotaCustomActionGroup(procedure, registeredAction.Threshold)
+			if _, ok := removedGroups[group]; !ok {
+				continue
+			}
+			args := sdk.NewQuotaRemoveCustomActionsArgsRequest().WithThreshold(registeredAction.Threshold).WithProcedureFqn(registeredAction.ProcedureFqn)
+			if _, err := quotas.RemoveCustomActions(ctx, sdk.NewRemoveCustomActionsQuotaRequest(id, *args)); err != nil {
+				return err
+			}
+			delete(removedGroups, group)
+		}
+		for _, raw := range d.Get("custom_action").(*schema.Set).List() {
+			action, err := quotaCustomActionFromRaw(raw)
+			if err != nil {
+				return err
+			}
+			if _, wasRemoved := removedGroups[quotaCustomActionGroup(action.Procedure, action.Threshold)]; wasRemoved || slices.ContainsFunc(added, func(a any) bool { return reflect.DeepEqual(a, raw) }) {
+				continue
+			}
+			for _, removedRaw := range removed {
+				removedAction, err := quotaCustomActionFromRaw(removedRaw)
+				if err != nil {
+					return err
+				}
+				if quotaCustomActionGroup(removedAction.Procedure, removedAction.Threshold) == quotaCustomActionGroup(action.Procedure, action.Threshold) {
+					added = append(added, raw)
+					break
+				}
+			}
+		}
+	}
+	for _, raw := range added {
+		action, err := quotaCustomActionFromRaw(raw)
+		if err != nil {
+			return err
+		}
+		args := sdk.NewQuotaAddCustomActionArgsRequest(action.Procedure, action.Arguments, action.SpendStrategy, action.Threshold)
+		if _, err := quotas.AddCustomAction(ctx, sdk.NewAddCustomActionQuotaRequest(id, *args)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func updateQuotaCycleStartAction(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) error {
+	if !d.HasChange("cycle_start_action") {
+		return nil
+	}
+	cycleStartAction := d.Get("cycle_start_action").([]any)
+	if len(cycleStartAction) == 0 || cycleStartAction[0] == nil {
+		_, err := quotas.RemoveCycleStartAction(ctx, sdk.NewRemoveCycleStartActionQuotaRequest(id))
+		return err
+	}
+	action := cycleStartAction[0].(map[string]any)
+	procedure, err := sdk.ParseSchemaObjectIdentifierWithArguments(action["procedure"].(string))
+	if err != nil {
+		return err
+	}
+	args := sdk.NewQuotaSetCycleStartActionArgsRequest(procedure, expandStringListAllowEmpty(action["arguments"].([]any)))
+	_, err = quotas.SetCycleStartAction(ctx, sdk.NewSetCycleStartActionQuotaRequest(id, *args))
+	return err
+}
+
 func quotaTagValueFromRaw(raw any) (sdk.SchemaObjectIdentifier, string, error) {
 	tagValue := raw.(map[string]any)
 	tag, err := sdk.ParseSchemaObjectIdentifier(tagValue["tag"].(string))
@@ -709,6 +859,35 @@ func quotaNotificationThresholdFromRaw(raw any) (sdk.QuotaNotificationThreshold,
 		NotifyUser:    threshold["notify_user"].(bool),
 		Cycle:         cycle,
 	}, nil
+}
+
+type quotaCustomAction struct {
+	Procedure     sdk.SchemaObjectIdentifierWithArguments
+	Arguments     []string
+	SpendStrategy sdk.QuotaSpendStrategy
+	Threshold     int
+}
+
+func quotaCustomActionFromRaw(raw any) (quotaCustomAction, error) {
+	action := raw.(map[string]any)
+	procedure, err := sdk.ParseSchemaObjectIdentifierWithArguments(action["procedure"].(string))
+	if err != nil {
+		return quotaCustomAction{}, err
+	}
+	spendStrategy, err := sdk.ToQuotaSpendStrategy(action["spend_strategy"].(string))
+	if err != nil {
+		return quotaCustomAction{}, err
+	}
+	return quotaCustomAction{
+		Procedure:     procedure,
+		Arguments:     expandStringListAllowEmpty(action["arguments"].([]any)),
+		SpendStrategy: spendStrategy,
+		Threshold:     action["threshold"].(int),
+	}, nil
+}
+
+func quotaCustomActionGroup(procedure sdk.SchemaObjectIdentifierWithArguments, threshold int) string {
+	return fmt.Sprintf("%d/%s", threshold, procedure.FullyQualifiedName())
 }
 
 func quotaSharedResourcesToSchema(scope sdk.QuotaScope) ([]map[string]any, []string) {
@@ -785,6 +964,34 @@ func quotaNotificationIntegrationNames(integrations []sdk.QuotaNotificationInteg
 	return names
 }
 
+func quotaCustomActionsToSchema(actions []sdk.QuotaCustomAction) []map[string]any {
+	result := make([]map[string]any, 0, len(actions))
+	for _, action := range actions {
+		procedure := action.ProcedureFqn
+		if id, err := action.ProcedureId(); err == nil {
+			procedure = id.FullyQualifiedName()
+		}
+		result = append(result, map[string]any{
+			"procedure":      procedure,
+			"arguments":      action.ProcedureArgs,
+			"spend_strategy": string(action.SpendStrategy),
+			"threshold":      action.Threshold,
+		})
+	}
+	return result
+}
+
+func quotaCycleStartActionToSchema(action *sdk.QuotaCycleStartAction) []map[string]any {
+	if action == nil || !action.IsSet() {
+		return []map[string]any{}
+	}
+	procedure := *action.ProcedureFqn
+	if id, err := action.ProcedureId(); err == nil {
+		procedure = id.FullyQualifiedName()
+	}
+	return []map[string]any{{"procedure": procedure, "arguments": action.ProcedureArgs}}
+}
+
 var quotaDomainsWithPlainInstances = []sdk.QuotaSharedResourceDomain{sdk.QuotaSharedResourceDomainAiFunction, sdk.QuotaSharedResourceDomainCortexCode}
 
 // quotaInstanceKey normalizes an instance of a shared resource domain, so that its equivalent spellings hash and compare the same.
@@ -835,4 +1042,14 @@ func quotaNotificationThresholdHash(v any) int {
 		threshold["notify_user"].(bool),
 		strings.ToUpper(threshold["cycle"].(string)),
 	))
+}
+
+func quotaCustomActionHash(v any) int {
+	action := v.(map[string]any)
+	procedure := action["procedure"].(string)
+	if id, err := sdk.ParseSchemaObjectIdentifierWithArguments(procedure); err == nil {
+		procedure = id.FullyQualifiedName()
+	}
+	arguments, _ := action["arguments"].([]any)
+	return schema.HashString(fmt.Sprintf("%s/%q/%s/%d", procedure, expandStringListAllowEmpty(arguments), strings.ToUpper(action["spend_strategy"].(string)), action["threshold"].(int)))
 }

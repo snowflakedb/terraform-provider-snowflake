@@ -46,6 +46,14 @@ func (f *fakeQuotas) AddNotificationThreshold(context.Context, *sdk.AddNotificat
 	return f.record("ADD_NOTIFICATION_THRESHOLD")
 }
 
+func (f *fakeQuotas) AddCustomAction(context.Context, *sdk.AddCustomActionQuotaRequest) (*string, error) {
+	return f.record("ADD_CUSTOM_ACTION")
+}
+
+func (f *fakeQuotas) SetCycleStartAction(context.Context, *sdk.SetCycleStartActionQuotaRequest) (*string, error) {
+	return f.record("SET_CYCLE_START_ACTION")
+}
+
 func Test_applyQuotaConfiguration(t *testing.T) {
 	id := sdk.NewSchemaObjectIdentifier("DB", "SCH", "QUOTA")
 	apply := func(t *testing.T, config map[string]any) []string {
@@ -70,6 +78,8 @@ func Test_applyQuotaConfiguration(t *testing.T) {
 			"per_user_limit_monthly":    1000,
 			"block_enforcement_enabled": true,
 			"notification_threshold":    []any{map[string]any{"threshold": 80, "spend_strategy": "PROJECTED", "notify_user": true, "cycle": "MONTHLY"}},
+			"custom_action":             []any{map[string]any{"procedure": `"DB"."SCH"."PROC"(VARCHAR)`, "arguments": []any{}, "spend_strategy": "ACTUAL", "threshold": 100}},
+			"cycle_start_action":        []any{map[string]any{"procedure": `"DB"."SCH"."RESET"()`, "arguments": []any{}}},
 		})
 		assert.Equal(t, []string{
 			"ADD_SHARED_RESOURCE",
@@ -77,6 +87,8 @@ func Test_applyQuotaConfiguration(t *testing.T) {
 			"INCLUDE_USERS",
 			"SET_PER_USER_LIMIT",
 			"ADD_NOTIFICATION_THRESHOLD",
+			"ADD_CUSTOM_ACTION",
+			"SET_CYCLE_START_ACTION",
 			"SET_BLOCK_ENFORCEMENT_ENABLED",
 		}, calls)
 	})
@@ -100,6 +112,11 @@ func Test_quotaSetHashes(t *testing.T) {
 			"threshold enum case", quotaNotificationThresholdHash,
 			map[string]any{"threshold": 80, "spend_strategy": "projected", "notify_user": true, "cycle": "monthly"},
 			map[string]any{"threshold": 80, "spend_strategy": "PROJECTED", "notify_user": true, "cycle": "MONTHLY"},
+		},
+		{
+			"quoted procedure", quotaCustomActionHash,
+			map[string]any{"procedure": `"DB"."SCH"."PROC"(VARCHAR)`, "arguments": []any{"a"}, "spend_strategy": "actual", "threshold": 100},
+			map[string]any{"procedure": "DB.SCH.PROC(VARCHAR)", "arguments": []any{"a"}, "spend_strategy": "ACTUAL", "threshold": 100},
 		},
 	}
 	for _, tc := range testCases {
