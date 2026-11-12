@@ -27,9 +27,13 @@ func (quotaDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 			}),
 			"included_users": quotaComputedStringList(),
 			"excluded_users": quotaComputedStringList(),
-			// ALL_USERS when the users are not selected by tags; the tags are then the excluded ones
+			// ALL_USERS when the users are not selected by tags
 			"user_tags_operator": quotaComputedValue(schema.TypeString),
 			"user_tags": quotaComputedNestedList(map[string]*schema.Schema{
+				"tag":    quotaComputedValue(schema.TypeString),
+				"values": quotaComputedStringList(),
+			}),
+			"excluded_user_tags": quotaComputedNestedList(map[string]*schema.Schema{
 				"tag":    quotaComputedValue(schema.TypeString),
 				"values": quotaComputedStringList(),
 			}),
@@ -169,18 +173,23 @@ func quotaScopeToSchema(scope sdk.QuotaScope) map[string]any {
 		"included_users":   userNames(scope.IncludedUsers),
 		"excluded_users":   userNames(scope.ExcludedUsers),
 	}
-	userTags := make([]map[string]any, 0)
 	if scope.UserTags != nil {
 		scopeSchema["user_tags_operator"] = scope.UserTags.Operator
-		for _, tag := range scope.UserTags.Tags {
-			userTags = append(userTags, map[string]any{
-				"tag":    tag.TagId().FullyQualifiedName(),
-				"values": tag.TagValues,
-			})
+	}
+	scopeSchema["user_tags"] = quotaScopeTagsToSchema(scope.SelectionTags())
+	scopeSchema["excluded_user_tags"] = quotaScopeTagsToSchema(scope.ExclusionTags())
+	return scopeSchema
+}
+
+func quotaScopeTagsToSchema(tags []sdk.QuotaScopeTag) []map[string]any {
+	result := make([]map[string]any, len(tags))
+	for i, tag := range tags {
+		result[i] = map[string]any{
+			"tag":    tag.TagId().FullyQualifiedName(),
+			"values": tag.TagValues,
 		}
 	}
-	scopeSchema["user_tags"] = userTags
-	return scopeSchema
+	return result
 }
 
 func quotaConfigToSchema(config sdk.QuotaConfig) map[string]any {
