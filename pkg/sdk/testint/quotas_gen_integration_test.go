@@ -180,9 +180,10 @@ func TestInt_Quotas(t *testing.T) {
 		assert.Nil(t, details.CycleStartAction)
 	})
 
+	// the GET_* methods are called on the instance, so Snowflake reports a missing quota as an unknown function
 	t.Run("describe: non-existing", func(t *testing.T) {
 		_, err := client.Quotas.DescribeDetails(ctx, NonExistingSchemaObjectIdentifier)
-		require.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
+		require.ErrorContains(t, err, "Unknown user-defined function")
 	})
 
 	t.Run("alter: set and unset comment", func(t *testing.T) {
