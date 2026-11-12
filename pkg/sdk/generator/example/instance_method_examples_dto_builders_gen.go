@@ -29,3 +29,51 @@ func NewGetSpendingLimitInstanceMethodExampleRequest(
 	s.name = name
 	return &s
 }
+
+func NewSetScopeInstanceMethodExampleRequest(
+	name AccountObjectIdentifier,
+	args InstanceMethodExampleSetScopeArgsRequest,
+) *SetScopeInstanceMethodExampleRequest {
+	s := SetScopeInstanceMethodExampleRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewInstanceMethodExampleSetScopeArgsRequest(
+	tags []ExampleTagValueRequest,
+	users []string,
+	enabled bool,
+) *InstanceMethodExampleSetScopeArgsRequest {
+	s := InstanceMethodExampleSetScopeArgsRequest{}
+	s.Tags = tags
+	s.Users = users
+	s.Enabled = enabled
+	return &s
+}
+
+func NewExampleTagValueRequest(
+	reference ExampleTagReferenceRequest,
+	value string,
+) *ExampleTagValueRequest {
+	s := ExampleTagValueRequest{}
+	s.Reference = reference
+	s.Value = value
+	return &s
+}
+
+func NewExampleTagReferenceRequest(
+	arguments ExampleTagReferenceArgumentsRequest,
+) *ExampleTagReferenceRequest {
+	s := ExampleTagReferenceRequest{}
+	s.Arguments = arguments
+	return &s
+}
+
+func NewExampleTagReferenceArgumentsRequest(
+	tag SchemaObjectIdentifier,
+) *ExampleTagReferenceArgumentsRequest {
+	s := ExampleTagReferenceArgumentsRequest{}
+	s.Tag = tag
+	return &s
+}
