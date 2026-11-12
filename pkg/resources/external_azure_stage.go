@@ -156,9 +156,11 @@ func ExternalAzureStage() *schema.Resource {
 		Description:   "Resource used to manage external Azure stages. For more information, check [external stage documentation](https://docs.snowflake.com/en/sql-reference/sql/create-stage#external-stage-parameters-externalstageparams).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.ExternalAzureStage, customdiff.All(
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, ShowOutputAttributeName, "name", "comment", "url", "storage_integration", "encryption"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(externalAzureStageSchema, ShowOutputAttributeName, "name", "database", "schema", "comment", "url", "storage_integration", "encryption"),
 			ComputedIfAnyAttributeChanged(externalAzureStageSchema, DescribeOutputAttributeName, "directory.0.enable", "directory.0.auto_refresh", "url", "use_privatelink_endpoint"),
-			ComputedIfAnyAttributeChanged(externalAzureStageSchema, FullyQualifiedNameAttributeName, "name"),
+			ComputedIfAnyAttributeChanged(externalAzureStageSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			ForceNewIfChangeToEmptySlice[any]("directory"),
 			ForceNewIfChangeToEmptySlice[any]("credentials"),
 			ForceNewIfChangeToEmptySlice[any]("encryption"),
@@ -354,10 +356,9 @@ func UpdateExternalAzureStage(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	id, err = handleStageRename(ctx, client, d, id)
-	if err != nil {
+	if diags := handleStageRename(ctx, meta, d, &id); diags != nil {
 		d.Partial(true)
-		return diag.FromErr(err)
+		return diags
 	}
 
 	err = handleStageDirectoryTable(ctx, client, d, id)

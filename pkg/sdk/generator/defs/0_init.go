@@ -31,7 +31,6 @@ func init() {
 		externalTablesDef,
 		externalAccessIntegrationsDef,
 		externalFunctionsDef,
-		failoverGroupsDef,
 		fileFormatsDef,
 		functionsDef,
 		gitRepositoriesDef,

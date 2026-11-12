@@ -132,12 +132,19 @@ func UpdateReplicationGroup(ctx context.Context, d *tfschema.ResourceData, meta 
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
-	setUnset, err := replicationGroupApplySetUnsetExt(d)
+	setUnset, err := replicationGroupApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := replicationGroupAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.setObjectLists, *sdk.NewReplicationGroupSetRequest()) {
+		if err := meta.(*provider.Context).Client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.setObjectLists)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewReplicationGroupSetRequest()) {
+		if err := meta.(*provider.Context).Client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewReplicationGroupUnsetRequest()) {
 		if err := meta.(*provider.Context).Client.ReplicationGroups.Alter(ctx, sdk.NewAlterReplicationGroupRequest(id).WithUnset(*setUnset.unset)); err != nil {
@@ -159,6 +166,31 @@ func replicationGroupParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObj
 
 func replicationGroupParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+// replicationGroupAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type replicationGroupAlterRequests struct {
+	setObjectLists *sdk.ReplicationGroupSetRequest
+	set            *sdk.ReplicationGroupSetRequest
+	unset          *sdk.ReplicationGroupUnsetRequest
+}
+
+func replicationGroupApplySetUnset(d *tfschema.ResourceData) (*replicationGroupAlterRequests, error) {
+	setObjectLists, set, unset := sdk.NewReplicationGroupSetRequest(), sdk.NewReplicationGroupSetRequest(), sdk.NewReplicationGroupUnsetRequest()
+	errs := errors.Join(
+		listValueUpdateSetOnlyBuilder(d, "object_types", setObjectLists.WithObjectTypes, toReplicationGroupObjectTypes),
+		listValueUpdateSetOnlyBuilder(d, "allowed_databases", setObjectLists.WithAllowedDatabases, toReplicationGroupAllowedDatabases),
+		listValueUpdateSetOnlyBuilder(d, "allowed_external_volumes", setObjectLists.WithAllowedExternalVolumes, toReplicationGroupAllowedExternalVolumes),
+		listValueUpdateSetOnlyBuilder(d, "allowed_shares", setObjectLists.WithAllowedShares, toReplicationGroupAllowedShares),
+		listValueUpdateSetOnlyBuilder(d, "allowed_integration_types", setObjectLists.WithAllowedIntegrationTypes, toReplicationGroupAllowedIntegrationTypes),
+		stringAttributeUpdateBuilder(d, "replication_schedule", set.WithReplicationSchedule, unset.WithReplicationSchedule),
+		accountObjectIdentifierAttributeUpdate(d, "error_integration", &set.ErrorIntegration, &unset.ErrorIntegration),
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &replicationGroupAlterRequests{setObjectLists: setObjectLists, set: set, unset: unset}, nil
 }
 
 func DeleteReplicationGroup(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

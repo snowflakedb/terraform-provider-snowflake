@@ -49,7 +49,9 @@ var ShareAttrs = struct {
 	},
 	Accounts: ssot.Attribute{
 		Name: "accounts",
-		Type: ssot.AttrSet,
+		// shareBeforeAlterExt adds and removes the accounts, because they are not a SET or UNSET field.
+		SkipUpdate: true,
+		Type:       ssot.AttrSet,
 		Elem: &ssot.Attribute{
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountIdentifier",
@@ -220,19 +222,17 @@ var Share = ssot.Object{
 			&ShareAttrs.Comment,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&ShareAttrs.Accounts,
-		&ShareAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		&ShareAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterKeywordBlock("Add", "ADD", &shareAddAccounts),
 			ssot.AlterKeywordBlock("Remove", "REMOVE", &shareRemoveAccounts),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&ShareAttrs.Accounts,
+				&ShareAttrs.Comment,
+			),
+			ssot.AlterUnset(
+				&ShareAttrs.Comment,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		},

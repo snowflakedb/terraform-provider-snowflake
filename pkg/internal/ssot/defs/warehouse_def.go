@@ -1,6 +1,8 @@
 package defs
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+)
 
 // WarehouseTypeUserSettable excludes ADAPTIVE and INTERACTIVE. Those types are separate resources.
 // SdkType is WarehouseType: sdk.ToWarehouseTypeUserSettable returns that type.
@@ -44,10 +46,16 @@ var WarehouseType = ssot.NewEnum(
 	"STANDARD", "SNOWPARK-OPTIMIZED", "ADAPTIVE", "INTERACTIVE",
 )
 
+// warehouseStateStarted and warehouseStateSuspended are the SHOW state values. SuspendForAlter uses them too.
+const (
+	warehouseStateStarted   = "STARTED"
+	warehouseStateSuspended = "SUSPENDED"
+)
+
 // ENABLED is reported for adaptive warehouses, which have no suspend/resume lifecycle.
 var WarehouseState = ssot.NewEnum(
 	"WarehouseState", "WarehouseStates",
-	"SUSPENDED", "SUSPENDING", "STARTED", "RESIZING", "RESUMING", "ENABLED",
+	warehouseStateSuspended, "SUSPENDING", warehouseStateStarted, "RESIZING", "RESUMING", "ENABLED",
 )
 
 // WarehouseAttrs holds reusable warehouse fields.
@@ -99,6 +107,7 @@ var WarehouseAttrs = struct {
 }{
 	WarehouseType: ssot.Attribute{
 		Name:                  "warehouse_type",
+		UpdateMapping:         ssot.CustomUpdate("warehouseTypeUpdate"),
 		Type:                  ssot.AttrEnum,
 		Description:           "Specifies warehouse type.",
 		AdditionalDescription: "Warehouse needs to be suspended to change its type. Provider will handle automatic suspension and resumption if needed. When not set, the provider creates the warehouse as `STANDARD` (instead of relying on the Snowflake default type, which is changing to `ADAPTIVE`), and removing the field from the configuration sets the type to `STANDARD` instead of unsetting it. A warehouse whose type was changed outside of Terraform to `ADAPTIVE` is updated back in place, and one changed to `INTERACTIVE` is recreated.",
@@ -113,6 +122,7 @@ var WarehouseAttrs = struct {
 	},
 	WarehouseSize: ssot.Attribute{
 		Name:                           "warehouse_size",
+		UpdateMapping:                  ssot.CustomUpdate("warehouseSizeUpdate"),
 		Type:                           ssot.AttrEnum,
 		Description:                    "Specifies the size of the virtual warehouse.",
 		AdditionalDescription:          "Consult [warehouse documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for the details. Note: removing the size from config will result in the resource recreation.",
@@ -152,6 +162,7 @@ var WarehouseAttrs = struct {
 	},
 	AutoSuspend: ssot.Attribute{
 		Name:           "auto_suspend",
+		UpdateMapping:  ssot.IntAttributeWithSpecialDefaultUnsetFallbackUpdate("600"),
 		Type:           ssot.AttrInt,
 		Description:    "Specifies the number of seconds of inactivity after which a warehouse is automatically suspended.",
 		Min:            new(0),
@@ -203,6 +214,7 @@ var WarehouseAttrs = struct {
 	},
 	ResourceConstraint: ssot.Attribute{
 		Name:                  "resource_constraint",
+		UpdateMapping:         ssot.CustomUpdate("warehouseResourceConstraintUpdate"),
 		Type:                  ssot.AttrEnum,
 		Description:           "Specifies the resource constraint for the warehouse. Only available for snowpark-optimized warehouses. For setting generation please use the `generation` field. Please check [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-warehouse#optional-properties-objectproperties) for required warehouse sizes for each resource constraint.",
 		AdditionalDescription: "Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration.",
@@ -215,6 +227,7 @@ var WarehouseAttrs = struct {
 	},
 	Generation: ssot.Attribute{
 		Name:                  "generation",
+		UpdateMapping:         ssot.CustomUpdate("warehouseGenerationUpdate"),
 		Type:                  ssot.AttrEnum,
 		Description:           "Specifies the generation for the warehouse. Only available for standard warehouses.",
 		AdditionalDescription: "Gen2 warehouses are not available in all regions. Please consult the [Snowflake Gen2 Region Availability documentation](https://docs.snowflake.com/en/user-guide/warehouses-gen2#region-availability) prior to configuration.",
@@ -337,6 +350,7 @@ var Warehouse = ssot.Object{
 		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
+			ssot.SdkSuspendIfStarted(),
 			ssot.SdkShow(
 				ssot.SdkShowOptionalLike(),
 				ssot.SdkShowOptionalStartsWith(),
@@ -358,9 +372,12 @@ var Warehouse = ssot.Object{
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
+		ssot.WithSuspendForAlter(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
@@ -380,6 +397,15 @@ var Warehouse = ssot.Object{
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
+	},
+	// A started warehouse is suspended while its type changes and is resumed afterwards.
+	SuspendForAlter: &ssot.SuspendForAlter{
+		When:      []*ssot.Attribute{&WarehouseAttrs.WarehouseType},
+		State:     &WarehouseAttrs.State,
+		Started:   warehouseStateStarted,
+		Suspended: warehouseStateSuspended,
+		// A removed warehouse_type sets STANDARD, which can be the type the warehouse already has.
+		NeededExt: true,
 	},
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"v092WarehouseSizeStateUpgrader",
@@ -423,47 +449,45 @@ var Warehouse = ssot.Object{
 		ssot.Parameters,
 		ssot.Tags,
 	}},
-	Set: []*ssot.Attribute{
-		&WarehouseAttrs.WarehouseType,
-		&WarehouseAttrs.WarehouseSize,
-		&WarehouseAttrs.WaitForCompletion,
-		&WarehouseAttrs.MaxClusterCount,
-		&WarehouseAttrs.MinClusterCount,
-		&WarehouseAttrs.ScalingPolicy,
-		&WarehouseAttrs.AutoSuspend,
-		&WarehouseAttrs.AutoResume,
-		&WarehouseAttrs.ResourceMonitor,
-		&WarehouseAttrs.Comment,
-		&WarehouseAttrs.EnableQueryAcceleration,
-		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
-		&WarehouseAttrs.ResourceConstraint,
-		&WarehouseAttrs.Generation,
-		ssot.Parameters,
-	},
-	Unset: []*ssot.Attribute{
-		&WarehouseAttrs.WarehouseType,
-		&WarehouseAttrs.WaitForCompletion,
-		&WarehouseAttrs.MaxClusterCount,
-		&WarehouseAttrs.MinClusterCount,
-		&WarehouseAttrs.ScalingPolicy,
-		&WarehouseAttrs.AutoSuspend,
-		&WarehouseAttrs.AutoResume,
-		&WarehouseAttrs.ResourceMonitor,
-		&WarehouseAttrs.Comment,
-		&WarehouseAttrs.EnableQueryAcceleration,
-		&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
-		&WarehouseAttrs.ResourceConstraint,
-		&WarehouseAttrs.Generation,
-		ssot.Parameters,
-	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterKeyword("SUSPEND"),
 		ssot.AlterKeyword("RESUME"),
 		ssot.AlterKeywordNotExactlyOne("IF SUSPENDED"),
 		ssot.AlterKeyword("ABORT ALL QUERIES"),
 		ssot.AlterRenameTo(),
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			&WarehouseAttrs.WarehouseType,
+			&WarehouseAttrs.WarehouseSize,
+			&WarehouseAttrs.WaitForCompletion,
+			&WarehouseAttrs.MaxClusterCount,
+			&WarehouseAttrs.MinClusterCount,
+			&WarehouseAttrs.ScalingPolicy,
+			&WarehouseAttrs.AutoSuspend,
+			&WarehouseAttrs.AutoResume,
+			&WarehouseAttrs.ResourceMonitor,
+			&WarehouseAttrs.Comment,
+			&WarehouseAttrs.EnableQueryAcceleration,
+			&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+			&WarehouseAttrs.ResourceConstraint,
+			&WarehouseAttrs.Generation,
+			ssot.Parameters,
+		),
+		ssot.AlterUnset(
+			&WarehouseAttrs.WarehouseType,
+			&WarehouseAttrs.WaitForCompletion,
+			&WarehouseAttrs.MaxClusterCount,
+			&WarehouseAttrs.MinClusterCount,
+			&WarehouseAttrs.ScalingPolicy,
+			&WarehouseAttrs.AutoSuspend,
+			&WarehouseAttrs.AutoResume,
+			&WarehouseAttrs.ResourceMonitor,
+			&WarehouseAttrs.Comment,
+			&WarehouseAttrs.EnableQueryAcceleration,
+			&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+			&WarehouseAttrs.ResourceConstraint,
+			&WarehouseAttrs.Generation,
+			ssot.Parameters,
+		),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 	}},

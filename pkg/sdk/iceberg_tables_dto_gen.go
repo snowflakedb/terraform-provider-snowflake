@@ -40,7 +40,7 @@ type CreateIcebergTableRequest struct {
 	IcebergVersion             *int
 	EnableIcebergMergeOnRead   *bool
 	RowAccessPolicy            *IcebergTableRowAccessPolicyRequest
-	AggregationPolicy          *IcebergTableAggregationPolicyRequest
+	AggregationPolicy          *TableAggregationPolicy
 	Tag                        []TagAssociation
 	EnableDataCompaction       *bool
 	Contact                    []TableContact
@@ -227,11 +227,6 @@ type IcebergTableRowAccessPolicyRequest struct {
 	On   []Column               // required
 }
 
-type IcebergTableAggregationPolicyRequest struct {
-	AggregationPolicy SchemaObjectIdentifier // required
-	EntityKey         []Column
-}
-
 type CreateFromIcebergFilesIcebergTableRequest struct {
 	OrReplace                *bool
 	IfNotExists              *bool
@@ -312,12 +307,12 @@ type AlterIcebergTableRequest struct {
 	Unset                         *IcebergTableUnsetPropertiesRequest
 	SetTags                       []TagAssociation
 	UnsetTags                     []ObjectIdentifier
-	AddRowAccessPolicy            *ViewAddRowAccessPolicyRequest
-	DropRowAccessPolicy           *ViewDropRowAccessPolicyRequest
-	DropAndAddRowAccessPolicy     *IcebergTableDropAndAddRowAccessPolicyRequest
+	AddRowAccessPolicy            *TableAddRowAccessPolicyRequest
+	DropRowAccessPolicy           *TableDropRowAccessPolicyRequest
+	DropAndAddRowAccessPolicy     *TableDropAndAddRowAccessPolicyRequest
 	DropAllRowAccessPolicies      *bool
-	SetAggregationPolicy          *ViewSetAggregationPolicyRequest
-	UnsetAggregationPolicy        *ViewUnsetAggregationPolicyRequest
+	SetAggregationPolicy          *TableSetAggregationPolicyRequest
+	UnsetAggregationPolicy        *TableUnsetAggregationPolicyRequest
 	SetJoinPolicy                 *TableSetJoinPolicyRequest
 	UnsetJoinPolicy               *TableUnsetJoinPolicyRequest
 	SearchOptimizationAction      *TableSearchOptimizationActionRequest
@@ -446,27 +441,6 @@ type IcebergTableUnsetPropertiesRequest struct {
 	ErrorLogging                *bool
 	Comment                     *bool
 }
-
-type IcebergTableDropAndAddRowAccessPolicyRequest struct {
-	Drop IcebergTableDropRowAccessPolicyRequest // required
-	Add  IcebergTableAddRowAccessPolicyRequest  // required
-}
-
-type IcebergTableDropRowAccessPolicyRequest struct {
-	RowAccessPolicy SchemaObjectIdentifier // required
-}
-
-type IcebergTableAddRowAccessPolicyRequest struct {
-	RowAccessPolicy SchemaObjectIdentifier // required
-	On              []Column               // required
-}
-
-type TableSetJoinPolicyRequest struct {
-	JoinPolicy SchemaObjectIdentifier // required
-	Force      *bool
-}
-
-type TableUnsetJoinPolicyRequest struct{}
 
 type DropIcebergTableRequest struct {
 	IfExists *bool

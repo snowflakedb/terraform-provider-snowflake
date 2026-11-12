@@ -1,0 +1,11 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
+{{- if .Hooks.SuspendForAlter.Generate }}
+{{- if .SuspendForAlter.Enabled }}
+	diags = append(diags, suspension.RestoreIfEnabled(ctx, d.Get("{{ .SuspendForAlter.Enabled }}").(bool), func(ctx context.Context) error {
+		return meta.(*provider.Context).Client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(id).WithResume(true))
+	})...)
+{{- else }}
+	diags = append(diags, suspension.Restore(ctx)...)
+{{- end }}
+
+{{ end -}}

@@ -3,7 +3,7 @@
 package testacc
 
 import (
-	"slices"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
@@ -26,11 +26,8 @@ import (
 // For the test that checks behavior for promoting secondary to primary, see `secondary_connection_promotion` manual test.
 
 func TestAcc_SecondaryConnection_BasicUseCase(t *testing.T) {
-	if slices.Contains([]testenvs.SnowflakeEnvironment{
-		testenvs.SnowflakeProdEnvironment,
-		testenvs.SnowflakePreProdGovEnvironment,
-	}, testenvs.GetSnowflakeEnvironmentWithProdDefault()) {
-		t.Skip("Missing azure configuration on all testing environments")
+	if testenvs.GetSnowflakeEnvironmentWithProdDefault() == testenvs.SnowflakePreProdGovEnvironment {
+		t.Skip("Missing azure configuration on the preprod gov testing environment")
 	}
 
 	// create primary connection
@@ -72,7 +69,7 @@ func TestAcc_SecondaryConnection_BasicUseCase(t *testing.T) {
 							HasCommentString(""),
 						resourceshowoutputassert.ConnectionShowOutput(t, secondaryConnectionModel.ResourceReference()).
 							HasName(connection.ID().Name()).
-							HasSnowflakeRegion(testClient().Context.CurrentRegion(t)).
+							HasSnowflakeRegion(strings.TrimPrefix(testClient().Context.CurrentRegion(t), "PUBLIC.")).
 							HasAccountLocator(testClient().GetAccountLocator()).
 							HasAccountName(accountId.AccountName()).
 							HasOrganizationName(accountId.OrganizationName()).

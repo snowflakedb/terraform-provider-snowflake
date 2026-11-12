@@ -28,6 +28,7 @@ var WarehouseInteractiveAttrs = struct {
 }{
 	WarehouseSize: ssot.Attribute{
 		Name:                           "warehouse_size",
+		UpdateMapping:                  ssot.AttributeMappedValueUpdateSetOnlyAlways("sdk.ToWarehouseSize"),
 		Type:                           ssot.AttrEnum,
 		Description:                    "Specifies the size of the interactive warehouse.",
 		AdditionalDescription:          "Note: changing the size briefly suspends and resumes the warehouse to apply the resize (an interactive warehouse cannot be resized while running); removing the size from config will result in the resource recreation.",
@@ -51,10 +52,11 @@ var WarehouseInteractiveAttrs = struct {
 	},
 	// Min is 1, so the attribute rule does not emit IntDefault. AttributesModificationExt sets that sentinel.
 	AutoSuspend: ssot.Attribute{
-		Name:        "auto_suspend",
-		Type:        ssot.AttrInt,
-		Description: "Specifies the number of seconds of inactivity after which an interactive warehouse is automatically suspended.",
-		Min:         new(1),
+		Name:          "auto_suspend",
+		UpdateMapping: ssot.IntAttributeWithSpecialDefaultUnsetFallbackUpdate("interactiveWarehouseDefaultAutoSuspend"),
+		Type:          ssot.AttrInt,
+		Description:   "Specifies the number of seconds of inactivity after which an interactive warehouse is automatically suspended.",
+		Min:           new(1),
 	},
 	AutoResume: ssot.Attribute{
 		Name:        "auto_resume",
@@ -111,8 +113,10 @@ var WarehouseInteractive = ssot.Object{
 	IdType:                     "AccountObjectIdentifier",
 	SdkCreateRequestObjectName: "InteractiveWarehouse",
 	VariantOf:                  &Warehouse,
-	VariantEntityCreateName:    "INTERACTIVE WAREHOUSE",
-	AttributesModification:     true,
+	// A started interactive warehouse is suspended while its size changes, through SuspendIfStarted of the base warehouse.
+	SuspendForAlter:         &ssot.SuspendForAlter{When: []*ssot.Attribute{&WarehouseInteractiveAttrs.WarehouseSize}},
+	VariantEntityCreateName: "INTERACTIVE WAREHOUSE",
+	AttributesModification:  true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			// show_output.tables was released as a list. A set would break indexing, so SHOW stays TypeList.
@@ -124,12 +128,14 @@ var WarehouseInteractive = ssot.Object{
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithDescribeInSdk(ssot.Omitted()),
 		ssot.WithDescribeOutputSchema(ssot.Omitted()),
 		ssot.WithShowOutputSet(ssot.Omitted()),
 		ssot.WithShowOutputSchema(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.ExtCall()),
+		ssot.WithSuspendForAlter(ssot.Generated()),
 		ssot.WithBeforeAlter(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
@@ -201,33 +207,31 @@ var WarehouseInteractive = ssot.Object{
 			ssot.Tags,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&WarehouseInteractiveAttrs.WarehouseSize,
-		&WarehouseInteractiveAttrs.MaxClusterCount,
-		&WarehouseInteractiveAttrs.MinClusterCount,
-		&WarehouseInteractiveAttrs.AutoSuspend,
-		&WarehouseInteractiveAttrs.AutoResume,
-		&WarehouseInteractiveAttrs.ResourceMonitor,
-		&WarehouseInteractiveAttrs.Comment,
-		ssot.Parameters,
-	},
-	Unset: []*ssot.Attribute{
-		&WarehouseInteractiveAttrs.WarehouseSize,
-		&WarehouseInteractiveAttrs.MaxClusterCount,
-		&WarehouseInteractiveAttrs.MinClusterCount,
-		&WarehouseInteractiveAttrs.AutoSuspend,
-		&WarehouseInteractiveAttrs.AutoResume,
-		&WarehouseInteractiveAttrs.ResourceMonitor,
-		&WarehouseInteractiveAttrs.Comment,
-		ssot.Parameters,
-	},
 	Alter: ssot.AlterSpec{
 		Doc:                      "https://docs.snowflake.com/en/sql-reference/sql/alter-warehouse",
 		SetAdditionalValidations: true,
 		Clauses: []ssot.AlterClause{
 			ssot.AlterRenameTo(),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&WarehouseInteractiveAttrs.WarehouseSize,
+				&WarehouseInteractiveAttrs.MaxClusterCount,
+				&WarehouseInteractiveAttrs.MinClusterCount,
+				&WarehouseInteractiveAttrs.AutoSuspend,
+				&WarehouseInteractiveAttrs.AutoResume,
+				&WarehouseInteractiveAttrs.ResourceMonitor,
+				&WarehouseInteractiveAttrs.Comment,
+				ssot.Parameters,
+			),
+			ssot.AlterUnset(
+				&WarehouseInteractiveAttrs.WarehouseSize,
+				&WarehouseInteractiveAttrs.MaxClusterCount,
+				&WarehouseInteractiveAttrs.MinClusterCount,
+				&WarehouseInteractiveAttrs.AutoSuspend,
+				&WarehouseInteractiveAttrs.AutoResume,
+				&WarehouseInteractiveAttrs.ResourceMonitor,
+				&WarehouseInteractiveAttrs.Comment,
+				ssot.Parameters,
+			),
 			ssot.AlterList("ADD TABLES", "SchemaObjectIdentifier"),
 			ssot.AlterList("DROP TABLES", "SchemaObjectIdentifier"),
 			ssot.AlterSetTags(),

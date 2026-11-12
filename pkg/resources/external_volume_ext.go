@@ -39,10 +39,6 @@ var (
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-type externalVolumeAlterRequestsExt struct {
-	set *sdk.ExternalVolumeSetRequest
-}
-
 func externalVolumeNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateExternalVolumeRequest, error) {
 	var storageLocations []sdk.ExternalVolumeStorageLocationItem
 	if err := listBlockAttributeCreate(d, "storage_location", &storageLocations, parseStorageLocation); err != nil {
@@ -64,18 +60,6 @@ func externalVolumeHandleExternalChangesExt(d *schema.ResourceData, externalVolu
 	return handleExternalChangesToObjectInShow(d,
 		outputMapping{"allow_writes", "allow_writes", externalVolume.AllowWrites, booleanStringFromBool(externalVolume.AllowWrites), nil},
 	)
-}
-
-func externalVolumeApplySetUnsetExt(d *schema.ResourceData) (*externalVolumeAlterRequestsExt, error) {
-	set := sdk.NewExternalVolumeSetRequest()
-	errs := errors.Join(
-		stringAttributeUpdateSetOnlyNotEmpty(d, "comment", &set.Comment),
-		booleanStringAttributeUnsetFallbackUpdate(d, "allow_writes", &set.AllowWrites, true),
-	)
-	if errs != nil {
-		return nil, errs
-	}
-	return &externalVolumeAlterRequestsExt{set: set}, nil
 }
 
 func externalVolumeSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, externalVolume *sdk.ExternalVolume, importPermissiveMode bool) error {
@@ -141,7 +125,7 @@ func externalVolumeDescribeInSdkExt(ctx context.Context, meta any, id sdk.Accoun
 	return &parsed, nil
 }
 
-func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *externalVolumeAlterRequestsExt) error {
+func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *externalVolumeAlterRequests) error {
 	client := meta.(*provider.Context).Client
 	if *reqs.set != (sdk.ExternalVolumeSetRequest{}) {
 		if err := client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithSet(*reqs.set)); err != nil {

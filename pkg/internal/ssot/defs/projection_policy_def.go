@@ -79,8 +79,8 @@ var ProjectionPolicy = ssot.Object{
 			),
 		),
 	},
-	// body is SET BODY -> and cannot share a SET with comment. The setter is WithSetBody.
-	// Generated ApplySetUnset would emit WithBody and put both fields on one request.
+	// body is SET BODY -> and cannot share a SET with comment, so the update sends it in its own SET (SetConflictingFields).
+	// The request field is SetBody, so the update mapping names it.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
@@ -95,8 +95,7 @@ var ProjectionPolicy = ssot.Object{
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.Generated()),
-		ssot.WithBeforeAlter(ssot.ExtCall()),
-		ssot.WithApplySetUnset(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
@@ -114,18 +113,16 @@ var ProjectionPolicy = ssot.Object{
 		},
 	},
 	// SET BODY -> and SET COMMENT cannot be combined. A probe on 2026-10-28 rejected both in one SET.
-	Set: []*ssot.Attribute{
-		&ProjectionPolicyAttrs.Body,
-		&ProjectionPolicyAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{&ProjectionPolicyAttrs.Comment},
 	Alter: ssot.AlterSpec{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterRenameTo(),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				ssot.AlterGroup("Body", &ProjectionPolicyAttrs.Body),
+				ssot.AlterGroup(ssot.MainAlterGroup, &ProjectionPolicyAttrs.Comment),
+			),
+			ssot.AlterUnset(&ProjectionPolicyAttrs.Comment),
 		},
 		SetConflictingFields: [][]*ssot.Attribute{{
 			&ProjectionPolicyAttrs.Body,
