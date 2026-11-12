@@ -26,6 +26,10 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		catalogNamespace            = "TEST_NAMESPACE"
 		oAuthAllowedScope           = "PRINCIPAL_ROLE:PRINCIPAL"
 		additionalOAuthAllowedScope = "PRINCIPAL_ROLE:SECONDARY"
+		sigV4CatalogUri             = "https://api.tabular.io/ws"
+		sigV4IamRole                = "arn:aws:iam::123456789012:role/sigv4-role"
+		sigV4SigningRegion          = "us-west-2"
+		sigV4ExternalId             = "external-id"
 	)
 
 	loadOpenCatalogConfig := func(t *testing.T) (catalogUri, privateCatalogUri, oAuthClientId, oAuthClientSecret string) {
@@ -241,12 +245,95 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 				HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope)).
+			HasNoSigv4RestAuthentication().
+			HasApiAwsIamUserArn("").
 			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasPrefix("").
 				HasCatalogName(catalogName).
 				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypePublic).
 				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)))
+	})
+
+	t.Run("create catalog integration: Iceberg REST SigV4 basic", func(t *testing.T) {
+		t.Skip("SNOW-3888393: no real Iceberg REST catalog with SigV4 auth available; fake credentials fail when CREATE validates the catalog")
+		request := sdk.NewCreateIcebergRestCatalogIntegrationRequest(
+			testClientHelper().Ids.RandomAccountObjectIdentifier(),
+			sdk.CatalogIntegrationIcebergRestRestConfigRequest{
+				CatalogUri:     sigV4CatalogUri,
+				CatalogApiType: new(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway),
+			},
+			false,
+		).WithSigV4RestAuthentication(*sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(sigV4IamRole))
+
+		integration := createIcebergRestWithRequest(t, request)
+
+		assertCatalogIntegration(t, integration, request.GetName(), "")
+
+		icebergRestDetails, err := client.CatalogIntegrations.DescribeIcebergRestDetails(ctx, integration.ID())
+		require.NoError(t, err)
+
+		// Snowflake fills the signing region and the external ID when they are not specified.
+		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
+			HasTableFormat(sdk.CatalogIntegrationTableFormatIceberg).
+			HasEnabled(false).
+			HasRefreshIntervalSeconds(30).
+			HasComment("").
+			HasCatalogNamespace("").
+			HasNoOauthRestAuthentication().
+			HasSigv4RestAuthenticationWith(objectassert.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationDetailsAssert().
+				HasSigv4IamRole(sigV4IamRole).
+				HasSigv4SigningRegionNotEmpty().
+				HasSigv4ExternalIdNotEmpty()).
+			HasApiAwsIamUserArnNotEmpty().
+			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
+				HasCatalogUri(sigV4CatalogUri).
+				HasPrefix("").
+				HasCatalogName("").
+				HasCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway).
+				HasAccessDelegationMode(sdk.CatalogIntegrationAccessDelegationModeExternalVolumeCredentials)))
+	})
+
+	t.Run("create catalog integration: Iceberg REST SigV4 all options", func(t *testing.T) {
+		t.Skip("SNOW-3888393: no real Iceberg REST catalog with SigV4 auth available; fake credentials fail when CREATE validates the catalog")
+		request := sdk.NewCreateIcebergRestCatalogIntegrationRequest(
+			testClientHelper().Ids.RandomAccountObjectIdentifier(),
+			sdk.CatalogIntegrationIcebergRestRestConfigRequest{
+				CatalogUri:     sigV4CatalogUri,
+				CatalogApiType: new(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway),
+			},
+			false,
+		).WithSigV4RestAuthentication(*sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(sigV4IamRole).
+			WithSigv4SigningRegion(sigV4SigningRegion).
+			WithSigv4ExternalId(sigV4ExternalId))
+
+		integration := createIcebergRestWithRequest(t, request)
+
+		assertCatalogIntegration(t, integration, request.GetName(), "")
+
+		icebergRestDetails, err := client.CatalogIntegrations.DescribeIcebergRestDetails(ctx, integration.ID())
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetailsFromObject(t, icebergRestDetails).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
+			HasNoOauthRestAuthentication().
+			HasSigv4RestAuthenticationWith(objectassert.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationDetailsAssert().
+				HasSigv4IamRole(sigV4IamRole).
+				HasSigv4SigningRegion(sigV4SigningRegion).
+				HasSigv4ExternalId(sigV4ExternalId)).
+			HasApiAwsIamUserArnNotEmpty())
+
+		assertThatObject(t, objectassert.CatalogIntegrationDetails(t, integration.ID()).
+			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
+			HasNoOauthRestAuthentication().
+			HasNoBearerRestAuthentication().
+			HasSigv4RestAuthentication(sdk.CatalogIntegrationSigv4RestAuthenticationDetails{
+				Sigv4IamRole:       sigV4IamRole,
+				Sigv4SigningRegion: sigV4SigningRegion,
+				Sigv4ExternalId:    sigV4ExternalId,
+			}).
+			HasApiAwsIamUserArnNotEmpty())
 	})
 
 	t.Run("create catalog integration: AWS Glue all options", func(t *testing.T) {
@@ -380,6 +467,8 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 				HasOauthTokenUri(oAuthTokenUri).
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope, additionalOAuthAllowedScope)).
+			HasNoSigv4RestAuthentication().
+			HasApiAwsIamUserArn("").
 			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasPrefix(prefix).
@@ -428,7 +517,11 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 		err := client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(integrationIcebergRest.ID()).WithSet(request))
 		require.NoError(t, err)
 
-		// Token is not returned by DESCRIBE, nothing to check
+		// Token is not returned by DESCRIBE, so only the authentication type is checked
+		assertThatObject(t, objectassert.CatalogIntegrationIcebergRestDetails(t, integrationIcebergRest.ID()).
+			HasNoOauthRestAuthentication().
+			HasNoSigv4RestAuthentication().
+			HasApiAwsIamUserArn(""))
 
 		invalid := []*sdk.CatalogIntegration{
 			integrationAwsGlue, integrationObjectStorage, integrationOpenCatalog,
@@ -551,7 +644,9 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 			HasGlueAwsRoleArn(glueAwsRoleArn).
 			HasGlueCatalogId(glueCatalogId).
 			HasGlueRegion(glueRegion).
-			HasCatalogNamespace(""))
+			HasCatalogNamespace("").
+			HasGlueAwsIamUserArnNotEmpty().
+			HasGlueAwsExternalIdNotEmpty())
 	})
 
 	t.Run("describe catalog integration: object storage", func(t *testing.T) {
@@ -608,6 +703,8 @@ func TestInt_CatalogIntegrations(t *testing.T) {
 				HasOauthTokenUri(catalogUri+"/v1/oauth/tokens").
 				HasOauthClientId(oAuthClientId).
 				HasOauthAllowedScopes(oAuthAllowedScope)).
+			HasNoSigv4RestAuthentication().
+			HasApiAwsIamUserArn("").
 			HasRestConfigWith(objectassert.NewCatalogIntegrationIcebergRestRestConfigDetailsAssert().
 				HasCatalogUri(catalogUri).
 				HasPrefix("").

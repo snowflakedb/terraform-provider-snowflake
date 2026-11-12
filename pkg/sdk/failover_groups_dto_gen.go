@@ -3,86 +3,107 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateFailoverGroupOptions]                          = new(CreateFailoverGroupRequest)
-	_ optionsProvider[CreateSecondaryReplicationGroupFailoverGroupOptions] = new(CreateSecondaryReplicationGroupFailoverGroupRequest)
-	_ optionsProvider[AlterSourceFailoverGroupOptions]                     = new(AlterSourceFailoverGroupRequest)
-	_ optionsProvider[AlterTargetFailoverGroupOptions]                     = new(AlterTargetFailoverGroupRequest)
-	_ optionsProvider[DropFailoverGroupOptions]                            = new(DropFailoverGroupRequest)
-	_ optionsProvider[ShowFailoverGroupOptions]                            = new(ShowFailoverGroupRequest)
-	_ optionsProvider[ShowFailoverGroupDatabasesFailoverGroupOptions]      = new(ShowFailoverGroupDatabasesFailoverGroupRequest)
-	_ optionsProvider[ShowFailoverGroupSharesFailoverGroupOptions]         = new(ShowFailoverGroupSharesFailoverGroupRequest)
+	_ optionsProvider[CreateFailoverGroupOptions]                     = new(CreateFailoverGroupRequest)
+	_ optionsProvider[CreateSecondaryFailoverGroupOptions]            = new(CreateSecondaryFailoverGroupRequest)
+	_ optionsProvider[AlterFailoverGroupOptions]                      = new(AlterFailoverGroupRequest)
+	_ optionsProvider[AlterSecondaryFailoverGroupOptions]             = new(AlterSecondaryFailoverGroupRequest)
+	_ optionsProvider[DropFailoverGroupOptions]                       = new(DropFailoverGroupRequest)
+	_ optionsProvider[ShowFailoverGroupOptions]                       = new(ShowFailoverGroupRequest)
+	_ optionsProvider[ShowFailoverGroupDatabasesFailoverGroupOptions] = new(ShowFailoverGroupDatabasesFailoverGroupRequest)
+	_ optionsProvider[ShowFailoverGroupSharesFailoverGroupOptions]    = new(ShowFailoverGroupSharesFailoverGroupRequest)
 )
 
 type CreateFailoverGroupRequest struct {
 	IfNotExists             *bool
-	name                    AccountObjectIdentifier // required
-	ObjectTypes             []PluralObjectType      // required
+	name                    AccountObjectIdentifier   // required
+	ObjectTypes             []FailoverGroupObjectType // required
 	AllowedDatabases        []AccountObjectIdentifier
+	AllowedExternalVolumes  []AccountObjectIdentifier
 	AllowedShares           []AccountObjectIdentifier
-	AllowedIntegrationTypes []IntegrationType
+	AllowedIntegrationTypes []FailoverGroupIntegrationType
 	AllowedAccounts         []AccountIdentifier // required
 	IgnoreEditionCheck      *bool
 	ReplicationSchedule     *string
 	OptimizedRefresh        *bool
+	Tag                     []TagAssociation
+	ErrorIntegration        *AccountObjectIdentifier
 }
 
-type CreateSecondaryReplicationGroupFailoverGroupRequest struct {
-	IfNotExists          *bool
-	name                 AccountObjectIdentifier  // required
-	PrimaryFailoverGroup ExternalObjectIdentifier // required
+type CreateSecondaryFailoverGroupRequest struct {
+	IfNotExists *bool
+	name        AccountObjectIdentifier  // required
+	AsReplicaOf ExternalObjectIdentifier // required
 }
 
-type AlterSourceFailoverGroupRequest struct {
-	IfExists *bool
-	name     AccountObjectIdentifier // required
-	RenameTo *AccountObjectIdentifier
-	Set      *FailoverGroupSetRequest
-	Unset    *FailoverGroupUnsetRequest
-	Add      *FailoverGroupAddRequest
-	Move     *FailoverGroupMoveRequest
-	Remove   *FailoverGroupRemoveRequest
+type AlterFailoverGroupRequest struct {
+	IfExists  *bool
+	name      AccountObjectIdentifier // required
+	RenameTo  *AccountObjectIdentifier
+	Set       *FailoverGroupSetRequest
+	Unset     *FailoverGroupUnsetRequest
+	SetTags   []TagAssociation
+	UnsetTags []ObjectIdentifier
+	Add       *FailoverGroupAddRequest
+	Move      *FailoverGroupMoveRequest
+	Remove    *FailoverGroupRemoveRequest
 }
 
 type FailoverGroupSetRequest struct {
-	ObjectTypes             []PluralObjectType
-	AllowedIntegrationTypes []IntegrationType
+	ObjectTypes             []FailoverGroupObjectType
+	AllowedDatabases        []AccountObjectIdentifier
+	AllowedExternalVolumes  []AccountObjectIdentifier
+	AllowedShares           []AccountObjectIdentifier
+	AllowedIntegrationTypes []FailoverGroupIntegrationType
+	Comment                 *string
 	ReplicationSchedule     *string
 	OptimizedRefresh        *bool
 	RpoAssurance            *bool
+	ErrorIntegration        *AccountObjectIdentifier
+	ReadOnly                *bool
 }
 
 type FailoverGroupUnsetRequest struct {
+	Comment             *bool
 	ReplicationSchedule *bool
 	OptimizedRefresh    *bool
 	RpoAssurance        *bool
+	ErrorIntegration    *bool
+	ReadOnly            *bool
 }
 
 type FailoverGroupAddRequest struct {
-	AllowedDatabases   []AccountObjectIdentifier
-	AllowedShares      []AccountObjectIdentifier
-	AllowedAccounts    []AccountIdentifier
-	IgnoreEditionCheck *bool
+	AllowedDatabases       []AccountObjectIdentifier
+	AllowedExternalVolumes []AccountObjectIdentifier
+	AllowedShares          []AccountObjectIdentifier
+	AllowedAccounts        []AccountIdentifier
+	IgnoreEditionCheck     *bool
 }
 
 type FailoverGroupMoveRequest struct {
-	Databases []AccountObjectIdentifier
-	Shares    []AccountObjectIdentifier
-	To        AccountObjectIdentifier // required
+	Databases       []AccountObjectIdentifier
+	ExternalVolumes []AccountObjectIdentifier
+	Shares          []AccountObjectIdentifier
+	To              AccountObjectIdentifier // required
 }
 
 type FailoverGroupRemoveRequest struct {
-	AllowedDatabases []AccountObjectIdentifier
-	AllowedShares    []AccountObjectIdentifier
-	AllowedAccounts  []AccountIdentifier
+	AllowedDatabases       []AccountObjectIdentifier
+	AllowedExternalVolumes []AccountObjectIdentifier
+	AllowedShares          []AccountObjectIdentifier
+	AllowedAccounts        []AccountIdentifier
 }
 
-type AlterTargetFailoverGroupRequest struct {
+type AlterSecondaryFailoverGroupRequest struct {
 	IfExists *bool
 	name     AccountObjectIdentifier // required
 	Refresh  *bool
 	Primary  *bool
-	Suspend  *bool
+	Suspend  *FailoverGroupSecondarySuspendRequest
 	Resume   *bool
+}
+
+type FailoverGroupSecondarySuspendRequest struct {
+	Immediate *bool
 }
 
 type DropFailoverGroupRequest struct {
@@ -91,13 +112,13 @@ type DropFailoverGroupRequest struct {
 }
 
 type ShowFailoverGroupRequest struct {
-	InAccount AccountIdentifier
+	InAccount *AccountIdentifier
 }
 
 type ShowFailoverGroupDatabasesFailoverGroupRequest struct {
-	In AccountObjectIdentifier // required
+	name AccountObjectIdentifier // required
 }
 
 type ShowFailoverGroupSharesFailoverGroupRequest struct {
-	In AccountObjectIdentifier // required
+	name AccountObjectIdentifier // required
 }

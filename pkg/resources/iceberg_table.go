@@ -176,11 +176,11 @@ func CreateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	if policyId, entityKey, ok, err := aggregationPolicyCreateRequest(d); err != nil {
 		return diag.FromErr(err)
 	} else if ok {
-		aggregationPolicyReq := sdk.NewIcebergTableAggregationPolicyRequest(policyId)
+		aggregationPolicy := sdk.TableAggregationPolicy{AggregationPolicy: policyId}
 		if len(entityKey) > 0 {
-			aggregationPolicyReq.WithEntityKey(entityKey)
+			aggregationPolicy.EntityKey = entityKey
 		}
-		req.WithAggregationPolicy(*aggregationPolicyReq)
+		req.WithAggregationPolicy(aggregationPolicy)
 	}
 
 	diags := handleIcebergTableSnowflakeManagedParametersCreate(d, req)
@@ -372,14 +372,14 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 		alterReq := sdk.NewAlterIcebergTableRequest(id)
 		switch {
 		case addReq != nil && dropReq != nil:
-			alterReq.WithDropAndAddRowAccessPolicy(*sdk.NewIcebergTableDropAndAddRowAccessPolicyRequest(
-				*sdk.NewIcebergTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy),
-				*sdk.NewIcebergTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
+			alterReq.WithDropAndAddRowAccessPolicy(*sdk.NewTableDropAndAddRowAccessPolicyRequest(
+				*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy),
+				*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
 			))
 		case addReq != nil:
-			alterReq.WithAddRowAccessPolicy(*addReq)
+			alterReq.WithAddRowAccessPolicy(*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On))
 		case dropReq != nil:
-			alterReq.WithDropRowAccessPolicy(*dropReq)
+			alterReq.WithDropRowAccessPolicy(*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy))
 		}
 		if err := client.IcebergTables.Alter(ctx, alterReq); err != nil {
 			return diag.FromErr(fmt.Errorf("error updating row access policy on %v err = %w", d.Id(), err))
@@ -387,7 +387,7 @@ func UpdateIcebergTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	if d.HasChange("aggregation_policy") {
-		setReq, unsetReq, err := aggregationPolicyUpdateRequests(d)
+		setReq, unsetReq, err := aggregationPolicyTableUpdateRequests(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}

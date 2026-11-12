@@ -171,7 +171,13 @@ func tableApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateTabl
 	)
 }
 
-func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequestsExt, error) {
+// tableAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type tableAlterRequests struct {
+	set   *sdk.TableSetRequest
+	unset *sdk.TableUnsetRequest
+}
+
+func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequests, error) {
 	set, unset := sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
@@ -181,7 +187,7 @@ func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequestsExt, error
 	if errs != nil {
 		return nil, errs
 	}
-	return &tableAlterRequestsExt{set: set, unset: unset}, nil
+	return &tableAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

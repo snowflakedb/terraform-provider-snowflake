@@ -510,13 +510,15 @@ func Test_CreateAlterFromObject(t *testing.T) {
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{items, label, kind, count, target},
 		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{&target, &count, &kind, ssot.Tags, &label, &items}},
-		Set:        []*ssot.Attribute{&items, &count, &label},
-		Unset:      []*ssot.Attribute{&label, &items},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 			ssot.AlterKeyword("RESUME"),
 			ssot.AlterKeyword("STOP ALL"),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&items, &count, &label,
+			),
+			ssot.AlterUnset(
+				&label, &items,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		}},
@@ -664,10 +666,11 @@ func Test_AlterOperationFromObject_unsetConflicts(t *testing.T) {
 	obj := ssot.Object{
 		Name:           "Widget",
 		Attributes:     []ssot.Attribute{comment, schedule, expire},
-		Unset:          []*ssot.Attribute{&comment, &schedule, &expire},
 		UnsetConflicts: [][]*ssot.Attribute{{&schedule, &expire}},
-		Alter:          ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterUnset()}},
-		Generators:     []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists(), ssot.SdkAlterWithoutExactlyOneValueSet()))},
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterUnset(
+			&comment, &schedule, &expire,
+		)}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists(), ssot.SdkAlterWithoutExactlyOneValueSet()))},
 	}
 	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
 	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
@@ -696,8 +699,9 @@ func Test_AlterOperationFromObject_setList(t *testing.T) {
 	obj := ssot.Object{
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{label},
-		Set:        []*ssot.Attribute{&label},
-		Alter:      ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet()}},
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet(
+			&label,
+		)}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(
 			ssot.SdkAlterSetList(),
 			ssot.SdkAlterWithoutIfExists(),
@@ -783,11 +787,13 @@ func Test_CreateAlterFromObject_parameters(t *testing.T) {
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{comment},
 		Create:     ssot.CreateSpec{Clauses: []*ssot.Attribute{ssot.Parameters, &comment, ssot.Tags}},
-		Set:        []*ssot.Attribute{ssot.Parameters, &comment},
-		Unset:      []*ssot.Attribute{ssot.Parameters, &comment},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				ssot.Parameters, &comment,
+			),
+			ssot.AlterUnset(
+				ssot.Parameters, &comment,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		}},
@@ -850,8 +856,12 @@ func Test_CreateAlterFromObject_parameters(t *testing.T) {
 
 	t.Run("parameters stay first in AtLeastOneValueSet when they follow attributes", func(t *testing.T) {
 		later := obj
-		later.Set = []*ssot.Attribute{&comment, ssot.Parameters}
-		later.Unset = []*ssot.Attribute{&comment, ssot.Parameters}
+		later.Alter.Clauses = []ssot.AlterClause{
+			ssot.AlterSet(&comment, ssot.Parameters),
+			ssot.AlterUnset(&comment, ssot.Parameters),
+			ssot.AlterSetTags(),
+			ssot.AlterUnsetTags(),
+		}
 		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(later)
 		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
 			"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
@@ -906,11 +916,13 @@ func Test_parametersForStatement_addsAlterLevels(t *testing.T) {
 		ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
 		Attributes:                            []ssot.Attribute{comment},
 		Create:                                ssot.CreateSpec{Clauses: []*ssot.Attribute{ssot.Parameters}},
-		Set:                                   []*ssot.Attribute{ssot.Parameters},
-		Unset:                                 []*ssot.Attribute{ssot.Parameters},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				ssot.Parameters,
+			),
+			ssot.AlterUnset(
+				ssot.Parameters,
+			),
 		}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(
 			ssot.SdkCreate(ssot.SdkCreateWithoutOrReplace(), ssot.SdkCreateWithoutIfNotExists()),
@@ -936,11 +948,13 @@ func Test_AlterOperationFromObject_clauseOrder(t *testing.T) {
 	obj := ssot.Object{
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{label},
-		Set:        []*ssot.Attribute{&label},
-		Unset:      []*ssot.Attribute{&label},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&label,
+			),
+			ssot.AlterUnset(
+				&label,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 			ssot.AlterKeyword("ENABLE MANAGED ACCESS"),
@@ -984,14 +998,16 @@ func Test_AlterOperationFromObject_listAndOptionalKeyword(t *testing.T) {
 	obj := ssot.Object{
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{label},
-		Set:        []*ssot.Attribute{&label},
-		Unset:      []*ssot.Attribute{&label},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 			ssot.AlterKeyword("RESUME"),
 			ssot.AlterKeywordNotExactlyOne("IF SUSPENDED"),
 			ssot.AlterRenameTo(),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&label,
+			),
+			ssot.AlterUnset(
+				&label,
+			),
 			ssot.AlterList("ADD TABLES", "SchemaObjectIdentifier"),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
@@ -1042,13 +1058,15 @@ func Test_AlterOperationFromObject_renameSwap(t *testing.T) {
 	obj := ssot.Object{
 		Name:       "Widget",
 		Attributes: []ssot.Attribute{label},
-		Set:        []*ssot.Attribute{&label},
-		Unset:      []*ssot.Attribute{&label},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 			ssot.AlterRenameTo(),
 			ssot.AlterSwapWith(),
-			ssot.AlterSet(),
-			ssot.AlterUnset(),
+			ssot.AlterSet(
+				&label,
+			),
+			ssot.AlterUnset(
+				&label,
+			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 			ssot.AlterKeyword("ENABLE MANAGED ACCESS"),
@@ -1274,15 +1292,17 @@ func Test_AlterVariantOperationsFromObject_fakeObject(t *testing.T) {
 		Name:                       "WidgetMini",
 		VariantOf:                  &base,
 		SdkCreateRequestObjectName: "MiniWidget",
-		Set:                        []*ssot.Attribute{&comment},
-		Unset:                      []*ssot.Attribute{&comment},
 		Alter: ssot.AlterSpec{
 			Doc:                   "https://docs.example.com/alter-mini",
 			AdditionalValidations: true,
 			Clauses: []ssot.AlterClause{
 				ssot.AlterRenameTo(),
-				ssot.AlterSet(),
-				ssot.AlterUnset(),
+				ssot.AlterSet(
+					&comment,
+				),
+				ssot.AlterUnset(
+					&comment,
+				),
 			},
 		},
 	}
@@ -2233,4 +2253,78 @@ func Test_DescribeOperationFromObject_detailsParseParsedAndRows(t *testing.T) {
 			{Property: "MODE", Field: "Mode", Parser: "ParseWidgetModeDescribed"},
 		},
 	}, got.DescribeParse)
+}
+
+func suspendIfStartedObject(change func(*ssot.Object)) ssot.Object {
+	state := ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: ssot.NewEnum("WidgetState", "WidgetStates", "STARTED", "SUSPENDED"), Readonly: true}
+	obj := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&state}},
+		Alter:      ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterKeyword("SUSPEND"), ssot.AlterKeyword("RESUME")}},
+		SuspendForAlter: &ssot.SuspendForAlter{
+			State: &state, Started: "STARTED", Suspended: "SUSPENDED",
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot(), ssot.SdkSuspendIfStarted())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_SuspendIfStartedFromObject(t *testing.T) {
+	t.Run("config from the definition", func(t *testing.T) {
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(suspendIfStartedObject(func(*ssot.Object) {}))
+		require.Equal(t, &SuspendIfStartedConfig{
+			StateField: "State", StartedConstant: "WidgetStateStarted", SuspendedConstant: "WidgetStateSuspended",
+		}, got.SuspendIfStartedConfig)
+		require.Len(t, got.CustomMethods, 1)
+		require.Equal(t, "SuspendIfStarted", got.CustomMethods[0].Name)
+	})
+
+	t.Run("IF SUSPENDED", func(t *testing.T) {
+		obj := suspendIfStartedObject(func(o *ssot.Object) {
+			o.Alter.Clauses = append(o.Alter.Clauses, ssot.AlterKeywordNotExactlyOne("IF SUSPENDED"))
+		})
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(obj)
+		require.True(t, got.SuspendIfStartedConfig.ResumeIfSuspended)
+	})
+
+	t.Run("native declaration panics without the state", func(t *testing.T) {
+		require.PanicsWithValue(t, `interface "Widgets": SuspendIfStarted needs StateField, StartedConstant, and SuspendedConstant`, func() {
+			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStarted(SuspendIfStartedConfig{StateField: "State"})
+		})
+	})
+
+	t.Run("panics when the object is not enabled", func(t *testing.T) {
+		obj := suspendIfStartedObject(func(o *ssot.Object) { o.Generators = nil })
+		require.Panics(t, func() { NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(obj) })
+	})
+
+	t.Run("InterfaceFromObject adds it only when the option is on", func(t *testing.T) {
+		require.NotNil(t, InterfaceFromObject(suspendIfStartedObject(func(*ssot.Object) {})).SuspendIfStartedConfig)
+		off := suspendIfStartedObject(func(o *ssot.Object) {
+			o.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDefineFromSsot())}
+			o.SuspendForAlter = nil
+		})
+		require.Nil(t, InterfaceFromObject(off).SuspendIfStartedConfig)
+	})
+
+	t.Run("rendered interface and implementation", func(t *testing.T) {
+		obj := suspendIfStartedObject(func(o *ssot.Object) {
+			o.Alter.Clauses = append(o.Alter.Clauses, ssot.AlterKeywordNotExactlyOne("IF SUSPENDED"))
+		})
+		iface := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").SuspendIfStartedFromObject(obj)
+		var ifaceOut, implOut strings.Builder
+		require.NoError(t, InterfaceTemplate.Execute(&ifaceOut, iface))
+		require.NoError(t, ImplementationTemplate.Execute(&implOut, iface))
+		require.Contains(t, ifaceOut.String(), "SuspendIfStarted(ctx context.Context, id AccountObjectIdentifier) (func(context.Context) error, error)")
+		impl := implOut.String()
+		require.Contains(t, impl, "func (v *widgets) SuspendIfStarted(ctx context.Context, id AccountObjectIdentifier) (func(context.Context) error, error) {")
+		require.Contains(t, impl, "if object.State != WidgetStateStarted {")
+		require.Contains(t, impl, "NewAlterWidgetRequest(id).WithSuspend(true)")
+		require.Contains(t, impl, "NewAlterWidgetRequest(id).WithResume(true).WithIfSuspended(true)")
+		require.Contains(t, impl, "util.Retry(5, time.Second")
+		require.Contains(t, impl, "object.State == WidgetStateSuspended")
+	})
 }

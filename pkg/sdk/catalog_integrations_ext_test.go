@@ -404,3 +404,59 @@ func TestParseCommaSeparatedEnumMap(t *testing.T) {
 		})
 	}
 }
+
+func TestParseRestAuthenticationProperty(t *testing.T) {
+	sigV4IamRole := "arn:aws:iam::123456789012:role/my-role"
+	expectedSigV4 := &CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{
+		Sigv4IamRole:       sigV4IamRole,
+		Sigv4SigningRegion: "eu-north-1",
+	}
+	expectedOAuth := &CatalogIntegrationIcebergRestOauthRestAuthenticationDetails{ //nolint:gosec // test credentials
+		OauthTokenUri:      "https://example.com/token",
+		OauthClientId:      "client",
+		OauthAllowedScopes: []string{"PRINCIPAL_ROLE:ALL"},
+	}
+
+	testCases := []struct {
+		Name           string
+		Value          string
+		ExpectedOAuth  *CatalogIntegrationIcebergRestOauthRestAuthenticationDetails
+		ExpectedBearer *CatalogIntegrationIcebergRestBearerRestAuthenticationDetails
+		ExpectedSigV4  *CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails
+	}{
+		{
+			Name:          "SIGV4 type in uppercase",
+			Value:         "{TYPE=SIGV4, SIGV4_IAM_ROLE=" + sigV4IamRole + ", SIGV4_SIGNING_REGION=eu-north-1}",
+			ExpectedSigV4: expectedSigV4,
+		},
+		{
+			Name:          "SIGV4 type in lowercase",
+			Value:         "{TYPE=sigv4, SIGV4_IAM_ROLE=" + sigV4IamRole + ", SIGV4_SIGNING_REGION=eu-north-1}",
+			ExpectedSigV4: expectedSigV4,
+		},
+		{
+			Name:          "OAUTH type in lowercase",
+			Value:         "{TYPE=oauth, OAUTH_TOKEN_URI=https://example.com/token, OAUTH_CLIENT_ID=client, OAUTH_ALLOWED_SCOPES=[PRINCIPAL_ROLE:ALL]}",
+			ExpectedOAuth: expectedOAuth,
+		},
+		{
+			Name:           "BEARER type in lowercase",
+			Value:          "{TYPE=bearer}",
+			ExpectedBearer: &CatalogIntegrationIcebergRestBearerRestAuthenticationDetails{},
+		},
+		{
+			Name:  "unknown type",
+			Value: "{TYPE=unknown}",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			oAuth, bearer, sigV4, err := parseRestAuthenticationProperty(CatalogIntegrationProperty{PropertyValue: tc.Value})
+			require.NoError(t, err)
+			require.Equal(t, tc.ExpectedOAuth, oAuth)
+			require.Equal(t, tc.ExpectedBearer, bearer)
+			require.Equal(t, tc.ExpectedSigV4, sigV4)
+		})
+	}
+}

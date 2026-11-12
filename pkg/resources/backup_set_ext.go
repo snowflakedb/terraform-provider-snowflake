@@ -31,11 +31,6 @@ func init() {
 	)
 }
 
-type backupSetAlterRequestsExt struct {
-	set   *sdk.BackupSetSetRequest
-	unset *sdk.BackupSetUnsetRequest
-}
-
 // SHOW splits the target and the backup policy across columns, so those attributes stay
 // copied from config. This marks show and describe output computed when they change.
 func backupSetOutputsComputedWhenTargetOrPolicyChanges(ctx context.Context, d *schema.ResourceDiff, meta any) error {

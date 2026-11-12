@@ -132,7 +132,7 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta
 	if diags := warehouseAdaptiveHierarchyRenameExt(ctx, d, meta, &id); diags != nil {
 		return diags
 	}
-	setUnset, err := warehouseAdaptiveApplySetUnsetExt(d)
+	setUnset, err := warehouseAdaptiveApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -150,6 +150,27 @@ func UpdateWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta
 
 func warehouseAdaptiveParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+// warehouseAdaptiveAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type warehouseAdaptiveAlterRequests struct {
+	set   *sdk.WarehouseAdaptiveSetRequest
+	unset *sdk.WarehouseAdaptiveUnsetRequest
+}
+
+func warehouseAdaptiveApplySetUnset(d *tfschema.ResourceData) (*warehouseAdaptiveAlterRequests, error) {
+	set, unset := sdk.NewWarehouseAdaptiveSetRequest(), sdk.NewWarehouseAdaptiveUnsetRequest()
+	errs := errors.Join(
+		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
+		warehouseAdaptiveTypeUpdate(d, set, unset),
+		attributeMappedValueUpdate(d, "max_query_performance_level", &set.MaxQueryPerformanceLevel, &unset.MaxQueryPerformanceLevel, sdk.ToMaxQueryPerformanceLevel),
+		intAttributeWithSpecialDefaultUpdateBuilder(d, "query_throughput_multiplier", set.WithQueryThroughputMultiplier, unset.WithQueryThroughputMultiplier),
+		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &warehouseAdaptiveAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteWarehouseAdaptive(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

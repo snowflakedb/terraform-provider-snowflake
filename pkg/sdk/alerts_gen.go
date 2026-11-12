@@ -17,6 +17,8 @@ type Alerts interface {
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Alert, error)
 	Describe(ctx context.Context, id SchemaObjectIdentifier) (*AlertDetails, error)
+	// SuspendIfStarted suspends the object when it is started and waits until it is suspended. The returned function resumes it; it is never nil and has to be called even when an error is returned.
+	SuspendIfStarted(ctx context.Context, id SchemaObjectIdentifier) (func(context.Context) error, error)
 }
 
 // CreateAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-alert.

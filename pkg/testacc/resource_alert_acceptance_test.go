@@ -456,6 +456,60 @@ func TestAcc_Alert_CompleteUseCase(t *testing.T) {
 	})
 }
 
+// An update that fails after the alert was suspended resumes the alert again and keeps the previous state.
+func TestAcc_Alert_FailedUpdateResumesTheAlert(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	warehouseName := testClient().Ids.WarehouseId().Name()
+
+	complete := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
+		WithAlertScheduleCron("0 0 * * *", "UTC").
+		WithComment("complete").
+		WithEnabled(true)
+	// The provider does not validate the time zone, so Snowflake rejects it after the alert was suspended.
+	invalidTimeZone := model.Alert("test", id.DatabaseName(), id.SchemaName(), id.Name(), "SELECT 1", "SELECT 1").
+		WithWarehouse(warehouseName).
+		WithAlertScheduleCron("0 0 * * *", "Not/A_Zone").
+		WithComment("changed").
+		WithEnabled(true)
+
+	ref := complete.ResourceReference()
+
+	completeAssertions := []assert.TestCheckFuncProvider{
+		newAlertResourceAssertions(t, ref, id).
+			HasCommentString("complete").
+			HasEnabled(true).
+			HasAlertScheduleCron("0 0 * * *", "UTC"),
+		newAlertObjectAssertions(t, id).
+			HasSchedule("USING CRON 0 0 * * * UTC").
+			HasComment("complete").
+			HasState(sdk.AlertStateStarted),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		CheckDestroy:             CheckDestroy(t, resources.Alert),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, completeAssertions...),
+			},
+			{
+				Config:      config.FromModels(t, invalidTimeZone),
+				ExpectError: regexp.MustCompile(`(?s).+`),
+			},
+			// Nothing changed: the alert is started again, and the state holds the values from before the failed update.
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Config: config.FromModels(t, complete),
+				Check:  assertThat(t, completeAssertions...),
+			},
+		},
+	})
+}
+
 func TestAcc_Alert_Replacement(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	renamedId := testClient().Ids.RandomSchemaObjectIdentifier()

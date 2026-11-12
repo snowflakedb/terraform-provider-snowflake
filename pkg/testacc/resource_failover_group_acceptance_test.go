@@ -1,4 +1,13 @@
-//go:build non_account_level_tests
+//go:build account_level_tests
+
+// Account object types other than SHARES and DATABASES (e.g. ROLES, INTEGRATIONS, WAREHOUSES) can be a part of only one
+// failover or replication group per account. Snowflake rejects the second group with 500070 "Account object types, other than
+// SHARES and DATABASES, can only be within one failover group or replication group" (documented as "Objects other than databases,
+// external volumes, and shares must be in the same failover group"). The restriction is on the type, so unique names do not help.
+// The tests below use such types (ROLES, INTEGRATIONS, WAREHOUSES, ACCOUNT PARAMETERS).
+// A database can also be added to only one failover or replication group, and these tests put the shared test database into groups.
+// Failover and replication groups share these restrictions, so the tests of both are account-level tests (they cannot run in parallel
+// with each other, other PRs, or the integration/acceptance suites).
 
 package testacc
 
@@ -10,7 +19,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -20,14 +28,10 @@ import (
 )
 
 func TestAcc_FailoverGroupBasic(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -37,7 +41,7 @@ func TestAcc_FailoverGroupBasic(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupBasic(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
+				Config: failoverGroupBasic(id, currentAccountId, secondaryAccountId, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "fully_qualified_name", id.FullyQualifiedName()),
@@ -65,14 +69,10 @@ func TestAcc_FailoverGroupBasic(t *testing.T) {
 }
 
 func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -81,7 +81,7 @@ func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId(), false),
+				Config: failoverGroupWithInterval(id, currentAccountId, secondaryAccountId, 20, testClient().Ids.DatabaseId(), false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -92,7 +92,7 @@ func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
 				),
 			},
 			{
-				Config: failoverGroupWithNoWarehouse(id, currentAccountId, businessCriticalAccountId, 20),
+				Config: failoverGroupWithNoWarehouse(id, currentAccountId, secondaryAccountId, 20),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "3"),
@@ -107,14 +107,10 @@ func TestAcc_FailoverGroupRemoveObjectTypes(t *testing.T) {
 }
 
 func TestAcc_FailoverGroupInterval(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -123,7 +119,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId(), true),
+				Config: failoverGroupWithInterval(id, currentAccountId, secondaryAccountId, 10, testClient().Ids.DatabaseId(), true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -139,7 +135,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Update Interval
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 20, testClient().Ids.DatabaseId(), true),
+				Config: failoverGroupWithInterval(id, currentAccountId, secondaryAccountId, 20, testClient().Ids.DatabaseId(), true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -155,7 +151,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Change to Cron Expression
 			{
-				Config: failoverGroupWithCronExpression(id, currentAccountId, businessCriticalAccountId, "0 0 10-20 * TUE,THU", testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithCronExpression(id, currentAccountId, secondaryAccountId, "0 0 10-20 * TUE,THU", testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -173,7 +169,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Update Cron Expression
 			{
-				Config: failoverGroupWithCronExpression(id, currentAccountId, businessCriticalAccountId, "0 0 5-20 * TUE,THU", testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithCronExpression(id, currentAccountId, secondaryAccountId, "0 0 5-20 * TUE,THU", testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -191,7 +187,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Remove replication schedule
 			{
-				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId(), false),
+				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, secondaryAccountId, testClient().Ids.DatabaseId(), false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -204,7 +200,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 				),
 			},
 			{
-				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId(), true),
+				Config: failoverGroupWithoutReplicationSchedule(id, currentAccountId, secondaryAccountId, testClient().Ids.DatabaseId(), true),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -218,7 +214,7 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 			},
 			// Change to Interval
 			{
-				Config: failoverGroupWithInterval(id, currentAccountId, businessCriticalAccountId, 10, testClient().Ids.DatabaseId(), false),
+				Config: failoverGroupWithInterval(id, currentAccountId, secondaryAccountId, 10, testClient().Ids.DatabaseId(), false),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "4"),
@@ -244,14 +240,10 @@ func TestAcc_FailoverGroupInterval(t *testing.T) {
 }
 
 func TestAcc_FailoverGroup_issue2517(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -260,7 +252,7 @@ func TestAcc_FailoverGroup_issue2517(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupWithAccountParameters(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
+				Config: failoverGroupWithAccountParameters(id, currentAccountId, secondaryAccountId, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "object_types.#", "5"),
@@ -276,14 +268,10 @@ func TestAcc_FailoverGroup_issue2517(t *testing.T) {
 }
 
 func TestAcc_FailoverGroup_issue2544(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	currentAccountId := testClient().Account.GetAccountIdentifier(t)
 
-	accountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	businessCriticalAccountId := sdk.NewAccountIdentifierFromFullyQualifiedName(accountName)
+	secondaryAccountId := secondaryTestClient().Account.GetAccountIdentifier(t)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -293,13 +281,13 @@ func TestAcc_FailoverGroup_issue2544(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupBasic(id, currentAccountId, businessCriticalAccountId, testClient().Ids.DatabaseId()),
+				Config: failoverGroupBasic(id, currentAccountId, secondaryAccountId, testClient().Ids.DatabaseId()),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 				),
 			},
 			{
-				Config: failoverGroupWithChanges(id, currentAccountId, businessCriticalAccountId, 20),
+				Config: failoverGroupWithChanges(id, currentAccountId, secondaryAccountId, 20),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_failover_group.fg", "name", id.Name()),
 				),
@@ -427,17 +415,13 @@ resource "snowflake_failover_group" "fg" {
 }
 
 func TestAcc_FailoverGroup_UpdateAllowedAccounts(t *testing.T) {
-	// TODO [SNOW-1002023]: Unskip; Business Critical Snowflake Edition needed
-	_ = testenvs.GetOrSkipTest(t, testenvs.TestFailoverGroups)
-
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	// We need to use the secondary account to test the failover group. Otherwise, we will get an error:
 	// Error: error removing allowed accounts for failover group TEST err = 003909 (55000): Disabling replication of the replication group to the account in which the primary currently resides is not allowed.
 	accountIdentifier := testClient().Context.CurrentAccountIdentifier(t)
 
-	secondaryAccountName := testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
-	secondaryAccountIdentifier := sdk.NewAccountIdentifierFromFullyQualifiedName(secondaryAccountName)
+	secondaryAccountIdentifier := secondaryTestClient().Account.GetAccountIdentifier(t)
 	providerModel := providermodel.SnowflakeProvider().
 		WithPreviewFeaturesEnabled(string(previewfeatures.FailoverGroupResource))
 

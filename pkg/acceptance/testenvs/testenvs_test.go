@@ -16,14 +16,14 @@ func Test_GetOrSkipTest(t *testing.T) {
 		var env string
 		var wg sync.WaitGroup
 		wg.Go(func() {
-			env = testenvs.GetOrSkipTest(t, testenvs.BusinessCriticalAccount)
+			env = testenvs.GetOrSkipTest(t, testenvs.TestAccountCreate)
 		})
 		wg.Wait()
 		return env
 	}
 
 	t.Run("skip test if missing", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "")
+		t.Setenv(string(testenvs.TestAccountCreate), "")
 
 		tut := &testing.T{}
 		env := runGetOrSkipInGoroutineAndWaitForCompletion(tut)
@@ -33,7 +33,7 @@ func Test_GetOrSkipTest(t *testing.T) {
 	})
 
 	t.Run("get env if exists", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "user")
+		t.Setenv(string(testenvs.TestAccountCreate), "user")
 
 		tut := &testing.T{}
 		env := runGetOrSkipInGoroutineAndWaitForCompletion(tut)
@@ -56,19 +56,19 @@ func Test_SkipTestIfSet(t *testing.T) {
 	}
 
 	t.Run("skip test if env is set", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "1")
+		t.Setenv(string(testenvs.TestAccountCreate), "1")
 
 		tut := &testing.T{}
-		runSkipTestIfSetInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount)
+		runSkipTestIfSetInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate)
 
 		require.True(t, tut.Skipped())
 	})
 
 	t.Run("do not skip if env not set", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "")
+		t.Setenv(string(testenvs.TestAccountCreate), "")
 
 		tut := &testing.T{}
-		runSkipTestIfSetInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount)
+		runSkipTestIfSetInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate)
 
 		require.False(t, tut.Skipped())
 	})
@@ -87,28 +87,28 @@ func Test_SkipTestIfSetTo(t *testing.T) {
 	}
 
 	t.Run("skip test if env is set to specific value", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "specific_value")
+		t.Setenv(string(testenvs.TestAccountCreate), "specific_value")
 
 		tut := &testing.T{}
-		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, "specific_value")
+		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate, "specific_value")
 
 		require.True(t, tut.Skipped())
 	})
 
 	t.Run("do not skip if env is set to different value", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "different_value")
+		t.Setenv(string(testenvs.TestAccountCreate), "different_value")
 
 		tut := &testing.T{}
-		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, "specific_value")
+		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate, "specific_value")
 
 		require.False(t, tut.Skipped())
 	})
 
 	t.Run("do not skip if env not set", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "")
+		t.Setenv(string(testenvs.TestAccountCreate), "")
 
 		tut := &testing.T{}
-		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, "specific_value")
+		runSkipTestIfSetToInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate, "specific_value")
 
 		require.False(t, tut.Skipped())
 	})
@@ -127,28 +127,28 @@ func Test_SkipTestIfValueIn(t *testing.T) {
 	}
 
 	t.Run("skip test if env is set to one of the values", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "value2")
+		t.Setenv(string(testenvs.TestAccountCreate), "value2")
 
 		tut := &testing.T{}
-		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, []string{"value1", "value2", "value3"})
+		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate, []string{"value1", "value2", "value3"})
 
 		require.True(t, tut.Skipped())
 	})
 
 	t.Run("do not skip if env is set to value not in list", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "different_value")
+		t.Setenv(string(testenvs.TestAccountCreate), "different_value")
 
 		tut := &testing.T{}
-		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, []string{"value1", "value2", "value3"})
+		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate, []string{"value1", "value2", "value3"})
 
 		require.False(t, tut.Skipped())
 	})
 
 	t.Run("do not skip if env not set", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "")
+		t.Setenv(string(testenvs.TestAccountCreate), "")
 
 		tut := &testing.T{}
-		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.BusinessCriticalAccount, []string{"value1", "value2", "value3"})
+		runSkipTestIfValueInInGoroutineAndWaitForCompletion(tut, testenvs.TestAccountCreate, []string{"value1", "value2", "value3"})
 
 		require.False(t, tut.Skipped())
 	})
@@ -166,26 +166,26 @@ func Test_Assertions(t *testing.T) {
 	}
 
 	t.Run("test if env does not exist", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "")
+		t.Setenv(string(testenvs.TestAccountCreate), "")
 
 		tut1 := &testing.T{}
-		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvNotSet(tut1, string(testenvs.BusinessCriticalAccount)) })
+		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvNotSet(tut1, string(testenvs.TestAccountCreate)) })
 
 		tut2 := &testing.T{}
-		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvSet(tut2, string(testenvs.BusinessCriticalAccount)) })
+		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvSet(tut2, string(testenvs.TestAccountCreate)) })
 
 		require.False(t, tut1.Failed())
 		require.True(t, tut2.Failed())
 	})
 
 	t.Run("test if env exists", func(t *testing.T) {
-		t.Setenv(string(testenvs.BusinessCriticalAccount), "user")
+		t.Setenv(string(testenvs.TestAccountCreate), "user")
 
 		tut1 := &testing.T{}
-		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvNotSet(tut1, string(testenvs.BusinessCriticalAccount)) })
+		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvNotSet(tut1, string(testenvs.TestAccountCreate)) })
 
 		tut2 := &testing.T{}
-		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvSet(tut2, string(testenvs.BusinessCriticalAccount)) })
+		runAssertionInGoroutineAndWaitForCompletion(func() { testenvs.AssertEnvSet(tut2, string(testenvs.TestAccountCreate)) })
 
 		require.True(t, tut1.Failed())
 		require.False(t, tut2.Failed())

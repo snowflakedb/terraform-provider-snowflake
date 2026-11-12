@@ -368,7 +368,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 			Name:       "Pool",
 			Attributes: []Attribute{minNodes},
 			Create:     CreateSpec{Clauses: []*Attribute{&minNodes}},
-			Set:        []*Attribute{&minNodes},
+			Alter:      AlterSpec{Clauses: []AlterClause{AlterSet(&minNodes)}},
 		})
 	})
 
@@ -378,8 +378,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 			Name:       "Widget",
 			Attributes: []Attribute{plain},
 			Create:     CreateSpec{Clauses: []*Attribute{&plain}},
-			Set:        []*Attribute{&plain},
-			Unset:      []*Attribute{&plain},
+			Alter:      AlterSpec{Clauses: []AlterClause{AlterSet(&plain), AlterUnset(&plain)}},
 		})
 	})
 	byValue := plain
@@ -389,7 +388,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 			Name:       "Widget",
 			Attributes: []Attribute{byValue},
 			Create:     CreateSpec{Clauses: []*Attribute{&byValue}},
-			Unset:      []*Attribute{&byValue},
+			Alter:      AlterSpec{Clauses: []AlterClause{AlterUnset(&byValue)}},
 		})
 	})
 
@@ -402,7 +401,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 				KeywordsBefore: []*Attribute{&transient},
 				Clauses:        []*Attribute{&minNodes},
 			},
-			Set: []*Attribute{&minNodes},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&minNodes)}},
 		})
 	})
 	require.PanicsWithValue(t, `object "Widget": KeywordsBefore list contains tags`, func() {
@@ -413,7 +412,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 				KeywordsBefore: []*Attribute{Tags},
 				Clauses:        []*Attribute{&minNodes},
 			},
-			Set: []*Attribute{&minNodes},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&minNodes)}},
 		})
 	})
 	comment := Attribute{
@@ -428,8 +427,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 			Name:       "Widget",
 			Attributes: []Attribute{comment},
 			Create:     CreateSpec{Clauses: []*Attribute{Parameters, &comment}},
-			Set:        []*Attribute{Parameters, &comment},
-			Unset:      []*Attribute{Parameters, &comment},
+			Alter:      AlterSpec{Clauses: []AlterClause{AlterSet(Parameters, &comment), AlterUnset(Parameters, &comment)}},
 		})
 	})
 	require.PanicsWithValue(t, `object "Widget": parameters is not an attribute`, func() {
@@ -448,7 +446,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(Object{
 			Name:  "Widget",
-			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterUnsetTags(), AlterKeyword("ENABLE MANAGED ACCESS")}},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()}), AlterUnsetTags(), AlterKeyword("ENABLE MANAGED ACCESS")}},
 		})
 	})
 	require.PanicsWithValue(t, `object "Widget": ALTER keyword is empty`, func() {
@@ -472,7 +470,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": duplicate ALTER set`, func() {
 		ValidateObject(Object{
 			Name:  "Widget",
-			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(), AlterSet()}},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()}), AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()})}},
 		})
 	})
 	require.NotPanics(t, func() {
@@ -542,7 +540,7 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 				KeywordsBefore: []*Attribute{&minNodes},
 				Clauses:        []*Attribute{&minNodes},
 			},
-			Set: []*Attribute{&minNodes},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&minNodes)}},
 		})
 	})
 
@@ -607,8 +605,7 @@ func Test_ValidateObject_sqlOnlyField(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(Object{
 			Name:  "Widget",
-			Set:   []*Attribute{&wait},
-			Unset: []*Attribute{&wait},
+			Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&wait), AlterUnset(&wait)}},
 		})
 	})
 }
@@ -1417,7 +1414,7 @@ func Test_ValidateObject_exactlyOneOf(t *testing.T) {
 
 func Test_ValidateObject_allowEmpty(t *testing.T) {
 	validate := func(attr Attribute) {
-		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}, Set: []*Attribute{&attr}})
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&attr)}}})
 	}
 	require.NotPanics(t, func() {
 		validate(Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter(AllowEmpty())})
@@ -1438,8 +1435,7 @@ func Test_ValidateObject_setConflictingFields(t *testing.T) {
 		return Object{
 			Name:       "Widget",
 			Attributes: []Attribute{one, two, three},
-			Set:        []*Attribute{&one, &two},
-			Alter:      AlterSpec{SetConflictingFields: pairs},
+			Alter:      AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("One", &one), AlterGroup(MainAlterGroup, &two))}, SetConflictingFields: pairs},
 		}
 	}
 	require.NotPanics(t, func() { ValidateObject(newObject([]*Attribute{&one, &two})) })
@@ -1451,6 +1447,104 @@ func Test_ValidateObject_setConflictingFields(t *testing.T) {
 	})
 	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 has an attribute that is not in Set`, func() {
 		ValidateObject(newObject([]*Attribute{&one, nil}))
+	})
+}
+
+func Test_Object_alterGroups(t *testing.T) {
+	body := Attribute{Name: "body", Type: AttrString}
+	comment := Attribute{Name: "comment", Type: AttrString}
+	schedule := Attribute{Name: "schedule", Type: AttrString}
+	obj := Object{Alter: AlterSpec{Clauses: []AlterClause{
+		AlterSet(AlterGroup("Body", &body), AlterGroup(MainAlterGroup, &comment)),
+		AlterUnset(&schedule),
+	}}}
+	require.Equal(t, []*Attribute{&body, &comment}, obj.SetAttributes())
+	require.Equal(t, []*Attribute{&schedule}, obj.UnsetAttributes())
+	// Groups keep declaration order and include the main group. Attributes passed directly are one main group.
+	require.Equal(t, []AlterGroupSpec{
+		{Name: "Body", Attributes: []*Attribute{&body}},
+		{Name: MainAlterGroup, Attributes: []*Attribute{&comment}},
+	}, obj.AlterSetGroups())
+	require.Equal(t, []AlterGroupSpec{{Name: MainAlterGroup, Attributes: []*Attribute{&schedule}}}, obj.AlterUnsetGroups())
+	require.Empty(t, Object{}.SetAttributes())
+	require.Empty(t, Object{}.AlterSetGroups())
+
+	// The main group keeps its place when it is declared first.
+	mainFirst := Object{Alter: AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup, &comment), AlterGroup("Body", &body))}}}
+	require.Equal(t, []*Attribute{&comment, &body}, mainFirst.SetAttributes())
+
+	// Mixing attributes and groups is recorded and rejected by validation.
+	mixed := AlterSet(&body, AlterGroup("Comment", &comment))
+	require.True(t, mixed.MixedForms)
+	require.False(t, AlterSet(&body, &comment).MixedForms)
+}
+
+func Test_ValidateObject_alterGroups(t *testing.T) {
+	one := Attribute{Name: "one", Type: AttrString}
+	two := Attribute{Name: "two", Type: AttrString}
+	three := Attribute{Name: "three", Type: AttrString}
+	newObject := func(alter AlterSpec, unsetConflicts [][]*Attribute) Object {
+		return Object{
+			Name:           "Widget",
+			Attributes:     []Attribute{one, two, three},
+			UnsetConflicts: unsetConflicts,
+			Alter:          alter,
+		}
+	}
+
+	require.NotPanics(t, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{
+			AlterSet(AlterGroup("Lists", &one), AlterGroup(MainAlterGroup, &two)),
+			AlterUnset(AlterGroup("Lists", &one), AlterGroup(MainAlterGroup, &two)),
+		}}, nil))
+	})
+	require.NotPanics(t, func() {
+		ValidateObject(newObject(AlterSpec{
+			Clauses:              []AlterClause{AlterSet(AlterGroup("One", &one), AlterGroup(MainAlterGroup, &two))},
+			SetConflictingFields: [][]*Attribute{{&one, &two}},
+		}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": SET group name "lists" is not an exported Go identifier`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("lists", &one))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": UNSET group name "Two Words" is not an exported Go identifier`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Two Words", &one))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": SET group name "Lists" is repeated`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists", &one), AlterGroup("Lists", &two))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": SET mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(&one, AlterGroup("Lists", &two))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": UNSET mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &two), &one)}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": SET has more than one main group`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup, &one), AlterGroup(MainAlterGroup, &two))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": SET group "Lists" has no attributes`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists"))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": SET has no attributes`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet()}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": UNSET has no attributes`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset()}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": main SET group has no attributes`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": duplicate SET field "one"`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("A", &one), AlterGroup("B", &one))}}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": main SET group holds attributes that cannot be sent together`, func() {
+		ValidateObject(newObject(AlterSpec{
+			Clauses:              []AlterClause{AlterSet(&one, &two)},
+			SetConflictingFields: [][]*Attribute{{&one, &two}},
+		}, nil))
+	})
+	require.PanicsWithValue(t, `object "Widget": UNSET group "Lists" holds attributes that cannot be sent together`, func() {
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &one, &two))}}, [][]*Attribute{{&one, &two}}))
 	})
 }
 
@@ -1603,7 +1697,7 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting_struct clause is CREATE only`, func() {
 		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat"), SetSql: PreexistingStruct("WidgetFormat")}
-		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Set: []*Attribute{&attr}})
+		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&attr)}}})
 	})
 }
 
@@ -1649,7 +1743,7 @@ func identityNamesCreatedBySnowflakeObject(change func(*Object)) Object {
 	obj := Object{
 		Name:                            "Widget",
 		IdentityNamesCreatedBySnowflake: []string{"PUBLIC"},
-		Alter:                           AlterSpec{Clauses: []AlterClause{AlterSet()}},
+		Alter:                           AlterSpec{Clauses: []AlterClause{AlterSet(&Attribute{Name: "comment", Type: AttrString, SetSql: StringParameter()})}},
 		ResourceHooks:                   []ResourceHookOption{WithBeforeCreate(Generated())},
 	}
 	change(&obj)
@@ -1893,4 +1987,184 @@ func Test_Object_LinkedAlterKeyword(t *testing.T) {
 	require.Equal(t, "SUSPEND", suspend.SQL)
 	_, ok = obj.LinkedAlterKeyword("comment", true)
 	require.False(t, ok)
+}
+
+func suspendForAlterObject(change func(*Object)) Object {
+	state := Attribute{Name: "state", Type: AttrEnum, Enum: NewEnum("WidgetState", "WidgetStates", "started", "suspended"), Readonly: true}
+	enabled := Attribute{Name: "enabled", Type: AttrBool, NativeBool: true}
+	comment := Attribute{Name: "comment", Type: AttrString}
+	obj := Object{
+		Name:       "Widget",
+		Attributes: []Attribute{enabled, comment},
+		Show:       OutputSpec{Columns: []*Attribute{&state}},
+		Alter:      AlterSpec{Clauses: []AlterClause{AlterKeyword("SUSPEND"), AlterKeyword("RESUME")}},
+		SuspendForAlter: &SuspendForAlter{
+			When: []*Attribute{&comment}, State: &state, Started: "started", Suspended: "suspended", Enabled: &enabled,
+		},
+		Generators:    []GeneratorOption{WithSdk(SdkSuspendIfStarted())},
+		ResourceHooks: []ResourceHookOption{WithSuspendForAlter(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func suspendForAlterVariant(change func(*Object)) Object {
+	base := suspendForAlterObject(func(*Object) {})
+	size := Attribute{Name: "size", Type: AttrInt}
+	obj := Object{
+		Name:            "WidgetSmall",
+		VariantOf:       &base,
+		Attributes:      []Attribute{size},
+		SuspendForAlter: &SuspendForAlter{When: []*Attribute{&size}},
+		ResourceHooks:   []ResourceHookOption{WithSuspendForAlter(Generated())},
+	}
+	change(&obj)
+	return obj
+}
+
+func Test_ValidateObject_suspendForAlter(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterObject(func(*Object) {})) })
+	})
+
+	t.Run("valid without enabled", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterObject(func(o *Object) { o.SuspendForAlter.Enabled = nil })) })
+	})
+
+	t.Run("valid with ext before and after alter hooks", func(t *testing.T) {
+		require.NotPanics(t, func() {
+			ValidateObject(suspendForAlterObject(func(o *Object) {
+				o.ResourceHooks = append(o.ResourceHooks, WithBeforeAlter(ExtCall()), WithAfterAlter(ExtCall()))
+			}))
+		})
+	})
+
+	t.Run("valid without when", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterObject(func(o *Object) { o.SuspendForAlter.When = nil })) })
+	})
+
+	t.Run("valid variant that uses the base method", func(t *testing.T) {
+		require.NotPanics(t, func() { ValidateObject(suspendForAlterVariant(func(*Object) {})) })
+	})
+
+	for name, tc := range map[string]struct {
+		object func() Object
+		panics string
+	}{
+		"ext call": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.ResourceHooks = []ResourceHookOption{WithSuspendForAlter(ExtCall())} })
+			},
+			`object "Widget": WithSuspendForAlter is Generated or Omitted, there is no ext call`,
+		},
+		"the SDK option without the declaration": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter, o.ResourceHooks = nil, nil })
+			},
+			`object "Widget": SdkSuspendIfStarted needs SuspendForAlter`,
+		},
+		"the generated hook without the declaration": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter, o.Generators = nil, nil })
+			},
+			`object "Widget": WithSuspendForAlter(Generated()) needs SuspendForAlter`,
+		},
+		"the declaration without the generated hook": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.ResourceHooks = nil }) },
+			`object "Widget": SuspendForAlter requires WithSuspendForAlter(Generated())`,
+		},
+		"the declaration without the SDK option": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.Generators = nil }) },
+			`object "Widget": SuspendForAlter needs SdkSuspendIfStarted, because the resource calls the SDK method`,
+		},
+		"state that is not an enum": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.State = &Attribute{Name: "state", Type: AttrString} })
+			},
+			`object "Widget": SuspendForAlter.State must be an enum column`,
+		},
+		"state that is not a SHOW column": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.Show = OutputSpec{} }) },
+			`object "Widget": SuspendForAlter.State "state" is not a SHOW column`,
+		},
+		"started value that the enum does not have": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.Started = "running" }) },
+			`object "Widget": SuspendForAlter value "running" is not a value of the WidgetState enum`,
+		},
+		"without the SUSPEND keyword": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.Alter = AlterSpec{Clauses: []AlterClause{AlterKeyword("RESUME")}} })
+			},
+			`object "Widget": SuspendForAlter needs the SUSPEND ALTER keyword`,
+		},
+		"without an attribute that changes in place": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) {
+					o.SuspendForAlter.When, o.SuspendForAlter.Enabled = nil, nil
+					o.Attributes = []Attribute{{Name: "size", Type: AttrInt, ForceNew: true}}
+				})
+			},
+			`object "Widget": SuspendForAlter needs an attribute that changes in place`,
+		},
+		"trigger that is not an attribute": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.When = []*Attribute{{Name: "size", Type: AttrInt}} })
+			},
+			`object "Widget": SuspendForAlter.When attribute "size" is not an attribute that changes in place`,
+		},
+		"trigger that never changes in place": {
+			func() Object { return suspendForAlterObject(func(o *Object) { o.Attributes[1].ForceNew = true }) },
+			`object "Widget": SuspendForAlter.When attribute "comment" is not an attribute that changes in place`,
+		},
+		"enabled that is not a native bool": {
+			func() Object {
+				return suspendForAlterObject(func(o *Object) { o.SuspendForAlter.Enabled = &Attribute{Name: "comment", Type: AttrString} })
+			},
+			`object "Widget": SuspendForAlter.Enabled "comment" is not a NativeBool attribute of the object`,
+		},
+		"variant that sets the state": {
+			func() Object {
+				return suspendForAlterVariant(func(o *Object) { o.SuspendForAlter.Started = "started" })
+			},
+			`object "WidgetSmall": a variant uses SuspendIfStarted of "Widget", so SuspendForAlter sets only When and Enabled`,
+		},
+		"variant of a base without the SDK method": {
+			func() Object {
+				return suspendForAlterVariant(func(o *Object) {
+					base := *o.VariantOf
+					base.SuspendForAlter = nil
+					o.VariantOf = &base
+				})
+			},
+			`object "WidgetSmall": SuspendForAlter needs SuspendIfStarted on the base "Widget"`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			require.PanicsWithValue(t, tc.panics, func() { ValidateObject(tc.object()) })
+		})
+	}
+}
+
+func Test_Object_SuspendForAlterWhen(t *testing.T) {
+	t.Run("the declared attributes", func(t *testing.T) {
+		require.Equal(t, []string{"comment"}, suspendForAlterObject(func(*Object) {}).SuspendForAlterWhen())
+	})
+
+	t.Run("every attribute that changes in place by default", func(t *testing.T) {
+		obj := suspendForAlterObject(func(o *Object) {
+			o.SuspendForAlter.When = nil
+			o.Attributes = append(o.Attributes,
+				Attribute{Name: "kind", Type: AttrString, ForceNew: true},
+				Attribute{Name: "created_on", Type: AttrString, Readonly: true},
+				Attribute{Name: "fingerprint", Type: AttrString, Computed: true},
+				Attribute{Name: "initially_suspended", Type: AttrBool, CreateOnly: true},
+				Attribute{Name: "then_action", Type: AttrString, SqlOnly: true},
+			)
+		})
+		require.Equal(t, []string{"enabled", "comment"}, obj.SuspendForAlterWhen())
+	})
+
+	t.Run("nil without the declaration", func(t *testing.T) {
+		require.Nil(t, Object{}.SuspendForAlterWhen())
+	})
 }
