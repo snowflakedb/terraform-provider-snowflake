@@ -10,6 +10,7 @@ import (
 
 type Listings interface {
 	Create(ctx context.Context, request *CreateListingRequest) error
+	CreateOrganization(ctx context.Context, request *CreateOrganizationListingRequest) error
 	Alter(ctx context.Context, request *AlterListingRequest) error
 	Drop(ctx context.Context, request *DropListingRequest) error
 	DropSafely(ctx context.Context, id AccountObjectIdentifier) error
@@ -37,6 +38,20 @@ type CreateListingOptions struct {
 type ListingWith struct {
 	Share              *AccountObjectIdentifier `ddl:"identifier" sql:"SHARE"`
 	ApplicationPackage *AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
+}
+
+// CreateOrganizationListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-organization-listing.
+type CreateOrganizationListingOptions struct {
+	create              bool                    `ddl:"static" sql:"CREATE"`
+	organizationListing bool                    `ddl:"static" sql:"ORGANIZATION LISTING"`
+	IfNotExists         *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                AccountObjectIdentifier `ddl:"identifier"`
+	With                *ListingWith            `ddl:"keyword"`
+	As                  *string                 `ddl:"parameter,double_dollar_quotes,no_equals" sql:"AS"`
+	From                *Location               `ddl:"parameter,single_quotes,no_equals" sql:"FROM"`
+	Publish             *bool                   `ddl:"parameter" sql:"PUBLISH"`
+	Review              *bool                   `ddl:"parameter" sql:"REVIEW"`
+	Comment             *string                 `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
 // AlterListingOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-listing.
