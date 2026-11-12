@@ -234,7 +234,6 @@ var RepositoryLabels = []string{
 	"data_source:postgres_mirrors",
 	"data_source:procedures",
 	"data_source:projection_policies",
-	"data_source:quotas",
 	"data_source:replication_groups",
 	"data_source:resource_monitors",
 	"data_source:roles",

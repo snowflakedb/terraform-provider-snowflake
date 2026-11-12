@@ -5,7 +5,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -52,7 +51,7 @@ var quotasSchema = map[string]*schema.Schema{
 
 func Quotas() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.QuotasDatasource), TrackingReadWrapper(datasources.Quotas, ReadQuotas)),
+		ReadContext: TrackingReadWrapper(datasources.Quotas, ReadQuotas),
 		Schema:      quotasSchema,
 		Description: "Data source used to get details of filtered per-user quotas (`SNOWFLAKE.CORE.QUOTA`). Filtering is aligned with the current possibilities for SHOW SNOWFLAKE.CORE.QUOTA." +
 			" The results of SHOW and of the quota's GET_* methods are encapsulated in one output collection `quotas`.",

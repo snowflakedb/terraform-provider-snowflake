@@ -829,7 +829,6 @@ func getDataSources() map[string]*schema.Resource {
 		"snowflake_postgres_mirrors":                   datasources.PostgresMirrors(),
 		"snowflake_procedures":                         datasources.Procedures(),
 		"snowflake_projection_policies":                datasources.ProjectionPolicies(),
-		"snowflake_quotas":                             datasources.Quotas(),
 		"snowflake_replication_groups":                 datasources.ReplicationGroups(),
 		"snowflake_resource_monitors":                  datasources.ResourceMonitors(),
 		"snowflake_row_access_policies":                datasources.RowAccessPolicies(),
