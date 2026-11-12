@@ -203,10 +203,15 @@ func ParseCatalogIntegrationIcebergRestDescribed(properties []CatalogIntegration
 		Comment:                commons.Comment,
 	}
 	var errs []error
+	var apiAwsExternalId, apiAwsIamUserArn string
 	for _, prop := range properties {
 		switch prop.Property {
 		case "CATALOG_NAMESPACE":
 			details.CatalogNamespace = prop.PropertyValue
+		case "API_AWS_EXTERNAL_ID":
+			apiAwsExternalId = prop.PropertyValue
+		case "API_AWS_IAM_USER_ARN":
+			apiAwsIamUserArn = prop.PropertyValue
 		case "REST_CONFIG":
 			if restConfig, err := parseIcebergRestRestConfigProperty(prop); err != nil {
 				errs = append(errs, err)
@@ -222,6 +227,10 @@ func ParseCatalogIntegrationIcebergRestDescribed(properties []CatalogIntegration
 				details.Sigv4RestAuthentication = sigV4RestAuth
 			}
 		}
+	}
+	if details.Sigv4RestAuthentication != nil {
+		details.Sigv4RestAuthentication.Sigv4ExternalId = apiAwsExternalId
+		details.ApiAwsIamUserArn = apiAwsIamUserArn
 	}
 	return details, errors.Join(errs...)
 }
@@ -248,8 +257,13 @@ func ParseCatalogIntegrationDescribed(properties []CatalogIntegrationProperty) (
 	details.GlueAwsExternalId = awsGlueDetails.glueAwsExternalId
 
 	var errs []error
+	var apiAwsExternalId, apiAwsIamUserArn string
 	for _, prop := range properties {
 		switch prop.Property {
+		case "API_AWS_EXTERNAL_ID":
+			apiAwsExternalId = prop.PropertyValue
+		case "API_AWS_IAM_USER_ARN":
+			apiAwsIamUserArn = prop.PropertyValue
 		case "REST_CONFIG":
 			// IcebergRestRestConfigDetails contains all properties of OpenCatalogRestConfigDetails
 			if restConfig, err := parseIcebergRestRestConfigProperty(prop); err != nil {
@@ -276,6 +290,10 @@ func ParseCatalogIntegrationDescribed(properties []CatalogIntegrationProperty) (
 				}
 			}
 		}
+	}
+	if details.Sigv4RestAuthentication != nil {
+		details.Sigv4RestAuthentication.Sigv4ExternalId = apiAwsExternalId
+		details.ApiAwsIamUserArn = apiAwsIamUserArn
 	}
 	return details, errors.Join(errs...)
 }
@@ -410,7 +428,7 @@ func parseSigV4RestAuthenticationProperty(parts []string) (*CatalogIntegrationIc
 			// SIGV4_SIGNING_REGION is always returned, even if unset
 			restAuthentication.Sigv4SigningRegion = v
 		}
-		// SIGV4_EXTERNAL_ID not returned
+		// SIGV4_EXTERNAL_ID is returned as a separate API_AWS_EXTERNAL_ID property
 	}
 	return restAuthentication, nil
 }

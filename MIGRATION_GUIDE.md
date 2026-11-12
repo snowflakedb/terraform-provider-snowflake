@@ -121,6 +121,18 @@ The provider now matches the type case-insensitively.
 
 No configuration changes are required. If you added `ignore_changes = [sigv4_rest_authentication]` as a workaround, you can remove it.
 
+### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` tracks the SigV4 external ID
+
+Previously, [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) did not read the SigV4 external ID from Snowflake. Importing an integration whose configuration sets `sigv4_rest_authentication.0.sigv4_external_id` planned a replacement, and a different external ID set outside Terraform went unnoticed.
+
+The provider now keeps `sigv4_external_id` in sync with Snowflake. The plan after import is empty when the configured external ID matches the one in Snowflake, and an external ID changed outside Terraform plans a replacement.
+
+The trust policy of the IAM role that Snowflake assumes needs the external ID and the IAM user ARN of the integration. You can now reference both from `describe_output` of the resource and of the [`snowflake_catalog_integrations`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/catalog_integrations) data source:
+- `describe_output.0.sigv4_rest_authentication.0.sigv4_external_id`,
+- `describe_output.0.api_aws_iam_user_arn`.
+
+No configuration changes are required. If you added `ignore_changes` for `sigv4_external_id` as a workaround, or adjusted the state manually after import, you can remove the workaround.
+
 ## v2.22.x ➞ v2.23.0
 
 ### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails

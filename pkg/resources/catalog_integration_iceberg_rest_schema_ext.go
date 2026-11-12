@@ -43,9 +43,6 @@ func catalogIntegrationIcebergRestAttributesModificationExt(s map[string]*schema
 	sigv4["sigv4_signing_region"].ValidateFunc = validation.StringIsNotEmpty
 	sigv4["sigv4_signing_region"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.sigv4_rest_authentication", "sigv4_signing_region")
 	sigv4["sigv4_external_id"].ValidateFunc = validation.StringIsNotEmpty
-	sigv4["sigv4_external_id"].Description = externalChangesNotDetectedFieldDescription(joinWithSpace(
-		"Specifies an external ID that Snowflake uses to establish a trust relationship with AWS.",
-		"If you don’t specify this parameter, Snowflake automatically generates a unique external ID when you create a catalog integration.",
-	))
+	sigv4["sigv4_external_id"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakePlainValueInOutput("describe_output.0.sigv4_rest_authentication", "sigv4_external_id")
 	return s
 }

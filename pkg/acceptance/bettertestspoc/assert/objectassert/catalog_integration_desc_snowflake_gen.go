@@ -340,3 +340,25 @@ func (c *CatalogIntegrationDetailsAssert) HasNoSigv4RestAuthentication() *Catalo
 	})
 	return c
 }
+
+func (c *CatalogIntegrationDetailsAssert) HasApiAwsIamUserArn(expected string) *CatalogIntegrationDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationDetails) error {
+		t.Helper()
+		if o.ApiAwsIamUserArn != expected {
+			return fmt.Errorf("expected api aws iam user arn: %v; got: %v", expected, o.ApiAwsIamUserArn)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationDetailsAssert) HasApiAwsIamUserArnNotEmpty() *CatalogIntegrationDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationDetails) error {
+		t.Helper()
+		if o.ApiAwsIamUserArn == "" {
+			return fmt.Errorf("expected api aws iam user arn to be non-empty")
+		}
+		return nil
+	})
+	return c
+}
