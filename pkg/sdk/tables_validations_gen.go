@@ -85,14 +85,19 @@ func (opts *CreateTableOptions) validate() error {
 			}
 		}
 	}
-	if valueSet(opts.StageFileFormat) {
-		if !exactlyOneValueSet(opts.StageFileFormat.FormatName, opts.StageFileFormat.FileFormatType) {
-			errs = append(errs, errExactlyOneOf("CreateTableOptions.StageFileFormat", "FormatName", "FileFormatType"))
-		}
-	}
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
+		}
+	}
+	if valueSet(opts.AggregationPolicy) {
+		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.AggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.JoinPolicy) {
+		if !ValidObjectIdentifier(opts.JoinPolicy.JoinPolicy) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.JoinPolicy", "JoinPolicy"))
 		}
 	}
 	if valueSet(opts.Tag) {
@@ -175,8 +180,8 @@ func (opts *AlterTableOptions) validate() error {
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "SwapWith"))
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy) {
-		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy) {
+		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ClusteringAction) {
@@ -196,6 +201,62 @@ func (opts *AlterTableOptions) validate() error {
 				if valueSet(opts.ColumnAction.Add.DefaultValue.Identity) {
 					if everyValueSet(opts.ColumnAction.Add.DefaultValue.Identity.Order, opts.ColumnAction.Add.DefaultValue.Identity.Noorder) {
 						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.DefaultValue.Identity", "Order", "Noorder"))
+					}
+				}
+			}
+			if valueSet(opts.ColumnAction.Add.InlineConstraint) {
+				if !exactlyOneValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK, opts.ColumnAction.Add.InlineConstraint.FK, opts.ColumnAction.Add.InlineConstraint.CH) {
+					errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint", "UniquePK", "FK", "CH"))
+				}
+				if valueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK) {
+					if !exactlyOneValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Unique, opts.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey) {
+						errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Enforced, opts.ColumnAction.Add.InlineConstraint.UniquePK.NotEnforced) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Deferrable, opts.ColumnAction.Add.InlineConstraint.UniquePK.NotDeferrable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyDeferred, opts.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyImmediate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Enable, opts.ColumnAction.Add.InlineConstraint.UniquePK.Disable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Enable", "Disable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Validate, opts.ColumnAction.Add.InlineConstraint.UniquePK.Novalidate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Validate", "Novalidate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Rely, opts.ColumnAction.Add.InlineConstraint.UniquePK.Norely) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Rely", "Norely"))
+					}
+				}
+				if valueSet(opts.ColumnAction.Add.InlineConstraint.FK) {
+					if !ValidObjectIdentifier(opts.ColumnAction.Add.InlineConstraint.FK.References) {
+						errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "References"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Enforced, opts.ColumnAction.Add.InlineConstraint.FK.NotEnforced) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Deferrable, opts.ColumnAction.Add.InlineConstraint.FK.NotDeferrable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.InitiallyDeferred, opts.ColumnAction.Add.InlineConstraint.FK.InitiallyImmediate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Enable, opts.ColumnAction.Add.InlineConstraint.FK.Disable) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Enable", "Disable"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Validate, opts.ColumnAction.Add.InlineConstraint.FK.Novalidate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Validate", "Novalidate"))
+					}
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.FK.Rely, opts.ColumnAction.Add.InlineConstraint.FK.Norely) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.FK", "Rely", "Norely"))
+					}
+				}
+				if valueSet(opts.ColumnAction.Add.InlineConstraint.CH) {
+					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.CH.EnableValidate, opts.ColumnAction.Add.InlineConstraint.CH.EnableNovalidate) {
+						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.CH", "EnableValidate", "EnableNovalidate"))
 					}
 				}
 			}
@@ -292,10 +353,8 @@ func (opts *AlterTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Set) {
-		if valueSet(opts.Set.StageFileFormat) {
-			if !exactlyOneValueSet(opts.Set.StageFileFormat.FormatName, opts.Set.StageFileFormat.FileFormatType) {
-				errs = append(errs, errExactlyOneOf("AlterTableOptions.Set.StageFileFormat", "FormatName", "FileFormatType"))
-			}
+		if !anyValueSet(opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment"))
 		}
 	}
 	if valueSet(opts.SetTags) {
@@ -305,12 +364,55 @@ func (opts *AlterTableOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.Unset) {
+		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ChangeTracking, opts.Unset.DefaultDdlCollation, opts.Unset.EnableSchemaEvolution, opts.Unset.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
+		}
+	}
+	if valueSet(opts.AddRowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.AddRowAccessPolicy.RowAccessPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.AddRowAccessPolicy", "RowAccessPolicy"))
+		}
+		if !valueSet(opts.AddRowAccessPolicy.On) {
+			errs = append(errs, errNotSet("AlterTableOptions.AddRowAccessPolicy", "On"))
+		}
+	}
+	if valueSet(opts.DropRowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.DropRowAccessPolicy.RowAccessPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.DropRowAccessPolicy", "RowAccessPolicy"))
+		}
+	}
+	if valueSet(opts.DropAndAddRowAccessPolicy) {
+		if valueSet(opts.DropAndAddRowAccessPolicy.Drop) {
+			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterTableOptions.DropAndAddRowAccessPolicy.Drop", "RowAccessPolicy"))
+			}
+		}
+		if valueSet(opts.DropAndAddRowAccessPolicy.Add) {
+			if !ValidObjectIdentifier(opts.DropAndAddRowAccessPolicy.Add.RowAccessPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterTableOptions.DropAndAddRowAccessPolicy.Add", "RowAccessPolicy"))
+			}
+			if !valueSet(opts.DropAndAddRowAccessPolicy.Add.On) {
+				errs = append(errs, errNotSet("AlterTableOptions.DropAndAddRowAccessPolicy.Add", "On"))
+			}
+		}
+	}
 	if valueSet(opts.AddStorageLifecyclePolicy) {
 		if !ValidObjectIdentifier(opts.AddStorageLifecyclePolicy.StorageLifecyclePolicy) {
 			errs = append(errs, errInvalidIdentifier("AlterTableOptions.AddStorageLifecyclePolicy", "StorageLifecyclePolicy"))
 		}
 		if !valueSet(opts.AddStorageLifecyclePolicy.On) {
 			errs = append(errs, errNotSet("AlterTableOptions.AddStorageLifecyclePolicy", "On"))
+		}
+	}
+	if valueSet(opts.SetAggregationPolicy) {
+		if !ValidObjectIdentifier(opts.SetAggregationPolicy.AggregationPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.SetAggregationPolicy", "AggregationPolicy"))
+		}
+	}
+	if valueSet(opts.SetJoinPolicy) {
+		if !ValidObjectIdentifier(opts.SetJoinPolicy.JoinPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterTableOptions.SetJoinPolicy", "JoinPolicy"))
 		}
 	}
 	return JoinErrors(errs...)

@@ -51,6 +51,35 @@ The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflak
 
 The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
 
+### *(new feature)* Hierarchy renames rolled out to more resources
+
+The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.
+
+Newly supported resources:
+
+- [`snowflake_file_format_avro`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro)
+- [`snowflake_file_format_csv`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_csv)
+- [`snowflake_file_format_json`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json)
+- [`snowflake_file_format_orc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc)
+- [`snowflake_file_format_parquet`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_parquet)
+- [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml)
+- [`snowflake_openflow_runtime`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_runtime)
+- [`snowflake_password_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/password_policy)
+- [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy)
+- [`snowflake_semantic_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/semantic_view)
+- [`snowflake_session_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy)
+- [`snowflake_stage_external_azure`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_azure)
+- [`snowflake_stage_external_gcs`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_gcs)
+- [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3)
+- [`snowflake_stage_external_s3_compatible`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3_compatible)
+- [`snowflake_stage_internal`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_internal)
+- [`snowflake_storage_lifecycle_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy)
+- [`snowflake_streamlit`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/streamlit)
+- [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag)
+- [`snowflake_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/view)
+
+Without the experiment, the behavior of these resources does not change. No configuration changes are required unless you want to enable the experiment.
+
 ### *(new feature)* `use_private_link` on Snowflake-managed Openflow deployments
 
 [`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) now accepts `use_private_link`. Valid values are `"true"` and `"false"`. Leave it unset to keep the Snowflake default (`FALSE`); the provider stores that as `"default"` and omits `USE_PRIVATE_LINK` from `CREATE OPENFLOW DEPLOYMENT`.
@@ -62,6 +91,14 @@ Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/i
 ### *(new feature)* Permissive import mode rolled out to more resources
 
 The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
+
+### *(improvement)* `attributes` in `snowflake_cortex_search_service` is updated in place
+
+Changing `attributes` in the [`snowflake_cortex_search_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_search_service) resource no longer recreates the service. The provider runs `ALTER CORTEX SEARCH SERVICE ... SET ATTRIBUTES`, or `UNSET ATTRIBUTES` when the field is removed from the configuration. As described in the [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search), the new attributes take effect after the next index refresh.
+
+Attribute columns must still be present in `query`. A change that also modifies `query` recreates the service, as before.
+
+No configuration changes are required.
 
 ### *(bug fix)* `snowflake_iceberg_table` supports `year`, `month`, `day`, and `hour` in `partition_by`
 
@@ -83,7 +120,43 @@ No configuration changes are required. If you worked around the crash by creatin
 
 Reference: [#5365](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5365).
 
+### *(bug fix)* `snowflake_compute_pool` no longer reports `backup_instance_families` as changed after create
+
+Previously, after [`snowflake_compute_pool`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/compute_pool) created a pool without `backup_instance_families`, every `terraform plan -refresh-only` reported `+ backup_instance_families = []` until the next `terraform apply`, although nothing changed in Snowflake.
+
+The provider now leaves `backup_instance_families` unset in state when Snowflake returns no backup instance families and the state holds none. Backup instance families added or removed outside Terraform are still detected.
+
+No configuration changes are required.
+
+### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` reads the REST authentication type case-insensitively
+
+Previously, the provider matched the `TYPE` in the `REST_AUTHENTICATION` property of `DESCRIBE CATALOG INTEGRATION` case-sensitively. Snowflake can return the type in lowercase (for example, `TYPE=sigv4`), so the authentication details were not read. After importing such a [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest), `sigv4_rest_authentication` and `describe_output.0.sigv4_rest_authentication` were empty, and the next plan replaced the resource because `sigv4_rest_authentication` is force-new. The same applied to `describe_output` in `snowflake_catalog_integrations`.
+
+The provider now matches the type case-insensitively.
+
+No configuration changes are required. If you added `ignore_changes = [sigv4_rest_authentication]` as a workaround, you can remove it.
+
+### *(bug fix)* `snowflake_catalog_integration_iceberg_rest` tracks the SigV4 external ID
+
+Previously, [`snowflake_catalog_integration_iceberg_rest`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/catalog_integration_iceberg_rest) did not read the SigV4 external ID from Snowflake. Importing an integration whose configuration sets `sigv4_rest_authentication.0.sigv4_external_id` planned a replacement, and a different external ID set outside Terraform went unnoticed.
+
+The provider now keeps `sigv4_external_id` in sync with Snowflake. The plan after import is empty when the configured external ID matches the one in Snowflake, and an external ID changed outside Terraform plans a replacement.
+
+The trust policy of the IAM role that Snowflake assumes needs the external ID and the IAM user ARN of the integration. You can now reference both from `describe_output` of the resource and of the [`snowflake_catalog_integrations`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/catalog_integrations) data source:
+- `describe_output.0.sigv4_rest_authentication.0.sigv4_external_id`,
+- `describe_output.0.api_aws_iam_user_arn`.
+
+No configuration changes are required. If you added `ignore_changes` for `sigv4_external_id` as a workaround, or adjusted the state manually after import, you can remove the workaround.
+
 ## v2.22.x ➞ v2.23.0
+
+### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails
+
+Snowflake rejects property changes on a started alert, and it requires a warehouse to be suspended while its type changes, or an interactive warehouse while its size changes. [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert), [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) suspend the object for the update. Until now, an update that failed after the suspension could leave the object suspended.
+
+The object is now resumed whenever it was started before the update, also when the update fails, and the values that were not applied stay in the state, so the next plan shows them again. A failed resume is reported together with the original error. The suspension happens once per update, and it is skipped when the object is already suspended.
+
+`snowflake_alert` used to ignore a failed suspension and then fail on the change itself. It now fails the update with the suspension error. No changes are required in your configuration.
 
 ### *(breaking change)* `snowflake_alert` reworked
 

@@ -46,24 +46,115 @@ func Test_CreateCall(t *testing.T) {
 
 func Test_UpdateCall(t *testing.T) {
 	call := IntAttributeUpdateSetOnlyBuilder.UpdateCall("ComputePool", Attribute{Name: "min_nodes"})
-	require.Equal(t, UpdateCall{Helper: "intAttributeUpdateSetOnlyBuilder", Target: "set.WithMinNodes"}, call)
+	require.Equal(t, UpdateCall{Helper: "intAttributeUpdateSetOnlyBuilder", Set: true}, call)
 
 	call = BooleanAttributeUpdateSetOnlyBuilder.UpdateCall("Table", Attribute{Name: "change_tracking"})
-	require.Equal(t, UpdateCall{Helper: "booleanAttributeUpdateSetOnlyBuilder", Target: "set.WithChangeTracking"}, call)
+	require.Equal(t, UpdateCall{Helper: "booleanAttributeUpdateSetOnlyBuilder", Set: true}, call)
 
 	call = BooleanStringAttributeUpdateBuilder.UpdateCall("ComputePool", Attribute{Name: "auto_resume"})
 	require.Equal(t, UpdateCall{
 		Helper: "booleanStringAttributeUpdateBuilder",
-		Target: "set.WithAutoResume, unset.WithAutoResume",
+		Set:    true,
+		Unset:  true,
 	}, call)
 
 	call = ListValueUpdate("toComputePoolBackupInstanceFamilies").UpdateCall("ComputePool", Attribute{Name: "backup_instance_families"})
 	require.Equal(t, UpdateCall{
 		Helper: "listValueUpdateBuilder",
-		Target: "set.WithBackupInstanceFamilies, unset.WithBackupInstanceFamilies, toComputePoolBackupInstanceFamilies",
+		Set:    true,
+		Unset:  true,
+		Mapper: "toComputePoolBackupInstanceFamilies",
 	}, call)
 
 	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueUpdate needs a mapper function`, func() {
 		ListValueUpdate("").UpdateCall("ComputePool", Attribute{Name: "items"})
+	})
+}
+
+func Test_UpdateCall_listValueUpdateSetOnly(t *testing.T) {
+	call := ListValueUpdateSetOnly("toWidgetObjectTypes").UpdateCall("Widget", Attribute{Name: "object_types"})
+	require.Equal(t, UpdateCall{Helper: "listValueUpdateSetOnlyBuilder", Set: true, Mapper: "toWidgetObjectTypes"}, call)
+}
+
+func Test_UpdateCall_fieldsStyle(t *testing.T) {
+	call := AccountObjectIdentifierAttributeUpdate.UpdateCall("ReplicationGroup", Attribute{Name: "error_integration"})
+	require.Equal(t, UpdateCall{Helper: "accountObjectIdentifierAttributeUpdate", Set: true, Unset: true, Fields: true}, call)
+
+	call = AttributeMappedValueUpdate("toBackupPolicySchedule").UpdateCall("BackupPolicy", Attribute{Name: "schedule"})
+	require.Equal(t, UpdateCall{
+		Helper: "attributeMappedValueUpdate",
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+		Mapper: "toBackupPolicySchedule",
+	}, call)
+
+	require.PanicsWithValue(t, `object "BackupPolicy": attribute "schedule" AttributeMappedValueUpdate needs a mapper function`, func() {
+		AttributeMappedValueUpdate("").UpdateCall("BackupPolicy", Attribute{Name: "schedule"})
+	})
+}
+
+func Test_UpdatesWholeValue(t *testing.T) {
+	require.True(t, UpdatesWholeValue(AttributeMappedValueUpdate("toBackupPolicySchedule")))
+	require.False(t, UpdatesWholeValue(StringAttributeUpdateBuilder))
+	require.False(t, UpdatesWholeValue(AccountObjectIdentifierAttributeUpdate))
+	require.False(t, UpdatesWholeValue(nil))
+}
+
+func Test_UpdateCall_booleanStringSetOnly(t *testing.T) {
+	require.Equal(t,
+		UpdateCall{Helper: "booleanStringAttributeUpdateSetOnly", Set: true, Fields: true},
+		BooleanStringAttributeUpdateSetOnly.UpdateCall("Widget", Attribute{Name: "enabled"}))
+}
+
+func Test_UpdateCall_setOnlyFieldsStyle(t *testing.T) {
+	call := StringAttributeUpdateSetOnlyNotEmpty("SetBody").UpdateCall("ProjectionPolicy", Attribute{Name: "body"})
+	require.Equal(t, UpdateCall{Helper: "stringAttributeUpdateSetOnlyNotEmpty", Set: true, Fields: true, Field: "SetBody"}, call)
+
+	call = BooleanStringAttributeUnsetFallbackUpdate(true).UpdateCall("ExternalVolume", Attribute{Name: "allow_writes"})
+	require.Equal(t, UpdateCall{Helper: "booleanStringAttributeUnsetFallbackUpdate", Set: true, Fields: true, Mapper: "true"}, call)
+}
+
+func Test_UpdateCall_warehouseMappings(t *testing.T) {
+	attr := Attribute{Name: "auto_suspend"}
+	require.Equal(t,
+		UpdateCall{Helper: "attributeMappedValueUpdateSetOnlyAlways", Set: true, Fields: true, Mapper: "sdk.ToWarehouseSize"},
+		AttributeMappedValueUpdateSetOnlyAlways("sdk.ToWarehouseSize").UpdateCall("Warehouse", attr))
+	require.Equal(t,
+		UpdateCall{Helper: "intAttributeWithSpecialDefaultUnsetFallbackUpdate", Set: true, Fields: true, Mapper: "600"},
+		IntAttributeWithSpecialDefaultUnsetFallbackUpdate("600").UpdateCall("Warehouse", attr))
+	require.Equal(t,
+		UpdateCall{Helper: "warehouseGenerationUpdate", Set: true, Unset: true, Requests: true},
+		CustomUpdate("warehouseGenerationUpdate").UpdateCall("Warehouse", attr))
+
+	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" AttributeMappedValueUpdateSetOnlyAlways needs a mapper function`, func() {
+		AttributeMappedValueUpdateSetOnlyAlways("").UpdateCall("Warehouse", attr)
+	})
+	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" IntAttributeWithSpecialDefaultUnsetFallbackUpdate needs a fallback`, func() {
+		IntAttributeWithSpecialDefaultUnsetFallbackUpdate("").UpdateCall("Warehouse", attr)
+	})
+	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" CustomUpdate needs a function`, func() {
+		CustomUpdate("").UpdateCall("Warehouse", attr)
+	})
+}
+
+func Test_UpdateCall_nestedValueMappings(t *testing.T) {
+	attr := Attribute{Name: "mfa_policy"}
+	require.Equal(t,
+		UpdateCall{Helper: "setValueUpdate", Set: true, Unset: true, Fields: true, Mapper: "toAuthenticationPolicyClientTypes"},
+		SetValueUpdate("toAuthenticationPolicyClientTypes").UpdateCall("AuthenticationPolicy", attr))
+	require.Equal(t,
+		UpdateCall{Helper: "singleBlockAttributeUpdate", Set: true, Unset: true, Fields: true, Mapper: "applyMfaPolicyUpdate"},
+		SingleBlockAttributeUpdate("applyMfaPolicyUpdate").UpdateCall("AuthenticationPolicy", attr))
+
+	// Both update a nested attribute as one value.
+	require.True(t, UpdatesWholeValue(SetValueUpdate("toAuthenticationPolicyClientTypes")))
+	require.True(t, UpdatesWholeValue(SingleBlockAttributeUpdate("applyMfaPolicyUpdate")))
+
+	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "mfa_policy" SetValueUpdate needs a mapper function`, func() {
+		SetValueUpdate("").UpdateCall("AuthenticationPolicy", attr)
+	})
+	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "mfa_policy" SingleBlockAttributeUpdate needs a fill function`, func() {
+		SingleBlockAttributeUpdate("").UpdateCall("AuthenticationPolicy", attr)
 	})
 }

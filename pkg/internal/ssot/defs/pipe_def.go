@@ -220,19 +220,17 @@ var Pipe = ssot.Object{
 		&PipeAttrs.Comment,
 		&PipeAttrs.CopyStatement,
 	}},
-	Set: []*ssot.Attribute{
-		&PipeAttrs.ErrorIntegration,
-		ssot.Parameters,
-		&PipeAttrs.Comment,
-	},
-	Unset: []*ssot.Attribute{
-		&PipeAttrs.ErrorIntegration,
-		ssot.Parameters,
-		&PipeAttrs.Comment,
-	},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			&PipeAttrs.ErrorIntegration,
+			ssot.Parameters,
+			&PipeAttrs.Comment,
+		),
+		ssot.AlterUnset(
+			&PipeAttrs.ErrorIntegration,
+			ssot.Parameters,
+			&PipeAttrs.Comment,
+		),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 		ssot.AlterKeywordBlock("Refresh", "REFRESH", &pipeRefresh),

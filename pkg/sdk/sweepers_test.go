@@ -1073,7 +1073,7 @@ func nukeFailoverGroups(client *sdk.Client, suffix string) func() error {
 		createdOn:     func(object sdk.FailoverGroup) (time.Time, error) { return object.CreatedOn, nil },
 		id:            func(object sdk.FailoverGroup) sdk.AccountObjectIdentifier { return object.ID() },
 		dropSafely:    client.FailoverGroups.DropSafely,
-		owner:         func(object sdk.FailoverGroup) string { return object.Owner },
+		owner:         func(object sdk.FailoverGroup) string { return util.DerefOrZero(object.Owner) },
 		takeOwnership: grantOwnershipToAccountadmin(client, sdk.ObjectTypeFailoverGroup),
 	})
 }

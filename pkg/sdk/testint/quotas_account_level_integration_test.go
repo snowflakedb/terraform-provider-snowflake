@@ -15,7 +15,7 @@ func TestInt_QuotasAccountLevel(t *testing.T) {
 	ctx := testContext(t)
 
 	// an account can have only one Snowflake Intelligence object, so this can't run in parallel with other tests creating one
-	t.Run("Snowflake Intelligence as a shared resource", func(t *testing.T) {
+	t.Run("add and remove shared resources: Snowflake Intelligence instance", func(t *testing.T) {
 		intelligenceId, intelligenceCleanup := testClientHelper().SnowflakeIntelligence.Create(t)
 		t.Cleanup(intelligenceCleanup)
 		quotaId, quotaCleanup := testClientHelper().Quota.Create(t)

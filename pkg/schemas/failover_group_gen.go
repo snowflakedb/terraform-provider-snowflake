@@ -49,7 +49,7 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 	// object_types is skipped and won't be generated
 	// allowed_integration_types is skipped and won't be generated
 	"allowed_accounts": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
@@ -77,11 +77,19 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"is_listing_auto_fulfillment_group": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
 	"is_optimized_refresh_enabled": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
 	"rpo_assurance": {
+		Type:     schema.TypeBool,
+		Computed: true,
+	},
+	"read_only": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
@@ -97,7 +105,9 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	failoverGroupSchema["account_name"] = failoverGroup.AccountName
 	failoverGroupSchema["name"] = failoverGroup.Name
 	failoverGroupSchema["type"] = failoverGroup.Type
-	failoverGroupSchema["comment"] = failoverGroup.Comment
+	if failoverGroup.Comment != nil {
+		failoverGroupSchema["comment"] = (*failoverGroup.Comment)
+	}
 	failoverGroupSchema["is_primary"] = failoverGroup.IsPrimary
 	failoverGroupSchema["primary"] = failoverGroup.Primary.FullyQualifiedName()
 	// object_types is skipped and won't be generated
@@ -105,12 +115,22 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	failoverGroupSchema["allowed_accounts"] = collections.Map(failoverGroup.AllowedAccounts, sdk.AccountIdentifier.Name)
 	failoverGroupSchema["organization_name"] = failoverGroup.OrganizationName
 	failoverGroupSchema["account_locator"] = failoverGroup.AccountLocator
-	failoverGroupSchema["replication_schedule"] = failoverGroup.ReplicationSchedule
-	failoverGroupSchema["secondary_state"] = string(failoverGroup.SecondaryState)
+	if failoverGroup.ReplicationSchedule != nil {
+		failoverGroupSchema["replication_schedule"] = (*failoverGroup.ReplicationSchedule)
+	}
+	if failoverGroup.SecondaryState != nil {
+		failoverGroupSchema["secondary_state"] = string((*failoverGroup.SecondaryState))
+	}
 	failoverGroupSchema["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh
-	failoverGroupSchema["owner"] = failoverGroup.Owner
+	if failoverGroup.Owner != nil {
+		failoverGroupSchema["owner"] = (*failoverGroup.Owner)
+	}
+	failoverGroupSchema["is_listing_auto_fulfillment_group"] = failoverGroup.IsListingAutoFulfillmentGroup
 	failoverGroupSchema["is_optimized_refresh_enabled"] = failoverGroup.IsOptimizedRefreshEnabled
 	failoverGroupSchema["rpo_assurance"] = failoverGroup.RpoAssurance
+	if failoverGroup.ReadOnly != nil {
+		failoverGroupSchema["read_only"] = (*failoverGroup.ReadOnly)
+	}
 	return failoverGroupSchema
 }
 

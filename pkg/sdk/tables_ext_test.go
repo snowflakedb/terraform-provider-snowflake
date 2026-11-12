@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -19,6 +18,8 @@ func init() {
 	maskingPolicyId := randomSchemaObjectIdentifier()
 	rowAccessPolicyId := randomSchemaObjectIdentifier()
 	rowAccessPolicyId2 := randomSchemaObjectIdentifier()
+	aggregationPolicyId := randomSchemaObjectIdentifier()
+	joinPolicyId := randomSchemaObjectIdentifier()
 	storageLifecyclePolicyId := randomSchemaObjectIdentifier()
 	columnTagId1 := randomSchemaObjectIdentifier()
 	columnTagId2 := randomSchemaObjectIdentifierInSchema(columnTagId1.SchemaId())
@@ -36,12 +37,6 @@ func init() {
 				ColumnsAndConstraints: CreateTableColumnsAndConstraints{
 					Columns: []TableColumn{tableTestColumn()},
 				},
-			}
-		}).
-		withModify(case_Tables_validation_Create_opts_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateTableOptions) {
-			opts.StageFileFormat = &LegacyFileFormat{
-				FormatName:     new("fmt"),
-				FileFormatType: new(FileFormatTypeCsv),
 			}
 		}).
 		withAdditionalValidationCase(
@@ -276,23 +271,20 @@ func init() {
 				}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
 				opts.EnableSchemaEvolution = new(true)
-				opts.StageFileFormat = &LegacyFileFormat{
-					FileFormatType: new(FileFormatTypeCsv),
-					Options:        &FileFormatTypeOptionsLegacy{CSVCompression: new(CsvCompressionAuto)},
-				}
-				opts.StageCopyOptions = &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")}}
 				opts.DataRetentionTimeInDays = new(10)
 				opts.MaxDataExtensionTimeInDays = new(100)
 				opts.ChangeTracking = new(true)
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en"})
 				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.AggregationPolicy = &TableAggregationPolicy{AggregationPolicy: aggregationPolicyId, EntityKey: []Column{{Value: "COLUMN_1"}}}
+				opts.JoinPolicy = &TableJoinPolicy{JoinPolicy: joinPolicyId, AllowedJoinKeys: []Column{{Value: "COLUMN_1"}}}
 				opts.Tag = []TagAssociation{
 					{Name: tableTagId1, Value: "v1"},
 					{Name: tableTagId2, Value: "v2"},
 				}
 				opts.Comment = &tableComment
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV COMPRESSION = AUTO) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -300,6 +292,8 @@ func init() {
 			columnComment,
 			fkRefId.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
+			aggregationPolicyId.FullyQualifiedName(),
+			joinPolicyId.FullyQualifiedName(),
 			tableTagId1.FullyQualifiedName(),
 			tableTagId2.FullyQualifiedName(),
 			tableComment,
@@ -319,22 +313,6 @@ func init() {
 				opts.CopyGrants = new(true)
 			},
 			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR) COPY GRANTS`,
-			id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Create_skipFileX",
-			func(opts *CreateTableOptions) {
-				opts.StageCopyOptions = &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new(fmt.Sprintf("SKIP_FILE_%d", 5))}}
-			},
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE_5)`,
-			id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Create_skipFileXPercent",
-			func(opts *CreateTableOptions) {
-				opts.StageCopyOptions = &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new(fmt.Sprintf("'SKIP_FILE_%d%%'", 10))}}
-			},
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR) STAGE_COPY_OPTIONS = (ON_ERROR = 'SKIP_FILE_10%%')`,
 			id.FullyQualifiedName(),
 		)
 
@@ -452,9 +430,6 @@ func init() {
 				On: []TableDropSearchOptimizationOn{{ColumnName: new("c")}, {}},
 			}}
 		}).
-		withModify(case_Tables_validation_Alter_opts_Set_StageFileFormat_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
-			opts.Set = &TableSet{StageFileFormat: &LegacyFileFormat{FormatName: new("fmt"), FileFormatType: new(FileFormatTypeCsv)}}
-		}).
 		withModify(case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
 			opts.ColumnAction = &TableColumnAction{Alter: []TableColumnAlterAction{{
 				DropDefault: new(true),
@@ -545,6 +520,17 @@ func init() {
 				).toOpts()
 			},
 			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addColumn_notNull",
+			func(opts *AlterTableOptions) {
+				*opts = *NewAlterTableRequest(id).WithColumnAction(
+					*NewTableColumnActionRequest().WithAdd(
+						*NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).WithNotNull(true),
+					),
+				).toOpts()
+			},
+			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR NOT NULL`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_renameColumn",
@@ -731,8 +717,6 @@ func init() {
 			func(opts *AlterTableOptions) {
 				opts.Set = &TableSet{
 					EnableSchemaEvolution:      new(true),
-					StageFileFormat:            &LegacyFileFormat{FileFormatType: new(FileFormatTypeCsv)},
-					StageCopyOptions:           &LegacyTableCopyOptions{OnError: &LegacyTableCopyOnErrorOptions{SkipFile: new("SKIP_FILE")}},
 					DataRetentionTimeInDays:    new(30),
 					MaxDataExtensionTimeInDays: new(90),
 					ChangeTracking:             new(false),
@@ -740,7 +724,7 @@ func init() {
 					Comment:                    &tableComment,
 				}
 			},
-			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true STAGE_FILE_FORMAT = (TYPE = CSV) STAGE_COPY_OPTIONS = (ON_ERROR = SKIP_FILE) DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
+			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
 			id.FullyQualifiedName(), tableComment,
 		).
 		withAdditionalSqlCasef(
@@ -782,15 +766,15 @@ func init() {
 					Comment:                    new(true),
 				}
 			},
-			`ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS MAX_DATA_EXTENSION_TIME_IN_DAYS CHANGE_TRACKING DEFAULT_DDL_COLLATION ENABLE_SCHEMA_EVOLUTION COMMENT`,
+			`ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION, COMMENT`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_AddRowAccessPolicy,
 			func(opts *AlterTableOptions) {
-				opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId, On: []string{"FIRST_COLUMN"}}
+				opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId, On: []Column{{"FIRST_COLUMN"}}}
 			},
-			`ALTER TABLE %s ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`,
+			`ALTER TABLE %s ADD ROW ACCESS POLICY %s ON ("FIRST_COLUMN")`,
 			id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -806,10 +790,10 @@ func init() {
 			func(opts *AlterTableOptions) {
 				opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{
 					Drop: TableDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId},
-					Add:  TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId2, On: []string{"FIRST_COLUMN"}},
+					Add:  TableAddRowAccessPolicy{RowAccessPolicy: rowAccessPolicyId2, On: []Column{{"FIRST_COLUMN"}}},
 				}
 			},
-			`ALTER TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON (FIRST_COLUMN)`,
+			`ALTER TABLE %s DROP ROW ACCESS POLICY %s, ADD ROW ACCESS POLICY %s ON ("FIRST_COLUMN")`,
 			id.FullyQualifiedName(), rowAccessPolicyId.FullyQualifiedName(), rowAccessPolicyId2.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -843,6 +827,36 @@ func init() {
 			case_Tables_sql_Alter_DropStorageLifecyclePolicy,
 			func(opts *AlterTableOptions) { opts.DropStorageLifecyclePolicy = new(true) },
 			`ALTER TABLE %s DROP STORAGE LIFECYCLE POLICY`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_SetAggregationPolicy,
+			func(opts *AlterTableOptions) {
+				opts.SetAggregationPolicy = &TableSetAggregationPolicy{
+					AggregationPolicy: aggregationPolicyId,
+					EntityKey:         []Column{{Value: "FIRST_COLUMN"}},
+					Force:             new(true),
+				}
+			},
+			`ALTER TABLE %s SET AGGREGATION POLICY %s ENTITY KEY ("FIRST_COLUMN") FORCE`,
+			id.FullyQualifiedName(), aggregationPolicyId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_UnsetAggregationPolicy,
+			func(opts *AlterTableOptions) { opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{} },
+			`ALTER TABLE %s UNSET AGGREGATION POLICY`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_SetJoinPolicy,
+			func(opts *AlterTableOptions) {
+				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, Force: new(true)}
+			},
+			`ALTER TABLE %s SET JOIN POLICY %s FORCE`,
+			id.FullyQualifiedName(), joinPolicyId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_UnsetJoinPolicy,
+			func(opts *AlterTableOptions) { opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{} },
+			`ALTER TABLE %s UNSET JOIN POLICY`, id.FullyQualifiedName(),
 		)
 
 	tablesTests.Drop.

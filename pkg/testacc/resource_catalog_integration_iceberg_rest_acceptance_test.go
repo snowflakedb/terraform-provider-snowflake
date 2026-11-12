@@ -963,16 +963,13 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportSigV4(t *testing.T) {
 				ImportStateId:      id.FullyQualifiedName(),
 				ImportStatePersist: true,
 			},
-			// After import, all ForceNew fields (rest_config, sigv4_rest_authentication, etc.) must already
-			// match the config. sigv4_external_id is copied from configuration into state during import because
-			// Snowflake does not return it — no recreation plan should be produced.
+			// Expect empty plan
 			{
 				Config: config.FromModels(t, allAttributes),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(ref, "rest_config", "refresh_interval_seconds"),
-						// SIGV4_EXTERNAL_ID is ForceNew and is not returned from Snowflake, so we need to destroy and create the resource.
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectEmptyPlan(),
 					},
 				},
 			},
@@ -1178,6 +1175,7 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 	newSigV4IamRole := "arn:aws:iam::123456789012:role/sigv4-role-2"
 	newSigV4SigningRegion := "eu-west-1"
 	newSigV4ExternalId := "external-id-2"
+	externalSigV4ExternalId := "external-id-3"
 
 	bearerToken := random.AlphanumericN(32)
 
@@ -1226,7 +1224,9 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			}),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasSigv4RestAuthenticationSigv4IamRole(sigV4IamRole).
-			HasSigv4RestAuthenticationSigv4SigningRegion(sigV4SigningRegion),
+			HasSigv4RestAuthenticationSigv4SigningRegion(sigV4SigningRegion).
+			HasSigv4RestAuthenticationSigv4ExternalIdNotEmpty().
+			HasApiAwsIamUserArnNotEmpty(),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasId(id).
 			HasCatalogSource(sdk.CatalogIntegrationCatalogSourceTypeIcebergRest).
@@ -1267,7 +1267,9 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			}),
 		resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
 			HasSigv4RestAuthenticationSigv4IamRole(newSigV4IamRole).
-			HasSigv4RestAuthenticationSigv4SigningRegion(newSigV4SigningRegion),
+			HasSigv4RestAuthenticationSigv4SigningRegion(newSigV4SigningRegion).
+			HasSigv4RestAuthenticationSigv4ExternalId(newSigV4ExternalId).
+			HasApiAwsIamUserArnNotEmpty(),
 	}, basicAssertions[2:]...)
 
 	withBearerTokenAssertions := append([]assert.TestCheckFuncProvider{
@@ -1333,8 +1335,11 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
+					externalSigV4Auth := *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest(sigV4IamRole).
+						WithSigv4SigningRegion(sigV4SigningRegion).
+						WithSigv4ExternalId(externalSigV4ExternalId)
 					createRequest := sdk.NewCreateIcebergRestCatalogIntegrationRequest(id, basicRestCfg, false).
-						WithSigV4RestAuthentication(basicSigV4Auth).
+						WithSigV4RestAuthentication(externalSigV4Auth).
 						WithOrReplace(true)
 					testClient().CatalogIntegration.CreateIcebergRestFunc(t, createRequest)
 				},
@@ -1345,6 +1350,8 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 						planchecks.ExpectChange(ref, "sigv4_rest_authentication.0.sigv4_iam_role", tfjson.ActionDelete, sdk.String(sigV4IamRole), sdk.String(newSigV4IamRole)),
 						planchecks.ExpectDrift(ref, "sigv4_rest_authentication.0.sigv4_signing_region", sdk.String(newSigV4SigningRegion), sdk.String(sigV4SigningRegion)),
 						planchecks.ExpectChange(ref, "sigv4_rest_authentication.0.sigv4_signing_region", tfjson.ActionDelete, sdk.String(sigV4SigningRegion), sdk.String(newSigV4SigningRegion)),
+						planchecks.ExpectDrift(ref, "sigv4_rest_authentication.0.sigv4_external_id", sdk.String(newSigV4ExternalId), sdk.String(externalSigV4ExternalId)),
+						planchecks.ExpectChange(ref, "sigv4_rest_authentication.0.sigv4_external_id", tfjson.ActionDelete, sdk.String(externalSigV4ExternalId), sdk.String(newSigV4ExternalId)),
 					},
 				},
 				Config: config.FromModels(t, updated),
@@ -1361,6 +1368,50 @@ func TestAcc_CatalogIntegrationIcebergRest_BasicUseCaseSigV4(t *testing.T) {
 				Config:          config.FromModels(t, withBearerToken, bearerTokenVariableModel),
 				ConfigVariables: bearerTokenConfigVariables,
 				Check:           assertThat(t, withBearerTokenAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_CatalogIntegrationIcebergRest_migrateFromV2_23_0_SigV4ExternalId(t *testing.T) {
+	t.Skip("SNOW-3888393: no real Iceberg REST catalog with SigV4 auth available; fake credentials fail when CREATE validates the catalog")
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	restConfig := *sdk.NewCatalogIntegrationIcebergRestRestConfigRequest("https://api.tabular.io/ws").
+		WithCatalogApiType(sdk.CatalogIntegrationCatalogApiTypeAwsApiGateway)
+	sigV4Auth := *sdk.NewCatalogIntegrationIcebergRestSigv4RestAuthenticationRequest("arn:aws:iam::123456789012:role/sigv4-role").
+		WithSigv4SigningRegion("us-west-2")
+
+	basic := model.CatalogIntegrationIcebergRestSigV4("t", id.Name(), false, restConfig, sigV4Auth)
+	ref := basic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.CatalogIntegrationIcebergRest),
+		Steps: []resource.TestStep{
+			// Create with the previous provider version, which does not store the external ID that Snowflake generates.
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.23.0"),
+				Config:            config.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.CatalogIntegrationIcebergRestResource(t, ref).
+						HasSigV4RestAuthentication(&sdk.CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{
+							Sigv4IamRole:       "arn:aws:iam::123456789012:role/sigv4-role",
+							Sigv4SigningRegion: "us-west-2",
+						}),
+				),
+			},
+			// The state upgrader fills describe_output, so the generated external ID is not reported as an external change.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, basic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})

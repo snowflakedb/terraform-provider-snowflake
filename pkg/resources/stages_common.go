@@ -7,9 +7,11 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -26,14 +28,12 @@ func stageCommonSchema(
 		"database": {
 			Type:             schema.TypeString,
 			Required:         true,
-			ForceNew:         true,
 			Description:      blocklistedCharactersFieldDescription("The database in which to create the stage."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
 		"schema": {
 			Type:             schema.TypeString,
 			Required:         true,
-			ForceNew:         true,
 			Description:      blocklistedCharactersFieldDescription("The schema in which to create the stage."),
 			DiffSuppressFunc: suppressIdentifierQuoting,
 		},
@@ -68,20 +68,33 @@ func stageCommonSchema(
 	return collections.MergeMaps(stageCommonSchema, stageFileFormatSchema)
 }
 
-func handleStageRename(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (sdk.SchemaObjectIdentifier, error) {
+func handleStageRename(ctx context.Context, meta any, d *schema.ResourceData, id *sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	client := meta.(*provider.Context).Client
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.Stages.Alter(ctx, sdk.NewAlterStageRequest(currentId).WithRenameTo(targetId))
+		},
+		client.Stages.ShowByID,
+		"stage",
+	); diags != nil {
+		return diags
+	}
+
 	if d.HasChange("name") {
 		newName := d.Get("name").(string)
 		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), newName)
 
-		err := client.Stages.Alter(ctx, sdk.NewAlterStageRequest(id).WithRenameTo(newId))
+		err := client.Stages.Alter(ctx, sdk.NewAlterStageRequest(*id).WithRenameTo(newId))
 		if err != nil {
-			return sdk.SchemaObjectIdentifier{}, fmt.Errorf("error renaming stage %v to %v: %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err)
+			return diag.FromErr(fmt.Errorf("error renaming stage %v to %v: %w", id.FullyQualifiedName(), newId.FullyQualifiedName(), err))
 		}
 
 		d.SetId(helpers.EncodeResourceIdentifier(newId))
-		id = newId
+		*id = newId
 	}
-	return id, nil
+	return nil
 }
 
 func handleStageDirectoryTable(ctx context.Context, client *sdk.Client, d *schema.ResourceData, id sdk.SchemaObjectIdentifier) error {

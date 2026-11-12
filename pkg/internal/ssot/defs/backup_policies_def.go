@@ -31,6 +31,7 @@ var BackupPolicyAttrs = struct {
 	Schedule: ssot.Attribute{
 		Name:           "schedule",
 		Type:           ssot.AttrObject,
+		UpdateMapping:  ssot.AttributeMappedValueUpdate("toBackupPolicySchedule"),
 		SdkString:      true,
 		SkipCreate:     true,
 		OptionalInShow: true,
@@ -130,7 +131,7 @@ var BackupPolicy = ssot.Object{
 		ssot.WithDescribeInSdk(ssot.Generated()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithHierarchyRename(ssot.Generated()),
-		ssot.WithApplySetUnset(ssot.ExtCall()),
+		ssot.WithApplySetUnset(ssot.Generated()),
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithSetConfigFields(ssot.ExtCall()),
@@ -152,24 +153,24 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.Comment,
 		},
 	},
-	Set: []*ssot.Attribute{
-		&BackupPolicyAttrs.Comment,
-		&BackupPolicyAttrs.Schedule,
-		&BackupPolicyAttrs.ExpireAfterDays,
-	},
-	Unset: []*ssot.Attribute{
-		&BackupPolicyAttrs.Comment,
-		&BackupPolicyAttrs.Schedule,
-		&BackupPolicyAttrs.ExpireAfterDays,
-	},
 	UnsetConflicts: [][]*ssot.Attribute{{
 		&BackupPolicyAttrs.Schedule,
 		&BackupPolicyAttrs.ExpireAfterDays,
 	}},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterRenameTo(),
-		ssot.AlterSet(),
-		ssot.AlterUnset(),
+		ssot.AlterSet(
+			&BackupPolicyAttrs.Comment,
+			&BackupPolicyAttrs.Schedule,
+			&BackupPolicyAttrs.ExpireAfterDays,
+		),
+		ssot.AlterUnset(
+			ssot.AlterGroup("Schedule", &BackupPolicyAttrs.Schedule),
+			ssot.AlterGroup(ssot.MainAlterGroup,
+				&BackupPolicyAttrs.Comment,
+				&BackupPolicyAttrs.ExpireAfterDays,
+			),
+		),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 	}},

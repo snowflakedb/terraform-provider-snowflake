@@ -107,7 +107,7 @@ func init() {
 					Name: rowAccessPolicyId,
 					On:   []Column{{"ID"}, {"NAME"}},
 				}
-				opts.AggregationPolicy = &IcebergTableAggregationPolicy{
+				opts.AggregationPolicy = &TableAggregationPolicy{
 					AggregationPolicy: aggregationPolicyId,
 					EntityKey:         []Column{{"ID"}},
 				}
@@ -990,7 +990,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_AddRowAccessPolicy,
 			func(opts *AlterIcebergTableOptions) {
-				opts.AddRowAccessPolicy = &ViewAddRowAccessPolicy{
+				opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{
 					RowAccessPolicy: rowAccessPolicy1Id,
 					On:              []Column{{"col1"}, {"col2"}},
 				}
@@ -1000,16 +1000,16 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_DropRowAccessPolicy,
 			func(opts *AlterIcebergTableOptions) {
-				opts.DropRowAccessPolicy = &ViewDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicy1Id}
+				opts.DropRowAccessPolicy = &TableDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicy1Id}
 			},
 			`ALTER ICEBERG TABLE %s DROP ROW ACCESS POLICY %s`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(), rowAccessPolicy1Id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_DropAndAddRowAccessPolicy,
 			func(opts *AlterIcebergTableOptions) {
-				opts.DropAndAddRowAccessPolicy = &IcebergTableDropAndAddRowAccessPolicy{
-					Drop: IcebergTableDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicy1Id},
-					Add: IcebergTableAddRowAccessPolicy{
+				opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{
+					Drop: TableDropRowAccessPolicy{RowAccessPolicy: rowAccessPolicy1Id},
+					Add: TableAddRowAccessPolicy{
 						RowAccessPolicy: rowAccessPolicy2Id,
 						On:              []Column{{"col1"}, {"col2"}},
 					},
@@ -1026,7 +1026,7 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_SetAggregationPolicy,
 			func(opts *AlterIcebergTableOptions) {
-				opts.SetAggregationPolicy = &ViewSetAggregationPolicy{
+				opts.SetAggregationPolicy = &TableSetAggregationPolicy{
 					AggregationPolicy: aggregationPolicyId,
 					EntityKey:         []Column{{"col1"}, {"col2"}},
 					Force:             new(true),
@@ -1036,7 +1036,7 @@ func init() {
 		).
 		withModifyAndExpectedSqlf(
 			case_IcebergTables_sql_Alter_UnsetAggregationPolicy,
-			func(opts *AlterIcebergTableOptions) { opts.UnsetAggregationPolicy = &ViewUnsetAggregationPolicy{} },
+			func(opts *AlterIcebergTableOptions) { opts.UnsetAggregationPolicy = &TableUnsetAggregationPolicy{} },
 			`ALTER ICEBERG TABLE %s UNSET AGGREGATION POLICY`, icebergTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

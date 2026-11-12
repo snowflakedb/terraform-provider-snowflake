@@ -4,7 +4,7 @@ package sdk
 
 func NewCreateFailoverGroupRequest(
 	name AccountObjectIdentifier,
-	objectTypes []PluralObjectType,
+	objectTypes []FailoverGroupObjectType,
 	allowedAccounts []AccountIdentifier,
 ) *CreateFailoverGroupRequest {
 	s := CreateFailoverGroupRequest{}
@@ -24,12 +24,17 @@ func (s *CreateFailoverGroupRequest) WithAllowedDatabases(allowedDatabases []Acc
 	return s
 }
 
+func (s *CreateFailoverGroupRequest) WithAllowedExternalVolumes(allowedExternalVolumes []AccountObjectIdentifier) *CreateFailoverGroupRequest {
+	s.AllowedExternalVolumes = allowedExternalVolumes
+	return s
+}
+
 func (s *CreateFailoverGroupRequest) WithAllowedShares(allowedShares []AccountObjectIdentifier) *CreateFailoverGroupRequest {
 	s.AllowedShares = allowedShares
 	return s
 }
 
-func (s *CreateFailoverGroupRequest) WithAllowedIntegrationTypes(allowedIntegrationTypes []IntegrationType) *CreateFailoverGroupRequest {
+func (s *CreateFailoverGroupRequest) WithAllowedIntegrationTypes(allowedIntegrationTypes []FailoverGroupIntegrationType) *CreateFailoverGroupRequest {
 	s.AllowedIntegrationTypes = allowedIntegrationTypes
 	return s
 }
@@ -49,60 +54,80 @@ func (s *CreateFailoverGroupRequest) WithOptimizedRefresh(optimizedRefresh bool)
 	return s
 }
 
-func NewCreateSecondaryReplicationGroupFailoverGroupRequest(
+func (s *CreateFailoverGroupRequest) WithTag(tag []TagAssociation) *CreateFailoverGroupRequest {
+	s.Tag = tag
+	return s
+}
+
+func (s *CreateFailoverGroupRequest) WithErrorIntegration(errorIntegration AccountObjectIdentifier) *CreateFailoverGroupRequest {
+	s.ErrorIntegration = &errorIntegration
+	return s
+}
+
+func NewCreateSecondaryFailoverGroupRequest(
 	name AccountObjectIdentifier,
-	primaryFailoverGroup ExternalObjectIdentifier,
-) *CreateSecondaryReplicationGroupFailoverGroupRequest {
-	s := CreateSecondaryReplicationGroupFailoverGroupRequest{}
+	asReplicaOf ExternalObjectIdentifier,
+) *CreateSecondaryFailoverGroupRequest {
+	s := CreateSecondaryFailoverGroupRequest{}
 	s.name = name
-	s.PrimaryFailoverGroup = primaryFailoverGroup
+	s.AsReplicaOf = asReplicaOf
 	return &s
 }
 
-func (s *CreateSecondaryReplicationGroupFailoverGroupRequest) WithIfNotExists(ifNotExists bool) *CreateSecondaryReplicationGroupFailoverGroupRequest {
+func (s *CreateSecondaryFailoverGroupRequest) WithIfNotExists(ifNotExists bool) *CreateSecondaryFailoverGroupRequest {
 	s.IfNotExists = &ifNotExists
 	return s
 }
 
-func NewAlterSourceFailoverGroupRequest(
+func NewAlterFailoverGroupRequest(
 	name AccountObjectIdentifier,
-) *AlterSourceFailoverGroupRequest {
-	s := AlterSourceFailoverGroupRequest{}
+) *AlterFailoverGroupRequest {
+	s := AlterFailoverGroupRequest{}
 	s.name = name
 	return &s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithIfExists(ifExists bool) *AlterSourceFailoverGroupRequest {
+func (s *AlterFailoverGroupRequest) WithIfExists(ifExists bool) *AlterFailoverGroupRequest {
 	s.IfExists = &ifExists
 	return s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterSourceFailoverGroupRequest {
+func (s *AlterFailoverGroupRequest) WithRenameTo(renameTo AccountObjectIdentifier) *AlterFailoverGroupRequest {
 	s.RenameTo = &renameTo
 	return s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithSet(set FailoverGroupSetRequest) *AlterSourceFailoverGroupRequest {
+func (s *AlterFailoverGroupRequest) WithSet(set FailoverGroupSetRequest) *AlterFailoverGroupRequest {
 	s.Set = &set
 	return s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithUnset(unset FailoverGroupUnsetRequest) *AlterSourceFailoverGroupRequest {
+func (s *AlterFailoverGroupRequest) WithUnset(unset FailoverGroupUnsetRequest) *AlterFailoverGroupRequest {
 	s.Unset = &unset
 	return s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithAdd(add FailoverGroupAddRequest) *AlterSourceFailoverGroupRequest {
+func (s *AlterFailoverGroupRequest) WithSetTags(setTags []TagAssociation) *AlterFailoverGroupRequest {
+	s.SetTags = setTags
+	return s
+}
+
+func (s *AlterFailoverGroupRequest) WithUnsetTags(unsetTags []ObjectIdentifier) *AlterFailoverGroupRequest {
+	s.UnsetTags = unsetTags
+	return s
+}
+
+func (s *AlterFailoverGroupRequest) WithAdd(add FailoverGroupAddRequest) *AlterFailoverGroupRequest {
 	s.Add = &add
 	return s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithMove(move FailoverGroupMoveRequest) *AlterSourceFailoverGroupRequest {
+func (s *AlterFailoverGroupRequest) WithMove(move FailoverGroupMoveRequest) *AlterFailoverGroupRequest {
 	s.Move = &move
 	return s
 }
 
-func (s *AlterSourceFailoverGroupRequest) WithRemove(remove FailoverGroupRemoveRequest) *AlterSourceFailoverGroupRequest {
+func (s *AlterFailoverGroupRequest) WithRemove(remove FailoverGroupRemoveRequest) *AlterFailoverGroupRequest {
 	s.Remove = &remove
 	return s
 }
@@ -112,13 +137,33 @@ func NewFailoverGroupSetRequest() *FailoverGroupSetRequest {
 	return &s
 }
 
-func (s *FailoverGroupSetRequest) WithObjectTypes(objectTypes []PluralObjectType) *FailoverGroupSetRequest {
+func (s *FailoverGroupSetRequest) WithObjectTypes(objectTypes []FailoverGroupObjectType) *FailoverGroupSetRequest {
 	s.ObjectTypes = objectTypes
 	return s
 }
 
-func (s *FailoverGroupSetRequest) WithAllowedIntegrationTypes(allowedIntegrationTypes []IntegrationType) *FailoverGroupSetRequest {
+func (s *FailoverGroupSetRequest) WithAllowedDatabases(allowedDatabases []AccountObjectIdentifier) *FailoverGroupSetRequest {
+	s.AllowedDatabases = allowedDatabases
+	return s
+}
+
+func (s *FailoverGroupSetRequest) WithAllowedExternalVolumes(allowedExternalVolumes []AccountObjectIdentifier) *FailoverGroupSetRequest {
+	s.AllowedExternalVolumes = allowedExternalVolumes
+	return s
+}
+
+func (s *FailoverGroupSetRequest) WithAllowedShares(allowedShares []AccountObjectIdentifier) *FailoverGroupSetRequest {
+	s.AllowedShares = allowedShares
+	return s
+}
+
+func (s *FailoverGroupSetRequest) WithAllowedIntegrationTypes(allowedIntegrationTypes []FailoverGroupIntegrationType) *FailoverGroupSetRequest {
 	s.AllowedIntegrationTypes = allowedIntegrationTypes
+	return s
+}
+
+func (s *FailoverGroupSetRequest) WithComment(comment string) *FailoverGroupSetRequest {
+	s.Comment = &comment
 	return s
 }
 
@@ -137,9 +182,24 @@ func (s *FailoverGroupSetRequest) WithRpoAssurance(rpoAssurance bool) *FailoverG
 	return s
 }
 
+func (s *FailoverGroupSetRequest) WithErrorIntegration(errorIntegration AccountObjectIdentifier) *FailoverGroupSetRequest {
+	s.ErrorIntegration = &errorIntegration
+	return s
+}
+
+func (s *FailoverGroupSetRequest) WithReadOnly(readOnly bool) *FailoverGroupSetRequest {
+	s.ReadOnly = &readOnly
+	return s
+}
+
 func NewFailoverGroupUnsetRequest() *FailoverGroupUnsetRequest {
 	s := FailoverGroupUnsetRequest{}
 	return &s
+}
+
+func (s *FailoverGroupUnsetRequest) WithComment(comment bool) *FailoverGroupUnsetRequest {
+	s.Comment = &comment
+	return s
 }
 
 func (s *FailoverGroupUnsetRequest) WithReplicationSchedule(replicationSchedule bool) *FailoverGroupUnsetRequest {
@@ -157,6 +217,16 @@ func (s *FailoverGroupUnsetRequest) WithRpoAssurance(rpoAssurance bool) *Failove
 	return s
 }
 
+func (s *FailoverGroupUnsetRequest) WithErrorIntegration(errorIntegration bool) *FailoverGroupUnsetRequest {
+	s.ErrorIntegration = &errorIntegration
+	return s
+}
+
+func (s *FailoverGroupUnsetRequest) WithReadOnly(readOnly bool) *FailoverGroupUnsetRequest {
+	s.ReadOnly = &readOnly
+	return s
+}
+
 func NewFailoverGroupAddRequest() *FailoverGroupAddRequest {
 	s := FailoverGroupAddRequest{}
 	return &s
@@ -164,6 +234,11 @@ func NewFailoverGroupAddRequest() *FailoverGroupAddRequest {
 
 func (s *FailoverGroupAddRequest) WithAllowedDatabases(allowedDatabases []AccountObjectIdentifier) *FailoverGroupAddRequest {
 	s.AllowedDatabases = allowedDatabases
+	return s
+}
+
+func (s *FailoverGroupAddRequest) WithAllowedExternalVolumes(allowedExternalVolumes []AccountObjectIdentifier) *FailoverGroupAddRequest {
+	s.AllowedExternalVolumes = allowedExternalVolumes
 	return s
 }
 
@@ -195,6 +270,11 @@ func (s *FailoverGroupMoveRequest) WithDatabases(databases []AccountObjectIdenti
 	return s
 }
 
+func (s *FailoverGroupMoveRequest) WithExternalVolumes(externalVolumes []AccountObjectIdentifier) *FailoverGroupMoveRequest {
+	s.ExternalVolumes = externalVolumes
+	return s
+}
+
 func (s *FailoverGroupMoveRequest) WithShares(shares []AccountObjectIdentifier) *FailoverGroupMoveRequest {
 	s.Shares = shares
 	return s
@@ -210,6 +290,11 @@ func (s *FailoverGroupRemoveRequest) WithAllowedDatabases(allowedDatabases []Acc
 	return s
 }
 
+func (s *FailoverGroupRemoveRequest) WithAllowedExternalVolumes(allowedExternalVolumes []AccountObjectIdentifier) *FailoverGroupRemoveRequest {
+	s.AllowedExternalVolumes = allowedExternalVolumes
+	return s
+}
+
 func (s *FailoverGroupRemoveRequest) WithAllowedShares(allowedShares []AccountObjectIdentifier) *FailoverGroupRemoveRequest {
 	s.AllowedShares = allowedShares
 	return s
@@ -220,36 +305,46 @@ func (s *FailoverGroupRemoveRequest) WithAllowedAccounts(allowedAccounts []Accou
 	return s
 }
 
-func NewAlterTargetFailoverGroupRequest(
+func NewAlterSecondaryFailoverGroupRequest(
 	name AccountObjectIdentifier,
-) *AlterTargetFailoverGroupRequest {
-	s := AlterTargetFailoverGroupRequest{}
+) *AlterSecondaryFailoverGroupRequest {
+	s := AlterSecondaryFailoverGroupRequest{}
 	s.name = name
 	return &s
 }
 
-func (s *AlterTargetFailoverGroupRequest) WithIfExists(ifExists bool) *AlterTargetFailoverGroupRequest {
+func (s *AlterSecondaryFailoverGroupRequest) WithIfExists(ifExists bool) *AlterSecondaryFailoverGroupRequest {
 	s.IfExists = &ifExists
 	return s
 }
 
-func (s *AlterTargetFailoverGroupRequest) WithRefresh(refresh bool) *AlterTargetFailoverGroupRequest {
+func (s *AlterSecondaryFailoverGroupRequest) WithRefresh(refresh bool) *AlterSecondaryFailoverGroupRequest {
 	s.Refresh = &refresh
 	return s
 }
 
-func (s *AlterTargetFailoverGroupRequest) WithPrimary(primary bool) *AlterTargetFailoverGroupRequest {
+func (s *AlterSecondaryFailoverGroupRequest) WithPrimary(primary bool) *AlterSecondaryFailoverGroupRequest {
 	s.Primary = &primary
 	return s
 }
 
-func (s *AlterTargetFailoverGroupRequest) WithSuspend(suspend bool) *AlterTargetFailoverGroupRequest {
+func (s *AlterSecondaryFailoverGroupRequest) WithSuspend(suspend FailoverGroupSecondarySuspendRequest) *AlterSecondaryFailoverGroupRequest {
 	s.Suspend = &suspend
 	return s
 }
 
-func (s *AlterTargetFailoverGroupRequest) WithResume(resume bool) *AlterTargetFailoverGroupRequest {
+func (s *AlterSecondaryFailoverGroupRequest) WithResume(resume bool) *AlterSecondaryFailoverGroupRequest {
 	s.Resume = &resume
+	return s
+}
+
+func NewFailoverGroupSecondarySuspendRequest() *FailoverGroupSecondarySuspendRequest {
+	s := FailoverGroupSecondarySuspendRequest{}
+	return &s
+}
+
+func (s *FailoverGroupSecondarySuspendRequest) WithImmediate(immediate bool) *FailoverGroupSecondarySuspendRequest {
+	s.Immediate = &immediate
 	return s
 }
 
@@ -272,22 +367,22 @@ func NewShowFailoverGroupRequest() *ShowFailoverGroupRequest {
 }
 
 func (s *ShowFailoverGroupRequest) WithInAccount(inAccount AccountIdentifier) *ShowFailoverGroupRequest {
-	s.InAccount = inAccount
+	s.InAccount = &inAccount
 	return s
 }
 
 func NewShowFailoverGroupDatabasesFailoverGroupRequest(
-	in AccountObjectIdentifier,
+	name AccountObjectIdentifier,
 ) *ShowFailoverGroupDatabasesFailoverGroupRequest {
 	s := ShowFailoverGroupDatabasesFailoverGroupRequest{}
-	s.In = in
+	s.name = name
 	return &s
 }
 
 func NewShowFailoverGroupSharesFailoverGroupRequest(
-	in AccountObjectIdentifier,
+	name AccountObjectIdentifier,
 ) *ShowFailoverGroupSharesFailoverGroupRequest {
 	s := ShowFailoverGroupSharesFailoverGroupRequest{}
-	s.In = in
+	s.name = name
 	return &s
 }

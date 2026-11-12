@@ -29,14 +29,12 @@ var streamlitSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the streamlit"),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the streamlit."),
-		ForceNew:         true,
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"stage": {
@@ -127,8 +125,10 @@ func Streamlit() *schema.Resource {
 		},
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Streamlit, customdiff.All(
-			ComputedIfAnyAttributeChanged(streamlitSchema, ShowOutputAttributeName, "name", "title", "comment", "query_warehouse"),
-			ComputedIfAnyAttributeChanged(streamlitSchema, FullyQualifiedNameAttributeName, "name"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(streamlitSchema, ShowOutputAttributeName, "name", "database", "schema", "title", "comment", "query_warehouse"),
+			ComputedIfAnyAttributeChanged(streamlitSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 			ComputedIfAnyAttributeChanged(streamlitSchema, DescribeOutputAttributeName, "title", "comment", "root_location", "main_file", "query_warehouse", "external_access_integrations"),
 		)),
 
@@ -325,18 +325,26 @@ func UpdateContextStreamlit(ctx context.Context, d *schema.ResourceData, meta an
 
 	set, unset := sdk.NewStreamlitSetRequest(), sdk.NewStreamlitUnsetRequest()
 
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.Streamlits.Alter(ctx, sdk.NewAlterStreamlitRequest(currentId).WithRenameTo(targetId))
+		},
+		client.Streamlits.ShowByID,
+		"streamlit",
+	); diags != nil {
+		return diags
+	}
+
 	if d.HasChange("name") {
-		databaseName := d.Get("database").(string)
-		schemaName := d.Get("schema").(string)
-		name := d.Get("name").(string)
-		newId := sdk.NewSchemaObjectIdentifier(databaseName, schemaName, name)
+		newId := sdk.NewSchemaObjectIdentifierInSchema(id.SchemaId(), d.Get("name").(string))
 
 		err := client.Streamlits.Alter(ctx, sdk.NewAlterStreamlitRequest(id).WithRenameTo(newId))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
-		d.SetId(newId.FullyQualifiedName())
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
 
