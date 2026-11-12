@@ -7,8 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
 )
 
 var (
@@ -407,6 +409,36 @@ func (r warehouseDescRow) convert() (*WarehouseDetails, error) {
 		Kind:      r.Kind,
 	}
 	return result, nil
+}
+
+func (v *warehouses) SuspendIfStarted(ctx context.Context, id AccountObjectIdentifier) (func(context.Context) error, error) {
+	noResume := func(context.Context) error { return nil }
+	object, err := v.ShowByID(ctx, id)
+	if err != nil {
+		return noResume, err
+	}
+	if object.State != WarehouseStateStarted {
+		return noResume, nil
+	}
+	if err := v.Alter(ctx, NewAlterWarehouseRequest(id).WithSuspend(true)); err != nil {
+		return noResume, err
+	}
+	resume := func(ctx context.Context) error {
+		return v.Alter(ctx, NewAlterWarehouseRequest(id).WithResume(true).WithIfSuspended(true))
+	}
+	var suspensionErrs []error
+	err = util.Retry(5, time.Second, func() (error, bool) {
+		object, err := v.ShowByID(ctx, id)
+		if err != nil {
+			suspensionErrs = append(suspensionErrs, err)
+			return nil, false
+		}
+		return nil, object.State == WarehouseStateSuspended
+	})
+	if err != nil {
+		return resume, fmt.Errorf("suspension of %s failed, err: %w, original errors: %w", id.FullyQualifiedName(), err, errors.Join(suspensionErrs...))
+	}
+	return resume, nil
 }
 
 func ToWarehouseParametersDetails(params []*Parameter) (*WarehouseParametersDetails, error) {

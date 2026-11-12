@@ -56,11 +56,6 @@ var (
 // yields NULL and additionally misbehaves (see SNOW-1473453). This mirrors the regular warehouse.
 const interactiveWarehouseDefaultAutoSuspend = 86400
 
-type warehouseInteractiveAlterRequestsExt struct {
-	set   *sdk.WarehouseInteractiveSetRequest
-	unset *sdk.WarehouseInteractiveUnsetRequest
-}
-
 func warehouseInteractiveParseIdFromConfigExt(d *schema.ResourceData) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(d.Get("name").(string))
 }
@@ -170,24 +165,6 @@ func warehouseInteractiveBeforeAlterExt(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func warehouseInteractiveApplySetUnsetExt(d *schema.ResourceData) (*warehouseInteractiveAlterRequestsExt, error) {
-	set := sdk.NewWarehouseInteractiveSetRequest()
-	unset := sdk.NewWarehouseInteractiveUnsetRequest()
-
-	if err := errors.Join(
-		attributeMappedValueUpdateSetOnlyAlways(d, "warehouse_size", &set.WarehouseSize, sdk.ToWarehouseSize),
-		intAttributeUpdate(d, "max_cluster_count", &set.MaxClusterCount, &unset.MaxClusterCount),
-		intAttributeUpdate(d, "min_cluster_count", &set.MinClusterCount, &unset.MinClusterCount),
-		intAttributeWithSpecialDefaultUnsetFallbackUpdate(d, "auto_suspend", &set.AutoSuspend, interactiveWarehouseDefaultAutoSuspend),
-		booleanStringAttributeUpdate(d, "auto_resume", &set.AutoResume, &unset.AutoResume),
-		accountObjectIdentifierAttributeUpdate(d, "resource_monitor", &set.ResourceMonitor, &unset.ResourceMonitor),
-		stringAttributeUpdate(d, "comment", &set.Comment, &unset.Comment),
-	); err != nil {
-		return nil, err
-	}
-	return &warehouseInteractiveAlterRequestsExt{set: set, unset: unset}, nil
-}
-
 func warehouseInteractiveSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier, w *sdk.WarehouseInteractive, importPermissiveMode bool) error {
 	if w.Type != sdk.WarehouseTypeInteractive {
 		return fmt.Errorf("warehouse %s is not an interactive warehouse; use snowflake_warehouse or snowflake_warehouse_adaptive instead", id.FullyQualifiedName())
@@ -235,20 +212,18 @@ func warehouseInteractiveShowByIdInSdkExt(ctx context.Context, meta any, id sdk.
 	return showWarehouseInteractiveByID(ctx, meta.(*provider.Context), id)
 }
 
-func warehouseInteractiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequestsExt) error {
+func warehouseInteractiveAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequests) error {
 	if *reqs.set != *sdk.NewWarehouseInteractiveSetRequest() {
-		// AlterInteractiveWithSuspend suspends and resumes the warehouse around the alter when it changes the
-		// size, because an interactive warehouse cannot be resized while running. Other SET changes
-		// are applied without a suspend.
+		// A size change runs while the warehouse is suspended: the generated update suspends it (SuspendForAlter).
 		client := meta.(*provider.Context).Client
-		if err := client.Warehouses.AlterInteractiveWithSuspend(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
+		if err := client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithSet(*reqs.set)); err != nil {
 			return fmt.Errorf("error setting interactive warehouse properties: %w", err)
 		}
 	}
 	return nil
 }
 
-func warehouseInteractiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequestsExt) error {
+func warehouseInteractiveAlterUnsetInSdkExt(ctx context.Context, meta any, id sdk.AccountObjectIdentifier, reqs *warehouseInteractiveAlterRequests) error {
 	if *reqs.unset != *sdk.NewWarehouseInteractiveUnsetRequest() {
 		client := meta.(*provider.Context).Client
 		if err := client.Warehouses.AlterInteractive(ctx, sdk.NewAlterInteractiveWarehouseRequest(id).WithUnset(*reqs.unset)); err != nil {

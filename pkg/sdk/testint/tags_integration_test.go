@@ -491,7 +491,6 @@ func TestInt_TagsAssociations(t *testing.T) {
 				return client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(id).WithUnsetTags(tags))
 			},
 		},
-		// TODO [SNOW-1002023]: Add a test for failover groups; Business Critical Snowflake Edition needed
 		{
 			name:       "ApiIntegration",
 			objectType: sdk.ObjectTypeIntegration,

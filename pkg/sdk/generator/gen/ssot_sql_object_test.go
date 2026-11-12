@@ -289,9 +289,11 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 		Name:       "Widget",
 		NamePlural: "Widgets",
 		IdType:     "AccountObjectIdentifier",
-		Set:        []*ssot.Attribute{&setOauth, &setBearer, &comment},
 		Alter: ssot.AlterSpec{
-			Clauses:              []ssot.AlterClause{ssot.AlterSet()},
+			Clauses: []ssot.AlterClause{ssot.AlterSet(
+				ssot.AlterGroup("Oauth", &setOauth),
+				ssot.AlterGroup(ssot.MainAlterGroup, &setBearer, &comment),
+			)},
 			SetConflictingFields: [][]*ssot.Attribute{{&setOauth, &setBearer}},
 		},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
@@ -616,7 +618,7 @@ func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
-	got := queryStructFromObject("Table", attr)
+	got := QueryStructFromAttribute("Table", attr)
 	want := NewQueryStruct("TableClusteringAction").
 		PredefinedQueryStructField("ClusterBy", "[]string", KeywordOptions().Parentheses().SQL("CLUSTER BY")).
 		OptionalQueryStructField("Recluster",
@@ -670,6 +672,108 @@ func Test_queryStructFromObject_tableSearchOptimizationAction(t *testing.T) {
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
 
+func Test_queryStructFromObject_tableAggregationPolicy(t *testing.T) {
+	attr := ssotdefs.TableCreateAttrs.AggregationPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	want := NewQueryStruct("TableAggregationPolicy").
+		Identifier("AggregationPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+		WithValidation(ValidIdentifier, "AggregationPolicy").
+		ListAssignment("ENTITY KEY", "Column", ParameterOptions().NoEquals().Parentheses())
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableJoinPolicy(t *testing.T) {
+	attr := ssotdefs.TableCreateAttrs.JoinPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	want := NewQueryStruct("TableJoinPolicy").
+		Identifier("JoinPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("JOIN POLICY").Required()).
+		WithValidation(ValidIdentifier, "JoinPolicy").
+		ListAssignment("ALLOWED JOIN KEYS", "Column", ParameterOptions().NoEquals().Parentheses())
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableSetAggregationPolicy(t *testing.T) {
+	attr := ssotdefs.TableAggregationPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseSet)
+	want := NewQueryStruct("TableSetAggregationPolicy").
+		SQL("SET").
+		Identifier("AggregationPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("AGGREGATION POLICY").Required()).
+		WithValidation(ValidIdentifier, "AggregationPolicy").
+		ListAssignment("ENTITY KEY", "Column", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("FORCE")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableUnsetAggregationPolicy(t *testing.T) {
+	attr := ssotdefs.TableAggregationPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseUnset)
+	want := NewQueryStruct("TableUnsetAggregationPolicy").
+		SQL("UNSET AGGREGATION POLICY")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableSetJoinPolicy(t *testing.T) {
+	attr := ssotdefs.TableJoinPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseSet)
+	want := NewQueryStruct("TableSetJoinPolicy").
+		SQL("SET").
+		Identifier("JoinPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("JOIN POLICY").Required()).
+		WithValidation(ValidIdentifier, "JoinPolicy").
+		OptionalSQL("FORCE")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableUnsetJoinPolicy(t *testing.T) {
+	attr := ssotdefs.TableJoinPolicy
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttributeUse("Table", attr, ssot.ClauseUnset)
+	want := NewQueryStruct("TableUnsetJoinPolicy").
+		SQL("UNSET JOIN POLICY")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_alterSetQueryStruct_table(t *testing.T) {
+	require.NotPanics(t, func() { ssot.ValidateObject(ssotdefs.Table) })
+	got := AlterSetQueryStruct(ssotdefs.Table, ssot.SdkGenerator{})
+	want := NewQueryStruct("TableSet").
+		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", ParameterOptions()).
+		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", ParameterOptions()).
+		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", ParameterOptions()).
+		OptionalBooleanAssignment("CHANGE_TRACKING", ParameterOptions()).
+		OptionalAssignment("DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
+		OptionalComment().
+		WithValidation(AtLeastOneValueSet, "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment")
+	require.Equal(t, want.IntoField(), got.IntoField())
+
+	unset := AlterUnsetQueryStruct(ssotdefs.Table)
+	wantUnset := NewQueryStruct("TableUnset").
+		OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
+		OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
+		OptionalSQL("CHANGE_TRACKING").
+		OptionalSQL("DEFAULT_DDL_COLLATION").
+		OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
+		OptionalSQL("COMMENT").
+		WithValidation(AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
+	require.Equal(t, wantUnset.IntoField(), unset.IntoField())
+}
+
 func Test_queryStructFromObject_tableStorageLifecyclePolicy(t *testing.T) {
 	attr := ssotdefs.TableStorageLifecyclePolicy
 	require.NotPanics(t, func() {
@@ -681,5 +785,36 @@ func Test_queryStructFromObject_tableStorageLifecyclePolicy(t *testing.T) {
 		WithValidation(ValidIdentifier, "StorageLifecyclePolicy").
 		ListAssignment("ON", "Column", ParameterOptions().NoEquals().Parentheses().Required()).
 		WithValidation(ValidateValueSet, "On")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableRowAccessPolicy(t *testing.T) {
+	for _, attr := range []ssot.Attribute{
+		ssotdefs.TableAddRowAccessPolicy,
+		ssotdefs.TableDropRowAccessPolicy,
+		ssotdefs.TableDropAndAddRowAccessPolicy,
+	} {
+		require.NotPanics(t, func() {
+			ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+		})
+	}
+	add := QueryStructFromAttribute("Table", ssotdefs.TableAddRowAccessPolicy)
+	require.Equal(t, NewQueryStruct("TableAddRowAccessPolicy").
+		SQLWithCustomFieldName("add", "ADD").
+		Identifier("RowAccessPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+		WithValidation(ValidIdentifier, "RowAccessPolicy").
+		ListAssignmentWithFieldName("ON", "Column", ParameterOptions().NoEquals().Parentheses().Required(), "On").
+		WithValidation(ValidateValueSet, "On").
+		IntoField(), add.IntoField())
+	drop := QueryStructFromAttribute("Table", ssotdefs.TableDropRowAccessPolicy)
+	require.Equal(t, NewQueryStruct("TableDropRowAccessPolicy").
+		SQLWithCustomFieldName("drop", "DROP").
+		Identifier("RowAccessPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+		WithValidation(ValidIdentifier, "RowAccessPolicy").
+		IntoField(), drop.IntoField())
+	got := QueryStructFromAttribute("Table", ssotdefs.TableDropAndAddRowAccessPolicy)
+	want := NewQueryStruct("TableDropAndAddRowAccessPolicy").
+		QueryStructField("Drop", drop, ListOptions().NoComma().Required()).
+		QueryStructField("Add", add, ListOptions().NoComma().Required())
 	require.Equal(t, want.IntoField(), got.IntoField())
 }

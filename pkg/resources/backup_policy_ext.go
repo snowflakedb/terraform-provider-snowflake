@@ -21,11 +21,6 @@ var (
 	}
 )
 
-type backupPolicyAlterRequestsExt struct {
-	set   *sdk.BackupPolicySetRequest
-	unset *sdk.BackupPolicyUnsetRequest
-}
-
 func backupPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateBackupPolicyRequest, error) {
 	req := sdk.NewCreateBackupPolicyRequest(id)
 	schedule, err := backupPolicyScheduleFromConfig(d.Get("schedule"))
@@ -36,29 +31,6 @@ func backupPolicyNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObject
 		req.WithSchedule(*schedule)
 	}
 	return req, nil
-}
-
-func backupPolicyApplySetUnsetExt(d *schema.ResourceData) (*backupPolicyAlterRequestsExt, error) {
-	set, unset := sdk.NewBackupPolicySetRequest(), sdk.NewBackupPolicyUnsetRequest()
-	errs := errors.Join(
-		intAttributeUpdateBuilder(d, "expire_after_days", set.WithExpireAfterDays, unset.WithExpireAfterDays),
-		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
-	)
-	if d.HasChange("schedule") {
-		schedule, err := backupPolicyScheduleFromConfig(d.Get("schedule"))
-		switch {
-		case err != nil:
-			errs = errors.Join(errs, err)
-		case schedule != nil:
-			set.WithSchedule(*schedule)
-		default:
-			unset.WithSchedule(true)
-		}
-	}
-	if errs != nil {
-		return nil, errs
-	}
-	return &backupPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }
 
 func backupPolicySetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, backupPolicy *sdk.BackupPolicy) error {
@@ -73,6 +45,19 @@ func backupPolicySetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _
 }
 
 // backupPolicyScheduleFromConfig turns the schedule block into the SCHEDULE value, or nil when the block is not set.
+// toBackupPolicySchedule turns the schedule block into the SDK schedule string for the generated ApplySetUnset.
+// The generated update calls it only while the block is present, so a missing schedule is a mistake.
+func toBackupPolicySchedule(blocks []any) (string, error) {
+	schedule, err := backupPolicyScheduleFromConfig(blocks)
+	if err != nil {
+		return "", err
+	}
+	if schedule == nil {
+		return "", fmt.Errorf("when setting a schedule one of hours, minutes, or using_cron field should be set")
+	}
+	return *schedule, nil
+}
+
 func backupPolicyScheduleFromConfig(v any) (*string, error) {
 	blocks, ok := v.([]any)
 	if !ok || len(blocks) == 0 {

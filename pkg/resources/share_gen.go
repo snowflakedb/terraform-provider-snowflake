@@ -192,7 +192,13 @@ func shareApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateShar
 	)
 }
 
-func shareApplySetUnset(d *tfschema.ResourceData) (*shareAlterRequestsExt, error) {
+// shareAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type shareAlterRequests struct {
+	set   *sdk.ShareSetRequest
+	unset *sdk.ShareUnsetRequest
+}
+
+func shareApplySetUnset(d *tfschema.ResourceData) (*shareAlterRequests, error) {
 	set, unset := sdk.NewShareSetRequest(), sdk.NewShareUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
@@ -200,7 +206,7 @@ func shareApplySetUnset(d *tfschema.ResourceData) (*shareAlterRequestsExt, error
 	if errs != nil {
 		return nil, errs
 	}
-	return &shareAlterRequestsExt{set: set, unset: unset}, nil
+	return &shareAlterRequests{set: set, unset: unset}, nil
 }
 
 func shareHandleExternalChanges(d *tfschema.ResourceData, share *sdk.Share, withExternalChangesMarking bool) error {

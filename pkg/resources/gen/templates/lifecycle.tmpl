@@ -89,17 +89,19 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 }
 
 {{- if .RequiresUpdate }}
-func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
+func Update{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) {{ if .Hooks.SuspendForAlter.Generate }}(diags diag.Diagnostics){{ else }}diag.Diagnostics{{ end }} {
 {{ template "parseId" . -}}
 	if err != nil {
 		return diag.FromErr(err)
 	}
 {{ template "hierarchyRename" . -}}
+{{ template "suspendForAlter" . -}}
 {{ template "beforeAlter" . -}}
 {{ template "applySetUnset" . -}}
 {{ template "applyParametersChanges" . -}}
 {{ template "alterSetInSdk" . -}}
 {{ template "alterUnsetInSdk" . -}}
+{{ template "resumeAfterAlter" . -}}
 {{ template "afterAlter" . }}
 }
 {{- end }}
@@ -132,6 +134,8 @@ var {{ .Prefix }}CustomizeDiff = TrackingCustomDiffWrapper(resources.{{ .Name }}
 {{- end }}
 {{- end }}
 {{- if .Hooks.ApplySetUnset.Generate }}
+
+{{ template "generatedAlterRequests" . }}
 
 {{ template "generatedApplySetUnset" . }}
 {{- end }}

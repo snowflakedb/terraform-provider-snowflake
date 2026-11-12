@@ -5,10 +5,13 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// Per-user quotas are documented only in the user guide (https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas);
-// there is no class reference yet, so where the guide is silent the definitions below follow Snowflake's behavior.
-
+// Per-user quotas are documented only in the user guide; there is no class reference yet, so where the guide is silent the
+// definitions below follow Snowflake's behavior. The guide doesn't cover ALTER, DROP and SHOW, so they link to the whole page.
 const quotasDocs = "https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas"
+
+func quotaDocs(section string) string {
+	return quotasDocs + "#" + section
+}
 
 var QuotaSharedResourceDomainEnumDef = g.NewEnum(
 	"QuotaSharedResourceDomain", "QuotaSharedResourceDomains",
@@ -66,14 +69,13 @@ func quotaTagValue(name string) *g.QueryStruct {
 		Text("Value", g.KeywordOptions().SingleQuotes().Required())
 }
 
-// SET_USER_TAGS replaces the tags that select the users (and any tags excluded with EXCLUDE_USERS('TAG', ...)).
-// The operator is required; the one-argument form is rejected.
+// SET_USER_TAGS replaces the tags that select the users. The operator is required; the one-argument form is rejected.
 var quotaSetUserTagsArgs = g.NewQueryStruct("SetUserTagsArgs").
 	ListQueryStructField("Tags", quotaTagValue("QuotaUserTag"), g.ListOptions().Required().MustBrackets().ArrayElements()).
 	Enum("Operator", QuotaUserTagsOperatorEnumDef, g.KeywordOptions().SingleQuotes().Required())
 
-// The 'USER' form accumulates like INCLUDE_USERS, and an empty array clears the list. The 'TAG' form replaces the user tags
-// (the quota then applies to all users without the given tags) and also clears the included and excluded users.
+// The 'USER' form accumulates like INCLUDE_USERS, and an empty array clears the list. The 'TAG' form replaces the excluded
+// tags, and an empty array clears them.
 var quotaExcludeUsersArgs = g.NewQueryStruct("ExcludeUsersArgs").
 	OptionalQueryStructField(
 		"ByTag",
@@ -204,7 +206,7 @@ var quotasDef = g.NewInterface(
 	"Quota",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
-	quotasDocs,
+	quotaDocs("use-sql-to-create-a-per-user-quota"),
 	g.NewQueryStruct("CreateQuotaOptions").
 		Create().
 		OrReplace().
@@ -266,121 +268,121 @@ var quotasDef = g.NewInterface(
 	g.ShowByIDLikeFiltering,
 	g.ShowByIDInFiltering,
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("monitored-domains"),
 	"ADD_SHARED_RESOURCE",
 	quotaSharedResourceArgs("AddSharedResourceArgs"),
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("monitored-domains"),
 	"REMOVE_SHARED_RESOURCE",
 	quotaSharedResourceArgs("RemoveSharedResourceArgs"),
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("user-scope"),
 	"SET_USER_TAGS",
 	quotaSetUserTagsArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("user-scope"),
 	"EXCLUDE_USERS",
 	quotaExcludeUsersArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("user-scope"),
 	"INCLUDE_USERS",
 	quotaIncludeUsersArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("user-scope"),
 	"GET_QUOTA_SCOPE",
 	nil,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("spending-limits"),
 	"SET_PER_USER_LIMIT",
 	quotaSetPerUserLimitArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("spending-limits"),
 	"UNSET_PER_USER_LIMIT",
 	quotaUnsetPerUserLimitArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("enforcement"),
 	"SET_BLOCK_ENFORCEMENT_ENABLED",
 	quotaSetBlockEnforcementEnabledArgs,
 	"string",
 ).InstanceMethodOperation(
-	quotasDocs,
+	quotaDocs("spending-limits"),
 	"GET_CONFIG",
 	nil,
 	quotaConfigResult,
 	g.InstanceMethodKindSingleValue,
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("notifications"),
 	"ADD_NOTIFICATION_THRESHOLD",
 	quotaAddNotificationThresholdArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("notifications"),
 	"REMOVE_NOTIFICATION_THRESHOLD",
 	quotaRemoveNotificationThresholdArgs,
 	"string",
 ).InstanceMethodOperation(
-	quotasDocs,
+	quotaDocs("notifications"),
 	"GET_NOTIFICATION_THRESHOLDS",
 	nil,
 	quotaNotificationThresholdResult,
 	g.InstanceMethodKindSlice,
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("notifications"),
 	"ADD_NOTIFICATION_INTEGRATION",
 	quotaNotificationIntegrationArgs("AddNotificationIntegrationArgs"),
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("notifications"),
 	"REMOVE_NOTIFICATION_INTEGRATION",
 	quotaNotificationIntegrationArgs("RemoveNotificationIntegrationArgs"),
 	"string",
 ).InstanceMethodOperation(
-	quotasDocs,
+	quotaDocs("notifications"),
 	"GET_NOTIFICATION_INTEGRATIONS",
 	nil,
 	quotaNotificationIntegrationResult,
 	g.InstanceMethodKindSlice,
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("notifications"),
 	"SET_ADMIN_EMAILS",
 	quotaSetAdminEmailsArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("custom-actions"),
 	"ADD_CUSTOM_ACTION",
 	quotaAddCustomActionArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("custom-actions"),
 	"REMOVE_CUSTOM_ACTIONS",
 	quotaRemoveCustomActionsArgs,
 	"string",
 ).InstanceMethodOperation(
-	quotasDocs,
+	quotaDocs("custom-actions"),
 	"GET_CUSTOM_ACTIONS",
 	nil,
 	quotaCustomActionResult,
 	g.InstanceMethodKindSlice,
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("cycle-start-action"),
 	"SET_CYCLE_START_ACTION",
 	quotaSetCycleStartActionArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotasDocs,
+	quotaDocs("cycle-start-action"),
 	"REMOVE_CYCLE_START_ACTION",
 	nil,
 	"string",
 ).InstanceMethodOperation(
-	quotasDocs,
+	quotaDocs("cycle-start-action"),
 	"GET_CYCLE_START_ACTION",
 	nil,
 	quotaCycleStartActionResult,

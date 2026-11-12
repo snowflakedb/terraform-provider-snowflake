@@ -119,11 +119,20 @@ var (
 	//go:embed templates/sub_templates/hierarchy_rename.tmpl
 	hierarchyRenameTemplateContent string
 
+	//go:embed templates/sub_templates/suspend_for_alter.tmpl
+	suspendForAlterTemplateContent string
+
+	//go:embed templates/sub_templates/resume_after_alter.tmpl
+	resumeAfterAlterTemplateContent string
+
 	//go:embed templates/sub_templates/before_alter.tmpl
 	beforeAlterTemplateContent string
 
 	//go:embed templates/sub_templates/apply_set_unset.tmpl
 	applySetUnsetTemplateContent string
+
+	//go:embed templates/sub_templates/generated_alter_requests.tmpl
+	generatedAlterRequestsTemplateContent string
 
 	//go:embed templates/sub_templates/generated_apply_set_unset.tmpl
 	generatedApplySetUnsetTemplateContent string
@@ -232,8 +241,11 @@ func init() {
 	subTemplates, _ = subTemplates.New("setComputedFields").Parse(setComputedFieldsTemplateContent)
 	subTemplates, _ = subTemplates.New("generatedSetComputedFields").Parse(generatedSetComputedFieldsTemplateContent)
 	subTemplates, _ = subTemplates.New("hierarchyRename").Parse(hierarchyRenameTemplateContent)
+	subTemplates, _ = subTemplates.New("suspendForAlter").Parse(suspendForAlterTemplateContent)
+	subTemplates, _ = subTemplates.New("resumeAfterAlter").Parse(resumeAfterAlterTemplateContent)
 	subTemplates, _ = subTemplates.New("beforeAlter").Parse(beforeAlterTemplateContent)
 	subTemplates, _ = subTemplates.New("applySetUnset").Parse(applySetUnsetTemplateContent)
+	subTemplates, _ = subTemplates.New("generatedAlterRequests").Parse(generatedAlterRequestsTemplateContent)
 	subTemplates, _ = subTemplates.New("generatedApplySetUnset").Parse(generatedApplySetUnsetTemplateContent)
 	subTemplates, _ = subTemplates.New("alterSetInSdk").Parse(alterSetInSdkTemplateContent)
 	subTemplates, _ = subTemplates.New("alterUnsetInSdk").Parse(alterUnsetInSdkTemplateContent)

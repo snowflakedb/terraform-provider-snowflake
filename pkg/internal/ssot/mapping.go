@@ -2,6 +2,7 @@ package ssot
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
@@ -98,20 +99,31 @@ type UpdateMapping interface {
 }
 
 // UpdateCall is one generated ApplySetUnset call.
-// Target is the argument after the attribute key.
+// Set and Unset say which setters the helper receives from the SET and UNSET request that holds the attribute: the
+// With<Field> methods, or with Fields the request fields (&set.<Field>). Mapper is the extra argument after the setters,
+// if any, such as a literal. The generator writes the final arguments, because only it knows which request each
+// attribute belongs to.
 type UpdateCall struct {
 	Helper string
-	Target string
+	Set    bool
+	Unset  bool
+	Fields bool
+	// Requests passes the requests themselves, set and unset, to a function of the object, and no attribute key.
+	// It is for an update that depends on more than one attribute.
+	Requests bool
+	// Field is the name of the request field or setter when it differs from the attribute, such as SetBody for body.
+	Field  string
+	Mapper string
 }
 
-// SetOnlyMapping is an update helper called with set.With<Field>.
+// SetOnlyMapping is an update helper called with the SET setter.
 // The value is the helper function name.
 type SetOnlyMapping string
 
 func (m SetOnlyMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
 	return UpdateCall{
 		Helper: string(m),
-		Target: "set.With" + genhelpers.SnakeCaseToCamel(attr.Name),
+		Set:    true,
 	}
 }
 
@@ -120,15 +132,15 @@ const (
 	BooleanAttributeUpdateSetOnlyBuilder SetOnlyMapping = "booleanAttributeUpdateSetOnlyBuilder"
 )
 
-// SetUnsetMapping is an update helper called with set.With<Field>, unset.With<Field>.
+// SetUnsetMapping is an update helper called with the SET and UNSET setters.
 // The value is the helper function name.
 type SetUnsetMapping string
 
 func (m SetUnsetMapping) UpdateCall(_ string, attr Attribute) UpdateCall {
-	goName := genhelpers.SnakeCaseToCamel(attr.Name)
 	return UpdateCall{
 		Helper: string(m),
-		Target: fmt.Sprintf("set.With%s, unset.With%s", goName, goName),
+		Set:    true,
+		Unset:  true,
 	}
 }
 
@@ -148,10 +160,11 @@ func (m ListValueUpdateMapping) UpdateCall(objectName string, attr Attribute) Up
 	if m.Mapper == "" {
 		panic(fmt.Sprintf("object %q: attribute %q ListValueUpdate needs a mapper function", objectName, attr.Name))
 	}
-	goName := genhelpers.SnakeCaseToCamel(attr.Name)
 	return UpdateCall{
 		Helper: "listValueUpdateBuilder",
-		Target: fmt.Sprintf("set.With%s, unset.With%s, %s", goName, goName, m.Mapper),
+		Set:    true,
+		Unset:  true,
+		Mapper: m.Mapper,
 	}
 }
 
@@ -170,10 +183,240 @@ func (m ListValueUpdateSetOnlyMapping) UpdateCall(objectName string, attr Attrib
 	}
 	return UpdateCall{
 		Helper: "listValueUpdateSetOnlyBuilder",
-		Target: fmt.Sprintf("set.With%s, %s", genhelpers.SnakeCaseToCamel(attr.Name), m.Mapper),
+		Set:    true,
+		Mapper: m.Mapper,
 	}
 }
 
 func ListValueUpdateSetOnly(mapper string) ListValueUpdateSetOnlyMapping {
 	return ListValueUpdateSetOnlyMapping{Mapper: mapper}
+}
+
+// SetUnsetFieldsMapping is an update helper called with the fields of the SET and UNSET requests,
+// &set.<Field> and &unset.<Field>. The value is the helper function name.
+type SetUnsetFieldsMapping string
+
+func (m SetUnsetFieldsMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: string(m),
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+	}
+}
+
+const (
+	AccountObjectIdentifierAttributeUpdate SetUnsetFieldsMapping = "accountObjectIdentifierAttributeUpdate"
+)
+
+// SetOnlyFieldsMapping is an update helper called with the field of the SET request, &set.<Field>. It never unsets the
+// attribute. The value is the helper function name.
+type SetOnlyFieldsMapping string
+
+func (m SetOnlyFieldsMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: string(m),
+		Set:    true,
+		Fields: true,
+	}
+}
+
+const (
+	BooleanStringAttributeUpdateSetOnly SetOnlyFieldsMapping = "booleanStringAttributeUpdateSetOnly"
+)
+
+// AttributeMappedValueUpdateMapping is attributeMappedValueUpdate with the name of the function that turns the Terraform
+// value into the SDK value. An attribute that is removed from the configuration is unset. It also serves a nested
+// attribute that is updated as one value, such as a block that the SDK takes as a string.
+type AttributeMappedValueUpdateMapping struct {
+	Mapper string
+}
+
+func (m AttributeMappedValueUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Mapper == "" {
+		panic(fmt.Sprintf("object %q: attribute %q AttributeMappedValueUpdate needs a mapper function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "attributeMappedValueUpdate",
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+		Mapper: m.Mapper,
+	}
+}
+
+func AttributeMappedValueUpdate(mapper string) AttributeMappedValueUpdateMapping {
+	return AttributeMappedValueUpdateMapping{Mapper: mapper}
+}
+
+// WholeValueUpdateMapping is implemented by an UpdateMapping that updates a nested attribute as one value. The generator
+// skips every other nested attribute, because their fields are not updated one by one yet.
+type WholeValueUpdateMapping interface {
+	UpdateMapping
+	updatesWholeValue()
+}
+
+func (AttributeMappedValueUpdateMapping) updatesWholeValue() {}
+
+// UpdatesWholeValue reports whether the mapping updates a nested attribute as one value.
+func UpdatesWholeValue(mapping UpdateMapping) bool {
+	_, ok := mapping.(WholeValueUpdateMapping)
+	return ok
+}
+
+// StringAttributeUpdateSetOnlyNotEmptyMapping is stringAttributeUpdateSetOnlyNotEmpty: the value is set when it changes,
+// and it is never unset. Field is the request field when it differs from the attribute.
+type StringAttributeUpdateSetOnlyNotEmptyMapping struct {
+	Field string
+}
+
+func (m StringAttributeUpdateSetOnlyNotEmptyMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: "stringAttributeUpdateSetOnlyNotEmpty",
+		Set:    true,
+		Fields: true,
+		Field:  m.Field,
+	}
+}
+
+func StringAttributeUpdateSetOnlyNotEmpty(field string) StringAttributeUpdateSetOnlyNotEmptyMapping {
+	return StringAttributeUpdateSetOnlyNotEmptyMapping{Field: field}
+}
+
+// BooleanStringAttributeUnsetFallbackUpdateMapping is booleanStringAttributeUnsetFallbackUpdate. A boolean string that is
+// removed from the configuration is set to Fallback, because the object has no UNSET for it.
+type BooleanStringAttributeUnsetFallbackUpdateMapping struct {
+	Fallback bool
+}
+
+func (m BooleanStringAttributeUnsetFallbackUpdateMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: "booleanStringAttributeUnsetFallbackUpdate",
+		Set:    true,
+		Fields: true,
+		Mapper: strconv.FormatBool(m.Fallback),
+	}
+}
+
+func BooleanStringAttributeUnsetFallbackUpdate(fallback bool) BooleanStringAttributeUnsetFallbackUpdateMapping {
+	return BooleanStringAttributeUnsetFallbackUpdateMapping{Fallback: fallback}
+}
+
+// AttributeMappedValueUpdateSetOnlyAlwaysMapping is attributeMappedValueUpdateSetOnlyAlways: the mapped value is set
+// whenever the attribute changes, and it is never unset.
+type AttributeMappedValueUpdateSetOnlyAlwaysMapping struct {
+	Mapper string
+}
+
+func (m AttributeMappedValueUpdateSetOnlyAlwaysMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Mapper == "" {
+		panic(fmt.Sprintf("object %q: attribute %q AttributeMappedValueUpdateSetOnlyAlways needs a mapper function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "attributeMappedValueUpdateSetOnlyAlways",
+		Set:    true,
+		Fields: true,
+		Mapper: m.Mapper,
+	}
+}
+
+func AttributeMappedValueUpdateSetOnlyAlways(mapper string) AttributeMappedValueUpdateSetOnlyAlwaysMapping {
+	return AttributeMappedValueUpdateSetOnlyAlwaysMapping{Mapper: mapper}
+}
+
+// IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping is intAttributeWithSpecialDefaultUnsetFallbackUpdate. A value
+// that is removed from the configuration is set to Fallback, because the UNSET of the attribute does not work.
+// Fallback is a Go expression, such as a number or a constant.
+type IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping struct {
+	Fallback string
+}
+
+func (m IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Fallback == "" {
+		panic(fmt.Sprintf("object %q: attribute %q IntAttributeWithSpecialDefaultUnsetFallbackUpdate needs a fallback", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "intAttributeWithSpecialDefaultUnsetFallbackUpdate",
+		Set:    true,
+		Fields: true,
+		Mapper: m.Fallback,
+	}
+}
+
+func IntAttributeWithSpecialDefaultUnsetFallbackUpdate(fallback string) IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping {
+	return IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping{Fallback: fallback}
+}
+
+// CustomUpdateMapping calls a function of package resources with the data and the SET and UNSET requests that hold the
+// attribute: function(d, set, unset). It is for an update that decides by other attributes, such as one that only
+// applies to some warehouse types. The function does the whole update of the attribute.
+type CustomUpdateMapping struct {
+	Function string
+}
+
+func (m CustomUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Function == "" {
+		panic(fmt.Sprintf("object %q: attribute %q CustomUpdate needs a function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper:   m.Function,
+		Set:      true,
+		Unset:    true,
+		Requests: true,
+	}
+}
+
+func CustomUpdate(function string) CustomUpdateMapping {
+	return CustomUpdateMapping{Function: function}
+}
+
+// SetValueUpdateMapping is setValueUpdate with the name of the function that turns one element of the Terraform set into
+// the SDK value. An empty set unsets the attribute. It updates a nested attribute as one value, so the generator does not
+// skip it.
+type SetValueUpdateMapping struct {
+	Mapper string
+}
+
+func (m SetValueUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Mapper == "" {
+		panic(fmt.Sprintf("object %q: attribute %q SetValueUpdate needs a mapper function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "setValueUpdate",
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+		Mapper: m.Mapper,
+	}
+}
+
+func (SetValueUpdateMapping) updatesWholeValue() {}
+
+func SetValueUpdate(mapper string) SetValueUpdateMapping {
+	return SetValueUpdateMapping{Mapper: mapper}
+}
+
+// SingleBlockAttributeUpdateMapping is singleBlockAttributeUpdate with the name of the function that fills the SDK request
+// from the nested fields of the block. A removed block unsets the attribute. It updates a nested attribute as one value.
+type SingleBlockAttributeUpdateMapping struct {
+	Fill string
+}
+
+func (m SingleBlockAttributeUpdateMapping) UpdateCall(objectName string, attr Attribute) UpdateCall {
+	if m.Fill == "" {
+		panic(fmt.Sprintf("object %q: attribute %q SingleBlockAttributeUpdate needs a fill function", objectName, attr.Name))
+	}
+	return UpdateCall{
+		Helper: "singleBlockAttributeUpdate",
+		Set:    true,
+		Unset:  true,
+		Fields: true,
+		Mapper: m.Fill,
+	}
+}
+
+func (SingleBlockAttributeUpdateMapping) updatesWholeValue() {}
+
+func SingleBlockAttributeUpdate(fill string) SingleBlockAttributeUpdateMapping {
+	return SingleBlockAttributeUpdateMapping{Fill: fill}
 }

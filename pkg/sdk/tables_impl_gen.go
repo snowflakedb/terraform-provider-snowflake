@@ -212,35 +212,22 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
-	if r.StageFileFormat != nil {
-		opts.StageFileFormat = &LegacyFileFormat{
-			FormatName:     r.StageFileFormat.FormatName,
-			FileFormatType: r.StageFileFormat.FileFormatType,
-			Options:        r.StageFileFormat.Options,
-		}
-	}
-	if r.StageCopyOptions != nil {
-		opts.StageCopyOptions = &LegacyTableCopyOptions{
-			SizeLimit:         r.StageCopyOptions.SizeLimit,
-			Purge:             r.StageCopyOptions.Purge,
-			ReturnFailedOnly:  r.StageCopyOptions.ReturnFailedOnly,
-			MatchByColumnName: r.StageCopyOptions.MatchByColumnName,
-			EnforceLength:     r.StageCopyOptions.EnforceLength,
-			Truncatecolumns:   r.StageCopyOptions.Truncatecolumns,
-			Force:             r.StageCopyOptions.Force,
-		}
-		if r.StageCopyOptions.OnError != nil {
-			opts.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
-				Continue_:      r.StageCopyOptions.OnError.Continue_,
-				SkipFile:       r.StageCopyOptions.OnError.SkipFile,
-				AbortStatement: r.StageCopyOptions.OnError.AbortStatement,
-			}
-		}
-	}
 	if r.RowAccessPolicy != nil {
 		opts.RowAccessPolicy = &TableRowAccessPolicy{
 			Name: r.RowAccessPolicy.Name,
 			On:   r.RowAccessPolicy.On,
+		}
+	}
+	if r.AggregationPolicy != nil {
+		opts.AggregationPolicy = &TableAggregationPolicy{
+			AggregationPolicy: r.AggregationPolicy.AggregationPolicy,
+			EntityKey:         r.AggregationPolicy.EntityKey,
+		}
+	}
+	if r.JoinPolicy != nil {
+		opts.JoinPolicy = &TableJoinPolicy{
+			JoinPolicy:      r.JoinPolicy.JoinPolicy,
+			AllowedJoinKeys: r.JoinPolicy.AllowedJoinKeys,
 		}
 	}
 	return opts
@@ -342,6 +329,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				Name:        r.ColumnAction.Add.Name,
 				ColumnType:  r.ColumnAction.Add.ColumnType,
 				Collate:     r.ColumnAction.Add.Collate,
+				NotNull:     r.ColumnAction.Add.NotNull,
 				Tag:         r.ColumnAction.Add.Tag,
 				Comment:     r.ColumnAction.Add.Comment,
 			}
@@ -359,15 +347,54 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				}
 			}
 			if r.ColumnAction.Add.InlineConstraint != nil {
-				opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{
-					NotNull:        r.ColumnAction.Add.InlineConstraint.NotNull,
-					Name:           r.ColumnAction.Add.InlineConstraint.Name,
-					ConstraintType: r.ColumnAction.Add.InlineConstraint.ConstraintType,
+				opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
+				if r.ColumnAction.Add.InlineConstraint.UniquePK != nil {
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{
+						Name:               r.ColumnAction.Add.InlineConstraint.UniquePK.Name,
+						Unique:             r.ColumnAction.Add.InlineConstraint.UniquePK.Unique,
+						PrimaryKey:         r.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey,
+						Enforced:           r.ColumnAction.Add.InlineConstraint.UniquePK.Enforced,
+						NotEnforced:        r.ColumnAction.Add.InlineConstraint.UniquePK.NotEnforced,
+						Deferrable:         r.ColumnAction.Add.InlineConstraint.UniquePK.Deferrable,
+						NotDeferrable:      r.ColumnAction.Add.InlineConstraint.UniquePK.NotDeferrable,
+						InitiallyDeferred:  r.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyDeferred,
+						InitiallyImmediate: r.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyImmediate,
+						Enable:             r.ColumnAction.Add.InlineConstraint.UniquePK.Enable,
+						Disable:            r.ColumnAction.Add.InlineConstraint.UniquePK.Disable,
+						Validate:           r.ColumnAction.Add.InlineConstraint.UniquePK.Validate,
+						Novalidate:         r.ColumnAction.Add.InlineConstraint.UniquePK.Novalidate,
+						Rely:               r.ColumnAction.Add.InlineConstraint.UniquePK.Rely,
+						Norely:             r.ColumnAction.Add.InlineConstraint.UniquePK.Norely,
+					}
 				}
-				if r.ColumnAction.Add.InlineConstraint.ForeignKey != nil {
-					opts.ColumnAction.Add.InlineConstraint.ForeignKey = &ColumnAddForeignKey{
-						TableName:  r.ColumnAction.Add.InlineConstraint.ForeignKey.TableName,
-						ColumnName: r.ColumnAction.Add.InlineConstraint.ForeignKey.ColumnName,
+				if r.ColumnAction.Add.InlineConstraint.FK != nil {
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{
+						Name:               r.ColumnAction.Add.InlineConstraint.FK.Name,
+						ForeignKey:         r.ColumnAction.Add.InlineConstraint.FK.ForeignKey,
+						References:         r.ColumnAction.Add.InlineConstraint.FK.References,
+						RefColumn:          r.ColumnAction.Add.InlineConstraint.FK.RefColumn,
+						Match:              r.ColumnAction.Add.InlineConstraint.FK.Match,
+						On:                 r.ColumnAction.Add.InlineConstraint.FK.On,
+						Enforced:           r.ColumnAction.Add.InlineConstraint.FK.Enforced,
+						NotEnforced:        r.ColumnAction.Add.InlineConstraint.FK.NotEnforced,
+						Deferrable:         r.ColumnAction.Add.InlineConstraint.FK.Deferrable,
+						NotDeferrable:      r.ColumnAction.Add.InlineConstraint.FK.NotDeferrable,
+						InitiallyDeferred:  r.ColumnAction.Add.InlineConstraint.FK.InitiallyDeferred,
+						InitiallyImmediate: r.ColumnAction.Add.InlineConstraint.FK.InitiallyImmediate,
+						Enable:             r.ColumnAction.Add.InlineConstraint.FK.Enable,
+						Disable:            r.ColumnAction.Add.InlineConstraint.FK.Disable,
+						Validate:           r.ColumnAction.Add.InlineConstraint.FK.Validate,
+						Novalidate:         r.ColumnAction.Add.InlineConstraint.FK.Novalidate,
+						Rely:               r.ColumnAction.Add.InlineConstraint.FK.Rely,
+						Norely:             r.ColumnAction.Add.InlineConstraint.FK.Norely,
+					}
+				}
+				if r.ColumnAction.Add.InlineConstraint.CH != nil {
+					opts.ColumnAction.Add.InlineConstraint.CH = &TableColumnAddInlineCH{
+						Name:             r.ColumnAction.Add.InlineConstraint.CH.Name,
+						Expression:       r.ColumnAction.Add.InlineConstraint.CH.Expression,
+						EnableValidate:   r.ColumnAction.Add.InlineConstraint.CH.EnableValidate,
+						EnableNovalidate: r.ColumnAction.Add.InlineConstraint.CH.EnableNovalidate,
 					}
 				}
 			}
@@ -522,31 +549,6 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
 			Comment:                    r.Set.Comment,
 		}
-		if r.Set.StageFileFormat != nil {
-			opts.Set.StageFileFormat = &LegacyFileFormat{
-				FormatName:     r.Set.StageFileFormat.FormatName,
-				FileFormatType: r.Set.StageFileFormat.FileFormatType,
-				Options:        r.Set.StageFileFormat.Options,
-			}
-		}
-		if r.Set.StageCopyOptions != nil {
-			opts.Set.StageCopyOptions = &LegacyTableCopyOptions{
-				SizeLimit:         r.Set.StageCopyOptions.SizeLimit,
-				Purge:             r.Set.StageCopyOptions.Purge,
-				ReturnFailedOnly:  r.Set.StageCopyOptions.ReturnFailedOnly,
-				MatchByColumnName: r.Set.StageCopyOptions.MatchByColumnName,
-				EnforceLength:     r.Set.StageCopyOptions.EnforceLength,
-				Truncatecolumns:   r.Set.StageCopyOptions.Truncatecolumns,
-				Force:             r.Set.StageCopyOptions.Force,
-			}
-			if r.Set.StageCopyOptions.OnError != nil {
-				opts.Set.StageCopyOptions.OnError = &LegacyTableCopyOnErrorOptions{
-					Continue_:      r.Set.StageCopyOptions.OnError.Continue_,
-					SkipFile:       r.Set.StageCopyOptions.OnError.SkipFile,
-					AbortStatement: r.Set.StageCopyOptions.OnError.AbortStatement,
-				}
-			}
-		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &TableUnset{
@@ -559,31 +561,31 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		}
 	}
 	if r.AddRowAccessPolicy != nil {
-		opts.AddRowAccessPolicy = &TableAddRowAccessPolicy{
-			RowAccessPolicy: r.AddRowAccessPolicy.RowAccessPolicy,
-			On:              r.AddRowAccessPolicy.On,
-		}
+		opts.AddRowAccessPolicy = r.AddRowAccessPolicy.toOpts()
 	}
 	if r.DropRowAccessPolicy != nil {
-		opts.DropRowAccessPolicy = &TableDropRowAccessPolicy{
-			RowAccessPolicy: r.DropRowAccessPolicy.RowAccessPolicy,
-		}
+		opts.DropRowAccessPolicy = r.DropRowAccessPolicy.toOpts()
 	}
 	if r.DropAndAddRowAccessPolicy != nil {
-		opts.DropAndAddRowAccessPolicy = &TableDropAndAddRowAccessPolicy{}
-		opts.DropAndAddRowAccessPolicy.Drop = TableDropRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Drop.RowAccessPolicy,
-		}
-		opts.DropAndAddRowAccessPolicy.Add = TableAddRowAccessPolicy{
-			RowAccessPolicy: r.DropAndAddRowAccessPolicy.Add.RowAccessPolicy,
-			On:              r.DropAndAddRowAccessPolicy.Add.On,
-		}
+		opts.DropAndAddRowAccessPolicy = r.DropAndAddRowAccessPolicy.toOpts()
 	}
 	if r.AddStorageLifecyclePolicy != nil {
 		opts.AddStorageLifecyclePolicy = &TableStorageLifecyclePolicy{
 			StorageLifecyclePolicy: r.AddStorageLifecyclePolicy.StorageLifecyclePolicy,
 			On:                     r.AddStorageLifecyclePolicy.On,
 		}
+	}
+	if r.SetAggregationPolicy != nil {
+		opts.SetAggregationPolicy = r.SetAggregationPolicy.toOpts()
+	}
+	if r.UnsetAggregationPolicy != nil {
+		opts.UnsetAggregationPolicy = r.UnsetAggregationPolicy.toOpts()
+	}
+	if r.SetJoinPolicy != nil {
+		opts.SetJoinPolicy = r.SetJoinPolicy.toOpts()
+	}
+	if r.UnsetJoinPolicy != nil {
+		opts.UnsetJoinPolicy = r.UnsetJoinPolicy.toOpts()
 	}
 	return opts
 }
@@ -634,7 +636,13 @@ func (r tablesRow) convert() (*Table, error) {
 	mapNullStringToRequiredBool(&result.EnableSchemaEvolution, r.EnableSchemaEvolution)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
 	mapNullStringToRequiredBool(&result.IsEvent, r.IsEvent)
+	mapNullStringToRequiredBool(&result.IsHybrid, r.IsHybrid)
+	mapNullStringToRequiredBool(&result.IsIceberg, r.IsIceberg)
 	mapNullStringToRequiredBool(&result.IsDynamic, r.IsDynamic)
+	mapNullStringToRequiredBool(&result.IsImmutable, r.IsImmutable)
+	mapNullStringToRequiredBool(&result.IsInteractive, r.IsInteractive)
+	mapNullStringToRequiredBoolValue(&result.RowTimestamp, r.RowTimestamp, "ON")
+	mapNullStringToRequiredBoolValue(&result.ErrorLogging, r.ErrorLogging, "ON")
 	mapNullString(&result.Budget, r.Budget)
 	return result, nil
 }
@@ -795,5 +803,59 @@ func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimization
 			opts.Drop.On = on
 		}
 	}
+	return opts
+}
+
+func (r *TableAddRowAccessPolicyRequest) toOpts() *TableAddRowAccessPolicy {
+	opts := &TableAddRowAccessPolicy{
+		RowAccessPolicy: r.RowAccessPolicy,
+		On:              r.On,
+	}
+	return opts
+}
+
+func (r *TableDropRowAccessPolicyRequest) toOpts() *TableDropRowAccessPolicy {
+	opts := &TableDropRowAccessPolicy{
+		RowAccessPolicy: r.RowAccessPolicy,
+	}
+	return opts
+}
+
+func (r *TableDropAndAddRowAccessPolicyRequest) toOpts() *TableDropAndAddRowAccessPolicy {
+	opts := &TableDropAndAddRowAccessPolicy{}
+	opts.Drop = TableDropRowAccessPolicy{
+		RowAccessPolicy: r.Drop.RowAccessPolicy,
+	}
+	opts.Add = TableAddRowAccessPolicy{
+		RowAccessPolicy: r.Add.RowAccessPolicy,
+		On:              r.Add.On,
+	}
+	return opts
+}
+
+func (r *TableSetAggregationPolicyRequest) toOpts() *TableSetAggregationPolicy {
+	opts := &TableSetAggregationPolicy{
+		AggregationPolicy: r.AggregationPolicy,
+		EntityKey:         r.EntityKey,
+		Force:             r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetAggregationPolicyRequest) toOpts() *TableUnsetAggregationPolicy {
+	opts := &TableUnsetAggregationPolicy{}
+	return opts
+}
+
+func (r *TableSetJoinPolicyRequest) toOpts() *TableSetJoinPolicy {
+	opts := &TableSetJoinPolicy{
+		JoinPolicy: r.JoinPolicy,
+		Force:      r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetJoinPolicyRequest) toOpts() *TableUnsetJoinPolicy {
+	opts := &TableUnsetJoinPolicy{}
 	return opts
 }

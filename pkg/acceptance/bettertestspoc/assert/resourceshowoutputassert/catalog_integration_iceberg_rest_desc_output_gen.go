@@ -70,6 +70,11 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasCatalogNamespace(
 	return c
 }
 
+func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasApiAwsIamUserArn(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
+	c.StringValueSet("api_aws_iam_user_arn", expected)
+	return c
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -106,5 +111,10 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoComment() *Cata
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoCatalogNamespace() *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.ValueNotSet("catalog_namespace")
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasNoApiAwsIamUserArn() *CatalogIntegrationIcebergRestDescribeOutputAssert {
+	c.ValueNotSet("api_aws_iam_user_arn")
 	return c
 }

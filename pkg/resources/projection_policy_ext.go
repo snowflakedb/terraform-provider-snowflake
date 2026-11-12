@@ -8,7 +8,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -21,11 +20,6 @@ var (
 		StateContext: TrackingImportWrapper(resources.ProjectionPolicy, importProjectionPolicy),
 	}
 )
-
-type projectionPolicyAlterRequestsExt struct {
-	set   *sdk.ProjectionPolicySetRequest
-	unset *sdk.ProjectionPolicyUnsetRequest
-}
 
 // SHOW does not return body. Import reads it from DESCRIBE after the generated show import.
 func importProjectionPolicy(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
@@ -61,27 +55,4 @@ func projectionPolicySetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.Sch
 		d.Set("schema", id.SchemaName()),
 		d.Set("comment", projectionPolicy.Comment),
 	)
-}
-
-// SET BODY -> cannot be combined with SET COMMENT. Body is its own ALTER.
-func projectionPolicyBeforeAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
-	if !d.HasChange("body") {
-		return nil
-	}
-	request := sdk.NewProjectionPolicySetRequest().WithSetBody(d.Get("body").(string))
-	if err := meta.(*provider.Context).Client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(id).WithSet(*request)); err != nil {
-		return diag.FromErr(err)
-	}
-	return nil
-}
-
-func projectionPolicyApplySetUnsetExt(d *schema.ResourceData) (*projectionPolicyAlterRequestsExt, error) {
-	set, unset := sdk.NewProjectionPolicySetRequest(), sdk.NewProjectionPolicyUnsetRequest()
-	errs := errors.Join(
-		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
-	)
-	if errs != nil {
-		return nil, errs
-	}
-	return &projectionPolicyAlterRequestsExt{set: set, unset: unset}, nil
 }

@@ -162,7 +162,13 @@ func codeBundleApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.Creat
 	)
 }
 
-func codeBundleApplySetUnset(d *tfschema.ResourceData) (*codeBundleAlterRequestsExt, error) {
+// codeBundleAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type codeBundleAlterRequests struct {
+	set   *sdk.CodeBundleSetRequest
+	unset *sdk.CodeBundleUnsetRequest
+}
+
+func codeBundleApplySetUnset(d *tfschema.ResourceData) (*codeBundleAlterRequests, error) {
 	set, unset := sdk.NewCodeBundleSetRequest(), sdk.NewCodeBundleUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
@@ -170,7 +176,7 @@ func codeBundleApplySetUnset(d *tfschema.ResourceData) (*codeBundleAlterRequests
 	if errs != nil {
 		return nil, errs
 	}
-	return &codeBundleAlterRequestsExt{set: set, unset: unset}, nil
+	return &codeBundleAlterRequests{set: set, unset: unset}, nil
 }
 
 func DeleteCodeBundle(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

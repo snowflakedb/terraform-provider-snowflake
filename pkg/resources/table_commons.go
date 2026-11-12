@@ -486,9 +486,7 @@ func aggregationPolicyCreateRequest(d *schema.ResourceData) (id sdk.SchemaObject
 	return id, entityKey, true, nil
 }
 
-// aggregationPolicyUpdateRequests computes the ready-to-use ViewSetAggregationPolicyRequest/ViewUnsetAggregationPolicyRequest
-// for the desired aggregation_policy state. These request types are shared verbatim between AlterViewRequest and
-// AlterIcebergTableRequest.
+// aggregationPolicyUpdateRequests computes View SET/UNSET aggregation policy requests for views.
 func aggregationPolicyUpdateRequests(d *schema.ResourceData) (set *sdk.ViewSetAggregationPolicyRequest, unset *sdk.ViewUnsetAggregationPolicyRequest, err error) {
 	v, ok := d.GetOk("aggregation_policy")
 	if !ok {
@@ -499,6 +497,23 @@ func aggregationPolicyUpdateRequests(d *schema.ResourceData) (set *sdk.ViewSetAg
 		return nil, nil, err
 	}
 	set = sdk.NewViewSetAggregationPolicyRequest(id)
+	if len(entityKey) > 0 {
+		set.WithEntityKey(entityKey)
+	}
+	return set.WithForce(true), nil, nil
+}
+
+// aggregationPolicyTableUpdateRequests computes Table SET/UNSET aggregation policy requests for iceberg tables.
+func aggregationPolicyTableUpdateRequests(d *schema.ResourceData) (set *sdk.TableSetAggregationPolicyRequest, unset *sdk.TableUnsetAggregationPolicyRequest, err error) {
+	v, ok := d.GetOk("aggregation_policy")
+	if !ok {
+		return nil, sdk.NewTableUnsetAggregationPolicyRequest(), nil
+	}
+	id, entityKey, err := extractPolicyWithColumnsSet(v, "entity_key")
+	if err != nil {
+		return nil, nil, err
+	}
+	set = sdk.NewTableSetAggregationPolicyRequest(id)
 	if len(entityKey) > 0 {
 		set.WithEntityKey(entityKey)
 	}

@@ -32,14 +32,12 @@ var tagSchema = map[string]*schema.Schema{
 	"database": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The database in which to create the tag."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
 	"schema": {
 		Type:             schema.TypeString,
 		Required:         true,
-		ForceNew:         true,
 		Description:      blocklistedCharactersFieldDescription("The schema in which to create the tag."),
 		DiffSuppressFunc: suppressIdentifierQuoting,
 	},
@@ -181,8 +179,10 @@ func Tag() *schema.Resource {
 		Description:   "Resource used to manage tags. For more information, check [tag documentation](https://docs.snowflake.com/en/sql-reference/sql/create-tag). For assigning tags to Snowflake objects, see [tag_association resource](./tag_association).",
 
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.Tag, customdiff.All(
-			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "comment", "allowed_values", "ordered_allowed_values", "no_allowed_values", "on_conflict"),
-			ComputedIfAnyAttributeChanged(tagSchema, FullyQualifiedNameAttributeName, "name"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
+			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+			ComputedIfAnyAttributeChanged(tagSchema, ShowOutputAttributeName, "name", "database", "schema", "comment", "allowed_values", "ordered_allowed_values", "no_allowed_values", "on_conflict"),
+			ComputedIfAnyAttributeChanged(tagSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 		)),
 
 		Schema: tagSchema,
@@ -387,6 +387,17 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := handleThreeLevelHierarchyRenameIfEnabled(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.Tags.Alter(ctx, sdk.NewAlterTagRequest(currentId).WithRenameTo(targetId))
+		},
+		client.Tags.ShowByID,
+		"tag",
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

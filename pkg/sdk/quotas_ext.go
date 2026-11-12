@@ -24,10 +24,28 @@ type QuotaDetails struct {
 // QuotaScope is the JSON returned by GET_QUOTA_SCOPE. Its user tags differ from the guide's example: their keys are camelCase
 // and they have no "type".
 type QuotaScope struct {
-	ExcludedUsers   []QuotaScopeUser           `json:"excluded_users"`
-	IncludedUsers   []QuotaScopeUser           `json:"included_users"`
-	SharedResources []QuotaScopeSharedResource `json:"shared_resources"`
-	UserTags        *QuotaScopeUserTags        `json:"user_tags"`
+	ExcludedUsers    []QuotaScopeUser           `json:"excluded_users"`
+	ExcludedUserTags []QuotaScopeTag            `json:"excluded_user_tags"`
+	IncludedUsers    []QuotaScopeUser           `json:"included_users"`
+	SharedResources  []QuotaScopeSharedResource `json:"shared_resources"`
+	UserTags         *QuotaScopeUserTags        `json:"user_tags"`
+}
+
+// SelectionTags returns the tags set with SET_USER_TAGS.
+func (s QuotaScope) SelectionTags() []QuotaScopeTag {
+	if s.UserTags == nil || s.UserTags.AreExclusions() {
+		return nil
+	}
+	return s.UserTags.Tags
+}
+
+// ExclusionTags returns the tags set with EXCLUDE_USERS('TAG', ...). Before Snowflake added excluded_user_tags, it returned
+// them in user_tags, with the ALL_USERS operator.
+func (s QuotaScope) ExclusionTags() []QuotaScopeTag {
+	if len(s.ExcludedUserTags) > 0 || s.UserTags == nil || !s.UserTags.AreExclusions() {
+		return s.ExcludedUserTags
+	}
+	return s.UserTags.Tags
 }
 
 // Numeric values are kept as json.Number, which accepts both JSON numbers and numeric strings.
@@ -55,8 +73,7 @@ func (r QuotaScopeSharedResource) NormalizedDomain() (QuotaSharedResourceDomain,
 	return ToQuotaSharedResourceDomain(strings.ReplaceAll(r.Domain, "_", " "))
 }
 
-// QuotaScopeUserTagsOperatorAllUsers is the operator of a quota whose users are not selected by tags. Its tags, if any,
-// are the ones excluded with EXCLUDE_USERS('TAG', ...).
+// QuotaScopeUserTagsOperatorAllUsers is the operator of a quota whose users are not selected by tags.
 const QuotaScopeUserTagsOperatorAllUsers = "ALL_USERS"
 
 type QuotaScopeUserTags struct {

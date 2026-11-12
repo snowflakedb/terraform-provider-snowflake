@@ -244,6 +244,7 @@ type CatalogIntegrationDetails struct {
 	OauthRestAuthentication  *CatalogIntegrationOauthRestAuthenticationDetails
 	BearerRestAuthentication *CatalogIntegrationBearerRestAuthenticationDetails
 	Sigv4RestAuthentication  *CatalogIntegrationSigv4RestAuthenticationDetails
+	ApiAwsIamUserArn         string
 }
 
 type CatalogIntegrationRestConfigDetails struct {
@@ -298,6 +299,7 @@ type CatalogIntegrationIcebergRestDetails struct {
 	OauthRestAuthentication  *CatalogIntegrationIcebergRestOauthRestAuthenticationDetails
 	BearerRestAuthentication *CatalogIntegrationIcebergRestBearerRestAuthenticationDetails
 	Sigv4RestAuthentication  *CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails
+	ApiAwsIamUserArn         string
 }
 
 type CatalogIntegrationIcebergRestRestConfigDetails struct {

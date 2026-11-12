@@ -588,6 +588,28 @@ func (i *Interface) ShowParametersDetailsFromObject(obj ssot.Object) *Interface 
 	return i.ShowParametersDetails(parametersForLevels(levels)...)
 }
 
+// SuspendIfStartedFromObject adds SuspendIfStarted, built from Object.SuspendForAlter.
+// The state field, the enum constants, and IF SUSPENDED come from the definition. The body is generated.
+func (i *Interface) SuspendIfStartedFromObject(obj ssot.Object) *Interface {
+	if !obj.SdkConfig().SuspendIfStarted || obj.SuspendForAlter == nil {
+		panic(fmt.Sprintf("object %q is not enabled for SDK SuspendIfStarted generation", obj.Name))
+	}
+	suspend := obj.SuspendForAlter
+	started, okStarted := suspend.State.Enum.ConstantName(suspend.Started)
+	suspended, okSuspended := suspend.State.Enum.ConstantName(suspend.Suspended)
+	if !okStarted || !okSuspended {
+		panic(fmt.Sprintf("object %q: SuspendForAlter values are not values of the %s enum", obj.Name, suspend.State.Enum.Name))
+	}
+	return i.SuspendIfStarted(SuspendIfStartedConfig{
+		StateField:        ssot.ColumnFieldName(*suspend.State),
+		StartedConstant:   started,
+		SuspendedConstant: suspended,
+		ResumeIfSuspended: slices.ContainsFunc(obj.Alter.Clauses, func(c ssot.AlterClause) bool {
+			return c.Kind == ssot.AlterClauseKeyword && c.SQL == "IF SUSPENDED"
+		}),
+	})
+}
+
 // InterfaceFromObject builds one SDK interface from the operations whose flags are on.
 // A flag that is off is absent. The existing FromObject helpers still panic if called while their flag is off.
 // Order is Create, Alter, Drop, Show, Describe, ShowParameters, ShowParametersDetails, custom operations, then custom interface methods.
@@ -623,6 +645,9 @@ func InterfaceFromObject(obj ssot.Object) *Interface {
 	}
 	if cfg.ShowParametersDetails {
 		iface = iface.ShowParametersDetailsFromObject(obj)
+	}
+	if cfg.SuspendIfStarted {
+		iface = iface.SuspendIfStartedFromObject(obj)
 	}
 	if cfg.CustomOperations {
 		iface = iface.CustomOperationsFromObject(obj)
@@ -726,8 +751,8 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 	}
 	addList(obj.Create.KeywordsBefore)
 	addList(obj.Create.Clauses)
-	addList(obj.Set)
-	addList(obj.Unset)
+	addList(obj.SetAttributes())
+	addList(obj.UnsetAttributes())
 	for _, enum := range obj.AdditionalEnums {
 		addEnum(enum)
 	}
@@ -941,8 +966,8 @@ func enumListItemQueryStructs(obj ssot.Object) []*QueryStruct {
 	}
 	add(obj.Create.KeywordsBefore)
 	add(obj.Create.Clauses)
-	add(obj.Set)
-	add(obj.Unset)
+	add(obj.SetAttributes())
+	add(obj.UnsetAttributes())
 	return out
 }
 
@@ -1063,10 +1088,19 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 }
 
 func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
-	setParams := parametersForStatement(obj, obj.Set, "SET")
+	var setOptions FieldTransformer = KeywordOptions().SQL("SET")
+	if cfg.AlterSetList {
+		setOptions = ListOptions().NoParentheses().SQL("SET")
+	}
+	return q.OptionalQueryStructField("Set", AlterSetQueryStruct(obj, cfg), setOptions)
+}
+
+// AlterSetQueryStruct builds the SET struct. An object can call it before ALTER itself is generated.
+func AlterSetQueryStruct(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+	setParams := parametersForStatement(obj, obj.SetAttributes(), "SET")
 	setStruct := NewQueryStruct(obj.Name + "Set")
 	setStruct.owner = obj.Name
-	setStruct = setStruct.appendSqlSequenceParams(obj.Set, attributeSqlSet, setParams)
+	setStruct = setStruct.appendSqlSequenceParams(obj.SetAttributes(), attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
 	for _, pair := range obj.Alter.SetConflictingFields {
 		setStruct = setStruct.WithValidation(ConflictingFields, collections.Map(pair, func(attr *ssot.Attribute) string {
@@ -1077,16 +1111,20 @@ func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *Que
 	if cfg.AlterSetAdditionalValidations {
 		setStruct = setStruct.WithAdditionalValidations()
 	}
-	var setOptions FieldTransformer = KeywordOptions().SQL("SET")
-	if cfg.AlterSetList {
-		setOptions = ListOptions().NoParentheses().SQL("SET")
-	}
-	return q.OptionalQueryStructField("Set", setStruct, setOptions)
+	return setStruct
 }
 
 func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
-	unsetParams := parametersForStatement(obj, obj.Unset, "UNSET")
-	unsetStruct := NewQueryStruct(obj.Name+"Unset").appendSqlSequenceParams(obj.Unset, attributeSqlUnset, unsetParams)
+	return q.OptionalQueryStructField("Unset", AlterUnsetQueryStruct(obj), ListOptions().NoParentheses().SQL("UNSET"))
+}
+
+// AlterUnsetQueryStruct builds the UNSET struct. The statement embeds it as a list with no parentheses,
+// so the fields are comma-separated. An object can call it before ALTER itself is generated.
+func AlterUnsetQueryStruct(obj ssot.Object) *QueryStruct {
+	unsetParams := parametersForStatement(obj, obj.UnsetAttributes(), "UNSET")
+	unsetStruct := NewQueryStruct(obj.Name + "Unset")
+	unsetStruct.owner = obj.Name
+	unsetStruct = unsetStruct.appendSqlSequenceParams(obj.UnsetAttributes(), attributeSqlUnset, unsetParams)
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
 	for _, group := range obj.UnsetConflicts {
 		names := collections.Map(group, func(member *ssot.Attribute) string {
@@ -1094,7 +1132,7 @@ func appendAlterUnset(q *QueryStruct, obj ssot.Object) *QueryStruct {
 		})
 		unsetStruct = unsetStruct.WithValidation(ConflictingFields, names...)
 	}
-	return q.OptionalQueryStructField("Unset", unsetStruct, ListOptions().NoParentheses().SQL("UNSET"))
+	return unsetStruct
 }
 
 func parametersForStatement(obj ssot.Object, list []*ssot.Attribute, statement string) []ssot.ParameterDef {

@@ -11,6 +11,14 @@ func setStringIfNotEmpty(d *schema.ResourceData, key, value string) error {
 	return nil
 }
 
+// setListKeepingNull skips d.Set when Snowflake and state hold no items, because d.Set stores an empty list instead of null.
+func setListKeepingNull[T any](d *schema.ResourceData, key string, value []T) error {
+	if len(value) == 0 && len(d.Get(key).([]any)) == 0 {
+		return nil
+	}
+	return d.Set(key, value)
+}
+
 func attributeMappedValueReadOrDefault[T, R any](d *schema.ResourceData, key string, value *T, mapper func(*T) (R, error), defaultValue *R) error {
 	if value != nil {
 		mappedValue, err := mapper(value)
@@ -58,15 +66,6 @@ func setRequiredFromStringPtr(d *schema.ResourceData, key string, ptr *string) e
 		}
 	}
 	return nil
-}
-
-// derefOrZero returns the value behind ptr, or the zero value of T when ptr is nil.
-func derefOrZero[T any](ptr *T) T {
-	if ptr == nil {
-		var zero T
-		return zero
-	}
-	return *ptr
 }
 
 func optionalStringOutputMapping[T ~string](value *T) (any, string) {

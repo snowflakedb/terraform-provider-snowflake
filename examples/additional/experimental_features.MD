@@ -85,9 +85,9 @@ Intended for large configurations (thousands of grant resources) where plan and 
 #### HIERARCHY_RENAMES
 When enabled, allows in-place handling of hierarchy renames and moves for supported resources.
 
-Currently supported by: `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_hybrid_table`, `snowflake_projection_policy`, `snowflake_schema`, `snowflake_table`.
+Currently supported by: `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_file_format_avro`, `snowflake_file_format_csv`, `snowflake_file_format_json`, `snowflake_file_format_orc`, `snowflake_file_format_parquet`, `snowflake_file_format_xml`, `snowflake_hybrid_table`, `snowflake_openflow_runtime`, `snowflake_password_policy`, `snowflake_projection_policy`, `snowflake_row_access_policy`, `snowflake_schema`, `snowflake_semantic_view`, `snowflake_session_policy`, `snowflake_stage_external_azure`, `snowflake_stage_external_gcs`, `snowflake_stage_external_s3`, `snowflake_stage_external_s3_compatible`, `snowflake_stage_internal`, `snowflake_storage_lifecycle_policy`, `snowflake_streamlit`, `snowflake_table`, `snowflake_tag`, `snowflake_view`.
 
-Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on the other supported resources forces resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.
+Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on the other supported resources may force resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.
 
 For more information, see the [object renaming guide](./guides/object_renaming_guide).
 
