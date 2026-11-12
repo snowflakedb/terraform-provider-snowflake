@@ -964,17 +964,24 @@ func TestAcc_CatalogIntegrationIcebergRest_ImportSigV4(t *testing.T) {
 				ImportStatePersist: true,
 			},
 			// After import, all ForceNew fields (rest_config, sigv4_rest_authentication, etc.) must already
-			// match the config. sigv4_external_id is copied from configuration into state during import because
-			// Snowflake does not return it — no recreation plan should be produced.
+			// match the config. sigv4_external_id is not set in state during import, but the diff is suppressed
+			// because it matches describe_output, which Snowflake returns as API_AWS_EXTERNAL_ID.
 			{
 				Config: config.FromModels(t, allAttributes),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						planchecks.PrintPlanDetails(ref, "rest_config", "refresh_interval_seconds"),
-						// SIGV4_EXTERNAL_ID is ForceNew and is not returned from Snowflake, so we need to destroy and create the resource.
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						plancheck.ExpectEmptyPlan(),
 					},
 				},
+				Check: resource.ComposeTestCheckFunc(
+					assertThat(t,
+						resourceshowoutputassert.CatalogIntegrationIcebergRestDescribeOutput(t, ref).
+							HasSigv4RestAuthenticationSigv4ExternalId(sigV4ExternalId),
+					),
+					// Snowflake assigns the IAM user, so only its presence is checked.
+					resource.TestCheckResourceAttrSet(ref, "describe_output.0.api_aws_iam_user_arn"),
+				),
 			},
 		},
 	})

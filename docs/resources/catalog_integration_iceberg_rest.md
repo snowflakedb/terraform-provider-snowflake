@@ -185,6 +185,7 @@ Optional:
 
 Read-Only:
 
+- `api_aws_iam_user_arn` (String)
 - `bearer_rest_authentication` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--bearer_rest_authentication))
 - `catalog_namespace` (String)
 - `catalog_source` (String)
@@ -231,6 +232,7 @@ Read-Only:
 
 Read-Only:
 
+- `sigv4_external_id` (String)
 - `sigv4_iam_role` (String)
 - `sigv4_signing_region` (String)
 

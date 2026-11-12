@@ -16,6 +16,7 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 	OauthRestAuthentication  ssot.Attribute
 	BearerRestAuthentication ssot.Attribute
 	Sigv4RestAuthentication  ssot.Attribute
+	ApiAwsIamUserArn         ssot.Attribute
 	Id                       ssot.Attribute
 	CatalogSource            ssot.Attribute
 	TableFormat              ssot.Attribute
@@ -185,7 +186,10 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 			},
 		},
 	},
-	Id: ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true},
+	// DESCRIBE returns API_AWS_IAM_USER_ARN for SIGV4 REST authentication. Its external ID, API_AWS_EXTERNAL_ID,
+	// is parsed into sigv4_rest_authentication in the SDK ext.
+	ApiAwsIamUserArn: ssot.Attribute{Name: "api_aws_iam_user_arn", Type: ssot.AttrString, Readonly: true},
+	Id:               ssot.Attribute{Name: "id", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Readonly: true},
 	CatalogSource: ssot.Attribute{
 		Name:        "catalog_source",
 		Type:        ssot.AttrEnum,
@@ -328,6 +332,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 			&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
 			&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
 			&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+			&CatalogIntegrationIcebergRestAttrs.ApiAwsIamUserArn,
 		},
 	},
 }

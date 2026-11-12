@@ -404,3 +404,53 @@ func TestParseCommaSeparatedEnumMap(t *testing.T) {
 		})
 	}
 }
+
+func TestParseCatalogIntegrationDescribed_Sigv4AwsProperties(t *testing.T) {
+	apiAwsIamUserArn := "arn:aws:iam::123456789012:user/snowflake"
+	sigV4Properties := []CatalogIntegrationProperty{
+		{Property: "CATALOG_SOURCE", PropertyType: "String", PropertyValue: "ICEBERG_REST"},
+		{Property: "REST_AUTHENTICATION", PropertyType: "Object", PropertyValue: "{TYPE=SIGV4, SIGV4_IAM_ROLE=arn:aws:iam::123456789012:role/my-role, SIGV4_SIGNING_REGION=eu-north-1}"},
+		{Property: "API_AWS_IAM_USER_ARN", PropertyType: "String", PropertyValue: apiAwsIamUserArn},
+		{Property: "API_AWS_EXTERNAL_ID", PropertyType: "String", PropertyValue: "ABC123_SFCRole=1_abc"},
+	}
+	expectedSigV4 := CatalogIntegrationIcebergRestSigv4RestAuthenticationDetails{
+		Sigv4IamRole:       "arn:aws:iam::123456789012:role/my-role",
+		Sigv4SigningRegion: "eu-north-1",
+		Sigv4ExternalId:    "ABC123_SFCRole=1_abc",
+	}
+	bearerProperties := []CatalogIntegrationProperty{
+		{Property: "CATALOG_SOURCE", PropertyType: "String", PropertyValue: "ICEBERG_REST"},
+		{Property: "REST_AUTHENTICATION", PropertyType: "Object", PropertyValue: "{TYPE=BEARER}"},
+		{Property: "API_AWS_IAM_USER_ARN", PropertyType: "String", PropertyValue: apiAwsIamUserArn},
+		{Property: "API_AWS_EXTERNAL_ID", PropertyType: "String", PropertyValue: "ABC123_SFCRole=1_abc"},
+	}
+
+	t.Run("Iceberg REST: SIGV4 reads external id and IAM user ARN", func(t *testing.T) {
+		details, err := ParseCatalogIntegrationIcebergRestDescribed(sigV4Properties)
+		require.NoError(t, err)
+		require.Equal(t, &expectedSigV4, details.Sigv4RestAuthentication)
+		require.Equal(t, apiAwsIamUserArn, details.ApiAwsIamUserArn)
+	})
+
+	t.Run("Iceberg REST: AWS properties ignored without SIGV4", func(t *testing.T) {
+		details, err := ParseCatalogIntegrationIcebergRestDescribed(bearerProperties)
+		require.NoError(t, err)
+		require.Nil(t, details.Sigv4RestAuthentication)
+		require.NotNil(t, details.BearerRestAuthentication)
+		require.Empty(t, details.ApiAwsIamUserArn)
+	})
+
+	t.Run("generic: SIGV4 reads external id and IAM user ARN", func(t *testing.T) {
+		details, err := ParseCatalogIntegrationDescribed(sigV4Properties)
+		require.NoError(t, err)
+		require.Equal(t, new(CatalogIntegrationSigv4RestAuthenticationDetails(expectedSigV4)), details.Sigv4RestAuthentication)
+		require.Equal(t, apiAwsIamUserArn, details.ApiAwsIamUserArn)
+	})
+
+	t.Run("generic: AWS properties ignored without SIGV4", func(t *testing.T) {
+		details, err := ParseCatalogIntegrationDescribed(bearerProperties)
+		require.NoError(t, err)
+		require.Nil(t, details.Sigv4RestAuthentication)
+		require.Empty(t, details.ApiAwsIamUserArn)
+	})
+}

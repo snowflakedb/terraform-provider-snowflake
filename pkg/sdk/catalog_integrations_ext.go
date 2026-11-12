@@ -223,6 +223,10 @@ func ParseCatalogIntegrationIcebergRestDescribed(properties []CatalogIntegration
 			}
 		}
 	}
+	if details.Sigv4RestAuthentication != nil {
+		details.Sigv4RestAuthentication.Sigv4ExternalId = findCatalogIntegrationPropertyValue(properties, "API_AWS_EXTERNAL_ID")
+		details.ApiAwsIamUserArn = findCatalogIntegrationPropertyValue(properties, "API_AWS_IAM_USER_ARN")
+	}
 	return details, errors.Join(errs...)
 }
 
@@ -277,7 +281,23 @@ func ParseCatalogIntegrationDescribed(properties []CatalogIntegrationProperty) (
 			}
 		}
 	}
+	if details.Sigv4RestAuthentication != nil {
+		details.Sigv4RestAuthentication.Sigv4ExternalId = findCatalogIntegrationPropertyValue(properties, "API_AWS_EXTERNAL_ID")
+		details.ApiAwsIamUserArn = findCatalogIntegrationPropertyValue(properties, "API_AWS_IAM_USER_ARN")
+	}
 	return details, errors.Join(errs...)
+}
+
+// findCatalogIntegrationPropertyValue returns the value of the given DESCRIBE property, or an empty string if it is missing.
+// For SIGV4 REST authentication, Snowflake returns API_AWS_EXTERNAL_ID and API_AWS_IAM_USER_ARN as separate properties,
+// not inside REST_AUTHENTICATION.
+func findCatalogIntegrationPropertyValue(properties []CatalogIntegrationProperty, name string) string {
+	for _, prop := range properties {
+		if prop.Property == name {
+			return prop.PropertyValue
+		}
+	}
+	return ""
 }
 
 func parseOpenCatalogRestConfigProperty(property CatalogIntegrationProperty) (CatalogIntegrationOpenCatalogRestConfigDetails, error) {
@@ -406,7 +426,7 @@ func parseSigV4RestAuthenticationProperty(parts []string) (*CatalogIntegrationIc
 			// SIGV4_SIGNING_REGION is always returned, even if unset
 			restAuthentication.Sigv4SigningRegion = v
 		}
-		// SIGV4_EXTERNAL_ID not returned
+		// SIGV4_EXTERNAL_ID is returned as a separate API_AWS_EXTERNAL_ID property, see findCatalogIntegrationPropertyValue
 	}
 	return restAuthentication, nil
 }
