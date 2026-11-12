@@ -261,6 +261,7 @@ func handleExternalChangesToSigV4RestAuthentication(d *schema.ResourceData, deta
 		map[string]any{
 			"sigv4_iam_role":       details.Sigv4RestAuthentication.Sigv4IamRole,
 			"sigv4_signing_region": details.Sigv4RestAuthentication.Sigv4SigningRegion,
+			"sigv4_external_id":    details.Sigv4RestAuthentication.Sigv4ExternalId,
 		},
 	}
 	err := handleExternalChangesToObjectInFlatDescribeDeepEqual(
@@ -309,15 +310,16 @@ func setIcebergRestAuthInState(d *schema.ResourceData, details *sdk.CatalogInteg
 		)
 	}
 	if details.Sigv4RestAuthentication != nil {
-		var sigV4SigningRegion string
+		var sigV4SigningRegion, sigV4ExternalId string
 		if !importPermissiveMode {
 			sigV4SigningRegion = details.Sigv4RestAuthentication.Sigv4SigningRegion
+			sigV4ExternalId = details.Sigv4RestAuthentication.Sigv4ExternalId
 		}
 		return errors.Join(
 			d.Set("sigv4_rest_authentication", []any{map[string]any{
 				"sigv4_iam_role":       details.Sigv4RestAuthentication.Sigv4IamRole,
 				"sigv4_signing_region": sigV4SigningRegion,
-				// sigv4_external_id not returned from Snowflake
+				"sigv4_external_id":    sigV4ExternalId,
 			}}),
 		)
 	}

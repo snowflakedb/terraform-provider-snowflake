@@ -219,6 +219,7 @@ var CatalogIntegration = ssot.Object{
 			&catalogIntegrationDescribeColumns.OauthRestAuthentication,
 			&catalogIntegrationDescribeColumns.BearerRestAuthentication,
 			&catalogIntegrationDescribeColumns.Sigv4RestAuthentication,
+			&CatalogIntegrationIcebergRestAttrs.ApiAwsIamUserArn,
 		},
 	},
 	DescribeRows: ssot.OutputSpec{

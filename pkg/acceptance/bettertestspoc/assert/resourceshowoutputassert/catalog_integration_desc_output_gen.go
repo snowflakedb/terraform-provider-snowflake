@@ -110,6 +110,11 @@ func (c *CatalogIntegrationDescribeOutputAssert) HasGlueAwsExternalId(expected s
 	return c
 }
 
+func (c *CatalogIntegrationDescribeOutputAssert) HasApiAwsIamUserArn(expected string) *CatalogIntegrationDescribeOutputAssert {
+	c.StringValueSet("api_aws_iam_user_arn", expected)
+	return c
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -171,5 +176,10 @@ func (c *CatalogIntegrationDescribeOutputAssert) HasNoGlueAwsIamUserArn() *Catal
 
 func (c *CatalogIntegrationDescribeOutputAssert) HasNoGlueAwsExternalId() *CatalogIntegrationDescribeOutputAssert {
 	c.ValueNotSet("glue_aws_external_id")
+	return c
+}
+
+func (c *CatalogIntegrationDescribeOutputAssert) HasNoApiAwsIamUserArn() *CatalogIntegrationDescribeOutputAssert {
+	c.ValueNotSet("api_aws_iam_user_arn")
 	return c
 }

@@ -6,6 +6,11 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
+func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasApiAwsIamUserArnNotEmpty() *CatalogIntegrationIcebergRestDescribeOutputAssert {
+	c.ValuePresent("api_aws_iam_user_arn")
+	return c
+}
+
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasRestConfigCatalogUri(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.StringValueSet("rest_config.0.catalog_uri", expected)
 	return c
@@ -43,6 +48,11 @@ func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasSigv4RestAuthenti
 
 func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasSigv4RestAuthenticationSigv4ExternalId(expected string) *CatalogIntegrationIcebergRestDescribeOutputAssert {
 	c.StringValueSet("sigv4_rest_authentication.0.sigv4_external_id", expected)
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestDescribeOutputAssert) HasSigv4RestAuthenticationSigv4ExternalIdNotEmpty() *CatalogIntegrationIcebergRestDescribeOutputAssert {
+	c.ValuePresent("sigv4_rest_authentication.0.sigv4_external_id")
 	return c
 }
 

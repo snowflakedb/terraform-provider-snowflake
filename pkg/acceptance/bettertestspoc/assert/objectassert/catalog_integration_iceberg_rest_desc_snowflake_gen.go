@@ -212,3 +212,25 @@ func (c *CatalogIntegrationIcebergRestDetailsAssert) HasNoSigv4RestAuthenticatio
 	})
 	return c
 }
+
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasApiAwsIamUserArn(expected string) *CatalogIntegrationIcebergRestDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
+		t.Helper()
+		if o.ApiAwsIamUserArn != expected {
+			return fmt.Errorf("expected api aws iam user arn: %v; got: %v", expected, o.ApiAwsIamUserArn)
+		}
+		return nil
+	})
+	return c
+}
+
+func (c *CatalogIntegrationIcebergRestDetailsAssert) HasApiAwsIamUserArnNotEmpty() *CatalogIntegrationIcebergRestDetailsAssert {
+	c.AddAssertion(func(t *testing.T, o *sdk.CatalogIntegrationIcebergRestDetails) error {
+		t.Helper()
+		if o.ApiAwsIamUserArn == "" {
+			return fmt.Errorf("expected api aws iam user arn to be non-empty")
+		}
+		return nil
+	})
+	return c
+}

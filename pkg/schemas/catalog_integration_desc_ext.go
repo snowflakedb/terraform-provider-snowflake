@@ -77,6 +77,10 @@ func (catalogIntegrationDetailsToSchemaMapper) additionalSchema() map[string]*sc
 						Type:     schema.TypeString,
 						Computed: true,
 					},
+					"sigv4_external_id": {
+						Type:     schema.TypeString,
+						Computed: true,
+					},
 				},
 			},
 		},
@@ -114,6 +118,7 @@ func (catalogIntegrationDetailsToSchemaMapper) additionalToSchema(src *sdk.Catal
 			{
 				"sigv4_iam_role":       src.Sigv4RestAuthentication.Sigv4IamRole,
 				"sigv4_signing_region": src.Sigv4RestAuthentication.Sigv4SigningRegion,
+				"sigv4_external_id":    src.Sigv4RestAuthentication.Sigv4ExternalId,
 			},
 		}
 	} else {

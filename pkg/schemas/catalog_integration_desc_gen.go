@@ -65,6 +65,10 @@ var DescribeCatalogIntegrationDetailsSchema = mergeSchema(map[string]*schema.Sch
 	// oauth_rest_authentication: manual addition and mapping is needed
 	// bearer_rest_authentication: manual addition and mapping is needed
 	// sigv4_rest_authentication: manual addition and mapping is needed
+	"api_aws_iam_user_arn": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }, catalogIntegrationDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeCatalogIntegrationDetailsSchema
@@ -87,6 +91,7 @@ func CatalogIntegrationDetailsToSchema(catalogIntegrationDetails *sdk.CatalogInt
 	// oauth_rest_authentication: manual addition and mapping is needed
 	// bearer_rest_authentication: manual addition and mapping is needed
 	// sigv4_rest_authentication: manual addition and mapping is needed
+	catalogIntegrationDetailsSchema["api_aws_iam_user_arn"] = catalogIntegrationDetails.ApiAwsIamUserArn
 	catalogIntegrationDetailsToSchemaMapper{}.additionalToSchema(catalogIntegrationDetails, catalogIntegrationDetailsSchema)
 	return catalogIntegrationDetailsSchema
 }

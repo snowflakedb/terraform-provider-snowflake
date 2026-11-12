@@ -5,8 +5,6 @@ description: |-
   Resource used to manage catalog integration objects for Apache Iceberg™ tables managed in a remote catalog that complies with the open source Apache Iceberg™ REST OpenAPI specification. For more information, check catalog integration documentation https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-rest.
 ---
 
-!> **Known limitation for SigV4 authentication:** `sigv4_rest_authentication.sigv4_external_id` is not returned by Snowflake, cannot be altered after creation, and is marked as `ForceNew` in the provider. If your configuration specifies this field after import, Terraform may still produce a destroy-before-create plan because the value cannot be populated in state during import and cannot be synced via an in-place update. To avoid recreation after import for `sigv4_rest_authentication` you can omit `sigv4_external_id` if you don't need to track its changes within the configuration, adjust the state manually for this field, or accept a one-time recreation plan. We plan to address this limitation in a future release; for now, this behavior is expected. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#bug-fix-snowflake_catalog_integration_iceberg_rest-import-fix-for-forcenew-fields) for details.
-
 ~> **Note on import behavior** After import, the first `terraform plan` may show an in-place **update** (not recreation) for write-only authentication secrets that Snowflake does not return: `oauth_rest_authentication.oauth_client_secret` and `bearer_rest_authentication.bearer_token`. Run `terraform apply` once to sync these values into state.
 
 # snowflake_catalog_integration_iceberg_rest (Resource)
@@ -165,7 +163,7 @@ Required:
 
 Optional:
 
-- `sigv4_external_id` (String) Specifies an external ID that Snowflake uses to establish a trust relationship with AWS. If you don’t specify this parameter, Snowflake automatically generates a unique external ID when you create a catalog integration. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+- `sigv4_external_id` (String) Specifies an external ID that Snowflake uses to establish a trust relationship with AWS. If you don’t specify this parameter, Snowflake automatically generates a unique external ID when you create a catalog integration.
 - `sigv4_signing_region` (String) Specifies the AWS Region associated with your API in API Gateway. If you don’t specify this parameter, Snowflake uses the region in which your Snowflake account is deployed.
 
 
@@ -185,6 +183,7 @@ Optional:
 
 Read-Only:
 
+- `api_aws_iam_user_arn` (String)
 - `bearer_rest_authentication` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--bearer_rest_authentication))
 - `catalog_namespace` (String)
 - `catalog_source` (String)
@@ -231,6 +230,7 @@ Read-Only:
 
 Read-Only:
 
+- `sigv4_external_id` (String)
 - `sigv4_iam_role` (String)
 - `sigv4_signing_region` (String)
 
