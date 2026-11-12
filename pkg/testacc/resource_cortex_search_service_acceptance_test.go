@@ -75,6 +75,14 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 		WithAutoSuspend(3600).
 		WithDependsOn(tableModelComplete.ResourceReference())
 
+	cssModelAttributesUnset := model.CortexSearchService("css", TestDatabaseName, TestSchemaName, id.Name(), "SOME_TEXT",
+		fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()), "2 minutes", newWarehouse.ID().Name()).
+		WithComment("Terraform acceptance test - updated").
+		WithEmbeddingModel("snowflake-arctic-embed-m-v1.5").
+		WithPrimaryKey("SOME_TEXT").
+		WithAutoSuspend(3600).
+		WithDependsOn(tableModelComplete.ResourceReference())
+
 	cssModelForImport := model.CortexSearchService("css", TestDatabaseName, TestSchemaName, id.Name(), "SOME_TEXT",
 		fmt.Sprintf("select SOME_TEXT, SOME_OTHER_TEXT from %s", tableId.FullyQualifiedName()), "2 minutes", newWarehouse.ID().Name()).
 		WithAttributes("SOME_OTHER_TEXT").
@@ -229,6 +237,34 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "auto_suspend", "3600"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.primary_key_columns.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "describe_output.0.primary_key_columns.0", "SOME_TEXT"),
+				),
+			},
+			// removing attributes from the config unsets them in place
+			{
+				Config: accconfig.FromModels(t, tableModelComplete, cssModelAttributesUnset),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "attributes.#", "0"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.attribute_columns.#", "0"),
+				),
+			},
+			// setting attributes again updates them in place
+			{
+				Config: accconfig.FromModels(t, tableModelComplete, cssModelPrimaryKeyRestored),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "attributes.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "attributes.0", "SOME_OTHER_TEXT"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.attribute_columns.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "describe_output.0.attribute_columns.0", "SOME_OTHER_TEXT"),
 				),
 			},
 			// test import

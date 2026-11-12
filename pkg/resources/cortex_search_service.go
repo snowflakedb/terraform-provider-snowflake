@@ -54,7 +54,6 @@ var cortexSearchServiceSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Elem:        &schema.Schema{Type: schema.TypeString},
 		Description: "Specifies the list of columns in the base table to enable filtering on when issuing queries to the service.",
-		ForceNew:    true,
 	},
 	"warehouse": {
 		Type:             schema.TypeString,
@@ -124,7 +123,7 @@ func CortexSearchService() *schema.Resource {
 
 		CustomizeDiff: TrackingCustomDiffWrapper(
 			resources.CortexSearchService,
-			ComputedIfAnyAttributeChanged(cortexSearchServiceSchema, DescribeOutputAttributeName, "embedding_model", "primary_key"),
+			ComputedIfAnyAttributeChanged(cortexSearchServiceSchema, DescribeOutputAttributeName, "embedding_model", "primary_key", "attributes"),
 		),
 
 		Schema: cortexSearchServiceSchema,
@@ -358,6 +357,19 @@ func UpdateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 			primaryKeyRequest.WithUnsetPrimaryKey(true)
 		}
 		if err := client.CortexSearchServices.Alter(ctx, primaryKeyRequest); err != nil {
+			diags = append(diags, diag.FromErr(err)...)
+		}
+	}
+
+	if d.HasChange("attributes") {
+		attributesRequest := sdk.NewAlterCortexSearchServiceRequest(id)
+		if v, ok := d.GetOk("attributes"); ok && v.(*schema.Set).Len() > 0 {
+			setAttributes := sdk.NewCortexSearchServiceSetAttributesRequest().WithColumns(expandStringList(v.(*schema.Set).List()))
+			attributesRequest.WithSetAttributes(*setAttributes)
+		} else {
+			attributesRequest.WithUnsetAttributes(true)
+		}
+		if err := client.CortexSearchServices.Alter(ctx, attributesRequest); err != nil {
 			diags = append(diags, diag.FromErr(err)...)
 		}
 	}

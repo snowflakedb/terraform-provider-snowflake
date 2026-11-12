@@ -77,6 +77,14 @@ Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/i
 
 The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
 
+### *(improvement)* `attributes` in `snowflake_cortex_search_service` is updated in place
+
+Changing `attributes` in the [`snowflake_cortex_search_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_search_service) resource no longer recreates the service. The provider runs `ALTER CORTEX SEARCH SERVICE ... SET ATTRIBUTES`, or `UNSET ATTRIBUTES` when the field is removed from the configuration. As described in the [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search), the new attributes take effect after the next index refresh.
+
+Attribute columns must still be present in `query`. A change that also modifies `query` recreates the service, as before.
+
+No configuration changes are required.
+
 ### *(bug fix)* `snowflake_iceberg_table` supports `year`, `month`, `day`, and `hour` in `partition_by`
 
 Previously, [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) crashed during `terraform apply` when a `partition_by` entry used `year`, `month`, `day`, or `hour`. The provider plugin failed with `panic: interface conversion: interface {} is nil, not string`, and the table was not created. `identity`, `bucket`, and `truncate` were not affected.
