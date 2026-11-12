@@ -6,6 +6,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -162,4 +163,48 @@ func Test_quotaTagValuesToSchema(t *testing.T) {
 		{"tag": `"DB"."SCH"."TAG"`, "value": "a"},
 		{"tag": `"DB"."SCH"."TAG"`, "value": "B"},
 	}, quotaTagValuesToSchema(tags))
+}
+
+func Test_quotaSetChange_sharedResources(t *testing.T) {
+	sharedResource := func(domain, instance string) map[string]any {
+		return map[string]any{"domain": domain, "instance": instance}
+	}
+	change := func(t *testing.T, oldResources []any, newResources []any) ([]any, []any) {
+		t.Helper()
+		config := func(sharedResources []any) map[string]any {
+			return map[string]any{"database": "DB", "schema": "SCH", "name": "QUOTA", "shared_resource": sharedResources}
+		}
+		stateData := schema.TestResourceDataRaw(t, quotaSchema, config(oldResources))
+		stateData.SetId("id")
+		state := stateData.State()
+		diff, err := schema.InternalMap(quotaSchema).Diff(context.Background(), state, terraform.NewResourceConfigRaw(config(newResources)), nil, nil, true)
+		require.NoError(t, err)
+		d, err := schema.InternalMap(quotaSchema).Data(state, diff)
+		require.NoError(t, err)
+		return quotaSetChange(d, "shared_resource")
+	}
+
+	t.Run("replacing a whole domain with one of its instances", func(t *testing.T) {
+		removed, added := change(t, []any{sharedResource("AI FUNCTION", "")}, []any{sharedResource("AI FUNCTION", "AI_CLASSIFY")})
+		assert.Equal(t, []any{sharedResource("AI FUNCTION", "")}, removed)
+		assert.Equal(t, []any{sharedResource("AI FUNCTION", "AI_CLASSIFY")}, added)
+	})
+
+	t.Run("removing a domain", func(t *testing.T) {
+		removed, added := change(t, []any{sharedResource("AI FUNCTION", ""), sharedResource("CORTEX CODE", "")}, []any{sharedResource("CORTEX CODE", "")})
+		assert.Equal(t, []any{sharedResource("AI FUNCTION", "")}, removed)
+		assert.Empty(t, added)
+	})
+
+	t.Run("removing every domain", func(t *testing.T) {
+		removed, added := change(t, []any{sharedResource("AI FUNCTION", "")}, []any{})
+		assert.Equal(t, []any{sharedResource("AI FUNCTION", "")}, removed)
+		assert.Empty(t, added)
+	})
+
+	t.Run("an equivalent spelling changes nothing", func(t *testing.T) {
+		removed, added := change(t, []any{sharedResource("WAREHOUSE", "WH")}, []any{sharedResource("warehouse", `"WH"`)})
+		assert.Empty(t, removed)
+		assert.Empty(t, added)
+	})
 }

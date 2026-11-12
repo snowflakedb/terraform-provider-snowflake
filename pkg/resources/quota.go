@@ -1020,7 +1020,12 @@ func quotaSharedResourceHash(v any) int {
 	return schema.HashString(domain + "/" + quotaInstanceKey(domain, resource["instance"].(string)))
 }
 
+// suppressQuotaSharedResourceInstance suppresses the diff between equivalent spellings of an instance. Empty values are never
+// suppressed: the instance of a removed element is diffed against an empty value, and a suppressed diff would keep it in the set.
 func suppressQuotaSharedResourceInstance(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if oldValue == "" || newValue == "" {
+		return false
+	}
 	domain, _ := d.Get(strings.TrimSuffix(k, "instance") + "domain").(string)
 	return quotaInstanceKey(domain, oldValue) == quotaInstanceKey(domain, newValue)
 }
