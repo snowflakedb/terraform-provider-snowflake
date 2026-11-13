@@ -348,7 +348,8 @@ func TestAcc_Warehouse_BasicUseCase_Import(t *testing.T) {
 	basicModel := model.Warehouse("test", id.Name())
 	ref := basicModel.ResourceReference()
 
-	warehouse, cleanup := testClient().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id))
+	warehouse, cleanup := testClient().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(id).
+		WithWarehouseType(sdk.WarehouseTypeStandard))
 	t.Cleanup(cleanup)
 
 	var generation *string
