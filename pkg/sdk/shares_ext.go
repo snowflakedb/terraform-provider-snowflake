@@ -49,19 +49,22 @@ func (r sharesRow) additionalConvert(s *Share) error {
 	return nil
 }
 
-// shareDataExchangeRecipient is what SHOW SHARES lists in the "to" column of a share linked to a public listing.
-// It is not an account, so it is never returned as a recipient.
-// TODO [SNOW-4428377]: Verify against a real listing-linked share what "to" holds when the share also has direct recipients, and whether
+// shareListingRecipients are the entries SHOW SHARES lists in the "to" column of a share linked to a listing, possibly
+// quoted: "ALL ACCOUNTS IN DATA EXCHANGE" for a public listing, and "TARGETED ACCOUNTS" for a listing with target accounts.
+// They are not accounts, so they are never returned as recipients. For a share linked to a listing with target accounts,
+// "to" holds only 'TARGETED ACCOUNTS', also when the share had direct recipients before the listing was attached.
+// TODO [SNOW-4428377]: Verify against a real public listing what "to" holds when the share also has direct recipients, and whether
 // "(N TOTAL)" counts this entry. It cannot be created with SQL (publishing needs a Marketplace review), so there is no acceptance test.
-const shareDataExchangeRecipient = "ALL ACCOUNTS IN DATA EXCHANGE"
+var shareListingRecipients = []string{"ALL ACCOUNTS IN DATA EXCHANGE", "TARGETED ACCOUNTS"}
 
 // parseShareRecipients parses a comma-separated list of "<organization_name>.<account_name>" recipients. The
 // truncation marker can only be the last element; the returned total is the count it reports, and 0 without it.
-// The "ALL ACCOUNTS IN DATA EXCHANGE" entry (a share linked to a listing) is skipped, because it is not an account.
+// The listing entries (see shareListingRecipients) are skipped, because they are not accounts.
 func parseShareRecipients(value string) ([]AccountIdentifier, int, error) {
 	items := ParseCommaSeparatedStringArray(value, false)
 	items = slices.DeleteFunc(items, func(item string) bool {
-		return strings.EqualFold(strings.TrimSpace(strings.Trim(item, "'")), shareDataExchangeRecipient)
+		trimmed := strings.TrimSpace(strings.Trim(item, "'"))
+		return slices.ContainsFunc(shareListingRecipients, func(r string) bool { return strings.EqualFold(trimmed, r) })
 	})
 	total := 0
 	if n := len(items); n > 0 {
