@@ -441,6 +441,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.ProjectionPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ProjectionPolicies.ShowByID)
 	},
+	resources.Quota: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Quotas.ShowByID)
+	},
 	resources.ReplicationGroup: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.ReplicationGroups.ShowByID)
 	},

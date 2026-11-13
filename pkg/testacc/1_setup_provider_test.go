@@ -91,7 +91,9 @@ func acceptanceTestsProvider() *schema.Provider {
 	p.ResourcesMap["snowflake_postgres_fork"] = resources.PostgresFork()
 	p.ResourcesMap["snowflake_backup_set"] = resources.BackupSet()
 	p.ResourcesMap["snowflake_projection_policy"] = resources.ProjectionPolicy()
+	p.ResourcesMap["snowflake_quota"] = resources.Quota()
 	p.DataSourcesMap["snowflake_projection_policies"] = datasources.ProjectionPolicies()
+	p.DataSourcesMap["snowflake_quotas"] = datasources.Quotas()
 	return p
 }
 
