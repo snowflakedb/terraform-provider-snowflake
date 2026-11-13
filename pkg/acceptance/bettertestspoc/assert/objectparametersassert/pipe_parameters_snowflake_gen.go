@@ -59,17 +59,22 @@ func (p *PipeParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk
 	return p
 }
 
+func (p *PipeParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.PipeParameter) *PipeParametersAssert {
+	p.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return p
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (p *PipeParametersAssert) HasAllDefaults() *PipeParametersAssert {
 	return p.
-		HasDefaultParameterValueOnLevel(sdk.PipeParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.PipeParameterPipeExecutionPaused, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.PipeParameterLogEventLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.PipeParameterPipeExecutionPaused)
 }
 
 func (p *PipeParametersAssert) HasAllDefaultsExplicit() *PipeParametersAssert {

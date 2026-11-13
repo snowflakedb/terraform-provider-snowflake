@@ -60,76 +60,81 @@ func (t *TaskParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk
 	return t
 }
 
+func (t *TaskParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.TaskParameter) *TaskParametersAssert {
+	t.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return t
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (t *TaskParametersAssert) HasAllDefaults() *TaskParametersAssert {
 	return t.
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterBinaryInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterBinaryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientMemoryLimit, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientMetadataRequestUseConnectionCtx, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientPrefetchThreads, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientResultChunkSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientResultColumnCaseInsensitive, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientSessionKeepAlive, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterClientTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterDateInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterDateOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterEnableUnloadPhysicalTypeOptimization, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterErrorOnNondeterministicMerge, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterErrorOnNondeterministicUpdate, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterGeographyOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterGeometryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterJdbcTreatTimestampNtzAsUtc, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterJdbcUseSessionTimezone, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterMultiStatementCount, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterQueryTag, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterRowsPerResultset, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMaxStatementSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterServerlessTaskMinStatementSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterStrictJsonOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimeOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampDayIsAlways24h, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampLtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampNtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimestampTzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTimezone, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTransactionAbortOnError, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTransactionDefaultIsolationLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterTwoDigitCenturyStart, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUnsupportedDdlAction, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUseCachedResult, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterWeekOfYearPolicy, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterWeekStart, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.TaskParameterSearchPath, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterAbortDetachedQuery).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterAutocommit).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterBinaryInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterBinaryOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientMemoryLimit).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientMetadataRequestUseConnectionCtx).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientPrefetchThreads).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientResultChunkSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientResultColumnCaseInsensitive).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientSessionKeepAlive).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientSessionKeepAliveHeartbeatFrequency).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterClientTimestampTypeMapping).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterDateInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterDateOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterEnableUnloadPhysicalTypeOptimization).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterErrorOnNondeterministicMerge).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterErrorOnNondeterministicUpdate).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterGeographyOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterGeometryOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterJdbcTreatTimestampNtzAsUtc).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterJdbcUseSessionTimezone).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterJsonIndent).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterLockTimeout).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterLogEventLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterLogLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterMultiStatementCount).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterNoorderSequenceAsDefault).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterOdbcTreatDecimalAsInt).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterQueryTag).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterQuotedIdentifiersIgnoreCase).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterRowsPerResultset).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterS3StageVpceDnsName).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterServerlessTaskMaxStatementSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterServerlessTaskMinStatementSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterStatementQueuedTimeoutInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterStatementTimeoutInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterStrictJsonOutput).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterSuspendTaskAfterNumFailures).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTaskAutoRetryAttempts).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimeInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimeOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimestampDayIsAlways24h).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimestampInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimestampLtzOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimestampNtzOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimestampOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimestampTypeMapping).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimestampTzOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTimezone).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTraceLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTransactionAbortOnError).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTransactionDefaultIsolationLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterTwoDigitCenturyStart).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterUnsupportedDdlAction).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterUseCachedResult).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterUserTaskManagedInitialWarehouseSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterUserTaskMinimumTriggerIntervalInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterUserTaskTimeoutMs).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterWeekOfYearPolicy).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterWeekStart).
+		HasDefaultParameterValueOnDefaultLevel(sdk.TaskParameterSearchPath)
 }
 
 func (t *TaskParametersAssert) HasAllDefaultsExplicit() *TaskParametersAssert {

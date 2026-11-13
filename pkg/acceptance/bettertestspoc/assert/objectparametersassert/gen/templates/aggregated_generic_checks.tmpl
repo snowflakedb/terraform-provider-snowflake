@@ -11,12 +11,12 @@
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func ({{ $assertVar }} *{{ $assertName }}) HasAllDefaults() *{{ $assertName }} {
     return {{ $assertVar }}.
     {{- range $index, $item := .Parameters }}
         {{- if .IsSnowflakeDefault }}
-        HasDefaultParameterValueOnLevel({{ $sdkParameterName }}{{ SnakeCaseToCamel .Name }}, {{ .DefaultLevel }}){{ if not (IsLastItem $index $parametersCount) }}.{{ end }}
+        HasDefaultParameterValueOnDefaultLevel({{ $sdkParameterName }}{{ SnakeCaseToCamel .Name }}){{ if not (IsLastItem $index $parametersCount) }}.{{ end }}
         {{- else }}
         Has{{ SnakeCaseToCamel .Name }}({{ .DefaultValue }}).
         Has{{ SnakeCaseToCamel .Name }}Level({{ .DefaultLevel }}){{ if not (IsLastItem $index $parametersCount) }}.{{ end }}

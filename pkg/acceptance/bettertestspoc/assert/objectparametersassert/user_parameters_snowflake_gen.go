@@ -60,82 +60,87 @@ func (u *UserParametersAssert) HasDefaultParameterValueOnLevel(parameterName sdk
 	return u
 }
 
+func (u *UserParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.UserParameter) *UserParametersAssert {
+	u.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return u
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (u *UserParametersAssert) HasAllDefaults() *UserParametersAssert {
 	return u.
-		HasDefaultParameterValueOnLevel(sdk.UserParameterAbortDetachedQuery, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterActivePythonProfiler, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterAutocommit, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterBinaryInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterBinaryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientEnableLogInfoStatementParameters, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientMemoryLimit, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientMetadataRequestUseConnectionCtx, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientMetadataUseSessionDatabase, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientPrefetchThreads, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientResultChunkSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientResultColumnCaseInsensitive, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientSessionKeepAlive, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientSessionKeepAliveHeartbeatFrequency, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterClientTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterCsvTimestampFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterDateInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterDateOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableGetDdlUseDataTypeAlias, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableUnloadPhysicalTypeOptimization, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterEnableUnredactedQuerySyntaxError, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterErrorOnNondeterministicMerge, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterErrorOnNondeterministicUpdate, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterGeographyOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterGeometryOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterHybridTableLockTimeout, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterJdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterJdbcTreatTimestampNtzAsUtc, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterJdbcUseSessionTimezone, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterJsTreatIntegerAsBigint, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterJsonIndent, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterLockTimeout, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterMultiStatementCount, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterNoorderSequenceAsDefault, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterOdbcTreatDecimalAsInt, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterPreventUnloadToInternalStages, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterPythonProfilerModules, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterPythonProfilerTargetStage, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterQueryTag, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterRowsPerResultset, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterS3StageVpceDnsName, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterSearchPath, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterSimulatedDataSharingConsumer, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterStrictJsonOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimeInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimeOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimestampDayIsAlways24h, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimestampInputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimestampLtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimestampNtzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimestampOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimestampTypeMapping, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimestampTzOutputFormat, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTimezone, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTransactionAbortOnError, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTransactionDefaultIsolationLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterTwoDigitCenturyStart, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterUnsupportedDdlAction, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterUseCachedResult, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterWeekOfYearPolicy, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.UserParameterWeekStart, sdk.ParameterTypeSnowflakeDefault).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterAbortDetachedQuery).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterActivePythonProfiler).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterAutocommit).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterBinaryInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterBinaryOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientEnableLogInfoStatementParameters).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientMemoryLimit).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientMetadataRequestUseConnectionCtx).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientMetadataUseSessionDatabase).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientPrefetchThreads).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientResultChunkSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientResultColumnCaseInsensitive).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientSessionKeepAlive).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientSessionKeepAliveHeartbeatFrequency).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterClientTimestampTypeMapping).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterCsvTimestampFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterDateInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterDateOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterEnableGetDdlUseDataTypeAlias).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterEnableUnloadPhysicalTypeOptimization).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterEnableUnredactedQuerySyntaxError).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterErrorOnNondeterministicMerge).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterErrorOnNondeterministicUpdate).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterGeographyOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterGeometryOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterHybridTableLockTimeout).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterJdbcTreatDecimalAsInt).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterJdbcTreatTimestampNtzAsUtc).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterJdbcUseSessionTimezone).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterJsTreatIntegerAsBigint).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterJsonIndent).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterLockTimeout).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterLogEventLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterLogLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterMultiStatementCount).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterNoorderSequenceAsDefault).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterOdbcTreatDecimalAsInt).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterPreventUnloadToInternalStages).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterPythonProfilerModules).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterPythonProfilerTargetStage).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterQueryTag).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterQuotedIdentifiersIgnoreCase).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterRowsPerResultset).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterS3StageVpceDnsName).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterSearchPath).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterSimulatedDataSharingConsumer).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterStatementQueuedTimeoutInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterStatementTimeoutInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterStrictJsonOutput).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimeInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimeOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimestampDayIsAlways24h).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimestampInputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimestampLtzOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimestampNtzOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimestampOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimestampTypeMapping).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimestampTzOutputFormat).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTimezone).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTraceLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTransactionAbortOnError).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTransactionDefaultIsolationLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterTwoDigitCenturyStart).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterUnsupportedDdlAction).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterUseCachedResult).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterWeekOfYearPolicy).
+		HasDefaultParameterValueOnDefaultLevel(sdk.UserParameterWeekStart).
 		HasNetworkPolicy("RESTRICTED_ACCESS").
 		HasNetworkPolicyLevel(sdk.ParameterTypeAccount)
 }

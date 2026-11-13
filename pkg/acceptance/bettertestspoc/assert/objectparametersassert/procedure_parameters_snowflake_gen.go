@@ -59,20 +59,25 @@ func (p *ProcedureParametersAssert) HasDefaultParameterValueOnLevel(parameterNam
 	return p
 }
 
+func (p *ProcedureParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.ProcedureParameter) *ProcedureParametersAssert {
+	p.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return p
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (p *ProcedureParametersAssert) HasAllDefaults() *ProcedureParametersAssert {
 	return p.
-		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterMetricLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.ProcedureParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.ProcedureParameterEnableConsoleOutput).
+		HasDefaultParameterValueOnDefaultLevel(sdk.ProcedureParameterLogEventLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.ProcedureParameterLogLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.ProcedureParameterMetricLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.ProcedureParameterTraceLevel)
 }
 
 func (p *ProcedureParametersAssert) HasAllDefaultsExplicit() *ProcedureParametersAssert {
