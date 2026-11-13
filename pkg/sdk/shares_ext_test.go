@@ -169,6 +169,9 @@ func Test_parseShareRecipients(t *testing.T) {
 			Value:  "ALL ACCOUNTS IN DATA EXCHANGE,ORG.ACC1",
 			Result: []AccountIdentifier{NewAccountIdentifier("ORG", "ACC1")},
 		},
+		{Name: "targeted accounts only (listing with target accounts)", Value: "TARGETED ACCOUNTS", Result: []AccountIdentifier{}},
+		{Name: "targeted accounts only, quoted", Value: "'TARGETED ACCOUNTS'", Result: []AccountIdentifier{}},
+		{Name: "targeted accounts only, lowercase", Value: "'targeted accounts'", Result: []AccountIdentifier{}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {

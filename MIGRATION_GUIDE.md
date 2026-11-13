@@ -85,6 +85,22 @@ Attribute columns must still be present in `query`. A change that also modifies 
 
 No configuration changes are required.
 
+### *(bug fix)* `snowflake_share` reads shares linked to a listing with target accounts
+
+Previously, [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) failed to read a share attached to a [listing](https://docs.snowflake.com/en/sql-reference/sql/create-listing) whose manifest sets `targets.accounts`. For such a share, `SHOW SHARES` returns `'TARGETED ACCOUNTS'` in the `to` column instead of the consumer accounts, and the refresh stopped the whole plan with:
+
+```text
+Error: conversion from Snowflake failed with error: unexpected number of parts 1 in identifier 'TARGETED ACCOUNTS', expected 2 in a form of "<organization_name>.<account_name>"
+```
+
+The same error affected the [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source.
+
+The provider now skips that entry, like `ALL ACCOUNTS IN DATA EXCHANGE`, so `accounts` and `show_output.0.to` are read as empty for such a share.
+
+No configuration changes are required.
+
+Reference: [#5366](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5366).
+
 ### *(bug fix)* `snowflake_iceberg_table` supports `year`, `month`, `day`, and `hour` in `partition_by`
 
 Previously, [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table) crashed during `terraform apply` when a `partition_by` entry used `year`, `month`, `day`, or `hour`. The provider plugin failed with `panic: interface conversion: interface {} is nil, not string`, and the table was not created. `identity`, `bucket`, and `truncate` were not affected.
