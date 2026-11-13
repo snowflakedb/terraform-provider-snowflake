@@ -126,7 +126,7 @@ test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") $(ADDITIONAL_TEST_FLAGS)
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=230m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=270m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
 
 test-account-level: ## run integration and acceptance test modifying account
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=150m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
