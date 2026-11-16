@@ -28,3 +28,20 @@ func TestFieldPair_textBool(t *testing.T) {
 	nullableYes := FieldPair{DbKind: "sql.NullString", PlainKind: "bool", BoolTrueValue: "YES"}
 	require.Equal(t, AssignmentKindNullableStringToRequiredBoolValue, nullableYes.AssignmentKind())
 }
+
+func TestFieldPair_customWithRawFallback(t *testing.T) {
+	custom := FieldPair{DbKind: "string", PlainKind: "datatypes.DataType", CustomParser: "datatypes.ParseDataType"}
+	require.Equal(t, AssignmentKindCustom, custom.AssignmentKind())
+
+	withRaw := FieldPair{DbKind: "string", PlainKind: "datatypes.DataType", CustomParser: "datatypes.ParseDataType", RawFallback: "DataTypeRaw"}
+	require.Equal(t, AssignmentKindCustomWithRawFallback, withRaw.AssignmentKind())
+
+	nullableWithRaw := FieldPair{DbKind: "sql.NullString", PlainKind: "datatypes.DataType", CustomParser: "datatypes.ParseDataType", RawFallback: "DataTypeRaw"}
+	require.Equal(t, AssignmentKindUnsupported, nullableWithRaw.AssignmentKind())
+
+	nonDataTypeWithRaw := FieldPair{DbKind: "string", PlainKind: "ObjectType", CustomParser: "ObjectTypeFromShowGrants", RawFallback: "ObjectTypeRaw"}
+	require.Equal(t, AssignmentKindUnsupported, nonDataTypeWithRaw.AssignmentKind())
+
+	manual := FieldPair{DbKind: "string", PlainKind: "datatypes.DataType", CustomParser: "datatypes.ParseDataType", RawFallback: "DataTypeRaw", manualConvert: true}
+	require.Equal(t, AssignmentKindManual, manual.AssignmentKind())
+}

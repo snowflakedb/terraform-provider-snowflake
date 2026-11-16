@@ -163,7 +163,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
 	{ObjectStruct: sdk.DatabaseDetailsRow{}, IsDescribe: true},
-	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
+	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
 	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}},
 	{ObjectStruct: sdk.ExternalAccessIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"allowed_network_rules", "allowed_api_authentication_integrations", "allowed_authentication_secrets"}},
@@ -198,7 +199,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// ManualFields `signature` stays ext (slice of structs)
 	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
 	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"signature"}},
-	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true},
+	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
 	// TypeString of each property .Value (today’s public describe_output).
 	{ObjectStruct: sdk.NetworkPolicyDetails{}, IsDescribe: true},
@@ -317,7 +319,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// Keep omitted: password (secret).
 	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{"password"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
-	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
+	// ManualFields `type`: public mapping is the raw DESC value (DataTypeRaw), not ToSql().
+	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type", "check"}},
 }
 
 func GetShowResultSchemaDetails() []ShowResultSchemaDetails {

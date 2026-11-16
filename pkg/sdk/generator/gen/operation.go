@@ -140,6 +140,7 @@ func (m *Mapping) AddFieldPairs(p *PairedStructs) {
 			ValueAdjuster:  f.valueAdjuster,
 			BoolTrueValue:  f.boolTrueValue,
 			BoolParsed:     f.boolParsed,
+			RawFallback:    f.rawFallbackFieldName,
 			manualConvert:  f.manualConvert,
 		})
 	}

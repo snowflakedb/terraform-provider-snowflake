@@ -92,6 +92,20 @@ func WithManualConvert() PairedFieldOption {
 	}
 }
 
+// WithRawFallback keeps the db value in an additional plain string field and parses it with parseDataTypeOrNil,
+// which logs a parse failure instead of failing convert and leaves the parsed field unset. Only supported with
+// DataType(), for columns that can return types datatypes.ParseDataType does not model.
+// Example:
+//
+//	DataType("type", WithRawFallback("DataTypeRaw"))
+//	// plain: Type        datatypes.DataType
+//	//        DataTypeRaw string
+func WithRawFallback(rawPlainFieldName string) PairedFieldOption {
+	return func(f *pairedField) {
+		f.rawFallbackFieldName = rawPlainFieldName
+	}
+}
+
 // WithBoolParsed routes string → bool or sql.NullString → bool conversions through strconv.ParseBool
 // instead of a fixed string comparison. Use when the db column returns "true"/"false" and robust
 // parsing is preferred over a hard-coded truthy value.
@@ -130,6 +144,8 @@ type pairedField struct {
 	boolParsed bool
 	// manualConvert marks this field to be skipped in generated convert code.
 	manualConvert bool
+	// rawFallbackFieldName is the plain string field that keeps the db value when the custom parser fails.
+	rawFallbackFieldName string
 	// plainOnly marks that this field only appears in the plain struct, not in the db row struct.
 	plainOnly bool
 }
@@ -528,6 +544,9 @@ func (p *PairedStructs) asPlainStruct() *Plain {
 	s := PlainStruct(p.plainName)
 	for _, f := range p.fields {
 		s.Field(f.resolvedPlainFieldName(), f.plainKind)
+		if f.rawFallbackFieldName != "" {
+			s.Field(f.rawFallbackFieldName, "string")
+		}
 	}
 	return s
 }

@@ -3,6 +3,7 @@ package sdk
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -522,4 +523,14 @@ func (s StageLocation) ToSql() string {
 		return fmt.Sprintf(`%v/%v`, stageFqn, s.path)
 	}
 	return stageFqn
+}
+
+// parseDataTypeOrNil returns nil instead of an error for types datatypes.ParseDataType does not model.
+func parseDataTypeOrNil(raw string) datatypes.DataType {
+	dataType, err := datatypes.ParseDataType(raw)
+	if err != nil {
+		log.Printf("[DEBUG] Could not parse data type %q, keeping only the raw value: %v", raw, err)
+		return nil
+	}
+	return dataType
 }
