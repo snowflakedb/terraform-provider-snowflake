@@ -223,9 +223,10 @@ var (
 // BackupSet is one schema object. The four FOR targets are mutually exclusive and permanent.
 // SHOW and DESCRIBE publish the same columns, in this order.
 var BackupSet = ssot.Object{
-	Name:       "BackupSet",
-	NamePlural: "BackupSets",
-	IdType:     "SchemaObjectIdentifier",
+	Name:           "BackupSet",
+	NamePlural:     "BackupSets",
+	IdType:         "SchemaObjectIdentifier",
+	PreviewFeature: true,
 	// DROP and ALTER pages omit IF EXISTS. Both stay on until a probe shows Snowflake rejects the clause.
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),

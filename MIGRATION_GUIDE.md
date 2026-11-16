@@ -81,6 +81,19 @@ Without the experiment, the behavior of these resources does not change. No conf
 
 Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5361).
 
+### *(new feature)* Backup set resource and data source
+
+We have added a new preview resource, [`snowflake_backup_set`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_set), for managing [backup sets](https://docs.snowflake.com/en/user-guide/backups). Exactly one of `for_table`, `for_dynamic_table`, `for_schema`, or `for_database` is required and cannot be changed after creation. An attached `backup_policy` can be changed to another policy, but it cannot be removed.
+
+We have also added a new preview data source, [`snowflake_backup_sets`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/backup_sets), for listing backup sets. It supports `like`, `in`, `starts_with`, and `limit`. `with_describe` is on by default and runs DESCRIBE for each backup set returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_backup_set_resource` for `snowflake_backup_set`;
+- `snowflake_backup_sets_datasource` for `snowflake_backup_sets`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(new feature)* Permissive import mode rolled out to more resources
 
 The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.

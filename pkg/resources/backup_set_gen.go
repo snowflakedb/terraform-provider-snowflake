@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -27,7 +28,7 @@ func BackupSet() *tfschema.Resource {
 		CreateContext: backupSetCreateExt,
 		ReadContext:   backupSetReadExt,
 		UpdateContext: backupSetUpdateExt,
-		DeleteContext: TrackingDeleteWrapper(resources.BackupSet, DeleteBackupSet),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.BackupSetResource), TrackingDeleteWrapper(resources.BackupSet, DeleteBackupSet)),
 		Importer:      backupSetImporterExt,
 
 		CustomizeDiff: backupSetCustomizeDiff,
