@@ -140,6 +140,9 @@ test-integration: ## run SDK integration tests
 test-openflow: ## run Openflow acceptance and integration tests
 	TF_ACC=1 TEST_SF_TF_TEST_OPENFLOW=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "Openflow" -v -cover -timeout=300m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
+test-postgres-instances: ## run Postgres instance acceptance and integration tests
+	TF_ACC=1 TEST_SF_TF_TEST_POSTGRES_INSTANCES=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "PostgresInstance" -v -cover -timeout=300m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
+
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
 	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional $(ADDITIONAL_TEST_FLAGS)
 
