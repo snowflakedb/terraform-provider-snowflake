@@ -570,11 +570,13 @@ func (r *DescribeIcebergTableRequest) toOpts() *DescribeIcebergTableOptions {
 
 func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	result := &IcebergTableDetails{
-		Name:       r.Name,
-		Kind:       r.Kind,
-		IsNullable: r.Null == "Y",
-		PrimaryKey: r.PrimaryKey == "Y",
-		UniqueKey:  r.UniqueKey == "Y",
+		Name:        r.Name,
+		Type:        parseDataTypeOrNil(r.Type),
+		DataTypeRaw: r.Type,
+		Kind:        r.Kind,
+		IsNullable:  r.Null == "Y",
+		PrimaryKey:  r.PrimaryKey == "Y",
+		UniqueKey:   r.UniqueKey == "Y",
 	}
 	mapNullString(&result.SourceIcebergType, r.SourceIcebergType)
 	mapNullString(&result.Default, r.Default)
@@ -585,9 +587,6 @@ func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 	mapNullString(&result.PrivacyDomain, r.PrivacyDomain)
 	mapNullString(&result.NameMapping, r.NameMapping)
 	mapNullString(&result.WriteDefault, r.WriteDefault)
-	if err := r.additionalConvert(result); err != nil {
-		return nil, err
-	}
 	return result, nil
 }
 

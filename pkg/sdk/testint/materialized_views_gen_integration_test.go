@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/internal/tracking"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -61,16 +62,17 @@ func TestInt_MaterializedViews(t *testing.T) {
 	assertViewDetailsRow := func(t *testing.T, materializedViewDetails *sdk.MaterializedViewDetails) {
 		t.Helper()
 		assert.Equal(t, sdk.MaterializedViewDetails{
-			Name:       "ID",
-			Type:       "NUMBER(38,0)",
-			Kind:       "COLUMN",
-			IsNullable: true,
-			Default:    nil,
-			IsPrimary:  false,
-			IsUnique:   false,
-			Check:      nil,
-			Expression: nil,
-			Comment:    nil,
+			Name:        "ID",
+			Type:        testdatatypes.DataTypeNumber_38_0,
+			DataTypeRaw: "NUMBER(38,0)",
+			Kind:        "COLUMN",
+			IsNullable:  true,
+			Default:     nil,
+			IsPrimary:   false,
+			IsUnique:    false,
+			Check:       nil,
+			Expression:  nil,
+			Comment:     nil,
 		}, *materializedViewDetails)
 	}
 

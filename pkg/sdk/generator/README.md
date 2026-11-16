@@ -304,6 +304,7 @@ Each method accepts zero or more `PairedFieldOption`s (see below).
 - **`WithValueAdjuster(funcName)`** — apply an adjustment function `func(T) T` to the converted value after assignment.
 - **`WithBoolTrueValue(v)`** — override the truthy string for `BoolFromText`/`OptionalBoolFromText` (default `"Y"`).
 - **`WithBoolParsed()`** — use `strconv.ParseBool` instead of a fixed string comparison for bool fields.
+- **`WithRawFallback(rawFieldName)`** — add a plain `string` field holding the raw db value and parse with `parseDataTypeOrNil`, which logs a parse failure at debug level and leaves the parsed field unset instead of failing `convert()`. Only supported with `DataType(col)`, for columns that can return structured types `datatypes.ParseDataType` rejects.
 - **`WithManualConvert()`** — skip this field in the generated `convert()` body; handle it manually in `additionalConvert()` in a `_ext.go` file.
 
 #### PairedStructs modifiers

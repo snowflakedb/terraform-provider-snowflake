@@ -1,11 +1,6 @@
 package sdk
 
-import (
-	"context"
-	"log"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
-)
+import "context"
 
 func (r *CreateIcebergTableRequest) GetName() SchemaObjectIdentifier {
 	return r.name
@@ -19,23 +14,8 @@ func (v *icebergTables) ShowParameters(ctx context.Context, id SchemaObjectIdent
 	})
 }
 
-// additionalConvert populates DataTypeRaw with the raw DESC output for every column and only
-// sets the parsed Type when datatypes.ParseDataType recognizes it - e.g. structured types like
-// OBJECT(...)/ARRAY(...)/MAP(...) aren't modeled by datatypes.DataType, so Type is left nil for
-// those instead of failing the whole Describe call.
-func (r icebergTableDetailsRow) additionalConvert(result *IcebergTableDetails) error {
-	result.DataTypeRaw = r.Type
-	v, err := datatypes.ParseDataType(r.Type)
-	if err != nil {
-		log.Printf("[DEBUG] Could not parse data type %s for Iceberg Table: %v", r.Type, err)
-		return nil
-	}
-	result.Type = v
-	return nil
-}
-
 // TypeString returns the best available textual representation of the column's data type:
-// the parsed form when available, otherwise the raw DESC output (see additionalConvert).
+// the parsed form when available, otherwise the raw DESC output.
 func (d IcebergTableDetails) TypeString() string {
 	if d.Type != nil {
 		return d.Type.ToSql()
