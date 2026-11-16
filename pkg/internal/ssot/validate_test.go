@@ -1270,6 +1270,9 @@ func Test_Attribute_nestedFields(t *testing.T) {
 func Test_Attribute_sqlStructNames(t *testing.T) {
 	attr := Attribute{Name: "storage_location"}
 	require.Equal(t, "ExternalVolumeStorageLocation", attr.SqlStructName("ExternalVolume"))
+	named := Attribute{Name: "column", CreateSql: ObjectParameter(StructName("TableColumnAction"))}
+	require.Equal(t, "TableColumnAction", named.SqlStructName("Table"))
+	require.Equal(t, "TableColumn", Attribute{Name: "column"}.SqlStructName("Table"))
 	require.Equal(t, "GCSStorageLocationParams", attr.SqlVariantStructName("GCS"))
 }
 
@@ -1340,14 +1343,14 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 
 	t.Run("without an object clause", func(t *testing.T) {
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct of an object clause`, func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "block", Type: AttrObject, Children: []Attribute{typeOauth, uri}}}})
 		})
 	})
 
 	t.Run("sql-only without a clause", func(t *testing.T) {
 		bare := Attribute{Name: "other", SqlOnly: true}
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct of an object clause`, func() {
 			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{bare, uri}})
 		})
 	})
@@ -2167,4 +2170,70 @@ func Test_Object_SuspendForAlterWhen(t *testing.T) {
 	t.Run("nil without the declaration", func(t *testing.T) {
 		require.Nil(t, Object{}.SuspendForAlterWhen())
 	})
+}
+
+func Test_ValidateObject_sqlOnlyConflictsWith(t *testing.T) {
+	order := Attribute{Name: "order", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("ORDER"))}
+	noorder := func(conflicts ...Attribute) Attribute {
+		return Attribute{Name: "noorder", Type: AttrBool, SqlOnly: true, ConflictsWith: conflicts, CreateSql: BoolKeyword(Sql("NOORDER"))}
+	}
+	objectWith := func(children ...Attribute) Object {
+		identity := Attribute{Name: "identity", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(), Children: children}
+		return Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&identity}}}
+	}
+	require.NotPanics(t, func() { ValidateObject(objectWith(order, noorder(order))) })
+	require.PanicsWithValue(t, `object "Widget": attribute "identity"."noorder" conflicts with itself`, func() {
+		ValidateObject(objectWith(order, noorder(noorder())))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "identity"."noorder" conflicts with "order", which is not a child of "identity"`, func() {
+		ValidateObject(objectWith(noorder(order)))
+	})
+}
+
+func Test_ValidateObject_structName(t *testing.T) {
+	child := Attribute{Name: "child", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("CHILD"))}
+	objectWith := func(attr Attribute) Object {
+		return Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}}
+	}
+	nested := func(opts ...SqlClauseOption) Attribute {
+		return Attribute{Name: "block", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(opts...), Children: []Attribute{child}}
+	}
+	require.NotPanics(t, func() { ValidateObject(objectWith(nested(StructName("WidgetBlock")))) })
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(Attribute{
+			Name:      "alter",
+			Type:      AttrList,
+			SqlOnly:   true,
+			CreateSql: ValueKeyword(Sql("ALTER"), StructName("WidgetAlter")),
+			Elem:      &Attribute{Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(), Children: []Attribute{child}},
+		}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "block" CREATE struct name "widgetBlock" is not an exported name`, func() {
+		ValidateObject(objectWith(nested(StructName("widgetBlock"))))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "flag" CREATE struct name is for a nested struct or a list of objects`, func() {
+		ValidateObject(objectWith(Attribute{Name: "flag", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("FLAG"), StructName("WidgetFlag"))}))
+	})
+}
+
+func Test_Attribute_RuleFields_skipsRequired(t *testing.T) {
+	attr := Attribute{
+		Name:         "alter",
+		Type:         AttrObject,
+		SqlOnly:      true,
+		ChildrenRule: ChildrenExactlyOne,
+		CreateSql:    ObjectParameter(),
+		Children: []Attribute{
+			{Name: "column", SqlOnly: true, CreateSql: StaticSQL("column", "COLUMN")},
+			{Name: "name", Type: AttrString, Required: true, SqlOnly: true, CreateSql: TextKeyword(Required())},
+			{Name: "drop_default", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("DROP DEFAULT"))},
+			{Name: "unset_comment", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("UNSET COMMENT"))},
+		},
+	}
+	fields := attr.RuleFields()
+	names := make([]string, 0, len(fields))
+	for _, field := range fields {
+		names = append(names, field.Name)
+	}
+	require.Equal(t, []string{"drop_default", "unset_comment"}, names)
 }

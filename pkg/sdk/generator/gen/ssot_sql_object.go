@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
@@ -22,7 +24,7 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 
 // appendObjectClause adds a SqlOnly nested struct, such as ENCRYPTION = (...), whose fields are the CREATE Children of attr.
 func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
-	nested := queryStructFromObjectUse(v.owner, attr, ssot.ClauseCreate)
+	nested := queryStructFromObjectSupplied(v.owner, attr, ssot.ClauseCreate, v.suppliedStructs)
 	name := clauseGoFieldName(attr, clause)
 	if clause.AsParameter {
 		opts := ParameterOptions().SQL(clause.SQL)
@@ -48,10 +50,11 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 }
 
 // QueryStructFromAttribute builds the CREATE query struct of a SqlOnly object attribute. owner is the interface name, and the
-// struct name is that owner plus the attribute name. The SDK definition calls it for one ALTER field and keeps the rest
-// of the operation handwritten. SET and UNSET projections use QueryStructFromAttributeUse.
-func QueryStructFromAttribute(owner string, attr ssot.Attribute) *QueryStruct {
-	return QueryStructFromAttributeUse(owner, attr, ssot.ClauseCreate)
+// struct name is the StructName of its clause or that owner plus the attribute name. helpers are the preexisting structs the attribute names.
+// The SDK definition calls it for one ALTER field and keeps the rest of the operation handwritten. SET and UNSET projections
+// use QueryStructFromAttributeUse.
+func QueryStructFromAttribute(owner string, attr ssot.Attribute, helpers ...*QueryStruct) *QueryStruct {
+	return queryStructFromObjectSupplied(owner, attr, ssot.ClauseCreate, suppliedByName(attr, helpers))
 }
 
 // QueryStructFromAttributeUse builds the query struct of a SqlOnly object attribute for one statement projection.
@@ -59,6 +62,21 @@ func QueryStructFromAttribute(owner string, attr ssot.Attribute) *QueryStruct {
 // children that have that clause. Handwritten ALTER calls this so tables and iceberg tables share SET/UNSET structs.
 func QueryStructFromAttributeUse(owner string, attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
 	return queryStructFromObjectUse(owner, attr, use)
+}
+
+// suppliedByName indexes the helper structs by name, the way a PreexistingStruct clause refers to them.
+func suppliedByName(attr ssot.Attribute, helpers []*QueryStruct) map[string]*QueryStruct {
+	supplied := make(map[string]*QueryStruct, len(helpers))
+	for _, helper := range helpers {
+		if helper == nil || helper.name == "" {
+			panic(fmt.Sprintf("attribute %q: helper struct has no name", attr.Name))
+		}
+		if _, dup := supplied[helper.name]; dup {
+			panic(fmt.Sprintf("attribute %q: helper struct %q is supplied twice", attr.Name, helper.name))
+		}
+		supplied[helper.name] = helper
+	}
+	return supplied
 }
 
 func clauseUseStatement(use ssot.ClauseUse) attributeSqlStatement {
@@ -76,14 +94,25 @@ func clauseUseStatement(use ssot.ClauseUse) attributeSqlStatement {
 
 // queryStructFromObjectUse builds a fresh query struct for a SqlOnly object attribute: the projection's Children are its fields.
 func queryStructFromObjectUse(owner string, attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
+	return queryStructFromObjectSupplied(owner, attr, use, nil)
+}
+
+// queryStructFromObjectSupplied is queryStructFromObjectUse with the preexisting structs a child clause can name.
+func queryStructFromObjectSupplied(owner string, attr ssot.Attribute, use ssot.ClauseUse, supplied map[string]*QueryStruct) *QueryStruct {
 	nested := NewQueryStruct(attr.SqlStructNameFor(owner, use))
 	nested.owner = owner
+	nested.suppliedStructs = supplied
 	statement := clauseUseStatement(use)
 	fields := attr.NestedSqlFieldsFor(use)
 	for i := range fields {
 		child := &fields[i]
+		if child.IsTags() {
+			nested = nested.OptionalTags()
+			continue
+		}
 		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(use), statement)
 	}
+	nested = withSqlOnlyConflicts(nested, fields, statement)
 	if attr.ChildrenRule != "" {
 		names := collections.Map(attr.RuleFieldsFor(use), func(child ssot.Attribute) string {
 			return clauseFieldName(child, statement)
@@ -93,6 +122,39 @@ func queryStructFromObjectUse(owner string, attr ssot.Attribute, use ssot.Clause
 			nested = nested.WithValidation(AtLeastOneValueSet, names...)
 		case ssot.ChildrenExactlyOne:
 			nested = nested.WithValidation(ExactlyOneValueSet, names...)
+		}
+	}
+	return nested
+}
+
+// withSqlOnlyConflicts adds ConflictingFields for the ConflictsWith of the SqlOnly children of an object clause. They have
+// no schema, so the SDK query struct carries the pair. A pair declared by both children is added once, in the order of
+// the children.
+func withSqlOnlyConflicts(nested *QueryStruct, fields []ssot.Attribute, statement attributeSqlStatement) *QueryStruct {
+	indexOf := func(name string) int {
+		for i, field := range fields {
+			if field.Name == name {
+				return i
+			}
+		}
+		return -1
+	}
+	seen := make(map[[2]int]struct{})
+	for i, child := range fields {
+		if !child.SqlOnly {
+			continue
+		}
+		for _, other := range child.ConflictsWith {
+			j := indexOf(other.Name)
+			if j < 0 {
+				panic(fmt.Sprintf("attribute %q conflicts with %q, which is not a field of the same statement", child.Name, other.Name))
+			}
+			pair := [2]int{min(i, j), max(i, j)}
+			if _, ok := seen[pair]; ok {
+				continue
+			}
+			seen[pair] = struct{}{}
+			nested = nested.WithValidation(ConflictingFields, clauseFieldName(fields[pair[0]], statement), clauseFieldName(fields[pair[1]], statement))
 		}
 	}
 	return nested

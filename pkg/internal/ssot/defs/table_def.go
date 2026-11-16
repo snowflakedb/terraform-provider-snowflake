@@ -194,6 +194,134 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 	},
 }
 
+var tableColumnIdentityOrder = ssot.Attribute{Name: "order", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("ORDER"))}
+
+// TableColumnDefaultValue is DEFAULT or IDENTITY on a column. CREATE and ALTER ADD COLUMN share this struct, and its
+// name stays ColumnDefaultValue because hybrid and iceberg tables refer to that type.
+var TableColumnDefaultValue = ssot.Attribute{
+	Name:         "default_value",
+	Type:         ssot.AttrObject,
+	SqlOnly:      true,
+	ChildrenRule: ssot.ChildrenExactlyOne,
+	CreateSql:    ssot.ObjectParameter(ssot.StructName("ColumnDefaultValue")),
+	Children: []ssot.Attribute{
+		{
+			Name:      "expression",
+			Type:      ssot.AttrString,
+			SqlOnly:   true,
+			CreateSql: ssot.PlainParameter(ssot.Sql("DEFAULT"), ssot.NoEquals(), ssot.FieldName("Expression")),
+		},
+		{
+			Name:      "identity",
+			Type:      ssot.AttrObject,
+			SqlOnly:   true,
+			CreateSql: ssot.ObjectParameter(ssot.Sql("IDENTITY"), ssot.StructName("ColumnIdentity")),
+			Children: []ssot.Attribute{
+				{Name: "start", Type: ssot.AttrInt, Required: true, SqlOnly: true, CreateSql: ssot.IntParameter(ssot.Sql("START"), ssot.NoQuotes(), ssot.NoEquals(), ssot.Required())},
+				{Name: "increment", Type: ssot.AttrInt, Required: true, SqlOnly: true, CreateSql: ssot.IntParameter(ssot.Sql("INCREMENT"), ssot.NoQuotes(), ssot.NoEquals(), ssot.Required())},
+				tableColumnIdentityOrder,
+				// ORDER and NOORDER cannot both be set. Either can be absent.
+				{Name: "noorder", Type: ssot.AttrBool, SqlOnly: true, ConflictsWith: []ssot.Attribute{tableColumnIdentityOrder}, CreateSql: ssot.BoolKeyword(ssot.Sql("NOORDER"))},
+			},
+		},
+	},
+}
+
+// TableColumn is ALTER TABLE ... column actions: exactly one of add, rename, alter, set or unset masking policy, set or
+// unset tags, and drop columns. It generates the TableColumnAction struct. The StructName options keep the public struct
+// names, because the nested struct name TableColumn would clash with the CREATE column.
+//
+// The structs the SDK definition supplies by name stay in pkg/sdk/generator/defs/tables_def.go:
+// TableColumnInlineConstraint and TableColumnMaskingPolicy because iceberg tables embed them, the masking policy and drop
+// column actions because they are shared, and the set and unset tags actions.
+var TableColumn = ssot.Attribute{
+	Name:         "column",
+	Type:         ssot.AttrObject,
+	SqlOnly:      true,
+	ChildrenRule: ssot.ChildrenExactlyOne,
+	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableColumnAction")),
+	Children: []ssot.Attribute{
+		{
+			// ADD COLUMN. NOT NULL is its own flag, which is what the table resource sets.
+			Name:      "add",
+			Type:      ssot.AttrObject,
+			SqlOnly:   true,
+			CreateSql: ssot.ObjectParameter(ssot.Sql("ADD"), ssot.NoComma(), ssot.StructName("TableColumnAddAction")),
+			Children: []ssot.Attribute{
+				{Name: "column", SqlOnly: true, CreateSql: ssot.StaticSQL("column", "COLUMN")},
+				{Name: "if_not_exists", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("IF NOT EXISTS"))},
+				{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required())},
+				{Name: "column_type", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PredefinedType("DataType", ssot.NoEquals(), ssot.Required())},
+				{Name: "collate", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COLLATE"), ssot.NoEquals())},
+				TableColumnDefaultValue,
+				{Name: "not_null", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOT NULL"))},
+				{Name: "inline_constraint", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableColumnInlineConstraint", ssot.NoComma(), ssot.Shared())},
+				{Name: "masking_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableColumnMaskingPolicy", ssot.NoComma(), ssot.Shared())},
+				{Name: "tags", Tags: true},
+				{Name: "comment", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COMMENT"), ssot.NoEquals())},
+			},
+		},
+		{
+			// RENAME COLUMN old TO new. Both names are unquoted, as legacy does.
+			Name:      "rename",
+			Type:      ssot.AttrObject,
+			SqlOnly:   true,
+			CreateSql: ssot.ObjectParameter(ssot.NoComma(), ssot.StructName("TableColumnRenameAction")),
+			Children: []ssot.Attribute{
+				{Name: "old_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("RENAME COLUMN"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("OldName"))},
+				{Name: "new_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("TO"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("NewName"))},
+			},
+		},
+		{
+			// ALTER COLUMN. The name is always present, so it is Required and not one of the exactly-one actions.
+			Name:      "alter",
+			Type:      ssot.AttrList,
+			SqlOnly:   true,
+			CreateSql: ssot.ValueKeyword(ssot.Sql("ALTER"), ssot.StructName("TableColumnAlterAction")),
+			Elem: &ssot.Attribute{
+				Type:         ssot.AttrObject,
+				SqlOnly:      true,
+				ChildrenRule: ssot.ChildrenExactlyOne,
+				CreateSql:    ssot.ObjectParameter(),
+				Children: []ssot.Attribute{
+					{Name: "column", SqlOnly: true, CreateSql: ssot.StaticSQL("column", "COLUMN")},
+					{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required())},
+					{Name: "drop_default", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("DROP DEFAULT"))},
+					{Name: "set_default", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PredefinedType("*SequenceName", ssot.FieldName("SetDefault"), ssot.Sql("SET DEFAULT"), ssot.NoEquals())},
+					{
+						Name:      "not_null_constraint",
+						Type:      ssot.AttrObject,
+						SqlOnly:   true,
+						CreateSql: ssot.ObjectParameter(ssot.FieldName("NotNullConstraint"), ssot.StructName("TableColumnNotNullConstraint")),
+						Children: []ssot.Attribute{
+							{Name: "set", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("SET NOT NULL"), ssot.FieldName("Set"))},
+							{Name: "drop", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("DROP NOT NULL"), ssot.FieldName("Drop"))},
+						},
+					},
+					{
+						// SET DATA TYPE <type> [COLLATE '<spec>']. COLLATE only accompanies the type, so it is a child of it.
+						Name:      "data_type",
+						Type:      ssot.AttrObject,
+						SqlOnly:   true,
+						CreateSql: ssot.ObjectParameter(ssot.Sql("SET DATA TYPE"), ssot.StructName("TableColumnAlterDataType")),
+						Children: []ssot.Attribute{
+							{Name: "type", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PredefinedType("DataType", ssot.FieldName("DataType"), ssot.NoEquals(), ssot.Required())},
+							{Name: "collate", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COLLATE"), ssot.NoEquals())},
+						},
+					},
+					{Name: "comment", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COMMENT"), ssot.NoEquals())},
+					{Name: "unset_comment", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("UNSET COMMENT"))},
+				},
+			},
+		},
+		{Name: "set_masking_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableSetColumnMaskingPolicy", ssot.NoComma(), ssot.Shared())},
+		{Name: "unset_masking_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableUnsetColumnMaskingPolicy", ssot.NoComma(), ssot.Shared())},
+		{Name: "set_tags", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableColumnAlterSetTagsAction", ssot.NoComma())},
+		{Name: "unset_tags", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableColumnAlterUnsetTagsAction", ssot.NoComma())},
+		{Name: "drop_columns", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableDropColumnAction", ssot.NoComma(), ssot.Shared())},
+	},
+}
+
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
 // resource, model, and assertion generators skip them.
 //

@@ -158,10 +158,11 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 		}
 		for _, cA := range changed {
 			if cA.changedDataType || cA.changedCollate {
-				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDataType(sdk.DataType(cA.newColumn.dataType))
+				dataTypeRequest := sdk.NewTableColumnAlterDataTypeRequest(sdk.DataType(cA.newColumn.dataType))
 				if sdk.IsStringType(cA.newColumn.dataType) && cA.newColumn.collate != "" {
-					columnAlterActionRequest.WithCollate(cA.newColumn.collate)
+					dataTypeRequest.WithCollate(cA.newColumn.collate)
 				}
+				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDataType(*dataTypeRequest)
 				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))

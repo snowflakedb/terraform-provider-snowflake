@@ -818,3 +818,96 @@ func Test_queryStructFromObject_tableRowAccessPolicy(t *testing.T) {
 		QueryStructField("Add", add, ListOptions().NoComma().Required())
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
+
+func Test_queryStructFromObject_tableColumn(t *testing.T) {
+	attr := ssotdefs.TableColumn
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	supplied := func() []*QueryStruct {
+		return []*QueryStruct{
+			NewQueryStruct("TableColumnInlineConstraint"),
+			NewQueryStruct("TableColumnMaskingPolicy"),
+			NewQueryStruct("TableSetColumnMaskingPolicy"),
+			NewQueryStruct("TableUnsetColumnMaskingPolicy"),
+			NewQueryStruct("TableColumnAlterSetTagsAction"),
+			NewQueryStruct("TableColumnAlterUnsetTagsAction"),
+			NewQueryStruct("TableDropColumnAction"),
+		}
+	}
+	helpers := supplied()
+	got := QueryStructFromAttribute("Table", attr, helpers...)
+
+	expected := supplied()
+	add := NewQueryStruct("TableColumnAddAction").
+		SQL("COLUMN").
+		IfNotExists().
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		PredefinedQueryStructField("ColumnType", "DataType", ParameterOptions().NoEquals().Required()).
+		OptionalTextAssignment("COLLATE", ParameterOptions().NoEquals().SingleQuotes()).
+		OptionalQueryStructField("DefaultValue",
+			NewQueryStruct("ColumnDefaultValue").
+				OptionalAssignmentWithFieldName("DEFAULT", "*string", ParameterOptions().NoEquals(), "Expression").
+				OptionalQueryStructField("Identity",
+					NewQueryStruct("ColumnIdentity").
+						NumberAssignment("START", ParameterOptions().NoQuotes().NoEquals().Required()).
+						NumberAssignment("INCREMENT", ParameterOptions().NoQuotes().NoEquals().Required()).
+						OptionalSQL("ORDER").
+						OptionalSQL("NOORDER").
+						WithValidation(ConflictingFields, "Order", "Noorder"),
+					ListOptions().NoComma().SQL("IDENTITY")).
+				WithValidation(ExactlyOneValueSet, "Expression", "Identity"),
+			ListOptions().NoComma()).
+		OptionalSQL("NOT NULL").
+		OptionalSharedQueryStructField("InlineConstraint", expected[0], ListOptions().NoComma()).
+		OptionalSharedQueryStructField("MaskingPolicy", expected[1], ListOptions().NoComma()).
+		OptionalTags().
+		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes())
+	rename := NewQueryStruct("TableColumnRenameAction").
+		AssignmentWithFieldName("RENAME COLUMN", "string", ParameterOptions().NoEquals().Required(), "OldName").
+		AssignmentWithFieldName("TO", "string", ParameterOptions().NoEquals().Required(), "NewName")
+	alter := NewQueryStruct("TableColumnAlterAction").
+		SQL("COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		OptionalSQL("DROP DEFAULT").
+		PredefinedQueryStructField("SetDefault", "*SequenceName", ParameterOptions().NoEquals().SQL("SET DEFAULT")).
+		OptionalQueryStructField("NotNullConstraint",
+			NewQueryStruct("TableColumnNotNullConstraint").
+				OptionalSQLWithCustomFieldName("Set", "SET NOT NULL").
+				OptionalSQLWithCustomFieldName("Drop", "DROP NOT NULL"),
+			ListOptions().NoComma()).
+		OptionalQueryStructField("DataType",
+			NewQueryStruct("TableColumnAlterDataType").
+				PredefinedQueryStructField("DataType", "DataType", ParameterOptions().NoEquals().Required()).
+				OptionalTextAssignment("COLLATE", ParameterOptions().NoEquals().SingleQuotes()),
+			ListOptions().NoComma().SQL("SET DATA TYPE")).
+		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes()).
+		OptionalSQL("UNSET COMMENT").
+		// The name is Required, so it is not one of the exactly-one actions.
+		WithValidation(ExactlyOneValueSet, "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment")
+	want := NewQueryStruct("TableColumnAction").
+		OptionalQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
+		OptionalQueryStructField("Rename", rename, ListOptions().NoComma()).
+		ListQueryStructField("Alter", alter, KeywordOptions().SQL("ALTER")).
+		OptionalSharedQueryStructField("SetMaskingPolicy", expected[2], ListOptions().NoComma()).
+		OptionalSharedQueryStructField("UnsetMaskingPolicy", expected[3], ListOptions().NoComma()).
+		OptionalQueryStructField("SetTags", expected[4], ListOptions().NoComma()).
+		OptionalQueryStructField("UnsetTags", expected[5], ListOptions().NoComma()).
+		OptionalSharedQueryStructField("DropColumns", expected[6], ListOptions().NoComma()).
+		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_sqlOnlyConflictsWith(t *testing.T) {
+	order := ssot.Attribute{Name: "order", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("ORDER"))}
+	noorder := ssot.Attribute{Name: "noorder", Type: ssot.AttrBool, SqlOnly: true, ConflictsWith: []ssot.Attribute{order}, CreateSql: ssot.BoolKeyword(ssot.Sql("NOORDER"))}
+	// Both sides name each other, and the pair is still added once, in the order of the children.
+	order.ConflictsWith = []ssot.Attribute{noorder}
+	attr := ssot.Attribute{Name: "identity", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.ObjectParameter(), Children: []ssot.Attribute{noorder, order}}
+	got := QueryStructFromAttribute("Widget", attr)
+	want := NewQueryStruct("WidgetIdentity").
+		OptionalSQL("NOORDER").
+		OptionalSQL("ORDER").
+		WithValidation(ConflictingFields, "Noorder", "Order")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}

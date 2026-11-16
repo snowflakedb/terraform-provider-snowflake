@@ -72,7 +72,7 @@ type TableColumn struct {
 
 type ColumnDefaultValue struct {
 	Expression *string         `ddl:"parameter,no_equals" sql:"DEFAULT"`
-	Identity   *ColumnIdentity `ddl:"keyword" sql:"IDENTITY"`
+	Identity   *ColumnIdentity `ddl:"list,no_comma" sql:"IDENTITY"`
 }
 
 type ColumnIdentity struct {
@@ -227,83 +227,28 @@ type TableReclusterChangeState struct {
 }
 
 type TableColumnAction struct {
-	Add                *TableColumnAddAction            `ddl:"keyword" sql:"ADD"`
-	Rename             *TableColumnRenameAction         `ddl:"keyword"`
+	Add                *TableColumnAddAction            `ddl:"list,no_comma" sql:"ADD"`
+	Rename             *TableColumnRenameAction         `ddl:"list,no_comma"`
 	Alter              []TableColumnAlterAction         `ddl:"keyword" sql:"ALTER"`
-	SetMaskingPolicy   *TableSetColumnMaskingPolicy     `ddl:"keyword"`
-	UnsetMaskingPolicy *TableUnsetColumnMaskingPolicy   `ddl:"keyword"`
-	SetTags            *TableColumnAlterSetTagsAction   `ddl:"keyword"`
-	UnsetTags          *TableColumnAlterUnsetTagsAction `ddl:"keyword"`
-	DropColumns        *TableDropColumnAction           `ddl:"keyword"`
+	SetMaskingPolicy   *TableSetColumnMaskingPolicy     `ddl:"list,no_comma"`
+	UnsetMaskingPolicy *TableUnsetColumnMaskingPolicy   `ddl:"list,no_comma"`
+	SetTags            *TableColumnAlterSetTagsAction   `ddl:"list,no_comma"`
+	UnsetTags          *TableColumnAlterUnsetTagsAction `ddl:"list,no_comma"`
+	DropColumns        *TableDropColumnAction           `ddl:"list,no_comma"`
 }
 
 type TableColumnAddAction struct {
-	column           bool                            `ddl:"static" sql:"COLUMN"`
-	IfNotExists      *bool                           `ddl:"keyword" sql:"IF NOT EXISTS"`
-	Name             string                          `ddl:"keyword,double_quotes"`
-	ColumnType       DataType                        `ddl:"keyword"`
-	Collate          *string                         `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
-	DefaultValue     *ColumnDefaultValue             `ddl:"keyword"`
-	NotNull          *bool                           `ddl:"keyword" sql:"NOT NULL"`
-	InlineConstraint *TableColumnAddInlineConstraint `ddl:"keyword"`
-	MaskingPolicy    *TableColumnMaskingPolicy       `ddl:"keyword"`
-	Tag              []TagAssociation                `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment          *string                         `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-}
-
-type TableColumnAddInlineConstraint struct {
-	UniquePK *TableColumnAddInlineUniquePK `ddl:"keyword"`
-	FK       *TableColumnAddInlineFK       `ddl:"keyword"`
-	CH       *TableColumnAddInlineCH       `ddl:"keyword"`
-}
-
-type TableColumnAddInlineUniquePK struct {
-	Name               *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	Unique             *bool   `ddl:"keyword" sql:"UNIQUE"`
-	PrimaryKey         *bool   `ddl:"keyword" sql:"PRIMARY KEY"`
-	Enforced           *bool   `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool   `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool   `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool   `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool   `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool   `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool   `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool   `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool   `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool   `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool   `ddl:"keyword" sql:"RELY"`
-	Norely             *bool   `ddl:"keyword" sql:"NORELY"`
-}
-
-type TableColumnAddInlineFK struct {
-	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
-	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
-	RefColumn          []Column               `ddl:"keyword,parentheses"`
-	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
-	On                 *ForeignKeyOnAction    `ddl:"keyword"`
-	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
-	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
-}
-
-type TableColumnAddInlineCH struct {
-	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	check            bool    `ddl:"static" sql:"CHECK"`
-	openParen        bool    `ddl:"static" sql:"("`
-	Expression       string  `ddl:"keyword,no_quotes"`
-	closeParen       bool    `ddl:"static" sql:")"`
-	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
-	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
+	column           bool                         `ddl:"static" sql:"COLUMN"`
+	IfNotExists      *bool                        `ddl:"keyword" sql:"IF NOT EXISTS"`
+	Name             string                       `ddl:"keyword,double_quotes"`
+	ColumnType       DataType                     `ddl:"parameter,no_equals"`
+	Collate          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	DefaultValue     *ColumnDefaultValue          `ddl:"list,no_comma"`
+	NotNull          *bool                        `ddl:"keyword" sql:"NOT NULL"`
+	InlineConstraint *TableColumnInlineConstraint `ddl:"list,no_comma"`
+	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"list,no_comma"`
+	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
 type TableColumnRenameAction struct {
@@ -316,9 +261,8 @@ type TableColumnAlterAction struct {
 	Name              string                        `ddl:"keyword,double_quotes"`
 	DropDefault       *bool                         `ddl:"keyword" sql:"DROP DEFAULT"`
 	SetDefault        *SequenceName                 `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
-	NotNullConstraint *TableColumnNotNullConstraint `ddl:"-"`
-	DataType          *DataType                     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
-	Collate           *string                       `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	NotNullConstraint *TableColumnNotNullConstraint `ddl:"list,no_comma"`
+	DataType          *TableColumnAlterDataType     `ddl:"list,no_comma" sql:"SET DATA TYPE"`
 	Comment           *string                       `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 	UnsetComment      *bool                         `ddl:"keyword" sql:"UNSET COMMENT"`
 }
@@ -326,6 +270,11 @@ type TableColumnAlterAction struct {
 type TableColumnNotNullConstraint struct {
 	Set  *bool `ddl:"keyword" sql:"SET NOT NULL"`
 	Drop *bool `ddl:"keyword" sql:"DROP NOT NULL"`
+}
+
+type TableColumnAlterDataType struct {
+	DataType DataType `ddl:"parameter,no_equals"`
+	Collate  *string  `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 }
 
 type TableColumnAlterSetTagsAction struct {
