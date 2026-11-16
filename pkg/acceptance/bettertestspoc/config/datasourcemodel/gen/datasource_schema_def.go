@@ -179,6 +179,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.ProjectionPolicies().Schema,
 	},
 	{
+		name:   "Quotas",
+		schema: datasources.Quotas().Schema,
+	},
+	{
 		name:   "ReplicationGroups",
 		schema: datasources.ReplicationGroups().Schema,
 	},
