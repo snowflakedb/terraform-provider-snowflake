@@ -104,6 +104,7 @@ body:
         - resource:api_integration_google_cloud_api_gateway
         - resource:authentication_policy
         - resource:backup_policy
+        - resource:backup_set
         - resource:catalog_integration
         - resource:catalog_integration_aws_glue
         - resource:catalog_integration_iceberg_rest
@@ -252,6 +253,7 @@ body:
         - data_source:api_integrations
         - data_source:authentication_policies
         - data_source:backup_policies
+        - data_source:backup_sets
         - data_source:catalog_integrations
         - data_source:code_bundles
         - data_source:compute_pools
