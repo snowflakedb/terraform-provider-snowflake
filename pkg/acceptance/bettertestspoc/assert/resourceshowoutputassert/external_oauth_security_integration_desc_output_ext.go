@@ -80,6 +80,11 @@ func (e *ExternalOauthSecurityIntegrationDescOutputAssert) HasExternalOauthScope
 	return e
 }
 
+func (e *ExternalOauthSecurityIntegrationDescOutputAssert) HasIsAgentic(expected string) *ExternalOauthSecurityIntegrationDescOutputAssert {
+	e.StringValueSet("is_agentic.0.value", expected)
+	return e
+}
+
 func (e *ExternalOauthSecurityIntegrationDescOutputAssert) HasComment(expected string) *ExternalOauthSecurityIntegrationDescOutputAssert {
 	e.StringValueSet("comment.0.value", expected)
 	return e

@@ -25,6 +25,7 @@ var DescribeExternalOauthSecurityIntegrationDetailsSchema = mergeSchema(map[stri
 	// external_oauth_token_user_mapping_claim: manual addition and mapping is needed
 	// external_oauth_snowflake_user_mapping_attribute: manual addition and mapping is needed
 	// external_oauth_scope_delimiter: manual addition and mapping is needed
+	// is_agentic: manual addition and mapping is needed
 	// comment: manual addition and mapping is needed
 }, externalOauthSecurityIntegrationDetailsToSchemaMapper{}.additionalSchema())
 
@@ -44,6 +45,7 @@ func ExternalOauthSecurityIntegrationDetailsToSchema(externalOauthSecurityIntegr
 	// external_oauth_token_user_mapping_claim: manual addition and mapping is needed
 	// external_oauth_snowflake_user_mapping_attribute: manual addition and mapping is needed
 	// external_oauth_scope_delimiter: manual addition and mapping is needed
+	// is_agentic: manual addition and mapping is needed
 	// comment: manual addition and mapping is needed
 	externalOauthSecurityIntegrationDetailsToSchemaMapper{}.additionalToSchema(externalOauthSecurityIntegrationDetails, externalOauthSecurityIntegrationDetailsSchema)
 	return externalOauthSecurityIntegrationDetailsSchema

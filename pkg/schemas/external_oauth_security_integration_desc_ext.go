@@ -21,6 +21,7 @@ var ExternalOauthPropertiesNames = []string{
 	"EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM",
 	"EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE",
 	"EXTERNAL_OAUTH_SCOPE_DELIMITER",
+	"IS_AGENTIC",
 	"COMMENT",
 }
 
@@ -40,6 +41,7 @@ func (externalOauthSecurityIntegrationDetailsToSchemaMapper) additionalSchema() 
 		"external_oauth_token_user_mapping_claim":         DescribePropertyListSchema,
 		"external_oauth_snowflake_user_mapping_attribute": DescribePropertyListSchema,
 		"external_oauth_scope_delimiter":                  DescribePropertyListSchema,
+		"is_agentic":                                      DescribePropertyListSchema,
 		"comment":                                         DescribePropertyListSchema,
 	}
 }
@@ -60,6 +62,7 @@ func (externalOauthSecurityIntegrationDetailsToSchemaMapper) additionalToSchema(
 	mapSecurityIntegrationProperty(dst, "external_oauth_token_user_mapping_claim", src.ExternalOauthTokenUserMappingClaim)
 	mapSecurityIntegrationProperty(dst, "external_oauth_snowflake_user_mapping_attribute", src.ExternalOauthSnowflakeUserMappingAttribute)
 	mapSecurityIntegrationProperty(dst, "external_oauth_scope_delimiter", src.ExternalOauthScopeDelimiter)
+	mapSecurityIntegrationProperty(dst, "is_agentic", src.IsAgentic)
 	mapSecurityIntegrationProperty(dst, "comment", src.Comment)
 }
 

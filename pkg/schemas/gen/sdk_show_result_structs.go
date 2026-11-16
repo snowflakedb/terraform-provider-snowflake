@@ -177,7 +177,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"enabled", "external_oauth_issuer", "external_oauth_jws_keys_url", "external_oauth_any_role_mode",
 		"external_oauth_rsa_public_key", "external_oauth_rsa_public_key2", "external_oauth_blocked_roles_list",
 		"external_oauth_allowed_roles_list", "external_oauth_audience_list", "external_oauth_token_user_mapping_claim",
-		"external_oauth_snowflake_user_mapping_attribute", "external_oauth_scope_delimiter", "comment",
+		"external_oauth_snowflake_user_mapping_attribute", "external_oauth_scope_delimiter", "is_agentic", "comment",
 	}},
 	// ManualFields nested type-specific structs (public schema is a flat union of per-type keys; nested mapping in ext).
 	{ObjectStruct: sdk.FileFormatAllDetails{}, IsDescribe: true, ManualFields: []string{"csv", "json", "avro", "orc", "parquet", "xml"}},
@@ -220,7 +220,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"oauth_issue_refresh_tokens", "oauth_refresh_token_validity", "network_policy",
 		"oauth_client_rsa_public_key_fp", "oauth_client_rsa_public_key2_fp", "comment",
 		"oauth_authorization_endpoint", "oauth_token_endpoint",
-		"oauth_allowed_authorization_endpoints", "oauth_allowed_token_endpoints",
+		"oauth_allowed_authorization_endpoints", "oauth_allowed_token_endpoints", "is_agentic",
 	}},
 	// Nested DescribePropertyListSchema in ext (today’s public describe_output).
 	// ManualFields `oauth_client_rsa_public_key2_fp` is ToSnakeCase of OauthClientRsaPublicKey2Fp;

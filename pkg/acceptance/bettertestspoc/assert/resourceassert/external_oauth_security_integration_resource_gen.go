@@ -117,6 +117,11 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedName(e
 	return e
 }
 
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasIsAgentic(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.StringValueSet("is_agentic", expected)
+	return e
+}
+
 // typed assert for "related_parameters" (type: List, subtype: Map) is not currently supported
 
 ///////////////////////////////////
@@ -180,6 +185,11 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTypeStr
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
 	e.ValueSet("fully_qualified_name", expected)
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasIsAgenticString(expected string) *ExternalOauthSecurityIntegrationResourceAssert {
+	e.ValueSet("is_agentic", expected)
 	return e
 }
 
@@ -247,6 +257,11 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoFullyQualifiedName
 	return e
 }
 
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasNoIsAgentic() *ExternalOauthSecurityIntegrationResourceAssert {
+	e.ValueNotSet("is_agentic")
+	return e
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -303,6 +318,11 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthScopeMa
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
 	e.ValueSet("fully_qualified_name", "")
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasIsAgenticEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
+	e.ValueSet("is_agentic", "")
 	return e
 }
 
@@ -372,5 +392,10 @@ func (e *ExternalOauthSecurityIntegrationResourceAssert) HasExternalOauthTypeNot
 
 func (e *ExternalOauthSecurityIntegrationResourceAssert) HasFullyQualifiedNameNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
 	e.ValuePresent("fully_qualified_name")
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationResourceAssert) HasIsAgenticNotEmpty() *ExternalOauthSecurityIntegrationResourceAssert {
+	e.ValuePresent("is_agentic")
 	return e
 }

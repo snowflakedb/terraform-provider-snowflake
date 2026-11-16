@@ -259,6 +259,11 @@ func (s *CreateExternalOauthSecurityIntegrationRequest) WithExternalOauthScopeMa
 	return s
 }
 
+func (s *CreateExternalOauthSecurityIntegrationRequest) WithIsAgentic(isAgentic bool) *CreateExternalOauthSecurityIntegrationRequest {
+	s.IsAgentic = &isAgentic
+	return s
+}
+
 func (s *CreateExternalOauthSecurityIntegrationRequest) WithComment(comment string) *CreateExternalOauthSecurityIntegrationRequest {
 	s.Comment = &comment
 	return s
@@ -427,6 +432,11 @@ func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithOauthClientR
 
 func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithOauthClientRsaPublicKey2(oauthClientRsaPublicKey2 string) *CreateOauthForCustomClientsSecurityIntegrationRequest {
 	s.OauthClientRsaPublicKey2 = &oauthClientRsaPublicKey2
+	return s
+}
+
+func (s *CreateOauthForCustomClientsSecurityIntegrationRequest) WithIsAgentic(isAgentic bool) *CreateOauthForCustomClientsSecurityIntegrationRequest {
+	s.IsAgentic = &isAgentic
 	return s
 }
 
@@ -1000,6 +1010,11 @@ func (s *ExternalOauthIntegrationSetRequest) WithExternalOauthScopeMappingAttrib
 	return s
 }
 
+func (s *ExternalOauthIntegrationSetRequest) WithIsAgentic(isAgentic bool) *ExternalOauthIntegrationSetRequest {
+	s.IsAgentic = &isAgentic
+	return s
+}
+
 func (s *ExternalOauthIntegrationSetRequest) WithComment(comment StringAllowEmpty) *ExternalOauthIntegrationSetRequest {
 	s.Comment = &comment
 	return s
@@ -1017,6 +1032,11 @@ func (s *ExternalOauthIntegrationUnsetRequest) WithEnabled(enabled bool) *Extern
 
 func (s *ExternalOauthIntegrationUnsetRequest) WithExternalOauthAudienceList(externalOauthAudienceList bool) *ExternalOauthIntegrationUnsetRequest {
 	s.ExternalOauthAudienceList = &externalOauthAudienceList
+	return s
+}
+
+func (s *ExternalOauthIntegrationUnsetRequest) WithIsAgentic(isAgentic bool) *ExternalOauthIntegrationUnsetRequest {
+	s.IsAgentic = &isAgentic
 	return s
 }
 
@@ -1216,6 +1236,11 @@ func (s *OauthForCustomClientsIntegrationSetRequest) WithOauthClientRsaPublicKey
 	return s
 }
 
+func (s *OauthForCustomClientsIntegrationSetRequest) WithIsAgentic(isAgentic bool) *OauthForCustomClientsIntegrationSetRequest {
+	s.IsAgentic = &isAgentic
+	return s
+}
+
 func (s *OauthForCustomClientsIntegrationSetRequest) WithComment(comment string) *OauthForCustomClientsIntegrationSetRequest {
 	s.Comment = &comment
 	return s
@@ -1248,6 +1273,11 @@ func (s *OauthForCustomClientsIntegrationUnsetRequest) WithOauthClientRsaPublicK
 
 func (s *OauthForCustomClientsIntegrationUnsetRequest) WithOauthUseSecondaryRoles(oauthUseSecondaryRoles bool) *OauthForCustomClientsIntegrationUnsetRequest {
 	s.OauthUseSecondaryRoles = &oauthUseSecondaryRoles
+	return s
+}
+
+func (s *OauthForCustomClientsIntegrationUnsetRequest) WithIsAgentic(isAgentic bool) *OauthForCustomClientsIntegrationUnsetRequest {
+	s.IsAgentic = &isAgentic
 	return s
 }
 

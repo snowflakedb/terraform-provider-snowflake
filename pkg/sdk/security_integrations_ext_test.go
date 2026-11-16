@@ -188,12 +188,13 @@ func init() {
 				opts.ExternalOauthAnyRoleMode = new(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)
 				opts.ExternalOauthScopeDelimiter = new(" ")
 				opts.ExternalOauthScopeMappingAttribute = new("foo")
+				opts.IsAgentic = new(true)
 				opts.Comment = new("foo")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = EXTERNAL_OAUTH ENABLED = false EXTERNAL_OAUTH_TYPE = CUSTOM EXTERNAL_OAUTH_ISSUER = 'foo'"+
 				" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo') EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS' EXTERNAL_OAUTH_ALLOWED_ROLES_LIST = (%s)"+
 				" EXTERNAL_OAUTH_RSA_PUBLIC_KEY = 'foo' EXTERNAL_OAUTH_RSA_PUBLIC_KEY_2 = 'foo' EXTERNAL_OAUTH_AUDIENCE_LIST = ('foo') EXTERNAL_OAUTH_ANY_ROLE_MODE = DISABLE"+
-				" EXTERNAL_OAUTH_SCOPE_DELIMITER = ' ' EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE = 'foo' COMMENT = 'foo'",
+				" EXTERNAL_OAUTH_SCOPE_DELIMITER = ' ' EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE = 'foo' IS_AGENTIC = true COMMENT = 'foo'",
 			id.FullyQualifiedName(), allowedRoleId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -285,11 +286,12 @@ func init() {
 				opts.NetworkPolicy = &networkPolicyId
 				opts.OauthClientRsaPublicKey = new("key")
 				opts.OauthClientRsaPublicKey2 = new("key2")
+				opts.IsAgentic = new(true)
 				opts.Comment = new("a")
 			},
 			"CREATE SECURITY INTEGRATION IF NOT EXISTS %s TYPE = OAUTH OAUTH_CLIENT = CUSTOM OAUTH_CLIENT_TYPE = 'PUBLIC' OAUTH_REDIRECT_URI = 'uri' ENABLED = true"+
 				" OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true OAUTH_ENFORCE_PKCE = true OAUTH_USE_SECONDARY_ROLES = NONE PRE_AUTHORIZED_ROLES_LIST = (%s) ALLOWED_ROLES_LIST = (%s) BLOCKED_ROLES_LIST = (%s)"+
-				" OAUTH_ISSUE_REFRESH_TOKENS = true OAUTH_REFRESH_TOKEN_VALIDITY = 42 NETWORK_POLICY = '\\\"%s\\\"' OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key' OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2' COMMENT = 'a'",
+				" OAUTH_ISSUE_REFRESH_TOKENS = true OAUTH_REFRESH_TOKEN_VALIDITY = 42 NETWORK_POLICY = '\\\"%s\\\"' OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key' OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2' IS_AGENTIC = true COMMENT = 'a'",
 			id.FullyQualifiedName(), preAuthorizedRoleId.FullyQualifiedName(), allowedRoleId.FullyQualifiedName(),
 			blockedRoleId.FullyQualifiedName(), networkPolicyId.Name(),
 		).
@@ -616,13 +618,14 @@ func init() {
 					ExternalOauthAnyRoleMode:                   new(ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable),
 					ExternalOauthScopeDelimiter:                new(" "),
 					ExternalOauthScopeMappingAttribute:         new("foo"),
+					IsAgentic:                                  new(true),
 					Comment:                                    new(StringAllowEmpty{Value: "foo"}),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, EXTERNAL_OAUTH_TYPE = CUSTOM, EXTERNAL_OAUTH_ISSUER = 'foo',"+
 				" EXTERNAL_OAUTH_TOKEN_USER_MAPPING_CLAIM = ('foo'), EXTERNAL_OAUTH_SNOWFLAKE_USER_MAPPING_ATTRIBUTE = 'EMAIL_ADDRESS', EXTERNAL_OAUTH_ALLOWED_ROLES_LIST = (%s),"+
 				" EXTERNAL_OAUTH_RSA_PUBLIC_KEY = 'foo', EXTERNAL_OAUTH_RSA_PUBLIC_KEY_2 = 'foo', EXTERNAL_OAUTH_AUDIENCE_LIST = ('foo'), EXTERNAL_OAUTH_ANY_ROLE_MODE = DISABLE,"+
-				" EXTERNAL_OAUTH_SCOPE_DELIMITER = ' ', EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE = 'foo', COMMENT = 'foo'",
+				" EXTERNAL_OAUTH_SCOPE_DELIMITER = ' ', EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE = 'foo', IS_AGENTIC = true, COMMENT = 'foo'",
 			id.FullyQualifiedName(), allowedRoleId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -642,9 +645,10 @@ func init() {
 				opts.Unset = &ExternalOauthIntegrationUnset{
 					Enabled:                   new(true),
 					ExternalOauthAudienceList: new(true),
+					IsAgentic:                 new(true),
 				}
 			},
-			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, EXTERNAL_OAUTH_AUDIENCE_LIST",
+			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, EXTERNAL_OAUTH_AUDIENCE_LIST, IS_AGENTIC",
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -774,12 +778,13 @@ func init() {
 					NetworkPolicy:               &networkPolicyId,
 					OauthClientRsaPublicKey:     new("key"),
 					OauthClientRsaPublicKey2:    new("key2"),
+					IsAgentic:                   new(true),
 					Comment:                     new("a"),
 				}
 			},
 			"ALTER SECURITY INTEGRATION %s SET ENABLED = true, OAUTH_REDIRECT_URI = 'uri', OAUTH_ALLOW_NON_TLS_REDIRECT_URI = true, OAUTH_ENFORCE_PKCE = true,"+
 				" PRE_AUTHORIZED_ROLES_LIST = (%s), ALLOWED_ROLES_LIST = (%s), BLOCKED_ROLES_LIST = (%s), OAUTH_ISSUE_REFRESH_TOKENS = true, OAUTH_REFRESH_TOKEN_VALIDITY = 42, OAUTH_USE_SECONDARY_ROLES = NONE,"+
-				" NETWORK_POLICY = '\\\"%s\\\"', OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key', OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2', COMMENT = 'a'",
+				" NETWORK_POLICY = '\\\"%s\\\"', OAUTH_CLIENT_RSA_PUBLIC_KEY = 'key', OAUTH_CLIENT_RSA_PUBLIC_KEY_2 = 'key2', IS_AGENTIC = true, COMMENT = 'a'",
 			id.FullyQualifiedName(), preAuthorizedRoleId.FullyQualifiedName(), allowedRoleId.FullyQualifiedName(),
 			blockedRoleId.FullyQualifiedName(), networkPolicyId.Name(),
 		).
@@ -792,9 +797,10 @@ func init() {
 					NetworkPolicy:            new(true),
 					OauthClientRsaPublicKey:  new(true),
 					OauthClientRsaPublicKey2: new(true),
+					IsAgentic:                new(true),
 				}
 			},
-			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, NETWORK_POLICY, OAUTH_CLIENT_RSA_PUBLIC_KEY, OAUTH_CLIENT_RSA_PUBLIC_KEY_2, OAUTH_USE_SECONDARY_ROLES",
+			"ALTER SECURITY INTEGRATION %s UNSET ENABLED, NETWORK_POLICY, OAUTH_CLIENT_RSA_PUBLIC_KEY, OAUTH_CLIENT_RSA_PUBLIC_KEY_2, OAUTH_USE_SECONDARY_ROLES, IS_AGENTIC",
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -1059,8 +1065,10 @@ func TestSecurityIntegrationDescribeProjections(t *testing.T) {
 	require.Equal(t, &comment, partner.Comment)
 	require.Nil(t, AsOauthPartner(nil))
 
-	custom := AsOauthCustom([]SecurityIntegrationProperty{clientType, enabled, key2Fp, comment, unknown})
+	isAgentic := SecurityIntegrationProperty{Name: "IS_AGENTIC", Type: "Boolean", Value: "true", Default: "false"}
+	custom := AsOauthCustom([]SecurityIntegrationProperty{clientType, enabled, key2Fp, isAgentic, comment, unknown})
 	require.Equal(t, &clientType, custom.OauthClientType)
+	require.Equal(t, &isAgentic, custom.IsAgentic)
 	require.Equal(t, &enabled, custom.Enabled)
 	require.Equal(t, &key2Fp, custom.OauthClientRsaPublicKey2Fp)
 	require.Equal(t, &comment, custom.Comment)
@@ -1068,8 +1076,9 @@ func TestSecurityIntegrationDescribeProjections(t *testing.T) {
 
 	issuerExt := SecurityIntegrationProperty{Name: "EXTERNAL_OAUTH_ISSUER", Type: "String", Value: "https://idp.example", Default: ""}
 	key2 := SecurityIntegrationProperty{Name: "EXTERNAL_OAUTH_RSA_PUBLIC_KEY_2", Type: "String", Value: "pk2", Default: ""}
-	external := AsExternalOauth([]SecurityIntegrationProperty{issuerExt, enabled, key2, comment, unknown})
+	external := AsExternalOauth([]SecurityIntegrationProperty{issuerExt, enabled, key2, isAgentic, comment, unknown})
 	require.Equal(t, &issuerExt, external.ExternalOauthIssuer)
+	require.Equal(t, &isAgentic, external.IsAgentic)
 	require.Equal(t, &enabled, external.Enabled)
 	require.Equal(t, &key2, external.ExternalOauthRsaPublicKey2)
 	require.Equal(t, &comment, external.Comment)

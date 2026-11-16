@@ -49,6 +49,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		WithOauthClientRsaPublicKey(key).
 		WithOauthClientRsaPublicKey2(key).
 		WithOauthEnforcePkce(resources.BooleanTrue).
+		WithIsAgentic(resources.BooleanTrue).
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
@@ -73,6 +74,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasEnabledString(resources.BooleanDefault).
 			HasOauthAllowNonTlsRedirectUriString(resources.BooleanDefault).
 			HasOauthEnforcePkceString(resources.BooleanDefault).
+			HasIsAgenticString(resources.BooleanDefault).
 			HasOauthIssueRefreshTokensString(resources.BooleanDefault).
 			HasOauthAllowNonTlsRedirectUriString(resources.BooleanDefault).
 			HasPreAuthorizedRolesList().
@@ -94,6 +96,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.enabled.0.value", "true")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanFalse)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.is_agentic.0.value", resources.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", "")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", "")),
@@ -127,6 +130,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 			HasEnabledString(resources.BooleanTrue).
 			HasOauthAllowNonTlsRedirectUriString(resources.BooleanTrue).
 			HasOauthEnforcePkceString(resources.BooleanTrue).
+			HasIsAgenticString(resources.BooleanTrue).
 			HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 			HasOauthRefreshTokenValidityString("86400").
 			HasOauthUseSecondaryRolesString("NONE").
@@ -153,6 +157,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.is_agentic.0.value", resources.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", allowedRole.ID().Name())),
@@ -189,6 +194,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"blocked_roles_list",
 					"enabled",
+					"is_agentic",
 					"oauth_allow_non_tls_redirect_uri",
 					"oauth_enforce_pkce",
 					"oauth_issue_refresh_tokens",
@@ -241,6 +247,7 @@ func TestAcc_OauthIntegrationForCustomClients_BasicUseCase(t *testing.T) {
 							WithEnabled(true).
 							WithNetworkPolicy(networkPolicy.ID()).
 							WithOauthEnforcePkce(true).
+							WithIsAgentic(true).
 							WithOauthIssueRefreshTokens(true).
 							WithOauthRefreshTokenValidity(86400).
 							WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone).
@@ -301,6 +308,7 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 		WithOauthClientRsaPublicKey(key).
 		WithOauthClientRsaPublicKey2(key).
 		WithOauthEnforcePkce(resources.BooleanTrue).
+		WithIsAgentic(resources.BooleanTrue).
 		WithEnabled(resources.BooleanTrue).
 		WithOauthIssueRefreshTokens(resources.BooleanTrue).
 		WithOauthRefreshTokenValidity(86400).
@@ -336,6 +344,7 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 						HasEnabledString(resources.BooleanTrue).
 						HasOauthAllowNonTlsRedirectUriString(resources.BooleanTrue).
 						HasOauthEnforcePkceString(resources.BooleanTrue).
+						HasIsAgenticString(resources.BooleanTrue).
 						HasOauthIssueRefreshTokensString(resources.BooleanTrue).
 						HasOauthRefreshTokenValidityString("86400").
 						HasOauthUseSecondaryRolesString("NONE").
@@ -362,6 +371,7 @@ func TestAcc_OauthIntegrationForCustomClients_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.enabled.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", resources.BooleanTrue)),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.is_agentic.0.value", resources.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", preAuthorizedRole.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", allowedRole.ID().Name())),
@@ -416,6 +426,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 		WithOauthClientRsaPublicKeyEmpty().
 		WithOauthClientRsaPublicKey2Empty().
 		WithOauthEnforcePkce(resources.BooleanFalse).
+		WithIsAgentic(resources.BooleanFalse).
 		WithOauthIssueRefreshTokens(resources.BooleanFalse).
 		WithOauthRefreshTokenValidity(7776000).
 		WithOauthUseSecondaryRoles(string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)).
@@ -436,6 +447,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "enabled", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_allow_non_tls_redirect_uri", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_enforce_pkce", "false"),
+					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "is_agentic", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "oauth_use_secondary_roles", string(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone)),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "pre_authorized_roles_list.#", "0"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "blocked_roles_list.#", "2"),
@@ -460,6 +472,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.enabled.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false"),
+					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.is_agentic.0.value", "false"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", ""),
 					resource.TestCheckResourceAttr(defaultValuesModel.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", ""),
@@ -486,6 +499,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "enabled", resources.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_allow_non_tls_redirect_uri", resources.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_enforce_pkce", resources.BooleanDefault),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "is_agentic", resources.BooleanDefault),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "oauth_use_secondary_roles", ""),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "pre_authorized_roles_list.#", "0"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "blocked_roles_list.#", "2"),
@@ -510,6 +524,7 @@ func TestAcc_OauthIntegrationForCustomClients_DefaultValues(t *testing.T) {
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.enabled.0.value", "true"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_allow_non_tls_redirect_uri.0.value", "false"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_enforce_pkce.0.value", "false"),
+					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.is_agentic.0.value", "false"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.oauth_use_secondary_roles.0.value", "NONE"),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.pre_authorized_roles_list.0.value", ""),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "describe_output.0.allowed_roles_list.0.value", ""),
@@ -712,6 +727,70 @@ func TestAcc_OauthIntegrationForCustomClients_WithQuotedName(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "name", id.Name()),
 					resource.TestCheckResourceAttr(basicModel.ResourceReference(), "id", id.Name()),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_OauthIntegrationForCustomClients_IsAgentic_migrateFromV2_23_0 verifies that upgrading from a version without
+// is_agentic doesn't plan a change, even when IS_AGENTIC was set outside the resource (for example with raw SQL),
+// and that the attribute can then take over the value.
+func TestAcc_OauthIntegrationForCustomClients_IsAgentic_migrateFromV2_23_0(t *testing.T) {
+	validUrl := "https://example.com"
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+
+	basic := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl)
+	withIsAgentic := model.OauthIntegrationForCustomClients("test", id.Name(), string(sdk.OauthSecurityIntegrationClientTypeOptionConfidential), validUrl).
+		WithIsAgentic(resources.BooleanTrue)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resourcenames.OauthIntegrationForCustomClients),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.23.0"),
+				Config:            accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.OauthIntegrationForCustomClientsResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasNoIsAgentic(),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.UpdateOauthForClients(t, sdk.NewAlterOauthForCustomClientsSecurityIntegrationRequest(id).WithSet(
+						*sdk.NewOauthForCustomClientsIntegrationSetRequest().WithIsAgentic(true),
+					))
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.OauthIntegrationForCustomClientsResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasIsAgenticString(resources.BooleanDefault),
+					assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.is_agentic.0.value", resources.BooleanTrue)),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withIsAgentic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, withIsAgentic),
+				Check: assertThat(t,
+					resourceassert.OauthIntegrationForCustomClientsResource(t, withIsAgentic.ResourceReference()).
+						HasIsAgenticString(resources.BooleanTrue),
+					assert.Check(resource.TestCheckResourceAttr(withIsAgentic.ResourceReference(), "describe_output.0.is_agentic.0.value", resources.BooleanTrue)),
 				),
 			},
 		},

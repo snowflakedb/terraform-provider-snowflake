@@ -51,6 +51,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 		WithExternalOauthAudienceListValue(config.SetVariable(config.StringVariable("bar"))).
 		WithExternalOauthScopeDelimiter(".").
+		WithIsAgentic(r.BooleanTrue).
 		WithComment(comment)
 
 	assertBasic := []assert.TestCheckFuncProvider{
@@ -67,6 +68,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 			HasExternalOauthTypeString(string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom)).
 			HasExternalOauthIssuerString(issuer).
 			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
+			HasIsAgenticString(r.BooleanDefault).
 			HasCommentString(""),
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, basic.ResourceReference()).
@@ -83,6 +85,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_snowflake_user_mapping_attribute.0.value", string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress))),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ",")),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.is_agentic.0.value", r.BooleanFalse)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.comment.0.value", "")),
 	}
 
@@ -102,6 +105,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 			HasExternalOauthSnowflakeUserMappingAttributeString(string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress)).
 			HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 			HasExternalOauthScopeDelimiterString(".").
+			HasIsAgenticString(r.BooleanTrue).
 			HasCommentString(comment),
 
 		resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
@@ -119,6 +123,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_any_role_mode.0.value", string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable))),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_audience_list.0.value", "bar")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ".")),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.is_agentic.0.value", r.BooleanTrue)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
 	}
 
@@ -141,6 +146,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
+					"is_agentic",
 					"external_oauth_jws_keys_url",
 					"external_oauth_rsa_public_key",
 					"external_oauth_rsa_public_key_2",
@@ -193,6 +199,7 @@ func TestAcc_ExternalOauthIntegration_BasicUseCase(t *testing.T) {
 						WithSet(
 							*sdk.NewExternalOauthIntegrationSetRequest().
 								WithEnabled(true).
+								WithIsAgentic(true).
 								WithExternalOauthJwsKeysUrl([]sdk.JwsKeysUrl{{JwsKeyUrl: "https://example.com"}}).
 								WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable).
 								WithExternalOauthAudienceList(*sdk.NewAudienceListRequest([]sdk.AudienceListItem{{Item: "bar"}})).
@@ -251,6 +258,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 		WithExternalOauthAnyRoleMode(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 		WithExternalOauthAudienceListValue(config.SetVariable(config.StringVariable("bar"))).
 		WithExternalOauthScopeDelimiter(".").
+		WithIsAgentic(r.BooleanTrue).
 		WithComment(comment)
 
 	resource.Test(t, resource.TestCase{
@@ -281,6 +289,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 						HasExternalOauthScopeMappingAttributeString("scp").
 						HasExternalOauthAnyRoleModeString(string(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable)).
 						HasExternalOauthScopeDelimiterString(".").
+						HasIsAgenticString(r.BooleanTrue).
 						HasCommentString(comment),
 
 					resourceshowoutputassert.SecurityIntegrationShowOutput(t, complete.ResourceReference()).
@@ -299,6 +308,7 @@ func TestAcc_ExternalOauthIntegration_CompleteUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_allowed_roles_list.0.value", role.ID().Name())),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_audience_list.0.value", "bar")),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.external_oauth_scope_delimiter.0.value", ".")),
+					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.is_agentic.0.value", r.BooleanTrue)),
 					assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.comment.0.value", comment)),
 				),
 			},
@@ -968,6 +978,83 @@ func TestAcc_ExternalOauthIntegration_gh5322(t *testing.T) {
 						HasNoExternalOauthScopeDelimiter(),
 					resourceshowoutputassert.ExternalOauthSecurityIntegrationDescOutput(t, azure.ResourceReference()).
 						HasExternalOauthScopeDelimiter(","),
+				),
+			},
+		},
+	})
+}
+
+// TestAcc_ExternalOauthIntegration_IsAgentic_migrateFromV2_23_0 verifies that upgrading from a version without
+// is_agentic doesn't plan a change, even when IS_AGENTIC was set outside the resource (for example with raw SQL),
+// and that the attribute can then take over the value.
+func TestAcc_ExternalOauthIntegration_IsAgentic_migrateFromV2_23_0(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	issuer := random.String()
+
+	basic := model.ExternalOauthSecurityIntegration(
+		"test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com")))
+	withIsAgentic := model.ExternalOauthSecurityIntegration(
+		"test", id.Name(), true, issuer,
+		string(sdk.ExternalOauthSecurityIntegrationSnowflakeUserMappingAttributeOptionEmailAddress),
+		[]string{"foo"},
+		string(sdk.ExternalOauthSecurityIntegrationTypeOptionCustom),
+	).
+		WithExternalOauthJwsKeysUrlValue(config.SetVariable(config.StringVariable("https://example.com"))).
+		WithIsAgentic(r.BooleanTrue)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ExternalOauthSecurityIntegration),
+		Steps: []resource.TestStep{
+			{
+				ExternalProviders: ExternalProviderWithExactVersion("2.23.0"),
+				Config:            accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.ExternalOauthSecurityIntegrationResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasNoIsAgentic(),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().SecurityIntegration.UpdateExternalOauth(t, sdk.NewAlterExternalOauthSecurityIntegrationRequest(id).
+						WithSet(*sdk.NewExternalOauthIntegrationSetRequest().WithIsAgentic(true)))
+				},
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(basic.ResourceReference(), plancheck.ResourceActionNoop),
+					},
+				},
+				Config: accconfig.FromModels(t, basic),
+				Check: assertThat(t,
+					resourceassert.ExternalOauthSecurityIntegrationResource(t, basic.ResourceReference()).
+						HasNameString(id.Name()).
+						HasIsAgenticString(r.BooleanDefault),
+					resourceshowoutputassert.ExternalOauthSecurityIntegrationDescOutput(t, basic.ResourceReference()).
+						HasIsAgentic(r.BooleanTrue),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(withIsAgentic.ResourceReference(), plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, withIsAgentic),
+				Check: assertThat(t,
+					resourceassert.ExternalOauthSecurityIntegrationResource(t, withIsAgentic.ResourceReference()).
+						HasIsAgenticString(r.BooleanTrue),
+					resourceshowoutputassert.ExternalOauthSecurityIntegrationDescOutput(t, withIsAgentic.ResourceReference()).
+						HasIsAgentic(r.BooleanTrue),
 				),
 			},
 		},

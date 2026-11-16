@@ -17,6 +17,7 @@ type OauthIntegrationForCustomClientsModel struct {
 	Comment                     tfconfig.Variable `json:"comment,omitempty"`
 	Enabled                     tfconfig.Variable `json:"enabled,omitempty"`
 	FullyQualifiedName          tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	IsAgentic                   tfconfig.Variable `json:"is_agentic,omitempty"`
 	NetworkPolicy               tfconfig.Variable `json:"network_policy,omitempty"`
 	OauthAllowNonTlsRedirectUri tfconfig.Variable `json:"oauth_allow_non_tls_redirect_uri,omitempty"`
 	OauthClientRsaPublicKey     tfconfig.Variable `json:"oauth_client_rsa_public_key,omitempty"`
@@ -124,6 +125,11 @@ func (o *OauthIntegrationForCustomClientsModel) WithFullyQualifiedName(fullyQual
 	return o
 }
 
+func (o *OauthIntegrationForCustomClientsModel) WithIsAgentic(isAgentic string) *OauthIntegrationForCustomClientsModel {
+	o.IsAgentic = tfconfig.StringVariable(isAgentic)
+	return o
+}
+
 func (o *OauthIntegrationForCustomClientsModel) WithNetworkPolicy(networkPolicy string) *OauthIntegrationForCustomClientsModel {
 	o.NetworkPolicy = tfconfig.StringVariable(networkPolicy)
 	return o
@@ -209,6 +215,11 @@ func (o *OauthIntegrationForCustomClientsModel) WithEnabledValue(value tfconfig.
 
 func (o *OauthIntegrationForCustomClientsModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *OauthIntegrationForCustomClientsModel {
 	o.FullyQualifiedName = value
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsModel) WithIsAgenticValue(value tfconfig.Variable) *OauthIntegrationForCustomClientsModel {
+	o.IsAgentic = value
 	return o
 }
 

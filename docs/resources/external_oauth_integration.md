@@ -39,6 +39,7 @@ resource "snowflake_external_oauth_integration" "test" {
   external_oauth_scope_delimiter                  = ","
   external_oauth_scope_mapping_attribute          = "scope"
   external_oauth_snowflake_user_mapping_attribute = "LOGIN_NAME"
+  is_agentic                                      = "true"
   external_oauth_token_user_mapping_claim         = ["upn"]
   name                                            = "test"
   external_oauth_type                             = "CUSTOM"
@@ -56,6 +57,7 @@ resource "snowflake_external_oauth_integration" "test" {
   external_oauth_scope_delimiter                  = ","
   external_oauth_scope_mapping_attribute          = "scope"
   external_oauth_snowflake_user_mapping_attribute = "LOGIN_NAME"
+  is_agentic                                      = "true"
   external_oauth_token_user_mapping_claim         = ["upn"]
   name                                            = "test"
   external_oauth_type                             = "CUSTOM"
@@ -90,6 +92,7 @@ resource "snowflake_external_oauth_integration" "test" {
 - `external_oauth_rsa_public_key_2` (String) Specifies a second RSA public key, without the -----BEGIN PUBLIC KEY----- and -----END PUBLIC KEY----- headers. Used for key rotation. If removed from the config, the resource is recreated.
 - `external_oauth_scope_delimiter` (String) Specifies the scope delimiter in the authorization token.
 - `external_oauth_scope_mapping_attribute` (String) Specifies the access token claim to map the access token to an account role. If removed from the config, the resource is recreated.
+- `is_agentic` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether sessions authenticated through this integration are treated as agent sessions. When true, Snowflake marks every session authenticated through this integration as an agent session, so `SYS_CONTEXT('SNOWFLAKE$CURRENT', 'IS_AGENT_ACTIVATED')` returns `TRUE` for it. For more information, check [agent identity documentation](https://docs.snowflake.com/en/user-guide/agent-identity). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -129,6 +132,7 @@ Read-Only:
 - `external_oauth_scope_delimiter` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--external_oauth_scope_delimiter))
 - `external_oauth_snowflake_user_mapping_attribute` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--external_oauth_snowflake_user_mapping_attribute))
 - `external_oauth_token_user_mapping_claim` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--external_oauth_token_user_mapping_claim))
+- `is_agentic` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--is_agentic))
 
 <a id="nestedobjatt--describe_output--comment"></a>
 ### Nested Schema for `describe_output.comment`
@@ -264,6 +268,17 @@ Read-Only:
 
 <a id="nestedobjatt--describe_output--external_oauth_token_user_mapping_claim"></a>
 ### Nested Schema for `describe_output.external_oauth_token_user_mapping_claim`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--is_agentic"></a>
+### Nested Schema for `describe_output.is_agentic`
 
 Read-Only:
 

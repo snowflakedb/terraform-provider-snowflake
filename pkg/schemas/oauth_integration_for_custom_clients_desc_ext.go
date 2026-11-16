@@ -27,6 +27,7 @@ var OauthIntegrationForCustomClientsPropertiesNames = []string{
 	"OAUTH_TOKEN_ENDPOINT",
 	"OAUTH_ALLOWED_AUTHORIZATION_ENDPOINTS",
 	"OAUTH_ALLOWED_TOKEN_ENDPOINTS",
+	"IS_AGENTIC",
 }
 
 // TODO [v3]: flatten nested DescribePropertyListSchema to typed scalars + DescribeOauthCustomDetails
@@ -51,6 +52,7 @@ func (oauthIntegrationForCustomClientsDetailsToSchemaMapper) additionalSchema() 
 		"oauth_token_endpoint":                  DescribePropertyListSchema,
 		"oauth_allowed_authorization_endpoints": DescribePropertyListSchema,
 		"oauth_allowed_token_endpoints":         DescribePropertyListSchema,
+		"is_agentic":                            DescribePropertyListSchema,
 	}
 }
 
@@ -76,6 +78,7 @@ func (oauthIntegrationForCustomClientsDetailsToSchemaMapper) additionalToSchema(
 	mapSecurityIntegrationProperty(dst, "oauth_token_endpoint", src.OauthTokenEndpoint)
 	mapSecurityIntegrationProperty(dst, "oauth_allowed_authorization_endpoints", src.OauthAllowedAuthorizationEndpoints)
 	mapSecurityIntegrationProperty(dst, "oauth_allowed_token_endpoints", src.OauthAllowedTokenEndpoints)
+	mapSecurityIntegrationProperty(dst, "is_agentic", src.IsAgentic)
 }
 
 func DescribeOauthIntegrationForCustomClientsToSchema(integrationProperties []sdk.SecurityIntegrationProperty) map[string]any {
