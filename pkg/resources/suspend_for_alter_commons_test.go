@@ -21,11 +21,11 @@ func Test_suspendForAlterIf(t *testing.T) {
 	// The resource says the change keeps Snowflake as it is, so nothing is suspended although comment changed.
 	suspension, err := SuspendForAlterIf(context.Background(), d, false, suspendIfStarted, id, "comment")
 	require.NoError(t, err)
-	require.Nil(t, suspension.resume)
+	require.False(t, suspension.active)
 	require.Zero(t, calls)
 
 	suspension, err = SuspendForAlterIf(context.Background(), d, true, suspendIfStarted, id, "comment")
 	require.NoError(t, err)
-	require.NotNil(t, suspension.resume)
+	require.True(t, suspension.active)
 	require.Equal(t, 1, calls)
 }
