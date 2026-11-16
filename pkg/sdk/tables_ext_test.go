@@ -549,7 +549,7 @@ func init() {
 					{Name: "COLUMN_2", DropDefault: new(true)},
 					{Name: "COLUMN_2", SetDefault: new(SequenceName("SEQUENCE_2"))},
 					{Name: "COLUMN_2", Comment: new("comment")},
-					{Name: "COLUMN_2", DataType: new(DataTypeVARCHAR), Collate: new("utf8")},
+					{Name: "COLUMN_2", DataType: &TableColumnAlterDataType{DataType: DataTypeVARCHAR, Collate: new("utf8")}},
 					{Name: "COLUMN_2", NotNullConstraint: &TableColumnNotNullConstraint{Drop: new(true)}},
 				}}
 			},

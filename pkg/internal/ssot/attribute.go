@@ -67,9 +67,10 @@ type Attribute struct {
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
 	// Resource alter generation skips a nested attribute and every field under it.
 	Children []Attribute
-	// ChildrenRule adds a validation over the Children that are fields of the SQL struct of an object, not fixed texts:
-	// at least one of them is set, or exactly one. The order is the Children order. It is valid only on an object with at
-	// least two such Children. The schema-side AtLeastOneOf is not generated from it.
+	// ChildrenRule adds a validation over the Children that are fields of the SQL struct of an object, not fixed texts and
+	// not Required: at least one of them is set, or exactly one. A Required child is always set, so it is never "the one".
+	// The order is the Children order. It is valid only on an object with at least two such Children. The schema-side
+	// AtLeastOneOf is not generated from it.
 	ChildrenRule   ChildrenRule
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
@@ -139,6 +140,8 @@ type Attribute struct {
 	// as a path from the resource root: the name at the top, and parent.0.name under a single block
 	// (an object, or a list of objects with MaxItems 1).
 	// A set, or a list without that bound, cannot name these relations.
+	// On a SqlOnly child of an object clause there is no schema, and the SDK query struct gets ConflictingFields for the
+	// pair instead, such as ORDER and NOORDER. The other attribute has to be a child of the same object.
 	ConflictsWith []Attribute
 	// AtLeastOneOf names attributes of which at least one must be set. Paths follow ConflictsWith.
 	// The list may include this attribute.

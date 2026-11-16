@@ -213,62 +213,10 @@ type TableColumnAddActionRequest struct {
 	Collate          *string
 	DefaultValue     *ColumnDefaultValueRequest
 	NotNull          *bool
-	InlineConstraint *TableColumnAddInlineConstraintRequest
+	InlineConstraint *TableColumnInlineConstraintRequest
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
 	Tag              []TagAssociation
 	Comment          *string
-}
-
-type TableColumnAddInlineConstraintRequest struct {
-	UniquePK *TableColumnAddInlineUniquePKRequest
-	FK       *TableColumnAddInlineFKRequest
-	CH       *TableColumnAddInlineCHRequest
-}
-
-type TableColumnAddInlineUniquePKRequest struct {
-	Name               *string
-	Unique             *bool
-	PrimaryKey         *bool
-	Enforced           *bool
-	NotEnforced        *bool
-	Deferrable         *bool
-	NotDeferrable      *bool
-	InitiallyDeferred  *bool
-	InitiallyImmediate *bool
-	Enable             *bool
-	Disable            *bool
-	Validate           *bool
-	Novalidate         *bool
-	Rely               *bool
-	Norely             *bool
-}
-
-type TableColumnAddInlineFKRequest struct {
-	Name               *string
-	ForeignKey         *bool
-	References         SchemaObjectIdentifier // required
-	RefColumn          []Column
-	Match              *MatchType
-	On                 *ForeignKeyOnAction
-	Enforced           *bool
-	NotEnforced        *bool
-	Deferrable         *bool
-	NotDeferrable      *bool
-	InitiallyDeferred  *bool
-	InitiallyImmediate *bool
-	Enable             *bool
-	Disable            *bool
-	Validate           *bool
-	Novalidate         *bool
-	Rely               *bool
-	Norely             *bool
-}
-
-type TableColumnAddInlineCHRequest struct {
-	Name             *string
-	Expression       string // required
-	EnableValidate   *bool
-	EnableNovalidate *bool
 }
 
 type TableColumnRenameActionRequest struct {
@@ -281,8 +229,7 @@ type TableColumnAlterActionRequest struct {
 	DropDefault       *bool
 	SetDefault        *SequenceName
 	NotNullConstraint *TableColumnNotNullConstraintRequest
-	DataType          *DataType
-	Collate           *string
+	DataType          *TableColumnAlterDataTypeRequest
 	Comment           *string
 	UnsetComment      *bool
 }
@@ -290,6 +237,11 @@ type TableColumnAlterActionRequest struct {
 type TableColumnNotNullConstraintRequest struct {
 	Set  *bool
 	Drop *bool
+}
+
+type TableColumnAlterDataTypeRequest struct {
+	DataType DataType // required
+	Collate  *string
 }
 
 type TableColumnAlterSetTagsActionRequest struct {

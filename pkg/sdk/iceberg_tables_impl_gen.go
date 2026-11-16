@@ -136,56 +136,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 				Comment:      v.Comment,
 			}
 			if v.InlineConstraint != nil {
-				columns[i].InlineConstraint = &TableColumnInlineConstraint{}
-				if v.InlineConstraint.UniquePK != nil {
-					columns[i].InlineConstraint.UniquePK = &TableColumnInlineUniquePK{
-						Name:               v.InlineConstraint.UniquePK.Name,
-						Unique:             v.InlineConstraint.UniquePK.Unique,
-						PrimaryKey:         v.InlineConstraint.UniquePK.PrimaryKey,
-						Enforced:           v.InlineConstraint.UniquePK.Enforced,
-						NotEnforced:        v.InlineConstraint.UniquePK.NotEnforced,
-						Deferrable:         v.InlineConstraint.UniquePK.Deferrable,
-						NotDeferrable:      v.InlineConstraint.UniquePK.NotDeferrable,
-						InitiallyDeferred:  v.InlineConstraint.UniquePK.InitiallyDeferred,
-						InitiallyImmediate: v.InlineConstraint.UniquePK.InitiallyImmediate,
-						Enable:             v.InlineConstraint.UniquePK.Enable,
-						Disable:            v.InlineConstraint.UniquePK.Disable,
-						Validate:           v.InlineConstraint.UniquePK.Validate,
-						Novalidate:         v.InlineConstraint.UniquePK.Novalidate,
-						Rely:               v.InlineConstraint.UniquePK.Rely,
-						Norely:             v.InlineConstraint.UniquePK.Norely,
-					}
-				}
-				if v.InlineConstraint.FK != nil {
-					columns[i].InlineConstraint.FK = &TableColumnInlineFK{
-						Name:               v.InlineConstraint.FK.Name,
-						ForeignKey:         v.InlineConstraint.FK.ForeignKey,
-						References:         v.InlineConstraint.FK.References,
-						RefColumn:          v.InlineConstraint.FK.RefColumn,
-						Match:              v.InlineConstraint.FK.Match,
-						On:                 v.InlineConstraint.FK.On,
-						Enforced:           v.InlineConstraint.FK.Enforced,
-						NotEnforced:        v.InlineConstraint.FK.NotEnforced,
-						Deferrable:         v.InlineConstraint.FK.Deferrable,
-						NotDeferrable:      v.InlineConstraint.FK.NotDeferrable,
-						InitiallyDeferred:  v.InlineConstraint.FK.InitiallyDeferred,
-						InitiallyImmediate: v.InlineConstraint.FK.InitiallyImmediate,
-						Enable:             v.InlineConstraint.FK.Enable,
-						Disable:            v.InlineConstraint.FK.Disable,
-						Validate:           v.InlineConstraint.FK.Validate,
-						Novalidate:         v.InlineConstraint.FK.Novalidate,
-						Rely:               v.InlineConstraint.FK.Rely,
-						Norely:             v.InlineConstraint.FK.Norely,
-					}
-				}
-				if v.InlineConstraint.CH != nil {
-					columns[i].InlineConstraint.CH = &TableColumnInlineCH{
-						Name:             v.InlineConstraint.CH.Name,
-						Expression:       v.InlineConstraint.CH.Expression,
-						EnableValidate:   v.InlineConstraint.CH.EnableValidate,
-						EnableNovalidate: v.InlineConstraint.CH.EnableNovalidate,
-					}
-				}
+				columns[i].InlineConstraint = v.InlineConstraint.toOpts()
 			}
 			if v.MaskingPolicy != nil {
 				columns[i].MaskingPolicy = v.MaskingPolicy.toOpts()
@@ -404,56 +355,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 			Tag:          r.AddColumnAction.Tag,
 		}
 		if r.AddColumnAction.InlineConstraint != nil {
-			opts.AddColumnAction.InlineConstraint = &TableColumnInlineConstraint{}
-			if r.AddColumnAction.InlineConstraint.UniquePK != nil {
-				opts.AddColumnAction.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{
-					Name:               r.AddColumnAction.InlineConstraint.UniquePK.Name,
-					Unique:             r.AddColumnAction.InlineConstraint.UniquePK.Unique,
-					PrimaryKey:         r.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey,
-					Enforced:           r.AddColumnAction.InlineConstraint.UniquePK.Enforced,
-					NotEnforced:        r.AddColumnAction.InlineConstraint.UniquePK.NotEnforced,
-					Deferrable:         r.AddColumnAction.InlineConstraint.UniquePK.Deferrable,
-					NotDeferrable:      r.AddColumnAction.InlineConstraint.UniquePK.NotDeferrable,
-					InitiallyDeferred:  r.AddColumnAction.InlineConstraint.UniquePK.InitiallyDeferred,
-					InitiallyImmediate: r.AddColumnAction.InlineConstraint.UniquePK.InitiallyImmediate,
-					Enable:             r.AddColumnAction.InlineConstraint.UniquePK.Enable,
-					Disable:            r.AddColumnAction.InlineConstraint.UniquePK.Disable,
-					Validate:           r.AddColumnAction.InlineConstraint.UniquePK.Validate,
-					Novalidate:         r.AddColumnAction.InlineConstraint.UniquePK.Novalidate,
-					Rely:               r.AddColumnAction.InlineConstraint.UniquePK.Rely,
-					Norely:             r.AddColumnAction.InlineConstraint.UniquePK.Norely,
-				}
-			}
-			if r.AddColumnAction.InlineConstraint.FK != nil {
-				opts.AddColumnAction.InlineConstraint.FK = &TableColumnInlineFK{
-					Name:               r.AddColumnAction.InlineConstraint.FK.Name,
-					ForeignKey:         r.AddColumnAction.InlineConstraint.FK.ForeignKey,
-					References:         r.AddColumnAction.InlineConstraint.FK.References,
-					RefColumn:          r.AddColumnAction.InlineConstraint.FK.RefColumn,
-					Match:              r.AddColumnAction.InlineConstraint.FK.Match,
-					On:                 r.AddColumnAction.InlineConstraint.FK.On,
-					Enforced:           r.AddColumnAction.InlineConstraint.FK.Enforced,
-					NotEnforced:        r.AddColumnAction.InlineConstraint.FK.NotEnforced,
-					Deferrable:         r.AddColumnAction.InlineConstraint.FK.Deferrable,
-					NotDeferrable:      r.AddColumnAction.InlineConstraint.FK.NotDeferrable,
-					InitiallyDeferred:  r.AddColumnAction.InlineConstraint.FK.InitiallyDeferred,
-					InitiallyImmediate: r.AddColumnAction.InlineConstraint.FK.InitiallyImmediate,
-					Enable:             r.AddColumnAction.InlineConstraint.FK.Enable,
-					Disable:            r.AddColumnAction.InlineConstraint.FK.Disable,
-					Validate:           r.AddColumnAction.InlineConstraint.FK.Validate,
-					Novalidate:         r.AddColumnAction.InlineConstraint.FK.Novalidate,
-					Rely:               r.AddColumnAction.InlineConstraint.FK.Rely,
-					Norely:             r.AddColumnAction.InlineConstraint.FK.Norely,
-				}
-			}
-			if r.AddColumnAction.InlineConstraint.CH != nil {
-				opts.AddColumnAction.InlineConstraint.CH = &TableColumnInlineCH{
-					Name:             r.AddColumnAction.InlineConstraint.CH.Name,
-					Expression:       r.AddColumnAction.InlineConstraint.CH.Expression,
-					EnableValidate:   r.AddColumnAction.InlineConstraint.CH.EnableValidate,
-					EnableNovalidate: r.AddColumnAction.InlineConstraint.CH.EnableNovalidate,
-				}
-			}
+			opts.AddColumnAction.InlineConstraint = r.AddColumnAction.InlineConstraint.toOpts()
 		}
 		if r.AddColumnAction.MaskingPolicy != nil {
 			opts.AddColumnAction.MaskingPolicy = r.AddColumnAction.MaskingPolicy.toOpts()
@@ -687,6 +589,60 @@ func (r icebergTableDetailsRow) convert() (*IcebergTableDetails, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func (r *TableColumnInlineConstraintRequest) toOpts() *TableColumnInlineConstraint {
+	opts := &TableColumnInlineConstraint{}
+	if r.UniquePK != nil {
+		opts.UniquePK = &TableColumnInlineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+		}
+	}
+	if r.FK != nil {
+		opts.FK = &TableColumnInlineFK{
+			Name:               r.FK.Name,
+			ForeignKey:         r.FK.ForeignKey,
+			References:         r.FK.References,
+			RefColumn:          r.FK.RefColumn,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+		}
+	}
+	if r.CH != nil {
+		opts.CH = &TableColumnInlineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return opts
 }
 
 func (r *TableColumnMaskingPolicyRequest) toOpts() *TableColumnMaskingPolicy {

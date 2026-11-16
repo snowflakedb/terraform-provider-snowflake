@@ -728,7 +728,7 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK = nil
 					opts.ColumnAction.Add.InlineConstraint.FK = nil
 					opts.ColumnAction.Add.InlineConstraint.CH = nil
@@ -740,9 +740,9 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 				},
 			},
 			validationCase[*AlterTableOptions]{
@@ -751,8 +751,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Unique = nil
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey = nil
 				},
@@ -763,8 +763,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Unique = new(true)
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey = new(true)
 				},
@@ -775,8 +775,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Enforced = new(true)
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.NotEnforced = new(true)
 				},
@@ -787,8 +787,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Deferrable = new(true)
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.NotDeferrable = new(true)
 				},
@@ -799,8 +799,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyDeferred = new(true)
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyImmediate = new(true)
 				},
@@ -811,8 +811,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Enable = new(true)
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Disable = new(true)
 				},
@@ -823,8 +823,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Validate = new(true)
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Novalidate = new(true)
 				},
@@ -835,8 +835,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnInlineUniquePK{}
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Rely = new(true)
 					opts.ColumnAction.Add.InlineConstraint.UniquePK.Norely = new(true)
 				},
@@ -847,8 +847,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 					opts.ColumnAction.Add.InlineConstraint.FK.References = emptySchemaObjectIdentifier
 				},
 			},
@@ -858,8 +858,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 					opts.ColumnAction.Add.InlineConstraint.FK.Enforced = new(true)
 					opts.ColumnAction.Add.InlineConstraint.FK.NotEnforced = new(true)
 				},
@@ -870,8 +870,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 					opts.ColumnAction.Add.InlineConstraint.FK.Deferrable = new(true)
 					opts.ColumnAction.Add.InlineConstraint.FK.NotDeferrable = new(true)
 				},
@@ -882,8 +882,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 					opts.ColumnAction.Add.InlineConstraint.FK.InitiallyDeferred = new(true)
 					opts.ColumnAction.Add.InlineConstraint.FK.InitiallyImmediate = new(true)
 				},
@@ -894,8 +894,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 					opts.ColumnAction.Add.InlineConstraint.FK.Enable = new(true)
 					opts.ColumnAction.Add.InlineConstraint.FK.Disable = new(true)
 				},
@@ -906,8 +906,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 					opts.ColumnAction.Add.InlineConstraint.FK.Validate = new(true)
 					opts.ColumnAction.Add.InlineConstraint.FK.Novalidate = new(true)
 				},
@@ -918,8 +918,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnInlineFK{}
 					opts.ColumnAction.Add.InlineConstraint.FK.Rely = new(true)
 					opts.ColumnAction.Add.InlineConstraint.FK.Norely = new(true)
 				},
@@ -930,8 +930,8 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-					opts.ColumnAction.Add.InlineConstraint.CH = &TableColumnAddInlineCH{}
+					opts.ColumnAction.Add.InlineConstraint = &TableColumnInlineConstraint{}
+					opts.ColumnAction.Add.InlineConstraint.CH = &TableColumnInlineCH{}
 					opts.ColumnAction.Add.InlineConstraint.CH.EnableValidate = new(true)
 					opts.ColumnAction.Add.InlineConstraint.CH.EnableNovalidate = new(true)
 				},

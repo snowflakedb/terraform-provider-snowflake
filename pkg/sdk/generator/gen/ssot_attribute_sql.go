@@ -98,6 +98,8 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendStaticClause(attr, clause)
 	case ssot.SqlKindPreexistingStruct:
 		return v.appendPreexistingStructClause(attr, clause, clauseRequired(attr, clause, statement))
+	case ssot.SqlKindPredefined:
+		return v.appendPredefinedClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindObject:
 		return v.appendObjectClause(attr, clause, clauseRequired(attr, clause, statement))
 	default:
@@ -128,11 +130,33 @@ func (v *QueryStruct) appendPreexistingStructClause(attr ssot.Attribute, clause 
 	if clause.SQL != "" {
 		opts = opts.SQL(clause.SQL)
 	}
+	if required {
+		opts = opts.Required()
+	}
+	transformer := opts
 	name := clauseGoFieldName(attr, clause)
 	if required {
-		return v.QueryStructField(name, nested, opts.Required())
+		v = v.QueryStructField(name, nested, transformer)
+	} else {
+		v = v.OptionalQueryStructField(name, nested, transformer)
 	}
-	return v.OptionalQueryStructField(name, nested, opts)
+	if clause.Shared {
+		v.fields[len(v.fields)-1].IsShared = true
+	}
+	return v
+}
+
+// appendPredefinedClause adds a field of a Go type the SDK already has.
+func (v *QueryStruct) appendPredefinedClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.GoType == "" {
+		panic(fmt.Sprintf("attribute %q: predefined type clause has no Go type", attr.Name))
+	}
+	name := clauseGoFieldName(attr, clause)
+	opts := parameterOptionsFromClause(clause, required)
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	return v.PredefinedQueryStructField(name, clause.GoType, opts)
 }
 
 // clauseGoFieldName is the Go field name of a clause: Field, or the attribute name in camel case.
@@ -236,6 +260,9 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 }
 
 func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.TextValue {
+		return v.appendTextKeywordClause(attr, clause, required)
+	}
 	if clause.ValueKeyword {
 		return v.appendValueKeywordClause(attr, clause, required)
 	}
@@ -251,6 +278,33 @@ func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlCl
 		name = clause.Field
 	}
 	return v.OptionalSQLWithCustomFieldName(name, sql)
+}
+
+// appendTextKeywordClause adds a string written as a keyword, such as a double-quoted column name.
+func (v *QueryStruct) appendTextKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	name := clauseGoFieldName(attr, clause)
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	switch clause.Quotes {
+	case "":
+	case ssot.SqlQuotesSingle:
+		opts = opts.SingleQuotes()
+	case ssot.SqlQuotesDouble:
+		opts = opts.DoubleQuotes()
+	case ssot.SqlQuotesNo:
+		opts = opts.NoQuotes()
+	default:
+		panic(fmt.Sprintf("sql clause quotes %q", clause.Quotes))
+	}
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if required {
+		return v.Text(name, opts.Required())
+	}
+	return v.OptionalText(name, opts)
 }
 
 // appendValueKeywordClause adds the value of the attribute written as a bare keyword: an enum, or a list of identifiers.
@@ -381,6 +435,8 @@ func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *Parameter
 	case "":
 	case ssot.SqlQuotesSingle:
 		opts = opts.SingleQuotes()
+	case ssot.SqlQuotesDouble:
+		opts = opts.DoubleQuotes()
 	case ssot.SqlQuotesNo:
 		opts = opts.NoQuotes()
 	default:
@@ -444,6 +500,10 @@ func clauseFieldName(attr ssot.Attribute, statement attributeSqlStatement) strin
 	clause := attributeClause(attr, statement)
 	if !clause.Present {
 		panic(fmt.Sprintf("attribute %q has no %s clause", attr.Name, statementName(statement)))
+	}
+	if clause.Kind == ssot.SqlKindPreexistingStruct || clause.Kind == ssot.SqlKindObject {
+		// The struct itself is not needed for the name. A preexisting struct is not known here, and a nested one is not built.
+		return clauseGoFieldName(attr, clause)
 	}
 	fields := NewQueryStruct("scratch").appendAttributeClause(attr, clause, statement).fields
 	if len(fields) == 0 {
