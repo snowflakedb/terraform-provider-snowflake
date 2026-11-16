@@ -126,6 +126,7 @@ var (
 		sdk.CatalogIntegrationOpenCatalogRestConfigDetails{},
 		sdk.ExternalVolumeStorageLocationDetails{},
 		sdk.PolicyReference{},
+		sdk.Quota{},
 		sdk.StorageLocationAzureDetails{},
 		sdk.StorageLocationGcsDetails{},
 		sdk.StorageLocationS3CompatDetails{},
