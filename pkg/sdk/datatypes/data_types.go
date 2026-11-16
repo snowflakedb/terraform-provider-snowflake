@@ -73,8 +73,8 @@ func ParseDataType(raw string) (DataType, error) {
 	if slices.Contains(ObjectDataTypeSynonyms, dataTypeRaw) {
 		return parseObjectDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
 	}
-	if slices.Contains(ArrayDataTypeSynonyms, dataTypeRaw) {
-		return parseArrayDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
+	if idx := slices.IndexFunc(ArrayDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
+		return parseArrayDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, ArrayDataTypeSynonyms[idx]})
 	}
 	if slices.Contains(GeographyDataTypeSynonyms, dataTypeRaw) {
 		return parseGeographyDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
@@ -109,7 +109,7 @@ func AreTheSame(a DataType, b DataType) bool {
 	}
 	switch v := a.(type) {
 	case *ArrayDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
+		return castSuccessfully(v, b, areArrayDataTypesTheSame)
 	case *BinaryDataType:
 		return castSuccessfully(v, b, areBinaryDataTypesTheSame)
 	case *BooleanDataType:
@@ -189,7 +189,7 @@ func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	}
 	switch v := a.(type) {
 	case *ArrayDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
+		return castSuccessfully(v, b, areArrayDataTypesDefinitelyDifferent)
 	case *BinaryDataType:
 		return castSuccessfully(v, b, areBinaryDataTypesDefinitelyDifferent)
 	case *BooleanDataType:

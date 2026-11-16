@@ -933,8 +933,25 @@ func Test_ParseDataType_Array(t *testing.T) {
 		negative("ARRAY(38, 2)"),
 		negative("ARRAY(38)"),
 		negative("ARRAY()"),
+		negative("ARRAY(   )"),
 		negative("A R R A Y"),
+		negative("ARRAYS"),
 		negative("other"),
+		// structured
+		negative("ARRAY(NUMBER"),
+		negative("ARRAY NUMBER)"),
+		negative("ARRAY(NUMBER))"),
+		negative("ARRAY((NUMBER)"),
+		negative("ARRAY(NUMBER, VARCHAR)"),
+		negative("ARRAY(other)"),
+		negative("ARRAY(NOT NULL)"),
+		negative("ARRAY(NUMBER NULL)"),
+		negative("ARRAY(NUMBER NOT)"),
+		negative("ARRAY(NUMBER NOTNULL)"),
+		negative("ARRAY(NUMBER NOT NULL NOT NULL)"),
+		negative("ARRAY(NUMBER(x))"),
+		negative("ARRAY(ARRAY(other))"),
+		negative("ARRAY(TABLE(A NUMBER))"),
 	}
 
 	for _, tc := range positiveTestCases {
@@ -945,6 +962,9 @@ func Test_ParseDataType_Array(t *testing.T) {
 			require.IsType(t, &ArrayDataType{}, parsed)
 
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*ArrayDataType).underlyingType)
+			assert.False(t, parsed.(*ArrayDataType).IsStructured())
+			assert.Nil(t, parsed.(*ArrayDataType).elementType)
+			assert.False(t, parsed.(*ArrayDataType).elementNotNull)
 
 			assert.Equal(t, ArrayLegacyDataType, parsed.ToLegacyDataTypeSql())
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.ToSql())
@@ -958,6 +978,66 @@ func Test_ParseDataType_Array(t *testing.T) {
 
 			require.Error(t, err)
 			require.Nil(t, parsed)
+		})
+	}
+}
+
+func Test_ParseDataType_StructuredArray(t *testing.T) {
+	type test struct {
+		input                  string
+		expectedElementType    string
+		expectedElementNotNull bool
+		expectedSql            string
+		expectedCanonical      string
+	}
+
+	positiveTestCases := []test{
+		{input: "ARRAY(NUMBER)", expectedElementType: "NUMBER", expectedSql: "ARRAY(NUMBER(38, 0))", expectedCanonical: "ARRAY(NUMBER(38,0))"},
+		{input: "array(number)", expectedElementType: "NUMBER", expectedSql: "ARRAY(NUMBER(38, 0))", expectedCanonical: "ARRAY(NUMBER(38,0))"},
+		{input: "ARRAY(NUMBER(38,0))", expectedElementType: "NUMBER(38,0)", expectedSql: "ARRAY(NUMBER(38, 0))", expectedCanonical: "ARRAY(NUMBER(38,0))"},
+		{input: "ARRAY(NUMBER(10, 2))", expectedElementType: "NUMBER(10, 2)", expectedSql: "ARRAY(NUMBER(10, 2))", expectedCanonical: "ARRAY(NUMBER(10,2))"},
+		{input: "ARRAY(INT)", expectedElementType: "INT", expectedSql: "ARRAY(INT)", expectedCanonical: "ARRAY(NUMBER(38,0))"},
+		{input: "ARRAY(VARCHAR)", expectedElementType: "VARCHAR", expectedSql: fmt.Sprintf("ARRAY(VARCHAR(%d))", DefaultVarcharLength), expectedCanonical: fmt.Sprintf("ARRAY(VARCHAR(%d))", DefaultVarcharLength)},
+		{input: "ARRAY(VARCHAR(100))", expectedElementType: "VARCHAR(100)", expectedSql: "ARRAY(VARCHAR(100))", expectedCanonical: "ARRAY(VARCHAR(100))"},
+		{input: "ARRAY(DOUBLE PRECISION)", expectedElementType: "DOUBLE PRECISION", expectedSql: "ARRAY(DOUBLE PRECISION)", expectedCanonical: "ARRAY(FLOAT)"},
+		{input: "ARRAY(TIMESTAMP WITH LOCAL TIME ZONE(3))", expectedElementType: "TIMESTAMP WITH LOCAL TIME ZONE(3)", expectedSql: "ARRAY(TIMESTAMP WITH LOCAL TIME ZONE(3))", expectedCanonical: "ARRAY(TIMESTAMP_LTZ(3))"},
+		{input: "ARRAY(BOOLEAN)", expectedElementType: "BOOLEAN", expectedSql: "ARRAY(BOOLEAN)", expectedCanonical: "ARRAY(BOOLEAN)"},
+		{input: "ARRAY(VARIANT)", expectedElementType: "VARIANT", expectedSql: "ARRAY(VARIANT)", expectedCanonical: "ARRAY(VARIANT)"},
+		{input: "ARRAY(OBJECT)", expectedElementType: "OBJECT", expectedSql: "ARRAY(OBJECT)", expectedCanonical: "ARRAY(OBJECT)"},
+		{input: "ARRAY(GEOGRAPHY)", expectedElementType: "GEOGRAPHY", expectedSql: "ARRAY(GEOGRAPHY)", expectedCanonical: "ARRAY(GEOGRAPHY)"},
+		{input: "ARRAY(VECTOR(INT, 3))", expectedElementType: "VECTOR(INT, 3)", expectedSql: "ARRAY(VECTOR(INT, 3))", expectedCanonical: "ARRAY(VECTOR(INT, 3))"},
+		{input: "ARRAY(NUMBER NOT NULL)", expectedElementType: "NUMBER", expectedElementNotNull: true, expectedSql: "ARRAY(NUMBER(38, 0) NOT NULL)", expectedCanonical: "ARRAY(NUMBER(38,0) NOT NULL)"},
+		{input: "array(number not null)", expectedElementType: "NUMBER", expectedElementNotNull: true, expectedSql: "ARRAY(NUMBER(38, 0) NOT NULL)", expectedCanonical: "ARRAY(NUMBER(38,0) NOT NULL)"},
+		{input: "ARRAY(VARCHAR(10)   NOT   NULL)", expectedElementType: "VARCHAR(10)", expectedElementNotNull: true, expectedSql: "ARRAY(VARCHAR(10) NOT NULL)", expectedCanonical: "ARRAY(VARCHAR(10) NOT NULL)"},
+		{input: "    ARRAY   (   NUMBER   )    ", expectedElementType: "NUMBER", expectedSql: "ARRAY(NUMBER(38, 0))", expectedCanonical: "ARRAY(NUMBER(38,0))"},
+		// semi-structured array as the element type
+		{input: "ARRAY(ARRAY)", expectedElementType: "ARRAY", expectedSql: "ARRAY(ARRAY)", expectedCanonical: "ARRAY(ARRAY)"},
+		// nested structured arrays
+		{input: "ARRAY(ARRAY(NUMBER))", expectedElementType: "ARRAY(NUMBER)", expectedSql: "ARRAY(ARRAY(NUMBER(38, 0)))", expectedCanonical: "ARRAY(ARRAY(NUMBER(38,0)))"},
+		{input: "ARRAY(ARRAY(INT NOT NULL) NOT NULL)", expectedElementType: "ARRAY(INT NOT NULL)", expectedElementNotNull: true, expectedSql: "ARRAY(ARRAY(INT NOT NULL) NOT NULL)", expectedCanonical: "ARRAY(ARRAY(NUMBER(38,0) NOT NULL) NOT NULL)"},
+		{input: "ARRAY(ARRAY(ARRAY(VARCHAR(5))))", expectedElementType: "ARRAY(ARRAY(VARCHAR(5)))", expectedSql: "ARRAY(ARRAY(ARRAY(VARCHAR(5))))", expectedCanonical: "ARRAY(ARRAY(ARRAY(VARCHAR(5))))"},
+	}
+
+	for _, tc := range positiveTestCases {
+		t.Run(tc.input, func(t *testing.T) {
+			parsed, err := ParseDataType(tc.input)
+
+			require.NoError(t, err)
+			require.IsType(t, &ArrayDataType{}, parsed)
+
+			arrayType := parsed.(*ArrayDataType)
+			assert.Equal(t, ArrayLegacyDataType, arrayType.underlyingType)
+			assert.True(t, arrayType.IsStructured())
+			assert.Equal(t, tc.expectedElementNotNull, arrayType.ElementNotNull())
+
+			expectedElementType, err := ParseDataType(tc.expectedElementType)
+			require.NoError(t, err)
+			assert.True(t, AreTheSame(expectedElementType, arrayType.ElementType()))
+			assert.Equal(t, expectedElementType.ToSql(), arrayType.ElementType().ToSql())
+
+			assert.Equal(t, ArrayLegacyDataType, parsed.ToLegacyDataTypeSql())
+			assert.Equal(t, tc.expectedSql, parsed.ToSql())
+			assert.Equal(t, tc.expectedCanonical, parsed.Canonical())
 		})
 	}
 }
@@ -1157,12 +1237,14 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(A NUMBER(10,2), B NUMBER(38,0), C TEXT)", expectedColumns: []column{{"A", "NUMBER(10,2)"}, {"B", "NUMBER(38,0)"}, {"C", "TEXT"}}},
 		{input: "TABLE(A VARCHAR(100), B NUMBER(5,2))", expectedColumns: []column{{"A", "VARCHAR(100)"}, {"B", "NUMBER(5,2)"}}},
 		{input: "TABLE(A VECTOR(FLOAT, 256), B NUMBER)", expectedColumns: []column{{"A", "VECTOR(FLOAT, 256)"}, {"B", "NUMBER"}}},
+		{input: "TABLE(A ARRAY(NUMBER(38,0) NOT NULL), B ARRAY)", expectedColumns: []column{{"A", "ARRAY(NUMBER(38,0) NOT NULL)"}, {"B", "ARRAY"}}},
 		// type-only columns (abbreviated argument/grant form)
 		{input: "TABLE(DATE)", expectedColumns: []column{{"", "DATE"}}},
 		{input: "TABLE(INT)", expectedColumns: []column{{"", "INT"}}},
 		{input: "TABLE(INT, INT)", expectedColumns: []column{{"", "INT"}, {"", "INT"}}},
 		{input: "TABLE(NUMBER(38,0))", expectedColumns: []column{{"", "NUMBER(38,0)"}}},
 		{input: "TABLE(DATE, NUMBER)", expectedColumns: []column{{"", "DATE"}, {"", "NUMBER"}}},
+		{input: "TABLE(ARRAY(VARCHAR), NUMBER)", expectedColumns: []column{{"", "ARRAY(VARCHAR)"}, {"", "NUMBER"}}},
 		// TODO [SNOW-2054316]: Support nested tables, e.g. TABLE(ARG NUMBER, NESTED TABLE(A VARCHAR, B GEOMETRY))
 		// TODO [SNOW-2054316]: Support complex argument names (with quotes / spaces / special characters / etc)
 	}
@@ -1305,6 +1387,20 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: false},
 		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: false},
+		{d1: "ARRAY", d2: "ARRAY", expectedOutcome: true},
+		{d1: "ARRAY", d2: "ARRAY(NUMBER)", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER)", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER(38,0))", expectedOutcome: true},
+		{d1: "ARRAY(INT)", d2: "ARRAY(NUMBER(38,0))", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER(20, 2))", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(VARCHAR)", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER NOT NULL)", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER NOT NULL)", d2: "ARRAY(NUMBER(38,0) NOT NULL)", expectedOutcome: true},
+		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY(NUMBER(38,0)))", expectedOutcome: true},
+		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY)", expectedOutcome: false},
+		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY(NUMBER NOT NULL))", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER)", d2: "NUMBER", expectedOutcome: false},
 	}
 
 	for _, tc := range testCases {
@@ -1398,6 +1494,22 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(24,2), B VARCHAR)", expectedOutcome: false},
 		{d1: "TABLE(A NUMBER(24,2), B VARCHAR)", d2: "TABLE(A NUMBER(38,0), B VARCHAR)", expectedOutcome: true},
 		{d1: "TABLE(A NUMBER(24,2), B VARCHAR(100))", d2: "TABLE(A NUMBER(24,2), B VARCHAR(200))", expectedOutcome: true},
+		{d1: "ARRAY", d2: "ARRAY", expectedOutcome: false},
+		{d1: "ARRAY", d2: "ARRAY(NUMBER)", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER)", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER(38,0))", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER(20, 2))", expectedOutcome: false},
+		{d1: "ARRAY(NUMBER(20, 1))", d2: "ARRAY(NUMBER(20, 2))", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(VARCHAR)", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER)", d2: "ARRAY(NUMBER NOT NULL)", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER NOT NULL)", d2: "ARRAY(NUMBER(38,0) NOT NULL)", expectedOutcome: false},
+		{d1: "ARRAY(VARCHAR)", d2: "ARRAY(VARCHAR(100))", expectedOutcome: false},
+		{d1: "ARRAY(VARCHAR(50))", d2: "ARRAY(VARCHAR(100))", expectedOutcome: true},
+		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY(NUMBER(38,0)))", expectedOutcome: false},
+		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY)", expectedOutcome: true},
+		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY(NUMBER NOT NULL))", expectedOutcome: true},
+		{d1: "ARRAY(NUMBER)", d2: "NUMBER", expectedOutcome: true},
 	}
 
 	for _, tc := range testCases {
@@ -1461,6 +1573,13 @@ func Test_ToSqlWithoutUnknowns(t *testing.T) {
 		{dt: "TABLE()"},
 		{dt: "TABLE(A NUMBER)"},
 		{dt: "TABLE(A NUMBER, B INT, C VARCHAR)"},
+		{dt: "ARRAY"},
+		{dt: "ARRAY(NUMBER)"},
+		{dt: "ARRAY(NUMBER(20, 4))"},
+		{dt: "ARRAY(INT NOT NULL)"},
+		{dt: "ARRAY(VARCHAR(15))"},
+		{dt: "ARRAY(ARRAY)"},
+		{dt: "ARRAY(ARRAY(TIMESTAMPLTZ) NOT NULL)"},
 	}
 
 	for _, tc := range testCases {
