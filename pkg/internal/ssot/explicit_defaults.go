@@ -30,9 +30,37 @@ func RedundantExplicitDefaults(obj Object) []string {
 	for _, attr := range obj.explicitDefaultRoots() {
 		walkExplicitDefaults(obj.Name+"."+attr.Name, attr, obj.mappingPlace(attr), places, wheres)
 	}
-	findings := make([]string, 0, len(places))
+	findings := obj.redundantObjectDefaults()
+	findings = slices.Grow(findings, len(places))
 	for attr, place := range places {
 		findings = append(findings, attr.validateExplicitDefaults(wheres[attr], place)...)
+	}
+	return findings
+}
+
+// redundantObjectDefaults lists object name overrides set to the value omission already produces.
+// DescribeDetailsName empty is Name plus Details. ShowPlainName, SdkCreateRequestObjectName empty is Name.
+// VariantEntityCreateName and VariantEntityAlterName empty are the base object's type words.
+func (obj Object) redundantObjectDefaults() []string {
+	var findings []string
+	if obj.DescribeDetailsName != "" && obj.DescribeDetailsName == obj.Name+"Details" {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "DescribeDetailsName"))
+	}
+	if obj.ShowPlainName != "" && obj.ShowPlainName == obj.Name {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "ShowPlainName"))
+	}
+	if obj.SdkCreateRequestObjectName != "" && obj.SdkCreateRequestObjectName == obj.Name {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "SdkCreateRequestObjectName"))
+	}
+	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+		return findings
+	}
+	base := obj.VariantOf.ObjectType()
+	if obj.VariantEntityCreateName != "" && obj.VariantEntityCreateName == base {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "VariantEntityCreateName"))
+	}
+	if obj.VariantEntityAlterName != "" && obj.VariantEntityAlterName == base {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "VariantEntityAlterName"))
 	}
 	return findings
 }
