@@ -157,13 +157,15 @@ func (c *ProcedureClient) CreateWithIdentifier(t *testing.T, id sdk.SchemaObject
 	ctx := context.Background()
 	argumentRequests := make([]sdk.ProcedureArgumentRequest, len(id.ArgumentDataTypes()))
 	for i, argumentDataType := range id.ArgumentDataTypes() {
-		argumentRequests[i] = *sdk.NewProcedureArgumentRequest(c.ids.Alpha(), nil).WithArgDataTypeOld(argumentDataType)
+		dataType, err := datatypes.ParseDataType(string(argumentDataType))
+		require.NoError(t, err)
+		argumentRequests[i] = *sdk.NewProcedureArgumentRequest(c.ids.Alpha(), dataType)
 	}
 	err := c.client().CreateForSQL(
 		ctx,
 		sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(
 			id.SchemaObjectId(),
-			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeInt)),
+			*sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*sdk.NewProcedureSQLReturnsResultDataTypeRequest(testdatatypes.DataTypeInteger)),
 			`BEGIN RETURN 1; END`,
 		).WithArguments(argumentRequests),
 	)

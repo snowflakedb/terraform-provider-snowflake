@@ -13,199 +13,135 @@ var (
 )
 
 const (
-	case_Procedures_validation_CreateForJava_RuntimeVersion_ValidateValueSet                                           testCaseName = "validation_CreateForJava_RuntimeVersion_ValidateValueSet"
-	case_Procedures_validation_CreateForJava_Packages_ValidateValueSet                                                 testCaseName = "validation_CreateForJava_Packages_ValidateValueSet"
-	case_Procedures_validation_CreateForJava_Handler_ValidateValueSet                                                  testCaseName = "validation_CreateForJava_Handler_ValidateValueSet"
-	case_Procedures_validation_CreateForJava_name_ValidIdentifier                                                      testCaseName = "validation_CreateForJava_name_ValidIdentifier"
-	case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet                                 testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                      testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid                             testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet                                   testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                            testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                     testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet              testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid          testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid                 testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier                                testCaseName = "validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier"
-	case_Procedures_sql_CreateForJava_basic                                                                            testCaseName = "sql_CreateForJava_basic"
-	case_Procedures_sql_CreateForJava_all                                                                              testCaseName = "sql_CreateForJava_all"
-	case_Procedures_validation_CreateForJavaScript_ProcedureDefinition_ValidateValueSet                                testCaseName = "validation_CreateForJavaScript_ProcedureDefinition_ValidateValueSet"
-	case_Procedures_validation_CreateForJavaScript_name_ValidIdentifier                                                testCaseName = "validation_CreateForJavaScript_name_ValidIdentifier"
-	case_Procedures_validation_CreateForJavaScript_opts_ExactlyOneValueSet_NoneSet                                     testCaseName = "validation_CreateForJavaScript_opts_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet                              testCaseName = "validation_CreateForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                testCaseName = "validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_BothInvalid                       testCaseName = "validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_sql_CreateForJavaScript_basic                                                                      testCaseName = "sql_CreateForJavaScript_basic"
-	case_Procedures_sql_CreateForJavaScript_all                                                                        testCaseName = "sql_CreateForJavaScript_all"
-	case_Procedures_validation_CreateForPython_RuntimeVersion_ValidateValueSet                                         testCaseName = "validation_CreateForPython_RuntimeVersion_ValidateValueSet"
-	case_Procedures_validation_CreateForPython_Packages_ValidateValueSet                                               testCaseName = "validation_CreateForPython_Packages_ValidateValueSet"
-	case_Procedures_validation_CreateForPython_Handler_ValidateValueSet                                                testCaseName = "validation_CreateForPython_Handler_ValidateValueSet"
-	case_Procedures_validation_CreateForPython_name_ValidIdentifier                                                    testCaseName = "validation_CreateForPython_name_ValidIdentifier"
-	case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet                               testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                        testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                    testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid                           testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet                                 testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid        testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid               testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier                              testCaseName = "validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier"
-	case_Procedures_sql_CreateForPython_basic                                                                          testCaseName = "sql_CreateForPython_basic"
-	case_Procedures_sql_CreateForPython_all                                                                            testCaseName = "sql_CreateForPython_all"
-	case_Procedures_validation_CreateForScala_RuntimeVersion_ValidateValueSet                                          testCaseName = "validation_CreateForScala_RuntimeVersion_ValidateValueSet"
-	case_Procedures_validation_CreateForScala_Packages_ValidateValueSet                                                testCaseName = "validation_CreateForScala_Packages_ValidateValueSet"
-	case_Procedures_validation_CreateForScala_Handler_ValidateValueSet                                                 testCaseName = "validation_CreateForScala_Handler_ValidateValueSet"
-	case_Procedures_validation_CreateForScala_name_ValidIdentifier                                                     testCaseName = "validation_CreateForScala_name_ValidIdentifier"
-	case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                     testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid                            testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateForScala_opts_Returns_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_CreateForScala_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_CreateForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_CreateForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_CreateForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid         testCaseName = "validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid                testCaseName = "validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier                               testCaseName = "validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier"
-	case_Procedures_sql_CreateForScala_basic                                                                           testCaseName = "sql_CreateForScala_basic"
-	case_Procedures_sql_CreateForScala_all                                                                             testCaseName = "sql_CreateForScala_all"
-	case_Procedures_validation_CreateForSQL_ProcedureDefinition_ValidateValueSet                                       testCaseName = "validation_CreateForSQL_ProcedureDefinition_ValidateValueSet"
-	case_Procedures_validation_CreateForSQL_name_ValidIdentifier                                                       testCaseName = "validation_CreateForSQL_name_ValidIdentifier"
-	case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet                                  testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                           testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                       testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid                              testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                                    testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                             testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                     testCaseName = "validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet              testCaseName = "validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet               testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid           testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid                  testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_sql_CreateForSQL_basic                                                                             testCaseName = "sql_CreateForSQL_basic"
-	case_Procedures_sql_CreateForSQL_all                                                                               testCaseName = "sql_CreateForSQL_all"
-	case_Procedures_validation_Alter_name_ValidIdentifier                                                              testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Procedures_validation_Alter_RenameTo_ValidIdentifierIfSet                                                     testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_Procedures_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_Alter_opts_Set_AtLeastOneValueSet                                                       testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Procedures_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                                    testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
-	case_Procedures_validation_Alter_opts_Unset_AtLeastOneValueSet                                                     testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Procedures_validation_Alter_SetTags_ValidIdentifier                                                           testCaseName = "validation_Alter_SetTags_ValidIdentifier"
-	case_Procedures_sql_Alter_RenameTo                                                                                 testCaseName = "sql_Alter_RenameTo"
-	case_Procedures_sql_Alter_Set                                                                                      testCaseName = "sql_Alter_Set"
-	case_Procedures_sql_Alter_Unset                                                                                    testCaseName = "sql_Alter_Unset"
-	case_Procedures_sql_Alter_SetTags                                                                                  testCaseName = "sql_Alter_SetTags"
-	case_Procedures_sql_Alter_UnsetTags                                                                                testCaseName = "sql_Alter_UnsetTags"
-	case_Procedures_sql_Alter_ExecuteAs                                                                                testCaseName = "sql_Alter_ExecuteAs"
-	case_Procedures_validation_Drop_name_ValidIdentifier                                                               testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Procedures_sql_Drop_basic                                                                                     testCaseName = "sql_Drop_basic"
-	case_Procedures_sql_Drop_all                                                                                       testCaseName = "sql_Drop_all"
-	case_Procedures_sql_Show_basic                                                                                     testCaseName = "sql_Show_basic"
-	case_Procedures_sql_Show_all                                                                                       testCaseName = "sql_Show_all"
-	case_Procedures_sql_Show_Like                                                                                      testCaseName = "sql_Show_Like"
-	case_Procedures_sql_Show_In                                                                                        testCaseName = "sql_Show_In"
-	case_Procedures_validation_Describe_name_ValidIdentifier                                                           testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_Procedures_sql_Describe_basic                                                                                 testCaseName = "sql_Describe_basic"
-	case_Procedures_validation_Call_name_ValidIdentifier                                                               testCaseName = "validation_Call_name_ValidIdentifier"
-	case_Procedures_sql_Call_basic                                                                                     testCaseName = "sql_Call_basic"
-	case_Procedures_validation_CreateAndCallForJava_RuntimeVersion_ValidateValueSet                                    testCaseName = "validation_CreateAndCallForJava_RuntimeVersion_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForJava_Packages_ValidateValueSet                                          testCaseName = "validation_CreateAndCallForJava_Packages_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForJava_Handler_ValidateValueSet                                           testCaseName = "validation_CreateAndCallForJava_Handler_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForJava_Name_ValidIdentifier                                               testCaseName = "validation_CreateAndCallForJava_Name_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForJava_ProcedureName_ValidIdentifier                                      testCaseName = "validation_CreateAndCallForJava_ProcedureName_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid               testCaseName = "validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid                      testCaseName = "validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet             testCaseName = "validation_CreateAndCallForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_CreateAndCallForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet              testCaseName = "validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet       testCaseName = "validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid   testCaseName = "validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid          testCaseName = "validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_sql_CreateAndCallForJava_basic                                                                     testCaseName = "sql_CreateAndCallForJava_basic"
-	case_Procedures_sql_CreateAndCallForJava_all                                                                       testCaseName = "sql_CreateAndCallForJava_all"
-	case_Procedures_validation_CreateAndCallForScala_RuntimeVersion_ValidateValueSet                                   testCaseName = "validation_CreateAndCallForScala_RuntimeVersion_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForScala_Packages_ValidateValueSet                                         testCaseName = "validation_CreateAndCallForScala_Packages_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForScala_Handler_ValidateValueSet                                          testCaseName = "validation_CreateAndCallForScala_Handler_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForScala_Name_ValidIdentifier                                              testCaseName = "validation_CreateAndCallForScala_Name_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForScala_ProcedureName_ValidIdentifier                                     testCaseName = "validation_CreateAndCallForScala_ProcedureName_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                  testCaseName = "validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid              testCaseName = "validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid                     testCaseName = "validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet            testCaseName = "validation_CreateAndCallForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_CreateAndCallForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet             testCaseName = "validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid  testCaseName = "validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid         testCaseName = "validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_sql_CreateAndCallForScala_basic                                                                    testCaseName = "sql_CreateAndCallForScala_basic"
-	case_Procedures_sql_CreateAndCallForScala_all                                                                      testCaseName = "sql_CreateAndCallForScala_all"
-	case_Procedures_validation_CreateAndCallForJavaScript_ProcedureDefinition_ValidateValueSet                         testCaseName = "validation_CreateAndCallForJavaScript_ProcedureDefinition_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForJavaScript_opts_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_CreateAndCallForJavaScript_opts_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_CreateAndCallForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForJavaScript_Name_ValidIdentifier                                         testCaseName = "validation_CreateAndCallForJavaScript_Name_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForJavaScript_ProcedureName_ValidIdentifier                                testCaseName = "validation_CreateAndCallForJavaScript_ProcedureName_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid         testCaseName = "validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_BothInvalid                testCaseName = "validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_sql_CreateAndCallForJavaScript_basic                                                               testCaseName = "sql_CreateAndCallForJavaScript_basic"
-	case_Procedures_sql_CreateAndCallForJavaScript_all                                                                 testCaseName = "sql_CreateAndCallForJavaScript_all"
-	case_Procedures_validation_CreateAndCallForPython_RuntimeVersion_ValidateValueSet                                  testCaseName = "validation_CreateAndCallForPython_RuntimeVersion_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForPython_Packages_ValidateValueSet                                        testCaseName = "validation_CreateAndCallForPython_Packages_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForPython_Handler_ValidateValueSet                                         testCaseName = "validation_CreateAndCallForPython_Handler_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForPython_Name_ValidIdentifier                                             testCaseName = "validation_CreateAndCallForPython_Name_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForPython_ProcedureName_ValidIdentifier                                    testCaseName = "validation_CreateAndCallForPython_ProcedureName_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_NoneSet                        testCaseName = "validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                 testCaseName = "validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid             testCaseName = "validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid                    testCaseName = "validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet           testCaseName = "validation_CreateAndCallForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_CreateAndCallForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet            testCaseName = "validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid        testCaseName = "validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_sql_CreateAndCallForPython_basic                                                                   testCaseName = "sql_CreateAndCallForPython_basic"
-	case_Procedures_sql_CreateAndCallForPython_all                                                                     testCaseName = "sql_CreateAndCallForPython_all"
-	case_Procedures_validation_CreateAndCallForSQL_ProcedureDefinition_ValidateValueSet                                testCaseName = "validation_CreateAndCallForSQL_ProcedureDefinition_ValidateValueSet"
-	case_Procedures_validation_CreateAndCallForSQL_Name_ValidIdentifier                                                testCaseName = "validation_CreateAndCallForSQL_Name_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForSQL_ProcedureName_ValidIdentifier                                       testCaseName = "validation_CreateAndCallForSQL_ProcedureName_ValidIdentifier"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet                           testCaseName = "validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                    testCaseName = "validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                testCaseName = "validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid                       testCaseName = "validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                             testCaseName = "validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet              testCaseName = "validation_CreateAndCallForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet       testCaseName = "validation_CreateAndCallForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet               testCaseName = "validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid    testCaseName = "validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid           testCaseName = "validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Procedures_sql_CreateAndCallForSQL_basic                                                                      testCaseName = "sql_CreateAndCallForSQL_basic"
-	case_Procedures_sql_CreateAndCallForSQL_all                                                                        testCaseName = "sql_CreateAndCallForSQL_all"
+	case_Procedures_validation_CreateForJava_RuntimeVersion_ValidateValueSet                                 testCaseName = "validation_CreateForJava_RuntimeVersion_ValidateValueSet"
+	case_Procedures_validation_CreateForJava_Packages_ValidateValueSet                                       testCaseName = "validation_CreateForJava_Packages_ValidateValueSet"
+	case_Procedures_validation_CreateForJava_Handler_ValidateValueSet                                        testCaseName = "validation_CreateForJava_Handler_ValidateValueSet"
+	case_Procedures_validation_CreateForJava_name_ValidIdentifier                                            testCaseName = "validation_CreateForJava_name_ValidIdentifier"
+	case_Procedures_validation_CreateForJava_Arguments_ArgDataType_ValidateValueSet                          testCaseName = "validation_CreateForJava_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                  testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet          testCaseName = "validation_CreateForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet           testCaseName = "validation_CreateForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier                      testCaseName = "validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier"
+	case_Procedures_sql_CreateForJava_basic                                                                  testCaseName = "sql_CreateForJava_basic"
+	case_Procedures_sql_CreateForJava_all                                                                    testCaseName = "sql_CreateForJava_all"
+	case_Procedures_validation_CreateForJavaScript_ProcedureDefinition_ValidateValueSet                      testCaseName = "validation_CreateForJavaScript_ProcedureDefinition_ValidateValueSet"
+	case_Procedures_validation_CreateForJavaScript_name_ValidIdentifier                                      testCaseName = "validation_CreateForJavaScript_name_ValidIdentifier"
+	case_Procedures_validation_CreateForJavaScript_ResultDataType_ValidateValueSet                           testCaseName = "validation_CreateForJavaScript_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForJavaScript_Arguments_ArgDataType_ValidateValueSet                    testCaseName = "validation_CreateForJavaScript_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_sql_CreateForJavaScript_basic                                                            testCaseName = "sql_CreateForJavaScript_basic"
+	case_Procedures_sql_CreateForJavaScript_all                                                              testCaseName = "sql_CreateForJavaScript_all"
+	case_Procedures_validation_CreateForPython_RuntimeVersion_ValidateValueSet                               testCaseName = "validation_CreateForPython_RuntimeVersion_ValidateValueSet"
+	case_Procedures_validation_CreateForPython_Packages_ValidateValueSet                                     testCaseName = "validation_CreateForPython_Packages_ValidateValueSet"
+	case_Procedures_validation_CreateForPython_Handler_ValidateValueSet                                      testCaseName = "validation_CreateForPython_Handler_ValidateValueSet"
+	case_Procedures_validation_CreateForPython_name_ValidIdentifier                                          testCaseName = "validation_CreateForPython_name_ValidIdentifier"
+	case_Procedures_validation_CreateForPython_Arguments_ArgDataType_ValidateValueSet                        testCaseName = "validation_CreateForPython_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet        testCaseName = "validation_CreateForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet         testCaseName = "validation_CreateForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier                    testCaseName = "validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier"
+	case_Procedures_sql_CreateForPython_basic                                                                testCaseName = "sql_CreateForPython_basic"
+	case_Procedures_sql_CreateForPython_all                                                                  testCaseName = "sql_CreateForPython_all"
+	case_Procedures_validation_CreateForScala_RuntimeVersion_ValidateValueSet                                testCaseName = "validation_CreateForScala_RuntimeVersion_ValidateValueSet"
+	case_Procedures_validation_CreateForScala_Packages_ValidateValueSet                                      testCaseName = "validation_CreateForScala_Packages_ValidateValueSet"
+	case_Procedures_validation_CreateForScala_Handler_ValidateValueSet                                       testCaseName = "validation_CreateForScala_Handler_ValidateValueSet"
+	case_Procedures_validation_CreateForScala_name_ValidIdentifier                                           testCaseName = "validation_CreateForScala_name_ValidIdentifier"
+	case_Procedures_validation_CreateForScala_Arguments_ArgDataType_ValidateValueSet                         testCaseName = "validation_CreateForScala_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForScala_opts_Returns_ExactlyOneValueSet_NoneSet                        testCaseName = "validation_CreateForScala_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                 testCaseName = "validation_CreateForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateForScala_Returns_ResultDataType_ResultDataType_ValidateValueSet         testCaseName = "validation_CreateForScala_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForScala_Returns_Table_Columns_ColumnDataType_ValidateValueSet          testCaseName = "validation_CreateForScala_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier                     testCaseName = "validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier"
+	case_Procedures_sql_CreateForScala_basic                                                                 testCaseName = "sql_CreateForScala_basic"
+	case_Procedures_sql_CreateForScala_all                                                                   testCaseName = "sql_CreateForScala_all"
+	case_Procedures_validation_CreateForSQL_ProcedureDefinition_ValidateValueSet                             testCaseName = "validation_CreateForSQL_ProcedureDefinition_ValidateValueSet"
+	case_Procedures_validation_CreateForSQL_name_ValidIdentifier                                             testCaseName = "validation_CreateForSQL_name_ValidIdentifier"
+	case_Procedures_validation_CreateForSQL_Arguments_ArgDataType_ValidateValueSet                           testCaseName = "validation_CreateForSQL_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet           testCaseName = "validation_CreateForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet            testCaseName = "validation_CreateForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_sql_CreateForSQL_basic                                                                   testCaseName = "sql_CreateForSQL_basic"
+	case_Procedures_sql_CreateForSQL_all                                                                     testCaseName = "sql_CreateForSQL_all"
+	case_Procedures_validation_Alter_name_ValidIdentifier                                                    testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Procedures_validation_Alter_RenameTo_ValidIdentifierIfSet                                           testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Procedures_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_Alter_opts_Set_AtLeastOneValueSet                                             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Procedures_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                          testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
+	case_Procedures_validation_Alter_opts_Unset_AtLeastOneValueSet                                           testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Procedures_validation_Alter_SetTags_ValidIdentifier                                                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
+	case_Procedures_sql_Alter_RenameTo                                                                       testCaseName = "sql_Alter_RenameTo"
+	case_Procedures_sql_Alter_Set                                                                            testCaseName = "sql_Alter_Set"
+	case_Procedures_sql_Alter_Unset                                                                          testCaseName = "sql_Alter_Unset"
+	case_Procedures_sql_Alter_SetTags                                                                        testCaseName = "sql_Alter_SetTags"
+	case_Procedures_sql_Alter_UnsetTags                                                                      testCaseName = "sql_Alter_UnsetTags"
+	case_Procedures_sql_Alter_ExecuteAs                                                                      testCaseName = "sql_Alter_ExecuteAs"
+	case_Procedures_validation_Drop_name_ValidIdentifier                                                     testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Procedures_sql_Drop_basic                                                                           testCaseName = "sql_Drop_basic"
+	case_Procedures_sql_Drop_all                                                                             testCaseName = "sql_Drop_all"
+	case_Procedures_sql_Show_basic                                                                           testCaseName = "sql_Show_basic"
+	case_Procedures_sql_Show_all                                                                             testCaseName = "sql_Show_all"
+	case_Procedures_sql_Show_Like                                                                            testCaseName = "sql_Show_Like"
+	case_Procedures_sql_Show_In                                                                              testCaseName = "sql_Show_In"
+	case_Procedures_validation_Describe_name_ValidIdentifier                                                 testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Procedures_sql_Describe_basic                                                                       testCaseName = "sql_Describe_basic"
+	case_Procedures_validation_Call_name_ValidIdentifier                                                     testCaseName = "validation_Call_name_ValidIdentifier"
+	case_Procedures_sql_Call_basic                                                                           testCaseName = "sql_Call_basic"
+	case_Procedures_validation_CreateAndCallForJava_RuntimeVersion_ValidateValueSet                          testCaseName = "validation_CreateAndCallForJava_RuntimeVersion_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForJava_Packages_ValidateValueSet                                testCaseName = "validation_CreateAndCallForJava_Packages_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForJava_Handler_ValidateValueSet                                 testCaseName = "validation_CreateAndCallForJava_Handler_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForJava_Name_ValidIdentifier                                     testCaseName = "validation_CreateAndCallForJava_Name_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForJava_ProcedureName_ValidIdentifier                            testCaseName = "validation_CreateAndCallForJava_ProcedureName_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForJava_Arguments_ArgDataType_ValidateValueSet                   testCaseName = "validation_CreateAndCallForJava_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateAndCallForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateAndCallForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet   testCaseName = "validation_CreateAndCallForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet    testCaseName = "validation_CreateAndCallForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_sql_CreateAndCallForJava_basic                                                           testCaseName = "sql_CreateAndCallForJava_basic"
+	case_Procedures_sql_CreateAndCallForJava_all                                                             testCaseName = "sql_CreateAndCallForJava_all"
+	case_Procedures_validation_CreateAndCallForScala_RuntimeVersion_ValidateValueSet                         testCaseName = "validation_CreateAndCallForScala_RuntimeVersion_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForScala_Packages_ValidateValueSet                               testCaseName = "validation_CreateAndCallForScala_Packages_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForScala_Handler_ValidateValueSet                                testCaseName = "validation_CreateAndCallForScala_Handler_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForScala_Name_ValidIdentifier                                    testCaseName = "validation_CreateAndCallForScala_Name_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForScala_ProcedureName_ValidIdentifier                           testCaseName = "validation_CreateAndCallForScala_ProcedureName_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForScala_Arguments_ArgDataType_ValidateValueSet                  testCaseName = "validation_CreateAndCallForScala_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_CreateAndCallForScala_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateAndCallForScala_Returns_ResultDataType_ResultDataType_ValidateValueSet  testCaseName = "validation_CreateAndCallForScala_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForScala_Returns_Table_Columns_ColumnDataType_ValidateValueSet   testCaseName = "validation_CreateAndCallForScala_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_sql_CreateAndCallForScala_basic                                                          testCaseName = "sql_CreateAndCallForScala_basic"
+	case_Procedures_sql_CreateAndCallForScala_all                                                            testCaseName = "sql_CreateAndCallForScala_all"
+	case_Procedures_validation_CreateAndCallForJavaScript_ProcedureDefinition_ValidateValueSet               testCaseName = "validation_CreateAndCallForJavaScript_ProcedureDefinition_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForJavaScript_ResultDataType_ValidateValueSet                    testCaseName = "validation_CreateAndCallForJavaScript_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForJavaScript_Name_ValidIdentifier                               testCaseName = "validation_CreateAndCallForJavaScript_Name_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForJavaScript_ProcedureName_ValidIdentifier                      testCaseName = "validation_CreateAndCallForJavaScript_ProcedureName_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForJavaScript_Arguments_ArgDataType_ValidateValueSet             testCaseName = "validation_CreateAndCallForJavaScript_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_sql_CreateAndCallForJavaScript_basic                                                     testCaseName = "sql_CreateAndCallForJavaScript_basic"
+	case_Procedures_sql_CreateAndCallForJavaScript_all                                                       testCaseName = "sql_CreateAndCallForJavaScript_all"
+	case_Procedures_validation_CreateAndCallForPython_RuntimeVersion_ValidateValueSet                        testCaseName = "validation_CreateAndCallForPython_RuntimeVersion_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForPython_Packages_ValidateValueSet                              testCaseName = "validation_CreateAndCallForPython_Packages_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForPython_Handler_ValidateValueSet                               testCaseName = "validation_CreateAndCallForPython_Handler_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForPython_Name_ValidIdentifier                                   testCaseName = "validation_CreateAndCallForPython_Name_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForPython_ProcedureName_ValidIdentifier                          testCaseName = "validation_CreateAndCallForPython_ProcedureName_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForPython_Arguments_ArgDataType_ValidateValueSet                 testCaseName = "validation_CreateAndCallForPython_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_NoneSet                testCaseName = "validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_CreateAndCallForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateAndCallForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet testCaseName = "validation_CreateAndCallForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet  testCaseName = "validation_CreateAndCallForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_sql_CreateAndCallForPython_basic                                                         testCaseName = "sql_CreateAndCallForPython_basic"
+	case_Procedures_sql_CreateAndCallForPython_all                                                           testCaseName = "sql_CreateAndCallForPython_all"
+	case_Procedures_validation_CreateAndCallForSQL_ProcedureDefinition_ValidateValueSet                      testCaseName = "validation_CreateAndCallForSQL_ProcedureDefinition_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForSQL_Name_ValidIdentifier                                      testCaseName = "validation_CreateAndCallForSQL_Name_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForSQL_ProcedureName_ValidIdentifier                             testCaseName = "validation_CreateAndCallForSQL_ProcedureName_ValidIdentifier"
+	case_Procedures_validation_CreateAndCallForSQL_Arguments_ArgDataType_ValidateValueSet                    testCaseName = "validation_CreateAndCallForSQL_Arguments_ArgDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_CreateAndCallForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Procedures_validation_CreateAndCallForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet    testCaseName = "validation_CreateAndCallForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Procedures_validation_CreateAndCallForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet     testCaseName = "validation_CreateAndCallForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Procedures_sql_CreateAndCallForSQL_basic                                                            testCaseName = "sql_CreateAndCallForSQL_basic"
+	case_Procedures_sql_CreateAndCallForSQL_all                                                              testCaseName = "sql_CreateAndCallForSQL_all"
 )
 
 type ProceduresTestsContext struct {
@@ -265,28 +201,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateForJava_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForJavaProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavaProcedureOptions]{
-				Name: case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForJavaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForJavaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForJavaProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForJavaProcedureOptions]{
@@ -306,43 +225,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForJavaProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForJavaProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForJavaProcedureOptions]{
-				Name: case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForJavaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForJavaProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 			validationCase[*CreateForJavaProcedureOptions]{
@@ -386,40 +282,18 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJavaScript_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaScriptProcedureOptions", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateForJavaScript_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaScriptProcedureOptions", "ResultDataType"),
 				DefaultModify: func(opts *CreateForJavaScriptProcedureOptions) {
-					opts.ResultDataTypeOld = ""
 					opts.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaScriptProcedureOptions", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaScriptProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateForJavaScript_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaScriptProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForJavaScriptProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaScriptProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavaScriptProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavaScriptProcedureOptions]{
-				Name: case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForJavaScriptProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForJavaScriptProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForJavaScriptProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 		).
@@ -470,28 +344,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateForPython_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForPythonProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForPythonProcedureOptions]{
-				Name: case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForPythonProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForPythonProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForPythonProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForPythonProcedureOptions]{
@@ -511,43 +368,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForPythonProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForPythonProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForPythonProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForPythonProcedureOptions]{
-				Name: case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForPythonProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForPythonProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 			validationCase[*CreateForPythonProcedureOptions]{
@@ -605,28 +439,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateForScala_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForScalaProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForScalaProcedureOptions]{
-				Name: case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForScalaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForScalaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForScalaProcedureOptions]{
@@ -646,43 +463,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateForScala_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForScalaProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateForScala_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForScalaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForScalaProcedureOptions]{
-				Name: case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForScalaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForScalaProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 			validationCase[*CreateForScalaProcedureOptions]{
@@ -726,28 +520,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateForSQL_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForSQLProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForSQLProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForSQLProcedureOptions]{
-				Name: case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForSQLProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForSQLProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForSQLProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForSQLProcedureOptions]{
@@ -767,43 +544,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForSQLProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForSQLProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureSQLReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForSQLProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForSQLProcedureOptions]{
-				Name: case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForSQLProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForSQLProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 		).
@@ -1063,28 +817,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForJava_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForJavaProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateAndCallForJavaProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForJavaProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForJavaProcedureOptions]{
@@ -1104,43 +841,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForJavaProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateAndCallForJavaProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateAndCallForJavaProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForJavaProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateAndCallForJavaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForJavaProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 		).
@@ -1198,28 +912,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForScala_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForScalaProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateAndCallForScalaProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForScalaProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForScalaProcedureOptions]{
@@ -1239,43 +936,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForScala_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForScalaProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateAndCallForScalaProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForScala_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateAndCallForScalaProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForScalaProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateAndCallForScalaProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForScalaProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 		).
@@ -1305,16 +979,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJavaScript_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForJavaScript_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForJavaScriptProcedureOptions", "ResultDataType"),
 				DefaultModify: func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-					opts.ResultDataTypeOld = ""
 					opts.ResultDataType = nil
 				},
-			},
-			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions", "ResultDataTypeOld", "ResultDataType"),
 			},
 			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
 				Name:        case_Procedures_validation_CreateAndCallForJavaScript_Name_ValidIdentifier,
@@ -1331,28 +1000,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForJavaScript_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForJavaScriptProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateAndCallForJavaScriptProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForJavaScriptProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateAndCallForJavaScriptProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 		).
@@ -1410,28 +1062,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForPython_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForPythonProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateAndCallForPythonProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForPythonProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForPythonProcedureOptions]{
@@ -1451,43 +1086,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForPythonProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateAndCallForPythonProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateAndCallForPythonProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForPythonProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateAndCallForPythonProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForPythonProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 		).
@@ -1531,28 +1143,11 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForSQL_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForSQLProcedureOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateAndCallForSQLProcedureOptions) {
 					opts.Arguments = []ProcedureArgument{{}}
-				},
-			},
-			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForSQLProcedureOptions) {
-					opts.Arguments = []ProcedureArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForSQLProcedureOptions]{
@@ -1572,43 +1167,20 @@ var proceduresTests = ProceduresTestsContext{
 				},
 			},
 			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateAndCallForSQLProcedureOptions) {
 					opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Procedures_validation_CreateAndCallForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateAndCallForSQLProcedureOptions) {
 					opts.Returns.Table = &ProcedureReturnsTable{}
 					opts.Returns.Table.Columns = []ProcedureColumn{{}}
-				},
-			},
-			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name:        case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateAndCallForSQLProcedureOptions]{
-				Name: case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateAndCallForSQLProcedureOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateAndCallForSQLProcedureOptions) {
-					opts.Returns.Table = &ProcedureReturnsTable{}
-					opts.Returns.Table.Columns = []ProcedureColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 		).

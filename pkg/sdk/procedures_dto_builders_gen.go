@@ -100,11 +100,6 @@ func NewProcedureArgumentRequest(
 	return &s
 }
 
-func (s *ProcedureArgumentRequest) WithArgDataTypeOld(argDataTypeOld DataType) *ProcedureArgumentRequest {
-	s.ArgDataTypeOld = argDataTypeOld
-	return s
-}
-
 func (s *ProcedureArgumentRequest) WithDefaultValue(defaultValue string) *ProcedureArgumentRequest {
 	s.DefaultValue = &defaultValue
 	return s
@@ -131,11 +126,6 @@ func NewProcedureReturnsResultDataTypeRequest(
 	s := ProcedureReturnsResultDataTypeRequest{}
 	s.ResultDataType = resultDataType
 	return &s
-}
-
-func (s *ProcedureReturnsResultDataTypeRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *ProcedureReturnsResultDataTypeRequest {
-	s.ResultDataTypeOld = resultDataTypeOld
-	return s
 }
 
 func (s *ProcedureReturnsResultDataTypeRequest) WithNull(null bool) *ProcedureReturnsResultDataTypeRequest {
@@ -166,11 +156,6 @@ func NewProcedureColumnRequest(
 	s.ColumnName = columnName
 	s.ColumnDataType = columnDataType
 	return &s
-}
-
-func (s *ProcedureColumnRequest) WithColumnDataTypeOld(columnDataTypeOld DataType) *ProcedureColumnRequest {
-	s.ColumnDataTypeOld = columnDataTypeOld
-	return s
 }
 
 func NewProcedurePackageRequest(
@@ -218,11 +203,6 @@ func (s *CreateForJavaScriptProcedureRequest) WithArguments(arguments []Procedur
 
 func (s *CreateForJavaScriptProcedureRequest) WithCopyGrants(copyGrants bool) *CreateForJavaScriptProcedureRequest {
 	s.CopyGrants = &copyGrants
-	return s
-}
-
-func (s *CreateForJavaScriptProcedureRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *CreateForJavaScriptProcedureRequest {
-	s.ResultDataTypeOld = resultDataTypeOld
 	return s
 }
 
@@ -486,11 +466,6 @@ func NewProcedureSQLReturnsResultDataTypeRequest(
 	s := ProcedureSQLReturnsResultDataTypeRequest{}
 	s.ResultDataType = resultDataType
 	return &s
-}
-
-func (s *ProcedureSQLReturnsResultDataTypeRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *ProcedureSQLReturnsResultDataTypeRequest {
-	s.ResultDataTypeOld = resultDataTypeOld
-	return s
 }
 
 func NewAlterProcedureRequest(
@@ -847,11 +822,6 @@ func NewCreateAndCallForJavaScriptProcedureRequest(
 
 func (s *CreateAndCallForJavaScriptProcedureRequest) WithArguments(arguments []ProcedureArgumentRequest) *CreateAndCallForJavaScriptProcedureRequest {
 	s.Arguments = arguments
-	return s
-}
-
-func (s *CreateAndCallForJavaScriptProcedureRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *CreateAndCallForJavaScriptProcedureRequest {
-	s.ResultDataTypeOld = resultDataTypeOld
 	return s
 }
 

@@ -2025,90 +2025,6 @@ func TestInt_Functions(t *testing.T) {
 		require.Equal(t, *e, *es)
 	})
 
-	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("function returns non-detailed data types of arguments - old data types", func(t *testing.T) {
-		// This test proves that every detailed data types (e.g. VARCHAR(20) and NUMBER(10, 0)) are generalized
-		// on Snowflake side (to e.g. VARCHAR and NUMBER) and that sdk.ToDataType mapping function maps detailed types
-		// correctly to their generalized counterparts (same as in Snowflake).
-
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		args := []sdk.FunctionArgumentRequest{
-			*sdk.NewFunctionArgumentRequest("A", nil).WithArgDataTypeOld("NUMBER(2, 0)"),
-			*sdk.NewFunctionArgumentRequest("B", nil).WithArgDataTypeOld("DECIMAL"),
-			*sdk.NewFunctionArgumentRequest("C", nil).WithArgDataTypeOld("INTEGER"),
-			*sdk.NewFunctionArgumentRequest("D", nil).WithArgDataTypeOld(sdk.DataTypeFloat),
-			*sdk.NewFunctionArgumentRequest("E", nil).WithArgDataTypeOld("DOUBLE"),
-			*sdk.NewFunctionArgumentRequest("F", nil).WithArgDataTypeOld("VARCHAR(20)"),
-			*sdk.NewFunctionArgumentRequest("G", nil).WithArgDataTypeOld("CHAR"),
-			*sdk.NewFunctionArgumentRequest("H", nil).WithArgDataTypeOld(sdk.DataTypeString),
-			*sdk.NewFunctionArgumentRequest("I", nil).WithArgDataTypeOld("TEXT"),
-			*sdk.NewFunctionArgumentRequest("J", nil).WithArgDataTypeOld(sdk.DataTypeBinary),
-			*sdk.NewFunctionArgumentRequest("K", nil).WithArgDataTypeOld("VARBINARY"),
-			*sdk.NewFunctionArgumentRequest("L", nil).WithArgDataTypeOld(sdk.DataTypeBoolean),
-			*sdk.NewFunctionArgumentRequest("M", nil).WithArgDataTypeOld(sdk.DataTypeDate),
-			*sdk.NewFunctionArgumentRequest("N", nil).WithArgDataTypeOld("DATETIME"),
-			*sdk.NewFunctionArgumentRequest("O", nil).WithArgDataTypeOld(sdk.DataTypeTime),
-			*sdk.NewFunctionArgumentRequest("R", nil).WithArgDataTypeOld(sdk.DataTypeTimestampLTZ),
-			*sdk.NewFunctionArgumentRequest("S", nil).WithArgDataTypeOld(sdk.DataTypeTimestampNTZ),
-			*sdk.NewFunctionArgumentRequest("T", nil).WithArgDataTypeOld(sdk.DataTypeTimestampTZ),
-			*sdk.NewFunctionArgumentRequest("U", nil).WithArgDataTypeOld(sdk.DataTypeVariant),
-			*sdk.NewFunctionArgumentRequest("V", nil).WithArgDataTypeOld(sdk.DataTypeObject),
-			*sdk.NewFunctionArgumentRequest("W", nil).WithArgDataTypeOld(sdk.DataTypeArray),
-			*sdk.NewFunctionArgumentRequest("X", nil).WithArgDataTypeOld(sdk.DataTypeGeography),
-			*sdk.NewFunctionArgumentRequest("Y", nil).WithArgDataTypeOld(sdk.DataTypeGeometry),
-			*sdk.NewFunctionArgumentRequest("Z", nil).WithArgDataTypeOld("VECTOR(INT, 16)"),
-		}
-		err := client.Functions.CreateForPython(
-			ctx, sdk.NewCreateForPythonFunctionRequest(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVariant)),
-				testvars.PythonRuntime,
-				"add",
-			).
-				WithArguments(args).
-				WithFunctionDefinitionWrapped("def add(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, R, S, T, U, V, W, X, Y, Z): A + A"),
-		)
-		require.NoError(t, err)
-
-		dataTypes := make([]sdk.DataType, len(args))
-		for i, arg := range args {
-			dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
-			require.NoError(t, err)
-			dataTypes[i] = sdk.LegacyDataTypeFrom(dataType)
-		}
-		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataTypes...)
-
-		function, err := client.Functions.ShowByID(ctx, idWithArguments)
-		require.NoError(t, err)
-		require.Equal(t, dataTypes, function.ArgumentsOld)
-	})
-
-	// This test follows the same reasoning as the above `function returns non-detailed data types of arguments - old data types` above.
-	// It is separated as DECFLOAT type is supported only in SQL function type and python type is used above.
-	t.Run("function returns non-detailed data types of arguments - old data types, DECFLOAT", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		arg := *sdk.NewFunctionArgumentRequest("P", nil).WithArgDataTypeOld(datatypes.DecfloatLegacyDataType)
-		definition := "3.141592654::DECFLOAT"
-		err := client.Functions.CreateForSQL(
-			ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(datatypes.DecfloatLegacyDataType)),
-				definition,
-			).
-				WithArguments([]sdk.FunctionArgumentRequest{arg}),
-		)
-		require.NoError(t, err)
-
-		dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
-		require.NoError(t, err)
-		dataTypes := []sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}
-		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataTypes...)
-
-		function, err := client.Functions.ShowByID(ctx, idWithArguments)
-		require.NoError(t, err)
-		require.Equal(t, dataTypes, function.ArgumentsOld)
-	})
-
 	// This test shows behavior of detailed types (e.g. VARCHAR(20) and NUMBER(10, 0)) on Snowflake side for functions.
 	// NOTE: These changes has been rolled back from 2025_03 bundle and may be reintroduced in the future.
 	// For SHOW, it changed after 2025_03 Bundle:
@@ -2124,6 +2040,7 @@ func TestInt_Functions(t *testing.T) {
 	}{
 		{"NUMBER(36, 5)", "NUMBER"},
 		{"NUMBER(36)", "NUMBER"},
+		{"NUMBER(2, 0)", "NUMBER"},
 		{"NUMBER", "NUMBER"},
 		{"DECIMAL", "NUMBER"},
 		{"INTEGER", "NUMBER"},
@@ -2135,6 +2052,7 @@ func TestInt_Functions(t *testing.T) {
 		{fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), "VARCHAR"},
 		{"CHAR", "VARCHAR"},
 		{"CHAR(10)", "VARCHAR"},
+		{"STRING", "VARCHAR"},
 		{"TEXT", "VARCHAR"},
 		{"BINARY", "BINARY"},
 		{"BINARY(1000)", "BINARY"},
@@ -2195,161 +2113,6 @@ func TestInt_Functions(t *testing.T) {
 		})
 	}
 
-	// This test differs from the previous one in the Snowflake interaction. In the previous one we use our hardcoded defaults, in this one, we pass explicit data types to Snowflake.
-	for _, tc := range []struct {
-		input                           string
-		expectedShowValue               string
-		expectedDescribeReturnsOverride string
-	}{
-		{input: "NUMBER", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(38)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(38,0)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER"},
-		{input: "DECIMAL", expectedShowValue: "NUMBER"},
-		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
-		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: "CHAR", expectedShowValue: "VARCHAR"},
-		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
-		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-	} {
-		tc := tc
-		// TODO [SNOW-2681221]: verify with SQL function type
-		t.Run(fmt.Sprintf("function returns after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
-			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			argName := "A"
-			funcName := "identity"
-			dataType, err := datatypes.ParseDataType(tc.input)
-			require.NoError(t, err)
-
-			// we fall back to the direct data type specification on purpose
-			explicitDataType := sdk.DataType(tc.input)
-
-			args := []sdk.FunctionArgumentRequest{
-				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-			}
-
-			err = client.Functions.CreateForPython(
-				ctx, sdk.NewCreateForPythonFunctionRequest(
-					id,
-					*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-					testvars.PythonRuntime,
-					funcName,
-				).
-					WithArguments(args).
-					WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
-			)
-			require.NoError(t, err)
-
-			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
-
-			function, err := client.Functions.ShowByID(ctx, idWithArguments)
-			require.NoError(t, err)
-			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, function.ArgumentsOld)
-			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), tc.expectedShowValue), function.ArgumentsRaw)
-
-			details, err := client.Functions.Describe(ctx, idWithArguments)
-			require.NoError(t, err)
-			pairs := make(map[string]string)
-			for _, detail := range details {
-				pairs[detail.Property] = *detail.Value
-			}
-			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
-			if tc.expectedDescribeReturnsOverride != "" {
-				assert.Equal(t, tc.expectedDescribeReturnsOverride, pairs["returns"])
-			} else {
-				assert.Equal(t, dataType.Canonical(), pairs["returns"])
-			}
-		})
-	}
-
-	// DECFLOAT has separate test as it can be used only in SQL function and the above test uses python (changing the type to SQL yields different results).
-	t.Run("function returns after 2025_03 Bundle for explicit types: DECFLOAT", func(t *testing.T) {
-		input := "DECFLOAT(38)"
-		expectedShowValue := "DECFLOAT"
-
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		argName := "A"
-		dataType, err := datatypes.ParseDataType(input)
-		require.NoError(t, err)
-
-		// we fall back to the direct data type specification on purpose
-		explicitDataType := sdk.DataType(input)
-
-		args := []sdk.FunctionArgumentRequest{
-			*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-		}
-
-		err = client.Functions.CreateForSQL(
-			ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
-				testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
-			).
-				WithArguments(args),
-		)
-		require.NoError(t, err)
-
-		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
-
-		function, err := client.Functions.ShowByID(ctx, idWithArguments)
-		require.NoError(t, err)
-		assert.Equal(t, []sdk.DataType{sdk.DataType(expectedShowValue)}, function.ArgumentsOld)
-		assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), expectedShowValue), function.ArgumentsRaw)
-
-		details, err := client.Functions.Describe(ctx, idWithArguments)
-		require.NoError(t, err)
-		pairs := make(map[string]string)
-		for _, detail := range details {
-			pairs[detail.Property] = *detail.Value
-		}
-		assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
-		assert.Equal(t, dataType.Canonical(), pairs["returns"])
-	})
-
-	for _, tc := range []struct {
-		input        string
-		expectedSize string
-	}{
-		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
-		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
-	} {
-		tc := tc
-		t.Run(fmt.Sprintf("function default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
-			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			argName := "A"
-			funcName := "identity"
-
-			// we fall back to the direct data type specification on purpose
-			explicitDataType := sdk.DataType(tc.input)
-
-			args := []sdk.FunctionArgumentRequest{
-				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-			}
-
-			err := client.Functions.CreateForPython(
-				ctx, sdk.NewCreateForPythonFunctionRequest(
-					id,
-					*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-					testvars.PythonRuntime,
-					funcName,
-				).
-					WithArguments(args).
-					WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
-			)
-			require.NoError(t, err)
-
-			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), explicitDataType)
-			returnDataTypeFromInformationSchema := testClientHelper().InformationSchema.GetFunctionDataType(t, idWithArguments)
-
-			require.Equal(t, tc.expectedSize, returnDataTypeFromInformationSchema)
-		})
-	}
-
 	t.Run("create function for SQL - return table data type", func(t *testing.T) {
 		argName := "x"
 
@@ -2362,7 +2125,7 @@ func TestInt_Functions(t *testing.T) {
 SELECT 2.2::float, 'abc');` // the ending parenthesis has to be there (otherwise SQL compilation error is thrown)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(returnDataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
-		argument := sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(datatypes.VarcharLegacyDataType)
+		argument := sdk.NewFunctionArgumentRequest(argName, testdatatypes.DataTypeVarchar)
 		request := sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument})
 

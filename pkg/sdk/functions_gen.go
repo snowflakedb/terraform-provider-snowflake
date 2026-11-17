@@ -69,10 +69,9 @@ type CreateForJavaFunctionOptions struct {
 }
 
 type FunctionArgument struct {
-	ArgName        string             `ddl:"keyword,double_quotes"`
-	ArgDataTypeOld DataType           `ddl:"keyword,no_quotes"`
-	ArgDataType    datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
-	DefaultValue   *string            `ddl:"parameter,no_equals" sql:"DEFAULT"`
+	ArgName      string             `ddl:"keyword,double_quotes"`
+	ArgDataType  datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
+	DefaultValue *string            `ddl:"parameter,no_equals" sql:"DEFAULT"`
 }
 
 type FunctionReturns struct {
@@ -81,8 +80,7 @@ type FunctionReturns struct {
 }
 
 type FunctionReturnsResultDataType struct {
-	ResultDataTypeOld DataType           `ddl:"keyword,no_quotes"`
-	ResultDataType    datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
+	ResultDataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
 }
 
 type FunctionReturnsTable struct {
@@ -90,9 +88,8 @@ type FunctionReturnsTable struct {
 }
 
 type FunctionColumn struct {
-	ColumnName        string             `ddl:"keyword,double_quotes"`
-	ColumnDataTypeOld DataType           `ddl:"keyword,no_quotes"`
-	ColumnDataType    datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
+	ColumnName     string             `ddl:"keyword,double_quotes"`
+	ColumnDataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
 }
 
 type FunctionImport struct {
@@ -170,7 +167,6 @@ type CreateForScalaFunctionOptions struct {
 	Arguments                  []FunctionArgument        `ddl:"list,must_parentheses"`
 	CopyGrants                 *bool                     `ddl:"keyword" sql:"COPY GRANTS"`
 	returns                    bool                      `ddl:"static" sql:"RETURNS"`
-	ResultDataTypeOld          DataType                  `ddl:"parameter,no_equals"`
 	ResultDataType             datatypes.DataType        `ddl:"parameter,no_quotes,no_equals"`
 	ReturnNullValues           *ReturnNullValues         `ddl:"keyword"`
 	languageScala              bool                      `ddl:"static" sql:"LANGUAGE SCALA"`
