@@ -49,22 +49,18 @@ func (r sharesRow) additionalConvert(s *Share) error {
 	return nil
 }
 
-// shareListingRecipients are the entries SHOW SHARES lists in the "to" column of a share linked to a listing, possibly
-// quoted: "ALL ACCOUNTS IN DATA EXCHANGE" for a public listing, and "TARGETED ACCOUNTS" for a listing with target accounts.
-// They are not accounts, so they are never returned as recipients. For a share linked to a listing with target accounts,
-// "to" holds only 'TARGETED ACCOUNTS', also when the share had direct recipients before the listing was attached.
-// TODO [SNOW-4428377]: Verify against a real public listing what "to" holds when the share also has direct recipients, and whether
-// "(N TOTAL)" counts this entry. It cannot be created with SQL (publishing needs a Marketplace review), so there is no acceptance test.
-var shareListingRecipients = []string{"ALL ACCOUNTS IN DATA EXCHANGE", "TARGETED ACCOUNTS"}
+// shareNonAccountRecipients are the entries, possibly quoted, that SHOW SHARES can list in the "to" column instead of
+// accounts, e.g., for a share shared with all accounts or linked to a listing. They are never returned as recipients.
+var shareNonAccountRecipients = []string{"ALL ACCOUNTS", "ALL ACCOUNTS IN DATA EXCHANGE", "TARGETED ACCOUNTS", "TARGETED WITHIN ORGANIZATION"}
 
 // parseShareRecipients parses a comma-separated list of "<organization_name>.<account_name>" recipients. The
 // truncation marker can only be the last element; the returned total is the count it reports, and 0 without it.
-// The listing entries (see shareListingRecipients) are skipped, because they are not accounts.
+// The entries that are not accounts (see shareNonAccountRecipients) are skipped.
 func parseShareRecipients(value string) ([]AccountIdentifier, int, error) {
 	items := ParseCommaSeparatedStringArray(value, false)
 	items = slices.DeleteFunc(items, func(item string) bool {
 		trimmed := strings.TrimSpace(strings.Trim(item, "'"))
-		return slices.ContainsFunc(shareListingRecipients, func(r string) bool { return strings.EqualFold(trimmed, r) })
+		return slices.ContainsFunc(shareNonAccountRecipients, func(r string) bool { return strings.EqualFold(trimmed, r) })
 	})
 	total := 0
 	if n := len(items); n > 0 {
