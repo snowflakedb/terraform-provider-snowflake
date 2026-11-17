@@ -21,6 +21,7 @@ type DataSourceModel struct {
 	Filters             ssot.DataSourceFilters
 	Describe            ssot.DataSourceDescribe
 	Hooks               ssot.DataSourceHooks
+	Additional          ssot.DataSourceGenerator
 	*genhelpers.PreambleModel
 }
 
@@ -59,6 +60,25 @@ func (m DataSourceModel) ResultSources() string {
 	}
 }
 
+func (m DataSourceModel) ShowOutputDescription() string {
+	return joinDescription("Holds the output of SHOW "+m.ShowSql+".", m.Additional.AdditionalShowOutputDescription)
+}
+
+func (m DataSourceModel) DescribeOutputDescription() string {
+	return joinDescription("Holds the output of DESCRIBE "+m.DescribeSql+".", m.Additional.AdditionalDescribeOutputDescription)
+}
+
+func (m DataSourceModel) ParametersOutputDescription() string {
+	return joinDescription("Holds the output of SHOW PARAMETERS FOR "+m.ObjectType+".", m.Additional.AdditionalParametersOutputDescription)
+}
+
+func joinDescription(description, additional string) string {
+	if additional == "" {
+		return description
+	}
+	return description + " " + additional
+}
+
 func (m DataSourceModel) HasFilters() bool {
 	f := m.Filters
 	return f.Like || f.StartsWith || f.Limit || f.On || f.Terse || f.History || f.In != ssot.DataSourceInNone
@@ -78,6 +98,7 @@ func ModelFromInputObject(input DataSourceObject, preamble *genhelpers.PreambleM
 		Filters:             input.DataSourceFilters(),
 		Describe:            input.DataSourceDescribe(),
 		Hooks:               input.EffectiveDataSourceHooks(),
+		Additional:          ssot.ObjectGenerators(input.Generators...).DataSource,
 		PreambleModel:       preamble,
 	}
 }

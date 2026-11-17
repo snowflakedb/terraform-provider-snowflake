@@ -202,4 +202,23 @@ func Test_ValidateObject_dataSource(t *testing.T) {
 			))
 		})
 	})
+
+	t.Run("a property-list describe needs the details method", func(t *testing.T) {
+		propertyList := func(sdk ...SdkOption) Object {
+			obj := dataSourceTestObject(WithDataSource(), WithSdk(sdk...))
+			obj.DescribeRows = OutputSpec{Columns: []*Attribute{{Name: "property", Readonly: true}}}
+			obj.Describe = OutputSpec{Columns: []*Attribute{{Name: "created_on", Readonly: true}}}
+			return obj
+		}
+		require.Panics(t, func() { ValidateObject(propertyList(SdkDescribe())) })
+		require.NotPanics(t, func() {
+			ValidateObject(propertyList(SdkDescribe(SdkDescribeDetails(SdkDescribeDetailsMethod()))))
+		})
+		hooks := propertyList(SdkDescribe())
+		hooks.DataSourceHooks = []DataSourceHookOption{
+			WithDataSourceDescribeInSdk(ExtCall()),
+			WithDataSourceDescribeOutputSet(ExtCall()),
+		}
+		require.NotPanics(t, func() { ValidateObject(hooks) })
+	})
 }

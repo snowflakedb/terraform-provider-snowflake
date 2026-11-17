@@ -28,3 +28,22 @@ func Test_WithDataSource(t *testing.T) {
 		require.True(t, g.Resource.Enabled)
 	})
 }
+
+func Test_WithDataSource_additionalDescriptions(t *testing.T) {
+	g := ObjectGenerators(WithDataSource(
+		DataSourceAdditionalShowOutputDescription("show"),
+		DataSourceAdditionalDescribeOutputDescription("describe"),
+		DataSourceAdditionalParametersOutputDescription("parameters"),
+	))
+	require.Equal(t, DataSourceGenerator{
+		Enabled:                               true,
+		AdditionalShowOutputDescription:       "show",
+		AdditionalDescribeOutputDescription:   "describe",
+		AdditionalParametersOutputDescription: "parameters",
+	}, g.DataSource)
+
+	t.Run("without drops them", func(t *testing.T) {
+		g := ObjectGenerators(WithDataSource(DataSourceAdditionalShowOutputDescription("show")), WithoutDataSource())
+		require.Equal(t, DataSourceGenerator{}, g.DataSource)
+	})
+}

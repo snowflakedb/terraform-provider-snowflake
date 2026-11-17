@@ -143,6 +143,10 @@ type ResourceGenerator struct {
 // An object in All without it is not a data-source-generation input.
 type DataSourceGenerator struct {
 	Enabled bool
+	// The additional descriptions end the description of the matching output block of the data source.
+	AdditionalShowOutputDescription       string
+	AdditionalDescribeOutputDescription   string
+	AdditionalParametersOutputDescription string
 }
 
 type ResourceAssertGenerator struct {
@@ -616,6 +620,18 @@ func WithResource(opts ...ResourceOption) GeneratorOption {
 }
 
 type DataSourceOption func(*DataSourceGenerator)
+
+func DataSourceAdditionalShowOutputDescription(text string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.AdditionalShowOutputDescription = text }
+}
+
+func DataSourceAdditionalDescribeOutputDescription(text string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.AdditionalDescribeOutputDescription = text }
+}
+
+func DataSourceAdditionalParametersOutputDescription(text string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.AdditionalParametersOutputDescription = text }
+}
 
 // WithDataSource enables data source generation for this object.
 // Zero options still sets Enabled. An object without this call is left out of make generate-datasource.

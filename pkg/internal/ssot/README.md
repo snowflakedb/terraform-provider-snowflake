@@ -755,6 +755,10 @@ The data source follows the object, so a definition lists only the exceptions:
 - `with_parameters` and `parameters` exist when the SDK has `SdkShowParameters()`. The parameters schema and mapper are
   written by hand in `pkg/schemas`.
 - A base uses its own show and describe schemas. Columns that belong to a variant are part of them.
+- The descriptions name the object. The show, describe and parameters blocks can end with an additional description,
+  set as `WithDataSource(DataSourceAdditionalShowOutputDescription("…"))`, or the describe and parameters variants. It is
+  for a note that the reader needs about that block, such as a fallback source. It is separate from the resource's
+  `AdditionalDescribeOutputDescription`, which is written for the resource.
 - `PreviewFeature` selects the preview wrapper and the preview mark of the description. The id is the constant
   `<plural_snake>_read`.
 

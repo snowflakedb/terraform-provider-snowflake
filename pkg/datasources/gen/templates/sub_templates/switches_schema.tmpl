@@ -2,10 +2,10 @@
 {{- if .Hooks.SwitchesSchema.Generate -}}
 	map[string]*schema.Schema{
 {{- if .Hooks.DescribeInSdk.Present }}
-		"with_describe": withDescribeSchema,
+		"with_describe": withDescribeSchema({{ printf "%q" .DescribeSql }}, {{ printf "%q" (CamelToWords .Name) }}, {{ printf "%q" .ShowSql }}),
 {{- end }}
 {{- if .Hooks.ShowParametersInSdk.Present }}
-		"with_parameters": withParametersSchema,
+		"with_parameters": withParametersSchema({{ printf "%q" .ObjectType }}, {{ printf "%q" (CamelToWords .Name) }}, {{ printf "%q" .ShowSql }}),
 {{- end }}
 	},
 {{ else if .Hooks.SwitchesSchema.Present -}}
