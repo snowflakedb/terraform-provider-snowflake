@@ -103,6 +103,7 @@ var BackupPolicy = ssot.Object{
 	}},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),
+		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
