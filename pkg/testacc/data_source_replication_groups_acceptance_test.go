@@ -12,6 +12,7 @@ package testacc
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -150,6 +151,7 @@ func TestAcc_ReplicationGroups_BasicUseCase_DifferentFiltering(t *testing.T) {
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config:                   accconfig.FromModels(t, fromSource, inSource),
 				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(fromSource.DatasourceReference(), "id", "replication_groups_read")),
 					assert.Check(replicationGroupListed(t, fromSource.DatasourceReference(), id.Name(), true)),
 					assert.Check(replicationGroupListed(t, fromSource.DatasourceReference(), replicaID.Name(), true)),
 					assert.Check(replicationGroupHasShape(t, fromSource.DatasourceReference(), id.Name(), true, testClient().GetAccountLocator())),
@@ -308,4 +310,19 @@ func replicationGroupsShowOutput(
 			HasAllowedAccounts(sourceAccount.Name(), allowedAccount.Name()).
 			ToTerraformTestCheckFunc(t, testClient())(s)
 	}
+}
+
+func TestAcc_ReplicationGroups_invalidInAccount(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config:      accconfig.FromModels(t, datasourcemodel.ReplicationGroups("test").WithInAccount("not an account identifier")),
+				ExpectError: regexp.MustCompile("Unable to parse the account identifier"),
+			},
+		},
+	})
 }

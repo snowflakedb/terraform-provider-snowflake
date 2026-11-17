@@ -60,6 +60,14 @@ func (m DataSourceModel) ResultSources() string {
 	}
 }
 
+// ResultDescription is the description of the result list. A list that holds only SHOW output has no details to aggregate.
+func (m DataSourceModel) ResultDescription() string {
+	if !m.Hooks.DescribeOutputSchema.Present && !m.Hooks.ParametersOutputSchema.Present {
+		return "Holds the output of SHOW " + m.ShowSql + "."
+	}
+	return "Holds the aggregated output of all " + genhelpers.CamelToWords(m.Name) + " details queries."
+}
+
 func (m DataSourceModel) ShowOutputDescription() string {
 	return joinDescription("Holds the output of SHOW "+m.ShowSql+".", m.Additional.AdditionalShowOutputDescription)
 }
