@@ -117,6 +117,7 @@ const (
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet                                                             testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid                                                         testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid                                                                testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid"
+	case_IcebergTables_validation_Alter_SetMaskingPolicyOnColumn_MaskingPolicy_ValidIdentifier                                                               testCaseName = "validation_Alter_SetMaskingPolicyOnColumn_MaskingPolicy_ValidIdentifier"
 	case_IcebergTables_validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier                                                                              testCaseName = "validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                                     testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                              testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
@@ -1119,6 +1120,14 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				},
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.AlterColumnAction = []IcebergTableAlterColumnAction{{}, {}}
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_SetMaskingPolicyOnColumn_MaskingPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.SetMaskingPolicyOnColumn", "MaskingPolicy"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.SetMaskingPolicyOnColumn = &TableSetColumnMaskingPolicy{}
+					opts.SetMaskingPolicyOnColumn.MaskingPolicy = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{

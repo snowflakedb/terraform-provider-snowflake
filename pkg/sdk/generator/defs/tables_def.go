@@ -7,20 +7,10 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-var tableSetColumnMaskingPolicy = g.NewQueryStruct("TableSetColumnMaskingPolicy").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SQL("SET").
-	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
-	ListAssignment("USING", "Column", g.ParameterOptions().NoEquals().Parentheses()).
-	OptionalSQL("FORCE").
+var tableSetColumnMaskingPolicy = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseSet).
 	WithSharedToOpts()
 
-var tableUnsetColumnMaskingPolicy = g.NewQueryStruct("TableUnsetColumnMaskingPolicy").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SQL("UNSET").
-	SQL("MASKING POLICY").
+var tableUnsetColumnMaskingPolicy = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseUnset).
 	WithSharedToOpts()
 
 var tableSetColumnProjectionPolicy = g.NewQueryStruct("TableSetColumnProjectionPolicy").
@@ -36,15 +26,11 @@ var tableUnsetColumnProjectionPolicy = g.NewQueryStruct("TableUnsetColumnProject
 	SQL("UNSET").
 	SQL("PROJECTION POLICY")
 
-var tableSetColumnTags = g.NewQueryStruct("TableSetColumnTags").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	SetTags()
+var tableSetColumnTags = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseSet).
+	WithSharedToOpts()
 
-var tableUnsetColumnTags = g.NewQueryStruct("TableUnsetColumnTags").
-	SQL("ALTER COLUMN").
-	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	UnsetTags()
+var tableUnsetColumnTags = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseUnset).
+	WithSharedToOpts()
 
 var tableColumnMaskingPolicy = g.NewQueryStruct("TableColumnMaskingPolicy").
 	Identifier("MaskingPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY").Required()).
@@ -55,16 +41,11 @@ var tableColumnMaskingPolicy = g.NewQueryStruct("TableColumnMaskingPolicy").
 var tableColumnProjectionPolicy = g.NewQueryStruct("TableColumnProjectionPolicy").
 	Identifier("ProjectionPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("PROJECTION POLICY").Required())
 
-var tableDropColumnAction = g.NewQueryStruct("TableDropColumnAction").
-	SQL("DROP COLUMN").
-	OptionalSQL("IF EXISTS").
-	PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Required()).
+var tableDropColumnAction = g.QueryStructFromAttribute("Table", ssotdefs.TableDropColumnAction).
 	WithSharedToOpts()
 
-var tableRenameColumnAction = g.NewQueryStruct("TableRenameColumnAction").
-	SQL("RENAME COLUMN").
-	Text("OldName", g.KeywordOptions().Required().DoubleQuotes()).
-	AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().DoubleQuotes(), "NewName")
+var tableRenameColumnAction = g.QueryStructFromAttribute("Table", ssotdefs.TableRenameColumnAction).
+	WithSharedToOpts()
 
 func tableSearchOptimizationAction() *g.QueryStruct {
 	return g.QueryStructFromAttribute("Table", ssotdefs.TableSearchOptimizationAction).WithSharedToOpts()
@@ -160,30 +141,11 @@ func tableColumnAction() *g.QueryStruct {
 		tableColumnMaskingPolicy,
 		tableSetColumnMaskingPolicy,
 		tableUnsetColumnMaskingPolicy,
-		legacyTableColumnAlterSetTagsAction(),
-		legacyTableColumnAlterUnsetTagsAction(),
+		tableRenameColumnAction,
+		tableSetColumnTags,
+		tableUnsetColumnTags,
 		tableDropColumnAction,
 	)
-}
-
-// legacyTableColumnAlterSetTagsAction duplicates tableSetColumnTags: legacy does not double-quote
-// the column name.
-// TODO[SNOW-1007542]: reuse tableSetColumnTags
-func legacyTableColumnAlterSetTagsAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableColumnAlterSetTagsAction").
-		SQL("ALTER COLUMN").
-		Text("ColumnName", g.KeywordOptions().Required()).
-		SetTags()
-}
-
-// legacyTableColumnAlterUnsetTagsAction duplicates tableUnsetColumnTags: legacy does not double-quote
-// the column name.
-// TODO[SNOW-1007542]: reuse tableUnsetColumnTags
-func legacyTableColumnAlterUnsetTagsAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableColumnAlterUnsetTagsAction").
-		SQL("ALTER COLUMN").
-		Text("ColumnName", g.KeywordOptions().Required()).
-		UnsetTags()
 }
 
 func tableConstraintAction() *g.QueryStruct {

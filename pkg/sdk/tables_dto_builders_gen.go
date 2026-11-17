@@ -640,7 +640,7 @@ func (s *TableColumnActionRequest) WithAdd(add TableColumnAddActionRequest) *Tab
 	return s
 }
 
-func (s *TableColumnActionRequest) WithRename(rename TableColumnRenameActionRequest) *TableColumnActionRequest {
+func (s *TableColumnActionRequest) WithRename(rename TableRenameColumnActionRequest) *TableColumnActionRequest {
 	s.Rename = &rename
 	return s
 }
@@ -660,12 +660,12 @@ func (s *TableColumnActionRequest) WithUnsetMaskingPolicy(unsetMaskingPolicy Tab
 	return s
 }
 
-func (s *TableColumnActionRequest) WithSetTags(setTags TableColumnAlterSetTagsActionRequest) *TableColumnActionRequest {
+func (s *TableColumnActionRequest) WithSetTags(setTags TableSetColumnTagsRequest) *TableColumnActionRequest {
 	s.SetTags = &setTags
 	return s
 }
 
-func (s *TableColumnActionRequest) WithUnsetTags(unsetTags TableColumnAlterUnsetTagsActionRequest) *TableColumnActionRequest {
+func (s *TableColumnActionRequest) WithUnsetTags(unsetTags TableUnsetColumnTagsRequest) *TableColumnActionRequest {
 	s.UnsetTags = &unsetTags
 	return s
 }
@@ -723,16 +723,6 @@ func (s *TableColumnAddActionRequest) WithTag(tag []TagAssociation) *TableColumn
 func (s *TableColumnAddActionRequest) WithComment(comment string) *TableColumnAddActionRequest {
 	s.Comment = &comment
 	return s
-}
-
-func NewTableColumnRenameActionRequest(
-	oldName string,
-	newName string,
-) *TableColumnRenameActionRequest {
-	s := TableColumnRenameActionRequest{}
-	s.OldName = oldName
-	s.NewName = newName
-	return &s
 }
 
 func NewTableColumnAlterActionRequest(
@@ -799,26 +789,6 @@ func NewTableColumnAlterDataTypeRequest(
 func (s *TableColumnAlterDataTypeRequest) WithCollate(collate string) *TableColumnAlterDataTypeRequest {
 	s.Collate = &collate
 	return s
-}
-
-func NewTableColumnAlterSetTagsActionRequest(
-	columnName string,
-	setTags []TagAssociation,
-) *TableColumnAlterSetTagsActionRequest {
-	s := TableColumnAlterSetTagsActionRequest{}
-	s.ColumnName = columnName
-	s.SetTags = setTags
-	return &s
-}
-
-func NewTableColumnAlterUnsetTagsActionRequest(
-	columnName string,
-	unsetTags []ObjectIdentifier,
-) *TableColumnAlterUnsetTagsActionRequest {
-	s := TableColumnAlterUnsetTagsActionRequest{}
-	s.ColumnName = columnName
-	s.UnsetTags = unsetTags
-	return &s
 }
 
 func NewTableConstraintActionRequest() *TableConstraintActionRequest {

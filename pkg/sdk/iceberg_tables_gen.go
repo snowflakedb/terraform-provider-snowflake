@@ -401,7 +401,7 @@ type TableColumnMaskingPolicy struct {
 type TableDropColumnAction struct {
 	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
 	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
-	Columns    []Column `ddl:"keyword"`
+	Columns    []Column `ddl:"parameter,no_equals"`
 }
 
 type TableRenameColumnAction struct {

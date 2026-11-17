@@ -97,6 +97,7 @@ const (
 	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet                                                          testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
 	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid                                                      testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_OneValidOneInvalid"
 	case_Tables_validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_BothInvalid                                                             testCaseName = "validation_Alter_opts_ColumnAction_Alter_ExactlyOneValueSet_BothInvalid"
+	case_Tables_validation_Alter_ColumnAction_SetMaskingPolicy_MaskingPolicy_ValidIdentifier                                                        testCaseName = "validation_Alter_ColumnAction_SetMaskingPolicy_MaskingPolicy_ValidIdentifier"
 	case_Tables_validation_Alter_ColumnAction_SetTags_SetTags_ValidIdentifier                                                                       testCaseName = "validation_Alter_ColumnAction_SetTags_SetTags_ValidIdentifier"
 	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet                                                                   testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_NoneSet"
 	case_Tables_validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet                                                            testCaseName = "validation_Alter_opts_ConstraintAction_ExactlyOneValueSet_MoreThanOneSet"
@@ -685,7 +686,7 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
 					opts.ColumnAction.Add = &TableColumnAddAction{}
-					opts.ColumnAction.Rename = &TableColumnRenameAction{}
+					opts.ColumnAction.Rename = &TableRenameColumnAction{}
 				},
 			},
 			validationCase[*AlterTableOptions]{
@@ -983,11 +984,20 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_ColumnAction_SetMaskingPolicy_MaskingPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.ColumnAction.SetMaskingPolicy", "MaskingPolicy"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ColumnAction = &TableColumnAction{}
+					opts.ColumnAction.SetMaskingPolicy = &TableSetColumnMaskingPolicy{}
+					opts.ColumnAction.SetMaskingPolicy.MaskingPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_ColumnAction_SetTags_SetTags_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterTableOptions.ColumnAction.SetTags.SetTags[0]", "Name"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ColumnAction = &TableColumnAction{}
-					opts.ColumnAction.SetTags = &TableColumnAlterSetTagsAction{}
+					opts.ColumnAction.SetTags = &TableSetColumnTags{}
 					opts.ColumnAction.SetTags.SetTags = []TagAssociation{{Name: emptyAccountObjectIdentifier}}
 				},
 			},

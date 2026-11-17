@@ -1246,15 +1246,12 @@ func (s *TableDropColumnActionRequest) WithIfExists(ifExists bool) *TableDropCol
 
 func NewTableRenameColumnActionRequest(
 	oldName string,
+	newName string,
 ) *TableRenameColumnActionRequest {
 	s := TableRenameColumnActionRequest{}
 	s.OldName = oldName
-	return &s
-}
-
-func (s *TableRenameColumnActionRequest) WithNewName(newName string) *TableRenameColumnActionRequest {
 	s.NewName = newName
-	return s
+	return &s
 }
 
 func NewIcebergTableAlterColumnActionRequest(

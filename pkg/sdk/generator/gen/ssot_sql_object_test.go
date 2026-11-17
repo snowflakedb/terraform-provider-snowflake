@@ -830,8 +830,9 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 			NewQueryStruct("TableColumnMaskingPolicy"),
 			NewQueryStruct("TableSetColumnMaskingPolicy"),
 			NewQueryStruct("TableUnsetColumnMaskingPolicy"),
-			NewQueryStruct("TableColumnAlterSetTagsAction"),
-			NewQueryStruct("TableColumnAlterUnsetTagsAction"),
+			NewQueryStruct("TableRenameColumnAction"),
+			NewQueryStruct("TableSetColumnTags"),
+			NewQueryStruct("TableUnsetColumnTags"),
 			NewQueryStruct("TableDropColumnAction"),
 		}
 	}
@@ -863,9 +864,6 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 		OptionalSharedQueryStructField("MaskingPolicy", expected[1], ListOptions().NoComma()).
 		OptionalTags().
 		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes())
-	rename := NewQueryStruct("TableColumnRenameAction").
-		AssignmentWithFieldName("RENAME COLUMN", "string", ParameterOptions().NoEquals().Required(), "OldName").
-		AssignmentWithFieldName("TO", "string", ParameterOptions().NoEquals().Required(), "NewName")
 	alter := NewQueryStruct("TableColumnAlterAction").
 		SQL("COLUMN").
 		Text("Name", KeywordOptions().Required().DoubleQuotes()).
@@ -887,13 +885,13 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 		WithValidation(ExactlyOneValueSet, "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment")
 	want := NewQueryStruct("TableColumnAction").
 		OptionalQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
-		OptionalQueryStructField("Rename", rename, ListOptions().NoComma()).
+		OptionalSharedQueryStructField("Rename", expected[4], ListOptions().NoComma()).
 		ListQueryStructField("Alter", alter, KeywordOptions().SQL("ALTER")).
 		OptionalSharedQueryStructField("SetMaskingPolicy", expected[2], ListOptions().NoComma()).
 		OptionalSharedQueryStructField("UnsetMaskingPolicy", expected[3], ListOptions().NoComma()).
-		OptionalQueryStructField("SetTags", expected[4], ListOptions().NoComma()).
-		OptionalQueryStructField("UnsetTags", expected[5], ListOptions().NoComma()).
-		OptionalSharedQueryStructField("DropColumns", expected[6], ListOptions().NoComma()).
+		OptionalSharedQueryStructField("SetTags", expected[5], ListOptions().NoComma()).
+		OptionalSharedQueryStructField("UnsetTags", expected[6], ListOptions().NoComma()).
+		OptionalSharedQueryStructField("DropColumns", expected[7], ListOptions().NoComma()).
 		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
@@ -910,4 +908,65 @@ func Test_queryStructFromObject_sqlOnlyConflictsWith(t *testing.T) {
 		OptionalSQL("ORDER").
 		WithValidation(ConflictingFields, "Noorder", "Order")
 	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableColumnActionStructs(t *testing.T) {
+	for _, attr := range []ssot.Attribute{
+		ssotdefs.TableRenameColumnAction,
+		ssotdefs.TableDropColumnAction,
+	} {
+		require.NotPanics(t, func() {
+			ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+		})
+	}
+	// The set and unset column actions have no CREATE clause. They are SET and UNSET projections of one attribute.
+	for _, attr := range []ssot.Attribute{
+		ssotdefs.TableAlterColumnMaskingPolicy,
+		ssotdefs.TableAlterColumnTags,
+	} {
+		require.NotPanics(t, func() {
+			ssot.ValidateObject(ssot.Object{Name: "Table", Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet(&attr), ssot.AlterUnset(&attr)}}})
+		})
+	}
+	rename := QueryStructFromAttribute("Table", ssotdefs.TableRenameColumnAction)
+	require.Equal(t, NewQueryStruct("TableRenameColumnAction").
+		SQL("RENAME COLUMN").
+		Text("OldName", KeywordOptions().Required().DoubleQuotes()).
+		AssignmentWithFieldName("TO", "string", ParameterOptions().NoEquals().DoubleQuotes().Required(), "NewName").
+		IntoField(), rename.IntoField())
+	setMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseSet)
+	require.Equal(t, NewQueryStruct("TableSetColumnMaskingPolicy").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		SQL("SET").
+		Identifier("MaskingPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("MASKING POLICY").Required()).
+		ListAssignment("USING", "Column", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("FORCE").
+		WithValidation(ValidIdentifier, "MaskingPolicy").
+		IntoField(), setMasking.IntoField())
+	unsetMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseUnset)
+	require.Equal(t, NewQueryStruct("TableUnsetColumnMaskingPolicy").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		SQL("UNSET").
+		SQL("MASKING POLICY").
+		IntoField(), unsetMasking.IntoField())
+	setTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseSet)
+	require.Equal(t, NewQueryStruct("TableSetColumnTags").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		SetTags().
+		IntoField(), setTags.IntoField())
+	unsetTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseUnset)
+	require.Equal(t, NewQueryStruct("TableUnsetColumnTags").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		UnsetTags().
+		IntoField(), unsetTags.IntoField())
+	drop := QueryStructFromAttribute("Table", ssotdefs.TableDropColumnAction)
+	require.Equal(t, NewQueryStruct("TableDropColumnAction").
+		SQL("DROP COLUMN").
+		OptionalSQL("IF EXISTS").
+		PredefinedQueryStructField("Columns", "[]Column", ParameterOptions().NoEquals().Required()).
+		IntoField(), drop.IntoField())
 }

@@ -227,13 +227,89 @@ var TableColumnDefaultValue = ssot.Attribute{
 	},
 }
 
+// TableRenameColumnAction is ALTER TABLE RENAME COLUMN. The old and new names are double-quoted.
+// Iceberg tables embed this struct, so the table statement marks the field shared and does not generate it again.
+var TableRenameColumnAction = ssot.Attribute{
+	Name:      "rename_column_action",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(ssot.StructName("TableRenameColumnAction")),
+	Children: []ssot.Attribute{
+		{Name: "rename_column", SqlOnly: true, CreateSql: ssot.StaticSQL("renameColumn", "RENAME COLUMN")},
+		{Name: "old_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required(), ssot.FieldName("OldName"))},
+		{Name: "new_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("TO"), ssot.NoEquals(), ssot.DoubleQuotes(), ssot.Required(), ssot.FieldName("NewName"))},
+	},
+}
+
+var (
+	tableAlterColumn     = ssot.StaticSQL("alterColumn", "ALTER COLUMN")
+	tableAlterColumnName = ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required(), ssot.FieldName("Name"))
+)
+
+// TableAlterColumnMaskingPolicy is ALTER COLUMN name SET MASKING POLICY and ALTER COLUMN name UNSET MASKING POLICY.
+// SET is TableSetColumnMaskingPolicy and UNSET is TableUnsetColumnMaskingPolicy. Iceberg tables embed both structs.
+var TableAlterColumnMaskingPolicy = ssot.Attribute{
+	Name:     "alter_column_masking_policy",
+	Type:     ssot.AttrObject,
+	SqlOnly:  true,
+	SetSql:   ssot.ObjectParameter(ssot.FieldName("SetColumnMaskingPolicy")),
+	UnsetSql: ssot.ObjectParameter(ssot.FieldName("UnsetColumnMaskingPolicy")),
+	Children: []ssot.Attribute{
+		{Name: "alter_column", SqlOnly: true, SetSql: tableAlterColumn, UnsetSql: tableAlterColumn},
+		{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, SetSql: tableAlterColumnName, UnsetSql: tableAlterColumnName},
+		{Name: "set", SqlOnly: true, SetSql: ssot.StaticSQL("set", "SET")},
+		{Name: "unset", SqlOnly: true, UnsetSql: ssot.StaticSQL("unset", "UNSET")},
+		{
+			Name:           "masking_policy",
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
+			Required:       true,
+			SqlOnly:        true,
+			SetSql:         ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("MASKING POLICY"), ssot.Required(), ssot.FieldName("MaskingPolicy")),
+			UnsetSql:       ssot.StaticSQL("maskingPolicy", "MASKING POLICY"),
+		},
+		{Name: "using", Type: ssot.AttrList, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, SetSql: ssot.ListParameter("Column", ssot.Sql("USING"), ssot.NoEquals(), ssot.FieldName("Using"))},
+		{Name: "force", Type: ssot.AttrBool, SqlOnly: true, SetSql: ssot.BoolKeyword(ssot.Sql("FORCE"))},
+	},
+}
+
+// TableAlterColumnTags is ALTER COLUMN name SET TAG and ALTER COLUMN name UNSET TAG.
+// SET is TableSetColumnTags and UNSET is TableUnsetColumnTags. Iceberg tables embed both structs.
+var TableAlterColumnTags = ssot.Attribute{
+	Name:     "alter_column_tags",
+	Type:     ssot.AttrObject,
+	SqlOnly:  true,
+	SetSql:   ssot.ObjectParameter(ssot.FieldName("SetColumnTags")),
+	UnsetSql: ssot.ObjectParameter(ssot.FieldName("UnsetColumnTags")),
+	Children: []ssot.Attribute{
+		{Name: "alter_column", SqlOnly: true, SetSql: tableAlterColumn, UnsetSql: tableAlterColumn},
+		{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, SetSql: tableAlterColumnName, UnsetSql: tableAlterColumnName},
+		{Name: "set_tags", Tags: true, TagForm: ssot.TagFormSet},
+		{Name: "unset_tags", Tags: true, TagForm: ssot.TagFormUnset},
+	},
+}
+
+// TableDropColumnAction is ALTER TABLE DROP COLUMN. Iceberg tables embed this struct.
+var TableDropColumnAction = ssot.Attribute{
+	Name:      "drop_column_action",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(ssot.StructName("TableDropColumnAction")),
+	Children: []ssot.Attribute{
+		{Name: "drop_column", SqlOnly: true, CreateSql: ssot.StaticSQL("dropColumn", "DROP COLUMN")},
+		{Name: "if_exists", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("IF EXISTS"))},
+		{Name: "columns", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PredefinedType("[]Column", ssot.NoEquals(), ssot.Required(), ssot.FieldName("Columns"))},
+	},
+}
+
 // TableColumn is ALTER TABLE ... column actions: exactly one of add, rename, alter, set or unset masking policy, set or
 // unset tags, and drop columns. It generates the TableColumnAction struct. The StructName options keep the public struct
 // names, because the nested struct name TableColumn would clash with the CREATE column.
 //
-// The structs the SDK definition supplies by name stay in pkg/sdk/generator/defs/tables_def.go:
-// TableColumnInlineConstraint and TableColumnMaskingPolicy because iceberg tables embed them, the masking policy and drop
-// column actions because they are shared, and the set and unset tags actions.
+// Rename, set or unset masking policy, set or unset tags, and drop columns are the structs iceberg tables embed, so
+// TableRenameColumnAction, TableSetColumnMaskingPolicy, TableUnsetColumnMaskingPolicy, TableSetColumnTags,
+// TableUnsetColumnTags, and TableDropColumnAction are defined above and marked shared. TableColumnInlineConstraint and
+// TableColumnMaskingPolicy stay in pkg/sdk/generator/defs/tables_def.go because iceberg tables embed them too.
 var TableColumn = ssot.Attribute{
 	Name:         "column",
 	Type:         ssot.AttrObject,
@@ -261,17 +337,7 @@ var TableColumn = ssot.Attribute{
 				{Name: "comment", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COMMENT"), ssot.NoEquals())},
 			},
 		},
-		{
-			// RENAME COLUMN old TO new. Both names are unquoted, as legacy does.
-			Name:      "rename",
-			Type:      ssot.AttrObject,
-			SqlOnly:   true,
-			CreateSql: ssot.ObjectParameter(ssot.NoComma(), ssot.StructName("TableColumnRenameAction")),
-			Children: []ssot.Attribute{
-				{Name: "old_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("RENAME COLUMN"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("OldName"))},
-				{Name: "new_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("TO"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("NewName"))},
-			},
-		},
+		{Name: "rename", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableRenameColumnAction", ssot.NoComma(), ssot.Shared())},
 		{
 			// ALTER COLUMN. The name is always present, so it is Required and not one of the exactly-one actions.
 			Name:      "alter",
@@ -316,8 +382,8 @@ var TableColumn = ssot.Attribute{
 		},
 		{Name: "set_masking_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableSetColumnMaskingPolicy", ssot.NoComma(), ssot.Shared())},
 		{Name: "unset_masking_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableUnsetColumnMaskingPolicy", ssot.NoComma(), ssot.Shared())},
-		{Name: "set_tags", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableColumnAlterSetTagsAction", ssot.NoComma())},
-		{Name: "unset_tags", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableColumnAlterUnsetTagsAction", ssot.NoComma())},
+		{Name: "set_tags", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableSetColumnTags", ssot.NoComma(), ssot.Shared())},
+		{Name: "unset_tags", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableUnsetColumnTags", ssot.NoComma(), ssot.Shared())},
 		{Name: "drop_columns", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableDropColumnAction", ssot.NoComma(), ssot.Shared())},
 	},
 }

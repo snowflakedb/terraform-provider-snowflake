@@ -1147,11 +1147,11 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 			setTags: func(id sdk.TableColumnIdentifier, tags []sdk.TagAssociation) error {
 				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(*sdk.NewTableColumnActionRequest().
-					WithSetTags(*sdk.NewTableColumnAlterSetTagsActionRequest(id.Name(), tags))))
+					WithSetTags(*sdk.NewTableSetColumnTagsRequest(id.Name(), tags))))
 			},
 			unsetTags: func(id sdk.TableColumnIdentifier, tags []sdk.ObjectIdentifier) error {
 				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(*sdk.NewTableColumnActionRequest().
-					WithUnsetTags(*sdk.NewTableColumnAlterUnsetTagsActionRequest(id.Name(), tags))))
+					WithUnsetTags(*sdk.NewTableUnsetColumnTagsRequest(id.Name(), tags))))
 			},
 		},
 		{

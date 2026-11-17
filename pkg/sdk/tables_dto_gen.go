@@ -197,12 +197,12 @@ type TableReclusterChangeStateRequest struct {
 
 type TableColumnActionRequest struct {
 	Add                *TableColumnAddActionRequest
-	Rename             *TableColumnRenameActionRequest
+	Rename             *TableRenameColumnActionRequest
 	Alter              []TableColumnAlterActionRequest
 	SetMaskingPolicy   *TableSetColumnMaskingPolicyRequest
 	UnsetMaskingPolicy *TableUnsetColumnMaskingPolicyRequest
-	SetTags            *TableColumnAlterSetTagsActionRequest
-	UnsetTags          *TableColumnAlterUnsetTagsActionRequest
+	SetTags            *TableSetColumnTagsRequest
+	UnsetTags          *TableUnsetColumnTagsRequest
 	DropColumns        *TableDropColumnActionRequest
 }
 
@@ -217,11 +217,6 @@ type TableColumnAddActionRequest struct {
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
 	Tag              []TagAssociation
 	Comment          *string
-}
-
-type TableColumnRenameActionRequest struct {
-	OldName string // required
-	NewName string // required
 }
 
 type TableColumnAlterActionRequest struct {
@@ -242,16 +237,6 @@ type TableColumnNotNullConstraintRequest struct {
 type TableColumnAlterDataTypeRequest struct {
 	DataType DataType // required
 	Collate  *string
-}
-
-type TableColumnAlterSetTagsActionRequest struct {
-	ColumnName string           // required
-	SetTags    []TagAssociation // required
-}
-
-type TableColumnAlterUnsetTagsActionRequest struct {
-	ColumnName string             // required
-	UnsetTags  []ObjectIdentifier // required
 }
 
 type TableConstraintActionRequest struct {

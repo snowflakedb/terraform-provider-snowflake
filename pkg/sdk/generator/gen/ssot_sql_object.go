@@ -107,7 +107,16 @@ func queryStructFromObjectSupplied(owner string, attr ssot.Attribute, use ssot.C
 	for i := range fields {
 		child := &fields[i]
 		if child.IsTags() {
-			nested = nested.OptionalTags()
+			switch child.TagForm {
+			case "":
+				nested = nested.OptionalTags()
+			case ssot.TagFormSet:
+				nested = nested.SetTags()
+			case ssot.TagFormUnset:
+				nested = nested.UnsetTags()
+			default:
+				panic(fmt.Sprintf("attribute %q: tags child %q has tag form %q", attr.Name, child.Name, child.TagForm))
+			}
 			continue
 		}
 		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(use), statement)

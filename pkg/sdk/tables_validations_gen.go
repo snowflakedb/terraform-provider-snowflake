@@ -280,6 +280,11 @@ func (opts *AlterTableOptions) validate() error {
 				}
 			}
 		}
+		if valueSet(opts.ColumnAction.SetMaskingPolicy) {
+			if !ValidObjectIdentifier(opts.ColumnAction.SetMaskingPolicy.MaskingPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.SetMaskingPolicy", "MaskingPolicy"))
+			}
+		}
 		if valueSet(opts.ColumnAction.SetTags) {
 			if valueSet(opts.ColumnAction.SetTags.SetTags) {
 				for setTagIdx, setTag := range opts.ColumnAction.SetTags.SetTags {
