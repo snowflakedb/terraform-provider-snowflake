@@ -37,3 +37,20 @@ func (p *ProjectionPoliciesModel) WithLimit(rows int) *ProjectionPoliciesModel {
 		}),
 	)
 }
+
+func (p *ProjectionPoliciesModel) WithInAccount() *ProjectionPoliciesModel {
+	return p.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
+
+func (p *ProjectionPoliciesModel) WithRowsAndFrom(rows int, from string) *ProjectionPoliciesModel {
+	return p.WithLimitValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"rows": tfconfig.IntegerVariable(rows),
+			"from": tfconfig.StringVariable(from),
+		}),
+	)
+}
