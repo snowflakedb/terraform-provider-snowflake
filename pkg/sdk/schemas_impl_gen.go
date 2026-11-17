@@ -51,7 +51,7 @@ func (v *schemas) Show(ctx context.Context, request *ShowSchemaRequest) ([]Schem
 func (v *schemas) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*Schema, error) {
 	request := NewShowSchemaRequest().
 		WithLike(Like{Pattern: String(id.Name())}).
-		WithIn(ExtendedIn{Database: id.DatabaseId()})
+		WithIn(ExtendedInWithoutSchema{Database: id.DatabaseId()})
 	schemas, err := v.Show(ctx, request)
 	if err != nil {
 		return nil, err

@@ -17,6 +17,10 @@
 	if err := handleExtendedIn(d, &req.In); err != nil {
 		return diag.FromErr(err)
 	}
+{{- else if eq .Filters.In "ExtendedInWithoutSchema" }}
+	if err := handleExtendedInWithoutSchema(d, &req.In); err != nil {
+		return diag.FromErr(err)
+	}
 {{- else if eq .Filters.In "InAccount" }}
 	if v, ok := d.GetOk("in_account"); ok {
 		account, err := helpers.DecodeSnowflakeAccountIdentifier(v.(string))

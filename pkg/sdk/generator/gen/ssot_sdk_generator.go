@@ -218,6 +218,9 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	if cfg.ShowOptionalIn && cfg.ShowOptionalExtendedIn {
 		panic("SHOW cannot set both plain IN and extended IN")
 	}
+	if cfg.ShowOptionalExtendedInWithoutSchema && (cfg.ShowOptionalIn || cfg.ShowOptionalExtendedIn || cfg.ShowOptionalInAccount) {
+		panic("SHOW cannot set extended IN without schema together with another IN")
+	}
 	if cfg.ShowOptionalInAccount && (cfg.ShowOptionalIn || cfg.ShowOptionalExtendedIn) {
 		panic("SHOW cannot set IN ACCOUNT together with plain IN or extended IN")
 	}
@@ -229,6 +232,9 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	}
 	if cfg.ShowOptionalExtendedIn {
 		q = q.OptionalExtendedIn()
+	}
+	if cfg.ShowOptionalExtendedInWithoutSchema {
+		q = q.OptionalExtendedInWithoutSchema()
 	}
 	if cfg.ShowOptionalOn {
 		q = q.OptionalOn()
@@ -266,6 +272,8 @@ func showByIDFilteringFromObject(obj ssot.Object, cfg ssot.SdkGenerator) []ShowB
 			filtering[i] = ShowByIDInFiltering
 		case ssot.SdkShowByIDExtendedIn:
 			filtering[i] = ShowByIDExtendedInFiltering
+		case ssot.SdkShowByIDExtendedInWithoutSchema:
+			filtering[i] = ShowByIDExtendedInWithoutSchemaFiltering
 		case ssot.SdkShowByIDNone:
 			filtering[i] = ShowByIDNoFiltering
 		default:

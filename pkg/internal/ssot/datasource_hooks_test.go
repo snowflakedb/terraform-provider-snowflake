@@ -114,7 +114,7 @@ func Test_Object_DataSourceFilters(t *testing.T) {
 			SdkShowTerse(),
 			SdkShowOptionalSql("HISTORY"),
 			SdkShowOptionalExtendedIn(),
-		)), WithDataSource(DataSourceWithTerse()))
+		)), WithDataSource(DataSourceWithTerse(), DataSourceWithHistory()))
 		require.Equal(t, DataSourceFilters{
 			Like: true, StartsWith: true, Limit: true, Terse: true, History: true, In: DataSourceInExtended,
 		}, obj.DataSourceFilters())
@@ -124,6 +124,15 @@ func Test_Object_DataSourceFilters(t *testing.T) {
 		require.Equal(t, DataSourceFilters{Like: true}, obj.DataSourceFilters())
 		obj = dataSourceTestObject(WithSdk(SdkShow(SdkShowTerse(), SdkShowOptionalLike())), WithDataSource(DataSourceWithTerse()))
 		require.Equal(t, DataSourceFilters{Like: true, Terse: true}, obj.DataSourceFilters())
+	})
+	t.Run("history is left out unless opted in", func(t *testing.T) {
+		show := SdkShow(SdkShowOptionalSql("HISTORY"), SdkShowOptionalLike())
+		require.Equal(t, DataSourceFilters{Like: true}, dataSourceTestObject(WithSdk(show)).DataSourceFilters())
+		require.Equal(t, DataSourceFilters{Like: true, History: true}, dataSourceTestObject(WithSdk(show), WithDataSource(DataSourceWithHistory())).DataSourceFilters())
+	})
+	t.Run("an IN without a schema level", func(t *testing.T) {
+		filters := dataSourceTestObject(WithSdk(SdkShow(SdkShowOptionalExtendedInWithoutSchema()))).DataSourceFilters()
+		require.Equal(t, DataSourceInExtendedWithoutSchema, filters.In)
 	})
 	t.Run("starts with and limit can be left out", func(t *testing.T) {
 		show := SdkShow(SdkShowOptionalLike(), SdkShowOptionalStartsWith(), SdkShowOptionalLimitFrom())

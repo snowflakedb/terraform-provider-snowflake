@@ -45,6 +45,44 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_ShowOperationFromObject_extendedInWithoutSchema(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "DatabaseObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowOptionalLike(),
+			ssot.SdkShowOptionalExtendedInWithoutSchema(),
+			ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedInWithoutSchema, ssot.SdkShowByIDLike),
+		))},
+	}
+	got := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").ShowOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").ShowOperationWithPairedStructs(
+		"https://docs.snowflake.com/en/sql-reference/sql/show-fakes",
+		ShowPairedStructs(obj),
+		NewQueryStruct("ShowFakes").
+			Show().
+			SQL("FAKES").
+			OptionalLike().
+			OptionalExtendedInWithoutSchema(),
+		ShowByIDExtendedInWithoutSchemaFiltering,
+		ShowByIDLikeFiltering,
+	)
+	requireSameOperations(t, want, got)
+
+	t.Run("cannot be combined with another IN", func(t *testing.T) {
+		for _, other := range []ssot.SdkShowOption{ssot.SdkShowOptionalIn(), ssot.SdkShowOptionalExtendedIn(), ssot.SdkShowOptionalInAccount()} {
+			combined := obj
+			combined.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(ssot.SdkShowOptionalExtendedInWithoutSchema(), other))}
+			require.Panics(t, func() {
+				NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").ShowOperationFromObject(combined)
+			})
+		}
+	})
+}
+
 func Test_ShowOperationFromObject_inAccount(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	obj := ssot.Object{

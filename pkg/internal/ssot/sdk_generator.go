@@ -22,10 +22,11 @@ const (
 type SdkShowByIDFilteringKind string
 
 const (
-	SdkShowByIDLike       SdkShowByIDFilteringKind = "like"
-	SdkShowByIDIn         SdkShowByIDFilteringKind = "in"
-	SdkShowByIDExtendedIn SdkShowByIDFilteringKind = "extended_in"
-	SdkShowByIDNone       SdkShowByIDFilteringKind = "none"
+	SdkShowByIDLike                    SdkShowByIDFilteringKind = "like"
+	SdkShowByIDIn                      SdkShowByIDFilteringKind = "in"
+	SdkShowByIDExtendedIn              SdkShowByIDFilteringKind = "extended_in"
+	SdkShowByIDExtendedInWithoutSchema SdkShowByIDFilteringKind = "extended_in_without_schema"
+	SdkShowByIDNone                    SdkShowByIDFilteringKind = "none"
 )
 
 // SdkShowByIDPredicateKind selects the ShowByID row match.
@@ -85,6 +86,12 @@ func SdkShowOptionalInAccount() SdkShowOption {
 // SdkShowOptionalExtendedIn emits IN for account, database, schema, application, and application package.
 func SdkShowOptionalExtendedIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalExtendedIn = true }
+}
+
+// SdkShowOptionalExtendedInWithoutSchema emits IN for account, database, application, and application package. It is for a
+// SHOW that has no schema level, such as SHOW SCHEMAS.
+func SdkShowOptionalExtendedInWithoutSchema() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalExtendedInWithoutSchema = true }
 }
 
 // SdkShowOptionalOn adds the optional ON clause, after IN and before STARTS WITH.

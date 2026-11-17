@@ -35,10 +35,10 @@ func widgetWith(show ...ssot.SdkShowOption) ssot.Object {
 	return syntheticObject([]ssot.SdkOption{ssot.SdkShow(show...), ssot.SdkDescribe()})
 }
 
-// terseWidgetWith is a widgetWith that opts in to the terse filter.
+// terseWidgetWith is a widgetWith that opts in to the terse and history filters.
 func terseWidgetWith(show ...ssot.SdkShowOption) ssot.Object {
 	object := widgetWith(show...)
-	object.Generators = append(object.Generators, ssot.WithDataSource(ssot.DataSourceWithTerse()))
+	object.Generators = append(object.Generators, ssot.WithDataSource(ssot.DataSourceWithTerse(), ssot.DataSourceWithHistory()))
 	return object
 }
 
@@ -115,10 +115,15 @@ func TestFiltersSchema(t *testing.T) {
 		require.Contains(t, got, `"terse": terseSchema,`)
 		require.Contains(t, got, `"history": historySchema,`)
 	})
-	t.Run("terse is left out by default", func(t *testing.T) {
-		got := renderTemplate(t, "filtersSchema", modelOf(widgetWith(ssot.SdkShowTerse(), ssot.SdkShowOptionalSql("HISTORY"))))
+	t.Run("terse and history are left out by default", func(t *testing.T) {
+		got := renderTemplate(t, "filtersSchema", modelOf(widgetWith(ssot.SdkShowOptionalLike(), ssot.SdkShowTerse(), ssot.SdkShowOptionalSql("HISTORY"))))
 		require.NotContains(t, got, "terse")
-		require.Contains(t, got, `"history": historySchema,`)
+		require.NotContains(t, got, "history")
+	})
+	t.Run("in without a schema level", func(t *testing.T) {
+		got := renderTemplate(t, "filtersSchema", modelOf(widgetWith(ssot.SdkShowOptionalExtendedInWithoutSchema())))
+		require.Contains(t, got, `"in": extendedInWithoutSchemaSchema,`)
+		require.NotContains(t, got, "extendedInSchema")
 	})
 	t.Run("in account", func(t *testing.T) {
 		got := renderTemplate(t, "filtersSchema", modelOf(widgetWith(ssot.SdkShowOptionalInAccount())))

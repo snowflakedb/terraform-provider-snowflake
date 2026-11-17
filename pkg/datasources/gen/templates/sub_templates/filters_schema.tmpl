@@ -9,6 +9,8 @@
 		"in": inSchema,
 {{- else if eq .Filters.In "ExtendedIn" }}
 		"in": extendedInSchema,
+{{- else if eq .Filters.In "ExtendedInWithoutSchema" }}
+		"in": extendedInWithoutSchemaSchema,
 {{- else if eq .Filters.In "InAccount" }}
 		"in_account": {
 			Type:             schema.TypeString,

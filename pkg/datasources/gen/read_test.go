@@ -97,6 +97,11 @@ func TestApplyFilters(t *testing.T) {
 		require.Contains(t, got, `d.Get("history").(bool)`)
 		require.Contains(t, got, "req.WithHistory(true)")
 	})
+	t.Run("extended in without a schema level", func(t *testing.T) {
+		got := renderTemplate(t, "applyFilters", modelOf(widgetWith(ssot.SdkShowOptionalExtendedInWithoutSchema())))
+		require.Contains(t, got, "handleExtendedInWithoutSchema(d, &req.In)")
+		require.NotContains(t, got, "handleExtendedIn(")
+	})
 	t.Run("in account", func(t *testing.T) {
 		got := renderTemplate(t, "applyFilters", modelOf(widgetWith(ssot.SdkShowOptionalInAccount())))
 		require.Contains(t, got, `d.GetOk("in_account")`)
@@ -262,6 +267,7 @@ func TestRead_everyShapeIsValidGo(t *testing.T) {
 		"parameters":         syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()}),
 		"every filter":       terseWidgetWith(ssot.SdkShowOptionalLike(), ssot.SdkShowOptionalStartsWith(), ssot.SdkShowOptionalLimitFrom(), ssot.SdkShowOptionalExtendedIn(), ssot.SdkShowOptionalOn(), ssot.SdkShowTerse(), ssot.SdkShowOptionalSql("HISTORY")),
 		"plain in":           widgetWith(ssot.SdkShowOptionalIn()),
+		"in without schema":  widgetWith(ssot.SdkShowOptionalExtendedInWithoutSchema()),
 		"in account":         widgetWith(ssot.SdkShowOptionalInAccount()),
 		"every hook omitted": syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()}, ssot.WithDataSourceDescribeInSdk(ssot.Omitted()), ssot.WithDataSourceShowParametersInSdk(ssot.Omitted()), ssot.WithDataSourceReadWrapper(ssot.Omitted())),
 		"hand-written":       handWritten,

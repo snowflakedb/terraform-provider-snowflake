@@ -28,22 +28,23 @@ type SdkGenerator struct {
 	Show     bool
 	Describe bool
 
-	ShowDoc                   string
-	ShowSql                   string
-	ShowTerse                 bool
-	ShowOptionalSql           []string
-	ShowOptionalLike          bool
-	ShowOptionalIn            bool
-	ShowOptionalInAccount     bool
-	ShowOptionalExtendedIn    bool
-	ShowOptionalOn            bool
-	ShowOptionalStartsWith    bool
-	ShowOptionalLimitFrom     bool
-	ShowOptionalLimit         bool
-	ShowByIDFiltering         []SdkShowByIDFilteringKind
-	ShowByIDPredicate         SdkShowByIDPredicateKind
-	ShowQueryStructName       string
-	ShowAdditionalValidations bool
+	ShowDoc                             string
+	ShowSql                             string
+	ShowTerse                           bool
+	ShowOptionalSql                     []string
+	ShowOptionalLike                    bool
+	ShowOptionalIn                      bool
+	ShowOptionalInAccount               bool
+	ShowOptionalExtendedIn              bool
+	ShowOptionalExtendedInWithoutSchema bool
+	ShowOptionalOn                      bool
+	ShowOptionalStartsWith              bool
+	ShowOptionalLimitFrom               bool
+	ShowOptionalLimit                   bool
+	ShowByIDFiltering                   []SdkShowByIDFilteringKind
+	ShowByIDPredicate                   SdkShowByIDPredicateKind
+	ShowQueryStructName                 string
+	ShowAdditionalValidations           bool
 	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
 	ShowResultFilterHook bool
 	// ShowPlainOnlyFields are SHOW columns that only the plain struct has. convert skips them and additionalConvert in the
@@ -149,6 +150,8 @@ type DataSourceGenerator struct {
 	AdditionalParametersOutputDescription string
 	// WithTerse offers the terse filter in the data source. It is left out by default.
 	WithTerse bool
+	// WithHistory offers the history filter in the data source. It is left out by default.
+	WithHistory bool
 	// WithoutFilters are the filters of the SDK SHOW request that the data source does not offer.
 	WithoutFilters []DataSourceFilter
 }
@@ -648,6 +651,11 @@ func DataSourceAdditionalParametersOutputDescription(text string) DataSourceOpti
 // DataSourceWithTerse offers `terse` in the data source. It is left out by default, because the data sources do not offer it in general.
 func DataSourceWithTerse() DataSourceOption {
 	return func(g *DataSourceGenerator) { g.WithTerse = true }
+}
+
+// DataSourceWithHistory offers `history` in the data source. It is left out by default, because the data sources do not offer it in general.
+func DataSourceWithHistory() DataSourceOption {
+	return func(g *DataSourceGenerator) { g.WithHistory = true }
 }
 
 // DataSourceWithoutFilters leaves filters out of the data source, for example while Snowflake ignores them in SHOW.
