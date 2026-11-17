@@ -3,7 +3,7 @@
 		"{{ .ResultName }}": {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Holds the aggregated output of all {{ CamelToWords .Name }} details queries.",
+			Description: {{ printf "%q" .ResultDescription }},
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
 {{ template "showOutputSchema" . -}}

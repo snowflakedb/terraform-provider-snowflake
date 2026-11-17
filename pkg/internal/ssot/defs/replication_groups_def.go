@@ -389,6 +389,7 @@ var replicationGroupSuspend = ssot.Attribute{
 // SDK create, show, drop, and alter are on. CREATE has no OR REPLACE.
 // DROP documents IF EXISTS, so SdkDrop keeps it. The page shows no pre-drop step.
 // SHOW stays here: SHOW REPLICATION GROUPS returns both roles.
+// DESCRIBE REPLICATION GROUP is not a published command, so the object has no DESCRIBE.
 // ReplicationGroupSecondary holds the target-account CREATE and ALTER.
 // SdkCreateForVariants emits CreateSecondary. SdkAlterForVariants emits AlterSecondary.
 var ReplicationGroup = ssot.Object{
@@ -410,6 +411,7 @@ var ReplicationGroup = ssot.Object{
 				ssot.ModelRequestType(&ReplicationGroupAttrs.AllowedAccounts, "[]string"),
 			),
 		),
+		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(

@@ -153,6 +153,23 @@ func TestItemSchema(t *testing.T) {
 		require.Contains(t, got, "schemas.ShowWidgetSchema")
 		require.NotContains(t, got, "DescribeOutputAttributeName")
 	})
+	t.Run("the result of a show-only data source is the show output", func(t *testing.T) {
+		got := renderTemplate(t, "itemSchema", modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow()})))
+		require.Contains(t, got, `Description: "Holds the output of SHOW WIDGETS.",`)
+		require.NotContains(t, got, "details queries")
+	})
+	t.Run("the result with describe or parameters aggregates the details", func(t *testing.T) {
+		require.Contains(t, renderTemplate(t, "itemSchema", modelOf(widgetWith())), "Holds the aggregated output of all widget details queries.")
+		parameters := syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkShowParameters()})
+		require.Contains(t, renderTemplate(t, "itemSchema", modelOf(parameters)), "Holds the aggregated output of all widget details queries.")
+	})
+	t.Run("a hand-written describe schema still counts as details", func(t *testing.T) {
+		model := modelOf(syntheticObject(
+			[]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe()},
+			ssot.WithDataSourceDescribeOutputSchema(ssot.ExtCall()),
+		))
+		require.Contains(t, renderTemplate(t, "itemSchema", model), "Holds the aggregated output of all widget details queries.")
+	})
 	t.Run("describe details name", func(t *testing.T) {
 		object := syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe()})
 		object.DescribeDetailsName = "WidgetSettings"
