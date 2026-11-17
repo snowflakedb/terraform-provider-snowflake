@@ -78,6 +78,28 @@ func Test_validateUpdateField(t *testing.T) {
 	require.False(t, renamed.validateUpdateField(place))
 }
 
+func Test_redundantObjectDefaults(t *testing.T) {
+	base := Object{Name: "Warehouse"}
+	require.Empty(t, Object{Name: "Warehouse"}.redundantObjectDefaults())
+
+	details := Object{Name: "Warehouse", DescribeDetailsName: "WarehouseDetails"}
+	require.Equal(t, []string{"Warehouse DescribeDetailsName restates the omitted default"}, details.redundantObjectDefaults())
+
+	plain := Object{Name: "Warehouse", ShowPlainName: "Warehouse"}
+	require.Equal(t, []string{"Warehouse ShowPlainName restates the omitted default"}, plain.redundantObjectDefaults())
+	require.Empty(t, Object{Name: "Warehouse", ShowPlainName: "WarehouseRegular"}.redundantObjectDefaults())
+
+	stem := Object{Name: "WarehouseAdaptive", SdkCreateRequestObjectName: "WarehouseAdaptive"}
+	require.Equal(t, []string{"WarehouseAdaptive SdkCreateRequestObjectName restates the omitted default"}, stem.redundantObjectDefaults())
+	require.Empty(t, Object{Name: "WarehouseAdaptive", SdkCreateRequestObjectName: "AdaptiveWarehouse"}.redundantObjectDefaults())
+
+	create := Object{Name: "WarehouseAdaptive", VariantOf: &base, VariantEntityCreateName: "WAREHOUSE"}
+	require.Equal(t, []string{"WarehouseAdaptive VariantEntityCreateName restates the omitted default"}, create.redundantObjectDefaults())
+	alter := Object{Name: "WarehouseAdaptive", VariantOf: &base, VariantEntityAlterName: "WAREHOUSE"}
+	require.Equal(t, []string{"WarehouseAdaptive VariantEntityAlterName restates the omitted default"}, alter.redundantObjectDefaults())
+	require.Empty(t, Object{Name: "WarehouseInteractive", VariantOf: &base, VariantEntityCreateName: "INTERACTIVE WAREHOUSE"}.redundantObjectDefaults())
+}
+
 func Test_validateShowName(t *testing.T) {
 	require.True(t, Attribute{Name: "comment", ShowName: "comment"}.validateShowName())
 	require.False(t, Attribute{Name: "for_application", ShowName: "application"}.validateShowName())
