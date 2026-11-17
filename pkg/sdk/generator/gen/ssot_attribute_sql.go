@@ -120,20 +120,7 @@ func (v *QueryStruct) appendPreexistingStructClause(attr ssot.Attribute, clause 
 	if !ok {
 		panic(fmt.Sprintf("attribute %q: struct clause names %q, which the SDK definition did not supply", attr.Name, clause.StructName))
 	}
-	opts := ListOptions()
-	if clause.Parentheses == ssot.SqlParensYes {
-		opts = opts.Parentheses()
-	}
-	if clause.NoComma {
-		opts = opts.NoComma()
-	}
-	if clause.SQL != "" {
-		opts = opts.SQL(clause.SQL)
-	}
-	if required {
-		opts = opts.Required()
-	}
-	transformer := opts
+	transformer := listOptionsFromClause(clause, required)
 	name := clauseGoFieldName(attr, clause)
 	if required {
 		v = v.QueryStructField(name, nested, transformer)
@@ -152,6 +139,9 @@ func (v *QueryStruct) appendPredefinedClause(attr ssot.Attribute, clause ssot.Sq
 		panic(fmt.Sprintf("attribute %q: predefined type clause has no Go type", attr.Name))
 	}
 	name := clauseGoFieldName(attr, clause)
+	if clause.NoComma {
+		return v.PredefinedQueryStructField(name, clause.GoType, listOptionsFromClause(clause, required))
+	}
 	opts := parameterOptionsFromClause(clause, required)
 	if clause.SQL != "" {
 		opts = opts.SQL(clause.SQL)
@@ -427,6 +417,23 @@ func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.Sq
 		return v.WithValidation(ValidIdentifier, name)
 	}
 	return v.OptionalIdentifier(name, clause.IdType, opts).WithValidation(ValidIdentifierIfSet, name)
+}
+
+func listOptionsFromClause(clause ssot.SqlClause, required bool) *ListTransformer {
+	opts := ListOptions()
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if clause.NoComma {
+		opts = opts.NoComma()
+	}
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	if required {
+		opts = opts.Required()
+	}
+	return opts
 }
 
 func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *ParameterTransformer {

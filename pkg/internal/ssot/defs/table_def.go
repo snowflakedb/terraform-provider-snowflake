@@ -669,7 +669,7 @@ var Table = ssot.Object{
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
 	},
-	CustomOperations: tableDescribeOperations,
+	CustomOperations: append(tableCreateVariantOperations, tableDescribeOperations...),
 	Attributes: []ssot.Attribute{
 		TableAttrs.ClusterBy,
 		TableAttrs.Column,

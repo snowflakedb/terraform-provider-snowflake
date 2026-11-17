@@ -11,10 +11,17 @@ import (
 // per variant of the element. See ssot.ListOfObjects and ssot.ObjectParameter.
 func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
 	name := clause.Field
+	prefix := clause.SQL
 	if name == "" {
 		name = sqlToFieldName(clause.SQLText(attr), true)
+		prefix = clause.SQLText(attr)
 	}
-	transformer := parameterOptionsFromClause(clause, required).SQL(clause.SQLText(attr))
+	var transformer FieldTransformer
+	if prefix != "" {
+		transformer = parameterOptionsFromClause(clause, required).SQL(prefix)
+	} else {
+		transformer = listOptionsFromClause(clause, required)
+	}
 	v = v.ListQueryStructField(name, queryStructFromObjectList(v.owner, attr), transformer)
 	if required {
 		v = v.WithValidation(ValidateValueSet, name)
@@ -33,18 +40,9 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 		}
 		return v.OptionalQueryStructField(name, nested, opts)
 	}
-	opts := ListOptions()
-	if clause.NoComma {
-		opts = opts.NoComma()
-	}
-	if clause.Parentheses == ssot.SqlParensYes {
-		opts = opts.Parentheses()
-	}
-	if clause.SQL != "" {
-		opts = opts.SQL(clause.SQL)
-	}
+	opts := listOptionsFromClause(clause, required)
 	if required {
-		return v.QueryStructField(name, nested, opts.Required())
+		return v.QueryStructField(name, nested, opts)
 	}
 	return v.OptionalQueryStructField(name, nested, opts)
 }
