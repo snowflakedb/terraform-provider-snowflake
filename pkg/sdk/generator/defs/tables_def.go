@@ -53,7 +53,7 @@ func tableSearchOptimizationAction() *g.QueryStruct {
 
 var (
 	ReclusterStateEnumDef = ssotdefs.ReclusterState
-	MatchTypeEnumDef      = g.NewEnum("MatchType", "MatchTypes", "FULL", "SIMPLE", "PARTIAL")
+	MatchTypeEnumDef      = ssotdefs.MatchType
 )
 
 func tableColumnsAndConstraints() *g.QueryStruct {
@@ -242,147 +242,12 @@ var tablesDef = g.NewInterface(
 	CustomOperationsFromObject(ssotdefs.Table).
 	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, ssotdefs.CloneMoment, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
 
-func tableOutOfLineUniquePK() *g.QueryStruct {
-	return withOutOfLineConstraintTail(
-		g.NewQueryStruct("TableOutOfLineUniquePK").
-			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-			OptionalSQL("UNIQUE").
-			OptionalSQL("PRIMARY KEY").
-			PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses()).
-			WithValidation(g.ExactlyOneValueSet, "Unique", "PrimaryKey"),
-	)
-}
-
-func tableOutOfLineFK() *g.QueryStruct {
-	return withOutOfLineConstraintTail(
-		g.NewQueryStruct("TableOutOfLineFK").
-			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-			SQL("FOREIGN KEY").
-			PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses()).
-			Identifier("References", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REFERENCES").Required()).
-			PredefinedQueryStructField("RefColumns", "[]Column", g.KeywordOptions().Parentheses()).
-			OptionalEnum("Match", MatchTypeEnumDef, g.ParameterOptions().NoEquals().SQL("MATCH")).
-			PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions()).
-			WithValidation(g.ValidIdentifier, "References"),
-	)
-}
-
-func tableOutOfLineCH() *g.QueryStruct {
-	return g.NewQueryStruct("TableOutOfLineCH").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-		SQL("CHECK").
-		SQLWithCustomFieldName("openParen", "(").
-		Text("Expression", g.KeywordOptions().NoQuotes().Required()).
-		SQLWithCustomFieldName("closeParen", ")").
-		OptionalSQL("ENABLE VALIDATE").
-		OptionalSQL("ENABLE NOVALIDATE").
-		WithValidation(g.ConflictingFields, "EnableValidate", "EnableNovalidate")
-}
-
 func tableOutOfLineConstraint() *g.QueryStruct {
-	return g.NewQueryStruct("TableOutOfLineConstraint").
-		OptionalQueryStructField("UniquePK", tableOutOfLineUniquePK(), g.KeywordOptions()).
-		OptionalQueryStructField("FK", tableOutOfLineFK(), g.KeywordOptions()).
-		OptionalQueryStructField("CH", tableOutOfLineCH(), g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "UniquePK", "FK", "CH")
-}
-
-// withOutOfLineConstraintTail appends the tail clauses shared by out-of-line UNIQUE/PK and FK
-// constraints (ENFORCED / DEFERRABLE / INITIALLY / ENABLE / VALIDATE / RELY pairs plus COMMENT)
-// and their ConflictingFields validations. Applied as a wrapper so tail fields are emitted
-// after the caller's struct-specific fields. Out-of-line CHECK uses its own ENABLE VALIDATE
-// pair and is not wrapped.
-func withOutOfLineConstraintTail(qs *g.QueryStruct) *g.QueryStruct {
-	return qs.
-		OptionalSQL("ENFORCED").
-		OptionalSQL("NOT ENFORCED").
-		OptionalSQL("DEFERRABLE").
-		OptionalSQL("NOT DEFERRABLE").
-		OptionalSQL("INITIALLY DEFERRED").
-		OptionalSQL("INITIALLY IMMEDIATE").
-		OptionalSQL("ENABLE").
-		OptionalSQL("DISABLE").
-		OptionalSQL("VALIDATE").
-		OptionalSQL("NOVALIDATE").
-		OptionalSQL("RELY").
-		OptionalSQL("NORELY").
-		OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
-		WithValidation(g.ConflictingFields, "Enforced", "NotEnforced").
-		WithValidation(g.ConflictingFields, "Deferrable", "NotDeferrable").
-		WithValidation(g.ConflictingFields, "InitiallyDeferred", "InitiallyImmediate").
-		WithValidation(g.ConflictingFields, "Enable", "Disable").
-		WithValidation(g.ConflictingFields, "Validate", "Novalidate").
-		WithValidation(g.ConflictingFields, "Rely", "Norely")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableOutOfLineConstraint)
 }
 
 // tableColumnInlineConstraint is used by iceberg tables (CREATE and ADD COLUMN) and by ALTER TABLE ADD COLUMN.
 // Iceberg tables generate the struct and its toOpts, and ALTER TABLE ADD COLUMN calls that toOpts.
 func tableColumnInlineConstraint() *g.QueryStruct {
-	return g.NewQueryStruct("TableColumnInlineConstraint").
-		OptionalQueryStructField("UniquePK", tableColumnInlineUniquePK(), g.KeywordOptions()).
-		OptionalQueryStructField("FK", tableColumnInlineFK(), g.KeywordOptions()).
-		OptionalQueryStructField("CH", tableColumnInlineCH(), g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "UniquePK", "FK", "CH").
-		WithSharedToOpts()
-}
-
-func tableColumnInlineUniquePK() *g.QueryStruct {
-	return withInlineConstraintTail(
-		g.NewQueryStruct("TableColumnInlineUniquePK").
-			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-			OptionalSQL("UNIQUE").
-			OptionalSQL("PRIMARY KEY").
-			WithValidation(g.ExactlyOneValueSet, "Unique", "PrimaryKey"),
-	)
-}
-
-func tableColumnInlineFK() *g.QueryStruct {
-	return withInlineConstraintTail(
-		g.NewQueryStruct("TableColumnInlineFK").
-			OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-			OptionalSQL("FOREIGN KEY").
-			Identifier("References", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("REFERENCES").Required()).
-			PredefinedQueryStructField("RefColumn", "[]Column", g.KeywordOptions().Parentheses()).
-			OptionalEnum("Match", MatchTypeEnumDef, g.ParameterOptions().NoEquals().SQL("MATCH")).
-			PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions()).
-			WithValidation(g.ValidIdentifier, "References"),
-	)
-}
-
-func tableColumnInlineCH() *g.QueryStruct {
-	return g.NewQueryStruct("TableColumnInlineCH").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals().DoubleQuotes(), "Name").
-		SQL("CHECK").
-		SQLWithCustomFieldName("openParen", "(").
-		Text("Expression", g.KeywordOptions().NoQuotes().Required()).
-		SQLWithCustomFieldName("closeParen", ")").
-		OptionalSQL("ENABLE VALIDATE").
-		OptionalSQL("ENABLE NOVALIDATE").
-		WithValidation(g.ConflictingFields, "EnableValidate", "EnableNovalidate")
-}
-
-// withInlineConstraintTail appends the tail clauses shared by inline UNIQUE/PK and FK
-// constraints (ENFORCED / DEFERRABLE / INITIALLY / ENABLE / VALIDATE / RELY pairs) and
-// their ConflictingFields validations. Applied as a wrapper so tail fields are emitted
-// after the caller's struct-specific fields.
-func withInlineConstraintTail(qs *g.QueryStruct) *g.QueryStruct {
-	return qs.
-		OptionalSQL("ENFORCED").
-		OptionalSQL("NOT ENFORCED").
-		OptionalSQL("DEFERRABLE").
-		OptionalSQL("NOT DEFERRABLE").
-		OptionalSQL("INITIALLY DEFERRED").
-		OptionalSQL("INITIALLY IMMEDIATE").
-		OptionalSQL("ENABLE").
-		OptionalSQL("DISABLE").
-		OptionalSQL("VALIDATE").
-		OptionalSQL("NOVALIDATE").
-		OptionalSQL("RELY").
-		OptionalSQL("NORELY").
-		WithValidation(g.ConflictingFields, "Enforced", "NotEnforced").
-		WithValidation(g.ConflictingFields, "Deferrable", "NotDeferrable").
-		WithValidation(g.ConflictingFields, "InitiallyDeferred", "InitiallyImmediate").
-		WithValidation(g.ConflictingFields, "Enable", "Disable").
-		WithValidation(g.ConflictingFields, "Validate", "Novalidate").
-		WithValidation(g.ConflictingFields, "Rely", "Norely")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableColumnInlineConstraint).WithSharedToOpts()
 }

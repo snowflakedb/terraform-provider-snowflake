@@ -139,6 +139,19 @@ func (v *QueryStruct) appendPredefinedClause(attr ssot.Attribute, clause ssot.Sq
 		panic(fmt.Sprintf("attribute %q: predefined type clause has no Go type", attr.Name))
 	}
 	name := clauseGoFieldName(attr, clause)
+	if clause.KeywordShape {
+		opts := KeywordOptions()
+		if clause.SQL != "" {
+			opts = opts.SQL(clause.SQL)
+		}
+		if clause.Parentheses == ssot.SqlParensYes {
+			opts = opts.Parentheses()
+		}
+		if required {
+			opts = opts.Required()
+		}
+		return v.PredefinedQueryStructField(name, clause.GoType, opts)
+	}
 	if clause.NoComma {
 		return v.PredefinedQueryStructField(name, clause.GoType, listOptionsFromClause(clause, required))
 	}
