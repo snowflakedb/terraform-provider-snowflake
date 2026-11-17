@@ -114,10 +114,16 @@ func Test_Object_DataSourceFilters(t *testing.T) {
 			SdkShowTerse(),
 			SdkShowOptionalSql("HISTORY"),
 			SdkShowOptionalExtendedIn(),
-		)))
+		)), WithDataSource(DataSourceWithTerse()))
 		require.Equal(t, DataSourceFilters{
 			Like: true, StartsWith: true, Limit: true, Terse: true, History: true, In: DataSourceInExtended,
 		}, obj.DataSourceFilters())
+	})
+	t.Run("terse is left out unless opted in", func(t *testing.T) {
+		obj := dataSourceTestObject(WithSdk(SdkShow(SdkShowTerse(), SdkShowOptionalLike())))
+		require.Equal(t, DataSourceFilters{Like: true}, obj.DataSourceFilters())
+		obj = dataSourceTestObject(WithSdk(SdkShow(SdkShowTerse(), SdkShowOptionalLike())), WithDataSource(DataSourceWithTerse()))
+		require.Equal(t, DataSourceFilters{Like: true, Terse: true}, obj.DataSourceFilters())
 	})
 	t.Run("in flavors", func(t *testing.T) {
 		require.Equal(t, DataSourceInPlain, dataSourceTestObject(WithSdk(SdkShow(SdkShowOptionalIn()))).DataSourceFilters().In)

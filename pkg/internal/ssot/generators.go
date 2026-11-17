@@ -147,6 +147,8 @@ type DataSourceGenerator struct {
 	AdditionalShowOutputDescription       string
 	AdditionalDescribeOutputDescription   string
 	AdditionalParametersOutputDescription string
+	// WithTerse offers the terse filter in the data source. It is left out by default.
+	WithTerse bool
 }
 
 type ResourceAssertGenerator struct {
@@ -631,6 +633,11 @@ func DataSourceAdditionalDescribeOutputDescription(text string) DataSourceOption
 
 func DataSourceAdditionalParametersOutputDescription(text string) DataSourceOption {
 	return func(g *DataSourceGenerator) { g.AdditionalParametersOutputDescription = text }
+}
+
+// DataSourceWithTerse offers `terse` in the data source. It is left out by default, because the data sources do not offer it in general.
+func DataSourceWithTerse() DataSourceOption {
+	return func(g *DataSourceGenerator) { g.WithTerse = true }
 }
 
 // WithDataSource enables data source generation for this object.
