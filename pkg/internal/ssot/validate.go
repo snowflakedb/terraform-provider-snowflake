@@ -870,14 +870,17 @@ func validateCustomOperationClauses(obj Object, spec CustomOperationSpec, attrs 
 				panic(fmt.Sprintf("object %q: custom operation %q attribute is parameters", obj.Name, spec.Kind))
 			}
 			name := clause.Attribute.Name
-			if _, ok := attrs[name]; !ok {
-				panic(fmt.Sprintf("object %q: custom operation %q attribute %q is not in Attributes", obj.Name, spec.Kind, name))
+			if name == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q attribute has empty Name", obj.Name, spec.Kind))
 			}
 			if _, dup := seenAttr[name]; dup {
 				panic(fmt.Sprintf("object %q: custom operation %q has duplicate attribute %q", obj.Name, spec.Kind, name))
 			}
 			seenAttr[name] = struct{}{}
 			validateSqlClause(obj, *clause.Attribute, "CREATE", clause.Attribute.EffectiveSqlClause(ClauseCreate))
+			if _, ok := attrs[name]; !ok {
+				validateNestedAttribute(obj, *clause.Attribute)
+			}
 		case CustomOperationClausePredefined:
 			if clause.Predefined == "" {
 				panic(fmt.Sprintf("object %q: custom operation %q predefined type is empty", obj.Name, spec.Kind))

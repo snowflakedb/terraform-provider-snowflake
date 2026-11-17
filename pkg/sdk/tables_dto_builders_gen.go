@@ -329,139 +329,6 @@ func (s *TableJoinPolicyRequest) WithAllowedJoinKeys(allowedJoinKeys []Column) *
 	return s
 }
 
-func NewCreateAsSelectTableRequest(
-	name SchemaObjectIdentifier,
-	columns []TableAsSelectColumnRequest,
-	query string,
-) *CreateAsSelectTableRequest {
-	s := CreateAsSelectTableRequest{}
-	s.name = name
-	s.Columns = columns
-	s.Query = query
-	return &s
-}
-
-func (s *CreateAsSelectTableRequest) WithOrReplace(orReplace bool) *CreateAsSelectTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateAsSelectTableRequest) WithClusterBy(clusterBy []string) *CreateAsSelectTableRequest {
-	s.ClusterBy = clusterBy
-	return s
-}
-
-func (s *CreateAsSelectTableRequest) WithCopyGrants(copyGrants bool) *CreateAsSelectTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateAsSelectTableRequest {
-	s.RowAccessPolicy = &rowAccessPolicy
-	return s
-}
-
-func NewTableAsSelectColumnRequest(
-	name string,
-) *TableAsSelectColumnRequest {
-	s := TableAsSelectColumnRequest{}
-	s.Name = name
-	return &s
-}
-
-func (s *TableAsSelectColumnRequest) WithColumnType(columnType DataType) *TableAsSelectColumnRequest {
-	s.ColumnType = &columnType
-	return s
-}
-
-func (s *TableAsSelectColumnRequest) WithMaskingPolicy(maskingPolicy SchemaObjectIdentifier) *TableAsSelectColumnRequest {
-	s.MaskingPolicy = &maskingPolicy
-	return s
-}
-
-func NewCreateUsingTemplateTableRequest(
-	name SchemaObjectIdentifier,
-) *CreateUsingTemplateTableRequest {
-	s := CreateUsingTemplateTableRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *CreateUsingTemplateTableRequest) WithOrReplace(orReplace bool) *CreateUsingTemplateTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateUsingTemplateTableRequest) WithCopyGrants(copyGrants bool) *CreateUsingTemplateTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func (s *CreateUsingTemplateTableRequest) WithQuery(query []string) *CreateUsingTemplateTableRequest {
-	s.Query = query
-	return s
-}
-
-func NewCreateLikeTableRequest(
-	name SchemaObjectIdentifier,
-	sourceTable SchemaObjectIdentifier,
-) *CreateLikeTableRequest {
-	s := CreateLikeTableRequest{}
-	s.name = name
-	s.SourceTable = sourceTable
-	return &s
-}
-
-func (s *CreateLikeTableRequest) WithOrReplace(orReplace bool) *CreateLikeTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateLikeTableRequest) WithClusterBy(clusterBy []string) *CreateLikeTableRequest {
-	s.ClusterBy = clusterBy
-	return s
-}
-
-func (s *CreateLikeTableRequest) WithCopyGrants(copyGrants bool) *CreateLikeTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func NewCreateCloneTableRequest(
-	name SchemaObjectIdentifier,
-	sourceTable SchemaObjectIdentifier,
-) *CreateCloneTableRequest {
-	s := CreateCloneTableRequest{}
-	s.name = name
-	s.SourceTable = sourceTable
-	return &s
-}
-
-func (s *CreateCloneTableRequest) WithOrReplace(orReplace bool) *CreateCloneTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateCloneTableRequest) WithClonePoint(clonePoint ClonePointRequest) *CreateCloneTableRequest {
-	s.ClonePoint = &clonePoint
-	return s
-}
-
-func (s *CreateCloneTableRequest) WithCopyGrants(copyGrants bool) *CreateCloneTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func NewClonePointRequest(
-	moment CloneMoment,
-	at TimeTravel,
-) *ClonePointRequest {
-	s := ClonePointRequest{}
-	s.Moment = moment
-	s.At = at
-	return &s
-}
-
 func NewAlterTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterTableRequest {
@@ -1279,6 +1146,139 @@ func (s *ShowTableRequest) WithStartsWith(startsWith string) *ShowTableRequest {
 func (s *ShowTableRequest) WithLimit(limit LimitFrom) *ShowTableRequest {
 	s.Limit = &limit
 	return s
+}
+
+func NewCreateAsSelectTableRequest(
+	name SchemaObjectIdentifier,
+	columns []TableAsSelectColumnRequest,
+	query string,
+) *CreateAsSelectTableRequest {
+	s := CreateAsSelectTableRequest{}
+	s.name = name
+	s.Columns = columns
+	s.Query = query
+	return &s
+}
+
+func (s *CreateAsSelectTableRequest) WithOrReplace(orReplace bool) *CreateAsSelectTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateAsSelectTableRequest) WithClusterBy(clusterBy []string) *CreateAsSelectTableRequest {
+	s.ClusterBy = clusterBy
+	return s
+}
+
+func (s *CreateAsSelectTableRequest) WithCopyGrants(copyGrants bool) *CreateAsSelectTableRequest {
+	s.CopyGrants = &copyGrants
+	return s
+}
+
+func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyRequest) *CreateAsSelectTableRequest {
+	s.RowAccessPolicy = &rowAccessPolicy
+	return s
+}
+
+func NewTableAsSelectColumnRequest(
+	name string,
+) *TableAsSelectColumnRequest {
+	s := TableAsSelectColumnRequest{}
+	s.Name = name
+	return &s
+}
+
+func (s *TableAsSelectColumnRequest) WithColumnType(columnType DataType) *TableAsSelectColumnRequest {
+	s.ColumnType = &columnType
+	return s
+}
+
+func (s *TableAsSelectColumnRequest) WithMaskingPolicy(maskingPolicy SchemaObjectIdentifier) *TableAsSelectColumnRequest {
+	s.MaskingPolicy = &maskingPolicy
+	return s
+}
+
+func NewCreateUsingTemplateTableRequest(
+	name SchemaObjectIdentifier,
+) *CreateUsingTemplateTableRequest {
+	s := CreateUsingTemplateTableRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CreateUsingTemplateTableRequest) WithOrReplace(orReplace bool) *CreateUsingTemplateTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateUsingTemplateTableRequest) WithCopyGrants(copyGrants bool) *CreateUsingTemplateTableRequest {
+	s.CopyGrants = &copyGrants
+	return s
+}
+
+func (s *CreateUsingTemplateTableRequest) WithQuery(query []string) *CreateUsingTemplateTableRequest {
+	s.Query = query
+	return s
+}
+
+func NewCreateLikeTableRequest(
+	name SchemaObjectIdentifier,
+	sourceTable SchemaObjectIdentifier,
+) *CreateLikeTableRequest {
+	s := CreateLikeTableRequest{}
+	s.name = name
+	s.SourceTable = sourceTable
+	return &s
+}
+
+func (s *CreateLikeTableRequest) WithOrReplace(orReplace bool) *CreateLikeTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateLikeTableRequest) WithClusterBy(clusterBy []string) *CreateLikeTableRequest {
+	s.ClusterBy = clusterBy
+	return s
+}
+
+func (s *CreateLikeTableRequest) WithCopyGrants(copyGrants bool) *CreateLikeTableRequest {
+	s.CopyGrants = &copyGrants
+	return s
+}
+
+func NewCreateCloneTableRequest(
+	name SchemaObjectIdentifier,
+	sourceTable SchemaObjectIdentifier,
+) *CreateCloneTableRequest {
+	s := CreateCloneTableRequest{}
+	s.name = name
+	s.SourceTable = sourceTable
+	return &s
+}
+
+func (s *CreateCloneTableRequest) WithOrReplace(orReplace bool) *CreateCloneTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateCloneTableRequest) WithClonePoint(clonePoint TableClonePointRequest) *CreateCloneTableRequest {
+	s.ClonePoint = &clonePoint
+	return s
+}
+
+func (s *CreateCloneTableRequest) WithCopyGrants(copyGrants bool) *CreateCloneTableRequest {
+	s.CopyGrants = &copyGrants
+	return s
+}
+
+func NewTableClonePointRequest(
+	moment CloneMoment,
+	at TimeTravel,
+) *TableClonePointRequest {
+	s := TableClonePointRequest{}
+	s.Moment = moment
+	s.At = at
+	return &s
 }
 
 func NewDescribeColumnsTableRequest(

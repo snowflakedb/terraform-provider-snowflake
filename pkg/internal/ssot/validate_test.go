@@ -818,11 +818,19 @@ func Test_ValidateObject_customOperations(t *testing.T) {
 	}
 	require.NotPanics(t, func() { ValidateObject(valid) })
 
-	missing := valid
+	onlyOnCustom := valid
 	other := Attribute{Name: "other", Type: AttrBool, CreateSql: BoolKeyword(Sql("OTHER"))}
-	missing.CustomOperations = []CustomOperationSpec{{
+	onlyOnCustom.CustomOperations = []CustomOperationSpec{{
 		Kind:    "Clone",
 		Clauses: []CustomOperationClause{CustomAttribute(&other)},
+	}}
+	require.NotPanics(t, func() { ValidateObject(onlyOnCustom) })
+
+	missing := valid
+	empty := Attribute{CreateSql: BoolKeyword(Sql("OTHER"))}
+	missing.CustomOperations = []CustomOperationSpec{{
+		Kind:    "Clone",
+		Clauses: []CustomOperationClause{CustomAttribute(&empty)},
 	}}
 	require.Panics(t, func() { ValidateObject(missing) })
 

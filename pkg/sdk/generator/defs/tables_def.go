@@ -52,7 +52,6 @@ func tableSearchOptimizationAction() *g.QueryStruct {
 }
 
 var (
-	CloneMomentEnumDef    = g.NewEnum("CloneMoment", "CloneMoments", "AT", "BEFORE")
 	ReclusterStateEnumDef = ssotdefs.ReclusterState
 	MatchTypeEnumDef      = g.NewEnum("MatchType", "MatchTypes", "FULL", "SIMPLE", "PARTIAL")
 )
@@ -116,19 +115,6 @@ func tableOutOfLineForeignKey() *g.QueryStruct {
 		PredefinedQueryStructField("ColumnNames", "[]Column", g.ParameterOptions().NoEquals().Parentheses()).
 		OptionalEnum("Match", MatchTypeEnumDef, g.ParameterOptions().NoEquals().SQL("MATCH")).
 		PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
-}
-
-func tableAsSelectColumn() *g.QueryStruct {
-	return g.NewQueryStruct("TableAsSelectColumn").
-		Text("Name", g.KeywordOptions().Required()).
-		PredefinedQueryStructField("ColumnType", g.KindOfTPointer[sdkcommons.DataType](), g.KeywordOptions()).
-		OptionalIdentifier("MaskingPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY"))
-}
-
-func tableClonePoint() *g.QueryStruct {
-	return g.NewQueryStruct("ClonePoint").
-		Enum("Moment", CloneMomentEnumDef, g.ParameterOptions().NoEquals().Required()).
-		PredefinedQueryStructField("At", "TimeTravel", g.ListOptions().Parentheses().NoComma().Required())
 }
 
 func tableClusteringAction() *g.QueryStruct {
@@ -278,64 +264,6 @@ var tablesDef = g.NewInterface(
 ).
 	// CREATE comes from ssotdefs.Table. The structs it names stay here because other operations reuse them.
 	CreateOperationFromObject(ssotdefs.Table, tableColumnsAndConstraints()).
-	// TODO: check if [...] in the docs (like in https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template) mean that we can reuse all parameters from "normal" CreateTableOptions
-	CustomOperation(
-		"CreateAsSelect",
-		"https://docs.snowflake.com/en/sql-reference/sql/create-table",
-		g.NewQueryStruct("CreateTableAsSelect").
-			Create().
-			OrReplace().
-			SQL("TABLE").
-			Name().
-			ListQueryStructField("Columns", tableAsSelectColumn(), g.ListOptions().Parentheses().Required()).
-			PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-			OptionalCopyGrants().
-			PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
-			AssignmentWithFieldName("AS", "string", g.ParameterOptions().NoEquals().Required(), "Query").
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ValidateValueSet, "Columns").
-			WithValidation(g.ValidateValueSet, "Query"),
-	).
-	CustomOperation(
-		"CreateUsingTemplate",
-		"https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template",
-		g.NewQueryStruct("CreateTableUsingTemplate").
-			Create().
-			OrReplace().
-			SQL("TABLE").
-			Name().
-			OptionalCopyGrants().
-			ListAssignmentWithFieldName("USING TEMPLATE", "string", g.ParameterOptions().NoEquals().Parentheses(), "Query").
-			WithValidation(g.ValidIdentifier, "name"),
-	).
-	CustomOperation(
-		"CreateLike",
-		"https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-like",
-		g.NewQueryStruct("CreateTableLike").
-			Create().
-			OrReplace().
-			SQL("TABLE").
-			Name().
-			Identifier("SourceTable", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("LIKE").Required()).
-			PredefinedQueryStructField("ClusterBy", "[]string", g.KeywordOptions().Parentheses().SQL("CLUSTER BY")).
-			OptionalCopyGrants().
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ValidIdentifier, "SourceTable"),
-	).
-	CustomOperation(
-		"CreateClone",
-		"https://docs.snowflake.com/en/sql-reference/sql/create-clone",
-		g.NewQueryStruct("CreateTableClone").
-			Create().
-			OrReplace().
-			SQL("TABLE").
-			Name().
-			Identifier("SourceTable", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("CLONE").Required()).
-			OptionalQueryStructField("ClonePoint", tableClonePoint(), g.KeywordOptions()).
-			OptionalCopyGrants().
-			WithValidation(g.ValidIdentifier, "name").
-			WithValidation(g.ValidIdentifier, "SourceTable"),
-	).
 	AlterOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/alter-table",
 		g.NewQueryStruct("AlterTable").
@@ -372,10 +300,10 @@ var tablesDef = g.NewInterface(
 	).
 	DropOperationFromObject(ssotdefs.Table).
 	ShowOperationFromObject(ssotdefs.Table).
-	// Describe and select come from ssotdefs.Table. CREATE AS SELECT, USING TEMPLATE, LIKE, and CLONE stay handwritten,
-	// so SdkDefineFromSsot stays off. Follow-up: convert those four and turn the setting on.
+	// CREATE AS SELECT, USING TEMPLATE, LIKE, CLONE, describe, and select come from ssotdefs.Table.
+	// ALTER helper structs stay handwritten, so SdkDefineFromSsot stays off.
 	CustomOperationsFromObject(ssotdefs.Table).
-	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, CloneMomentEnumDef, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
+	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, ssotdefs.CloneMoment, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
 
 func tableOutOfLineUniquePK() *g.QueryStruct {
 	return withOutOfLineConstraintTail(

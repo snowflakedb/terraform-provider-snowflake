@@ -326,7 +326,7 @@ func init() {
 		}).
 		withExpectedSqlf(
 			case_Tables_sql_CreateAsSelect_basic,
-			`CREATE TABLE %s (a) AS SELECT 1`, id.FullyQualifiedName(),
+			`CREATE TABLE %s ("a") AS SELECT 1`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_CreateAsSelect_all,
@@ -342,7 +342,7 @@ func init() {
 				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
 				opts.Query = "SELECT * FROM ANOTHER_TABLE"
 			},
-			`CREATE OR REPLACE TABLE %s (FIRST_COLUMN VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
@@ -407,7 +407,7 @@ func init() {
 			func(opts *CreateCloneTableOptions) {
 				opts.OrReplace = new(true)
 				opts.CopyGrants = new(true)
-				opts.ClonePoint = &ClonePoint{
+				opts.ClonePoint = &TableClonePoint{
 					Moment: CloneMomentAt,
 					At:     TimeTravel{Offset: new(0)},
 				}

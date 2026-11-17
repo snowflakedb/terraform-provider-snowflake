@@ -781,6 +781,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 		name = obj.CustomOperationQueryStructName(spec.Kind)
 	}
 	q := NewQueryStruct(name)
+	q.owner = obj.Name
 	sawOrReplace := false
 	sawIfNotExists := false
 	sawName := false
@@ -862,6 +863,12 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
 	q = q.withAtLeastOneOfValidations(obj, attributes)
+	for _, attr := range attributes {
+		clause := attr.EffectiveSqlClause(ssot.ClauseCreate)
+		if clauseRequired(*attr, clause, attributeSqlCreate) && attr.SdkType() == ssot.AttrString {
+			q = q.WithValidation(ValidateValueSet, clauseGoFieldName(*attr, clause))
+		}
+	}
 	if spec.AdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}

@@ -29,26 +29,6 @@ func (v *tables) Create(ctx context.Context, request *CreateTableRequest) error 
 	return validateAndExec(v.client, ctx, opts)
 }
 
-func (v *tables) CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *tables) CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *tables) CreateLike(ctx context.Context, request *CreateLikeTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *tables) CreateClone(ctx context.Context, request *CreateCloneTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
 func (v *tables) Alter(ctx context.Context, request *AlterTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
@@ -85,6 +65,26 @@ func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tabl
 
 func (v *tables) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
+}
+
+func (v *tables) CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateLike(ctx context.Context, request *CreateLikeTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateClone(ctx context.Context, request *CreateCloneTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
 }
 
 func (v *tables) DescribeColumns(ctx context.Context, request *DescribeColumnsTableRequest) ([]TableColumnDetails, error) {
@@ -228,66 +228,6 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		opts.JoinPolicy = &TableJoinPolicy{
 			JoinPolicy:      r.JoinPolicy.JoinPolicy,
 			AllowedJoinKeys: r.JoinPolicy.AllowedJoinKeys,
-		}
-	}
-	return opts
-}
-
-func (r *CreateAsSelectTableRequest) toOpts() *CreateAsSelectTableOptions {
-	opts := &CreateAsSelectTableOptions{
-		OrReplace:       r.OrReplace,
-		name:            r.name,
-		ClusterBy:       r.ClusterBy,
-		CopyGrants:      r.CopyGrants,
-		RowAccessPolicy: r.RowAccessPolicy,
-		Query:           r.Query,
-	}
-	if r.Columns != nil {
-		columns := make([]TableAsSelectColumn, len(r.Columns))
-		for i, v := range r.Columns {
-			columns[i] = TableAsSelectColumn{
-				Name:          v.Name,
-				ColumnType:    v.ColumnType,
-				MaskingPolicy: v.MaskingPolicy,
-			}
-		}
-		opts.Columns = columns
-	}
-	return opts
-}
-
-func (r *CreateUsingTemplateTableRequest) toOpts() *CreateUsingTemplateTableOptions {
-	opts := &CreateUsingTemplateTableOptions{
-		OrReplace:  r.OrReplace,
-		name:       r.name,
-		CopyGrants: r.CopyGrants,
-		Query:      r.Query,
-	}
-	return opts
-}
-
-func (r *CreateLikeTableRequest) toOpts() *CreateLikeTableOptions {
-	opts := &CreateLikeTableOptions{
-		OrReplace:   r.OrReplace,
-		name:        r.name,
-		SourceTable: r.SourceTable,
-		ClusterBy:   r.ClusterBy,
-		CopyGrants:  r.CopyGrants,
-	}
-	return opts
-}
-
-func (r *CreateCloneTableRequest) toOpts() *CreateCloneTableOptions {
-	opts := &CreateCloneTableOptions{
-		OrReplace:   r.OrReplace,
-		name:        r.name,
-		SourceTable: r.SourceTable,
-		CopyGrants:  r.CopyGrants,
-	}
-	if r.ClonePoint != nil {
-		opts.ClonePoint = &ClonePoint{
-			Moment: r.ClonePoint.Moment,
-			At:     r.ClonePoint.At,
 		}
 	}
 	return opts
@@ -591,6 +531,71 @@ func (r tablesRow) convert() (*Table, error) {
 	mapNullStringToRequiredBoolValue(&result.ErrorLogging, r.ErrorLogging, "ON")
 	mapNullString(&result.Budget, r.Budget)
 	return result, nil
+}
+
+func (r *CreateAsSelectTableRequest) toOpts() *CreateAsSelectTableOptions {
+	opts := &CreateAsSelectTableOptions{
+		OrReplace:  r.OrReplace,
+		name:       r.name,
+		ClusterBy:  r.ClusterBy,
+		CopyGrants: r.CopyGrants,
+		Query:      r.Query,
+	}
+	if r.Columns != nil {
+		columns := make([]TableAsSelectColumn, len(r.Columns))
+		for i, v := range r.Columns {
+			columns[i] = TableAsSelectColumn{
+				Name:          v.Name,
+				ColumnType:    v.ColumnType,
+				MaskingPolicy: v.MaskingPolicy,
+			}
+		}
+		opts.Columns = columns
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &TableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
+		}
+	}
+	return opts
+}
+
+func (r *CreateUsingTemplateTableRequest) toOpts() *CreateUsingTemplateTableOptions {
+	opts := &CreateUsingTemplateTableOptions{
+		OrReplace:  r.OrReplace,
+		name:       r.name,
+		CopyGrants: r.CopyGrants,
+		Query:      r.Query,
+	}
+	return opts
+}
+
+func (r *CreateLikeTableRequest) toOpts() *CreateLikeTableOptions {
+	opts := &CreateLikeTableOptions{
+		OrReplace:   r.OrReplace,
+		name:        r.name,
+		SourceTable: r.SourceTable,
+		ClusterBy:   r.ClusterBy,
+		CopyGrants:  r.CopyGrants,
+	}
+	return opts
+}
+
+func (r *CreateCloneTableRequest) toOpts() *CreateCloneTableOptions {
+	opts := &CreateCloneTableOptions{
+		OrReplace:   r.OrReplace,
+		name:        r.name,
+		SourceTable: r.SourceTable,
+		CopyGrants:  r.CopyGrants,
+	}
+	if r.ClonePoint != nil {
+		opts.ClonePoint = &TableClonePoint{
+			Moment: r.ClonePoint.Moment,
+			At:     r.ClonePoint.At,
+		}
+	}
+	return opts
 }
 
 func (r *DescribeColumnsTableRequest) toOpts() *DescribeColumnsTableOptions {

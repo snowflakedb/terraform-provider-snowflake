@@ -4,13 +4,13 @@ package sdk
 
 var (
 	_ optionsProvider[CreateTableOptions]                     = new(CreateTableRequest)
+	_ optionsProvider[AlterTableOptions]                      = new(AlterTableRequest)
+	_ optionsProvider[DropTableOptions]                       = new(DropTableRequest)
+	_ optionsProvider[ShowTableOptions]                       = new(ShowTableRequest)
 	_ optionsProvider[CreateAsSelectTableOptions]             = new(CreateAsSelectTableRequest)
 	_ optionsProvider[CreateUsingTemplateTableOptions]        = new(CreateUsingTemplateTableRequest)
 	_ optionsProvider[CreateLikeTableOptions]                 = new(CreateLikeTableRequest)
 	_ optionsProvider[CreateCloneTableOptions]                = new(CreateCloneTableRequest)
-	_ optionsProvider[AlterTableOptions]                      = new(AlterTableRequest)
-	_ optionsProvider[DropTableOptions]                       = new(DropTableRequest)
-	_ optionsProvider[ShowTableOptions]                       = new(ShowTableRequest)
 	_ optionsProvider[DescribeColumnsTableOptions]            = new(DescribeColumnsTableRequest)
 	_ optionsProvider[DescribeStageTableOptions]              = new(DescribeStageTableRequest)
 	_ optionsProvider[DescribeSearchOptimizationTableOptions] = new(DescribeSearchOptimizationTableRequest)
@@ -107,50 +107,6 @@ type TableAggregationPolicyRequest struct {
 type TableJoinPolicyRequest struct {
 	JoinPolicy      SchemaObjectIdentifier // required
 	AllowedJoinKeys []Column
-}
-
-type CreateAsSelectTableRequest struct {
-	OrReplace       *bool
-	name            SchemaObjectIdentifier       // required
-	Columns         []TableAsSelectColumnRequest // required
-	ClusterBy       []string
-	CopyGrants      *bool
-	RowAccessPolicy *TableRowAccessPolicy
-	Query           string // required
-}
-
-type TableAsSelectColumnRequest struct {
-	Name          string // required
-	ColumnType    *DataType
-	MaskingPolicy *SchemaObjectIdentifier
-}
-
-type CreateUsingTemplateTableRequest struct {
-	OrReplace  *bool
-	name       SchemaObjectIdentifier // required
-	CopyGrants *bool
-	Query      []string
-}
-
-type CreateLikeTableRequest struct {
-	OrReplace   *bool
-	name        SchemaObjectIdentifier // required
-	SourceTable SchemaObjectIdentifier // required
-	ClusterBy   []string
-	CopyGrants  *bool
-}
-
-type CreateCloneTableRequest struct {
-	OrReplace   *bool
-	name        SchemaObjectIdentifier // required
-	SourceTable SchemaObjectIdentifier // required
-	ClonePoint  *ClonePointRequest
-	CopyGrants  *bool
-}
-
-type ClonePointRequest struct {
-	Moment CloneMoment // required
-	At     TimeTravel  // required
 }
 
 type AlterTableRequest struct {
@@ -394,6 +350,50 @@ type ShowTableRequest struct {
 	In         *ExtendedIn
 	StartsWith *string
 	Limit      *LimitFrom
+}
+
+type CreateAsSelectTableRequest struct {
+	OrReplace       *bool
+	name            SchemaObjectIdentifier       // required
+	Columns         []TableAsSelectColumnRequest // required
+	ClusterBy       []string
+	CopyGrants      *bool
+	RowAccessPolicy *TableRowAccessPolicyRequest
+	Query           string // required
+}
+
+type TableAsSelectColumnRequest struct {
+	Name          string // required
+	ColumnType    *DataType
+	MaskingPolicy *SchemaObjectIdentifier
+}
+
+type CreateUsingTemplateTableRequest struct {
+	OrReplace  *bool
+	name       SchemaObjectIdentifier // required
+	CopyGrants *bool
+	Query      []string
+}
+
+type CreateLikeTableRequest struct {
+	OrReplace   *bool
+	name        SchemaObjectIdentifier // required
+	SourceTable SchemaObjectIdentifier // required
+	ClusterBy   []string
+	CopyGrants  *bool
+}
+
+type CreateCloneTableRequest struct {
+	OrReplace   *bool
+	name        SchemaObjectIdentifier // required
+	SourceTable SchemaObjectIdentifier // required
+	ClonePoint  *TableClonePointRequest
+	CopyGrants  *bool
+}
+
+type TableClonePointRequest struct {
+	Moment CloneMoment // required
+	At     TimeTravel  // required
 }
 
 type DescribeColumnsTableRequest struct {

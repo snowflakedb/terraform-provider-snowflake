@@ -6,13 +6,13 @@ import "fmt"
 
 var (
 	_ validatable = new(CreateTableOptions)
+	_ validatable = new(AlterTableOptions)
+	_ validatable = new(DropTableOptions)
+	_ validatable = new(ShowTableOptions)
 	_ validatable = new(CreateAsSelectTableOptions)
 	_ validatable = new(CreateUsingTemplateTableOptions)
 	_ validatable = new(CreateLikeTableOptions)
 	_ validatable = new(CreateCloneTableOptions)
-	_ validatable = new(AlterTableOptions)
-	_ validatable = new(DropTableOptions)
-	_ validatable = new(ShowTableOptions)
 	_ validatable = new(DescribeColumnsTableOptions)
 	_ validatable = new(DescribeStageTableOptions)
 	_ validatable = new(DescribeSearchOptimizationTableOptions)
@@ -106,62 +106,6 @@ func (opts *CreateTableOptions) validate() error {
 				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.Tag[%d]", tagIdx), "Name"))
 			}
 		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateAsSelectTableOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateAsSelectTableOptions", "name"))
-	}
-	if !valueSet(opts.Columns) {
-		errs = append(errs, errNotSet("CreateAsSelectTableOptions", "Columns"))
-	}
-	if !valueSet(opts.Query) {
-		errs = append(errs, errNotSet("CreateAsSelectTableOptions", "Query"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateUsingTemplateTableOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateUsingTemplateTableOptions", "name"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateLikeTableOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateLikeTableOptions", "name"))
-	}
-	if !ValidObjectIdentifier(opts.SourceTable) {
-		errs = append(errs, errInvalidIdentifier("CreateLikeTableOptions", "SourceTable"))
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *CreateCloneTableOptions) validate() error {
-	if opts == nil {
-		return ErrNilOptions
-	}
-	var errs []error
-	if !ValidObjectIdentifier(opts.name) {
-		errs = append(errs, errInvalidIdentifier("CreateCloneTableOptions", "name"))
-	}
-	if !ValidObjectIdentifier(opts.SourceTable) {
-		errs = append(errs, errInvalidIdentifier("CreateCloneTableOptions", "SourceTable"))
 	}
 	return JoinErrors(errs...)
 }
@@ -443,6 +387,74 @@ func (opts *ShowTableOptions) validate() error {
 	}
 	var errs []error
 	errs = append(errs, opts.additionalValidations())
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateAsSelectTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !valueSet(opts.Columns) {
+		errs = append(errs, errNotSet("CreateAsSelectTableOptions", "Columns"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CreateAsSelectTableOptions", "name"))
+	}
+	if !valueSet(opts.Query) {
+		errs = append(errs, errNotSet("CreateAsSelectTableOptions", "Query"))
+	}
+	if valueSet(opts.Columns) {
+		for columnIdx, column := range opts.Columns {
+			if column.MaskingPolicy != nil && !ValidObjectIdentifier(column.MaskingPolicy) {
+				errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateAsSelectTableOptions.Columns[%d]", columnIdx), "MaskingPolicy"))
+			}
+		}
+	}
+	if valueSet(opts.RowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
+			errs = append(errs, errInvalidIdentifier("CreateAsSelectTableOptions.RowAccessPolicy", "Name"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateUsingTemplateTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CreateUsingTemplateTableOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateLikeTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.SourceTable) {
+		errs = append(errs, errInvalidIdentifier("CreateLikeTableOptions", "SourceTable"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CreateLikeTableOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *CreateCloneTableOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.SourceTable) {
+		errs = append(errs, errInvalidIdentifier("CreateCloneTableOptions", "SourceTable"))
+	}
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("CreateCloneTableOptions", "name"))
+	}
 	return JoinErrors(errs...)
 }
 

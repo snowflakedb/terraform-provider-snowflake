@@ -101,7 +101,7 @@ type Object struct {
 	// AdditionalEnums are SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field
 	// that the resource validates but the SQL does not send. They are emitted with the enums the object refers to.
 	AdditionalEnums []*Enum
-	// CustomOperations are operations other than CREATE and ALTER.
+	// CustomOperations are operations other than the object's CREATE and ALTER, including extra CREATE shapes.
 	// Clause order is the emission order. SdkCustomOperations turns them on.
 	CustomOperations []CustomOperationSpec
 	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.

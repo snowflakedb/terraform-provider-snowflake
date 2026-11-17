@@ -12,16 +12,16 @@ import (
 
 type Tables interface {
 	Create(ctx context.Context, request *CreateTableRequest) error
-	CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error
-	CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error
-	CreateLike(ctx context.Context, request *CreateLikeTableRequest) error
-	CreateClone(ctx context.Context, request *CreateCloneTableRequest) error
 	Alter(ctx context.Context, request *AlterTableRequest) error
 	Drop(ctx context.Context, request *DropTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Show(ctx context.Context, request *ShowTableRequest) ([]Table, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error)
+	CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error
+	CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error
+	CreateLike(ctx context.Context, request *CreateLikeTableRequest) error
+	CreateClone(ctx context.Context, request *CreateCloneTableRequest) error
 	DescribeColumns(ctx context.Context, request *DescribeColumnsTableRequest) ([]TableColumnDetails, error)
 	DescribeStage(ctx context.Context, request *DescribeStageTableRequest) ([]TableStageDetails, error)
 	DescribeSearchOptimization(ctx context.Context, request *DescribeSearchOptimizationTableRequest) ([]TableSearchOptimizationDetails, error)
@@ -122,62 +122,6 @@ type TableAggregationPolicy struct {
 type TableJoinPolicy struct {
 	JoinPolicy      SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
 	AllowedJoinKeys []Column               `ddl:"parameter,parentheses,no_equals" sql:"ALLOWED JOIN KEYS"`
-}
-
-// CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
-type CreateAsSelectTableOptions struct {
-	create          bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table           bool                   `ddl:"static" sql:"TABLE"`
-	name            SchemaObjectIdentifier `ddl:"identifier"`
-	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
-	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	CopyGrants      *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy *TableRowAccessPolicy  `ddl:"keyword"`
-	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
-}
-
-type TableAsSelectColumn struct {
-	Name          string                  `ddl:"keyword"`
-	ColumnType    *DataType               `ddl:"keyword"`
-	MaskingPolicy *SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
-}
-
-// CreateUsingTemplateTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template.
-type CreateUsingTemplateTableOptions struct {
-	create     bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace  *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table      bool                   `ddl:"static" sql:"TABLE"`
-	name       SchemaObjectIdentifier `ddl:"identifier"`
-	CopyGrants *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-	Query      []string               `ddl:"parameter,parentheses,no_equals" sql:"USING TEMPLATE"`
-}
-
-// CreateLikeTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-like.
-type CreateLikeTableOptions struct {
-	create      bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table       bool                   `ddl:"static" sql:"TABLE"`
-	name        SchemaObjectIdentifier `ddl:"identifier"`
-	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"LIKE"`
-	ClusterBy   []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	CopyGrants  *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-}
-
-// CreateCloneTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-clone.
-type CreateCloneTableOptions struct {
-	create      bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table       bool                   `ddl:"static" sql:"TABLE"`
-	name        SchemaObjectIdentifier `ddl:"identifier"`
-	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"CLONE"`
-	ClonePoint  *ClonePoint            `ddl:"keyword"`
-	CopyGrants  *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-}
-
-type ClonePoint struct {
-	Moment CloneMoment `ddl:"parameter,no_equals"`
-	At     TimeTravel  `ddl:"list,parentheses,no_comma"`
 }
 
 // AlterTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
@@ -517,6 +461,62 @@ func (v *Table) ID() SchemaObjectIdentifier {
 
 func (v *Table) ObjectType() ObjectType {
 	return ObjectTypeTable
+}
+
+// CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
+type CreateAsSelectTableOptions struct {
+	create          bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table           bool                   `ddl:"static" sql:"TABLE"`
+	name            SchemaObjectIdentifier `ddl:"identifier"`
+	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
+	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	CopyGrants      *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+	RowAccessPolicy *TableRowAccessPolicy  `ddl:"list,no_comma"`
+	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
+}
+
+type TableAsSelectColumn struct {
+	Name          string                  `ddl:"keyword,double_quotes"`
+	ColumnType    *DataType               `ddl:"parameter,no_equals"`
+	MaskingPolicy *SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
+}
+
+// CreateUsingTemplateTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template.
+type CreateUsingTemplateTableOptions struct {
+	create     bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace  *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table      bool                   `ddl:"static" sql:"TABLE"`
+	name       SchemaObjectIdentifier `ddl:"identifier"`
+	CopyGrants *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+	Query      []string               `ddl:"parameter,parentheses,no_equals" sql:"USING TEMPLATE"`
+}
+
+// CreateLikeTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-like.
+type CreateLikeTableOptions struct {
+	create      bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table       bool                   `ddl:"static" sql:"TABLE"`
+	name        SchemaObjectIdentifier `ddl:"identifier"`
+	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"LIKE"`
+	ClusterBy   []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	CopyGrants  *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+}
+
+// CreateCloneTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-clone.
+type CreateCloneTableOptions struct {
+	create      bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table       bool                   `ddl:"static" sql:"TABLE"`
+	name        SchemaObjectIdentifier `ddl:"identifier"`
+	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"CLONE"`
+	ClonePoint  *TableClonePoint       `ddl:"list,no_comma"`
+	CopyGrants  *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
+}
+
+type TableClonePoint struct {
+	Moment CloneMoment `ddl:"keyword"`
+	At     TimeTravel  `ddl:"list,parentheses,no_comma"`
 }
 
 // DescribeColumnsTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-table.

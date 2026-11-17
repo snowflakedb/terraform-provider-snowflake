@@ -45,22 +45,6 @@ const (
 	case_Tables_validation_Create_Tag_ValidIdentifier                                                                                               testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Tables_sql_Create_basic                                                                                                                    testCaseName = "sql_Create_basic"
 	case_Tables_sql_Create_all                                                                                                                      testCaseName = "sql_Create_all"
-	case_Tables_validation_CreateAsSelect_name_ValidIdentifier                                                                                      testCaseName = "validation_CreateAsSelect_name_ValidIdentifier"
-	case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet                                                                                  testCaseName = "validation_CreateAsSelect_Columns_ValidateValueSet"
-	case_Tables_validation_CreateAsSelect_Query_ValidateValueSet                                                                                    testCaseName = "validation_CreateAsSelect_Query_ValidateValueSet"
-	case_Tables_sql_CreateAsSelect_basic                                                                                                            testCaseName = "sql_CreateAsSelect_basic"
-	case_Tables_sql_CreateAsSelect_all                                                                                                              testCaseName = "sql_CreateAsSelect_all"
-	case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier                                                                                 testCaseName = "validation_CreateUsingTemplate_name_ValidIdentifier"
-	case_Tables_sql_CreateUsingTemplate_basic                                                                                                       testCaseName = "sql_CreateUsingTemplate_basic"
-	case_Tables_sql_CreateUsingTemplate_all                                                                                                         testCaseName = "sql_CreateUsingTemplate_all"
-	case_Tables_validation_CreateLike_name_ValidIdentifier                                                                                          testCaseName = "validation_CreateLike_name_ValidIdentifier"
-	case_Tables_validation_CreateLike_SourceTable_ValidIdentifier                                                                                   testCaseName = "validation_CreateLike_SourceTable_ValidIdentifier"
-	case_Tables_sql_CreateLike_basic                                                                                                                testCaseName = "sql_CreateLike_basic"
-	case_Tables_sql_CreateLike_all                                                                                                                  testCaseName = "sql_CreateLike_all"
-	case_Tables_validation_CreateClone_name_ValidIdentifier                                                                                         testCaseName = "validation_CreateClone_name_ValidIdentifier"
-	case_Tables_validation_CreateClone_SourceTable_ValidIdentifier                                                                                  testCaseName = "validation_CreateClone_SourceTable_ValidIdentifier"
-	case_Tables_sql_CreateClone_basic                                                                                                               testCaseName = "sql_CreateClone_basic"
-	case_Tables_sql_CreateClone_all                                                                                                                 testCaseName = "sql_CreateClone_all"
 	case_Tables_validation_Alter_name_ValidIdentifier                                                                                               testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_Tables_validation_Alter_RenameTo_ValidIdentifierIfSet                                                                                      testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_Tables_validation_Alter_SwapWith_ValidIdentifierIfSet                                                                                      testCaseName = "validation_Alter_SwapWith_ValidIdentifierIfSet"
@@ -165,6 +149,24 @@ const (
 	case_Tables_sql_Show_In                                                                                                                         testCaseName = "sql_Show_In"
 	case_Tables_sql_Show_StartsWith                                                                                                                 testCaseName = "sql_Show_StartsWith"
 	case_Tables_sql_Show_Limit                                                                                                                      testCaseName = "sql_Show_Limit"
+	case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet                                                                                  testCaseName = "validation_CreateAsSelect_Columns_ValidateValueSet"
+	case_Tables_validation_CreateAsSelect_name_ValidIdentifier                                                                                      testCaseName = "validation_CreateAsSelect_name_ValidIdentifier"
+	case_Tables_validation_CreateAsSelect_Query_ValidateValueSet                                                                                    testCaseName = "validation_CreateAsSelect_Query_ValidateValueSet"
+	case_Tables_validation_CreateAsSelect_Columns_MaskingPolicy_ValidIdentifierIfSet                                                                testCaseName = "validation_CreateAsSelect_Columns_MaskingPolicy_ValidIdentifierIfSet"
+	case_Tables_validation_CreateAsSelect_RowAccessPolicy_Name_ValidIdentifier                                                                      testCaseName = "validation_CreateAsSelect_RowAccessPolicy_Name_ValidIdentifier"
+	case_Tables_sql_CreateAsSelect_basic                                                                                                            testCaseName = "sql_CreateAsSelect_basic"
+	case_Tables_sql_CreateAsSelect_all                                                                                                              testCaseName = "sql_CreateAsSelect_all"
+	case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier                                                                                 testCaseName = "validation_CreateUsingTemplate_name_ValidIdentifier"
+	case_Tables_sql_CreateUsingTemplate_basic                                                                                                       testCaseName = "sql_CreateUsingTemplate_basic"
+	case_Tables_sql_CreateUsingTemplate_all                                                                                                         testCaseName = "sql_CreateUsingTemplate_all"
+	case_Tables_validation_CreateLike_SourceTable_ValidIdentifier                                                                                   testCaseName = "validation_CreateLike_SourceTable_ValidIdentifier"
+	case_Tables_validation_CreateLike_name_ValidIdentifier                                                                                          testCaseName = "validation_CreateLike_name_ValidIdentifier"
+	case_Tables_sql_CreateLike_basic                                                                                                                testCaseName = "sql_CreateLike_basic"
+	case_Tables_sql_CreateLike_all                                                                                                                  testCaseName = "sql_CreateLike_all"
+	case_Tables_validation_CreateClone_SourceTable_ValidIdentifier                                                                                  testCaseName = "validation_CreateClone_SourceTable_ValidIdentifier"
+	case_Tables_validation_CreateClone_name_ValidIdentifier                                                                                         testCaseName = "validation_CreateClone_name_ValidIdentifier"
+	case_Tables_sql_CreateClone_basic                                                                                                               testCaseName = "sql_CreateClone_basic"
+	case_Tables_sql_CreateClone_all                                                                                                                 testCaseName = "sql_CreateClone_all"
 	case_Tables_validation_DescribeColumns_name_ValidIdentifier                                                                                     testCaseName = "validation_DescribeColumns_name_ValidIdentifier"
 	case_Tables_sql_DescribeColumns_basic                                                                                                           testCaseName = "sql_DescribeColumns_basic"
 	case_Tables_validation_DescribeStage_name_ValidIdentifier                                                                                       testCaseName = "validation_DescribeStage_name_ValidIdentifier"
@@ -179,13 +181,13 @@ const (
 
 type TablesTestsContext struct {
 	Create                     *sdkTestCtx[*CreateTableOptions]
+	Alter                      *sdkTestCtx[*AlterTableOptions]
+	Drop                       *sdkTestCtx[*DropTableOptions]
+	Show                       *sdkTestCtx[*ShowTableOptions]
 	CreateAsSelect             *sdkTestCtx[*CreateAsSelectTableOptions]
 	CreateUsingTemplate        *sdkTestCtx[*CreateUsingTemplateTableOptions]
 	CreateLike                 *sdkTestCtx[*CreateLikeTableOptions]
 	CreateClone                *sdkTestCtx[*CreateCloneTableOptions]
-	Alter                      *sdkTestCtx[*AlterTableOptions]
-	Drop                       *sdkTestCtx[*DropTableOptions]
-	Show                       *sdkTestCtx[*ShowTableOptions]
 	DescribeColumns            *sdkTestCtx[*DescribeColumnsTableOptions]
 	DescribeStage              *sdkTestCtx[*DescribeStageTableOptions]
 	DescribeSearchOptimization *sdkTestCtx[*DescribeSearchOptimizationTableOptions]
@@ -451,138 +453,6 @@ var tablesTests = TablesTestsContext{
 			},
 			sqlCase[*CreateTableOptions]{
 				Name: case_Tables_sql_Create_all,
-			},
-		),
-	CreateAsSelect: newSdkTestCtx[*CreateAsSelectTableOptions](
-		"Tables", "CreateAsSelect",
-	).
-		withDefaultOpts(func() *CreateAsSelectTableOptions {
-			return &CreateAsSelectTableOptions{
-				name: tablesTestIdSchemaObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateAsSelectTableOptions]{
-				Name:        case_Tables_validation_CreateAsSelect_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateAsSelectTableOptions", "name"),
-				DefaultModify: func(opts *CreateAsSelectTableOptions) {
-					opts.name = emptySchemaObjectIdentifier
-				},
-			},
-			validationCase[*CreateAsSelectTableOptions]{
-				Name:        case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet,
-				ExpectedErr: errNotSet("CreateAsSelectTableOptions", "Columns"),
-				DefaultModify: func(opts *CreateAsSelectTableOptions) {
-					opts.Columns = nil
-				},
-			},
-			validationCase[*CreateAsSelectTableOptions]{
-				Name:        case_Tables_validation_CreateAsSelect_Query_ValidateValueSet,
-				ExpectedErr: errNotSet("CreateAsSelectTableOptions", "Query"),
-				DefaultModify: func(opts *CreateAsSelectTableOptions) {
-					opts.Query = ""
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateAsSelectTableOptions]{
-				Name:           case_Tables_sql_CreateAsSelect_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateAsSelectTableOptions]{
-				Name: case_Tables_sql_CreateAsSelect_all,
-			},
-		),
-	CreateUsingTemplate: newSdkTestCtx[*CreateUsingTemplateTableOptions](
-		"Tables", "CreateUsingTemplate",
-	).
-		withDefaultOpts(func() *CreateUsingTemplateTableOptions {
-			return &CreateUsingTemplateTableOptions{
-				name: tablesTestIdSchemaObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateUsingTemplateTableOptions]{
-				Name:        case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateUsingTemplateTableOptions", "name"),
-				DefaultModify: func(opts *CreateUsingTemplateTableOptions) {
-					opts.name = emptySchemaObjectIdentifier
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateUsingTemplateTableOptions]{
-				Name:           case_Tables_sql_CreateUsingTemplate_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateUsingTemplateTableOptions]{
-				Name: case_Tables_sql_CreateUsingTemplate_all,
-			},
-		),
-	CreateLike: newSdkTestCtx[*CreateLikeTableOptions](
-		"Tables", "CreateLike",
-	).
-		withDefaultOpts(func() *CreateLikeTableOptions {
-			return &CreateLikeTableOptions{
-				name: tablesTestIdSchemaObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateLikeTableOptions]{
-				Name:        case_Tables_validation_CreateLike_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateLikeTableOptions", "name"),
-				DefaultModify: func(opts *CreateLikeTableOptions) {
-					opts.name = emptySchemaObjectIdentifier
-				},
-			},
-			validationCase[*CreateLikeTableOptions]{
-				Name:        case_Tables_validation_CreateLike_SourceTable_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateLikeTableOptions", "SourceTable"),
-				DefaultModify: func(opts *CreateLikeTableOptions) {
-					opts.SourceTable = emptySchemaObjectIdentifier
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateLikeTableOptions]{
-				Name:           case_Tables_sql_CreateLike_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateLikeTableOptions]{
-				Name: case_Tables_sql_CreateLike_all,
-			},
-		),
-	CreateClone: newSdkTestCtx[*CreateCloneTableOptions](
-		"Tables", "CreateClone",
-	).
-		withDefaultOpts(func() *CreateCloneTableOptions {
-			return &CreateCloneTableOptions{
-				name: tablesTestIdSchemaObjectIdentifier,
-			}
-		}).
-		withValidationCases(
-			validationCase[*CreateCloneTableOptions]{
-				Name:        case_Tables_validation_CreateClone_name_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateCloneTableOptions", "name"),
-				DefaultModify: func(opts *CreateCloneTableOptions) {
-					opts.name = emptySchemaObjectIdentifier
-				},
-			},
-			validationCase[*CreateCloneTableOptions]{
-				Name:        case_Tables_validation_CreateClone_SourceTable_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("CreateCloneTableOptions", "SourceTable"),
-				DefaultModify: func(opts *CreateCloneTableOptions) {
-					opts.SourceTable = emptySchemaObjectIdentifier
-				},
-			},
-		).
-		withSqlCases(
-			sqlCase[*CreateCloneTableOptions]{
-				Name:           case_Tables_sql_CreateClone_basic,
-				NoModifyNeeded: true,
-			},
-			sqlCase[*CreateCloneTableOptions]{
-				Name: case_Tables_sql_CreateClone_all,
 			},
 		),
 	Alter: newSdkTestCtx[*AlterTableOptions](
@@ -1450,6 +1320,154 @@ var tablesTests = TablesTestsContext{
 				Name: case_Tables_sql_Show_Limit,
 			},
 		),
+	CreateAsSelect: newSdkTestCtx[*CreateAsSelectTableOptions](
+		"Tables", "CreateAsSelect",
+	).
+		withDefaultOpts(func() *CreateAsSelectTableOptions {
+			return &CreateAsSelectTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_Columns_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAsSelectTableOptions", "Columns"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.Columns = nil
+				},
+			},
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAsSelectTableOptions", "name"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_Query_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAsSelectTableOptions", "Query"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.Query = ""
+				},
+			},
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_Columns_MaskingPolicy_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("CreateAsSelectTableOptions.Columns[0]", "MaskingPolicy"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.Columns = []TableAsSelectColumn{{}}
+					opts.Columns[0].MaskingPolicy = new(emptySchemaObjectIdentifier)
+				},
+			},
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_RowAccessPolicy_Name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateAsSelectTableOptions.RowAccessPolicy", "Name"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.RowAccessPolicy = &TableRowAccessPolicy{}
+					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateAsSelectTableOptions]{
+				Name:           case_Tables_sql_CreateAsSelect_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateAsSelectTableOptions]{
+				Name: case_Tables_sql_CreateAsSelect_all,
+			},
+		),
+	CreateUsingTemplate: newSdkTestCtx[*CreateUsingTemplateTableOptions](
+		"Tables", "CreateUsingTemplate",
+	).
+		withDefaultOpts(func() *CreateUsingTemplateTableOptions {
+			return &CreateUsingTemplateTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateUsingTemplateTableOptions]{
+				Name:        case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateUsingTemplateTableOptions", "name"),
+				DefaultModify: func(opts *CreateUsingTemplateTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateUsingTemplateTableOptions]{
+				Name:           case_Tables_sql_CreateUsingTemplate_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateUsingTemplateTableOptions]{
+				Name: case_Tables_sql_CreateUsingTemplate_all,
+			},
+		),
+	CreateLike: newSdkTestCtx[*CreateLikeTableOptions](
+		"Tables", "CreateLike",
+	).
+		withDefaultOpts(func() *CreateLikeTableOptions {
+			return &CreateLikeTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateLikeTableOptions]{
+				Name:        case_Tables_validation_CreateLike_SourceTable_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateLikeTableOptions", "SourceTable"),
+				DefaultModify: func(opts *CreateLikeTableOptions) {
+					opts.SourceTable = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateLikeTableOptions]{
+				Name:        case_Tables_validation_CreateLike_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateLikeTableOptions", "name"),
+				DefaultModify: func(opts *CreateLikeTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateLikeTableOptions]{
+				Name:           case_Tables_sql_CreateLike_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateLikeTableOptions]{
+				Name: case_Tables_sql_CreateLike_all,
+			},
+		),
+	CreateClone: newSdkTestCtx[*CreateCloneTableOptions](
+		"Tables", "CreateClone",
+	).
+		withDefaultOpts(func() *CreateCloneTableOptions {
+			return &CreateCloneTableOptions{
+				name: tablesTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateCloneTableOptions]{
+				Name:        case_Tables_validation_CreateClone_SourceTable_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCloneTableOptions", "SourceTable"),
+				DefaultModify: func(opts *CreateCloneTableOptions) {
+					opts.SourceTable = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateCloneTableOptions]{
+				Name:        case_Tables_validation_CreateClone_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateCloneTableOptions", "name"),
+				DefaultModify: func(opts *CreateCloneTableOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateCloneTableOptions]{
+				Name:           case_Tables_sql_CreateClone_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateCloneTableOptions]{
+				Name: case_Tables_sql_CreateClone_all,
+			},
+		),
 	DescribeColumns: newSdkTestCtx[*DescribeColumnsTableOptions](
 		"Tables", "DescribeColumns",
 	).
@@ -1568,6 +1586,21 @@ func TestTables_Create(t *testing.T) {
 	tablesTests.Create.RunSqlCases(t)
 }
 
+func TestTables_Alter(t *testing.T) {
+	tablesTests.Alter.RunValidationCases(t)
+	tablesTests.Alter.RunSqlCases(t)
+}
+
+func TestTables_Drop(t *testing.T) {
+	tablesTests.Drop.RunValidationCases(t)
+	tablesTests.Drop.RunSqlCases(t)
+}
+
+func TestTables_Show(t *testing.T) {
+	tablesTests.Show.RunValidationCases(t)
+	tablesTests.Show.RunSqlCases(t)
+}
+
 func TestTables_CreateAsSelect(t *testing.T) {
 	tablesTests.CreateAsSelect.RunValidationCases(t)
 	tablesTests.CreateAsSelect.RunSqlCases(t)
@@ -1586,21 +1619,6 @@ func TestTables_CreateLike(t *testing.T) {
 func TestTables_CreateClone(t *testing.T) {
 	tablesTests.CreateClone.RunValidationCases(t)
 	tablesTests.CreateClone.RunSqlCases(t)
-}
-
-func TestTables_Alter(t *testing.T) {
-	tablesTests.Alter.RunValidationCases(t)
-	tablesTests.Alter.RunSqlCases(t)
-}
-
-func TestTables_Drop(t *testing.T) {
-	tablesTests.Drop.RunValidationCases(t)
-	tablesTests.Drop.RunSqlCases(t)
-}
-
-func TestTables_Show(t *testing.T) {
-	tablesTests.Show.RunValidationCases(t)
-	tablesTests.Show.RunSqlCases(t)
 }
 
 func TestTables_DescribeColumns(t *testing.T) {

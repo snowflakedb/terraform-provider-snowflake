@@ -337,7 +337,7 @@ func TestInt_Table(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		request := sdk.NewCreateCloneTableRequest(id, sourceTable.ID()).
-			WithCopyGrants(true).WithClonePoint(*sdk.NewClonePointRequest(sdk.CloneMomentAt, sdk.TimeTravel{Offset: sdk.Pointer(0)}))
+			WithCopyGrants(true).WithClonePoint(*sdk.NewTableClonePointRequest(sdk.CloneMomentAt, sdk.TimeTravel{Offset: sdk.Pointer(0)}))
 
 		err := client.Tables.CreateClone(ctx, request)
 		require.NoError(t, err)
