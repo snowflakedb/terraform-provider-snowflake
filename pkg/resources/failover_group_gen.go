@@ -160,6 +160,7 @@ var failoverGroupCustomizeDiff = TrackingCustomDiffWrapper(resources.FailoverGro
 	ComputedIfAnyAttributeChanged(failoverGroupSchema, ShowOutputAttributeName, "name", "comment", "replication_schedule", "rpo_assurance", "error_integration", "read_only"),
 	ComputedIfAnyAttributeChanged(failoverGroupSchema, FullyQualifiedNameAttributeName, "name"),
 	failoverGroupMembershipLockedInReadOnlyMode,
+	failoverGroupRecreateWhenNotPrimary,
 ))
 
 func failoverGroupParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {

@@ -70,7 +70,7 @@ resource "snowflake_failover_group" "complete" {
 }
 ```
 
--> **Note** Snowflake adds the source account to every failover group, and this resource leaves it out of `allowed_accounts`: list only the target accounts. A failover group that was created in the target account with `from_replica` is managed by [`snowflake_failover_group_secondary`](./failover_group_secondary) now. Moving the object is a manual state migration. See [resource migration](../guides/resource_migration).
+-> **Note** When this failover group is no longer primary, Terraform recreates it as a primary group. Snowflake adds the source account to every failover group, and this resource leaves it out of `allowed_accounts`: list only the target accounts. A failover group that was created in the target account with `from_replica` is managed by [`snowflake_failover_group_secondary`](./failover_group_secondary) now. Moving the object is a manual state migration. See [resource migration](../guides/resource_migration).
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
@@ -102,7 +102,7 @@ resource "snowflake_failover_group" "complete" {
 
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `is_primary` (Boolean) Indicates if the failover group is primary.
+- `is_primary` (Boolean) Indicates if the failover group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.
 - `show_output` (List of Object) Outputs the result of `SHOW FAILOVER GROUPS` for the given failover group. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>

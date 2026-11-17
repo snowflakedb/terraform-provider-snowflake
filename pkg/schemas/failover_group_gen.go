@@ -125,7 +125,7 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	if failoverGroup.SecondaryState != nil {
 		failoverGroupSchema["secondary_state"] = string((*failoverGroup.SecondaryState))
 	}
-	failoverGroupSchema["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh
+	failoverGroupSchema["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh.String()
 	if failoverGroup.Owner != nil {
 		failoverGroupSchema["owner"] = (*failoverGroup.Owner)
 	}

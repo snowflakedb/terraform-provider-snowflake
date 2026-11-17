@@ -318,7 +318,8 @@ func replicationGroupReverseIdentifierList(name, sql, idType string) ssot.Attrib
 	}
 }
 
-// One MOVE statement sets one of the three lists. AdditionalValidations checks that.
+// TODO [SNOW-4490849]: MOVE needs exactly one of the three lists, but ChildrenRule also counts the always set `to`, so it cannot express this.
+// The SDK extension validates it. Move them here when validations can be declared in a better way.
 var replicationGroupMove = ssot.Attribute{
 	Name:      "move",
 	Type:      ssot.AttrObject,
@@ -337,7 +338,9 @@ var replicationGroupMove = ssot.Attribute{
 	},
 }
 
-// ADD and REMOVE each set one allowed list. IGNORE EDITION CHECK belongs only to ADD accounts.
+// TODO [SNOW-4490849]: ADD needs exactly one of the four lists, but ChildrenRule also counts ignore_edition_check, so it cannot express this.
+// IGNORE EDITION CHECK is allowed only together with allowed_accounts, a dependency between fields that no rule expresses.
+// The SDK extension validates both. Move them here when validations can be declared in a better way.
 var replicationGroupAdd = ssot.Attribute{
 	Name:      "add",
 	Type:      ssot.AttrObject,
@@ -357,10 +360,11 @@ var replicationGroupAdd = ssot.Attribute{
 }
 
 var replicationGroupRemove = ssot.Attribute{
-	Name:      "remove",
-	Type:      ssot.AttrObject,
-	SqlOnly:   true,
-	CreateSql: ssot.ObjectParameter(),
+	Name:         "remove",
+	Type:         ssot.AttrObject,
+	SqlOnly:      true,
+	ChildrenRule: ssot.ChildrenExactlyOne,
+	CreateSql:    ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		replicationGroupReverseIdentifierList("allowed_databases", "FROM ALLOWED_DATABASES", "AccountObjectIdentifier"),
 		replicationGroupReverseIdentifierList("allowed_external_volumes", "FROM ALLOWED_EXTERNAL_VOLUMES", "AccountObjectIdentifier"),

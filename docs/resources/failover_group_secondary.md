@@ -23,7 +23,7 @@ resource "snowflake_failover_group_secondary" "basic" {
 }
 ```
 
--> **Note** Use this resource in the target account to manage a replica of a failover group from another account. Promoting the replica to primary and moving the object to [`snowflake_failover_group`](./failover_group) is a manual state migration. See [resource migration](../guides/resource_migration).
+-> **Note** When this failover group becomes primary, Terraform recreates it as a replica of `primary`. Use this resource in the target account to manage a replica of a failover group from another account. Promoting the replica to primary and moving the object to [`snowflake_failover_group`](./failover_group) is a manual state migration. See [resource migration](../guides/resource_migration).
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
@@ -43,7 +43,7 @@ resource "snowflake_failover_group_secondary" "basic" {
 
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `is_primary` (Boolean) Indicates if the failover group is primary.
+- `is_primary` (Boolean) Indicates if the failover group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.
 - `show_output` (List of Object) Outputs the result of `SHOW FAILOVER GROUPS` for the given failover group secondary. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>

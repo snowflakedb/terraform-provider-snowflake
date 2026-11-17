@@ -1161,3 +1161,75 @@ func TestAcc_FailoverGroup_ErrorIntegration_ExternalChanges(t *testing.T) {
 		},
 	})
 }
+
+// A failover (a promotion of a replica in another account) makes the managed group a replica. The resource is recreated as a primary then.
+func TestAcc_FailoverGroup_RecreateWhenExternallyNotPrimary(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	sourceAccount := testClient().Account.GetAccountIdentifier(t)
+	targetAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+	database, cleanupDatabase := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDatabase)
+
+	// A primary in the other account, so this account can replace the managed group with a replica of the same name.
+	otherDatabase, cleanupOtherDatabase := secondaryTestClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupOtherDatabase)
+	otherPrimary := secondaryTestClient().Ids.RandomAccountObjectIdentifier()
+	_, cleanupOtherPrimary := secondaryTestClient().FailoverGroup.CreateWithRequest(t, sdk.NewCreateFailoverGroupRequest(
+		otherPrimary,
+		[]sdk.FailoverGroupObjectType{sdk.FailoverGroupObjectTypeDatabases},
+		[]sdk.AccountIdentifier{sourceAccount},
+	).WithAllowedDatabases([]sdk.AccountObjectIdentifier{otherDatabase.ID()}))
+	t.Cleanup(cleanupOtherPrimary)
+	t.Cleanup(func() {
+		// The brief replica copies the database of the other primary into this account. Drop that copy before the other primary goes.
+		_ = testClient().Database.DropDatabase(t, otherDatabase.ID())
+	})
+
+	group := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES"}).
+		WithAllowedDatabases([]string{database.ID().Name()})
+	ref := group.ResourceReference()
+	otherOf := sdk.NewExternalObjectIdentifier(targetAccount, otherPrimary)
+	assertPrimary := []assert.TestCheckFuncProvider{
+		resourceassert.FailoverGroupResource(t, ref).
+			HasNameString(id.Name()).
+			HasObjectTypes("DATABASES").
+			HasAllowedDatabases(database.ID().Name()).
+			HasIsPrimary(true),
+		objectassert.FailoverGroup(t, id).
+			HasName(id.Name()).
+			HasIsPrimary(true).
+			HasPrimary(sdk.NewExternalObjectIdentifier(sourceAccount, id)),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, group),
+				Check:  assertThat(t, assertPrimary...),
+			},
+			{
+				// Replace the primary with a replica of the same name. The resource must destroy it and create the primary again.
+				PreConfig: func() {
+					testClient().FailoverGroup.Drop(t, id)
+					testClient().FailoverGroup.WaitForPrimaryToBeVisible(t, otherOf)
+					testClient().FailoverGroup.CreateSecondary(t, id, otherOf)
+				},
+				Config: config.FromModels(t, group),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t, assertPrimary...),
+			},
+		},
+	})
+}

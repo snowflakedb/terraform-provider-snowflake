@@ -112,6 +112,7 @@ func ReadFailoverGroupSecondaryFunc(withExternalChangesMarking bool) tfschema.Re
 
 var failoverGroupSecondaryCustomizeDiff = TrackingCustomDiffWrapper(resources.FailoverGroupSecondary, customdiff.All(
 	ComputedIfAnyAttributeChanged(failoverGroupSecondarySchema, ShowOutputAttributeName, "name", "primary"),
+	failoverGroupSecondaryRecreateWhenPrimary,
 ))
 
 func failoverGroupSecondaryParseIdFromConfig(d *tfschema.ResourceData) (sdk.AccountObjectIdentifier, error) {

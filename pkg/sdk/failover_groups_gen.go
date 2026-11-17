@@ -171,7 +171,7 @@ type failoverGroupsRow struct {
 	AccountLocator                string         `db:"account_locator"`
 	ReplicationSchedule           sql.NullString `db:"replication_schedule"`
 	SecondaryState                sql.NullString `db:"secondary_state"`
-	NextScheduledRefresh          sql.NullString `db:"next_scheduled_refresh"`
+	NextScheduledRefresh          sql.NullTime   `db:"next_scheduled_refresh"`
 	Owner                         sql.NullString `db:"owner"`
 	IsListingAutoFulfillmentGroup bool           `db:"is_listing_auto_fulfillment_group"`
 	IsOptimizedRefreshEnabled     bool           `db:"is_optimized_refresh_enabled"`
@@ -197,7 +197,7 @@ type FailoverGroup struct {
 	AccountLocator                string
 	ReplicationSchedule           *string
 	SecondaryState                *FailoverGroupSecondaryState
-	NextScheduledRefresh          string
+	NextScheduledRefresh          time.Time
 	Owner                         *string
 	IsListingAutoFulfillmentGroup bool
 	IsOptimizedRefreshEnabled     bool

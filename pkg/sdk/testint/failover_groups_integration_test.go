@@ -93,6 +93,7 @@ func TestInt_FailoverGroups(t *testing.T) {
 			HasNoAllowedIntegrationTypes().
 			HasNoReplicationSchedule().
 			HasNoSecondaryState().
+			HasNextScheduledRefresh(time.Time{}).
 			HasIsListingAutoFulfillmentGroup(false).
 			HasIsOptimizedRefreshEnabled(false).
 			HasRpoAssurance(false).
@@ -224,6 +225,17 @@ func TestInt_FailoverGroups(t *testing.T) {
 			[]sdk.AccountIdentifier{secondaryAccountID},
 		))
 		require.ErrorContains(t, err, "already exists")
+	})
+
+	t.Run("create: or replace is not supported", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		t.Cleanup(testClientHelper().FailoverGroup.DropFunc(t, id))
+
+		_, err := client.ExecForTests(ctx, fmt.Sprintf(
+			"CREATE OR REPLACE FAILOVER GROUP %s OBJECT_TYPES = ROLES ALLOWED_ACCOUNTS = %s",
+			id.FullyQualifiedName(), secondaryAccountID.FullyQualifiedName(),
+		))
+		require.ErrorContains(t, err, "cannot be replaced")
 	})
 
 	t.Run("create secondary: basic", func(t *testing.T) {
@@ -583,11 +595,11 @@ func TestInt_FailoverGroups(t *testing.T) {
 		require.ErrorContains(t, err, "is not in read-only mode")
 	})
 
-	// Snowflake rejects the membership changes (the allowed lists, OBJECT_TYPES, and ALLOWED_INTEGRATION_TYPES) while a primary failover group
-	// is in the read-only mode (500161). Properties (comment, schedule, optimized refresh, error integration), tags, and the rename are accepted.
+	// Snowflake rejects the membership changes (the allowed databases, shares and external volumes, OBJECT_TYPES, and ALLOWED_INTEGRATION_TYPES)
+	// while a primary failover group is in the read-only mode (500161). Properties (comment, schedule, optimized refresh, error integration),
+	// tags, the rename, ADD / REMOVE of allowed accounts, and MOVE to another group are accepted.
 	// SET READ_ONLY on a read-only group (500158) and UNSET READ_ONLY on a group that is not read-only (500159) are errors, so neither is idempotent.
 	// Each case runs on its own and, when it is accepted, is reverted.
-	// TODO [next PRs]: ADD / REMOVE of allowed accounts and MOVE are not covered here (they need a third account and a second group).
 	t.Run("alter: statements in the read-only mode", func(t *testing.T) {
 		databaseA, cleanupDatabaseA := testClientHelper().Database.CreateDatabase(t)
 		t.Cleanup(cleanupDatabaseA)
@@ -646,6 +658,8 @@ func TestInt_FailoverGroups(t *testing.T) {
 			return alter(sdk.NewAlterFailoverGroupRequest(id).WithRemove(*request))
 		}
 		ids := func(values ...sdk.AccountObjectIdentifier) []sdk.AccountObjectIdentifier { return values }
+		accounts := func(values ...sdk.AccountIdentifier) []sdk.AccountIdentifier { return values }
+		moveTarget := createPrimary(t)
 
 		cases := []struct {
 			name    string
@@ -696,6 +710,35 @@ func TestInt_FailoverGroups(t *testing.T) {
 					return remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedExternalVolumes(ids(volumeA)))
 				},
 				revert: func() error { return add(sdk.NewFailoverGroupAddRequest().WithAllowedExternalVolumes(ids(volumeA))) },
+			},
+			{
+				name: "remove and add allowed account",
+				run: func() error {
+					if err := remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(accounts(secondaryAccountID))); err != nil {
+						return err
+					}
+					assertThatObject(t, objectassert.FailoverGroup(t, id).HasAllowedAccounts(sourceAccountID))
+					return nil
+				},
+				revert: func() error {
+					return add(sdk.NewFailoverGroupAddRequest().WithAllowedAccounts(accounts(secondaryAccountID)).WithIgnoreEditionCheck(true))
+				},
+			},
+			{
+				name: "move databases to another group",
+				run: func() error {
+					if err := alter(sdk.NewAlterFailoverGroupRequest(id).WithMove(*sdk.NewFailoverGroupMoveRequest(moveTarget).WithDatabases(ids(databaseA.ID())))); err != nil {
+						return err
+					}
+					moved, err := client.FailoverGroups.ShowDatabases(ctx, moveTarget)
+					require.NoError(t, err)
+					require.Contains(t, moved, databaseA.ID())
+					return nil
+				},
+				revert: func() error {
+					return client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(moveTarget).
+						WithMove(*sdk.NewFailoverGroupMoveRequest(id).WithDatabases(ids(databaseA.ID()))))
+				},
 			},
 			{
 				name:    "set object types",
@@ -820,7 +863,8 @@ func TestInt_FailoverGroups(t *testing.T) {
 		require.NoError(t, secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
 			WithResume(true)))
 		assertThatObjectSecondary(t, objectassert.FailoverGroup(t, secondaryID).
-			HasSecondaryState(sdk.FailoverGroupSecondaryStateStarted))
+			HasSecondaryState(sdk.FailoverGroupSecondaryStateStarted).
+			HasNextScheduledRefreshNotEmpty())
 
 		// TODO [SNOW-1348343]: use INFORMATION_SCHEMA.REPLICATION_GROUP_REFRESH_PROGRESS (END_TIME = NULL) to know when no refresh is going on.
 		// A refresh can already be running (003101: Only one refresh statement can execute at a time). Retry until this one is accepted.

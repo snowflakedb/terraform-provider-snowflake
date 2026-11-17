@@ -173,7 +173,7 @@ func ReadFailoverGroups(ctx context.Context, d *schema.ResourceData, meta any) d
 		m["account_locator"] = failoverGroup.AccountLocator
 		m["replication_schedule"] = util.DerefOrZero(failoverGroup.ReplicationSchedule)
 		m["secondary_state"] = failoverGroupSecondaryStateOutput(failoverGroup.SecondaryState)
-		m["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh
+		m["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh.String()
 		m["owner"] = util.DerefOrZero(failoverGroup.Owner)
 		failoverGroupsFlatten = append(failoverGroupsFlatten, m)
 	}

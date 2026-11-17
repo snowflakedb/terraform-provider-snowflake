@@ -25,7 +25,7 @@ description: |-
 
 {{- end }}
 
--> **Note** Use this resource in the target account to manage a replica of a failover group from another account. Promoting the replica to primary and moving the object to [`snowflake_failover_group`](./failover_group) is a manual state migration. See [resource migration](../guides/resource_migration).
+-> **Note** When this failover group becomes primary, Terraform recreates it as a replica of `primary`. Use this resource in the target account to manage a replica of a failover group from another account. Promoting the replica to primary and moving the object to [`snowflake_failover_group`](./failover_group) is a manual state migration. See [resource migration](../guides/resource_migration).
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 

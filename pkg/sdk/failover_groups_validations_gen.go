@@ -32,6 +32,7 @@ func (opts *CreateFailoverGroupOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("CreateFailoverGroupOptions", "name"))
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.AllowedDatabases) {
 		for allowedDatabaseIdx, allowedDatabase := range opts.AllowedDatabases {
 			if !ValidObjectIdentifier(allowedDatabase) {
@@ -99,6 +100,7 @@ func (opts *AlterFailoverGroupOptions) validate() error {
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, errInvalidIdentifier("AlterFailoverGroupOptions", "RenameTo"))
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Set) {
 		if opts.Set.ErrorIntegration != nil && !ValidObjectIdentifier(opts.Set.ErrorIntegration) {
 			errs = append(errs, errInvalidIdentifier("AlterFailoverGroupOptions.Set", "ErrorIntegration"))
@@ -198,6 +200,9 @@ func (opts *AlterFailoverGroupOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Remove) {
+		if !exactlyOneValueSet(opts.Remove.AllowedDatabases, opts.Remove.AllowedExternalVolumes, opts.Remove.AllowedShares, opts.Remove.AllowedAccounts) {
+			errs = append(errs, errExactlyOneOf("AlterFailoverGroupOptions.Remove", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedAccounts"))
+		}
 		if valueSet(opts.Remove.AllowedDatabases) {
 			for allowedDatabaseIdx, allowedDatabase := range opts.Remove.AllowedDatabases {
 				if !ValidObjectIdentifier(allowedDatabase) {
