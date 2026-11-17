@@ -153,9 +153,6 @@ func (opts *AlterTableOptions) validate() error {
 					errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint", "UniquePK", "FK", "CH"))
 				}
 				if valueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK) {
-					if !exactlyOneValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Unique, opts.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey) {
-						errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
-					}
 					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Enforced, opts.ColumnAction.Add.InlineConstraint.UniquePK.NotEnforced) {
 						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
 					}
@@ -173,6 +170,9 @@ func (opts *AlterTableOptions) validate() error {
 					}
 					if everyValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Rely, opts.ColumnAction.Add.InlineConstraint.UniquePK.Norely) {
 						errs = append(errs, errOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Rely", "Norely"))
+					}
+					if !exactlyOneValueSet(opts.ColumnAction.Add.InlineConstraint.UniquePK.Unique, opts.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey) {
+						errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction.Add.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
 					}
 				}
 				if valueSet(opts.ColumnAction.Add.InlineConstraint.FK) {

@@ -99,9 +99,9 @@ type IcebergTableColumn struct {
 }
 
 type TableColumnInlineConstraint struct {
-	UniquePK *TableColumnInlineUniquePK `ddl:"keyword"`
-	FK       *TableColumnInlineFK       `ddl:"keyword"`
-	CH       *TableColumnInlineCH       `ddl:"keyword"`
+	UniquePK *TableColumnInlineUniquePK `ddl:"list,no_comma"`
+	FK       *TableColumnInlineFK       `ddl:"list,no_comma"`
+	CH       *TableColumnInlineCH       `ddl:"list,no_comma"`
 }
 
 type TableColumnInlineUniquePK struct {
@@ -158,9 +158,9 @@ type TableColumnProjectionPolicy struct {
 }
 
 type TableOutOfLineConstraint struct {
-	UniquePK *TableOutOfLineUniquePK `ddl:"keyword"`
-	FK       *TableOutOfLineFK       `ddl:"keyword"`
-	CH       *TableOutOfLineCH       `ddl:"keyword"`
+	UniquePK *TableOutOfLineUniquePK `ddl:"list,no_comma"`
+	FK       *TableOutOfLineFK       `ddl:"list,no_comma"`
+	CH       *TableOutOfLineCH       `ddl:"list,no_comma"`
 }
 
 type TableOutOfLineUniquePK struct {

@@ -971,6 +971,30 @@ func Test_queryStructFromObject_tableColumnActionStructs(t *testing.T) {
 		IntoField(), drop.IntoField())
 }
 
+func Test_queryStructFromObject_tableConstraints(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		wrapper ssot.Attribute
+		kinds   []ssot.Attribute
+	}{
+		{"out of line", ssotdefs.TableOutOfLineConstraint, []ssot.Attribute{ssotdefs.TableOutOfLineUniquePK, ssotdefs.TableOutOfLineFK, ssotdefs.TableOutOfLineCH}},
+		{"inline", ssotdefs.TableColumnInlineConstraint, []ssot.Attribute{ssotdefs.TableColumnInlineUniquePK, ssotdefs.TableColumnInlineFK, ssotdefs.TableColumnInlineCH}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.NotPanics(t, func() {
+				ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&tc.wrapper}}})
+			})
+			got := QueryStructFromAttribute("Table", tc.wrapper)
+			want := NewQueryStruct(tc.wrapper.CreateSql.StructName)
+			for _, kind := range tc.kinds {
+				want = want.OptionalQueryStructField(kind.CreateSql.Field, QueryStructFromAttribute("Table", kind), ListOptions().NoComma())
+			}
+			want = want.WithValidation(ExactlyOneValueSet, "UniquePK", "FK", "CH")
+			require.Equal(t, want.IntoField(), got.IntoField())
+		})
+	}
+}
+
 func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
 	attr := ssotdefs.TableConstraintAction
 	require.NotPanics(t, func() {

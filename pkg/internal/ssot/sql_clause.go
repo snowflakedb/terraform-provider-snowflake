@@ -99,6 +99,9 @@ type SqlClause struct {
 	TextValue bool
 	// GoType is the Go type of a predefined field, such as DataType or []Column. PredefinedType sets it.
 	GoType string
+	// KeywordShape writes a predefined type as a keyword field instead of a parameter, for a Go type that prints itself,
+	// such as []Column or *ForeignKeyOnAction. KeywordShape sets it.
+	KeywordShape bool
 	// Shared marks a preexisting struct field as shared: the struct is generated once, and this field calls its toOpts.
 	// Shared sets it.
 	Shared bool
@@ -392,6 +395,9 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.GoType != "" {
 		base.GoType = over.GoType
 	}
+	if over.KeywordShape {
+		base.KeywordShape = true
+	}
 	if over.Shared {
 		base.Shared = true
 	}
@@ -418,6 +424,12 @@ func ObjectParameter(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindObject, func(c *SqlClause) {
 		c.NoComma = true
 	}, opts)
+}
+
+// KeywordShape writes a predefined type as a keyword field, not a parameter. Sql is the text before it and Parentheses()
+// wraps it. Use it for a Go type that prints itself, such as []Column or *ForeignKeyOnAction.
+func KeywordShape() SqlClauseOption {
+	return func(c *SqlClause) { c.KeywordShape = true }
 }
 
 // Shared marks a preexisting struct field as shared. The struct is generated with the object that defines it, and this
