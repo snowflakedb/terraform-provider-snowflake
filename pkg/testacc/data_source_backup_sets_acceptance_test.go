@@ -97,6 +97,7 @@ func TestAcc_BackupSets_Filtering(t *testing.T) {
 	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := testClient().Ids.RandomSchemaObjectIdentifierInSchemaWithPrefix(prefix, secondSchema.ID())
+	idWithoutPrefix := testClient().Ids.RandomSchemaObjectIdentifierInSchema(secondSchema.ID())
 
 	// One backup set per table.
 	table1, cleanupTable1 := testClient().Table.CreateWithPredefinedColumns(t)
@@ -105,12 +106,15 @@ func TestAcc_BackupSets_Filtering(t *testing.T) {
 	t.Cleanup(cleanupTable2)
 	table3, cleanupTable3 := testClient().Table.CreateWithPredefinedColumns(t)
 	t.Cleanup(cleanupTable3)
+	tableWithoutPrefix, cleanupTableWithoutPrefix := testClient().Table.CreateWithPredefinedColumns(t)
+	t.Cleanup(cleanupTableWithoutPrefix)
 
 	model1 := model.BackupSet("test1", id1.DatabaseName(), id1.SchemaName(), id1.Name()).WithForTable(table1.ID().FullyQualifiedName())
 	model2 := model.BackupSet("test2", id2.DatabaseName(), id2.SchemaName(), id2.Name()).WithForTable(table2.ID().FullyQualifiedName())
 	model3 := model.BackupSet("test3", id3.DatabaseName(), id3.SchemaName(), id3.Name()).WithForTable(table3.ID().FullyQualifiedName())
+	modelWithoutPrefix := model.BackupSet("test4", idWithoutPrefix.DatabaseName(), idWithoutPrefix.SchemaName(), idWithoutPrefix.Name()).WithForTable(tableWithoutPrefix.ID().FullyQualifiedName())
 
-	dependsOn := []string{model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference()}
+	dependsOn := []string{model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), modelWithoutPrefix.ResourceReference()}
 	likeFirst := datasourcemodel.BackupSets("test").
 		WithLike(id1.Name()).
 		WithInDatabase(id1.DatabaseId()).
@@ -126,6 +130,10 @@ func TestAcc_BackupSets_Filtering(t *testing.T) {
 		WithStartsWith(prefix).
 		WithInDatabase(id1.DatabaseId()).
 		WithDependsOn(dependsOn...)
+	likePrefixInAccount := datasourcemodel.BackupSets("test").
+		WithLike(prefix + "%").
+		WithInAccount().
+		WithDependsOn(dependsOn...)
 	withLimit := datasourcemodel.BackupSets("test").
 		WithStartsWith(prefix).
 		WithInDatabase(id1.DatabaseId()).
@@ -139,23 +147,27 @@ func TestAcc_BackupSets_Filtering(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, likeFirst),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, likeFirst),
 				Check:  resource.TestCheckResourceAttr(likeFirst.DatasourceReference(), "backup_sets.#", "1"),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, likePrefix),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, likePrefix),
 				Check:  resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "backup_sets.#", "3"),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, inSchema),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, inSchema),
 				Check:  resource.TestCheckResourceAttr(inSchema.DatasourceReference(), "backup_sets.#", "2"),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, inDatabase),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, inDatabase),
 				Check:  resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "backup_sets.#", "3"),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, withLimit),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, likePrefixInAccount),
+				Check:  resource.TestCheckResourceAttr(likePrefixInAccount.DatasourceReference(), "backup_sets.#", "3"),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, withLimit),
 				Check:  resource.TestCheckResourceAttr(withLimit.DatasourceReference(), "backup_sets.#", "1"),
 			},
 		},

@@ -230,6 +230,7 @@ var BackupSet = ssot.Object{
 	// DROP and ALTER pages omit IF EXISTS. Both stay on until a probe shows Snowflake rejects the clause.
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),
+		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
