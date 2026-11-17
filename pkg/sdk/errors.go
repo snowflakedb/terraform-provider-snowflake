@@ -46,6 +46,10 @@ var (
 	// It is distinct from a parse error, which means the parameter is supported but the value is invalid.
 	ErrParameterNotSupported = NewError("parameter not supported on this object")
 
+	// ErrLegacyParameterNotSupported signals that the given parameter cannot be set or unset through the
+	// legacy account parameter write path (see parameters_legacy_ext.go), but the catalog write path supports it.
+	ErrLegacyParameterNotSupported = NewError("parameter not supported by the legacy account parameter write path")
+
 	// ErrEnumValueNotSupported signals that an enum parser does not recognize a value.
 	// Callers may use it to distinguish enum conversion failures from other parse errors.
 	ErrEnumValueNotSupported = NewError("enum value not supported")

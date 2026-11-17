@@ -25,6 +25,8 @@ func alterObjectParameter(parseOnSetEnabled bool, catalog func() (bool, error), 
 			return err
 		}
 	}
+	// TODO [SNOW-4258021]: when the legacy write path does not support the parameter, suggest the catalog write path
+	// (if it supports the parameter) or the forward-compatible path in the error.
 	return legacy()
 }
 
@@ -131,7 +133,7 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 				return client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, parameter, value)
 			},
 			func() error {
-				return client.Parameters.SetObjectParameterOnAccount(ctx, parameter, value)
+				return client.Parameters.SetObjectParameterOnAccountLegacy(ctx, parameter, value)
 			},
 		); err != nil {
 			return diag.FromErr(fmt.Errorf("error creating object parameter err = %w", err))
@@ -235,7 +237,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 					return client.Parameters.UnsetObjectParameterOnAccountViaCatalog(ctx, objectParameter)
 				},
 				func() error {
-					return client.Parameters.UnsetObjectParameterOnAccount(ctx, objectParameter)
+					return client.Parameters.UnsetObjectParameterOnAccountLegacy(ctx, objectParameter)
 				},
 			); err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting account parameter err = %w", err))
@@ -252,7 +254,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 					return client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, objectParameter, defaultValue)
 				},
 				func() error {
-					return client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), defaultValue)
+					return client.Parameters.SetAccountParameterLegacy(ctx, sdk.AccountParameter(key), defaultValue)
 				},
 			); err != nil {
 				return diag.FromErr(fmt.Errorf("error resetting account parameter err = %w", err))

@@ -280,6 +280,32 @@ The trust policy of the IAM role that Snowflake assumes needs the external ID an
 
 No configuration changes are required. If you added `ignore_changes` for `sigv4_external_id` as a workaround, or adjusted the state manually after import, you can remove the workaround.
 
+### *(new feature)* `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` and `OBJECT_PARAMETER_PARSE_ON_SET` enabled by default
+
+The [`ACCOUNT_PARAMETER_CATALOG_WRITE_PATH`](#new-feature-opt-in-experiment-internal-quoting-for-snowflake_account_parameter) and [`OBJECT_PARAMETER_PARSE_ON_SET`](#new-feature-opt-in-experiment-parse-snowflake_object_parameter-values-on-set) experiments are now enabled by default. Opt out by listing the names in [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1). With the experiments, the provider parses `value` and quotes it based on the parameter type:
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) and [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) with `on_account = true`: string values must not be wrapped in single quotes manually (e.g. `value = "module_a,module_b"` for `PYTHON_PROFILER_MODULES`). Identifier values (`CATALOG`, `EVENT_TABLE`, `NETWORK_POLICY`, and `PYTHON_PROFILER_TARGET_STAGE`) are sent as double-quoted identifiers, so they must match the name stored in Snowflake. The parameters [added in v2.22.0](#new-feature-new-supported-parameters-in-snowflake_account_parameter) (e.g. `DISABLE_UI_DOWNLOAD_BUTTON`) can be set.
+- [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) with `on_account = false`: covered parameters (on Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table) are parsed with the same rules as the typed SDK fields. String values are quoted by the provider, so they are stored as written (e.g. `DEFAULT_DDL_COLLATION = "en_US"` is stored as `en_US` instead of `EN_US`), and a value that does not match the parameter fails in the provider. Other parameters and object types keep sending `value` as a raw SQL token.
+
+They will be promoted (the opt-out removed) in **v2.25.0** or **v2.26.0**. After promotion, listing the names in either list is a no-op until the next major version.
+
+**Recommended action:**
+- `snowflake_account_parameter` and `snowflake_object_parameter` with `on_account = true`: if `value` wraps a string in single quotes, remove them (e.g. change `value = "'module_a,module_b'"` to `value = "module_a,module_b"`). If `value` is an identifier, set it to the name stored in Snowflake (e.g. `value = "MY_NETWORK_POLICY"` for a network policy created without quotes as `my_network_policy`).
+- `snowflake_object_parameter` with `on_account = false`: for the covered parameters, remove the manual quotes from string values (e.g. change `value = "'en-ci-upper'"` to `value = "en-ci-upper"`), and check the values that Snowflake case-folded before (e.g. `value = "en_US"` was stored as `EN_US` and is now stored as `en_US`).
+
+No changes are required if your configuration already follows these rules. To keep the previous behavior instead, opt out:
+
+```terraform
+provider "snowflake" {
+  experimental_features_disabled = ["ACCOUNT_PARAMETER_CATALOG_WRITE_PATH", "OBJECT_PARAMETER_PARSE_ON_SET"]
+}
+```
+
+With the experiments disabled:
+- `snowflake_account_parameter` and `snowflake_object_parameter` with `on_account = true` use the v2.22.x write path. String values of the parameters that are not quoted by the provider (`PYTHON_PROFILER_MODULES` for `snowflake_account_parameter`) must be wrapped in single quotes manually. `CATALOG` and `PYTHON_PROFILER_TARGET_STAGE` are sent as written, and `NETWORK_POLICY` and `EVENT_TABLE` as single-quoted string literals. The parameters added in v2.22.0, and `ENABLE_CONSOLE_OUTPUT`, `EXTERNAL_VOLUME`, `REPLACE_INVALID_CHARACTERS`, and `USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS`, are not supported by this write path, and apply fails with an error saying that the legacy write path does not support the parameter. Value range checks done by v2.22.x in the provider (e.g. `CLIENT_ENCRYPTION_KEY_SIZE` being `128` or `256`) are left to Snowflake.
+- `snowflake_object_parameter` with `on_account = false` sends `value` as a raw SQL token.
+
+Parameters that neither write path supports yet (e.g. `SERVICE_CALLER_TOKEN_VALIDITY_SECS`) fail with an error saying that the parameter is not supported, with or without the experiments.
+
 ## v2.22.x ➞ v2.23.0
 
 ### *(breaking change)* `snowflake_alert` reworked
@@ -1014,6 +1040,12 @@ The [`snowflake_external_oauth_integration`](https://registry.terraform.io/provi
 
 If a non-`CUSTOM` integration configures `external_oauth_scope_delimiter`, remove the field; the provider now returns an error explaining that it is supported only with `external_oauth_type = "CUSTOM"`. If you used `lifecycle.ignore_changes` for this field as a workaround, you can remove that entry after upgrading. `CUSTOM` integrations require no changes.
 
+### *(breaking change)* `snowflake_network_policy_attachment` sets the account network policy as an identifier
+
+With `set_for_account = true`, the preview [`snowflake_network_policy_attachment`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_policy_attachment) resource sets the network policy on the account as a double-quoted identifier (`ALTER ACCOUNT SET NETWORK_POLICY = "<network_policy_name>"`) instead of a single-quoted string literal. This is how the resource already sets the network policy on users. `network_policy_name` is case-sensitive.
+
+**Migration:** set `network_policy_name` to the name stored in Snowflake, as shown by `SHOW NETWORK POLICIES`. For a network policy created without quotes, this is the uppercase name (e.g. `network_policy_name = "MY_NETWORK_POLICY"` for `CREATE NETWORK POLICY my_network_policy ...`). If the network policy is managed by `snowflake_network_policy`, reference its `name` attribute. Attaching the network policy to users is not affected.
+
 ## v2.22.0 ➞ v2.22.1
 
 ### *(chore)* Provider rebuilt with Go 1.26.10 (CVE-2026-111943)
@@ -1234,8 +1266,6 @@ We added the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` opt-in experiment (`experime
   ```
 
 By default (experiment disabled), the resource keeps its current behavior — this is a zero behavior change for existing configurations.
-
-This experiment is also the first step toward forward-compatible parameter support: letting newly-added Snowflake parameters be used without waiting for a provider release. For now, it only changes how already-supported parameters are written.
 
 ### *(enhancement)* Loosened integer parameter validation on database and schema resources
 

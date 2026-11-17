@@ -53,6 +53,8 @@ func Test_Experiments_IsEnabled(t *testing.T) {
 		require.True(t, New(nil, nil).IsEnabled(GrantsSafeDestroy))
 		require.True(t, New(nil, nil).IsEnabled(TagAssociationSafeDestroy))
 		require.True(t, New(nil, nil).IsEnabled(UserEnableDefaultWorkloadIdentity))
+		require.True(t, New(nil, nil).IsEnabled(ObjectParameterParseOnSet))
+		require.True(t, New(nil, nil).IsEnabled(AccountParameterCatalogWritePath))
 	})
 
 	t.Run("default-on experiment can be disabled", func(t *testing.T) {
@@ -67,7 +69,7 @@ func Test_Experiments_IsEnabled(t *testing.T) {
 
 func Test_Experiments_UserLists(t *testing.T) {
 	enabled := []string{string(HierarchyRenames)}
-	disabled := []string{string(InheritedGrants), string(WarehouseShowImprovedPerformance), string(GrantAccountRoleSafePublicRole), string(GrantsStrictPrivilegeManagement), string(GrantsImportValidation), string(ParametersIgnoreValueChangesIfNotOnObjectLevel), string(GrantsSafeDestroy), string(TagAssociationSafeDestroy), string(UserEnableDefaultWorkloadIdentity)}
+	disabled := []string{string(InheritedGrants), string(WarehouseShowImprovedPerformance), string(GrantAccountRoleSafePublicRole), string(GrantsStrictPrivilegeManagement), string(GrantsImportValidation), string(ParametersIgnoreValueChangesIfNotOnObjectLevel), string(GrantsSafeDestroy), string(TagAssociationSafeDestroy), string(UserEnableDefaultWorkloadIdentity), string(ObjectParameterParseOnSet), string(AccountParameterCatalogWritePath)}
 	experiments := New(enabled, disabled)
 
 	gotEnabled := experiments.UserEnabled()
@@ -144,7 +146,9 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 	userWif := string(UserEnableDefaultWorkloadIdentity)
 	safePublic := string(GrantAccountRoleSafePublicRole)
 	inherited := string(InheritedGrants)
-	allDefaultOn := []string{warehouse, grantsStrict, parametersIgnore, userWif, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, inherited}
+	objectParameterParseOnSet := string(ObjectParameterParseOnSet)
+	accountParameterCatalogWritePath := string(AccountParameterCatalogWritePath)
+	allDefaultOn := []string{warehouse, grantsStrict, parametersIgnore, userWif, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, inherited, objectParameterParseOnSet, accountParameterCatalogWritePath}
 
 	t.Run("empty lists enable default-on experiments only", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled(nil, nil)
@@ -153,7 +157,7 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 
 	t.Run("opt-in experiment is included when listed in enabled", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled([]string{optIn}, nil)
-		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, userWif, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn, inherited}, got)
+		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, userWif, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn, inherited, objectParameterParseOnSet, accountParameterCatalogWritePath}, got)
 	})
 
 	t.Run("default-on experiment is excluded when listed in disabled", func(t *testing.T) {
@@ -168,6 +172,6 @@ func Test_ComputeEffectiveExperimentsEnabled_Public(t *testing.T) {
 
 	t.Run("matching is case-insensitive", func(t *testing.T) {
 		got := ComputeEffectiveExperimentsEnabled([]string{strings.ToLower(optIn)}, []string{strings.ToLower(inherited)})
-		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, userWif, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn}, got)
+		require.Equal(t, []string{warehouse, grantsStrict, parametersIgnore, userWif, grantsImport, grantsSafeDestroy, tagAssociationSafeDestroy, safePublic, optIn, objectParameterParseOnSet, accountParameterCatalogWritePath}, got)
 	})
 }

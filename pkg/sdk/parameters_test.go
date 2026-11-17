@@ -432,3 +432,87 @@ func TestUnsetObjectParameterOnAccountViaCatalog(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, handled)
 }
+
+// The expected SQL of the legacy write path is the SQL sent by v2.22.x, and invalid values fail as in v2.22.x.
+func TestSetParameterOnAccountLegacySql(t *testing.T) {
+	cases := []struct {
+		name      string
+		formats   string
+		parameter string
+		value     string
+		wantSql   string
+		wantErr   string
+	}{
+		{name: "raw string keeps manual quotes", formats: "account", parameter: "PYTHON_PROFILER_MODULES", value: "'module_a,module_b'", wantSql: "ALTER ACCOUNT SET PYTHON_PROFILER_MODULES = 'module_a,module_b'"},
+		{name: "raw identifier is not quoted", formats: "account", parameter: "CATALOG", value: "my_catalog", wantSql: "ALTER ACCOUNT SET CATALOG = my_catalog"},
+		{name: "raw enum is not normalized", formats: "account", parameter: "LOG_LEVEL", value: "info", wantSql: "ALTER ACCOUNT SET LOG_LEVEL = info"},
+		{name: "identifier as single-quoted string", formats: "account", parameter: "NETWORK_POLICY", value: "my_policy", wantSql: "ALTER ACCOUNT SET NETWORK_POLICY = 'my_policy'"},
+		{name: "qualified identifier as single-quoted string", formats: "account", parameter: "EVENT_TABLE", value: "DB.SCHEMA.EVENTS", wantSql: "ALTER ACCOUNT SET EVENT_TABLE = 'DB.SCHEMA.EVENTS'"},
+		{name: "single-quoted string escapes quotes", formats: "account", parameter: "QUERY_TAG", value: "it's", wantSql: `ALTER ACCOUNT SET QUERY_TAG = 'it\'s'`},
+		{name: "enum single-quoted on the account parameter path", formats: "account", parameter: "TRACE_LEVEL", value: "ALWAYS", wantSql: "ALTER ACCOUNT SET TRACE_LEVEL = 'ALWAYS'"},
+		{name: "bool is normalized", formats: "account", parameter: "ENABLE_PERSONAL_DATABASE", value: "TRUE", wantSql: "ALTER ACCOUNT SET ENABLE_PERSONAL_DATABASE = true"},
+		{name: "bool accepts 1", formats: "account", parameter: "ENABLE_PERSONAL_DATABASE", value: "1", wantSql: "ALTER ACCOUNT SET ENABLE_PERSONAL_DATABASE = true"},
+		{name: "int is normalized", formats: "account", parameter: "STATEMENT_TIMEOUT_IN_SECONDS", value: "042", wantSql: "ALTER ACCOUNT SET STATEMENT_TIMEOUT_IN_SECONDS = 42"},
+		{name: "non-negative float", formats: "account", parameter: "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", value: "9.9", wantSql: "ALTER ACCOUNT SET INITIAL_REPLICATION_SIZE_LIMIT_IN_TB = 9.9"},
+		// v2.22.x rejected this value in the provider; it is left to Snowflake now.
+		{name: "int range is not checked", formats: "account", parameter: "CLIENT_ENCRYPTION_KEY_SIZE", value: "42", wantSql: "ALTER ACCOUNT SET CLIENT_ENCRYPTION_KEY_SIZE = 42"},
+		{name: "invalid bool", formats: "account", parameter: "ENABLE_PERSONAL_DATABASE", value: "yes", wantErr: `boolean value ("true"/"false") expected for ENABLE_PERSONAL_DATABASE parameter, but got yes instead`},
+		{name: "invalid int", formats: "account", parameter: "STATEMENT_TIMEOUT_IN_SECONDS", value: "9.9", wantErr: "failed to parse parameter STATEMENT_TIMEOUT_IN_SECONDS, expected an integer, but got 9.9"},
+		{name: "negative float", formats: "account", parameter: "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB", value: "-0.5", wantErr: "INITIAL_REPLICATION_SIZE_LIMIT_IN_TB must be a non-negative float, got -0.5"},
+		{name: "object parameter: enum is raw", formats: "object", parameter: "TRACE_LEVEL", value: "ALWAYS", wantSql: "ALTER ACCOUNT SET TRACE_LEVEL = ALWAYS"},
+		{name: "object parameter: identifier as single-quoted string", formats: "object", parameter: "NETWORK_POLICY", value: "my_policy", wantSql: "ALTER ACCOUNT SET NETWORK_POLICY = 'my_policy'"},
+		{name: "object parameter: raw identifier", formats: "object", parameter: "CATALOG", value: "my_catalog", wantSql: "ALTER ACCOUNT SET CATALOG = my_catalog"},
+		{name: "object parameter: int", formats: "object", parameter: "DATA_RETENTION_TIME_IN_DAYS", value: "1", wantSql: "ALTER ACCOUNT SET DATA_RETENTION_TIME_IN_DAYS = 1"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var sql string
+			var err error
+			if tc.formats == "object" {
+				sql, err = legacySetParameterOnAccountSql(legacyObjectParameterOnAccountFormats, ObjectParameter(tc.parameter), tc.value)
+			} else {
+				sql, err = legacySetParameterOnAccountSql(legacyAccountParameterFormats, AccountParameter(tc.parameter), tc.value)
+			}
+			if tc.wantErr != "" {
+				require.EqualError(t, err, tc.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.wantSql, sql)
+		})
+	}
+}
+
+func TestUnsetParameterOnAccountLegacySql(t *testing.T) {
+	sql, err := legacyUnsetParameterOnAccountSql(legacyAccountParameterFormats, AccountParameterTimezone)
+	require.NoError(t, err)
+	require.Equal(t, "ALTER ACCOUNT UNSET TIMEZONE", sql)
+
+	sql, err = legacyUnsetParameterOnAccountSql(legacyObjectParameterOnAccountFormats, ObjectParameterNetworkPolicy)
+	require.NoError(t, err)
+	require.Equal(t, "ALTER ACCOUNT UNSET NETWORK_POLICY", sql)
+}
+
+func TestParameterOnAccountLegacy_NotSupported(t *testing.T) {
+	// The errors are returned before any SQL is sent.
+	p := &parameters{client: &Client{}}
+	ctx := context.Background()
+
+	t.Run("supported only by the catalog write path", func(t *testing.T) {
+		require.ErrorIs(t, p.SetAccountParameterLegacy(ctx, AccountParameterDisableUiDownloadButton, "true"), ErrLegacyParameterNotSupported)
+		require.ErrorIs(t, p.UnsetAccountParameterLegacy(ctx, AccountParameterDisableUiDownloadButton), ErrLegacyParameterNotSupported)
+		require.ErrorIs(t, p.SetObjectParameterOnAccountLegacy(ctx, ObjectParameter("ENABLE_CONSOLE_OUTPUT"), "true"), ErrLegacyParameterNotSupported)
+		require.ErrorIs(t, p.UnsetObjectParameterOnAccountLegacy(ctx, ObjectParameter("ENABLE_CONSOLE_OUTPUT")), ErrLegacyParameterNotSupported)
+	})
+
+	t.Run("not supported by any write path", func(t *testing.T) {
+		err := p.SetAccountParameterLegacy(ctx, AccountParameterServiceCallerTokenValiditySecs, "60")
+		require.ErrorIs(t, err, ErrParameterNotSupported)
+		require.NotErrorIs(t, err, ErrLegacyParameterNotSupported)
+
+		err = p.UnsetObjectParameterOnAccountLegacy(ctx, ObjectParameter("FALLBACK_WAREHOUSE"))
+		require.ErrorIs(t, err, ErrParameterNotSupported)
+		require.NotErrorIs(t, err, ErrLegacyParameterNotSupported)
+	})
+}
