@@ -600,7 +600,7 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 			return nil, err
 		}
 
-		req := sdk.NewHybridTableColumnRequest(col.name, sdk.LegacyDataTypeWithAttrs(spec.dataType))
+		req := sdk.NewHybridTableColumnRequest(col.name, spec.dataType)
 		if !col.nullable {
 			req.WithNotNull(true)
 		}
@@ -627,7 +627,7 @@ func buildHybridAddColumnAction(col column) (*sdk.HybridTableAddColumnActionRequ
 	if err != nil {
 		return nil, err
 	}
-	req := sdk.NewHybridTableAddColumnActionRequest(col.name, sdk.LegacyDataTypeWithAttrs(spec.dataType))
+	req := sdk.NewHybridTableAddColumnActionRequest(col.name, spec.dataType)
 	if spec.defaultValue != nil {
 		req.WithDefaultValue(*spec.defaultValue)
 	}
@@ -642,21 +642,15 @@ func buildHybridAddColumnAction(col column) (*sdk.HybridTableAddColumnActionRequ
 
 // buildHybridAlterColumnTypeAction constructs a SET DATA TYPE alter-column
 // action from a parsed column. Mirrors the Create and ADD COLUMN paths by
-// running the raw type string through datatypes.ParseDataType (so that an
-// invalid type fails client-side with a clear error) before converting via
-// sdk.LegacyDataTypeWithAttrs, which preserves precision/scale/length on the
-// way out (e.g. NUMBER(20,5) and VARCHAR(100) survive the round-trip).
-//
-// Using LegacyDataTypeFrom here would be a regression: it strips attributes,
-// silently degrading NUMBER(20,5) to NUMBER (which Snowflake interprets as
-// the default NUMBER(38,0)).
+// running the raw type string through datatypes.ParseDataType, so that an
+// invalid type fails client-side with a clear error.
 func buildHybridAlterColumnTypeAction(col column) (*sdk.HybridTableAlterColumnActionRequest, error) {
 	dataType, err := datatypes.ParseDataType(col.dataType)
 	if err != nil {
 		return nil, fmt.Errorf("invalid data type for column %s: %w", col.name, err)
 	}
 	return sdk.NewHybridTableAlterColumnActionRequest(col.name).
-		WithDataType(sdk.LegacyDataTypeWithAttrs(dataType)), nil
+		WithDataType(dataType), nil
 }
 
 // buildHybridColumnDefaultFromParsed converts the resource-level columnDefault
@@ -1115,11 +1109,10 @@ func buildHybridColumnStateFromDescribe(details []sdk.HybridTableDetails, d *sch
 
 		cfg := configByName[strings.ToUpper(td.Name)]
 
-		typeOut := td.Type
-		if cfg.found && cfg.typeStr != "" {
+		typeOut := td.DataTypeRaw
+		if cfg.found && cfg.typeStr != "" && td.Type != nil {
 			cfgParsed, errCfg := datatypes.ParseDataType(cfg.typeStr)
-			descParsed, errDesc := datatypes.ParseDataType(td.Type)
-			if errCfg == nil && errDesc == nil && datatypes.AreTheSame(cfgParsed, descParsed) {
+			if errCfg == nil && datatypes.AreTheSame(cfgParsed, td.Type) {
 				typeOut = cfg.typeStr
 			}
 		}
@@ -1320,7 +1313,7 @@ func toHybridColumnDefaultConfig(td sdk.HybridTableDetails) ([]any, error) {
 	}
 
 	// Constant: unescape for string types
-	if sdk.IsStringType(td.Type) {
+	if datatypes.IsTextDataType(td.Type) {
 		unquoted := strings.TrimSuffix(strings.TrimPrefix(defaultRaw, "'"), "'")
 		return []any{map[string]any{
 			"constant": strings.ReplaceAll(unquoted, "''", "'"),
