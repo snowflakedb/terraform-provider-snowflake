@@ -30,6 +30,14 @@ func (p *PipesModel) WithInSchema(schemaId sdk.DatabaseObjectIdentifier) *PipesM
 	)
 }
 
+func (p *PipesModel) WithInAccount() *PipesModel {
+	return p.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
+
 func (p *PipesModel) WithInApplication(applicationId sdk.AccountObjectIdentifier) *PipesModel {
 	return p.WithInValue(
 		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
