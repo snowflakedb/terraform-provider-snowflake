@@ -89,7 +89,7 @@ func TestApplyFilters(t *testing.T) {
 		require.Contains(t, got, "handleOn(d, &req.On)")
 	})
 	t.Run("terse and history", func(t *testing.T) {
-		got := renderTemplate(t, "applyFilters", modelOf(widgetWith(
+		got := renderTemplate(t, "applyFilters", modelOf(terseWidgetWith(
 			ssot.SdkShowTerse(), ssot.SdkShowOptionalSql("HISTORY"),
 		)))
 		require.Contains(t, got, `d.Get("terse").(bool)`)
@@ -244,7 +244,7 @@ func TestRead_everyShapeIsValidGo(t *testing.T) {
 		"slice describe":     sliceDescribe,
 		"details describe":   detailsDescribe,
 		"parameters":         syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()}),
-		"every filter":       widgetWith(ssot.SdkShowOptionalLike(), ssot.SdkShowOptionalStartsWith(), ssot.SdkShowOptionalLimitFrom(), ssot.SdkShowOptionalExtendedIn(), ssot.SdkShowOptionalOn(), ssot.SdkShowTerse(), ssot.SdkShowOptionalSql("HISTORY")),
+		"every filter":       terseWidgetWith(ssot.SdkShowOptionalLike(), ssot.SdkShowOptionalStartsWith(), ssot.SdkShowOptionalLimitFrom(), ssot.SdkShowOptionalExtendedIn(), ssot.SdkShowOptionalOn(), ssot.SdkShowTerse(), ssot.SdkShowOptionalSql("HISTORY")),
 		"plain in":           widgetWith(ssot.SdkShowOptionalIn()),
 		"in account":         widgetWith(ssot.SdkShowOptionalInAccount()),
 		"every hook omitted": syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()}, ssot.WithDataSourceDescribeInSdk(ssot.Omitted()), ssot.WithDataSourceShowParametersInSdk(ssot.Omitted()), ssot.WithDataSourceReadWrapper(ssot.Omitted())),

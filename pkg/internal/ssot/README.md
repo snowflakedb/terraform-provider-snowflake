@@ -752,6 +752,7 @@ The data source follows the object, so a definition lists only the exceptions:
 - Filters are the options of the SDK SHOW: `like`, `starts_with`, `limit`, one `in` flavour (`In`, `ExtendedIn` or
   `InAccount`), `on`, `terse` and `history`. The data source cannot offer a filter that the SDK request does not have. The
   shared schemas and handlers are in `pkg/datasources/common.go`, and a new filter flavour starts there.
+  `terse` is left out unless the definition opts in with `WithDataSource(DataSourceWithTerse())`.
 - `with_describe` and `describe_output` exist when the SDK has DESCRIBE and the object has `Describe.Columns`. The call is
   `DescribeDetails` when the SDK emits it, otherwise `Describe`.
 - `with_parameters` and `parameters` exist when the SDK has `SdkShowParameters()`. The parameters schema and mapper are

@@ -124,7 +124,7 @@ func (obj Object) DataSourceFilters() DataSourceFilters {
 		StartsWith: cfg.ShowOptionalStartsWith,
 		Limit:      cfg.ShowOptionalLimitFrom || cfg.ShowOptionalLimit,
 		On:         cfg.ShowOptionalOn,
-		Terse:      cfg.ShowTerse,
+		Terse:      cfg.ShowTerse && ObjectGenerators(obj.Generators...).DataSource.WithTerse,
 		History:    slices.Contains(cfg.ShowOptionalSql, "HISTORY"),
 	}
 	switch {

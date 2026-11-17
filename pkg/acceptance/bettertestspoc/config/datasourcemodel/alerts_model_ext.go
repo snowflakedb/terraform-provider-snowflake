@@ -30,6 +30,14 @@ func (a *AlertsModel) WithInSchema(schemaId sdk.DatabaseObjectIdentifier) *Alert
 	)
 }
 
+func (a *AlertsModel) WithInAccount() *AlertsModel {
+	return a.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
+
 func (a *AlertsModel) WithInApplication(applicationId sdk.AccountObjectIdentifier) *AlertsModel {
 	return a.WithInValue(
 		tfconfig.ObjectVariable(map[string]tfconfig.Variable{

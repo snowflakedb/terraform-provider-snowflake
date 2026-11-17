@@ -97,32 +97,38 @@ func TestAcc_Alerts_Filtering(t *testing.T) {
 	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithPrefix(prefix)
 	id3 := testClient().Ids.RandomSchemaObjectIdentifierInSchemaWithPrefix(prefix, secondSchema.ID())
+	idWithoutPrefix := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	model1 := model.Alert("test1", id1.DatabaseName(), id1.SchemaName(), id1.Name(), "SELECT 1", "SELECT 1").WithAlertScheduleInterval(60)
 	model2 := model.Alert("test2", id2.DatabaseName(), id2.SchemaName(), id2.Name(), "SELECT 1", "SELECT 1").WithAlertScheduleInterval(60)
 	model3 := model.Alert("test3", id3.DatabaseName(), id3.SchemaName(), id3.Name(), "SELECT 1", "SELECT 1").WithAlertScheduleInterval(60)
+	modelWithoutPrefix := model.Alert("test4", idWithoutPrefix.DatabaseName(), idWithoutPrefix.SchemaName(), idWithoutPrefix.Name(), "SELECT 1", "SELECT 1").WithAlertScheduleInterval(60)
 
 	likeFirst := datasourcemodel.Alerts("test").
 		WithLike(id1.Name()).
 		WithInDatabase(id1.DatabaseId()).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), modelWithoutPrefix.ResourceReference())
 	likePrefix := datasourcemodel.Alerts("test").
 		WithLike(prefix+"%").
 		WithInDatabase(id1.DatabaseId()).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), modelWithoutPrefix.ResourceReference())
 	inSchema := datasourcemodel.Alerts("test").
 		WithInSchema(id1.SchemaId()).
 		WithStartsWith(prefix).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), modelWithoutPrefix.ResourceReference())
 	inDatabase := datasourcemodel.Alerts("test").
 		WithStartsWith(prefix).
 		WithInDatabase(id1.DatabaseId()).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), modelWithoutPrefix.ResourceReference())
+	likePrefixInAccount := datasourcemodel.Alerts("test").
+		WithLike(prefix+"%").
+		WithInAccount().
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), modelWithoutPrefix.ResourceReference())
 	withLimit := datasourcemodel.Alerts("test").
 		WithStartsWith(prefix).
 		WithInDatabase(id1.DatabaseId()).
 		WithLimit(1).
-		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference(), modelWithoutPrefix.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -131,23 +137,27 @@ func TestAcc_Alerts_Filtering(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, likeFirst),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, likeFirst),
 				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(likeFirst.DatasourceReference(), "alerts.#", "1")),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, likePrefix),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, likePrefix),
 				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "alerts.#", "3")),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, inSchema),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, inSchema),
 				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(inSchema.DatasourceReference(), "alerts.#", "2")),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, inDatabase),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, inDatabase),
 				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "alerts.#", "3")),
 			},
 			{
-				Config: accconfig.FromModels(t, model1, model2, model3, withLimit),
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, likePrefixInAccount),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(likePrefixInAccount.DatasourceReference(), "alerts.#", "3")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, modelWithoutPrefix, withLimit),
 				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(withLimit.DatasourceReference(), "alerts.#", "1")),
 			},
 		},
