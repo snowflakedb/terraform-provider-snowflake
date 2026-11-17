@@ -462,6 +462,7 @@ var AuthenticationPolicy = ssot.Object{
 				),
 			),
 		),
+		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
@@ -469,6 +470,7 @@ var AuthenticationPolicy = ssot.Object{
 				ssot.SdkShowOptionalExtendedIn(),
 				ssot.SdkShowOptionalOn(),
 				ssot.SdkShowOptionalStartsWith(),
+				// TODO(SNOW-4466363): SHOW AUTHENTICATION POLICIES applies LIMIT before LIKE and STARTS WITH; revisit when Snowflake changes the order.
 				ssot.SdkShowOptionalLimit(),
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDExtendedIn),
 				ssot.SdkShowResultFilterHook(),
