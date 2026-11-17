@@ -970,3 +970,44 @@ func Test_queryStructFromObject_tableColumnActionStructs(t *testing.T) {
 		PredefinedQueryStructField("Columns", "[]Column", ParameterOptions().NoEquals().Required()).
 		IntoField(), drop.IntoField())
 }
+
+func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
+	attr := ssotdefs.TableConstraintAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	add := NewQueryStruct("OutOfLineConstraint")
+	got := QueryStructFromAttribute("Table", attr, add)
+	rename := NewQueryStruct("TableConstraintRenameAction").
+		Text("OldName", KeywordOptions().Required()).
+		AssignmentWithFieldName("TO", "string", ParameterOptions().NoEquals().Required(), "NewName")
+	alter := NewQueryStruct("TableConstraintAlterAction").
+		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().NoEquals(), "ConstraintName").
+		OptionalSQL("PRIMARY KEY").
+		OptionalSQL("UNIQUE").
+		OptionalSQL("FOREIGN KEY").
+		PredefinedQueryStructField("Columns", "[]string", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("ENFORCED").
+		OptionalSQL("NOT ENFORCED").
+		OptionalSQL("VALIDATE").
+		OptionalSQL("NOVALIDATE").
+		OptionalSQL("RELY").
+		OptionalSQL("NORELY").
+		WithValidation(ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
+	drop := NewQueryStruct("TableConstraintDropAction").
+		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().NoEquals(), "ConstraintName").
+		OptionalSQL("PRIMARY KEY").
+		OptionalSQL("UNIQUE").
+		OptionalSQL("FOREIGN KEY").
+		PredefinedQueryStructField("Columns", "[]string", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("CASCADE").
+		OptionalSQL("RESTRICT").
+		WithValidation(ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
+	want := NewQueryStruct("TableConstraintAction").
+		OptionalQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
+		OptionalQueryStructField("Rename", rename, ListOptions().NoComma().SQL("RENAME CONSTRAINT")).
+		OptionalQueryStructField("Alter", alter, ListOptions().NoComma().SQL("ALTER")).
+		OptionalQueryStructField("Drop", drop, ListOptions().NoComma().SQL("DROP")).
+		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "Drop")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}

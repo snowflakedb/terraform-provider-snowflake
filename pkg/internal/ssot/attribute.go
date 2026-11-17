@@ -71,10 +71,14 @@ type Attribute struct {
 	// not Required: at least one of them is set, or exactly one. A Required child is always set, so it is never "the one".
 	// The order is the Children order. It is valid only on an object with at least two such Children. The schema-side
 	// AtLeastOneOf is not generated from it.
-	ChildrenRule   ChildrenRule
-	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
-	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
-	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
+	ChildrenRule ChildrenRule
+	// ChildrenRuleFields names the Children that ChildrenRule applies to, when some fields of the SQL struct sit beside the choice,
+	// such as the enforcement flags next to the constraint name and the key kinds. Empty means every field, as described above.
+	// It is valid only with ChildrenRule, and each name is a child that is a field and is not Required.
+	ChildrenRuleFields []string
+	OptionalInShow     bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
+	OptionalInDb       bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
+	StoredAsText       bool // the db column is text, and the plain kind stays the semantic type
 	// BoolTrueValue, with StoredAsText, is the text that converts to true, such as Y, YES, or ON.
 	// Empty uses strconv.ParseBool.
 	BoolTrueValue string

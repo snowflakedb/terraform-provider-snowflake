@@ -79,8 +79,11 @@ func tableColumnDefaultValue() *g.QueryStruct {
 	return g.QueryStructFromAttribute("Table", ssotdefs.TableColumnDefaultValue)
 }
 
-// legacyTableOutOfLineConstraint duplicates tableOutOfLineConstraint: legacy does not double-quote the constraint name.
-// TODO[SNOW-1007542]: reuse tableOutOfLineConstraint
+// legacyTableOutOfLineConstraint emits `CONSTRAINT my_pk PRIMARY KEY (...)`.
+// tableOutOfLineConstraint emits `CONSTRAINT "my_pk" PRIMARY KEY (...)`.
+// snowflake_table_constraint and snowflake_table.primary_key would change: Snowflake stores the
+// unquoted name folded to uppercase, and a quoted lowercase name in an existing config no longer
+// matches that stored name. CREATE and ALTER ADD both keep this builder.
 func legacyTableOutOfLineConstraint() *g.QueryStruct {
 	return g.NewQueryStruct("OutOfLineConstraint").
 		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals(), "Name").
@@ -135,46 +138,7 @@ func tableColumnAction() *g.QueryStruct {
 }
 
 func tableConstraintAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableConstraintAction").
-		OptionalQueryStructField("Add", legacyTableOutOfLineConstraint(), g.KeywordOptions().SQL("ADD")).
-		OptionalQueryStructField("Rename", tableConstraintRenameAction(), g.KeywordOptions().SQL("RENAME CONSTRAINT")).
-		OptionalQueryStructField("Alter", tableConstraintAlterAction(), g.KeywordOptions().SQL("ALTER")).
-		OptionalQueryStructField("Drop", tableConstraintDropAction(), g.KeywordOptions().SQL("DROP")).
-		WithValidation(g.ExactlyOneValueSet, "Add", "Rename", "Alter", "Drop")
-}
-
-func tableConstraintRenameAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableConstraintRenameAction").
-		Text("OldName", g.KeywordOptions().Required()).
-		AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().Required(), "NewName")
-}
-
-func tableConstraintAlterAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableConstraintAlterAction").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals(), "ConstraintName").
-		OptionalSQL("PRIMARY KEY").
-		OptionalSQL("UNIQUE").
-		OptionalSQL("FOREIGN KEY").
-		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
-		OptionalSQL("ENFORCED").
-		OptionalSQL("NOT ENFORCED").
-		OptionalSQL("VALIDATE").
-		OptionalSQL("NOVALIDATE").
-		OptionalSQL("RELY").
-		OptionalSQL("NORELY").
-		WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
-}
-
-func tableConstraintDropAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableConstraintDropAction").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals(), "ConstraintName").
-		OptionalSQL("PRIMARY KEY").
-		OptionalSQL("UNIQUE").
-		OptionalSQL("FOREIGN KEY").
-		PredefinedQueryStructField("Columns", "[]string", g.KeywordOptions().Parentheses()).
-		OptionalSQL("CASCADE").
-		OptionalSQL("RESTRICT").
-		WithValidation(g.ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableConstraintAction, legacyTableOutOfLineConstraint())
 }
 
 func tableExternalTableAction() *g.QueryStruct {

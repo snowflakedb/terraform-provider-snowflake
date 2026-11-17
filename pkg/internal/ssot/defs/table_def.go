@@ -388,6 +388,82 @@ var TableColumn = ssot.Attribute{
 	},
 }
 
+// TableConstraintRenameAction is ALTER TABLE RENAME CONSTRAINT. The names are not quoted.
+// It is a child of TableConstraintAction.
+var TableConstraintRenameAction = ssot.Attribute{
+	Name:      "constraint_rename_action",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(ssot.Sql("RENAME CONSTRAINT"), ssot.NoComma(), ssot.FieldName("Rename"), ssot.StructName("TableConstraintRenameAction")),
+	Children: []ssot.Attribute{
+		{Name: "old_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.Required(), ssot.FieldName("OldName"))},
+		{Name: "new_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("TO"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("NewName"))},
+	},
+}
+
+// TableConstraintAlterAction is ALTER TABLE ALTER CONSTRAINT. Exactly one of the name and the key kinds is set.
+// The columns and the enforcement flags sit beside that choice, so ChildrenRuleFields names the fields the rule covers.
+// It is a child of TableConstraintAction.
+var TableConstraintAlterAction = ssot.Attribute{
+	Name:               "constraint_alter_action",
+	Type:               ssot.AttrObject,
+	SqlOnly:            true,
+	ChildrenRule:       ssot.ChildrenExactlyOne,
+	ChildrenRuleFields: []string{"constraint_name", "primary_key", "unique", "foreign_key"},
+	CreateSql:          ssot.ObjectParameter(ssot.Sql("ALTER"), ssot.NoComma(), ssot.FieldName("Alter"), ssot.StructName("TableConstraintAlterAction")),
+	Children: []ssot.Attribute{
+		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.FieldName("ConstraintName"))},
+		{Name: "primary_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("PRIMARY KEY"))},
+		{Name: "unique", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("UNIQUE"))},
+		{Name: "foreign_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("FOREIGN KEY"))},
+		{Name: "columns", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PredefinedType("[]string", ssot.NoEquals(), ssot.Parentheses(), ssot.FieldName("Columns"))},
+		{Name: "enforced", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("ENFORCED"))},
+		{Name: "not_enforced", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOT ENFORCED"))},
+		{Name: "validate", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("VALIDATE"))},
+		{Name: "novalidate", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOVALIDATE"))},
+		{Name: "rely", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("RELY"))},
+		{Name: "norely", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NORELY"))},
+	},
+}
+
+// TableConstraintDropAction is ALTER TABLE DROP CONSTRAINT. Exactly one of the name and the key kinds is set.
+// The columns and the CASCADE and RESTRICT flags sit beside that choice, so ChildrenRuleFields names the fields the rule covers.
+// It is a child of TableConstraintAction.
+var TableConstraintDropAction = ssot.Attribute{
+	Name:               "constraint_drop_action",
+	Type:               ssot.AttrObject,
+	SqlOnly:            true,
+	ChildrenRule:       ssot.ChildrenExactlyOne,
+	ChildrenRuleFields: []string{"constraint_name", "primary_key", "unique", "foreign_key"},
+	CreateSql:          ssot.ObjectParameter(ssot.Sql("DROP"), ssot.NoComma(), ssot.FieldName("Drop"), ssot.StructName("TableConstraintDropAction")),
+	Children: []ssot.Attribute{
+		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.FieldName("ConstraintName"))},
+		{Name: "primary_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("PRIMARY KEY"))},
+		{Name: "unique", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("UNIQUE"))},
+		{Name: "foreign_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("FOREIGN KEY"))},
+		{Name: "columns", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PredefinedType("[]string", ssot.NoEquals(), ssot.Parentheses(), ssot.FieldName("Columns"))},
+		{Name: "cascade", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("CASCADE"))},
+		{Name: "restrict", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("RESTRICT"))},
+	},
+}
+
+// TableConstraintAction is one ALTER TABLE constraint branch. It composes the rename, alter, and drop attributes above.
+// ADD keeps the unquoted out-of-line constraint, which is the legacy struct CREATE also uses, so it is the one
+// preexisting struct.
+var TableConstraintAction = ssot.Attribute{
+	Name:         "constraint_action",
+	Type:         ssot.AttrObject,
+	SqlOnly:      true,
+	ChildrenRule: ssot.ChildrenExactlyOne,
+	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableConstraintAction")),
+	Children: []ssot.Attribute{
+		{Name: "add", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("OutOfLineConstraint", ssot.NoComma(), ssot.Sql("ADD"))},
+		TableConstraintRenameAction,
+		TableConstraintAlterAction,
+		TableConstraintDropAction,
+	},
+}
+
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
 // resource, model, and assertion generators skip them.
 //

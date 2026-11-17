@@ -171,7 +171,8 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   (`MaxItems: 1`) is still a list: it is a slice in SQL.
   `ChildrenRule` on the object (`ChildrenAtLeastOne` or `ChildrenExactlyOne`) adds `AtLeastOneValueSet` or `ExactlyOneValueSet` over
   the `Children` that are fields of its SQL struct, so not the fixed texts, in `Children` order. It does not generate the
-  schema-side `AtLeastOneOf`.
+  schema-side `AtLeastOneOf`. `ChildrenRuleFields` narrows the rule to the named `Children`, for a struct whose other fields sit
+  beside the choice, such as the enforcement flags next to a constraint name and the key kinds.
   A fixed text of its struct, such as `TYPE = OAUTH`, is a `SqlOnly` child with `StaticSQL`, in SQL position. It is not a
   Terraform field: `NestedFields()` skips it and `NestedSqlFields()` has it. Only SDK SQL reads `NestedSqlFields()`.
   The same holds for the `Children` of a list element.

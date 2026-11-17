@@ -1615,6 +1615,20 @@ func Test_ValidateObject_childrenAtLeastOneValueSet(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRule but is not an object`, func() {
 		ValidateObject(obj(Attribute{Name: "policy", Type: AttrString, ChildrenRule: ChildrenAtLeastOne}))
 	})
+	beside := append([]Attribute{{Name: "flag", Type: AttrBool}}, children...)
+	require.NotPanics(t, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenExactlyOne, ChildrenRuleFields: []string{"limit", "size"}, Children: beside}))
+	})
+	ruleFields := Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenExactlyOne, ChildrenRuleFields: []string{"limit", "size"}, Children: beside}.RuleFields()
+	require.Len(t, ruleFields, 2)
+	require.Equal(t, "limit", ruleFields[0].Name)
+	require.Equal(t, "size", ruleFields[1].Name)
+	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRuleFields without ChildrenRule`, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRuleFields: []string{"limit"}, Children: children}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "policy" has ChildrenRuleFields entry "missing" that is not a Child that is a field and not Required`, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, ChildrenRuleFields: []string{"limit", "size", "missing"}, Children: children}))
+	})
 }
 
 func Test_ValidateObject_boolTrueValueNeedsStoredAsText(t *testing.T) {
