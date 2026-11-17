@@ -358,7 +358,7 @@ func failoverGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData
 	return errors.Join(
 		d.Set("object_types", enumStrings(group.ObjectTypes)),
 		d.Set("allowed_integration_types", enumStrings(group.AllowedIntegrationTypes)),
-		d.Set("allowed_accounts", collections.Map(allowedAccounts, sdk.AccountIdentifier.Name)),
+		d.Set("allowed_accounts", collections.Map(allowedAccounts, sdk.AccountIdentifier.FullyQualifiedName)),
 		d.Set("allowed_databases", collections.Map(databases, sdk.AccountObjectIdentifier.Name)),
 		d.Set("allowed_shares", collections.Map(shares, sdk.AccountObjectIdentifier.Name)),
 		d.Set("comment", group.Comment),

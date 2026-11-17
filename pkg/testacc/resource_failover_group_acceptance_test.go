@@ -47,9 +47,9 @@ func TestAcc_FailoverGroup_issue2517_AccountParametersObjectType(t *testing.T) {
 	database, cleanupDatabase := testClient().Database.CreateDatabase(t)
 	t.Cleanup(cleanupDatabase)
 
-	withoutAccountParameters := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES"}).
+	withoutAccountParameters := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES"}).
 		WithAllowedDatabases([]string{database.ID().Name()})
-	withAccountParameters := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"ACCOUNT PARAMETERS", "DATABASES"}).
+	withAccountParameters := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"ACCOUNT PARAMETERS", "DATABASES"}).
 		WithAllowedDatabases([]string{database.ID().Name()})
 	ref := withoutAccountParameters.ResourceReference()
 
@@ -126,11 +126,11 @@ func TestAcc_FailoverGroup_issue2544_SeparateAlterStatements(t *testing.T) {
 	database, cleanupDatabase := testClient().Database.CreateDatabase(t)
 	t.Cleanup(cleanupDatabase)
 
-	both := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES", "INTEGRATIONS"}).
+	both := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES", "INTEGRATIONS"}).
 		WithAllowedDatabases([]string{database.ID().Name()}).
 		WithAllowedIntegrationTypes([]string{"API INTEGRATIONS", "NOTIFICATION INTEGRATIONS"}).
 		WithReplicationSchedule("10 MINUTE")
-	narrowed := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"INTEGRATIONS"}).
+	narrowed := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"INTEGRATIONS"}).
 		WithAllowedIntegrationTypes([]string{"API INTEGRATIONS"}).
 		WithReplicationSchedule("20 MINUTE")
 	ref := both.ResourceReference()
@@ -308,7 +308,7 @@ func TestAcc_FailoverGroup_AllowedAccounts_ThreeAccounts(t *testing.T) {
 	t.Cleanup(cleanupDatabase)
 
 	newModel := func(accounts ...sdk.AccountIdentifier) *model.FailoverGroupModel {
-		return model.FailoverGroup("t", id.Name(), collections.Map(accounts, sdk.AccountIdentifier.Name), []string{"DATABASES"}).
+		return model.FailoverGroup("t", id.Name(), collections.Map(accounts, sdk.AccountIdentifier.FullyQualifiedName), []string{"DATABASES"}).
 			WithAllowedDatabases([]string{database.ID().Name()})
 	}
 	twoTargets := newModel(secondaryAccount, thirdAccount)
@@ -322,7 +322,7 @@ func TestAcc_FailoverGroup_AllowedAccounts_ThreeAccounts(t *testing.T) {
 				HasNameString(id.Name()).
 				HasObjectTypes("DATABASES").
 				HasAllowedDatabases(database.ID().Name()).
-				HasAllowedAccounts(collections.Map(targets, sdk.AccountIdentifier.Name)...),
+				HasAllowedAccounts(collections.Map(targets, sdk.AccountIdentifier.FullyQualifiedName)...),
 			objectassert.FailoverGroup(t, id).
 				HasName(id.Name()).
 				HasIsPrimary(true).
@@ -347,7 +347,7 @@ func TestAcc_FailoverGroup_AllowedAccounts_ThreeAccounts(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectSetElementsChange(ref, "allowed_accounts", tfjson.ActionUpdate, nil, []string{thirdAccount.Name()}),
+						planchecks.ExpectSetElementsChange(ref, "allowed_accounts", tfjson.ActionUpdate, nil, []string{thirdAccount.FullyQualifiedName()}),
 					},
 				},
 				Config: config.FromModels(t, oneTarget),
@@ -358,7 +358,7 @@ func TestAcc_FailoverGroup_AllowedAccounts_ThreeAccounts(t *testing.T) {
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
-						planchecks.ExpectSetElementsChange(ref, "allowed_accounts", tfjson.ActionUpdate, []string{thirdAccount.Name()}, nil),
+						planchecks.ExpectSetElementsChange(ref, "allowed_accounts", tfjson.ActionUpdate, []string{thirdAccount.FullyQualifiedName()}, nil),
 					},
 				},
 				Config: config.FromModels(t, twoTargets),
@@ -437,13 +437,13 @@ resource "snowflake_failover_group" "t" {
 	}
 }
 `, id.Name(), sourceAccount.Name(), targetAccount.Name(), database.ID().Name())
-	current := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES"}).
+	current := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES"}).
 		WithAllowedDatabases([]string{database.ID().Name()}).
 		WithIgnoreEditionCheck(true).
 		WithOptimizedRefresh(true).
 		WithReplicationSchedule("10 MINUTE")
 	comment := random.Comment()
-	updated := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES"}).
+	updated := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES"}).
 		WithAllowedDatabases([]string{database.ID().Name()}).
 		WithIgnoreEditionCheck(true).
 		WithOptimizedRefresh(true).
@@ -457,7 +457,7 @@ resource "snowflake_failover_group" "t" {
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasObjectTypes("DATABASES").
-			HasAllowedAccounts(targetAccount.Name()).
+			HasAllowedAccounts(targetAccount.FullyQualifiedName()).
 			HasAllowedDatabases(database.ID().Name()).
 			HasReplicationSchedule(schedule).
 			HasOptimizedRefresh(true).
@@ -555,7 +555,7 @@ func TestAcc_FailoverGroup_CompleteUseCase_ReplicationScheduleTransitions(t *tes
 		cronB      = "USING CRON 0 0 5-20 * TUE,THU UTC"
 	)
 	newModel := func(schedule string, optimizedRefresh, rpoAssurance bool) *model.FailoverGroupModel {
-		m := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES"}).
+		m := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES"}).
 			WithAllowedDatabases([]string{database.ID().Name()})
 		if schedule != "" {
 			m.WithReplicationSchedule(schedule)
@@ -584,7 +584,7 @@ func TestAcc_FailoverGroup_CompleteUseCase_ReplicationScheduleTransitions(t *tes
 		resourceAssert := resourceassert.FailoverGroupResource(t, ref).
 			HasNameString(id.Name()).
 			HasObjectTypes("DATABASES").
-			HasAllowedAccounts(targetAccount.Name()).
+			HasAllowedAccounts(targetAccount.FullyQualifiedName()).
 			HasOptimizedRefresh(optimizedRefresh).
 			HasRpoAssurance(rpoAssurance)
 		showOutputAssert := resourceshowoutputassert.FailoverGroupShowOutput(t, ref).
@@ -738,8 +738,8 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 	objectTypes := []string{"ROLES", "DATABASES", "SHARES", "EXTERNAL VOLUMES", "INTEGRATIONS", "WAREHOUSES"}
 	integrationTypes := []string{"API INTEGRATIONS", "EXTERNAL ACCESS INTEGRATIONS", "NOTIFICATION INTEGRATIONS", "SECURITY INTEGRATIONS", "STORAGE INTEGRATIONS"}
 
-	basic := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"ROLES"})
-	withOptionals := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, objectTypes).
+	basic := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"ROLES"})
+	withOptionals := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, objectTypes).
 		WithAllowedDatabases([]string{database.ID().Name()}).
 		WithAllowedShares([]string{share.ID().Name()}).
 		WithAllowedExternalVolumes([]string{externalVolume.Name()}).
@@ -756,7 +756,7 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasObjectTypes("ROLES").
-			HasAllowedAccounts(targetAccount.Name()).
+			HasAllowedAccounts(targetAccount.FullyQualifiedName()).
 			HasAllowedDatabasesEmpty().
 			HasAllowedIntegrationTypesEmpty().
 			HasReplicationScheduleEmpty().
@@ -797,7 +797,7 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasObjectTypes(objectTypes...).
-			HasAllowedAccounts(targetAccount.Name()).
+			HasAllowedAccounts(targetAccount.FullyQualifiedName()).
 			HasAllowedDatabases(database.ID().Name()).
 			HasAllowedShares(share.ID().Name()).
 			HasAllowedExternalVolumes(externalVolume.Name()).
@@ -866,7 +866,7 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 					resourceassert.ImportedFailoverGroupResource(t, resourceId).
 						HasNameString(id.Name()).
 						HasObjectTypes("ROLES").
-						HasAllowedAccounts(targetAccount.Name()).
+						HasAllowedAccounts(targetAccount.FullyQualifiedName()).
 						HasIsPrimaryString("true"),
 					resourceshowoutputassert.ImportedFailoverGroupShowOutput(t, resourceId).
 						HasName(id.Name()).
@@ -898,7 +898,7 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 					resourceassert.ImportedFailoverGroupResource(t, resourceId).
 						HasNameString(id.Name()).
 						HasObjectTypes(objectTypes...).
-						HasAllowedAccounts(targetAccount.Name()).
+						HasAllowedAccounts(targetAccount.FullyQualifiedName()).
 						HasAllowedDatabases(database.ID().Name()).
 						HasAllowedShares(share.ID().Name()).
 						HasAllowedIntegrationTypes(integrationTypes...).
@@ -964,7 +964,7 @@ func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 	t.Cleanup(cleanupDatabaseB)
 
 	newModel := func(readOnly *bool, databases ...string) *model.FailoverGroupModel {
-		m := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES"}).WithAllowedDatabases(databases)
+		m := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES"}).WithAllowedDatabases(databases)
 		if readOnly != nil {
 			m.WithReadOnly(*readOnly)
 		}
@@ -983,7 +983,7 @@ func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 			HasNameString(id.Name()).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()).
 			HasObjectTypes("DATABASES").
-			HasAllowedAccounts(targetAccount.Name()).
+			HasAllowedAccounts(targetAccount.FullyQualifiedName()).
 			HasAllowedDatabases(databaseNames...).
 			HasIsPrimaryString("true")
 		switch {
@@ -1185,7 +1185,7 @@ func TestAcc_FailoverGroup_RecreateWhenExternallyNotPrimary(t *testing.T) {
 		_ = testClient().Database.DropDatabase(t, otherDatabase.ID())
 	})
 
-	group := model.FailoverGroup("t", id.Name(), []string{targetAccount.Name()}, []string{"DATABASES"}).
+	group := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES"}).
 		WithAllowedDatabases([]string{database.ID().Name()})
 	ref := group.ResourceReference()
 	otherOf := sdk.NewExternalObjectIdentifier(targetAccount, otherPrimary)

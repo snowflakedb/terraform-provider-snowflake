@@ -97,12 +97,12 @@ var failoverGroupsSchema = map[string]*schema.Schema{
 				"replication_schedule": {
 					Type:        schema.TypeString,
 					Computed:    true,
-					Description: "Scheduled interval for refresh; NULL if no replication schedule is set.",
+					Description: "Scheduled interval for refresh; empty if no replication schedule is set.",
 				},
 				"secondary_state": {
 					Type:        schema.TypeString,
 					Computed:    true,
-					Description: "Current state of scheduled refresh. Valid values are started or suspended. NULL if no replication schedule is set.",
+					Description: "Current state of scheduled refresh. Valid values are started or suspended. Empty if no replication schedule is set.",
 				},
 				"next_scheduled_refresh": {
 					Type:        schema.TypeString,
@@ -112,7 +112,7 @@ var failoverGroupsSchema = map[string]*schema.Schema{
 				"owner": {
 					Type:        schema.TypeString,
 					Computed:    true,
-					Description: "Name of the role with the OWNERSHIP privilege on the failover group. NULL if the failover group is in a different region.",
+					Description: "Name of the role with the OWNERSHIP privilege on the failover group. Empty if the failover group is in a different region.",
 				},
 			},
 		},
@@ -183,10 +183,10 @@ func ReadFailoverGroups(ctx context.Context, d *schema.ResourceData, meta any) d
 	return nil
 }
 
-// failoverGroupSecondaryStateOutput keeps the output of the data source: the state in upper case, and NULL when SHOW returns no state.
+// failoverGroupSecondaryStateOutput is the state in upper case, and an empty string when SHOW returns no state.
 func failoverGroupSecondaryStateOutput(state *sdk.FailoverGroupSecondaryState) string {
 	if state == nil {
-		return "NULL"
+		return ""
 	}
 	return strings.ToUpper(string(*state))
 }
