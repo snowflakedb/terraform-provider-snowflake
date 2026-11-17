@@ -1011,3 +1011,21 @@ func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
 		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "Drop")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
+
+func Test_queryStructFromObject_tableExternalTableAction(t *testing.T) {
+	attr := ssotdefs.TableExternalTableAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	add := NewQueryStruct("TableExternalTableColumnAddAction").
+		SQL("ADD COLUMN").
+		IfNotExists().
+		Text("Name", KeywordOptions().Required()).
+		PredefinedQueryStructField("ColumnType", "DataType", ParameterOptions().NoEquals().Required()).
+		ListAssignmentWithFieldName("AS", "string", ParameterOptions().NoEquals().Parentheses(), "Expression").
+		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes())
+	want := NewQueryStruct("TableExternalTableAction").
+		OptionalQueryStructField("Add", add, ListOptions().NoComma())
+	require.Equal(t, want.IntoField(), got.IntoField())
+}

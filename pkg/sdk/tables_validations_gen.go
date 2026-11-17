@@ -278,13 +278,8 @@ func (opts *AlterTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.ExternalTableAction) {
-		if !exactlyOneValueSet(opts.ExternalTableAction.Add, opts.ExternalTableAction.Rename, opts.ExternalTableAction.Drop) {
-			errs = append(errs, errExactlyOneOf("AlterTableOptions.ExternalTableAction", "Add", "Rename", "Drop"))
-		}
-		if valueSet(opts.ExternalTableAction.Drop) {
-			if !valueSet(opts.ExternalTableAction.Drop.Names) {
-				errs = append(errs, errNotSet("AlterTableOptions.ExternalTableAction.Drop", "Names"))
-			}
+		if !valueSet(opts.ExternalTableAction.Add) {
+			errs = append(errs, errNotSet("AlterTableOptions.ExternalTableAction", "Add"))
 		}
 	}
 	if valueSet(opts.SearchOptimizationAction) {

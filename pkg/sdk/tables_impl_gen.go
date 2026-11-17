@@ -410,18 +410,6 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				Comment:     r.ExternalTableAction.Add.Comment,
 			}
 		}
-		if r.ExternalTableAction.Rename != nil {
-			opts.ExternalTableAction.Rename = &TableExternalTableColumnRenameAction{
-				OldName: r.ExternalTableAction.Rename.OldName,
-				NewName: r.ExternalTableAction.Rename.NewName,
-			}
-		}
-		if r.ExternalTableAction.Drop != nil {
-			opts.ExternalTableAction.Drop = &TableExternalTableColumnDropAction{
-				IfExists: r.ExternalTableAction.Drop.IfExists,
-				Names:    r.ExternalTableAction.Drop.Names,
-			}
-		}
 	}
 	if r.SearchOptimizationAction != nil {
 		opts.SearchOptimizationAction = r.SearchOptimizationAction.toOpts()

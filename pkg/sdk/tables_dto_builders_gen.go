@@ -803,16 +803,6 @@ func (s *TableExternalTableActionRequest) WithAdd(add TableExternalTableColumnAd
 	return s
 }
 
-func (s *TableExternalTableActionRequest) WithRename(rename TableExternalTableColumnRenameActionRequest) *TableExternalTableActionRequest {
-	s.Rename = &rename
-	return s
-}
-
-func (s *TableExternalTableActionRequest) WithDrop(drop TableExternalTableColumnDropActionRequest) *TableExternalTableActionRequest {
-	s.Drop = &drop
-	return s
-}
-
 func NewTableExternalTableColumnAddActionRequest(
 	name string,
 	columnType DataType,
@@ -835,29 +825,6 @@ func (s *TableExternalTableColumnAddActionRequest) WithExpression(expression []s
 
 func (s *TableExternalTableColumnAddActionRequest) WithComment(comment string) *TableExternalTableColumnAddActionRequest {
 	s.Comment = &comment
-	return s
-}
-
-func NewTableExternalTableColumnRenameActionRequest(
-	oldName string,
-	newName string,
-) *TableExternalTableColumnRenameActionRequest {
-	s := TableExternalTableColumnRenameActionRequest{}
-	s.OldName = oldName
-	s.NewName = newName
-	return &s
-}
-
-func NewTableExternalTableColumnDropActionRequest(
-	names []string,
-) *TableExternalTableColumnDropActionRequest {
-	s := TableExternalTableColumnDropActionRequest{}
-	s.Names = names
-	return &s
-}
-
-func (s *TableExternalTableColumnDropActionRequest) WithIfExists(ifExists bool) *TableExternalTableColumnDropActionRequest {
-	s.IfExists = &ifExists
 	return s
 }
 

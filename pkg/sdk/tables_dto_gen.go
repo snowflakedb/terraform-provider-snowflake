@@ -232,9 +232,7 @@ type TableConstraintDropActionRequest struct {
 }
 
 type TableExternalTableActionRequest struct {
-	Add    *TableExternalTableColumnAddActionRequest
-	Rename *TableExternalTableColumnRenameActionRequest
-	Drop   *TableExternalTableColumnDropActionRequest
+	Add *TableExternalTableColumnAddActionRequest
 }
 
 type TableExternalTableColumnAddActionRequest struct {
@@ -243,16 +241,6 @@ type TableExternalTableColumnAddActionRequest struct {
 	ColumnType  DataType // required
 	Expression  []string
 	Comment     *string
-}
-
-type TableExternalTableColumnRenameActionRequest struct {
-	OldName string // required
-	NewName string // required
-}
-
-type TableExternalTableColumnDropActionRequest struct {
-	IfExists *bool
-	Names    []string // required
 }
 
 type TableSearchOptimizationActionRequest struct {
