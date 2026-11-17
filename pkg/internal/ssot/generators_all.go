@@ -116,6 +116,11 @@ func WithoutResource() GeneratorOption {
 	return func(g *Generators) { g.Resource = ResourceGenerator{} }
 }
 
+// WithoutDataSource turns off the data source generator.
+func WithoutDataSource() GeneratorOption {
+	return func(g *Generators) { g.DataSource = DataSourceGenerator{} }
+}
+
 // WithoutResourceAssert turns off the resource assertion generator.
 func WithoutResourceAssert() GeneratorOption {
 	return func(g *Generators) { g.ResourceAssert = ResourceAssertGenerator{} }

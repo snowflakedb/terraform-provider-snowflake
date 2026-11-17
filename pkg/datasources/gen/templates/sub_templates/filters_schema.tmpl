@@ -1,0 +1,39 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.FiltersSchema.Generate -}}
+{{- if .HasFilters -}}
+	map[string]*schema.Schema{
+{{- if .Filters.Like }}
+		"like": likeSchema,
+{{- end }}
+{{- if eq .Filters.In "In" }}
+		"in": inSchema,
+{{- else if eq .Filters.In "ExtendedIn" }}
+		"in": extendedInSchema,
+{{- else if eq .Filters.In "InAccount" }}
+		"in_account": {
+			Type:             schema.TypeString,
+			Optional:         true,
+			Description:      "Limits results to {{ CamelToWords .NamePlural }} in this account, as organization and account name. Matches [SHOW {{ .ShowSql }}]({{ .ShowDoc }}) `IN ACCOUNT`.",
+			ValidateDiagFunc: resources.IsValidAccountIdentifier(),
+		},
+{{- end }}
+{{- if .Filters.On }}
+		"on": onSchema,
+{{- end }}
+{{- if .Filters.StartsWith }}
+		"starts_with": startsWithSchema,
+{{- end }}
+{{- if .Filters.Limit }}
+		"limit": limitFromSchema,
+{{- end }}
+{{- if .Filters.Terse }}
+		"terse": terseSchema,
+{{- end }}
+{{- if .Filters.History }}
+		"history": historySchema,
+{{- end }}
+	},
+{{ end -}}
+{{ else if .Hooks.FiltersSchema.Present -}}
+	{{ .Prefix }}FiltersSchemaExt,
+{{ end -}}

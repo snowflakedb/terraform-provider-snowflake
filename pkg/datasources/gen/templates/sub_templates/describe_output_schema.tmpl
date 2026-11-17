@@ -1,0 +1,15 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.DescribeOutputSchema.Generate -}}
+	map[string]*schema.Schema{
+		resources.DescribeOutputAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Holds the output of DESCRIBE {{ .DescribeSql }}.",
+			Elem: &schema.Resource{
+				Schema: schemas.Describe{{ .DescribeSchemaName }}Schema,
+			},
+		},
+	},
+{{ else if .Hooks.DescribeOutputSchema.Present -}}
+	{{ .Prefix }}DescribeOutputSchemaExt,
+{{ end -}}

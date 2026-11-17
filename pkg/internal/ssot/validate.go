@@ -112,6 +112,29 @@ func ValidateObject(obj Object) {
 	validateSetAfterCreate(obj)
 	validateIdentityNamesCreatedBySnowflake(obj)
 	validateSuspendForAlter(obj)
+	validateDataSource(obj, g)
+}
+
+// validateDataSource rejects data source settings that cannot take effect.
+func validateDataSource(obj Object, g Generators) {
+	if len(obj.DataSourceHooks) > 0 {
+		if !g.DataSource.Enabled {
+			panic(fmt.Sprintf("object %q: DataSourceHooks need WithDataSource()", obj.Name))
+		}
+		if obj.VariantOf != nil {
+			panic(fmt.Sprintf("object %q: DataSourceHooks belong to the base, a variant is covered by it", obj.Name))
+		}
+	}
+	if !g.DataSource.Enabled || obj.VariantOf != nil {
+		return
+	}
+	hooks := obj.EffectiveDataSourceHooks()
+	if (hooks.DescribeInSdk.Generate || hooks.DescribeOutputSchema.Generate) && !obj.HasDataSourceDescribe() {
+		panic(fmt.Sprintf("object %q: the generated data source describe needs SdkDescribe() and DESCRIBE columns", obj.Name))
+	}
+	if hooks.ShowParametersInSdk.Generate && !obj.HasDataSourceParameters() {
+		panic(fmt.Sprintf("object %q: the generated data source parameters need SdkShowParameters()", obj.Name))
+	}
 }
 
 func validateAttributeRelations(obj Object, a Attribute, siblings []Attribute) {

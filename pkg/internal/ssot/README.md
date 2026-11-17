@@ -295,6 +295,9 @@ enable nothing.
 - `WithResource()` - resource generator (`make generate-resource`).
   See [Resource generator](#resource-generator). An object in `All()` is a resource-generation input when this call is present.
   Zero options still sets `Enabled`. Generation parts stay on the resource generator's per-object settings.
+- `WithDataSource()` - data source generator (`make generate-datasource`).
+  See [Data source generator](#data-source-generator). Zero options still sets `Enabled`. It is not part of
+  `WithAllGenerators` yet. `WithoutDataSource()` turns it off.
 - `WithSchema(SchemaShow(), SchemaDescribe())` - SHOW/DESCRIBE schema generator (`make generate-show-output-schemas`).
   See [that README](../../schemas/gen/README.md). `SchemaShow(SchemaShowManualFields(&attrs.Tables))` copies
   `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
@@ -735,6 +738,45 @@ A SHOW pointer is passed through. No matching fields returns nil.
 Skipping a nested block does not panic. An object that also writes `show_output` in this hook, or that copies
 values from DESCRIBE, keeps `ExtCall`.
 
+#### Data source generator
+
+The data source generator (`make generate-datasource`) writes `pkg/datasources/<plural_snake>_gen.go` for each object with
+`WithDataSource()` on. A data source lists one plural, so it takes the base of that plural: a variant is covered by its base,
+and so is a `VariantBaseOnly` base. The object needs an SDK SHOW and SHOW columns. `make generate-datasource-check` fails
+on a file that differs from the committed one, and on a file left over from an object that no longer enables it.
+
+The data source follows the object, so a definition lists only the exceptions:
+
+- Filters are the options of the SDK SHOW: `like`, `starts_with`, `limit`, one `in` flavour (`In`, `ExtendedIn` or
+  `InAccount`), `on`, `terse` and `history`. The data source cannot offer a filter that the SDK request does not have. The
+  shared schemas and handlers are in `pkg/datasources/common.go`, and a new filter flavour starts there.
+- `with_describe` and `describe_output` exist when the SDK has DESCRIBE and the object has `Describe.Columns`. The call is
+  `DescribeDetails` when the SDK emits it, otherwise `Describe`.
+- `with_parameters` and `parameters` exist when the SDK has `SdkShowParameters()`. The parameters schema and mapper are
+  written by hand in `pkg/schemas`.
+- A base uses its own show and describe schemas. Columns that belong to a variant are part of them.
+- `PreviewFeature` selects the preview wrapper and the preview mark of the description. The id is the constant
+  `<plural_snake>_read`.
+
+A step of the data source is a hook with the states of a resource hook: `Generated`, `ExtCall` and `Omitted`. They are set
+in `DataSourceHooks` with the `WithDataSource…` options. Setting a hook to `Omitted()` opts out of it:
+`WithDataSourceDescribeInSdk(Omitted())` drops the describe switch, its output schema and its set. Setting it to `ExtCall()`
+calls a function that the object's `*_ext.go` defines. The name is the plural in lower camel case, such as `computePools`, plus the hook name and `Ext`. A
+hook on a variant, or on an object without `WithDataSource()`, panics in `ValidateObject`.
+
+| Hook | Ext function |
+|---|---|
+| `Description`, `ReadWrapper` | `<name>DescriptionExt` (string), `<name>ReadWrapperExt(read)` |
+| `SwitchesSchema`, `FiltersSchema`, `ShowOutputSchema`, `DescribeOutputSchema`, `ParametersOutputSchema`, `AdditionalSchema` | `<name>…SchemaExt`, a `map[string]*schema.Schema` that is merged into the schema |
+| `ApplyFilters`, `ShowInSdk`, `SetId` | `<name>ApplyFiltersExt(d, req)`, `<name>ShowInSdkExt(ctx, client, req)`, `<name>SetIdExt(d)` |
+| `DescribeInSdk`, `DescribeOutputSet` | `<name>DescribeInSdkExt(ctx, client, item)`, `<name>DescribeOutputSetExt(result)` |
+| `ShowParametersInSdk`, `ParametersOutputSet` | `<name>ShowParametersInSdkExt(ctx, client, item)`, `<name>ParametersOutputSetExt(parameters)` |
+| `ItemExtra` | `<name>ItemExtraExt(ctx, d, client, item)`, a map that is merged into each item |
+
+The generator does not write the name constant in `pkg/provider/datasources`, the registration, the preview feature
+constants, the docs templates, the examples, the config model, the assertions, or the acceptance tests. They stay steps of
+[Adding a new entity](#adding-a-new-entity).
+
 #### Enabling all generators
 
 `WithAllGenerators(overrides...)` is one `GeneratorOption` that turns on everything an object normally has, then applies
@@ -1091,8 +1133,8 @@ Each step enables one generator flag, or one operation setting inside `WithSdk()
 7. **Resource.** `WithResource()` (`make generate-resource`) and the hooks that step generates. Generate the describe SDK call, describe output schema, and describe output set when describe columns exist. Omit those hooks when there is no describe. Omit parameter hooks and the parameters generation part when the object has no parameters. Omit set and unset when the statement has no SET or UNSET. When every field is ForceNew, the constructor omits `Update`, so there is no update id to keep used. `WithAfterAlter(ExtCall())` with a body that returns nil is for an `Update` that is still generated and would otherwise leave the parsed id unused. A config field that SHOW does not return stays in the set-state-from-config list so Read keeps the configured value. `IdentityNameForceNew` and `IdentityHierarchyForceNew` are both emitted on the identity schema. `WithHierarchyRename(Generated())` follows those flags, described under Resource generator. `Schema` keeps `WithHierarchyRename(ExtCall())`. `WithIdentitySchema(ExtCall())` is for an identity schema that differs from that. See [Resource generator](#resource-generator). Do not register the resource in this step. An entry in `acceptanceTestsProvider()` is visible to every acceptance test. Do not add a preview feature constant. That waits for provider registration.
 8. **Resource helpers.** One flag per step: `WithModel()` (`make generate-resource-model-builders`), `WithResourceAssert()` (`make generate-resource-assertions`), `WithShowOutputAssert(ShowOutputShow())` (`make generate-resource-show-output-assertions`). `ShowOutputDescribe()` is its own step when describe columns exist. `WithResourceParametersAssert()` (`make generate-resource-parameters-assertions`), on from the start; it is a no-op until the catalog has entries for the object.
 9. **Acceptance test.** One `TestAcc_<Object>_BasicUseCase` in `pkg/testacc/`, with build tag `non_account_level_tests` unless the test changes account settings, plus a helper client. Use the generated model and assertions, including an object assertion. Register the resource in `acceptanceTestsProvider()` in `pkg/testacc/1_setup_provider_test.go` in this step, not earlier. Do not add a preview feature constant or preview wrappers on that provider. Those wrappers call `StringToFeature`, which accepts only `ValidPreviewFeatures`, the same allow-list as `preview_features_enabled`. `AllPreviewFeatures` is what `docs/index.md` writes into that field. Create, read, and update stay tracking wrappers. Generated delete calls `DropSafely` through the tracking wrapper. Register destroy checking in `pkg/testacc/2_check_destroy_test.go` through `ShowByID`. A config field that SHOW does not return is listed in `ImportStateVerifyIgnore`. So is an optional SHOW string that comes back nil: Read leaves it absent when the config omits it, and import writes that nil as `""`. A nested show or describe string that the mapper leaves unset is stored as `""`, so that output assertion expects the empty string. A resource string that `SetConfigFields` copies from a non-nil SHOW pointer is present, including a pointer to `""`. The SDK object assertion still treats a nil value as unset. The test does not enable a preview feature.
-10. **Data source.** `snowflake_<plural>` in `pkg/datasources/<plural>.go`, plus the name constant in `pkg/provider/datasources`. Register it in `acceptanceTestsProvider()` only. Read is `TrackingReadWrapper`. Do not add a `previewfeatures` constant, do not list one in `allPreviewFeatures`, and do not use `PreviewFeatureReadWrapper`. Filters follow the SHOW request: `like`, plain `in` for a schema object, and `starts_with` and `limit` when the statement has them. `with_describe` is included when DESCRIBE exists. The id is the static sentinel `"<plural>_read"`.
-11. **Provider registration, docs, and examples.** Move the resource and the data source from `acceptanceTestsProvider()` into `pkg/provider/provider.go`. Set `PreviewFeature` and regenerate so Delete uses `PreviewFeatureDeleteContextWrapper`. The ext wraps create, read, and update with the matching preview wrappers. Import stays `TrackingImportWrapper`. There is no preview import wrapper. The data source read switches to `PreviewFeatureReadWrapper` in this step. Add `<Name>Resource` and `<Plural>Datasource` to the preview feature constants, `allPreviewFeatures`, and the `StringToFeature` test. Docs templates use subcategory `Preview`. `make generate-docs-additional-files` writes the preview lists from `allPreviewFeatures` and the provider maps. `make generate-issue-labels` adds the resource and data source labels. The current unreleased section of `MIGRATION_GUIDE.md` records the new preview feature.
+10. **Data source.** `WithDataSource()` (`make generate-datasource`) writes `pkg/datasources/<plural_snake>_gen.go`, see [Data source generator](#data-source-generator). Add the name constant to `pkg/provider/datasources`. Register it in `acceptanceTestsProvider()` only. `PreviewFeature` stays unset, so the read is `TrackingReadWrapper`. Do not add a `previewfeatures` constant and do not list one in `allPreviewFeatures`. Hand-written parts go in the object's `*_ext.go` through hooks.
+11. **Provider registration, docs, and examples.** Move the resource and the data source from `acceptanceTestsProvider()` into `pkg/provider/provider.go`. Set `PreviewFeature` and regenerate so Delete uses `PreviewFeatureDeleteContextWrapper`. The ext wraps create, read, and update with the matching preview wrappers. Import stays `TrackingImportWrapper`. There is no preview import wrapper. Setting `PreviewFeature` and regenerating also switches the data source read to `PreviewFeatureReadWrapper` and adds the preview mark to its description. Add `<Name>Resource` and `<Plural>Datasource` to the preview feature constants, `allPreviewFeatures`, and the `StringToFeature` test. Docs templates use subcategory `Preview`. `make generate-docs-additional-files` writes the preview lists from `allPreviewFeatures` and the provider maps. `make generate-issue-labels` adds the resource and data source labels. The current unreleased section of `MIGRATION_GUIDE.md` records the new preview feature.
 
 ### Later
 

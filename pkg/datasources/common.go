@@ -162,6 +162,32 @@ var serviceInSchema = &schema.Schema{
 	},
 }
 
+var withDescribeSchema = &schema.Schema{
+	Type:        schema.TypeBool,
+	Optional:    true,
+	Default:     true,
+	Description: "Runs DESCRIBE for each object returned by SHOW. The output of describe is saved to the describe_output field. By default this value is set to true.",
+}
+
+var withParametersSchema = &schema.Schema{
+	Type:        schema.TypeBool,
+	Optional:    true,
+	Default:     true,
+	Description: "Runs SHOW PARAMETERS for each object returned by SHOW. The output of SHOW PARAMETERS is saved to the parameters field as a map. By default this value is set to true.",
+}
+
+var terseSchema = &schema.Schema{
+	Type:        schema.TypeBool,
+	Optional:    true,
+	Description: "Returns only a subset of the output columns.",
+}
+
+var historySchema = &schema.Schema{
+	Type:        schema.TypeBool,
+	Optional:    true,
+	Description: "Includes dropped objects that are still within the Time Travel retention period.",
+}
+
 var startsWithSchema = &schema.Schema{
 	Type:        schema.TypeString,
 	Optional:    true,

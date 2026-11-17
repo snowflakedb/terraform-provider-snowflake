@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_schemaTemplateMatchesHandWrittenMappings(t *testing.T) {
 	model := ResourceModel{
 		Name:       "Schema",
@@ -56,6 +57,7 @@ func TestParameterHooks_customDiffUsesConfiguredParseId(t *testing.T) {
 	require.NotContains(t, rendered.String(), "schemaParseIdExt(d.Id())")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_variantUsesBaseSdkNames(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: ssotdefs.WarehouseAdaptive}, nil, nil)
 
@@ -80,6 +82,7 @@ func TestParameterHooks_variantUsesBaseSdkNames(t *testing.T) {
 	require.Contains(t, lifecycleRendered.String(), "sdk.ToWarehouseParametersDetails(rawWarehouseAdaptiveParameters)")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_nonVariantUsesOwnSdkNames(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: ssotdefs.Warehouse}, nil, nil)
 	var rendered bytes.Buffer
@@ -92,6 +95,7 @@ func TestParameterHooks_nonVariantUsesOwnSdkNames(t *testing.T) {
 	require.Contains(t, parameters, "*sdk.WarehouseUnsetRequest")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_variantRetainsOwnCatalog(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
 		Name:       "WarehouseInteractive",

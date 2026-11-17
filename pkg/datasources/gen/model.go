@@ -1,0 +1,83 @@
+package gen
+
+import (
+	"log"
+	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+)
+
+type DataSourceModel struct {
+	Name       string
+	NamePlural string
+	// ObjectType is the object words of SHOW PARAMETERS FOR. ShowSql, ShowDoc and DescribeSql come from the SDK config.
+	ObjectType          string
+	ShowSql             string
+	ShowDoc             string
+	DescribeSql         string
+	DescribeDetailsName string
+	PreviewFeature      bool
+	Filters             ssot.DataSourceFilters
+	Describe            ssot.DataSourceDescribe
+	Hooks               ssot.DataSourceHooks
+	*genhelpers.PreambleModel
+}
+
+func (m DataSourceModel) Prefix() string {
+	return genhelpers.FirstLetterLowercase(m.NamePlural)
+}
+
+// ResultName is the attribute that holds the list of results.
+func (m DataSourceModel) ResultName() string {
+	return genhelpers.ToSnakeCase(m.NamePlural)
+}
+
+func (m DataSourceModel) DescribeSchemaName() string {
+	if m.DescribeDetailsName != "" {
+		return m.DescribeDetailsName
+	}
+	return m.Name + "Details"
+}
+
+// ResultSources lists the commands whose output the result holds, for the description.
+func (m DataSourceModel) ResultSources() string {
+	sources := []string{"SHOW"}
+	if m.Hooks.DescribeOutputSchema.Present {
+		sources = append(sources, "DESCRIBE")
+	}
+	if m.Hooks.ParametersOutputSchema.Present {
+		sources = append(sources, "SHOW PARAMETERS")
+	}
+	switch len(sources) {
+	case 1:
+		return sources[0]
+	case 2:
+		return sources[0] + " and " + sources[1]
+	default:
+		return strings.Join(sources[:len(sources)-1], ", ") + ", and " + sources[len(sources)-1]
+	}
+}
+
+func (m DataSourceModel) HasFilters() bool {
+	f := m.Filters
+	return f.Like || f.StartsWith || f.Limit || f.On || f.Terse || f.History || f.In != ssot.DataSourceInNone
+}
+
+func ModelFromInputObject(input DataSourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) DataSourceModel {
+	sdkConfig := input.SdkConfig()
+	return DataSourceModel{
+		Name:                input.Name,
+		NamePlural:          input.NamePlural,
+		ObjectType:          input.ObjectType(),
+		ShowSql:             sdkConfig.ShowSql,
+		ShowDoc:             sdkConfig.ShowDoc,
+		DescribeSql:         sdkConfig.DescribeSql,
+		DescribeDetailsName: input.DescribeDetailsName,
+		PreviewFeature:      input.PreviewFeature,
+		Filters:             input.DataSourceFilters(),
+		Describe:            input.DataSourceDescribe(),
+		Hooks:               input.EffectiveDataSourceHooks(),
+		PreambleModel:       preamble,
+	}
+}

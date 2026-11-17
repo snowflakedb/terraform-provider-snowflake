@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ComputePoolCreateMappings_renderCreateFuncs(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
@@ -90,10 +91,12 @@ func Test_constructorArg(t *testing.T) {
 	})
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_collectionMapperName(t *testing.T) {
 	require.Equal(t, "toComputePoolBackupInstanceFamilies", collectionMapperName("ComputePool", defs.ComputePoolAttrs.BackupInstanceFamilies))
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_AuthenticationPolicySecurityIntegrationsCreateMapping(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.AuthenticationPolicy}, nil, nil)
 	var got *CreateOptionalCall
@@ -109,6 +112,7 @@ func Test_AuthenticationPolicySecurityIntegrationsCreateMapping(t *testing.T) {
 	}, got)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ExternalVolumeCreateMappings_renderCreateFuncs(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ExternalVolumeObject}, nil, nil)
 	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
@@ -129,6 +133,7 @@ func Test_ExternalVolumeCreateMappings_renderCreateFuncs(t *testing.T) {
 `, renderTemplate(t, "generatedApplyCreateOptionals", model))
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_SchemaCreateMappings_stayExt(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
 	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
@@ -534,6 +539,7 @@ func Test_attachCreateMappings_skipCreateStaysHandwritten(t *testing.T) {
 	require.Equal(t, "stringAttributeCreateBuilder", model.Attributes[1].CreateOptionalCall.Helper)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_AlertCreateMappings_skipsNestedParsers(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Alert}, nil, nil)
 

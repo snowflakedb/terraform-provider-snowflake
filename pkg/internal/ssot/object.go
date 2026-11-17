@@ -61,6 +61,7 @@ type Object struct {
 	ComputedAttributes       []Attribute // Read-only resource state; never used for CREATE/ALTER.
 	AttributesModification   bool
 	ResourceHooks            []ResourceHookOption
+	DataSourceHooks          []DataSourceHookOption // Exceptions to the defaults of EffectiveDataSourceHooks.
 	Generators               []GeneratorOption
 	SchemaStateUpgraders     []StateUpgraderFunc
 	AdditionalCustomizeDiffs []CustomizeDiffFunc

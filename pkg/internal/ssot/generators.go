@@ -139,6 +139,12 @@ type ResourceGenerator struct {
 	Enabled bool
 }
 
+// DataSourceGenerator emits the Terraform data source. Enabled is set by WithDataSource.
+// An object in All without it is not a data-source-generation input.
+type DataSourceGenerator struct {
+	Enabled bool
+}
+
 type ResourceAssertGenerator struct {
 	Enabled bool
 }
@@ -215,6 +221,7 @@ type Generators struct {
 	Schema                   SchemaGenerator
 	Sdk                      SdkGenerator
 	Resource                 ResourceGenerator
+	DataSource               DataSourceGenerator
 	Model                    ModelGenerator
 	ResourceAssert           ResourceAssertGenerator
 	ShowOutputAssert         ShowOutputAssertGenerator
@@ -604,6 +611,19 @@ func WithResource(opts ...ResourceOption) GeneratorOption {
 		g.Resource.Enabled = true
 		for _, opt := range opts {
 			opt(&g.Resource)
+		}
+	}
+}
+
+type DataSourceOption func(*DataSourceGenerator)
+
+// WithDataSource enables data source generation for this object.
+// Zero options still sets Enabled. An object without this call is left out of make generate-datasource.
+func WithDataSource(opts ...DataSourceOption) GeneratorOption {
+	return func(g *Generators) {
+		g.DataSource.Enabled = true
+		for _, opt := range opts {
+			opt(&g.DataSource)
 		}
 	}
 }

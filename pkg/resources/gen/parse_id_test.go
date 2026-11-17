@@ -71,6 +71,7 @@ func Test_ParseId_identifierKindsAndEncoding(t *testing.T) {
 	}
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ParseId_computePoolLifecycleUsesGeneratedParser(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	got := renderLifecycle(t, model)

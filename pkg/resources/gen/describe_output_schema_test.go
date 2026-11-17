@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestDescribeOutputSchema_describeSqlOverride(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.CatalogIntegrationObjectStorage}, nil, nil)
 	require.Equal(t, "CATALOG INTEGRATION", model.ObjectType)
@@ -21,6 +22,7 @@ func TestDescribeOutputSchema_describeSqlOverride(t *testing.T) {
 	require.NotContains(t, got, "for the given catalog integration object storage")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestDescribeOutputSchema_nameWords(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.Equal(t, "COMPUTE POOL", model.ObjectType)
@@ -30,6 +32,7 @@ func TestDescribeOutputSchema_nameWords(t *testing.T) {
 	require.Contains(t, got, "schemas.DescribeComputePoolDetailsSchema")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestDescribeOutputSchema_authenticationPolicy(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.AuthenticationPolicy}, nil, nil)
 	require.True(t, model.Hooks.DescribeOutputSchema.Generate)
@@ -41,6 +44,7 @@ func TestDescribeOutputSchema_authenticationPolicy(t *testing.T) {
 	require.Contains(t, got, "schemas.DescribeAuthenticationPolicyDetailsSchema")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestDescribeOutputSchema_catalogIntegrationVariant(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.CatalogIntegrationAwsGlue}, nil, nil)
 	require.True(t, model.Hooks.DescribeOutputSchema.Generate)

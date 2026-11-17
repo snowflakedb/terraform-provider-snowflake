@@ -1,0 +1,13 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.SwitchesSchema.Generate -}}
+	map[string]*schema.Schema{
+{{- if .Hooks.DescribeInSdk.Present }}
+		"with_describe": withDescribeSchema,
+{{- end }}
+{{- if .Hooks.ShowParametersInSdk.Present }}
+		"with_parameters": withParametersSchema,
+{{- end }}
+	},
+{{ else if .Hooks.SwitchesSchema.Present -}}
+	{{ .Prefix }}SwitchesSchemaExt,
+{{ end -}}

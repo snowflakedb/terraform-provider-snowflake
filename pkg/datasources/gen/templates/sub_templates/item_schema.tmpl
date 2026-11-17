@@ -1,0 +1,15 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+	map[string]*schema.Schema{
+		"{{ .ResultName }}": {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Holds the aggregated output of all {{ CamelToWords .Name }} details queries.",
+			Elem: &schema.Resource{
+				Schema: collections.MergeMaps(
+{{ template "showOutputSchema" . -}}
+{{ template "describeOutputSchema" . -}}
+{{ template "parametersOutputSchema" . -}}
+				),
+			},
+		},
+	},
