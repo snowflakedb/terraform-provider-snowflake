@@ -241,7 +241,7 @@ func init() {
 				opts.Terse = new(true)
 				opts.History = new(true)
 				opts.Like = &Like{Pattern: new("schema_pattern")}
-				opts.In = &ExtendedIn{Database: databaseId}
+				opts.In = &ExtendedInWithoutSchema{Database: databaseId}
 				opts.StartsWith = new("schema_pattern")
 				opts.Limit = &LimitFrom{Rows: new(3), From: new("name_string")}
 			},
@@ -262,7 +262,7 @@ func init() {
 			func(opts *ShowSchemaOptions) {
 				opts.Terse = new(true)
 				opts.History = new(true)
-				opts.In = &ExtendedIn{Account: new(true)}
+				opts.In = &ExtendedInWithoutSchema{Account: new(true)}
 			},
 			`SHOW TERSE SCHEMAS HISTORY IN ACCOUNT`,
 		).
@@ -271,10 +271,26 @@ func init() {
 			func(opts *ShowSchemaOptions) {
 				opts.Terse = new(true)
 				opts.History = new(true)
-				opts.In = &ExtendedIn{Database: databaseId}
+				opts.In = &ExtendedInWithoutSchema{Database: databaseId}
 			},
 			`SHOW TERSE SCHEMAS HISTORY IN DATABASE %s`,
 			databaseId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_In_application",
+			func(opts *ShowSchemaOptions) {
+				opts.In = &ExtendedInWithoutSchema{Application: NewAccountObjectIdentifier("app")}
+			},
+			`SHOW SCHEMAS IN APPLICATION %s`,
+			NewAccountObjectIdentifier("app").FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Show_In_application_package",
+			func(opts *ShowSchemaOptions) {
+				opts.In = &ExtendedInWithoutSchema{ApplicationPackage: NewAccountObjectIdentifier("package")}
+			},
+			`SHOW SCHEMAS IN APPLICATION PACKAGE %s`,
+			NewAccountObjectIdentifier("package").FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Schemas_sql_Show_StartsWith,

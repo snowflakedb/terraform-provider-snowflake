@@ -208,6 +208,14 @@ output "read_only" {
 
 State is upgraded automatically. The next refresh replaces `show_output` and reads `error_integration` from Snowflake. Update any configuration that references `show_output[0].read_only` of a replication group.
 
+### *(improvement)* `snowflake_schemas` data source validates the identifiers in `in`
+
+Previously, the `database`, `application`, and `application_package` fields of the `in` block in the [`snowflake_schemas`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/schemas) data source accepted any string, and a value that is not a valid identifier was only rejected when Snowflake ran [`SHOW SCHEMAS`](https://docs.snowflake.com/en/sql-reference/sql/show-schemas).
+
+The provider now checks these values while planning, as the other data sources with an `in` block already do, so an invalid identifier is reported before any request is sent. Valid values behave as before.
+
+No configuration changes are required, unless your configuration passes a value that is not a valid identifier to one of these fields.
+
 ### *(improvement)* `attributes` in `snowflake_cortex_search_service` is updated in place
 
 Changing `attributes` in the [`snowflake_cortex_search_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_search_service) resource no longer recreates the service. The provider runs `ALTER CORTEX SEARCH SERVICE ... SET ATTRIBUTES`, or `UNSET ATTRIBUTES` when the field is removed from the configuration. As described in the [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search), the new attributes take effect after the next index refresh.

@@ -70,6 +70,18 @@ type ExtendedIn struct {
 	ApplicationPackage AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
 }
 
+// InWithoutSchema is the IN clause of a SHOW that has no schema level, such as SHOW SCHEMAS.
+type InWithoutSchema struct {
+	Account  *bool                   `ddl:"keyword" sql:"ACCOUNT"`
+	Database AccountObjectIdentifier `ddl:"identifier" sql:"DATABASE"`
+}
+
+type ExtendedInWithoutSchema struct {
+	InWithoutSchema
+	Application        AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION"`
+	ApplicationPackage AccountObjectIdentifier `ddl:"identifier" sql:"APPLICATION PACKAGE"`
+}
+
 type On struct {
 	Account *bool                   `ddl:"keyword" sql:"ACCOUNT"`
 	User    AccountObjectIdentifier `ddl:"identifier" sql:"USER"`

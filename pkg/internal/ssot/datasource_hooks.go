@@ -100,10 +100,11 @@ func WithDataSourceItemExtra(h DataSourceHook) DataSourceHookOption {
 type DataSourceInKind string
 
 const (
-	DataSourceInNone     DataSourceInKind = ""
-	DataSourceInPlain    DataSourceInKind = "In"
-	DataSourceInExtended DataSourceInKind = "ExtendedIn"
-	DataSourceInAccount  DataSourceInKind = "InAccount"
+	DataSourceInNone                  DataSourceInKind = ""
+	DataSourceInPlain                 DataSourceInKind = "In"
+	DataSourceInExtended              DataSourceInKind = "ExtendedIn"
+	DataSourceInExtendedWithoutSchema DataSourceInKind = "ExtendedInWithoutSchema"
+	DataSourceInAccount               DataSourceInKind = "InAccount"
 )
 
 // DataSourceFilters are the filters that the SDK SHOW request offers.
@@ -126,9 +127,11 @@ func (obj Object) DataSourceFilters() DataSourceFilters {
 		Limit:      (cfg.ShowOptionalLimitFrom || cfg.ShowOptionalLimit) && !slices.Contains(generator.WithoutFilters, DataSourceFilterLimit),
 		On:         cfg.ShowOptionalOn,
 		Terse:      cfg.ShowTerse && generator.WithTerse,
-		History:    slices.Contains(cfg.ShowOptionalSql, "HISTORY"),
+		History:    slices.Contains(cfg.ShowOptionalSql, "HISTORY") && generator.WithHistory,
 	}
 	switch {
+	case cfg.ShowOptionalExtendedInWithoutSchema:
+		filters.In = DataSourceInExtendedWithoutSchema
 	case cfg.ShowOptionalExtendedIn:
 		filters.In = DataSourceInExtended
 	case cfg.ShowOptionalIn:

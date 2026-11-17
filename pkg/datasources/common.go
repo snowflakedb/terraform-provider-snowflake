@@ -100,6 +100,44 @@ var extendedInSchema = &schema.Schema{
 	},
 }
 
+var extendedInWithoutSchemaSchema = &schema.Schema{
+	Type:        schema.TypeList,
+	Optional:    true,
+	Description: "IN clause to filter the list of objects",
+	MaxItems:    1,
+	Elem: &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"account": {
+				Type:         schema.TypeBool,
+				Optional:     true,
+				Description:  "Returns records for the entire account.",
+				ExactlyOneOf: []string{"in.0.account", "in.0.database", "in.0.application", "in.0.application_package"},
+			},
+			"database": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Returns records for the current database in use or for a specified database.",
+				ExactlyOneOf:     []string{"in.0.account", "in.0.database", "in.0.application", "in.0.application_package"},
+				ValidateDiagFunc: resources.IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			},
+			"application": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Returns records for the specified application.",
+				ExactlyOneOf:     []string{"in.0.account", "in.0.database", "in.0.application", "in.0.application_package"},
+				ValidateDiagFunc: resources.IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			},
+			"application_package": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "Returns records for the specified application package.",
+				ExactlyOneOf:     []string{"in.0.account", "in.0.database", "in.0.application", "in.0.application_package"},
+				ValidateDiagFunc: resources.IsValidIdentifier[sdk.AccountObjectIdentifier](),
+			},
+		},
+	},
+}
+
 var onSchema = &schema.Schema{
 	Type:        schema.TypeList,
 	Optional:    true,
@@ -330,6 +368,31 @@ func handleExtendedIn(d *schema.ResourceData, setField **sdk.ExtendedIn) error {
 		if v, ok := in["application_package"]; ok {
 			if applicationPackage := v.(string); applicationPackage != "" {
 				*setField = &sdk.ExtendedIn{ApplicationPackage: sdk.NewAccountObjectIdentifier(applicationPackage)}
+			}
+		}
+	}
+	return nil
+}
+
+func handleExtendedInWithoutSchema(d *schema.ResourceData, setField **sdk.ExtendedInWithoutSchema) error {
+	if v, ok := d.GetOk("in"); ok {
+		in := v.([]any)[0].(map[string]any)
+		if v, ok := in["account"]; ok && v.(bool) {
+			*setField = &sdk.ExtendedInWithoutSchema{Account: sdk.Bool(true)}
+		}
+		if v, ok := in["database"]; ok {
+			if database := v.(string); database != "" {
+				*setField = &sdk.ExtendedInWithoutSchema{Database: sdk.NewAccountObjectIdentifier(database)}
+			}
+		}
+		if v, ok := in["application"]; ok {
+			if application := v.(string); application != "" {
+				*setField = &sdk.ExtendedInWithoutSchema{Application: sdk.NewAccountObjectIdentifier(application)}
+			}
+		}
+		if v, ok := in["application_package"]; ok {
+			if applicationPackage := v.(string); applicationPackage != "" {
+				*setField = &sdk.ExtendedInWithoutSchema{ApplicationPackage: sdk.NewAccountObjectIdentifier(applicationPackage)}
 			}
 		}
 	}
