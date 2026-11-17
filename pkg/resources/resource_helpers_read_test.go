@@ -3,6 +3,7 @@ package resources
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
@@ -41,4 +42,14 @@ func Test_setListKeepingNull(t *testing.T) {
 		assert.Equal(t, "CPU_X64_M", attrs["items.0"])
 		assert.Equal(t, "CPU_X64_L", attrs["items.1"])
 	})
+}
+
+func Test_omitCurrentAccount(t *testing.T) {
+	t.Parallel()
+
+	current := sdk.NewAccountIdentifier("ORG", "SOURCE")
+	target := sdk.NewAccountIdentifier("ORG", "TARGET")
+
+	require.Equal(t, []sdk.AccountIdentifier{target}, omitCurrentAccount([]sdk.AccountIdentifier{current, target}, current))
+	require.Empty(t, omitCurrentAccount([]sdk.AccountIdentifier{current}, current))
 }

@@ -128,7 +128,7 @@ func (v *failoverGroups) ShowShares(ctx context.Context, id AccountObjectIdentif
 // The SHOW converters below keep the leniency of the handwritten converter: a value they do not know is not an error,
 // because a SHOW row that cannot be read breaks the read of every failover group (see GH #1418).
 
-// SHOW prints PARAMETERS for the ACCOUNT PARAMETERS object type. Any other token is left unchanged.
+// SHOW prints PARAMETERS for the ACCOUNT PARAMETERS object type. A token that is not a known object type is kept in upper case.
 func ParseCommaSeparatedFailoverGroupObjectTypeArray(value string) ([]FailoverGroupObjectType, error) {
 	var result []FailoverGroupObjectType
 	for part := range strings.SplitSeq(value, ",") {
@@ -139,12 +139,17 @@ func ParseCommaSeparatedFailoverGroupObjectTypeArray(value string) ([]FailoverGr
 		if strings.EqualFold(part, "PARAMETERS") {
 			part = string(FailoverGroupObjectTypeAccountParameters)
 		}
-		result = append(result, FailoverGroupObjectType(part))
+		objectType, err := ToFailoverGroupObjectType(part)
+		if err != nil {
+			objectType = FailoverGroupObjectType(strings.ToUpper(part))
+		}
+		result = append(result, objectType)
 	}
 	return result, nil
 }
 
 // SHOW prints short tokens such as API and EXTERNAL_ACCESS. They become the create-page values (API INTEGRATIONS, EXTERNAL ACCESS INTEGRATIONS).
+// A token that is not a known integration type is kept in upper case.
 func ParseCommaSeparatedFailoverGroupIntegrationTypeArray(value string) ([]FailoverGroupIntegrationType, error) {
 	var result []FailoverGroupIntegrationType
 	for part := range strings.SplitSeq(value, ",") {
@@ -152,7 +157,12 @@ func ParseCommaSeparatedFailoverGroupIntegrationTypeArray(value string) ([]Failo
 		if part == "" {
 			continue
 		}
-		result = append(result, FailoverGroupIntegrationType(strings.ReplaceAll(part, "_", " ")+" INTEGRATIONS"))
+		part = strings.ReplaceAll(part, "_", " ") + " INTEGRATIONS"
+		integrationType, err := ToFailoverGroupIntegrationType(part)
+		if err != nil {
+			integrationType = FailoverGroupIntegrationType(strings.ToUpper(part))
+		}
+		result = append(result, integrationType)
 	}
 	return result, nil
 }

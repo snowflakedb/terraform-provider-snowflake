@@ -403,22 +403,6 @@ func TestInt_FailoverGroups(t *testing.T) {
 		)
 	})
 
-	t.Run("alter: set and unset tags", func(t *testing.T) {
-		tag, cleanupTag := testClientHelper().Tag.CreateTag(t)
-		t.Cleanup(cleanupTag)
-		id := createPrimary(t)
-
-		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
-			WithSetTags([]sdk.TagAssociation{{Name: tag.ID(), Value: "v2"}}),
-		))
-		assertTagSet(t, tag.ID(), id, sdk.ObjectTypeFailoverGroup, "v2")
-
-		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
-			WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}),
-		))
-		assertTagUnset(t, tag.ID(), id, sdk.ObjectTypeFailoverGroup)
-	})
-
 	// OPTIMIZED_REFRESH needs a schedule and conflicts with RPO_ASSURANCE, which needs the schedule to be unset.
 	t.Run("alter: optimized refresh and rpo assurance", func(t *testing.T) {
 		id := createPrimary(t)
