@@ -147,6 +147,7 @@ var Pipe = ssot.Object{
 		ssot.WithAllGenerators(
 			ssot.WithModel(ssot.ModelMultiline(&PipeAttrs.CopyStatement)),
 		),
+		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
