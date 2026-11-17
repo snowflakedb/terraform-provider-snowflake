@@ -143,7 +143,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// SHOW does not return the allowed-object lists or error_integration.
+				// SHOW does not return the allowed-object lists.
 				// ignore_edition_check is a create-only default.
 				ImportStateVerifyIgnore: replicationGroupImportIgnores(),
 				ImportStateCheck:        replicationGroupImportChecks(t, id, configAccounts, basicState),
@@ -488,7 +488,6 @@ func replicationGroupImportIgnores() []string {
 		"allowed_external_volumes",
 		"allowed_shares",
 		"ignore_edition_check",
-		"error_integration",
 	}
 }
 

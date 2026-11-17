@@ -3,7 +3,9 @@ package resources
 import (
 	"context"
 	"errors"
+	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -25,9 +27,36 @@ var (
 	}
 )
 
+// failoverGroupMembershipLockedInReadOnlyMode is listed on the failover group SSOT object and appended to the generated customdiff.All.
+// Snowflake rejects the membership changes (OBJECT_TYPES, the allowed lists, and ALLOWED_INTEGRATION_TYPES) in the read-only mode,
+// so a plan that keeps read_only on and changes one of them fails here instead of in the middle of the apply.
+// Switching read_only off in the same plan is fine: the update leaves the read-only mode before the membership changes.
+// TODO [next PRs]: add an experiment that leaves the read-only mode before the membership changes and restores it afterwards.
+func failoverGroupMembershipLockedInReadOnlyMode(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	if d.Id() == "" {
+		return nil
+	}
+	oldReadOnly, newReadOnly := d.GetChange("read_only")
+	if !oldReadOnly.(bool) || !newReadOnly.(bool) {
+		return nil
+	}
+	var changed []string
+	for _, key := range []string{"object_types", "allowed_databases", "allowed_external_volumes", "allowed_shares", "allowed_integration_types"} {
+		if d.HasChange(key) {
+			changed = append(changed, key)
+		}
+	}
+	if len(changed) > 0 {
+		return fmt.Errorf("cannot change %s while read_only is true: Snowflake does not allow changing the membership of a failover group in the read-only mode; "+
+			"set read_only to false (or remove it) to change them, and set it back to true afterwards", strings.Join(changed, ", "))
+	}
+	return nil
+}
+
 // failoverGroupAlterRequestsExt holds the ALTER statements of an update in the order they must run.
 // The order matters to Snowflake (RPO assurance, replication schedule, and optimized refresh depend on each other),
-// and OBJECT_TYPES with ALLOWED_INTEGRATION_TYPES cannot share a SET with the other properties, so SET and UNSET are not grouped.
+// and OBJECT_TYPES with ALLOWED_INTEGRATION_TYPES cannot share a SET with the other properties. The schedule, the comment,
+// and the error integration share one SET and one UNSET.
 type failoverGroupAlterRequestsExt struct {
 	steps []func(id sdk.AccountObjectIdentifier) *sdk.AlterFailoverGroupRequest
 }
@@ -101,6 +130,22 @@ func failoverGroupAfterCreateExt(ctx context.Context, d *schema.ResourceData, me
 
 func failoverGroupApplySetUnsetExt(d *schema.ResourceData) (*failoverGroupAlterRequestsExt, error) {
 	steps := &failoverGroupAlterRequestsExt{}
+	// Members are removed before OBJECT_TYPES is set, because Snowflake drops them with their object type and then rejects the REMOVE,
+	// and they are added after it, because a member needs its object type.
+	removes := &failoverGroupAlterRequestsExt{}
+	adds := &failoverGroupAlterRequestsExt{}
+	readOnlyOff := &failoverGroupAlterRequestsExt{}
+	readOnlyOn := &failoverGroupAlterRequestsExt{}
+
+	// Snowflake rejects membership changes in the read-only mode, so it is switched off before them and on after them.
+	// SET and UNSET READ_ONLY fail when the group is already (not) in the read-only mode, so they run only when the value changes.
+	if d.HasChange("read_only") {
+		if d.Get("read_only").(bool) {
+			readOnlyOn.set(sdk.NewFailoverGroupSetRequest().WithReadOnly(true))
+		} else {
+			readOnlyOff.unset(sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))
+		}
+	}
 
 	if err := failoverGroupObjectTypesStepsExt(d, steps); err != nil {
 		return nil, err
@@ -120,12 +165,47 @@ func failoverGroupApplySetUnsetExt(d *schema.ResourceData) (*failoverGroupAlterR
 		steps.unset(sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true))
 	}
 
+	// The schedule, the comment, and the error integration share one SET and one UNSET. The schedule is changed after the unsets above
+	// and before the sets below, as before.
+	properties := sdk.NewFailoverGroupSetRequest()
+	removedProperties := sdk.NewFailoverGroupUnsetRequest()
+	hasProperties, hasRemovedProperties := false, false
 	if d.HasChange("replication_schedule") {
 		if schedule := d.Get("replication_schedule").(string); schedule != "" {
-			steps.set(sdk.NewFailoverGroupSetRequest().WithReplicationSchedule(schedule))
+			properties.WithReplicationSchedule(schedule)
+			hasProperties = true
 		} else {
-			steps.unset(sdk.NewFailoverGroupUnsetRequest().WithReplicationSchedule(true))
+			removedProperties.WithReplicationSchedule(true)
+			hasRemovedProperties = true
 		}
+	}
+	if d.HasChange("comment") {
+		if comment := d.Get("comment").(string); comment != "" {
+			properties.WithComment(comment)
+			hasProperties = true
+		} else {
+			removedProperties.WithComment(true)
+			hasRemovedProperties = true
+		}
+	}
+	if d.HasChange("error_integration") {
+		if raw := d.Get("error_integration").(string); raw != "" {
+			errorIntegration, err := sdk.ParseAccountObjectIdentifier(raw)
+			if err != nil {
+				return nil, err
+			}
+			properties.WithErrorIntegration(errorIntegration)
+			hasProperties = true
+		} else {
+			removedProperties.WithErrorIntegration(true)
+			hasRemovedProperties = true
+		}
+	}
+	if hasRemovedProperties {
+		steps.unset(removedProperties)
+	}
+	if hasProperties {
+		steps.set(properties)
 	}
 
 	if d.HasChange("optimized_refresh") && d.Get("optimized_refresh").(bool) {
@@ -136,57 +216,29 @@ func failoverGroupApplySetUnsetExt(d *schema.ResourceData) (*failoverGroupAlterR
 		steps.set(sdk.NewFailoverGroupSetRequest().WithRpoAssurance(true))
 	}
 
-	if d.HasChange("comment") {
-		if comment := d.Get("comment").(string); comment != "" {
-			steps.set(sdk.NewFailoverGroupSetRequest().WithComment(comment))
-		} else {
-			steps.unset(sdk.NewFailoverGroupUnsetRequest().WithComment(true))
-		}
-	}
-
-	if d.HasChange("error_integration") {
-		if raw := d.Get("error_integration").(string); raw != "" {
-			errorIntegration, err := sdk.ParseAccountObjectIdentifier(raw)
-			if err != nil {
-				return nil, err
-			}
-			steps.set(sdk.NewFailoverGroupSetRequest().WithErrorIntegration(errorIntegration))
-		} else {
-			steps.unset(sdk.NewFailoverGroupUnsetRequest().WithErrorIntegration(true))
-		}
-	}
-
-	if d.HasChange("read_only") {
-		if d.Get("read_only").(bool) {
-			steps.set(sdk.NewFailoverGroupSetRequest().WithReadOnly(true))
-		} else {
-			steps.unset(sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))
-		}
-	}
-
-	return steps, errors.Join(
-		failoverGroupAddRemoveStepsExt(d, steps, "allowed_databases", toFailoverGroupAccountObjectIdentifier,
+	err := errors.Join(
+		failoverGroupAddRemoveStepsExt(d, removes, adds, "allowed_databases", toFailoverGroupAccountObjectIdentifier,
 			func(ids []sdk.AccountObjectIdentifier) *sdk.FailoverGroupRemoveRequest {
 				return sdk.NewFailoverGroupRemoveRequest().WithAllowedDatabases(ids)
 			},
 			func(ids []sdk.AccountObjectIdentifier) *sdk.FailoverGroupAddRequest {
 				return sdk.NewFailoverGroupAddRequest().WithAllowedDatabases(ids)
 			}),
-		failoverGroupAddRemoveStepsExt(d, steps, "allowed_shares", toFailoverGroupAccountObjectIdentifier,
+		failoverGroupAddRemoveStepsExt(d, removes, adds, "allowed_shares", toFailoverGroupAccountObjectIdentifier,
 			func(ids []sdk.AccountObjectIdentifier) *sdk.FailoverGroupRemoveRequest {
 				return sdk.NewFailoverGroupRemoveRequest().WithAllowedShares(ids)
 			},
 			func(ids []sdk.AccountObjectIdentifier) *sdk.FailoverGroupAddRequest {
 				return sdk.NewFailoverGroupAddRequest().WithAllowedShares(ids)
 			}),
-		failoverGroupAddRemoveStepsExt(d, steps, "allowed_external_volumes", toFailoverGroupAccountObjectIdentifier,
+		failoverGroupAddRemoveStepsExt(d, removes, adds, "allowed_external_volumes", toFailoverGroupAccountObjectIdentifier,
 			func(ids []sdk.AccountObjectIdentifier) *sdk.FailoverGroupRemoveRequest {
 				return sdk.NewFailoverGroupRemoveRequest().WithAllowedExternalVolumes(ids)
 			},
 			func(ids []sdk.AccountObjectIdentifier) *sdk.FailoverGroupAddRequest {
 				return sdk.NewFailoverGroupAddRequest().WithAllowedExternalVolumes(ids)
 			}),
-		failoverGroupAddRemoveStepsExt(d, steps, "allowed_accounts", toFailoverGroupAccountIdentifier,
+		failoverGroupAddRemoveStepsExt(d, removes, adds, "allowed_accounts", toFailoverGroupAccountIdentifier,
 			func(ids []sdk.AccountIdentifier) *sdk.FailoverGroupRemoveRequest {
 				return sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(ids)
 			},
@@ -194,6 +246,9 @@ func failoverGroupApplySetUnsetExt(d *schema.ResourceData) (*failoverGroupAlterR
 				return sdk.NewFailoverGroupAddRequest().WithAllowedAccounts(ids)
 			}),
 	)
+
+	steps.steps = slices.Concat(readOnlyOff.steps, removes.steps, steps.steps, adds.steps, readOnlyOn.steps)
+	return steps, err
 }
 
 // failoverGroupObjectTypesStepsExt is one SET with OBJECT_TYPES and ALLOWED_INTEGRATION_TYPES. The schedule and the other properties cannot share it (GH #2544).
@@ -226,10 +281,10 @@ func failoverGroupObjectTypesStepsExt(d *schema.ResourceData, steps *failoverGro
 	return nil
 }
 
-// failoverGroupAddRemoveStepsExt removes the values dropped from the config before it adds the new ones. ADD and REMOVE take one list per statement.
+// failoverGroupAddRemoveStepsExt collects the REMOVE and the ADD statements of one list. ADD and REMOVE take one list per statement.
 func failoverGroupAddRemoveStepsExt[T comparable](
 	d *schema.ResourceData,
-	steps *failoverGroupAlterRequestsExt,
+	removes, adds *failoverGroupAlterRequestsExt,
 	key string,
 	mapper func(any) (T, error),
 	remove func([]T) *sdk.FailoverGroupRemoveRequest,
@@ -250,12 +305,12 @@ func failoverGroupAddRemoveStepsExt[T comparable](
 	removed := slices.DeleteFunc(slices.Clone(oldValues), func(v T) bool { return slices.Contains(newValues, v) })
 	added := slices.DeleteFunc(slices.Clone(newValues), func(v T) bool { return slices.Contains(oldValues, v) })
 	if len(removed) > 0 {
-		steps.add(func(id sdk.AccountObjectIdentifier) *sdk.AlterFailoverGroupRequest {
+		removes.add(func(id sdk.AccountObjectIdentifier) *sdk.AlterFailoverGroupRequest {
 			return sdk.NewAlterFailoverGroupRequest(id).WithRemove(*remove(removed))
 		})
 	}
 	if len(added) > 0 {
-		steps.add(func(id sdk.AccountObjectIdentifier) *sdk.AlterFailoverGroupRequest {
+		adds.add(func(id sdk.AccountObjectIdentifier) *sdk.AlterFailoverGroupRequest {
 			return sdk.NewAlterFailoverGroupRequest(id).WithAdd(*add(added))
 		})
 	}
@@ -276,8 +331,8 @@ func failoverGroupAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, 
 	return nil
 }
 
-// SHOW lists the allowed databases and shares only through separate commands. SHOW returns NULL in read_only whatever is set,
-// and no command lists the allowed external volumes or the error integration, so those keep the configured values.
+// SHOW lists the allowed databases and shares only through separate commands, and no command lists the allowed external volumes,
+// so those keep the configured values.
 func failoverGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, group *sdk.FailoverGroup) error {
 	client := meta.(*provider.Context).Client
 	allowedAccounts, err := allowedAccountsWithoutCurrent(ctx, meta, group.AllowedAccounts)

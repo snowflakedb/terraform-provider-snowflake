@@ -285,7 +285,7 @@ var FailoverGroupAttrs = struct {
 		NativeBool:     true,
 		OptionalInShow: true,
 		OptionalInDb:   true,
-		Description:    "Enables the read-only mode of a primary failover group.",
+		Description:    "Enables the read-only mode of a primary failover group. Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` in this mode, so set it to false (or remove it) before changing them.",
 	},
 	// SHOW primary is org.account.name. It is not the AS REPLICA OF argument.
 	Primary: ssot.Attribute{
@@ -505,6 +505,10 @@ var FailoverGroup = ssot.Object{
 			Doc:     "ShowShares returns the list of shares in the failover group as identifiers.",
 			Returns: []string{"[]AccountObjectIdentifier", "error"},
 		},
+	},
+	// Listed in the extension; rejects the membership changes of a group that stays in the read-only mode.
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"failoverGroupMembershipLockedInReadOnlyMode",
 	},
 	// is_primary is a computed attribute, not a resource attribute, so it stays out of CREATE and ALTER.
 	ComputedAttributes: []ssot.Attribute{
