@@ -29,3 +29,11 @@ func (c *CodeBundlesModel) WithInSchema(schemaId sdk.DatabaseObjectIdentifier) *
 		}),
 	)
 }
+
+func (c *CodeBundlesModel) WithInAccount() *CodeBundlesModel {
+	return c.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
