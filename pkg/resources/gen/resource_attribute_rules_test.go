@@ -139,6 +139,7 @@ func Test_applyResourceAttributeRules_identifierSuppressesQuoting(t *testing.T) 
 	require.Equal(t, "suppressIdentifierQuoting", got.DiffSuppressExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_enumField(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:                  "instance_family",
@@ -158,6 +159,7 @@ func Test_applyResourceAttributeRules_enumField(t *testing.T) {
 	require.Equal(t, `"Identifies the type of machine. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies) + " Not all instance families are supported."`, got.DescriptionExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_listOfEnum(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "backup_instance_families",
@@ -183,6 +185,7 @@ func Test_applyResourceAttributeRules_listOfEnum(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "allowed_values",
@@ -208,6 +211,7 @@ func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_deprecatedSetIgnoresChanges(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "mfa_authentication_methods",
@@ -262,6 +266,7 @@ func Test_isCollection(t *testing.T) {
 	require.False(t, ssot.Attribute{Type: ssot.AttrEnum}.IsEnumCollection())
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_sdkEnumSymbols(t *testing.T) {
 	ctx := resourceAttributeRuleContext{}
 	attr := ssot.Attribute{Name: "instance_family", Type: ssot.AttrEnum, Enum: defs.ComputePoolInstanceFamily}
@@ -454,6 +459,7 @@ func Test_applyResourceAttributeRules_comment(t *testing.T) {
 	require.Empty(t, got.DiffSuppressExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_nestedBlocksRecurse(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "outer",
@@ -530,6 +536,7 @@ func gotSourceNested() ssot.Attribute {
 	}
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_nestedBlock(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "client_policy",
@@ -663,6 +670,7 @@ func Test_applyResourceAttributeRules_accountAndExternalIdentifiers(t *testing.T
 	require.Empty(t, primary.ValidateDiagExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:     "mfa_policy",

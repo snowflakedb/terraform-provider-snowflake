@@ -54,6 +54,7 @@ func Test_ShowExternalChanges(t *testing.T) {
 	require.NotContains(t, got, "comment")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_DescribeExternalChanges_catalogIntegrations(t *testing.T) {
 	refresh := ExternalChangeMapping{
 		OutputKey: "refresh_interval_seconds",
@@ -87,6 +88,7 @@ func Test_DescribeExternalChanges_catalogIntegrations(t *testing.T) {
 	require.Contains(t, read, "diags = catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(ctx, d, meta, catalogIntegrationAwsGlueDetails, withExternalChangesMarking)")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_DerivedOutputDiffSuppress(t *testing.T) {
 	byName := func(model ResourceModel) map[string]string {
 		got := make(map[string]string, len(model.Attributes))

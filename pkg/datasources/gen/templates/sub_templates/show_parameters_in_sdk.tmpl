@@ -1,0 +1,6 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.ShowParametersInSdk.Generate -}}
+			parameters, err := client.{{ .NamePlural }}.ShowParameters(ctx, item.ID())
+{{ else if .Hooks.ShowParametersInSdk.Present -}}
+			parameters, err := {{ .Prefix }}ShowParametersInSdkExt(ctx, client, item)
+{{ end -}}

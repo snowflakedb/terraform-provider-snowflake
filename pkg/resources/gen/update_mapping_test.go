@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ComputePoolUpdateMappings_renderApplySetUnset(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.True(t, model.Hooks.ApplySetUnset.Generate)
@@ -69,6 +70,7 @@ func Test_attachUpdateMappings_skipsNested(t *testing.T) {
 	require.Nil(t, dst[0].Children[0].UpdateCall)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_SchemaUpdateMappings_generated(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
 	require.True(t, model.Hooks.ApplySetUnset.Generate)

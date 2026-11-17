@@ -1,0 +1,74 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+
+var {{ .Prefix }}Schema = collections.MergeMaps(
+{{ template "switchesSchema" . -}}
+{{ template "filtersSchema" . -}}
+{{ template "itemSchema" . -}}
+{{ template "additionalSchema" . -}}
+)
+
+func {{ .NamePlural }}() *schema.Resource {
+	return &schema.Resource{
+		ReadContext: {{ template "readWrapper" . }},
+		Schema:      {{ .Prefix }}Schema,
+{{- if .Hooks.Description.Present }}
+		Description: {{ template "description" . }},
+{{- end }}
+	}
+}
+
+func Read{{ .NamePlural }}(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+{{- if .Hooks.ParametersOutputSet.Generate }}
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
+{{- else }}
+	client := meta.(*provider.Context).Client
+{{- end }}
+	req := sdk.NewShow{{ .Name }}Request()
+
+{{ template "applyFilters" . }}
+
+{{ template "showInSdk" . -}}
+	if err != nil {
+		return diag.FromErr(err)
+	}
+{{ template "setId" . }}
+
+	flattened := make([]map[string]any, len(items))
+	for i, item := range items {
+{{- if and .Hooks.DescribeInSdk.Present .Hooks.DescribeOutputSet.Present }}
+		var describeOutput []map[string]any
+		if d.Get("with_describe").(bool) {
+{{ template "describeInSdk" . -}}
+			if err != nil {
+				return diag.FromErr(err)
+			}
+{{ template "describeOutputSet" . -}}
+		}
+{{- end }}
+{{- if and .Hooks.ShowParametersInSdk.Present .Hooks.ParametersOutputSet.Present }}
+		var parametersOutput []map[string]any
+		if d.Get("with_parameters").(bool) {
+{{ template "showParametersInSdk" . -}}
+			if err != nil {
+				return diag.FromErr(err)
+			}
+{{ template "parametersOutputSet" . -}}
+		}
+{{- end }}
+{{ template "itemExtra" . }}
+		flattened[i] = {{ if .Hooks.ItemExtra.Present }}collections.MergeMaps({{ end }}map[string]any{
+			resources.ShowOutputAttributeName: []map[string]any{schemas.{{ .Name }}ToSchema(&item)},
+{{- if and .Hooks.DescribeInSdk.Present .Hooks.DescribeOutputSet.Present }}
+			resources.DescribeOutputAttributeName: describeOutput,
+{{- end }}
+{{- if and .Hooks.ShowParametersInSdk.Present .Hooks.ParametersOutputSet.Present }}
+			resources.ParametersAttributeName: parametersOutput,
+{{- end }}
+		}{{ if .Hooks.ItemExtra.Present }}, itemExtra){{ end }}
+	}
+	if err := d.Set("{{ .ResultName }}", flattened); err != nil {
+		return diag.FromErr(err)
+	}
+	return nil
+}

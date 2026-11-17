@@ -1,0 +1,15 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.ParametersOutputSchema.Generate -}}
+	map[string]*schema.Schema{
+		resources.ParametersAttributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: "Holds the output of SHOW PARAMETERS FOR {{ .ObjectType }}.",
+			Elem: &schema.Resource{
+				Schema: schemas.Show{{ .Name }}ParametersSchema,
+			},
+		},
+	},
+{{ else if .Hooks.ParametersOutputSchema.Present -}}
+	{{ .Prefix }}ParametersOutputSchemaExt,
+{{ end -}}
