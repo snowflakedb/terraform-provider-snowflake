@@ -37,3 +37,20 @@ func (b *BackupPoliciesModel) WithLimit(rows int) *BackupPoliciesModel {
 		}),
 	)
 }
+
+func (b *BackupPoliciesModel) WithInAccount() *BackupPoliciesModel {
+	return b.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
+
+func (b *BackupPoliciesModel) WithRowsAndFrom(rows int, from string) *BackupPoliciesModel {
+	return b.WithLimitValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"rows": tfconfig.IntegerVariable(rows),
+			"from": tfconfig.StringVariable(from),
+		}),
+	)
+}
