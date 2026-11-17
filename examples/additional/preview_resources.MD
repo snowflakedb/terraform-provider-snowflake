@@ -14,6 +14,7 @@
 - [snowflake_external_function](./docs/resources/external_function)
 - [snowflake_external_table](./docs/resources/external_table)
 - [snowflake_failover_group](./docs/resources/failover_group)
+- [snowflake_failover_group_secondary](./docs/resources/failover_group_secondary)
 - [snowflake_file_format](./docs/resources/file_format)
 - [snowflake_function_java](./docs/resources/function_java)
 - [snowflake_function_javascript](./docs/resources/function_javascript)

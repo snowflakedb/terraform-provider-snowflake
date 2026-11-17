@@ -98,6 +98,113 @@ No changes are required for existing configurations unless you want to adopt the
 
 The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
 
+### *(breaking change)* `snowflake_failover_group` reworked
+
+[`snowflake_failover_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/failover_group) is a preview resource and has been reworked to match the new [replication group](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) resources. It manages a [failover group](https://docs.snowflake.com/en/sql-reference/sql/create-failover-group) in the source account only. A replica in a target account is managed by the new preview resource [`snowflake_failover_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/failover_group_secondary).
+
+This resource is still in preview. To use the new resource, add `snowflake_failover_group_secondary_resource` to the `preview_features_enabled` field in the provider configuration.
+
+#### `replication_schedule` is a string
+
+The nested `replication_schedule` block (`interval` or `cron`) is replaced by a string with an interval in minutes or a cron expression with the time zone. The state of existing resources is upgraded automatically.
+
+Before:
+```terraform
+replication_schedule {
+  interval = 10
+}
+
+replication_schedule {
+  cron {
+    expression = "0 0 10-20 * TUE,THU"
+    time_zone  = "UTC"
+  }
+}
+```
+
+After:
+```terraform
+replication_schedule = "10 MINUTE"
+
+replication_schedule = "USING CRON 0 0 10-20 * TUE,THU UTC"
+```
+
+#### The source account is no longer a part of `allowed_accounts`
+
+Snowflake adds the source account to every failover group. `allowed_accounts` now holds only the target accounts, in the form `<organization_name>.<account_name>`, and the resource leaves the source account out of the state. If your configuration lists the source account, remove it, otherwise the plan shows a difference on every run.
+
+#### `from_replica` moved to `snowflake_failover_group_secondary`
+
+The `from_replica` block is removed. A failover group that was created with `from_replica` cannot be upgraded in place: the first plan after upgrading fails with a message that points to the new resource. For each such group, remove it from the state and import it as the new resource, which takes the primary group as `"<organization_name>"."<account_name>"."<failover_group_name>"`:
+
+```shell
+terraform state rm snowflake_failover_group.target_failover_group
+terraform import snowflake_failover_group_secondary.target_failover_group '"<failover_group_name>"'
+```
+
+Before:
+```terraform
+resource "snowflake_failover_group" "target_failover_group" {
+  name = "FG1"
+  from_replica {
+    organization_name   = "..."
+    source_account_name = "..."
+    name                = "FG1"
+  }
+}
+```
+
+After:
+```terraform
+resource "snowflake_failover_group_secondary" "target_failover_group" {
+  name    = "FG1"
+  primary = "\"<organization_name>\".\"<source_account_name>\".\"FG1\""
+}
+```
+
+#### Other changes
+
+- `object_types` is required. `object_types` and `allowed_integration_types` accept only the values listed in the documentation (case-insensitive), and `allowed_databases`, `allowed_shares`, `allowed_external_volumes`, `allowed_accounts` and `error_integration` are validated as identifiers.
+- `name` can be changed in place (`ALTER FAILOVER GROUP ... RENAME TO`) and no longer recreates the group. It is no longer compared case-insensitively, so a change that only differs in letter case is a rename too.
+- `optimized_refresh` and `rpo_assurance` have no default value anymore. `rpo_assurance` cannot be combined with `replication_schedule` or `optimized_refresh`, as before.
+- We have added `allowed_external_volumes`, `error_integration`, `comment` and `read_only`, the computed `is_primary`, and the `show_output` block. `read_only` and `error_integration` are read from `SHOW FAILOVER GROUPS` (the columns `is_primary_read_only` and `error_integration`), so changes to them outside Terraform are detected. Snowflake does not return `allowed_external_volumes`, so changes to it outside Terraform are not detected.
+
+After upgrading, run `terraform plan` and apply the configuration changes above.
+
+Reference: [#2332](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2332).
+
+### *(improvement)* `primary` in `snowflake_replication_group_secondary` is required at plan time
+
+Previously, [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) marked `primary` as optional in the schema, so a configuration without it passed `terraform validate` and `terraform plan` and failed only on `terraform apply` with "primary is required". The group is created with [`CREATE REPLICATION GROUP ... AS REPLICA OF <primary>`](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group), which always needs the primary group.
+
+The provider now marks `primary` as required, so a missing argument is reported by `terraform validate` and `terraform plan`.
+
+No configuration changes are required.
+
+### *(improvement)* `show_output` of replication groups reports the read-only mode in `is_primary_read_only` and `error_integration`
+
+`show_output` of [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) and [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary), and `show_output` in the [`snowflake_replication_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/replication_groups) data source, no longer have `read_only`, which was always empty. The [documentation of `SHOW REPLICATION GROUPS`](https://docs.snowflake.com/en/sql-reference/sql/show-replication-groups) lists a `read_only` column, but Snowflake returns the read-only mode in `is_primary_read_only` (empty for replication groups and for secondary groups) and also returns `error_integration`, which the documentation does not list. `show_output` now has both columns.
+
+Before:
+
+```terraform
+output "read_only" {
+  value = snowflake_replication_group.example.show_output[0].read_only
+}
+```
+
+After:
+
+```terraform
+output "read_only" {
+  value = snowflake_replication_group.example.show_output[0].is_primary_read_only
+}
+```
+
+[`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) `error_integration` is also read from Snowflake now. Previously, the configured value was kept in the state, so a change made outside Terraform was not detected. The next plan shows a difference when the notification integration of the group was changed or removed outside Terraform.
+
+State is upgraded automatically. The next refresh replaces `show_output` and reads `error_integration` from Snowflake. Update any configuration that references `show_output[0].read_only` of a replication group.
+
 ### *(improvement)* `attributes` in `snowflake_cortex_search_service` is updated in place
 
 Changing `attributes` in the [`snowflake_cortex_search_service`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/cortex_search_service) resource no longer recreates the service. The provider runs `ALTER CORTEX SEARCH SERVICE ... SET ATTRIBUTES`, or `UNSET ATTRIBUTES` when the field is removed from the configuration. As described in the [Snowflake docs](https://docs.snowflake.com/en/sql-reference/sql/alter-cortex-search), the new attributes take effect after the next index refresh.

@@ -669,6 +669,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_external_table":                                               resources.ExternalTable(),
 		"snowflake_external_volume":                                              resources.ExternalVolume(),
 		"snowflake_failover_group":                                               resources.FailoverGroup(),
+		"snowflake_failover_group_secondary":                                     resources.FailoverGroupSecondary(),
 		"snowflake_file_format":                                                  resources.FileFormat(),
 		"snowflake_file_format_avro":                                             resources.FileFormatAvro(),
 		"snowflake_file_format_csv":                                              resources.FileFormatCsv(),

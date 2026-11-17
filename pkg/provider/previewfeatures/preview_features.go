@@ -67,6 +67,7 @@ const (
 	ExternalVolumeResource                         feature = "snowflake_external_volume_resource"
 	ExternalVolumesDatasource                      feature = "snowflake_external_volumes_datasource"
 	FailoverGroupResource                          feature = "snowflake_failover_group_resource"
+	FailoverGroupSecondaryResource                 feature = "snowflake_failover_group_secondary_resource"
 	FailoverGroupsDatasource                       feature = "snowflake_failover_groups_datasource"
 	FileFormatResource                             feature = "snowflake_file_format_resource"
 	FileFormatAvroResource                         feature = "snowflake_file_format_avro_resource"
@@ -203,6 +204,7 @@ var allPreviewFeatures = []feature{
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	FailoverGroupResource,
+	FailoverGroupSecondaryResource,
 	FailoverGroupsDatasource,
 	FileFormatResource,
 	FunctionJavaResource,

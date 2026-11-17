@@ -166,6 +166,7 @@ func TestInt_FailoverGroups(t *testing.T) {
 			HasIsPrimary(true).
 			HasNoComment().
 			HasReplicationSchedule("10 MINUTE").
+			HasErrorIntegration(errorIntegration.ID()).
 			HasNoSecondaryState().
 			HasIsOptimizedRefreshEnabled(true).
 			HasRpoAssurance(false).
@@ -373,7 +374,8 @@ func TestInt_FailoverGroups(t *testing.T) {
 		))
 		assertThatObject(t, objectassert.FailoverGroup(t, id).
 			HasComment(comment).
-			HasReplicationSchedule("USING CRON 0 0 10-20 * TUE,THU UTC"),
+			HasReplicationSchedule("USING CRON 0 0 10-20 * TUE,THU UTC").
+			HasErrorIntegration(errorIntegration.ID()),
 		)
 
 		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
@@ -384,7 +386,8 @@ func TestInt_FailoverGroups(t *testing.T) {
 		))
 		assertThatObject(t, objectassert.FailoverGroup(t, id).
 			HasNoComment().
-			HasNoReplicationSchedule(),
+			HasNoReplicationSchedule().
+			HasNoErrorIntegration(),
 		)
 	})
 
@@ -541,18 +544,43 @@ func TestInt_FailoverGroups(t *testing.T) {
 		require.Empty(t, sourceShares)
 	})
 
-	// Snowflake accepts SET and UNSET READ_ONLY on a failover group, but SHOW keeps read_only null.
+	// SHOW prints the read-only mode of a primary failover group in is_primary_read_only (the documentation calls the column read_only).
 	t.Run("alter: read only", func(t *testing.T) {
 		id := createPrimary(t)
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasIsPrimaryReadOnly(false))
 
 		err := client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
 			WithSet(*sdk.NewFailoverGroupSetRequest().WithReadOnly(true)))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.FailoverGroup(t, id).HasNoReadOnly())
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasIsPrimaryReadOnly(true))
 
 		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
 			WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))))
-		assertThatObject(t, objectassert.FailoverGroup(t, id).HasNoReadOnly())
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasIsPrimaryReadOnly(false))
+	})
+
+	// The comment and the read-only mode are set and unset in single statements.
+	t.Run("alter: comment and read only in one statement", func(t *testing.T) {
+		id := createPrimary(t)
+		comment := random.Comment()
+		t.Cleanup(func() {
+			_ = client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true)))
+		})
+
+		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithComment(comment).WithReadOnly(true))))
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasComment(comment).HasIsPrimaryReadOnly(true))
+		// SET READ_ONLY on a group that is already read-only fails.
+		err := client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithReadOnly(true)))
+		require.ErrorContains(t, err, "read-only mode")
+
+		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithComment(true).WithReadOnly(true))))
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasNoComment().HasIsPrimaryReadOnly(false))
+		err = client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true)))
+		require.ErrorContains(t, err, "is not in read-only mode")
 	})
 
 	// The secondary state is set only when the primary has a replication schedule.

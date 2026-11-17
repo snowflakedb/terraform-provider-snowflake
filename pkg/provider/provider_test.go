@@ -33,7 +33,6 @@ func TestStandardTemplatePreviewMarks(t *testing.T) {
 		"snowflake_dynamic_table",
 		"snowflake_email_notification_integration",
 		"snowflake_external_table",
-		"snowflake_failover_group",
 		"snowflake_intelligence_cortex_agent_attachment",
 		"snowflake_managed_account",
 		"snowflake_notification_integration",

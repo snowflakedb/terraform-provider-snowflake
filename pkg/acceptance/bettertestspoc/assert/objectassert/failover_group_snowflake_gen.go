@@ -460,25 +460,50 @@ func (f *FailoverGroupAssert) HasRpoAssurance(expected bool) *FailoverGroupAsser
 	return f
 }
 
-func (f *FailoverGroupAssert) HasReadOnly(expected bool) *FailoverGroupAssert {
+func (f *FailoverGroupAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *FailoverGroupAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FailoverGroup) error {
 		t.Helper()
-		if o.ReadOnly == nil {
-			return fmt.Errorf("expected read only to have value; got: nil")
+		if o.ErrorIntegration == nil {
+			return fmt.Errorf("expected error integration to have value; got: nil")
 		}
-		if *o.ReadOnly != expected {
-			return fmt.Errorf("expected read only: %v; got: %v", expected, *o.ReadOnly)
+		if (*o.ErrorIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected error integration: %v; got: %v", expected.FullyQualifiedName(), (*o.ErrorIntegration).FullyQualifiedName())
 		}
 		return nil
 	})
 	return f
 }
 
-func (f *FailoverGroupAssert) HasNoReadOnly() *FailoverGroupAssert {
+func (f *FailoverGroupAssert) HasNoErrorIntegration() *FailoverGroupAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FailoverGroup) error {
 		t.Helper()
-		if o.ReadOnly != nil {
-			return fmt.Errorf("expected read only to be nil; got: %v", *o.ReadOnly)
+		if o.ErrorIntegration != nil {
+			return fmt.Errorf("expected error integration to be nil; got: %v", *o.ErrorIntegration)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FailoverGroupAssert) HasIsPrimaryReadOnly(expected bool) *FailoverGroupAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FailoverGroup) error {
+		t.Helper()
+		if o.IsPrimaryReadOnly == nil {
+			return fmt.Errorf("expected is primary read only to have value; got: nil")
+		}
+		if *o.IsPrimaryReadOnly != expected {
+			return fmt.Errorf("expected is primary read only: %v; got: %v", expected, *o.IsPrimaryReadOnly)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FailoverGroupAssert) HasNoIsPrimaryReadOnly() *FailoverGroupAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.FailoverGroup) error {
+		t.Helper()
+		if o.IsPrimaryReadOnly != nil {
+			return fmt.Errorf("expected is primary read only to be nil; got: %v", *o.IsPrimaryReadOnly)
 		}
 		return nil
 	})

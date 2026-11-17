@@ -4,7 +4,6 @@ package model
 
 import (
 	"encoding/json"
-	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -128,13 +127,8 @@ func (f *FailoverGroupModel) WithErrorIntegrationSdk(errorIntegration sdk.Accoun
 	return f
 }
 
-func (f *FailoverGroupModel) WithIgnoreEditionCheck(ignoreEditionCheck string) *FailoverGroupModel {
-	f.IgnoreEditionCheck = tfconfig.StringVariable(ignoreEditionCheck)
-	return f
-}
-
-func (f *FailoverGroupModel) WithIgnoreEditionCheckBool(ignoreEditionCheck bool) *FailoverGroupModel {
-	f.IgnoreEditionCheck = tfconfig.StringVariable(strconv.FormatBool(ignoreEditionCheck))
+func (f *FailoverGroupModel) WithIgnoreEditionCheck(ignoreEditionCheck bool) *FailoverGroupModel {
+	f.IgnoreEditionCheck = tfconfig.BoolVariable(ignoreEditionCheck)
 	return f
 }
 

@@ -33,10 +33,10 @@ resource "snowflake_replication_group_secondary" "basic" {
 ### Required
 
 - `name` (String) Specifies the identifier for the replication group secondary; must be unique for the account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `primary` (String) Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.
 
 ### Optional
 
-- `primary` (String) Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -67,14 +67,15 @@ Read-Only:
 - `allowed_accounts` (Set of String)
 - `comment` (String)
 - `created_on` (String)
+- `error_integration` (String)
 - `is_listing_auto_fulfillment_group` (Boolean)
 - `is_primary` (Boolean)
+- `is_primary_read_only` (Boolean)
 - `name` (String)
 - `next_scheduled_refresh` (String)
 - `organization_name` (String)
 - `owner` (String)
 - `primary` (String)
-- `read_only` (Boolean)
 - `region_group` (String)
 - `replication_schedule` (String)
 - `secondary_state` (String)

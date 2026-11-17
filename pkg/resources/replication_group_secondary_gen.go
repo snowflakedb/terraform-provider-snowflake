@@ -58,7 +58,7 @@ func CreateReplicationGroupSecondary(ctx context.Context, d *tfschema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	req, err := replicationGroupSecondaryNewCreateRequestExt(d, id)
+	req, err := replicationGroupSecondaryNewCreateRequest(d, id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,15 +97,11 @@ func ReadReplicationGroupSecondaryFunc(withExternalChangesMarking bool) tfschema
 			return diag.FromErr(err)
 		}
 
-		if err = setStateToValuesFromConfig(d, replicationGroupSecondarySchema, []string{
-			"primary",
-		}); err != nil {
-			return diag.FromErr(err)
-		}
 		errs := errors.Join(
 			d.Set(ShowOutputAttributeName, []map[string]any{schemas.ReplicationGroupToSchema(replicationGroupSecondary)}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			replicationGroupSecondarySetComputedFields(d, replicationGroupSecondary),
+			replicationGroupSecondarySetConfigFields(d, replicationGroupSecondary),
 		)
 		if errs != nil {
 			return diag.FromErr(errs)
@@ -127,6 +123,14 @@ func replicationGroupSecondaryParseId(id string) (sdk.AccountObjectIdentifier, e
 	return sdk.ParseAccountObjectIdentifier(id)
 }
 
+func replicationGroupSecondaryNewCreateRequest(d *tfschema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateSecondaryReplicationGroupRequest, error) {
+	primary, err := sdk.ParseExternalObjectIdentifier(d.Get("primary").(string))
+	if err != nil {
+		return nil, err
+	}
+	return sdk.NewCreateSecondaryReplicationGroupRequest(id, primary), nil
+}
+
 func replicationGroupSecondaryApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateSecondaryReplicationGroupRequest) error {
 	return nil
 }
@@ -138,6 +142,12 @@ func DeleteReplicationGroupSecondary(ctx context.Context, d *tfschema.ResourceDa
 			return client.ReplicationGroups.DropSafely
 		},
 	)(ctx, d, meta)
+}
+
+func replicationGroupSecondarySetConfigFields(d *tfschema.ResourceData, obj *sdk.ReplicationGroup) error {
+	return errors.Join(
+		d.Set("primary", obj.Primary.FullyQualifiedName()),
+	)
 }
 
 func replicationGroupSecondarySetComputedFields(d *tfschema.ResourceData, obj *sdk.ReplicationGroup) error {

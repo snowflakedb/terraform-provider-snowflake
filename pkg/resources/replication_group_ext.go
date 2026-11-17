@@ -47,16 +47,17 @@ func replicationGroupNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountO
 }
 
 func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, group *sdk.ReplicationGroup) error {
-	allowedAccounts, err := replicationGroupAllowedAccountsWithoutCurrent(ctx, meta, group.AllowedAccounts)
+	allowedAccounts, err := allowedAccountsWithoutCurrent(ctx, meta, group.AllowedAccounts)
 	if err != nil {
 		return err
 	}
 	errs := []error{
-		d.Set("object_types", replicationGroupEnumStrings(group.ObjectTypes)),
+		d.Set("object_types", enumStrings(group.ObjectTypes)),
 		d.Set("allowed_accounts", accountIdentifierNames(allowedAccounts)),
 		d.Set("comment", group.Comment),
 		d.Set("replication_schedule", group.ReplicationSchedule),
-		d.Set("allowed_integration_types", replicationGroupEnumStrings(group.AllowedIntegrationTypes)),
+		d.Set("allowed_integration_types", enumStrings(group.AllowedIntegrationTypes)),
+		setOptionalValueWithMapping(d, "error_integration", group.ErrorIntegration, (*sdk.AccountObjectIdentifier).Name),
 	}
 	return errors.Join(errs...)
 }
@@ -89,7 +90,7 @@ func toReplicationGroupAllowedAccounts(value any) (sdk.AccountIdentifier, error)
 	return sdk.ParseAccountIdentifier(value.(string))
 }
 
-func replicationGroupEnumStrings[T ~string](values []T) []string {
+func enumStrings[T ~string](values []T) []string {
 	out := make([]string, len(values))
 	for i, value := range values {
 		out[i] = string(value)
@@ -97,7 +98,7 @@ func replicationGroupEnumStrings[T ~string](values []T) []string {
 	return out
 }
 
-func replicationGroupCurrentAccount(ctx context.Context, meta any) (sdk.AccountIdentifier, error) {
+func currentAccountIdentifier(ctx context.Context, meta any) (sdk.AccountIdentifier, error) {
 	details, err := meta.(*provider.Context).Client.ContextFunctions.CurrentSessionDetails(ctx)
 	if err != nil {
 		return sdk.AccountIdentifier{}, err
@@ -105,8 +106,8 @@ func replicationGroupCurrentAccount(ctx context.Context, meta any) (sdk.AccountI
 	return sdk.NewAccountIdentifier(details.OrganizationName, details.AccountName), nil
 }
 
-func replicationGroupAllowedAccountsWithoutCurrent(ctx context.Context, meta any, accounts []sdk.AccountIdentifier) ([]sdk.AccountIdentifier, error) {
-	current, err := replicationGroupCurrentAccount(ctx, meta)
+func allowedAccountsWithoutCurrent(ctx context.Context, meta any, accounts []sdk.AccountIdentifier) ([]sdk.AccountIdentifier, error) {
+	current, err := currentAccountIdentifier(ctx, meta)
 	if err != nil {
 		return nil, err
 	}
