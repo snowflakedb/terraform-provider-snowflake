@@ -172,6 +172,10 @@ func Test_parseShareRecipients(t *testing.T) {
 		{Name: "targeted accounts only (listing with target accounts)", Value: "TARGETED ACCOUNTS", Result: []AccountIdentifier{}},
 		{Name: "targeted accounts only, quoted", Value: "'TARGETED ACCOUNTS'", Result: []AccountIdentifier{}},
 		{Name: "targeted accounts only, lowercase", Value: "'targeted accounts'", Result: []AccountIdentifier{}},
+		{Name: "targeted within organization only (organization listing)", Value: "TARGETED WITHIN ORGANIZATION", Result: []AccountIdentifier{}},
+		{Name: "targeted within organization only, quoted", Value: "'TARGETED WITHIN ORGANIZATION'", Result: []AccountIdentifier{}},
+		{Name: "all accounts only (share with all accounts)", Value: "ALL ACCOUNTS", Result: []AccountIdentifier{}},
+		{Name: "all accounts only, quoted", Value: "'ALL ACCOUNTS'", Result: []AccountIdentifier{}},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {

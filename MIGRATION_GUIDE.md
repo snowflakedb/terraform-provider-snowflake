@@ -216,9 +216,9 @@ Attribute columns must still be present in `query`. A change that also modifies 
 
 No configuration changes are required.
 
-### *(bug fix)* `snowflake_share` reads shares linked to a listing with target accounts
+### *(bug fix)* `snowflake_share` reads shares linked to a listing with target accounts, to an organization listing, or shared with all accounts
 
-Previously, [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) failed to read a share attached to a [listing](https://docs.snowflake.com/en/sql-reference/sql/create-listing) whose manifest sets `targets.accounts`. For such a share, `SHOW SHARES` returns `'TARGETED ACCOUNTS'` in the `to` column instead of the consumer accounts, and the refresh stopped the whole plan with:
+Previously, [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) failed to read a share attached to a [listing](https://docs.snowflake.com/en/sql-reference/sql/create-listing) whose manifest sets `targets.accounts`, a share attached to an [organization listing](https://docs.snowflake.com/en/sql-reference/sql/create-organization-listing), or a share shared with all accounts. For such a share, `SHOW SHARES` returns `'TARGETED ACCOUNTS'`, `'TARGETED WITHIN ORGANIZATION'`, or `'ALL ACCOUNTS'` in the `to` column instead of the consumer accounts, and the refresh stopped the whole plan with:
 
 ```text
 Error: conversion from Snowflake failed with error: unexpected number of parts 1 in identifier 'TARGETED ACCOUNTS', expected 2 in a form of "<organization_name>.<account_name>"
@@ -226,7 +226,7 @@ Error: conversion from Snowflake failed with error: unexpected number of parts 1
 
 The same error affected the [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source.
 
-The provider now skips that entry, like `ALL ACCOUNTS IN DATA EXCHANGE`, so `accounts` and `show_output.0.to` are read as empty for such a share.
+The provider now skips these entries, like `ALL ACCOUNTS IN DATA EXCHANGE`, so `accounts` and `show_output.0.to` are read as empty for such a share.
 
 No configuration changes are required.
 
