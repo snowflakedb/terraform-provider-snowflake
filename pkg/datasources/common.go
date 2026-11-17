@@ -162,18 +162,22 @@ var serviceInSchema = &schema.Schema{
 	},
 }
 
-var withDescribeSchema = &schema.Schema{
-	Type:        schema.TypeBool,
-	Optional:    true,
-	Default:     true,
-	Description: "Runs DESCRIBE for each object returned by SHOW. The output of describe is saved to the describe_output field. By default this value is set to true.",
+func withDescribeSchema(describeSql, objectWords, showSql string) *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: fmt.Sprintf("Runs DESC %s for each %s returned by SHOW %s. The output of describe is saved to the describe_output field. By default this value is set to true.", describeSql, objectWords, showSql),
+	}
 }
 
-var withParametersSchema = &schema.Schema{
-	Type:        schema.TypeBool,
-	Optional:    true,
-	Default:     true,
-	Description: "Runs SHOW PARAMETERS for each object returned by SHOW. The output of SHOW PARAMETERS is saved to the parameters field as a map. By default this value is set to true.",
+func withParametersSchema(objectType, objectWords, showSql string) *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeBool,
+		Optional:    true,
+		Default:     true,
+		Description: fmt.Sprintf("Runs SHOW PARAMETERS FOR %s for each %s returned by SHOW %s. The output of SHOW PARAMETERS is saved to the parameters field as a map. By default this value is set to true.", objectType, objectWords, showSql),
+	}
 }
 
 var terseSchema = &schema.Schema{

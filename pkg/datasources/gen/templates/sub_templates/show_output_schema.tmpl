@@ -4,7 +4,7 @@
 		resources.ShowOutputAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Holds the output of SHOW {{ .ShowSql }}.",
+			Description: {{ printf "%q" .ShowOutputDescription }},
 			Elem: &schema.Resource{
 				Schema: schemas.Show{{ .Name }}Schema,
 			},

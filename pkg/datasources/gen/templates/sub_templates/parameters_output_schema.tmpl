@@ -4,7 +4,7 @@
 		resources.ParametersAttributeName: {
 			Type:        schema.TypeList,
 			Computed:    true,
-			Description: "Holds the output of SHOW PARAMETERS FOR {{ .ObjectType }}.",
+			Description: {{ printf "%q" .ParametersOutputDescription }},
 			Elem: &schema.Resource{
 				Schema: schemas.Show{{ .Name }}ParametersSchema,
 			},

@@ -38,15 +38,15 @@ func widgetWith(show ...ssot.SdkShowOption) ssot.Object {
 func TestSwitchesSchema(t *testing.T) {
 	t.Run("describe only", func(t *testing.T) {
 		got := renderTemplate(t, "switchesSchema", modelOf(widgetWith()))
-		require.Contains(t, got, `"with_describe": withDescribeSchema,`)
+		require.Contains(t, got, `"with_describe": withDescribeSchema("WIDGET", "widget", "WIDGETS"),`)
 		require.NotContains(t, got, "with_parameters")
 	})
 	t.Run("describe and parameters", func(t *testing.T) {
 		got := renderTemplate(t, "switchesSchema", modelOf(syntheticObject(
 			[]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()},
 		)))
-		require.Contains(t, got, `"with_describe": withDescribeSchema,`)
-		require.Contains(t, got, `"with_parameters": withParametersSchema,`)
+		require.Contains(t, got, `"with_describe": withDescribeSchema("WIDGET", "widget", "WIDGETS"),`)
+		require.Contains(t, got, `"with_parameters": withParametersSchema("WIDGET", "widget", "WIDGETS"),`)
 	})
 	t.Run("nothing to switch", func(t *testing.T) {
 		got := renderTemplate(t, "switchesSchema", modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow()})))
@@ -189,5 +189,35 @@ func TestDataSourceSchema(t *testing.T) {
 			require.Greater(t, index, last, part)
 			last = index
 		}
+	})
+}
+
+func TestAdditionalOutputDescriptions(t *testing.T) {
+	object := func(opts ...ssot.DataSourceOption) ssot.Object {
+		obj := syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()})
+		obj.Generators = append(obj.Generators, ssot.WithDataSource(opts...))
+		return obj
+	}
+
+	t.Run("none by default", func(t *testing.T) {
+		model := modelOf(object())
+		require.Contains(t, renderTemplate(t, "showOutputSchema", model), `Description: "Holds the output of SHOW WIDGETS.",`)
+		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), `Description: "Holds the output of DESCRIBE WIDGET.",`)
+		require.Contains(t, renderTemplate(t, "parametersOutputSchema", model), `Description: "Holds the output of SHOW PARAMETERS FOR WIDGET.",`)
+	})
+	t.Run("appended to the matching block only", func(t *testing.T) {
+		model := modelOf(object(
+			ssot.DataSourceAdditionalShowOutputDescription("The full list is read from `VIEW`."),
+			ssot.DataSourceAdditionalDescribeOutputDescription("Needs a privilege."),
+			ssot.DataSourceAdditionalParametersOutputDescription("Read per object."),
+		))
+		require.Contains(t, renderTemplate(t, "showOutputSchema", model), "Holds the output of SHOW WIDGETS. The full list is read from `VIEW`.")
+		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), "Holds the output of DESCRIBE WIDGET. Needs a privilege.")
+		require.Contains(t, renderTemplate(t, "parametersOutputSchema", model), "Holds the output of SHOW PARAMETERS FOR WIDGET. Read per object.")
+		require.NotContains(t, renderTemplate(t, "describeOutputSchema", model), "VIEW")
+	})
+	t.Run("quotes are escaped", func(t *testing.T) {
+		model := modelOf(object(ssot.DataSourceAdditionalShowOutputDescription(`Says "hello".`)))
+		require.Contains(t, renderTemplate(t, "showOutputSchema", model), `Holds the output of SHOW WIDGETS. Says \"hello\".`)
 	})
 }

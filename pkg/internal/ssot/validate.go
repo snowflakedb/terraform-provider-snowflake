@@ -132,6 +132,9 @@ func validateDataSource(obj Object, g Generators) {
 	if (hooks.DescribeInSdk.Generate || hooks.DescribeOutputSchema.Generate) && !obj.HasDataSourceDescribe() {
 		panic(fmt.Sprintf("object %q: the generated data source describe needs SdkDescribe() and DESCRIBE columns", obj.Name))
 	}
+	if hooks.DescribeInSdk.Generate && hooks.DescribeOutputSet.Generate && obj.DataSourceDescribe().Method == "Describe" && len(obj.DescribeRows.Columns) > 0 {
+		panic(fmt.Sprintf("object %q: the generated data source describe of a property-list DESCRIBE needs SdkDescribeDetailsMethod()", obj.Name))
+	}
 	if hooks.ShowParametersInSdk.Generate && !obj.HasDataSourceParameters() {
 		panic(fmt.Sprintf("object %q: the generated data source parameters need SdkShowParameters()", obj.Name))
 	}

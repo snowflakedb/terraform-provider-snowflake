@@ -192,6 +192,7 @@ var ComputePool = ssot.Object{
 	IdentityNameForceNew: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),
+		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
