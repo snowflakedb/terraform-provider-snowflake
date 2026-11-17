@@ -10,8 +10,12 @@ import (
 var (
 	DataTypeNumber_36_2, _     = datatypes.ParseDataType("NUMBER(36, 2)")
 	DataTypeNumber_2_0, _      = datatypes.ParseDataType("NUMBER(2, 0)")
+	DataTypeVarchar_50, _      = datatypes.ParseDataType("VARCHAR(50)")
 	DataTypeVarchar_100, _     = datatypes.ParseDataType("VARCHAR(100)")
 	DataTypeVarchar_200, _     = datatypes.ParseDataType("VARCHAR(200)")
+	DataTypeVarchar_255, _     = datatypes.ParseDataType("VARCHAR(255)")
+	DataTypeVarchar_256, _     = datatypes.ParseDataType("VARCHAR(256)")
+	DataTypeVarchar_500, _     = datatypes.ParseDataType("VARCHAR(500)")
 	DataTypeVarchar, _         = datatypes.ParseDataType("VARCHAR")
 	DataTypeDecfloat, _        = datatypes.ParseDataType("DECFLOAT")
 	DataTypeText, _            = datatypes.ParseDataType("TEXT")

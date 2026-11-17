@@ -26,7 +26,9 @@ var (
 	// TODO [SNOW-1843440]: create using constructors (when we add them)?
 	dataTypeNumber_36_2, _                = datatypes.ParseDataType("NUMBER(36, 2)")
 	dataTypeNumber, _                     = datatypes.ParseDataType("NUMBER")
+	dataTypeNumber_38_0, _                = datatypes.ParseDataType("NUMBER(38, 0)")
 	dataTypeVarchar_100, _                = datatypes.ParseDataType("VARCHAR(100)")
+	dataTypeVarchar_200, _                = datatypes.ParseDataType("VARCHAR(200)")
 	dataTypeVarchar, _                    = datatypes.ParseDataType("VARCHAR")
 	dataTypeBoolean, _                    = datatypes.ParseDataType("BOOLEAN")
 	dataTypeFloat, _                      = datatypes.ParseDataType("FLOAT")

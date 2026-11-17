@@ -192,7 +192,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"id", "normalized_imports", "normalized_target_path",
 		"normalized_arguments", "normalized_external_access_integrations", "normalized_secrets", "normalized_packages",
 	}},
-	{ObjectStruct: sdk.HybridTableDetails{}, IsDescribe: true},
+	// ManualFields `type`: public mapping is the raw DESC value (DataTypeRaw), not ToSql().
+	{ObjectStruct: sdk.HybridTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
 	{ObjectStruct: sdk.IcebergTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	{ObjectStruct: sdk.ListingDetails{}, IsDescribe: true},
