@@ -119,7 +119,7 @@ var failoverGroupAttributesSchema = failoverGroupAttributesModificationExt(map[s
 		Type:             tfschema.TypeBool,
 		Optional:         true,
 		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("is_primary_read_only"),
-		Description:      "Enables the read-only mode of a primary failover group.",
+		Description:      "Enables the read-only mode of a primary failover group. Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` in this mode, so set it to false (or remove it) before changing them.",
 	},
 	"is_primary": {
 		Type:        tfschema.TypeBool,
