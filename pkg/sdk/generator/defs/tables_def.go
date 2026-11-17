@@ -142,35 +142,8 @@ func tableConstraintAction() *g.QueryStruct {
 }
 
 func tableExternalTableAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableExternalTableAction").
-		OptionalQueryStructField("Add", tableExternalTableColumnAddAction(), g.KeywordOptions()).
-		OptionalQueryStructField("Rename", tableExternalTableColumnRenameAction(), g.KeywordOptions()).
-		OptionalQueryStructField("Drop", tableExternalTableColumnDropAction(), g.KeywordOptions()).
-		WithValidation(g.ExactlyOneValueSet, "Add", "Rename", "Drop")
-}
-
-func tableExternalTableColumnAddAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableExternalTableColumnAddAction").
-		SQL("ADD COLUMN").
-		IfNotExists().
-		Text("Name", g.KeywordOptions().Required()).
-		PredefinedQueryStructField("ColumnType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
-		ListAssignmentWithFieldName("AS", "string", g.ParameterOptions().NoEquals().Parentheses(), "Expression").
-		OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
-}
-
-func tableExternalTableColumnRenameAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableExternalTableColumnRenameAction").
-		AssignmentWithFieldName("RENAME COLUMN", "string", g.ParameterOptions().NoEquals().Required(), "OldName").
-		AssignmentWithFieldName("TO", "string", g.ParameterOptions().NoEquals().Required(), "NewName")
-}
-
-func tableExternalTableColumnDropAction() *g.QueryStruct {
-	return g.NewQueryStruct("TableExternalTableColumnDropAction").
-		SQL("DROP COLUMN").
-		IfExists().
-		PredefinedQueryStructField("Names", "[]string", g.KeywordOptions().Required()).
-		WithValidation(g.ValidateValueSet, "Names")
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableExternalTableAction).
+		WithValidation(g.ValidateValueSet, "Add")
 }
 
 func tableSet() *g.QueryStruct {

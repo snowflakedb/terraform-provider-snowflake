@@ -253,29 +253,16 @@ type TableConstraintDropAction struct {
 }
 
 type TableExternalTableAction struct {
-	Add    *TableExternalTableColumnAddAction    `ddl:"keyword"`
-	Rename *TableExternalTableColumnRenameAction `ddl:"keyword"`
-	Drop   *TableExternalTableColumnDropAction   `ddl:"keyword"`
+	Add *TableExternalTableColumnAddAction `ddl:"list,no_comma"`
 }
 
 type TableExternalTableColumnAddAction struct {
 	addColumn   bool     `ddl:"static" sql:"ADD COLUMN"`
 	IfNotExists *bool    `ddl:"keyword" sql:"IF NOT EXISTS"`
 	Name        string   `ddl:"keyword"`
-	ColumnType  DataType `ddl:"keyword"`
+	ColumnType  DataType `ddl:"parameter,no_equals"`
 	Expression  []string `ddl:"parameter,parentheses,no_equals" sql:"AS"`
 	Comment     *string  `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-}
-
-type TableExternalTableColumnRenameAction struct {
-	OldName string `ddl:"parameter,no_equals" sql:"RENAME COLUMN"`
-	NewName string `ddl:"parameter,no_equals" sql:"TO"`
-}
-
-type TableExternalTableColumnDropAction struct {
-	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
-	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
-	Names      []string `ddl:"keyword"`
 }
 
 type TableSearchOptimizationAction struct {

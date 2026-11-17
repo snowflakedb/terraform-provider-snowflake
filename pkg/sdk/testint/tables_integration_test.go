@@ -954,60 +954,6 @@ func TestInt_Table(t *testing.T) {
 		assertColumns(t, expectedColumns, currentColumns)
 	})
 
-	t.Run("external table: rename", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
-		}
-
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
-		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(id))
-
-		alterRequest := sdk.NewAlterTableRequest(id).
-			WithExternalTableAction(*sdk.NewTableExternalTableActionRequest().WithRename(*sdk.NewTableExternalTableColumnRenameActionRequest("COLUMN_1", "COLUMN_3")))
-
-		err = client.Tables.Alter(ctx, alterRequest)
-		require.NoError(t, err)
-		table, err := client.Tables.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		assert.Equal(t, "", table.Comment)
-		currentColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
-		expectedColumns := []expectedColumn{
-			{"COLUMN_3", sdk.DataTypeVARCHAR},
-			{"COLUMN_2", sdk.DataTypeVARCHAR},
-		}
-		assertColumns(t, expectedColumns, currentColumns)
-	})
-
-	t.Run("external table: drop", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
-		}
-
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
-		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(id))
-
-		alterRequest := sdk.NewAlterTableRequest(id).
-			WithExternalTableAction(*sdk.NewTableExternalTableActionRequest().WithDrop(*sdk.NewTableExternalTableColumnDropActionRequest([]string{"COLUMN_2"})))
-
-		err = client.Tables.Alter(ctx, alterRequest)
-		require.NoError(t, err)
-		table, err := client.Tables.ShowByID(ctx, id)
-		require.NoError(t, err)
-
-		currentColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
-		expectedColumns := []expectedColumn{
-			{"COLUMN_1", sdk.DataTypeVARCHAR},
-		}
-		assertColumns(t, expectedColumns, currentColumns)
-	})
-
 	// TODO [SNOW-1007542]: check search optimization - after adding https://docs.snowflake.com/en/sql-reference/sql/desc-search-optimization
 	t.Run("add search optimization", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()

@@ -464,6 +464,34 @@ var TableConstraintAction = ssot.Attribute{
 	},
 }
 
+// TableExternalTableColumnAddAction is ALTER TABLE ADD COLUMN with an AS expression, as Snowflake documents it for external
+// table columns. The name is not quoted. It is a child of TableExternalTableAction.
+var TableExternalTableColumnAddAction = ssot.Attribute{
+	Name:      "external_table_column_add_action",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(ssot.NoComma(), ssot.FieldName("Add"), ssot.StructName("TableExternalTableColumnAddAction")),
+	Children: []ssot.Attribute{
+		{Name: "add_column", SqlOnly: true, CreateSql: ssot.StaticSQL("addColumn", "ADD COLUMN")},
+		{Name: "if_not_exists", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("IF NOT EXISTS"))},
+		{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.Required(), ssot.FieldName("Name"))},
+		{Name: "column_type", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PredefinedType("DataType", ssot.NoEquals(), ssot.Required(), ssot.FieldName("ColumnType"))},
+		{Name: "expression", Type: ssot.AttrList, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.ListParameter("string", ssot.Sql("AS"), ssot.NoEquals(), ssot.FieldName("Expression"))},
+		{Name: "comment", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COMMENT"), ssot.NoEquals())},
+	},
+}
+
+// TableExternalTableAction is the external table column branch of ALTER TABLE. ADD is the only one: renaming and
+// dropping a column use the regular column actions. ChildrenRule needs two alternatives, so the SDK definition in
+// pkg/sdk/generator/defs/tables_def.go requires ADD.
+var TableExternalTableAction = ssot.Attribute{
+	Name:      "external_table_action",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(ssot.StructName("TableExternalTableAction")),
+	Children:  []ssot.Attribute{TableExternalTableColumnAddAction},
+}
+
 // TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
 // resource, model, and assertion generators skip them.
 //

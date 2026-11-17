@@ -672,20 +672,6 @@ func init() {
 			},
 			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS COLUMN_1 BOOLEAN AS (SELECT 1)`, id.FullyQualifiedName(),
 		).
-		withAdditionalSqlCasef(
-			"sql_Alter_renameExternalTableColumn",
-			func(opts *AlterTableOptions) {
-				opts.ExternalTableAction = &TableExternalTableAction{Rename: &TableExternalTableColumnRenameAction{OldName: "OLD_NAME_COLUMN", NewName: "NEW_NAME_COLUMN"}}
-			},
-			`ALTER TABLE %s RENAME COLUMN OLD_NAME_COLUMN TO NEW_NAME_COLUMN`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_dropExternalTableColumn",
-			func(opts *AlterTableOptions) {
-				opts.ExternalTableAction = &TableExternalTableAction{Drop: &TableExternalTableColumnDropAction{IfExists: new(true), Names: []string{"COLUMN_3", "COLUMN_4"}}}
-			},
-			`ALTER TABLE %s DROP COLUMN IF EXISTS COLUMN_3, COLUMN_4`, id.FullyQualifiedName(),
-		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_SearchOptimizationAction,
 			func(opts *AlterTableOptions) {

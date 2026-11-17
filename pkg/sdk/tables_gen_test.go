@@ -96,9 +96,7 @@ const (
 	case_Tables_validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet                                                      testCaseName = "validation_Alter_opts_ConstraintAction_Alter_ExactlyOneValueSet_MoreThanOneSet"
 	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet                                                              testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_NoneSet"
 	case_Tables_validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet                                                       testCaseName = "validation_Alter_opts_ConstraintAction_Drop_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet                                                                testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet"
-	case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet                                                         testCaseName = "validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet"
-	case_Tables_validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet                                                                    testCaseName = "validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet"
+	case_Tables_validation_Alter_ExternalTableAction_Add_ValidateValueSet                                                                           testCaseName = "validation_Alter_ExternalTableAction_Add_ValidateValueSet"
 	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet                                                           testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_NoneSet"
 	case_Tables_validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet                                                    testCaseName = "validation_Alter_opts_SearchOptimizationAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_Tables_validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet                                                   testCaseName = "validation_Alter_opts_SearchOptimizationAction_Drop_On_ExactlyOneValueSet_NoneSet"
@@ -1005,31 +1003,11 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*AlterTableOptions]{
-				Name:        case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.ExternalTableAction", "Add", "Rename", "Drop"),
+				Name:        case_Tables_validation_Alter_ExternalTableAction_Add_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.ExternalTableAction", "Add"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.ExternalTableAction = &TableExternalTableAction{}
 					opts.ExternalTableAction.Add = nil
-					opts.ExternalTableAction.Rename = nil
-					opts.ExternalTableAction.Drop = nil
-				},
-			},
-			validationCase[*AlterTableOptions]{
-				Name:        case_Tables_validation_Alter_opts_ExternalTableAction_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions.ExternalTableAction", "Add", "Rename", "Drop"),
-				DefaultModify: func(opts *AlterTableOptions) {
-					opts.ExternalTableAction = &TableExternalTableAction{}
-					opts.ExternalTableAction.Add = &TableExternalTableColumnAddAction{}
-					opts.ExternalTableAction.Rename = &TableExternalTableColumnRenameAction{}
-				},
-			},
-			validationCase[*AlterTableOptions]{
-				Name:        case_Tables_validation_Alter_ExternalTableAction_Drop_Names_ValidateValueSet,
-				ExpectedErr: errNotSet("AlterTableOptions.ExternalTableAction.Drop", "Names"),
-				DefaultModify: func(opts *AlterTableOptions) {
-					opts.ExternalTableAction = &TableExternalTableAction{}
-					opts.ExternalTableAction.Drop = &TableExternalTableColumnDropAction{}
-					opts.ExternalTableAction.Drop.Names = nil
 				},
 			},
 			validationCase[*AlterTableOptions]{
