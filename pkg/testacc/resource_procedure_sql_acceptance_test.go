@@ -198,38 +198,6 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 	})
 }
 
-func TestAcc_ProcedureSql_DecfloatUnsupported(t *testing.T) {
-	t.Skip("TODO(next prs): fix or remove the test now that DECFLOAT is supported for SQL procedures")
-	argName := "x"
-	dataType := testdatatypes.DataTypeDecfloat
-
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-
-	definition := testClient().Procedure.SampleSqlDefinitionWithArgument(t)
-
-	procedureModel := model.ProcedureSqlBasicInline("w", id, dataType, definition).
-		WithArgument(argName, dataType)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: functionsAndProceduresProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.ProcedureSql),
-		Steps: []resource.TestStep{
-			{
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(procedureModel.ResourceReference(), plancheck.ResourceActionCreate),
-					},
-				},
-				Config:      config.FromModels(t, procedureModel),
-				ExpectError: regexp.MustCompile(`Language SQL does not support type 'DECFLOAT\(38\)' for argument or return type`),
-			},
-		},
-	})
-}
-
 func TestAcc_ProcedureSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
 
