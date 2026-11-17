@@ -176,7 +176,7 @@ var backupSetApplyPolicy = ssot.Attribute{
 		{
 			Name:      "force",
 			Type:      ssot.AttrBool,
-			CreateSql: ssot.BoolKeyword(ssot.Sql("FORCE")),
+			CreateSql: ssot.BoolKeyword(),
 		},
 	},
 }

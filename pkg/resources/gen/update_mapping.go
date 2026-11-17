@@ -43,7 +43,7 @@ func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceA
 		}
 		// An attribute that the object cannot unset is only ever set.
 		setOnly := restricted && !inUnset[name]
-		call, ok := updateCallFor(objectName, src[i], dst[i], setOnly)
+		call, ok := updateCallFor(objectName, src[i], setOnly)
 		if !ok {
 			if restricted && updatable(src[i]) {
 				panic(fmt.Sprintf("object %q: attribute %q is in the SET or UNSET block, but no update helper can be deduced for it, so give it an UpdateMapping or SkipUpdate", objectName, name))
@@ -75,7 +75,7 @@ func attributeNames(attributes []*ssot.Attribute) map[string]bool {
 // updatable reports whether the update can change the attribute at all. ForceNew and CreateOnly attributes are create-only,
 // and a Readonly one is not written.
 func updatable(src ssot.Attribute) bool {
-	return !src.SkipUpdate && !src.ForceNew && !src.CreateOnly && !src.Readonly
+	return src.CanUpdate()
 }
 
 // groupOf is the name of the group that holds the attribute. It is empty for the main group, and for an attribute that no
@@ -132,52 +132,12 @@ func updateTarget(call ssot.UpdateCall, attr ssot.Attribute, setRequest, unsetRe
 // SkipCreate does not leave the attribute out of set/unset.
 // SkipUpdate does.
 // setOnly is true for an attribute that is in the SET block and not in the UNSET block.
-func updateCallFor(objectName string, src ssot.Attribute, resolved ResourceAttribute, setOnly bool) (ssot.UpdateCall, bool) {
+func updateCallFor(objectName string, src ssot.Attribute, setOnly bool) (ssot.UpdateCall, bool) {
 	if src.SkipUpdate {
 		return ssot.UpdateCall{}, false
 	}
 	if src.UpdateMapping != nil {
 		return src.UpdateMapping.UpdateCall(objectName, src), true
 	}
-	return deduceUpdateCall(objectName, src, resolved, setOnly)
-}
-
-func deduceUpdateCall(objectName string, src ssot.Attribute, resolved ResourceAttribute, setOnly bool) (ssot.UpdateCall, bool) {
-	if !updatable(src) {
-		return ssot.UpdateCall{}, false
-	}
-	switch {
-	case src.Type == ssot.AttrInt && (src.Required || setOnly):
-		return ssot.IntAttributeUpdateSetOnlyBuilder.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrInt && resolved.DefaultExpr == "IntDefault":
-		return ssot.IntAttributeWithSpecialDefaultUpdateBuilder.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrInt:
-		return ssot.IntAttributeUpdateBuilder.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrBool && src.NativeBool:
-		return ssot.BooleanAttributeUpdateSetOnlyBuilder.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault" && setOnly:
-		return ssot.BooleanStringAttributeUpdateSetOnly.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault":
-		return ssot.BooleanStringAttributeUpdateBuilder.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrString && setOnly:
-		return ssot.StringAttributeUpdateSetOnlyNotEmpty(src.SetSql.Field).UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrString:
-		return ssot.StringAttributeUpdateBuilder.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrEnum && resolved.EnumName != "" && !setOnly:
-		return ssot.AttributeMappedValueUpdate("sdk.To"+resolved.EnumName).UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrIdentifier && src.IdentifierType == "AccountObjectIdentifier" && !setOnly:
-		return ssot.AccountObjectIdentifierAttributeUpdate.UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrList && setOnly && isMappedCollection(src):
-		return ssot.ListValueUpdateSetOnly(collectionMapperName(objectName, src)).UpdateCall(objectName, src), true
-	case src.Type == ssot.AttrList && isMappedCollection(src):
-		return ssot.ListValueUpdate(collectionMapperName(objectName, src)).UpdateCall(objectName, src), true
-	default:
-		return ssot.UpdateCall{}, false
-	}
-}
-
-// isMappedCollection reports whether the elements of a list are enums or account object identifiers, which a mapper function
-// named like the one of create converts.
-func isMappedCollection(src ssot.Attribute) bool {
-	return src.IsEnumCollection() || (src.Elem != nil && src.Elem.Type == ssot.AttrIdentifier && src.Elem.IdentifierType == "AccountObjectIdentifier")
+	return src.DeducedUpdateCall(objectName, setOnly)
 }

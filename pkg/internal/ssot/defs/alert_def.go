@@ -48,10 +48,6 @@ var AlertAttrs = struct {
 		OptionalInDb:   true,
 		Type:           ssot.AttrString,
 		Description:    "Specifies a comment for the alert.",
-		CreateMapping:  ssot.StringAttributeCreateBuilder,
-		CreateSql:      ssot.StringParameter(),
-		SetSql:         ssot.StringParameter(),
-		UnsetSql:       ssot.BoolKeyword(),
 	},
 	Warehouse: ssot.Attribute{
 		Name:           "warehouse",
@@ -60,9 +56,8 @@ var AlertAttrs = struct {
 		OptionalInShow: true,
 		OptionalInDb:   true,
 		Description:    "The warehouse the alert will use. When not set, the alert uses serverless compute resources. Creating, resuming, or switching to a serverless alert requires the EXECUTE MANAGED ALERT privilege; using a named warehouse requires its USAGE privilege.",
-		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("WAREHOUSE"), ssot.Equals()),
-		SetSql:         ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("WAREHOUSE"), ssot.Equals()),
-		UnsetSql:       ssot.BoolKeyword(ssot.Sql("WAREHOUSE")),
+		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
+		SetSql:         ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 	},
 	Condition: ssot.Attribute{
 		Name:         "condition",
@@ -154,7 +149,7 @@ var (
 			Name:      "condition",
 			Type:      ssot.AttrList,
 			Elem:      &ssot.Attribute{Type: ssot.AttrString},
-			CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.NoComma(), ssot.Sql("EXISTS"), ssot.FieldName("Condition")),
+			CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.NoComma(), ssot.Sql("EXISTS")),
 		}},
 	}
 	alertActionSql = ssot.Attribute{

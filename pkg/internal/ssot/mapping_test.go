@@ -6,155 +6,110 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_CreateCall(t *testing.T) {
-	call := AccountObjectIdentifierAttributeCreateBuilder.CreateCall("ComputePool", Attribute{Name: "for_application"})
-	require.Equal(t, CreateCall{
-		Helper: "accountObjectIdentifierAttributeCreateBuilder",
-		Target: "request.WithForApplication",
-	}, call)
+func Test_CollectionMapperName(t *testing.T) {
+	families := Attribute{Name: "backup_instance_families"}
+	require.Equal(t, "toComputePoolBackupInstanceFamilies", CollectionMapperName("ComputePool", families))
 
-	call = ListValueCreate("toComputePoolBackupInstanceFamilies").CreateCall("ComputePool", Attribute{Name: "backup_instance_families"})
-	require.Equal(t, CreateCall{
-		Helper: "listValueCreate",
-		Target: "&request.BackupInstanceFamilies, toComputePoolBackupInstanceFamilies",
-	}, call)
+	methods := Attribute{Name: "allowed_methods"}
+	require.Equal(t, "toAuthenticationPolicyMfaPolicyAllowedMethods", CollectionMapperName("AuthenticationPolicyMfaPolicy", methods))
+}
 
-	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueCreate needs a mapper function`, func() {
-		ListValueCreate("").CreateCall("ComputePool", Attribute{Name: "items"})
+func Test_DeducedCreateCall(t *testing.T) {
+	size := NewEnum("WidgetSize", "WidgetSizes", "SMALL")
+
+	t.Run("boolean string", func(t *testing.T) {
+		got, ok := Attribute{Name: "enabled", Type: AttrBool}.DeducedCreateCall("Widget")
+		require.True(t, ok)
+		require.Equal(t, "booleanStringAttributeCreateBuilder", got.Helper)
+		require.Equal(t, "request.WithEnabled", got.Target)
 	})
-
-	call = AttributeMappedValueCreate("ToSecurityIntegrationsRequest").CreateCall("AuthenticationPolicy", Attribute{Name: "security_integrations"})
-	require.Equal(t, CreateCall{
-		Helper: "attributeMappedValueCreateBuilder",
-		Target: "request.WithSecurityIntegrations, ToSecurityIntegrationsRequest",
-	}, call)
-
-	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "security_integrations" attributeMappedValueCreateBuilder needs a mapper function`, func() {
-		AttributeMappedValueCreate("").CreateCall("AuthenticationPolicy", Attribute{Name: "security_integrations"})
+	t.Run("native bool", func(t *testing.T) {
+		got, ok := Attribute{Name: "enabled", Type: AttrBool, NativeBool: true}.DeducedCreateCall("Widget")
+		require.True(t, ok)
+		require.Equal(t, "boolAttributeCreateBuilder", got.Helper)
 	})
-
-	call = SetMappedValueCreate("toPostgresMirrorName").CreateCall("PostgresMirror", Attribute{Name: "postgres_tables"})
-	require.Equal(t, CreateCall{
-		Helper: "setMappedValueCreateBuilder",
-		Target: "request.WithPostgresTables, toPostgresMirrorName",
-	}, call)
-
-	require.PanicsWithValue(t, `object "PostgresMirror": attribute "postgres_tables" SetMappedValueCreate needs a mapper function`, func() {
-		SetMappedValueCreate("").CreateCall("PostgresMirror", Attribute{Name: "postgres_tables"})
+	t.Run("int whose min is at most zero", func(t *testing.T) {
+		got, ok := Attribute{Name: "count", Type: AttrInt, Min: new(0)}.DeducedCreateCall("Widget")
+		require.True(t, ok)
+		require.Equal(t, "intAttributeWithSpecialDefaultCreateBuilder", got.Helper)
+	})
+	t.Run("int", func(t *testing.T) {
+		got, ok := Attribute{Name: "count", Type: AttrInt, Min: new(1)}.DeducedCreateCall("Widget")
+		require.True(t, ok)
+		require.Equal(t, "intAttributeCreateBuilder", got.Helper)
+	})
+	t.Run("enum parser", func(t *testing.T) {
+		got, ok := Attribute{Name: "size", Type: AttrEnum, Enum: size}.DeducedCreateCall("Widget")
+		require.True(t, ok)
+		require.Equal(t, "attributeMappedValueCreateBuilder", got.Helper)
+		require.Equal(t, "request.WithSize, sdk.ToWidgetSize", got.Target)
+	})
+	t.Run("list mapper", func(t *testing.T) {
+		got, ok := Attribute{
+			Name: "kinds",
+			Type: AttrList,
+			Elem: &Attribute{Type: AttrEnum, Enum: size},
+		}.DeducedCreateCall("Widget")
+		require.True(t, ok)
+		require.Equal(t, "listValueCreate", got.Helper)
+		require.Equal(t, "&request.Kinds, toWidgetKinds", got.Target)
+	})
+	t.Run("required has no helper", func(t *testing.T) {
+		_, ok := Attribute{Name: "name", Type: AttrString, Required: true}.DeducedCreateCall("Widget")
+		require.False(t, ok)
 	})
 }
 
-func Test_UpdateCall(t *testing.T) {
-	call := IntAttributeUpdateSetOnlyBuilder.UpdateCall("ComputePool", Attribute{Name: "min_nodes"})
-	require.Equal(t, UpdateCall{Helper: "intAttributeUpdateSetOnlyBuilder", Set: true}, call)
+func Test_DeducedUpdateCall(t *testing.T) {
+	size := NewEnum("WidgetSize", "WidgetSizes", "SMALL")
 
-	call = BooleanAttributeUpdateSetOnlyBuilder.UpdateCall("Table", Attribute{Name: "change_tracking"})
-	require.Equal(t, UpdateCall{Helper: "booleanAttributeUpdateSetOnlyBuilder", Set: true}, call)
-
-	call = BooleanStringAttributeUpdateBuilder.UpdateCall("ComputePool", Attribute{Name: "auto_resume"})
-	require.Equal(t, UpdateCall{
-		Helper: "booleanStringAttributeUpdateBuilder",
-		Set:    true,
-		Unset:  true,
-	}, call)
-
-	call = ListValueUpdate("toComputePoolBackupInstanceFamilies").UpdateCall("ComputePool", Attribute{Name: "backup_instance_families"})
-	require.Equal(t, UpdateCall{
-		Helper: "listValueUpdateBuilder",
-		Set:    true,
-		Unset:  true,
-		Mapper: "toComputePoolBackupInstanceFamilies",
-	}, call)
-
-	require.PanicsWithValue(t, `object "ComputePool": attribute "items" ListValueUpdate needs a mapper function`, func() {
-		ListValueUpdate("").UpdateCall("ComputePool", Attribute{Name: "items"})
+	t.Run("enum parser", func(t *testing.T) {
+		got, ok := Attribute{Name: "size", Type: AttrEnum, Enum: size}.DeducedUpdateCall("Widget", false)
+		require.True(t, ok)
+		require.Equal(t, "attributeMappedValueUpdate", got.Helper)
+		require.Equal(t, "sdk.ToWidgetSize", got.Mapper)
+		require.True(t, got.Unset)
 	})
-}
-
-func Test_UpdateCall_listValueUpdateSetOnly(t *testing.T) {
-	call := ListValueUpdateSetOnly("toWidgetObjectTypes").UpdateCall("Widget", Attribute{Name: "object_types"})
-	require.Equal(t, UpdateCall{Helper: "listValueUpdateSetOnlyBuilder", Set: true, Mapper: "toWidgetObjectTypes"}, call)
-}
-
-func Test_UpdateCall_fieldsStyle(t *testing.T) {
-	call := AccountObjectIdentifierAttributeUpdate.UpdateCall("ReplicationGroup", Attribute{Name: "error_integration"})
-	require.Equal(t, UpdateCall{Helper: "accountObjectIdentifierAttributeUpdate", Set: true, Unset: true, Fields: true}, call)
-
-	call = AttributeMappedValueUpdate("toBackupPolicySchedule").UpdateCall("BackupPolicy", Attribute{Name: "schedule"})
-	require.Equal(t, UpdateCall{
-		Helper: "attributeMappedValueUpdate",
-		Set:    true,
-		Unset:  true,
-		Fields: true,
-		Mapper: "toBackupPolicySchedule",
-	}, call)
-
-	require.PanicsWithValue(t, `object "BackupPolicy": attribute "schedule" AttributeMappedValueUpdate needs a mapper function`, func() {
-		AttributeMappedValueUpdate("").UpdateCall("BackupPolicy", Attribute{Name: "schedule"})
+	t.Run("set-only enum has no helper", func(t *testing.T) {
+		_, ok := Attribute{Name: "size", Type: AttrEnum, Enum: size}.DeducedUpdateCall("Widget", true)
+		require.False(t, ok)
 	})
-}
-
-func Test_UpdatesWholeValue(t *testing.T) {
-	require.True(t, UpdatesWholeValue(AttributeMappedValueUpdate("toBackupPolicySchedule")))
-	require.False(t, UpdatesWholeValue(StringAttributeUpdateBuilder))
-	require.False(t, UpdatesWholeValue(AccountObjectIdentifierAttributeUpdate))
-	require.False(t, UpdatesWholeValue(nil))
-}
-
-func Test_UpdateCall_booleanStringSetOnly(t *testing.T) {
-	require.Equal(t,
-		UpdateCall{Helper: "booleanStringAttributeUpdateSetOnly", Set: true, Fields: true},
-		BooleanStringAttributeUpdateSetOnly.UpdateCall("Widget", Attribute{Name: "enabled"}))
-}
-
-func Test_UpdateCall_setOnlyFieldsStyle(t *testing.T) {
-	call := StringAttributeUpdateSetOnlyNotEmpty("SetBody").UpdateCall("ProjectionPolicy", Attribute{Name: "body"})
-	require.Equal(t, UpdateCall{Helper: "stringAttributeUpdateSetOnlyNotEmpty", Set: true, Fields: true, Field: "SetBody"}, call)
-
-	call = BooleanStringAttributeUnsetFallbackUpdate(true).UpdateCall("ExternalVolume", Attribute{Name: "allow_writes"})
-	require.Equal(t, UpdateCall{Helper: "booleanStringAttributeUnsetFallbackUpdate", Set: true, Fields: true, Mapper: "true"}, call)
-}
-
-func Test_UpdateCall_warehouseMappings(t *testing.T) {
-	attr := Attribute{Name: "auto_suspend"}
-	require.Equal(t,
-		UpdateCall{Helper: "attributeMappedValueUpdateSetOnlyAlways", Set: true, Fields: true, Mapper: "sdk.ToWarehouseSize"},
-		AttributeMappedValueUpdateSetOnlyAlways("sdk.ToWarehouseSize").UpdateCall("Warehouse", attr))
-	require.Equal(t,
-		UpdateCall{Helper: "intAttributeWithSpecialDefaultUnsetFallbackUpdate", Set: true, Fields: true, Mapper: "600"},
-		IntAttributeWithSpecialDefaultUnsetFallbackUpdate("600").UpdateCall("Warehouse", attr))
-	require.Equal(t,
-		UpdateCall{Helper: "warehouseGenerationUpdate", Set: true, Unset: true, Requests: true},
-		CustomUpdate("warehouseGenerationUpdate").UpdateCall("Warehouse", attr))
-
-	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" AttributeMappedValueUpdateSetOnlyAlways needs a mapper function`, func() {
-		AttributeMappedValueUpdateSetOnlyAlways("").UpdateCall("Warehouse", attr)
+	t.Run("set-only list mapper", func(t *testing.T) {
+		got, ok := Attribute{
+			Name: "databases",
+			Type: AttrList,
+			Elem: &Attribute{Type: AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		}.DeducedUpdateCall("Widget", true)
+		require.True(t, ok)
+		require.Equal(t, "listValueUpdateSetOnlyBuilder", got.Helper)
+		require.Equal(t, "toWidgetDatabases", got.Mapper)
+		require.False(t, got.Unset)
 	})
-	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" IntAttributeWithSpecialDefaultUnsetFallbackUpdate needs a fallback`, func() {
-		IntAttributeWithSpecialDefaultUnsetFallbackUpdate("").UpdateCall("Warehouse", attr)
+	t.Run("list mapper", func(t *testing.T) {
+		got, ok := Attribute{
+			Name: "kinds",
+			Type: AttrList,
+			Elem: &Attribute{Type: AttrEnum, Enum: size},
+		}.DeducedUpdateCall("Widget", false)
+		require.True(t, ok)
+		require.Equal(t, "listValueUpdateBuilder", got.Helper)
+		require.Equal(t, "toWidgetKinds", got.Mapper)
+		require.True(t, got.Unset)
 	})
-	require.PanicsWithValue(t, `object "Warehouse": attribute "auto_suspend" CustomUpdate needs a function`, func() {
-		CustomUpdate("").UpdateCall("Warehouse", attr)
+	t.Run("set-only boolean string", func(t *testing.T) {
+		got, ok := Attribute{Name: "enabled", Type: AttrBool}.DeducedUpdateCall("Widget", true)
+		require.True(t, ok)
+		require.Equal(t, "booleanStringAttributeUpdateSetOnly", got.Helper)
+		require.False(t, got.Unset)
 	})
-}
-
-func Test_UpdateCall_nestedValueMappings(t *testing.T) {
-	attr := Attribute{Name: "mfa_policy"}
-	require.Equal(t,
-		UpdateCall{Helper: "setValueUpdate", Set: true, Unset: true, Fields: true, Mapper: "toAuthenticationPolicyClientTypes"},
-		SetValueUpdate("toAuthenticationPolicyClientTypes").UpdateCall("AuthenticationPolicy", attr))
-	require.Equal(t,
-		UpdateCall{Helper: "singleBlockAttributeUpdate", Set: true, Unset: true, Fields: true, Mapper: "applyMfaPolicyUpdate"},
-		SingleBlockAttributeUpdate("applyMfaPolicyUpdate").UpdateCall("AuthenticationPolicy", attr))
-
-	// Both update a nested attribute as one value.
-	require.True(t, UpdatesWholeValue(SetValueUpdate("toAuthenticationPolicyClientTypes")))
-	require.True(t, UpdatesWholeValue(SingleBlockAttributeUpdate("applyMfaPolicyUpdate")))
-
-	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "mfa_policy" SetValueUpdate needs a mapper function`, func() {
-		SetValueUpdate("").UpdateCall("AuthenticationPolicy", attr)
+	t.Run("set-only int", func(t *testing.T) {
+		got, ok := Attribute{Name: "count", Type: AttrInt}.DeducedUpdateCall("Widget", true)
+		require.True(t, ok)
+		require.Equal(t, "intAttributeUpdateSetOnlyBuilder", got.Helper)
 	})
-	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "mfa_policy" SingleBlockAttributeUpdate needs a fill function`, func() {
-		SingleBlockAttributeUpdate("").UpdateCall("AuthenticationPolicy", attr)
+	t.Run("int whose min is at most zero", func(t *testing.T) {
+		got, ok := Attribute{Name: "count", Type: AttrInt, Min: new(0)}.DeducedUpdateCall("Widget", false)
+		require.True(t, ok)
+		require.Equal(t, "intAttributeWithSpecialDefaultUpdateBuilder", got.Helper)
 	})
 }

@@ -46,7 +46,7 @@ var CodeBundleAttrs = struct {
 		Required:    true,
 		ForceNew:    true,
 		Description: "Specifies the source that backs this code bundle: a snow://workspace/... URL, or an internal or temporary stage reference. External stages are not supported.",
-		CreateSql:   ssot.StringParameter(ssot.Sql("FROM"), ssot.NoEquals(), ssot.Required()),
+		CreateSql:   ssot.StringParameter(ssot.NoEquals(), ssot.Required()),
 	},
 	Comment: ssot.Attribute{
 		Name:           "comment",

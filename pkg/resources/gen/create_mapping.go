@@ -152,7 +152,7 @@ func attachFieldCreate(scope createScope, src ssot.Attribute, dst *ResourceAttri
 		dst.CreateConstructorArg = arg
 		return true
 	}
-	call, ok := createCallFor(scope.stem, src, *dst)
+	call, ok := createCallFor(scope.stem, src)
 	if !ok {
 		return false
 	}
@@ -238,48 +238,11 @@ func constructorArg(scope createScope, src ssot.Attribute, resolved ResourceAttr
 
 // createCallFor uses an explicit CreateMapping when one is set.
 // Otherwise it picks the helper from the attribute type and the schema default the attribute rules already chose.
-func createCallFor(objectName string, src ssot.Attribute, resolved ResourceAttribute) (ssot.CreateCall, bool) {
+func createCallFor(objectName string, src ssot.Attribute) (ssot.CreateCall, bool) {
 	if src.CreateMapping != nil {
 		return src.CreateMapping.CreateCall(objectName, src), true
 	}
-	return deduceCreateCall(objectName, src, resolved)
-}
-
-func deduceCreateCall(objectName string, src ssot.Attribute, resolved ResourceAttribute) (ssot.CreateCall, bool) {
-	if src.Required || src.Readonly {
-		return ssot.CreateCall{}, false
-	}
-	switch {
-	case src.Type == ssot.AttrBool && src.NativeBool:
-		return ssot.BoolAttributeCreateBuilder.CreateCall(objectName, src), true
-	case src.Type == ssot.AttrBool && resolved.DefaultExpr == "BooleanDefault":
-		return ssot.BooleanStringAttributeCreateBuilder.CreateCall(objectName, src), true
-	case src.Type == ssot.AttrInt && resolved.DefaultExpr == "IntDefault":
-		return ssot.IntAttributeWithSpecialDefaultCreateBuilder.CreateCall(objectName, src), true
-	case src.Type == ssot.AttrInt:
-		return ssot.IntAttributeCreateBuilder.CreateCall(objectName, src), true
-	case src.Type == ssot.AttrString:
-		return ssot.StringAttributeCreateBuilder.CreateCall(objectName, src), true
-	case src.Type == ssot.AttrEnum && resolved.EnumName != "":
-		return withFieldMapperCall("attributeMappedValueCreateBuilder", src, "sdk.To"+resolved.EnumName), true
-	case src.Type == ssot.AttrIdentifier && src.IdentifierType == "AccountObjectIdentifier":
-		return ssot.AccountObjectIdentifierAttributeCreateBuilder.CreateCall(objectName, src), true
-	case src.Type == ssot.AttrList && src.Elem != nil && !src.IsObjectList():
-		return ssot.ListValueCreate(collectionMapperName(objectName, src)).CreateCall(objectName, src), true
-	case src.Type == ssot.AttrSet:
-		return withFieldMapperCall("setMappedValueCreateBuilder", src, collectionMapperName(objectName, src)), true
-	default:
-		return ssot.CreateCall{}, false
-	}
-}
-
-// withFieldMapperCall is attributeMappedValueCreateBuilder or setMappedValueCreateBuilder.
-// The target is request.With<Field> and the mapper function name.
-func withFieldMapperCall(helper string, attr ssot.Attribute, mapper string) ssot.CreateCall {
-	return ssot.CreateCall{
-		Helper: helper,
-		Target: fmt.Sprintf("request.With%s, %s", genhelpers.SnakeCaseToCamel(attr.Name), mapper),
-	}
+	return src.DeducedCreateCall(objectName)
 }
 
 // blockCreateCall parses a block. A single block passes the value to request.With<Field>.
@@ -296,11 +259,4 @@ func blockCreateCall(attr ssot.Attribute, parseName string) ssot.CreateCall {
 		Helper: "listBlockAttributeCreate",
 		Target: fmt.Sprintf("&request.%s, %s", goName, parseName),
 	}
-}
-
-// collectionMapperName is the hand-written per-element mapper for a list or set. A set element may be a block.
-// objectName is the request stem, so backup_instance_families on ComputePool becomes toComputePoolBackupInstanceFamilies,
-// and allowed_methods in the AuthenticationPolicy mfa_policy block becomes toAuthenticationPolicyMfaPolicyAllowedMethods.
-func collectionMapperName(objectName string, attr ssot.Attribute) string {
-	return "to" + objectName + genhelpers.SnakeCaseToCamel(attr.Name)
 }

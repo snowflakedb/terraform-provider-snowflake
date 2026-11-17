@@ -558,10 +558,8 @@ func validateObjectVariants(obj Object, list Attribute) {
 }
 
 // validateVariantField checks one attribute a variant refers to: a child of the element, or a SqlOnly static or nested struct.
+// The variant list places the field. A typed field with no clause uses the type default. A field with no type default writes its clause.
 func validateVariantField(obj Object, list Attribute, variant SqlVariant, field Attribute) {
-	if !field.CreateSql.Present {
-		panic(fmt.Sprintf("object %q: attribute %q variant %q field %q has no CREATE clause", obj.Name, list.Name, variant.Key, field.Name))
-	}
 	if field.SqlOnly {
 		switch field.CreateSql.Kind {
 		case SqlKindStatic:
@@ -570,7 +568,7 @@ func validateVariantField(obj Object, list Attribute, variant SqlVariant, field 
 				panic(fmt.Sprintf("object %q: attribute %q variant %q field %q needs Children", obj.Name, list.Name, variant.Key, field.Name))
 			}
 			for _, child := range field.Children {
-				if !child.CreateSql.Present {
+				if !variantFieldHasClause(child) {
 					panic(fmt.Sprintf("object %q: attribute %q variant %q struct %q field %q has no CREATE clause", obj.Name, list.Name, variant.Key, field.Name, child.Name))
 				}
 			}
@@ -579,9 +577,17 @@ func validateVariantField(obj Object, list Attribute, variant SqlVariant, field 
 		}
 		return
 	}
+	if !variantFieldHasClause(field) {
+		panic(fmt.Sprintf("object %q: attribute %q variant %q field %q has no CREATE clause", obj.Name, list.Name, variant.Key, field.Name))
+	}
 	if !slices.ContainsFunc(list.Elem.Children, func(c Attribute) bool { return c.Name == field.Name }) {
 		panic(fmt.Sprintf("object %q: attribute %q variant %q field %q is not a child of the element", obj.Name, list.Name, variant.Key, field.Name))
 	}
+}
+
+// variantFieldHasClause reports that the field can be emitted. A present clause is one. A zero clause is one when the type has a default.
+func variantFieldHasClause(field Attribute) bool {
+	return field.CreateSql.Present || field.hasSqlDefault(ClauseCreate)
 }
 
 func validateCollectionBounds(obj Object, attr Attribute) {
