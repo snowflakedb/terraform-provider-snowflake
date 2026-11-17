@@ -370,10 +370,7 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		opts.DropColumnAction = r.DropColumnAction.toOpts()
 	}
 	if r.RenameColumnAction != nil {
-		opts.RenameColumnAction = &TableRenameColumnAction{
-			OldName: r.RenameColumnAction.OldName,
-			NewName: r.RenameColumnAction.NewName,
-		}
+		opts.RenameColumnAction = r.RenameColumnAction.toOpts()
 	}
 	if r.AlterColumnAction != nil {
 		alterColumnAction := make([]IcebergTableAlterColumnAction, len(r.AlterColumnAction))
@@ -410,16 +407,10 @@ func (r *AlterIcebergTableRequest) toOpts() *AlterIcebergTableOptions {
 		}
 	}
 	if r.SetTagsOnColumn != nil {
-		opts.SetTagsOnColumn = &TableSetColumnTags{
-			Name:    r.SetTagsOnColumn.Name,
-			SetTags: r.SetTagsOnColumn.SetTags,
-		}
+		opts.SetTagsOnColumn = r.SetTagsOnColumn.toOpts()
 	}
 	if r.UnsetTagsOnColumn != nil {
-		opts.UnsetTagsOnColumn = &TableUnsetColumnTags{
-			Name:      r.UnsetTagsOnColumn.Name,
-			UnsetTags: r.UnsetTagsOnColumn.UnsetTags,
-		}
+		opts.UnsetTagsOnColumn = r.UnsetTagsOnColumn.toOpts()
 	}
 	if r.ClusteringAction != nil {
 		opts.ClusteringAction = &IcebergTableClusteringAction{
@@ -660,6 +651,14 @@ func (r *TableDropColumnActionRequest) toOpts() *TableDropColumnAction {
 	return opts
 }
 
+func (r *TableRenameColumnActionRequest) toOpts() *TableRenameColumnAction {
+	opts := &TableRenameColumnAction{
+		OldName: r.OldName,
+		NewName: r.NewName,
+	}
+	return opts
+}
+
 func (r *TableSetColumnMaskingPolicyRequest) toOpts() *TableSetColumnMaskingPolicy {
 	opts := &TableSetColumnMaskingPolicy{
 		Name:          r.Name,
@@ -673,6 +672,22 @@ func (r *TableSetColumnMaskingPolicyRequest) toOpts() *TableSetColumnMaskingPoli
 func (r *TableUnsetColumnMaskingPolicyRequest) toOpts() *TableUnsetColumnMaskingPolicy {
 	opts := &TableUnsetColumnMaskingPolicy{
 		Name: r.Name,
+	}
+	return opts
+}
+
+func (r *TableSetColumnTagsRequest) toOpts() *TableSetColumnTags {
+	opts := &TableSetColumnTags{
+		Name:    r.Name,
+		SetTags: r.SetTags,
+	}
+	return opts
+}
+
+func (r *TableUnsetColumnTagsRequest) toOpts() *TableUnsetColumnTags {
+	opts := &TableUnsetColumnTags{
+		Name:      r.Name,
+		UnsetTags: r.UnsetTags,
 	}
 	return opts
 }

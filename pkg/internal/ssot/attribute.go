@@ -163,8 +163,20 @@ type Attribute struct {
 	// The generator emits resources.<Name>. Nil means no link.
 	RelatedResource *Object
 	Tags            bool // optional TAG clause. Only valid on a CREATE list, not on Attributes.
-	Parameters      bool // parameter catalog spread. Valid on a CREATE, SET, or UNSET list, not on Attributes.
+	// TagForm selects SET TAG or UNSET TAG when Tags is set. Empty emits optional TAG.
+	TagForm    TagForm
+	Parameters bool // parameter catalog spread. Valid on a CREATE, SET, or UNSET list, not on Attributes.
 }
+
+// TagForm selects the TAG clause a Tags child emits.
+type TagForm string
+
+const (
+	// TagFormSet emits SET TAG.
+	TagFormSet TagForm = "set"
+	// TagFormUnset emits UNSET TAG.
+	TagFormUnset TagForm = "unset"
+)
 
 // Tags is the optional TAG clause. Put it on a CREATE list. It is not an Attributes entry.
 var Tags = &Attribute{Name: "tags", Tags: true}

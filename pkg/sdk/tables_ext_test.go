@@ -535,9 +535,9 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Alter_renameColumn",
 			func(opts *AlterTableOptions) {
-				opts.ColumnAction = &TableColumnAction{Rename: &TableColumnRenameAction{OldName: "OLD_NAME", NewName: "NEW_NAME"}}
+				opts.ColumnAction = &TableColumnAction{Rename: &TableRenameColumnAction{OldName: "OLD_NAME", NewName: "NEW_NAME"}}
 			},
-			`ALTER TABLE %s RENAME COLUMN OLD_NAME TO NEW_NAME`, id.FullyQualifiedName(),
+			`ALTER TABLE %s RENAME COLUMN "OLD_NAME" TO "NEW_NAME"`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_alterColumn",
@@ -579,26 +579,26 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Alter_setTagsOnColumn",
 			func(opts *AlterTableOptions) {
-				opts.ColumnAction = &TableColumnAction{SetTags: &TableColumnAlterSetTagsAction{
-					ColumnName: "COLUMN_1",
+				opts.ColumnAction = &TableColumnAction{SetTags: &TableSetColumnTags{
+					Name: "COLUMN_1",
 					SetTags: []TagAssociation{
 						{Name: columnTagId1, Value: "v1"},
 						{Name: columnTagId2, Value: "v2"},
 					},
 				}}
 			},
-			`ALTER TABLE %s ALTER COLUMN COLUMN_1 SET TAG %s = 'v1', %s = 'v2'`,
+			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" SET TAG %s = 'v1', %s = 'v2'`,
 			id.FullyQualifiedName(), columnTagId1.FullyQualifiedName(), columnTagId2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_unsetTagsOnColumn",
 			func(opts *AlterTableOptions) {
-				opts.ColumnAction = &TableColumnAction{UnsetTags: &TableColumnAlterUnsetTagsAction{
-					ColumnName: "COLUMN_1",
-					UnsetTags:  []ObjectIdentifier{columnTagId1, columnTagId2},
+				opts.ColumnAction = &TableColumnAction{UnsetTags: &TableUnsetColumnTags{
+					Name:      "COLUMN_1",
+					UnsetTags: []ObjectIdentifier{columnTagId1, columnTagId2},
 				}}
 			},
-			`ALTER TABLE %s ALTER COLUMN COLUMN_1 UNSET TAG %s, %s`,
+			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" UNSET TAG %s, %s`,
 			id.FullyQualifiedName(), columnTagId1.FullyQualifiedName(), columnTagId2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(

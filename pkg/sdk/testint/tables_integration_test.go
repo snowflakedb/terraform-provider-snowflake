@@ -569,7 +569,7 @@ func TestInt_Table(t *testing.T) {
 
 		alterRequest := sdk.NewAlterTableRequest(id).
 			WithColumnAction(*sdk.NewTableColumnActionRequest().
-				WithRename(*sdk.NewTableColumnRenameActionRequest("COLUMN_1", "COLUMN_3")))
+				WithRename(*sdk.NewTableRenameColumnActionRequest("COLUMN_1", "COLUMN_3")))
 		err = client.Tables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
 

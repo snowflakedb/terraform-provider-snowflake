@@ -341,7 +341,7 @@ type TableDropColumnActionRequest struct {
 
 type TableRenameColumnActionRequest struct {
 	OldName string // required
-	NewName string
+	NewName string // required
 }
 
 type IcebergTableAlterColumnActionRequest struct {

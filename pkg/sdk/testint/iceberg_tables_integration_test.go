@@ -1043,7 +1043,7 @@ func TestInt_IcebergTables(t *testing.T) {
 		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
 		err = client.IcebergTables.Alter(ctx, sdk.NewAlterIcebergTableRequest(id).
-			WithRenameColumnAction(*sdk.NewTableRenameColumnActionRequest("OLD_NAME").WithNewName("NEW_NAME")))
+			WithRenameColumnAction(*sdk.NewTableRenameColumnActionRequest("OLD_NAME", "NEW_NAME")))
 		require.NoError(t, err)
 
 		details, err := client.IcebergTables.Describe(ctx, id)

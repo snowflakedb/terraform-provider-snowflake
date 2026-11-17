@@ -354,10 +354,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			}
 		}
 		if r.ColumnAction.Rename != nil {
-			opts.ColumnAction.Rename = &TableColumnRenameAction{
-				OldName: r.ColumnAction.Rename.OldName,
-				NewName: r.ColumnAction.Rename.NewName,
-			}
+			opts.ColumnAction.Rename = r.ColumnAction.Rename.toOpts()
 		}
 		if r.ColumnAction.Alter != nil {
 			alter := make([]TableColumnAlterAction, len(r.ColumnAction.Alter))
@@ -391,16 +388,10 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			opts.ColumnAction.UnsetMaskingPolicy = r.ColumnAction.UnsetMaskingPolicy.toOpts()
 		}
 		if r.ColumnAction.SetTags != nil {
-			opts.ColumnAction.SetTags = &TableColumnAlterSetTagsAction{
-				ColumnName: r.ColumnAction.SetTags.ColumnName,
-				SetTags:    r.ColumnAction.SetTags.SetTags,
-			}
+			opts.ColumnAction.SetTags = r.ColumnAction.SetTags.toOpts()
 		}
 		if r.ColumnAction.UnsetTags != nil {
-			opts.ColumnAction.UnsetTags = &TableColumnAlterUnsetTagsAction{
-				ColumnName: r.ColumnAction.UnsetTags.ColumnName,
-				UnsetTags:  r.ColumnAction.UnsetTags.UnsetTags,
-			}
+			opts.ColumnAction.UnsetTags = r.ColumnAction.UnsetTags.toOpts()
 		}
 		if r.ColumnAction.DropColumns != nil {
 			opts.ColumnAction.DropColumns = r.ColumnAction.DropColumns.toOpts()

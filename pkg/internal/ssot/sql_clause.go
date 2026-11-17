@@ -539,6 +539,10 @@ func (a Attribute) NestedSqlFieldsFor(use ClauseUse) []Attribute {
 }
 
 func (a Attribute) inSqlProjection(use ClauseUse) bool {
+	if a.IsTags() && a.TagForm != "" {
+		// A SET TAG or UNSET TAG child belongs to the statement it names.
+		return (use == ClauseSet && a.TagForm == TagFormSet) || (use == ClauseUnset && a.TagForm == TagFormUnset)
+	}
 	create, set, unset := a.CreateSql.Present, a.SetSql.Present, a.UnsetSql.Present
 	none := !create && !set && !unset
 	switch use {

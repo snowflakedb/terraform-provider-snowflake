@@ -227,14 +227,14 @@ type TableReclusterChangeState struct {
 }
 
 type TableColumnAction struct {
-	Add                *TableColumnAddAction            `ddl:"list,no_comma" sql:"ADD"`
-	Rename             *TableColumnRenameAction         `ddl:"list,no_comma"`
-	Alter              []TableColumnAlterAction         `ddl:"keyword" sql:"ALTER"`
-	SetMaskingPolicy   *TableSetColumnMaskingPolicy     `ddl:"list,no_comma"`
-	UnsetMaskingPolicy *TableUnsetColumnMaskingPolicy   `ddl:"list,no_comma"`
-	SetTags            *TableColumnAlterSetTagsAction   `ddl:"list,no_comma"`
-	UnsetTags          *TableColumnAlterUnsetTagsAction `ddl:"list,no_comma"`
-	DropColumns        *TableDropColumnAction           `ddl:"list,no_comma"`
+	Add                *TableColumnAddAction          `ddl:"list,no_comma" sql:"ADD"`
+	Rename             *TableRenameColumnAction       `ddl:"list,no_comma"`
+	Alter              []TableColumnAlterAction       `ddl:"keyword" sql:"ALTER"`
+	SetMaskingPolicy   *TableSetColumnMaskingPolicy   `ddl:"list,no_comma"`
+	UnsetMaskingPolicy *TableUnsetColumnMaskingPolicy `ddl:"list,no_comma"`
+	SetTags            *TableSetColumnTags            `ddl:"list,no_comma"`
+	UnsetTags          *TableUnsetColumnTags          `ddl:"list,no_comma"`
+	DropColumns        *TableDropColumnAction         `ddl:"list,no_comma"`
 }
 
 type TableColumnAddAction struct {
@@ -249,11 +249,6 @@ type TableColumnAddAction struct {
 	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"list,no_comma"`
 	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
 	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-}
-
-type TableColumnRenameAction struct {
-	OldName string `ddl:"parameter,no_equals" sql:"RENAME COLUMN"`
-	NewName string `ddl:"parameter,no_equals" sql:"TO"`
 }
 
 type TableColumnAlterAction struct {
@@ -275,18 +270,6 @@ type TableColumnNotNullConstraint struct {
 type TableColumnAlterDataType struct {
 	DataType DataType `ddl:"parameter,no_equals"`
 	Collate  *string  `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
-}
-
-type TableColumnAlterSetTagsAction struct {
-	alterColumn bool             `ddl:"static" sql:"ALTER COLUMN"`
-	ColumnName  string           `ddl:"keyword"`
-	SetTags     []TagAssociation `ddl:"keyword" sql:"SET TAG"`
-}
-
-type TableColumnAlterUnsetTagsAction struct {
-	alterColumn bool               `ddl:"static" sql:"ALTER COLUMN"`
-	ColumnName  string             `ddl:"keyword"`
-	UnsetTags   []ObjectIdentifier `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type TableConstraintAction struct {

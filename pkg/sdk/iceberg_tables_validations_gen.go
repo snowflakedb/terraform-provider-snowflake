@@ -356,6 +356,11 @@ func (opts *AlterIcebergTableOptions) validate() error {
 			}
 		}
 	}
+	if valueSet(opts.SetMaskingPolicyOnColumn) {
+		if !ValidObjectIdentifier(opts.SetMaskingPolicyOnColumn.MaskingPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.SetMaskingPolicyOnColumn", "MaskingPolicy"))
+		}
+	}
 	if valueSet(opts.SetTagsOnColumn) {
 		if valueSet(opts.SetTagsOnColumn.SetTags) {
 			for setTagIdx, setTag := range opts.SetTagsOnColumn.SetTags {

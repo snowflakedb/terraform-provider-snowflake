@@ -372,6 +372,12 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 			panic(fmt.Sprintf("object %q: attribute %q has duplicate nested attribute %q", obj.Name, attr.Name, child.Name))
 		}
 		seen[child.Name] = struct{}{}
+		if child.TagForm != "" && !child.IsTags() {
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q sets a tag form and is not tags", obj.Name, attr.Name, child.Name))
+		}
+		if child.IsTags() && child.TagForm != "" && child.TagForm != TagFormSet && child.TagForm != TagFormUnset {
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q has tag form %q", obj.Name, attr.Name, child.Name, child.TagForm))
+		}
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
 			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
 		}
