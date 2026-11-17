@@ -17,23 +17,6 @@ func init() {
 				RuntimeVersion: "1.8",
 			}
 		}).
-		withModify(case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForJavaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat}, {ArgName: "arg2"}}
-		}).
-		withModify(case_Procedures_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForJavaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
-		}).
 		withAdditionalValidationCase(
 			"validation_CreateForJava_procedureDefinition",
 			func(opts *CreateForJavaProcedureOptions) { opts.TargetPath = new("@~/testfunc.jar") },
@@ -71,35 +54,6 @@ func init() {
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("id" NUMBER(36, 2), "name" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR(100)) LANGUAGE JAVA STRICT IMMUTABLE RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return id + name;`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForJava_allOldDataTypes",
-			func(opts *CreateForJavaProcedureOptions) {
-				opts.OrReplace = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []ProcedureArgument{
-					{ArgName: "id", ArgDataTypeOld: DataTypeNumber},
-					{ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: new("'test'")},
-				}
-				opts.CopyGrants = new(true)
-				opts.Returns = ProcedureReturns{
-					Table: &ProcedureReturnsTable{
-						Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}},
-					},
-				}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
-				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
-				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.TargetPath = new("@~/testfunc.jar")
-				opts.Comment = new("test comment")
-				opts.ExecuteAs = new(ExecuteAsCaller)
-				opts.ProcedureDefinition = new("return id + name;")
-			},
-			`CREATE OR REPLACE SECURE PROCEDURE %s ("id" NUMBER, "name" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR) LANGUAGE JAVA STRICT IMMUTABLE RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return id + name;`,
-			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateForJavaScript.
@@ -109,15 +63,6 @@ func init() {
 				ResultDataType:      dataTypeFloat,
 				ProcedureDefinition: "return 1;",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaScriptProcedureOptions) {
-			opts.ResultDataTypeOld = DataTypeFloat
-		}).
-		withModify(case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaScriptProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForJavaScriptProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat}, {ArgName: "d2"}}
 		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateForJavaScript_basic,
@@ -140,26 +85,6 @@ func init() {
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS return 1;`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForJavaScript_allOldDataTypes",
-			func(opts *CreateForJavaScriptProcedureOptions) {
-				opts.OrReplace = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: "DOUBLE", DefaultValue: new("1.0")}}
-				opts.CopyGrants = new(true)
-				opts.ResultDataType = nil
-				opts.ResultDataTypeOld = "DOUBLE"
-				opts.NotNull = new(true)
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.Comment = new("test comment")
-				opts.ExecuteAs = new(ExecuteAsCaller)
-				opts.ProcedureDefinition = "return 1;"
-			},
-			`CREATE OR REPLACE SECURE PROCEDURE %s ("d" DOUBLE DEFAULT 1.0) COPY GRANTS RETURNS DOUBLE NOT NULL LANGUAGE JAVASCRIPT STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS return 1;`,
-			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateForPython.
@@ -171,23 +96,6 @@ func init() {
 				Packages:       []ProcedurePackage{{ProcedurePackage: "snowflake-snowpark-python"}},
 				RuntimeVersion: "3.9",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForPythonProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForPythonProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: DataTypeFloat}, {ArgName: "i2"}}
-		}).
-		withModify(case_Procedures_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForPythonProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForPythonProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForPythonProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateForPython_basic,
@@ -214,28 +122,6 @@ func init() {
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("i" NUMBER(36, 2) DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForPython_allOldDataTypes",
-			func(opts *CreateForPythonProcedureOptions) {
-				opts.OrReplace = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: "int", DefaultValue: new("1")}}
-				opts.CopyGrants = new(true)
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARIANT", Null: new(true)}}
-				opts.Packages = []ProcedurePackage{{ProcedurePackage: "numpy"}, {ProcedurePackage: "pandas"}}
-				opts.Imports = []ProcedureImport{{ProcedureImport: "numpy"}, {ProcedureImport: "pandas"}}
-				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
-				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.Comment = new("test comment")
-				opts.ExecuteAs = new(ExecuteAsCaller)
-				opts.ProcedureDefinition = new("import numpy as np")
-			},
-			`CREATE OR REPLACE SECURE PROCEDURE %s ("i" int DEFAULT 1) COPY GRANTS RETURNS VARIANT NULL LANGUAGE PYTHON STRICT IMMUTABLE RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) COMMENT = 'test comment' EXECUTE AS CALLER AS import numpy as np`,
-			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateForScala.
@@ -247,23 +133,6 @@ func init() {
 				Packages:       []ProcedurePackage{{ProcedurePackage: "com.snowflake:snowpark:1.2.0"}},
 				RuntimeVersion: "2.0",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForScalaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForScalaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat}, {ArgName: "arg2"}}
-		}).
-		withModify(case_Procedures_validation_CreateForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForScalaProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForScalaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForScalaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withAdditionalValidationCase(
 			"validation_CreateForScala_procedureDefinition",
@@ -293,26 +162,6 @@ func init() {
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("x" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS VARCHAR(100) NOT NULL LANGUAGE SCALA STRICT IMMUTABLE RUNTIME_VERSION = '2.0' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return x`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForScala_allOldDataTypes",
-			func(opts *CreateForScalaProcedureOptions) {
-				opts.OrReplace = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "x", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARCHAR", NotNull: new(true)}}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.Imports = []ProcedureImport{{ProcedureImport: "@udf_libs/echohandler.jar"}}
-				opts.TargetPath = new("@~/testfunc.jar")
-				opts.Comment = new("test comment")
-				opts.ExecuteAs = new(ExecuteAsCaller)
-				opts.ProcedureDefinition = new("return x")
-			},
-			`CREATE OR REPLACE SECURE PROCEDURE %s ("x" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SCALA STRICT IMMUTABLE RUNTIME_VERSION = '2.0' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' TARGET_PATH = '@~/testfunc.jar' COMMENT = 'test comment' EXECUTE AS CALLER AS return x`,
-			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateForSQL.
@@ -322,23 +171,6 @@ func init() {
 				Returns:             ProcedureSQLReturns{ResultDataType: &ProcedureSQLReturnsResultDataType{ResultDataType: dataTypeVarchar_100}},
 				ProcedureDefinition: "3.141592654::FLOAT",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForSQLProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForSQLProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat}, {ArgName: "arg2"}}
-		}).
-		withModify(case_Procedures_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForSQLProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureSQLReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForSQLProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForSQLProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateForSQL_basic,
@@ -363,27 +195,6 @@ func init() {
 				opts.ProcedureDefinition = "3.141592654::FLOAT"
 			},
 			`CREATE OR REPLACE SECURE PROCEDURE %s ("message" VARCHAR(100) DEFAULT 'test') COPY GRANTS RETURNS VARCHAR(100) NOT NULL LANGUAGE SQL STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS 3.141592654::FLOAT`,
-			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForSQL_allOldDataTypes",
-			func(opts *CreateForSQLProcedureOptions) {
-				opts.OrReplace = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
-				opts.Returns = ProcedureSQLReturns{
-					ResultDataType: &ProcedureSQLReturnsResultDataType{ResultDataTypeOld: "VARCHAR"},
-					NotNull:        new(true),
-				}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.Comment = new("test comment")
-				opts.ExecuteAs = new(ExecuteAsCaller)
-				opts.ProcedureDefinition = "3.141592654::FLOAT"
-			},
-			`CREATE OR REPLACE SECURE PROCEDURE %s ("message" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SQL STRICT IMMUTABLE COMMENT = 'test comment' EXECUTE AS CALLER AS 3.141592654::FLOAT`,
 			proceduresTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -544,23 +355,6 @@ func init() {
 				RuntimeVersion: "1.8",
 			}
 		}).
-		withModify(case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForJavaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForJavaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat}, {ArgName: "arg2"}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForJavaProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForJavaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForJavaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
-		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForJava_basic,
 			`WITH %s AS PROCEDURE () RETURNS VARCHAR(100) LANGUAGE JAVA RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' CALL %s ()`,
@@ -589,22 +383,6 @@ func init() {
 			},
 			`WITH %s AS PROCEDURE () RETURNS TABLE () LANGUAGE JAVA RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:latest') HANDLER = 'TestFunc.echoVarchar' CALL %s ()`,
 			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateAndCallForJava_allOldDataTypes",
-			func(opts *CreateAndCallForJavaProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "id", ArgDataTypeOld: DataTypeNumber}, {ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR}}
-				opts.Returns = ProcedureReturns{Table: &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}}}}
-				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = new("return id + name;")
-				opts.WithClause = &ProcedureWithClause{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}
-				opts.ScriptingVariable = new(":ret")
-				opts.CallArguments = []string{"1", "rnd"}
-			},
-			`WITH %s AS PROCEDURE ("id" NUMBER, "name" VARCHAR) RETURNS TABLE ("country_code" VARCHAR) LANGUAGE JAVA STRICT RUNTIME_VERSION = '1.8' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' AS 'return id + name;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1, rnd) INTO :ret`,
-			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), cteId.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateAndCallForScala.
@@ -617,23 +395,6 @@ func init() {
 				Packages:       []ProcedurePackage{{ProcedurePackage: "com.snowflake:snowpark:1.2.0"}},
 				RuntimeVersion: "2.12",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForScalaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForScalaProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat}, {ArgName: "arg2"}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForScala_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForScalaProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForScalaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForScala_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForScalaProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForScala_basic,
@@ -662,22 +423,6 @@ func init() {
 			},
 			`WITH %s AS PROCEDURE () RETURNS TABLE () LANGUAGE SCALA RUNTIME_VERSION = '2.12' PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' CALL %s ()`,
 			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateAndCallForScala_allOldDataTypes",
-			func(opts *CreateAndCallForScalaProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "id", ArgDataTypeOld: DataTypeNumber}, {ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR}}
-				opts.Returns = ProcedureReturns{Table: &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}}}}
-				opts.Imports = []ProcedureImport{{ProcedureImport: "test_jar.jar"}}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = new("return id + name;")
-				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = new(":ret")
-				opts.CallArguments = []string{"1", "rnd"}
-			},
-			`WITH %s AS PROCEDURE ("id" NUMBER, "name" VARCHAR) RETURNS TABLE ("country_code" VARCHAR) LANGUAGE SCALA STRICT RUNTIME_VERSION = '2.12' PACKAGES = ('com.snowflake:snowpark:1.2.0') IMPORTS = ('test_jar.jar') HANDLER = 'TestFunc.echoVarchar' AS 'return id + name;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1, rnd) INTO :ret`,
-			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), cteId.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateAndCallForJavaScript.
@@ -688,15 +433,6 @@ func init() {
 				ResultDataType:      dataTypeFloat,
 				ProcedureDefinition: "return 1;",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForJavaScript_opts_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-			opts.ResultDataTypeOld = DataTypeFloat
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForJavaScript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat}, {ArgName: "d2"}}
 		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForJavaScript_basic,
@@ -716,23 +452,6 @@ func init() {
 			},
 			`WITH %s AS PROCEDURE ("d" FLOAT DEFAULT 1.0) RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT STRICT AS 'return 1;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
 			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), cteId.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateAndCallForJavaScript_allOldDataTypes",
-			func(opts *CreateAndCallForJavaScriptProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "d", ArgDataTypeOld: "DOUBLE", DefaultValue: new("1.0")}}
-				opts.ResultDataType = nil
-				opts.ResultDataTypeOld = "DOUBLE"
-				opts.NotNull = new(true)
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = "return 1;"
-				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = new(":ret")
-				opts.CallArguments = []string{"1"}
-			},
-			`WITH %s AS PROCEDURE ("d" DOUBLE DEFAULT 1.0) RETURNS DOUBLE NOT NULL LANGUAGE JAVASCRIPT STRICT AS 'return 1;' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
-			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), cteId.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateAndCallForPython.
@@ -745,23 +464,6 @@ func init() {
 				Packages:       []ProcedurePackage{{ProcedurePackage: "snowflake-snowpark-python"}},
 				RuntimeVersion: "3.9",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForPythonProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForPythonProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: DataTypeFloat}, {ArgName: "i2"}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForPythonProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForPythonProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForPythonProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForPython_basic,
@@ -791,23 +493,6 @@ func init() {
 			},
 			`WITH %s AS PROCEDURE () RETURNS TABLE () LANGUAGE PYTHON RUNTIME_VERSION = '3.9' PACKAGES = ('snowflake-snowpark-python') HANDLER = 'udf' CALL %s ()`,
 			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateAndCallForPython_allOldDataTypes",
-			func(opts *CreateAndCallForPythonProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "i", ArgDataTypeOld: "int", DefaultValue: new("1")}}
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: "VARIANT", Null: new(true)}}
-				opts.Packages = []ProcedurePackage{{ProcedurePackage: "numpy"}, {ProcedurePackage: "pandas"}}
-				opts.Imports = []ProcedureImport{{ProcedureImport: "numpy"}, {ProcedureImport: "pandas"}}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = new("import numpy as np")
-				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = new(":ret")
-				opts.CallArguments = []string{"1"}
-			},
-			`WITH %s AS PROCEDURE ("i" int DEFAULT 1) RETURNS VARIANT NULL LANGUAGE PYTHON STRICT RUNTIME_VERSION = '3.9' PACKAGES = ('numpy', 'pandas') IMPORTS = ('numpy', 'pandas') HANDLER = 'udf' AS 'import numpy as np' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
-			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), cteId.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
 		)
 
 	proceduresTests.CreateAndCallForSQL.
@@ -818,23 +503,6 @@ func init() {
 				Returns:             ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataType: dataTypeFloat}},
 				ProcedureDefinition: "3.141592654::FLOAT",
 			}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForSQLProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForSQLProcedureOptions) {
-			opts.Arguments = []ProcedureArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat}, {ArgName: "arg2"}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForSQLProcedureOptions) {
-			opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateAndCallForSQLProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Procedures_validation_CreateAndCallForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateAndCallForSQLProcedureOptions) {
-			opts.Returns.ResultDataType = nil
-			opts.Returns.Table = &ProcedureReturnsTable{Columns: []ProcedureColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withExpectedSqlf(
 			case_Procedures_sql_CreateAndCallForSQL_basic,
@@ -862,20 +530,5 @@ func init() {
 			},
 			`WITH %s AS PROCEDURE () RETURNS TABLE () LANGUAGE SQL AS '3.141592654::FLOAT' CALL %s ()`,
 			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348106]: remove with old procedure removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateAndCallForSQL_allOldDataTypes",
-			func(opts *CreateAndCallForSQLProcedureOptions) {
-				opts.Arguments = []ProcedureArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
-				opts.Returns = ProcedureReturns{ResultDataType: &ProcedureReturnsResultDataType{ResultDataTypeOld: DataTypeFloat}}
-				opts.NullInputBehavior = new(NullInputBehaviorStrict)
-				opts.ProcedureDefinition = "3.141592654::FLOAT"
-				opts.WithClauses = []ProcedureWithClause{{CteName: cteId, CteColumns: []string{"x", "y"}, Statement: "(select m.album_ID, m.album_name, b.band_name from music_albums)"}}
-				opts.ScriptingVariable = new(":ret")
-				opts.CallArguments = []string{"1"}
-			},
-			`WITH %s AS PROCEDURE ("message" VARCHAR DEFAULT 'test') RETURNS FLOAT LANGUAGE SQL STRICT AS '3.141592654::FLOAT' , %s (x, y) AS (select m.album_ID, m.album_name, b.band_name from music_albums) CALL %s (1) INTO :ret`,
-			proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(), cteId.FullyQualifiedName(), proceduresTestIdAccountObjectIdentifier.FullyQualifiedName(),
 		)
 }

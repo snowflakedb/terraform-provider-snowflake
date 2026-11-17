@@ -22,18 +22,16 @@ var functionCreateParameters = collections.Filter(functionParameters, func(p par
 var functionArgument = func() *g.QueryStruct {
 	return g.NewQueryStruct("FunctionArgument").
 		Text("ArgName", g.KeywordOptions().DoubleQuotes().Required()).
-		PredefinedQueryStructField("ArgDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 		PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 		PredefinedQueryStructField("DefaultValue", "*string", g.ParameterOptions().NoEquals().SQL("DEFAULT")).
-		WithValidation(g.ExactlyOneValueSet, "ArgDataTypeOld", "ArgDataType")
+		WithValidation(g.ValidateValueSet, "ArgDataType")
 }
 
 var functionColumn = func() *g.QueryStruct {
 	return g.NewQueryStruct("FunctionColumn").
 		Text("ColumnName", g.KeywordOptions().DoubleQuotes().Required()).
-		PredefinedQueryStructField("ColumnDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 		PredefinedQueryStructField("ColumnDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-		WithValidation(g.ExactlyOneValueSet, "ColumnDataTypeOld", "ColumnDataType")
+		WithValidation(g.ValidateValueSet, "ColumnDataType")
 }
 
 var functionReturns = func() *g.QueryStruct {
@@ -41,9 +39,8 @@ var functionReturns = func() *g.QueryStruct {
 		OptionalQueryStructField(
 			"ResultDataType",
 			g.NewQueryStruct("FunctionReturnsResultDataType").
-				PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.KeywordOptions().NoQuotes()).
 				PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-				WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType"),
+				WithValidation(g.ValidateValueSet, "ResultDataType"),
 			g.KeywordOptions(),
 		).
 		OptionalQueryStructField(
@@ -247,7 +244,6 @@ var functionsDef = g.NewInterface(
 		).
 		OptionalSQL("COPY GRANTS").
 		SQL("RETURNS").
-		PredefinedQueryStructField("ResultDataTypeOld", "DataType", g.ParameterOptions().NoEquals()).
 		PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 		PredefinedQueryStructField("ReturnNullValues", "*ReturnNullValues", g.KeywordOptions()).
 		SQL("LANGUAGE SCALA").
@@ -274,7 +270,7 @@ var functionsDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidateValueSet, "Handler").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists").
-		WithValidation(g.ExactlyOneValueSet, "ResultDataTypeOld", "ResultDataType").
+		WithValidation(g.ValidateValueSet, "ResultDataType").
 		WithValidation(g.ValidIdentifier, "ExternalAccessIntegrations").
 		WithAdditionalValidations(),
 ).CustomOperation(

@@ -1602,13 +1602,13 @@ func TestInt_Procedures(t *testing.T) {
 					return filteredRows;
 				}
 			}`
-		column1 := sdk.NewProcedureColumnRequest("id", nil).WithColumnDataTypeOld(sdk.DataTypeNumber)
-		column2 := sdk.NewProcedureColumnRequest("name", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
-		column3 := sdk.NewProcedureColumnRequest("role", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
+		column1 := sdk.NewProcedureColumnRequest("id", testdatatypes.DataTypeNumber)
+		column2 := sdk.NewProcedureColumnRequest("name", testdatatypes.DataTypeVarchar)
+		column3 := sdk.NewProcedureColumnRequest("role", testdatatypes.DataTypeVarchar)
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{*column1, *column2, *column3})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("table_name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("table_name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 		request := sdk.NewCreateForJavaProcedureRequest(id.SchemaObjectId(), *returns, "11", packages, "Filter.filterByRole").
 			WithOrReplace(true).
@@ -1642,9 +1642,8 @@ func TestInt_Procedures(t *testing.T) {
 				catch (err)  {
 					return "Failed: " + err; // Return a success/error indicator.
 				}`
-		argument := sdk.NewProcedureArgumentRequest("FLOAT_PARAM1", nil).WithArgDataTypeOld(sdk.DataTypeFloat)
-		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), nil, definition).
-			WithResultDataTypeOld(sdk.DataTypeString).
+		argument := sdk.NewProcedureArgumentRequest("FLOAT_PARAM1", testdatatypes.DataTypeFloat)
+		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), testdatatypes.DataTypeString, definition).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithNullInputBehavior(sdk.NullInputBehaviorStrict).
 			WithExecuteAs(sdk.ExecuteAsCaller)
@@ -1666,7 +1665,7 @@ func TestInt_Procedures(t *testing.T) {
 		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name)
 
 		definition := `return 3.1415926;`
-		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), nil, definition).WithResultDataTypeOld(sdk.DataTypeFloat).WithNotNull(true).WithOrReplace(true)
+		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), testdatatypes.DataTypeFloat, definition).WithNotNull(true).WithOrReplace(true)
 		err := client.Procedures.CreateForJavaScript(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Procedure.DropProcedureFunc(t, id))
@@ -1695,9 +1694,9 @@ func TestInt_Procedures(t *testing.T) {
 					return new String(input.readAllBytes(), StandardCharsets.UTF_8)
 				}
 			}`
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureReturnsResultDataTypeRequest(testdatatypes.DataTypeVarchar)
 		returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
-		argument := sdk.NewProcedureArgumentRequest("input", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		argument := sdk.NewProcedureArgumentRequest("input", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 		request := sdk.NewCreateForScalaProcedureRequest(id.SchemaObjectId(), *returns, "2.12", packages, "FileReader.execute").
 			WithOrReplace(true).
@@ -1730,13 +1729,13 @@ func TestInt_Procedures(t *testing.T) {
 					return filteredRows
 				}
 			}`
-		column1 := sdk.NewProcedureColumnRequest("id", nil).WithColumnDataTypeOld(sdk.DataTypeNumber)
-		column2 := sdk.NewProcedureColumnRequest("name", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
-		column3 := sdk.NewProcedureColumnRequest("role", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
+		column1 := sdk.NewProcedureColumnRequest("id", testdatatypes.DataTypeNumber)
+		column2 := sdk.NewProcedureColumnRequest("name", testdatatypes.DataTypeVarchar)
+		column3 := sdk.NewProcedureColumnRequest("role", testdatatypes.DataTypeVarchar)
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{*column1, *column2, *column3})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("table_name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("table_name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 		request := sdk.NewCreateForScalaProcedureRequest(id.SchemaObjectId(), *returns, "2.12", packages, "Filter.filterByRole").
 			WithOrReplace(true).
@@ -1766,9 +1765,9 @@ def joblib_multiprocessing(session, i):
 	result = joblib.Parallel(n_jobs=-1)(joblib.delayed(sqrt)(i ** 2) for i in range(10))
 	return str(result)`
 
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeString)
+		dt := sdk.NewProcedureReturnsResultDataTypeRequest(testdatatypes.DataTypeString)
 		returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
-		argument := sdk.NewProcedureArgumentRequest("i", nil).WithArgDataTypeOld(sdk.DataTypeInt)
+		argument := sdk.NewProcedureArgumentRequest("i", testdatatypes.DataTypeInteger)
 		packages := []sdk.ProcedurePackageRequest{
 			*sdk.NewProcedurePackageRequest("snowflake-snowpark-python"),
 			*sdk.NewProcedurePackageRequest("joblib"),
@@ -1799,13 +1798,13 @@ from snowflake.snowpark.functions import col
 def filter_by_role(session, table_name, role):
 	df = session.table(table_name)
 	return df.filter(col("role") == role)`
-		column1 := sdk.NewProcedureColumnRequest("id", nil).WithColumnDataTypeOld(sdk.DataTypeNumber)
-		column2 := sdk.NewProcedureColumnRequest("name", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
-		column3 := sdk.NewProcedureColumnRequest("role", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
+		column1 := sdk.NewProcedureColumnRequest("id", testdatatypes.DataTypeNumber)
+		column2 := sdk.NewProcedureColumnRequest("name", testdatatypes.DataTypeVarchar)
+		column3 := sdk.NewProcedureColumnRequest("role", testdatatypes.DataTypeVarchar)
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{*column1, *column2, *column3})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("table_name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("table_name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
 		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, "filter_by_role").
 			WithOrReplace(true).
@@ -1833,9 +1832,9 @@ def filter_by_role(session, table_name, role):
 			RETURN message;
 		END;`
 
-		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(testdatatypes.DataTypeVarchar)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt).WithNotNull(true)
-		argument := sdk.NewProcedureArgumentRequest("message", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		argument := sdk.NewProcedureArgumentRequest("message", testdatatypes.DataTypeVarchar)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
 			WithOrReplace(true).
 			// Suddenly this is erroring out, when it used to not have an problem. Must be an error with the Snowflake API.
@@ -1858,9 +1857,9 @@ def filter_by_role(session, table_name, role):
 	t.Run("create procedure for SQL: returns table", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeVARCHAR)
 
-		column1 := sdk.NewProcedureColumnRequest("id", nil).WithColumnDataTypeOld("INTEGER")
-		column2 := sdk.NewProcedureColumnRequest("price", nil).WithColumnDataTypeOld("double")
-		column3 := sdk.NewProcedureColumnRequest("third", nil).WithColumnDataTypeOld("Geometry")
+		column1 := sdk.NewProcedureColumnRequest("id", testdatatypes.DataTypeInteger)
+		column2 := sdk.NewProcedureColumnRequest("price", testdatatypes.DataTypeDouble)
+		column3 := sdk.NewProcedureColumnRequest("third", testdatatypes.DataTypeGeometry)
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{*column1, *column2, *column3})
 		expectedReturnDataType, err := datatypes.ParseDataType(fmt.Sprintf("TABLE(id %s, price %s, third %s)", datatypes.NumberLegacyDataType, datatypes.FloatLegacyDataType, datatypes.GeometryLegacyDataType))
 		require.NoError(t, err)
@@ -1871,7 +1870,7 @@ def filter_by_role(session, table_name, role):
 			RETURN TABLE(res);
 		END;`
 		returns := sdk.NewProcedureSQLReturnsRequest().WithTable(*returnsTable)
-		argument := sdk.NewProcedureArgumentRequest("id", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		argument := sdk.NewProcedureArgumentRequest("id", testdatatypes.DataTypeVarchar)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
 			WithOrReplace(true).
 			// SNOW-1051627 todo: uncomment once null input behavior working again
@@ -2511,123 +2510,6 @@ def filter_by_role(session, table_name, role):
 			assert.Equal(t, dataType.Canonical(), pairs["returns"])
 		})
 	}
-
-	// This test differs from the previous one in the Snowflake interaction. In the previous one we use our hardcoded defaults, in this one, we pass explicit data types to Snowflake.
-	for _, tc := range []struct {
-		input                           string
-		expectedShowValue               string
-		expectedDescribeReturnsOverride string
-	}{
-		{input: "NUMBER", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(38)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(38,0)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER"},
-		{input: "DECIMAL", expectedShowValue: "NUMBER"},
-		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
-		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: "CHAR", expectedShowValue: "VARCHAR"},
-		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
-		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-	} {
-		tc := tc
-		t.Run(fmt.Sprintf("procedure returns after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
-			procName := "add"
-			argName := "A"
-			dataType, err := datatypes.ParseDataType(tc.input)
-			require.NoError(t, err)
-
-			// we fall back to the direct data type specification on purpose
-			explicitDataType := sdk.DataType(tc.input)
-
-			args := []sdk.ProcedureArgumentRequest{
-				*sdk.NewProcedureArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-			}
-			idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
-
-			packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
-			definition := fmt.Sprintf("def add(%[1]s): %[1]s", argName)
-
-			err = client.Procedures.CreateForPython(
-				ctx, sdk.NewCreateForPythonProcedureRequest(
-					idWithArguments.SchemaObjectId(),
-					*sdk.NewProcedureReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-					testvars.PythonRuntime,
-					packages,
-					procName,
-				).
-					WithArguments(args).
-					WithProcedureDefinitionWrapped(definition),
-			)
-			require.NoError(t, err)
-
-			procedure, err := client.Procedures.ShowByID(ctx, idWithArguments)
-			require.NoError(t, err)
-			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, procedure.ArgumentsOld)
-			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", idWithArguments.Name(), tc.expectedShowValue), procedure.ArgumentsRaw)
-
-			details, err := client.Procedures.Describe(ctx, idWithArguments)
-			require.NoError(t, err)
-			pairs := make(map[string]string)
-			for _, detail := range details {
-				pairs[detail.Property] = *detail.Value
-			}
-			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
-			if tc.expectedDescribeReturnsOverride != "" {
-				assert.Equal(t, tc.expectedDescribeReturnsOverride, pairs["returns"])
-			} else {
-				assert.Equal(t, dataType.Canonical(), pairs["returns"])
-			}
-		})
-	}
-
-	for _, tc := range []struct {
-		input        string
-		expectedSize string
-	}{
-		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
-		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
-	} {
-		tc := tc
-		t.Run(fmt.Sprintf("procedure default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
-			procName := "add"
-			argName := "A"
-			dataType, err := datatypes.ParseDataType(tc.input)
-			require.NoError(t, err)
-
-			// we fall back to the direct data type specification on purpose
-			explicitDataType := sdk.DataType(tc.input)
-
-			args := []sdk.ProcedureArgumentRequest{
-				*sdk.NewProcedureArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-			}
-			idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
-
-			packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
-			definition := fmt.Sprintf("def add(%[1]s): %[1]s", argName)
-
-			err = client.Procedures.CreateForPython(
-				ctx, sdk.NewCreateForPythonProcedureRequest(
-					idWithArguments.SchemaObjectId(),
-					*sdk.NewProcedureReturnsRequest().WithResultDataType(*sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-					testvars.PythonRuntime,
-					packages,
-					procName,
-				).
-					WithArguments(args).
-					WithProcedureDefinitionWrapped(definition),
-			)
-			require.NoError(t, err)
-
-			returnDataTypeFromInformationSchema := testClientHelper().InformationSchema.GetProcedureDataType(t, idWithArguments)
-
-			require.Equal(t, tc.expectedSize, returnDataTypeFromInformationSchema)
-		})
-	}
 }
 
 func TestInt_CallProcedure(t *testing.T) {
@@ -2670,9 +2552,9 @@ func TestInt_CallProcedure(t *testing.T) {
 			RETURN MESSAGE;
 		END;`
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeVARCHAR)
-		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(testdatatypes.DataTypeVarchar)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt).WithNotNull(true)
-		argument := sdk.NewProcedureArgumentRequest("MESSAGE", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		argument := sdk.NewProcedureArgumentRequest("MESSAGE", testdatatypes.DataTypeVarchar)
 		request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
 			WithSecure(true).
 			WithOrReplace(true).
@@ -2714,13 +2596,13 @@ func TestInt_CallProcedure(t *testing.T) {
 				return filteredRows;
 			}
 		}`
-		column1 := sdk.NewProcedureColumnRequest("id", nil).WithColumnDataTypeOld(sdk.DataTypeNumber)
-		column2 := sdk.NewProcedureColumnRequest("name", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
-		column3 := sdk.NewProcedureColumnRequest("role", nil).WithColumnDataTypeOld(sdk.DataTypeVARCHAR)
+		column1 := sdk.NewProcedureColumnRequest("id", testdatatypes.DataTypeNumber)
+		column2 := sdk.NewProcedureColumnRequest("name", testdatatypes.DataTypeVarchar)
+		column3 := sdk.NewProcedureColumnRequest("role", testdatatypes.DataTypeVarchar)
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{*column1, *column2, *column3})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 		request := sdk.NewCreateForJavaProcedureRequest(id.SchemaObjectId(), *returns, "11", packages, "Filter.filterByRole").
 			WithOrReplace(true).
@@ -2753,8 +2635,8 @@ func TestInt_CallProcedure(t *testing.T) {
 		}`
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 		request := sdk.NewCreateForScalaProcedureRequest(id.SchemaObjectId(), *returns, "2.12", packages, "Filter.filterByRole").
 			WithOrReplace(true).
@@ -2785,9 +2667,8 @@ func TestInt_CallProcedure(t *testing.T) {
 		catch (err)  {
 			return "Failed: " + err; // Return a success/error indicator.
 		}`
-		arg := sdk.NewProcedureArgumentRequest("FLOAT_PARAM1", nil).WithArgDataTypeOld(sdk.DataTypeFloat)
-		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), nil, definition).
-			WithResultDataTypeOld(sdk.DataTypeString).
+		arg := sdk.NewProcedureArgumentRequest("FLOAT_PARAM1", testdatatypes.DataTypeFloat)
+		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), testdatatypes.DataTypeString, definition).
 			WithOrReplace(true).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg}).
 			WithNullInputBehavior(sdk.NullInputBehaviorStrict).
@@ -2806,7 +2687,7 @@ func TestInt_CallProcedure(t *testing.T) {
 		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), name)
 
 		definition := `return 3.1415926;`
-		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), nil, definition).WithResultDataTypeOld(sdk.DataTypeFloat).WithNotNull(true).WithOrReplace(true)
+		request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), testdatatypes.DataTypeFloat, definition).WithNotNull(true).WithOrReplace(true)
 		err := client.Procedures.CreateForJavaScript(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(cleanupProcedureHandle(id))
@@ -2826,8 +2707,8 @@ def filter_by_role(session, name, role):
 	return df.filter(col("role") == role)`
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
 		request := sdk.NewCreateForPythonProcedureRequest(id.SchemaObjectId(), *returns, testvars.PythonRuntime, packages, "filter_by_role").
 			WithOrReplace(true).
@@ -2881,8 +2762,8 @@ func TestInt_CreateAndCallProcedures(t *testing.T) {
 		}`
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 		ca := []string{fmt.Sprintf(`'%s'`, tid.FullyQualifiedName()), "'dev'"}
 		request := sdk.NewCreateAndCallForJavaProcedureRequest(name, *returns, "11", packages, "Filter.filterByRole", name).
@@ -2911,8 +2792,8 @@ func TestInt_CreateAndCallProcedures(t *testing.T) {
 		}`
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 		ca := []string{fmt.Sprintf(`'%s'`, tid.FullyQualifiedName()), "'dev'"}
 		request := sdk.NewCreateAndCallForScalaProcedureRequest(name, *returns, "2.12", packages, "Filter.filterByRole", name).
@@ -2939,9 +2820,8 @@ func TestInt_CreateAndCallProcedures(t *testing.T) {
 		catch (err)  {
 			return "Failed: " + err; // Return a success/error indicator.
 		}`
-		arg := sdk.NewProcedureArgumentRequest("FLOAT_PARAM1", nil).WithArgDataTypeOld(sdk.DataTypeFloat)
-		request := sdk.NewCreateAndCallForJavaScriptProcedureRequest(name, nil, definition, name).
-			WithResultDataTypeOld(sdk.DataTypeString).
+		arg := sdk.NewProcedureArgumentRequest("FLOAT_PARAM1", testdatatypes.DataTypeFloat)
+		request := sdk.NewCreateAndCallForJavaScriptProcedureRequest(name, testdatatypes.DataTypeString, definition, name).
 			WithArguments([]sdk.ProcedureArgumentRequest{*arg}).
 			WithNullInputBehavior(sdk.NullInputBehaviorStrict).
 			WithCallArguments([]string{"5.14::FLOAT"})
@@ -2955,7 +2835,7 @@ func TestInt_CreateAndCallProcedures(t *testing.T) {
 		name := sdk.NewAccountObjectIdentifier("sp_pi")
 
 		definition := `return 3.1415926;`
-		request := sdk.NewCreateAndCallForJavaScriptProcedureRequest(name, nil, definition, name).WithResultDataTypeOld(sdk.DataTypeFloat).WithNotNull(true)
+		request := sdk.NewCreateAndCallForJavaScriptProcedureRequest(name, testdatatypes.DataTypeFloat, definition, name).WithNotNull(true)
 		err := client.Procedures.CreateAndCallForJavaScript(ctx, request)
 		require.NoError(t, err)
 	})
@@ -2967,9 +2847,9 @@ func TestInt_CreateAndCallProcedures(t *testing.T) {
 		END;`
 
 		name := testClientHelper().Ids.RandomAccountObjectIdentifier()
-		dt := sdk.NewProcedureReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVARCHAR)
+		dt := sdk.NewProcedureReturnsResultDataTypeRequest(testdatatypes.DataTypeVarchar)
 		returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
-		argument := sdk.NewProcedureArgumentRequest("MESSAGE", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		argument := sdk.NewProcedureArgumentRequest("MESSAGE", testdatatypes.DataTypeVarchar)
 		request := sdk.NewCreateAndCallForSQLProcedureRequest(name, *returns, definition, name).
 			WithArguments([]sdk.ProcedureArgumentRequest{*argument}).
 			WithCallArguments([]string{"message => 'hi'"})
@@ -2988,8 +2868,8 @@ def filter_by_role(session, name, role):
 	return df.filter(col("role") == role)`
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
 		ca := []string{fmt.Sprintf(`'%s'`, tid.FullyQualifiedName()), "'dev'"}
 		request := sdk.NewCreateAndCallForPythonProcedureRequest(name, *returns, testvars.PythonRuntime, packages, "filter_by_role", name).
@@ -3015,8 +2895,8 @@ def filter_by_role(session, name, role):
 		}`
 		returnsTable := sdk.NewProcedureReturnsTableRequest().WithColumns([]sdk.ProcedureColumnRequest{})
 		returns := sdk.NewProcedureReturnsRequest().WithTable(*returnsTable)
-		arg1 := sdk.NewProcedureArgumentRequest("name", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
-		arg2 := sdk.NewProcedureArgumentRequest("role", nil).WithArgDataTypeOld(sdk.DataTypeVARCHAR)
+		arg1 := sdk.NewProcedureArgumentRequest("name", testdatatypes.DataTypeVarchar)
+		arg2 := sdk.NewProcedureArgumentRequest("role", testdatatypes.DataTypeVarchar)
 		packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("com.snowflake:snowpark:latest")}
 
 		ca := []string{fmt.Sprintf(`'%s'`, tid.FullyQualifiedName()), "'dev'"}
