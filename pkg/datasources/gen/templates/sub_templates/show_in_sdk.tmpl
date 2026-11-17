@@ -2,5 +2,5 @@
 {{- if .Hooks.ShowInSdk.Generate -}}
 	items, err := client.{{ .NamePlural }}.Show(ctx, req)
 {{ else if .Hooks.ShowInSdk.Present -}}
-	items, err := {{ .Prefix }}ShowInSdkExt(ctx, client, req)
+	items, err := {{ .Prefix }}ShowInSdkExt(ctx, client, req, &diags)
 {{ end -}}

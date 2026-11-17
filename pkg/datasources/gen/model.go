@@ -104,6 +104,16 @@ func joinDescription(description, additional string) string {
 	return description + " " + additional
 }
 
+// UsesDiagnostics is true when a hand-written step can report warnings through the diagnostics of the read.
+func (m DataSourceModel) UsesDiagnostics() bool {
+	for _, hook := range []ssot.DataSourceHook{m.Hooks.ShowInSdk, m.Hooks.DescribeInSdk, m.Hooks.ShowParametersInSdk, m.Hooks.ItemExtra} {
+		if hook.Present && !hook.Generate {
+			return true
+		}
+	}
+	return false
+}
+
 func (m DataSourceModel) HasFilters() bool {
 	f := m.Filters
 	return f.Like || f.StartsWith || f.Limit || f.On || f.Terse || f.History || f.In != ssot.DataSourceInNone

@@ -777,10 +777,13 @@ hook on a variant, or on an object without `WithDataSource()`, panics in `Valida
 |---|---|
 | `Description`, `ReadWrapper` | `<name>DescriptionExt` (string), `<name>ReadWrapperExt(read)` |
 | `SwitchesSchema`, `FiltersSchema`, `ShowOutputSchema`, `DescribeOutputSchema`, `ParametersOutputSchema`, `AdditionalSchema` | `<name>…SchemaExt`, a `map[string]*schema.Schema` that is merged into the schema |
-| `ApplyFilters`, `ShowInSdk`, `SetId` | `<name>ApplyFiltersExt(d, req)`, `<name>ShowInSdkExt(ctx, client, req)`, `<name>SetIdExt(d)` |
-| `DescribeInSdk`, `DescribeOutputSet` | `<name>DescribeInSdkExt(ctx, client, item)`, `<name>DescribeOutputSetExt(result)` |
-| `ShowParametersInSdk`, `ParametersOutputSet` | `<name>ShowParametersInSdkExt(ctx, client, item)`, `<name>ParametersOutputSetExt(parameters)` |
-| `ItemExtra` | `<name>ItemExtraExt(ctx, d, client, item)`, a map that is merged into each item |
+| `ApplyFilters`, `ShowInSdk`, `SetId` | `<name>ApplyFiltersExt(d, req)`, `<name>ShowInSdkExt(ctx, client, req, diags)`, `<name>SetIdExt(d)` |
+| `DescribeInSdk`, `DescribeOutputSet` | `<name>DescribeInSdkExt(ctx, client, item, diags)`, `<name>DescribeOutputSetExt(result)` |
+| `ShowParametersInSdk`, `ParametersOutputSet` | `<name>ShowParametersInSdkExt(ctx, client, item, diags)`, `<name>ParametersOutputSetExt(parameters)` |
+| `ItemExtra` | `<name>ItemExtraExt(ctx, d, client, item, diags)`, a map that is merged into each item |
+
+`diags` is a `*diag.Diagnostics` that the read returns. A step that fails without being fatal appends a warning to it and
+returns no error. Reads without such a step have no `diags`.
 
 The generator does not write the name constant in `pkg/provider/datasources`, the registration, the preview feature
 constants, the docs templates, the examples, the config model, the assertions, or the acceptance tests. They stay steps of

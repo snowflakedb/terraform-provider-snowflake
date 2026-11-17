@@ -25,6 +25,9 @@ func Read{{ .NamePlural }}(ctx context.Context, d *schema.ResourceData, meta any
 	client := meta.(*provider.Context).Client
 {{- end }}
 	req := sdk.NewShow{{ .Name }}Request()
+{{- if .UsesDiagnostics }}
+	var diags diag.Diagnostics
+{{- end }}
 
 {{ template "applyFilters" . }}
 
@@ -68,7 +71,13 @@ func Read{{ .NamePlural }}(ctx context.Context, d *schema.ResourceData, meta any
 		}{{ if .Hooks.ItemExtra.Present }}, itemExtra){{ end }}
 	}
 	if err := d.Set("{{ .ResultName }}", flattened); err != nil {
+{{- if .UsesDiagnostics }}
+		return append(diags, diag.FromErr(err)...)
+	}
+	return diags
+{{- else }}
 		return diag.FromErr(err)
 	}
 	return nil
+{{- end }}
 }

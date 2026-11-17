@@ -1,6 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
 {{- if .Hooks.ItemExtra.Present -}}
-		itemExtra, err := {{ .Prefix }}ItemExtraExt(ctx, d, client, item)
+		itemExtra, err := {{ .Prefix }}ItemExtraExt(ctx, d, client, item, &diags)
 		if err != nil {
 			return diag.FromErr(err)
 		}

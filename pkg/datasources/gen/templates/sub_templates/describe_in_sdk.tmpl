@@ -2,5 +2,5 @@
 {{- if .Hooks.DescribeInSdk.Generate -}}
 			describeResult, err := client.{{ .NamePlural }}.{{ .Describe.Method }}(ctx, item.ID())
 {{ else if .Hooks.DescribeInSdk.Present -}}
-			describeResult, err := {{ .Prefix }}DescribeInSdkExt(ctx, client, item)
+			describeResult, err := {{ .Prefix }}DescribeInSdkExt(ctx, client, item, &diags)
 {{ end -}}
