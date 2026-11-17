@@ -6,7 +6,7 @@
 			Computed:    true,
 			Description: {{ printf "%q" .ParametersOutputDescription }},
 			Elem: &schema.Resource{
-				Schema: schemas.Show{{ .Name }}ParametersSchema,
+				Schema: {{ .ParametersSchemaExpr }},
 			},
 		},
 	},

@@ -18,10 +18,12 @@ type DataSourceModel struct {
 	DescribeSql         string
 	DescribeDetailsName string
 	PreviewFeature      bool
-	Filters             ssot.DataSourceFilters
-	Describe            ssot.DataSourceDescribe
-	Hooks               ssot.DataSourceHooks
-	Additional          ssot.DataSourceGenerator
+	// ParametersAcrossLevels is set when the parameters of the data source cover the levels of more than one variant.
+	ParametersAcrossLevels bool
+	Filters                ssot.DataSourceFilters
+	Describe               ssot.DataSourceDescribe
+	Hooks                  ssot.DataSourceHooks
+	Additional             ssot.DataSourceGenerator
 	*genhelpers.PreambleModel
 }
 
@@ -76,6 +78,21 @@ func (m DataSourceModel) DescribeOutputDescription() string {
 	return joinDescription("Holds the output of DESCRIBE "+m.DescribeSql+".", m.Additional.AdditionalDescribeOutputDescription)
 }
 
+// ParametersSchemaExpr is the schema of the parameters block. Across levels it is the hand-written union of all of them.
+func (m DataSourceModel) ParametersSchemaExpr() string {
+	if m.ParametersAcrossLevels {
+		return "schemas.ShowAll" + m.Name + "ParametersSchema()"
+	}
+	return "schemas.Show" + m.Name + "ParametersSchema"
+}
+
+func (m DataSourceModel) ParametersMapperName() string {
+	if m.ParametersAcrossLevels {
+		return "All" + m.Name + "ParametersToSchema"
+	}
+	return m.Name + "ParametersToSchema"
+}
+
 func (m DataSourceModel) ParametersOutputDescription() string {
 	return joinDescription("Holds the output of SHOW PARAMETERS FOR "+m.ObjectType+".", m.Additional.AdditionalParametersOutputDescription)
 }
@@ -95,18 +112,19 @@ func (m DataSourceModel) HasFilters() bool {
 func ModelFromInputObject(input DataSourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) DataSourceModel {
 	sdkConfig := input.SdkConfig()
 	return DataSourceModel{
-		Name:                input.Name,
-		NamePlural:          input.NamePlural,
-		ObjectType:          input.ObjectType(),
-		ShowSql:             sdkConfig.ShowSql,
-		ShowDoc:             sdkConfig.ShowDoc,
-		DescribeSql:         sdkConfig.DescribeSql,
-		DescribeDetailsName: input.DescribeDetailsName,
-		PreviewFeature:      input.PreviewFeature,
-		Filters:             input.DataSourceFilters(),
-		Describe:            input.DataSourceDescribe(),
-		Hooks:               input.EffectiveDataSourceHooks(),
-		Additional:          ssot.ObjectGenerators(input.Generators...).DataSource,
-		PreambleModel:       preamble,
+		Name:                   input.Name,
+		NamePlural:             input.NamePlural,
+		ObjectType:             input.ObjectType(),
+		ShowSql:                sdkConfig.ShowSql,
+		ShowDoc:                sdkConfig.ShowDoc,
+		DescribeSql:            sdkConfig.DescribeSql,
+		DescribeDetailsName:    input.DescribeDetailsName,
+		PreviewFeature:         input.PreviewFeature,
+		ParametersAcrossLevels: len(input.ShowParametersDetailsAdditionalLevels) > 0,
+		Filters:                input.DataSourceFilters(),
+		Describe:               input.DataSourceDescribe(),
+		Hooks:                  input.EffectiveDataSourceHooks(),
+		Additional:             ssot.ObjectGenerators(input.Generators...).DataSource,
+		PreambleModel:          preamble,
 	}
 }

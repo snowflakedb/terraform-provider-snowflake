@@ -1,6 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
 {{- if .Hooks.ParametersOutputSet.Generate -}}
-			parametersOutput = []map[string]any{schemas.{{ .Name }}ParametersToSchema(parameters, providerCtx)}
+			parametersOutput = []map[string]any{schemas.{{ .ParametersMapperName }}(parameters, providerCtx)}
 {{ else if .Hooks.ParametersOutputSet.Present -}}
 			parametersOutput = {{ .Prefix }}ParametersOutputSetExt(parameters)
 {{ end -}}

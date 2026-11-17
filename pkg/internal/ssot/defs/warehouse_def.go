@@ -348,6 +348,8 @@ var Warehouse = ssot.Object{
 				ssot.ObjectAssertDescribe(),
 			),
 		),
+		// TODO [SNOW-4491301]: offer starts_with and limit when Snowflake applies STARTS WITH and LIMIT in SHOW WAREHOUSES; it ignores them today.
+		ssot.WithDataSource(ssot.DataSourceWithoutFilters(ssot.DataSourceFilterStartsWith, ssot.DataSourceFilterLimit)),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkSuspendIfStarted(),

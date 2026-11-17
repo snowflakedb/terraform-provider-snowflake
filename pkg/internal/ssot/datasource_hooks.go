@@ -119,12 +119,13 @@ type DataSourceFilters struct {
 
 func (obj Object) DataSourceFilters() DataSourceFilters {
 	cfg := obj.SdkConfig()
+	generator := ObjectGenerators(obj.Generators...).DataSource
 	filters := DataSourceFilters{
 		Like:       cfg.ShowOptionalLike,
-		StartsWith: cfg.ShowOptionalStartsWith,
-		Limit:      cfg.ShowOptionalLimitFrom || cfg.ShowOptionalLimit,
+		StartsWith: cfg.ShowOptionalStartsWith && !slices.Contains(generator.WithoutFilters, DataSourceFilterStartsWith),
+		Limit:      (cfg.ShowOptionalLimitFrom || cfg.ShowOptionalLimit) && !slices.Contains(generator.WithoutFilters, DataSourceFilterLimit),
 		On:         cfg.ShowOptionalOn,
-		Terse:      cfg.ShowTerse && ObjectGenerators(obj.Generators...).DataSource.WithTerse,
+		Terse:      cfg.ShowTerse && generator.WithTerse,
 		History:    slices.Contains(cfg.ShowOptionalSql, "HISTORY"),
 	}
 	switch {

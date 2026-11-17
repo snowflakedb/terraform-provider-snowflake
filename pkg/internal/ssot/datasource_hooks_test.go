@@ -125,6 +125,13 @@ func Test_Object_DataSourceFilters(t *testing.T) {
 		obj = dataSourceTestObject(WithSdk(SdkShow(SdkShowTerse(), SdkShowOptionalLike())), WithDataSource(DataSourceWithTerse()))
 		require.Equal(t, DataSourceFilters{Like: true, Terse: true}, obj.DataSourceFilters())
 	})
+	t.Run("starts with and limit can be left out", func(t *testing.T) {
+		show := SdkShow(SdkShowOptionalLike(), SdkShowOptionalStartsWith(), SdkShowOptionalLimitFrom())
+		obj := dataSourceTestObject(WithSdk(show), WithDataSource(DataSourceWithoutFilters(DataSourceFilterStartsWith)))
+		require.Equal(t, DataSourceFilters{Like: true, Limit: true}, obj.DataSourceFilters())
+		obj = dataSourceTestObject(WithSdk(show), WithDataSource(DataSourceWithoutFilters(DataSourceFilterStartsWith, DataSourceFilterLimit)))
+		require.Equal(t, DataSourceFilters{Like: true}, obj.DataSourceFilters())
+	})
 	t.Run("in flavors", func(t *testing.T) {
 		require.Equal(t, DataSourceInPlain, dataSourceTestObject(WithSdk(SdkShow(SdkShowOptionalIn()))).DataSourceFilters().In)
 		require.Equal(t, DataSourceInAccount, dataSourceTestObject(WithSdk(SdkShow(SdkShowOptionalInAccount()))).DataSourceFilters().In)

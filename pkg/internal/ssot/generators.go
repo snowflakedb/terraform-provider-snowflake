@@ -149,7 +149,17 @@ type DataSourceGenerator struct {
 	AdditionalParametersOutputDescription string
 	// WithTerse offers the terse filter in the data source. It is left out by default.
 	WithTerse bool
+	// WithoutFilters are the filters of the SDK SHOW request that the data source does not offer.
+	WithoutFilters []DataSourceFilter
 }
+
+// DataSourceFilter is a filter that a data source can leave out.
+type DataSourceFilter string
+
+const (
+	DataSourceFilterStartsWith DataSourceFilter = "starts_with"
+	DataSourceFilterLimit      DataSourceFilter = "limit"
+)
 
 type ResourceAssertGenerator struct {
 	Enabled bool
@@ -638,6 +648,11 @@ func DataSourceAdditionalParametersOutputDescription(text string) DataSourceOpti
 // DataSourceWithTerse offers `terse` in the data source. It is left out by default, because the data sources do not offer it in general.
 func DataSourceWithTerse() DataSourceOption {
 	return func(g *DataSourceGenerator) { g.WithTerse = true }
+}
+
+// DataSourceWithoutFilters leaves filters out of the data source, for example while Snowflake ignores them in SHOW.
+func DataSourceWithoutFilters(filters ...DataSourceFilter) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.WithoutFilters = append(g.WithoutFilters, filters...) }
 }
 
 // WithDataSource enables data source generation for this object.

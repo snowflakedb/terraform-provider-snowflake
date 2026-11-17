@@ -752,11 +752,13 @@ The data source follows the object, so a definition lists only the exceptions:
 - Filters are the options of the SDK SHOW: `like`, `starts_with`, `limit`, one `in` flavour (`In`, `ExtendedIn` or
   `InAccount`), `on`, `terse` and `history`. The data source cannot offer a filter that the SDK request does not have. The
   shared schemas and handlers are in `pkg/datasources/common.go`, and a new filter flavour starts there.
-  `terse` is left out unless the definition opts in with `WithDataSource(DataSourceWithTerse())`.
+  `terse` is left out unless the definition opts in with `WithDataSource(DataSourceWithTerse())`. A filter that Snowflake
+  ignores in SHOW is left out with `WithDataSource(DataSourceWithoutFilters(DataSourceFilterStartsWith, …))`.
 - `with_describe` and `describe_output` exist when the SDK has DESCRIBE and the object has `Describe.Columns`. The call is
   `DescribeDetails` when the SDK emits it, otherwise `Describe`.
 - `with_parameters` and `parameters` exist when the SDK has `SdkShowParameters()`. The parameters schema and mapper are
-  written by hand in `pkg/schemas`.
+  written by hand in `pkg/schemas`. An object with `ShowParametersDetailsAdditionalLevels` covers the parameters of its
+  variants, so the data source uses the union: `ShowAll<Name>ParametersSchema()` and `All<Name>ParametersToSchema`.
 - A base uses its own show and describe schemas. Columns that belong to a variant are part of them.
 - The descriptions name the object. The show, describe and parameters blocks can end with an additional description,
   set as `WithDataSource(DataSourceAdditionalShowOutputDescription("…"))`, or the describe and parameters variants. It is
