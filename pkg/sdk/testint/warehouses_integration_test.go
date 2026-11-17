@@ -1276,7 +1276,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasSize(sdk.WarehouseSizeXSmall).
 				HasMaxClusterCount(1).
 				HasMinClusterCount(1).
-				HasAutoSuspend(86400).
+				HasAutoSuspend(3600).
 				HasAutoResume(true).
 				HasTables(),
 		)
@@ -1328,7 +1328,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasSize(sdk.WarehouseSizeXSmall).
 				HasMaxClusterCount(1).
 				HasMinClusterCount(1).
-				HasAutoSuspend(86400).
+				HasAutoSuspend(3600).
 				HasAutoResume(true).
 				HasTables(table1.ID(), table2.ID()),
 		)
