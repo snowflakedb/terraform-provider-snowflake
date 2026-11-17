@@ -69,7 +69,6 @@ var ExternalVolumeStorageLocationAttrs = struct {
 		Type:        ssot.AttrString,
 		Required:    true,
 		Description: "Specifies the base URL for your cloud storage location.",
-		CreateSql:   ssot.Clause(),
 	},
 	AwsRoleArn: ssot.Attribute{
 		Name:        "storage_aws_role_arn",
@@ -81,7 +80,6 @@ var ExternalVolumeStorageLocationAttrs = struct {
 		Name:        "storage_aws_external_id",
 		Type:        ssot.AttrString,
 		Description: "External ID that Snowflake uses to establish a trust relationship with AWS.",
-		CreateSql:   ssot.Clause(),
 	},
 	EncryptionType: ssot.Attribute{
 		Name:        "encryption_type",
@@ -99,13 +97,11 @@ var ExternalVolumeStorageLocationAttrs = struct {
 		Name:        "storage_aws_access_point_arn",
 		Type:        ssot.AttrString,
 		Description: "Specifies the access point ARN for the S3 bucket containing your data files. Only applicable for S3 and S3GOV storage providers.",
-		CreateSql:   ssot.Clause(),
 	},
 	UsePrivatelinkEndpoint: ssot.Attribute{
 		Name:        "use_privatelink_endpoint",
 		Type:        ssot.AttrBool,
 		Description: "Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers.",
-		CreateSql:   ssot.Clause(),
 	},
 	AzureTenantId: ssot.Attribute{
 		Name:        "azure_tenant_id",
@@ -206,17 +202,15 @@ var ExternalVolumeAttrs = struct {
 	PropertyDefault ssot.Attribute
 }{
 	Comment: ssot.Attribute{
-		Name:          "comment",
-		Type:          ssot.AttrString,
-		Description:   "Specifies a comment for the external volume.",
-		OptionalInDb:  true,
-		CreateMapping: ssot.StringAttributeCreateBuilder,
+		Name:         "comment",
+		Type:         ssot.AttrString,
+		Description:  "Specifies a comment for the external volume.",
+		OptionalInDb: true,
 	},
 	AllowWrites: ssot.Attribute{
-		Name:          "allow_writes",
-		Type:          ssot.AttrBool,
-		Description:   "Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog.",
-		CreateMapping: ssot.BooleanStringAttributeCreateBuilder,
+		Name:        "allow_writes",
+		Type:        ssot.AttrBool,
+		Description: "Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog.",
 		// The object has no UNSET for it, so a removed value is set to the default, which is true.
 		UpdateMapping: ssot.BooleanStringAttributeUnsetFallbackUpdate(true),
 	},

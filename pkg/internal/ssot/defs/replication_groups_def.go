@@ -93,16 +93,15 @@ func replicationGroupIdList(idType string, required bool) ssot.SqlClause {
 }
 
 func replicationGroupMoveList(name, sql string) ssot.Attribute {
+	opts := []ssot.SqlClauseOption{ssot.NoParentheses(), ssot.NoEquals()}
+	if sql != "" {
+		opts = append([]ssot.SqlClauseOption{ssot.Sql(sql)}, opts...)
+	}
 	return ssot.Attribute{
-		Name: name,
-		Type: ssot.AttrList,
-		Elem: &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
-		CreateSql: ssot.ListParameter(
-			"AccountObjectIdentifier",
-			ssot.Sql(sql),
-			ssot.NoParentheses(),
-			ssot.NoEquals(),
-		),
+		Name:      name,
+		Type:      ssot.AttrList,
+		Elem:      &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql: ssot.ListParameter("AccountObjectIdentifier", opts...),
 	}
 }
 
@@ -326,9 +325,9 @@ var replicationGroupMove = ssot.Attribute{
 	SqlOnly:   true,
 	CreateSql: ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
-		replicationGroupMoveList("databases", "DATABASES"),
+		replicationGroupMoveList("databases", ""),
 		replicationGroupMoveList("external_volumes", "EXTERNAL VOLUMES"),
-		replicationGroupMoveList("shares", "SHARES"),
+		replicationGroupMoveList("shares", ""),
 		{
 			Name:           "to",
 			Type:           ssot.AttrIdentifier,
@@ -382,7 +381,7 @@ var replicationGroupSuspend = ssot.Attribute{
 	Children: []ssot.Attribute{{
 		Name:      "immediate",
 		Type:      ssot.AttrBool,
-		CreateSql: ssot.BoolKeyword(ssot.Sql("IMMEDIATE")),
+		CreateSql: ssot.BoolKeyword(),
 	}},
 }
 

@@ -66,7 +66,7 @@ var catalogIntegrationSetAttrs = struct {
 		Name:    "set_bearer_rest_authentication",
 		Type:    ssot.AttrObject,
 		SqlOnly: true,
-		SetSql:  ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("SetBearerRestAuthentication")),
+		SetSql:  ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			{Name: "bearer_token", Type: ssot.AttrString, Required: true},
 		},

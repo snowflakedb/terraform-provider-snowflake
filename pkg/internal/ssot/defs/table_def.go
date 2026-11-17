@@ -578,7 +578,7 @@ var TableCreateAttrs = struct {
 				Required:  true,
 				SqlOnly:   true,
 				Elem:      &ssot.Attribute{Type: ssot.AttrString},
-				CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("ON")),
+				CreateSql: ssot.StringListKeyword(ssot.Parentheses()),
 			},
 		},
 	},

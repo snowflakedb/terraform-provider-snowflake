@@ -95,16 +95,15 @@ func failoverGroupIdList(idType string, required bool) ssot.SqlClause {
 }
 
 func failoverGroupMoveList(name, sql string) ssot.Attribute {
+	opts := []ssot.SqlClauseOption{ssot.NoParentheses(), ssot.NoEquals()}
+	if sql != "" {
+		opts = append([]ssot.SqlClauseOption{ssot.Sql(sql)}, opts...)
+	}
 	return ssot.Attribute{
-		Name: name,
-		Type: ssot.AttrList,
-		Elem: &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
-		CreateSql: ssot.ListParameter(
-			"AccountObjectIdentifier",
-			ssot.Sql(sql),
-			ssot.NoParentheses(),
-			ssot.NoEquals(),
-		),
+		Name:      name,
+		Type:      ssot.AttrList,
+		Elem:      &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql: ssot.ListParameter("AccountObjectIdentifier", opts...),
 	}
 }
 
@@ -161,7 +160,6 @@ var FailoverGroupAttrs = struct {
 		Type:          ssot.AttrSet,
 		Required:      true,
 		CreateMapping: ssot.ListValueCreate("toFailoverGroupObjectTypes"),
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toFailoverGroupObjectTypes"),
 		Description:   "Types of objects for which replication and failover from the source account to the target accounts is enabled.",
 		Elem:          &ssot.Attribute{Type: ssot.AttrEnum, Enum: FailoverGroupObjectType},
 		// CSV. NULL or empty when a secondary group lists none. The plain field stays a slice.
@@ -206,12 +204,11 @@ var FailoverGroupAttrs = struct {
 		// SHOW prints short tokens such as API and EXTERNAL_ACCESS. Those tokens are mapped to the
 		// create-page values (the handwritten converter replaces underscores and appends " INTEGRATIONS").
 		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
-		OptionalInDb:  true,
-		SkipInSchema:  true,
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toFailoverGroupAllowedIntegrationTypes"),
-		CustomParser:  "ParseCommaSeparatedFailoverGroupIntegrationTypeArray",
-		CreateSql:     failoverGroupEnumList(FailoverGroupIntegrationType, false),
-		SetSql:        failoverGroupEnumList(FailoverGroupIntegrationType, false),
+		OptionalInDb: true,
+		SkipInSchema: true,
+		CustomParser: "ParseCommaSeparatedFailoverGroupIntegrationTypeArray",
+		CreateSql:    failoverGroupEnumList(FailoverGroupIntegrationType, false),
+		SetSql:       failoverGroupEnumList(FailoverGroupIntegrationType, false),
 	},
 	AllowedAccounts: ssot.Attribute{
 		Name:          "allowed_accounts",
@@ -249,7 +246,6 @@ var FailoverGroupAttrs = struct {
 		Type:          ssot.AttrBool,
 		NativeBool:    true,
 		Description:   "Specifies whether the failover group uses Optimized Refresh. Set on the primary failover group only. When true, a `replication_schedule` with an interval of 6 hours or less is required (Snowflake recommends `10 MINUTE` or less). Cannot be set together with `rpo_assurance`.",
-		CreateSql:     ssot.BoolParameter(),
 	},
 	RpoAssurance: ssot.Attribute{
 		// See ReplicationSchedule and OptimizedRefresh.
@@ -352,9 +348,9 @@ var failoverGroupMove = ssot.Attribute{
 	SqlOnly:   true,
 	CreateSql: ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
-		failoverGroupMoveList("databases", "DATABASES"),
+		failoverGroupMoveList("databases", ""),
 		failoverGroupMoveList("external_volumes", "EXTERNAL VOLUMES"),
-		failoverGroupMoveList("shares", "SHARES"),
+		failoverGroupMoveList("shares", ""),
 		{
 			Name:           "to",
 			Type:           ssot.AttrIdentifier,
@@ -408,7 +404,7 @@ var failoverGroupSuspend = ssot.Attribute{
 	Children: []ssot.Attribute{{
 		Name:      "immediate",
 		Type:      ssot.AttrBool,
-		CreateSql: ssot.BoolKeyword(ssot.Sql("IMMEDIATE")),
+		CreateSql: ssot.BoolKeyword(),
 	}},
 }
 

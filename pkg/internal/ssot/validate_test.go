@@ -1247,9 +1247,13 @@ func Test_ValidateObject_objectListVariants(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "key_id" is not a child of the element`, func() {
 		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &keyId))), baseUrl))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "key_id" has no CREATE clause`, func() {
-		noClause := Attribute{Name: "key_id", Type: AttrString}
-		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &noClause))), baseUrl))
+	require.NotPanics(t, func() {
+		plain := Attribute{Name: "key_id", Type: AttrString}
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &plain))), plain))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "when" has no CREATE clause`, func() {
+		when := Attribute{Name: "when", Type: AttrTime}
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &when))), when))
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "block" needs Children`, func() {
 		block := Attribute{Name: "block", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter()}

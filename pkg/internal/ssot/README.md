@@ -67,11 +67,13 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   field is the unexported Go name and the SQL is the ddl text, such as `WAREHOUSE_TYPE = 'ADAPTIVE'`.
 - `ShowName` - SHOW/DESCRIBE key when it differs from the resource name (`for_application` → `application`).
   `Name` stays the resource attribute and the CREATE field. `OutputKey()` is `ShowName` or `Name`.
+  Leave `ShowName` unset when it equals `Name`.
   `FieldName` on a clause renames the SDK request field. It is not how the output column is named.
 - `SchemaName` - the Terraform schema key when it differs from the snake_case of the Go field (`null?` is published as
-  `is_nullable`). Empty keeps that snake_case. It does not change the Go field, the `db` tag, or `OutputKey()`.
+  `is_nullable`). Empty keeps that snake_case. Leave `SchemaName` unset when it equals that snake_case. It does not change the Go field, the `db` tag, or `OutputKey()`.
+- `ShowEnum` - the SHOW, DESCRIBE, and CREATE/SET enum when it differs from `Enum`. Empty uses `Enum`. Resource schema and model builders keep `Enum`. Leave `ShowEnum` unset when it is `Enum`.
 - `CreateMapping` - overrides the create helper a generated `ApplyCreateOptionals` deduces for the attribute. Leave it
-  nil, including on nested fields, unless the deduced call does not match the SDK request. The helpers are in
+  nil, including on nested fields, unless the deduced call does not match the SDK request. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when an explicit mapping equals that call, including `sdk.To<Enum>` and `to<Object><Field>`. The helpers are in
   `pkg/resources/resource_helpers_create.go`. Without a mapping, an optional field is deduced from its type and the
   schema default: a string, an int, a `NativeBool` (`boolAttributeCreateBuilder`), a boolean-string when the default is `BooleanDefault`, an enum (`attributeMappedValueCreateBuilder` with `sdk.To<Enum>`), or
   `AccountObjectIdentifier` (by its own `IdentifierType`) uses its builder. A list with `Elem` calls `listValueCreate`,
@@ -425,7 +427,7 @@ enable nothing.
   fields first, then the other fields in the struct.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
-  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
+  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, or `ShowEnum`. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of the UNSET block
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
@@ -936,7 +938,7 @@ Until a piece has moved, do not assume it is already in ssot:
   ShowByID filtering, the ShowByID find predicate, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
   handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
-  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
+  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, or `ShowEnum`. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
   ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). The SET and UNSET groups are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
   When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is

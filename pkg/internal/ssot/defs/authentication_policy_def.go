@@ -336,7 +336,6 @@ var AuthenticationPolicyAttrs = struct {
 		UpdateMapping: ssot.SetValueUpdate("toAuthenticationPolicyClientPolicy"),
 		Type:          ssot.AttrSet,
 		Description:   "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
-		CreateSql:     ssot.ListOfObjects(ssot.Sql("CLIENT_POLICY"), ssot.Parentheses()),
 		Elem: &ssot.Attribute{
 			Type:      ssot.AttrObject,
 			CreateSql: ssot.ObjectParameter(),

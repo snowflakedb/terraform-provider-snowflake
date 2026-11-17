@@ -100,11 +100,6 @@ func Test_constructorArg(t *testing.T) {
 }
 
 // TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
-func Test_collectionMapperName(t *testing.T) {
-	require.Equal(t, "toComputePoolBackupInstanceFamilies", collectionMapperName("ComputePool", defs.ComputePoolAttrs.BackupInstanceFamilies))
-}
-
-// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_AuthenticationPolicySecurityIntegrationsCreateMapping(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.AuthenticationPolicy}, nil, nil)
 	var got *CreateOptionalCall

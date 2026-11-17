@@ -95,7 +95,7 @@ var (
 		CreateSql: ssot.ObjectParameter(),
 		Children: []ssot.Attribute{
 			ssot.WithCreateSql(&ShareAttrs.Accounts, ssot.PlainParameter(ssot.Required())),
-			{Name: "share_restrictions", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolParameter()},
+			{Name: "share_restrictions", Type: ssot.AttrBool, SqlOnly: true},
 		},
 	}
 	shareRemoveAccounts = ssot.Attribute{
