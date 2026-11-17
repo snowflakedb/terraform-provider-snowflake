@@ -2,7 +2,7 @@
 page_title: "snowflake_warehouses Data Source - terraform-provider-snowflake"
 subcategory: "Stable"
 description: |-
-  Data source used to get details of filtered warehouses. Filtering is aligned with the current possibilities for SHOW WAREHOUSES https://docs.snowflake.com/en/sql-reference/sql/show-warehouses query (only like is supported). The results of SHOW, DESCRIBE, and SHOW PARAMETERS IN are encapsulated in one output collection.
+  Data source used to get details of filtered warehouses. Filtering is aligned with the current possibilities for SHOW WAREHOUSES https://docs.snowflake.com/en/sql-reference/sql/show-warehouses query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection warehouses.
 ---
 
 
@@ -10,7 +10,7 @@ description: |-
 
 # snowflake_warehouses (Data Source)
 
-Data source used to get details of filtered warehouses. Filtering is aligned with the current possibilities for [SHOW WAREHOUSES](https://docs.snowflake.com/en/sql-reference/sql/show-warehouses) query (only `like` is supported). The results of SHOW, DESCRIBE, and SHOW PARAMETERS IN are encapsulated in one output collection.
+Data source used to get details of filtered warehouses. Filtering is aligned with the current possibilities for [SHOW WAREHOUSES](https://docs.snowflake.com/en/sql-reference/sql/show-warehouses) query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `warehouses`.
 
 ## Example Usage
 
@@ -86,8 +86,8 @@ check "warehouse_check" {
 ### Optional
 
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
-- `with_describe` (Boolean) (Default: `true`) Runs DESC WAREHOUSE for each warehouse returned by SHOW WAREHOUSES. The output of describe is saved to the description field. By default this value is set to true.
-- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR WAREHOUSE for each warehouse returned by SHOW WAREHOUSES. The output of describe is saved to the parameters field as a map. By default this value is set to true.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC WAREHOUSE for each warehouse returned by SHOW WAREHOUSES. The output of describe is saved to the describe_output field. By default this value is set to true.
+- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR WAREHOUSE for each warehouse returned by SHOW WAREHOUSES. The output of SHOW PARAMETERS is saved to the parameters field as a map. By default this value is set to true.
 
 ### Read-Only
 
