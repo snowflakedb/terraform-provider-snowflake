@@ -33,9 +33,10 @@ func TestAcc_ExternalVolumes_BasicUseCase_DifferentFiltering(t *testing.T) {
 		}},
 	}
 
-	_, cleanupOne := testClient().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(idOne, storageLocations))
+	commentOne, commentTwo := random.Comment(), random.Comment()
+	_, cleanupOne := testClient().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(idOne, storageLocations).WithComment(commentOne))
 	t.Cleanup(cleanupOne)
-	_, cleanupTwo := testClient().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(idTwo, storageLocations))
+	_, cleanupTwo := testClient().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(idTwo, storageLocations).WithComment(commentTwo))
 	t.Cleanup(cleanupTwo)
 	_, cleanupThree := testClient().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(idThree, storageLocations))
 	t.Cleanup(cleanupThree)
@@ -46,6 +47,17 @@ func TestAcc_ExternalVolumes_BasicUseCase_DifferentFiltering(t *testing.T) {
 
 	externalVolumesModelLikePrefix := datasourcemodel.ExternalVolumes("test").
 		WithLike(prefix + "%").
+		WithWithDescribe(false)
+
+	externalVolumesModelLikePrefixWithDescribe := datasourcemodel.ExternalVolumes("test").
+		WithLike(prefix + "%")
+
+	otherCasePrefix := strings.ToUpper(prefix)
+	if otherCasePrefix == prefix {
+		otherCasePrefix = strings.ToLower(prefix)
+	}
+	externalVolumesModelLikeOtherCase := datasourcemodel.ExternalVolumes("test").
+		WithLike(otherCasePrefix + "%").
 		WithWithDescribe(false)
 
 	resource.Test(t, resource.TestCase{
@@ -66,6 +78,43 @@ func TestAcc_ExternalVolumes_BasicUseCase_DifferentFiltering(t *testing.T) {
 				Config: accconfig.FromModels(t, externalVolumesModelLikePrefix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(externalVolumesModelLikePrefix.DatasourceReference(), "external_volumes.#", "2"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefix.DatasourceReference(), "external_volumes.0.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefix.DatasourceReference(), "external_volumes.1.describe_output.#", "0"),
+				),
+			},
+			// with more than one result, every item holds its own show and describe output
+			{
+				Config: accconfig.FromModels(t, externalVolumesModelLikePrefixWithDescribe),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "id", "external_volumes_read"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.#", "2"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.show_output.0.comment",
+						externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.describe_output.0.comment",
+					),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.show_output.0.comment",
+						externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.describe_output.0.comment",
+					),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.describe_output.0.storage_locations.#", "1"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.describe_output.0.storage_locations.0.name", "my-s3-us-west-2"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.describe_output.0.storage_locations.0.storage_provider", string(sdk.S3StorageProviderS3)),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.describe_output.0.storage_locations.0.storage_base_url", "s3://my-example-bucket/"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.0.describe_output.0.storage_locations.0.s3_storage_location.0.storage_aws_role_arn", "arn:aws:iam::123456789012:role/myrole"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.describe_output.0.storage_locations.#", "1"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.describe_output.0.storage_locations.0.name", "my-s3-us-west-2"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.describe_output.0.storage_locations.0.storage_provider", string(sdk.S3StorageProviderS3)),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.describe_output.0.storage_locations.0.storage_base_url", "s3://my-example-bucket/"),
+					resource.TestCheckResourceAttr(externalVolumesModelLikePrefixWithDescribe.DatasourceReference(), "external_volumes.1.describe_output.0.storage_locations.0.s3_storage_location.0.storage_aws_role_arn", "arn:aws:iam::123456789012:role/myrole"),
+				),
+			},
+			// like is case-insensitive
+			{
+				Config: accconfig.FromModels(t, externalVolumesModelLikeOtherCase),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(externalVolumesModelLikeOtherCase.DatasourceReference(), "external_volumes.#", "2"),
 				),
 			},
 		},
