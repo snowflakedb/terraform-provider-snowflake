@@ -54,3 +54,27 @@ func (a *AuthenticationPoliciesModel) WithOnAccount() *AuthenticationPoliciesMod
 		}),
 	)
 }
+
+func (a *AuthenticationPoliciesModel) WithInSchema(schemaId sdk.DatabaseObjectIdentifier) *AuthenticationPoliciesModel {
+	return a.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"schema": tfconfig.StringVariable(schemaId.FullyQualifiedName()),
+		}),
+	)
+}
+
+func (a *AuthenticationPoliciesModel) WithInAccount() *AuthenticationPoliciesModel {
+	return a.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
+
+func (a *AuthenticationPoliciesModel) WithLimit(rows int) *AuthenticationPoliciesModel {
+	return a.WithLimitValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"rows": tfconfig.IntegerVariable(rows),
+		}),
+	)
+}
