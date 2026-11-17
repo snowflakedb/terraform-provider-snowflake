@@ -33,13 +33,14 @@ func TestAcc_FailoverGroups(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
 		Steps: []resource.TestStep{
 			{
-				Config: failoverGroupsConfig(failoverGroupId, currentAccountId, secondaryAccountId),
+				Config: failoverGroupsConfig(failoverGroupId, secondaryAccountId),
 				Check: resource.ComposeTestCheckFunc(
 					// Other failover groups may exist (parallel runs), so the group is found by its primary identifier.
 					resource.TestCheckTypeSetElemNestedAttrs("data.snowflake_failover_groups.d", "failover_groups.*", map[string]string{
-						"primary":            sdk.NewExternalObjectIdentifier(currentAccountId, failoverGroupId).FullyQualifiedName(),
-						"object_types.#":     "1",
-						"object_types.0":     "ROLES",
+						"primary":        sdk.NewExternalObjectIdentifier(currentAccountId, failoverGroupId).FullyQualifiedName(),
+						"object_types.#": "1",
+						"object_types.0": "ROLES",
+						// SHOW lists the source account too, so the data source reports two accounts for one configured target.
 						"allowed_accounts.#": "2",
 					}),
 				),
@@ -48,16 +49,16 @@ func TestAcc_FailoverGroups(t *testing.T) {
 	})
 }
 
-func failoverGroupsConfig(failoverGroupId sdk.AccountObjectIdentifier, currentAccountId sdk.AccountIdentifier, allowedAccountId sdk.AccountIdentifier) string {
+func failoverGroupsConfig(failoverGroupId sdk.AccountObjectIdentifier, allowedAccountId sdk.AccountIdentifier) string {
 	return fmt.Sprintf(`
 	resource "snowflake_failover_group" "source_failover_group" {
 		name                      = "%s"
 		object_types              = ["ROLES"]
-		allowed_accounts          = ["%s", "%s"]
+		allowed_accounts          = ["%s"]
 	}
 
 	data "snowflake_failover_groups" "d" {
 		depends_on = [snowflake_failover_group.source_failover_group]
 	}
-	`, failoverGroupId.Name(), currentAccountId.Name(), allowedAccountId.Name())
+	`, failoverGroupId.Name(), allowedAccountId.Name())
 }

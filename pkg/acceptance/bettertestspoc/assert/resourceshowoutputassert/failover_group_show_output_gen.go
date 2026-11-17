@@ -126,8 +126,13 @@ func (f *FailoverGroupShowOutputAssert) HasRpoAssurance(expected bool) *Failover
 	return f
 }
 
-func (f *FailoverGroupShowOutputAssert) HasReadOnly(expected bool) *FailoverGroupShowOutputAssert {
-	f.BoolValueSet("read_only", expected)
+func (f *FailoverGroupShowOutputAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *FailoverGroupShowOutputAssert {
+	f.StringValueSet("error_integration", expected.Name())
+	return f
+}
+
+func (f *FailoverGroupShowOutputAssert) HasIsPrimaryReadOnly(expected bool) *FailoverGroupShowOutputAssert {
+	f.BoolValueSet("is_primary_read_only", expected)
 	return f
 }
 
@@ -240,7 +245,12 @@ func (f *FailoverGroupShowOutputAssert) HasNoRpoAssurance() *FailoverGroupShowOu
 	return f
 }
 
-func (f *FailoverGroupShowOutputAssert) HasNoReadOnly() *FailoverGroupShowOutputAssert {
-	f.ValueNotSet("read_only")
+func (f *FailoverGroupShowOutputAssert) HasNoErrorIntegration() *FailoverGroupShowOutputAssert {
+	f.ValueNotSet("error_integration")
+	return f
+}
+
+func (f *FailoverGroupShowOutputAssert) HasNoIsPrimaryReadOnly() *FailoverGroupShowOutputAssert {
+	f.ValueNotSet("is_primary_read_only")
 	return f
 }

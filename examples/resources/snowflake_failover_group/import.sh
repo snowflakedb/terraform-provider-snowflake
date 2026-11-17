@@ -1,1 +1,1 @@
-terraform import snowflake_failover_group.example 'fg1'
+terraform import snowflake_failover_group.example '"<failover_group_name>"'

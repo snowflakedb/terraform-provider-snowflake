@@ -12,10 +12,12 @@ import (
 
 // CreateConstructorArg is one constructor argument of a create request, after the id for the object request.
 // Var is the local variable, Get is the d.Get expression, and a non-empty EnumName converts the value with sdk.To<EnumName>.
+// A non-empty Parser converts the value with that function, for an identifier the constructor takes as a typed value.
 type CreateConstructorArg struct {
 	Var      string
 	Get      string
 	EnumName string
+	Parser   string
 }
 
 // CreateOptionalCall is one create helper call on a request.
@@ -198,16 +200,20 @@ func constructorArg(scope createScope, src ssot.Attribute, resolved ResourceAttr
 	if src.CreateMapping != nil || !src.Required {
 		return nil, false
 	}
-	var cast string
+	var cast, parser string
 	switch src.Type {
 	case ssot.AttrInt:
 		cast = "int"
 	case ssot.AttrString:
 		cast = "string"
 	case ssot.AttrIdentifier:
-		// An account object name is one string. Nested identifiers stay handwritten.
+		// An account object name is one string. Another identifier is a typed constructor argument, parsed from the string.
+		// Inside a block, nested identifiers stay handwritten.
 		if src.IdentifierType == "AccountObjectIdentifier" {
 			cast = "string"
+		} else if src.IdentifierType != "" && !scope.inBlock {
+			cast = "string"
+			parser = "sdk.Parse" + src.IdentifierType
 		}
 	case ssot.AttrBool:
 		cast = "bool"
@@ -226,6 +232,7 @@ func constructorArg(scope createScope, src ssot.Attribute, resolved ResourceAttr
 		Var:      genhelpers.FirstLetterLowercase(genhelpers.SnakeCaseToCamel(src.Name)),
 		Get:      fmt.Sprintf("d.Get(%s).(%s)", scope.key(src.Name), cast),
 		EnumName: resolved.EnumName,
+		Parser:   parser,
 	}, true
 }
 

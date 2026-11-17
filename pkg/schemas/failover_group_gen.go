@@ -89,7 +89,11 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	"read_only": {
+	"error_integration": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"is_primary_read_only": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
@@ -128,8 +132,11 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	failoverGroupSchema["is_listing_auto_fulfillment_group"] = failoverGroup.IsListingAutoFulfillmentGroup
 	failoverGroupSchema["is_optimized_refresh_enabled"] = failoverGroup.IsOptimizedRefreshEnabled
 	failoverGroupSchema["rpo_assurance"] = failoverGroup.RpoAssurance
-	if failoverGroup.ReadOnly != nil {
-		failoverGroupSchema["read_only"] = (*failoverGroup.ReadOnly)
+	if failoverGroup.ErrorIntegration != nil {
+		failoverGroupSchema["error_integration"] = (*failoverGroup.ErrorIntegration).Name()
+	}
+	if failoverGroup.IsPrimaryReadOnly != nil {
+		failoverGroupSchema["is_primary_read_only"] = (*failoverGroup.IsPrimaryReadOnly)
 	}
 	return failoverGroupSchema
 }

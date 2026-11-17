@@ -11,9 +11,9 @@ import (
 var replicationGroupSecondaryAttributesSchema = map[string]*tfschema.Schema{
 	"primary": {
 		Type:             tfschema.TypeString,
-		Optional:         true,
+		Required:         true,
 		ForceNew:         true,
-		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("primary")),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 		Description:      "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
 	},
 	"is_primary": {

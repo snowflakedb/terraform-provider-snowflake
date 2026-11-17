@@ -176,7 +176,8 @@ type failoverGroupsRow struct {
 	IsListingAutoFulfillmentGroup bool           `db:"is_listing_auto_fulfillment_group"`
 	IsOptimizedRefreshEnabled     bool           `db:"is_optimized_refresh_enabled"`
 	RpoAssurance                  bool           `db:"rpo_assurance"`
-	ReadOnly                      sql.NullBool   `db:"read_only"`
+	ErrorIntegration              sql.NullString `db:"error_integration"`
+	IsPrimaryReadOnly             sql.NullBool   `db:"is_primary_read_only"`
 }
 
 type FailoverGroup struct {
@@ -201,7 +202,8 @@ type FailoverGroup struct {
 	IsListingAutoFulfillmentGroup bool
 	IsOptimizedRefreshEnabled     bool
 	RpoAssurance                  bool
-	ReadOnly                      *bool
+	ErrorIntegration              *AccountObjectIdentifier
+	IsPrimaryReadOnly             *bool
 }
 
 func (v *FailoverGroup) ID() AccountObjectIdentifier {

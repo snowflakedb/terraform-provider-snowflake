@@ -2,14 +2,14 @@
 page_title: "snowflake_failover_group Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Resource used to manage failover groups in the source account. To manage a failover group in a target account, use snowflake_failover_group_secondary. For more information, check failover group documentation https://docs.snowflake.com/en/sql-reference/sql/create-failover-group.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_failover_group (Resource)
 
-
+Resource used to manage failover groups in the source account. To manage a failover group in a target account, use `snowflake_failover_group_secondary`. For more information, check [failover group documentation](https://docs.snowflake.com/en/sql-reference/sql/create-failover-group).
 
 ## Example Usage
 
@@ -17,41 +17,60 @@ description: |-
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
-resource "snowflake_database" "db" {
-  name = "db1"
+## Minimal
+resource "snowflake_failover_group" "basic" {
+  name = "failover_group_name"
+  object_types = [
+    "DATABASES",
+  ]
+  allowed_accounts = [
+    "\"<organization_name>\".\"<account_name>\"",
+  ]
+  allowed_databases = [
+    snowflake_database.example.fully_qualified_name,
+  ]
 }
 
-resource "snowflake_failover_group" "source_failover_group" {
-  name                      = "FG1"
-  object_types              = ["WAREHOUSES", "DATABASES", "INTEGRATIONS", "ROLES"]
-  allowed_accounts          = ["<org_name>.<target_account_name1>", "<org_name>.<target_account_name2>"]
-  allowed_databases         = [snowflake_database.db.name]
-  allowed_integration_types = ["SECURITY INTEGRATIONS"]
-  replication_schedule {
-    cron {
-      expression = "0 0 10-20 * TUE,THU"
-      time_zone  = "UTC"
-    }
-
-    // replication_schedule could also be specified with interval instead of cron
-    // interval = 10
-  }
-}
-
-provider "snowflake" {
-  alias = "account2"
-}
-
-resource "snowflake_failover_group" "target_failover_group" {
-  provider = snowflake.account2
-  name     = "FG1"
-  from_replica {
-    organization_name   = "..."
-    source_account_name = "..."
-    name                = snowflake_failover_group.source_failover_group.name
-  }
+## Complete
+resource "snowflake_failover_group" "complete" {
+  name = "failover_group_name"
+  object_types = [
+    "DATABASES",
+    "ROLES",
+    "EXTERNAL VOLUMES",
+    "SHARES",
+    "INTEGRATIONS",
+  ]
+  allowed_accounts = [
+    "\"<organization_name>\".\"<account_name>\"",
+  ]
+  allowed_databases = [
+    snowflake_database.example.fully_qualified_name,
+  ]
+  allowed_external_volumes = [
+    snowflake_external_volume.example.fully_qualified_name,
+  ]
+  allowed_shares = [
+    snowflake_share.example.fully_qualified_name,
+  ]
+  allowed_integration_types = [
+    "API INTEGRATIONS",
+    "EXTERNAL ACCESS INTEGRATIONS",
+    "NOTIFICATION INTEGRATIONS",
+    "SECURITY INTEGRATIONS",
+    "STORAGE INTEGRATIONS",
+  ]
+  ignore_edition_check = true
+  # an interval in minutes ("10 MINUTE") or a cron expression with the time zone ("USING CRON 0 0 10-20 * TUE,THU UTC")
+  replication_schedule = "10 MINUTE"
+  # needs a replication schedule with an interval of 6 hours or less
+  optimized_refresh = true
+  error_integration = snowflake_notification_integration.example.fully_qualified_name
+  comment           = "My failover group"
 }
 ```
+
+-> **Note** Snowflake adds the source account to every failover group, and this resource leaves it out of `allowed_accounts`: list only the target accounts. A failover group that was created in the target account with `from_replica` is managed by [`snowflake_failover_group_secondary`](./failover_group_secondary) now. Moving the object is a manual state migration. See [resource migration](../guides/resource_migration).
 
 -> **Note** If a field has a default value, it is shown next to the type in the schema.
 
@@ -60,54 +79,31 @@ resource "snowflake_failover_group" "target_failover_group" {
 
 ### Required
 
-- `name` (String) Specifies the identifier for the failover group. The identifier must start with an alphabetic character and cannot contain spaces or special characters unless the identifier string is enclosed in double quotes (e.g. "My object"). Identifiers enclosed in double quotes are also case-sensitive.
+- `allowed_accounts` (Set of String) Target accounts, in the form `<organization_name>.<account_name>`, to which replication and failover is enabled. Snowflake adds the source account to every failover group, so do not list it.
+- `name` (String) Specifies the identifier for the failover group; must be unique for the account. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
+- `object_types` (Set of String) Types of objects for which replication and failover from the source account to the target accounts is enabled. Valid values are (case-insensitive): `ACCOUNT PARAMETERS` | `DATABASES` | `EXTERNAL VOLUMES` | `INTEGRATIONS` | `LISTINGS` | `NETWORK POLICIES` | `PROFILES` | `RESOURCE MONITORS` | `ROLES` | `SHARES` | `USERS` | `WAREHOUSES`.
 
 ### Optional
 
-- `allowed_accounts` (Set of String) Specifies the target account or list of target accounts to which replication and failover of specified objects from the source account is enabled. Secondary failover groups in the target accounts in this list can be promoted to serve as the primary failover group in case of failover. Expected in the form `<org_name>.<target_account_name>`. This value is case-sensitive.
-- `allowed_databases` (Set of String) Specifies the database or list of databases for which you are enabling replication and failover from the source account to the target account. The OBJECT_TYPES list must include DATABASES to set this parameter.
-- `allowed_integration_types` (Set of String) Type(s) of integrations for which you are enabling replication and failover from the source account to the target account. This property requires that the OBJECT_TYPES list include INTEGRATIONS to set this parameter. The following integration types are supported: "SECURITY INTEGRATIONS", "API INTEGRATIONS", "STORAGE INTEGRATIONS", "EXTERNAL ACCESS INTEGRATIONS", "NOTIFICATION INTEGRATIONS"
-- `allowed_shares` (Set of String) Specifies the share or list of shares for which you are enabling replication and failover from the source account to the target account. The OBJECT_TYPES list must include SHARES to set this parameter.
-- `from_replica` (Block List, Max: 1) Specifies the name of the replica to use as the source for the failover group. (see [below for nested schema](#nestedblock--from_replica))
-- `ignore_edition_check` (Boolean) (Default: `false`) Allows replicating objects to accounts on lower editions.
-- `object_types` (Set of String) Type(s) of objects for which you are enabling replication and failover from the source account to the target account. The following object types are supported: "ACCOUNT PARAMETERS", "DATABASES", "INTEGRATIONS", "NETWORK POLICIES", "RESOURCE MONITORS", "ROLES", "SHARES", "USERS", "WAREHOUSES"
-- `optimized_refresh` (Boolean) (Default: `false`) Specifies whether the failover group uses Optimized Refresh. Can be set on the primary failover group only. When true, a replication_schedule with an interval of 6 hours or less is required (Snowflake recommends 10 MINUTE or less). Do not set when rpo_assurance is true. Default: false.
-- `replication_schedule` (Block List, Max: 1) Specifies the schedule for refreshing secondary failover groups. (see [below for nested schema](#nestedblock--replication_schedule))
-- `rpo_assurance` (Boolean) (Default: `false`) Specifies whether the failover group uses RPO Assurance. Can be set on the primary failover group only. Cannot be set with replication_schedule (unset the schedule first). Enables Optimized Refresh automatically; do not also set optimized_refresh. Default: false.
+- `allowed_databases` (Set of String) Databases enabled for replication and failover. OBJECT_TYPES must include DATABASES.
+- `allowed_external_volumes` (Set of String) External volumes enabled for replication and failover. OBJECT_TYPES must include EXTERNAL VOLUMES. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
+- `allowed_integration_types` (Set of String) Integration types enabled for replication and failover. OBJECT_TYPES must include INTEGRATIONS. SECURITY INTEGRATIONS also requires ROLES. Valid values are (case-insensitive): `SECURITY INTEGRATIONS` | `API INTEGRATIONS` | `STORAGE INTEGRATIONS` | `EXTERNAL ACCESS INTEGRATIONS` | `NOTIFICATION INTEGRATIONS`.
+- `allowed_shares` (Set of String) Shares enabled for replication and failover. OBJECT_TYPES must include SHARES.
+- `comment` (String) Comment for the failover group.
+- `error_integration` (String) Notification integration that receives refresh error notifications.
+- `ignore_edition_check` (Boolean) Allows replicating objects to accounts on lower editions.
+- `optimized_refresh` (Boolean) Specifies whether the failover group uses Optimized Refresh. Set on the primary failover group only. When true, a `replication_schedule` with an interval of 6 hours or less is required (Snowflake recommends `10 MINUTE` or less). Cannot be set together with `rpo_assurance`.
+- `read_only` (Boolean) Enables the read-only mode of a primary failover group.
+- `replication_schedule` (String) Schedule for refreshing secondary failover groups. An interval (`<num> MINUTE`) or `USING CRON <expr> <time_zone>`. Remove the attribute to unset the schedule.
+- `rpo_assurance` (Boolean) Specifies whether the failover group uses RPO Assurance. Set on the primary failover group only. Needs no replication schedule, enables Optimized Refresh automatically, and cannot be set together with `optimized_refresh`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-
-<a id="nestedblock--from_replica"></a>
-### Nested Schema for `from_replica`
-
-Required:
-
-- `name` (String) Identifier for the primary failover group in the source account.
-- `organization_name` (String) Name of your Snowflake organization.
-- `source_account_name` (String) Source account from which you are enabling replication and failover of the specified objects.
-
-
-<a id="nestedblock--replication_schedule"></a>
-### Nested Schema for `replication_schedule`
-
-Optional:
-
-- `cron` (Block List, Max: 1) Specifies the cron expression for the replication schedule. The cron expression must be in the following format: "minute hour day-of-month month day-of-week". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday) (see [below for nested schema](#nestedblock--replication_schedule--cron))
-- `interval` (Number) Specifies the interval in minutes for the replication schedule. The interval must be greater than 0 and less than 1440 (24 hours).
-
-<a id="nestedblock--replication_schedule--cron"></a>
-### Nested Schema for `replication_schedule.cron`
-
-Required:
-
-- `expression` (String) Specifies the cron expression for the replication schedule. The cron expression must be in the following format: "minute hour day-of-month month day-of-week". The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)
-- `time_zone` (String) Specifies the time zone for secondary group refresh.
-
-
+- `is_primary` (Boolean) Indicates if the failover group is primary.
+- `show_output` (List of Object) Outputs the result of `SHOW FAILOVER GROUPS` for the given failover group. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -119,10 +115,38 @@ Optional:
 - `read` (String)
 - `update` (String)
 
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `account_locator` (String)
+- `account_name` (String)
+- `allowed_accounts` (Set of String)
+- `comment` (String)
+- `created_on` (String)
+- `error_integration` (String)
+- `is_listing_auto_fulfillment_group` (Boolean)
+- `is_optimized_refresh_enabled` (Boolean)
+- `is_primary` (Boolean)
+- `is_primary_read_only` (Boolean)
+- `name` (String)
+- `next_scheduled_refresh` (String)
+- `organization_name` (String)
+- `owner` (String)
+- `primary` (String)
+- `region_group` (String)
+- `replication_schedule` (String)
+- `rpo_assurance` (Boolean)
+- `secondary_state` (String)
+- `snowflake_region` (String)
+- `type` (String)
+
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-terraform import snowflake_failover_group.example 'fg1'
+terraform import snowflake_failover_group.example '"<failover_group_name>"'
 ```

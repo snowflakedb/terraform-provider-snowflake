@@ -66,6 +66,7 @@ var RepositoryLabels = []string{
 	"resource:external_table",
 	"resource:external_volume",
 	"resource:failover_group",
+	"resource:failover_group_secondary",
 	"resource:file_format",
 	"resource:file_format_avro",
 	"resource:file_format_csv",

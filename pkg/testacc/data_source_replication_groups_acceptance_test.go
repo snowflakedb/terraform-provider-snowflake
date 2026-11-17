@@ -304,7 +304,7 @@ func replicationGroupsShowOutput(
 			HasAccountLocator(testClient().GetAccountLocator()).
 			HasOrganizationName(sourceAccount.OrganizationName()).
 			HasIsListingAutoFulfillmentGroup(false).
-			HasReadOnly(false).
+			HasIsPrimaryReadOnly(false).
 			HasAllowedAccounts(sourceAccount.Name(), allowedAccount.Name()).
 			ToTerraformTestCheckFunc(t, testClient())(s)
 	}

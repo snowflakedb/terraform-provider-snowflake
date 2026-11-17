@@ -85,7 +85,7 @@ var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: suppressIdentifierQuoting,
+		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("error_integration")),
 		Description:      "Notification integration that receives refresh error notifications.",
 	},
 	"comment": {

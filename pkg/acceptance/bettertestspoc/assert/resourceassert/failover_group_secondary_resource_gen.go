@@ -43,6 +43,11 @@ func (f *FailoverGroupSecondaryResourceAssert) HasFullyQualifiedName(expected st
 	return f
 }
 
+func (f *FailoverGroupSecondaryResourceAssert) HasIsPrimary(expected bool) *FailoverGroupSecondaryResourceAssert {
+	f.BoolValueSet("is_primary", expected)
+	return f
+}
+
 func (f *FailoverGroupSecondaryResourceAssert) HasPrimary(expected string) *FailoverGroupSecondaryResourceAssert {
 	f.StringValueSet("primary", expected)
 	return f
@@ -67,6 +72,11 @@ func (f *FailoverGroupSecondaryResourceAssert) HasFullyQualifiedNameString(expec
 	return f
 }
 
+func (f *FailoverGroupSecondaryResourceAssert) HasIsPrimaryString(expected string) *FailoverGroupSecondaryResourceAssert {
+	f.ValueSet("is_primary", expected)
+	return f
+}
+
 func (f *FailoverGroupSecondaryResourceAssert) HasPrimaryString(expected string) *FailoverGroupSecondaryResourceAssert {
 	f.ValueSet("primary", expected)
 	return f
@@ -86,6 +96,11 @@ func (f *FailoverGroupSecondaryResourceAssert) HasNoFullyQualifiedName() *Failov
 	return f
 }
 
+func (f *FailoverGroupSecondaryResourceAssert) HasNoIsPrimary() *FailoverGroupSecondaryResourceAssert {
+	f.ValueNotSet("is_primary")
+	return f
+}
+
 func (f *FailoverGroupSecondaryResourceAssert) HasNoPrimary() *FailoverGroupSecondaryResourceAssert {
 	f.ValueNotSet("primary")
 	return f
@@ -100,8 +115,8 @@ func (f *FailoverGroupSecondaryResourceAssert) HasFullyQualifiedNameEmpty() *Fai
 	return f
 }
 
-func (f *FailoverGroupSecondaryResourceAssert) HasPrimaryEmpty() *FailoverGroupSecondaryResourceAssert {
-	f.ValueSet("primary", "")
+func (f *FailoverGroupSecondaryResourceAssert) HasIsPrimaryEmpty() *FailoverGroupSecondaryResourceAssert {
+	f.ValueSet("is_primary", "")
 	return f
 }
 
@@ -116,6 +131,11 @@ func (f *FailoverGroupSecondaryResourceAssert) HasNameNotEmpty() *FailoverGroupS
 
 func (f *FailoverGroupSecondaryResourceAssert) HasFullyQualifiedNameNotEmpty() *FailoverGroupSecondaryResourceAssert {
 	f.ValuePresent("fully_qualified_name")
+	return f
+}
+
+func (f *FailoverGroupSecondaryResourceAssert) HasIsPrimaryNotEmpty() *FailoverGroupSecondaryResourceAssert {
+	f.ValuePresent("is_primary")
 	return f
 }
 

@@ -74,6 +74,14 @@ func Test_constructorArg(t *testing.T) {
 	_, ok = arg(block, ssot.Attribute{Name: "schema_object", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true})
 	require.False(t, ok)
 
+	got, ok = arg(object, ssot.Attribute{Name: "primary", Type: ssot.AttrIdentifier, IdentifierType: "ExternalObjectIdentifier", Required: true})
+	require.True(t, ok)
+	require.Equal(t, &CreateConstructorArg{Var: "primary", Get: `d.Get("primary").(string)`, Parser: "sdk.ParseExternalObjectIdentifier"}, got)
+
+	got, ok = arg(object, ssot.Attribute{Name: "target_account", Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier", Required: true})
+	require.True(t, ok)
+	require.Equal(t, &CreateConstructorArg{Var: "targetAccount", Get: `d.Get("target_account").(string)`, Parser: "sdk.ParseAccountIdentifier"}, got)
+
 	got, ok = arg(block, ssot.Attribute{Name: "instance_family", Type: ssot.AttrEnum, Required: true, Enum: family})
 	require.True(t, ok)
 	require.Equal(t, &CreateConstructorArg{Var: "instanceFamily", Get: `d.Get(prefix+"instance_family").(string)`, EnumName: "ComputePoolInstanceFamily"}, got)

@@ -217,10 +217,13 @@ var ReplicationGroupAttrs = struct {
 		OptionalInDb:   true,
 		Description:    "Schedule for refreshing secondary replication groups. An interval (`<num> MINUTE`) or `USING CRON <expr> <time_zone>`. NULL when unset.",
 	},
+	// SHOW returns the integration name on a primary group and NULL on a secondary group. The documentation does not list the column.
 	ErrorIntegration: ssot.Attribute{
 		Name:           "error_integration",
 		Type:           ssot.AttrIdentifier,
 		IdentifierType: "AccountObjectIdentifier",
+		OptionalInShow: true,
+		OptionalInDb:   true,
 		Description:    "Notification integration that receives refresh error notifications.",
 		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 		SetSql:         ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
@@ -275,8 +278,10 @@ var ReplicationGroupAttrs = struct {
 	// Failover's handwritten SHOW row does not include these two columns. The replication group page does.
 	// TRUE/FALSE is a bool, matching is_primary on the same SHOW command.
 	IsListingAutoFulfillmentGroup: ssot.Attribute{Name: "is_listing_auto_fulfillment_group", Type: ssot.AttrBool, Readonly: true, Description: "TRUE when the group is used for Cross-Cloud Auto-Fulfillment."},
+	// The documentation lists the SHOW column as read_only, but SHOW returns is_primary_read_only.
 	ReadOnly: ssot.Attribute{
 		Name:           "read_only",
+		ShowName:       "is_primary_read_only",
 		Type:           ssot.AttrBool,
 		Readonly:       true,
 		OptionalInShow: true,
@@ -292,6 +297,7 @@ var replicationGroupAsReplicaOf = ssot.Attribute{
 	Name:           "primary",
 	Type:           ssot.AttrIdentifier,
 	IdentifierType: "ExternalObjectIdentifier",
+	Required:       true,
 	ForceNew:       true,
 	Description:    "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
 	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("AsReplicaOf")),
@@ -534,6 +540,7 @@ var ReplicationGroup = ssot.Object{
 			&ReplicationGroupAttrs.NextScheduledRefresh,
 			&ReplicationGroupAttrs.Owner,
 			&ReplicationGroupAttrs.IsListingAutoFulfillmentGroup,
+			&ReplicationGroupAttrs.ErrorIntegration,
 			&ReplicationGroupAttrs.ReadOnly,
 		},
 	},
@@ -562,7 +569,7 @@ var ReplicationGroupSecondary = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
-		ssot.WithNewCreateRequest(ssot.ExtCall()),
+		ssot.WithNewCreateRequest(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
@@ -572,7 +579,7 @@ var ReplicationGroupSecondary = ssot.Object{
 		ssot.WithApplySetUnset(ssot.Omitted()),
 		ssot.WithAlterSetInSdk(ssot.Omitted()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		ssot.WithSetConfigFields(ssot.Omitted()),
+		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
