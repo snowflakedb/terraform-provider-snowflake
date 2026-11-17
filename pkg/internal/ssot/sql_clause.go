@@ -2,6 +2,7 @@ package ssot
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -559,6 +560,7 @@ func (a Attribute) inSqlProjection(use ClauseUse) bool {
 
 // RuleFields are the Children that ChildrenRule is applied to: the CREATE fields of the SQL struct that are not a fixed
 // text, and not Required, in Children order. A child with no explicit clause uses the type default.
+// ChildrenRuleFields narrows them to the named Children.
 func (a Attribute) RuleFields() []Attribute {
 	return a.RuleFieldsFor(ClauseCreate)
 }
@@ -567,6 +569,9 @@ func (a Attribute) RuleFields() []Attribute {
 func (a Attribute) RuleFieldsFor(use ClauseUse) []Attribute {
 	return collections.Filter(a.NestedSqlFieldsFor(use), func(child Attribute) bool {
 		if child.Required {
+			return false
+		}
+		if len(a.ChildrenRuleFields) > 0 && !slices.Contains(a.ChildrenRuleFields, child.Name) {
 			return false
 		}
 		clause := child.rawSqlClause(use)

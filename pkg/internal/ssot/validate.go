@@ -454,6 +454,17 @@ func validateNestedShape(obj Object, attr Attribute) {
 			panic(fmt.Sprintf("object %q: attribute %q sets ChildrenRule and needs at least two Children that are fields", obj.Name, attr.Name))
 		}
 	}
+	if len(attr.ChildrenRuleFields) > 0 {
+		if attr.ChildrenRule == "" {
+			panic(fmt.Sprintf("object %q: attribute %q sets ChildrenRuleFields without ChildrenRule", obj.Name, attr.Name))
+		}
+		eligible := collections.Map(attr.RuleFields(), func(child Attribute) string { return child.Name })
+		for _, name := range attr.ChildrenRuleFields {
+			if !slices.Contains(eligible, name) {
+				panic(fmt.Sprintf("object %q: attribute %q has ChildrenRuleFields entry %q that is not a Child that is a field and not Required", obj.Name, attr.Name, name))
+			}
+		}
+	}
 	validateSqlOnlyConflicts(obj, attr)
 	if attr.Elem != nil && attr.Elem.Type == AttrObject {
 		if attr.Type != AttrList && attr.Type != AttrSet {

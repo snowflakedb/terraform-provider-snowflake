@@ -217,10 +217,10 @@ type TableColumnAlterDataType struct {
 }
 
 type TableConstraintAction struct {
-	Add    *OutOfLineConstraint         `ddl:"keyword" sql:"ADD"`
-	Rename *TableConstraintRenameAction `ddl:"keyword" sql:"RENAME CONSTRAINT"`
-	Alter  *TableConstraintAlterAction  `ddl:"keyword" sql:"ALTER"`
-	Drop   *TableConstraintDropAction   `ddl:"keyword" sql:"DROP"`
+	Add    *OutOfLineConstraint         `ddl:"list,no_comma" sql:"ADD"`
+	Rename *TableConstraintRenameAction `ddl:"list,no_comma" sql:"RENAME CONSTRAINT"`
+	Alter  *TableConstraintAlterAction  `ddl:"list,no_comma" sql:"ALTER"`
+	Drop   *TableConstraintDropAction   `ddl:"list,no_comma" sql:"DROP"`
 }
 
 type TableConstraintRenameAction struct {
@@ -233,7 +233,7 @@ type TableConstraintAlterAction struct {
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
-	Columns        []string `ddl:"keyword,parentheses"`
+	Columns        []string `ddl:"parameter,parentheses,no_equals"`
 	Enforced       *bool    `ddl:"keyword" sql:"ENFORCED"`
 	NotEnforced    *bool    `ddl:"keyword" sql:"NOT ENFORCED"`
 	Validate       *bool    `ddl:"keyword" sql:"VALIDATE"`
@@ -247,7 +247,7 @@ type TableConstraintDropAction struct {
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
-	Columns        []string `ddl:"keyword,parentheses"`
+	Columns        []string `ddl:"parameter,parentheses,no_equals"`
 	Cascade        *bool    `ddl:"keyword" sql:"CASCADE"`
 	Restrict       *bool    `ddl:"keyword" sql:"RESTRICT"`
 }
