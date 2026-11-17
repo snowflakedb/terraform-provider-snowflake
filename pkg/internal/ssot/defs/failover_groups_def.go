@@ -309,7 +309,7 @@ var FailoverGroupAttrs = struct {
 		Type:        ssot.AttrBool,
 		NativeBool:  true,
 		Readonly:    true,
-		Description: "Indicates if the failover group is primary.",
+		Description: "Indicates if the failover group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.",
 	},
 	OrganizationName: ssot.Attribute{Name: "organization_name", Type: ssot.AttrString, Readonly: true},
 	AccountLocator:   ssot.Attribute{Name: "account_locator", Type: ssot.AttrString, Readonly: true},
@@ -322,9 +322,8 @@ var FailoverGroupAttrs = struct {
 		OptionalInDb:   true,
 		Description:    "State of scheduled refresh: started or suspended. NULL when no replication schedule is set.",
 	},
-	// The page calls this a date and time. The handwritten row stores it as text, and the data source exposes that text, so it stays text.
-	// TODO [next PRs]: make it a time when the data source and the resource are reworked.
-	NextScheduledRefresh: ssot.Attribute{Name: "next_scheduled_refresh", Type: ssot.AttrString, Readonly: true, OptionalInDb: true},
+	// The page calls this a date and time. A nullable time is OptionalInDb only, so the plain field stays time.Time (the same as the replication group).
+	NextScheduledRefresh: ssot.Attribute{Name: "next_scheduled_refresh", Type: ssot.AttrTime, Readonly: true, OptionalInDb: true},
 	// Usually owner is not null, but the page says it is NULL when the group is in a different region.
 	Owner: ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true, OptionalInShow: true, OptionalInDb: true, Description: "Role with OWNERSHIP on the group. NULL when the group is in a different region."},
 	// The handwritten SHOW row does not include this column. The page does.
@@ -345,7 +344,8 @@ var failoverGroupAsReplicaOf = ssot.Attribute{
 	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("AsReplicaOf")),
 }
 
-// One MOVE statement sets one of the lists. AdditionalValidations checks that.
+// TODO [SNOW-4490849]: MOVE needs at least one of the three lists, but ChildrenRule also counts the always set `to`, so it cannot express this.
+// The SDK extension validates it. Move them here when validations can be declared in a better way.
 var failoverGroupMove = ssot.Attribute{
 	Name:      "move",
 	Type:      ssot.AttrObject,
@@ -364,7 +364,9 @@ var failoverGroupMove = ssot.Attribute{
 	},
 }
 
-// ADD and REMOVE each set one allowed list. IGNORE EDITION CHECK belongs only to ADD accounts.
+// TODO [SNOW-4490849]: ADD needs exactly one of the four lists, but ChildrenRule also counts ignore_edition_check, so it cannot express this.
+// IGNORE EDITION CHECK is allowed only together with allowed_accounts, a dependency between fields that no rule expresses.
+// The SDK extension validates both. Move them here when validations can be declared in a better way.
 var failoverGroupAdd = ssot.Attribute{
 	Name:      "add",
 	Type:      ssot.AttrObject,
@@ -384,10 +386,11 @@ var failoverGroupAdd = ssot.Attribute{
 }
 
 var failoverGroupRemove = ssot.Attribute{
-	Name:      "remove",
-	Type:      ssot.AttrObject,
-	SqlOnly:   true,
-	CreateSql: ssot.ObjectParameter(),
+	Name:         "remove",
+	Type:         ssot.AttrObject,
+	SqlOnly:      true,
+	ChildrenRule: ssot.ChildrenExactlyOne,
+	CreateSql:    ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		failoverGroupReverseIdentifierList("allowed_databases", "FROM ALLOWED_DATABASES", "AccountObjectIdentifier"),
 		failoverGroupReverseIdentifierList("allowed_external_volumes", "FROM ALLOWED_EXTERNAL_VOLUMES", "AccountObjectIdentifier"),
@@ -435,10 +438,12 @@ var FailoverGroup = ssot.Object{
 				ssot.SdkShowByIDPredicate(ssot.SdkShowByIDPredicateNameAndLocator),
 			),
 			// SET carries the page's mixes in one struct; its validations (the allowed lists need the matching OBJECT_TYPES value,
-			// OPTIMIZED_REFRESH and RPO_ASSURANCE conflict) are in the SDK ext. The page's ADD / MOVE / REMOVE rules (exactly one list) are
-			// not validated, like in the handwritten SDK.
-			// TODO [next PRs]: add them as SdkAlterAdditionalValidations.
-			ssot.SdkAlter(ssot.SdkAlterSetAdditionalValidations()),
+			// OPTIMIZED_REFRESH and RPO_ASSURANCE conflict) are in the SDK ext. The page's ADD / REMOVE rules (exactly one list), the MOVE rule
+			// (at least one list; Snowflake accepts several) and IGNORE EDITION CHECK only with ALLOWED_ACCOUNTS are validated in the SDK ext as well.
+			ssot.SdkAlter(
+				ssot.SdkAlterSetAdditionalValidations(),
+				ssot.SdkAlterAdditionalValidations(),
+			),
 			// The secondary CREATE (AS REPLICA OF) is emitted from FailoverGroupSecondary as CreateSecondary.
 			ssot.SdkCreateForVariants(),
 			// The target-account ALTER (REFRESH, PRIMARY, SUSPEND [IMMEDIATE], RESUME) is emitted from FailoverGroupSecondary as AlterSecondary.
@@ -447,12 +452,14 @@ var FailoverGroup = ssot.Object{
 			ssot.SdkCustomInterfaceMethods(),
 			// The page documents IF EXISTS and no pre-drop step. A primary group can be dropped only when no secondary group is linked to it.
 			ssot.SdkDrop(),
-			// The page has IF NOT EXISTS and no OR REPLACE (the same as the replication group page, whose integration tests confirm it).
-			// TODO [next PRs]: confirm both with the failover group integration tests (a second IF NOT EXISTS create leaves the first
-			// group in place; CREATE OR REPLACE is rejected by Snowflake) before treating them as verified.
-			// TODO [next PRs]: add the page's requirements (ALLOWED_* needs the matching OBJECT_TYPES value, SECURITY INTEGRATIONS needs ROLES)
-			// as SdkCreateAdditionalValidations; the handwritten SDK has none for CREATE and Snowflake rejects the mixes itself.
-			ssot.SdkCreate(ssot.SdkCreateWithoutOrReplace()),
+			// The page has IF NOT EXISTS and no OR REPLACE. The failover group integration tests confirm both: a second IF NOT EXISTS
+			// create leaves the first group in place, and Snowflake rejects CREATE OR REPLACE ("Failover group cannot be replaced").
+			// The page's requirements (each OBJECT_TYPES value and its ALLOWED_* list go together, SECURITY INTEGRATIONS needs ROLES)
+			// are validated in the SDK ext.
+			ssot.SdkCreate(
+				ssot.SdkCreateWithoutOrReplace(),
+				ssot.SdkCreateAdditionalValidations(),
+			),
 		),
 	},
 	CustomOperations: []ssot.CustomOperationSpec{
@@ -509,6 +516,7 @@ var FailoverGroup = ssot.Object{
 	// Listed in the extension; rejects the membership changes of a group that stays in the read-only mode.
 	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
 		"failoverGroupMembershipLockedInReadOnlyMode",
+		"failoverGroupRecreateWhenNotPrimary",
 	},
 	// is_primary is a computed attribute, not a resource attribute, so it stays out of CREATE and ALTER.
 	ComputedAttributes: []ssot.Attribute{
@@ -665,6 +673,9 @@ var FailoverGroupSecondary = ssot.Object{
 		),
 	},
 	// is_primary is a computed attribute, not a resource attribute, so it stays out of CREATE and ALTER.
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"failoverGroupSecondaryRecreateWhenPrimary",
+	},
 	ComputedAttributes: []ssot.Attribute{
 		FailoverGroupAttrs.IsPrimary,
 	},

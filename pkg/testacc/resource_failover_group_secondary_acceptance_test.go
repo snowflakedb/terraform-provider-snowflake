@@ -193,3 +193,67 @@ func failoverGroupSecondaryImportChecks(t *testing.T, id sdk.AccountObjectIdenti
 			HasPrimary(primary),
 	)
 }
+
+// A failover (a promotion of the replica) makes the managed group a primary. The resource is recreated as a replica of the configured primary then.
+func TestAcc_FailoverGroupSecondary_RecreateWhenExternallyPrimary(t *testing.T) {
+	targetAccount := testClient().Account.GetAccountIdentifier(t)
+	sourceAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+	sourceDatabase, cleanupSourceDatabase := secondaryTestClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupSourceDatabase)
+	localDatabase, cleanupLocalDatabase := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupLocalDatabase)
+
+	primaryID := secondaryTestClient().Ids.RandomAccountObjectIdentifier()
+	replicaID := testClient().Ids.RandomAccountObjectIdentifier()
+	_, cleanupPrimary := secondaryTestClient().FailoverGroup.CreateWithRequest(t, sdk.NewCreateFailoverGroupRequest(
+		primaryID,
+		[]sdk.FailoverGroupObjectType{sdk.FailoverGroupObjectTypeDatabases},
+		[]sdk.AccountIdentifier{targetAccount},
+	).WithAllowedDatabases([]sdk.AccountObjectIdentifier{sourceDatabase.ID()}))
+	t.Cleanup(cleanupPrimary)
+	// A replica must be dropped before its primary.
+	t.Cleanup(func() {
+		testClient().FailoverGroup.Drop(t, replicaID)
+	})
+
+	primaryOf := sdk.NewExternalObjectIdentifier(sourceAccount, primaryID)
+	testClient().FailoverGroup.WaitForPrimaryToBeVisible(t, primaryOf)
+	replica := model.FailoverGroupSecondary("t", replicaID.Name(), primaryOf.FullyQualifiedName())
+	ref := replica.ResourceReference()
+	assertReplica := failoverGroupSecondaryAssertions(t, ref, replicaID, primaryOf, targetAccount)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FailoverGroupSecondary),
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, replica),
+				Check:  assertThat(t, assertReplica...),
+			},
+			{
+				// Replace the replica with a primary of the same name. The resource must destroy it and create the replica again.
+				PreConfig: func() {
+					testClient().FailoverGroup.Drop(t, replicaID)
+					testClient().FailoverGroup.CreateWithRequest(t, sdk.NewCreateFailoverGroupRequest(
+						replicaID,
+						[]sdk.FailoverGroupObjectType{sdk.FailoverGroupObjectTypeDatabases},
+						[]sdk.AccountIdentifier{sourceAccount},
+					).WithAllowedDatabases([]sdk.AccountObjectIdentifier{localDatabase.ID()}))
+				},
+				Config: config.FromModels(t, replica),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t, assertReplica...),
+			},
+		},
+	})
+}

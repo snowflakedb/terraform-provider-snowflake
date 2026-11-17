@@ -101,8 +101,8 @@ func (f *FailoverGroupShowOutputAssert) HasSecondaryState(expected sdk.FailoverG
 	return f
 }
 
-func (f *FailoverGroupShowOutputAssert) HasNextScheduledRefresh(expected string) *FailoverGroupShowOutputAssert {
-	f.StringValueSet("next_scheduled_refresh", expected)
+func (f *FailoverGroupShowOutputAssert) HasNextScheduledRefresh(expected time.Time) *FailoverGroupShowOutputAssert {
+	f.StringValueSet("next_scheduled_refresh", expected.String())
 	return f
 }
 

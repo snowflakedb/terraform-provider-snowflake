@@ -19,7 +19,7 @@ var failoverGroupSecondaryAttributesSchema = map[string]*tfschema.Schema{
 	"is_primary": {
 		Type:        tfschema.TypeBool,
 		Computed:    true,
-		Description: "Indicates if the failover group is primary.",
+		Description: "Indicates if the failover group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.",
 	},
 }
 

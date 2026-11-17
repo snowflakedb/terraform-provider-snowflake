@@ -20,6 +20,9 @@ var (
 	}
 )
 
+// Listed on the failover group secondary SSOT object and appended to the generated customdiff.All.
+var failoverGroupSecondaryRecreateWhenPrimary = RecreateWhenResourceBoolFieldChangedExternally("is_primary", false)
+
 func failoverGroupSecondaryCreateInSdkExt(ctx context.Context, meta any, _ sdk.AccountObjectIdentifier, req *sdk.CreateSecondaryFailoverGroupRequest) diag.Diagnostics {
 	if err := meta.(*provider.Context).Client.FailoverGroups.CreateSecondary(ctx, req); err != nil {
 		return diag.FromErr(err)

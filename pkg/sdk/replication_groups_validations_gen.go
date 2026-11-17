@@ -198,6 +198,9 @@ func (opts *AlterReplicationGroupOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Remove) {
+		if !exactlyOneValueSet(opts.Remove.FromAllowedDatabases, opts.Remove.FromAllowedExternalVolumes, opts.Remove.FromAllowedShares, opts.Remove.FromAllowedAccounts) {
+			errs = append(errs, errExactlyOneOf("AlterReplicationGroupOptions.Remove", "FromAllowedDatabases", "FromAllowedExternalVolumes", "FromAllowedShares", "FromAllowedAccounts"))
+		}
 		if valueSet(opts.Remove.FromAllowedDatabases) {
 			for fromAllowedDatabaseIdx, fromAllowedDatabase := range opts.Remove.FromAllowedDatabases {
 				if !ValidObjectIdentifier(fromAllowedDatabase) {

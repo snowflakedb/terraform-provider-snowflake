@@ -15,6 +15,8 @@ func (v *FailoverGroup) ExternalID() ExternalObjectIdentifier {
 	}, v.ID())
 }
 
+// TODO [SNOW-4490849]: a value of one field that requires another field (here ALLOWED_INTEGRATION_TYPES requires INTEGRATIONS in OBJECT_TYPES)
+// has no validation in the SSoT definition yet.
 func (v *FailoverGroupSet) additionalValidations() error {
 	if len(v.AllowedIntegrationTypes) > 0 {
 		if !slices.Contains(v.ObjectTypes, FailoverGroupObjectTypeIntegrations) {
@@ -24,6 +26,69 @@ func (v *FailoverGroupSet) additionalValidations() error {
 	return nil
 }
 
+// REMOVE is validated by the generated ChildrenRule. ADD and MOVE are not, see the TODOs in the definition.
+func (opts *AlterFailoverGroupOptions) additionalValidations() error {
+	var errs []error
+	if opts.Add != nil {
+		// TODO [SNOW-4490849]: exactly one list, and IGNORE EDITION CHECK only with the accounts, in the definition of ADD.
+		if !exactlyOneValueSet(opts.Add.AllowedDatabases, opts.Add.AllowedExternalVolumes, opts.Add.AllowedShares, opts.Add.AllowedAccounts) {
+			errs = append(errs, NewError("ADD must set exactly one allowed list"))
+		}
+		if opts.Add.IgnoreEditionCheck != nil && *opts.Add.IgnoreEditionCheck && !valueSet(opts.Add.AllowedAccounts) {
+			errs = append(errs, NewError("IGNORE EDITION CHECK requires ADD TO ALLOWED_ACCOUNTS"))
+		}
+	}
+	if opts.Move != nil {
+		// Snowflake accepts several lists in one MOVE, although the page shows one list per statement.
+		// TODO [SNOW-4490849]: at least one list, in the definition of MOVE.
+		if !anyValueSet(opts.Move.Databases, opts.Move.ExternalVolumes, opts.Move.Shares) {
+			errs = append(errs, NewError("MOVE must set at least one of DATABASES, EXTERNAL VOLUMES, and SHARES"))
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+// TODO [SNOW-4490849]: each OBJECT_TYPES value that goes together with an ALLOWED_* list, and SECURITY INTEGRATIONS requiring ROLES,
+// are dependencies between fields that have no validation in the SSoT definition yet.
+func (opts *CreateFailoverGroupOptions) additionalValidations() error {
+	var errs []error
+	errs = append(errs, failoverGroupRequireObjectList(
+		opts.ObjectTypes, FailoverGroupObjectTypeDatabases, opts.AllowedDatabases,
+		"DATABASES", "ALLOWED_DATABASES",
+	)...)
+	errs = append(errs, failoverGroupRequireObjectList(
+		opts.ObjectTypes, FailoverGroupObjectTypeExternalVolumes, opts.AllowedExternalVolumes,
+		"EXTERNAL VOLUMES", "ALLOWED_EXTERNAL_VOLUMES",
+	)...)
+	errs = append(errs, failoverGroupRequireObjectList(
+		opts.ObjectTypes, FailoverGroupObjectTypeShares, opts.AllowedShares,
+		"SHARES", "ALLOWED_SHARES",
+	)...)
+	errs = append(errs, failoverGroupRequireObjectList(
+		opts.ObjectTypes, FailoverGroupObjectTypeIntegrations, opts.AllowedIntegrationTypes,
+		"INTEGRATIONS", "ALLOWED_INTEGRATION_TYPES",
+	)...)
+	if slices.Contains(opts.AllowedIntegrationTypes, FailoverGroupIntegrationTypeSecurityIntegrations) &&
+		!slices.Contains(opts.ObjectTypes, FailoverGroupObjectTypeRoles) {
+		errs = append(errs, NewError("OBJECT_TYPES must include ROLES when ALLOWED_INTEGRATION_TYPES includes SECURITY INTEGRATIONS"))
+	}
+	return JoinErrors(errs...)
+}
+
+func failoverGroupRequireObjectList[T any](objectTypes []FailoverGroupObjectType, objectType FailoverGroupObjectType, list []T, objectTypeSQL, listSQL string) []error {
+	hasType := slices.Contains(objectTypes, objectType)
+	hasList := len(list) > 0
+	switch {
+	case hasType && !hasList:
+		return []error{NewError(listSQL + " must be set when OBJECT_TYPES includes " + objectTypeSQL)}
+	case hasList && !hasType:
+		return []error{NewError("OBJECT_TYPES must include " + objectTypeSQL + " when " + listSQL + " is set")}
+	default:
+		return nil
+	}
+}
+
+// TODO [SNOW-4490849]: the identifier validation of an ExternalObjectIdentifier field (it can hold a nil identifier) is not generated.
 func (opts *CreateSecondaryFailoverGroupOptions) additionalValidations() error {
 	if opts.AsReplicaOf.objectIdentifier == nil || !ValidObjectIdentifier(opts.AsReplicaOf) {
 		return errInvalidIdentifier("CreateSecondaryFailoverGroupOptions", "AsReplicaOf")

@@ -379,6 +379,28 @@ func init() {
 			NewError("MOVE must set exactly one of DATABASES, EXTERNAL VOLUMES, and SHARES"),
 		).
 		withAdditionalValidationCase(
+			"validation_Alter_Move_emptyLists",
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Move = &ReplicationGroupMove{
+					ToReplicationGroup: moveTarget,
+					Databases:          []AccountObjectIdentifier{},
+					Shares:             []AccountObjectIdentifier{},
+				}
+			},
+			NewError("MOVE must set exactly one of DATABASES, EXTERNAL VOLUMES, and SHARES"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Move_twoLists",
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Move = &ReplicationGroupMove{
+					ToReplicationGroup: moveTarget,
+					Databases:          []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")},
+					Shares:             []AccountObjectIdentifier{NewAccountObjectIdentifier("share1")},
+				}
+			},
+			NewError("MOVE must set exactly one of DATABASES, EXTERNAL VOLUMES, and SHARES"),
+		).
+		withAdditionalValidationCase(
 			"validation_Alter_Move_To_ValidIdentifier",
 			func(opts *AlterReplicationGroupOptions) {
 				opts.Move = &ReplicationGroupMove{
@@ -476,6 +498,23 @@ func init() {
 			NewError("ADD must set exactly one allowed list"),
 		).
 		withAdditionalValidationCase(
+			"validation_Alter_Add_emptyList",
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Add = &ReplicationGroupAdd{ToAllowedDatabases: []AccountObjectIdentifier{}}
+			},
+			NewError("ADD must set exactly one allowed list"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Add_twoLists",
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Add = &ReplicationGroupAdd{
+					ToAllowedDatabases: []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")},
+					ToAllowedShares:    []AccountObjectIdentifier{NewAccountObjectIdentifier("share1")},
+				}
+			},
+			NewError("ADD must set exactly one allowed list"),
+		).
+		withAdditionalValidationCase(
 			"validation_Alter_Add_IgnoreEditionCheck_requiresAccounts",
 			func(opts *AlterReplicationGroupOptions) {
 				opts.Add = &ReplicationGroupAdd{
@@ -486,11 +525,20 @@ func init() {
 			NewError("IGNORE EDITION CHECK requires ADD TO ALLOWED_ACCOUNTS"),
 		).
 		withAdditionalValidationCase(
-			"validation_Alter_Remove_exactlyOneList",
+			"validation_Alter_Remove_emptyList",
 			func(opts *AlterReplicationGroupOptions) {
-				opts.Remove = &ReplicationGroupRemove{}
+				opts.Remove = &ReplicationGroupRemove{FromAllowedShares: []AccountObjectIdentifier{}}
 			},
-			NewError("REMOVE must set exactly one allowed list"),
+			errExactlyOneOf("AlterReplicationGroupOptions.Remove", "FromAllowedDatabases", "FromAllowedExternalVolumes", "FromAllowedShares", "FromAllowedAccounts"),
+		).
+		withModify(
+			case_ReplicationGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet,
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Remove = &ReplicationGroupRemove{
+					FromAllowedDatabases: []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")},
+					FromAllowedAccounts:  []AccountIdentifier{NewAccountIdentifier("MY_ORG", "MY_ACCOUNT")},
+				}
+			},
 		)
 
 	replicationGroupsTests.AlterSecondary.

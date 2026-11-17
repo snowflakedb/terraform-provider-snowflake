@@ -380,7 +380,7 @@ func (f *FailoverGroupAssert) HasNoSecondaryState() *FailoverGroupAssert {
 	return f
 }
 
-func (f *FailoverGroupAssert) HasNextScheduledRefresh(expected string) *FailoverGroupAssert {
+func (f *FailoverGroupAssert) HasNextScheduledRefresh(expected time.Time) *FailoverGroupAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FailoverGroup) error {
 		t.Helper()
 		if o.NextScheduledRefresh != expected {
@@ -394,8 +394,8 @@ func (f *FailoverGroupAssert) HasNextScheduledRefresh(expected string) *Failover
 func (f *FailoverGroupAssert) HasNextScheduledRefreshNotEmpty() *FailoverGroupAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.FailoverGroup) error {
 		t.Helper()
-		if o.NextScheduledRefresh == "" {
-			return fmt.Errorf("expected next scheduled refresh to be non-empty")
+		if o.NextScheduledRefresh.IsZero() {
+			return fmt.Errorf("expected next scheduled refresh to be set; got zero value")
 		}
 		return nil
 	})

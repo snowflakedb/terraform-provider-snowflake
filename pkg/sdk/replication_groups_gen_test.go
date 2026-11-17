@@ -50,6 +50,8 @@ const (
 	case_ReplicationGroups_validation_Alter_Move_Databases_ValidIdentifier                    testCaseName = "validation_Alter_Move_Databases_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Move_ExternalVolumes_ValidIdentifier              testCaseName = "validation_Alter_Move_ExternalVolumes_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Move_Shares_ValidIdentifier                       testCaseName = "validation_Alter_Move_Shares_ValidIdentifier"
+	case_ReplicationGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet            testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet"
+	case_ReplicationGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet"
 	case_ReplicationGroups_validation_Alter_Remove_FromAllowedDatabases_ValidIdentifier       testCaseName = "validation_Alter_Remove_FromAllowedDatabases_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Remove_FromAllowedExternalVolumes_ValidIdentifier testCaseName = "validation_Alter_Remove_FromAllowedExternalVolumes_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Remove_FromAllowedShares_ValidIdentifier          testCaseName = "validation_Alter_Remove_FromAllowedShares_ValidIdentifier"
@@ -373,6 +375,21 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 					opts.Move = &ReplicationGroupMove{}
 					opts.Move.Shares = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
+			},
+			validationCase[*AlterReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterReplicationGroupOptions.Remove", "FromAllowedDatabases", "FromAllowedExternalVolumes", "FromAllowedShares", "FromAllowedAccounts"),
+				DefaultModify: func(opts *AlterReplicationGroupOptions) {
+					opts.Remove = &ReplicationGroupRemove{}
+					opts.Remove.FromAllowedDatabases = nil
+					opts.Remove.FromAllowedExternalVolumes = nil
+					opts.Remove.FromAllowedShares = nil
+					opts.Remove.FromAllowedAccounts = nil
+				},
+			},
+			validationCase[*AlterReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterReplicationGroupOptions.Remove", "FromAllowedDatabases", "FromAllowedExternalVolumes", "FromAllowedShares", "FromAllowedAccounts"),
 			},
 			validationCase[*AlterReplicationGroupOptions]{
 				Name:        case_ReplicationGroups_validation_Alter_Remove_FromAllowedDatabases_ValidIdentifier,

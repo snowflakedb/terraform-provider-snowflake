@@ -53,6 +53,9 @@ func failoverGroupMembershipLockedInReadOnlyMode(_ context.Context, d *schema.Re
 	return nil
 }
 
+// Listed on the failover group SSOT object and appended to the generated customdiff.All.
+var failoverGroupRecreateWhenNotPrimary = RecreateWhenResourceBoolFieldChangedExternally("is_primary", true)
+
 // failoverGroupAlterRequestsExt holds the ALTER statements of an update in the order they must run.
 // The order matters to Snowflake (RPO assurance, replication schedule, and optimized refresh depend on each other),
 // and OBJECT_TYPES with ALLOWED_INTEGRATION_TYPES cannot share a SET with the other properties. The schedule, the comment,
