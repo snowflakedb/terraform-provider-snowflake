@@ -101,7 +101,7 @@ check "share_check" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `shares` (List of Object) Holds the aggregated output of all shares details queries. (see [below for nested schema](#nestedatt--shares))
+- `shares` (List of Object) Holds the aggregated output of all share details queries. (see [below for nested schema](#nestedatt--shares))
 
 <a id="nestedblock--limit"></a>
 ### Nested Schema for `limit`

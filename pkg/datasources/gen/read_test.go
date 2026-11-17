@@ -121,7 +121,7 @@ func TestShowInSdkAndSetId(t *testing.T) {
 
 	model := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow()},
 		ssot.WithDataSourceShowInSdk(ssot.ExtCall()), ssot.WithDataSourceSetId(ssot.ExtCall())))
-	require.Contains(t, renderTemplate(t, "showInSdk", model), "items, err := widgetsShowInSdkExt(ctx, client, req)")
+	require.Contains(t, renderTemplate(t, "showInSdk", model), "items, err := widgetsShowInSdkExt(ctx, client, req, &diags)")
 	require.Contains(t, renderTemplate(t, "setId", model), "widgetsSetIdExt(d)")
 }
 
@@ -148,7 +148,7 @@ func TestDescribe(t *testing.T) {
 	t.Run("hand-written", func(t *testing.T) {
 		model := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe()},
 			ssot.WithDataSourceDescribeInSdk(ssot.ExtCall()), ssot.WithDataSourceDescribeOutputSet(ssot.ExtCall())))
-		require.Contains(t, renderTemplate(t, "describeInSdk", model), "describeResult, err := widgetsDescribeInSdkExt(ctx, client, item)")
+		require.Contains(t, renderTemplate(t, "describeInSdk", model), "describeResult, err := widgetsDescribeInSdkExt(ctx, client, item, &diags)")
 		require.Contains(t, renderTemplate(t, "describeOutputSet", model), "describeOutput = widgetsDescribeOutputSetExt(describeResult)")
 	})
 	t.Run("nothing without describe", func(t *testing.T) {
@@ -170,7 +170,7 @@ func TestParameters(t *testing.T) {
 
 	custom := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkShowParameters()},
 		ssot.WithDataSourceShowParametersInSdk(ssot.ExtCall()), ssot.WithDataSourceParametersOutputSet(ssot.ExtCall())))
-	require.Contains(t, renderTemplate(t, "showParametersInSdk", custom), "widgetsShowParametersInSdkExt(ctx, client, item)")
+	require.Contains(t, renderTemplate(t, "showParametersInSdk", custom), "widgetsShowParametersInSdkExt(ctx, client, item, &diags)")
 	require.Contains(t, renderTemplate(t, "parametersOutputSet", custom), "widgetsParametersOutputSetExt(parameters)")
 }
 
@@ -204,9 +204,20 @@ func TestRead(t *testing.T) {
 	t.Run("extra item output is merged", func(t *testing.T) {
 		model := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow()}, ssot.WithDataSourceItemExtra(ssot.ExtCall())))
 		got := renderDataSource(t, model)
-		require.Contains(t, got, "itemExtra, err := widgetsItemExtraExt(ctx, d, client, item)")
+		require.Contains(t, got, "itemExtra, err := widgetsItemExtraExt(ctx, d, client, item, &diags)")
 		require.Contains(t, got, "collections.MergeMaps(map[string]any{")
 		require.Contains(t, got, "}, itemExtra)")
+	})
+	t.Run("a hand-written step can report warnings", func(t *testing.T) {
+		model := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow()}, ssot.WithDataSourceShowInSdk(ssot.ExtCall())))
+		got := renderDataSource(t, model)
+		require.Contains(t, got, "var diags diag.Diagnostics")
+		require.Contains(t, got, "return append(diags, diag.FromErr(err)...)")
+		require.Contains(t, got, "return diags")
+	})
+	t.Run("no diagnostics without hand-written steps", func(t *testing.T) {
+		got := renderDataSource(t, modelOf(widgetWith()))
+		require.NotContains(t, got, "diags")
 	})
 	t.Run("no merge without extras", func(t *testing.T) {
 		require.NotContains(t, renderDataSource(t, modelOf(widgetWith())), "itemExtra")
