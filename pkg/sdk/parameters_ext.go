@@ -9,39 +9,6 @@ import (
 
 var _ validatable = new(setParameterOnObject)
 
-func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
-	parameters := NewAccountParametersRequest()
-	if err := parameters.SetParameterFromRaw(string(parameter), value); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*parameters)))
-}
-
-// TODO(SNOW-1866453): add integration tests
-func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error {
-	parameters := NewAccountParametersUnsetRequest()
-	if err := parameters.UnsetParameterFromRaw(string(parameter)); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnset(*NewAccountUnsetRequest().WithParameters(*parameters)))
-}
-
-func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error {
-	parameters := NewAccountParametersRequest()
-	if err := parameters.SetParameterFromRaw(string(parameter), value); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*parameters)))
-}
-
-func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error {
-	parameters := NewAccountParametersUnsetRequest()
-	if err := parameters.UnsetParameterFromRaw(string(parameter)); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnset(*NewAccountUnsetRequest().WithParameters(*parameters)))
-}
-
 type setParameterOnObject struct {
 	alter            bool             `ddl:"static" sql:"ALTER"`
 	objectType       ObjectType       `ddl:"keyword"`
@@ -321,6 +288,24 @@ func (v *parameters) UnsetObjectParameterOnObjectViaCatalog(ctx context.Context,
 		return false, nil
 	}
 	return unsetter(v.client, ctx, object.Name, parameter)
+}
+
+// SetAccountParameter uses the catalog write path. SetAccountParameterLegacy is the legacy write path.
+func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
+	req := NewAccountParametersRequest()
+	if err := req.SetParameterFromRaw(string(parameter), value); err != nil {
+		return err
+	}
+	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*req)))
+}
+
+// UnsetAccountParameter uses the catalog write path. UnsetAccountParameterLegacy is the legacy write path.
+func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error {
+	req := NewAccountParametersUnsetRequest()
+	if err := req.UnsetParameterFromRaw(string(parameter)); err != nil {
+		return err
+	}
+	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnset(*NewAccountUnsetRequest().WithParameters(*req)))
 }
 
 func (v *parameters) SetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter, value string) (bool, error) {

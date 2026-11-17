@@ -78,15 +78,13 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	value := d.Get("value").(string)
 
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
-		req := sdk.NewAccountParametersRequest()
-		if err := req.SetParameterFromRaw(key, value); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithSet(*sdk.NewAccountSetRequest().WithParameters(*req))); err != nil {
+		if err := client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), value); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
-		if err := client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), value); err != nil {
+		// TODO [SNOW-4258021]: when the legacy write path does not support the parameter, suggest the catalog write path
+		// (if it supports the parameter) or the forward-compatible path in the error.
+		if err := client.Parameters.SetAccountParameterLegacy(ctx, sdk.AccountParameter(key), value); err != nil {
 			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w", err))
 		}
 	}
@@ -129,15 +127,11 @@ func DeleteAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	key := strings.ToUpper(d.Get("key").(string))
 
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
-		req := sdk.NewAccountParametersUnsetRequest()
-		if err := req.UnsetParameterFromRaw(key); err != nil {
-			return diag.FromErr(err)
-		}
-		if err := client.Accounts.Alter(ctx, sdk.NewAlterAccountRequest().WithUnset(*sdk.NewAccountUnsetRequest().WithParameters(*req))); err != nil {
+		if err := client.Parameters.UnsetAccountParameter(ctx, sdk.AccountParameter(key)); err != nil {
 			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
 		}
 	} else {
-		if err := client.Parameters.UnsetAccountParameter(ctx, sdk.AccountParameter(key)); err != nil {
+		if err := client.Parameters.UnsetAccountParameterLegacy(ctx, sdk.AccountParameter(key)); err != nil {
 			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
 		}
 	}

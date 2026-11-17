@@ -83,7 +83,7 @@ var parametersDef = g.NewInterface(
 ).
 	WithAllowedGenerationParts(g.PartDefault, g.PartImpl, g.PartEnums, g.PartUnitTests).
 	WithCustomInterfaceMethod(
-		"SetAccountParameter",
+		"SetAccountParameterLegacy",
 		"",
 		[]*g.MethodParameter{
 			g.NewMethodParameter("parameter", "AccountParameter"),
@@ -92,13 +92,13 @@ var parametersDef = g.NewInterface(
 		"error",
 	).
 	WithCustomInterfaceMethod(
-		"UnsetAccountParameter",
+		"UnsetAccountParameterLegacy",
 		"",
 		[]*g.MethodParameter{g.NewMethodParameter("parameter", "AccountParameter")},
 		"error",
 	).
 	WithCustomInterfaceMethod(
-		"SetObjectParameterOnAccount",
+		"SetObjectParameterOnAccountLegacy",
 		"",
 		[]*g.MethodParameter{
 			g.NewMethodParameter("parameter", "ObjectParameter"),
@@ -117,7 +117,7 @@ var parametersDef = g.NewInterface(
 		"error",
 	).
 	WithCustomInterfaceMethod(
-		"UnsetObjectParameterOnAccount",
+		"UnsetObjectParameterOnAccountLegacy",
 		"",
 		[]*g.MethodParameter{g.NewMethodParameter("parameter", "ObjectParameter")},
 		"error",
@@ -129,6 +129,21 @@ var parametersDef = g.NewInterface(
 			g.NewMethodParameter("object", "Object"),
 			g.NewMethodParameter("parameter", "ObjectParameter"),
 		},
+		"error",
+	).
+	WithCustomInterfaceMethod(
+		"SetAccountParameter",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("parameter", "AccountParameter"),
+			g.NewMethodParameter("value", g.KindString),
+		},
+		"error",
+	).
+	WithCustomInterfaceMethod(
+		"UnsetAccountParameter",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("parameter", "AccountParameter")},
 		"error",
 	).
 	WithCustomInterfaceMethod(

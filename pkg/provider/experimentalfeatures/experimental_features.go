@@ -236,13 +236,14 @@ var allExperiments = []Experiment{
 		"Without this experiment, deleting the resource fetches the parameter's default value and explicitly sets it back, which is fragile and doesn't truly remove the object-level override.",
 		"When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		ObjectParameterParseOnSet,
+		[]string{"v2.25.0", "v2.26.0"},
 		"Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.",
-		"Without this experiment, `value` is sent as a raw SQL token. You supply any quoting, and a value that does not match the parameter is not checked by the provider.",
 		"With this experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so a configuration such as `DEFAULT_DDL_COLLATION = \"en-ci-upper\"` is stored as written. Identifier parameters stay a bare name in configuration. Numeric and boolean values need no quoting either way.",
-		"Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Account-level parameters already parse values this way. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior.",
-		"See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-parse-snowflake_object_parameter-values-on-set.",
+		"Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior.",
+		"Without this experiment, `value` is sent as a raw SQL token for parameters set on objects, and account-level parameters use the v2.22.x legacy write path. You supply any quoting, and a value that does not match the parameter is not checked by the provider.",
+		"See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.",
 	),
 	NewOptInExperiment(
 		AuthenticatorExplicitOnly,
@@ -256,11 +257,13 @@ var allExperiments = []Experiment{
 		"When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `\"myorg-myaccount\"`) and an account locator (e.g. `\"xy12345\"`). If both `organization_name` and `account_name` are set, they take precedence over `account`. The `SNOWFLAKE_ACCOUNT` environment variable is used as the `account` value only when this experiment is enabled.",
 		"Without this experiment, setting the `account` field in the provider configuration or in a TOML profile results in an error directing you to enable this experiment. A value coming from the `SNOWFLAKE_ACCOUNT` environment variable is ignored with a warning instead, because this experiment will be enabled by default in v3 and the variable will be taken into account from that version on.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		AccountParameterCatalogWritePath,
+		[]string{"v2.25.0", "v2.26.0"},
 		"Changes how `snowflake_account_parameter` builds the SQL it sends for the `value` field of string-typed and identifier-typed parameters.",
-		"String-typed parameter values no longer need to be manually wrapped in single quotes within `value` — quoting is now handled internally. Identifier-typed parameters (e.g. referencing a network policy by name) require no `value` change, but are now sent as a quoted identifier instead of a single-quoted string literal.",
-		"This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade); for now it only changes how existing parameters are written. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-internal-quoting-for-snowflake_account_parameter.",
+		"With this experiment, string-typed parameter values must not be manually wrapped in single quotes within `value`, because quoting is handled by the provider. Identifier-typed parameters (e.g. referencing a network policy by name) are sent as a quoted identifier, so `value` must match the name stored in Snowflake.",
+		"Without this experiment, the v2.22.x legacy write path is used: some string-typed values must be wrapped in single quotes manually, identifier-typed values are sent as a single-quoted string literal or as written, and the parameters that the legacy write path does not support (e.g. the parameters added in v2.22.0, like `DISABLE_UI_DOWNLOAD_BUTTON`) fail with an error.",
+		"This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade). See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.",
 	),
 	NewOptInExperiment(
 		WriteOnlyAttributes,

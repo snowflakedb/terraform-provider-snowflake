@@ -12,21 +12,25 @@ import (
 
 func (c *ParameterClient) UpdateAccountParameterTemporarily(t *testing.T, parameter sdk.AccountParameter, newValue string) func() {
 	t.Helper()
-	ctx := context.Background()
 
 	param := c.ShowAccountParameter(t, parameter)
 	oldValue := param.Value
 	oldLevel := param.Level
 
-	err := c.client().SetAccountParameter(ctx, parameter, newValue)
-	require.NoError(t, err)
+	c.setAccountParameter(t, parameter, newValue)
 
 	return func() {
 		if oldLevel == "" {
 			c.UnsetAccountParameter(t, parameter)
 		} else {
-			err := c.client().SetAccountParameter(ctx, parameter, oldValue)
-			require.NoError(t, err)
+			c.setAccountParameter(t, parameter, oldValue)
 		}
 	}
+}
+
+// setAccountParameter uses the catalog write path, so values are quoted by the SDK.
+func (c *ParameterClient) setAccountParameter(t *testing.T, parameter sdk.AccountParameter, value string) {
+	t.Helper()
+	err := c.client().SetAccountParameter(context.Background(), parameter, value)
+	require.NoError(t, err)
 }

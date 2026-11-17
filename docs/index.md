@@ -125,8 +125,8 @@ provider "snowflake" {
 - `disable_telemetry` (Boolean, Deprecated) This field is deprecated. It will be removed in the next major release. Use `params` to set `CLIENT_TELEMETRY_ENABLED` session parameter instead. Setting this field adds `CLIENT_TELEMETRY_ENABLED` with value `false` to `params`. Disables telemetry in the driver. Can also be sourced from the `DISABLE_TELEMETRY` environment variable.
 - `driver_tracing` (String) Specifies the logging level to be used by the driver. Valid options are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. The following values are deprecated and will be removed in v3: `WARNING` (uses `WARN` instead), `PRINT` (uses `INFO` instead), `PANIC` (uses `FATAL` instead). Can also be sourced from the `SNOWFLAKE_DRIVER_TRACING` environment variable.
 - `enable_single_use_refresh_tokens` (Boolean) Enables single use refresh tokens for Snowflake IdP. Can also be sourced from the `SNOWFLAKE_ENABLE_SINGLE_USE_REFRESH_TOKENS` environment variable.
-- `experimental_features_disabled` (Set of String) A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `GRANTS_IMPORT_VALIDATION` | `GRANTS_SAFE_DESTROY` | `TAG_ASSOCIATION_SAFE_DESTROY` | `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` | `INHERITED_GRANTS`. Promoted and discontinued experiment names are still accepted as no-ops. Opt-in experiment names are accepted with a warning: opt-in experiments are disabled unless listed in `experimental_features_enabled`, so they don't need to be listed here.
-- `experimental_features_enabled` (Set of String) A list of opt-in experimental features to enable. Opt-in experiments are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource. Experiments that are already enabled by default are not preview — listing them here is redundant. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Opt-in experiments you can enable are: `PARAMETERS_REDUCED_OUTPUT` | `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` | `IMPORT_BOOLEAN_DEFAULT` | `IMPORT_PERMISSIVE_MODE` | `GRANT_ACCOUNT_ROLE_SHOW_CACHING` | `ACCOUNT_ROLE_SHOW_CACHING` | `GRANTS_SHOW_CACHING` | `HIERARCHY_RENAMES` | `OBJECT_PARAMETER_UNSET_ON_DELETE` | `OBJECT_PARAMETER_PARSE_ON_SET` | `AUTHENTICATOR_EXPLICIT_ONLY` | `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` | `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` | `WRITE_ONLY_ATTRIBUTES`. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).
+- `experimental_features_disabled` (Set of String) A list of experimental features to disable. Use this to opt out of experiments that are enabled by default (current default behavior, not preview features). This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Experiments you can disable are: `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE` | `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` | `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL` | `USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY` | `GRANTS_IMPORT_VALIDATION` | `GRANTS_SAFE_DESTROY` | `TAG_ASSOCIATION_SAFE_DESTROY` | `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE` | `INHERITED_GRANTS` | `OBJECT_PARAMETER_PARSE_ON_SET` | `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH`. Promoted and discontinued experiment names are still accepted as no-ops. Opt-in experiment names are accepted with a warning: opt-in experiments are disabled unless listed in `experimental_features_enabled`, so they don't need to be listed here.
+- `experimental_features_enabled` (Set of String) A list of opt-in experimental features to enable. Opt-in experiments are not yet stable; enabling one is still considered a preview feature, even when applied to a stable resource. Experiments that are already enabled by default are not preview — listing them here is redundant. These switches offer experiments altering the provider behavior. This field can not be set with environmental variables. Check more details in the [experimental features section](#experimental-features). Opt-in experiments you can enable are: `PARAMETERS_REDUCED_OUTPUT` | `TAGS_ALLOW_EMPTY_ALLOWED_VALUES` | `IMPORT_BOOLEAN_DEFAULT` | `IMPORT_PERMISSIVE_MODE` | `GRANT_ACCOUNT_ROLE_SHOW_CACHING` | `ACCOUNT_ROLE_SHOW_CACHING` | `GRANTS_SHOW_CACHING` | `HIERARCHY_RENAMES` | `OBJECT_PARAMETER_UNSET_ON_DELETE` | `AUTHENTICATOR_EXPLICIT_ONLY` | `PROVIDER_CONFIGURATION_ACCOUNT_FALLBACK` | `WRITE_ONLY_ATTRIBUTES`. Names of experiments that are enabled by default, promoted, or discontinued are still accepted (listing them is redundant or a no-op; see the experimental features section).
 - `external_browser_timeout` (Number) The timeout in seconds for the external browser to complete the authentication. Can also be sourced from the `SNOWFLAKE_EXTERNAL_BROWSER_TIMEOUT` environment variable.
 - `host` (String) Specifies a custom host value used by the driver for privatelink connections. Can also be sourced from the `SNOWFLAKE_HOST` environment variable.
 - `include_retry_reason` (String) Should retried request contain retry reason. Can also be sourced from the `SNOWFLAKE_INCLUDE_RETRY_REASON` environment variable.
@@ -1106,17 +1106,6 @@ Without this experiment, deleting the resource fetches the parameter's default v
 
 When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.
 
-#### OBJECT_PARAMETER_PARSE_ON_SET
-Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.
-
-Without this experiment, `value` is sent as a raw SQL token. You supply any quoting, and a value that does not match the parameter is not checked by the provider.
-
-With this experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so a configuration such as `DEFAULT_DDL_COLLATION = "en-ci-upper"` is stored as written. Identifier parameters stay a bare name in configuration. Numeric and boolean values need no quoting either way.
-
-Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Account-level parameters already parse values this way. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior.
-
-See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-parse-snowflake_object_parameter-values-on-set.
-
 #### AUTHENTICATOR_EXPLICIT_ONLY
 Removes implicit authenticator derivation from other provider configuration fields.
 
@@ -1130,13 +1119,6 @@ Re-introduces the `account` field as a fallback for `organization_name` and `acc
 When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `"myorg-myaccount"`) and an account locator (e.g. `"xy12345"`). If both `organization_name` and `account_name` are set, they take precedence over `account`. The `SNOWFLAKE_ACCOUNT` environment variable is used as the `account` value only when this experiment is enabled.
 
 Without this experiment, setting the `account` field in the provider configuration or in a TOML profile results in an error directing you to enable this experiment. A value coming from the `SNOWFLAKE_ACCOUNT` environment variable is ignored with a warning instead, because this experiment will be enabled by default in v3 and the variable will be taken into account from that version on.
-
-#### ACCOUNT_PARAMETER_CATALOG_WRITE_PATH
-Changes how `snowflake_account_parameter` builds the SQL it sends for the `value` field of string-typed and identifier-typed parameters.
-
-String-typed parameter values no longer need to be manually wrapped in single quotes within `value` — quoting is now handled internally. Identifier-typed parameters (e.g. referencing a network policy by name) require no `value` change, but are now sent as a quoted identifier instead of a single-quoted string literal.
-
-This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade); for now it only changes how existing parameters are written. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-internal-quoting-for-snowflake_account_parameter.
 
 #### WRITE_ONLY_ATTRIBUTES
 Enables write-only attributes. Their values are never saved in the Terraform plan or state, so they can be set from an ephemeral resource. They require Terraform 1.11 or later.
@@ -1254,3 +1236,31 @@ Without this experiment, using an `inherited` block results in an error.
 This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
 
 It will be promoted in v2.23.0 or v2.24.0.
+
+#### OBJECT_PARAMETER_PARSE_ON_SET
+Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.
+
+With this experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so a configuration such as `DEFAULT_DDL_COLLATION = "en-ci-upper"` is stored as written. Identifier parameters stay a bare name in configuration. Numeric and boolean values need no quoting either way.
+
+Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior.
+
+Without this experiment, `value` is sent as a raw SQL token for parameters set on objects, and account-level parameters use the v2.22.x legacy write path. You supply any quoting, and a value that does not match the parameter is not checked by the provider.
+
+See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.25.0 or v2.26.0.
+
+#### ACCOUNT_PARAMETER_CATALOG_WRITE_PATH
+Changes how `snowflake_account_parameter` builds the SQL it sends for the `value` field of string-typed and identifier-typed parameters.
+
+With this experiment, string-typed parameter values must not be manually wrapped in single quotes within `value`, because quoting is handled by the provider. Identifier-typed parameters (e.g. referencing a network policy by name) are sent as a quoted identifier, so `value` must match the name stored in Snowflake.
+
+Without this experiment, the v2.22.x legacy write path is used: some string-typed values must be wrapped in single quotes manually, identifier-typed values are sent as a single-quoted string literal or as written, and the parameters that the legacy write path does not support (e.g. the parameters added in v2.22.0, like `DISABLE_UI_DOWNLOAD_BUTTON`) fail with an error.
+
+This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade). See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.
+
+This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
+
+It will be promoted in v2.25.0 or v2.26.0.

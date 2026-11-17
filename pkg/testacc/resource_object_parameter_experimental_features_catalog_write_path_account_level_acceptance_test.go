@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -11,7 +12,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
@@ -89,9 +89,11 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
 				Config: accconfig.FromModels(t,
-					providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)),
+					providermodel.SnowflakeProvider().
+						WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+						WithAllEnabledByDefaultExperimentsDisabled(),
 					accountModel, databaseModel, schemaModel),
 				ExpectNonEmptyPlan: true,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -114,11 +116,9 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: objectParameterParseOnSetProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config: accconfig.FromModels(t,
-					providermodel.SnowflakeProvider().
-						WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
-						WithExperimentalFeaturesEnabled(experimentalfeatures.ObjectParameterParseOnSet),
+					providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)),
 					accountModel,
 					databaseModel,
 					schemaModel,
@@ -150,6 +150,41 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath(t *testing.T) {
 					objectparametersassert.AccountParameters(t, testClient().Context.CurrentAccountId(t)).HasDefaultDdlCollation("en_US"),
 					objectparametersassert.DatabaseParameters(t, database.ID()).HasDefaultDdlCollation("en_US"),
 					objectparametersassert.SchemaParameters(t, schema.ID()).HasDefaultDdlCollation("en_US"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_ObjectParameter_CatalogWritePath_NewAccountParameters(t *testing.T) {
+	param := sdk.AccountParameterDisableUiDownloadButton
+	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
+
+	accountModel := model.ObjectParameter("account_scope", string(param), "true").
+		WithOnAccount(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config: accconfig.FromModels(t,
+					providermodel.SnowflakeProvider().
+						WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+						WithAllEnabledByDefaultExperimentsDisabled(),
+					accountModel),
+				ExpectError: regexp.MustCompile(`parameter not supported by the legacy account parameter write path: DISABLE_UI_DOWNLOAD_BUTTON`),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config: accconfig.FromModels(t,
+					providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)),
+					accountModel),
+				Check: assertThat(
+					t,
+					resourceassert.ObjectParameterResource(t, accountModel.ResourceReference()).HasValueString("true"),
 				),
 			},
 		},

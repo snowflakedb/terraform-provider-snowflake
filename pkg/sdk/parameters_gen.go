@@ -7,12 +7,14 @@ import (
 )
 
 type Parameters interface {
+	SetAccountParameterLegacy(ctx context.Context, parameter AccountParameter, value string) error
+	UnsetAccountParameterLegacy(ctx context.Context, parameter AccountParameter) error
+	SetObjectParameterOnAccountLegacy(ctx context.Context, parameter ObjectParameter, value string) error
+	SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error
+	UnsetObjectParameterOnAccountLegacy(ctx context.Context, parameter ObjectParameter) error
+	UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error
 	SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error
 	UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error
-	SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error
-	SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error
-	UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error
-	UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error
 	SetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter, value string) (bool, error)
 	UnsetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter) (bool, error)
 	SetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter, value string) (bool, error)
