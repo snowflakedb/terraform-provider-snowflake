@@ -2,14 +2,14 @@
 page_title: "snowflake_tables Data Source - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for SHOW TABLES https://docs.snowflake.com/en/sql-reference/sql/show-tables query. The results of SHOW and DESCRIBE are encapsulated in one output collection tables.
+  Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for SHOW TABLES https://docs.snowflake.com/en/sql-reference/sql/show-tables query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection tables.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_tables (Data Source)
 
-Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `tables`.
+Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `tables`.
 
 ## Example Usage
 
@@ -106,10 +106,32 @@ output "limit_output" {
 data "snowflake_tables" "only_show" {
   # with_describe is turned on by default and it calls DESCRIBE TABLE for every table found and attaches its output to tables.*.describe_output field
   with_describe = false
+  # with_parameters is turned on by default and it calls SHOW PARAMETERS FOR TABLE for every table found and attaches its output to tables.*.parameters field
+  with_parameters = false
 }
 
 output "only_show_output" {
   value = data.snowflake_tables.only_show.tables
+}
+
+# Filtering (terse)
+data "snowflake_tables" "terse" {
+  terse = true
+  like  = "table-name"
+}
+
+output "terse_output" {
+  value = data.snowflake_tables.terse.tables
+}
+
+# Filtering (history)
+data "snowflake_tables" "history" {
+  history = true
+  like    = "table-name"
+}
+
+output "history_output" {
+  value = data.snowflake_tables.history.tables
 }
 
 # Ensure the number of tables is equal to at least one element (with the use of postcondition)
@@ -143,11 +165,14 @@ check "table_check" {
 
 ### Optional
 
+- `history` (Boolean) Includes dropped objects that are still within the Time Travel retention period.
 - `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
+- `terse` (Boolean) Returns only a subset of the output columns.
 - `with_describe` (Boolean) (Default: `true`) Runs DESC TABLE for each table returned by SHOW TABLES. The output of describe is saved to the describe_output field. By default this value is set to true.
+- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR TABLE for each table returned by SHOW TABLES. The output of SHOW PARAMETERS is saved to the parameters field as a map. By default this value is set to true.
 
 ### Read-Only
 
@@ -184,6 +209,7 @@ Optional:
 Read-Only:
 
 - `describe_output` (List of Object) (see [below for nested schema](#nestedobjatt--tables--describe_output))
+- `parameters` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters))
 - `show_output` (List of Object) (see [below for nested schema](#nestedobjatt--tables--show_output))
 
 <a id="nestedobjatt--tables--describe_output"></a>
@@ -204,6 +230,156 @@ Read-Only:
 - `policy_name` (String)
 - `schema_evolution_record` (String)
 - `type` (String)
+
+
+<a id="nestedobjatt--tables--parameters"></a>
+### Nested Schema for `tables.parameters`
+
+Read-Only:
+
+- `catalog` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--catalog))
+- `data_retention_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--data_retention_time_in_days))
+- `default_ddl_collation` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--default_ddl_collation))
+- `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--enable_console_output))
+- `external_volume` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--external_volume))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--log_event_level))
+- `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--log_level))
+- `max_data_extension_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--max_data_extension_time_in_days))
+- `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--quoted_identifiers_ignore_case))
+- `replace_invalid_characters` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--replace_invalid_characters))
+- `storage_serialization_policy` (List of Object) (see [below for nested schema](#nestedobjatt--tables--parameters--storage_serialization_policy))
+
+<a id="nestedobjatt--tables--parameters--catalog"></a>
+### Nested Schema for `tables.parameters.catalog`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--data_retention_time_in_days"></a>
+### Nested Schema for `tables.parameters.data_retention_time_in_days`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--default_ddl_collation"></a>
+### Nested Schema for `tables.parameters.default_ddl_collation`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--enable_console_output"></a>
+### Nested Schema for `tables.parameters.enable_console_output`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--external_volume"></a>
+### Nested Schema for `tables.parameters.external_volume`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--log_event_level"></a>
+### Nested Schema for `tables.parameters.log_event_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--log_level"></a>
+### Nested Schema for `tables.parameters.log_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--max_data_extension_time_in_days"></a>
+### Nested Schema for `tables.parameters.max_data_extension_time_in_days`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--quoted_identifiers_ignore_case"></a>
+### Nested Schema for `tables.parameters.quoted_identifiers_ignore_case`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--replace_invalid_characters"></a>
+### Nested Schema for `tables.parameters.replace_invalid_characters`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--tables--parameters--storage_serialization_policy"></a>
+### Nested Schema for `tables.parameters.storage_serialization_policy`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
 
 
 <a id="nestedobjatt--tables--show_output"></a>

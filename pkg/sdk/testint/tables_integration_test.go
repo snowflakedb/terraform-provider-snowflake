@@ -1239,4 +1239,27 @@ func TestInt_TablesShowByID(t *testing.T) {
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
 	})
+
+	t.Run("show parameters", func(t *testing.T) {
+		table, cleanup := testClientHelper().Table.Create(t)
+		t.Cleanup(cleanup)
+
+		parametersDirect, err := client.Parameters.ShowParameters(ctx, &sdk.ShowParametersOptions{
+			In: &sdk.ParametersIn{Table: table.ID()},
+		})
+		require.NoError(t, err)
+		require.NotEmpty(t, parametersDirect)
+
+		parameters, err := client.Tables.ShowParameters(ctx, table.ID())
+		require.NoError(t, err)
+		require.Equal(t, parametersDirect, parameters)
+	})
+
+	t.Run("show parameters of a dropped table", func(t *testing.T) {
+		table, cleanup := testClientHelper().Table.Create(t)
+		cleanup()
+
+		_, err := client.Tables.ShowParameters(ctx, table.ID())
+		require.Error(t, err)
+	})
 }

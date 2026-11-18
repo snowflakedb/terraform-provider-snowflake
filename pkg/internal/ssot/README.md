@@ -758,7 +758,9 @@ The data source follows the object, so a definition lists only the exceptions:
   `WithDataSource(DataSourceDescribeMethod("DescribeColumns"))` selects a custom operation. The call is `DescribeDetails`
   when the SDK emits it, otherwise `Describe`. A custom-operation describe is `Client.<Plural>.<Kind>(ctx, sdk.New<Kind><Name>Request(id))`.
   The output type is the paired plain struct of that operation. A generated describe without columns or a describe method
-  panics in `ValidateObject`. `with_describe` names the object from `ObjectType()`.
+  panics in `ValidateObject`. `with_describe` names the object from `ObjectType()`. When the data source offers `history`,
+  a generated describe or parameters call skips a SHOW row whose `DroppedOn` is set, because DESCRIBE and SHOW PARAMETERS
+  cannot read a dropped object.
 - `with_parameters` and `parameters` exist when the SDK has `SdkShowParameters()`. The parameters schema and mapper are
   written by hand in `pkg/schemas`. An object with `ShowParametersDetailsAdditionalLevels` covers the parameters of its
   variants, so the data source uses the union: `ShowAll<Name>ParametersSchema()` and `All<Name>ParametersToSchema`.

@@ -417,6 +417,13 @@ var allStructs = []SdkObjectDef{
 	},
 	{
 		IdType:               "sdk.SchemaObjectIdentifier",
+		ObjectStruct:         sdk.TableColumnDetails{},
+		IsDataSourceOutput:   true,
+		NoIdentifiableObject: true,
+		SkipFields:           []string{"Type"},
+	},
+	{
+		IdType:               "sdk.SchemaObjectIdentifier",
 		ObjectStruct:         sdk.TableSearchOptimizationDetails{},
 		IsDataSourceOutput:   true,
 		NoIdentifiableObject: true,

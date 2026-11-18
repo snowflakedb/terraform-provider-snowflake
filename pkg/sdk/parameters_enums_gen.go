@@ -2387,6 +2387,66 @@ func ToPipeParameter(s string) (PipeParameter, error) {
 	}
 }
 
+type TableParameter string
+
+const (
+	TableParameterCatalog                     TableParameter = "CATALOG"
+	TableParameterDataRetentionTimeInDays     TableParameter = "DATA_RETENTION_TIME_IN_DAYS"
+	TableParameterDefaultDdlCollation         TableParameter = "DEFAULT_DDL_COLLATION"
+	TableParameterEnableConsoleOutput         TableParameter = "ENABLE_CONSOLE_OUTPUT"
+	TableParameterExternalVolume              TableParameter = "EXTERNAL_VOLUME"
+	TableParameterLogEventLevel               TableParameter = "LOG_EVENT_LEVEL"
+	TableParameterLogLevel                    TableParameter = "LOG_LEVEL"
+	TableParameterMaxDataExtensionTimeInDays  TableParameter = "MAX_DATA_EXTENSION_TIME_IN_DAYS"
+	TableParameterQuotedIdentifiersIgnoreCase TableParameter = "QUOTED_IDENTIFIERS_IGNORE_CASE"
+	TableParameterReplaceInvalidCharacters    TableParameter = "REPLACE_INVALID_CHARACTERS"
+	TableParameterStorageSerializationPolicy  TableParameter = "STORAGE_SERIALIZATION_POLICY"
+)
+
+var AllTableParameters = []TableParameter{
+	TableParameterCatalog,
+	TableParameterDataRetentionTimeInDays,
+	TableParameterDefaultDdlCollation,
+	TableParameterEnableConsoleOutput,
+	TableParameterExternalVolume,
+	TableParameterLogEventLevel,
+	TableParameterLogLevel,
+	TableParameterMaxDataExtensionTimeInDays,
+	TableParameterQuotedIdentifiersIgnoreCase,
+	TableParameterReplaceInvalidCharacters,
+	TableParameterStorageSerializationPolicy,
+}
+
+func ToTableParameter(s string) (TableParameter, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableParameterCatalog):
+		return TableParameterCatalog, nil
+	case string(TableParameterDataRetentionTimeInDays):
+		return TableParameterDataRetentionTimeInDays, nil
+	case string(TableParameterDefaultDdlCollation):
+		return TableParameterDefaultDdlCollation, nil
+	case string(TableParameterEnableConsoleOutput):
+		return TableParameterEnableConsoleOutput, nil
+	case string(TableParameterExternalVolume):
+		return TableParameterExternalVolume, nil
+	case string(TableParameterLogEventLevel):
+		return TableParameterLogEventLevel, nil
+	case string(TableParameterLogLevel):
+		return TableParameterLogLevel, nil
+	case string(TableParameterMaxDataExtensionTimeInDays):
+		return TableParameterMaxDataExtensionTimeInDays, nil
+	case string(TableParameterQuotedIdentifiersIgnoreCase):
+		return TableParameterQuotedIdentifiersIgnoreCase, nil
+	case string(TableParameterReplaceInvalidCharacters):
+		return TableParameterReplaceInvalidCharacters, nil
+	case string(TableParameterStorageSerializationPolicy):
+		return TableParameterStorageSerializationPolicy, nil
+	default:
+		return "", fmt.Errorf("invalid table parameter: %s", s)
+	}
+}
+
 type IcebergTableParameter string
 
 const (

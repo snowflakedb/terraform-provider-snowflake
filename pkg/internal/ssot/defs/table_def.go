@@ -663,11 +663,17 @@ var Table = ssot.Object{
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedIn, ssot.SdkShowByIDLike),
 			),
 			ssot.SdkCustomOperations(),
+			ssot.SdkShowParameters(),
 		),
 		ssot.WithDataSource(
+			ssot.DataSourceWithTerse(),
+			ssot.DataSourceWithHistory(),
 			ssot.DataSourceDescribeMethod("DescribeColumns"),
-			ssot.DataSourceAdditionalDescribeOutputDescription("The statement is DESCRIBE TABLE ... TYPE = COLUMNS."),
+			ssot.DataSourceAdditionalDescribeOutputDescription("The statement is DESCRIBE TABLE ... TYPE = COLUMNS. It is empty for a dropped table that `history` returns."),
+			ssot.DataSourceAdditionalParametersOutputDescription("It is empty for a dropped table that `history` returns."),
 		),
+		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
+		ssot.WithResourceParametersAssert(),
 	},
 	Create: ssot.CreateSpec{
 		KeywordsBefore: []*ssot.Attribute{

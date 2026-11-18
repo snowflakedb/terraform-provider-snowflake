@@ -240,6 +240,7 @@ var tablesDef = g.NewInterface(
 	// CREATE AS SELECT, USING TEMPLATE, LIKE, CLONE, describe, and select come from ssotdefs.Table.
 	// ALTER helper structs stay handwritten, so SdkDefineFromSsot stays off.
 	CustomOperationsFromObject(ssotdefs.Table).
+	ShowParametersFromObject(ssotdefs.Table).
 	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, ssotdefs.CloneMoment, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
 
 func tableOutOfLineConstraint() *g.QueryStruct {

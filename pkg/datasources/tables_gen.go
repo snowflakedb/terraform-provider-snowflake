@@ -19,13 +19,16 @@ import (
 
 var tablesSchema = collections.MergeMaps(
 	map[string]*schema.Schema{
-		"with_describe": withDescribeSchema("TABLE", "table", "TABLES"),
+		"with_describe":   withDescribeSchema("TABLE", "table", "TABLES"),
+		"with_parameters": withParametersSchema("TABLE", "table", "TABLES"),
 	},
 	map[string]*schema.Schema{
 		"like":        likeSchema,
 		"in":          extendedInSchema,
 		"starts_with": startsWithSchema,
 		"limit":       limitFromSchema,
+		"terse":       terseSchema,
+		"history":     historySchema,
 	},
 	map[string]*schema.Schema{
 		"tables": {
@@ -48,9 +51,19 @@ var tablesSchema = collections.MergeMaps(
 						resources.DescribeOutputAttributeName: {
 							Type:        schema.TypeList,
 							Computed:    true,
-							Description: "Holds the output of DESCRIBE TABLE. The statement is DESCRIBE TABLE ... TYPE = COLUMNS.",
+							Description: "Holds the output of DESCRIBE TABLE. The statement is DESCRIBE TABLE ... TYPE = COLUMNS. It is empty for a dropped table that `history` returns.",
 							Elem: &schema.Resource{
 								Schema: schemas.DescribeTableColumnDetailsSchema,
+							},
+						},
+					},
+					map[string]*schema.Schema{
+						resources.ParametersAttributeName: {
+							Type:        schema.TypeList,
+							Computed:    true,
+							Description: "Holds the output of SHOW PARAMETERS FOR TABLE. It is empty for a dropped table that `history` returns.",
+							Elem: &schema.Resource{
+								Schema: schemas.ShowTableParametersSchema,
 							},
 						},
 					},
@@ -64,12 +77,13 @@ func Tables() *schema.Resource {
 	return &schema.Resource{
 		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.TablesDatasource), TrackingReadWrapper(datasources.Tables, ReadTables)),
 		Schema:      tablesSchema,
-		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `tables`.",
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `tables`.",
 	}
 }
 
 func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	client := meta.(*provider.Context).Client
+	providerCtx := meta.(*provider.Context)
+	client := providerCtx.Client
 	req := sdk.NewShowTableRequest()
 
 	handleLike(d, &req.Like)
@@ -77,6 +91,12 @@ func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	handleLimitFrom(d, &req.Limit)
 	if err := handleExtendedIn(d, &req.In); err != nil {
 		return diag.FromErr(err)
+	}
+	if d.Get("terse").(bool) {
+		req.WithTerse(true)
+	}
+	if d.Get("history").(bool) {
+		req.WithHistory(true)
 	}
 
 	items, err := client.Tables.Show(ctx, req)
@@ -88,7 +108,7 @@ func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 	flattened := make([]map[string]any, len(items))
 	for i, item := range items {
 		var describeOutput []map[string]any
-		if d.Get("with_describe").(bool) {
+		if d.Get("with_describe").(bool) && item.DroppedOn == nil {
 			describeResult, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeColumnsTableRequest(item.ID()))
 			if err != nil {
 				return diag.FromErr(err)
@@ -97,10 +117,19 @@ func ReadTables(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 				return schemas.TableColumnDetailsToSchema(&details)
 			})
 		}
+		var parametersOutput []map[string]any
+		if d.Get("with_parameters").(bool) && item.DroppedOn == nil {
+			parameters, err := client.Tables.ShowParameters(ctx, item.ID())
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			parametersOutput = []map[string]any{schemas.TableParametersToSchema(parameters, providerCtx)}
+		}
 
 		flattened[i] = map[string]any{
 			resources.ShowOutputAttributeName:     []map[string]any{schemas.TableToSchema(&item)},
 			resources.DescribeOutputAttributeName: describeOutput,
+			resources.ParametersAttributeName:     parametersOutput,
 		}
 	}
 	if err := d.Set("tables", flattened); err != nil {

@@ -55,6 +55,7 @@ func parameterEnums() []*g.Enum {
 		g.NewEnum("ProcedureParameter", "ProcedureParameters", parameterNamesForLevels(parameterdefs.ParameterLevelProcedure)...),
 		g.NewEnum("ServiceParameter", "ServiceParameters", parameterNamesForLevels(parameterdefs.ParameterLevelService)...),
 		g.NewEnum("PipeParameter", "PipeParameters", parameterNamesForLevels(parameterdefs.ParameterLevelPipe)...),
+		g.NewEnum("TableParameter", "TableParameters", parameterNamesForLevels(parameterdefs.ParameterLevelTable)...),
 		g.NewEnum("IcebergTableParameter", "IcebergTableParameters", parameterNamesForLevels(parameterdefs.ParameterLevelIcebergTable)...),
 		g.NewEnum("HybridTableParameter", "HybridTableParameters", parameterNamesForLevels(parameterdefs.ParameterLevelHybridTable)...),
 		g.NewEnum("OpenflowDeploymentParameter", "OpenflowDeploymentParameters", parameterNamesForLevels(parameterdefs.ParameterLevelOpenflowDeployment)...),
