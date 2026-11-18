@@ -90,8 +90,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, procedure.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -186,8 +188,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, proc.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -270,8 +274,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -360,8 +366,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -515,8 +523,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -592,8 +602,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -669,8 +681,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeNumber).
+				HasArgumentsRawList("NUMBER").
+				HasReturnType(testdatatypes.DataTypeNumber).
+				HasReturnTypeRaw("NUMBER").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -760,8 +774,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeNumber).
+				HasArgumentsRawList("NUMBER").
+				HasReturnType(testdatatypes.DataTypeNumber).
+				HasReturnTypeRaw("NUMBER").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -840,8 +856,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -930,8 +948,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1014,8 +1034,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -1112,8 +1134,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1193,8 +1217,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -1285,8 +1311,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1362,8 +1390,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -1471,8 +1501,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1542,8 +1574,10 @@ func TestInt_Procedures(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(0).
 				HasMaxNumArguments(0).
-				HasArgumentsOld().
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments().
+				HasArgumentsRawList().
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s() RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultProcedureComment).
 				HasCatalogName(id.DatabaseName()).
@@ -2497,8 +2531,13 @@ def filter_by_role(session, table_name, role):
 
 			procedure, err := client.Procedures.ShowByID(ctx, idWithArguments)
 			require.NoError(t, err)
-			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, procedure.ArgumentsOld)
-			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", idWithArguments.Name(), tc.expectedShowValue), procedure.ArgumentsRaw)
+			expectedShowDataType, err := datatypes.ParseDataType(tc.expectedShowValue)
+			require.NoError(t, err)
+			assertThatObject(t, objectassert.ProcedureFromObject(t, procedure).
+				HasArguments(expectedShowDataType).
+				HasArgumentsRawList(tc.expectedShowValue).
+				HasArgumentsRaw(fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", idWithArguments.Name(), tc.expectedShowValue)),
+			)
 
 			details, err := client.Procedures.Describe(ctx, idWithArguments)
 			require.NoError(t, err)

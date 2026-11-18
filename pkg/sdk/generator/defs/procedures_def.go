@@ -95,9 +95,12 @@ var procedurePairs = g.StructPair("procedureRow", "Procedure").
 	BoolFromText("is_ansi").
 	Number("min_num_arguments").
 	Number("max_num_arguments").
+	// TODO(SNOW-1850370): in the procedures rework, remove ArgumentsRawList and make ArgumentsRaw a slice of raw argument types.
 	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
-	PlainOnlyField("ArgumentsOld", "[]DataType").
-	PlainOnlyField("ReturnTypeOld", "DataType").
+	PlainOnlyField("Arguments", "[]datatypes.DataType").
+	PlainOnlyField("ArgumentsRawList", "[]string").
+	PlainOnlyField("ReturnType", "datatypes.DataType").
+	PlainOnlyField("ReturnTypeRaw", "string").
 	Text("description").
 	Text("catalog_name", g.WithManualConvert()).
 	BoolFromText("is_table_function").
