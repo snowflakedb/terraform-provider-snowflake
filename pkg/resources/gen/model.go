@@ -160,6 +160,14 @@ func (m ResourceModel) AlterRequestsType() string {
 	return m.Prefix() + "AlterRequestsExt"
 }
 
+// EncodeIdFn is the Go expression of the function passed as encodeIdFn to hierarchy rename helpers.
+func (m ResourceModel) EncodeIdFn() string {
+	if m.LegacyIdEncoding {
+		return "func(renamed ...sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(renamed[0]) }"
+	}
+	return "helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier]"
+}
+
 // HierarchyRenameParents reports whether the generated Update moves a schema object to another database or schema.
 func (m ResourceModel) HierarchyRenameParents() bool {
 	return m.Hooks.HierarchyRename.Generate && m.IdType == "SchemaObjectIdentifier" && !m.IdentityHierarchyForceNew

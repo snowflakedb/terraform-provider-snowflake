@@ -395,7 +395,7 @@ func UpdateContextTag(ctx context.Context, d *schema.ResourceData, meta any) dia
 			return client.Tags.Alter(ctx, sdk.NewAlterTagRequest(currentId).WithRenameTo(targetId))
 		},
 		client.Tags.ShowByID,
-		"tag",
+		sdk.ObjectTypeTag,
 	); diags != nil {
 		return diags
 	}

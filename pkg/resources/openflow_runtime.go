@@ -320,7 +320,7 @@ func UpdateOpenflowRuntime(ctx context.Context, d *schema.ResourceData, meta any
 			return waitForOpenflowRuntimeUpdated(ctx, client, targetId, timeout)
 		},
 		client.OpenflowRuntimes.ShowByID,
-		"Openflow runtime",
+		sdk.ObjectTypeOpenflowRuntime,
 	); diags != nil {
 		return diags
 	}

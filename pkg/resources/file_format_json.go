@@ -213,7 +213,7 @@ func UpdateFileFormatJson(ctx context.Context, d *schema.ResourceData, meta any)
 			return client.FileFormats.AlterJson(ctx, sdk.NewAlterJsonFileFormatRequest(currentId).WithRenameTo(targetId))
 		},
 		client.FileFormats.ShowByID,
-		"file format",
+		sdk.ObjectTypeFileFormat,
 	); diags != nil {
 		return diags
 	}

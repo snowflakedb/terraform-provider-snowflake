@@ -721,7 +721,7 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 			return client.Views.Alter(ctx, sdk.NewAlterViewRequest(currentId).WithRenameTo(targetId))
 		},
 		client.Views.ShowByID,
-		"view",
+		sdk.ObjectTypeView,
 	); diags != nil {
 		return diags
 	}

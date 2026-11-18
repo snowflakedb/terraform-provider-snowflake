@@ -242,7 +242,7 @@ func UpdateStorageLifecyclePolicy(ctx context.Context, d *schema.ResourceData, m
 			return client.StorageLifecyclePolicies.Alter(ctx, sdk.NewAlterStorageLifecyclePolicyRequest(currentId).WithRenameTo(targetId))
 		},
 		client.StorageLifecyclePolicies.ShowByID,
-		"storage lifecycle policy",
+		sdk.ObjectTypeStorageLifecyclePolicy,
 	); diags != nil {
 		return diags
 	}

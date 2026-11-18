@@ -929,8 +929,8 @@ func UpdateHybridTable(ctx context.Context, d *schema.ResourceData, meta any) di
 			ctx, d, client, &id,
 			hybridTableRenameFn,
 			client.HybridTables.ShowByID,
-			func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
-			"hybrid table",
+			helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+			sdk.ObjectTypeHybridTable,
 		); diags != nil {
 			return diags
 		}
