@@ -632,9 +632,9 @@ func (a Attribute) IsObjectList() bool {
 	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrObject
 }
 
-// IsSingleBlock reports whether the attribute is one nested block: an object, or a list with MaxItems 1.
+// IsSingleBlock reports whether the attribute is one nested object.
 func (a Attribute) IsSingleBlock() bool {
-	return a.Type == AttrObject || (a.IsObjectList() && a.MaxItems != nil && *a.MaxItems == 1)
+	return a.Type == AttrObject
 }
 
 // AllowEmpty makes a string parameter take an empty string: the SDK field is StringAllowEmpty, not string.

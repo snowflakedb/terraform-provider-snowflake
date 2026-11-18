@@ -26,13 +26,14 @@ const (
 	RuleSetOfIdentifiersNormalizes             = "set_of_identifiers_normalizes"
 	RuleConfiguredDiffSuppress                 = "configured_diff_suppress"
 	RuleSingleObjectIsListOfOne                = "single_object_is_list_of_one"
+	RuleRequiredListHasMinOne                  = "required_list_has_min_one"
 )
 
 // resourceAttributeRuleContext distinguishes a top-level attribute from a collection
 // elem (list or set) and from a field inside a nested block, so rules that only apply
 // to fields (enum DiffSuppress, descriptions, top-level set normalization) can skip the others.
 // RelationPrefix is the Terraform path of this attribute's parent, without a trailing dot.
-// Empty at the resource root. A list with MaxItems 1 uses parent.0.
+// Empty at the resource root. An AttrObject uses parent.0.
 type resourceAttributeRuleContext struct {
 	AsCollectionElem bool
 	InBlock          bool
@@ -216,9 +217,20 @@ var resourceAttributeRules = []resourceAttributeRule{
 		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
 			out.TfType = SchemaTypeList
 			out.MaxItems = new(1)
+			// SDKv2 ignores MinItems on Optional attributes (core_schema.go resets it to 0), so only Required sets MinItems: 1.
 			if in.Required {
 				out.MinItems = new(1)
 			}
+		},
+	},
+	{
+		Name:        RuleRequiredListHasMinOne,
+		Description: "Required lists require at least one item unless a higher Min is set.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return in.Type == ssot.AttrList && in.Required && in.Min == nil && !ctx.AsCollectionElem
+		},
+		Then: func(_ ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.MinItems = new(1)
 		},
 	},
 	{
@@ -301,8 +313,8 @@ func relationPaths(prefix string, attrs []ssot.Attribute) []string {
 	})
 }
 
-// listBlockRelationPrefix is the Terraform path of children of a single block: an object, or a list of objects
-// with MaxItems 1. Other blocks cannot name child relations, so their children keep an empty prefix.
+// listBlockRelationPrefix is the Terraform path of children of a single object (AttrObject).
+// List and set blocks cannot name child relations, so their children keep an empty prefix.
 func listBlockRelationPrefix(parent ssot.Attribute, ctx resourceAttributeRuleContext) string {
 	if !parent.IsSingleBlock() {
 		return ""
@@ -400,8 +412,10 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 		out.Computed = in.Computed
 		out.ForceNew = in.ForceNew
 		out.Sensitive = in.Sensitive
-		out.MinItems = in.MinItems
-		out.MaxItems = in.MaxItems
+		if in.Type == ssot.AttrList || in.Type == ssot.AttrSet {
+			out.MinItems = in.Min
+			out.MaxItems = in.Max
+		}
 		out.ConflictsWith = relationPaths(ctx.RelationPrefix, in.ConflictsWith)
 		out.AtLeastOneOf = relationPaths(ctx.RelationPrefix, in.AtLeastOneOf)
 	}
@@ -411,13 +425,15 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 	if in.Deprecated != "" {
 		out.DeprecatedExpr = strconv.Quote(in.Deprecated)
 	}
-	switch {
-	case in.Min != nil && in.Max != nil:
-		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntBetween(%d, %d))", *in.Min, *in.Max)
-	case in.Min != nil:
-		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtLeast(%d))", *in.Min)
-	case in.Max != nil:
-		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtMost(%d))", *in.Max)
+	if in.Type == ssot.AttrInt {
+		switch {
+		case in.Min != nil && in.Max != nil:
+			out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntBetween(%d, %d))", *in.Min, *in.Max)
+		case in.Min != nil:
+			out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtLeast(%d))", *in.Min)
+		case in.Max != nil:
+			out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtMost(%d))", *in.Max)
+		}
 	}
 	if in.Type == ssot.AttrEnum && in.Enum != nil {
 		out.EnumName = in.Enum.Name

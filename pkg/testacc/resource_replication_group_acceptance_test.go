@@ -11,6 +11,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	tfresources "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -213,6 +214,26 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, renamed),
 				Check:  assertThat(t, assertRenamed...),
+			},
+		},
+	})
+}
+
+// The configuration is validated at plan time, before anything is created in Snowflake.
+func TestAcc_ReplicationGroup_Validations(t *testing.T) {
+	emptyObjectTypes := model.ReplicationGroup("t", "name", []string{"MYORG.MYACCOUNT"}, []string{})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ReplicationGroup),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, emptyObjectTypes),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Not enough list items`),
 			},
 		},
 	})

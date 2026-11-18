@@ -13,6 +13,7 @@ var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
 	"object_types": {
 		Type:     tfschema.TypeList,
 		Required: true,
+		MinItems: 1,
 		Elem: &tfschema.Schema{
 			Type:             tfschema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToReplicationGroupObjectType),

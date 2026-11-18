@@ -93,12 +93,11 @@ var AlertAttrs = struct {
 		Children: []ssot.Attribute{
 			{
 				Name:          "cron",
-				Type:          ssot.AttrList,
-				MaxItems:      new(1),
+				Type:          ssot.AttrObject,
 				ConflictsWith: []ssot.Attribute{{Name: "interval"}},
 				Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". " +
 					"The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
-				Elem: ssot.ObjectElem([]ssot.Attribute{
+				Children: []ssot.Attribute{
 					{
 						Name:        "expression",
 						Type:        ssot.AttrString,
@@ -111,7 +110,7 @@ var AlertAttrs = struct {
 						Required:    true,
 						Description: "Specifies the time zone for alert refresh.",
 					},
-				}),
+				},
 			},
 			{
 				Name:          "interval",

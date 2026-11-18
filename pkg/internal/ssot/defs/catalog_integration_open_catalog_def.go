@@ -124,7 +124,6 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				Type:        ssot.AttrList,
 				Required:    true,
 				ForceNew:    true,
-				MinItems:    new(1),
 				Description: "Specifies one or more scopes for the OAuth token.",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
 				CreateSql:   ssot.ListParameter("StringListItemWrapper"),

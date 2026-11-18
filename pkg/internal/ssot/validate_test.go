@@ -126,20 +126,6 @@ func Test_ValidateObject_atLeastOneOfAndNestedRelations(t *testing.T) {
 		ValidateObject(Object{
 			Name: "AuthenticationPolicy",
 			Attributes: []Attribute{{
-				Name:     "mfa_policy",
-				Type:     AttrList,
-				MaxItems: new(1),
-				Elem: ObjectElem([]Attribute{
-					{Name: "enforce_mfa_on_external_authentication", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-				}),
-			}},
-		})
-	})
-	require.NotPanics(t, func() {
-		ValidateObject(Object{
-			Name: "AuthenticationPolicy",
-			Attributes: []Attribute{{
 				Name: "mfa_policy",
 				Type: AttrObject,
 				Children: []Attribute{
@@ -153,12 +139,11 @@ func Test_ValidateObject_atLeastOneOfAndNestedRelations(t *testing.T) {
 		ValidateObject(Object{
 			Name: "AuthenticationPolicy",
 			Attributes: []Attribute{{
-				Name:     "mfa_policy",
-				Type:     AttrList,
-				MaxItems: new(1),
-				Elem: ObjectElem([]Attribute{
+				Name: "mfa_policy",
+				Type: AttrObject,
+				Children: []Attribute{
 					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "missing"}}},
-				}),
+				},
 			}},
 		})
 	})
@@ -660,10 +645,10 @@ func Test_ValidateObject_nestedAttribute(t *testing.T) {
 	})
 
 	for name, attr := range map[string]Attribute{
-		"min": {Name: "min", Type: AttrObject, Children: []Attribute{leaf}, MinItems: new(1)},
-		"max": {Name: "max", Type: AttrObject, Children: []Attribute{leaf}, MaxItems: new(1)},
+		"min": {Name: "min", Type: AttrObject, Children: []Attribute{leaf}, Min: new(1)},
+		"max": {Name: "max", Type: AttrObject, Children: []Attribute{leaf}, Max: new(1)},
 	} {
-		require.PanicsWithValue(t, fmt.Sprintf(`object "Widget": attribute %q item bounds require a list or set`, name), func() {
+		require.PanicsWithValue(t, fmt.Sprintf(`object "Widget": attribute %q bounds require an int, list, or set`, name), func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}})
 		})
 	}
@@ -739,47 +724,128 @@ func Test_ValidateObject_collectionItemBounds(t *testing.T) {
 		Name:     "storage_location",
 		Type:     AttrList,
 		Required: true,
-		MinItems: new(1),
 		Elem: ObjectElem([]Attribute{
 			{Name: "storage_location_name", Type: AttrString, Required: true},
 			{Name: "storage_base_url", Type: AttrString, Required: true},
-			{Name: "allowed_locations", Type: AttrList, MinItems: new(1), Elem: &Attribute{Type: AttrString}},
+			{Name: "allowed_locations", Type: AttrList, Min: new(1), Elem: &Attribute{Type: AttrString}},
 		}),
 	}
 	require.NotPanics(t, func() {
 		ValidateObject(Object{Name: "ExternalVolume", Attributes: []Attribute{locations}})
 	})
 
-	require.PanicsWithValue(t, `object "ExternalVolume": attribute "comment" item bounds require a list or set`, func() {
+	require.NotPanics(t, func() {
 		ValidateObject(Object{
-			Name:       "ExternalVolume",
-			Attributes: []Attribute{{Name: "comment", Type: AttrString, MinItems: new(1)}},
-		})
-	})
-
-	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" MinItems 2 is greater than MaxItems 1`, func() {
-		ValidateObject(Object{
-			Name: "ExternalVolume",
+			Name: "Widget",
 			Attributes: []Attribute{{
-				Name:     "storage_location",
+				Name:     "items",
 				Type:     AttrList,
-				MinItems: new(2),
-				MaxItems: new(1),
+				Required: true,
+				Min:      new(2),
+				Elem:     &Attribute{Type: AttrString},
 			}},
 		})
 	})
 
-	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_base_url" item bounds require a list or set`, func() {
+	require.PanicsWithValue(t, `object "Widget": attribute "items" is a required list and cannot have Min 0`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name:     "items",
+				Type:     AttrList,
+				Required: true,
+				Min:      new(0),
+				Elem:     &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "items" is a required list, so Min 1 is deduced automatically; omit Min`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name:     "items",
+				Type:     AttrList,
+				Required: true,
+				Min:      new(1),
+				Elem:     &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "comment" bounds require an int, list, or set`, func() {
+		ValidateObject(Object{
+			Name:       "ExternalVolume",
+			Attributes: []Attribute{{Name: "comment", Type: AttrString, Min: new(1)}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" Min 2 is greater than Max 1`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name: "storage_location",
+				Type: AttrList,
+				Min:  new(2),
+				Max:  new(1),
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_base_url" bounds require an int, list, or set`, func() {
 		ValidateObject(Object{
 			Name: "ExternalVolume",
 			Attributes: []Attribute{{
 				Name: "storage_location",
 				Type: AttrSet,
 				Elem: ObjectElem([]Attribute{{
-					Name:     "storage_base_url",
-					Type:     AttrString,
-					MinItems: new(1),
+					Name: "storage_base_url",
+					Type: AttrString,
+					Min:  new(1),
 				}}),
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" collection bounds cannot be negative`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name: "storage_location",
+				Type: AttrList,
+				Min:  new(-1),
+				Elem: &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" collection bounds cannot be negative`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name: "storage_location",
+				Type: AttrSet,
+				Max:  new(-1),
+				Elem: &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Table",
+			Attributes: []Attribute{{Name: "data_retention_time_in_days", Type: AttrInt, Min: new(-1), Max: new(90)}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Alert": attribute "cron" is a list of objects with Max 1; use AttrObject instead`, func() {
+		ValidateObject(Object{
+			Name: "Alert",
+			Attributes: []Attribute{{
+				Name: "cron",
+				Type: AttrList,
+				Max:  new(1),
+				Elem: ObjectElem([]Attribute{{Name: "expression", Type: AttrString}}),
 			}},
 		})
 	})
@@ -1306,9 +1372,8 @@ func Test_ObjectElem(t *testing.T) {
 func Test_Attribute_IsSingleBlock(t *testing.T) {
 	leaf := Attribute{Name: "leaf", Type: AttrString}
 	require.True(t, Attribute{Type: AttrObject, Children: []Attribute{leaf}}.IsSingleBlock())
-	require.True(t, Attribute{Type: AttrList, MaxItems: new(1), Elem: ObjectElem([]Attribute{leaf})}.IsSingleBlock())
 	require.False(t, Attribute{Type: AttrList, Elem: ObjectElem([]Attribute{leaf})}.IsSingleBlock())
-	require.False(t, Attribute{Type: AttrList, MaxItems: new(1), Elem: &Attribute{Type: AttrString}}.IsSingleBlock())
+	require.False(t, Attribute{Type: AttrList, Max: new(1), Elem: &Attribute{Type: AttrString}}.IsSingleBlock())
 }
 
 func Test_Attribute_nestedSqlFields(t *testing.T) {

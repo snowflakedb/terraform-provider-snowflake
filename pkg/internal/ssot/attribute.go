@@ -42,12 +42,11 @@ type Attribute struct {
 	Description           string
 	AdditionalDescription string
 	ForceNew              bool
-	Min                   *int
-	Max                   *int
-	// MinItems and MaxItems are Terraform list or set bounds. Nil means unset.
-	// A list with MinItems and no MaxItems holds multiple items, as storage_location does.
-	MinItems       *int
-	MaxItems       *int
+	// Min and Max are inclusive bounds. An int bounds its value. A list or set bounds its number of items. Nil means
+	// unset. A required AttrList deduces MinItems 1 when Min is nil, so omit Min on a required list unless setting a
+	// higher bound (Min of 0 or 1 is rejected).
+	Min            *int
+	Max            *int
 	RawDescription bool
 	Enum           *Enum
 	// ShowEnum is the SHOW, DESCRIBE, and CREATE/SET enum when it differs from Enum.
@@ -61,7 +60,7 @@ type Attribute struct {
 	Elem *Attribute
 	// Children are the fields of an AttrObject: a single block, an Elem, or a SqlOnly nested struct. They are valid only
 	// there: a list or set of objects declares its fields on an Elem object (ObjectElem), never on the list itself.
-	// A single block sets no MinItems or MaxItems: Terraform gets MaxItems 1, and MinItems 1 when it is Required.
+	// A single block sets no Min or Max: Terraform gets at most one item, and one item when it is Required.
 	// A SqlOnly child is fixed text of the SQL struct, such as TYPE = OAUTH: a StaticSQL clause, valid when the object has an
 	// object clause. It is in NestedSqlFields and not in NestedFields, so it is not a Terraform field.
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
@@ -141,9 +140,8 @@ type Attribute struct {
 	// Leave it unset when the omitted value is empty, as catalog_namespace is.
 	ServerDefault bool
 	// ConflictsWith names other attributes on the same level. The generator emits schema.ConflictsWith
-	// as a path from the resource root: the name at the top, and parent.0.name under a single block
-	// (an object, or a list of objects with MaxItems 1).
-	// A set, or a list without that bound, cannot name these relations.
+	// as a path from the resource root: the name at the top, and parent.0.name under a single object.
+	// A set, or a list of objects, cannot name these relations.
 	// On a SqlOnly child of an object clause there is no schema, and the SDK query struct gets ConflictingFields for the
 	// pair instead, such as ORDER and NOORDER. The other attribute has to be a child of the same object.
 	ConflictsWith []Attribute

@@ -7,6 +7,18 @@ Generators consume ssot; they do not all consume `defs.All()` the same way. Reso
 assertions, Snowflake object assertions, object and resource parameters assertions, and SDK paired structs are opt-in per object ([Generators](#generators)). More
 generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
 
+### A generic definition
+
+SSOT describes a Snowflake object. It mirrors neither the SDK nor Terraform. Each generator translates the same
+definition into its own world, so a field is named and shaped by what it means for the object, not by the SDK struct
+or the Terraform schema it ends up in. Keep this in mind when adding a feature:
+
+- Name a field after its meaning. `Max: new(1)` bounds an int by value and a list by item count, and Terraform gets
+  `MaxItems` from it.
+- Prefer one field over one field per generator. Reach for a generator-specific setting only when the generators
+  genuinely disagree, and then declare it in that generator's options, not on `Attribute`.
+- Do not copy SDK or Terraform terms into a new field name when a neutral word says the same.
+
 ### Object
 
 `Object` is the written intent for one Snowflake object:
@@ -60,6 +72,9 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 
 `Attribute` is one field. Current types are in [attribute.go](attribute.go).
 
+- `Min` / `Max` - inclusive bounds. An int bounds its value. A list or set bounds its number of items (non-negative; a
+  list of objects with `Max: new(1)` is rejected — use `AttrObject` instead; a required `AttrList` deduces
+  `MinItems: 1` when `Min` is nil and rejects `Min` of 0 or 1). Other types reject them.
 - `Readonly` - non-writable output column. Must not sit on `Attributes`. CREATE-only fields are writable and absent from
   `Show` / `Describe` `Columns`.
 - `SqlOnly` - the attribute stays on a SQL sequence and is left out of schema, resource, model, and assertion generation.
@@ -143,9 +158,8 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   Optional scalar SHOW columns get the same treatment without this flag. `catalog_namespace` stays unset because
   Snowflake reports an empty namespace.
 - `ConflictsWith` names other attributes on the same level. The generator emits `schema.ConflictsWith` as a path from
-  the resource root: the attribute name at the top, and `parent.0.name` for a child of a single block (an `AttrObject`,
-  or a list of objects with `MaxItems: 1`).
-  A set, or a list without that bound, cannot name these relations. `AtLeastOneOf` uses the same paths and may include
+  the resource root: the attribute name at the top, and `parent.0.name` for a child of a single object (`AttrObject`).
+  A set, or a list of objects, cannot name these relations. `AtLeastOneOf` uses the same paths and may include
   this attribute.
 - `Sensitive` marks the schema field sensitive.
 - `SkipInSchema` - the SHOW/DESCRIBE schema generator (`WithSchema`) omits the column from the generated schema map
@@ -165,12 +179,23 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   hand-written per-element mapper.
 - **Single object.** An attribute of type `AttrObject` with `Children` is one nested block, and one struct in SDK SQL.
   Terraform sees it as a list of at most one object. The resource attribute rule `single_object_is_list_of_one` makes it a
-  `TypeList` with `MaxItems: 1`, and `MinItems: 1` when it is `Required`. The definition sets no `MinItems`, `MaxItems`, or
+  `TypeList` with `MaxItems: 1`, and `MinItems: 1` when it is `Required`. The definition sets no `Min`, `Max`, or
   `Elem`. Its SQL is its own `CreateSql`, `ObjectParameter(Sql("REST_CONFIG ="), Parentheses())`, and each child has the
-  `CreateSql` it needs. Generated create parses it like a list block with `MaxItems: 1` (`Attribute.IsSingleBlock()`). A single
-  block that is a `SqlOnly` attribute is the same struct and is not a Terraform field. Child `ConflictsWith` and
-  `AtLeastOneOf` use the same `name.0.child` paths as a list of objects with `MaxItems: 1`. A list of exactly one object
-  (`MaxItems: 1`) is still a list: it is a slice in SQL.
+  `CreateSql` it needs. Generated create parses it with `singleBlockAttributeCreate` (`Attribute.IsSingleBlock()`). A single
+  object that is a `SqlOnly` attribute is the same struct and is not a Terraform field. Child `ConflictsWith` and
+  `AtLeastOneOf` use `name.0.child` paths.
+
+  ```go
+  {
+      Name: "mfa_policy",
+      Type: ssot.AttrObject,
+      Children: []ssot.Attribute{
+          {Name: "enforce_mfa_on_external_authentication", Type: ssot.AttrEnum, Enum: ...},
+          {Name: "allowed_methods", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: ...}},
+      },
+  }
+  ```
+
   `ChildrenRule` on the object (`ChildrenAtLeastOne` or `ChildrenExactlyOne`) adds `AtLeastOneValueSet` or `ExactlyOneValueSet` over
   the `Children` that are fields of its SQL struct, so not the fixed texts, in `Children` order. It does not generate the
   schema-side `AtLeastOneOf`. `ChildrenRuleFields` narrows the rule to the named `Children`, for a struct whose other fields sit
@@ -209,23 +234,24 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   properties `SET` block. `ObjectParameter` joins nested fields without commas; `Commas()`
   keeps them. `ArrowEquals()` writes `=>`.
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
-  object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
+  object fields. Use `AttrObject` instead of `AttrList` with `Max: new(1)` for a single object; validation rejects a list of
+  objects with `Max: new(1)`. `Attribute.NestedFields()` returns the
   fields and `IsObjectList()` tells a list of objects from a list of scalars, so generators ask the attribute for its fields
   and do not read `Children` or `Elem` directly.
 
   ```go
   {
-      Name:     "mfa_policy",
+      Name:     "storage_location",
       Type:     ssot.AttrList,
-      MaxItems: new(1),
+      Required: true,
       Elem: ssot.ObjectElem([]ssot.Attribute{
-          {Name: "enforce_mfa_on_external_authentication", Type: ssot.AttrEnum, Enum: ...},
-          {Name: "allowed_methods", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: ...}},
+          {Name: "storage_location_name", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Required: true},
+          {Name: "storage_base_url", Type: ssot.AttrString, Required: true},
       }),
   }
   ```
 
-  `Required`, `MinItems`, `MaxItems`, `Description`, `ForceNew`, and the other settings of the block stay on the list
+  `Required`, `Min`, `Max`, `Description`, `ForceNew`, and the other settings of the block stay on the list
   attribute. The `Elem` carries the fields and, for SDK SQL, the element clause. `Children` is valid only on an object:
   validation panics when a list or set has `Children`, and an `AttrObject` with no `Children` or with an `Elem`.
 
@@ -250,8 +276,8 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   struct (`ENCRYPTION = (...)`, `UPDATE ... CREDENTIALS = (...)`). It is not in the schema, the resource, or the assertions.
   A variant or an ALTER block refers to it by pointer. A fixed text is a `SqlOnly` attribute with `StaticSQL`, and
   `WithCreateSql(&attr, clause)` is a copy of an attribute with another clause for the one place that needs it.
-- **Generated create of a block.** A generated `ApplyCreateOptionals` parses an optional list block with a generated
-  `parse<Stem>` function. `MaxItems: 1` calls `singleBlockAttributeCreate`, and any other list calls
+- **Generated create of a block.** A generated `ApplyCreateOptionals` parses an optional nested block with a generated
+  `parse<Stem>` function. An `AttrObject` (`IsSingleBlock()`) calls `singleBlockAttributeCreate`, and a list of objects calls
   `listBlockAttributeCreate`. The block request is built like the object request, with the same deduction and templates:
   required fields are `sdk.New<Stem>Request` arguments in field order, and other fields use their deduced create helper on
   that request. Fields are read from `prefix+"<name>"`. The stem of a block is the parent stem plus the block name:
@@ -646,7 +672,8 @@ in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go
 and applies to the resource schema only. The schema default is `default`. Create omits the clause for that value. Import writes `true` or `false` from SHOW.
 
 An optional int whose `Min` is 0 or less emits `Default = IntDefault`, because 0 is a real value and cannot mean unset.
-Warehouse `auto_suspend` is that case. A minimum above 0 does not emit that default.
+Warehouse `auto_suspend` is that case. A minimum above 0 does not emit that default. A required `AttrList` emits
+`MinItems: 1` unless a higher `Min` is set.
 
 A top-level set of identifiers emits `NormalizeAndCompareIdentifiersInSet`. A top-level set of enums emits
 `NormalizeAndCompareEnumsInSet`. A list of enums, and a nested set of enums, emit `NormalizeAndCompare` on the
@@ -1025,7 +1052,8 @@ the enum type in a details struct (also in its nested structs).
 - A computed-only field is not an attribute field. `Deprecated` is the schema message; see [Attribute](#attribute).
   An explicit schema `Default` is not an attribute field.
   An optional int whose `Min` is 0 or less still emits `Default = IntDefault`. `NativeBool`
-  keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
+  keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc` (on ints)
+  and `MinItems` / `MaxItems` (on collections); a required `AttrList` deduces `MinItems: 1` when `Min` is nil.
   Chrome the generator does not emit stays in the attributes modification function.
 
 #### Why Show and Describe columns are explicit

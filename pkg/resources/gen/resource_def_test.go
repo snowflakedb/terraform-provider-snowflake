@@ -36,15 +36,20 @@ func Test_ModelFromInputObject_singleBlockIsAListOfOne(t *testing.T) {
 	}
 	for name, required := range map[string]bool{"optional": false, "required": true} {
 		t.Run(name, func(t *testing.T) {
-			object := model(ssot.Attribute{Name: "block", Type: ssot.AttrObject, Required: required, ForceNew: true, Children: []ssot.Attribute{leaf}})
-			listAttr := ssot.Attribute{
-				Name: "block", Type: ssot.AttrList, Required: required, ForceNew: true, MaxItems: new(1),
-				Elem: ssot.ObjectElem([]ssot.Attribute{leaf}),
-			}
+			got := model(ssot.Attribute{Name: "block", Type: ssot.AttrObject, Required: required, ForceNew: true, Children: []ssot.Attribute{leaf}})
+			require.Len(t, got.Attributes, 1)
+			attr := got.Attributes[0]
+			require.Equal(t, SchemaTypeList, attr.TfType)
+			require.Equal(t, required, attr.Required)
+			require.Equal(t, !required, attr.Optional)
+			require.Equal(t, new(1), attr.MaxItems)
 			if required {
-				listAttr.MinItems = new(1)
+				require.Equal(t, new(1), attr.MinItems)
+				require.Nil(t, attr.CreateOptionalCall)
+			} else {
+				require.Nil(t, attr.MinItems)
+				require.Equal(t, "singleBlockAttributeCreate", attr.CreateOptionalCall.Helper)
 			}
-			require.Equal(t, model(listAttr).Attributes, object.Attributes)
 		})
 	}
 }
