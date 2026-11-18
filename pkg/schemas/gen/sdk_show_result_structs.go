@@ -62,7 +62,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.FileFormat{}},
 	// SkipFields `options`: unused TypeInvalid (nested `FileFormatTypeOptionsLegacy`). Un-skip with native nested structs.
 	{ObjectStruct: sdk.FileFormatLegacy{}, SkipFields: []string{"options"}},
-	{ObjectStruct: sdk.Function{}, SkipFields: []string{"arguments_old", "return_type_old"}},
+	{ObjectStruct: sdk.Function{}, SkipFields: []string{"arguments", "arguments_raw_list", "return_type", "return_type_raw"}},
 	{ObjectStruct: sdk.GitRepository{}},
 	{ObjectStruct: sdk.Grant{}, SkipFields: []string{"grant_on", "grant_to"}},
 	{ObjectStruct: sdk.HybridTable{}},
@@ -90,7 +90,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PolicyReference{}},
 	{ObjectStruct: sdk.PostgresInstance{}, ManualFields: []string{"is_highly_available"}},
 	{ObjectStruct: sdk.PostgresMirror{}},
-	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments_old", "return_type_old"}},
+	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments", "arguments_raw_list", "return_type", "return_type_raw"}},
 	{ObjectStruct: sdk.ReplicationAccount{}},
 	{ObjectStruct: sdk.ReplicationDatabase{}},
 	{ObjectStruct: sdk.Region{}},

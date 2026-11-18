@@ -45,8 +45,10 @@ var ShowFunctionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// arguments_old is skipped and won't be generated
-	// return_type_old is skipped and won't be generated
+	// arguments is skipped and won't be generated
+	// arguments_raw_list is skipped and won't be generated
+	// return_type is skipped and won't be generated
+	// return_type_raw is skipped and won't be generated
 	"description": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -106,8 +108,10 @@ func FunctionToSchema(function *sdk.Function) map[string]any {
 	functionSchema["min_num_arguments"] = function.MinNumArguments
 	functionSchema["max_num_arguments"] = function.MaxNumArguments
 	functionSchema["arguments_raw"] = function.ArgumentsRaw
-	// arguments_old is skipped and won't be generated
-	// return_type_old is skipped and won't be generated
+	// arguments is skipped and won't be generated
+	// arguments_raw_list is skipped and won't be generated
+	// return_type is skipped and won't be generated
+	// return_type_raw is skipped and won't be generated
 	functionSchema["description"] = function.Description
 	functionSchema["catalog_name"] = function.CatalogName
 	functionSchema["is_table_function"] = function.IsTableFunction

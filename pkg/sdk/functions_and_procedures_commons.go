@@ -65,6 +65,33 @@ func parseFunctionOrProcedureStageLocationPath(location string) (*NormalizedPath
 	return &NormalizedPath{stageRaw, pathRaw}, nil
 }
 
+type functionOrProcedureShowArguments struct {
+	Arguments     []datatypes.DataType
+	ArgumentsRaw  []string
+	ReturnType    datatypes.DataType
+	ReturnTypeRaw string
+}
+
+// Format of the SHOW FUNCTIONS/PROCEDURES arguments column is: NAME(argType, argType, ...) RETURN returnType.
+func parseFunctionOrProcedureShowArguments(name string, argumentsRaw string) (*functionOrProcedureShowArguments, error) {
+	arguments := strings.TrimLeft(argumentsRaw, name)
+	returnIndex := strings.Index(arguments, ") RETURN ")
+	returnTypeRaw := arguments[returnIndex+len(") RETURN "):]
+	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
+	if err != nil {
+		return nil, err
+	}
+	argumentsRawList := collections.Map(parsedArguments, func(a ParsedArgument) string {
+		return a.ArgType
+	})
+	return &functionOrProcedureShowArguments{
+		Arguments:     collections.Map(argumentsRawList, parseDataTypeOrNil),
+		ArgumentsRaw:  argumentsRawList,
+		ReturnType:    parseDataTypeOrNil(returnTypeRaw),
+		ReturnTypeRaw: returnTypeRaw,
+	}, nil
+}
+
 func parseFunctionOrProcedureReturns(returns string) (datatypes.DataType, bool, error) {
 	var returnNotNull bool
 	trimmed := strings.TrimSpace(returns)

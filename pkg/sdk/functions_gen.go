@@ -299,8 +299,10 @@ type Function struct {
 	MinNumArguments            int
 	MaxNumArguments            int
 	ArgumentsRaw               string
-	ArgumentsOld               []DataType
-	ReturnTypeOld              DataType
+	Arguments                  []datatypes.DataType
+	ArgumentsRawList           []string
+	ReturnType                 datatypes.DataType
+	ReturnTypeRaw              string
 	Description                string
 	CatalogName                string
 	IsTableFunction            bool
