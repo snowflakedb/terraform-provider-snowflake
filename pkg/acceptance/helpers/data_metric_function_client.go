@@ -38,7 +38,7 @@ RETURNS NUMBER AS
    WHERE arg_c IN (SELECT id FROM %s)'`, id.FullyQualifiedName(), viewID.FullyQualifiedName()))
 	require.NoError(t, err)
 
-	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), sdk.DataType("TABLE(INT)"))
+	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(id.SchemaId(), id.Name(), sdk.DataType("TABLE(INT)"))
 	return id, c.DropFunc(t, idWithArgs)
 }
 
@@ -61,7 +61,7 @@ func (c *DataMetricFunctionClient) CreateWithArguments(t *testing.T, createArgum
 	for i, arg := range signatureArguments {
 		argumentDataTypes[i] = sdk.DataType(arg)
 	}
-	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), argumentDataTypes...)
+	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(id.SchemaId(), id.Name(), argumentDataTypes...)
 
 	return idWithArgs, c.DropFunc(t, idWithArgs)
 }

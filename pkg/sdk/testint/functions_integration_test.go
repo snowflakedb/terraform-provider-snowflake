@@ -1676,7 +1676,7 @@ func TestInt_Functions(t *testing.T) {
 		t.Cleanup(fCleanup)
 		id := f.ID()
 
-		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentDataTypes()...)
+		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentLegacyDataTypes()...)
 		err := client.Functions.Alter(ctx, sdk.NewAlterFunctionRequest(id).WithRenameTo(nid.SchemaObjectId()))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Function.DropFunctionFunc(t, nid))

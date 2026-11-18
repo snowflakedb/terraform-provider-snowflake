@@ -2025,7 +2025,7 @@ def filter_by_role(session, table_name, role):
 		t.Cleanup(pCleanup)
 		id := p.ID()
 
-		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentDataTypes()...)
+		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentLegacyDataTypes()...)
 
 		err := client.Procedures.Alter(ctx, sdk.NewAlterProcedureRequest(id).WithRenameTo(nid.SchemaObjectId()))
 		require.NoError(t, err)

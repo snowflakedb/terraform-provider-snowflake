@@ -55,7 +55,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 		require.False(t, e.IsBuiltin)
 		require.False(t, e.IsAggregate)
 		require.False(t, e.IsAnsi)
-		if len(id.ArgumentDataTypes()) > 0 {
+		if len(id.ArgumentLegacyDataTypes()) > 0 {
 			require.Equal(t, 1, e.MinNumArguments)
 			require.Equal(t, 1, e.MaxNumArguments)
 		} else {

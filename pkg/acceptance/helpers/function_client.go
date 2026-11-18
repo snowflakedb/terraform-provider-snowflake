@@ -73,7 +73,7 @@ func (c *FunctionClient) CreateSqlWithIdentifierAndArgument(t *testing.T, id sdk
 	t.Helper()
 	ctx := context.Background()
 
-	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
+	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), dataType)
 	argName := "x"
 	definition := c.SampleSqlDefinition(t)
 	dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -194,9 +194,7 @@ func (c *FunctionClient) CreateWithRequest(t *testing.T, id sdk.SchemaObjectIden
 	ctx := context.Background()
 	argumentRequests := make([]sdk.FunctionArgumentRequest, len(id.ArgumentDataTypes()))
 	for i, argumentDataType := range id.ArgumentDataTypes() {
-		dataType, err := datatypes.ParseDataType(string(argumentDataType))
-		require.NoError(t, err)
-		argumentRequests[i] = *sdk.NewFunctionArgumentRequest(c.ids.Alpha(), dataType)
+		argumentRequests[i] = *sdk.NewFunctionArgumentRequest(c.ids.Alpha(), argumentDataType)
 	}
 	err := c.client().CreateForSQL(ctx, req.WithArguments(argumentRequests))
 	require.NoError(t, err)
