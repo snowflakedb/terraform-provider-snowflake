@@ -425,7 +425,6 @@ var FailoverGroup = ssot.Object{
 				ssot.ModelRequestType(&FailoverGroupAttrs.AllowedAccounts, "[]string"),
 			),
 		),
-		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(

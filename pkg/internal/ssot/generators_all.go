@@ -3,7 +3,7 @@ package ssot
 // WithAllGenerators enables every generator except the SDK, then applies overrides in order.
 //
 // Enabled: SHOW and DESCRIBE of the schema, object assertion, and show output assertion generators, the resource, the
-// config model builders, the resource assertions, and the object and resource parameter assertions.
+// config model builders, the resource assertions, the object and resource parameter assertions, and the data source.
 // The SDK (WithSdk) is not part of it: pass WithSdk next to it in Generators.
 //
 // An enabled generator that has no input for the object is skipped by its selector, so enabling all of them is safe for an
@@ -26,6 +26,7 @@ func WithAllGenerators(overrides ...GeneratorOption) GeneratorOption {
 		g.ResourceAssert.Enabled = true
 		g.ObjectParametersAssert.Enabled = true
 		g.ResourceParametersAssert.Enabled = true
+		g.DataSource.Enabled = true
 		for _, override := range overrides {
 			override(g)
 		}

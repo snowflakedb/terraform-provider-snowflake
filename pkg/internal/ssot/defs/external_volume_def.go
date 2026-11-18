@@ -299,7 +299,6 @@ var ExternalVolumeObject = ssot.Object{
 				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeNestedField(&ExternalVolumeAttrs.StorageLocations)),
 			),
 		),
-		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkShow(ssot.SdkShowOptionalLike()),
 			ssot.SdkDrop(),

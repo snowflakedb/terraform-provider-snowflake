@@ -16,6 +16,7 @@ func Test_WithAllGenerators_equalsEnablingEveryGeneratorByHand(t *testing.T) {
 		WithResource(),
 		WithModel(),
 		WithResourceAssert(),
+		WithDataSource(),
 	)
 	require.Equal(t, byHand, ObjectGenerators(WithAllGenerators()))
 }
@@ -73,6 +74,7 @@ func Test_Without_wholeGeneratorIsZero(t *testing.T) {
 		WithoutResourceAssert(),
 		WithoutObjectParametersAssert(),
 		WithoutResourceParametersAssert(),
+		WithoutDataSource(),
 	))
 	require.Equal(t, Generators{}, g)
 }

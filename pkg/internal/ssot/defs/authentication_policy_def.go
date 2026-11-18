@@ -461,7 +461,6 @@ var AuthenticationPolicy = ssot.Object{
 				),
 			),
 		),
-		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(

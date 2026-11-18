@@ -182,7 +182,6 @@ var CatalogIntegration = ssot.Object{
 				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeMethod("DescribeDetails")),
 			),
 		),
-		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkCreateForVariants(),
 			ssot.SdkAlter(),
