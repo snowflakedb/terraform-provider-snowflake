@@ -1598,10 +1598,26 @@ func Test_ValidateObject_describeDetailsObjectColumnsAndVariants(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_wrapString(t *testing.T) {
+	wrap := Attribute{
+		Name: "condition", Type: AttrString, Required: true,
+		CreateSql: WrapString(SQLBefore("ifExists", "IF (EXISTS("), SQLAfter("closeIfExists", "))")),
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{wrap}, Create: CreateSpec{Clauses: []*Attribute{&wrap}}})
+	})
+	require.Panics(t, func() {
+		bad := wrap
+		bad.CreateSql = WrapString()
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{bad}, Create: CreateSpec{Clauses: []*Attribute{&bad}}})
+	})
+}
+
 func Test_Attribute_IsOptionalColumn(t *testing.T) {
 	require.True(t, Attribute{Type: AttrString, OptionalInShow: true}.IsOptionalColumn())
 	require.False(t, Attribute{Type: AttrString}.IsOptionalColumn())
-	require.True(t, Attribute{Type: AttrObject}.IsOptionalColumn(), "an object that is not required is a pointer")
+	require.True(t, Attribute{Type: AttrObject, OptionalInShow: true}.IsOptionalColumn())
+	require.False(t, Attribute{Type: AttrObject}.IsOptionalColumn())
 	require.False(t, Attribute{Type: AttrObject, Required: true}.IsOptionalColumn())
 }
 

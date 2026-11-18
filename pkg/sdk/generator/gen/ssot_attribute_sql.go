@@ -102,6 +102,8 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendPredefinedClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindObject:
 		return v.appendObjectClause(attr, clause, clauseRequired(attr, clause, statement))
+	case ssot.SqlKindWrapString:
+		return v.appendWrapStringClause(attr, clause, clauseRequired(attr, clause, statement))
 	default:
 		panic(fmt.Sprintf("attribute %q: sql kind %q", attr.Name, clause.Kind))
 	}
@@ -521,7 +523,7 @@ func clauseFieldName(attr ssot.Attribute, statement attributeSqlStatement) strin
 	if !clause.Present {
 		panic(fmt.Sprintf("attribute %q has no %s clause", attr.Name, statementName(statement)))
 	}
-	if clause.Kind == ssot.SqlKindPreexistingStruct || clause.Kind == ssot.SqlKindObject {
+	if clause.Kind == ssot.SqlKindPreexistingStruct || clause.Kind == ssot.SqlKindObject || clause.Kind == ssot.SqlKindWrapString {
 		// The struct itself is not needed for the name. A preexisting struct is not known here, and a nested one is not built.
 		return clauseGoFieldName(attr, clause)
 	}

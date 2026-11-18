@@ -104,11 +104,14 @@ var catalogIntegrationDescribeRowAttrs = struct {
 	PropertyDefault: ssot.Attribute{Name: "property_default", Type: ssot.AttrString, Readonly: true},
 }
 
-// readonlyColumn is the attribute as a DESCRIBE column of the base: the same field, read only. It is not required, so an
-// object column is optional in the details of the base, which has the fields of every variant.
+// readonlyColumn is the attribute as a DESCRIBE column of the base: the same field, read only. An object column sets
+// OptionalInShow, so it is a pointer in the details of the base, which has the fields of every variant.
 func readonlyColumn(attr ssot.Attribute) ssot.Attribute {
 	attr.Readonly = true
 	attr.Required = false
+	if attr.Type == ssot.AttrObject {
+		attr.OptionalInShow = true
+	}
 	return attr
 }
 

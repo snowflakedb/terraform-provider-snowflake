@@ -24,6 +24,8 @@ const (
 	SqlKindPreexistingStruct SqlKind = "preexisting_struct"
 	// SqlKindPredefined is a Go type the SDK already has, such as DataType. See PredefinedType.
 	SqlKindPredefined SqlKind = "predefined"
+	// SqlKindWrapString is a helper struct around a string: static SQL, the string, then static SQL. See WrapString.
+	SqlKindWrapString SqlKind = "wrap_string"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -117,6 +119,15 @@ type SqlClause struct {
 	// NoComma separates the elements of a nested struct without commas. NoComma sets it. ObjectParameter defaults to true;
 	// Commas() sets it false so EQUALITY (c1, c2, ANALYZER => '...') keeps commas.
 	NoComma bool
+	// Before and After are the static SQL around a wrapped string. SQLBefore and SQLAfter set them.
+	Before WrapSQL
+	After  WrapSQL
+}
+
+// WrapSQL is one static field of a wrapped string. Field is the unexported Go name. SQL is the ddl text.
+type WrapSQL struct {
+	Field string
+	SQL   string
 }
 
 // SqlVariant is one variant of an object, such as a storage provider. Fields are references to attributes, in SQL order.
@@ -413,7 +424,29 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if len(over.Variants) > 0 {
 		base.Variants = over.Variants
 	}
+	if over.Before.Field != "" {
+		base.Before = over.Before
+	}
+	if over.After.Field != "" {
+		base.After = over.After
+	}
 	return base
+}
+
+// WrapString is a helper struct for a string attribute. SQLBefore, then the string, then SQLAfter.
+// The CREATE field name is the attribute name. SHOW and DESCRIBE stay the plain string.
+func WrapString(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindWrapString, nil, opts)
+}
+
+// SQLBefore sets the static SQL before the wrapped string. field is the unexported Go name. sql is the ddl text.
+func SQLBefore(field, sql string) SqlClauseOption {
+	return func(c *SqlClause) { c.Before = WrapSQL{Field: field, SQL: sql} }
+}
+
+// SQLAfter sets the static SQL after the wrapped string. field is the unexported Go name. sql is the ddl text.
+func SQLAfter(field, sql string) SqlClauseOption {
+	return func(c *SqlClause) { c.After = WrapSQL{Field: field, SQL: sql} }
 }
 
 // ObjectParameter is a nested struct clause. On the Elem object of a list it is the shape of each element: Parentheses()

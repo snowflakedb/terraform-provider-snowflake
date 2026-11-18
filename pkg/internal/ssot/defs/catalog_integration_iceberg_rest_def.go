@@ -99,11 +99,12 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		},
 	},
 	OauthRestAuthentication: ssot.Attribute{
-		Name:        "oauth_rest_authentication",
-		Type:        ssot.AttrObject,
-		ForceNew:    true,
-		Description: "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("OAuthRestAuthentication")),
+		Name:           "oauth_rest_authentication",
+		Type:           ssot.AttrObject,
+		OptionalInShow: true,
+		ForceNew:       true,
+		Description:    "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		CreateSql:      ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("OAuthRestAuthentication")),
 		Children: []ssot.Attribute{
 			catalogIntegrationRestAuthTypeOauth,
 			{
@@ -140,10 +141,11 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		},
 	},
 	BearerRestAuthentication: ssot.Attribute{
-		Name:        "bearer_rest_authentication",
-		Type:        ssot.AttrObject,
-		Description: "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
+		Name:           "bearer_rest_authentication",
+		Type:           ssot.AttrObject,
+		OptionalInShow: true,
+		Description:    "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		CreateSql:      ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			catalogIntegrationIcebergRestAuthTypeBearer,
 			{
@@ -156,11 +158,12 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		},
 	},
 	Sigv4RestAuthentication: ssot.Attribute{
-		Name:        "sigv4_rest_authentication",
-		Type:        ssot.AttrObject,
-		ForceNew:    true,
-		Description: "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("SigV4RestAuthentication")),
+		Name:           "sigv4_rest_authentication",
+		Type:           ssot.AttrObject,
+		OptionalInShow: true,
+		ForceNew:       true,
+		Description:    "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		CreateSql:      ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("SigV4RestAuthentication")),
 		Children: []ssot.Attribute{
 			catalogIntegrationIcebergRestAuthTypeSigv4,
 			{

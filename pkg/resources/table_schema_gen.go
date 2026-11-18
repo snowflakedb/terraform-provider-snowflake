@@ -142,9 +142,10 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 		Default:          IntDefault,
 	},
 	"change_tracking": {
-		Type:        tfschema.TypeBool,
-		Optional:    true,
-		Description: "Specifies whether to enable change tracking on the table. Default false.",
+		Type:             tfschema.TypeBool,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("change_tracking"),
+		Description:      "Specifies whether to enable change tracking on the table. Default false.",
 	},
 })
 

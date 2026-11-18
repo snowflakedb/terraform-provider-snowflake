@@ -1220,6 +1220,29 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		if clause.GoType == "" {
 			panic(fmt.Sprintf("object %q: attribute %q predefined type clause has no Go type", obj.Name, attr.Name))
 		}
+	case SqlKindWrapString:
+		if attr.Type != AttrString {
+			panic(fmt.Sprintf("object %q: attribute %q %s wrapped string is not a string", obj.Name, attr.Name, statement))
+		}
+		if clause.Before.Field == "" && clause.After.Field == "" {
+			panic(fmt.Sprintf("object %q: attribute %q %s wrapped string has no SQL", obj.Name, attr.Name, statement))
+		}
+		seenWrap := map[string]struct{}{genhelpers.SnakeCaseToCamel(attr.Name): {}}
+		for _, part := range []WrapSQL{clause.Before, clause.After} {
+			if part.Field == "" && part.SQL == "" {
+				continue
+			}
+			if part.Field == "" || part.SQL == "" {
+				panic(fmt.Sprintf("object %q: attribute %q %s wrapped string needs a field name and SQL", obj.Name, attr.Name, statement))
+			}
+			if !token.IsIdentifier(part.Field) || token.IsExported(part.Field) {
+				panic(fmt.Sprintf("object %q: attribute %q %s wrapped string field %q is not private", obj.Name, attr.Name, statement, part.Field))
+			}
+			if _, dup := seenWrap[part.Field]; dup {
+				panic(fmt.Sprintf("object %q: attribute %q %s wrapped string field %q is duplicated", obj.Name, attr.Name, statement, part.Field))
+			}
+			seenWrap[part.Field] = struct{}{}
+		}
 	case SqlKindStatic:
 		requireCreateOnlyClause(obj, attr, statement, clause)
 		if !attr.SqlOnly {

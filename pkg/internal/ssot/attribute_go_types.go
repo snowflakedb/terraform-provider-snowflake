@@ -54,10 +54,9 @@ func NestedObjectDetails(obj Object, attr Attribute) string {
 	return obj.Name + genhelpers.SnakeCaseToCamel(attr.OutputKey()) + "Details"
 }
 
-// IsOptionalColumn reports whether the column is a pointer in the details: it is OptionalInShow, or it is an object
-// that is not required.
+// IsOptionalColumn reports whether the column is a pointer in the details. OptionalInShow is that switch.
 func (a Attribute) IsOptionalColumn() bool {
-	return a.OptionalInShow || (a.SdkType() == AttrObject && !a.Required)
+	return a.OptionalInShow
 }
 
 // NestedDetailsElem is the element type name of a nested list or set column in the details struct:

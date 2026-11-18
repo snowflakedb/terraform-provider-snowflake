@@ -2177,7 +2177,7 @@ func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
 			{Name: "fixed", SqlOnly: true, CreateSql: ssot.StaticSQL("fixed", "A = B")},
 		},
 	}
-	auth := ssot.Attribute{Name: "o_auth_config", Type: ssot.AttrObject, Children: []ssot.Attribute{{Name: "token", Type: ssot.AttrString}}}
+	auth := ssot.Attribute{Name: "o_auth_config", Type: ssot.AttrObject, OptionalInShow: true, Children: []ssot.Attribute{{Name: "token", Type: ssot.AttrString}}}
 	base := ssot.Object{
 		Name:         "Widget",
 		NamePlural:   "Widgets",
@@ -2230,7 +2230,7 @@ func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
 			Field("OAuthConfig", "*WidgetMaxiOAuthConfigDetails").
 			IntoField(),
 		DescribeDetailsPlain(maxi).IntoField(),
-		"an object column is a struct of its Children, a pointer when it is not required",
+		"an object column is a struct of its Children, a pointer when OptionalInShow is set",
 	)
 
 	nested := DescribeNestedPlains(maxi)

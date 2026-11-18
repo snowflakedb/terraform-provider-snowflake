@@ -72,7 +72,7 @@ func TestInt_Alerts(t *testing.T) {
 		// Without WAREHOUSE the alert is serverless. Without SCHEDULE it runs when new rows arrive in the table.
 		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
 			id,
-			sdk.NewAlertConditionFromString(condition),
+			*sdk.NewAlertConditionRequest(condition),
 			"SELECT 1",
 		))
 		require.NoError(t, err)
@@ -86,7 +86,7 @@ func TestInt_Alerts(t *testing.T) {
 
 		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
 			id,
-			sdk.NewAlertConditionFromString("SELECT 1"),
+			*sdk.NewAlertConditionRequest("SELECT 1"),
 			"SELECT 1",
 		).
 			WithSchedule("5 MINUTE"))
@@ -103,7 +103,7 @@ func TestInt_Alerts(t *testing.T) {
 
 		err := client.Alerts.Create(ctx, sdk.NewCreateAlertRequest(
 			id,
-			sdk.NewAlertConditionFromString("SELECT 1"),
+			*sdk.NewAlertConditionRequest("SELECT 1"),
 			action,
 		).
 			WithWarehouse(warehouse).
@@ -153,7 +153,7 @@ func TestInt_Alerts(t *testing.T) {
 		t.Cleanup(tableCleanup)
 		alert, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
 			testClientHelper().Ids.RandomSchemaObjectIdentifier(),
-			sdk.NewAlertConditionFromString(fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName())),
+			*sdk.NewAlertConditionRequest(fmt.Sprintf("SELECT * FROM %s", table.ID().FullyQualifiedName())),
 			"SELECT 1",
 		))
 		t.Cleanup(cleanup)
@@ -376,7 +376,7 @@ func TestInt_Alerts(t *testing.T) {
 		for _, id := range []sdk.SchemaObjectIdentifier{id1, id2} {
 			created, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
 				id,
-				sdk.NewAlertConditionFromString("SELECT 1"),
+				*sdk.NewAlertConditionRequest("SELECT 1"),
 				"SELECT 1",
 			).
 				WithWarehouse(warehouse).
@@ -398,7 +398,7 @@ func TestInt_Alerts(t *testing.T) {
 			id := testClientHelper().Ids.NewSchemaObjectIdentifierInSchema(name, schema.ID())
 			_, cleanup := testClientHelper().Alert.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
 				id,
-				sdk.NewAlertConditionFromString("SELECT 1"),
+				*sdk.NewAlertConditionRequest("SELECT 1"),
 				"SELECT 1",
 			).
 				WithWarehouse(warehouse).

@@ -29,6 +29,27 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 	return v
 }
 
+// appendWrapStringClause adds a helper struct: static SQL, the string, then static SQL.
+func (v *QueryStruct) appendWrapStringClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	nested := NewQueryStruct(attr.SqlStructName(v.owner))
+	if clause.Before.Field != "" {
+		nested = nested.SQLWithCustomFieldName(clause.Before.Field, clause.Before.SQL)
+	}
+	nested = nested.Text(clauseGoFieldName(attr, ssot.SqlClause{}), KeywordOptions().NoQuotes().Required())
+	if clause.After.Field != "" {
+		nested = nested.SQLWithCustomFieldName(clause.After.Field, clause.After.SQL)
+	}
+	opts := ListOptions().NoComma()
+	if required {
+		opts = opts.Required()
+	}
+	name := clauseGoFieldName(attr, clause)
+	if required {
+		return v.QueryStructField(name, nested, opts)
+	}
+	return v.OptionalQueryStructField(name, nested, opts)
+}
+
 // appendObjectClause adds a SqlOnly nested struct, such as ENCRYPTION = (...), whose fields are the CREATE Children of attr.
 func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
 	nested := queryStructFromObjectSupplied(v.owner, attr, ssot.ClauseCreate, v.suppliedStructs)

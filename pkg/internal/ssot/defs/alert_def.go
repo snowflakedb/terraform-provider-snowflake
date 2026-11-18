@@ -65,6 +65,10 @@ var AlertAttrs = struct {
 		Required:     true,
 		Description:  "The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)",
 		DiffSuppress: ssot.SuppressStatement,
+		CreateSql: ssot.WrapString(
+			ssot.SQLBefore("ifExists", "IF (EXISTS ("),
+			ssot.SQLAfter("closeIfExists", "))"),
+		),
 	},
 	Action: ssot.Attribute{
 		Name:         "action",
@@ -72,6 +76,7 @@ var AlertAttrs = struct {
 		Required:     true,
 		Description:  "The SQL statement that should be executed if the condition returns one or more rows.",
 		DiffSuppress: ssot.SuppressStatement,
+		CreateSql:    ssot.PlainParameter(ssot.Sql("THEN"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("action")),
 	},
 	AlertSchedule: ssot.Attribute{
 		Name:           "alert_schedule",
@@ -134,31 +139,6 @@ const (
 
 // alertStateEnum is the SHOW state column. RESUME and SUSPEND are ALTER keywords, not this enum.
 var alertStateEnum = ssot.NewEnum("AlertState", "AlertStates", alertStateStarted, alertStateSuspended)
-
-// SQL clauses that are not resource attributes. condition and action are statement text.
-// CREATE uses IF (EXISTS (...)) and THEN.
-var (
-	// One IF block, not a list. ObjectParameter is a struct tagged list, so the SQL word is printed
-	// before the parentheses: IF (EXISTS (...)).
-	alertConditionSql = ssot.Attribute{
-		Name:      "condition",
-		Type:      ssot.AttrObject,
-		Required:  true,
-		CreateSql: ssot.ObjectParameter(ssot.Sql("IF"), ssot.Parentheses(), ssot.Required(), ssot.FieldName("condition")),
-		Children: []ssot.Attribute{{
-			Name:      "condition",
-			Type:      ssot.AttrList,
-			Elem:      &ssot.Attribute{Type: ssot.AttrString},
-			CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.NoComma(), ssot.Sql("EXISTS")),
-		}},
-	}
-	alertActionSql = ssot.Attribute{
-		Name:      "then_action",
-		Type:      ssot.AttrString,
-		Required:  true,
-		CreateSql: ssot.PlainParameter(ssot.Sql("THEN"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("action")),
-	}
-)
 
 var Alert = ssot.Object{
 	Name:                 "Alert",
@@ -225,8 +205,8 @@ var Alert = ssot.Object{
 		&AlertAttrs.Warehouse,
 		&AlertAttrs.AlertSchedule,
 		&AlertAttrs.Comment,
-		&alertConditionSql,
-		&alertActionSql,
+		&AlertAttrs.Condition,
+		&AlertAttrs.Action,
 	}},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterKeywordFor(&AlertAttrs.Enabled, true, "RESUME"),

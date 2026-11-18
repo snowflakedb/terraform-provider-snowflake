@@ -169,6 +169,30 @@ func Test_appendSqlSequence_singleObject(t *testing.T) {
 	require.Equal(t, want.fields, got.fields)
 }
 
+func Test_appendSqlSequence_wrappedString(t *testing.T) {
+	condition := ssot.Attribute{
+		Name:     "condition",
+		Type:     ssot.AttrString,
+		Required: true,
+		CreateSql: ssot.WrapString(
+			ssot.SQLBefore("ifExists", "IF (EXISTS("),
+			ssot.SQLAfter("closeIfExists", "))"),
+		),
+	}
+	got := NewQueryStruct("CreateAlert")
+	got.owner = "Alert"
+	got = got.appendSqlSequence([]*ssot.Attribute{&condition}, attributeSqlCreate)
+	want := NewQueryStruct("CreateAlert").QueryStructField(
+		"Condition",
+		NewQueryStruct("AlertCondition").
+			SQLWithCustomFieldName("ifExists", "IF (EXISTS(").
+			Text("Condition", KeywordOptions().NoQuotes().Required()).
+			SQLWithCustomFieldName("closeIfExists", "))"),
+		ListOptions().NoComma().Required(),
+	)
+	require.Equal(t, want.fields, got.fields)
+}
+
 func Test_appendSqlSequence_singleObjectWithStaticField(t *testing.T) {
 	typeOauth := ssot.Attribute{Name: "type_oauth", SqlOnly: true, CreateSql: ssot.StaticSQL("restAuthType", "TYPE = OAUTH")}
 	secret := ssot.Attribute{Name: "client_secret", Type: ssot.AttrString, Required: true}
