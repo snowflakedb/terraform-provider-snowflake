@@ -143,6 +143,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.PasswordPolicies().Schema,
 	},
 	{
+		name:   "FailoverGroups",
+		schema: datasources.FailoverGroups().Schema,
+	},
+	{
 		name:   "NetworkRules",
 		schema: datasources.NetworkRules().Schema,
 	},
