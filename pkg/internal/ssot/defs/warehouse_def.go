@@ -282,6 +282,7 @@ var WarehouseAttrs = struct {
 
 // ConflictsWith is assigned here. The two attributes reference each other, so setting it inside the
 // WarehouseAttrs literal is an initialization cycle.
+// ShowVariants points back at objects that are declared after Warehouse, so it is set here too.
 func init() {
 	WarehouseAttrs.ResourceConstraint.ConflictsWith = []ssot.Attribute{WarehouseAttrs.Generation}
 	WarehouseAttrs.Generation.ConflictsWith = []ssot.Attribute{WarehouseAttrs.ResourceConstraint}

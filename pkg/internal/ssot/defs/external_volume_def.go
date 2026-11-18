@@ -218,7 +218,6 @@ var ExternalVolumeAttrs = struct {
 		Name:      "storage_location",
 		Type:      ssot.AttrList,
 		Required:  true,
-		MinItems:  new(1),
 		CreateSql: ssot.ListOfObjects(ssot.Sql("STORAGE_LOCATIONS"), ssot.Parentheses()),
 		Description: "List of named cloud storage locations in different regions and, optionally, cloud platforms. Minimum 1 required. " +
 			"The order of the list is important as it impacts the active storage location, and updates will be triggered if it changes. " +

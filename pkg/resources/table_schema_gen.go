@@ -42,7 +42,6 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 				"default": {
 					Type:     tfschema.TypeList,
 					Optional: true,
-					MinItems: 1,
 					MaxItems: 1,
 					Elem: &tfschema.Resource{
 						Schema: map[string]*tfschema.Schema{
@@ -69,7 +68,6 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 				"identity": {
 					Type:     tfschema.TypeList,
 					Optional: true,
-					MinItems: 1,
 					MaxItems: 1,
 					Elem: &tfschema.Resource{
 						Schema: map[string]*tfschema.Schema{
@@ -125,6 +123,7 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 				"keys": {
 					Type:     tfschema.TypeList,
 					Required: true,
+					MinItems: 1,
 					Elem: &tfschema.Schema{
 						Type: tfschema.TypeString,
 					},

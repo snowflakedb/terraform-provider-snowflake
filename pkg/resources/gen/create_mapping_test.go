@@ -237,14 +237,13 @@ func Test_attachCreateMappings_collectionsUseElementMappers(t *testing.T) {
 			Required: true,
 		}}),
 	}, {
-		Name:     "policy",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name: "issuers",
 			Type: ssot.AttrSet,
 			Elem: &ssot.Attribute{Type: ssot.AttrString},
-		}}),
+		}},
 	}})
 
 	require.Equal(t, `func widgetApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateWidgetRequest) error {
@@ -269,10 +268,9 @@ func Test_attachCreateMappings_nestedListBlocks(t *testing.T) {
 	mode := ssot.NewEnum("WidgetMode", "WidgetModes", "ON")
 	level := ssot.NewEnum("WidgetLevel", "WidgetLevels", "LOW")
 	model := createOptionalsModel("Widget", []ssot.Attribute{{
-		Name:     "policy",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name:     "mode",
 			Type:     ssot.AttrEnum,
 			Required: true,
@@ -297,17 +295,16 @@ func Test_attachCreateMappings_nestedListBlocks(t *testing.T) {
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountObjectIdentifier",
 		}, {
-			Name:     "limit",
-			Type:     ssot.AttrList,
-			MaxItems: new(1),
-			Elem: ssot.ObjectElem([]ssot.Attribute{{
+			Name: "limit",
+			Type: ssot.AttrObject,
+			Children: []ssot.Attribute{{
 				Name: "count",
 				Type: ssot.AttrInt,
 			}, {
 				Name: "enabled",
 				Type: ssot.AttrBool,
-			}}),
-		}}),
+			}},
+		}},
 	}, {
 		Name: "storage_location",
 		Type: ssot.AttrList,
@@ -487,17 +484,15 @@ func Test_attachCreateMappings_fourLevelBlocksWithUnmappedLeafStayHandwritten(t 
 // fourLevelBlock is a -> b -> c -> d, alternating single and multi-item lists. adjustDeepest changes d.
 func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 	block := ssot.Attribute{
-		Name:     "a",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "a",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name: "b",
 			Type: ssot.AttrList,
 			Elem: ssot.ObjectElem([]ssot.Attribute{{
-				Name:     "c",
-				Type:     ssot.AttrList,
-				MaxItems: new(1),
-				Elem: ssot.ObjectElem([]ssot.Attribute{{
+				Name: "c",
+				Type: ssot.AttrObject,
+				Children: []ssot.Attribute{{
 					Name: "d",
 					Type: ssot.AttrList,
 					Elem: ssot.ObjectElem([]ssot.Attribute{{
@@ -508,12 +503,12 @@ func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 						Name: "note",
 						Type: ssot.AttrString,
 					}}),
-				}}),
+				}},
 			}}),
-		}}),
+		}},
 	}
 	if adjustDeepest != nil {
-		adjustDeepest(&block.Elem.Children[0].Elem.Children[0].Elem.Children[0])
+		adjustDeepest(&block.Children[0].Elem.Children[0].Children[0])
 	}
 	return block
 }
@@ -521,14 +516,13 @@ func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 func Test_attachCreateMappings_skipCreateStaysHandwritten(t *testing.T) {
 	src := []ssot.Attribute{{
 		Name:       "schedule",
-		Type:       ssot.AttrList,
-		MaxItems:   new(1),
+		Type:       ssot.AttrObject,
 		SkipCreate: true,
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Children: []ssot.Attribute{{
 			Name:     "expression",
 			Type:     ssot.AttrString,
 			Required: true,
-		}}),
+		}},
 	}, {
 		Name: "comment",
 		Type: ssot.AttrString,
@@ -558,13 +552,12 @@ func Test_AlertCreateMappings_skipsNestedParsers(t *testing.T) {
 
 func Test_ApplyCreateOptionals_rendersBlockParseFuncs(t *testing.T) {
 	model := createOptionalsModel("Widget", []ssot.Attribute{{
-		Name:     "policy",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name: "comment",
 			Type: ssot.AttrString,
-		}}),
+		}},
 	}})
 	var b strings.Builder
 	require.NoError(t, LifecycleTemplate.Execute(&b, model))

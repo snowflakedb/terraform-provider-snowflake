@@ -44,7 +44,7 @@ func ValidateObject(obj Object) {
 			sqlOnly[a.Name] = struct{}{}
 		}
 		validateSdkString(obj, a)
-		validateCollectionBounds(obj, a)
+		validateBounds(obj, a)
 		validateNestedAttribute(obj, a)
 		validateAttribute(obj, a)
 		validateSqlClauses(obj, a)
@@ -430,7 +430,7 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 				panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, setOrUnset))
 			}
 		}
-		validateCollectionBounds(obj, child)
+		validateBounds(obj, child)
 		validateNestedAttribute(obj, child)
 	}
 	if attr.IsObjectList() {
@@ -461,9 +461,9 @@ func isNestedSqlOnlyClause(child Attribute) bool {
 	return false
 }
 
-// validateNestedShape allows two shapes for a nested block: an object, which is a single block, and a list or set whose Elem
-// is an object, which is a repeated block. The fields are the Children of the object. Children is valid only on an object.
-// A single block gets its item bounds from ResourceForm, so it sets none: bounds are valid only on a list or set.
+// validateNestedShape allows two shapes for a nested object: an object, and a list or set whose Elem
+// is an object. The fields are the Children of the object. Children is valid only on an object.
+// A single object sets no Min or Max: bounds are valid only on an int, list, or set.
 func validateNestedShape(obj Object, attr Attribute) {
 	if len(attr.Children) > 0 && attr.Type != AttrObject {
 		panic(fmt.Sprintf("object %q: attribute %q has Children but is not an object; declare the fields of a list or set on an object Elem (ObjectElem)", obj.Name, attr.Name))
@@ -598,15 +598,31 @@ func variantFieldHasClause(field Attribute) bool {
 	return field.CreateSql.Present || field.hasSqlDefault(ClauseCreate)
 }
 
-func validateCollectionBounds(obj Object, attr Attribute) {
-	if attr.MinItems == nil && attr.MaxItems == nil {
+func validateBounds(obj Object, attr Attribute) {
+	if attr.Min == nil && attr.Max == nil {
 		return
 	}
-	if attr.Type != AttrList && attr.Type != AttrSet {
-		panic(fmt.Sprintf("object %q: attribute %q item bounds require a list or set", obj.Name, attr.Name))
+	if attr.Type != AttrInt && attr.Type != AttrList && attr.Type != AttrSet {
+		panic(fmt.Sprintf("object %q: attribute %q bounds require an int, list, or set", obj.Name, attr.Name))
 	}
-	if attr.MinItems != nil && attr.MaxItems != nil && *attr.MinItems > *attr.MaxItems {
-		panic(fmt.Sprintf("object %q: attribute %q MinItems %d is greater than MaxItems %d", obj.Name, attr.Name, *attr.MinItems, *attr.MaxItems))
+	if attr.Type == AttrList || attr.Type == AttrSet {
+		if (attr.Min != nil && *attr.Min < 0) || (attr.Max != nil && *attr.Max < 0) {
+			panic(fmt.Sprintf("object %q: attribute %q collection bounds cannot be negative", obj.Name, attr.Name))
+		}
+	}
+	if attr.Type == AttrList && attr.Required && attr.Min != nil {
+		if *attr.Min == 0 {
+			panic(fmt.Sprintf("object %q: attribute %q is a required list and cannot have Min 0", obj.Name, attr.Name))
+		}
+		if *attr.Min == 1 {
+			panic(fmt.Sprintf("object %q: attribute %q is a required list, so Min 1 is deduced automatically; omit Min", obj.Name, attr.Name))
+		}
+	}
+	if attr.Min != nil && attr.Max != nil && *attr.Min > *attr.Max {
+		panic(fmt.Sprintf("object %q: attribute %q Min %d is greater than Max %d", obj.Name, attr.Name, *attr.Min, *attr.Max))
+	}
+	if attr.Type == AttrList && attr.IsObjectList() && attr.Max != nil && *attr.Max == 1 {
+		panic(fmt.Sprintf("object %q: attribute %q is a list of objects with Max 1; use AttrObject instead", obj.Name, attr.Name))
 	}
 }
 
