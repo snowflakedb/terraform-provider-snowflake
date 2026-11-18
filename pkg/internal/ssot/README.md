@@ -600,7 +600,8 @@ parameters attributes schema, and its changed keys are `<prefix>ParametersFieldN
 `Name` is a top-level resource or identifier attribute. An object `Elem` marks a nested column or a nested resource
 attribute, and both are left out. For now, the set/list fields have to be excluded
 (`TODO [SNOW-1648997]`): a column or resource attribute whose type is a set or a list is left out, including a set or
-list of scalars. A readonly column that is not a resource attribute is left out: a diff cannot change it, unless its `ShowName` is a
+list of scalars. A change of such an attribute leaves its `show_output` value stale until the next refresh, so a test that
+verifies an import ignores that value (with a `TODO [SNOW-1648997]`). A readonly column that is not a resource attribute is left out: a diff cannot change it, unless its `ShowName` is a
 resource attribute (a DESCRIBE-only column that reads that attribute's property in another type, such as a plain string): the key
 is then that attribute. Otherwise the key is `Name`, the resource attribute `ComputedIfAnyAttributeChanged` watches.
 `fully_qualified_name` is emitted only when at least one identifier attribute is not ForceNew. Its keys are those
@@ -744,8 +745,8 @@ values from DESCRIBE, keeps `ExtCall`.
 
 #### Data source generator
 
-The data source generator (`make generate-datasource`) writes `pkg/datasources/<plural_snake>_gen.go` for each object with
-`WithDataSource()` on. A data source lists one plural, so it takes the base of that plural: a variant is covered by its base,
+The data source generator (`make generate-datasource`) writes `pkg/datasources/<plural_snake>_gen.go` for each object that has
+it enabled (`WithAllGenerators`, or `WithDataSource()`). A data source lists one plural, so it takes the base of that plural: a variant is covered by its base,
 and so is a `VariantBaseOnly` base. The object needs an SDK SHOW and SHOW columns. `make generate-datasource-check` fails
 on a file that differs from the committed one, and on a file left over from an object that no longer enables it.
 
@@ -756,6 +757,16 @@ The data source follows the object, so a definition lists only the exceptions:
   shared schemas and handlers are in `pkg/datasources/common.go`, and a new filter flavour starts there.
   `terse` and `history` are left out unless the definition opts in with `WithDataSource(DataSourceWithTerse())` or `DataSourceWithHistory()`. A SHOW without a schema level, such as `SHOW SCHEMAS`, uses `SdkShowOptionalExtendedInWithoutSchema()`, and its data source `in` block has no `schema`. A filter that Snowflake
   ignores in SHOW is left out with `WithDataSource(DataSourceWithoutFilters(DataSourceFilterStartsWith, …))`.
+  Take the `IN` option and the filters from the SHOW page, not from a similar object: `SHOW SCHEMAS` has no `IN SCHEMA`,
+  and `SHOW PIPES` and `SHOW WAREHOUSES` accept `STARTS WITH` and `LIMIT` but do not apply them. Probe a filter against
+  Snowflake before offering it. When the SDK does not need an ignored filter, leave it out of the SDK `SHOW`. When it does
+  (a ShowByID that uses `STARTS WITH` with `LIMIT 1`), opt out in the data source, and add an integration case that
+  documents the behavior and fails once Snowflake applies it.
+- A SHOW column marked `SkipInSchema` is not in `show_output`, so the data source does not return it. A column of enum
+  values that the schema generator cannot map is kept with `SchemaShowManualFields` and mapped in `pkg/schemas/<name>_ext.go`.
+  Adding a column to the show schema also adds it to `show_output` of the resource, so it needs the resource's
+  `show_output` recompute (see the set and list exclusion in [Resource generator](#resource-generator)) and a migration
+  guide line.
 - `with_describe` and `describe_output` exist when the SDK has DESCRIBE and the object has `Describe.Columns`, or when
   `WithDataSource(DataSourceDescribeMethod("DescribeColumns"))` selects a custom operation. The call is `DescribeDetails`
   when the SDK emits it, otherwise `Describe`. A custom-operation describe is `Client.<Plural>.<Kind>(ctx, sdk.New<Kind><Name>Request(id))`.
@@ -791,6 +802,15 @@ hook on a variant, or on an object without `WithDataSource()`, panics in `Valida
 
 `diags` is a `*diag.Diagnostics` that the read returns. A step that fails without being fatal appends a warning to it and
 returns no error. Reads without such a step have no `diags`.
+
+A hand-written data source of an object that is defined here is replaced by the generated one, not extended. Both files
+declare the same names, so the hand-written file is deleted in the same change that enables the data source. When its
+shape is not the generated one (flat fields instead of `show_output`, another `in_account` format, another id), the
+replacement is a breaking change of a preview data source. Compare every hand-written output field with the generated show
+schema, and write the migration guide entry as a subsection of the entry of the related resource when there is one. The
+tests of the object are moved to the use-case shape. A `SHOW` without `LIKE`, such as `SHOW FAILOVER GROUPS` and
+`SHOW REPLICATION GROUPS`, returns the rows of the whole account, so those tests find the created row by name
+(`groupsInDataSource` in `pkg/testacc`).
 
 The generator does not write the name constant in `pkg/provider/datasources`, the registration, the preview feature
 constants, the docs templates, the examples, the config model, the assertions, or the acceptance tests. They stay steps of
