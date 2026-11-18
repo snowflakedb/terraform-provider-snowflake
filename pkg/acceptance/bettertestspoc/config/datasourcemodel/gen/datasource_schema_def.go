@@ -239,6 +239,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.Streams().Schema,
 	},
 	{
+		name:   "Tables",
+		schema: datasources.Tables().Schema,
+	},
+	{
 		name:   "Tags",
 		schema: datasources.Tags().Schema,
 	},

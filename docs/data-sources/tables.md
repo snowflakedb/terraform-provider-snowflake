@@ -2,14 +2,14 @@
 page_title: "snowflake_tables Data Source - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Datasource used to get details of filtered tables. Filtering is aligned with the current possibilities for SHOW TABLES https://docs.snowflake.com/en/sql-reference/sql/show-tables query. The results of SHOW and DESCRIBE (COLUMNS) are encapsulated in one output collection tables.
+  Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for SHOW TABLES https://docs.snowflake.com/en/sql-reference/sql/show-tables query. The results of SHOW and DESCRIBE are encapsulated in one output collection tables.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_tables (Data Source)
 
-Datasource used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW and DESCRIBE (COLUMNS) are encapsulated in one output collection `tables`.
+Data source used to get details of filtered tables. Filtering is aligned with the current possibilities for [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `tables`.
 
 ## Example Usage
 
@@ -147,12 +147,12 @@ check "table_check" {
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
-- `with_describe` (Boolean) (Default: `true`) Runs DESC TABLE for each table returned by SHOW TABLES. The output of describe is saved to the description field. By default this value is set to true.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC TABLE for each table returned by SHOW TABLES. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `tables` (List of Object) Holds the aggregated output of all tables details queries. (see [below for nested schema](#nestedatt--tables))
+- `tables` (List of Object) Holds the aggregated output of all table details queries. (see [below for nested schema](#nestedatt--tables))
 
 <a id="nestedblock--in"></a>
 ### Nested Schema for `in`

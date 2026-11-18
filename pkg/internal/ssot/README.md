@@ -754,8 +754,11 @@ The data source follows the object, so a definition lists only the exceptions:
   shared schemas and handlers are in `pkg/datasources/common.go`, and a new filter flavour starts there.
   `terse` and `history` are left out unless the definition opts in with `WithDataSource(DataSourceWithTerse())` or `DataSourceWithHistory()`. A SHOW without a schema level, such as `SHOW SCHEMAS`, uses `SdkShowOptionalExtendedInWithoutSchema()`, and its data source `in` block has no `schema`. A filter that Snowflake
   ignores in SHOW is left out with `WithDataSource(DataSourceWithoutFilters(DataSourceFilterStartsWith, …))`.
-- `with_describe` and `describe_output` exist when the SDK has DESCRIBE and the object has `Describe.Columns`. The call is
-  `DescribeDetails` when the SDK emits it, otherwise `Describe`.
+- `with_describe` and `describe_output` exist when the SDK has DESCRIBE and the object has `Describe.Columns`, or when
+  `WithDataSource(DataSourceDescribeMethod("DescribeColumns"))` selects a custom operation. The call is `DescribeDetails`
+  when the SDK emits it, otherwise `Describe`. A custom-operation describe is `Client.<Plural>.<Kind>(ctx, sdk.New<Kind><Name>Request(id))`.
+  The output type is the paired plain struct of that operation. A generated describe without columns or a describe method
+  panics in `ValidateObject`. `with_describe` names the object from `ObjectType()`.
 - `with_parameters` and `parameters` exist when the SDK has `SdkShowParameters()`. The parameters schema and mapper are
   written by hand in `pkg/schemas`. An object with `ShowParametersDetailsAdditionalLevels` covers the parameters of its
   variants, so the data source uses the union: `ShowAll<Name>ParametersSchema()` and `All<Name>ParametersToSchema`.

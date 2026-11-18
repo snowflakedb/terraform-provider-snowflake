@@ -147,9 +147,17 @@ type DataSourceDescribe struct {
 	Method string
 	// Slice is true when the call returns a list.
 	Slice bool
+	// RequestConstructor is the SDK request constructor when DESCRIBE takes a request, such as NewDescribeColumnsTableRequest.
+	// Empty means the call takes item.ID().
+	RequestConstructor string
+	// ResultName is the SDK type of the DESCRIBE result, such as TableColumnDetails. Empty uses DescribeDetailsName or Name plus Details.
+	ResultName string
 }
 
 func (obj Object) HasDataSourceDescribe() bool {
+	if ObjectGenerators(obj.Generators...).DataSource.DescribeMethod != "" {
+		return true
+	}
 	return obj.SdkConfig().Describe && len(obj.Describe.Columns) > 0
 }
 
@@ -157,13 +165,35 @@ func (obj Object) HasDataSourceParameters() bool {
 	return obj.SdkConfig().ShowParameters
 }
 
-// DataSourceDescribe prefers DescribeDetails over Describe.
+// DataSourceDescribe prefers a custom-operation method, then DescribeDetails, then Describe.
 func (obj Object) DataSourceDescribe() DataSourceDescribe {
+	method := ObjectGenerators(obj.Generators...).DataSource.DescribeMethod
+	if method != "" {
+		op := obj.customOperation(method)
+		if op == nil {
+			panic("object " + obj.Name + ": DataSourceDescribeMethod " + method + " is not a custom operation")
+		}
+		describe := DataSourceDescribe{Method: method, RequestConstructor: "New" + method + obj.Name + "Request"}
+		if op.Paired != nil {
+			describe.Slice = true
+			describe.ResultName = op.Paired.Plain
+		}
+		return describe
+	}
 	cfg := obj.SdkConfig()
 	if cfg.DescribeDetailsMethod || cfg.DescribeDetailsFromIdentifier {
 		return DataSourceDescribe{Method: "DescribeDetails"}
 	}
 	return DataSourceDescribe{Method: "Describe", Slice: cfg.DescribeMapping == SdkDescriptionMappingSlice}
+}
+
+func (obj Object) customOperation(kind string) *CustomOperationSpec {
+	for i := range obj.CustomOperations {
+		if obj.CustomOperations[i].Kind == kind {
+			return &obj.CustomOperations[i]
+		}
+	}
+	return nil
 }
 
 // EffectiveDataSourceHooks are the hooks of the data source of this object. The data source exposes what the object has,

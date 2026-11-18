@@ -154,6 +154,9 @@ type DataSourceGenerator struct {
 	WithHistory bool
 	// WithoutFilters are the filters of the SDK SHOW request that the data source does not offer.
 	WithoutFilters []DataSourceFilter
+	// DescribeMethod is the custom-operation Kind the data source DESCRIBE calls, such as DescribeColumns.
+	// Empty uses DescribeDetails when the SDK emits it, otherwise Describe.
+	DescribeMethod string
 }
 
 // DataSourceFilter is a filter that a data source can leave out.
@@ -661,6 +664,12 @@ func DataSourceWithHistory() DataSourceOption {
 // DataSourceWithoutFilters leaves filters out of the data source, for example while Snowflake ignores them in SHOW.
 func DataSourceWithoutFilters(filters ...DataSourceFilter) DataSourceOption {
 	return func(g *DataSourceGenerator) { g.WithoutFilters = append(g.WithoutFilters, filters...) }
+}
+
+// DataSourceDescribeMethod selects a custom operation as the data source DESCRIBE, such as DescribeColumns.
+// Kind is CustomOperationSpec.Kind. The call is Client.<Plural>.<Kind>(ctx, sdk.New<Kind><Name>Request(id)).
+func DataSourceDescribeMethod(kind string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.DescribeMethod = kind }
 }
 
 // WithDataSource enables data source generation for this object.

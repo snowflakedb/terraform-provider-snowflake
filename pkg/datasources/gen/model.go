@@ -37,6 +37,9 @@ func (m DataSourceModel) ResultName() string {
 }
 
 func (m DataSourceModel) DescribeSchemaName() string {
+	if m.Describe.ResultName != "" {
+		return m.Describe.ResultName
+	}
 	if m.DescribeDetailsName != "" {
 		return m.DescribeDetailsName
 	}
@@ -121,6 +124,10 @@ func (m DataSourceModel) HasFilters() bool {
 
 func ModelFromInputObject(input DataSourceObject, preamble *genhelpers.PreambleModel, _ *log.Logger) DataSourceModel {
 	sdkConfig := input.SdkConfig()
+	// An ext describe has no SDK DESCRIBE config, and the with_describe description still names the object.
+	if sdkConfig.DescribeSql == "" {
+		sdkConfig.DescribeSql = input.ObjectType()
+	}
 	return DataSourceModel{
 		Name:                   input.Name,
 		NamePlural:             input.NamePlural,
