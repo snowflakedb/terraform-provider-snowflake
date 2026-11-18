@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -84,17 +83,7 @@ func ReadFailoverGroupSecondaryFunc(withExternalChangesMarking bool) tfschema.Re
 
 		failoverGroupSecondary, err := meta.(*provider.Context).Client.FailoverGroups.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query failover group secondary. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Failover group secondary id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeFailoverGroup, id, err)
 		}
 
 		errs := errors.Join(
