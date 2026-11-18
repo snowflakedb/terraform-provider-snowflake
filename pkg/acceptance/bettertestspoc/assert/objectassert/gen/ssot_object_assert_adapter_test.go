@@ -380,7 +380,7 @@ func Test_objectAssertionDetailsFromSsot_describeFetch(t *testing.T) {
 
 func Test_objectAssertionDetailsFromSsot_nestedObjectColumn(t *testing.T) {
 	required := ssot.Attribute{Name: "rest_config", Type: ssot.AttrObject, Required: true}
-	optional := ssot.Attribute{Name: "oauth_rest_authentication", Type: ssot.AttrObject}
+	optional := ssot.Attribute{Name: "oauth_rest_authentication", Type: ssot.AttrObject, OptionalInShow: true}
 	obj := ssot.Object{
 		Name:   "Widget",
 		IdType: "AccountObjectIdentifier",

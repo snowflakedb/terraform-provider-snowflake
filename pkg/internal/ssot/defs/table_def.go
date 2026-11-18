@@ -163,10 +163,13 @@ var TableAttrs = struct {
 		Description: "Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table. If you wish to inherit the parent schema setting then pass in the schema attribute to this argument or do not fill this parameter at all; the default value for this field is -1, which is a fallback to use Snowflake default - in this case the schema value",
 	},
 	ChangeTracking: ssot.Attribute{
-		Name:        "change_tracking",
-		Type:        ssot.AttrBool,
-		NativeBool:  true,
-		Description: "Specifies whether to enable change tracking on the table. Default false.",
+		Name:          "change_tracking",
+		Type:          ssot.AttrBool,
+		NativeBool:    true,
+		StoredAsText:  true,
+		OptionalInDb:  true,
+		BoolTrueValue: "ON",
+		Description:   "Specifies whether to enable change tracking on the table. Default false.",
 	},
 }
 
@@ -601,23 +604,18 @@ func tableShowBool(name, trueValue string) ssot.Attribute {
 }
 
 var (
-	tableShowCreatedOn           = tableShowString("created_on", false, false)
-	tableShowName                = tableShowString("name", false, false)
-	tableShowSchemaName          = tableShowString("schema_name", false, false)
-	tableShowDatabaseName        = tableShowString("database_name", false, false)
-	tableShowKind                = tableShowString("kind", false, false)
-	tableShowClusterBy           = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
-	tableShowOwner               = tableShowString("owner", false, false)
-	tableShowRows                = tableShowInt("rows", false)
-	tableShowBytes               = tableShowInt("bytes", true)
-	tableShowRetentionTime       = tableShowInt("retention_time", false)
-	tableShowDroppedOn           = tableShowString("dropped_on", true, true)
-	tableShowAutomaticClustering = tableShowBool("automatic_clustering", "ON")
-	// The resource attribute stays a separate field. Sharing its name would drift-suppress change_tracking.
-	tableShowChangeTracking = ssot.Attribute{
-		Name: "show_change_tracking", ShowName: "change_tracking", Type: ssot.AttrBool, Readonly: true,
-		StoredAsText: true, OptionalInDb: true, BoolTrueValue: "ON",
-	}
+	tableShowCreatedOn                  = tableShowString("created_on", false, false)
+	tableShowName                       = tableShowString("name", false, false)
+	tableShowSchemaName                 = tableShowString("schema_name", false, false)
+	tableShowDatabaseName               = tableShowString("database_name", false, false)
+	tableShowKind                       = tableShowString("kind", false, false)
+	tableShowClusterBy                  = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
+	tableShowOwner                      = tableShowString("owner", false, false)
+	tableShowRows                       = tableShowInt("rows", false)
+	tableShowBytes                      = tableShowInt("bytes", true)
+	tableShowRetentionTime              = tableShowInt("retention_time", false)
+	tableShowDroppedOn                  = tableShowString("dropped_on", true, true)
+	tableShowAutomaticClustering        = tableShowBool("automatic_clustering", "ON")
 	tableShowSearchOptimization         = tableShowBool("search_optimization", "ON")
 	tableShowSearchOptimizationProgress = tableShowString("search_optimization_progress", true, false)
 	tableShowSearchOptimizationBytes    = tableShowInt("search_optimization_bytes", true)
@@ -733,7 +731,7 @@ var Table = ssot.Object{
 			&tableShowRetentionTime,
 			&tableShowDroppedOn,
 			&tableShowAutomaticClustering,
-			&tableShowChangeTracking,
+			&TableAttrs.ChangeTracking,
 			&tableShowSearchOptimization,
 			&tableShowSearchOptimizationProgress,
 			&tableShowSearchOptimizationBytes,

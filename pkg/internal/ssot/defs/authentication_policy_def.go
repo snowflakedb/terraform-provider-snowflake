@@ -270,13 +270,10 @@ var AuthenticationPolicyAttrs = struct {
 	OwnerRoleType            ssot.Attribute
 	Options                  ssot.Attribute
 	TargetScopes             ssot.Attribute
-	// DESCRIBE-only columns: a read enum, and the values DESCRIBE returns as nested structs. They share the Children of the attributes.
-	DescribeMfaEnrollment          ssot.Attribute
-	DescribeSecurityIntegrations   ssot.Attribute
-	DescribeClientPolicy           ssot.Attribute
-	DescribeMfaPolicy              ssot.Attribute
-	DescribePatPolicy              ssot.Attribute
-	DescribeWorkloadIdentityPolicy ssot.Attribute
+	// DESCRIBE-only columns whose shape is not the writable attribute: a read enum, security_integrations, and client_policy.
+	DescribeMfaEnrollment        ssot.Attribute
+	DescribeSecurityIntegrations ssot.Attribute
+	DescribeClientPolicy         ssot.Attribute
 	// The DESCRIBE rows are a property list, which the SDK parses into the details that Describe.Columns models.
 	Property            ssot.Attribute
 	PropertyValue       ssot.Attribute
@@ -405,14 +402,11 @@ var AuthenticationPolicyAttrs = struct {
 		},
 	},
 	// The elements are the hand-written AuthenticationPolicyClientPolicyDetails, see SdkDescribeDetailsNestedField.
-	DescribeClientPolicy:           ssot.Attribute{Name: "describe_client_policy", ShowName: "client_policy", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}},
-	DescribeMfaPolicy:              ssot.Attribute{Name: "describe_mfa_policy", ShowName: "mfa_policy", Type: ssot.AttrObject, Required: true, Readonly: true, Children: authenticationPolicyMfaPolicyChildren},
-	DescribePatPolicy:              ssot.Attribute{Name: "describe_pat_policy", ShowName: "pat_policy", Type: ssot.AttrObject, Required: true, Readonly: true, Children: authenticationPolicyPatPolicyChildren},
-	DescribeWorkloadIdentityPolicy: ssot.Attribute{Name: "describe_workload_identity_policy", ShowName: "workload_identity_policy", Type: ssot.AttrObject, Required: true, Readonly: true, Children: authenticationPolicyWorkloadIdentityPolicyChildren},
-	Property:                       ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true},
-	PropertyValue:                  ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true},
-	PropertyDefault:                ssot.Attribute{Name: "default", Type: ssot.AttrString, Readonly: true},
-	PropertyDescription:            ssot.Attribute{Name: "description", Type: ssot.AttrString, Readonly: true},
+	DescribeClientPolicy: ssot.Attribute{Name: "describe_client_policy", ShowName: "client_policy", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}},
+	Property:             ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true},
+	PropertyValue:        ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true},
+	PropertyDefault:      ssot.Attribute{Name: "default", Type: ssot.AttrString, Readonly: true},
+	PropertyDescription:  ssot.Attribute{Name: "description", Type: ssot.AttrString, Readonly: true},
 	TargetScopes: ssot.Attribute{
 		Name:     "target_scopes",
 		Type:     ssot.AttrList,
@@ -443,9 +437,9 @@ var AuthenticationPolicy = ssot.Object{
 					&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
 					&AuthenticationPolicyAttrs.Comment,
 					&AuthenticationPolicyAttrs.DescribeClientPolicy,
-					&AuthenticationPolicyAttrs.DescribeMfaPolicy,
-					&AuthenticationPolicyAttrs.DescribePatPolicy,
-					&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
+					&AuthenticationPolicyAttrs.MfaPolicy,
+					&AuthenticationPolicyAttrs.PatPolicy,
+					&AuthenticationPolicyAttrs.WorkloadIdentityPolicy,
 				)),
 			),
 			// Parameter assertions omitted. The catalog has no AUTHENTICATION_POLICY entries.
@@ -455,9 +449,9 @@ var AuthenticationPolicy = ssot.Object{
 					ssot.ObjectAssertDescribeMethod("DescribeDetails"),
 					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations),
 					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeClientPolicy),
-					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeMfaPolicy),
-					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribePatPolicy),
-					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.MfaPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.PatPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.WorkloadIdentityPolicy),
 				),
 			),
 		),
@@ -490,9 +484,9 @@ var AuthenticationPolicy = ssot.Object{
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations, "SECURITY_INTEGRATIONS"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.Comment, "COMMENT"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeClientPolicy, "CLIENT_POLICY"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeMfaPolicy, "MFA_POLICY"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribePatPolicy, "PAT_POLICY"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy, "WORKLOAD_IDENTITY_POLICY"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.MfaPolicy, "MFA_POLICY"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.PatPolicy, "PAT_POLICY"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.WorkloadIdentityPolicy, "WORKLOAD_IDENTITY_POLICY"),
 					),
 				),
 			),
@@ -609,9 +603,9 @@ var AuthenticationPolicy = ssot.Object{
 			&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
 			&AuthenticationPolicyAttrs.Comment,
 			&AuthenticationPolicyAttrs.DescribeClientPolicy,
-			&AuthenticationPolicyAttrs.DescribeMfaPolicy,
-			&AuthenticationPolicyAttrs.DescribePatPolicy,
-			&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
+			&AuthenticationPolicyAttrs.MfaPolicy,
+			&AuthenticationPolicyAttrs.PatPolicy,
+			&AuthenticationPolicyAttrs.WorkloadIdentityPolicy,
 		},
 	},
 }

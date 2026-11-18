@@ -213,7 +213,7 @@ type ObjectAssertGenerator struct {
 // Empty GoType means the default. A list or set is "[]sdk." + object Name + the column name in
 // camel case with one trailing "s" dropped + "Details" (storage_locations on ExternalVolume is
 // []sdk.ExternalVolumeStorageLocationDetails). An object column is sdk.<NestedObjectDetails>, and a
-// pointer when the column is not required.
+// pointer when OptionalInShow is set.
 type ObjectAssertNestedField struct {
 	Attr   *Attribute
 	GoType string
