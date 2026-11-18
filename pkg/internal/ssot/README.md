@@ -298,8 +298,8 @@ enable nothing.
   See [Resource generator](#resource-generator). An object in `All()` is a resource-generation input when this call is present.
   Zero options still sets `Enabled`. Generation parts stay on the resource generator's per-object settings.
 - `WithDataSource()` - data source generator (`make generate-datasource`).
-  See [Data source generator](#data-source-generator). Zero options still sets `Enabled`. It is not part of
-  `WithAllGenerators` yet. `WithoutDataSource()` turns it off.
+  See [Data source generator](#data-source-generator). Zero options still sets `Enabled`.
+  `WithAllGenerators` enables it, so a definition adds `WithDataSource(...)` only for options. `WithoutDataSource()` turns it off.
 - `WithSchema(SchemaShow(), SchemaDescribe())` - SHOW/DESCRIBE schema generator (`make generate-show-output-schemas`).
   See [that README](../../schemas/gen/README.md). `SchemaShow(SchemaShowManualFields(&attrs.Tables))` copies
   `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
@@ -809,6 +809,7 @@ constants, the docs templates, the examples, the config model, the assertions, o
 | `WithResourceAssert` | - |
 | `WithObjectParametersAssert` | - |
 | `WithResourceParametersAssert` | - |
+| `WithDataSource` | - |
 
 The SDK (`WithSdk`) is not part of it. Pass `WithSdk(...)` next to it in `Generators`.
 

@@ -411,7 +411,6 @@ var ReplicationGroup = ssot.Object{
 				ssot.ModelRequestType(&ReplicationGroupAttrs.AllowedAccounts, "[]string"),
 			),
 		),
-		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(
