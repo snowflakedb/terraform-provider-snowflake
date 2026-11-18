@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/util"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -27,12 +28,25 @@ var (
 	}
 )
 
+// failoverGroupMembershipAttributes are the attributes Snowflake rejects changes to in the read-only mode.
+var failoverGroupMembershipAttributes = []string{"object_types", "allowed_databases", "allowed_external_volumes", "allowed_shares", "allowed_integration_types"}
+
+func failoverGroupChangedMembershipAttributes(d interface{ HasChange(string) bool }) []string {
+	var changed []string
+	for _, key := range failoverGroupMembershipAttributes {
+		if d.HasChange(key) {
+			changed = append(changed, key)
+		}
+	}
+	return changed
+}
+
 // failoverGroupMembershipLockedInReadOnlyMode is listed on the failover group SSOT object and appended to the generated customdiff.All.
 // Snowflake rejects the membership changes (OBJECT_TYPES, the allowed lists, and ALLOWED_INTEGRATION_TYPES) in the read-only mode,
 // so a plan that keeps read_only on and changes one of them fails here instead of in the middle of the apply.
 // Switching read_only off in the same plan is fine: the update leaves the read-only mode before the membership changes.
-// TODO [next PRs]: add an experiment that leaves the read-only mode before the membership changes and restores it afterwards.
-func failoverGroupMembershipLockedInReadOnlyMode(_ context.Context, d *schema.ResourceDiff, _ any) error {
+// With the FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH experiment the plan passes, and the update leaves the read-only mode and enters it again around the changes.
+func failoverGroupMembershipLockedInReadOnlyMode(_ context.Context, d *schema.ResourceDiff, meta any) error {
 	if d.Id() == "" {
 		return nil
 	}
@@ -40,15 +54,13 @@ func failoverGroupMembershipLockedInReadOnlyMode(_ context.Context, d *schema.Re
 	if !oldReadOnly.(bool) || !newReadOnly.(bool) {
 		return nil
 	}
-	var changed []string
-	for _, key := range []string{"object_types", "allowed_databases", "allowed_external_volumes", "allowed_shares", "allowed_integration_types"} {
-		if d.HasChange(key) {
-			changed = append(changed, key)
-		}
+	if meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.FailoverGroupReadOnlyAutoSwitch) {
+		return nil
 	}
-	if len(changed) > 0 {
+	if changed := failoverGroupChangedMembershipAttributes(d); len(changed) > 0 {
 		return fmt.Errorf("cannot change %s while read_only is true: Snowflake does not allow changing the membership of a failover group in the read-only mode; "+
-			"set read_only to false (or remove it) to change them, and set it back to true afterwards", strings.Join(changed, ", "))
+			"set read_only to false (or remove it) to change them, and set it back to true afterwards, "+
+			"or enable the %s experiment to let the provider do it", strings.Join(changed, ", "), experimentalfeatures.FailoverGroupReadOnlyAutoSwitch)
 	}
 	return nil
 }
@@ -142,12 +154,16 @@ func failoverGroupApplySetUnsetExt(d *schema.ResourceData) (*failoverGroupAlterR
 
 	// Snowflake rejects membership changes in the read-only mode, so it is switched off before them and on after them.
 	// SET and UNSET READ_ONLY fail when the group is already (not) in the read-only mode, so they run only when the value changes.
-	if d.HasChange("read_only") {
-		if d.Get("read_only").(bool) {
-			readOnlyOn.set(sdk.NewFailoverGroupSetRequest().WithReadOnly(true))
-		} else {
-			readOnlyOff.unset(sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))
-		}
+	// A group that stays read-only reaches this point only with the FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH experiment, otherwise the plan fails.
+	staysReadOnly := d.Get("read_only").(bool) && !d.HasChange("read_only") && len(failoverGroupChangedMembershipAttributes(d)) > 0
+	switch {
+	case d.HasChange("read_only") && d.Get("read_only").(bool):
+		readOnlyOn.set(sdk.NewFailoverGroupSetRequest().WithReadOnly(true))
+	case d.HasChange("read_only"):
+		readOnlyOff.unset(sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))
+	case staysReadOnly:
+		readOnlyOff.unset(sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))
+		readOnlyOn.set(sdk.NewFailoverGroupSetRequest().WithReadOnly(true))
 	}
 
 	if err := failoverGroupObjectTypesStepsExt(d, steps); err != nil {

@@ -22,7 +22,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -850,16 +849,10 @@ func TestInt_FailoverGroups(t *testing.T) {
 			HasSecondaryState(sdk.FailoverGroupSecondaryStateStarted).
 			HasNextScheduledRefreshNotEmpty())
 
-		// TODO [SNOW-1348343]: use INFORMATION_SCHEMA.REPLICATION_GROUP_REFRESH_PROGRESS (END_TIME = NULL) to know when no refresh is going on.
-		// A refresh can already be running (003101: Only one refresh statement can execute at a time). Retry until this one is accepted.
-		assert.Eventually(t, func() bool {
-			err := secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
-				WithRefresh(true))
-			if err != nil {
-				t.Logf("Retrying: %v", err)
-			}
-			return err == nil
-		}, 2*time.Minute, time.Second)
+		// A refresh can already be running (003101: Only one refresh statement can execute at a time).
+		secondaryTestClientHelper().FailoverGroup.WaitForNoRefreshInProgress(t, secondaryID)
+		require.NoError(t, secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
+			WithRefresh(true)))
 	})
 
 	t.Run("alter secondary: promote to primary", func(t *testing.T) {
@@ -870,15 +863,10 @@ func TestInt_FailoverGroups(t *testing.T) {
 			testClientHelper().FailoverGroup.Drop(t, primaryID)
 		})
 
-		// A refresh in progress blocks the promotion (003122). Retry until it is accepted.
-		assert.Eventually(t, func() bool {
-			err := secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
-				WithPrimary(true))
-			if err != nil {
-				t.Logf("Retrying: %v", err)
-			}
-			return err == nil
-		}, 2*time.Minute, time.Second)
+		// A refresh in progress blocks the promotion (003122).
+		secondaryTestClientHelper().FailoverGroup.WaitForNoRefreshInProgress(t, secondaryID)
+		require.NoError(t, secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
+			WithPrimary(true)))
 
 		assertThatObjectSecondary(t, objectassert.FailoverGroup(t, secondaryID).
 			HasIsPrimary(true).

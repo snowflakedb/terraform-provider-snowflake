@@ -293,6 +293,7 @@ var ReplicationGroupAttrs = struct {
 // The SHOW column is read-only. A create clause on an Attributes entry has to be in that statement's sequence,
 // so the source attribute has no create clause and the primary CREATE does not gain AS REPLICA OF.
 var replicationGroupAsReplicaOf = ssot.Attribute{
+	// TODO [SNOW-1495079]: Add validation when ExternalObjectIdentifier will be available in IsValidIdentifier.
 	Name:           "primary",
 	Type:           ssot.AttrIdentifier,
 	IdentifierType: "ExternalObjectIdentifier",

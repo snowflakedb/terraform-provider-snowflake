@@ -36,6 +36,7 @@ const (
 	AccountParameterCatalogWritePath     ExperimentalFeature = "ACCOUNT_PARAMETER_CATALOG_WRITE_PATH"
 	ObjectParameterParseOnSet            ExperimentalFeature = "OBJECT_PARAMETER_PARSE_ON_SET"
 	WriteOnlyAttributes                  ExperimentalFeature = "WRITE_ONLY_ATTRIBUTES"
+	FailoverGroupReadOnlyAutoSwitch      ExperimentalFeature = "FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH"
 )
 
 type experimentalFeatureState string
@@ -270,6 +271,12 @@ var allExperiments = []Experiment{
 		"Enables write-only attributes. Their values are never saved in the Terraform plan or state, so they can be set from an ephemeral resource. They require Terraform 1.11 or later.",
 		"Currently supported by: `rsa_public_key_wo` and `rsa_public_key_2_wo`, with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on `snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`.",
 		"Without this experiment, using a write-only attribute that is behind it results in an error.",
+	),
+	NewOptInExperiment(
+		FailoverGroupReadOnlyAutoSwitch,
+		"Lets the `snowflake_failover_group` resource change the membership of a failover group that stays in the read-only mode.",
+		"Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` while a failover group is read-only. Without this experiment, the plan fails when `read_only` stays `true` and one of these attributes changes.",
+		"When enabled, the plan passes. The provider leaves the read-only mode before the change and enters it again afterwards, in the same apply.",
 	),
 }
 
