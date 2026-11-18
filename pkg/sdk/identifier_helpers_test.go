@@ -3,6 +3,8 @@ package sdk
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -314,4 +316,61 @@ func Test_quoteIdentifierPartIfNeeded(t *testing.T) {
 			assert.Equal(t, tt.expected, quoteIdentifierPartIfNeeded(tt.part))
 		})
 	}
+}
+
+func TestSchemaObjectIdentifierWithArguments_LegacyAndNormalizedConstructorsMatch(t *testing.T) {
+	schemaId := NewDatabaseObjectIdentifier("MY_DB", "MY_SCHEMA")
+
+	tests := []struct {
+		name                string
+		legacyArguments     []DataType
+		normalizedArguments []datatypes.DataType
+		expectedFqn         string
+	}{
+		{
+			name:                "no arguments",
+			legacyArguments:     []DataType{},
+			normalizedArguments: []datatypes.DataType{},
+			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"()`,
+		},
+		{
+			name:                "single argument",
+			legacyArguments:     []DataType{DataTypeNumber},
+			normalizedArguments: []datatypes.DataType{testdatatypes.DataTypeNumber},
+			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER)`,
+		},
+		{
+			name:                "multiple arguments",
+			legacyArguments:     []DataType{DataTypeNumber, DataTypeVARCHAR, DataTypeFloat},
+			normalizedArguments: []datatypes.DataType{testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeFloat},
+			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR, FLOAT)`,
+		},
+		{
+			name:                "arguments with attributes",
+			legacyArguments:     []DataType{"NUMBER(36, 2)", "VARCHAR(100)"},
+			normalizedArguments: []datatypes.DataType{testdatatypes.DataTypeNumber_36_2, testdatatypes.DataTypeVarchar_100},
+			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR)`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			legacyId := NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(schemaId, "MY_FUNC", tt.legacyArguments...)
+			normalizedId := NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId, "MY_FUNC", tt.normalizedArguments...)
+
+			assert.Equal(t, tt.expectedFqn, legacyId.FullyQualifiedName())
+			assert.Equal(t, legacyId.FullyQualifiedName(), normalizedId.FullyQualifiedName())
+			assert.Equal(t, legacyId, normalizedId)
+			assert.Equal(t, legacyId.ArgumentLegacyDataTypes(), normalizedId.ArgumentLegacyDataTypes())
+			assert.ElementsMatch(t, tt.normalizedArguments, legacyId.ArgumentDataTypes())
+		})
+	}
+}
+
+func TestSchemaObjectIdentifierWithArguments_NoArgumentsMatchesAcrossConstructors(t *testing.T) {
+	schemaId := NewDatabaseObjectIdentifier("MY_DB", "MY_SCHEMA")
+
+	assert.Equal(t,
+		NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(schemaId, "MY_FUNC"),
+		NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId, "MY_FUNC"),
+	)
 }

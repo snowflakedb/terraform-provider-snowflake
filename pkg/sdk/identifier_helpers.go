@@ -375,46 +375,44 @@ func (i SchemaObjectIdentifier) ArgumentsSignature() string {
 }
 
 type SchemaObjectIdentifierWithArguments struct {
-	databaseName      string
-	schemaName        string
-	name              string
-	argumentDataTypes []DataType
+	databaseName            string
+	schemaName              string
+	name                    string
+	argumentLegacyDataTypes []DataType
+	argumentDataTypes       []datatypes.DataType
 }
 
 func NewSchemaObjectIdentifierWithArguments(databaseName, schemaName, name string, argumentDataTypes ...DataType) SchemaObjectIdentifierWithArguments {
 	// Arguments have to be "normalized" with ToDataType, so the signature would match with the one returned by Snowflake.
-	normalizedArguments := make([]DataType, len(argumentDataTypes))
+	parsedArguments := make([]datatypes.DataType, len(argumentDataTypes))
 	for i, argument := range argumentDataTypes {
-		normalizedArgument, err := datatypes.ParseDataType(string(argument))
+		parsedArgument, err := datatypes.ParseDataType(string(argument))
 		if err != nil {
 			log.Printf("[DEBUG] failed to normalize argument %d: %v, err = %v", i, argument, err)
 		}
 		// TODO [SNOW-1348103]: temporary workaround to fix panic resulting from TestAcc_Grants_To_AccountRole test (because of unsupported TABLE data type)
-		if normalizedArgument != nil {
-			normalizedArguments[i] = LegacyDataTypeFrom(normalizedArgument)
-		} else {
-			normalizedArguments[i] = ""
-		}
+		// LegacyDataTypeFrom maps a nil parsedArgument to "".
+		parsedArguments[i] = parsedArgument
 	}
-	return SchemaObjectIdentifierWithArguments{
-		databaseName:      strings.Trim(databaseName, `"`),
-		schemaName:        strings.Trim(schemaName, `"`),
-		name:              strings.Trim(name, `"`),
-		argumentDataTypes: normalizedArguments,
-	}
+	return NewSchemaObjectIdentifierWithArgumentsNormalized(databaseName, schemaName, name, parsedArguments...)
 }
 
 func NewSchemaObjectIdentifierWithArgumentsNormalized(databaseName, schemaName, name string, argumentDataTypes ...datatypes.DataType) SchemaObjectIdentifierWithArguments {
 	return SchemaObjectIdentifierWithArguments{
-		databaseName:      strings.Trim(databaseName, `"`),
-		schemaName:        strings.Trim(schemaName, `"`),
-		name:              strings.Trim(name, `"`),
-		argumentDataTypes: collections.Map(argumentDataTypes, LegacyDataTypeFrom),
+		databaseName:            strings.Trim(databaseName, `"`),
+		schemaName:              strings.Trim(schemaName, `"`),
+		name:                    strings.Trim(name, `"`),
+		argumentLegacyDataTypes: collections.Map(argumentDataTypes, LegacyDataTypeFrom),
+		argumentDataTypes:       collections.Map(argumentDataTypes, func(dt datatypes.DataType) datatypes.DataType { return dt }),
 	}
 }
 
-func NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId DatabaseObjectIdentifier, name string, argumentDataTypes ...DataType) SchemaObjectIdentifierWithArguments {
+func NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(schemaId DatabaseObjectIdentifier, name string, argumentDataTypes ...DataType) SchemaObjectIdentifierWithArguments {
 	return NewSchemaObjectIdentifierWithArguments(schemaId.DatabaseName(), schemaId.Name(), name, argumentDataTypes...)
+}
+
+func NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId DatabaseObjectIdentifier, name string, argumentDataTypes ...datatypes.DataType) SchemaObjectIdentifierWithArguments {
+	return NewSchemaObjectIdentifierWithArgumentsNormalized(schemaId.DatabaseName(), schemaId.Name(), name, argumentDataTypes...)
 }
 
 func (i SchemaObjectIdentifierWithArguments) DatabaseName() string {
@@ -429,7 +427,11 @@ func (i SchemaObjectIdentifierWithArguments) Name() string {
 	return i.name
 }
 
-func (i SchemaObjectIdentifierWithArguments) ArgumentDataTypes() []DataType {
+func (i SchemaObjectIdentifierWithArguments) ArgumentLegacyDataTypes() []DataType {
+	return i.argumentLegacyDataTypes
+}
+
+func (i SchemaObjectIdentifierWithArguments) ArgumentDataTypes() []datatypes.DataType {
 	return i.argumentDataTypes
 }
 
@@ -446,17 +448,17 @@ func (i SchemaObjectIdentifierWithArguments) DatabaseId() AccountObjectIdentifie
 }
 
 func (i SchemaObjectIdentifierWithArguments) FullyQualifiedName() string {
-	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentDataTypes) == 0 {
+	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentLegacyDataTypes) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(`"%v"."%v"."%v"(%v)`, i.databaseName, i.schemaName, i.name, strings.Join(AsStringList(i.argumentDataTypes), ", "))
+	return fmt.Sprintf(`"%v"."%v"."%v"(%v)`, i.databaseName, i.schemaName, i.name, strings.Join(AsStringList(i.argumentLegacyDataTypes), ", "))
 }
 
 func (i SchemaObjectIdentifierWithArguments) FullyQualifiedNameEscaped() string {
-	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentDataTypes) == 0 {
+	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentLegacyDataTypes) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(`%v.%v.%v(%v)`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.schemaName), DoubleQuotes.Modify(i.name), strings.Join(AsStringList(i.argumentDataTypes), ", "))
+	return fmt.Sprintf(`%v.%v.%v(%v)`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.schemaName), DoubleQuotes.Modify(i.name), strings.Join(AsStringList(i.argumentLegacyDataTypes), ", "))
 }
 
 type TableColumnIdentifier struct {
