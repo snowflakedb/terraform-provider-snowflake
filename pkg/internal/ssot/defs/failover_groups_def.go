@@ -279,7 +279,7 @@ var FailoverGroupAttrs = struct {
 		NativeBool:     true,
 		OptionalInShow: true,
 		OptionalInDb:   true,
-		Description:    "Enables the read-only mode of a primary failover group. Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` in this mode, so set it to false (or remove it) before changing them.",
+		Description:    "Enables the read-only mode of a primary failover group. Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` in this mode, so set it to false (or remove it) before changing them. With the `FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH` experiment listed in [`experimental_features_enabled`](../#experimental_features_enabled-1) in the provider block, the provider leaves the read-only mode and enters it again around these changes.",
 	},
 	// SHOW primary is org.account.name. It is not the AS REPLICA OF argument.
 	Primary: ssot.Attribute{
@@ -329,6 +329,7 @@ var FailoverGroupAttrs = struct {
 // AS REPLICA OF is the secondary CREATE argument. It is not the SHOW column primary.
 // The SHOW column is read-only, so the source attribute has no create clause on the primary CREATE.
 var failoverGroupAsReplicaOf = ssot.Attribute{
+	// TODO [SNOW-1495079]: Add validation when ExternalObjectIdentifier will be available in IsValidIdentifier.
 	Name:           "primary",
 	Type:           ssot.AttrIdentifier,
 	IdentifierType: "ExternalObjectIdentifier",

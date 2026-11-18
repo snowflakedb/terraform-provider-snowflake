@@ -119,6 +119,13 @@ Currently supported by: `rsa_public_key_wo` and `rsa_public_key_2_wo`, with thei
 
 Without this experiment, using a write-only attribute that is behind it results in an error.
 
+#### FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH
+Lets the `snowflake_failover_group` resource change the membership of a failover group that stays in the read-only mode.
+
+Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` while a failover group is read-only. Without this experiment, the plan fails when `read_only` stays `true` and one of these attributes changes.
+
+When enabled, the plan passes. The provider leaves the read-only mode before the change and enters it again afterwards, in the same apply.
+
 
 ### Experiments enabled by default
 

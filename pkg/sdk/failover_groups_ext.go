@@ -119,8 +119,7 @@ func (v *failoverGroups) ShowShares(ctx context.Context, id AccountObjectIdentif
 	}
 	result := make([]AccountObjectIdentifier, len(shares))
 	for i, s := range shares {
-		// TODO [SNOW-1348343]: change during failover groups rework; this was not working correctly with identifiers containing `.` character
-		result[i] = NewExternalObjectIdentifier(NewAccountIdentifierFromFullyQualifiedName(s.OwnerAccount), NewAccountObjectIdentifier(s.Name)).objectIdentifier.(AccountObjectIdentifier)
+		result[i] = NewAccountObjectIdentifier(s.Name)
 	}
 	return result, nil
 }

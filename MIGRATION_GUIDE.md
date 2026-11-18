@@ -230,6 +230,20 @@ output "primary" {
 
 A data source keeps no state of its own, so the next refresh reads it in the new shape. Update the `in_account` value and the references to the failover group fields in your configuration.
 
+#### Opt-in experiment: change a read-only group's membership
+
+We have added the `FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH` opt-in experiment (`experimental_features_enabled = ["FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH"]`). Without it, the plan fails when you change `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` or `allowed_integration_types` and keep `read_only = true`, because [Snowflake rejects these changes](https://docs.snowflake.com/en/sql-reference/sql/alter-failover-group) in the read-only mode.
+
+With the experiment, the plan passes. In the same apply, the provider leaves the read-only mode, changes the group, and enters the read-only mode again.
+
+```terraform
+provider "snowflake" {
+  experimental_features_enabled = ["FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH"]
+}
+```
+
+By default (experiment disabled), the plan keeps failing. No changes are required for existing configurations.
+
 #### Other changes
 
 - `object_types` is required. `object_types` and `allowed_integration_types` accept only the values listed in the documentation (case-insensitive), and `allowed_databases`, `allowed_shares`, `allowed_external_volumes`, `allowed_accounts` and `error_integration` are validated as identifiers.
@@ -240,7 +254,7 @@ A data source keeps no state of its own, so the next refresh reads it in the new
 - `allowed_accounts` is written to the state in the fully qualified form `"<organization_name>"."<account_name>"`, as in [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group), and not as `<organization_name>.<account_name>`. The form in the configuration is unchanged and the plan shows no difference. Update any configuration that compares or reuses the value from the state as text.
 - `secondary_state` in the [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source is an empty string, and no longer `NULL`, when the group has no replication schedule. Update any configuration that compares it with `NULL`.
 - `is_primary` is a computed attribute on both resources. When Terraform detects that a failover group is no longer primary (`snowflake_failover_group`) or became primary (`snowflake_failover_group_secondary`) outside of Terraform, for example after a failover, it recreates the resource as the primary group or as a replica of `primary`. Moving the object between the two resources is a manual state migration.
-- While `read_only` is `true`, Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types`, so the plan fails when you change one of them and keep `read_only = true`. Set `read_only` to `false` (or remove it) in the same apply to change them, and set it back to `true` afterwards.
+- While `read_only` is `true`, Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types`, so the plan fails when you change one of them and keep `read_only = true`. Set `read_only` to `false` (or remove it) in the same apply to change them, and set it back to `true` afterwards. With the `FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH` opt-in experiment, the provider does this for you.
 - We have added `allowed_external_volumes`, `error_integration`, `comment` and `read_only`, the computed `is_primary`, and the `show_output` block. `read_only` and `error_integration` are read from `SHOW FAILOVER GROUPS` (the columns `is_primary_read_only` and `error_integration`), so changes to them outside Terraform are detected. Snowflake does not return `allowed_external_volumes`, so changes to it outside Terraform are not detected.
 
 After upgrading, run `terraform plan` and apply the configuration changes above.

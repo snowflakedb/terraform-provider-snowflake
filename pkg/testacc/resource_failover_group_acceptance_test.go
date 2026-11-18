@@ -29,6 +29,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -959,7 +960,7 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 // Snowflake rejects the membership changes of a failover group in the read-only mode, so the plan fails when read_only stays true.
 // Switching read_only off in the same apply leaves the read-only mode before the change, and switching it on is done afterwards.
 // SHOW returns the read-only mode of a primary failover group in is_primary_read_only, so the checks read it back.
-// TODO [next PRs]: add an experiment that lifts and restores the read-only mode around the membership changes.
+// The FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH experiment lifts this restriction, see TestAcc_FailoverGroup_ReadOnlyMode_AutoSwitch.
 func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	resourceId := helpers.EncodeResourceIdentifier(id)
@@ -1049,6 +1050,8 @@ func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "read_only", tfjson.ActionUpdate, sdk.String("true"), sdk.String("false")),
 						planchecks.ExpectSetElementsChange(ref, "allowed_databases", tfjson.ActionUpdate, []string{databaseB.ID().Name()}, nil),
+						planchecks.ExpectNoChangeOnField(ref, "object_types"),
+						planchecks.ExpectNoChangeOnField(ref, "allowed_accounts"),
 					},
 				},
 				Config: config.FromModels(t, notReadOnlyWithAAndB),
@@ -1077,6 +1080,9 @@ func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "read_only", tfjson.ActionUpdate, sdk.String("false"), sdk.String("true")),
 						planchecks.ExpectNoChangeOnField(ref, "ignore_edition_check"),
+						planchecks.ExpectNoChangeOnField(ref, "object_types"),
+						planchecks.ExpectNoChangeOnField(ref, "allowed_databases"),
+						planchecks.ExpectNoChangeOnField(ref, "allowed_accounts"),
 					},
 				},
 				Config: config.FromModels(t, readOnlyWithAAndB),
@@ -1088,10 +1094,97 @@ func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectSetElementsChange(ref, "allowed_databases", tfjson.ActionUpdate, nil, []string{databaseB.ID().Name()}),
+						planchecks.ExpectNoChangeOnField(ref, "object_types"),
+						planchecks.ExpectNoChangeOnField(ref, "allowed_accounts"),
 					},
 				},
 				Config: config.FromModels(t, withoutReadOnlyWithA),
 				Check:  assertThat(t, assertions(nil, &idA)...),
+			},
+		},
+	})
+}
+
+// With the FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH experiment the plan passes while read_only stays true,
+// and the update leaves the read-only mode before the membership change and enters it again afterwards.
+func TestAcc_FailoverGroup_ReadOnlyMode_AutoSwitch(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	sourceAccount := testClient().Account.GetAccountIdentifier(t)
+	targetAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+
+	databaseA, cleanupDatabaseA := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDatabaseA)
+	databaseB, cleanupDatabaseB := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDatabaseB)
+
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.FailoverGroupResource)).
+		WithExperimentalFeaturesEnabled(experimentalfeatures.FailoverGroupReadOnlyAutoSwitch)
+
+	newModel := func(databases ...string) *model.FailoverGroupModel {
+		return model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"DATABASES"}).
+			WithAllowedDatabases(databases).
+			WithReadOnly(true)
+	}
+	withA := newModel(databaseA.ID().Name())
+	withAAndB := newModel(databaseA.ID().Name(), databaseB.ID().Name())
+	ref := withA.ResourceReference()
+
+	assertions := func(databases ...string) []assert.TestCheckFuncProvider {
+		return []assert.TestCheckFuncProvider{
+			resourceassert.FailoverGroupResource(t, ref).
+				HasNameString(id.Name()).
+				HasObjectTypes("DATABASES").
+				HasAllowedDatabases(databases...).
+				HasReadOnly(true),
+			objectassert.FailoverGroup(t, id).
+				HasName(id.Name()).
+				HasIsPrimary(true).
+				HasObjectTypesInAnyOrder(sdk.FailoverGroupObjectTypeDatabases).
+				HasAllowedAccountsInAnyOrder(sourceAccount, targetAccount).
+				HasIsPrimaryReadOnly(true),
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: failoverGroupReadOnlyAutoSwitchProviderFactory,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
+		Steps: []resource.TestStep{
+			// 1. Create in the read-only mode
+			{
+				Config: config.FromModels(t, providerModel, withA),
+				Check:  assertThat(t, assertions(databaseA.ID().Name())...),
+			},
+			// 2. Add a database while read_only stays true
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectNoChangeOnField(ref, "read_only"),
+						planchecks.ExpectSetElementsChange(ref, "allowed_databases", tfjson.ActionUpdate, []string{databaseB.ID().Name()}, nil),
+						planchecks.ExpectNoChangeOnField(ref, "object_types"),
+						planchecks.ExpectNoChangeOnField(ref, "allowed_accounts"),
+					},
+				},
+				Config: config.FromModels(t, providerModel, withAAndB),
+				Check:  assertThat(t, assertions(databaseA.ID().Name(), databaseB.ID().Name())...),
+			},
+			// 3. Remove it again while read_only stays true
+			{
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectNoChangeOnField(ref, "read_only"),
+						planchecks.ExpectSetElementsChange(ref, "allowed_databases", tfjson.ActionUpdate, nil, []string{databaseB.ID().Name()}),
+						planchecks.ExpectNoChangeOnField(ref, "object_types"),
+						planchecks.ExpectNoChangeOnField(ref, "allowed_accounts"),
+					},
+				},
+				Config: config.FromModels(t, providerModel, withA),
+				Check:  assertThat(t, assertions(databaseA.ID().Name())...),
 			},
 		},
 	})
