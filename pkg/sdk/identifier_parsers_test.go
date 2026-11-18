@@ -343,32 +343,3 @@ func TestNewSchemaObjectIdentifierWithArgumentsFromFullyQualifiedName_WithRawInp
 		})
 	}
 }
-
-func TestNewSchemaObjectIdentifierWithArgumentsAndReturnTypeFromFullyQualifiedName_WithRawInput(t *testing.T) {
-	testCases := []struct {
-		RawInput                    string
-		ExpectedIdentifierStructure SchemaObjectIdentifierWithArguments
-		Error                       string
-	}{
-		{RawInput: `abc.def.ghi()`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`)},
-		{RawInput: `abc.def.ghi(FLOAT, VECTOR(INT, 20))`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeFloat, "VECTOR(INT, 20)")},
-		{RawInput: `abc.def.ghi():FLOAT`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`)},
-		{RawInput: `abc.def."ghi(FLOAT, VECTOR(INT, 20)):NUMBER(10,2)"`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeFloat, "VECTOR(INT, 20)")},
-		{RawInput: `abc.def."ghi(FLOAT, VECTOR(INT, 20)):NUMBER"`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeFloat, "VECTOR(INT, 20)")},
-		{RawInput: `abc.def."ghi(ab FLOAT, VECTOR VECTOR(INT, 20), FLOAT):NUMBER"`, ExpectedIdentifierStructure: NewSchemaObjectIdentifierWithArguments(`abc`, `def`, `ghi`, DataTypeFloat, "VECTOR(INT, 20)", DataTypeFloat)},
-		{RawInput: `abc|def|ghi(varchar):NUMBER`, Error: `unexpected number of parts 1 in identifier abc|def|ghi(varchar):NUMBER, expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...):<returntype>" where <argname> is optional`},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(fmt.Sprintf("processing %s", testCase.ExpectedIdentifierStructure.FullyQualifiedName()), func(t *testing.T) {
-			id, err := ParseSchemaObjectIdentifierWithArgumentsAndReturnType(testCase.RawInput)
-
-			if testCase.Error != "" {
-				assert.ErrorContains(t, err, testCase.Error)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, testCase.ExpectedIdentifierStructure.FullyQualifiedName(), id.FullyQualifiedName())
-			}
-		})
-	}
-}

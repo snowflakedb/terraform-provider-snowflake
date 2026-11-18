@@ -171,35 +171,3 @@ func ParseSchemaObjectIdentifierWithArguments(fullyQualifiedName string) (Schema
 		})...,
 	), nil
 }
-
-// ParseSchemaObjectIdentifierWithArgumentsAndReturnType parses names in the following format: <database>.<schema>."<function>(<argname> <argtype>...):<returntype>"
-// Return type is not part of an identifier.
-// TODO(SNOW-1625030): Remove and use ParseSchemaObjectIdentifierWithArguments instead
-func ParseSchemaObjectIdentifierWithArgumentsAndReturnType(fullyQualifiedName string) (SchemaObjectIdentifierWithArguments, error) {
-	parts, err := ParseIdentifierStringWithOpts(fullyQualifiedName, func(r *csv.Reader) {
-		r.Comma = IdDelimiter
-	})
-	if err != nil {
-		return SchemaObjectIdentifierWithArguments{}, err
-	}
-	if len(parts) != 3 {
-		return SchemaObjectIdentifierWithArguments{}, fmt.Errorf(`unexpected number of parts %[1]d in identifier %[2]s, expected 3 in a form of "<database_name>.<schema_name>.<schema_object_name>(<argname> <argtype>...):<returntype>" where <argname> is optional`, len(parts), fullyQualifiedName)
-	}
-	functionHeader := parts[2]
-	leftParenthesisIndex := strings.IndexRune(functionHeader, '(')
-	functionName := functionHeader[:leftParenthesisIndex]
-	argsRaw := functionHeader[leftParenthesisIndex:]
-	argsRaw, _, _ = strings.CutLast(argsRaw, ":")
-	parsedArguments, err := ParseFunctionAndProcedureArguments(argsRaw)
-	if err != nil {
-		return SchemaObjectIdentifierWithArguments{}, err
-	}
-	return NewSchemaObjectIdentifierWithArguments(
-		parts[0],
-		parts[1],
-		functionName,
-		collections.Map(parsedArguments, func(a ParsedArgument) DataType {
-			return DataType(a.ArgType)
-		})...,
-	), nil
-}
