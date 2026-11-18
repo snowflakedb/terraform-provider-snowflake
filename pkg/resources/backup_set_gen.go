@@ -120,25 +120,17 @@ func UpdateBackupSet(ctx context.Context, d *tfschema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, &id,
-			rename,
-			client.BackupSets.ShowByID,
-			func(renamed sdk.SchemaObjectIdentifier) string {
-				return helpers.EncodeResourceIdentifier(renamed)
-			},
-			"backup set",
-		); diags != nil {
-			return diags
-		}
+	client := meta.(*provider.Context).Client
+	if diags := handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.BackupSets.Alter(ctx, sdk.NewAlterBackupSetRequest(currentId).WithRenameTo(targetId))
+		},
+		client.BackupSets.ShowByID,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		sdk.ObjectTypeBackupSet,
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

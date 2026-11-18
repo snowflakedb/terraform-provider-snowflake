@@ -112,25 +112,17 @@ func UpdateProjectionPolicy(ctx context.Context, d *tfschema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, &id,
-			rename,
-			client.ProjectionPolicies.ShowByID,
-			func(renamed sdk.SchemaObjectIdentifier) string {
-				return helpers.EncodeResourceIdentifier(renamed)
-			},
-			"projection policy",
-		); diags != nil {
-			return diags
-		}
+	client := meta.(*provider.Context).Client
+	if diags := handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.ProjectionPolicies.ShowByID,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		sdk.ObjectTypeProjectionPolicy,
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

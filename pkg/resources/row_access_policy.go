@@ -286,7 +286,7 @@ func UpdateRowAccessPolicy(ctx context.Context, d *schema.ResourceData, meta any
 			return client.RowAccessPolicies.Alter(ctx, sdk.NewAlterRowAccessPolicyRequest(currentId).WithRenameTo(targetId))
 		},
 		client.RowAccessPolicies.ShowByID,
-		"row access policy",
+		sdk.ObjectTypeRowAccessPolicy,
 	); diags != nil {
 		return diags
 	}
