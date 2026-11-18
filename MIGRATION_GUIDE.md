@@ -162,12 +162,51 @@ resource "snowflake_failover_group_secondary" "target_failover_group" {
 }
 ```
 
+#### `snowflake_failover_groups` data source reworked
+
+The preview [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source now follows the same rules as [`snowflake_replication_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/replication_groups) and the other data sources: the result of [`SHOW FAILOVER GROUPS`](https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups) is returned in one `show_output` block, and the filter takes the same account identifier.
+
+Filtering changes:
+- `in_account` takes `<organization_name>.<account_name>` instead of an account locator, and is validated.
+
+Output changes:
+- Each element of `failover_groups` now holds `show_output`. The previous flat fields are removed; read them from `failover_groups.*.show_output.0` instead (`region_group`, `snowflake_region`, `created_on`, `account_name`, `type`, `comment`, `is_primary`, `primary`, `object_types`, `allowed_integration_types`, `allowed_accounts`, `organization_name`, `account_locator`, `replication_schedule`, `secondary_state`, `next_scheduled_refresh`, `owner`).
+- `show_output` also has `name`, `error_integration`, `is_listing_auto_fulfillment_group`, `is_optimized_refresh_enabled`, `is_primary_read_only`, and `rpo_assurance`.
+- `object_types`, `allowed_integration_types`, and `allowed_accounts` are sets of strings, not lists.
+- `secondary_state` is the value returned by `SHOW FAILOVER GROUPS`. It is empty, not the text `NULL`, when Snowflake returns no state.
+- The data source id changed from `failover_groups` to the static `failover_groups_read`.
+
+Before:
+```terraform
+data "snowflake_failover_groups" "example" {
+  in_account = "<account_locator>"
+}
+
+output "primary" {
+  value = data.snowflake_failover_groups.example.failover_groups[0].primary
+}
+```
+
+After:
+```terraform
+data "snowflake_failover_groups" "example" {
+  in_account = "<organization_name>.<account_name>"
+}
+
+output "primary" {
+  value = data.snowflake_failover_groups.example.failover_groups[0].show_output[0].primary
+}
+```
+
+A data source keeps no state of its own, so the next refresh reads it in the new shape. Update the `in_account` value and the references to the failover group fields in your configuration.
+
 #### Other changes
 
 - `object_types` is required. `object_types` and `allowed_integration_types` accept only the values listed in the documentation (case-insensitive), and `allowed_databases`, `allowed_shares`, `allowed_external_volumes`, `allowed_accounts` and `error_integration` are validated as identifiers.
 - `name` can be changed in place (`ALTER FAILOVER GROUP ... RENAME TO`) and no longer recreates the group. It is no longer compared case-insensitively, so a change that only differs in letter case is a rename too.
 - `optimized_refresh` and `rpo_assurance` have no default value anymore. `rpo_assurance` cannot be combined with `replication_schedule` or `optimized_refresh`, as before.
-- `next_scheduled_refresh` in `show_output` of both resources and in the [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source is now read as a date and time and printed in the form `2026-11-13 14:20:00 +0000 UTC`, instead of the text returned by `SHOW FAILOVER GROUPS`. When no replication schedule is set, it is `0001-01-01 00:00:00 +0000 UTC` instead of an empty string. Update any configuration that compares this value as text.
+- `next_scheduled_refresh` in `show_output` of both resources and of the [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source is now read as a date and time and printed in the form `2026-11-13 14:20:00 +0000 UTC`, instead of the text returned by `SHOW FAILOVER GROUPS`. When no replication schedule is set, it is `0001-01-01 00:00:00 +0000 UTC` instead of an empty string. Update any configuration that compares this value as text.
+- `show_output` of both resources has two new computed values, `object_types` and `allowed_integration_types`, as sets of the values returned by [`SHOW FAILOVER GROUPS`](https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups). After you change `object_types` or `allowed_integration_types`, these two values in `show_output` are updated on the next refresh.
 - `allowed_accounts` is written to the state in the fully qualified form `"<organization_name>"."<account_name>"`, as in [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group), and not as `<organization_name>.<account_name>`. The form in the configuration is unchanged and the plan shows no difference. Update any configuration that compares or reuses the value from the state as text.
 - `secondary_state` in the [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source is an empty string, and no longer `NULL`, when the group has no replication schedule. Update any configuration that compares it with `NULL`.
 - `is_primary` is a computed attribute on both resources. When Terraform detects that a failover group is no longer primary (`snowflake_failover_group`) or became primary (`snowflake_failover_group_secondary`) outside of Terraform, for example after a failover, it recreates the resource as the primary group or as a replica of `primary`. Moving the object between the two resources is a manual state migration.

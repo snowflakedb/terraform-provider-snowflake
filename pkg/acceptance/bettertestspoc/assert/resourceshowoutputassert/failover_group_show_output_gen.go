@@ -32,6 +32,21 @@ func ImportedFailoverGroupShowOutput(t *testing.T, id string) *FailoverGroupShow
 	return &failoverGroupAssert
 }
 
+func FailoverGroupsDatasourceShowOutput(t *testing.T, name string) *FailoverGroupShowOutputAssert {
+	t.Helper()
+
+	return FailoverGroupsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func FailoverGroupsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *FailoverGroupShowOutputAssert {
+	t.Helper()
+
+	failoverGroupAssert := FailoverGroupShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "failover_groups", idx),
+	}
+	return &failoverGroupAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

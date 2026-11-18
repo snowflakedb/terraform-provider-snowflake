@@ -164,9 +164,8 @@ var FailoverGroupAttrs = struct {
 		Elem:          &ssot.Attribute{Type: ssot.AttrEnum, Enum: FailoverGroupObjectType},
 		// CSV. NULL or empty when a secondary group lists none. The plain field stays a slice.
 		// SHOW uses PARAMETERS for account parameters. That token is mapped to ACCOUNT PARAMETERS.
-		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
+		// The SHOW schema generator does not map an enum slice, so the schema ext maps the column.
 		OptionalInDb: true,
-		SkipInSchema: true,
 		CustomParser: "ParseCommaSeparatedFailoverGroupObjectTypeArray",
 		CreateSql:    failoverGroupEnumList(FailoverGroupObjectType, true),
 		SetSql:       failoverGroupEnumList(FailoverGroupObjectType, false),
@@ -203,9 +202,8 @@ var FailoverGroupAttrs = struct {
 		// The column is always present. It is empty when no integration types are set.
 		// SHOW prints short tokens such as API and EXTERNAL_ACCESS. Those tokens are mapped to the
 		// create-page values (the handwritten converter replaces underscores and appends " INTEGRATIONS").
-		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
+		// The SHOW schema generator does not map an enum slice, so the schema ext maps the column.
 		OptionalInDb: true,
-		SkipInSchema: true,
 		CustomParser: "ParseCommaSeparatedFailoverGroupIntegrationTypeArray",
 		CreateSql:    failoverGroupEnumList(FailoverGroupIntegrationType, false),
 		SetSql:       failoverGroupEnumList(FailoverGroupIntegrationType, false),
@@ -421,11 +419,13 @@ var FailoverGroup = ssot.Object{
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
+			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowManualFields(&FailoverGroupAttrs.ObjectTypes, &FailoverGroupAttrs.AllowedIntegrationTypes))),
 			ssot.WithModel(
 				ssot.ModelRequestType(&FailoverGroupAttrs.ObjectTypes, "[]string"),
 				ssot.ModelRequestType(&FailoverGroupAttrs.AllowedAccounts, "[]string"),
 			),
 		),
+		ssot.WithDataSource(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
@@ -509,6 +509,9 @@ var FailoverGroup = ssot.Object{
 			Returns: []string{"[]AccountObjectIdentifier", "error"},
 		},
 	},
+	// For now, the set/list fields have to be excluded from the generated recompute of show_output, so a change of object_types or
+	// allowed_integration_types leaves show_output.object_types and show_output.allowed_integration_types stale until the next refresh.
+	// TODO [SNOW-1648997]: address the above comment
 	// Listed in the extension; rejects the membership changes of a group that stays in the read-only mode.
 	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
 		"failoverGroupMembershipLockedInReadOnlyMode",

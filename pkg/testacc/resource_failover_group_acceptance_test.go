@@ -91,11 +91,12 @@ func TestAcc_FailoverGroup_issue2517_AccountParametersObjectType(t *testing.T) {
 			},
 			// 3. Import
 			{
-				Config:                  config.FromModels(t, withAccountParameters),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"ignore_edition_check"},
+				Config:            config.FromModels(t, withAccountParameters),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// TODO [SNOW-1648997]: show_output is not recomputed when a set changes, so these two lists are stale after the update.
+				ImportStateVerifyIgnore: []string{"ignore_edition_check", "show_output.0.object_types", "show_output.0.allowed_integration_types"},
 				ImportStateCheck: assertThatImport(t,
 					resourceassert.ImportedFailoverGroupResource(t, resourceId).
 						HasNameString(id.Name()).
@@ -470,7 +471,9 @@ resource "snowflake_failover_group" "t" {
 			HasReplicationSchedule(schedule).
 			HasIsOptimizedRefreshEnabled(true).
 			HasRpoAssurance(false).
-			HasOwner(snowflakeroles.Accountadmin.Name())
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasObjectTypes("DATABASES").
+			HasNoAllowedIntegrationTypes()
 		objectAssert := objectassert.FailoverGroup(t, id).
 			HasName(id.Name()).
 			HasType("FAILOVER").
@@ -590,6 +593,7 @@ func TestAcc_FailoverGroup_CompleteUseCase_ReplicationScheduleTransitions(t *tes
 		showOutputAssert := resourceshowoutputassert.FailoverGroupShowOutput(t, ref).
 			HasName(id.Name()).
 			HasIsPrimary(true).
+			HasObjectTypes("DATABASES").
 			HasIsOptimizedRefreshEnabled(optimizedRefreshInSnowflake).
 			HasRpoAssurance(rpoAssurance)
 		objectAssert := objectassert.FailoverGroup(t, id).
@@ -776,6 +780,8 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 			HasCreatedOnNotEmpty().
 			HasSnowflakeRegionNotEmpty().
 			HasAllowedAccounts(sourceAccount.Name(), targetAccount.Name()).
+			HasObjectTypes("ROLES").
+			HasNoAllowedIntegrationTypes().
 			HasIsOptimizedRefreshEnabled(false).
 			HasRpoAssurance(false),
 		objectassert.FailoverGroup(t, id).
@@ -818,6 +824,8 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 			HasComment(comment).
 			HasReplicationSchedule("10 MINUTE").
 			HasErrorIntegration(errorIntegration.ID()).
+			HasObjectTypes(objectTypes...).
+			HasAllowedIntegrationTypes(integrationTypes...).
 			HasIsOptimizedRefreshEnabled(true).
 			HasRpoAssurance(false),
 		objectassert.FailoverGroup(t, id).
