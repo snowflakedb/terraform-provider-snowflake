@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -86,17 +85,7 @@ func ReadProjectionPolicyFunc(withExternalChangesMarking bool) tfschema.ReadCont
 
 		projectionPolicy, err := meta.(*provider.Context).Client.ProjectionPolicies.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query projection policy. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Projection policy id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeProjectionPolicy, id, err)
 		}
 		projectionPolicyDetails, err := meta.(*provider.Context).Client.ProjectionPolicies.Describe(ctx, id)
 		if err != nil {

@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -86,17 +85,7 @@ func ReadBackupSetFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc
 
 		backupSet, err := meta.(*provider.Context).Client.BackupSets.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query backup set. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Backup set id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeBackupSet, id, err)
 		}
 		backupSetDetails, err := meta.(*provider.Context).Client.BackupSets.Describe(ctx, id)
 		if err != nil {

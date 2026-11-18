@@ -1,9 +1,12 @@
 package resources
 
 import (
+	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/assert"
@@ -41,6 +44,37 @@ func Test_setListKeepingNull(t *testing.T) {
 		assert.Equal(t, "2", attrs["items.#"])
 		assert.Equal(t, "CPU_X64_M", attrs["items.0"])
 		assert.Equal(t, "CPU_X64_L", attrs["items.1"])
+	})
+}
+
+func Test_showByIdErrorDiagnostics(t *testing.T) {
+	id := sdk.NewSchemaObjectIdentifier("db", "sch", "policy")
+	newData := func(t *testing.T) *schema.ResourceData {
+		t.Helper()
+		d := schema.TestResourceDataRaw(t, map[string]*schema.Schema{}, nil)
+		d.SetId("db.sch.policy")
+		return d
+	}
+
+	t.Run("an object that does not exist is removed from the state with a warning", func(t *testing.T) {
+		d := newData(t)
+		diags := showByIdErrorDiagnostics(d, sdk.ObjectTypeBackupPolicy, id, fmt.Errorf("wrapped: %w", sdk.ErrObjectNotFound))
+
+		require.Len(t, diags, 1)
+		assert.Equal(t, diag.Warning, diags[0].Severity)
+		assert.Equal(t, "Failed to query backup policy. Marking the resource as removed.", diags[0].Summary)
+		assert.Equal(t, fmt.Sprintf("Resource backup policy id: %s, Err: wrapped: %s", id.FullyQualifiedName(), sdk.ErrObjectNotFound), diags[0].Detail)
+		assert.Empty(t, d.Id())
+	})
+
+	t.Run("another error is returned and keeps the state", func(t *testing.T) {
+		d := newData(t)
+		diags := showByIdErrorDiagnostics(d, sdk.ObjectTypeBackupPolicy, id, errors.New("boom"))
+
+		require.Len(t, diags, 1)
+		assert.Equal(t, diag.Error, diags[0].Severity)
+		assert.Equal(t, "boom", diags[0].Summary)
+		assert.Equal(t, "db.sch.policy", d.Id())
 	})
 }
 
