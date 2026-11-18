@@ -34,3 +34,55 @@ func Test_ModelFromInputObject(t *testing.T) {
 	require.Equal(t, ssot.Generated(), model.Hooks.DescribeInSdk)
 	require.Equal(t, "datasource", model.GeneratorName)
 }
+
+func Test_ModelFromInputObject_ExtDescribeWithoutSdkDescribe(t *testing.T) {
+	input := DataSourceObject{Object: ssot.Object{
+		Name:       "Thing",
+		NamePlural: "Things",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{{Name: "name", Readonly: true}}},
+		Generators: []ssot.GeneratorOption{
+			ssot.WithSdk(ssot.SdkShow()),
+			ssot.WithDataSource(),
+		},
+		DataSourceHooks: []ssot.DataSourceHookOption{
+			ssot.WithDataSourceDescribeInSdk(ssot.ExtCall()),
+			ssot.WithDataSourceDescribeOutputSchema(ssot.ExtCall()),
+			ssot.WithDataSourceDescribeOutputSet(ssot.ExtCall()),
+		},
+	}}
+
+	model := ModelFromInputObject(input, genhelpers.NewPreambleModel("datasource", "0.1.0"), nil)
+
+	require.Equal(t, "THING", model.DescribeSql)
+	require.Equal(t, ssot.ExtCall(), model.Hooks.DescribeInSdk)
+	require.Equal(t, ssot.Generated(), model.Hooks.SwitchesSchema)
+	require.Equal(t, "Holds the aggregated output of all thing details queries.", model.ResultDescription())
+}
+
+func Test_ModelFromInputObject_CustomDescribeMethod(t *testing.T) {
+	input := DataSourceObject{Object: ssot.Object{
+		Name:       "Thing",
+		NamePlural: "Things",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{{Name: "name", Readonly: true}}},
+		CustomOperations: []ssot.CustomOperationSpec{{
+			Kind:   "DescribeColumns",
+			Paired: &ssot.CustomPairedShow{Plain: "ThingColumnDetails"},
+		}},
+		Generators: []ssot.GeneratorOption{
+			ssot.WithSdk(ssot.SdkShow()),
+			ssot.WithDataSource(ssot.DataSourceDescribeMethod("DescribeColumns")),
+		},
+	}}
+
+	model := ModelFromInputObject(input, genhelpers.NewPreambleModel("datasource", "0.1.0"), nil)
+
+	require.Equal(t, ssot.DataSourceDescribe{
+		Method:             "DescribeColumns",
+		Slice:              true,
+		RequestConstructor: "NewDescribeColumnsThingRequest",
+		ResultName:         "ThingColumnDetails",
+	}, model.Describe)
+	require.Equal(t, "ThingColumnDetails", model.DescribeSchemaName())
+	require.Equal(t, ssot.Generated(), model.Hooks.DescribeInSdk)
+	require.Equal(t, "THING", model.DescribeSql)
+}

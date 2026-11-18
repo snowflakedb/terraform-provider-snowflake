@@ -6,6 +6,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func describeColumnsOperation() CustomOperationSpec {
+	return CustomOperationSpec{
+		Kind: "DescribeColumns",
+		Paired: &CustomPairedShow{
+			DbRow:   "thingColumnDetailsRow",
+			Plain:   "ThingColumnDetails",
+			Columns: []*Attribute{{Name: "name", Readonly: true}},
+		},
+	}
+}
+
 func dataSourceTestObject(opts ...GeneratorOption) Object {
 	return Object{
 		Name:       "Thing",
@@ -168,6 +179,17 @@ func Test_Object_DataSourceDescribe(t *testing.T) {
 		dataSourceTestObject(WithSdk(SdkDescribe(SdkDescribeMapping(SdkDescriptionMappingSlice), SdkDescribeDetails(SdkDescribeDetailsMethod())))).DataSourceDescribe(),
 		"details is one result even when the rows are a list",
 	)
+
+	custom := dataSourceTestObject(WithDataSource(DataSourceDescribeMethod("DescribeColumns")))
+	custom.CustomOperations = []CustomOperationSpec{describeColumnsOperation()}
+	require.Equal(t, DataSourceDescribe{
+		Method:             "DescribeColumns",
+		Slice:              true,
+		RequestConstructor: "NewDescribeColumnsThingRequest",
+		ResultName:         "ThingColumnDetails",
+	}, custom.DataSourceDescribe())
+	require.True(t, custom.HasDataSourceDescribe())
+	require.Equal(t, Generated(), custom.EffectiveDataSourceHooks().DescribeInSdk)
 }
 
 func Test_ValidateObject_dataSource(t *testing.T) {
@@ -213,6 +235,19 @@ func Test_ValidateObject_dataSource(t *testing.T) {
 		require.Panics(t, func() {
 			ValidateObject(withHooks(dataSourceTestObject(WithDataSource()), WithDataSourceShowParametersInSdk(Generated())))
 		})
+	})
+	t.Run("a custom-operation describe does not need SdkDescribe", func(t *testing.T) {
+		obj := dataSourceTestObject(WithDataSource(DataSourceDescribeMethod("DescribeColumns")))
+		obj.CustomOperations = []CustomOperationSpec{describeColumnsOperation()}
+		require.NotPanics(t, func() { ValidateObject(obj) })
+	})
+	t.Run("a describe method must be a custom operation with paired rows", func(t *testing.T) {
+		require.Panics(t, func() {
+			ValidateObject(dataSourceTestObject(WithDataSource(DataSourceDescribeMethod("DescribeColumns"))))
+		})
+		obj := dataSourceTestObject(WithDataSource(DataSourceDescribeMethod("DescribeColumns")))
+		obj.CustomOperations = []CustomOperationSpec{{Kind: "DescribeColumns"}}
+		require.Panics(t, func() { ValidateObject(obj) })
 	})
 	t.Run("a hand-written describe with no generated schema is allowed", func(t *testing.T) {
 		require.NotPanics(t, func() {

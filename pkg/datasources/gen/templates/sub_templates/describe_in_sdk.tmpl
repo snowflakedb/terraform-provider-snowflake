@@ -1,6 +1,10 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
 {{- if .Hooks.DescribeInSdk.Generate -}}
+{{- if .Describe.RequestConstructor -}}
+			describeResult, err := client.{{ .NamePlural }}.{{ .Describe.Method }}(ctx, sdk.{{ .Describe.RequestConstructor }}(item.ID()))
+{{- else -}}
 			describeResult, err := client.{{ .NamePlural }}.{{ .Describe.Method }}(ctx, item.ID())
+{{- end }}
 {{ else if .Hooks.DescribeInSdk.Present -}}
 			describeResult, err := {{ .Prefix }}DescribeInSdkExt(ctx, client, item, &diags)
 {{ end -}}

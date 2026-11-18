@@ -150,6 +150,18 @@ func TestDescribe(t *testing.T) {
 		require.Contains(t, got, "collections.Map(describeResult, func(details sdk.WidgetDetails) map[string]any {")
 		require.Contains(t, got, "schemas.WidgetDetailsToSchema(&details)")
 	})
+	t.Run("custom operation", func(t *testing.T) {
+		object := syntheticObject([]ssot.SdkOption{ssot.SdkShow()})
+		object.Generators = append(object.Generators, ssot.WithDataSource(ssot.DataSourceDescribeMethod("DescribeColumns")))
+		object.CustomOperations = []ssot.CustomOperationSpec{{
+			Kind:   "DescribeColumns",
+			Paired: &ssot.CustomPairedShow{Plain: "WidgetColumnDetails"},
+		}}
+		model := modelOf(object)
+		require.Contains(t, renderTemplate(t, "describeInSdk", model), "client.Widgets.DescribeColumns(ctx, sdk.NewDescribeColumnsWidgetRequest(item.ID()))")
+		require.Contains(t, renderTemplate(t, "describeOutputSet", model), "func(details sdk.WidgetColumnDetails)")
+		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), "schemas.DescribeWidgetColumnDetailsSchema")
+	})
 	t.Run("hand-written", func(t *testing.T) {
 		model := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe()},
 			ssot.WithDataSourceDescribeInSdk(ssot.ExtCall()), ssot.WithDataSourceDescribeOutputSet(ssot.ExtCall())))
@@ -271,6 +283,15 @@ func TestRead_everyShapeIsValidGo(t *testing.T) {
 		"in account":         widgetWith(ssot.SdkShowOptionalInAccount()),
 		"every hook omitted": syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()}, ssot.WithDataSourceDescribeInSdk(ssot.Omitted()), ssot.WithDataSourceShowParametersInSdk(ssot.Omitted()), ssot.WithDataSourceReadWrapper(ssot.Omitted())),
 		"hand-written":       handWritten,
+		"custom describe": func() ssot.Object {
+			object := syntheticObject([]ssot.SdkOption{ssot.SdkShow()})
+			object.Generators = append(object.Generators, ssot.WithDataSource(ssot.DataSourceDescribeMethod("DescribeColumns")))
+			object.CustomOperations = []ssot.CustomOperationSpec{{
+				Kind:   "DescribeColumns",
+				Paired: &ssot.CustomPairedShow{Plain: "WidgetColumnDetails"},
+			}}
+			return object
+		}(),
 	}
 	for name, object := range objects {
 		t.Run(name, func(t *testing.T) {

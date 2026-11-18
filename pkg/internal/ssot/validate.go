@@ -129,8 +129,16 @@ func validateDataSource(obj Object, g Generators) {
 		return
 	}
 	hooks := obj.EffectiveDataSourceHooks()
-	if (hooks.DescribeInSdk.Generate || hooks.DescribeOutputSchema.Generate) && !obj.HasDataSourceDescribe() {
-		panic(fmt.Sprintf("object %q: the generated data source describe needs SdkDescribe() and DESCRIBE columns", obj.Name))
+	if method := g.DataSource.DescribeMethod; method != "" {
+		op := obj.customOperation(method)
+		if op == nil {
+			panic(fmt.Sprintf("object %q: DataSourceDescribeMethod %q is not a custom operation", obj.Name, method))
+		}
+		if op.Paired == nil {
+			panic(fmt.Sprintf("object %q: DataSourceDescribeMethod %q needs paired DESCRIBE rows", obj.Name, method))
+		}
+	} else if (hooks.DescribeInSdk.Generate || hooks.DescribeOutputSchema.Generate) && !obj.HasDataSourceDescribe() {
+		panic(fmt.Sprintf("object %q: the generated data source describe needs SdkDescribe() and DESCRIBE columns, or DataSourceDescribeMethod", obj.Name))
 	}
 	if hooks.DescribeInSdk.Generate && hooks.DescribeOutputSet.Generate && obj.DataSourceDescribe().Method == "Describe" && len(obj.DescribeRows.Columns) > 0 {
 		panic(fmt.Sprintf("object %q: the generated data source describe of a property-list DESCRIBE needs SdkDescribeDetailsMethod()", obj.Name))

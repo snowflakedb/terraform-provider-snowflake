@@ -664,6 +664,10 @@ var Table = ssot.Object{
 			),
 			ssot.SdkCustomOperations(),
 		),
+		ssot.WithDataSource(
+			ssot.DataSourceDescribeMethod("DescribeColumns"),
+			ssot.DataSourceAdditionalDescribeOutputDescription("The statement is DESCRIBE TABLE ... TYPE = COLUMNS."),
+		),
 	},
 	Create: ssot.CreateSpec{
 		KeywordsBefore: []*ssot.Attribute{
