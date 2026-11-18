@@ -162,6 +162,10 @@ func TestDescribe(t *testing.T) {
 		require.Contains(t, renderTemplate(t, "describeOutputSet", model), "func(details sdk.WidgetColumnDetails)")
 		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), "schemas.DescribeWidgetColumnDetailsSchema")
 	})
+	t.Run("history skips describe of a dropped row", func(t *testing.T) {
+		got := renderDataSource(t, modelOf(terseWidgetWith(ssot.SdkShowOptionalSql("HISTORY"))))
+		require.Contains(t, got, "if d.Get(\"with_describe\").(bool) && item.DroppedOn == nil {")
+	})
 	t.Run("hand-written", func(t *testing.T) {
 		model := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe()},
 			ssot.WithDataSourceDescribeInSdk(ssot.ExtCall()), ssot.WithDataSourceDescribeOutputSet(ssot.ExtCall())))
@@ -189,6 +193,13 @@ func TestParameters(t *testing.T) {
 		ssot.WithDataSourceShowParametersInSdk(ssot.ExtCall()), ssot.WithDataSourceParametersOutputSet(ssot.ExtCall())))
 	require.Contains(t, renderTemplate(t, "showParametersInSdk", custom), "widgetsShowParametersInSdkExt(ctx, client, item, &diags)")
 	require.Contains(t, renderTemplate(t, "parametersOutputSet", custom), "widgetsParametersOutputSetExt(parameters)")
+
+	t.Run("history skips parameters of a dropped row", func(t *testing.T) {
+		object := syntheticObject([]ssot.SdkOption{ssot.SdkShow(ssot.SdkShowOptionalSql("HISTORY")), ssot.SdkShowParameters()})
+		object.Generators = append(object.Generators, ssot.WithDataSource(ssot.DataSourceWithHistory()))
+		got := renderDataSource(t, modelOf(object))
+		require.Contains(t, got, "if d.Get(\"with_parameters\").(bool) && item.DroppedOn == nil {")
+	})
 }
 
 func TestRead(t *testing.T) {

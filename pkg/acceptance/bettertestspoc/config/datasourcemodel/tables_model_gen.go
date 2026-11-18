@@ -11,12 +11,15 @@ import (
 )
 
 type TablesModel struct {
-	In           tfconfig.Variable `json:"in,omitempty"`
-	Like         tfconfig.Variable `json:"like,omitempty"`
-	Limit        tfconfig.Variable `json:"limit,omitempty"`
-	StartsWith   tfconfig.Variable `json:"starts_with,omitempty"`
-	Tables       tfconfig.Variable `json:"tables,omitempty"`
-	WithDescribe tfconfig.Variable `json:"with_describe,omitempty"`
+	History        tfconfig.Variable `json:"history,omitempty"`
+	In             tfconfig.Variable `json:"in,omitempty"`
+	Like           tfconfig.Variable `json:"like,omitempty"`
+	Limit          tfconfig.Variable `json:"limit,omitempty"`
+	StartsWith     tfconfig.Variable `json:"starts_with,omitempty"`
+	Tables         tfconfig.Variable `json:"tables,omitempty"`
+	Terse          tfconfig.Variable `json:"terse,omitempty"`
+	WithDescribe   tfconfig.Variable `json:"with_describe,omitempty"`
+	WithParameters tfconfig.Variable `json:"with_parameters,omitempty"`
 
 	*config.DatasourceModelMeta
 }
@@ -63,6 +66,11 @@ func (t *TablesModel) WithDependsOn(values ...string) *TablesModel {
 // below all the proper values //
 /////////////////////////////////
 
+func (t *TablesModel) WithHistory(history bool) *TablesModel {
+	t.History = tfconfig.BoolVariable(history)
+	return t
+}
+
 // in attribute type is not yet supported, so WithIn can't be generated
 
 func (t *TablesModel) WithLike(like string) *TablesModel {
@@ -79,14 +87,29 @@ func (t *TablesModel) WithStartsWith(startsWith string) *TablesModel {
 
 // tables attribute type is not yet supported, so WithTables can't be generated
 
+func (t *TablesModel) WithTerse(terse bool) *TablesModel {
+	t.Terse = tfconfig.BoolVariable(terse)
+	return t
+}
+
 func (t *TablesModel) WithWithDescribe(withDescribe bool) *TablesModel {
 	t.WithDescribe = tfconfig.BoolVariable(withDescribe)
+	return t
+}
+
+func (t *TablesModel) WithWithParameters(withParameters bool) *TablesModel {
+	t.WithParameters = tfconfig.BoolVariable(withParameters)
 	return t
 }
 
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
+
+func (t *TablesModel) WithHistoryValue(value tfconfig.Variable) *TablesModel {
+	t.History = value
+	return t
+}
 
 func (t *TablesModel) WithInValue(value tfconfig.Variable) *TablesModel {
 	t.In = value
@@ -113,7 +136,17 @@ func (t *TablesModel) WithTablesValue(value tfconfig.Variable) *TablesModel {
 	return t
 }
 
+func (t *TablesModel) WithTerseValue(value tfconfig.Variable) *TablesModel {
+	t.Terse = value
+	return t
+}
+
 func (t *TablesModel) WithWithDescribeValue(value tfconfig.Variable) *TablesModel {
 	t.WithDescribe = value
+	return t
+}
+
+func (t *TablesModel) WithWithParametersValue(value tfconfig.Variable) *TablesModel {
+	t.WithParameters = value
 	return t
 }

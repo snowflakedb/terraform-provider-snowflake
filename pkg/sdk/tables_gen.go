@@ -27,6 +27,7 @@ type Tables interface {
 	DescribeSearchOptimization(ctx context.Context, request *DescribeSearchOptimizationTableRequest) ([]TableSearchOptimizationDetails, error)
 	SelectTableConstraints(ctx context.Context, request *SelectTableConstraintsTableRequest) ([]TableConstraintDetails, error)
 	SelectCheckConstraints(ctx context.Context, request *SelectCheckConstraintsTableRequest) ([]TableCheckConstraintDetails, error)
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 }
 
 // CreateTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.

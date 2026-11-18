@@ -75,6 +75,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Task{}):                        {"Tasks"},
 	normalized(sdk.User{}):                        {"Users"},
 	normalized(sdk.Warehouse{}):                   {"Warehouses"},
+	normalized(sdk.Table{}):                       {"Tables"},
 
 	// Describe output:
 	normalized(sdk.AlertDetails{}):                  {"Alerts"},
@@ -87,6 +88,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.ExternalVolumeDetails{}):         {"ExternalVolumes"},
 	normalized(sdk.FileFormatAllDetails{}):          {"FileFormats"},
 	normalized(sdk.IcebergTableDetails{}):           {"IcebergTables"},
+	normalized(sdk.TableColumnDetails{}):            {"Tables"},
 	normalized(sdk.OpenflowConnectorDetails{}):      {"OpenflowConnectors"},
 	normalized(sdk.OpenflowDeploymentDetails{}):     {"OpenflowDeployments"},
 	normalized(sdk.OpenflowRuntimeDetails{}):        {"OpenflowRuntimes"},

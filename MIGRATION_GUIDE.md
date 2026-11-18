@@ -44,6 +44,36 @@ The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflak
 
 The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
 
+#### `terse` and `history` filters in `snowflake_tables`
+
+We have added two optional filters to the preview [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) data source. They match the `TERSE` and `HISTORY` options of [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables):
+
+- `terse` returns only the `created_on`, `name`, `kind`, `database_name`, and `schema_name` columns in `show_output`. The other fields of `show_output` are empty.
+- `history` also returns the dropped tables that are still within the Time Travel retention period. A dropped table has `dropped_on` set in `show_output`, and its `describe_output` and `parameters` are empty, because DESCRIBE TABLE and SHOW PARAMETERS cannot read it.
+
+```terraform
+data "snowflake_tables" "example" {
+  like    = "my_table%"
+  terse   = true
+  history = true
+}
+```
+
+Both default to `false`, so the data source runs the same SHOW TABLES as before. No configuration changes are required unless you want to use the new filters.
+
+#### `with_parameters` in `snowflake_tables`
+
+We have added `with_parameters` (default `true`) to the preview [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) data source. When it is true, the data source runs [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters) for every table and stores the result in `tables.*.parameters`. Set it to `false` to skip those queries.
+
+```terraform
+data "snowflake_tables" "example" {
+  like            = "my_table%"
+  with_parameters = false
+}
+```
+
+No configuration changes are required unless you want to turn the extra queries off.
+
 ### *(new feature)* Hierarchy renames rolled out to more resources
 
 The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.

@@ -1,10 +1,19 @@
 package sdk
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 )
+
+func (v *tables) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
+	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
+		In: &ParametersIn{
+			Table: id,
+		},
+	})
+}
 
 func (r *CreateTableRequest) GetName() SchemaObjectIdentifier {
 	return r.name
