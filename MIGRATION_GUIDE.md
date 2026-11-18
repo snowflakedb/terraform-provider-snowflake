@@ -28,13 +28,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.23.x ➞ v2.24.0
 
-### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails
+### *(breaking change)* Table constraint names are case-sensitive
 
-Snowflake rejects property changes on a started alert, and it requires a warehouse to be suspended while its type changes, or an interactive warehouse while its size changes. [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert), [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) suspend the object for the update. Until now, an update that failed after the suspension could leave the object suspended.
+[`snowflake_table_constraint`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table_constraint) now double-quotes `name` when it adds and drops the constraint. Earlier versions sent the name unquoted, so Snowflake stored it in uppercase: `name = "pk_orders"` created a constraint called `PK_ORDERS`. Now it creates `pk_orders`. Names with characters that need quoting, such as spaces or dashes, now work as well.
 
-The object is now resumed whenever it was started before the update, also when the update fails, and the values that were not applied stay in the state, so the next plan shows them again. A failed resume is reported together with the original error. The suspension happens once per update, and it is skipped when the object is already suspended.
+The deprecated `primary_key.name` field of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) changed the same way. It is set only when `primary_key` changes after the table is created, and it is not read back from Snowflake, so existing primary keys are not affected.
 
-`snowflake_alert` used to ignore a failed suspension and then fail on the change itself. It now fails the update with the suspension error. No changes are required in your configuration.
+The resource does not read the constraint back from Snowflake, so the upgrade itself plans no changes. The difference shows up when the constraint is dropped, on destroy or replacement. For a constraint created with a lowercase or mixed-case `name`, the provider now drops the quoted name, which does not exist in Snowflake. The provider treats a missing constraint as already dropped, so it removes the resource from the state and leaves the uppercase constraint on the table. The name used for the drop comes from the resource ID, so changing `name` in the configuration does not help.
+
+To migrate a constraint whose `name` is not all uppercase, rename it in Snowflake to the exact configured name, so that the configuration, the state, and Snowflake agree:
+
+```sql
+ALTER TABLE <database>.<schema>.<table> RENAME CONSTRAINT PK_ORDERS TO "pk_orders";
+```
+
+No changes are required for constraints whose `name` is already in uppercase.
 
 ### *(breaking change)* `snowflake_table` reworked
 
@@ -261,6 +269,60 @@ After upgrading, run `terraform plan` and apply the configuration changes above.
 
 References: [#2332](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2332), [#3447](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3447), [#1418](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1418), [#2516](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2516).
 
+### *(new feature)* Hierarchy renames rolled out to more resources
+
+The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.
+
+Newly supported resources:
+
+- [`snowflake_file_format_avro`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro)
+- [`snowflake_file_format_csv`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_csv)
+- [`snowflake_file_format_json`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json)
+- [`snowflake_file_format_orc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc)
+- [`snowflake_file_format_parquet`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_parquet)
+- [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml)
+- [`snowflake_openflow_runtime`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_runtime)
+- [`snowflake_password_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/password_policy)
+- [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy)
+- [`snowflake_semantic_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/semantic_view)
+- [`snowflake_session_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy)
+- [`snowflake_stage_external_azure`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_azure)
+- [`snowflake_stage_external_gcs`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_gcs)
+- [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3)
+- [`snowflake_stage_external_s3_compatible`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3_compatible)
+- [`snowflake_stage_internal`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_internal)
+- [`snowflake_storage_lifecycle_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy)
+- [`snowflake_streamlit`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/streamlit)
+- [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag)
+- [`snowflake_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/view)
+
+Without the experiment, the behavior of these resources does not change. No configuration changes are required unless you want to enable the experiment.
+
+### *(new feature)* `use_private_link` on Snowflake-managed Openflow deployments
+
+[`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) now accepts `use_private_link`. Valid values are `"true"` and `"false"`. Leave it unset to keep the Snowflake default (`FALSE`); the provider stores that as `"default"` and omits `USE_PRIVATE_LINK` from `CREATE OPENFLOW DEPLOYMENT`.
+
+`ALTER OPENFLOW DEPLOYMENT ... SET` does not accept `USE_PRIVATE_LINK`, so changing the attribute replaces the deployment. Existing state is upgraded to `use_private_link = "default"`, which does not replace a deployment that was created before this attribute existed.
+
+Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5361).
+
+### *(new feature)* Backup set resource and data source
+
+We have added a new preview resource, [`snowflake_backup_set`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_set), for managing [backup sets](https://docs.snowflake.com/en/user-guide/backups). Exactly one of `for_table`, `for_dynamic_table`, `for_schema`, or `for_database` is required and cannot be changed after creation. An attached `backup_policy` can be changed to another policy, but it cannot be removed.
+
+We have also added a new preview data source, [`snowflake_backup_sets`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/backup_sets), for listing backup sets. It supports `like`, `in`, `starts_with`, and `limit`. `with_describe` is on by default and runs DESCRIBE for each backup set returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_backup_set_resource` for `snowflake_backup_set`;
+- `snowflake_backup_sets_datasource` for `snowflake_backup_sets`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
+### *(new feature)* Permissive import mode rolled out to more resources
+
+The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
+
 ### *(improvement)* `primary` in `snowflake_replication_group_secondary` is required at plan time
 
 Previously, [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) marked `primary` as optional in the schema, so a configuration without it passed `terraform validate` and `terraform plan` and failed only on `terraform apply` with "primary is required". The group is created with [`CREATE REPLICATION GROUP ... AS REPLICA OF <primary>`](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group), which always needs the primary group.
@@ -308,6 +370,14 @@ Changing `attributes` in the [`snowflake_cortex_search_service`](https://registr
 Attribute columns must still be present in `query`. A change that also modifies `query` recreates the service, as before.
 
 No configuration changes are required.
+
+### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails
+
+Snowflake rejects property changes on a started alert, and it requires a warehouse to be suspended while its type changes, or an interactive warehouse while its size changes. [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert), [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) suspend the object for the update. Until now, an update that failed after the suspension could leave the object suspended.
+
+The object is now resumed whenever it was started before the update, also when the update fails, and the values that were not applied stay in the state, so the next plan shows them again. A failed resume is reported together with the original error. The suspension happens once per update, and it is skipped when the object is already suspended.
+
+`snowflake_alert` used to ignore a failed suspension and then fail on the change itself. It now fails the update with the suspension error. No changes are required in your configuration.
 
 ### *(bug fix)* `snowflake_share` reads shares linked to a listing with target accounts, to an organization listing, or shared with all accounts
 

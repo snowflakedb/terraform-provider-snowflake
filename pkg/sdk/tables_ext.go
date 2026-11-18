@@ -42,33 +42,9 @@ func (opts *CreateTableOptions) additionalValidations() error {
 	if len(opts.ColumnsAndConstraints.Columns) == 0 {
 		errs = append(errs, errNotSet("CreateTableOptions", "Columns"))
 	}
-	for _, column := range opts.ColumnsAndConstraints.Columns {
-		if column.InlineConstraint != nil {
-			if err := column.InlineConstraint.validate(); err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
-	for _, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
-		if err := outOfLineConstraint.validate(); err != nil {
-			errs = append(errs, err)
-		}
-	}
 	if opts.RowAccessPolicy != nil {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
-		}
-	}
-	return JoinErrors(errs...)
-}
-
-func (opts *AlterTableOptions) additionalValidations() error {
-	var errs []error
-	if constraintAction := opts.ConstraintAction; valueSet(constraintAction) {
-		if addAction := constraintAction.Add; valueSet(addAction) {
-			if err := addAction.validate(); err != nil {
-				errs = append(errs, err)
-			}
 		}
 	}
 	return JoinErrors(errs...)
@@ -79,35 +55,6 @@ func (opts *ShowTableOptions) additionalValidations() error {
 		return ErrPatternRequiredForLikeKeyword
 	}
 	return nil
-}
-
-func (v *OutOfLineConstraint) validate() error {
-	var errs []error
-	switch v.ConstraintType {
-	case ColumnConstraintTypeForeignKey:
-		if !valueSet(v.ForeignKey) {
-			errs = append(errs, errNotSet("OutOfLineConstraint", "ForeignKey"))
-		} else {
-			if err := v.ForeignKey.validate(); err != nil {
-				errs = append(errs, err)
-			}
-		}
-	case ColumnConstraintTypeUnique, ColumnConstraintTypePrimaryKey:
-		if valueSet(v.ForeignKey) {
-			errs = append(errs, errSet("OutOfLineConstraint", "ForeignKey"))
-		}
-	default:
-		errs = append(errs, errInvalidValue("OutOfLineConstraint", "ConstraintType", string(v.ConstraintType)))
-	}
-	return JoinErrors(errs...)
-}
-
-func (v *OutOfLineForeignKey) validate() error {
-	var errs []error
-	if !valueSet(v.TableName) {
-		errs = append(errs, errNotSet("OutOfLineForeignKey", "TableName"))
-	}
-	return JoinErrors(errs...)
 }
 
 // additionalConvert splits COLLATE off the DESCRIBE TABLE type column.

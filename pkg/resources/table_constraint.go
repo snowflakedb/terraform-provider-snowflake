@@ -251,82 +251,32 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	constraintRequest := sdk.NewOutOfLineConstraintRequest(constraintType).WithName(name)
 
 	cc := d.Get("columns").([]any)
 	columns := make([]string, 0, len(cc))
 	for _, c := range cc {
 		columns = append(columns, c.(string))
 	}
-	constraintRequest.WithColumns(toColumns(columns))
 
-	if v, ok := d.GetOk("enforced"); ok {
-		constraintRequest.WithEnforced(v.(bool))
-	}
-
-	if v, ok := d.GetOk("deferrable"); ok {
-		constraintRequest.WithDeferrable(v.(bool))
-	}
-
-	if v, ok := d.GetOk("initially"); ok {
-		if v.(string) == "DEFERRED" {
-			constraintRequest.WithInitiallyDeferred(true)
+	constraintRequest := sdk.NewTableOutOfLineConstraintRequest()
+	switch constraintType {
+	case sdk.ColumnConstraintTypeForeignKey:
+		foreignKeyRequest, err := tableConstraintForeignKeyRequest(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		foreignKeyRequest.WithName(name).WithColumns(toColumns(columns))
+		applyTableConstraintProperties(d, foreignKeyRequest)
+		constraintRequest.WithFK(*foreignKeyRequest)
+	default:
+		uniquePKRequest := sdk.NewTableOutOfLineUniquePKRequest().WithName(name).WithColumns(toColumns(columns))
+		if constraintType == sdk.ColumnConstraintTypePrimaryKey {
+			uniquePKRequest.WithPrimaryKey(true)
 		} else {
-			constraintRequest.WithInitiallyImmediate(true)
+			uniquePKRequest.WithUnique(true)
 		}
-	}
-
-	if v, ok := d.GetOk("enable"); ok {
-		constraintRequest.WithEnable(v.(bool))
-	}
-
-	if v, ok := d.GetOk("validate"); ok {
-		constraintRequest.WithValidate(v.(bool))
-	}
-
-	if v, ok := d.GetOk("rely"); ok {
-		constraintRequest.WithRely(v.(bool))
-	}
-
-	// set foreign key specific settings
-	if v, ok := d.GetOk("foreign_key_properties"); ok {
-		foreignKeyProperties := v.([]any)[0].(map[string]any)
-		references := foreignKeyProperties["references"].([]any)[0].(map[string]any)
-		fkTableID := references["table_id"].(string)
-		fkId, err := helpers.DecodeSnowflakeParameterID(fkTableID)
-		if err != nil {
-			return diag.FromErr(fmt.Errorf("table id is incorrect: %s, err: %w", fkTableID, err))
-		}
-		referencedTableIdentifier, ok := fkId.(sdk.SchemaObjectIdentifier)
-		if !ok {
-			return diag.FromErr(fmt.Errorf("table id is incorrect: %s", fkId))
-		}
-
-		cols := references["columns"].([]any)
-		var fkColumns []string
-		for _, c := range cols {
-			fkColumns = append(fkColumns, c.(string))
-		}
-		foreignKeyRequest := sdk.NewOutOfLineForeignKeyRequest(referencedTableIdentifier).WithColumnNames(toColumns(fkColumns))
-
-		matchType, err := sdk.ToMatchType(foreignKeyProperties["match"].(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		foreignKeyRequest.WithMatch(matchType)
-
-		onUpdate, err := sdk.ToForeignKeyAction(foreignKeyProperties["on_update"].(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		onDelete, err := sdk.ToForeignKeyAction(foreignKeyProperties["on_delete"].(string))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-		foreignKeyRequest.WithOn(*sdk.NewForeignKeyOnAction().
-			WithOnDelete(&onDelete).
-			WithOnUpdate(&onUpdate))
-		constraintRequest.WithForeignKey(*foreignKeyRequest)
+		applyTableConstraintProperties(d, uniquePKRequest)
+		constraintRequest.WithUniquePK(*uniquePKRequest)
 	}
 
 	alterStatement := sdk.NewAlterTableRequest(*tableIdentifier).WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAdd(*constraintRequest))
@@ -343,6 +293,85 @@ func CreateTableConstraint(ctx context.Context, d *schema.ResourceData, meta any
 	d.SetId(tc.String())
 
 	return ReadTableConstraint(ctx, d, meta)
+}
+
+type tableConstraintPropertiesRequest[T any] interface {
+	WithEnforced(bool) T
+	WithDeferrable(bool) T
+	WithInitiallyDeferred(bool) T
+	WithInitiallyImmediate(bool) T
+	WithEnable(bool) T
+	WithValidate(bool) T
+	WithRely(bool) T
+}
+
+func applyTableConstraintProperties[T any](d *schema.ResourceData, request tableConstraintPropertiesRequest[T]) {
+	if v, ok := d.GetOk("enforced"); ok {
+		request.WithEnforced(v.(bool))
+	}
+	if v, ok := d.GetOk("deferrable"); ok {
+		request.WithDeferrable(v.(bool))
+	}
+	if v, ok := d.GetOk("initially"); ok {
+		if v.(string) == "DEFERRED" {
+			request.WithInitiallyDeferred(true)
+		} else {
+			request.WithInitiallyImmediate(true)
+		}
+	}
+	if v, ok := d.GetOk("enable"); ok {
+		request.WithEnable(v.(bool))
+	}
+	if v, ok := d.GetOk("validate"); ok {
+		request.WithValidate(v.(bool))
+	}
+	if v, ok := d.GetOk("rely"); ok {
+		request.WithRely(v.(bool))
+	}
+}
+
+func tableConstraintForeignKeyRequest(d *schema.ResourceData) (*sdk.TableOutOfLineFKRequest, error) {
+	v, ok := d.GetOk("foreign_key_properties")
+	if !ok {
+		return nil, fmt.Errorf("foreign_key_properties must be set for a FOREIGN KEY constraint")
+	}
+	foreignKeyProperties := v.([]any)[0].(map[string]any)
+	references := foreignKeyProperties["references"].([]any)[0].(map[string]any)
+	fkTableID := references["table_id"].(string)
+	fkId, err := helpers.DecodeSnowflakeParameterID(fkTableID)
+	if err != nil {
+		return nil, fmt.Errorf("table id is incorrect: %s, err: %w", fkTableID, err)
+	}
+	referencedTableIdentifier, ok := fkId.(sdk.SchemaObjectIdentifier)
+	if !ok {
+		return nil, fmt.Errorf("table id is incorrect: %s", fkId)
+	}
+
+	cols := references["columns"].([]any)
+	fkColumns := make([]string, 0, len(cols))
+	for _, c := range cols {
+		fkColumns = append(fkColumns, c.(string))
+	}
+	foreignKeyRequest := sdk.NewTableOutOfLineFKRequest(referencedTableIdentifier).WithRefColumns(toColumns(fkColumns))
+
+	matchType, err := sdk.ToMatchType(foreignKeyProperties["match"].(string))
+	if err != nil {
+		return nil, err
+	}
+	foreignKeyRequest.WithMatch(matchType)
+
+	onUpdate, err := sdk.ToForeignKeyAction(foreignKeyProperties["on_update"].(string))
+	if err != nil {
+		return nil, err
+	}
+	onDelete, err := sdk.ToForeignKeyAction(foreignKeyProperties["on_delete"].(string))
+	if err != nil {
+		return nil, err
+	}
+	foreignKeyRequest.WithOn(*sdk.NewForeignKeyOnAction().
+		WithOnDelete(&onDelete).
+		WithOnUpdate(&onUpdate))
+	return foreignKeyRequest, nil
 }
 
 // ReadTableConstraint implements schema.ReadFunc.

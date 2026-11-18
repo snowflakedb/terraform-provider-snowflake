@@ -1024,13 +1024,13 @@ func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
-	add := NewQueryStruct("OutOfLineConstraint")
+	add := NewQueryStruct("TableOutOfLineConstraint")
 	got := QueryStructFromAttribute("Table", attr, add)
 	rename := NewQueryStruct("TableConstraintRenameAction").
-		Text("OldName", KeywordOptions().Required()).
-		AssignmentWithFieldName("TO", "string", ParameterOptions().NoEquals().Required(), "NewName")
+		Text("OldName", KeywordOptions().DoubleQuotes().Required()).
+		AssignmentWithFieldName("TO", "string", ParameterOptions().DoubleQuotes().NoEquals().Required(), "NewName")
 	alter := NewQueryStruct("TableConstraintAlterAction").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().NoEquals(), "ConstraintName").
+		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().DoubleQuotes().NoEquals(), "ConstraintName").
 		OptionalSQL("PRIMARY KEY").
 		OptionalSQL("UNIQUE").
 		OptionalSQL("FOREIGN KEY").
@@ -1043,7 +1043,7 @@ func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
 		OptionalSQL("NORELY").
 		WithValidation(ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
 	drop := NewQueryStruct("TableConstraintDropAction").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().NoEquals(), "ConstraintName").
+		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().DoubleQuotes().NoEquals(), "ConstraintName").
 		OptionalSQL("PRIMARY KEY").
 		OptionalSQL("UNIQUE").
 		OptionalSQL("FOREIGN KEY").
@@ -1052,7 +1052,7 @@ func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
 		OptionalSQL("RESTRICT").
 		WithValidation(ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
 	want := NewQueryStruct("TableConstraintAction").
-		OptionalQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
+		OptionalSharedQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
 		OptionalQueryStructField("Rename", rename, ListOptions().NoComma().SQL("RENAME CONSTRAINT")).
 		OptionalQueryStructField("Alter", alter, ListOptions().NoComma().SQL("ALTER")).
 		OptionalQueryStructField("Drop", drop, ListOptions().NoComma().SQL("DROP")).

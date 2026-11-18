@@ -152,59 +152,7 @@ func (r *CreateIcebergTableRequest) toOpts() *CreateIcebergTableOptions {
 	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
 		outOfLineConstraint := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
-			outOfLineConstraint[i] = TableOutOfLineConstraint{}
-			if v.UniquePK != nil {
-				outOfLineConstraint[i].UniquePK = &TableOutOfLineUniquePK{
-					Name:               v.UniquePK.Name,
-					Unique:             v.UniquePK.Unique,
-					PrimaryKey:         v.UniquePK.PrimaryKey,
-					Columns:            v.UniquePK.Columns,
-					Enforced:           v.UniquePK.Enforced,
-					NotEnforced:        v.UniquePK.NotEnforced,
-					Deferrable:         v.UniquePK.Deferrable,
-					NotDeferrable:      v.UniquePK.NotDeferrable,
-					InitiallyDeferred:  v.UniquePK.InitiallyDeferred,
-					InitiallyImmediate: v.UniquePK.InitiallyImmediate,
-					Enable:             v.UniquePK.Enable,
-					Disable:            v.UniquePK.Disable,
-					Validate:           v.UniquePK.Validate,
-					Novalidate:         v.UniquePK.Novalidate,
-					Rely:               v.UniquePK.Rely,
-					Norely:             v.UniquePK.Norely,
-					Comment:            v.UniquePK.Comment,
-				}
-			}
-			if v.FK != nil {
-				outOfLineConstraint[i].FK = &TableOutOfLineFK{
-					Name:               v.FK.Name,
-					Columns:            v.FK.Columns,
-					References:         v.FK.References,
-					RefColumns:         v.FK.RefColumns,
-					Match:              v.FK.Match,
-					On:                 v.FK.On,
-					Enforced:           v.FK.Enforced,
-					NotEnforced:        v.FK.NotEnforced,
-					Deferrable:         v.FK.Deferrable,
-					NotDeferrable:      v.FK.NotDeferrable,
-					InitiallyDeferred:  v.FK.InitiallyDeferred,
-					InitiallyImmediate: v.FK.InitiallyImmediate,
-					Enable:             v.FK.Enable,
-					Disable:            v.FK.Disable,
-					Validate:           v.FK.Validate,
-					Novalidate:         v.FK.Novalidate,
-					Rely:               v.FK.Rely,
-					Norely:             v.FK.Norely,
-					Comment:            v.FK.Comment,
-				}
-			}
-			if v.CH != nil {
-				outOfLineConstraint[i].CH = &TableOutOfLineCH{
-					Name:             v.CH.Name,
-					Expression:       v.CH.Expression,
-					EnableValidate:   v.CH.EnableValidate,
-					EnableNovalidate: v.CH.EnableNovalidate,
-				}
-			}
+			outOfLineConstraint[i] = *v.toOpts()
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
@@ -626,6 +574,63 @@ func (r *TableColumnInlineConstraintRequest) toOpts() *TableColumnInlineConstrai
 	}
 	if r.CH != nil {
 		opts.CH = &TableColumnInlineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return opts
+}
+
+func (r *TableOutOfLineConstraintRequest) toOpts() *TableOutOfLineConstraint {
+	opts := &TableOutOfLineConstraint{}
+	if r.UniquePK != nil {
+		opts.UniquePK = &TableOutOfLineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Columns:            r.UniquePK.Columns,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+			Comment:            r.UniquePK.Comment,
+		}
+	}
+	if r.FK != nil {
+		opts.FK = &TableOutOfLineFK{
+			Name:               r.FK.Name,
+			Columns:            r.FK.Columns,
+			References:         r.FK.References,
+			RefColumns:         r.FK.RefColumns,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+			Comment:            r.FK.Comment,
+		}
+	}
+	if r.CH != nil {
+		opts.CH = &TableOutOfLineCH{
 			Name:             r.CH.Name,
 			Expression:       r.CH.Expression,
 			EnableValidate:   r.CH.EnableValidate,

@@ -19,7 +19,7 @@ func TestInt_SemanticView(t *testing.T) {
 	columns1 := []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("first_a", sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
 		*sdk.NewTableColumnRequest("first_b", sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest("first_c", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.ColumnInlineConstraint{Name: sdk.String("pkey"), Type: sdk.ColumnConstraintTypePrimaryKey}),
+		*sdk.NewTableColumnRequest("first_c", sdk.DataTypeVARCHAR).WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithUniquePK(*sdk.NewTableColumnInlineUniquePKRequest().WithName("pkey").WithPrimaryKey(true))),
 	}
 	table1Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
 	_, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1Id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns1)))
@@ -28,7 +28,7 @@ func TestInt_SemanticView(t *testing.T) {
 	columns2 := []sdk.TableColumnRequest{
 		*sdk.NewTableColumnRequest("second_a", sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
 		*sdk.NewTableColumnRequest("second_b", sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
-		*sdk.NewTableColumnRequest("second_c", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.ColumnInlineConstraint{Name: sdk.String("pkey"), Type: sdk.ColumnConstraintTypePrimaryKey}),
+		*sdk.NewTableColumnRequest("second_c", sdk.DataTypeVARCHAR).WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithUniquePK(*sdk.NewTableColumnInlineUniquePKRequest().WithName("pkey").WithPrimaryKey(true))),
 	}
 	table2Id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithPrefix("lowercase")
 	_, table2Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table2Id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns2)))

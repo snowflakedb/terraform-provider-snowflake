@@ -5,6 +5,7 @@ package testint
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -87,6 +88,35 @@ func TestInt_Table(t *testing.T) {
 		assert.Empty(t, table.Owner)
 	}
 
+	selectTableConstraints := func(t *testing.T, id sdk.SchemaObjectIdentifier) []sdk.TableConstraintDetails {
+		t.Helper()
+		constraints, err := client.Tables.SelectTableConstraints(ctx, sdk.NewSelectTableConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		slices.SortFunc(constraints, func(x, y sdk.TableConstraintDetails) int {
+			return strings.Compare(x.ConstraintName, y.ConstraintName)
+		})
+		return constraints
+	}
+
+	addConstraint := func(t *testing.T, id sdk.SchemaObjectIdentifier, constraint sdk.TableOutOfLineConstraintRequest) {
+		t.Helper()
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAdd(constraint)))
+		require.NoError(t, err)
+	}
+
+	createTableWithColumns := func(t *testing.T, columnNames ...string) sdk.SchemaObjectIdentifier {
+		t.Helper()
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		columns := make([]sdk.TableColumnRequest, len(columnNames))
+		for i, name := range columnNames {
+			columns[i] = *sdk.NewTableColumnRequest(name, sdk.DataTypeNumber)
+		}
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+		return id
+	}
+
 	t.Run("create table: no optionals", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		columns := []sdk.TableColumnRequest{
@@ -163,8 +193,10 @@ func TestInt_Table(t *testing.T) {
 	t.Run("create table: complete optionals", func(t *testing.T) {
 		maskingPolicy, maskingPolicyCleanup := testClientHelper().MaskingPolicy.CreateMaskingPolicy(t)
 		t.Cleanup(maskingPolicyCleanup)
-		table2, table2Cleanup := testClientHelper().Table.Create(t)
-		t.Cleanup(table2Cleanup)
+		referencedId := createTableWithColumns(t, "id")
+		addConstraint(t, referencedId, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "id"}})))
 		comment := random.Comment()
 
 		columnTags := []sdk.TagAssociation{
@@ -179,22 +211,50 @@ func TestInt_Table(t *testing.T) {
 		}
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_3", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR).
+			*sdk.NewTableColumnRequest("column_3", sdk.DataTypeVARCHAR).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithUniquePK(*sdk.NewTableColumnInlineUniquePKRequest().
+					WithName("uq_Inline").
+					WithUnique(true))),
+			*sdk.NewTableColumnRequest("column_1", sdk.DataTypeVARCHAR).
 				WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression("'default'")).
-				WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicy.ID()).WithUsing([]sdk.Column{{Value: "COLUMN_1"}, {Value: "COLUMN_3"}})).
+				WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicy.ID()).WithUsing([]sdk.Column{{Value: "column_1"}, {Value: "column_3"}})).
 				WithTag(columnTags).
 				WithNotNull(true),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))),
+			*sdk.NewTableColumnRequest("column_2", sdk.DataTypeNumber).
+				WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(1, 1))).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithUniquePK(*sdk.NewTableColumnInlineUniquePKRequest().
+					WithName("pk_Id").
+					WithPrimaryKey(true).
+					WithNotEnforced(true).
+					WithRely(true))),
+			*sdk.NewTableColumnRequest("ref_id", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("inline_ref", sdk.DataTypeNumber).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithFK(*sdk.NewTableColumnInlineFKRequest(referencedId).
+					WithName("fk_Inline").
+					WithForeignKey(true).
+					WithRefColumn([]sdk.Column{{Value: "id"}}).
+					WithMatch(sdk.MatchTypeFull).
+					WithOn(*sdk.NewForeignKeyOnAction().WithOnUpdate(new(sdk.ForeignKeyNoAction)).WithOnDelete(new(sdk.ForeignKeyNoAction))))),
+			*sdk.NewTableColumnRequest("amount", sdk.DataTypeNumber).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithCH(*sdk.NewTableColumnInlineCHRequest(`"amount" > 0`).
+					WithName("chk_Amount_Positive"))),
 		}
-		outOfLineConstraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypeForeignKey).
-			WithName("OUT_OF_LINE_CONSTRAINT").
-			WithColumns([]sdk.Column{{Value: "COLUMN_1"}}).
-			WithForeignKey(*sdk.NewOutOfLineForeignKeyRequest(table2.ID()).WithColumnNames([]sdk.Column{{Value: "id"}}).
+		constraints := []sdk.TableOutOfLineConstraintRequest{
+			*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+				WithName("uq_Code").
+				WithUnique(true).
+				WithColumns([]sdk.Column{{Value: "column_1"}}).
+				WithComment("unique comment")),
+			*sdk.NewTableOutOfLineConstraintRequest().WithFK(*sdk.NewTableOutOfLineFKRequest(referencedId).
+				WithName("fk_Ref").
+				WithColumns([]sdk.Column{{Value: "ref_id"}}).
+				WithRefColumns([]sdk.Column{{Value: "id"}}).
 				WithMatch(sdk.MatchTypeFull).
-				WithOn(*sdk.NewForeignKeyOnAction().
-					WithOnDelete(sdk.Pointer(sdk.ForeignKeySetNullAction)).WithOnUpdate(sdk.Pointer(sdk.ForeignKeyRestrictAction))))
-		request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint([]sdk.OutOfLineConstraintRequest{*outOfLineConstraint})).
+				WithOn(*sdk.NewForeignKeyOnAction().WithOnUpdate(new(sdk.ForeignKeyNoAction)).WithOnDelete(new(sdk.ForeignKeyNoAction)))),
+			*sdk.NewTableOutOfLineConstraintRequest().WithCH(*sdk.NewTableOutOfLineCHRequest(`"column_2" > 0`).
+				WithName("chk_Id_Positive")),
+		}
+		request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint(constraints)).
 			WithComment(comment).
 			WithDataRetentionTimeInDays(30).
 			WithMaxDataExtensionTimeInDays(30)
@@ -216,11 +276,55 @@ func TestInt_Table(t *testing.T) {
 
 		tableColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
 		expectedColumns := []expectedColumn{
-			{"COLUMN_3", sdk.DataTypeVARCHAR},
-			{"COLUMN_1", sdk.DataTypeVARCHAR},
-			{"COLUMN_2", sdk.DataTypeNumber},
+			{"column_3", sdk.DataTypeVARCHAR},
+			{"column_1", sdk.DataTypeVARCHAR},
+			{"column_2", sdk.DataTypeNumber},
+			{"ref_id", sdk.DataTypeNumber},
+			{"inline_ref", sdk.DataTypeNumber},
+			{"amount", sdk.DataTypeNumber},
 		}
 		assertColumns(t, expectedColumns, tableColumns)
+
+		tableConstraints := selectTableConstraints(t, id)
+		require.Len(t, tableConstraints, 5)
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[0]).
+			HasConstraintName("fk_Inline").
+			HasConstraintType(sdk.TableConstraintTypeForeignKey).
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[1]).
+			HasConstraintName("fk_Ref").
+			HasConstraintType(sdk.TableConstraintTypeForeignKey).
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[2]).
+			HasConstraintName("pk_Id").
+			HasConstraintType(sdk.TableConstraintTypePrimaryKey).
+			HasEnforced(false).
+			HasRely(true).
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[3]).
+			HasConstraintName("uq_Code").
+			HasConstraintType(sdk.TableConstraintTypeUnique).
+			HasComment("unique comment").
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[4]).
+			HasConstraintName("uq_Inline").
+			HasConstraintType(sdk.TableConstraintTypeUnique).
+			HasTableName(id.Name()))
+
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		slices.SortFunc(checkConstraints, func(x, y sdk.TableCheckConstraintDetails) int {
+			return strings.Compare(x.ConstraintName, y.ConstraintName)
+		})
+		require.Len(t, checkConstraints, 2)
+		assertThatObject(t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[0]).
+			HasConstraintName("chk_Amount_Positive").
+			HasCheckClause(`"amount" > 0`).
+			HasConstraintTable(id.Name()))
+		assertThatObject(t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[1]).
+			HasConstraintName("chk_Id_Positive").
+			HasCheckClause(`"column_2" > 0`).
+			HasConstraintTable(id.Name()))
 	})
 
 	t.Run("create table as select", func(t *testing.T) {
@@ -795,33 +899,60 @@ func TestInt_Table(t *testing.T) {
 		assert.Equal(t, "", table.Comment)
 	})
 
-	// TODO [SNOW-1007542]: check added constraints
-	// Add method similar to getTableColumnsFor based on https://docs.snowflake.com/en/sql-reference/info-schema/table_constraints.
-	t.Run("alter constraint: add", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-		}
+	t.Run("alter constraint: add primary key, unique, foreign key, and check", func(t *testing.T) {
+		referencedId := createTableWithColumns(t, "REF_ID")
+		addConstraint(t, referencedId, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "REF_ID"}})))
 
-		secondTableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		secondTableColumns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_3", sdk.DataTypeVARCHAR).WithInlineConstraint(sdk.ColumnInlineConstraint{Name: sdk.String("pkey"), Type: sdk.ColumnConstraintTypePrimaryKey}),
-		}
+		id := createTableWithColumns(t, "ID", "CODE", "REF_ID")
 
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithName("pk_Id").
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "ID"}}).
+			WithNotEnforced(true).
+			WithRely(true).
+			WithComment("primary key comment")))
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithName("uq_Code").
+			WithUnique(true).
+			WithColumns([]sdk.Column{{Value: "CODE"}})))
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithFK(*sdk.NewTableOutOfLineFKRequest(referencedId).
+			WithName("fk_Ref").
+			WithColumns([]sdk.Column{{Value: "REF_ID"}}).
+			WithRefColumns([]sdk.Column{{Value: "REF_ID"}}).
+			WithMatch(sdk.MatchTypeFull).
+			WithOn(*sdk.NewForeignKeyOnAction().WithOnUpdate(new(sdk.ForeignKeyNoAction)).WithOnDelete(new(sdk.ForeignKeyNoAction)))))
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithCH(*sdk.NewTableOutOfLineCHRequest("ID > 0").
+			WithName("chk_Id_Positive").
+			WithEnableNovalidate(true)))
+
+		constraints := selectTableConstraints(t, id)
+		require.Len(t, constraints, 3)
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &constraints[0]).
+			HasConstraintName("fk_Ref").
+			HasConstraintType(sdk.TableConstraintTypeForeignKey).
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &constraints[1]).
+			HasConstraintName("pk_Id").
+			HasConstraintType(sdk.TableConstraintTypePrimaryKey).
+			HasEnforced(false).
+			HasRely(true).
+			HasComment("primary key comment").
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &constraints[2]).
+			HasConstraintName("uq_Code").
+			HasConstraintType(sdk.TableConstraintTypeUnique).
+			HasTableName(id.Name()))
+
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
 		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(id))
-
-		err = client.Tables.Create(ctx, sdk.NewCreateTableRequest(secondTableId, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(secondTableColumns)))
-		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(secondTableId))
-
-		alterRequest := sdk.NewAlterTableRequest(id).
-			WithConstraintAction(*sdk.NewTableConstraintActionRequest().
-				WithAdd(*sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypeForeignKey).WithName("OUT_OF_LINE_CONSTRAINT").WithColumns([]sdk.Column{{Value: "COLUMN_1"}}).
-					WithForeignKey(*sdk.NewOutOfLineForeignKeyRequest(secondTableId).WithColumnNames([]sdk.Column{{Value: "COLUMN_3"}}))))
-		err = client.Tables.Alter(ctx, alterRequest)
-		require.NoError(t, err)
+		require.Len(t, checkConstraints, 1)
+		assertThatObject(t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[0]).
+			HasConstraintName("chk_Id_Positive").
+			HasCheckClause("ID > 0").
+			HasConstraintTable(id.Name()))
 	})
 
 	t.Run("add constraint: not null", func(t *testing.T) {
@@ -843,66 +974,62 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	// TODO [SNOW-1007542]: check renamed constraint
 	t.Run("alter constraint: rename", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
-		}
-		oldConstraintName := "OUT_OF_LINE_CONSTRAINT"
-		outOfLineConstraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithName(oldConstraintName).WithColumns([]sdk.Column{{Value: "COLUMN_1"}})
+		id := createTableWithColumns(t, "COLUMN_1")
+		oldConstraintName := "Out_Of_Line_Constraint"
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithName(oldConstraintName).
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "COLUMN_1"}})))
 
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint([]sdk.OutOfLineConstraintRequest{*outOfLineConstraint})))
-		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(id))
-
-		newConstraintName := "NEW_OUT_OF_LINE_CONSTRAINT_NAME"
+		newConstraintName := "New_Out_Of_Line_Constraint"
 		alterRequest := sdk.NewAlterTableRequest(id).
 			WithConstraintAction(*sdk.NewTableConstraintActionRequest().
 				WithRename(*sdk.NewTableConstraintRenameActionRequest(oldConstraintName, newConstraintName)))
-		err = client.Tables.Alter(ctx, alterRequest)
+		err := client.Tables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
+
+		constraints := selectTableConstraints(t, id)
+		require.Len(t, constraints, 1)
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &constraints[0]).
+			HasConstraintName(newConstraintName).
+			HasConstraintType(sdk.TableConstraintTypePrimaryKey))
 	})
 
-	// TODO [SNOW-1007542]: check altered constraint
 	t.Run("alter constraint: alter", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
-		}
-		constraintName := "OUT_OF_LINE_CONSTRAINT"
-		outOfLineConstraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithName(constraintName).WithColumns([]sdk.Column{{Value: "COLUMN_1"}})
-
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint([]sdk.OutOfLineConstraintRequest{*outOfLineConstraint})))
-		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(id))
+		id := createTableWithColumns(t, "COLUMN_1")
+		constraintName := "Out_Of_Line_Constraint"
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithName(constraintName).
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "COLUMN_1"}})))
 
 		alterRequest := sdk.NewAlterTableRequest(id).
-			WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAlter(*sdk.NewTableConstraintAlterActionRequest().WithConstraintName(constraintName).WithEnforced(true)))
-		err = client.Tables.Alter(ctx, alterRequest)
+			WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAlter(*sdk.NewTableConstraintAlterActionRequest().WithConstraintName(constraintName).WithRely(true)))
+		err := client.Tables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
+
+		constraints := selectTableConstraints(t, id)
+		require.Len(t, constraints, 1)
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &constraints[0]).
+			HasConstraintName(constraintName).
+			HasRely(true))
 	})
 
-	// TODO [SNOW-1007542]: check dropped constraint
 	t.Run("alter constraint: drop constraint with name", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
-		}
-		constraintName := "OUT_OF_LINE_CONSTRAINT"
-		outOfLineConstraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithName(constraintName).WithColumns([]sdk.Column{{Value: "COLUMN_1"}})
-
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint([]sdk.OutOfLineConstraintRequest{*outOfLineConstraint})))
-		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(id))
+		id := createTableWithColumns(t, "COLUMN_1")
+		constraintName := "Out_Of_Line_Constraint"
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithName(constraintName).
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "COLUMN_1"}})))
 
 		alterRequest := sdk.NewAlterTableRequest(id).
 			WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithDrop(*sdk.NewTableConstraintDropActionRequest().WithConstraintName(constraintName)))
-		err = client.Tables.Alter(ctx, alterRequest)
+		err := client.Tables.Alter(ctx, alterRequest)
 		require.NoError(t, err)
+
+		require.Empty(t, selectTableConstraints(t, id))
 	})
 
 	t.Run("alter constraint: drop primary key without constraint name", func(t *testing.T) {
@@ -910,9 +1037,11 @@ func TestInt_Table(t *testing.T) {
 		columns := []sdk.TableColumnRequest{
 			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
 		}
-		outOfLineConstraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns([]sdk.Column{{Value: "COLUMN_1"}})
+		outOfLineConstraint := sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "COLUMN_1"}}))
 
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint([]sdk.OutOfLineConstraintRequest{*outOfLineConstraint})))
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint([]sdk.TableOutOfLineConstraintRequest{*outOfLineConstraint})))
 		require.NoError(t, err)
 		t.Cleanup(cleanupTableProvider(id))
 
