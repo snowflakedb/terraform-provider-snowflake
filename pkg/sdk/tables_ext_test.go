@@ -39,6 +39,18 @@ func init() {
 				},
 			}
 		}).
+		withModify(case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateTableOptions) {
+			opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{
+				UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "COLUMN_1"}}},
+				FK:       &TableOutOfLineFK{References: fkRefId, Columns: []Column{{Value: "COLUMN_1"}}},
+			}}
+		}).
+		withModify(case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateTableOptions) {
+			opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{
+				{UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "COLUMN_1"}}}},
+				{},
+			}
+		}).
 		withAdditionalValidationCase(
 			"validation_Create_noColumns",
 			func(opts *CreateTableOptions) { opts.ColumnsAndConstraints.Columns = nil },
@@ -50,170 +62,6 @@ func init() {
 				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: emptySchemaObjectIdentifier, On: []string{"COLUMN_1"}}
 			},
 			errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_emptyType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Name: new("INLINE_CONSTRAINT")},
-				}}
-			},
-			errInvalidValue("ColumnInlineConstraint", "Type", ""),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_invalidType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: "not existing type"},
-				}}
-			},
-			errInvalidValue("ColumnInlineConstraint", "Type", "not existing type"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_foreignKeyNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeForeignKey},
-				}}
-			},
-			errNotSet("ColumnInlineConstraint", "ForeignKey"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_foreignKeyTableNameNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeForeignKey, ForeignKey: &InlineForeignKey{}},
-				}}
-			},
-			errNotSet("InlineForeignKey", "TableName"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_foreignKeySet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, ForeignKey: &InlineForeignKey{TableName: "t"}},
-				}}
-			},
-			errSet("ColumnInlineConstraint", "ForeignKey"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Enforced_NotEnforced",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Enforced: new(true), NotEnforced: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Enforced", "NotEnforced"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Deferrable_NotDeferrable",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Deferrable: new(true), NotDeferrable: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Deferrable", "NotDeferrable"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_InitiallyDeferred_InitiallyImmediate",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, InitiallyDeferred: new(true), InitiallyImmediate: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "InitiallyDeferred", "InitiallyImmediate"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Enable_Disable",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Enable: new(true), Disable: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Enable", "Disable"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Validate_Novalidate",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Validate: new(true), NoValidate: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Validate", "Novalidate"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Rely_Norely",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Rely: new(true), NoRely: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Rely", "Norely"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_emptyType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{Name: new("OUT_OF_LINE_CONSTRAINT"), Columns: []Column{{Value: "COLUMN_1"}}}}
-			},
-			errInvalidValue("OutOfLineConstraint", "ConstraintType", ""),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_invalidType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: "not existing type", Columns: []Column{{Value: "COLUMN_1"}}}}
-			},
-			errInvalidValue("OutOfLineConstraint", "ConstraintType", "not existing type"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_foreignKeyNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeForeignKey, Columns: []Column{{Value: "COLUMN_1"}}}}
-			},
-			errNotSet("OutOfLineConstraint", "ForeignKey"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_foreignKeyTableNameNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{
-					ConstraintType: ColumnConstraintTypeForeignKey,
-					Columns:        []Column{{Value: "COLUMN_1"}},
-					ForeignKey:     &OutOfLineForeignKey{},
-				}}
-			},
-			errNotSet("OutOfLineForeignKey", "TableName"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_foreignKeySet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{
-					ConstraintType: ColumnConstraintTypeUnique,
-					Columns:        []Column{{Value: "COLUMN_1"}},
-					ForeignKey:     &OutOfLineForeignKey{TableName: fkRefId},
-				}}
-			},
-			errSet("OutOfLineConstraint", "ForeignKey"),
 		).
 		withExpectedSqlf(
 			case_Tables_sql_Create_basic,
@@ -241,32 +89,35 @@ func init() {
 							{Name: columnTagId1, Value: "v1"},
 							{Name: columnTagId2, Value: "v2"},
 						},
-						InlineConstraint: &ColumnInlineConstraint{Name: new("INLINE_CONSTRAINT"), Type: ColumnConstraintTypePrimaryKey},
+						InlineConstraint: &TableColumnInlineConstraint{UniquePK: &TableColumnInlineUniquePK{Name: new("Inline_Constraint"), PrimaryKey: new(true)}},
 					}},
-					OutOfLineConstraint: []OutOfLineConstraint{
-						{
-							Name:           new("OUT_OF_LINE_CONSTRAINT"),
-							ConstraintType: ColumnConstraintTypeForeignKey,
-							Columns:        []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
-							ForeignKey: &OutOfLineForeignKey{
-								TableName:   fkRefId,
-								ColumnNames: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
-								Match:       new(MatchTypeFull),
-								On: &ForeignKeyOnAction{
-									OnUpdate: new(ForeignKeySetNullAction),
-									OnDelete: new(ForeignKeyRestrictAction),
-								},
+					OutOfLineConstraint: []TableOutOfLineConstraint{
+						{FK: &TableOutOfLineFK{
+							Name:       new("Out_Of_Line_Constraint"),
+							Columns:    []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
+							References: fkRefId,
+							RefColumns: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
+							Match:      new(MatchTypeFull),
+							On: &ForeignKeyOnAction{
+								OnUpdate: new(ForeignKeySetNullAction),
+								OnDelete: new(ForeignKeyRestrictAction),
 							},
-						},
-						{
-							ConstraintType:    ColumnConstraintTypeUnique,
+						}},
+						{UniquePK: &TableOutOfLineUniquePK{
+							Unique:            new(true),
 							Columns:           []Column{{Value: "COLUMN_1"}},
 							Enforced:          new(true),
 							Deferrable:        new(true),
 							InitiallyDeferred: new(true),
 							Enable:            new(true),
 							Rely:              new(true),
-						},
+							Comment:           new("unique comment"),
+						}},
+						{CH: &TableOutOfLineCH{
+							Name:             new("check_Positive"),
+							Expression:       "COLUMN_1 > 0",
+							EnableNovalidate: new(true),
+						}},
 					},
 				}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
@@ -284,7 +135,7 @@ func init() {
 				}
 				opts.Comment = &tableComment
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -313,6 +164,27 @@ func init() {
 				opts.CopyGrants = new(true)
 			},
 			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR) COPY GRANTS`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_lowercaseColumnNamesOnConstraints",
+			func(opts *CreateTableOptions) {
+				opts.ColumnsAndConstraints = CreateTableColumnsAndConstraints{
+					Columns: []TableColumn{{
+						Name:             "id",
+						ColumnType:       DataTypeNumber,
+						InlineConstraint: &TableColumnInlineConstraint{UniquePK: &TableColumnInlineUniquePK{Name: new("pk_id"), PrimaryKey: new(true)}},
+					}},
+					OutOfLineConstraint: []TableOutOfLineConstraint{
+						{UniquePK: &TableOutOfLineUniquePK{
+							Name:    new("uq_code"),
+							Unique:  new(true),
+							Columns: []Column{{Value: "code"}},
+						}},
+					},
+				}
+			},
+			`CREATE TABLE %s ("id" NUMBER CONSTRAINT "pk_id" PRIMARY KEY, CONSTRAINT "uq_code" UNIQUE ("code"))`,
 			id.FullyQualifiedName(),
 		)
 
@@ -611,30 +483,81 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_ConstraintAction,
 			func(opts *AlterTableOptions) {
-				opts.ConstraintAction = &TableConstraintAction{Add: &OutOfLineConstraint{
-					Name:           new("OUT_OF_LINE_CONSTRAINT"),
-					ConstraintType: ColumnConstraintTypeForeignKey,
-					Columns:        []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
-					ForeignKey: &OutOfLineForeignKey{
-						TableName:   fkRefId,
-						ColumnNames: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
-						Match:       new(MatchTypeFull),
-						On: &ForeignKeyOnAction{
-							OnUpdate: new(ForeignKeySetNullAction),
-							OnDelete: new(ForeignKeyRestrictAction),
-						},
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{FK: &TableOutOfLineFK{
+					Name:       new("OUT_OF_LINE_CONSTRAINT"),
+					Columns:    []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
+					References: fkRefId,
+					RefColumns: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
+					Match:      new(MatchTypeFull),
+					On: &ForeignKeyOnAction{
+						OnUpdate: new(ForeignKeySetNullAction),
+						OnDelete: new(ForeignKeyRestrictAction),
 					},
-				}}
+				}}}
 			},
-			`ALTER TABLE %s ADD CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT`,
+			`ALTER TABLE %s ADD CONSTRAINT "OUT_OF_LINE_CONSTRAINT" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT`,
 			id.FullyQualifiedName(), fkRefId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addPrimaryKeyConstraint",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{UniquePK: &TableOutOfLineUniquePK{
+					Name:              new("pk_Constraint"),
+					PrimaryKey:        new(true),
+					Columns:           []Column{{Value: "COLUMN_1"}},
+					Enforced:          new(true),
+					Deferrable:        new(true),
+					InitiallyDeferred: new(true),
+					Enable:            new(true),
+					Validate:          new(true),
+					Rely:              new(true),
+					Comment:           new("pk comment"),
+				}}}
+			},
+			`ALTER TABLE %s ADD CONSTRAINT "pk_Constraint" PRIMARY KEY ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY COMMENT 'pk comment'`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addPrimaryKeyConstraintLowercaseColumns",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{UniquePK: &TableOutOfLineUniquePK{
+					Name:       new("pk_id"),
+					PrimaryKey: new(true),
+					Columns:    []Column{{Value: "id"}},
+				}}}
+			},
+			`ALTER TABLE %s ADD CONSTRAINT "pk_id" PRIMARY KEY ("id")`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addUniqueConstraint",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{UniquePK: &TableOutOfLineUniquePK{
+					Unique:  new(true),
+					Columns: []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
+				}}}
+			},
+			`ALTER TABLE %s ADD UNIQUE ("COLUMN_1", "COLUMN_2")`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addCheckConstraint",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{CH: &TableOutOfLineCH{
+					Name:           new("check_positive"),
+					Expression:     "COLUMN_1 > 0",
+					EnableValidate: new(true),
+				}}}
+			},
+			`ALTER TABLE %s ADD CONSTRAINT "check_positive" CHECK ( COLUMN_1 > 0 ) ENABLE VALIDATE`,
+			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_renameConstraint",
 			func(opts *AlterTableOptions) {
 				opts.ConstraintAction = &TableConstraintAction{Rename: &TableConstraintRenameAction{OldName: "OLD_NAME_CONSTRAINT", NewName: "NEW_NAME_CONSTRAINT"}}
 			},
-			`ALTER TABLE %s RENAME CONSTRAINT OLD_NAME_CONSTRAINT TO NEW_NAME_CONSTRAINT`, id.FullyQualifiedName(),
+			`ALTER TABLE %s RENAME CONSTRAINT "OLD_NAME_CONSTRAINT" TO "NEW_NAME_CONSTRAINT"`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_alterConstraint",
@@ -647,7 +570,7 @@ func init() {
 					Rely:           new(true),
 				}}
 			},
-			`ALTER TABLE %s ALTER CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) NOT ENFORCED VALIDATE RELY`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ALTER CONSTRAINT "OUT_OF_LINE_CONSTRAINT" (COLUMN_3, COLUMN_4) NOT ENFORCED VALIDATE RELY`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_dropConstraint",
@@ -658,7 +581,7 @@ func init() {
 					Cascade:        new(true),
 				}}
 			},
-			`ALTER TABLE %s DROP CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) CASCADE`, id.FullyQualifiedName(),
+			`ALTER TABLE %s DROP CONSTRAINT "OUT_OF_LINE_CONSTRAINT" (COLUMN_3, COLUMN_4) CASCADE`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_ExternalTableAction,

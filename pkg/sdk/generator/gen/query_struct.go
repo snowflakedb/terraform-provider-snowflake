@@ -79,6 +79,12 @@ func (v *QueryStruct) SharedQueryStructField(name string, queryStruct *QueryStru
 	return v
 }
 
+func (v *QueryStruct) ListSharedQueryStructField(name string, queryStruct *QueryStruct, transformer FieldTransformer) *QueryStruct {
+	v.ListQueryStructField(name, queryStruct, transformer)
+	v.fields[len(v.fields)-1].IsShared = true
+	return v
+}
+
 // WithSharedToOpts marks this QueryStruct for standalone toOpts() method generation.
 // Use on structs shared across multiple object definitions — the originating object generates
 // a standalone `func (r *XRequest) toOpts() *X` that reusing objects can call.

@@ -35,6 +35,62 @@ func (opts *CreateTableOptions) validate() error {
 	if valueSet(opts.ColumnsAndConstraints) {
 		if valueSet(opts.ColumnsAndConstraints.Columns) {
 			for columnIdx, column := range opts.ColumnsAndConstraints.Columns {
+				if valueSet(column.InlineConstraint) {
+					if !exactlyOneValueSet(column.InlineConstraint.UniquePK, column.InlineConstraint.FK, column.InlineConstraint.CH) {
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint", columnIdx), "UniquePK", "FK", "CH"))
+					}
+					if valueSet(column.InlineConstraint.UniquePK) {
+						if everyValueSet(column.InlineConstraint.UniquePK.Enforced, column.InlineConstraint.UniquePK.NotEnforced) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Enforced", "NotEnforced"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Deferrable, column.InlineConstraint.UniquePK.NotDeferrable) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Deferrable", "NotDeferrable"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.InitiallyDeferred, column.InlineConstraint.UniquePK.InitiallyImmediate) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "InitiallyDeferred", "InitiallyImmediate"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Enable, column.InlineConstraint.UniquePK.Disable) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Enable", "Disable"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Validate, column.InlineConstraint.UniquePK.Novalidate) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Validate", "Novalidate"))
+						}
+						if everyValueSet(column.InlineConstraint.UniquePK.Rely, column.InlineConstraint.UniquePK.Norely) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Rely", "Norely"))
+						}
+						if !exactlyOneValueSet(column.InlineConstraint.UniquePK.Unique, column.InlineConstraint.UniquePK.PrimaryKey) {
+							errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Unique", "PrimaryKey"))
+						}
+					}
+					if valueSet(column.InlineConstraint.FK) {
+						if !ValidObjectIdentifier(column.InlineConstraint.FK.References) {
+							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "References"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Enforced, column.InlineConstraint.FK.NotEnforced) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "Enforced", "NotEnforced"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Deferrable, column.InlineConstraint.FK.NotDeferrable) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "Deferrable", "NotDeferrable"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.InitiallyDeferred, column.InlineConstraint.FK.InitiallyImmediate) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "InitiallyDeferred", "InitiallyImmediate"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Enable, column.InlineConstraint.FK.Disable) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "Enable", "Disable"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Validate, column.InlineConstraint.FK.Novalidate) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "Validate", "Novalidate"))
+						}
+						if everyValueSet(column.InlineConstraint.FK.Rely, column.InlineConstraint.FK.Norely) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.FK", columnIdx), "Rely", "Norely"))
+						}
+					}
+					if valueSet(column.InlineConstraint.CH) {
+						if everyValueSet(column.InlineConstraint.CH.EnableValidate, column.InlineConstraint.CH.EnableNovalidate) {
+							errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.CH", columnIdx), "EnableValidate", "EnableNovalidate"))
+						}
+					}
+				}
 				if valueSet(column.DefaultValue) {
 					if !exactlyOneValueSet(column.DefaultValue.Expression, column.DefaultValue.Identity) {
 						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].DefaultValue", columnIdx), "Expression", "Identity"))
@@ -61,26 +117,59 @@ func (opts *CreateTableOptions) validate() error {
 		}
 		if valueSet(opts.ColumnsAndConstraints.OutOfLineConstraint) {
 			for outOfLineConstraintIdx, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
-				if !valueSet(outOfLineConstraint.Columns) {
-					errs = append(errs, errNotSet(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Columns"))
+				if !exactlyOneValueSet(outOfLineConstraint.UniquePK, outOfLineConstraint.FK, outOfLineConstraint.CH) {
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "UniquePK", "FK", "CH"))
 				}
-				if everyValueSet(outOfLineConstraint.Enforced, outOfLineConstraint.NotEnforced) {
-					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Enforced", "NotEnforced"))
+				if valueSet(outOfLineConstraint.UniquePK) {
+					if everyValueSet(outOfLineConstraint.UniquePK.Enforced, outOfLineConstraint.UniquePK.NotEnforced) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Deferrable, outOfLineConstraint.UniquePK.NotDeferrable) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.InitiallyDeferred, outOfLineConstraint.UniquePK.InitiallyImmediate) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Enable, outOfLineConstraint.UniquePK.Disable) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Enable", "Disable"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Validate, outOfLineConstraint.UniquePK.Novalidate) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Validate", "Novalidate"))
+					}
+					if everyValueSet(outOfLineConstraint.UniquePK.Rely, outOfLineConstraint.UniquePK.Norely) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Rely", "Norely"))
+					}
+					if !exactlyOneValueSet(outOfLineConstraint.UniquePK.Unique, outOfLineConstraint.UniquePK.PrimaryKey) {
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Unique", "PrimaryKey"))
+					}
 				}
-				if everyValueSet(outOfLineConstraint.Deferrable, outOfLineConstraint.NotDeferrable) {
-					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Deferrable", "NotDeferrable"))
+				if valueSet(outOfLineConstraint.FK) {
+					if !ValidObjectIdentifier(outOfLineConstraint.FK.References) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "References"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Enforced, outOfLineConstraint.FK.NotEnforced) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "Enforced", "NotEnforced"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Deferrable, outOfLineConstraint.FK.NotDeferrable) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "Deferrable", "NotDeferrable"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.InitiallyDeferred, outOfLineConstraint.FK.InitiallyImmediate) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "InitiallyDeferred", "InitiallyImmediate"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Enable, outOfLineConstraint.FK.Disable) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "Enable", "Disable"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Validate, outOfLineConstraint.FK.Novalidate) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "Validate", "Novalidate"))
+					}
+					if everyValueSet(outOfLineConstraint.FK.Rely, outOfLineConstraint.FK.Norely) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].FK", outOfLineConstraintIdx), "Rely", "Norely"))
+					}
 				}
-				if everyValueSet(outOfLineConstraint.InitiallyDeferred, outOfLineConstraint.InitiallyImmediate) {
-					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "InitiallyDeferred", "InitiallyImmediate"))
-				}
-				if everyValueSet(outOfLineConstraint.Enable, outOfLineConstraint.Disable) {
-					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Enable", "Disable"))
-				}
-				if everyValueSet(outOfLineConstraint.Validate, outOfLineConstraint.Novalidate) {
-					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Validate", "Novalidate"))
-				}
-				if everyValueSet(outOfLineConstraint.Rely, outOfLineConstraint.Norely) {
-					errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "Rely", "Norely"))
+				if valueSet(outOfLineConstraint.CH) {
+					if everyValueSet(outOfLineConstraint.CH.EnableValidate, outOfLineConstraint.CH.EnableNovalidate) {
+						errs = append(errs, errOneOf(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].CH", outOfLineConstraintIdx), "EnableValidate", "EnableNovalidate"))
+					}
 				}
 			}
 		}
@@ -127,7 +216,6 @@ func (opts *AlterTableOptions) validate() error {
 	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy) {
 		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"))
 	}
-	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.Recluster, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
@@ -244,26 +332,59 @@ func (opts *AlterTableOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction", "Add", "Rename", "Alter", "Drop"))
 		}
 		if valueSet(opts.ConstraintAction.Add) {
-			if !valueSet(opts.ConstraintAction.Add.Columns) {
-				errs = append(errs, errNotSet("AlterTableOptions.ConstraintAction.Add", "Columns"))
+			if !exactlyOneValueSet(opts.ConstraintAction.Add.UniquePK, opts.ConstraintAction.Add.FK, opts.ConstraintAction.Add.CH) {
+				errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction.Add", "UniquePK", "FK", "CH"))
 			}
-			if everyValueSet(opts.ConstraintAction.Add.Enforced, opts.ConstraintAction.Add.NotEnforced) {
-				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Enforced", "NotEnforced"))
+			if valueSet(opts.ConstraintAction.Add.UniquePK) {
+				if everyValueSet(opts.ConstraintAction.Add.UniquePK.Enforced, opts.ConstraintAction.Add.UniquePK.NotEnforced) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.UniquePK", "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.UniquePK.Deferrable, opts.ConstraintAction.Add.UniquePK.NotDeferrable) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.UniquePK", "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.UniquePK.InitiallyDeferred, opts.ConstraintAction.Add.UniquePK.InitiallyImmediate) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.UniquePK", "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.UniquePK.Enable, opts.ConstraintAction.Add.UniquePK.Disable) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.UniquePK", "Enable", "Disable"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.UniquePK.Validate, opts.ConstraintAction.Add.UniquePK.Novalidate) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.UniquePK", "Validate", "Novalidate"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.UniquePK.Rely, opts.ConstraintAction.Add.UniquePK.Norely) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.UniquePK", "Rely", "Norely"))
+				}
+				if !exactlyOneValueSet(opts.ConstraintAction.Add.UniquePK.Unique, opts.ConstraintAction.Add.UniquePK.PrimaryKey) {
+					errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction.Add.UniquePK", "Unique", "PrimaryKey"))
+				}
 			}
-			if everyValueSet(opts.ConstraintAction.Add.Deferrable, opts.ConstraintAction.Add.NotDeferrable) {
-				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Deferrable", "NotDeferrable"))
+			if valueSet(opts.ConstraintAction.Add.FK) {
+				if !ValidObjectIdentifier(opts.ConstraintAction.Add.FK.References) {
+					errs = append(errs, errInvalidIdentifier("AlterTableOptions.ConstraintAction.Add.FK", "References"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.FK.Enforced, opts.ConstraintAction.Add.FK.NotEnforced) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.FK", "Enforced", "NotEnforced"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.FK.Deferrable, opts.ConstraintAction.Add.FK.NotDeferrable) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.FK", "Deferrable", "NotDeferrable"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.FK.InitiallyDeferred, opts.ConstraintAction.Add.FK.InitiallyImmediate) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.FK", "InitiallyDeferred", "InitiallyImmediate"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.FK.Enable, opts.ConstraintAction.Add.FK.Disable) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.FK", "Enable", "Disable"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.FK.Validate, opts.ConstraintAction.Add.FK.Novalidate) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.FK", "Validate", "Novalidate"))
+				}
+				if everyValueSet(opts.ConstraintAction.Add.FK.Rely, opts.ConstraintAction.Add.FK.Norely) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.FK", "Rely", "Norely"))
+				}
 			}
-			if everyValueSet(opts.ConstraintAction.Add.InitiallyDeferred, opts.ConstraintAction.Add.InitiallyImmediate) {
-				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "InitiallyDeferred", "InitiallyImmediate"))
-			}
-			if everyValueSet(opts.ConstraintAction.Add.Enable, opts.ConstraintAction.Add.Disable) {
-				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Enable", "Disable"))
-			}
-			if everyValueSet(opts.ConstraintAction.Add.Validate, opts.ConstraintAction.Add.Novalidate) {
-				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Validate", "Novalidate"))
-			}
-			if everyValueSet(opts.ConstraintAction.Add.Rely, opts.ConstraintAction.Add.Norely) {
-				errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add", "Rely", "Norely"))
+			if valueSet(opts.ConstraintAction.Add.CH) {
+				if everyValueSet(opts.ConstraintAction.Add.CH.EnableValidate, opts.ConstraintAction.Add.CH.EnableNovalidate) {
+					errs = append(errs, errOneOf("AlterTableOptions.ConstraintAction.Add.CH", "EnableValidate", "EnableNovalidate"))
+				}
 			}
 		}
 		if valueSet(opts.ConstraintAction.Alter) {

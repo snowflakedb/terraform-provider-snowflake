@@ -41,13 +41,13 @@ type CreateTableRequest struct {
 
 type CreateTableColumnsAndConstraintsRequest struct {
 	Columns             []TableColumnRequest
-	OutOfLineConstraint []OutOfLineConstraintRequest
+	OutOfLineConstraint []TableOutOfLineConstraintRequest
 }
 
 type TableColumnRequest struct {
 	Name             string   // required
 	ColumnType       DataType // required
-	InlineConstraint *ColumnInlineConstraint
+	InlineConstraint *TableColumnInlineConstraintRequest
 	NotNull          *bool
 	Collate          *string
 	DefaultValue     *ColumnDefaultValueRequest
@@ -66,32 +66,6 @@ type ColumnIdentityRequest struct {
 	Increment int // required
 	Order     *bool
 	Noorder   *bool
-}
-
-type OutOfLineConstraintRequest struct {
-	Name               *string
-	ConstraintType     ColumnConstraintType // required
-	Columns            []Column
-	ForeignKey         *OutOfLineForeignKeyRequest
-	Enforced           *bool
-	NotEnforced        *bool
-	Deferrable         *bool
-	NotDeferrable      *bool
-	InitiallyDeferred  *bool
-	InitiallyImmediate *bool
-	Enable             *bool
-	Disable            *bool
-	Validate           *bool
-	Novalidate         *bool
-	Rely               *bool
-	Norely             *bool
-}
-
-type OutOfLineForeignKeyRequest struct {
-	TableName   SchemaObjectIdentifier // required
-	ColumnNames []Column
-	Match       *MatchType
-	On          *ForeignKeyOnAction
 }
 
 type TableRowAccessPolicyRequest struct {
@@ -196,7 +170,7 @@ type TableColumnAlterDataTypeRequest struct {
 }
 
 type TableConstraintActionRequest struct {
-	Add    *OutOfLineConstraintRequest
+	Add    *TableOutOfLineConstraintRequest
 	Rename *TableConstraintRenameActionRequest
 	Alter  *TableConstraintAlterActionRequest
 	Drop   *TableConstraintDropActionRequest

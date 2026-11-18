@@ -232,12 +232,12 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 		}
 
 		if len(newKey.keys) > 0 {
-			constraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(toColumns(newKey.keys))
+			primaryKey := sdk.NewTableOutOfLineUniquePKRequest().WithPrimaryKey(true).WithColumns(toColumns(newKey.keys))
 			if newKey.name != "" {
-				constraint.WithName(newKey.name)
+				primaryKey.WithName(newKey.name)
 			}
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
-				*sdk.NewTableConstraintActionRequest().WithAdd(*constraint),
+				*sdk.NewTableConstraintActionRequest().WithAdd(*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*primaryKey)),
 			))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error updating table: %w", err))

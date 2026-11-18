@@ -154,13 +154,15 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		columns := make([]TableColumn, len(r.ColumnsAndConstraints.Columns))
 		for i, v := range r.ColumnsAndConstraints.Columns {
 			columns[i] = TableColumn{
-				Name:             v.Name,
-				ColumnType:       v.ColumnType,
-				InlineConstraint: v.InlineConstraint,
-				NotNull:          v.NotNull,
-				Collate:          v.Collate,
-				Tag:              v.Tag,
-				Comment:          v.Comment,
+				Name:       v.Name,
+				ColumnType: v.ColumnType,
+				NotNull:    v.NotNull,
+				Collate:    v.Collate,
+				Tag:        v.Tag,
+				Comment:    v.Comment,
+			}
+			if v.InlineConstraint != nil {
+				columns[i].InlineConstraint = v.InlineConstraint.toOpts()
 			}
 			if v.DefaultValue != nil {
 				columns[i].DefaultValue = &ColumnDefaultValue{
@@ -182,33 +184,9 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		opts.ColumnsAndConstraints.Columns = columns
 	}
 	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
-		outOfLineConstraint := make([]OutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		outOfLineConstraint := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
-			outOfLineConstraint[i] = OutOfLineConstraint{
-				Name:               v.Name,
-				ConstraintType:     v.ConstraintType,
-				Columns:            v.Columns,
-				Enforced:           v.Enforced,
-				NotEnforced:        v.NotEnforced,
-				Deferrable:         v.Deferrable,
-				NotDeferrable:      v.NotDeferrable,
-				InitiallyDeferred:  v.InitiallyDeferred,
-				InitiallyImmediate: v.InitiallyImmediate,
-				Enable:             v.Enable,
-				Disable:            v.Disable,
-				Validate:           v.Validate,
-				Novalidate:         v.Novalidate,
-				Rely:               v.Rely,
-				Norely:             v.Norely,
-			}
-			if v.ForeignKey != nil {
-				outOfLineConstraint[i].ForeignKey = &OutOfLineForeignKey{
-					TableName:   v.ForeignKey.TableName,
-					ColumnNames: v.ForeignKey.ColumnNames,
-					Match:       v.ForeignKey.Match,
-					On:          v.ForeignKey.On,
-				}
-			}
+			outOfLineConstraint[i] = *v.toOpts()
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
@@ -340,31 +318,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 	if r.ConstraintAction != nil {
 		opts.ConstraintAction = &TableConstraintAction{}
 		if r.ConstraintAction.Add != nil {
-			opts.ConstraintAction.Add = &OutOfLineConstraint{
-				Name:               r.ConstraintAction.Add.Name,
-				ConstraintType:     r.ConstraintAction.Add.ConstraintType,
-				Columns:            r.ConstraintAction.Add.Columns,
-				Enforced:           r.ConstraintAction.Add.Enforced,
-				NotEnforced:        r.ConstraintAction.Add.NotEnforced,
-				Deferrable:         r.ConstraintAction.Add.Deferrable,
-				NotDeferrable:      r.ConstraintAction.Add.NotDeferrable,
-				InitiallyDeferred:  r.ConstraintAction.Add.InitiallyDeferred,
-				InitiallyImmediate: r.ConstraintAction.Add.InitiallyImmediate,
-				Enable:             r.ConstraintAction.Add.Enable,
-				Disable:            r.ConstraintAction.Add.Disable,
-				Validate:           r.ConstraintAction.Add.Validate,
-				Novalidate:         r.ConstraintAction.Add.Novalidate,
-				Rely:               r.ConstraintAction.Add.Rely,
-				Norely:             r.ConstraintAction.Add.Norely,
-			}
-			if r.ConstraintAction.Add.ForeignKey != nil {
-				opts.ConstraintAction.Add.ForeignKey = &OutOfLineForeignKey{
-					TableName:   r.ConstraintAction.Add.ForeignKey.TableName,
-					ColumnNames: r.ConstraintAction.Add.ForeignKey.ColumnNames,
-					Match:       r.ConstraintAction.Add.ForeignKey.Match,
-					On:          r.ConstraintAction.Add.ForeignKey.On,
-				}
-			}
+			opts.ConstraintAction.Add = r.ConstraintAction.Add.toOpts()
 		}
 		if r.ConstraintAction.Rename != nil {
 			opts.ConstraintAction.Rename = &TableConstraintRenameAction{

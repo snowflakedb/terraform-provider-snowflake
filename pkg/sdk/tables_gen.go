@@ -55,20 +55,20 @@ type CreateTableOptions struct {
 }
 
 type CreateTableColumnsAndConstraints struct {
-	Columns             []TableColumn         `ddl:"keyword"`
-	OutOfLineConstraint []OutOfLineConstraint `ddl:"list,no_parentheses"`
+	Columns             []TableColumn              `ddl:"keyword"`
+	OutOfLineConstraint []TableOutOfLineConstraint `ddl:"keyword"`
 }
 
 type TableColumn struct {
-	Name             string                    `ddl:"keyword,double_quotes"`
-	ColumnType       DataType                  `ddl:"keyword"`
-	InlineConstraint *ColumnInlineConstraint   `ddl:"keyword"`
-	NotNull          *bool                     `ddl:"keyword" sql:"NOT NULL"`
-	Collate          *string                   `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
-	DefaultValue     *ColumnDefaultValue       `ddl:"keyword"`
-	MaskingPolicy    *TableColumnMaskingPolicy `ddl:"keyword"`
-	Tag              []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment          *string                   `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	Name             string                       `ddl:"keyword,double_quotes"`
+	ColumnType       DataType                     `ddl:"keyword"`
+	InlineConstraint *TableColumnInlineConstraint `ddl:"keyword"`
+	NotNull          *bool                        `ddl:"keyword" sql:"NOT NULL"`
+	Collate          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	DefaultValue     *ColumnDefaultValue          `ddl:"keyword"`
+	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"keyword"`
+	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
 type ColumnDefaultValue struct {
@@ -81,33 +81,6 @@ type ColumnIdentity struct {
 	Increment int   `ddl:"parameter,no_quotes,no_equals" sql:"INCREMENT"`
 	Order     *bool `ddl:"keyword" sql:"ORDER"`
 	Noorder   *bool `ddl:"keyword" sql:"NOORDER"`
-}
-
-type OutOfLineConstraint struct {
-	Name               *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
-	ConstraintType     ColumnConstraintType `ddl:"keyword"`
-	Columns            []Column             `ddl:"keyword,parentheses"`
-	ForeignKey         *OutOfLineForeignKey `ddl:"keyword"`
-	Enforced           *bool                `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool                `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool                `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool                `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool                `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool                `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool                `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool                `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool                `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool                `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool                `ddl:"keyword" sql:"RELY"`
-	Norely             *bool                `ddl:"keyword" sql:"NORELY"`
-}
-
-type OutOfLineForeignKey struct {
-	references  bool                   `ddl:"static" sql:"REFERENCES"`
-	TableName   SchemaObjectIdentifier `ddl:"identifier"`
-	ColumnNames []Column               `ddl:"parameter,parentheses,no_equals"`
-	Match       *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
-	On          *ForeignKeyOnAction    `ddl:"keyword"`
 }
 
 type TableRowAccessPolicy struct {
@@ -218,19 +191,19 @@ type TableColumnAlterDataType struct {
 }
 
 type TableConstraintAction struct {
-	Add    *OutOfLineConstraint         `ddl:"list,no_comma" sql:"ADD"`
+	Add    *TableOutOfLineConstraint    `ddl:"list,no_comma" sql:"ADD"`
 	Rename *TableConstraintRenameAction `ddl:"list,no_comma" sql:"RENAME CONSTRAINT"`
 	Alter  *TableConstraintAlterAction  `ddl:"list,no_comma" sql:"ALTER"`
 	Drop   *TableConstraintDropAction   `ddl:"list,no_comma" sql:"DROP"`
 }
 
 type TableConstraintRenameAction struct {
-	OldName string `ddl:"keyword"`
-	NewName string `ddl:"parameter,no_equals" sql:"TO"`
+	OldName string `ddl:"keyword,double_quotes"`
+	NewName string `ddl:"parameter,double_quotes,no_equals" sql:"TO"`
 }
 
 type TableConstraintAlterAction struct {
-	ConstraintName *string  `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
@@ -244,7 +217,7 @@ type TableConstraintAlterAction struct {
 }
 
 type TableConstraintDropAction struct {
-	ConstraintName *string  `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`

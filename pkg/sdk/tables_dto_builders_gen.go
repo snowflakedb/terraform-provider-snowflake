@@ -102,7 +102,7 @@ func (s *CreateTableColumnsAndConstraintsRequest) WithColumns(columns []TableCol
 	return s
 }
 
-func (s *CreateTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfLineConstraint []OutOfLineConstraintRequest) *CreateTableColumnsAndConstraintsRequest {
+func (s *CreateTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfLineConstraint []TableOutOfLineConstraintRequest) *CreateTableColumnsAndConstraintsRequest {
 	s.OutOfLineConstraint = outOfLineConstraint
 	return s
 }
@@ -117,7 +117,7 @@ func NewTableColumnRequest(
 	return &s
 }
 
-func (s *TableColumnRequest) WithInlineConstraint(inlineConstraint ColumnInlineConstraint) *TableColumnRequest {
+func (s *TableColumnRequest) WithInlineConstraint(inlineConstraint TableColumnInlineConstraintRequest) *TableColumnRequest {
 	s.InlineConstraint = &inlineConstraint
 	return s
 }
@@ -184,112 +184,6 @@ func (s *ColumnIdentityRequest) WithOrder(order bool) *ColumnIdentityRequest {
 
 func (s *ColumnIdentityRequest) WithNoorder(noorder bool) *ColumnIdentityRequest {
 	s.Noorder = &noorder
-	return s
-}
-
-func NewOutOfLineConstraintRequest(
-	constraintType ColumnConstraintType,
-) *OutOfLineConstraintRequest {
-	s := OutOfLineConstraintRequest{}
-	s.ConstraintType = constraintType
-	return &s
-}
-
-func (s *OutOfLineConstraintRequest) WithName(name string) *OutOfLineConstraintRequest {
-	s.Name = &name
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithColumns(columns []Column) *OutOfLineConstraintRequest {
-	s.Columns = columns
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithForeignKey(foreignKey OutOfLineForeignKeyRequest) *OutOfLineConstraintRequest {
-	s.ForeignKey = &foreignKey
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithEnforced(enforced bool) *OutOfLineConstraintRequest {
-	s.Enforced = &enforced
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithNotEnforced(notEnforced bool) *OutOfLineConstraintRequest {
-	s.NotEnforced = &notEnforced
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithDeferrable(deferrable bool) *OutOfLineConstraintRequest {
-	s.Deferrable = &deferrable
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithNotDeferrable(notDeferrable bool) *OutOfLineConstraintRequest {
-	s.NotDeferrable = &notDeferrable
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithInitiallyDeferred(initiallyDeferred bool) *OutOfLineConstraintRequest {
-	s.InitiallyDeferred = &initiallyDeferred
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithInitiallyImmediate(initiallyImmediate bool) *OutOfLineConstraintRequest {
-	s.InitiallyImmediate = &initiallyImmediate
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithEnable(enable bool) *OutOfLineConstraintRequest {
-	s.Enable = &enable
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithDisable(disable bool) *OutOfLineConstraintRequest {
-	s.Disable = &disable
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithValidate(validate bool) *OutOfLineConstraintRequest {
-	s.Validate = &validate
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithNovalidate(novalidate bool) *OutOfLineConstraintRequest {
-	s.Novalidate = &novalidate
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithRely(rely bool) *OutOfLineConstraintRequest {
-	s.Rely = &rely
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithNorely(norely bool) *OutOfLineConstraintRequest {
-	s.Norely = &norely
-	return s
-}
-
-func NewOutOfLineForeignKeyRequest(
-	tableName SchemaObjectIdentifier,
-) *OutOfLineForeignKeyRequest {
-	s := OutOfLineForeignKeyRequest{}
-	s.TableName = tableName
-	return &s
-}
-
-func (s *OutOfLineForeignKeyRequest) WithColumnNames(columnNames []Column) *OutOfLineForeignKeyRequest {
-	s.ColumnNames = columnNames
-	return s
-}
-
-func (s *OutOfLineForeignKeyRequest) WithMatch(match MatchType) *OutOfLineForeignKeyRequest {
-	s.Match = &match
-	return s
-}
-
-func (s *OutOfLineForeignKeyRequest) WithOn(on ForeignKeyOnAction) *OutOfLineForeignKeyRequest {
-	s.On = &on
 	return s
 }
 
@@ -663,7 +557,7 @@ func NewTableConstraintActionRequest() *TableConstraintActionRequest {
 	return &s
 }
 
-func (s *TableConstraintActionRequest) WithAdd(add OutOfLineConstraintRequest) *TableConstraintActionRequest {
+func (s *TableConstraintActionRequest) WithAdd(add TableOutOfLineConstraintRequest) *TableConstraintActionRequest {
 	s.Add = &add
 	return s
 }

@@ -59,14 +59,14 @@ var (
 func tableColumnsAndConstraints() *g.QueryStruct {
 	return g.NewQueryStruct("CreateTableColumnsAndConstraints").
 		ListQueryStructField("Columns", tableColumn(), g.KeywordOptions()).
-		ListQueryStructField("OutOfLineConstraint", legacyTableOutOfLineConstraint(), g.ListOptions().NoParentheses())
+		ListSharedQueryStructField("OutOfLineConstraint", tableOutOfLineConstraint(), g.KeywordOptions())
 }
 
 func tableColumn() *g.QueryStruct {
 	return g.NewQueryStruct("TableColumn").
 		Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 		PredefinedQueryStructField("ColumnType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
-		PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
+		OptionalSharedQueryStructField("InlineConstraint", tableColumnInlineConstraint(), g.KeywordOptions()).
 		OptionalSQL("NOT NULL").
 		OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 		OptionalQueryStructField("DefaultValue", tableColumnDefaultValue(), g.KeywordOptions()).
@@ -79,45 +79,17 @@ func tableColumnDefaultValue() *g.QueryStruct {
 	return g.QueryStructFromAttribute("Table", ssotdefs.TableColumnDefaultValue)
 }
 
-// legacyTableOutOfLineConstraint emits `CONSTRAINT my_pk PRIMARY KEY (...)`.
-// tableOutOfLineConstraint emits `CONSTRAINT "my_pk" PRIMARY KEY (...)`.
-// snowflake_table_constraint and snowflake_table.primary_key would change: Snowflake stores the
-// unquoted name folded to uppercase, and a quoted lowercase name in an existing config no longer
-// matches that stored name. CREATE and ALTER ADD both keep this builder.
-func legacyTableOutOfLineConstraint() *g.QueryStruct {
-	return g.NewQueryStruct("OutOfLineConstraint").
-		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", g.ParameterOptions().NoEquals(), "Name").
-		WithField(g.EnumLegacy[sdkcommons.ColumnConstraintType]("ConstraintType", g.KeywordOptions().Required())).
-		PredefinedQueryStructField("Columns", "[]Column", g.KeywordOptions().Parentheses()).
-		OptionalQueryStructField("ForeignKey", tableOutOfLineForeignKey(), g.KeywordOptions()).
-		OptionalSQL("ENFORCED").
-		OptionalSQL("NOT ENFORCED").
-		OptionalSQL("DEFERRABLE").
-		OptionalSQL("NOT DEFERRABLE").
-		OptionalSQL("INITIALLY DEFERRED").
-		OptionalSQL("INITIALLY IMMEDIATE").
-		OptionalSQL("ENABLE").
-		OptionalSQL("DISABLE").
-		OptionalSQL("VALIDATE").
-		OptionalSQL("NOVALIDATE").
-		OptionalSQL("RELY").
-		OptionalSQL("NORELY").
-		WithValidation(g.ValidateValueSet, "Columns").
-		WithValidation(g.ConflictingFields, "Enforced", "NotEnforced").
-		WithValidation(g.ConflictingFields, "Deferrable", "NotDeferrable").
-		WithValidation(g.ConflictingFields, "InitiallyDeferred", "InitiallyImmediate").
-		WithValidation(g.ConflictingFields, "Enable", "Disable").
-		WithValidation(g.ConflictingFields, "Validate", "Novalidate").
-		WithValidation(g.ConflictingFields, "Rely", "Norely")
+func tableAsSelectColumn() *g.QueryStruct {
+	return g.NewQueryStruct("TableAsSelectColumn").
+		Text("Name", g.KeywordOptions().Required()).
+		PredefinedQueryStructField("ColumnType", g.KindOfTPointer[sdkcommons.DataType](), g.KeywordOptions()).
+		OptionalIdentifier("MaskingPolicy", g.KindOfTPointer[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("MASKING POLICY"))
 }
 
-func tableOutOfLineForeignKey() *g.QueryStruct {
-	return g.NewQueryStruct("OutOfLineForeignKey").
-		SQL("REFERENCES").
-		Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
-		PredefinedQueryStructField("ColumnNames", "[]Column", g.ParameterOptions().NoEquals().Parentheses()).
-		OptionalEnum("Match", MatchTypeEnumDef, g.ParameterOptions().NoEquals().SQL("MATCH")).
-		PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
+func tableClonePoint() *g.QueryStruct {
+	return g.NewQueryStruct("ClonePoint").
+		Enum("Moment", ssotdefs.CloneMoment, g.ParameterOptions().NoEquals().Required()).
+		PredefinedQueryStructField("At", "TimeTravel", g.ListOptions().Parentheses().NoComma().Required())
 }
 
 func tableClusteringAction() *g.QueryStruct {
@@ -138,7 +110,7 @@ func tableColumnAction() *g.QueryStruct {
 }
 
 func tableConstraintAction() *g.QueryStruct {
-	return g.QueryStructFromAttribute("Table", ssotdefs.TableConstraintAction, legacyTableOutOfLineConstraint())
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableConstraintAction, tableOutOfLineConstraint())
 }
 
 func tableExternalTableAction() *g.QueryStruct {
@@ -232,8 +204,7 @@ var tablesDef = g.NewInterface(
 			WithValidation(g.ValidIdentifier, "name").
 			WithValidation(g.ValidIdentifierIfSet, "RenameTo").
 			WithValidation(g.ValidIdentifierIfSet, "SwapWith").
-			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy").
-			WithAdditionalValidations(),
+			WithValidation(g.ExactlyOneValueSet, "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"),
 	).
 	DropOperationFromObject(ssotdefs.Table).
 	ShowOperationFromObject(ssotdefs.Table).
@@ -243,8 +214,10 @@ var tablesDef = g.NewInterface(
 	ShowParametersFromObject(ssotdefs.Table).
 	WithEnums(ssotdefs.TableConstraintType, ssotdefs.TableScope, ssotdefs.TableKind, ssotdefs.CloneMoment, ReclusterStateEnumDef, MatchTypeEnumDef, ssotdefs.TableSearchMethod)
 
+// tableOutOfLineConstraint is used by iceberg tables (CREATE) and by CREATE TABLE and ALTER TABLE ADD.
+// Iceberg tables generate the struct and its toOpts, and the table operations call that toOpts.
 func tableOutOfLineConstraint() *g.QueryStruct {
-	return g.QueryStructFromAttribute("Table", ssotdefs.TableOutOfLineConstraint)
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableOutOfLineConstraint).WithSharedToOpts()
 }
 
 // tableColumnInlineConstraint is used by iceberg tables (CREATE and ADD COLUMN) and by ALTER TABLE ADD COLUMN.

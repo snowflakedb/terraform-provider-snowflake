@@ -133,7 +133,7 @@ func (c *TableClient) CreateWithPredefinedColumnsForIcebergTable(t *testing.T) (
 
 	table, cleanup := c.CreateWithPredefinedColumns(t)
 
-	err := c.client().Alter(context.Background(), sdk.NewAlterTableRequest(table.ID()).WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAdd(*sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithName("pk_id").WithColumns([]sdk.Column{{Value: "ID"}}))))
+	err := c.client().Alter(context.Background(), sdk.NewAlterTableRequest(table.ID()).WithConstraintAction(*sdk.NewTableConstraintActionRequest().WithAdd(*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().WithPrimaryKey(true).WithName("PK_ID").WithColumns([]sdk.Column{{Value: "ID"}})))))
 	require.NoError(t, err)
 
 	return table, cleanup

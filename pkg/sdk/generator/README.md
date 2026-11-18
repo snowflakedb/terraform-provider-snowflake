@@ -415,7 +415,9 @@ OptionalSharedQueryStructField("Secrets", sharedStruct, g.ParameterOptions().SQL
 - In all objects (including the originator), the `toOpts` mapping calls `.toOpts()` instead of inlining the field mapping.
 - Reusing objects skip struct/DTO/constructor generation for the shared field.
 
-See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go](defs/notebooks_def.go) (reuser).
+`SharedQueryStructField` and `ListSharedQueryStructField` do the same for a required field and for a list. The list mapping calls `.toOpts()` on each element.
+
+See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go](defs/notebooks_def.go) (reuser). [tables_def.go](defs/tables_def.go) reuses the constraint structs that [iceberg_tables_def.go](defs/iceberg_tables_def.go) generates. `WithSharedToOpts()` on those structs stops the generated `toOpts` from using the iceberg column-list variables, so iceberg tables emit the standalone methods and tables call them.
 
 ### Instance method arguments
 

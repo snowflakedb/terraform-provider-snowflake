@@ -385,7 +385,7 @@ var TableColumn = ssot.Attribute{
 	},
 }
 
-// TableConstraintRenameAction is ALTER TABLE RENAME CONSTRAINT. The names are not quoted.
+// TableConstraintRenameAction is ALTER TABLE RENAME CONSTRAINT. The names are double-quoted, as ADD writes them.
 // It is a child of TableConstraintAction.
 var TableConstraintRenameAction = ssot.Attribute{
 	Name:      "constraint_rename_action",
@@ -393,8 +393,8 @@ var TableConstraintRenameAction = ssot.Attribute{
 	SqlOnly:   true,
 	CreateSql: ssot.ObjectParameter(ssot.Sql("RENAME CONSTRAINT"), ssot.NoComma(), ssot.FieldName("Rename"), ssot.StructName("TableConstraintRenameAction")),
 	Children: []ssot.Attribute{
-		{Name: "old_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.Required(), ssot.FieldName("OldName"))},
-		{Name: "new_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("TO"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("NewName"))},
+		{Name: "old_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required(), ssot.FieldName("OldName"))},
+		{Name: "new_name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("TO"), ssot.NoEquals(), ssot.DoubleQuotes(), ssot.Required(), ssot.FieldName("NewName"))},
 	},
 }
 
@@ -409,7 +409,7 @@ var TableConstraintAlterAction = ssot.Attribute{
 	ChildrenRuleFields: []string{"constraint_name", "primary_key", "unique", "foreign_key"},
 	CreateSql:          ssot.ObjectParameter(ssot.Sql("ALTER"), ssot.NoComma(), ssot.FieldName("Alter"), ssot.StructName("TableConstraintAlterAction")),
 	Children: []ssot.Attribute{
-		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.FieldName("ConstraintName"))},
+		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.DoubleQuotes(), ssot.FieldName("ConstraintName"))},
 		{Name: "primary_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("PRIMARY KEY"))},
 		{Name: "unique", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("UNIQUE"))},
 		{Name: "foreign_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("FOREIGN KEY"))},
@@ -434,7 +434,7 @@ var TableConstraintDropAction = ssot.Attribute{
 	ChildrenRuleFields: []string{"constraint_name", "primary_key", "unique", "foreign_key"},
 	CreateSql:          ssot.ObjectParameter(ssot.Sql("DROP"), ssot.NoComma(), ssot.FieldName("Drop"), ssot.StructName("TableConstraintDropAction")),
 	Children: []ssot.Attribute{
-		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.FieldName("ConstraintName"))},
+		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.DoubleQuotes(), ssot.FieldName("ConstraintName"))},
 		{Name: "primary_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("PRIMARY KEY"))},
 		{Name: "unique", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("UNIQUE"))},
 		{Name: "foreign_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("FOREIGN KEY"))},
@@ -445,8 +445,7 @@ var TableConstraintDropAction = ssot.Attribute{
 }
 
 // TableConstraintAction is one ALTER TABLE constraint branch. It composes the rename, alter, and drop attributes above.
-// ADD keeps the unquoted out-of-line constraint, which is the legacy struct CREATE also uses, so it is the one
-// preexisting struct.
+// ADD is the out-of-line constraint iceberg tables embed, so it is the one preexisting struct, and it is shared.
 var TableConstraintAction = ssot.Attribute{
 	Name:         "constraint_action",
 	Type:         ssot.AttrObject,
@@ -454,7 +453,7 @@ var TableConstraintAction = ssot.Attribute{
 	ChildrenRule: ssot.ChildrenExactlyOne,
 	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableConstraintAction")),
 	Children: []ssot.Attribute{
-		{Name: "add", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("OutOfLineConstraint", ssot.NoComma(), ssot.Sql("ADD"))},
+		{Name: "add", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("TableOutOfLineConstraint", ssot.NoComma(), ssot.Sql("ADD"), ssot.Shared())},
 		TableConstraintRenameAction,
 		TableConstraintAlterAction,
 		TableConstraintDropAction,
