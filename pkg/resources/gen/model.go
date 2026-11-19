@@ -160,12 +160,38 @@ func (m ResourceModel) AlterRequestsType() string {
 	return m.Prefix() + "AlterRequestsExt"
 }
 
+// EncodeId is the Go expression that encodes the identifier in the variable idVar as the resource id.
+func (m ResourceModel) EncodeId(idVar string) string {
+	if m.LegacyIdEncoding {
+		return "helpers.EncodeSnowflakeID(" + idVar + ")"
+	}
+	return "helpers.EncodeResourceIdentifier(" + idVar + ")"
+}
+
 // EncodeIdFn is the Go expression of the function passed as encodeIdFn to hierarchy rename helpers.
 func (m ResourceModel) EncodeIdFn() string {
 	if m.LegacyIdEncoding {
 		return "func(renamed ...sdk.SchemaObjectIdentifier) string { return helpers.EncodeSnowflakeID(renamed[0]) }"
 	}
 	return "helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier]"
+}
+
+// ReadCollectsDiags reports whether the generated Read gathers diagnostics from hooks (diags) and returns them at the end.
+func (m ResourceModel) ReadCollectsDiags() bool {
+	return m.ExternalChangesInDescribe() || m.Hooks.AfterShowById.Present
+}
+
+// ExternalChangesInDescribe reports whether Read compares the DESCRIBE output with the config to detect external changes.
+func (m ResourceModel) ExternalChangesInDescribe() bool {
+	return m.Hooks.HandleExternalChangesInDescribe.Present && m.Hooks.DescribeInSdk.Present
+}
+
+// DecodeId is the Go expression of the SDK-level function that decodes the resource id into the identifier of the object.
+func (m ResourceModel) DecodeId() string {
+	if m.LegacyIdEncoding {
+		return "helpers.DecodeSnowflakeIDErrLegacy[sdk." + m.IdType + "]"
+	}
+	return "sdk.Parse" + m.IdType
 }
 
 // HierarchyRenameParents reports whether the generated Update moves a schema object to another database or schema.

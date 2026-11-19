@@ -41,7 +41,7 @@ func Create{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "applyParametersCreate" . }}
 {{ template "createInSdk" . }}
 
-	d.SetId({{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(id){{ else }}helpers.EncodeResourceIdentifier(id){{ end }})
+	d.SetId({{ .EncodeId "id" }})
 {{ template "afterCreate" . }}
 }
 
@@ -52,7 +52,7 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 			return diag.FromErr(err)
 		}
 
-{{ if or (and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present) .Hooks.AfterShowById.Present -}}
+{{ if .ReadCollectsDiags -}}
 		var diags diag.Diagnostics
 {{ end -}}
 {{ template "showByIdSafelyInSdk" . -}}
@@ -74,13 +74,13 @@ func Read{{ .Name }}Func(withExternalChangesMarking bool) tfschema.ReadContextFu
 {{ template "setConfigFields" . }}
 		)
 		if errs != nil {
-{{ if or (and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present) .Hooks.AfterShowById.Present -}}
+{{ if .ReadCollectsDiags -}}
 			return append(diags, diag.FromErr(errs)...)
 {{ else -}}
 			return diag.FromErr(errs)
 {{ end }}
 		}
-{{ if or (and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present) .Hooks.AfterShowById.Present -}}
+{{ if .ReadCollectsDiags -}}
 		return diags
 {{ else -}}
 		return nil
