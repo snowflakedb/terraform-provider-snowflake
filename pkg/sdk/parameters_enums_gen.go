@@ -2850,6 +2850,42 @@ func ToUnsupportedDDLAction(s string) (UnsupportedDDLAction, error) {
 	}
 }
 
+type ParameterValueKind string
+
+const (
+	ParameterValueKindString     ParameterValueKind = "STRING"
+	ParameterValueKindIdentifier ParameterValueKind = "IDENTIFIER"
+	ParameterValueKindInteger    ParameterValueKind = "INTEGER"
+	ParameterValueKindFloat      ParameterValueKind = "FLOAT"
+	ParameterValueKindBoolean    ParameterValueKind = "BOOLEAN"
+)
+
+var AllParameterValueKinds = []ParameterValueKind{
+	ParameterValueKindString,
+	ParameterValueKindIdentifier,
+	ParameterValueKindInteger,
+	ParameterValueKindFloat,
+	ParameterValueKindBoolean,
+}
+
+func ToParameterValueKind(s string) (ParameterValueKind, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(ParameterValueKindString):
+		return ParameterValueKindString, nil
+	case string(ParameterValueKindIdentifier):
+		return ParameterValueKindIdentifier, nil
+	case string(ParameterValueKindInteger):
+		return ParameterValueKindInteger, nil
+	case string(ParameterValueKindFloat):
+		return ParameterValueKindFloat, nil
+	case string(ParameterValueKindBoolean):
+		return ParameterValueKindBoolean, nil
+	default:
+		return "", fmt.Errorf("invalid parameter value kind: %s", s)
+	}
+}
+
 type ParameterType string
 
 const (

@@ -78,7 +78,11 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	value := d.Get("value").(string)
 
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
-		if err := client.Parameters.SetAccountParameter(ctx, sdk.AccountParameter(key), value); err != nil {
+		handled, err := client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, sdk.ObjectParameter(key), value)
+		if err == nil && !handled {
+			err = fmt.Errorf("%w: %s", sdk.ErrParameterNotSupported, key)
+		}
+		if err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
@@ -127,7 +131,11 @@ func DeleteAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	key := strings.ToUpper(d.Get("key").(string))
 
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
-		if err := client.Parameters.UnsetAccountParameter(ctx, sdk.AccountParameter(key)); err != nil {
+		handled, err := client.Parameters.UnsetObjectParameterOnAccountViaCatalog(ctx, sdk.ObjectParameter(key))
+		if err == nil && !handled {
+			err = fmt.Errorf("%w: %s", sdk.ErrParameterNotSupported, key)
+		}
+		if err != nil {
 			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
 		}
 	} else {

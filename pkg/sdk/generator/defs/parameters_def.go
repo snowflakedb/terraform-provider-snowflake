@@ -69,6 +69,7 @@ func parameterEnums() []*g.Enum {
 		g.NewEnum("TimestampTypeMapping", "TimestampTypeMappings", "TIMESTAMP_LTZ", "TIMESTAMP_NTZ", "TIMESTAMP_TZ"),
 		g.NewEnum("TransactionDefaultIsolationLevel", "TransactionDefaultIsolationLevels", "READ COMMITTED"),
 		g.NewEnum("UnsupportedDDLAction", "UnsupportedDDLActions", "IGNORE", "FAIL"),
+		g.NewEnum("ParameterValueKind", "ParameterValueKinds", "STRING", "IDENTIFIER", "INTEGER", "FLOAT", "BOOLEAN"),
 		g.NewEnum("ParameterType", "ParameterTypes",
 			"SYSTEM", "ACCOUNT", "USER", "SESSION", "OBJECT", "WAREHOUSE",
 			"DATABASE", "SCHEMA", "TABLE", "TASK", "FUNCTION", "PROCEDURE",
@@ -82,10 +83,94 @@ var parametersDef = g.NewInterface(
 	"Parameter",
 	g.KindOfT[sdkcommons.AccountObjectIdentifier](),
 ).
-	WithAllowedGenerationParts(g.PartDefault, g.PartImpl, g.PartEnums, g.PartUnitTests).
+	WithAllowedGenerationParts(g.PartDefault, g.PartDto, g.PartDtoBuilders, g.PartImpl, g.PartValidations, g.PartEnums, g.PartUnitTests).
+	CustomOperation(
+		"SetAccountParameterRaw",
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-account",
+		g.NewQueryStruct("SetAccountParameterRaw").
+			SQL("ALTER ACCOUNT").
+			SQL("SET").
+			Text("Parameter", g.KeywordOptions().NoQuotes().Required()).
+			SQL("=").
+			Text("Value", g.KeywordOptions().NoQuotes().Required()).
+			WithValidation(g.ValidateValueSet, "Parameter").
+			WithValidation(g.ValidateValueSet, "Value"),
+	).
+	CustomOperation(
+		"UnsetAccountParameterRaw",
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-account",
+		g.NewQueryStruct("UnsetAccountParameterRaw").
+			SQL("ALTER ACCOUNT").
+			SQL("UNSET").
+			Text("Parameter", g.KeywordOptions().NoQuotes().Required()).
+			WithValidation(g.ValidateValueSet, "Parameter"),
+	).
+	CustomOperation(
+		"SetObjectParameterOnObjectRaw",
+		"https://docs.snowflake.com/en/sql-reference/parameters",
+		g.NewQueryStruct("SetObjectParameterOnObjectRaw").
+			SQL("ALTER").
+			PredefinedQueryStructField("ObjectType", "ObjectType", g.KeywordOptions().Required()).
+			Identifier("ObjectName", "ObjectIdentifier", g.IdentifierOptions().Required()).
+			SQL("SET").
+			Text("Parameter", g.KeywordOptions().NoQuotes().Required()).
+			SQL("=").
+			Text("Value", g.KeywordOptions().NoQuotes().Required()).
+			WithValidation(g.ValidateValueSet, "ObjectType").
+			WithValidation(g.ValidIdentifier, "ObjectName").
+			WithValidation(g.ValidateValueSet, "Parameter").
+			WithValidation(g.ValidateValueSet, "Value"),
+	).
+	CustomOperation(
+		"UnsetObjectParameterOnObjectRaw",
+		"https://docs.snowflake.com/en/sql-reference/parameters",
+		g.NewQueryStruct("UnsetObjectParameterOnObjectRaw").
+			SQL("ALTER").
+			PredefinedQueryStructField("ObjectType", "ObjectType", g.KeywordOptions().Required()).
+			Identifier("ObjectName", "ObjectIdentifier", g.IdentifierOptions().Required()).
+			SQL("UNSET").
+			Text("Parameter", g.KeywordOptions().NoQuotes().Required()).
+			WithValidation(g.ValidateValueSet, "ObjectType").
+			WithValidation(g.ValidIdentifier, "ObjectName").
+			WithValidation(g.ValidateValueSet, "Parameter"),
+	).
+	WithCustomInterfaceMethod(
+		"SetObjectParameterOnAccountViaCatalog",
+		"Catalog write path: the value is parsed and quoted by the parameter catalog.\nThe methods return false, and send nothing, when the catalog does not handle the parameter.",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("parameter", "ObjectParameter"),
+			g.NewMethodParameter("value", g.KindString),
+		},
+		"bool", "error",
+	).
+	WithCustomInterfaceMethod(
+		"UnsetObjectParameterOnAccountViaCatalog",
+		"",
+		[]*g.MethodParameter{g.NewMethodParameter("parameter", "ObjectParameter")},
+		"bool", "error",
+	).
+	WithCustomInterfaceMethod(
+		"SetObjectParameterOnObjectViaCatalog",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("object", "Object"),
+			g.NewMethodParameter("parameter", "ObjectParameter"),
+			g.NewMethodParameter("value", g.KindString),
+		},
+		"bool", "error",
+	).
+	WithCustomInterfaceMethod(
+		"UnsetObjectParameterOnObjectViaCatalog",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("object", "Object"),
+			g.NewMethodParameter("parameter", "ObjectParameter"),
+		},
+		"bool", "error",
+	).
 	WithCustomInterfaceMethod(
 		"SetAccountParameterLegacy",
-		"",
+		"Legacy write path: the SQL of v2.22.x.",
 		[]*g.MethodParameter{
 			g.NewMethodParameter("parameter", "AccountParameter"),
 			g.NewMethodParameter("value", g.KindString),
@@ -108,78 +193,48 @@ var parametersDef = g.NewInterface(
 		"error",
 	).
 	WithCustomInterfaceMethod(
-		"SetObjectParameterOnObject",
-		"",
-		[]*g.MethodParameter{
-			g.NewMethodParameter("object", "Object"),
-			g.NewMethodParameter("parameter", "ObjectParameter"),
-			g.NewMethodParameter("value", g.KindString),
-		},
-		"error",
-	).
-	WithCustomInterfaceMethod(
 		"UnsetObjectParameterOnAccountLegacy",
 		"",
 		[]*g.MethodParameter{g.NewMethodParameter("parameter", "ObjectParameter")},
 		"error",
 	).
 	WithCustomInterfaceMethod(
-		"UnsetObjectParameterOnObject",
+		"SetAccountParameterWithGenericFallback",
+		"Hybrid write path: the catalog write path when it supports the parameter, otherwise the raw write path\n(the value is rendered by the kind, so it is quoted the same way as by the catalog).",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("parameter", g.KindString),
+			g.NewMethodParameter("kind", "ParameterValueKind"),
+			g.NewMethodParameter("value", g.KindString),
+		},
+		"error",
+	).
+	WithCustomInterfaceMethod(
+		"UnsetAccountParameterWithGenericFallback",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("parameter", g.KindString),
+		},
+		"error",
+	).
+	WithCustomInterfaceMethod(
+		"SetObjectParameterOnObjectWithGenericFallback",
+		"",
+		[]*g.MethodParameter{
+			g.NewMethodParameter("object", "Object"),
+			g.NewMethodParameter("parameter", "ObjectParameter"),
+			g.NewMethodParameter("kind", "ParameterValueKind"),
+			g.NewMethodParameter("value", g.KindString),
+		},
+		"error",
+	).
+	WithCustomInterfaceMethod(
+		"UnsetObjectParameterOnObjectWithGenericFallback",
 		"",
 		[]*g.MethodParameter{
 			g.NewMethodParameter("object", "Object"),
 			g.NewMethodParameter("parameter", "ObjectParameter"),
 		},
 		"error",
-	).
-	WithCustomInterfaceMethod(
-		"SetAccountParameter",
-		"",
-		[]*g.MethodParameter{
-			g.NewMethodParameter("parameter", "AccountParameter"),
-			g.NewMethodParameter("value", g.KindString),
-		},
-		"error",
-	).
-	WithCustomInterfaceMethod(
-		"UnsetAccountParameter",
-		"",
-		[]*g.MethodParameter{g.NewMethodParameter("parameter", "AccountParameter")},
-		"error",
-	).
-	WithCustomInterfaceMethod(
-		"SetObjectParameterOnObjectViaCatalog",
-		"",
-		[]*g.MethodParameter{
-			g.NewMethodParameter("object", "Object"),
-			g.NewMethodParameter("parameter", "ObjectParameter"),
-			g.NewMethodParameter("value", g.KindString),
-		},
-		"bool", "error",
-	).
-	WithCustomInterfaceMethod(
-		"UnsetObjectParameterOnObjectViaCatalog",
-		"",
-		[]*g.MethodParameter{
-			g.NewMethodParameter("object", "Object"),
-			g.NewMethodParameter("parameter", "ObjectParameter"),
-		},
-		"bool", "error",
-	).
-	WithCustomInterfaceMethod(
-		"SetObjectParameterOnAccountViaCatalog",
-		"",
-		[]*g.MethodParameter{
-			g.NewMethodParameter("parameter", "ObjectParameter"),
-			g.NewMethodParameter("value", g.KindString),
-		},
-		"bool", "error",
-	).
-	WithCustomInterfaceMethod(
-		"UnsetObjectParameterOnAccountViaCatalog",
-		"",
-		[]*g.MethodParameter{g.NewMethodParameter("parameter", "ObjectParameter")},
-		"bool", "error",
 	).
 	WithCustomInterfaceMethod(
 		"ShowParameters",

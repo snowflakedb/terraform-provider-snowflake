@@ -1969,7 +1969,7 @@ def filter_by_role(session, table_name, role):
 		// below via assertProcedureParametersDetails.
 	})
 
-	// This covers the generic/catalog-driven parameter path (SetObjectParameterOnObject / UnsetObjectParameterOnObject),
+	// This covers the generic/catalog-driven parameter path (SetObjectParameterOnObjectRaw / UnsetObjectParameterOnObjectRaw),
 	// distinct from the Procedure-specific hand-written Alter(...).WithSet/WithUnset(...) builder methods covered elsewhere
 	// in this file. It targets MetricLevel and EnableConsoleOutput specifically because their catalog-level tagging
 	// (pkg/sdk/generator/defs/parameters_def.go) was extended to include Function/Procedure as part of SNOW-4233370 -
@@ -1989,17 +1989,17 @@ def filter_by_role(session, table_name, role):
 		require.NoError(t, err)
 		assert.Equal(t, "false", enableConsoleOutputParam.Value)
 
-		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel, string(sdk.MetricLevelAll))
+		err = client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterMetricLevel), string(sdk.MetricLevelAll)))
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel)
+			err := client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterMetricLevel)))
 			require.NoError(t, err)
 		})
 
-		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput, "true")
+		err = client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterEnableConsoleOutput), "true"))
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput)
+			err := client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterEnableConsoleOutput)))
 			require.NoError(t, err)
 		})
 
@@ -2014,7 +2014,7 @@ def filter_by_role(session, table_name, role):
 		assert.Equal(t, sdk.ParameterTypeProcedure, enableConsoleOutputParam.Level)
 	})
 
-	// Generic Parameters.SetObjectParameterOnObject path, separate from Alter().WithSet.
+	// Generic Parameters.SetObjectParameterOnObjectRaw path, separate from Alter().WithSet.
 	t.Run("set and unset object parameter on procedure object - generic/catalog path", func(t *testing.T) {
 		p, pCleanup := testClientHelper().Procedure.CreateSql(t)
 		t.Cleanup(pCleanup)
@@ -2029,17 +2029,17 @@ def filter_by_role(session, table_name, role):
 		require.NoError(t, err)
 		assert.Equal(t, "false", enableConsoleOutputParam.Value)
 
-		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel, string(sdk.MetricLevelAll))
+		err = client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterMetricLevel), string(sdk.MetricLevelAll)))
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterMetricLevel)
+			err := client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterMetricLevel)))
 			require.NoError(t, err)
 		})
 
-		err = client.Parameters.SetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput, "true")
+		err = client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterEnableConsoleOutput), "true"))
 		require.NoError(t, err)
 		t.Cleanup(func() {
-			err := client.Parameters.UnsetObjectParameterOnObject(ctx, object, sdk.ObjectParameterEnableConsoleOutput)
+			err := client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(sdk.ObjectParameterEnableConsoleOutput)))
 			require.NoError(t, err)
 		})
 
