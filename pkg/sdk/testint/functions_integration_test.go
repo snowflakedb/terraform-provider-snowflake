@@ -2128,7 +2128,7 @@ func TestInt_Functions(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			oldDataType := sdk.LegacyDataTypeFrom(dataType)
+			dataTypeWithoutAttrs := dataType.ToLegacyDataTypeSql()
 			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataType)
 
 			function, err := client.Functions.ShowByID(ctx, idWithArguments)
@@ -2147,7 +2147,7 @@ func TestInt_Functions(t *testing.T) {
 			for _, detail := range details {
 				pairs[detail.Property] = *detail.Value
 			}
-			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, oldDataType), pairs["signature"])
+			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, dataTypeWithoutAttrs), pairs["signature"])
 			assert.Equal(t, dataType.Canonical(), pairs["returns"])
 		})
 	}

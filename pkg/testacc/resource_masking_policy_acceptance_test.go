@@ -126,13 +126,13 @@ func TestAcc_MaskingPolicy_BasicUseCase(t *testing.T) {
 			// change fields
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(bodyWithBooleanReturnType).WithReturnDataType(string(sdk.DataTypeBoolean)).WithArgument(argumentWithChangedFirstArgumentType).WithComment("Terraform acceptance test - changed comment").WithExemptOtherPolicies(r.BooleanFalse)),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(bodyWithBooleanReturnType).WithReturnDataType("BOOLEAN").WithArgument(argumentWithChangedFirstArgumentType).WithComment("Terraform acceptance test - changed comment").WithExemptOtherPolicies(r.BooleanFalse)),
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
 						HasNameString(id.Name()).
 						HasDatabaseString(id.DatabaseName()).
 						HasSchemaString(id.SchemaName()).
-						HasReturnDataTypeString(string(sdk.DataTypeBoolean)).
+						HasReturnDataTypeString("BOOLEAN").
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasExemptOtherPoliciesString(r.BooleanFalse).
 						HasCommentString("Terraform acceptance test - changed comment").
@@ -143,7 +143,7 @@ func TestAcc_MaskingPolicy_BasicUseCase(t *testing.T) {
 			// restore previous types - first argument type, return_type, and returned value in `body` must be the same type
 			{
 				ConfigDirectory: ConfigurationDirectory("TestAcc_MaskingPolicy/complete"),
-				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithReturnDataType(string(sdk.DataTypeVARCHAR)).WithArgument(changedArgument).WithExemptOtherPolicies(r.BooleanTrue)),
+				ConfigVariables: accconfig.ConfigVariablesFromModel(t, policyModel.WithBody(body).WithReturnDataType("VARCHAR").WithArgument(changedArgument).WithExemptOtherPolicies(r.BooleanTrue)),
 				Check: assertThat(
 					t, resourceassert.MaskingPolicyResource(t, resourceName).
 						HasNameString(id.Name()).
@@ -377,7 +377,7 @@ resource "snowflake_masking_policy" "test" {
 func TestAcc_MaskingPolicy_migrateFromVersion_0_94_1(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	body := "case when current_role() in ('ANALYST') then val else sha2(val, 512) end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)
 
@@ -473,7 +473,7 @@ func TestAcc_MaskingPolicy_InvalidDataType(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then true else false end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -577,9 +577,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.#", "2")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.0.name", "A")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.1.type", "VARCHAR")),
 				),
 			},
 			{
@@ -600,9 +600,9 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasBodyString(body),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.0.name", "A")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "argument.1.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", id.FullyQualifiedName())),
 					assert.Check(resource.TestCheckNoResourceAttr(resourceName, "masking_expression")),
 				),
@@ -638,7 +638,7 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -698,7 +698,7 @@ func TestAcc_MaskingPolicy_migrateToV2_0_0_nonDefaultInConfig(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataType("VARCHAR(100)"))
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar_100)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -760,7 +760,7 @@ func TestAcc_MaskingPolicy_dataType_argumentDefaultToSpecific(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -829,8 +829,8 @@ func TestAcc_MaskingPolicy_dataType_returnTypeDefaultToSpecific(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
-	updatedPolicyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataType("VARCHAR(100)"))
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
+	updatedPolicyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar_100)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -881,7 +881,7 @@ func TestAcc_MaskingPolicy_dataType_externalChange(t *testing.T) {
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 	updatedBody := "case when current_role() in ('ANALYST') then 1 else 2 end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -954,7 +954,7 @@ func TestAcc_MaskingPolicy_dataType_argumentExternalChangeSuppressed(t *testing.
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -1023,7 +1023,7 @@ func TestAcc_MaskingPolicy_dataType_returnTypeExternalChange(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, sdk.DataTypeVARCHAR)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{
@@ -1092,7 +1092,7 @@ func TestAcc_MaskingPolicy_Decfloat(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	body := "REPLACE('X', 1, 2)::DECFLOAT"
-	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, datatypes.DecfloatLegacyDataType)
+	policyModel := model.MaskingPolicyDynamicArguments("test", id, body, testdatatypes.DataTypeDecfloat)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{

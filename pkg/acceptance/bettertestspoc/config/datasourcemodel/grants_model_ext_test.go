@@ -80,7 +80,7 @@ func Test_GrantsModel(t *testing.T) {
     object_type = "FUNCTION"
   }
 }
-`, id.DatabaseName(), id.SchemaName(), id.Name(), sdk.DataTypeVARCHAR)
+`, id.DatabaseName(), id.SchemaName(), id.Name(), testdatatypes.DataTypeVarchar.ToLegacyDataTypeSql())
 
 		result := config.FromModels(t, datasourcemodel.GrantsOnSchemaObjectWithArguments("test", id, sdk.ObjectTypeFunction))
 

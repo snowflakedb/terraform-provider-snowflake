@@ -945,7 +945,7 @@ func TestAcc_GrantPrivilegesToAccountRole_BasicUseCase_OnSchemaObject_OnFunction
 		"database":          config.StringVariable(function.ID().DatabaseName()),
 		"schema":            config.StringVariable(function.ID().SchemaName()),
 		"with_grant_option": config.BoolVariable(false),
-		"argument_type":     config.StringVariable(string(sdk.DataTypeFloat)),
+		"argument_type":     config.StringVariable(testdatatypes.DataTypeFloat.ToLegacyDataTypeSql()),
 	}
 
 	resourceName := "snowflake_grant_privileges_to_account_role.test"

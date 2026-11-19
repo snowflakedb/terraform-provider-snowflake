@@ -2510,7 +2510,7 @@ def filter_by_role(session, table_name, role):
 			args := []sdk.ProcedureArgumentRequest{
 				*sdk.NewProcedureArgumentRequest(argName, dataType),
 			}
-			oldDataType := sdk.LegacyDataTypeFrom(dataType)
+			dataTypeWithoutAttrs := dataType.ToLegacyDataTypeSql()
 			idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 			packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
@@ -2545,7 +2545,7 @@ def filter_by_role(session, table_name, role):
 			for _, detail := range details {
 				pairs[detail.Property] = *detail.Value
 			}
-			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, oldDataType), pairs["signature"])
+			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, dataTypeWithoutAttrs), pairs["signature"])
 			assert.Equal(t, dataType.Canonical(), pairs["returns"])
 		})
 	}
