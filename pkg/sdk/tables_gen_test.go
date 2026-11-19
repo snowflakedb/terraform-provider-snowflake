@@ -9,10 +9,13 @@ import (
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableScope]{"TableScope", AllTableScopes, ToTableScope})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableKind]{"TableKind", AllTableKinds, ToTableKind})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableCopyOption]{"TableCopyOption", AllTableCopyOptions, ToTableCopyOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableConstraintType]{"TableConstraintType", AllTableConstraintTypes, ToTableConstraintType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ReclusterState]{"ReclusterState", AllReclusterStates, ToReclusterState})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MatchType]{"MatchType", AllMatchTypes, ToMatchType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableSearchMethod]{"TableSearchMethod", AllTableSearchMethods, ToTableSearchMethod})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableDataMetricScheduleStatusOperation]{"TableDataMetricScheduleStatusOperation", AllTableDataMetricScheduleStatusOperations, ToTableDataMetricScheduleStatusOperation})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableDataMetricSensitivity]{"TableDataMetricSensitivity", AllTableDataMetricSensitivities, ToTableDataMetricSensitivity})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[CloneMoment]{"CloneMoment", AllCloneMoments, ToCloneMoment})
 }
 
@@ -68,6 +71,8 @@ const (
 	case_Tables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                                                testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
 	case_Tables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier                                                                 testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
 	case_Tables_validation_Create_JoinPolicy_JoinPolicy_ValidIdentifier                                                                               testCaseName = "validation_Create_JoinPolicy_JoinPolicy_ValidIdentifier"
+	case_Tables_validation_Create_StorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier                                                       testCaseName = "validation_Create_StorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier"
+	case_Tables_validation_Create_StorageLifecyclePolicy_On_ValidateValueSet                                                                          testCaseName = "validation_Create_StorageLifecyclePolicy_On_ValidateValueSet"
 	case_Tables_validation_Create_Tag_ValidIdentifier                                                                                                 testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Tables_sql_Create_basic                                                                                                                      testCaseName = "sql_Create_basic"
 	case_Tables_sql_Create_all                                                                                                                        testCaseName = "sql_Create_all"
@@ -144,6 +149,7 @@ const (
 	case_Tables_validation_Alter_opts_Set_AtLeastOneValueSet                                                                                          testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_Tables_validation_Alter_SetTags_ValidIdentifier                                                                                              testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_Tables_validation_Alter_opts_Unset_AtLeastOneValueSet                                                                                        testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Tables_validation_Alter_opts_Unset_ConflictingGroups                                                                                         testCaseName = "validation_Alter_opts_Unset_ConflictingGroups"
 	case_Tables_validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                   testCaseName = "validation_Alter_AddRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
 	case_Tables_validation_Alter_AddRowAccessPolicy_On_ValidateValueSet                                                                               testCaseName = "validation_Alter_AddRowAccessPolicy_On_ValidateValueSet"
 	case_Tables_validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier                                                                  testCaseName = "validation_Alter_DropRowAccessPolicy_RowAccessPolicy_ValidIdentifier"
@@ -154,6 +160,17 @@ const (
 	case_Tables_validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet                                                                        testCaseName = "validation_Alter_AddStorageLifecyclePolicy_On_ValidateValueSet"
 	case_Tables_validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier                                                               testCaseName = "validation_Alter_SetAggregationPolicy_AggregationPolicy_ValidIdentifier"
 	case_Tables_validation_Alter_SetJoinPolicy_JoinPolicy_ValidIdentifier                                                                             testCaseName = "validation_Alter_SetJoinPolicy_JoinPolicy_ValidIdentifier"
+	case_Tables_validation_Alter_AddDataMetricFunction_AddedFunctions_DataMetricFunction_ValidIdentifier                                              testCaseName = "validation_Alter_AddDataMetricFunction_AddedFunctions_DataMetricFunction_ValidIdentifier"
+	case_Tables_validation_Alter_AddDataMetricFunction_AddedFunctions_On_ValidateValueSet                                                             testCaseName = "validation_Alter_AddDataMetricFunction_AddedFunctions_On_ValidateValueSet"
+	case_Tables_validation_Alter_AddDataMetricFunction_AddedFunctions_ExecuteAsRole_ValidIdentifierIfSet                                              testCaseName = "validation_Alter_AddDataMetricFunction_AddedFunctions_ExecuteAsRole_ValidIdentifierIfSet"
+	case_Tables_validation_Alter_DropDataMetricFunction_DroppedFunctions_DataMetricFunction_ValidIdentifier                                           testCaseName = "validation_Alter_DropDataMetricFunction_DroppedFunctions_DataMetricFunction_ValidIdentifier"
+	case_Tables_validation_Alter_DropDataMetricFunction_DroppedFunctions_On_ValidateValueSet                                                          testCaseName = "validation_Alter_DropDataMetricFunction_DroppedFunctions_On_ValidateValueSet"
+	case_Tables_validation_Alter_ModifyDataMetricFunction_ModifiedFunctions_DataMetricFunction_ValidIdentifier                                        testCaseName = "validation_Alter_ModifyDataMetricFunction_ModifiedFunctions_DataMetricFunction_ValidIdentifier"
+	case_Tables_validation_Alter_ModifyDataMetricFunction_ModifiedFunctions_On_ValidateValueSet                                                       testCaseName = "validation_Alter_ModifyDataMetricFunction_ModifiedFunctions_On_ValidateValueSet"
+	case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_NoneSet                                           testCaseName = "validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_NoneSet"
+	case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_MoreThanOneSet                                    testCaseName = "validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_MoreThanOneSet"
+	case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_OneValidOneInvalid                                testCaseName = "validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_OneValidOneInvalid"
+	case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_BothInvalid                                       testCaseName = "validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_BothInvalid"
 	case_Tables_sql_Alter_RenameTo                                                                                                                    testCaseName = "sql_Alter_RenameTo"
 	case_Tables_sql_Alter_SwapWith                                                                                                                    testCaseName = "sql_Alter_SwapWith"
 	case_Tables_sql_Alter_ClusteringAction                                                                                                            testCaseName = "sql_Alter_ClusteringAction"
@@ -175,6 +192,11 @@ const (
 	case_Tables_sql_Alter_UnsetAggregationPolicy                                                                                                      testCaseName = "sql_Alter_UnsetAggregationPolicy"
 	case_Tables_sql_Alter_SetJoinPolicy                                                                                                               testCaseName = "sql_Alter_SetJoinPolicy"
 	case_Tables_sql_Alter_UnsetJoinPolicy                                                                                                             testCaseName = "sql_Alter_UnsetJoinPolicy"
+	case_Tables_sql_Alter_SetDataMetricSchedule                                                                                                       testCaseName = "sql_Alter_SetDataMetricSchedule"
+	case_Tables_sql_Alter_UnsetDataMetricSchedule                                                                                                     testCaseName = "sql_Alter_UnsetDataMetricSchedule"
+	case_Tables_sql_Alter_AddDataMetricFunction                                                                                                       testCaseName = "sql_Alter_AddDataMetricFunction"
+	case_Tables_sql_Alter_DropDataMetricFunction                                                                                                      testCaseName = "sql_Alter_DropDataMetricFunction"
+	case_Tables_sql_Alter_ModifyDataMetricFunction                                                                                                    testCaseName = "sql_Alter_ModifyDataMetricFunction"
 	case_Tables_validation_Drop_name_ValidIdentifier                                                                                                  testCaseName = "validation_Drop_name_ValidIdentifier"
 	case_Tables_validation_Drop_opts_ConflictingFields                                                                                                testCaseName = "validation_Drop_opts_ConflictingFields"
 	case_Tables_sql_Drop_basic                                                                                                                        testCaseName = "sql_Drop_basic"
@@ -718,6 +740,22 @@ var tablesTests = TablesTestsContext{
 				},
 			},
 			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_StorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateTableOptions.StorageLifecyclePolicy", "StorageLifecyclePolicy"),
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.StorageLifecyclePolicy = &CreateTableStorageLifecyclePolicy{}
+					opts.StorageLifecyclePolicy.StorageLifecyclePolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_StorageLifecyclePolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateTableOptions.StorageLifecyclePolicy", "On"),
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.StorageLifecyclePolicy = &CreateTableStorageLifecyclePolicy{}
+					opts.StorageLifecyclePolicy.On = nil
+				},
+			},
+			validationCase[*CreateTableOptions]{
 				Name:        case_Tables_validation_Create_Tag_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateTableOptions.Tag[0]", "Name"),
 				DefaultModify: func(opts *CreateTableOptions) {
@@ -752,7 +790,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SetDataMetricSchedule", "UnsetDataMetricSchedule", "AddDataMetricFunction", "DropDataMetricFunction", "ModifyDataMetricFunction"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.RenameTo = nil
 					opts.SwapWith = nil
@@ -775,11 +813,16 @@ var tablesTests = TablesTestsContext{
 					opts.UnsetAggregationPolicy = nil
 					opts.SetJoinPolicy = nil
 					opts.UnsetJoinPolicy = nil
+					opts.SetDataMetricSchedule = nil
+					opts.UnsetDataMetricSchedule = nil
+					opts.AddDataMetricFunction = nil
+					opts.DropDataMetricFunction = nil
+					opts.ModifyDataMetricFunction = nil
 				},
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"),
+				ExpectedErr: errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SetDataMetricSchedule", "UnsetDataMetricSchedule", "AddDataMetricFunction", "DropDataMetricFunction", "ModifyDataMetricFunction"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.RenameTo = new(randomSchemaObjectIdentifier())
 					opts.SwapWith = new(randomSchemaObjectIdentifier())
@@ -1480,7 +1523,7 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "ErrorLogging", "Contact", "Comment", "RowTimestamp"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.Set = &TableSet{}
 					opts.Set.EnableSchemaEvolution = nil
@@ -1488,7 +1531,11 @@ var tablesTests = TablesTestsContext{
 					opts.Set.MaxDataExtensionTimeInDays = nil
 					opts.Set.ChangeTracking = nil
 					opts.Set.DefaultDdlCollation = nil
+					opts.Set.IcebergDefaultDdlCollation = nil
+					opts.Set.ErrorLogging = nil
+					opts.Set.Contact = nil
 					opts.Set.Comment = nil
+					opts.Set.RowTimestamp = nil
 				},
 			},
 			validationCase[*AlterTableOptions]{
@@ -1500,15 +1547,28 @@ var tablesTests = TablesTestsContext{
 			},
 			validationCase[*AlterTableOptions]{
 				Name:        case_Tables_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterTableOptions.Unset", "Contact", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp"),
 				DefaultModify: func(opts *AlterTableOptions) {
 					opts.Unset = &TableUnset{}
+					opts.Unset.Contact = nil
 					opts.Unset.DataRetentionTimeInDays = nil
 					opts.Unset.MaxDataExtensionTimeInDays = nil
 					opts.Unset.ChangeTracking = nil
 					opts.Unset.DefaultDdlCollation = nil
+					opts.Unset.IcebergDefaultDdlCollation = nil
 					opts.Unset.EnableSchemaEvolution = nil
+					opts.Unset.ErrorLogging = nil
 					opts.Unset.Comment = nil
+					opts.Unset.RowTimestamp = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_Unset_ConflictingGroups,
+				ExpectedErr: errConflictingGroups("AlterTableOptions.Unset", []string{"Contact"}, []string{"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp"}),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.Unset = &TableUnset{}
+					opts.Unset.Contact = new("foo")
+					opts.Unset.DataRetentionTimeInDays = new(true)
 				},
 			},
 			validationCase[*AlterTableOptions]{
@@ -1591,6 +1651,96 @@ var tablesTests = TablesTestsContext{
 					opts.SetJoinPolicy.JoinPolicy = emptySchemaObjectIdentifier
 				},
 			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_AddDataMetricFunction_AddedFunctions_DataMetricFunction_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.AddDataMetricFunction.AddedFunctions[0]", "DataMetricFunction"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.AddDataMetricFunction = &TableAddDataMetricFunction{}
+					opts.AddDataMetricFunction.AddedFunctions = []TableAddedFunctions{{}}
+					opts.AddDataMetricFunction.AddedFunctions[0].DataMetricFunction = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_AddDataMetricFunction_AddedFunctions_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.AddDataMetricFunction.AddedFunctions[0]", "On"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.AddDataMetricFunction = &TableAddDataMetricFunction{}
+					opts.AddDataMetricFunction.AddedFunctions = []TableAddedFunctions{{}}
+					opts.AddDataMetricFunction.AddedFunctions[0].On = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_AddDataMetricFunction_AddedFunctions_ExecuteAsRole_ValidIdentifierIfSet,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.AddDataMetricFunction.AddedFunctions[0]", "ExecuteAsRole"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.AddDataMetricFunction = &TableAddDataMetricFunction{}
+					opts.AddDataMetricFunction.AddedFunctions = []TableAddedFunctions{{}}
+					opts.AddDataMetricFunction.AddedFunctions[0].ExecuteAsRole = new(emptyAccountObjectIdentifier)
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_DropDataMetricFunction_DroppedFunctions_DataMetricFunction_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.DropDataMetricFunction.DroppedFunctions[0]", "DataMetricFunction"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.DropDataMetricFunction = &TableDropDataMetricFunction{}
+					opts.DropDataMetricFunction.DroppedFunctions = []TableDroppedFunctions{{}}
+					opts.DropDataMetricFunction.DroppedFunctions[0].DataMetricFunction = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_DropDataMetricFunction_DroppedFunctions_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.DropDataMetricFunction.DroppedFunctions[0]", "On"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.DropDataMetricFunction = &TableDropDataMetricFunction{}
+					opts.DropDataMetricFunction.DroppedFunctions = []TableDroppedFunctions{{}}
+					opts.DropDataMetricFunction.DroppedFunctions[0].On = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_ModifyDataMetricFunction_ModifiedFunctions_DataMetricFunction_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[0]", "DataMetricFunction"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{}
+					opts.ModifyDataMetricFunction.ModifiedFunctions = []TableModifiedFunctions{{}}
+					opts.ModifyDataMetricFunction.ModifiedFunctions[0].DataMetricFunction = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_ModifyDataMetricFunction_ModifiedFunctions_On_ValidateValueSet,
+				ExpectedErr: errNotSet("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[0]", "On"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{}
+					opts.ModifyDataMetricFunction.ModifiedFunctions = []TableModifiedFunctions{{}}
+					opts.ModifyDataMetricFunction.ModifiedFunctions[0].On = nil
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[0]", "Status", "AddExpectation", "ModifyExpectation", "DropExpectation", "Filter", "Set"),
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{}
+					opts.ModifyDataMetricFunction.ModifiedFunctions = []TableModifiedFunctions{{}}
+				},
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[0]", "Status", "AddExpectation", "ModifyExpectation", "DropExpectation", "Filter", "Set"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name:        case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_OneValidOneInvalid,
+				ExpectedErr: errExactlyOneOf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[1]", "Status", "AddExpectation", "ModifyExpectation", "DropExpectation", "Filter", "Set"),
+			},
+			validationCase[*AlterTableOptions]{
+				Name: case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_BothInvalid,
+				ExpectedErrs: []error{
+					errExactlyOneOf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[0]", "Status", "AddExpectation", "ModifyExpectation", "DropExpectation", "Filter", "Set"),
+					errExactlyOneOf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[1]", "Status", "AddExpectation", "ModifyExpectation", "DropExpectation", "Filter", "Set"),
+				},
+				DefaultModify: func(opts *AlterTableOptions) {
+					opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{}
+					opts.ModifyDataMetricFunction.ModifiedFunctions = []TableModifiedFunctions{{}, {}}
+				},
+			},
 		).
 		withSqlCases(
 			sqlCase[*AlterTableOptions]{
@@ -1655,6 +1805,21 @@ var tablesTests = TablesTestsContext{
 			},
 			sqlCase[*AlterTableOptions]{
 				Name: case_Tables_sql_Alter_UnsetJoinPolicy,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_SetDataMetricSchedule,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_UnsetDataMetricSchedule,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_AddDataMetricFunction,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_DropDataMetricFunction,
+			},
+			sqlCase[*AlterTableOptions]{
+				Name: case_Tables_sql_Alter_ModifyDataMetricFunction,
 			},
 		),
 	Drop: newSdkTestCtx[*DropTableOptions](

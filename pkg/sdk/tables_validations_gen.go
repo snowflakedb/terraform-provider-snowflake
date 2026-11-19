@@ -194,6 +194,14 @@ func (opts *CreateTableOptions) validate() error {
 			errs = append(errs, errInvalidIdentifier("CreateTableOptions.JoinPolicy", "JoinPolicy"))
 		}
 	}
+	if valueSet(opts.StorageLifecyclePolicy) {
+		if !ValidObjectIdentifier(opts.StorageLifecyclePolicy.StorageLifecyclePolicy) {
+			errs = append(errs, errInvalidIdentifier("CreateTableOptions.StorageLifecyclePolicy", "StorageLifecyclePolicy"))
+		}
+		if !valueSet(opts.StorageLifecyclePolicy.On) {
+			errs = append(errs, errNotSet("CreateTableOptions.StorageLifecyclePolicy", "On"))
+		}
+	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
 			if !ValidObjectIdentifier(tag.Name) {
@@ -212,8 +220,8 @@ func (opts *AlterTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "name"))
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy) {
-		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"))
+	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy, opts.SetDataMetricSchedule, opts.UnsetDataMetricSchedule, opts.AddDataMetricFunction, opts.DropDataMetricFunction, opts.ModifyDataMetricFunction) {
+		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy", "SetDataMetricSchedule", "UnsetDataMetricSchedule", "AddDataMetricFunction", "DropDataMetricFunction", "ModifyDataMetricFunction"))
 	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "RenameTo"))
@@ -429,8 +437,8 @@ func (opts *AlterTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment"))
+		if !anyValueSet(opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.IcebergDefaultDdlCollation, opts.Set.ErrorLogging, opts.Set.Contact, opts.Set.Comment, opts.Set.RowTimestamp) {
+			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "ErrorLogging", "Contact", "Comment", "RowTimestamp"))
 		}
 	}
 	if valueSet(opts.SetTags) {
@@ -441,8 +449,11 @@ func (opts *AlterTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Unset) {
-		if !anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ChangeTracking, opts.Unset.DefaultDdlCollation, opts.Unset.EnableSchemaEvolution, opts.Unset.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Unset", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment"))
+		if !anyValueSet(opts.Unset.Contact, opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ChangeTracking, opts.Unset.DefaultDdlCollation, opts.Unset.IcebergDefaultDdlCollation, opts.Unset.EnableSchemaEvolution, opts.Unset.ErrorLogging, opts.Unset.Comment, opts.Unset.RowTimestamp) {
+			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Unset", "Contact", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp"))
+		}
+		if anyValueSet(opts.Unset.Contact) && anyValueSet(opts.Unset.DataRetentionTimeInDays, opts.Unset.MaxDataExtensionTimeInDays, opts.Unset.ChangeTracking, opts.Unset.DefaultDdlCollation, opts.Unset.IcebergDefaultDdlCollation, opts.Unset.EnableSchemaEvolution, opts.Unset.ErrorLogging, opts.Unset.Comment, opts.Unset.RowTimestamp) {
+			errs = append(errs, errConflictingGroups("AlterTableOptions.Unset", []string{"Contact"}, []string{"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp"}))
 		}
 	}
 	if valueSet(opts.AddRowAccessPolicy) {
@@ -489,6 +500,48 @@ func (opts *AlterTableOptions) validate() error {
 	if valueSet(opts.SetJoinPolicy) {
 		if !ValidObjectIdentifier(opts.SetJoinPolicy.JoinPolicy) {
 			errs = append(errs, errInvalidIdentifier("AlterTableOptions.SetJoinPolicy", "JoinPolicy"))
+		}
+	}
+	if valueSet(opts.AddDataMetricFunction) {
+		if valueSet(opts.AddDataMetricFunction.AddedFunctions) {
+			for addedFunctionIdx, addedFunction := range opts.AddDataMetricFunction.AddedFunctions {
+				if !ValidObjectIdentifier(addedFunction.DataMetricFunction) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.AddDataMetricFunction.AddedFunctions[%d]", addedFunctionIdx), "DataMetricFunction"))
+				}
+				if !valueSet(addedFunction.On) {
+					errs = append(errs, errNotSet(fmt.Sprintf("AlterTableOptions.AddDataMetricFunction.AddedFunctions[%d]", addedFunctionIdx), "On"))
+				}
+				if addedFunction.ExecuteAsRole != nil && !ValidObjectIdentifier(addedFunction.ExecuteAsRole) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.AddDataMetricFunction.AddedFunctions[%d]", addedFunctionIdx), "ExecuteAsRole"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.DropDataMetricFunction) {
+		if valueSet(opts.DropDataMetricFunction.DroppedFunctions) {
+			for droppedFunctionIdx, droppedFunction := range opts.DropDataMetricFunction.DroppedFunctions {
+				if !ValidObjectIdentifier(droppedFunction.DataMetricFunction) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.DropDataMetricFunction.DroppedFunctions[%d]", droppedFunctionIdx), "DataMetricFunction"))
+				}
+				if !valueSet(droppedFunction.On) {
+					errs = append(errs, errNotSet(fmt.Sprintf("AlterTableOptions.DropDataMetricFunction.DroppedFunctions[%d]", droppedFunctionIdx), "On"))
+				}
+			}
+		}
+	}
+	if valueSet(opts.ModifyDataMetricFunction) {
+		if valueSet(opts.ModifyDataMetricFunction.ModifiedFunctions) {
+			for modifiedFunctionIdx, modifiedFunction := range opts.ModifyDataMetricFunction.ModifiedFunctions {
+				if !ValidObjectIdentifier(modifiedFunction.DataMetricFunction) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[%d]", modifiedFunctionIdx), "DataMetricFunction"))
+				}
+				if !valueSet(modifiedFunction.On) {
+					errs = append(errs, errNotSet(fmt.Sprintf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[%d]", modifiedFunctionIdx), "On"))
+				}
+				if !exactlyOneValueSet(modifiedFunction.Status, modifiedFunction.AddExpectation, modifiedFunction.ModifyExpectation, modifiedFunction.DropExpectation, modifiedFunction.Filter, modifiedFunction.Set) {
+					errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterTableOptions.ModifyDataMetricFunction.ModifiedFunctions[%d]", modifiedFunctionIdx), "Status", "AddExpectation", "ModifyExpectation", "DropExpectation", "Filter", "Set"))
+				}
+			}
 		}
 	}
 	return JoinErrors(errs...)

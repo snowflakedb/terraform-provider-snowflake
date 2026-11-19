@@ -197,6 +197,14 @@ func TestInt_Table(t *testing.T) {
 		addConstraint(t, referencedId, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
 			WithPrimaryKey(true).
 			WithColumns([]sdk.Column{{Value: "id"}})))
+		contactId, contactCleanup := testClientHelper().Contact.Create(t)
+		t.Cleanup(contactCleanup)
+		storageLifecyclePolicyId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		t.Cleanup(testClientHelper().StorageLifecyclePolicy.CreateWithId(t, storageLifecyclePolicyId))
+		aggregationPolicy, aggregationPolicyCleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
+		t.Cleanup(aggregationPolicyCleanup)
+		joinPolicy, joinPolicyCleanup := testClientHelper().JoinPolicy.Create(t)
+		t.Cleanup(joinPolicyCleanup)
 		comment := random.Comment()
 
 		columnTags := []sdk.TagAssociation{
@@ -238,6 +246,8 @@ func TestInt_Table(t *testing.T) {
 			*sdk.NewTableColumnRequest("amount", sdk.DataTypeNumber).
 				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithCH(*sdk.NewTableColumnInlineCHRequest(`"amount" > 0`).
 					WithName("chk_Amount_Positive"))),
+			*sdk.NewTableColumnRequest("DOUBLE_ID", sdk.DataTypeNumber).
+				WithVirtual(*sdk.NewTableColumnVirtualRequest("(1 + 1)").WithGeneratedAlways(true).WithVirtual(true)),
 		}
 		constraints := []sdk.TableOutOfLineConstraintRequest{
 			*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
@@ -257,7 +267,14 @@ func TestInt_Table(t *testing.T) {
 		request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint(constraints)).
 			WithComment(comment).
 			WithDataRetentionTimeInDays(30).
-			WithMaxDataExtensionTimeInDays(30)
+			WithMaxDataExtensionTimeInDays(30).
+			WithErrorLogging(true).
+			WithRowTimestamp(true).
+			WithContact([]sdk.TableContact{{Purpose: "SUPPORT", Contact: contactId}}).
+			WithStorageLifecyclePolicy(*sdk.NewCreateTableStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "column_1"}})).
+			WithAggregationPolicy(*sdk.NewTableAggregationPolicyRequest(aggregationPolicy).WithEntityKey([]sdk.Column{{Value: "column_1"}})).
+			WithJoinPolicy(*sdk.NewTableJoinPolicyRequest(joinPolicy).WithAllowedJoinKeys([]sdk.Column{{Value: "column_1"}})).
+			WithTag([]sdk.TagAssociation{{Name: tag1.ID(), Value: "v1"}})
 
 		err := client.Tables.Create(ctx, request)
 		require.NoError(t, err)
@@ -265,14 +282,22 @@ func TestInt_Table(t *testing.T) {
 
 		table, err := client.Tables.ShowByID(ctx, id)
 		require.NoError(t, err)
+		assertThatObject(t, objectassert.TableFromObject(t, table).
+			HasCreatedOnNotEmpty().
+			HasName(id.Name()).
+			HasDatabaseName(testClientHelper().Ids.DatabaseId().Name()).
+			HasSchemaName(testClientHelper().Ids.SchemaId().Name()).
+			HasKind("TABLE").
+			HasComment(comment).
+			HasRetentionTime(30).
+			HasOwner("ACCOUNTADMIN").
+			HasOwnerRoleType("ROLE").
+			HasErrorLogging(true).
+			HasRowTimestamp(true))
 
-		assertTable(t, table, id)
-		assert.Equal(t, comment, table.Comment)
-		assert.Equal(t, 30, table.RetentionTime)
-
-		param, err := client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameterMaxDataExtensionTimeInDays, sdk.Object{ObjectType: sdk.ObjectTypeTable, Name: table.ID()})
-		assert.NoError(t, err)
-		assert.Equal(t, "30", param.Value)
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.PolicyReferenceFromObject(t, new(references[0])).HasRefEntityName(id.Name()))
 
 		tableColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
 		expectedColumns := []expectedColumn{
@@ -282,6 +307,7 @@ func TestInt_Table(t *testing.T) {
 			{"ref_id", sdk.DataTypeNumber},
 			{"inline_ref", sdk.DataTypeNumber},
 			{"amount", sdk.DataTypeNumber},
+			{"DOUBLE_ID", sdk.DataTypeNumber},
 		}
 		assertColumns(t, expectedColumns, tableColumns)
 
@@ -324,6 +350,140 @@ func TestInt_Table(t *testing.T) {
 		assertThatObject(t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[1]).
 			HasConstraintName("chk_Id_Positive").
 			HasCheckClause(`"column_2" > 0`).
+			HasConstraintTable(id.Name()))
+
+		err = client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
+		})).WithOrReplace(true).WithCopy([]sdk.TableCopyOption{sdk.TableCopyOptionComments, sdk.TableCopyOptionTags}))
+		require.NoError(t, err)
+
+		table, err = client.Tables.ShowByID(ctx, id)
+		require.NoError(t, err)
+		assertThatObject(t, objectassert.TableFromObject(t, table).HasComment(comment))
+	})
+
+	t.Run("create table: out-of-line primary key, unique, foreign key, and check", func(t *testing.T) {
+		referencedId := createTableWithColumns(t, "REF_ID")
+		addConstraint(t, referencedId, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "REF_ID"}})))
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("CODE", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("REF_ID", sdk.DataTypeNumber),
+		}
+		constraints := []sdk.TableOutOfLineConstraintRequest{
+			*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+				WithName("pk_Id").
+				WithPrimaryKey(true).
+				WithColumns([]sdk.Column{{Value: "ID"}}).
+				WithNotEnforced(true).
+				WithRely(true).
+				WithComment("primary key comment")),
+			*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+				WithName("uq_Code").
+				WithUnique(true).
+				WithColumns([]sdk.Column{{Value: "CODE"}})),
+			*sdk.NewTableOutOfLineConstraintRequest().WithFK(*sdk.NewTableOutOfLineFKRequest(referencedId).
+				WithName("fk_Ref").
+				WithColumns([]sdk.Column{{Value: "REF_ID"}}).
+				WithRefColumns([]sdk.Column{{Value: "REF_ID"}}).
+				WithMatch(sdk.MatchTypeFull).
+				WithOn(*sdk.NewForeignKeyOnAction().WithOnUpdate(new(sdk.ForeignKeyNoAction)).WithOnDelete(new(sdk.ForeignKeyNoAction)))),
+			*sdk.NewTableOutOfLineConstraintRequest().WithCH(*sdk.NewTableOutOfLineCHRequest("ID > 0").
+				WithName("chk_Id_Positive")),
+		}
+
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns).WithOutOfLineConstraint(constraints)))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+
+		tableConstraints := selectTableConstraints(t, id)
+		require.Len(t, tableConstraints, 3)
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[0]).
+			HasConstraintName("fk_Ref").
+			HasConstraintType(sdk.TableConstraintTypeForeignKey).
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[1]).
+			HasConstraintName("pk_Id").
+			HasConstraintType(sdk.TableConstraintTypePrimaryKey).
+			HasEnforced(false).
+			HasRely(true).
+			HasComment("primary key comment").
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[2]).
+			HasConstraintName("uq_Code").
+			HasConstraintType(sdk.TableConstraintTypeUnique).
+			HasTableName(id.Name()))
+
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, checkConstraints, 1)
+		assertThatObject(t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[0]).
+			HasConstraintName("chk_Id_Positive").
+			HasCheckClause("ID > 0").
+			HasConstraintTable(id.Name()))
+	})
+
+	t.Run("create table: inline primary key, unique, foreign key, and check", func(t *testing.T) {
+		referencedId := createTableWithColumns(t, "REF_ID")
+		addConstraint(t, referencedId, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "REF_ID"}})))
+
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithUniquePK(*sdk.NewTableColumnInlineUniquePKRequest().
+					WithName("pk_Id").
+					WithPrimaryKey(true).
+					WithNotEnforced(true).
+					WithRely(true))),
+			*sdk.NewTableColumnRequest("CODE", sdk.DataTypeNumber).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithUniquePK(*sdk.NewTableColumnInlineUniquePKRequest().
+					WithName("uq_Code").
+					WithUnique(true))),
+			*sdk.NewTableColumnRequest("REF_ID", sdk.DataTypeNumber).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithFK(*sdk.NewTableColumnInlineFKRequest(referencedId).
+					WithName("fk_Ref").
+					WithForeignKey(true).
+					WithRefColumn([]sdk.Column{{Value: "REF_ID"}}).
+					WithMatch(sdk.MatchTypeFull).
+					WithOn(*sdk.NewForeignKeyOnAction().WithOnUpdate(new(sdk.ForeignKeyNoAction)).WithOnDelete(new(sdk.ForeignKeyNoAction))))),
+			*sdk.NewTableColumnRequest("AMOUNT", sdk.DataTypeNumber).
+				WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithCH(*sdk.NewTableColumnInlineCHRequest("AMOUNT > 0").
+					WithName("chk_Amount_Positive"))),
+		}
+
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+
+		tableConstraints := selectTableConstraints(t, id)
+		require.Len(t, tableConstraints, 3)
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[0]).
+			HasConstraintName("fk_Ref").
+			HasConstraintType(sdk.TableConstraintTypeForeignKey).
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[1]).
+			HasConstraintName("pk_Id").
+			HasConstraintType(sdk.TableConstraintTypePrimaryKey).
+			HasEnforced(false).
+			HasRely(true).
+			HasTableName(id.Name()))
+		assertThatObject(t, objectassert.TableConstraintDetailsFromObject(t, &tableConstraints[2]).
+			HasConstraintName("uq_Code").
+			HasConstraintType(sdk.TableConstraintTypeUnique).
+			HasTableName(id.Name()))
+
+		checkConstraints, err := client.Tables.SelectCheckConstraints(ctx, sdk.NewSelectCheckConstraintsTableRequest(id.DatabaseId(), id.SchemaName(), id.Name()))
+		require.NoError(t, err)
+		require.Len(t, checkConstraints, 1)
+		assertThatObject(t, objectassert.TableCheckConstraintDetailsFromObject(t, &checkConstraints[0]).
+			HasConstraintName("chk_Amount_Positive").
+			HasCheckClause("AMOUNT > 0").
 			HasConstraintTable(id.Name()))
 	})
 
@@ -528,7 +688,7 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(sourceTableCleanup)
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		request := sdk.NewCreateLikeTableRequest(id, sourceTable.ID()).WithCopyGrants(true)
+		request := sdk.NewCreateLikeTableRequest(id, sourceTable.ID()).WithCopy([]sdk.TableCopyOption{sdk.TableCopyOptionGrants})
 
 		err := client.Tables.CreateLike(ctx, request)
 		require.NoError(t, err)
@@ -566,7 +726,7 @@ func TestInt_Table(t *testing.T) {
 
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 		request := sdk.NewCreateCloneTableRequest(id, sourceTable.ID()).
-			WithCopyGrants(true).WithClonePoint(*sdk.NewTableClonePointRequest(sdk.CloneMomentAt, sdk.TimeTravel{Offset: sdk.Pointer(0)}))
+			WithCopy([]sdk.TableCopyOption{sdk.TableCopyOptionGrants}).WithClonePoint(*sdk.NewTableClonePointRequest(sdk.CloneMomentAt, sdk.TimeTravel{Offset: sdk.Pointer(0)}))
 
 		err := client.Tables.CreateClone(ctx, request)
 		require.NoError(t, err)
@@ -752,8 +912,13 @@ func TestInt_Table(t *testing.T) {
 			{"COLUMN_3", sdk.DataTypeVARCHAR},
 		}
 		assertColumns(t, expectedColumns, currentColumns)
+		assertThatObject(t, objectassert.TableFromObject(t, table).HasComment(""))
 
-		assert.Equal(t, "", table.Comment)
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(
+			*sdk.NewTableColumnAddActionRequest("DOUBLE_ID", sdk.DataTypeNumber).
+				WithVirtual(*sdk.NewTableColumnVirtualRequest("(1 + 1)").WithGeneratedAlways(true).WithVirtual(true)),
+		)))
+		require.NoError(t, err)
 	})
 
 	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
@@ -969,26 +1134,7 @@ func TestInt_Table(t *testing.T) {
 		require.Empty(t, references)
 	})
 
-	t.Run("create table: aggregation and join policies", func(t *testing.T) {
-		aggregationPolicy, aggregationPolicyCleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
-		t.Cleanup(aggregationPolicyCleanup)
-		joinPolicy, joinPolicyCleanup := testClientHelper().JoinPolicy.Create(t)
-		t.Cleanup(joinPolicyCleanup)
-
-		tableId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(tableId, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
-		})).
-			WithAggregationPolicy(*sdk.NewTableAggregationPolicyRequest(aggregationPolicy).WithEntityKey([]sdk.Column{{Value: "COLUMN_1"}})).
-			WithJoinPolicy(*sdk.NewTableJoinPolicyRequest(joinPolicy).WithAllowedJoinKeys([]sdk.Column{{Value: "COLUMN_1"}})))
-		require.NoError(t, err)
-		t.Cleanup(cleanupTableProvider(tableId))
-
-		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
-		require.NoError(t, err)
-		require.Len(t, references, 2)
-	})
+	// TODO [SNOW-4532966]: add an integration test for CREATE TABLE ... FROM BACKUP SET ... IDENTIFIER once the variant is added back to the SSOT definition.
 
 	t.Run("alter table: set and unset aggregation policy", func(t *testing.T) {
 		aggregationPolicy, aggregationPolicyCleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
@@ -1307,37 +1453,77 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	// TODO [SNOW-1007542]: try to check more sets (ddl collation, max data extension time in days, etc.)
-	t.Run("set: with complete options", func(t *testing.T) {
+	t.Run("alter table: set and unset complete options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
+		contactId, contactCleanup := testClientHelper().Contact.Create(t)
+		t.Cleanup(contactCleanup)
+		dmfId, dmfCleanup := testClientHelper().DataMetricFunctionClient.CreateWithArguments(t, []string{"ARG_T TABLE(ARG_C NUMBER)"}, []string{"TABLE(NUMBER)"})
+		t.Cleanup(dmfCleanup)
 		columns := []sdk.TableColumnRequest{
+			*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
 			*sdk.NewTableColumnRequest("COLUMN_1", sdk.DataTypeVARCHAR),
-			*sdk.NewTableColumnRequest("COLUMN_2", sdk.DataTypeVARCHAR),
 		}
 
 		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 		require.NoError(t, err)
 		t.Cleanup(cleanupTableProvider(id))
 
-		alterRequest := sdk.NewAlterTableRequest(id).
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).
 			WithSet(*sdk.NewTableSetRequest().
 				WithEnableSchemaEvolution(true).
 				WithDataRetentionTimeInDays(30).
 				WithMaxDataExtensionTimeInDays(90).
 				WithChangeTracking(false).
 				WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "us"}).
-				WithComment(comment))
-
-		err = client.Tables.Alter(ctx, alterRequest)
+				WithIcebergDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en-ci"}).
+				WithErrorLogging(true).
+				WithContact([]sdk.TableContact{{Purpose: "SUPPORT", Contact: contactId}}).
+				WithComment(comment).
+				WithRowTimestamp(true)))
 		require.NoError(t, err)
+
 		table, err := client.Tables.ShowByID(ctx, id)
 		require.NoError(t, err)
+		assertThatObject(t, objectassert.TableFromObject(t, table).
+			HasComment(comment).
+			HasRetentionTime(30).
+			HasChangeTracking(false).
+			HasEnableSchemaEvolution(true).
+			HasErrorLogging(true).
+			HasRowTimestamp(true))
 
-		assert.Equal(t, comment, table.Comment)
-		assert.Equal(t, 30, table.RetentionTime)
-		assert.False(t, table.ChangeTracking)
-		assert.True(t, table.EnableSchemaEvolution)
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(*sdk.NewTableUnsetRequest().
+			WithDataRetentionTimeInDays(true).
+			WithMaxDataExtensionTimeInDays(true).
+			WithChangeTracking(true).
+			WithDefaultDdlCollation(true).
+			WithIcebergDefaultDdlCollation(true).
+			WithEnableSchemaEvolution(true).
+			WithErrorLogging(true).
+			WithComment(true).
+			WithRowTimestamp(true)))
+		require.NoError(t, err)
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(*sdk.NewTableUnsetRequest().WithContact("SUPPORT")))
+		require.NoError(t, err)
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetDataMetricSchedule(*sdk.NewTableSetDataMetricScheduleRequest("TRIGGER_ON_CHANGES")))
+		require.NoError(t, err)
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithAddDataMetricFunction(*sdk.NewTableAddDataMetricFunctionRequest([]sdk.TableAddedFunctionsRequest{
+			*sdk.NewTableAddedFunctionsRequest(dmfId.SchemaObjectId(), []sdk.Column{{Value: "ID"}}),
+		})))
+		require.NoError(t, err)
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithModifyDataMetricFunction(*sdk.NewTableModifyDataMetricFunctionRequest([]sdk.TableModifiedFunctionsRequest{
+			*sdk.NewTableModifiedFunctionsRequest(dmfId.SchemaObjectId(), []sdk.Column{{Value: "ID"}}).WithStatus(sdk.TableDataMetricScheduleStatusOperationSuspend),
+		})))
+		require.NoError(t, err)
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithDropDataMetricFunction(*sdk.NewTableDropDataMetricFunctionRequest([]sdk.TableDroppedFunctionsRequest{
+			*sdk.NewTableDroppedFunctionsRequest(dmfId.SchemaObjectId(), []sdk.Column{{Value: "ID"}}),
+		})))
+		require.NoError(t, err)
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetDataMetricSchedule(true))
+		require.NoError(t, err)
 	})
 
 	t.Run("drop table", func(t *testing.T) {

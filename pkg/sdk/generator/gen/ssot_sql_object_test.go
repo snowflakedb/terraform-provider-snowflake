@@ -793,19 +793,28 @@ func Test_alterSetQueryStruct_table(t *testing.T) {
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", ParameterOptions()).
 		OptionalBooleanAssignment("CHANGE_TRACKING", ParameterOptions()).
 		OptionalAssignment("DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
+		OptionalAssignment("ICEBERG_DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
+		OptionalBooleanAssignment("ERROR_LOGGING", ParameterOptions()).
+		PredefinedQueryStructField("Contact", "[]TableContact", KeywordOptions().SQL("CONTACT")).
 		OptionalComment().
-		WithValidation(AtLeastOneValueSet, "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment")
+		OptionalBooleanAssignment("ROW_TIMESTAMP", ParameterOptions()).
+		WithValidation(AtLeastOneValueSet, "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "ErrorLogging", "Contact", "Comment", "RowTimestamp")
 	require.Equal(t, want.IntoField(), got.IntoField())
 
 	unset := AlterUnsetQueryStruct(ssotdefs.Table)
 	wantUnset := NewQueryStruct("TableUnset").
+		OptionalAssignment("CONTACT", "string", ParameterOptions().NoEquals()).
 		OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
 		OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
 		OptionalSQL("CHANGE_TRACKING").
 		OptionalSQL("DEFAULT_DDL_COLLATION").
+		OptionalSQL("ICEBERG_DEFAULT_DDL_COLLATION").
 		OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
+		OptionalSQL("ERROR_LOGGING").
 		OptionalSQL("COMMENT").
-		WithValidation(AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
+		OptionalSQL("ROW_TIMESTAMP").
+		WithValidation(AtLeastOneValueSet, "Contact", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp").
+		WithConflictingGroups([]string{"Contact"}, []string{"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp"})
 	require.Equal(t, wantUnset.IntoField(), unset.IntoField())
 }
 
@@ -862,6 +871,7 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 	got := QueryStructFromAttribute("Table", attr)
 
 	// Table emits the structs the column statements embed, and each one carries its standalone toOpts.
+	virtual := QueryStructFromAttribute("Table", ssotdefs.TableColumnVirtual)
 	inlineConstraint := QueryStructFromAttribute("Table", ssotdefs.TableColumnInlineConstraint)
 	maskingPolicy := QueryStructFromAttribute("Table", ssotdefs.TableColumnMaskingPolicy)
 	projectionPolicy := QueryStructFromAttribute("Table", ssotdefs.TableColumnProjectionPolicy)
@@ -879,6 +889,7 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 		IfNotExists().
 		Text("Name", KeywordOptions().Required().DoubleQuotes()).
 		PredefinedQueryStructField("ColumnType", "DataType", ParameterOptions().NoEquals().Required()).
+		OptionalQueryStructField("Virtual", virtual, ListOptions().NoComma()).
 		OptionalTextAssignment("COLLATE", ParameterOptions().NoEquals().SingleQuotes()).
 		OptionalQueryStructField("DefaultValue",
 			NewQueryStruct("ColumnDefaultValue").

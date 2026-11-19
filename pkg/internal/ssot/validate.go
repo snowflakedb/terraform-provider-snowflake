@@ -1193,7 +1193,6 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause names a nested struct, not an attribute", obj.Name, attr.Name))
 		}
 	case SqlKindPredefined:
-		requireCreateOnlyClause(obj, attr, statement, clause)
 		if clause.GoType == "" {
 			panic(fmt.Sprintf("object %q: attribute %q predefined type clause has no Go type", obj.Name, attr.Name))
 		}

@@ -62,8 +62,13 @@ func (s *CreateTableRequest) WithDefaultDdlCollation(defaultDdlCollation StringA
 	return s
 }
 
-func (s *CreateTableRequest) WithCopyGrants(copyGrants bool) *CreateTableRequest {
-	s.CopyGrants = &copyGrants
+func (s *CreateTableRequest) WithErrorLogging(errorLogging bool) *CreateTableRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
+func (s *CreateTableRequest) WithCopy(copy []TableCopyOption) *CreateTableRequest {
+	s.Copy = copy
 	return s
 }
 
@@ -82,13 +87,28 @@ func (s *CreateTableRequest) WithJoinPolicy(joinPolicy TableJoinPolicyRequest) *
 	return s
 }
 
+func (s *CreateTableRequest) WithStorageLifecyclePolicy(storageLifecyclePolicy CreateTableStorageLifecyclePolicyRequest) *CreateTableRequest {
+	s.StorageLifecyclePolicy = &storageLifecyclePolicy
+	return s
+}
+
 func (s *CreateTableRequest) WithTag(tag []TagAssociation) *CreateTableRequest {
 	s.Tag = tag
 	return s
 }
 
+func (s *CreateTableRequest) WithContact(contact []TableContact) *CreateTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func (s *CreateTableRequest) WithComment(comment string) *CreateTableRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *CreateTableRequest) WithRowTimestamp(rowTimestamp bool) *CreateTableRequest {
+	s.RowTimestamp = &rowTimestamp
 	return s
 }
 
@@ -115,6 +135,11 @@ func NewTableColumnRequest(
 	s.Name = name
 	s.ColumnType = columnType
 	return &s
+}
+
+func (s *TableColumnRequest) WithVirtual(virtual TableColumnVirtualRequest) *TableColumnRequest {
+	s.Virtual = &virtual
+	return s
 }
 
 func (s *TableColumnRequest) WithInlineConstraint(inlineConstraint TableColumnInlineConstraintRequest) *TableColumnRequest {
@@ -154,6 +179,24 @@ func (s *TableColumnRequest) WithTag(tag []TagAssociation) *TableColumnRequest {
 
 func (s *TableColumnRequest) WithComment(comment string) *TableColumnRequest {
 	s.Comment = &comment
+	return s
+}
+
+func NewTableColumnVirtualRequest(
+	as string,
+) *TableColumnVirtualRequest {
+	s := TableColumnVirtualRequest{}
+	s.As = as
+	return &s
+}
+
+func (s *TableColumnVirtualRequest) WithGeneratedAlways(generatedAlways bool) *TableColumnVirtualRequest {
+	s.GeneratedAlways = &generatedAlways
+	return s
+}
+
+func (s *TableColumnVirtualRequest) WithVirtual(virtual bool) *TableColumnVirtualRequest {
+	s.Virtual = &virtual
 	return s
 }
 
@@ -696,6 +739,16 @@ func (s *TableJoinPolicyRequest) WithAllowedJoinKeys(allowedJoinKeys []Column) *
 	return s
 }
 
+func NewCreateTableStorageLifecyclePolicyRequest(
+	storageLifecyclePolicy SchemaObjectIdentifier,
+	on []Column,
+) *CreateTableStorageLifecyclePolicyRequest {
+	s := CreateTableStorageLifecyclePolicyRequest{}
+	s.StorageLifecyclePolicy = storageLifecyclePolicy
+	s.On = on
+	return &s
+}
+
 func NewAlterTableRequest(
 	name SchemaObjectIdentifier,
 ) *AlterTableRequest {
@@ -811,6 +864,31 @@ func (s *AlterTableRequest) WithSetJoinPolicy(setJoinPolicy TableSetJoinPolicyRe
 
 func (s *AlterTableRequest) WithUnsetJoinPolicy(unsetJoinPolicy TableUnsetJoinPolicyRequest) *AlterTableRequest {
 	s.UnsetJoinPolicy = &unsetJoinPolicy
+	return s
+}
+
+func (s *AlterTableRequest) WithSetDataMetricSchedule(setDataMetricSchedule TableSetDataMetricScheduleRequest) *AlterTableRequest {
+	s.SetDataMetricSchedule = &setDataMetricSchedule
+	return s
+}
+
+func (s *AlterTableRequest) WithUnsetDataMetricSchedule(unsetDataMetricSchedule bool) *AlterTableRequest {
+	s.UnsetDataMetricSchedule = &unsetDataMetricSchedule
+	return s
+}
+
+func (s *AlterTableRequest) WithAddDataMetricFunction(addDataMetricFunction TableAddDataMetricFunctionRequest) *AlterTableRequest {
+	s.AddDataMetricFunction = &addDataMetricFunction
+	return s
+}
+
+func (s *AlterTableRequest) WithDropDataMetricFunction(dropDataMetricFunction TableDropDataMetricFunctionRequest) *AlterTableRequest {
+	s.DropDataMetricFunction = &dropDataMetricFunction
+	return s
+}
+
+func (s *AlterTableRequest) WithModifyDataMetricFunction(modifyDataMetricFunction TableModifyDataMetricFunctionRequest) *AlterTableRequest {
+	s.ModifyDataMetricFunction = &modifyDataMetricFunction
 	return s
 }
 
@@ -931,6 +1009,11 @@ func NewTableColumnAddActionRequest(
 
 func (s *TableColumnAddActionRequest) WithIfNotExists(ifNotExists bool) *TableColumnAddActionRequest {
 	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *TableColumnAddActionRequest) WithVirtual(virtual TableColumnVirtualRequest) *TableColumnAddActionRequest {
+	s.Virtual = &virtual
 	return s
 }
 
@@ -1414,14 +1497,39 @@ func (s *TableSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllo
 	return s
 }
 
+func (s *TableSetRequest) WithIcebergDefaultDdlCollation(icebergDefaultDdlCollation StringAllowEmpty) *TableSetRequest {
+	s.IcebergDefaultDdlCollation = &icebergDefaultDdlCollation
+	return s
+}
+
+func (s *TableSetRequest) WithErrorLogging(errorLogging bool) *TableSetRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
+func (s *TableSetRequest) WithContact(contact []TableContact) *TableSetRequest {
+	s.Contact = contact
+	return s
+}
+
 func (s *TableSetRequest) WithComment(comment string) *TableSetRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *TableSetRequest) WithRowTimestamp(rowTimestamp bool) *TableSetRequest {
+	s.RowTimestamp = &rowTimestamp
 	return s
 }
 
 func NewTableUnsetRequest() *TableUnsetRequest {
 	s := TableUnsetRequest{}
 	return &s
+}
+
+func (s *TableUnsetRequest) WithContact(contact string) *TableUnsetRequest {
+	s.Contact = &contact
+	return s
 }
 
 func (s *TableUnsetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *TableUnsetRequest {
@@ -1444,13 +1552,28 @@ func (s *TableUnsetRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *T
 	return s
 }
 
+func (s *TableUnsetRequest) WithIcebergDefaultDdlCollation(icebergDefaultDdlCollation bool) *TableUnsetRequest {
+	s.IcebergDefaultDdlCollation = &icebergDefaultDdlCollation
+	return s
+}
+
 func (s *TableUnsetRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *TableUnsetRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
 	return s
 }
 
+func (s *TableUnsetRequest) WithErrorLogging(errorLogging bool) *TableUnsetRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
 func (s *TableUnsetRequest) WithComment(comment bool) *TableUnsetRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *TableUnsetRequest) WithRowTimestamp(rowTimestamp bool) *TableUnsetRequest {
+	s.RowTimestamp = &rowTimestamp
 	return s
 }
 
@@ -1533,6 +1656,191 @@ func NewTableUnsetJoinPolicyRequest() *TableUnsetJoinPolicyRequest {
 	return &s
 }
 
+func NewTableSetDataMetricScheduleRequest(
+	dataMetricSchedule string,
+) *TableSetDataMetricScheduleRequest {
+	s := TableSetDataMetricScheduleRequest{}
+	s.DataMetricSchedule = dataMetricSchedule
+	return &s
+}
+
+func NewTableAddDataMetricFunctionRequest(
+	addedFunctions []TableAddedFunctionsRequest,
+) *TableAddDataMetricFunctionRequest {
+	s := TableAddDataMetricFunctionRequest{}
+	s.AddedFunctions = addedFunctions
+	return &s
+}
+
+func NewTableAddedFunctionsRequest(
+	dataMetricFunction SchemaObjectIdentifier,
+	on []Column,
+) *TableAddedFunctionsRequest {
+	s := TableAddedFunctionsRequest{}
+	s.DataMetricFunction = dataMetricFunction
+	s.On = on
+	return &s
+}
+
+func (s *TableAddedFunctionsRequest) WithWithinGroup(withinGroup []Column) *TableAddedFunctionsRequest {
+	s.WithinGroup = withinGroup
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithGroupLimit(groupLimit int) *TableAddedFunctionsRequest {
+	s.GroupLimit = &groupLimit
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithFilter(filter string) *TableAddedFunctionsRequest {
+	s.Filter = &filter
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithExpectations(expectations []TableExpectationsRequest) *TableAddedFunctionsRequest {
+	s.Expectations = expectations
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithExecuteAsRole(executeAsRole AccountObjectIdentifier) *TableAddedFunctionsRequest {
+	s.ExecuteAsRole = &executeAsRole
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithAnomalyDetection(anomalyDetection bool) *TableAddedFunctionsRequest {
+	s.AnomalyDetection = &anomalyDetection
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithSensitivity(sensitivity TableDataMetricSensitivity) *TableAddedFunctionsRequest {
+	s.Sensitivity = &sensitivity
+	return s
+}
+
+func NewTableExpectationsRequest(
+	name string,
+	expression string,
+) *TableExpectationsRequest {
+	s := TableExpectationsRequest{}
+	s.Name = name
+	s.Expression = expression
+	return &s
+}
+
+func NewTableDropDataMetricFunctionRequest(
+	droppedFunctions []TableDroppedFunctionsRequest,
+) *TableDropDataMetricFunctionRequest {
+	s := TableDropDataMetricFunctionRequest{}
+	s.DroppedFunctions = droppedFunctions
+	return &s
+}
+
+func NewTableDroppedFunctionsRequest(
+	dataMetricFunction SchemaObjectIdentifier,
+	on []Column,
+) *TableDroppedFunctionsRequest {
+	s := TableDroppedFunctionsRequest{}
+	s.DataMetricFunction = dataMetricFunction
+	s.On = on
+	return &s
+}
+
+func NewTableModifyDataMetricFunctionRequest(
+	modifiedFunctions []TableModifiedFunctionsRequest,
+) *TableModifyDataMetricFunctionRequest {
+	s := TableModifyDataMetricFunctionRequest{}
+	s.ModifiedFunctions = modifiedFunctions
+	return &s
+}
+
+func NewTableModifiedFunctionsRequest(
+	dataMetricFunction SchemaObjectIdentifier,
+	on []Column,
+) *TableModifiedFunctionsRequest {
+	s := TableModifiedFunctionsRequest{}
+	s.DataMetricFunction = dataMetricFunction
+	s.On = on
+	return &s
+}
+
+func (s *TableModifiedFunctionsRequest) WithStatus(status TableDataMetricScheduleStatusOperation) *TableModifiedFunctionsRequest {
+	s.Status = &status
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithAddExpectation(addExpectation []TableAddExpectationRequest) *TableModifiedFunctionsRequest {
+	s.AddExpectation = addExpectation
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithModifyExpectation(modifyExpectation []TableModifyExpectationRequest) *TableModifiedFunctionsRequest {
+	s.ModifyExpectation = modifyExpectation
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithDropExpectation(dropExpectation []TableDropExpectationRequest) *TableModifiedFunctionsRequest {
+	s.DropExpectation = dropExpectation
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithFilter(filter string) *TableModifiedFunctionsRequest {
+	s.Filter = &filter
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithSet(set TableModifyDataMetricFunctionSetRequest) *TableModifiedFunctionsRequest {
+	s.Set = &set
+	return s
+}
+
+func NewTableAddExpectationRequest(
+	name string,
+	expression string,
+) *TableAddExpectationRequest {
+	s := TableAddExpectationRequest{}
+	s.Name = name
+	s.Expression = expression
+	return &s
+}
+
+func NewTableModifyExpectationRequest(
+	name string,
+	expression string,
+) *TableModifyExpectationRequest {
+	s := TableModifyExpectationRequest{}
+	s.Name = name
+	s.Expression = expression
+	return &s
+}
+
+func NewTableDropExpectationRequest(
+	name string,
+) *TableDropExpectationRequest {
+	s := TableDropExpectationRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewTableModifyDataMetricFunctionSetRequest() *TableModifyDataMetricFunctionSetRequest {
+	s := TableModifyDataMetricFunctionSetRequest{}
+	return &s
+}
+
+func (s *TableModifyDataMetricFunctionSetRequest) WithAnomalyDetection(anomalyDetection bool) *TableModifyDataMetricFunctionSetRequest {
+	s.AnomalyDetection = &anomalyDetection
+	return s
+}
+
+func (s *TableModifyDataMetricFunctionSetRequest) WithSensitivity(sensitivity TableDataMetricSensitivity) *TableModifyDataMetricFunctionSetRequest {
+	s.Sensitivity = &sensitivity
+	return s
+}
+
+func (s *TableModifyDataMetricFunctionSetRequest) WithDataQualityNotification(dataQualityNotification bool) *TableModifyDataMetricFunctionSetRequest {
+	s.DataQualityNotification = &dataQualityNotification
+	return s
+}
+
 func NewDropTableRequest(
 	name SchemaObjectIdentifier,
 ) *DropTableRequest {
@@ -1613,8 +1921,8 @@ func (s *CreateAsSelectTableRequest) WithClusterBy(clusterBy []string) *CreateAs
 	return s
 }
 
-func (s *CreateAsSelectTableRequest) WithCopyGrants(copyGrants bool) *CreateAsSelectTableRequest {
-	s.CopyGrants = &copyGrants
+func (s *CreateAsSelectTableRequest) WithCopy(copy []TableCopyOption) *CreateAsSelectTableRequest {
+	s.Copy = copy
 	return s
 }
 
@@ -1654,8 +1962,8 @@ func (s *CreateUsingTemplateTableRequest) WithOrReplace(orReplace bool) *CreateU
 	return s
 }
 
-func (s *CreateUsingTemplateTableRequest) WithCopyGrants(copyGrants bool) *CreateUsingTemplateTableRequest {
-	s.CopyGrants = &copyGrants
+func (s *CreateUsingTemplateTableRequest) WithCopy(copy []TableCopyOption) *CreateUsingTemplateTableRequest {
+	s.Copy = copy
 	return s
 }
 
@@ -1684,8 +1992,8 @@ func (s *CreateLikeTableRequest) WithClusterBy(clusterBy []string) *CreateLikeTa
 	return s
 }
 
-func (s *CreateLikeTableRequest) WithCopyGrants(copyGrants bool) *CreateLikeTableRequest {
-	s.CopyGrants = &copyGrants
+func (s *CreateLikeTableRequest) WithCopy(copy []TableCopyOption) *CreateLikeTableRequest {
+	s.Copy = copy
 	return s
 }
 
@@ -1709,8 +2017,8 @@ func (s *CreateCloneTableRequest) WithClonePoint(clonePoint TableClonePointReque
 	return s
 }
 
-func (s *CreateCloneTableRequest) WithCopyGrants(copyGrants bool) *CreateCloneTableRequest {
-	s.CopyGrants = &copyGrants
+func (s *CreateCloneTableRequest) WithCopy(copy []TableCopyOption) *CreateCloneTableRequest {
+	s.Copy = copy
 	return s
 }
 
