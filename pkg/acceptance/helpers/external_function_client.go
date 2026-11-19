@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/require"
 )
 
@@ -24,7 +25,7 @@ func (c *ExternalFunctionClient) client() sdk.ExternalFunctions {
 	return c.context.client.ExternalFunctions
 }
 
-func (c *ExternalFunctionClient) Create(t *testing.T, apiIntegrationId sdk.AccountObjectIdentifier, arguments ...sdk.DataType) *sdk.ExternalFunction {
+func (c *ExternalFunctionClient) Create(t *testing.T, apiIntegrationId sdk.AccountObjectIdentifier, arguments ...datatypes.DataType) *sdk.ExternalFunction {
 	t.Helper()
 	return c.CreateWithIdentifier(t, apiIntegrationId, c.ids.RandomSchemaObjectIdentifierWithArguments(arguments...))
 }

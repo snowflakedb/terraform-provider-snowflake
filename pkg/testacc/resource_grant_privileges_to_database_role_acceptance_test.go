@@ -523,7 +523,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnFunctio
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
-	function := testClient().Function.CreateSecure(t, sdk.DataTypeFloat)
+	function := testClient().Function.CreateSecure(t, testdatatypes.DataTypeFloat)
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeUsage).

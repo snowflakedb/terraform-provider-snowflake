@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
@@ -50,8 +49,7 @@ func (opts *CreateForScalaFunctionOptions) additionalValidations() error {
 }
 
 func (v *Function) ID() SchemaObjectIdentifierWithArguments {
-	// TODO(next-prs): rework to build the id from the typed Arguments in a follow-up PR.
-	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, collections.Map(v.ArgumentsRawList, func(a string) DataType { return DataType(a) })...)
+	return NewSchemaObjectIdentifierWithArgumentsNormalized(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
 }
 
 // FunctionDetails contains aggregated describe results for the given function.

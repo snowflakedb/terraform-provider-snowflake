@@ -61,7 +61,7 @@ func TestInt_Procedures(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
@@ -143,7 +143,7 @@ func TestInt_Procedures(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType).
 			WithNotNull(true)
@@ -240,7 +240,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Java - staged minimal", func(t *testing.T) {
 		dataType := tmpJavaProcedure.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
@@ -325,7 +325,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Java - staged full", func(t *testing.T) {
 		dataType := tmpJavaProcedure.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
@@ -423,7 +423,7 @@ func TestInt_Procedures(t *testing.T) {
 		tmpJavaProcedureDifferentStage := testClientHelper().CreateSampleJavaProcedureAndJarOnStage(t, stage)
 
 		dataType := tmpJavaProcedureDifferentStage.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
@@ -465,7 +465,7 @@ func TestInt_Procedures(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType).WithDefaultValue(`'abc'`)
 		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
@@ -497,7 +497,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Javascript - inline minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "d"
 		definition := testClientHelper().Procedure.SampleJavascriptDefinition(t, argName)
@@ -570,7 +570,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Javascript - inline full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "d"
 		definition := testClientHelper().Procedure.SampleJavascriptDefinition(t, argName)
@@ -649,7 +649,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Python - inline minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeNumber_36_2
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		funcName := "dump"
@@ -730,7 +730,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Python - inline full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeNumber_36_2
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		funcName := "dump"
@@ -826,7 +826,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Python - staged minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeVarchar_100
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
@@ -907,7 +907,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Python - staged full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeVarchar_100
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType).
@@ -1004,7 +1004,7 @@ func TestInt_Procedures(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
@@ -1087,7 +1087,7 @@ func TestInt_Procedures(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType).
 			WithNotNull(true)
@@ -1186,7 +1186,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Scala - staged minimal", func(t *testing.T) {
 		dataType := tmpJavaProcedure.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
@@ -1268,7 +1268,7 @@ func TestInt_Procedures(t *testing.T) {
 
 	t.Run("create procedure for Scala - staged full", func(t *testing.T) {
 		dataType := tmpJavaProcedure.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewProcedureArgumentRequest(argName, dataType)
@@ -1364,7 +1364,7 @@ func TestInt_Procedures(t *testing.T) {
 	t.Run("create procedure for SQL - inline minimal", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
 		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
@@ -1439,7 +1439,7 @@ func TestInt_Procedures(t *testing.T) {
 	t.Run("create procedure for SQL - default argument value", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
 		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
@@ -1469,7 +1469,7 @@ func TestInt_Procedures(t *testing.T) {
 	t.Run("create procedure for SQL - inline full", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Procedure.SampleSqlDefinition(t)
 		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(dataType)
@@ -1625,7 +1625,7 @@ func TestInt_Procedures(t *testing.T) {
 
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-java#specifying-return-column-names-and-types
 		name := "filter_by_role"
-		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 			import com.snowflake.snowpark_java.*;
@@ -1663,7 +1663,7 @@ func TestInt_Procedures(t *testing.T) {
 
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-javascript#basic-examples
 		name := "stproc1"
-		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeFloat)
+		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeFloat)
 
 		definition := `
 				var sql_command = "INSERT INTO stproc_test_table1 (num_col1) VALUES (" + FLOAT_PARAM1 + ")";
@@ -1715,7 +1715,7 @@ func TestInt_Procedures(t *testing.T) {
 
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-scala#reading-a-dynamically-specified-file-with-snowflakefile
 		name := "file_reader_scala_proc_snowflakefile"
-		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeVARCHAR)
+		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeVarchar)
 
 		definition := `
 			import java.io.InputStream
@@ -1751,7 +1751,7 @@ func TestInt_Procedures(t *testing.T) {
 
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-scala#specifying-return-column-names-and-types
 		name := "filter_by_role"
-		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 			import com.snowflake.snowpark.functions._
@@ -1790,7 +1790,7 @@ func TestInt_Procedures(t *testing.T) {
 
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-python#running-concurrent-tasks-with-worker-processes
 		name := "joblib_multiprocessing_proc"
-		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeInt)
+		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeNumber)
 
 		definition := `
 import joblib
@@ -1825,7 +1825,7 @@ def joblib_multiprocessing(session, i):
 
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-python#specifying-return-column-names-and-types
 		name := "filterByRole"
-		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 from snowflake.snowpark.functions import col
@@ -1859,7 +1859,7 @@ def filter_by_role(session, table_name, role):
 
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-snowflake-scripting
 		name := "output_message"
-		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeVARCHAR)
+		id := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeVarchar)
 
 		definition := `
 		BEGIN
@@ -1889,7 +1889,7 @@ def filter_by_role(session, table_name, role):
 	})
 
 	t.Run("create procedure for SQL: returns table", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeVARCHAR)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeVarchar)
 
 		column1 := sdk.NewProcedureColumnRequest("id", testdatatypes.DataTypeInteger)
 		column2 := sdk.NewProcedureColumnRequest("price", testdatatypes.DataTypeDouble)
@@ -2059,7 +2059,7 @@ def filter_by_role(session, table_name, role):
 		t.Cleanup(pCleanup)
 		id := p.ID()
 
-		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentLegacyDataTypes()...)
+		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentDataTypes()...)
 
 		err := client.Procedures.Alter(ctx, sdk.NewAlterProcedureRequest(id).WithRenameTo(nid.SchemaObjectId()))
 		require.NoError(t, err)
@@ -2372,8 +2372,8 @@ def filter_by_role(session, table_name, role):
 		t.Cleanup(schemaCleanup)
 
 		dataType := testdatatypes.DataTypeFloat
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(id1.Name(), schema.ID(), sdk.LegacyDataTypeFrom(dataType))
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(id1.Name(), schema.ID(), dataType)
 
 		_, pCleanup1 := testClientHelper().Procedure.CreateSqlWithIdentifierAndArgument(t, id1.SchemaObjectId(), dataType, testClientHelper().Procedure.SampleSqlDefinition(t))
 		t.Cleanup(pCleanup1)
@@ -2393,8 +2393,8 @@ def filter_by_role(session, table_name, role):
 		dataType := testdatatypes.DataTypeFloat
 		name := testClientHelper().Ids.Alpha()
 
-		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.LegacyDataTypeFrom(dataType))
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, sdk.DataTypeInt, sdk.DataTypeVARCHAR)
+		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, dataType)
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArguments(name, testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar)
 
 		e, cleanupProcedure := testClientHelper().Procedure.CreateWithIdentifier(t, id1)
 		t.Cleanup(cleanupProcedure)
@@ -2450,7 +2450,7 @@ def filter_by_role(session, table_name, role):
 	})
 
 	t.Run("show by id safely - missing procedure", func(t *testing.T) {
-		procedureId := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeInt)
+		procedureId := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeNumber)
 		_, err := client.Procedures.ShowByIDSafely(ctx, procedureId)
 		assert.Error(t, err)
 		assert.ErrorIs(t, err, sdk.ErrObjectNotFound)
@@ -2511,7 +2511,7 @@ def filter_by_role(session, table_name, role):
 				*sdk.NewProcedureArgumentRequest(argName, dataType),
 			}
 			oldDataType := sdk.LegacyDataTypeFrom(dataType)
-			idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(oldDataType)
+			idWithArguments := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 			packages := []sdk.ProcedurePackageRequest{*sdk.NewProcedurePackageRequest("snowflake-snowpark-python")}
 			definition := fmt.Sprintf("def add(%[1]s): %[1]s", argName)
@@ -2590,7 +2590,7 @@ func TestInt_CallProcedure(t *testing.T) {
 		BEGIN
 			RETURN MESSAGE;
 		END;`
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeVARCHAR)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeVarchar)
 		dt := sdk.NewProcedureSQLReturnsResultDataTypeRequest(testdatatypes.DataTypeVarchar)
 		returns := sdk.NewProcedureSQLReturnsRequest().WithResultDataType(*dt).WithNotNull(true)
 		argument := sdk.NewProcedureArgumentRequest("MESSAGE", testdatatypes.DataTypeVarchar)
@@ -2624,7 +2624,7 @@ func TestInt_CallProcedure(t *testing.T) {
 	t.Run("call procedure for Java: returns table", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-java#omitting-return-column-names-and-types
 		name := "filter_by_role"
-		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), name, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 		import com.snowflake.snowpark_java.*;
@@ -2659,7 +2659,7 @@ func TestInt_CallProcedure(t *testing.T) {
 	t.Run("call procedure for Scala: returns table", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-scala#omitting-return-column-names-and-types
 		name := "filter_by_role"
-		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), name, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 		import com.snowflake.snowpark.functions._
@@ -2693,7 +2693,7 @@ func TestInt_CallProcedure(t *testing.T) {
 	t.Run("call procedure for Javascript", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-javascript#basic-examples
 		name := "stproc1"
-		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), name, sdk.DataTypeFloat)
+		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeFloat)
 
 		definition := `
 		var sql_command = "INSERT INTO stproc_test_table1 (num_col1) VALUES (" + FLOAT_PARAM1 + ")";
@@ -2737,7 +2737,7 @@ func TestInt_CallProcedure(t *testing.T) {
 
 	t.Run("call procedure for Python: returns table", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-python#omitting-return-column-names-and-types
-		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), "filterByRole", sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), "filterByRole", testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 from snowflake.snowpark.functions import col

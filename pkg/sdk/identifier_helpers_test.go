@@ -1,6 +1,8 @@
 package sdk
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
@@ -362,6 +364,26 @@ func TestSchemaObjectIdentifierWithArguments_LegacyAndNormalizedConstructorsMatc
 			assert.Equal(t, legacyId, normalizedId)
 			assert.Equal(t, legacyId.ArgumentLegacyDataTypes(), normalizedId.ArgumentLegacyDataTypes())
 			assert.ElementsMatch(t, tt.normalizedArguments, legacyId.ArgumentDataTypes())
+		})
+	}
+}
+
+func TestSchemaObjectIdentifierWithArguments_FullyQualifiedNameMatchesLegacyFormat(t *testing.T) {
+	arguments := []DataType{
+		"NUMBER", "NUMBER(36, 2)", "DECIMAL", "INT", "FLOAT", "DOUBLE", "DECFLOAT",
+		"VARCHAR", "VARCHAR(100)", "TEXT", "CHAR(10)", "BINARY", "BINARY(1000)", "BOOLEAN",
+		"DATE", "DATETIME", "TIME", "TIME(5)", "TIMESTAMP_LTZ", "TIMESTAMP_NTZ(3)", "TIMESTAMP_TZ",
+		"VARIANT", "OBJECT", "ARRAY", "GEOGRAPHY", "GEOMETRY", "VECTOR(INT, 16)", "VECTOR(FLOAT, 8)",
+		"UNKNOWN_TYPE",
+	}
+
+	for _, argument := range arguments {
+		t.Run(string(argument), func(t *testing.T) {
+			id := NewSchemaObjectIdentifierWithArguments("MY_DB", "MY_SCHEMA", "MY_FUNC", argument, "FLOAT")
+			legacySignature := strings.Join(AsStringList(id.ArgumentLegacyDataTypes()), ", ")
+
+			assert.Equal(t, fmt.Sprintf(`"MY_DB"."MY_SCHEMA"."MY_FUNC"(%s)`, legacySignature), id.FullyQualifiedName())
+			assert.Equal(t, fmt.Sprintf(`"MY_DB"."MY_SCHEMA"."MY_FUNC"(%s)`, legacySignature), id.FullyQualifiedNameEscaped())
 		})
 	}
 }

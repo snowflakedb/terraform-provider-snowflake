@@ -32,7 +32,7 @@ func (c *ProcedureClient) client() sdk.Procedures {
 func (c *ProcedureClient) CreateSql(t *testing.T) (*sdk.Procedure, func()) {
 	t.Helper()
 	dataType := testdatatypes.DataTypeFloat
-	id := c.ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+	id := c.ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	definition := c.SampleSqlDefinition(t)
 	return c.CreateSqlWithIdentifierAndArgument(t, id.SchemaObjectId(), dataType, definition)
 }
@@ -68,7 +68,7 @@ func (c *ProcedureClient) CreateJava(t *testing.T) (*sdk.Procedure, func()) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := c.ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+	id := c.ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 	dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
 	returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
@@ -94,7 +94,7 @@ func (c *ProcedureClient) CreatePythonInSchema(t *testing.T, schemaId sdk.Databa
 	ctx := context.Background()
 
 	dataType := testdatatypes.DataTypeNumber_36_2
-	id := c.ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+	id := c.ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId, dataType)
 
 	argName := "i"
 	funcName := "dump"
@@ -141,13 +141,13 @@ func (c *ProcedureClient) CreateScalaStaged(t *testing.T, id sdk.SchemaObjectIde
 	return function, c.DropProcedureFunc(t, id)
 }
 
-func (c *ProcedureClient) Create(t *testing.T, arguments ...sdk.DataType) (*sdk.Procedure, func()) {
+func (c *ProcedureClient) Create(t *testing.T, arguments ...datatypes.DataType) (*sdk.Procedure, func()) {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifierWithArguments(arguments...)
 	return c.CreateWithIdentifier(t, id)
 }
 
-func (c *ProcedureClient) CreateInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier, arguments ...sdk.DataType) (*sdk.Procedure, func()) {
+func (c *ProcedureClient) CreateInSchema(t *testing.T, schemaId sdk.DatabaseObjectIdentifier, arguments ...datatypes.DataType) (*sdk.Procedure, func()) {
 	t.Helper()
 	return c.CreateWithIdentifier(t, c.ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId, arguments...))
 }

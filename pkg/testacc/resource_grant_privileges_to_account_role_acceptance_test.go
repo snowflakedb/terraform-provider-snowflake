@@ -19,6 +19,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -932,7 +933,7 @@ func TestAcc_GrantPrivilegesToAccountRole_BasicUseCase_OnSchemaObject_OnFunction
 	role, roleCleanup := testClient().Role.CreateRole(t)
 	t.Cleanup(roleCleanup)
 
-	function := testClient().Function.CreateSecure(t, sdk.DataTypeFloat)
+	function := testClient().Function.CreateSecure(t, testdatatypes.DataTypeFloat)
 
 	roleFullyQualifiedName := role.ID().FullyQualifiedName()
 	configVariables := config.Variables{

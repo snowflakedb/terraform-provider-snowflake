@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
@@ -111,35 +110,20 @@ func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArgumentsOld(arguments ..
 	return sdk.NewSchemaObjectIdentifierWithArgumentsOld(c.SchemaId().DatabaseName(), c.SchemaId().Name(), c.Alpha(), arguments)
 }
 
-func (c *IdsGenerator) NewSchemaObjectIdentifierWithArguments(name string, arguments ...sdk.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	return sdk.NewSchemaObjectIdentifierWithArguments(c.SchemaId().DatabaseName(), c.SchemaId().Name(), name, arguments...)
+func (c *IdsGenerator) NewSchemaObjectIdentifierWithArguments(name string, arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
+	return sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(c.SchemaId().DatabaseName(), c.SchemaId().Name(), name, arguments...)
 }
 
-func (c *IdsGenerator) NewSchemaObjectIdentifierWithArgumentsNewDataTypes(name string, arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	legacyDataTypes := collections.Map(arguments, sdk.LegacyDataTypeFrom)
-	return sdk.NewSchemaObjectIdentifierWithArguments(c.SchemaId().DatabaseName(), c.SchemaId().Name(), name, legacyDataTypes...)
+func (c *IdsGenerator) NewSchemaObjectIdentifierWithArgumentsInSchema(name string, schemaId sdk.DatabaseObjectIdentifier, argumentDataTypes ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
+	return sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId, name, argumentDataTypes...)
 }
 
-func (c *IdsGenerator) NewSchemaObjectIdentifierWithArgumentsInSchema(name string, schemaId sdk.DatabaseObjectIdentifier, argumentDataTypes ...sdk.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	return sdk.NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(schemaId, name, argumentDataTypes...)
+func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArguments(arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
+	return sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(c.SchemaId().DatabaseName(), c.SchemaId().Name(), c.Alpha(), arguments...)
 }
 
-func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArguments(arguments ...sdk.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	return sdk.NewSchemaObjectIdentifierWithArguments(c.SchemaId().DatabaseName(), c.SchemaId().Name(), c.Alpha(), arguments...)
-}
-
-func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId sdk.DatabaseObjectIdentifier, arguments ...sdk.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	return sdk.NewSchemaObjectIdentifierWithArguments(schemaId.DatabaseName(), schemaId.Name(), c.Alpha(), arguments...)
-}
-
-func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	legacyDataTypes := collections.Map(arguments, sdk.LegacyDataTypeFrom)
-	return sdk.NewSchemaObjectIdentifierWithArguments(c.SchemaId().DatabaseName(), c.SchemaId().Name(), c.Alpha(), legacyDataTypes...)
-}
-
-func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId sdk.DatabaseObjectIdentifier, arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	legacyDataTypes := collections.Map(arguments, sdk.LegacyDataTypeFrom)
-	return sdk.NewSchemaObjectIdentifierWithArguments(schemaId.DatabaseName(), schemaId.Name(), c.Alpha(), legacyDataTypes...)
+func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId sdk.DatabaseObjectIdentifier, arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
+	return sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(schemaId.DatabaseName(), schemaId.Name(), c.Alpha(), arguments...)
 }
 
 func (c *IdsGenerator) Alpha() string {
