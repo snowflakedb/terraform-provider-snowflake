@@ -31,6 +31,7 @@ func (c *ParameterClient) UpdateAccountParameterTemporarily(t *testing.T, parame
 // setAccountParameter uses the catalog write path, so values are quoted by the SDK.
 func (c *ParameterClient) setAccountParameter(t *testing.T, parameter sdk.AccountParameter, value string) {
 	t.Helper()
-	err := c.client().SetAccountParameter(context.Background(), parameter, value)
+	handled, err := c.client().SetObjectParameterOnAccountViaCatalog(context.Background(), sdk.ObjectParameter(parameter), value)
 	require.NoError(t, err)
+	require.True(t, handled, "parameter %s is not supported by the catalog write path", parameter)
 }

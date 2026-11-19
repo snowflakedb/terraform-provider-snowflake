@@ -144,7 +144,7 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 			return client.Parameters.SetObjectParameterOnObjectViaCatalog(ctx, o, parameter, value)
 		},
 		func() error {
-			return client.Parameters.SetObjectParameterOnObject(ctx, o, parameter, value)
+			return client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(parameter), value))
 		},
 	); err != nil {
 		return diag.FromErr(fmt.Errorf("error setting object parameter err = %w", err))
@@ -282,7 +282,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 					return client.Parameters.UnsetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter)
 				},
 				func() error {
-					return client.Parameters.UnsetObjectParameterOnObject(ctx, o, objectParameter)
+					return client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(objectParameter)))
 				},
 			); err != nil {
 				return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))
@@ -306,7 +306,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 						return client.Parameters.UnsetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter)
 					},
 					func() error {
-						return client.Parameters.UnsetObjectParameterOnObject(ctx, o, objectParameter)
+						return client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(objectParameter)))
 					},
 				); err != nil {
 					return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))
@@ -321,7 +321,7 @@ func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 					return client.Parameters.SetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter, defaultValue)
 				},
 				func() error {
-					return client.Parameters.SetObjectParameterOnObject(ctx, o, objectParameter, defaultValue)
+					return client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(objectParameter), defaultValue))
 				},
 			); err != nil {
 				return diag.FromErr(fmt.Errorf("error resetting object parameter err = %w", err))

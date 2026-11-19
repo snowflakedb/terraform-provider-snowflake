@@ -10,8 +10,7 @@ import (
 // The legacy account parameter write path reproduces the SQL that the provider sent before the parameter catalog,
 // up to v2.22.x. It is used by snowflake_account_parameter and snowflake_object_parameter (with on_account) when the
 // ACCOUNT_PARAMETER_CATALOG_WRITE_PATH or OBJECT_PARAMETER_PARSE_ON_SET experiment is disabled. Do not add new
-// parameters here: new parameters are supported only by the catalog write path (SetAccountParameter,
-// UnsetAccountParameter, and the *ViaCatalog functions).
+// parameters here: new parameters are supported only by the catalog write path (the *ViaCatalog functions).
 // The tables are frozen and reproduce the SQL sent by v2.22.1.
 
 type legacyParameterFormat int
@@ -58,20 +57,6 @@ func (f legacyParameterFormat) render(parameter string, value string) (string, e
 	}
 }
 
-type legacyAccountParameterSet struct {
-	alterAccount   bool   `ddl:"static" sql:"ALTER ACCOUNT"`
-	set            bool   `ddl:"static" sql:"SET"`
-	parameterKey   string `ddl:"keyword"`
-	equals         bool   `ddl:"static" sql:"="`
-	parameterValue string `ddl:"keyword"`
-}
-
-type legacyAccountParameterUnset struct {
-	alterAccount bool   `ddl:"static" sql:"ALTER ACCOUNT"`
-	unset        bool   `ddl:"static" sql:"UNSET"`
-	parameterKey string `ddl:"keyword"`
-}
-
 // legacyParameterNotSupportedError returns ErrLegacyParameterNotSupported only when the catalog write path supports
 // the parameter, so that enabling the experiment helps. Otherwise, it returns ErrParameterNotSupported.
 func legacyParameterNotSupportedError[P ~string](parameter P) error {
@@ -90,14 +75,14 @@ func legacySetParameterOnAccountSql[P ~string](formats map[P]legacyParameterForm
 	if err != nil {
 		return "", err
 	}
-	return structToSQL(&legacyAccountParameterSet{parameterKey: string(parameter), parameterValue: rendered})
+	return structToSQL(&SetAccountParameterRawParameterOptions{Parameter: string(parameter), Value: rendered})
 }
 
 func legacyUnsetParameterOnAccountSql[P ~string](formats map[P]legacyParameterFormat, parameter P) (string, error) {
 	if _, ok := formats[parameter]; !ok {
 		return "", legacyParameterNotSupportedError(parameter)
 	}
-	return structToSQL(&legacyAccountParameterUnset{parameterKey: string(parameter)})
+	return structToSQL(&UnsetAccountParameterRawParameterOptions{Parameter: string(parameter)})
 }
 
 func (v *parameters) execLegacy(ctx context.Context, sql string, err error) error {
@@ -108,13 +93,13 @@ func (v *parameters) execLegacy(ctx context.Context, sql string, err error) erro
 	return err
 }
 
-// SetAccountParameterLegacy uses the legacy write path. SetAccountParameter is the catalog write path.
+// SetAccountParameterLegacy uses the legacy write path. SetObjectParameterOnAccountViaCatalog is the catalog write path.
 func (v *parameters) SetAccountParameterLegacy(ctx context.Context, parameter AccountParameter, value string) error {
 	sql, err := legacySetParameterOnAccountSql(legacyAccountParameterFormats, parameter, value)
 	return v.execLegacy(ctx, sql, err)
 }
 
-// UnsetAccountParameterLegacy uses the legacy write path. UnsetAccountParameter is the catalog write path.
+// UnsetAccountParameterLegacy uses the legacy write path. UnsetObjectParameterOnAccountViaCatalog is the catalog write path.
 func (v *parameters) UnsetAccountParameterLegacy(ctx context.Context, parameter AccountParameter) error {
 	sql, err := legacyUnsetParameterOnAccountSql(legacyAccountParameterFormats, parameter)
 	return v.execLegacy(ctx, sql, err)
@@ -132,7 +117,7 @@ func (v *parameters) UnsetObjectParameterOnAccountLegacy(ctx context.Context, pa
 	return v.execLegacy(ctx, sql, err)
 }
 
-// legacyAccountParameterFormats is the effective v2.22.1 account -> session -> object parameter fallback chain of SetAccountParameter (now SetAccountParameterLegacy).
+// legacyAccountParameterFormats is the effective v2.22.1 account -> session -> object parameter fallback chain of SetAccountParameterLegacy.
 var legacyAccountParameterFormats = map[AccountParameter]legacyParameterFormat{
 	"ABORT_DETACHED_QUERY":                                            legacyBool,
 	"ACTIVE_PYTHON_PROFILER":                                          legacySingleQuoted,

@@ -2,8 +2,66 @@
 
 package sdk
 
+import (
+	"context"
+)
+
 var _ Parameters = (*parameters)(nil)
 
 type parameters struct {
 	client *Client
+}
+
+func (v *parameters) SetAccountParameterRaw(ctx context.Context, request *SetAccountParameterRawParameterRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *parameters) UnsetAccountParameterRaw(ctx context.Context, request *UnsetAccountParameterRawParameterRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *parameters) SetObjectParameterOnObjectRaw(ctx context.Context, request *SetObjectParameterOnObjectRawParameterRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *parameters) UnsetObjectParameterOnObjectRaw(ctx context.Context, request *UnsetObjectParameterOnObjectRawParameterRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (r *SetAccountParameterRawParameterRequest) toOpts() *SetAccountParameterRawParameterOptions {
+	opts := &SetAccountParameterRawParameterOptions{
+		Parameter: r.Parameter,
+		Value:     r.Value,
+	}
+	return opts
+}
+
+func (r *UnsetAccountParameterRawParameterRequest) toOpts() *UnsetAccountParameterRawParameterOptions {
+	opts := &UnsetAccountParameterRawParameterOptions{
+		Parameter: r.Parameter,
+	}
+	return opts
+}
+
+func (r *SetObjectParameterOnObjectRawParameterRequest) toOpts() *SetObjectParameterOnObjectRawParameterOptions {
+	opts := &SetObjectParameterOnObjectRawParameterOptions{
+		ObjectType: r.ObjectType,
+		ObjectName: r.ObjectName,
+		Parameter:  r.Parameter,
+		Value:      r.Value,
+	}
+	return opts
+}
+
+func (r *UnsetObjectParameterOnObjectRawParameterRequest) toOpts() *UnsetObjectParameterOnObjectRawParameterOptions {
+	opts := &UnsetObjectParameterOnObjectRawParameterOptions{
+		ObjectType: r.ObjectType,
+		ObjectName: r.ObjectName,
+		Parameter:  r.Parameter,
+	}
+	return opts
 }
