@@ -882,7 +882,7 @@ func TestAcc_TagAssociation_issue_4403(t *testing.T) {
 	tagValue2 := "value2"
 	dataType := testdatatypes.DataTypeNumber_36_2
 
-	functionId := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	functionId := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	tagId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)

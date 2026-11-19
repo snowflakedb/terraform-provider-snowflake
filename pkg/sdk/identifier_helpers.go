@@ -448,17 +448,28 @@ func (i SchemaObjectIdentifierWithArguments) DatabaseId() AccountObjectIdentifie
 }
 
 func (i SchemaObjectIdentifierWithArguments) FullyQualifiedName() string {
-	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentLegacyDataTypes) == 0 {
+	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentDataTypes) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(`"%v"."%v"."%v"(%v)`, i.databaseName, i.schemaName, i.name, strings.Join(AsStringList(i.argumentLegacyDataTypes), ", "))
+	return fmt.Sprintf(`"%v"."%v"."%v"(%v)`, i.databaseName, i.schemaName, i.name, i.argumentsSignature())
 }
 
 func (i SchemaObjectIdentifierWithArguments) FullyQualifiedNameEscaped() string {
-	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentLegacyDataTypes) == 0 {
+	if i.schemaName == "" && i.databaseName == "" && i.name == "" && len(i.argumentDataTypes) == 0 {
 		return ""
 	}
-	return fmt.Sprintf(`%v.%v.%v(%v)`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.schemaName), DoubleQuotes.Modify(i.name), strings.Join(AsStringList(i.argumentLegacyDataTypes), ", "))
+	return fmt.Sprintf(`%v.%v.%v(%v)`, DoubleQuotes.Modify(i.databaseName), DoubleQuotes.Modify(i.schemaName), DoubleQuotes.Modify(i.name), i.argumentsSignature())
+}
+
+// argumentsSignature uses the attribute-less type names, because that is how Snowflake reports function and procedure
+// signatures; changing the format would change resource ids. Unparseable (nil) types are rendered as an empty string.
+func (i SchemaObjectIdentifierWithArguments) argumentsSignature() string {
+	return strings.Join(collections.Map(i.argumentDataTypes, func(dt datatypes.DataType) string {
+		if dt == nil {
+			return ""
+		}
+		return dt.ToLegacyDataTypeSql()
+	}), ", ")
 }
 
 type TableColumnIdentifier struct {
@@ -474,16 +485,6 @@ func NewTableColumnIdentifier(databaseName, schemaName, tableName, columnName st
 		schemaName:   strings.Trim(schemaName, `"`),
 		tableName:    strings.Trim(tableName, `"`),
 		columnName:   strings.Trim(columnName, `"`),
-	}
-}
-
-func NewTableColumnIdentifierFromFullyQualifiedName(fullyQualifiedName string) TableColumnIdentifier {
-	parts := strings.Split(fullyQualifiedName, ".")
-	return TableColumnIdentifier{
-		databaseName: strings.Trim(parts[0], `"`),
-		schemaName:   strings.Trim(parts[1], `"`),
-		tableName:    strings.Trim(parts[2], `"`),
-		columnName:   strings.Trim(parts[3], `"`),
 	}
 }
 

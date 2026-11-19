@@ -29,8 +29,8 @@ func TestAcc_ProcedureSql_InlineBasic(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SampleSqlDefinitionWithArgument(t)
 
@@ -115,7 +115,7 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SampleSqlDefinitionWithArgument(t)
 
@@ -199,7 +199,7 @@ func TestAcc_ProcedureSql_InlineFull(t *testing.T) {
 }
 
 func TestAcc_ProcedureSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 	returnType := "TABLE(O_ERR_CODE NUMBER(24, 2), O_ERR_SEVERITY VARCHAR(150))"
 	definition := testClient().Procedure.SampleSqlDefinitionReturningTable(t)
@@ -238,7 +238,7 @@ func TestAcc_ProcedureSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *t
 // When a procedure with TABLE return type using non-parametrized column types was created in
 // v2.15.0, the current version must not produce spurious plan drift after migration.
 func TestAcc_ProcedureSql_defaultParamsNoDriftAfterMigration(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 	returnType := "TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"
 	definition := testClient().Procedure.SampleSqlDefinitionReturningTable(t)

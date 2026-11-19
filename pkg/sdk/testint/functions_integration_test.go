@@ -75,7 +75,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -159,7 +159,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -263,7 +263,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Java - staged minimal", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -347,7 +347,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Java - staged full", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -449,7 +449,7 @@ func TestInt_Functions(t *testing.T) {
 		tmpJavaFunctionDifferentStage := testClientHelper().CreateSampleJavaFunctionAndJarOnStage(t, stage)
 
 		dataType := tmpJavaFunctionDifferentStage.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -488,7 +488,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType).WithDefaultValue(`'abc'`)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -519,7 +519,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Javascript - inline minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "d"
 		definition := testClientHelper().Function.SampleJavascriptDefinition(t, argName)
@@ -599,7 +599,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Javascript - inline full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "d"
 		definition := testClientHelper().Function.SampleJavascriptDefinition(t, argName)
@@ -684,7 +684,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - inline minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeNumber_36_2
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		funcName := "dump"
@@ -765,7 +765,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - inline full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeNumber_36_2
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		funcName := "dump"
@@ -862,7 +862,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - staged minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeVarchar_100
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -943,7 +943,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - staged full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeVarchar_100
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -1041,7 +1041,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleScalaDefinition(t, className, funcName, argName)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1123,7 +1123,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleScalaDefinition(t, className, funcName, argName)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1225,7 +1225,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Scala - staged minimal", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1307,7 +1307,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Scala - staged full", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1402,7 +1402,7 @@ func TestInt_Functions(t *testing.T) {
 	t.Run("create function for SQL - inline minimal", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleSqlDefinition(t)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -1482,7 +1482,7 @@ func TestInt_Functions(t *testing.T) {
 	t.Run("create function for SQL - default argument value", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleSqlDefinition(t)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -1512,7 +1512,7 @@ func TestInt_Functions(t *testing.T) {
 	t.Run("create function for SQL - inline full", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleSqlDefinition(t)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -1710,7 +1710,7 @@ func TestInt_Functions(t *testing.T) {
 		t.Cleanup(fCleanup)
 		id := f.ID()
 
-		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentLegacyDataTypes()...)
+		nid := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(id.ArgumentDataTypes()...)
 		err := client.Functions.Alter(ctx, sdk.NewAlterFunctionRequest(id).WithRenameTo(nid.SchemaObjectId()))
 		require.NoError(t, err)
 		t.Cleanup(testClientHelper().Function.DropFunctionFunc(t, nid))
@@ -2021,8 +2021,8 @@ func TestInt_Functions(t *testing.T) {
 		t.Cleanup(schemaCleanup)
 
 		dataType := testdatatypes.DataTypeFloat
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(id1.Name(), schema.ID(), sdk.LegacyDataTypeFrom(dataType))
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(id1.Name(), schema.ID(), dataType)
 
 		_, fCleanup1 := testClientHelper().Function.CreateSqlWithIdentifierAndArgument(t, id1.SchemaObjectId(), dataType)
 		t.Cleanup(fCleanup1)
@@ -2048,8 +2048,8 @@ func TestInt_Functions(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
 		name := testClientHelper().Ids.Alpha()
 
-		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), sdk.LegacyDataTypeFrom(dataType))
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), sdk.DataTypeInt, sdk.DataTypeVARCHAR)
+		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), dataType)
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar)
 
 		e := testClientHelper().Function.CreateWithIdentifier(t, id1)
 		testClientHelper().Function.CreateWithIdentifier(t, id2)
@@ -2129,7 +2129,7 @@ func TestInt_Functions(t *testing.T) {
 			require.NoError(t, err)
 
 			oldDataType := sdk.LegacyDataTypeFrom(dataType)
-			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), oldDataType)
+			idWithArguments := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(id.DatabaseName(), id.SchemaName(), id.Name(), dataType)
 
 			function, err := client.Functions.ShowByID(ctx, idWithArguments)
 			require.NoError(t, err)
@@ -2158,7 +2158,7 @@ func TestInt_Functions(t *testing.T) {
 		returnDataType, err := datatypes.ParseDataType(fmt.Sprintf("TABLE(PRICE %s, THIRD %s)", datatypes.FloatLegacyDataType, datatypes.VarcharLegacyDataType))
 		require.NoError(t, err)
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(datatypes.VarcharLegacyDataType)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeVarchar)
 
 		definition := `
 SELECT 2.2::float, 'abc');` // the ending parenthesis has to be there (otherwise SQL compilation error is thrown)

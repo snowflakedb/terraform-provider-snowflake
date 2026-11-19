@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 const IdDelimiter = '.'
@@ -162,12 +163,12 @@ func ParseSchemaObjectIdentifierWithArguments(fullyQualifiedName string) (Schema
 	if err != nil {
 		return SchemaObjectIdentifierWithArguments{}, err
 	}
-	return NewSchemaObjectIdentifierWithArguments(
+	return NewSchemaObjectIdentifierWithArgumentsNormalized(
 		parts[0],
 		parts[1],
 		parts[2],
-		collections.Map(parsedArguments, func(a ParsedArgument) DataType {
-			return DataType(a.ArgType)
+		collections.Map(parsedArguments, func(a ParsedArgument) datatypes.DataType {
+			return parseDataTypeOrNil(a.ArgType)
 		})...,
 	), nil
 }

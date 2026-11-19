@@ -361,7 +361,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnFunctionWithArguments(t *test
 	share, shareCleanup := testClient().Share.Create(t)
 	t.Cleanup(shareCleanup)
 
-	function := testClient().Function.CreateSecure(t, sdk.DataTypeFloat)
+	function := testClient().Function.CreateSecure(t, testdatatypes.DataTypeFloat)
 
 	setupGrantModel := model.GrantPrivilegesToShare("test_setup", []string{"USAGE"}, share.ID().Name()).
 		WithOnDatabase(TestDatabaseName)
