@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type ExternalTables interface {
@@ -49,7 +51,7 @@ type CreateExternalTableOptions struct {
 
 type ExternalTableColumn struct {
 	Name             string                  `ddl:"keyword"`
-	DataType         DataType                `ddl:"keyword"`
+	DataType         datatypes.DataType      `ddl:"parameter,no_quotes,no_equals"`
 	AsExpression     AsExpression            `ddl:"list,parentheses" sql:"AS"`
 	NotNull          *bool                   `ddl:"keyword" sql:"NOT NULL"`
 	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
@@ -290,7 +292,7 @@ type DescribeColumnsExternalTableOptions struct {
 
 type externalTableColumnDetailsRow struct {
 	Name       string         `db:"name"`
-	Type       DataType       `db:"type"`
+	Type       string         `db:"type"`
 	Kind       string         `db:"kind"`
 	Null       string         `db:"null?"`
 	Default    sql.NullString `db:"default"`
@@ -304,7 +306,8 @@ type externalTableColumnDetailsRow struct {
 
 type ExternalTableColumnDetails struct {
 	Name       string
-	Type       DataType
+	Type       datatypes.DataType
+	TypeRaw    string
 	Kind       string
 	IsNullable bool
 	Default    *string

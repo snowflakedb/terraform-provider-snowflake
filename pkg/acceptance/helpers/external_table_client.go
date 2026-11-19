@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -33,6 +34,16 @@ func (c *ExternalTableClient) PublishDataToStage(t *testing.T, stageId sdk.Schem
 	require.NoError(t, err)
 }
 
+func (c *ExternalTableClient) SelectAll(t *testing.T, id sdk.SchemaObjectIdentifier) []map[string]*any {
+	t.Helper()
+	ctx := context.Background()
+
+	rows, err := c.context.client.QueryUnsafe(ctx, fmt.Sprintf("select * from %s", id.FullyQualifiedName()))
+	require.NoError(t, err)
+
+	return rows
+}
+
 func (c *ExternalTableClient) CreateWithLocation(t *testing.T, location string) (*sdk.ExternalTable, func()) {
 	t.Helper()
 
@@ -42,7 +53,7 @@ func (c *ExternalTableClient) CreateWithLocation(t *testing.T, location string) 
 func (c *ExternalTableClient) CreateInSchemaWithLocation(t *testing.T, location string, schemaId sdk.DatabaseObjectIdentifier) (*sdk.ExternalTable, func()) {
 	t.Helper()
 
-	req := sdk.NewCreateExternalTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), location).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJson)).WithColumns([]sdk.ExternalTableColumnRequest{*sdk.NewExternalTableColumnRequest("id", sdk.DataTypeNumber, *sdk.NewAsExpressionRequest("value:time::int"))}).
+	req := sdk.NewCreateExternalTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), location).WithFileFormat(*sdk.NewExternalTableFileFormatRequest().WithFileFormatType(sdk.ExternalTableFileFormatTypeJson)).WithColumns([]sdk.ExternalTableColumnRequest{*sdk.NewExternalTableColumnRequest("id", testdatatypes.DataTypeNumber, *sdk.NewAsExpressionRequest("value:time::int"))}).
 		WithAutoRefresh(false)
 
 	return c.CreateWithRequest(t, req)

@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 func NewCreateExternalTableRequest(
 	name SchemaObjectIdentifier,
 	location string,
@@ -89,7 +91,7 @@ func (s *CreateExternalTableRequest) WithTag(tag []TagAssociation) *CreateExtern
 
 func NewExternalTableColumnRequest(
 	name string,
-	dataType DataType,
+	dataType datatypes.DataType,
 	asExpression AsExpressionRequest,
 ) *ExternalTableColumnRequest {
 	s := ExternalTableColumnRequest{}

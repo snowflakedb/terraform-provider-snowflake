@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 var (
 	_ optionsProvider[CreateExternalTableOptions]                       = new(CreateExternalTableRequest)
 	_ optionsProvider[CreateWithManualPartitioningExternalTableOptions] = new(CreateWithManualPartitioningExternalTableRequest)
@@ -37,7 +39,7 @@ type CreateExternalTableRequest struct {
 
 type ExternalTableColumnRequest struct {
 	Name             string              // required
-	DataType         DataType            // required
+	DataType         datatypes.DataType  // required
 	AsExpression     AsExpressionRequest // required
 	NotNull          *bool
 	InlineConstraint *ColumnInlineConstraint

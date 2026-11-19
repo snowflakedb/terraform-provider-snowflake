@@ -64,7 +64,7 @@ func init() {
 					{Name: tag2, Value: "value2"},
 				}
 			},
-			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true PATTERN = '.*' FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) AWS_SNS_TOPIC = 'aws_sns_topic' COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
+			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column VARCHAR(16777216) AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true PATTERN = '.*' FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) AWS_SNS_TOPIC = 'aws_sns_topic' COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
 			id.FullyQualifiedName(), location, rowAccessPolicyId.FullyQualifiedName(), tag1.FullyQualifiedName(), tag2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -120,7 +120,7 @@ func init() {
 					{Name: tag2, Value: "value2"},
 				}
 			},
-			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON) COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
+			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column VARCHAR(16777216) AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON) COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
 			id.FullyQualifiedName(), location, rowAccessPolicyId.FullyQualifiedName(), tag1.FullyQualifiedName(), tag2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -167,7 +167,7 @@ func init() {
 				opts.IfNotExists = new(true)
 				opts.Columns = []ExternalTableColumn{{
 					Name:         "column",
-					DataType:     "varchar",
+					DataType:     dataTypeVarchar,
 					AsExpression: AsExpression{Expression: "value::column::varchar"},
 				}}
 				opts.CloudProviderParams = &CloudProviderParams{MicrosoftAzureIntegration: new("123")}
@@ -183,7 +183,7 @@ func init() {
 					{Name: tag2, Value: "value2"},
 				}
 			},
-			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar)) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true FILE_FORMAT = (FORMAT_NAME = 'JSON') TABLE_FORMAT = DELTA COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
+			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column VARCHAR(16777216) AS (value::column::varchar)) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true FILE_FORMAT = (FORMAT_NAME = 'JSON') TABLE_FORMAT = DELTA COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
 			id.FullyQualifiedName(), location, rowAccessPolicyId.FullyQualifiedName(), tag1.FullyQualifiedName(), tag2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -438,7 +438,7 @@ func init() {
 func externalTableTestColumn() ExternalTableColumn {
 	return ExternalTableColumn{
 		Name:         "column",
-		DataType:     "varchar",
+		DataType:     dataTypeVarchar,
 		AsExpression: AsExpression{Expression: "value::column::varchar"},
 		NotNull:      new(true),
 		InlineConstraint: &ColumnInlineConstraint{
