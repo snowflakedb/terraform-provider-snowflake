@@ -1,5 +1,5 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
-{{- if and .Hooks.HandleExternalChangesInDescribe.Present .Hooks.DescribeInSdk.Present -}}
+{{- if .ExternalChangesInDescribe -}}
 {{- if .Hooks.HandleExternalChangesInDescribe.Generate }}
 		diags = {{ .Prefix }}HandleExternalChangesInDescribe(d, {{ .Prefix }}Details, withExternalChangesMarking)
 {{- else }}

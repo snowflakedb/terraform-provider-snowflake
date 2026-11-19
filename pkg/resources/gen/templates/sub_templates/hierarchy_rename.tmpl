@@ -23,7 +23,7 @@
 		if err := meta.(*provider.Context).Client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(err)
 		}
-		d.SetId({{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(newId){{ else }}helpers.EncodeResourceIdentifier(newId){{ end }})
+		d.SetId({{ .EncodeId "newId" }})
 		id = newId
 	}
 {{ end -}}

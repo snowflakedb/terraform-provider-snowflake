@@ -6,7 +6,7 @@
 		_, err := meta.(*provider.Context).Client.{{ $.NamePlural }}.ShowByID(ctx, id)
 		if err == nil {
 			log.Printf("[DEBUG] found %s {{ .ObjectWords }} during creation, updating...", id.Name())
-			d.SetId({{ if $.LegacyIdEncoding }}helpers.EncodeSnowflakeID(id){{ else }}helpers.EncodeResourceIdentifier(id){{ end }})
+			d.SetId({{ $.EncodeId "id" }})
 			return Update{{ $.Name }}(ctx, d, meta)
 		}
 		if !errors.Is(err, sdk.ErrObjectNotFound) {
