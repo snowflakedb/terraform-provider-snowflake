@@ -56,8 +56,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.DynamicTable{}},
 	{ObjectStruct: sdk.EventTable{}},
 	{ObjectStruct: sdk.ExternalAccessIntegration{}},
-	// SkipFields `arguments`: unused TypeInvalid (`[]sdk.DataType`). Un-skip with native DataType slices.
-	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
+	// ManualFields `arguments` and `return_type`: public mapping is ArgumentsStrings() and ReturnTypeString() (raw SHOW fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments_raw", "return_type_raw"}, ManualFields: []string{"arguments", "return_type"}},
 	{ObjectStruct: sdk.ExternalTable{}},
 	{ObjectStruct: sdk.FileFormat{}},
 	// SkipFields `options`: unused TypeInvalid (nested `FileFormatTypeOptionsLegacy`). Un-skip with native nested structs.

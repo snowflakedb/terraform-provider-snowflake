@@ -375,11 +375,10 @@ func (i SchemaObjectIdentifier) ArgumentsSignature() string {
 }
 
 type SchemaObjectIdentifierWithArguments struct {
-	databaseName            string
-	schemaName              string
-	name                    string
-	argumentLegacyDataTypes []DataType
-	argumentDataTypes       []datatypes.DataType
+	databaseName      string
+	schemaName        string
+	name              string
+	argumentDataTypes []datatypes.DataType
 }
 
 func NewSchemaObjectIdentifierWithArguments(databaseName, schemaName, name string, argumentDataTypes ...DataType) SchemaObjectIdentifierWithArguments {
@@ -391,7 +390,6 @@ func NewSchemaObjectIdentifierWithArguments(databaseName, schemaName, name strin
 			log.Printf("[DEBUG] failed to normalize argument %d: %v, err = %v", i, argument, err)
 		}
 		// TODO [SNOW-1348103]: temporary workaround to fix panic resulting from TestAcc_Grants_To_AccountRole test (because of unsupported TABLE data type)
-		// LegacyDataTypeFrom maps a nil parsedArgument to "".
 		parsedArguments[i] = parsedArgument
 	}
 	return NewSchemaObjectIdentifierWithArgumentsNormalized(databaseName, schemaName, name, parsedArguments...)
@@ -399,11 +397,10 @@ func NewSchemaObjectIdentifierWithArguments(databaseName, schemaName, name strin
 
 func NewSchemaObjectIdentifierWithArgumentsNormalized(databaseName, schemaName, name string, argumentDataTypes ...datatypes.DataType) SchemaObjectIdentifierWithArguments {
 	return SchemaObjectIdentifierWithArguments{
-		databaseName:            strings.Trim(databaseName, `"`),
-		schemaName:              strings.Trim(schemaName, `"`),
-		name:                    strings.Trim(name, `"`),
-		argumentLegacyDataTypes: collections.Map(argumentDataTypes, LegacyDataTypeFrom),
-		argumentDataTypes:       collections.Map(argumentDataTypes, func(dt datatypes.DataType) datatypes.DataType { return dt }),
+		databaseName:      strings.Trim(databaseName, `"`),
+		schemaName:        strings.Trim(schemaName, `"`),
+		name:              strings.Trim(name, `"`),
+		argumentDataTypes: collections.Map(argumentDataTypes, func(dt datatypes.DataType) datatypes.DataType { return dt }),
 	}
 }
 
@@ -425,10 +422,6 @@ func (i SchemaObjectIdentifierWithArguments) SchemaName() string {
 
 func (i SchemaObjectIdentifierWithArguments) Name() string {
 	return i.name
-}
-
-func (i SchemaObjectIdentifierWithArguments) ArgumentLegacyDataTypes() []DataType {
-	return i.argumentLegacyDataTypes
 }
 
 func (i SchemaObjectIdentifierWithArguments) ArgumentDataTypes() []datatypes.DataType {

@@ -32,9 +32,9 @@ func TestInt_ExternalFunctions(t *testing.T) {
 	createExternalFunction := func(t *testing.T) *sdk.ExternalFunction {
 		t.Helper()
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(defaultDataTypes[0])
-		argument := sdk.NewExternalFunctionArgumentRequest("x", sdk.LegacyDataTypeFrom(defaultDataTypes[0]))
+		argument := sdk.NewExternalFunctionArgumentRequest("x", defaultDataTypes[0])
 		as := "https://xyz.execute-api.us-west-2.amazonaws.com/production/remote_echo"
-		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), sdk.DataTypeVariant, sdk.Pointer(integration.ID()), as).
+		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), testdatatypes.DataTypeVariant, sdk.Pointer(integration.ID()), as).
 			WithOrReplace(true).
 			WithSecure(true).
 			WithArguments([]sdk.ExternalFunctionArgumentRequest{*argument})
@@ -58,7 +58,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 		require.False(t, e.IsBuiltin)
 		require.False(t, e.IsAggregate)
 		require.False(t, e.IsAnsi)
-		if len(id.ArgumentLegacyDataTypes()) > 0 {
+		if len(id.ArgumentDataTypes()) > 0 {
 			require.Equal(t, 1, e.MinNumArguments)
 			require.Equal(t, 1, e.MaxNumArguments)
 		} else {
@@ -78,7 +78,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 
 	t.Run("create external function", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(defaultDataTypes...)
-		argument := sdk.NewExternalFunctionArgumentRequest("x", sdk.DataTypeVARCHAR)
+		argument := sdk.NewExternalFunctionArgumentRequest("x", testdatatypes.DataTypeVarchar)
 		headers := []sdk.ExternalFunctionHeaderRequest{
 			{
 				Name:  "measure",
@@ -94,7 +94,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 			},
 		}
 		as := "https://xyz.execute-api.us-west-2.amazonaws.com/production/remote_echo"
-		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), sdk.DataTypeVariant, sdk.Pointer(integration.ID()), as).
+		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), testdatatypes.DataTypeVariant, sdk.Pointer(integration.ID()), as).
 			WithOrReplace(true).
 			WithSecure(true).
 			WithArguments([]sdk.ExternalFunctionArgumentRequest{*argument}).
@@ -113,7 +113,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 	t.Run("create external function without arguments", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments()
 		as := "https://xyz.execute-api.us-west-2.amazonaws.com/production/remote_echo"
-		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), sdk.DataTypeVariant, sdk.Pointer(integration.ID()), as)
+		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), testdatatypes.DataTypeVariant, sdk.Pointer(integration.ID()), as)
 		err := client.ExternalFunctions.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(cleanupExternalFunctionHandle(id))

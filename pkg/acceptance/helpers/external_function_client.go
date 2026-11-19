@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/require"
@@ -33,15 +34,15 @@ func (c *ExternalFunctionClient) Create(t *testing.T, apiIntegrationId sdk.Accou
 func (c *ExternalFunctionClient) CreateWithIdentifier(t *testing.T, apiIntegrationId sdk.AccountObjectIdentifier, id sdk.SchemaObjectIdentifierWithArguments) *sdk.ExternalFunction {
 	t.Helper()
 	ctx := context.Background()
-	argumentRequests := make([]sdk.ExternalFunctionArgumentRequest, len(id.ArgumentLegacyDataTypes()))
-	for i, argumentDataType := range id.ArgumentLegacyDataTypes() {
+	argumentRequests := make([]sdk.ExternalFunctionArgumentRequest, len(id.ArgumentDataTypes()))
+	for i, argumentDataType := range id.ArgumentDataTypes() {
 		argumentRequests[i] = *sdk.NewExternalFunctionArgumentRequest(c.ids.Alpha(), argumentDataType)
 	}
 	err := c.client().Create(
 		ctx,
 		sdk.NewCreateExternalFunctionRequest(
 			id.SchemaObjectId(),
-			sdk.DataTypeVariant,
+			testdatatypes.DataTypeVariant,
 			&apiIntegrationId,
 			"https://xyz.execute-api.us-west-2.amazonaws.com/production/remote_echo",
 		).WithArguments(argumentRequests),
