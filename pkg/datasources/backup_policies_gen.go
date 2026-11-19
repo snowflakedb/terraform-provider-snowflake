@@ -34,26 +34,8 @@ var backupPoliciesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all backup policy details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					map[string]*schema.Schema{
-						resources.ShowOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW BACKUP POLICIES.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowBackupPolicySchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.DescribeOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of DESCRIBE BACKUP POLICY.",
-							Elem: &schema.Resource{
-								Schema: schemas.DescribeBackupPolicyDetailsSchema,
-							},
-						},
-					},
+					showOutputListSchema(sdk.ObjectTypeBackupPolicy.Plural(), schemas.ShowBackupPolicySchema),
+					describeOutputListSchema(sdk.ObjectTypeBackupPolicy, schemas.DescribeBackupPolicyDetailsSchema),
 				),
 			},
 		},

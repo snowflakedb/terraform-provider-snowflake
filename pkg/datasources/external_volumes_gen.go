@@ -29,26 +29,8 @@ var externalVolumesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all external volume details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					map[string]*schema.Schema{
-						resources.ShowOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW EXTERNAL VOLUMES.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowExternalVolumeSchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.DescribeOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of DESCRIBE EXTERNAL VOLUME.",
-							Elem: &schema.Resource{
-								Schema: schemas.DescribeExternalVolumeDetailsSchema,
-							},
-						},
-					},
+					showOutputListSchema(sdk.ObjectTypeExternalVolume.Plural(), schemas.ShowExternalVolumeSchema),
+					describeOutputListSchema(sdk.ObjectTypeExternalVolume, schemas.DescribeExternalVolumeDetailsSchema),
 				),
 			},
 		},

@@ -2,6 +2,7 @@ package gen
 
 import (
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
@@ -73,14 +74,6 @@ func (m DataSourceModel) ResultDescription() string {
 	return "Holds the aggregated output of all " + genhelpers.CamelToWords(m.Name) + " details queries."
 }
 
-func (m DataSourceModel) ShowOutputDescription() string {
-	return joinDescription("Holds the output of SHOW "+m.ShowSql+".", m.Additional.AdditionalShowOutputDescription)
-}
-
-func (m DataSourceModel) DescribeOutputDescription() string {
-	return joinDescription("Holds the output of DESCRIBE "+m.DescribeSql+".", m.Additional.AdditionalDescribeOutputDescription)
-}
-
 // ParametersSchemaExpr is the schema of the parameters block. Across levels it is the hand-written union of all of them.
 func (m DataSourceModel) ParametersSchemaExpr() string {
 	if m.ParametersAcrossLevels {
@@ -96,15 +89,23 @@ func (m DataSourceModel) ParametersMapperName() string {
 	return m.Name + "ParametersToSchema"
 }
 
-func (m DataSourceModel) ParametersOutputDescription() string {
-	return joinDescription("Holds the output of SHOW PARAMETERS FOR "+m.ObjectType+".", m.Additional.AdditionalParametersOutputDescription)
+func additionalDescriptionArg(additional string) string {
+	if additional == "" {
+		return ""
+	}
+	return ", " + strconv.Quote(additional)
 }
 
-func joinDescription(description, additional string) string {
-	if additional == "" {
-		return description
-	}
-	return description + " " + additional
+func (m DataSourceModel) AdditionalShowOutputArg() string {
+	return additionalDescriptionArg(m.Additional.AdditionalShowOutputDescription)
+}
+
+func (m DataSourceModel) AdditionalDescribeOutputArg() string {
+	return additionalDescriptionArg(m.Additional.AdditionalDescribeOutputDescription)
+}
+
+func (m DataSourceModel) AdditionalParametersOutputArg() string {
+	return additionalDescriptionArg(m.Additional.AdditionalParametersOutputDescription)
 }
 
 // UsesDiagnostics is true when a hand-written step can report warnings through the diagnostics of the read.

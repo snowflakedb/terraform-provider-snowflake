@@ -218,6 +218,39 @@ func withParametersSchema(objectType, objectWords, showSql string) *schema.Schem
 	}
 }
 
+// outputListSchema is the computed list attribute that holds one output block (show_output, describe_output, or parameters) of an item.
+func outputListSchema(attributeName, description string, elemSchema map[string]*schema.Schema) map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		attributeName: {
+			Type:        schema.TypeList,
+			Computed:    true,
+			Description: description,
+			Elem:        &schema.Resource{Schema: elemSchema},
+		},
+	}
+}
+
+func joinOutputDescription(base string, additional ...string) string {
+	for _, extra := range additional {
+		if extra != "" {
+			base += " " + extra
+		}
+	}
+	return base
+}
+
+func showOutputListSchema(objectType sdk.PluralObjectType, elemSchema map[string]*schema.Schema, additional ...string) map[string]*schema.Schema {
+	return outputListSchema(resources.ShowOutputAttributeName, joinOutputDescription(fmt.Sprintf("Holds the output of SHOW %s.", objectType), additional...), elemSchema)
+}
+
+func describeOutputListSchema(objectType sdk.ObjectType, elemSchema map[string]*schema.Schema, additional ...string) map[string]*schema.Schema {
+	return outputListSchema(resources.DescribeOutputAttributeName, joinOutputDescription(fmt.Sprintf("Holds the output of DESCRIBE %s.", objectType), additional...), elemSchema)
+}
+
+func parametersOutputListSchema(objectType sdk.ObjectType, elemSchema map[string]*schema.Schema, additional ...string) map[string]*schema.Schema {
+	return outputListSchema(resources.ParametersAttributeName, joinOutputDescription(fmt.Sprintf("Holds the output of SHOW PARAMETERS FOR %s.", objectType), additional...), elemSchema)
+}
+
 var terseSchema = &schema.Schema{
 	Type:        schema.TypeBool,
 	Optional:    true,

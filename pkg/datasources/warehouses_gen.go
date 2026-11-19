@@ -30,36 +30,9 @@ var warehousesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all warehouse details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					map[string]*schema.Schema{
-						resources.ShowOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW WAREHOUSES.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowWarehouseSchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.DescribeOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of DESCRIBE WAREHOUSE.",
-							Elem: &schema.Resource{
-								Schema: schemas.DescribeWarehouseDetailsSchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.ParametersAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW PARAMETERS FOR WAREHOUSE.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowAllWarehouseParametersSchema(),
-							},
-						},
-					},
+					showOutputListSchema(sdk.ObjectTypeWarehouse.Plural(), schemas.ShowWarehouseSchema),
+					describeOutputListSchema(sdk.ObjectTypeWarehouse, schemas.DescribeWarehouseDetailsSchema),
+					parametersOutputListSchema(sdk.ObjectTypeWarehouse, schemas.ShowAllWarehouseParametersSchema()),
 				),
 			},
 		},

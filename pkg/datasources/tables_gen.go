@@ -37,36 +37,9 @@ var tablesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all table details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					map[string]*schema.Schema{
-						resources.ShowOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW TABLES.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowTableSchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.DescribeOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of DESCRIBE TABLE. The statement is DESCRIBE TABLE ... TYPE = COLUMNS. It is empty for a dropped table that `history` returns.",
-							Elem: &schema.Resource{
-								Schema: schemas.DescribeTableColumnDetailsSchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.ParametersAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW PARAMETERS FOR TABLE. It is empty for a dropped table that `history` returns.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowTableParametersSchema,
-							},
-						},
-					},
+					showOutputListSchema(sdk.ObjectTypeTable.Plural(), schemas.ShowTableSchema),
+					describeOutputListSchema(sdk.ObjectTypeTable, schemas.DescribeTableColumnDetailsSchema, "The statement is DESCRIBE TABLE ... TYPE = COLUMNS. It is empty for a dropped table that `history` returns."),
+					parametersOutputListSchema(sdk.ObjectTypeTable, schemas.ShowTableParametersSchema, "It is empty for a dropped table that `history` returns."),
 				),
 			},
 		},

@@ -152,9 +152,8 @@ func TestItemSchema(t *testing.T) {
 	t.Run("show and describe", func(t *testing.T) {
 		got := renderTemplate(t, "itemSchema", modelOf(widgetWith()))
 		require.Contains(t, got, `"widgets": {`)
-		require.Contains(t, got, "Description: \"Holds the output of SHOW WIDGETS.\"")
-		require.Contains(t, got, "schemas.ShowWidgetSchema")
-		require.Contains(t, got, "Description: \"Holds the output of DESCRIBE WIDGET.\"")
+		require.Contains(t, got, `showOutputListSchema(sdk.ObjectTypeWidget.Plural(), schemas.ShowWidgetSchema)`)
+		require.Contains(t, got, `describeOutputListSchema(sdk.ObjectTypeWidget, schemas.DescribeWidgetDetailsSchema)`)
 		require.Contains(t, got, "schemas.DescribeWidgetDetailsSchema")
 		require.NotContains(t, got, "ParametersAttributeName")
 	})
@@ -162,8 +161,7 @@ func TestItemSchema(t *testing.T) {
 		got := renderTemplate(t, "itemSchema", modelOf(syntheticObject(
 			[]ssot.SdkOption{ssot.SdkShow(), ssot.SdkDescribe(), ssot.SdkShowParameters()},
 		)))
-		require.Contains(t, got, "Description: \"Holds the output of SHOW PARAMETERS FOR WIDGET.\"")
-		require.Contains(t, got, "schemas.ShowWidgetParametersSchema")
+		require.Contains(t, got, `parametersOutputListSchema(sdk.ObjectTypeWidget, schemas.ShowWidgetParametersSchema)`)
 	})
 	t.Run("no describe", func(t *testing.T) {
 		got := renderTemplate(t, "itemSchema", modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow()})))
@@ -235,9 +233,9 @@ func TestAdditionalOutputDescriptions(t *testing.T) {
 
 	t.Run("none by default", func(t *testing.T) {
 		model := modelOf(object())
-		require.Contains(t, renderTemplate(t, "showOutputSchema", model), `Description: "Holds the output of SHOW WIDGETS.",`)
-		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), `Description: "Holds the output of DESCRIBE WIDGET.",`)
-		require.Contains(t, renderTemplate(t, "parametersOutputSchema", model), `Description: "Holds the output of SHOW PARAMETERS FOR WIDGET.",`)
+		require.Contains(t, renderTemplate(t, "showOutputSchema", model), `showOutputListSchema(sdk.ObjectTypeWidget.Plural(), schemas.ShowWidgetSchema),`)
+		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), `describeOutputListSchema(sdk.ObjectTypeWidget, schemas.DescribeWidgetDetailsSchema),`)
+		require.Contains(t, renderTemplate(t, "parametersOutputSchema", model), `parametersOutputListSchema(sdk.ObjectTypeWidget, schemas.ShowWidgetParametersSchema),`)
 	})
 	t.Run("appended to the matching block only", func(t *testing.T) {
 		model := modelOf(object(
@@ -245,13 +243,13 @@ func TestAdditionalOutputDescriptions(t *testing.T) {
 			ssot.DataSourceAdditionalDescribeOutputDescription("Needs a privilege."),
 			ssot.DataSourceAdditionalParametersOutputDescription("Read per object."),
 		))
-		require.Contains(t, renderTemplate(t, "showOutputSchema", model), "Holds the output of SHOW WIDGETS. The full list is read from `VIEW`.")
-		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), "Holds the output of DESCRIBE WIDGET. Needs a privilege.")
-		require.Contains(t, renderTemplate(t, "parametersOutputSchema", model), "Holds the output of SHOW PARAMETERS FOR WIDGET. Read per object.")
+		require.Contains(t, renderTemplate(t, "showOutputSchema", model), "showOutputListSchema(sdk.ObjectTypeWidget.Plural(), schemas.ShowWidgetSchema, \"The full list is read from `VIEW`.\"),")
+		require.Contains(t, renderTemplate(t, "describeOutputSchema", model), `describeOutputListSchema(sdk.ObjectTypeWidget, schemas.DescribeWidgetDetailsSchema, "Needs a privilege."),`)
+		require.Contains(t, renderTemplate(t, "parametersOutputSchema", model), `parametersOutputListSchema(sdk.ObjectTypeWidget, schemas.ShowWidgetParametersSchema, "Read per object."),`)
 		require.NotContains(t, renderTemplate(t, "describeOutputSchema", model), "VIEW")
 	})
 	t.Run("quotes are escaped", func(t *testing.T) {
 		model := modelOf(object(ssot.DataSourceAdditionalShowOutputDescription(`Says "hello".`)))
-		require.Contains(t, renderTemplate(t, "showOutputSchema", model), `Holds the output of SHOW WIDGETS. Says \"hello\".`)
+		require.Contains(t, renderTemplate(t, "showOutputSchema", model), `showOutputListSchema(sdk.ObjectTypeWidget.Plural(), schemas.ShowWidgetSchema, "Says \"hello\"."),`)
 	})
 }
