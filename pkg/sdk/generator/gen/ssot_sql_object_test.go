@@ -888,7 +888,7 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 		SQL("COLUMN").
 		IfNotExists().
 		Text("Name", KeywordOptions().Required().DoubleQuotes()).
-		PredefinedQueryStructField("ColumnType", "DataType", ParameterOptions().NoEquals().Required()).
+		PredefinedQueryStructField("ColumnType", "datatypes.DataType", ParameterOptions().NoQuotes().NoEquals().Required()).
 		OptionalQueryStructField("Virtual", virtual, ListOptions().NoComma()).
 		OptionalTextAssignment("COLLATE", ParameterOptions().NoEquals().SingleQuotes()).
 		OptionalQueryStructField("DefaultValue",
@@ -922,7 +922,7 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 			ListOptions().NoComma()).
 		OptionalQueryStructField("DataType",
 			NewQueryStruct("TableColumnAlterDataType").
-				PredefinedQueryStructField("DataType", "DataType", ParameterOptions().NoEquals().Required()).
+				PredefinedQueryStructField("DataType", "datatypes.DataType", ParameterOptions().NoQuotes().NoEquals().Required()).
 				OptionalTextAssignment("COLLATE", ParameterOptions().NoEquals().SingleQuotes()),
 			ListOptions().NoComma().SQL("SET DATA TYPE")).
 		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes()).
@@ -1093,7 +1093,7 @@ func Test_queryStructFromObject_tableExternalTableAction(t *testing.T) {
 		SQL("ADD COLUMN").
 		IfNotExists().
 		Text("Name", KeywordOptions().Required()).
-		PredefinedQueryStructField("ColumnType", "DataType", ParameterOptions().NoEquals().Required()).
+		PredefinedQueryStructField("ColumnType", "datatypes.DataType", ParameterOptions().NoQuotes().NoEquals().Required()).
 		ListAssignmentWithFieldName("AS", "string", ParameterOptions().NoEquals().Parentheses(), "Expression").
 		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes())
 	want := NewQueryStruct("TableExternalTableAction").

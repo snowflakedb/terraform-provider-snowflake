@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -25,15 +26,15 @@ func TestAcc_SemanticView_basic(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment, changedComment := "comment 1", "comment 2"
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a3", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a4", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a1", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a2", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a3", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a4", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(table1Cleanup)
 	table2, table2Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a1", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a2", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(table2Cleanup)
 
@@ -516,8 +517,8 @@ func TestAcc_SemanticView_Rename(t *testing.T) {
 	newIdInDifferentDatabase := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schemaInSecondDatabase.ID())
 
 	table1, table1Cleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("a1", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("a2", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a1", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("a2", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(table1Cleanup)
 

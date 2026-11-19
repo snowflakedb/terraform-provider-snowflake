@@ -1342,7 +1342,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
 			sdk.NewCreateTableRequest(
-				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber)})).
+				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber)})).
 				WithTag([]sdk.TagAssociation{
 					{Name: tag.ID(), Value: "v1"},
 				}),
@@ -1374,7 +1374,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
 			sdk.NewCreateTableRequest(
-				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber)})).WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "will_be_removed"}}),
+				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber)})).WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "will_be_removed"}}),
 		)
 		t.Cleanup(tableCleanup)
 

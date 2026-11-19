@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -59,7 +60,7 @@ func (c *TableClient) CreateWithName(t *testing.T, name string) (*sdk.Table, fun
 	t.Helper()
 
 	columns := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
 	}
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.NewSchemaObjectIdentifier(name), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
@@ -68,7 +69,7 @@ func (c *TableClient) CreateInSchema(t *testing.T, schemaId sdk.DatabaseObjectId
 	t.Helper()
 
 	columns := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
 	}
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
 }
@@ -89,9 +90,9 @@ func (c *TableClient) CreateWithPredefinedColumnsInSchema(t *testing.T, schemaId
 	t.Helper()
 
 	columns := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", "NUMBER"),
-		*sdk.NewTableColumnRequest("SOME_TEXT_COLUMN", "VARCHAR"),
-		*sdk.NewTableColumnRequest("SOME_OTHER_TEXT_COLUMN", "VARCHAR"),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("SOME_TEXT_COLUMN", testdatatypes.DataTypeVarchar),
+		*sdk.NewTableColumnRequest("SOME_OTHER_TEXT_COLUMN", testdatatypes.DataTypeVarchar),
 	}
 
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
@@ -107,10 +108,10 @@ func (c *TableClient) CreateWithPredefinedColumnsForCortexSearchServiceInSchema(
 	t.Helper()
 
 	columns := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", "VARCHAR"),
-		*sdk.NewTableColumnRequest("SOME_TEXT_COLUMN", "VARCHAR"),
-		*sdk.NewTableColumnRequest("SOME_OTHER_TEXT_COLUMN", "VARCHAR"),
-		*sdk.NewTableColumnRequest("ANOTHER_TEXT_COLUMN", "VARCHAR"),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeVarchar),
+		*sdk.NewTableColumnRequest("SOME_TEXT_COLUMN", testdatatypes.DataTypeVarchar),
+		*sdk.NewTableColumnRequest("SOME_OTHER_TEXT_COLUMN", testdatatypes.DataTypeVarchar),
+		*sdk.NewTableColumnRequest("ANOTHER_TEXT_COLUMN", testdatatypes.DataTypeVarchar),
 	}
 
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
@@ -120,9 +121,9 @@ func (c *TableClient) CreateWithPredefinedColumnsLowercased(t *testing.T) (*sdk.
 	t.Helper()
 
 	columns := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("id", "NUMBER"),
-		*sdk.NewTableColumnRequest("some_text_column", "VARCHAR"),
-		*sdk.NewTableColumnRequest("some_other_text_column", "VARCHAR"),
+		*sdk.NewTableColumnRequest("id", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("some_text_column", testdatatypes.DataTypeVarchar),
+		*sdk.NewTableColumnRequest("some_other_text_column", testdatatypes.DataTypeVarchar),
 	}
 
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
@@ -143,7 +144,7 @@ func (c *TableClient) CreateWithChangeTrackingInSchema(t *testing.T, schemaId sd
 	t.Helper()
 
 	columns := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", "NUMBER"),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
 	}
 
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifierInSchema(schemaId), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)).WithChangeTracking(true))
@@ -153,7 +154,7 @@ func (c *TableClient) CreateWithChangeTracking(t *testing.T) (*sdk.Table, func()
 	t.Helper()
 
 	columns := []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", "NUMBER"),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
 	}
 
 	return c.CreateWithRequest(t, sdk.NewCreateTableRequest(c.ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)).WithChangeTracking(true))

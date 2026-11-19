@@ -8,6 +8,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type TableColumnDetailsAssert struct {
@@ -37,6 +38,39 @@ func (t *TableColumnDetailsAssert) HasNameNotEmpty() *TableColumnDetailsAssert {
 		t.Helper()
 		if o.Name == "" {
 			return fmt.Errorf("expected name to be non-empty")
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableColumnDetailsAssert) HasType(expected datatypes.DataType) *TableColumnDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableColumnDetails) error {
+		t.Helper()
+		if !datatypes.AreTheSame(o.Type, expected) {
+			return fmt.Errorf("expected type: %v; got: %v", expected.ToSql(), o.Type.ToSql())
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableColumnDetailsAssert) HasTypeRaw(expected string) *TableColumnDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableColumnDetails) error {
+		t.Helper()
+		if o.TypeRaw != expected {
+			return fmt.Errorf("expected type raw: %v; got: %v", expected, o.TypeRaw)
+		}
+		return nil
+	})
+	return t
+}
+
+func (t *TableColumnDetailsAssert) HasTypeRawNotEmpty() *TableColumnDetailsAssert {
+	t.AddAssertion(func(t *testing.T, o *sdk.TableColumnDetails) error {
+		t.Helper()
+		if o.TypeRaw == "" {
+			return fmt.Errorf("expected type raw to be non-empty")
 		}
 		return nil
 	})

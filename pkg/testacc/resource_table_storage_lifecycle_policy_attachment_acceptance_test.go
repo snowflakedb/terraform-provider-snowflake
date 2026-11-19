@@ -18,15 +18,15 @@ import (
 
 func TestAcc_TableStorageLifecyclePolicyAttachment_Table(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("C1", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("C2", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("C1", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("C2", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup)
 	tableName := table.ID().FullyQualifiedName()
 
 	table2, tableCleanup2 := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("C1", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("C2", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("C1", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("C2", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup2)
 	tableName2 := table2.ID().FullyQualifiedName()

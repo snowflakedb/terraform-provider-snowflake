@@ -117,7 +117,11 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 		}
 
 		for _, cA := range added {
-			addRequest := sdk.NewTableColumnAddActionRequest(cA.name, sdk.DataType(cA.dataType))
+			dataType, err := datatypes.ParseDataType(cA.dataType)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+			}
+			addRequest := sdk.NewTableColumnAddActionRequest(cA.name, dataType)
 			if !cA.nullable {
 				addRequest.WithNotNull(true)
 			}
@@ -127,7 +131,7 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 					return diag.FromErr(fmt.Errorf("failed to add column %v => Only adding a column as a constant is supported by Snowflake", cA.name))
 				}
 				var expression string
-				if sdk.IsStringType(cA.dataType) {
+				if datatypes.IsTextDataType(dataType) {
 					expression = snowflake.EscapeSnowflakeString(*cA._default.constant)
 				} else {
 					expression = *cA._default.constant
@@ -147,23 +151,27 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 				addRequest.WithComment(cA.comment)
 			}
 
-			if cA.collate != "" && sdk.IsStringType(cA.dataType) {
+			if cA.collate != "" && datatypes.IsTextDataType(dataType) {
 				addRequest.WithCollate(cA.collate)
 			}
 
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(*addRequest)))
+			err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(*addRequest)))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error adding column: %w", err))
 			}
 		}
 		for _, cA := range changed {
 			if cA.changedDataType || cA.changedCollate {
-				dataTypeRequest := sdk.NewTableColumnAlterDataTypeRequest(sdk.DataType(cA.newColumn.dataType))
-				if sdk.IsStringType(cA.newColumn.dataType) && cA.newColumn.collate != "" {
+				dataType, err := datatypes.ParseDataType(cA.newColumn.dataType)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
+				}
+				dataTypeRequest := sdk.NewTableColumnAlterDataTypeRequest(dataType)
+				if datatypes.IsTextDataType(dataType) && cA.newColumn.collate != "" {
 					dataTypeRequest.WithCollate(cA.newColumn.collate)
 				}
 				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDataType(*dataTypeRequest)
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
+				err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
 				if err != nil {
 					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
 				}
@@ -491,7 +499,7 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 		return nil, err
 	}
 
-	request := sdk.NewTableColumnRequest(c["name"].(string), sdk.DataType(_type))
+	request := sdk.NewTableColumnRequest(c["name"].(string), dataType)
 
 	_default := c["default"].([]any)
 	var expression string
@@ -581,7 +589,7 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 
 		flat := map[string]any{}
 		flat["name"] = td.Name
-		flat["type"] = string(td.Type)
+		flat["type"] = td.TypeRaw
 		flat["nullable"] = td.Null
 
 		if td.Comment != nil {
@@ -635,7 +643,7 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 		return def
 	}
 
-	if sdk.IsStringType(string(td.Type)) {
+	if td.Type != nil && datatypes.IsTextDataType(td.Type) {
 		def["constant"] = snowflake.UnescapeSnowflakeString(defaultRaw)
 		return def
 	}

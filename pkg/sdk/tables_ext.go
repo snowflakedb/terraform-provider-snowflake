@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 func (v *tables) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
@@ -67,21 +69,32 @@ func (opts *ShowTableOptions) additionalValidations() error {
 }
 
 // additionalConvert splits COLLATE off the DESCRIBE TABLE type column.
+// Type stays nil when the type cannot be parsed; TypeRaw always holds the type without COLLATE.
 func (r tableColumnDetailsRow) additionalConvert(result *TableColumnDetails) error {
-	type_, collation := r.splitTypeAndCollation()
-	result.Type = type_
+	typeRaw, collation := r.splitTypeAndCollation()
+	result.TypeRaw = typeRaw
 	result.Collation = collation
+	if dataType, err := datatypes.ParseDataType(typeRaw); err == nil {
+		result.Type = dataType
+	}
 	return nil
 }
 
-func (r tableColumnDetailsRow) splitTypeAndCollation() (DataType, *string) {
+func (r tableColumnDetailsRow) splitTypeAndCollation() (string, *string) {
 	collateRegexp := regexp.MustCompile(`COLLATE +'([a-zA-Z0-9_-]*)'`)
 	matches := collateRegexp.FindStringSubmatch(r.Type)
 
 	if len(matches) == 2 {
 		collation := matches[1]
-		type_ := DataType(strings.TrimSpace(collateRegexp.ReplaceAllString(r.Type, "")))
-		return type_, &collation
+		return strings.TrimSpace(collateRegexp.ReplaceAllString(r.Type, "")), &collation
 	}
-	return DataType(r.Type), nil
+	return r.Type, nil
+}
+
+// TypeString returns the SQL of the parsed type, falling back to the raw DESCRIBE value when parsing failed.
+func (d TableColumnDetails) TypeString() string {
+	if d.Type != nil {
+		return d.Type.ToSql()
+	}
+	return d.TypeRaw
 }

@@ -69,7 +69,7 @@ type CreateTableColumnsAndConstraints struct {
 
 type TableColumn struct {
 	Name             string                       `ddl:"keyword,double_quotes"`
-	ColumnType       DataType                     `ddl:"keyword"`
+	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
 	Virtual          *TableColumnVirtual          `ddl:"keyword"`
 	InlineConstraint *TableColumnInlineConstraint `ddl:"keyword"`
 	NotNull          *bool                        `ddl:"keyword" sql:"NOT NULL"`
@@ -310,7 +310,7 @@ type TableColumnAddAction struct {
 	column           bool                         `ddl:"static" sql:"COLUMN"`
 	IfNotExists      *bool                        `ddl:"keyword" sql:"IF NOT EXISTS"`
 	Name             string                       `ddl:"keyword,double_quotes"`
-	ColumnType       DataType                     `ddl:"parameter,no_equals"`
+	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
 	Virtual          *TableColumnVirtual          `ddl:"list,no_comma"`
 	Collate          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 	DefaultValue     *ColumnDefaultValue          `ddl:"list,no_comma"`
@@ -345,8 +345,8 @@ type TableColumnNotNullConstraint struct {
 }
 
 type TableColumnAlterDataType struct {
-	DataType DataType `ddl:"parameter,no_equals"`
-	Collate  *string  `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	DataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
+	Collate  *string            `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 }
 
 type TableSetColumnMaskingPolicy struct {
@@ -439,12 +439,12 @@ type TableExternalTableAction struct {
 }
 
 type TableExternalTableColumnAddAction struct {
-	addColumn   bool     `ddl:"static" sql:"ADD COLUMN"`
-	IfNotExists *bool    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	Name        string   `ddl:"keyword"`
-	ColumnType  DataType `ddl:"parameter,no_equals"`
-	Expression  []string `ddl:"parameter,parentheses,no_equals" sql:"AS"`
-	Comment     *string  `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	addColumn   bool               `ddl:"static" sql:"ADD COLUMN"`
+	IfNotExists *bool              `ddl:"keyword" sql:"IF NOT EXISTS"`
+	Name        string             `ddl:"keyword"`
+	ColumnType  datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
+	Expression  []string           `ddl:"parameter,parentheses,no_equals" sql:"AS"`
+	Comment     *string            `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
 type TableSearchOptimizationAction struct {
@@ -728,7 +728,7 @@ type CreateAsSelectTableOptions struct {
 
 type TableAsSelectColumn struct {
 	Name          string                  `ddl:"keyword,double_quotes"`
-	ColumnType    *DataType               `ddl:"parameter,no_equals"`
+	ColumnType    datatypes.DataType      `ddl:"parameter,no_quotes,no_equals"`
 	MaskingPolicy *SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
 }
 
@@ -794,7 +794,8 @@ type tableColumnDetailsRow struct {
 
 type TableColumnDetails struct {
 	Name                  string
-	Type                  DataType
+	Type                  datatypes.DataType
+	TypeRaw               string
 	Kind                  string
 	Null                  bool
 	Default               *string
