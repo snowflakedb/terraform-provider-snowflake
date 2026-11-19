@@ -228,6 +228,7 @@ func buildSingleFieldValidationCase(v *Validation, f *Field, opName, expectedErr
 
 // buildMultiFieldValidationCases generates per-shape cases for multi-field validations:
 // ConflictingFields   -> one case (all fields set) + BothInvalid when the container is a slice
+// ConflictingGroups   -> one case (one field of each group set)
 // AtLeastOneValueSet  -> one case (all fields zeroed) + BothInvalid when the container is a slice
 // ExactlyOneValueSet  -> NoneSet + MoreThanOneSet (+ OneValidOneInvalid + BothInvalid for slices)
 // MoreThanOneValueSet -> MoreThanOneSet (+ OneValidOneInvalid + BothInvalid for slices)
@@ -267,6 +268,10 @@ func buildMultiFieldValidationCases(v *Validation, f *Field, opName string, disa
 			bothLines, bothOk := deriveListedFieldsOnNElements(v, f, 2, nonZeroValueFor)
 			cases = append(cases, bothInvalid(baseName+"_BothInvalid", bothLines, bothOk))
 		}
+
+	case ConflictingGroups:
+		lines, ok := deriveConflictingGroupsModify(v, f)
+		cases = append(cases, tc(baseName, lines, ok, defaultErr))
 
 	case AtLeastOneValueSet:
 		lines, ok := deriveAtLeastOneValueSetModify(v, f)
@@ -327,6 +332,34 @@ func deriveConflictingFieldsModify(v *Validation, f *Field) ([]string, bool) {
 			return nil, false
 		}
 		stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), name, nz))
+	}
+	return append(prime, stmts...), true
+}
+
+// deriveConflictingGroupsModify sets the first field of each group that has a derivable non-zero value.
+// A group with no such field, such as a group of slices, leaves the modification to ext.
+func deriveConflictingGroupsModify(v *Validation, f *Field) ([]string, bool) {
+	prime := primeAncestors(f)
+	if f.IsPointer() {
+		prime = append(prime, fmt.Sprintf("opts%s = &%s{}", f.IndexedPath(), f.KindNoPtr()))
+	}
+	stmts := make([]string, 0, len(v.Groups))
+	for _, group := range v.Groups {
+		found := false
+		for _, name := range group {
+			child := f.FindChild(name)
+			if child == nil {
+				continue
+			}
+			if nz, ok := nonZeroValueFor(child); ok {
+				stmts = append(stmts, fmt.Sprintf("opts%s.%s = %s", f.IndexedElemPath(), name, nz))
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, false
+		}
 	}
 	return append(prime, stmts...), true
 }

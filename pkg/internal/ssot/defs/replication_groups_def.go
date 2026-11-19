@@ -487,13 +487,12 @@ var ReplicationGroup = ssot.Object{
 	},
 	// OBJECT_TYPES and the allowed-object lists are their own SET statement (the ObjectLists group), because
 	// Snowflake rejects a SET that mixes them with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION.
-	// The SDK SET struct still holds all of them, so ReplicationGroupSet.additionalValidations rejects a mixed SET.
+	// The SDK SET struct still holds all of them, and the groups make its validation reject a mixed SET.
 	// The page allows several of these in one UNSET, separated by commas.
 	// Failover's handwritten UNSET allows exactly one field.
 	Alter: ssot.AlterSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/alter-replication-group",
 		// SET: allowed lists require the matching OBJECT_TYPES value.
-		// OBJECT_TYPES and the allowed lists cannot share a SET with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION.
 		SetAdditionalValidations: true,
 		// MOVE sets exactly one of databases, external volumes, and shares, and To is a valid identifier.
 		AdditionalValidations: true,

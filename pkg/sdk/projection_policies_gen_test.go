@@ -19,7 +19,7 @@ const (
 	case_ProjectionPolicies_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_ProjectionPolicies_validation_Alter_RenameTo_ValidIdentifierIfSet          testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_ProjectionPolicies_validation_Alter_SetTags_ValidIdentifier                testCaseName = "validation_Alter_SetTags_ValidIdentifier"
-	case_ProjectionPolicies_validation_Alter_opts_Set_ConflictingFields             testCaseName = "validation_Alter_opts_Set_ConflictingFields"
+	case_ProjectionPolicies_validation_Alter_opts_Set_ConflictingGroups             testCaseName = "validation_Alter_opts_Set_ConflictingGroups"
 	case_ProjectionPolicies_validation_Alter_opts_Set_AtLeastOneValueSet            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_ProjectionPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_ProjectionPolicies_sql_Alter_RenameTo                                      testCaseName = "sql_Alter_RenameTo"
@@ -136,8 +136,8 @@ var projectionPoliciesTests = ProjectionPoliciesTestsContext{
 				},
 			},
 			validationCase[*AlterProjectionPolicyOptions]{
-				Name:        case_ProjectionPolicies_validation_Alter_opts_Set_ConflictingFields,
-				ExpectedErr: errOneOf("AlterProjectionPolicyOptions.Set", "SetBody", "Comment"),
+				Name:        case_ProjectionPolicies_validation_Alter_opts_Set_ConflictingGroups,
+				ExpectedErr: errConflictingGroups("AlterProjectionPolicyOptions.Set", []string{"SetBody"}, []string{"Comment"}),
 				DefaultModify: func(opts *AlterProjectionPolicyOptions) {
 					opts.Set = &ProjectionPolicySet{}
 					opts.Set.SetBody = new("foo")

@@ -40,7 +40,7 @@ const (
 	case_CatalogIntegrations_validation_Alter_name_ValidIdentifier                                                    testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields                                              testCaseName = "validation_Alter_opts_Set_ConflictingFields"
+	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingGroups                                              testCaseName = "validation_Alter_opts_Set_ConflictingGroups"
 	case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                                             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier                                                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_CatalogIntegrations_sql_Alter_Set                                                                            testCaseName = "sql_Alter_Set"
@@ -266,8 +266,8 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 				ExpectedErr: errExactlyOneOf("AlterCatalogIntegrationOptions", "Set", "SetTags", "UnsetTags"),
 			},
 			validationCase[*AlterCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields,
-				ExpectedErr: errOneOf("AlterCatalogIntegrationOptions.Set", "SetOAuthRestAuthentication", "SetBearerRestAuthentication"),
+				Name:        case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingGroups,
+				ExpectedErr: errConflictingGroups("AlterCatalogIntegrationOptions.Set", []string{"SetOAuthRestAuthentication"}, []string{"SetBearerRestAuthentication", "Enabled", "RefreshIntervalSeconds", "Comment"}),
 				DefaultModify: func(opts *AlterCatalogIntegrationOptions) {
 					opts.Set = &CatalogIntegrationSet{}
 					opts.Set.SetOAuthRestAuthentication = &CatalogIntegrationSetOauthRestAuthentication{}

@@ -36,6 +36,7 @@ const (
 	case_ReplicationGroups_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
 	case_ReplicationGroups_validation_Alter_RenameTo_ValidIdentifierIfSet                     testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
 	case_ReplicationGroups_validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet         testCaseName = "validation_Alter_Set_ErrorIntegration_ValidIdentifierIfSet"
+	case_ReplicationGroups_validation_Alter_opts_Set_ConflictingGroups                        testCaseName = "validation_Alter_opts_Set_ConflictingGroups"
 	case_ReplicationGroups_validation_Alter_opts_Set_AtLeastOneValueSet                       testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_ReplicationGroups_validation_Alter_Set_AllowedDatabases_ValidIdentifier              testCaseName = "validation_Alter_Set_AllowedDatabases_ValidIdentifier"
 	case_ReplicationGroups_validation_Alter_Set_AllowedExternalVolumes_ValidIdentifier        testCaseName = "validation_Alter_Set_AllowedExternalVolumes_ValidIdentifier"
@@ -255,6 +256,10 @@ var replicationGroupsTests = ReplicationGroupsTestsContext{
 					opts.Set = &ReplicationGroupSet{}
 					opts.Set.ErrorIntegration = new(emptyAccountObjectIdentifier)
 				},
+			},
+			validationCase[*AlterReplicationGroupOptions]{
+				Name:        case_ReplicationGroups_validation_Alter_opts_Set_ConflictingGroups,
+				ExpectedErr: errConflictingGroups("AlterReplicationGroupOptions.Set", []string{"ObjectTypes", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedIntegrationTypes"}, []string{"Comment", "ReplicationSchedule", "ErrorIntegration"}),
 			},
 			validationCase[*AlterReplicationGroupOptions]{
 				Name:        case_ReplicationGroups_validation_Alter_opts_Set_AtLeastOneValueSet,

@@ -1507,29 +1507,6 @@ func Test_ValidateObject_allowEmpty(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_setConflictingFields(t *testing.T) {
-	one := Attribute{Name: "one", Type: AttrString}
-	two := Attribute{Name: "two", Type: AttrString}
-	three := Attribute{Name: "three", Type: AttrString}
-	newObject := func(pairs ...[]*Attribute) Object {
-		return Object{
-			Name:       "Widget",
-			Attributes: []Attribute{one, two, three},
-			Alter:      AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("One", &one), AlterGroup(MainAlterGroup, &two))}, SetConflictingFields: pairs},
-		}
-	}
-	require.NotPanics(t, func() { ValidateObject(newObject([]*Attribute{&one, &two})) })
-	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 needs exactly two attributes`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &two, &three}))
-	})
-	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 has an attribute that is not in Set`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &three}))
-	})
-	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 has an attribute that is not in Set`, func() {
-		ValidateObject(newObject([]*Attribute{&one, nil}))
-	})
-}
-
 func Test_Object_alterGroups(t *testing.T) {
 	body := Attribute{Name: "body", Type: AttrString}
 	comment := Attribute{Name: "comment", Type: AttrString}
@@ -1563,12 +1540,11 @@ func Test_ValidateObject_alterGroups(t *testing.T) {
 	one := Attribute{Name: "one", Type: AttrString}
 	two := Attribute{Name: "two", Type: AttrString}
 	three := Attribute{Name: "three", Type: AttrString}
-	newObject := func(alter AlterSpec, unsetConflicts [][]*Attribute) Object {
+	newObject := func(alter AlterSpec) Object {
 		return Object{
-			Name:           "Widget",
-			Attributes:     []Attribute{one, two, three},
-			UnsetConflicts: unsetConflicts,
-			Alter:          alter,
+			Name:       "Widget",
+			Attributes: []Attribute{one, two, three},
+			Alter:      alter,
 		}
 	}
 
@@ -1576,55 +1552,40 @@ func Test_ValidateObject_alterGroups(t *testing.T) {
 		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{
 			AlterSet(AlterGroup("Lists", &one), AlterGroup(MainAlterGroup, &two)),
 			AlterUnset(AlterGroup("Lists", &one), AlterGroup(MainAlterGroup, &two)),
-		}}, nil))
-	})
-	require.NotPanics(t, func() {
-		ValidateObject(newObject(AlterSpec{
-			Clauses:              []AlterClause{AlterSet(AlterGroup("One", &one), AlterGroup(MainAlterGroup, &two))},
-			SetConflictingFields: [][]*Attribute{{&one, &two}},
-		}, nil))
+		}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET group name "lists" is not an exported Go identifier`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("lists", &one))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("lists", &one))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": UNSET group name "Two Words" is not an exported Go identifier`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Two Words", &one))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Two Words", &one))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET group name "Lists" is repeated`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists", &one), AlterGroup("Lists", &two))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists", &one), AlterGroup("Lists", &two))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(&one, AlterGroup("Lists", &two))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(&one, AlterGroup("Lists", &two))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": UNSET mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &two), &one)}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &two), &one)}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET has more than one main group`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup, &one), AlterGroup(MainAlterGroup, &two))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup, &one), AlterGroup(MainAlterGroup, &two))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET group "Lists" has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists"))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists"))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet()}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet()}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": UNSET has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset()}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset()}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": main SET group has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": duplicate SET field "one"`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("A", &one), AlterGroup("B", &one))}}, nil))
-	})
-	require.PanicsWithValue(t, `object "Widget": main SET group holds attributes that cannot be sent together`, func() {
-		ValidateObject(newObject(AlterSpec{
-			Clauses:              []AlterClause{AlterSet(&one, &two)},
-			SetConflictingFields: [][]*Attribute{{&one, &two}},
-		}, nil))
-	})
-	require.PanicsWithValue(t, `object "Widget": UNSET group "Lists" holds attributes that cannot be sent together`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &one, &two))}}, [][]*Attribute{{&one, &two}}))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("A", &one), AlterGroup("B", &one))}}))
 	})
 }
 

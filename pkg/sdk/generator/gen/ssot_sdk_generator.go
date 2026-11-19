@@ -1117,11 +1117,7 @@ func AlterSetQueryStruct(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
 	setStruct.owner = obj.Name
 	setStruct = setStruct.appendSqlSequenceParams(obj.SetAttributes(), attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
-	for _, pair := range obj.Alter.SetConflictingFields {
-		setStruct = setStruct.WithValidation(ConflictingFields, collections.Map(pair, func(attr *ssot.Attribute) string {
-			return clauseFieldName(*attr, attributeSqlSet)
-		})...)
-	}
+	setStruct = setStruct.withConflictingAlterGroups(obj.AlterSetGroups(), attributeSqlSet, setParams)
 	setStruct = setStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(setStruct, setParams)...)
 	if cfg.AlterSetAdditionalValidations {
 		setStruct = setStruct.WithAdditionalValidations()
@@ -1141,13 +1137,31 @@ func AlterUnsetQueryStruct(obj ssot.Object) *QueryStruct {
 	unsetStruct.owner = obj.Name
 	unsetStruct = unsetStruct.appendSqlSequenceParams(obj.UnsetAttributes(), attributeSqlUnset, unsetParams)
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
-	for _, group := range obj.UnsetConflicts {
-		names := collections.Map(group, func(member *ssot.Attribute) string {
-			return clauseFieldName(*member, attributeSqlUnset)
-		})
-		unsetStruct = unsetStruct.WithValidation(ConflictingFields, names...)
-	}
+	unsetStruct = unsetStruct.withConflictingAlterGroups(obj.AlterUnsetGroups(), attributeSqlUnset, unsetParams)
 	return unsetStruct
+}
+
+// withConflictingAlterGroups adds ConflictingGroups for each pair of groups of a SET or UNSET block, in declaration order.
+// The resource sends each group in its own ALTER, so the SDK rejects a request that sets fields of two groups.
+// A Parameters attribute contributes the field of each parameter.
+func (v *QueryStruct) withConflictingAlterGroups(groups []ssot.AlterGroupSpec, statement attributeSqlStatement, params []ssot.ParameterDef) *QueryStruct {
+	names := collections.Map(groups, func(group ssot.AlterGroupSpec) []string {
+		var fields []string
+		for _, attr := range group.Attributes {
+			if attr.IsParameters() {
+				fields = append(fields, collections.Map(params, func(param ssot.ParameterDef) string { return param.StructFieldName() })...)
+				continue
+			}
+			fields = append(fields, clauseFieldName(*attr, statement))
+		}
+		return fields
+	})
+	for i := range names {
+		for j := i + 1; j < len(names); j++ {
+			v = v.WithConflictingGroups(names[i], names[j])
+		}
+	}
+	return v
 }
 
 func parametersForStatement(obj ssot.Object, list []*ssot.Attribute, statement string) []ssot.ParameterDef {

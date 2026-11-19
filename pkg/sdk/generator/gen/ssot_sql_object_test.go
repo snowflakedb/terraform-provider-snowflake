@@ -318,7 +318,6 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 				ssot.AlterGroup("Oauth", &setOauth),
 				ssot.AlterGroup(ssot.MainAlterGroup, &setBearer, &comment),
 			)},
-			SetConflictingFields: [][]*ssot.Attribute{{&setOauth, &setBearer}},
 		},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
 	}
@@ -339,7 +338,7 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 					OptionalQueryStructField("SetOAuth", NewQueryStruct("WidgetSetOauth").TextAssignment("CLIENT_SECRET", ParameterOptions().SingleQuotes().Required()), auth).
 					OptionalQueryStructField("SetBearer", NewQueryStruct("WidgetSetBearer").TextAssignment("BEARER_TOKEN", ParameterOptions().SingleQuotes().Required()), auth).
 					OptionalAssignment("COMMENT", "StringAllowEmpty", ParameterOptions()).
-					WithValidation(ConflictingFields, "SetOAuth", "SetBearer").
+					WithConflictingGroups([]string{"SetOAuth"}, []string{"SetBearer", "Comment"}).
 					WithValidation(AtLeastOneValueSet, "SetOAuth", "SetBearer", "Comment"),
 				KeywordOptions().SQL("SET"),
 			).

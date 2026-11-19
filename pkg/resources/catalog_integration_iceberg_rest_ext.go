@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -39,7 +38,8 @@ var (
 // =============================================================================
 
 type catalogIntegrationIcebergRestAlterRequestsExt struct {
-	set *sdk.CatalogIntegrationSetRequest
+	setOauthRestAuthentication *sdk.CatalogIntegrationSetRequest
+	set                        *sdk.CatalogIntegrationSetRequest
 }
 
 func catalogIntegrationIcebergRestNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateIcebergRestCatalogIntegrationRequest, error) {
@@ -97,10 +97,10 @@ func catalogIntegrationIcebergRestSetConfigFieldsExt(_ context.Context, d *schem
 }
 
 func catalogIntegrationIcebergRestApplySetUnsetExt(d *schema.ResourceData) (*catalogIntegrationIcebergRestAlterRequestsExt, error) {
-	set := sdk.NewCatalogIntegrationSetRequest()
+	setOauthRestAuthentication, set := sdk.NewCatalogIntegrationSetRequest(), sdk.NewCatalogIntegrationSetRequest()
 
 	if errs := errors.Join(
-		attributeMappedValueUpdateSetOnlyAlways(d, "oauth_rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, func(secret string) (sdk.CatalogIntegrationSetOauthRestAuthenticationRequest, error) {
+		attributeMappedValueUpdateSetOnlyAlways(d, "oauth_rest_authentication.0.oauth_client_secret", &setOauthRestAuthentication.SetOAuthRestAuthentication, func(secret string) (sdk.CatalogIntegrationSetOauthRestAuthenticationRequest, error) {
 			return *sdk.NewCatalogIntegrationSetOauthRestAuthenticationRequest(secret), nil
 		}),
 		attributeMappedValueUpdateSetOnlyAlways(d, "bearer_rest_authentication.0.bearer_token", &set.SetBearerRestAuthentication, func(token string) (sdk.CatalogIntegrationSetBearerRestAuthenticationRequest, error) {
@@ -110,7 +110,7 @@ func catalogIntegrationIcebergRestApplySetUnsetExt(d *schema.ResourceData) (*cat
 	); errs != nil {
 		return nil, errs
 	}
-	return &catalogIntegrationIcebergRestAlterRequestsExt{set: set}, nil
+	return &catalogIntegrationIcebergRestAlterRequestsExt{setOauthRestAuthentication: setOauthRestAuthentication, set: set}, nil
 }
 
 func catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationIcebergRestDetails, importPermissiveMode bool) error {
@@ -175,12 +175,8 @@ func catalogIntegrationIcebergRestDescribeInSdkExt(ctx context.Context, meta any
 }
 
 func catalogIntegrationIcebergRestAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationIcebergRestAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-	if !reflect.DeepEqual(*reqs.set, *sdk.NewCatalogIntegrationSetRequest()) {
-		req := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*reqs.set)
-		if err := client.CatalogIntegrations.Alter(ctx, req); err != nil {
-			return fmt.Errorf("error updating Iceberg REST catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
-		}
+	if err := alterCatalogIntegrationSets(ctx, meta.(*provider.Context).Client, id, reqs.setOauthRestAuthentication, reqs.set); err != nil {
+		return fmt.Errorf("error updating Iceberg REST catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 	}
 	return nil
 }

@@ -316,17 +316,10 @@ func init() {
 					SetOAuthRestAuthentication: &CatalogIntegrationSetOauthRestAuthentication{
 						OauthClientSecret: oAuthClientSecret,
 					},
-					Enabled:                new(true),
-					RefreshIntervalSeconds: new(60),
-					Comment:                &StringAllowEmpty{Value: "test comment"},
 				}
 			},
-			"ALTER CATALOG INTEGRATION IF EXISTS %s SET "+
-				"REST_AUTHENTICATION = (OAUTH_CLIENT_SECRET = '%s') "+
-				"ENABLED = true "+
-				"REFRESH_INTERVAL_SECONDS = %d "+
-				"COMMENT = '%s'",
-			id.FullyQualifiedName(), oAuthClientSecret, 60, "test comment",
+			"ALTER CATALOG INTEGRATION IF EXISTS %s SET REST_AUTHENTICATION = (OAUTH_CLIENT_SECRET = '%s')",
+			id.FullyQualifiedName(), oAuthClientSecret,
 		)
 
 	catalogIntegrationsTests.Drop.
