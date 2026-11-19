@@ -316,7 +316,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
 	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
-	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
+	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, SkipFields: []string{"type_raw"}, ManualFields: []string{"check", "type"}},
 	// Keep omitted: password (secret).
 	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{"password"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.

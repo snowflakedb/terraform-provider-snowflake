@@ -6,6 +6,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -68,7 +69,7 @@ func init() {
 		).
 		withExpectedSqlf(
 			case_Tables_sql_Create_basic,
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR)`, id.FullyQualifiedName(),
+			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216))`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Create_all,
@@ -77,7 +78,7 @@ func init() {
 				opts.ColumnsAndConstraints = CreateTableColumnsAndConstraints{
 					Columns: []TableColumn{{
 						Name:       "FIRST_COLUMN",
-						ColumnType: DataTypeVARCHAR,
+						ColumnType: dataTypeVarchar,
 						Collate:    new("de"),
 						Comment:    &columnComment,
 						DefaultValue: &ColumnDefaultValue{
@@ -95,7 +96,7 @@ func init() {
 						InlineConstraint: &TableColumnInlineConstraint{UniquePK: &TableColumnInlineUniquePK{Name: new("Inline_Constraint"), PrimaryKey: new(true)}},
 					}, {
 						Name:       "DOUBLE_ID",
-						ColumnType: DataTypeNumber,
+						ColumnType: dataTypeNumber,
 						Virtual:    &TableColumnVirtual{GeneratedAlways: new(true), As: "(1 + 1)", Virtual: new(true)},
 					}},
 					OutOfLineConstraint: []TableOutOfLineConstraint{
@@ -150,7 +151,7 @@ func init() {
 				opts.Comment = &tableComment
 				opts.RowTimestamp = new(true)
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', "DOUBLE_ID" NUMBER GENERATED ALWAYS AS (1 + 1) VIRTUAL, CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ERROR_LOGGING = true COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN") TAG (%s = 'v1', %s = 'v2') WITH CONTACT (SUPPORT = %s) COMMENT = '%s' ROW_TIMESTAMP = true`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR(16777216) CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', "DOUBLE_ID" NUMBER(38, 0) GENERATED ALWAYS AS (1 + 1) VIRTUAL, CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ERROR_LOGGING = true COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN") TAG (%s = 'v1', %s = 'v2') WITH CONTACT (SUPPORT = %s) COMMENT = '%s' ROW_TIMESTAMP = true`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -171,7 +172,7 @@ func init() {
 			func(opts *CreateTableOptions) {
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: ""})
 			},
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR) DEFAULT_DDL_COLLATION = ''`,
+			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216)) DEFAULT_DDL_COLLATION = ''`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -180,7 +181,7 @@ func init() {
 				opts.OrReplace = new(true)
 				opts.Copy = []TableCopyOption{TableCopyOptionGrants}
 			},
-			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR) COPY = (GRANTS)`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216)) COPY = (GRANTS)`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -189,7 +190,7 @@ func init() {
 				opts.ColumnsAndConstraints = CreateTableColumnsAndConstraints{
 					Columns: []TableColumn{{
 						Name:             "id",
-						ColumnType:       DataTypeNumber,
+						ColumnType:       dataTypeNumber,
 						InlineConstraint: &TableColumnInlineConstraint{UniquePK: &TableColumnInlineUniquePK{Name: new("pk_id"), PrimaryKey: new(true)}},
 					}},
 					OutOfLineConstraint: []TableOutOfLineConstraint{
@@ -201,7 +202,7 @@ func init() {
 					},
 				}
 			},
-			`CREATE TABLE %s ("id" NUMBER CONSTRAINT "pk_id" PRIMARY KEY, CONSTRAINT "uq_code" UNIQUE ("code"))`,
+			`CREATE TABLE %s ("id" NUMBER(38, 0) CONSTRAINT "pk_id" PRIMARY KEY, CONSTRAINT "uq_code" UNIQUE ("code"))`,
 			id.FullyQualifiedName(),
 		)
 
@@ -223,7 +224,7 @@ func init() {
 				opts.OrReplace = new(true)
 				opts.Columns = []TableAsSelectColumn{{
 					Name:          "FIRST_COLUMN",
-					ColumnType:    new(DataTypeVARCHAR),
+					ColumnType:    dataTypeVarchar,
 					MaskingPolicy: &maskingPolicyId,
 				}}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
@@ -231,7 +232,7 @@ func init() {
 				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
 				opts.Query = "SELECT * FROM ANOTHER_TABLE"
 			},
-			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216) MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
@@ -400,25 +401,25 @@ func init() {
 				opts.ColumnAction = &TableColumnAction{Add: &TableColumnAddAction{
 					IfNotExists: new(true),
 					Name:        "NEXT_COLUMN",
-					ColumnType:  DataTypeVARCHAR,
+					ColumnType:  dataTypeVarchar,
 					Collate:     new("utf8"),
 					DefaultValue: &ColumnDefaultValue{
 						Identity: &ColumnIdentity{Start: 10, Increment: 1},
 					},
 				}}
 			},
-			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS "NEXT_COLUMN" VARCHAR COLLATE 'utf8' IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS "NEXT_COLUMN" VARCHAR(16777216) COLLATE 'utf8' IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_addVirtualColumn",
 			func(opts *AlterTableOptions) {
 				opts.ColumnAction = &TableColumnAction{Add: &TableColumnAddAction{
 					Name:       "DOUBLE_ID",
-					ColumnType: DataTypeNumber,
+					ColumnType: dataTypeNumber,
 					Virtual:    &TableColumnVirtual{GeneratedAlways: new(true), As: "(ID * 2)", Virtual: new(true)},
 				}}
 			},
-			`ALTER TABLE %s ADD COLUMN "DOUBLE_ID" NUMBER GENERATED ALWAYS AS (ID * 2) VIRTUAL`,
+			`ALTER TABLE %s ADD COLUMN "DOUBLE_ID" NUMBER(38, 0) GENERATED ALWAYS AS (ID * 2) VIRTUAL`,
 			id.FullyQualifiedName(),
 		).
 		// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
@@ -428,7 +429,7 @@ func init() {
 			func(opts *AlterTableOptions) {
 				*opts = *NewAlterTableRequest(id).WithColumnAction(
 					*NewTableColumnActionRequest().WithAdd(
-						*NewTableColumnAddActionRequest("NEW_BOOLEAN_COLUMN", DataTypeBoolean).
+						*NewTableColumnAddActionRequest("NEW_BOOLEAN_COLUMN", dataTypeBoolean).
 							WithDefaultValue(*NewColumnDefaultValueRequest().WithExpression("FALSE")),
 					),
 				).toOpts()
@@ -440,23 +441,23 @@ func init() {
 			func(opts *AlterTableOptions) {
 				*opts = *NewAlterTableRequest(id).WithColumnAction(
 					*NewTableColumnActionRequest().WithAdd(
-						*NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).
+						*NewTableColumnAddActionRequest("NEXT_COLUMN", dataTypeVarchar).
 							WithDefaultValue(*NewColumnDefaultValueRequest().WithIdentity(*NewColumnIdentityRequest(10, 1))),
 					),
 				).toOpts()
 			},
-			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR(16777216) IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_addColumn_notNull",
 			func(opts *AlterTableOptions) {
 				*opts = *NewAlterTableRequest(id).WithColumnAction(
 					*NewTableColumnActionRequest().WithAdd(
-						*NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).WithNotNull(true),
+						*NewTableColumnAddActionRequest("NEXT_COLUMN", dataTypeVarchar).WithNotNull(true),
 					),
 				).toOpts()
 			},
-			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR NOT NULL`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR(16777216) NOT NULL`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_renameColumn",
@@ -475,11 +476,11 @@ func init() {
 					{Name: "COLUMN_2", DropDefault: new(true)},
 					{Name: "COLUMN_2", SetDefault: new(SequenceName("SEQUENCE_2"))},
 					{Name: "COLUMN_2", Comment: new("comment")},
-					{Name: "COLUMN_2", DataType: &TableColumnAlterDataType{DataType: DataTypeVARCHAR, Collate: new("utf8")}},
+					{Name: "COLUMN_2", DataType: &TableColumnAlterDataType{DataType: dataTypeVarchar, Collate: new("utf8")}},
 					{Name: "COLUMN_2", NotNullConstraint: &TableColumnNotNullConstraint{Drop: new(true)}},
 				}}
 			},
-			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" DROP DEFAULT, COLUMN "COLUMN_1" SET DEFAULT SEQUENCE_1.NEXTVAL, COLUMN "COLUMN_1" UNSET COMMENT, COLUMN "COLUMN_2" DROP DEFAULT, COLUMN "COLUMN_2" SET DEFAULT SEQUENCE_2.NEXTVAL, COLUMN "COLUMN_2" COMMENT 'comment', COLUMN "COLUMN_2" SET DATA TYPE VARCHAR COLLATE 'utf8', COLUMN "COLUMN_2" DROP NOT NULL`,
+			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" DROP DEFAULT, COLUMN "COLUMN_1" SET DEFAULT SEQUENCE_1.NEXTVAL, COLUMN "COLUMN_1" UNSET COMMENT, COLUMN "COLUMN_2" DROP DEFAULT, COLUMN "COLUMN_2" SET DEFAULT SEQUENCE_2.NEXTVAL, COLUMN "COLUMN_2" COMMENT 'comment', COLUMN "COLUMN_2" SET DATA TYPE VARCHAR(16777216) COLLATE 'utf8', COLUMN "COLUMN_2" DROP NOT NULL`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -643,7 +644,7 @@ func init() {
 				opts.ExternalTableAction = &TableExternalTableAction{Add: &TableExternalTableColumnAddAction{
 					IfNotExists: new(true),
 					Name:        "COLUMN_1",
-					ColumnType:  DataTypeBoolean,
+					ColumnType:  dataTypeBoolean,
 					Expression:  []string{"SELECT 1"},
 				}}
 			},
@@ -1033,39 +1034,61 @@ func init() {
 }
 
 func tableTestColumn() TableColumn {
-	return TableColumn{Name: "FIRST_COLUMN", ColumnType: DataTypeVARCHAR}
+	return TableColumn{Name: "FIRST_COLUMN", ColumnType: dataTypeVarchar}
 }
 
 func TestTableColumnDetailsRow_SplitTypeAndCollation(t *testing.T) {
 	t.Run("with utf8", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'utf8'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "utf8", *actualCollation)
 	})
 	t.Run("with locale", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'en_US'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "en_US", *actualCollation)
 	})
 	t.Run("with multiple specifiers", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'fr_CA-ai-pi-trim'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "fr_CA-ai-pi-trim", *actualCollation)
 	})
 	t.Run("with empty collation", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE ''"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "", *actualCollation)
 	})
 	t.Run("without collation", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "NUMBER(38, 0)"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("NUMBER(38, 0)"), actualType)
+		assert.Equal(t, "NUMBER(38, 0)", actualType)
 		assert.Nil(t, actualCollation)
+	})
+}
+
+func TestTableColumnDetailsRow_AdditionalConvert(t *testing.T) {
+	t.Run("parsed type with collation", func(t *testing.T) {
+		details := &TableColumnDetails{}
+		require.NoError(t, tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'utf8'"}.additionalConvert(details))
+
+		require.NotNil(t, details.Type)
+		assert.Equal(t, "VARCHAR(10)", details.Type.ToSql())
+		assert.Equal(t, "VARCHAR(10)", details.TypeRaw)
+		assert.Equal(t, "utf8", *details.Collation)
+		assert.Equal(t, "VARCHAR(10)", details.TypeString())
+	})
+	t.Run("unparsable type falls back to raw", func(t *testing.T) {
+		details := &TableColumnDetails{}
+		require.NoError(t, tableColumnDetailsRow{Type: "UNKNOWN_TYPE(1)"}.additionalConvert(details))
+
+		assert.Nil(t, details.Type)
+		assert.Equal(t, "UNKNOWN_TYPE(1)", details.TypeRaw)
+		assert.Nil(t, details.Collation)
+		assert.Equal(t, "UNKNOWN_TYPE(1)", details.TypeString())
 	})
 }
 

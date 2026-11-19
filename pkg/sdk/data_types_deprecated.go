@@ -1,8 +1,6 @@
 package sdk
 
 import (
-	"strings"
-
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
@@ -33,18 +31,6 @@ const (
 	DataTypeGeography    DataType = "GEOGRAPHY"
 	DataTypeGeometry     DataType = "GEOMETRY"
 )
-
-// IsStringType is a legacy method. datatypes.IsTextDataType should be used instead.
-// TODO [SNOW-1348114]: remove with tables rework
-func IsStringType(_type string) bool {
-	t := strings.ToUpper(_type)
-	return strings.HasPrefix(t, "STRING") ||
-		strings.HasPrefix(t, "VARCHAR") ||
-		strings.HasPrefix(t, "CHAR") ||
-		strings.HasPrefix(t, "TEXT") ||
-		strings.HasPrefix(t, "NVARCHAR") ||
-		strings.HasPrefix(t, "NCHAR")
-}
 
 func LegacyDataTypeFrom(newDataType datatypes.DataType) DataType {
 	// TODO [SNOW-1850370]: remove this check?

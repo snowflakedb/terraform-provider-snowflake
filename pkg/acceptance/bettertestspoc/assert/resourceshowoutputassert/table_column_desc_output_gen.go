@@ -54,6 +54,11 @@ func (t *TableColumnDescribeOutputAssert) HasName(expected string) *TableColumnD
 	return t
 }
 
+func (t *TableColumnDescribeOutputAssert) HasTypeRaw(expected string) *TableColumnDescribeOutputAssert {
+	t.StringValueSet("type_raw", expected)
+	return t
+}
+
 func (t *TableColumnDescribeOutputAssert) HasKind(expected string) *TableColumnDescribeOutputAssert {
 	t.StringValueSet("kind", expected)
 	return t
@@ -115,6 +120,16 @@ func (t *TableColumnDescribeOutputAssert) HasSchemaEvolutionRecord(expected stri
 
 func (t *TableColumnDescribeOutputAssert) HasNoName() *TableColumnDescribeOutputAssert {
 	t.ValueNotSet("name")
+	return t
+}
+
+func (t *TableColumnDescribeOutputAssert) HasNoType() *TableColumnDescribeOutputAssert {
+	t.ValueNotSet("type")
+	return t
+}
+
+func (t *TableColumnDescribeOutputAssert) HasNoTypeRaw() *TableColumnDescribeOutputAssert {
+	t.ValueNotSet("type_raw")
 	return t
 }
 

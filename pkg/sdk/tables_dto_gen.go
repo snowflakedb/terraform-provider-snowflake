@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 var (
 	_ optionsProvider[CreateTableOptions]                     = new(CreateTableRequest)
 	_ optionsProvider[AlterTableOptions]                      = new(AlterTableRequest)
@@ -49,8 +51,8 @@ type CreateTableColumnsAndConstraintsRequest struct {
 }
 
 type TableColumnRequest struct {
-	Name             string   // required
-	ColumnType       DataType // required
+	Name             string             // required
+	ColumnType       datatypes.DataType // required
 	Virtual          *TableColumnVirtualRequest
 	InlineConstraint *TableColumnInlineConstraintRequest
 	NotNull          *bool
@@ -278,8 +280,8 @@ type TableColumnActionRequest struct {
 
 type TableColumnAddActionRequest struct {
 	IfNotExists      *bool
-	Name             string   // required
-	ColumnType       DataType // required
+	Name             string             // required
+	ColumnType       datatypes.DataType // required
 	Virtual          *TableColumnVirtualRequest
 	Collate          *string
 	DefaultValue     *ColumnDefaultValueRequest
@@ -312,7 +314,7 @@ type TableColumnNotNullConstraintRequest struct {
 }
 
 type TableColumnAlterDataTypeRequest struct {
-	DataType DataType // required
+	DataType datatypes.DataType // required
 	Collate  *string
 }
 
@@ -394,8 +396,8 @@ type TableExternalTableActionRequest struct {
 
 type TableExternalTableColumnAddActionRequest struct {
 	IfNotExists *bool
-	Name        string   // required
-	ColumnType  DataType // required
+	Name        string             // required
+	ColumnType  datatypes.DataType // required
 	Expression  []string
 	Comment     *string
 }
@@ -586,7 +588,7 @@ type CreateAsSelectTableRequest struct {
 
 type TableAsSelectColumnRequest struct {
 	Name          string // required
-	ColumnType    *DataType
+	ColumnType    datatypes.DataType
 	MaskingPolicy *SchemaObjectIdentifier
 }
 

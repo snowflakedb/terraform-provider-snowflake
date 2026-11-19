@@ -24,7 +24,7 @@ var tableCreateVariantAttrs = struct {
 			CreateSql: ssot.ObjectParameter(),
 			Children: []ssot.Attribute{
 				{Name: "name", Type: ssot.AttrString, Required: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes())},
-				{Name: "column_type", Type: ssot.AttrString, CreateSql: ssot.PredefinedType("*DataType", ssot.NoEquals())},
+				{Name: "column_type", Type: ssot.AttrString, CreateSql: ssot.PredefinedType("datatypes.DataType", ssot.NoQuotes(), ssot.NoEquals())},
 				{Name: "masking_policy", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", CreateSql: ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("MASKING POLICY"))},
 			},
 		},

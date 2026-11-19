@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 func NewCreateTableRequest(
 	name SchemaObjectIdentifier,
 	columnsAndConstraints CreateTableColumnsAndConstraintsRequest,
@@ -129,7 +131,7 @@ func (s *CreateTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfL
 
 func NewTableColumnRequest(
 	name string,
-	columnType DataType,
+	columnType datatypes.DataType,
 ) *TableColumnRequest {
 	s := TableColumnRequest{}
 	s.Name = name
@@ -999,7 +1001,7 @@ func (s *TableColumnActionRequest) WithDropColumns(dropColumns TableDropColumnAc
 
 func NewTableColumnAddActionRequest(
 	name string,
-	columnType DataType,
+	columnType datatypes.DataType,
 ) *TableColumnAddActionRequest {
 	s := TableColumnAddActionRequest{}
 	s.Name = name
@@ -1121,7 +1123,7 @@ func (s *TableColumnNotNullConstraintRequest) WithDrop(drop bool) *TableColumnNo
 }
 
 func NewTableColumnAlterDataTypeRequest(
-	dataType DataType,
+	dataType datatypes.DataType,
 ) *TableColumnAlterDataTypeRequest {
 	s := TableColumnAlterDataTypeRequest{}
 	s.DataType = dataType
@@ -1364,7 +1366,7 @@ func (s *TableExternalTableActionRequest) WithAdd(add TableExternalTableColumnAd
 
 func NewTableExternalTableColumnAddActionRequest(
 	name string,
-	columnType DataType,
+	columnType datatypes.DataType,
 ) *TableExternalTableColumnAddActionRequest {
 	s := TableExternalTableColumnAddActionRequest{}
 	s.Name = name
@@ -1939,8 +1941,8 @@ func NewTableAsSelectColumnRequest(
 	return &s
 }
 
-func (s *TableAsSelectColumnRequest) WithColumnType(columnType DataType) *TableAsSelectColumnRequest {
-	s.ColumnType = &columnType
+func (s *TableAsSelectColumnRequest) WithColumnType(columnType datatypes.DataType) *TableAsSelectColumnRequest {
+	s.ColumnType = columnType
 	return s
 }
 

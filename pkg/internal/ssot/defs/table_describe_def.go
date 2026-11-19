@@ -44,7 +44,8 @@ var tableDescribeOperations = []ssot.CustomOperationSpec{
 			Plain: "TableColumnDetails",
 			Columns: []*ssot.Attribute{
 				tableDescribeText("name"),
-				tableDescribeField("type", "DataType", true, ""),
+				tableDescribeField("type", "datatypes.DataType", true, ""),
+				{Name: "TypeRaw", PlainOnlyKind: "string"},
 				tableDescribeText("kind"),
 				{Name: "null?", Type: ssot.AttrBool, StoredAsText: true, BoolTrueValue: "Y", Readonly: true, SchemaName: "is_nullable"},
 				tableDescribeOptionalText("default"),

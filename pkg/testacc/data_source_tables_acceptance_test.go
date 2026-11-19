@@ -13,6 +13,7 @@ import (
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -63,7 +64,8 @@ func TestAcc_Tables_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(tablesModel.DatasourceReference(), "tables.#", "1")),
 					showOutputAssertions,
 					resourceshowoutputassert.TablesDatasourceDescribeOutput(t, tablesModel.DatasourceReference()).
-						HasName("ID"),
+						HasName("ID").
+						HasType(testdatatypes.DataTypeNumber_38_0),
 					resourceparametersassert.TablesDatasourceParameters(t, tablesModel.DatasourceReference()).
 						HasDataRetentionTimeInDays(table.RetentionTime),
 				),
@@ -111,7 +113,7 @@ func TestAcc_Tables_Filtering(t *testing.T) {
 	t.Cleanup(cleanup2)
 	_, cleanup3 := testClient().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(
 		testClient().Ids.RandomSchemaObjectIdentifierInSchemaWithPrefix(prefix, secondSchema.ID()),
-		*sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber)}),
+		*sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber)}),
 	))
 	t.Cleanup(cleanup3)
 

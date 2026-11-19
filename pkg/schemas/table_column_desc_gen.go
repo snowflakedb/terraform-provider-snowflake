@@ -17,10 +17,8 @@ var DescribeTableColumnDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"type": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
+	// type: manual addition and mapping is needed
+	// type_raw is skipped and won't be generated
 	"kind": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -69,7 +67,8 @@ var _ = DescribeTableColumnDetailsSchema
 func TableColumnDetailsToSchema(tableColumnDetails *sdk.TableColumnDetails) map[string]any {
 	tableColumnDetailsSchema := make(map[string]any)
 	tableColumnDetailsSchema["name"] = tableColumnDetails.Name
-	tableColumnDetailsSchema["type"] = string(tableColumnDetails.Type)
+	// type: manual addition and mapping is needed
+	// type_raw is skipped and won't be generated
 	tableColumnDetailsSchema["kind"] = tableColumnDetails.Kind
 	tableColumnDetailsSchema["is_nullable"] = tableColumnDetails.Null
 	if tableColumnDetails.Default != nil {

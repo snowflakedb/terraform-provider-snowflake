@@ -420,7 +420,6 @@ var allStructs = []SdkObjectDef{
 		ObjectStruct:         sdk.TableColumnDetails{},
 		IsDataSourceOutput:   true,
 		NoIdentifiableObject: true,
-		SkipFields:           []string{"Type"},
 	},
 	{
 		IdType:               "sdk.SchemaObjectIdentifier",

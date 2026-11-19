@@ -82,6 +82,12 @@ data "snowflake_tables" "example" {
 
 No configuration changes are required unless you want to turn the extra queries off.
 
+#### Column data types are parsed
+
+`tables.*.describe_output.*.type` in [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) is now parsed and shown in a normalized format, e.g. `NUMBER(38, 0)` instead of `NUMBER(38,0)`. When the provider cannot parse a type, it shows the value returned by DESCRIBE TABLE. `column.*.type` in `snowflake_table` is unchanged.
+
+No configuration changes are required. Update any references that compare `describe_output` types as strings.
+
 ### *(new feature)* Hierarchy renames rolled out to more resources
 
 The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.

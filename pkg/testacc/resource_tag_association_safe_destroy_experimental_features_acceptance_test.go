@@ -9,6 +9,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -81,7 +82,7 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 				table, _ := testClient().Table.CreateWithRequest(
 					t,
 					sdk.NewCreateTableRequest(
-						testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeInt), *sdk.NewTableColumnRequest("ID2", sdk.DataTypeInt)})),
+						testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeInteger), *sdk.NewTableColumnRequest("ID2", testdatatypes.DataTypeInteger)})),
 				)
 
 				columnId := sdk.NewTableColumnIdentifier(table.ID().DatabaseName(), table.ID().SchemaName(), table.ID().Name(), "ID")
