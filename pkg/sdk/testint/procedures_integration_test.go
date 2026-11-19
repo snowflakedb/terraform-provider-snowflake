@@ -2624,7 +2624,7 @@ func TestInt_CallProcedure(t *testing.T) {
 	t.Run("call procedure for Java: returns table", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-java#omitting-return-column-names-and-types
 		name := "filter_by_role"
-		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
+		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 		import com.snowflake.snowpark_java.*;
@@ -2659,7 +2659,7 @@ func TestInt_CallProcedure(t *testing.T) {
 	t.Run("call procedure for Scala: returns table", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-scala#omitting-return-column-names-and-types
 		name := "filter_by_role"
-		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
+		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 		import com.snowflake.snowpark.functions._
@@ -2693,7 +2693,7 @@ func TestInt_CallProcedure(t *testing.T) {
 	t.Run("call procedure for Javascript", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-javascript#basic-examples
 		name := "stproc1"
-		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeFloat)
+		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), name, testdatatypes.DataTypeFloat)
 
 		definition := `
 		var sql_command = "INSERT INTO stproc_test_table1 (num_col1) VALUES (" + FLOAT_PARAM1 + ")";
@@ -2737,7 +2737,7 @@ func TestInt_CallProcedure(t *testing.T) {
 
 	t.Run("call procedure for Python: returns table", func(t *testing.T) {
 		// https://docs.snowflake.com/en/developer-guide/stored-procedure/stored-procedures-python#omitting-return-column-names-and-types
-		id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(databaseId.Name(), schemaId.Name(), "filterByRole", testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
+		id := sdk.NewSchemaObjectIdentifierWithArguments(databaseId.Name(), schemaId.Name(), "filterByRole", testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 
 		definition := `
 from snowflake.snowpark.functions import col

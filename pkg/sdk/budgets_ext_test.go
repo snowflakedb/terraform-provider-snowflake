@@ -3,8 +3,8 @@ package sdk
 func init() {
 	id := budgetsTestIdSchemaObjectIdentifier
 	notificationIntegrationId := randomAccountObjectIdentifier()
-	procedureId := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
-	procedureId2 := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeVARCHAR)
+	procedureId := randomSchemaObjectIdentifierWithArguments(dataTypeVarchar)
+	procedureId2 := randomSchemaObjectIdentifierWithArguments(dataTypeVarchar, dataTypeVarchar)
 
 	budgetsTests.Create.
 		withExpectedSqlf(

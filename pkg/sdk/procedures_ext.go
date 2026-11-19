@@ -17,7 +17,7 @@ const (
 )
 
 func (v *Procedure) ID() SchemaObjectIdentifierWithArguments {
-	return NewSchemaObjectIdentifierWithArgumentsNormalized(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
+	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
 }
 
 // ProcedureDetails contains aggregated describe results for the given procedure.

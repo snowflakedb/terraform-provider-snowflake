@@ -3,6 +3,7 @@ package resources
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -46,12 +47,12 @@ func TestParseGrantPrivilegesToShareId(t *testing.T) {
 		},
 		{
 			Name:       "grant privileges on function to share",
-			Identifier: `"share-name"|USAGE|OnFunction|"on-database-name"."on-schema-name".on-function-name(INT, VARCHAR)`,
+			Identifier: `"share-name"|USAGE|OnFunction|"on-database-name"."on-schema-name".on-function-name(INTEGER, VARCHAR)`,
 			Expected: GrantPrivilegesToShareId{
 				ShareName:  sdk.NewAccountObjectIdentifier("share-name"),
 				Privileges: []string{"USAGE"},
 				Kind:       OnFunctionShareGrantKind,
-				Identifier: sdk.NewSchemaObjectIdentifierWithArguments("on-database-name", "on-schema-name", "on-function-name", sdk.DataTypeInt, sdk.DataTypeVARCHAR),
+				Identifier: sdk.NewSchemaObjectIdentifierWithArguments("on-database-name", "on-schema-name", "on-function-name", testdatatypes.DataTypeInteger, testdatatypes.DataTypeVarchar),
 			},
 		},
 		{
@@ -61,7 +62,7 @@ func TestParseGrantPrivilegesToShareId(t *testing.T) {
 				ShareName:  sdk.NewAccountObjectIdentifier("share-name"),
 				Privileges: []string{"READ"},
 				Kind:       OnFunctionShareGrantKind,
-				Identifier: sdk.NewSchemaObjectIdentifierWithArguments("on-database-name", "on-schema-name", "on-view-name", []sdk.DataType{}...),
+				Identifier: sdk.NewSchemaObjectIdentifierWithArguments("on-database-name", "on-schema-name", "on-view-name"),
 			},
 		},
 		{

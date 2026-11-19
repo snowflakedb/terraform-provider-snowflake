@@ -2129,7 +2129,7 @@ func TestInt_Functions(t *testing.T) {
 			require.NoError(t, err)
 
 			oldDataType := sdk.LegacyDataTypeFrom(dataType)
-			idWithArguments := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(id.DatabaseName(), id.SchemaName(), id.Name(), dataType)
+			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataType)
 
 			function, err := client.Functions.ShowByID(ctx, idWithArguments)
 			require.NoError(t, err)

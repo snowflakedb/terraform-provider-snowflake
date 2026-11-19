@@ -49,7 +49,7 @@ func (opts *CreateForScalaFunctionOptions) additionalValidations() error {
 }
 
 func (v *Function) ID() SchemaObjectIdentifierWithArguments {
-	return NewSchemaObjectIdentifierWithArgumentsNormalized(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
+	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
 }
 
 // FunctionDetails contains aggregated describe results for the given function.

@@ -6,7 +6,7 @@ import (
 )
 
 func (v *ExternalFunction) ID() SchemaObjectIdentifierWithArguments {
-	return NewSchemaObjectIdentifierWithArgumentsNormalized(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
+	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
 }
 
 // ArgumentsStrings returns the SQL of each parsed argument type, falling back to the raw SHOW value when parsing failed.

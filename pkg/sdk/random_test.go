@@ -37,9 +37,15 @@ var (
 	dataTypeChar_100, _                   = datatypes.ParseDataType("CHAR(100)")
 	dataTypeDoublePrecision, _            = datatypes.ParseDataType("DOUBLE PRECISION")
 	dataTypeTimestampWithoutTimeZone_5, _ = datatypes.ParseDataType("TIMESTAMP WITHOUT TIME ZONE(5)")
+	dataTypeTime, _                       = datatypes.ParseDataType("TIME")
+	dataTypeTimestampTz, _                = datatypes.ParseDataType("TIMESTAMP_TZ")
+	dataTypeVectorInt_10, _               = datatypes.ParseDataType("VECTOR(INT, 10)")
+	dataTypeVectorInt_20, _               = datatypes.ParseDataType("VECTOR(INT, 20)")
+	dataTypeVectorFloat_10, _             = datatypes.ParseDataType("VECTOR(FLOAT, 10)")
+	dataTypeTableDate, _                  = datatypes.ParseDataType("TABLE(DATE)")
 )
 
-func randomSchemaObjectIdentifierWithArguments(argumentDataTypes ...DataType) SchemaObjectIdentifierWithArguments {
+func randomSchemaObjectIdentifierWithArguments(argumentDataTypes ...datatypes.DataType) SchemaObjectIdentifierWithArguments {
 	return NewSchemaObjectIdentifierWithArguments(random.StringN(12), random.StringN(12), random.StringN(12), argumentDataTypes...)
 }
 

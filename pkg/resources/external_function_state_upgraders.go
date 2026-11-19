@@ -50,19 +50,23 @@ func v085ExternalFunctionStateUpgrader(ctx context.Context, rawState map[string]
 		return nil, err
 	}
 
-	argDataTypes := make([]sdk.DataType, 0)
+	argDataTypes := make([]datatypes.DataType, 0)
 	if parsedV085ExternalFunctionId.ExternalFunctionArgTypes != "" {
 		for argType := range strings.SplitSeq(parsedV085ExternalFunctionId.ExternalFunctionArgTypes, "-") {
 			argDataType, err := datatypes.ParseDataType(argType)
 			if err != nil {
 				return nil, err
 			}
-			argDataTypes = append(argDataTypes, sdk.LegacyDataTypeFrom(argDataType))
+			argDataTypes = append(argDataTypes, argDataType)
 		}
 	}
 
-	schemaObjectIdentifierWithArguments := sdk.NewSchemaObjectIdentifierWithArgumentsOld(parsedV085ExternalFunctionId.DatabaseName, parsedV085ExternalFunctionId.SchemaName, parsedV085ExternalFunctionId.ExternalFunctionName, argDataTypes)
-	rawState["id"] = schemaObjectIdentifierWithArguments.FullyQualifiedName()
+	// Without arguments, v0.85 ids are migrated without parentheses; the v0941ResourceIdentifierWithArguments upgrader adds them.
+	if len(argDataTypes) == 0 {
+		rawState["id"] = sdk.NewSchemaObjectIdentifier(parsedV085ExternalFunctionId.DatabaseName, parsedV085ExternalFunctionId.SchemaName, parsedV085ExternalFunctionId.ExternalFunctionName).FullyQualifiedName()
+	} else {
+		rawState["id"] = sdk.NewSchemaObjectIdentifierWithArguments(parsedV085ExternalFunctionId.DatabaseName, parsedV085ExternalFunctionId.SchemaName, parsedV085ExternalFunctionId.ExternalFunctionName, argDataTypes...).FullyQualifiedName()
+	}
 
 	oldDatabase := rawState["database"].(string)
 	oldSchema := rawState["schema"].(string)

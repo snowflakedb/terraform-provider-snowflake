@@ -297,7 +297,7 @@ func TestSetObjectParameterOnObjectViaCatalog(t *testing.T) {
 		},
 		{
 			name:      "unknown function enum value falls back",
-			object:    Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_fn", DataTypeVARCHAR)},
+			object:    Object{ObjectType: ObjectTypeFunction, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_fn", dataTypeVarchar)},
 			parameter: "LOG_LEVEL",
 			value:     "not-a-level",
 		},
@@ -309,7 +309,7 @@ func TestSetObjectParameterOnObjectViaCatalog(t *testing.T) {
 		},
 		{
 			name:        "procedure parse error propagates",
-			object:      Object{ObjectType: ObjectTypeProcedure, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_proc", DataTypeVARCHAR)},
+			object:      Object{ObjectType: ObjectTypeProcedure, Name: NewSchemaObjectIdentifierWithArguments("some_db", "some_schema", "some_proc", dataTypeVarchar)},
 			parameter:   "ENABLE_CONSOLE_OUTPUT",
 			value:       "not-a-bool",
 			wantHandled: true,
