@@ -3,10 +3,15 @@ package resources
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -18,30 +23,22 @@ import (
 // TODO [SNOW-1348325,SNOW-1501905]: Add this parameter to SDK
 const ReplicableWithFailoverGroups = "REPLICABLE_WITH_FAILOVER_GROUPS"
 
-func alterObjectParameter(parseOnSetEnabled bool, catalog func() (bool, error), legacy func() error) error {
-	if parseOnSetEnabled {
-		handled, err := catalog()
-		if err != nil || handled {
-			return err
-		}
-	}
-	// TODO [SNOW-4258021]: when the legacy write path does not support the parameter, suggest the catalog write path
-	// (if it supports the parameter) or the forward-compatible path in the error.
-	return legacy()
-}
-
 var objectParameterSchema = map[string]*schema.Schema{
 	"key": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "Name of object parameter. Valid values are those in [object parameters](https://docs.snowflake.com/en/sql-reference/parameters.html#object-parameters).",
+		Type:     schema.TypeString,
+		Required: true,
+		ForceNew: true,
+		Description: fmt.Sprintf("Name of object parameter. Valid values are those in [object parameters](https://docs.snowflake.com/en/sql-reference/parameters.html#object-parameters). "+
+			"With the `OBJECT_PARAMETER_PARSE_ON_SET` experiment (enabled by default), the provider supports the following parameters, and it parses and quotes their values itself: %s. "+
+			"Any other parameter, and any parameter on any other object type, is sent to Snowflake as is: with `value_type`, the value is rendered by it, and without it, the value is sent as written.",
+			objectParameterSupportedParametersDescription()),
 	},
 	"value": {
 		Type:        schema.TypeString,
 		Required:    true,
 		Description: "Value of object parameter, as a string. Constraints are the same as those for the parameters in Snowflake documentation.",
 	},
+	"value_type": parameterValueTypeSchema("the `key` field description, per object type", experimentalfeatures.ObjectParameterParseOnSet, suppressValueTypeForSupportedObjectParameter),
 	"on_account": {
 		Type:        schema.TypeBool,
 		Optional:    true,
@@ -52,9 +49,9 @@ var objectParameterSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Optional:         true,
 		ForceNew:         true,
-		Description:      "Type of object to which the parameter applies. Valid values are those in [object types](https://docs.snowflake.com/en/sql-reference/parameters.html#object-types). If no value is provided, then the resource will default to setting the object parameter at account level.",
+		Description:      fmt.Sprintf("Type of object to which the parameter applies. Valid values are those in [object types](https://docs.snowflake.com/en/sql-reference/parameters.html#object-types). If no value is provided, then the resource will default to setting the object parameter at account level. The provider supports the parameters of the following object types: %s (see `key`). Other object types are sent as is, with the value rendered by `value_type`.", possibleValuesListed(collections.Map(objectParameterCatalogObjectTypes, func(t objectParameterCatalogObjectType) string { return string(t.objectType) }))),
+		DiffSuppressFunc: ignoreCaseSuppressFunc,
 		RequiredWith:     []string{"object_identifier"},
-		ValidateDiagFunc: validators.NormalizeValidation(sdk.ToObjectType),
 	},
 	"object_identifier": {
 		Type:         schema.TypeList,
@@ -112,41 +109,32 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 	parameter := sdk.ObjectParameter(key)
 
 	o := sdk.Object{}
-	if v, ok := d.GetOk("object_identifier"); ok {
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
-		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
-		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
-		o.Name = sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier)
-		objectType, err := sdk.ToObjectType(d.Get("object_type").(string))
-		if err != nil {
+	if _, ok := d.GetOk("object_identifier"); ok {
+		var err error
+		if o, err = parameterObjectFromConfig(d); err != nil {
 			return diag.FromErr(err)
 		}
-		o.ObjectType = objectType
+	}
+
+	// Empty when value_type is not set.
+	var kind sdk.ParameterValueKind
+	if valueType := d.Get("value_type").(string); valueType != "" {
+		var err error
+		if kind, err = sdk.ToParameterValueKind(valueType); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	onAccount := d.Get("on_account").(bool)
 	parseOnSetEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterParseOnSet)
+
+	var err error
 	if onAccount {
-		if err := alterObjectParameter(
-			parseOnSetEnabled,
-			func() (bool, error) {
-				return client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, parameter, value)
-			},
-			func() error {
-				return client.Parameters.SetObjectParameterOnAccountLegacy(ctx, parameter, value)
-			},
-		); err != nil {
-			return diag.FromErr(fmt.Errorf("error creating object parameter err = %w", err))
-		}
-	} else if err := alterObjectParameter(
-		parseOnSetEnabled,
-		func() (bool, error) {
-			return client.Parameters.SetObjectParameterOnObjectViaCatalog(ctx, o, parameter, value)
-		},
-		func() error {
-			return client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(parameter), value))
-		},
-	); err != nil {
+		err = setParameterOnAccount(ctx, client, parseOnSetEnabled, key, value, kind)
+	} else {
+		err = setParameterOnObject(ctx, client, parseOnSetEnabled, o, parameter, value, kind)
+	}
+	if err != nil {
 		return diag.FromErr(fmt.Errorf("error setting object parameter err = %w", err))
 	}
 
@@ -158,7 +146,6 @@ func CreateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	d.SetId(id)
-	var err error
 	var p *sdk.Parameter
 	if onAccount {
 		p, err = client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(key))
@@ -193,16 +180,14 @@ func ReadObjectParameter(ctx context.Context, d *schema.ResourceData, meta any) 
 	if parts[1] == "" {
 		p, err = client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(key))
 	} else {
-		var objectType sdk.ObjectType
-		objectType, err = sdk.ToObjectType(parts[1])
+		var objectIdentifier sdk.ObjectIdentifier
+		objectIdentifier, err = sdk.ParseObjectIdentifierString(parts[2])
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		objectIdentifier := parts[2]
-		objectIdentifier = strings.Trim(objectIdentifier, "\"")
 		p, err = client.Parameters.ShowObjectParameter(ctx, sdk.ObjectParameter(key), sdk.Object{
-			ObjectType: objectType,
-			Name:       sdk.NewObjectIdentifierFromFullyQualifiedName(objectIdentifier),
+			ObjectType: sdk.ObjectType(strings.ToUpper(parts[1])),
+			Name:       objectIdentifier,
 		})
 	}
 	if err != nil {
@@ -223,111 +208,210 @@ func UpdateObjectParameter(ctx context.Context, d *schema.ResourceData, meta any
 func DeleteObjectParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	client := providerCtx.Client
-
 	key := d.Get("key").(string)
-	onAccount := d.Get("on_account").(bool)
-	parseOnSetEnabled := providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterParseOnSet)
-
-	if onAccount {
-		objectParameter := sdk.ObjectParameter(key)
-		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete) {
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.UnsetObjectParameterOnAccountViaCatalog(ctx, objectParameter)
-				},
-				func() error {
-					return client.Parameters.UnsetObjectParameterOnAccountLegacy(ctx, objectParameter)
-				},
-			); err != nil {
-				return diag.FromErr(fmt.Errorf("error unsetting account parameter err = %w", err))
-			}
-		} else {
-			defaultParameter, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(key))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			defaultValue := defaultParameter.Default
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, objectParameter, defaultValue)
-				},
-				func() error {
-					return client.Parameters.SetAccountParameterLegacy(ctx, sdk.AccountParameter(key), defaultValue)
-				},
-			); err != nil {
-				return diag.FromErr(fmt.Errorf("error resetting account parameter err = %w", err))
-			}
-		}
-	} else {
-		v := d.Get("object_identifier")
-		objectDatabase, objectSchema, objectName := expandObjectIdentifier(v.([]any))
-		fullyQualifierObjectIdentifier := FormatFullyQualifiedObjectID(objectDatabase, objectSchema, objectName)
-		fullyQualifierObjectIdentifier = strings.Trim(fullyQualifierObjectIdentifier, "\"")
-		objectType, err := sdk.ToObjectType(d.Get("object_type").(string))
-		if err != nil {
+	// Empty when value_type is not set.
+	var kind sdk.ParameterValueKind
+	if valueType := d.Get("value_type").(string); valueType != "" {
+		var err error
+		if kind, err = sdk.ToParameterValueKind(valueType); err != nil {
 			return diag.FromErr(err)
 		}
-		o := sdk.Object{
-			ObjectType: objectType,
-			Name:       sdk.NewObjectIdentifierFromFullyQualifiedName(fullyQualifierObjectIdentifier),
-		}
-
-		objectParameter := sdk.ObjectParameter(key)
-		if providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete) {
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.UnsetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter)
-				},
-				func() error {
-					return client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(objectParameter)))
-				},
-			); err != nil {
-				return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))
-			}
-		} else {
-			defaultParameter, err := client.Parameters.ShowObjectParameter(ctx, objectParameter, o)
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			defaultValue := defaultParameter.Default
-			// TODO [SNOW-2395064,SNOW-1348325]: Remove the workaround when default value on REPLICABLE_WITH_FAILOVER_GROUPS parameter in Snowflake is settable or during snowflake_object_parameter rework (using UNSET)
-			if key == ReplicableWithFailoverGroups {
-				defaultValue = "YES"
-			}
-
-			// If empty string is a default value, we cannot use it as it won't be emitted, in such case UNSET has to be used.
-			if defaultValue == "" {
-				if err := alterObjectParameter(
-					parseOnSetEnabled,
-					func() (bool, error) {
-						return client.Parameters.UnsetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter)
-					},
-					func() error {
-						return client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(objectParameter)))
-					},
-				); err != nil {
-					return diag.FromErr(fmt.Errorf("error unsetting object parameter err = %w", err))
-				}
-				d.SetId("")
-				return nil
-			}
-
-			if err := alterObjectParameter(
-				parseOnSetEnabled,
-				func() (bool, error) {
-					return client.Parameters.SetObjectParameterOnObjectViaCatalog(ctx, o, objectParameter, defaultValue)
-				},
-				func() error {
-					return client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(objectParameter), defaultValue))
-				},
-			); err != nil {
-				return diag.FromErr(fmt.Errorf("error resetting object parameter err = %w", err))
-			}
-		}
 	}
+	parseOnSet := providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterParseOnSet)
+	unsetOnDelete := providerCtx.Experiments.IsEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete)
+
+	var err error
+	if d.Get("on_account").(bool) {
+		err = removeParameterOnAccount(ctx, client, parseOnSet, unsetOnDelete, key, kind)
+	} else {
+		o, objectErr := parameterObjectFromConfig(d)
+		if objectErr != nil {
+			return diag.FromErr(objectErr)
+		}
+		err = removeParameterOnObject(ctx, client, parseOnSet, unsetOnDelete, o, sdk.ObjectParameter(key), kind)
+	}
+	if err != nil {
+		return diag.FromErr(fmt.Errorf("error deleting object parameter err = %w", err))
+	}
+
 	d.SetId("")
 	return nil
+}
+
+// parameterObjectFromConfig builds the object from the object_type and object_identifier fields.
+func parameterObjectFromConfig(d *schema.ResourceData) (sdk.Object, error) {
+	database, schemaName, name := expandObjectIdentifier(d.Get("object_identifier").([]any))
+	id, err := sdk.ParseObjectIdentifierString(FormatFullyQualifiedObjectID(database, schemaName, name))
+	if err != nil {
+		return sdk.Object{}, err
+	}
+	return sdk.Object{ObjectType: sdk.ObjectType(strings.ToUpper(d.Get("object_type").(string))), Name: id}, nil
+}
+
+// setParameterOnAccount sets a parameter on the account level (on_account = true).
+func setParameterOnAccount(ctx context.Context, client *sdk.Client, parseOnSet bool, key, value string, kind sdk.ParameterValueKind) error {
+	parameter := sdk.ObjectParameter(key)
+	switch {
+	// Legacy path: the experiment is disabled, so the value is formatted by the frozen v2.22.x table.
+	case !parseOnSet:
+		return withExperimentHint(client.Parameters.SetObjectParameterOnAccountLegacy(ctx, parameter, value), experimentalfeatures.ObjectParameterParseOnSet)
+	// Hybrid path: the catalog sends the parameter if it supports it, otherwise the value is rendered by value_type and sent as is.
+	case parseOnSet && kind != "":
+		return client.Parameters.SetAccountParameterWithGenericFallback(ctx, key, kind, value)
+	}
+
+	// Catalog path with the legacy fallback: no value_type, so a parameter that the catalog does not handle goes through the legacy table.
+	handled, err := client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, parameter, value)
+	if err != nil || handled {
+		return err
+	}
+	return client.Parameters.SetObjectParameterOnAccountLegacy(ctx, parameter, value)
+}
+
+// setParameterOnObject sets a parameter on a specific object.
+func setParameterOnObject(ctx context.Context, client *sdk.Client, parseOnSet bool, o sdk.Object, parameter sdk.ObjectParameter, value string, kind sdk.ParameterValueKind) error {
+	switch {
+	// Legacy path: the experiment is disabled, so the value is sent as written.
+	case !parseOnSet:
+		return client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(parameter), value))
+	// Hybrid path: the catalog sends the parameter if it supports the object type and the parameter, otherwise the value is rendered by value_type and sent as is.
+	case parseOnSet && kind != "":
+		return client.Parameters.SetObjectParameterOnObjectWithGenericFallback(ctx, o, parameter, kind, value)
+	}
+
+	// Catalog path with the legacy fallback: no value_type, so what the catalog does not handle is sent as written.
+	handled, err := client.Parameters.SetObjectParameterOnObjectViaCatalog(ctx, o, parameter, value)
+	if err != nil || handled {
+		return err
+	}
+	return client.Parameters.SetObjectParameterOnObjectRaw(ctx, sdk.NewSetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(parameter), value))
+}
+
+// unsetParameterOnAccount unsets a parameter on the account level.
+func unsetParameterOnAccount(ctx context.Context, client *sdk.Client, parseOnSet, hasValueType bool, key string) error {
+	parameter := sdk.ObjectParameter(key)
+	switch {
+	// Legacy path: the experiment is disabled.
+	case !parseOnSet:
+		return client.Parameters.UnsetObjectParameterOnAccountLegacy(ctx, parameter)
+	// Hybrid path: value_type tells that the parameter may be unknown to the provider, so it is unset as is when the catalog does not handle it.
+	case parseOnSet && hasValueType:
+		return client.Parameters.UnsetAccountParameterWithGenericFallback(ctx, key)
+	}
+
+	// Catalog path with the legacy fallback.
+	handled, err := client.Parameters.UnsetObjectParameterOnAccountViaCatalog(ctx, parameter)
+	if err != nil || handled {
+		return err
+	}
+	return client.Parameters.UnsetObjectParameterOnAccountLegacy(ctx, parameter)
+}
+
+// removeParameterOnAccount unsets a parameter on the account level, or sets it back to its default value.
+func removeParameterOnAccount(ctx context.Context, client *sdk.Client, parseOnSet, unsetOnDelete bool, key string, kind sdk.ParameterValueKind) error {
+	if unsetOnDelete {
+		return unsetParameterOnAccount(ctx, client, parseOnSet, kind != "", key)
+	}
+	defaultParameter, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(key))
+	if err != nil {
+		return err
+	}
+	switch {
+	// An empty default value cannot be sent, so the parameter is unset.
+	case defaultParameter.Default == "":
+		return unsetParameterOnAccount(ctx, client, parseOnSet, kind != "", key)
+	// Legacy path: the experiment is disabled, so the default value is formatted by the table of the account parameters, like in v2.22.x.
+	case !parseOnSet:
+		return client.Parameters.SetAccountParameterLegacy(ctx, sdk.AccountParameter(key), defaultParameter.Default)
+	}
+
+	// Catalog path: the default value is set when the catalog handles the parameter.
+	handled, err := client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, sdk.ObjectParameter(key), defaultParameter.Default)
+	if err != nil || handled {
+		return err
+	}
+	// Hybrid fallback: a parameter set with value_type is unknown to the provider, so it is unset as is.
+	if kind != "" {
+		return client.Parameters.UnsetAccountParameterRaw(ctx, sdk.NewUnsetAccountParameterRawParameterRequest(key))
+	}
+	return client.Parameters.SetAccountParameterLegacy(ctx, sdk.AccountParameter(key), defaultParameter.Default)
+}
+
+// removeParameterOnObject unsets a parameter on a specific object, or sets it back to its default value.
+func removeParameterOnObject(ctx context.Context, client *sdk.Client, parseOnSet, unsetOnDelete bool, o sdk.Object, parameter sdk.ObjectParameter, kind sdk.ParameterValueKind) error {
+	if unsetOnDelete {
+		return unsetParameterOnObject(ctx, client, parseOnSet, o, parameter)
+	}
+	defaultParameter, err := client.Parameters.ShowObjectParameter(ctx, parameter, o)
+	if err != nil {
+		return err
+	}
+	defaultValue := defaultParameter.Default
+	// The default value of REPLICABLE_WITH_FAILOVER_GROUPS is not settable in Snowflake, so the parameter is set to YES.
+	if string(parameter) == ReplicableWithFailoverGroups {
+		defaultValue = "YES"
+	}
+	// An empty default value cannot be sent, so the parameter is unset.
+	if defaultValue == "" {
+		return unsetParameterOnObject(ctx, client, parseOnSet, o, parameter)
+	}
+	return setParameterOnObject(ctx, client, parseOnSet, o, parameter, defaultValue, kind)
+}
+
+// unsetParameterOnObject unsets a parameter on a specific object.
+func unsetParameterOnObject(ctx context.Context, client *sdk.Client, parseOnSet bool, o sdk.Object, parameter sdk.ObjectParameter) error {
+	// Catalog path, when the experiment is enabled.
+	if parseOnSet {
+		handled, err := client.Parameters.UnsetObjectParameterOnObjectViaCatalog(ctx, o, parameter)
+		if err != nil || handled {
+			return err
+		}
+	}
+
+	// Legacy path: what the catalog does not handle is unset as is.
+	return client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(parameter)))
+}
+
+// TODO [SNOW-4242868]: the ssot imports of this file go away in the next PR of the stack, where the SDK reports the parameters supported by the catalog write path.
+type objectParameterCatalogObjectType struct {
+	objectType sdk.ObjectType
+	level      ssot.ParameterLevel
+}
+
+// Functions and procedures have catalog writers, but this resource does not capture argument types, so they are not listed.
+var objectParameterCatalogObjectTypes = []objectParameterCatalogObjectType{
+	{sdk.ObjectTypeDatabase, ssot.ParameterLevelDatabase},
+	{sdk.ObjectTypeSchema, ssot.ParameterLevelSchema},
+	{sdk.ObjectTypeWarehouse, ssot.ParameterLevelWarehouse},
+	{sdk.ObjectTypeUser, ssot.ParameterLevelUser},
+	{sdk.ObjectTypeTask, ssot.ParameterLevelTask},
+	{sdk.ObjectTypeService, ssot.ParameterLevelService},
+	{sdk.ObjectTypeHybridTable, ssot.ParameterLevelHybridTable},
+	{sdk.ObjectTypeIcebergTable, ssot.ParameterLevelIcebergTable},
+}
+
+func objectParameterSupportedParametersDescription() string {
+	names := func(level ssot.ParameterLevel) string {
+		return possibleValuesListed(collections.Map(defs.ParameterDefsForLevel(level), func(p ssot.ParameterDef) string { return p.SqlName }))
+	}
+	scopes := make([]string, 0, 1+len(objectParameterCatalogObjectTypes))
+	scopes = append(scopes, fmt.Sprintf("on the account level (`on_account = true`): %s", names(ssot.ParameterLevelAccountExt)))
+	for _, t := range objectParameterCatalogObjectTypes {
+		scopes = append(scopes, fmt.Sprintf("`%s`: %s", t.objectType, names(t.level)))
+	}
+	return strings.Join(scopes, "; ")
+}
+
+// suppressValueTypeForSupportedObjectParameter hides value_type diffs once the provider supports the parameter.
+func suppressValueTypeForSupportedObjectParameter(_, _, _ string, d *schema.ResourceData) bool {
+	key := strings.ToUpper(d.Get("key").(string))
+	if d.Get("on_account").(bool) {
+		return slices.Contains(accountParameterSupportedParameters, sdk.AccountParameter(key))
+	}
+	objectType, err := sdk.ToObjectType(d.Get("object_type").(string))
+	if err != nil {
+		return false
+	}
+	i := slices.IndexFunc(objectParameterCatalogObjectTypes, func(t objectParameterCatalogObjectType) bool { return t.objectType == objectType })
+	return i >= 0 && slices.ContainsFunc(defs.ParameterDefsForLevel(objectParameterCatalogObjectTypes[i].level), func(p ssot.ParameterDef) bool { return p.SqlName == key })
 }

@@ -68,9 +68,9 @@ func AccountParameter() *schema.Resource {
 }
 
 // withExperimentHint tells how to send a parameter that the legacy write path does not support.
-func withExperimentHint(err error) error {
+func withExperimentHint(err error, experiment experimentalfeatures.ExperimentalFeature) error {
 	if errors.Is(err, sdk.ErrParameterNotSupported) || errors.Is(err, sdk.ErrLegacyParameterNotSupported) {
-		return fmt.Errorf("%w; to send it, remove %s from `experimental_features_disabled` in the provider configuration (and set `value_type` if the provider does not support the parameter)", err, experimentalfeatures.AccountParameterCatalogWritePath)
+		return fmt.Errorf("%w; to send it, remove %s from `experimental_features_disabled` in the provider configuration (and set `value_type` if the provider does not support the parameter)", err, experiment)
 	}
 	return err
 }
@@ -94,7 +94,7 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	switch {
 	case !providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath):
 		if err := client.Parameters.SetAccountParameterLegacy(ctx, sdk.AccountParameter(key), value); err != nil {
-			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w", withExperimentHint(err)))
+			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w", withExperimentHint(err, experimentalfeatures.AccountParameterCatalogWritePath)))
 		}
 	case kind != "":
 		if err := client.Parameters.SetAccountParameterWithGenericFallback(ctx, key, kind, value); err != nil {
@@ -147,7 +147,7 @@ func DeleteAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
 		}
 	} else if err := client.Parameters.UnsetAccountParameterLegacy(ctx, sdk.AccountParameter(key)); err != nil {
-		return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", withExperimentHint(err)))
+		return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", withExperimentHint(err, experimentalfeatures.AccountParameterCatalogWritePath)))
 	}
 
 	d.SetId("")

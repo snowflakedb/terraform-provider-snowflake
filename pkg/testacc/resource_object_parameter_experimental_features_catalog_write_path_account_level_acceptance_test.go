@@ -3,6 +3,7 @@
 package testacc
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -12,12 +13,14 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -185,6 +188,62 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath_NewAccountParameters(
 				Check: assertThat(
 					t,
 					resourceassert.ObjectParameterResource(t, accountModel.ResourceReference()).HasValueString("true"),
+				),
+			},
+		},
+	})
+}
+
+// SERVICE_CALLER_TOKEN_VALIDITY_SECS is a service parameter in the catalog, not an account one, so on the account level
+// it can be set only through the generic write path.
+func TestAcc_ObjectParameter_GenericWritePath_OnAccount(t *testing.T) {
+	param := sdk.AccountParameter("SERVICE_CALLER_TOKEN_VALIDITY_SECS")
+	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
+
+	parameterModel := model.ObjectParameter("generic", string(param), "120").WithOnAccount(true).WithValueType("INTEGER")
+	changedModel := model.ObjectParameter("generic", string(param), "240").WithOnAccount(true).WithValueType("INTEGER")
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete)
+	experimentsDisabledProviderModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+		WithAllEnabledByDefaultExperimentsDisabled()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: func(_ *terraform.State) error {
+			if level := testClient().Parameter.ShowAccountParameter(t, param).Level; level != sdk.ParameterTypeSnowflakeDefault {
+				return fmt.Errorf("expected parameter level empty, got %v", level)
+			}
+			return nil
+		},
+		Steps: []resource.TestStep{
+			// The generic path needs the experiment.
+			{
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   accconfig.FromModels(t, experimentsDisabledProviderModel, parameterModel),
+				ExpectError:              regexp.MustCompile("remove OBJECT_PARAMETER_PARSE_ON_SET from `experimental_features_disabled`"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, providerModel, parameterModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: assertThat(t,
+					resourceassert.ObjectParameterResource(t, parameterModel.ResourceReference()).
+						HasKeyString(string(param)).
+						HasValueString("120"),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, providerModel, changedModel),
+				Check: assertThat(t,
+					resourceassert.ObjectParameterResource(t, changedModel.ResourceReference()).
+						HasValueString("240"),
 				),
 			},
 		},

@@ -16,6 +16,7 @@ type ObjectParameterModel struct {
 	ObjectType       tfconfig.Variable `json:"object_type,omitempty"`
 	OnAccount        tfconfig.Variable `json:"on_account,omitempty"`
 	Value            tfconfig.Variable `json:"value,omitempty"`
+	ValueType        tfconfig.Variable `json:"value_type,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -105,6 +106,11 @@ func (o *ObjectParameterModel) WithValue(value string) *ObjectParameterModel {
 	return o
 }
 
+func (o *ObjectParameterModel) WithValueType(valueType string) *ObjectParameterModel {
+	o.ValueType = tfconfig.StringVariable(valueType)
+	return o
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -131,5 +137,10 @@ func (o *ObjectParameterModel) WithOnAccountValue(value tfconfig.Variable) *Obje
 
 func (o *ObjectParameterModel) WithValueValue(value tfconfig.Variable) *ObjectParameterModel {
 	o.Value = value
+	return o
+}
+
+func (o *ObjectParameterModel) WithValueTypeValue(value tfconfig.Variable) *ObjectParameterModel {
+	o.ValueType = value
 	return o
 }
