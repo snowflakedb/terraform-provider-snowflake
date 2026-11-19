@@ -631,7 +631,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 	})
 
 	t.Run("system reference: schema object identifier with one argument", func(t *testing.T) {
-		id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
+		id := randomSchemaObjectIdentifierWithArguments(dataTypeVarchar)
 		s := &struct {
 			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
 		}{name: id}
@@ -641,7 +641,7 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 	})
 
 	t.Run("system reference: schema object identifier with more arguments", func(t *testing.T) {
-		id := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
+		id := randomSchemaObjectIdentifierWithArguments(dataTypeVarchar, dataTypeNumber)
 		s := &struct {
 			name SchemaObjectIdentifierWithArguments `ddl:"identifier,system_reference" sql:"PROCEDURE"`
 		}{name: id}

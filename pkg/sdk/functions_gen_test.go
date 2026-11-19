@@ -8,7 +8,7 @@ import (
 
 var (
 	functionsTestIdSchemaObjectIdentifier              = randomSchemaObjectIdentifier()
-	functionsTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
+	functionsTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments(dataTypeVarchar, dataTypeNumber)
 )
 
 const (

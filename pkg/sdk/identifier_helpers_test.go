@@ -35,11 +35,8 @@ func TestNewSchemaObjectIdentifierFromFullyQualifiedName(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "\"MY_DB\".\"MY_SCHEMA\".\"multiply\"(number, number)", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "multiply", arguments: []DataType{DataTypeNumber, DataTypeNumber}}},
-		{input: "MY_DB.MY_SCHEMA.add(number, number)", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "add", arguments: []DataType{DataTypeNumber, DataTypeNumber}}},
-		{input: "\"MY_DB\".\"MY_SCHEMA\".\"MY_UDF\"()", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_UDF", arguments: []DataType{}}},
-		{input: "\"MY_DB\".\"MY_SCHEMA\".\"MY_PIPE\"", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_PIPE", arguments: nil}},
-		{input: "MY_DB.MY_SCHEMA.MY_STAGE", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_STAGE", arguments: nil}},
+		{input: "\"MY_DB\".\"MY_SCHEMA\".\"MY_PIPE\"", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_PIPE"}},
+		{input: "MY_DB.MY_SCHEMA.MY_STAGE", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_STAGE"}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
@@ -318,58 +315,35 @@ func Test_quoteIdentifierPartIfNeeded(t *testing.T) {
 	}
 }
 
-func TestSchemaObjectIdentifierWithArguments_LegacyAndNormalizedConstructorsMatch(t *testing.T) {
+func TestSchemaObjectIdentifierWithArguments_FullyQualifiedName(t *testing.T) {
 	schemaId := NewDatabaseObjectIdentifier("MY_DB", "MY_SCHEMA")
 
 	tests := []struct {
-		name                string
-		legacyArguments     []DataType
-		normalizedArguments []datatypes.DataType
-		expectedFqn         string
+		name        string
+		arguments   []datatypes.DataType
+		expectedFqn string
 	}{
 		{
-			name:                "no arguments",
-			legacyArguments:     []DataType{},
-			normalizedArguments: []datatypes.DataType{},
-			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"()`,
+			name:        "no arguments",
+			arguments:   []datatypes.DataType{},
+			expectedFqn: `"MY_DB"."MY_SCHEMA"."MY_FUNC"()`,
 		},
 		{
-			name:                "single argument",
-			legacyArguments:     []DataType{DataTypeNumber},
-			normalizedArguments: []datatypes.DataType{testdatatypes.DataTypeNumber},
-			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER)`,
+			name:        "multiple arguments",
+			arguments:   []datatypes.DataType{testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeFloat},
+			expectedFqn: `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR, FLOAT)`,
 		},
 		{
-			name:                "multiple arguments",
-			legacyArguments:     []DataType{DataTypeNumber, DataTypeVARCHAR, DataTypeFloat},
-			normalizedArguments: []datatypes.DataType{testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeFloat},
-			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR, FLOAT)`,
-		},
-		{
-			name:                "arguments with attributes",
-			legacyArguments:     []DataType{"NUMBER(36, 2)", "VARCHAR(100)"},
-			normalizedArguments: []datatypes.DataType{testdatatypes.DataTypeNumber_36_2, testdatatypes.DataTypeVarchar_100},
-			expectedFqn:         `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR)`,
+			name:        "arguments with attributes",
+			arguments:   []datatypes.DataType{testdatatypes.DataTypeNumber_36_2, testdatatypes.DataTypeVarchar_100},
+			expectedFqn: `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR)`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			legacyId := NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(schemaId, "MY_FUNC", tt.legacyArguments...)
-			normalizedId := NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId, "MY_FUNC", tt.normalizedArguments...)
+			id := NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId, "MY_FUNC", tt.arguments...)
 
-			assert.Equal(t, tt.expectedFqn, legacyId.FullyQualifiedName())
-			assert.Equal(t, legacyId.FullyQualifiedName(), normalizedId.FullyQualifiedName())
-			assert.Equal(t, legacyId, normalizedId)
-			assert.ElementsMatch(t, tt.normalizedArguments, legacyId.ArgumentDataTypes())
+			assert.Equal(t, tt.expectedFqn, id.FullyQualifiedName())
 		})
 	}
-}
-
-func TestSchemaObjectIdentifierWithArguments_NoArgumentsMatchesAcrossConstructors(t *testing.T) {
-	schemaId := NewDatabaseObjectIdentifier("MY_DB", "MY_SCHEMA")
-
-	assert.Equal(t,
-		NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(schemaId, "MY_FUNC"),
-		NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId, "MY_FUNC"),
-	)
 }

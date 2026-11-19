@@ -106,12 +106,8 @@ func (c *IdsGenerator) RandomSchemaObjectIdentifierInSchemaWithPrefix(prefix str
 	return sdk.NewSchemaObjectIdentifierInSchema(schemaId, c.AlphaWithPrefix(prefix))
 }
 
-func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArgumentsOld(arguments ...sdk.DataType) sdk.SchemaObjectIdentifier {
-	return sdk.NewSchemaObjectIdentifierWithArgumentsOld(c.SchemaId().DatabaseName(), c.SchemaId().Name(), c.Alpha(), arguments)
-}
-
 func (c *IdsGenerator) NewSchemaObjectIdentifierWithArguments(name string, arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	return sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(c.SchemaId().DatabaseName(), c.SchemaId().Name(), name, arguments...)
+	return sdk.NewSchemaObjectIdentifierWithArguments(c.SchemaId().DatabaseName(), c.SchemaId().Name(), name, arguments...)
 }
 
 func (c *IdsGenerator) NewSchemaObjectIdentifierWithArgumentsInSchema(name string, schemaId sdk.DatabaseObjectIdentifier, argumentDataTypes ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
@@ -119,11 +115,11 @@ func (c *IdsGenerator) NewSchemaObjectIdentifierWithArgumentsInSchema(name strin
 }
 
 func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArguments(arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	return sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(c.SchemaId().DatabaseName(), c.SchemaId().Name(), c.Alpha(), arguments...)
+	return sdk.NewSchemaObjectIdentifierWithArguments(c.SchemaId().DatabaseName(), c.SchemaId().Name(), c.Alpha(), arguments...)
 }
 
 func (c *IdsGenerator) RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId sdk.DatabaseObjectIdentifier, arguments ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
-	return sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(schemaId.DatabaseName(), schemaId.Name(), c.Alpha(), arguments...)
+	return sdk.NewSchemaObjectIdentifierWithArguments(schemaId.DatabaseName(), schemaId.Name(), c.Alpha(), arguments...)
 }
 
 func (c *IdsGenerator) Alpha() string {

@@ -163,7 +163,7 @@ func ParseSchemaObjectIdentifierWithArguments(fullyQualifiedName string) (Schema
 	if err != nil {
 		return SchemaObjectIdentifierWithArguments{}, err
 	}
-	return NewSchemaObjectIdentifierWithArgumentsNormalized(
+	return NewSchemaObjectIdentifierWithArguments(
 		parts[0],
 		parts[1],
 		parts[2],

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,7 +39,9 @@ RETURNS NUMBER AS
    WHERE arg_c IN (SELECT id FROM %s)'`, id.FullyQualifiedName(), viewID.FullyQualifiedName()))
 	require.NoError(t, err)
 
-	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(id.SchemaId(), id.Name(), sdk.DataType("TABLE(INT)"))
+	tableArgument, err := datatypes.ParseDataType("TABLE(INT)")
+	require.NoError(t, err)
+	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), tableArgument)
 	return id, c.DropFunc(t, idWithArgs)
 }
 
@@ -57,11 +60,12 @@ func (c *DataMetricFunctionClient) CreateWithArguments(t *testing.T, createArgum
 	))
 	require.NoError(t, err)
 
-	argumentDataTypes := make([]sdk.DataType, len(signatureArguments))
+	argumentDataTypes := make([]datatypes.DataType, len(signatureArguments))
 	for i, arg := range signatureArguments {
-		argumentDataTypes[i] = sdk.DataType(arg)
+		argumentDataTypes[i], err = datatypes.ParseDataType(arg)
+		require.NoError(t, err)
 	}
-	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchemaLegacy(id.SchemaId(), id.Name(), argumentDataTypes...)
+	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), argumentDataTypes...)
 
 	return idWithArgs, c.DropFunc(t, idWithArgs)
 }

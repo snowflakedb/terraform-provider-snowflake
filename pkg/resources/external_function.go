@@ -250,7 +250,7 @@ func CreateContextExternalFunction(ctx context.Context, d *schema.ResourceData, 
 	for _, item := range args {
 		argTypes = append(argTypes, item.ArgDataType)
 	}
-	id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(database, schemaName, name, argTypes...)
+	id := sdk.NewSchemaObjectIdentifierWithArguments(database, schemaName, name, argTypes...)
 
 	returnType := d.Get("return_type").(string)
 	resultDataType, err := datatypes.ParseDataType(returnType)

@@ -6,6 +6,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -154,7 +155,7 @@ func TestInt_ShowSchemaObjectInNonExistingSchema(t *testing.T) {
 
 func TestInt_DropSchemaObjectInNonExistingDatabase(t *testing.T) {
 	id := sdk.NewSchemaObjectIdentifier("non-existing-database", "non-existing-schema", "non-existing-schema-object")
-	idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments("non-existing-database", "non-existing-schema", "non-existing-schema-object", sdk.DataTypeInt)
+	idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments("non-existing-database", "non-existing-schema", "non-existing-schema-object", testdatatypes.DataTypeInteger)
 
 	testCases := []struct {
 		ObjectType  sdk.ObjectType
@@ -225,7 +226,7 @@ func TestInt_DropSchemaInNonExistingDatabase(t *testing.T) {
 
 func TestInt_DropSchemaObjectInNonExistingSchema(t *testing.T) {
 	id := sdk.NewSchemaObjectIdentifier(testClientHelper().Ids.DatabaseId().Name(), "non-existing-schema", "non-existing-schema-object")
-	idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(testClientHelper().Ids.DatabaseId().Name(), "non-existing-schema", "non-existing-schema-object", sdk.DataTypeInt)
+	idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(testClientHelper().Ids.DatabaseId().Name(), "non-existing-schema", "non-existing-schema-object", testdatatypes.DataTypeInteger)
 
 	testCases := []struct {
 		ObjectType  sdk.ObjectType
