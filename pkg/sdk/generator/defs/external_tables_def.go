@@ -86,7 +86,7 @@ func externalTableFileFormat() *g.QueryStruct {
 func externalTableColumn() *g.QueryStruct {
 	return g.NewQueryStruct("ExternalTableColumn").
 		Text("Name", g.KeywordOptions().Required()).
-		PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+		PredefinedQueryStructField("DataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 		QueryStructField("AsExpression", asExpression(), g.ListOptions().Parentheses().SQL("AS").Required()).
 		OptionalSQL("NOT NULL").
 		PredefinedQueryStructField("InlineConstraint", "*ColumnInlineConstraint", g.KeywordOptions())
@@ -158,7 +158,7 @@ var externalTablePairs = g.StructPair("externalTableRow", "ExternalTable").
 
 var externalTableColumnDetailsPairs = g.StructPair("externalTableColumnDetailsRow", "ExternalTableColumnDetails").
 	Text("name").
-	Field("type", "DataType", "DataType").
+	DataType("type", g.WithRawFallback("TypeRaw")).
 	Text("kind").
 	BoolFromText("null?", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 	OptionalText("default").

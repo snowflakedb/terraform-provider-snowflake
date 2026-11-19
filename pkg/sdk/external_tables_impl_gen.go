@@ -509,7 +509,8 @@ func (r *DescribeColumnsExternalTableRequest) toOpts() *DescribeColumnsExternalT
 func (r externalTableColumnDetailsRow) convert() (*ExternalTableColumnDetails, error) {
 	result := &ExternalTableColumnDetails{
 		Name:       r.Name,
-		Type:       r.Type,
+		Type:       parseDataTypeOrNil(r.Type),
+		TypeRaw:    r.Type,
 		Kind:       r.Kind,
 		IsNullable: r.Null == "Y",
 		IsPrimary:  r.PrimaryKey == "Y",
