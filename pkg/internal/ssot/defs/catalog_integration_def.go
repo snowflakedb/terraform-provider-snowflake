@@ -233,6 +233,7 @@ var CatalogIntegration = ssot.Object{
 			&catalogIntegrationDescribeRowAttrs.PropertyDefault,
 		},
 	},
+	// SET OAUTH_CLIENT_SECRET cannot share a SET with BEARER_TOKEN, so the OAuth secret is its own SET statement.
 	Alter: ssot.AlterSpec{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterSet(
@@ -247,9 +248,5 @@ var CatalogIntegration = ssot.Object{
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		},
-		SetConflictingFields: [][]*ssot.Attribute{{
-			&catalogIntegrationSetAttrs.OauthRestAuthentication,
-			&catalogIntegrationSetAttrs.BearerRestAuthentication,
-		}},
 	},
 }

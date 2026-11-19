@@ -156,11 +156,10 @@ func Test_ModelFromInputObject_alterStatements(t *testing.T) {
 	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString}
 	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt}
 	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
-		Name:           "Widget",
-		NamePlural:     "Widgets",
-		IdType:         "AccountObjectIdentifier",
-		Attributes:     []ssot.Attribute{body, comment, schedule, expire},
-		UnsetConflicts: [][]*ssot.Attribute{{&schedule, &expire}},
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Attributes: []ssot.Attribute{body, comment, schedule, expire},
 		Alter: ssot.AlterSpec{
 			Clauses: []ssot.AlterClause{
 				ssot.AlterSet(
@@ -173,7 +172,6 @@ func Test_ModelFromInputObject_alterStatements(t *testing.T) {
 					ssot.AlterGroup(ssot.MainAlterGroup, &expire),
 				),
 			},
-			SetConflictingFields: [][]*ssot.Attribute{{&body, &comment}},
 		},
 	}}, nil, nil)
 	require.Equal(t, AlterStatementsModel{

@@ -120,6 +120,7 @@ var BackupPolicy = ssot.Object{
 	},
 	// The schedule is a block in Terraform and a string in SQL and SHOW, so create, set, unset, and read of it are in ext code.
 	// CREATE and SET need it in the same request as the other fields, and UNSET cannot clear schedule and expiration together.
+	// UNSET SCHEDULE, COMMENT is accepted (the SDK integration test runs it), so comment shares the main group with schedule.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
@@ -153,10 +154,6 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.Comment,
 		},
 	},
-	UnsetConflicts: [][]*ssot.Attribute{{
-		&BackupPolicyAttrs.Schedule,
-		&BackupPolicyAttrs.ExpireAfterDays,
-	}},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterRenameTo(),
 		ssot.AlterSet(
@@ -165,11 +162,11 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.ExpireAfterDays,
 		),
 		ssot.AlterUnset(
-			ssot.AlterGroup("Schedule", &BackupPolicyAttrs.Schedule),
 			ssot.AlterGroup(ssot.MainAlterGroup,
+				&BackupPolicyAttrs.Schedule,
 				&BackupPolicyAttrs.Comment,
-				&BackupPolicyAttrs.ExpireAfterDays,
 			),
+			ssot.AlterGroup("ExpireAfterDays", &BackupPolicyAttrs.ExpireAfterDays),
 		),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),

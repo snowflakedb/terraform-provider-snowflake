@@ -55,8 +55,8 @@ func (opts *AlterProjectionPolicyOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Set) {
-		if everyValueSet(opts.Set.SetBody, opts.Set.Comment) {
-			errs = append(errs, errOneOf("AlterProjectionPolicyOptions.Set", "SetBody", "Comment"))
+		if anyValueSet(opts.Set.SetBody) && anyValueSet(opts.Set.Comment) {
+			errs = append(errs, errConflictingGroups("AlterProjectionPolicyOptions.Set", []string{"SetBody"}, []string{"Comment"}))
 		}
 		if !anyValueSet(opts.Set.SetBody, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterProjectionPolicyOptions.Set", "SetBody", "Comment"))

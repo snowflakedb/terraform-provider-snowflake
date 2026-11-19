@@ -81,6 +81,10 @@ func errOneOf(structName string, fieldNames ...string) error {
 	return newError(fmt.Sprintf("%v fields: %v are incompatible and cannot be set at the same time", structName, fieldNames), 2)
 }
 
+func errConflictingGroups(structName string, firstGroup []string, secondGroup []string) error {
+	return newError(fmt.Sprintf("%v fields: %v cannot be set together with %v", structName, firstGroup, secondGroup), 2)
+}
+
 func errNotSet(structName string, fieldNames ...string) error {
 	return newError(fmt.Sprintf("%v fields: %v should be set", structName, fieldNames), 2)
 }

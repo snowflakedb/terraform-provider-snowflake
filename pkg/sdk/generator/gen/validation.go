@@ -3,6 +3,7 @@ package gen
 import (
 	"fmt"
 	"log"
+	"slices"
 	"strings"
 )
 
@@ -10,6 +11,7 @@ import (
 // - opts not nil - not present here, handled on template level
 // - valid identifier - present here, for now put on level containing given field
 // - conflicting fields - present here, put on level containing given fields
+// - conflicting groups - present here, put on level containing given fields; a field of one group cannot be set with a field of the other
 // - exactly one value set - present here, put on level containing given fields
 // - at least one value set - present here, put on level containing given fields
 // - validate nested field - present here, used for common structs which have their own validate() methods specified
@@ -21,6 +23,7 @@ const (
 	ValidIdentifier ValidationType = iota
 	ValidIdentifierIfSet
 	ConflictingFields
+	ConflictingGroups
 	MoreThanOneValueSet
 	ExactlyOneValueSet
 	AtLeastOneValueSet
@@ -37,12 +40,23 @@ const tagAssociationIdentifierField = "Name"
 type Validation struct {
 	Type       ValidationType
 	FieldNames []string
+	// Groups are the two field groups of ConflictingGroups. FieldNames is their union, in order.
+	Groups [][]string
 }
 
 func NewValidation(validationType ValidationType, fieldNames ...string) *Validation {
 	return &Validation{
 		Type:       validationType,
 		FieldNames: fieldNames,
+	}
+}
+
+// NewConflictingGroupsValidation fails when a field of first and a field of second are set together.
+func NewConflictingGroupsValidation(first, second []string) *Validation {
+	return &Validation{
+		Type:       ConflictingGroups,
+		FieldNames: append(slices.Clone(first), second...),
+		Groups:     [][]string{first, second},
 	}
 }
 
@@ -60,6 +74,8 @@ func (v *Validation) TypeName() string {
 		return "ValidIdentifierIfSet"
 	case ConflictingFields:
 		return "ConflictingFields"
+	case ConflictingGroups:
+		return "ConflictingGroups"
 	case MoreThanOneValueSet:
 		return "MoreThanOneValueSet"
 	case ExactlyOneValueSet:
@@ -83,7 +99,7 @@ func (v *Validation) TypeName() string {
 // IsMultiField reports whether this validation spans more than one field name.
 func (v *Validation) IsMultiField() bool {
 	switch v.Type {
-	case ConflictingFields, MoreThanOneValueSet, ExactlyOneValueSet, AtLeastOneValueSet:
+	case ConflictingFields, ConflictingGroups, MoreThanOneValueSet, ExactlyOneValueSet, AtLeastOneValueSet:
 		return true
 	default:
 		return false
@@ -142,6 +158,10 @@ func (v *Validation) Condition(field *Field) string {
 		return fmt.Sprintf("%s != nil && !ValidObjectIdentifier(%s)", strings.Join(fieldNamesProvider(field), ","), strings.Join(fieldNamesProvider(field), ","))
 	case ConflictingFields:
 		return fmt.Sprintf("everyValueSet(%s)", strings.Join(fieldNamesProvider(field), ","))
+	case ConflictingGroups:
+		fields := fieldNamesProvider(field)
+		split := len(v.Groups[0])
+		return fmt.Sprintf("anyValueSet(%s) && anyValueSet(%s)", strings.Join(fields[:split], ","), strings.Join(fields[split:], ","))
 	case MoreThanOneValueSet:
 		return fmt.Sprintf("moreThanOneValueSet(%s)", strings.Join(fieldNamesProvider(field), ","))
 	case ExactlyOneValueSet:
@@ -215,6 +235,10 @@ func (v *Validation) errorWithPathExpr(field *Field, pathExpr string) string {
 		return fmt.Sprintf(`errInvalidIdentifier(%s, %q)`, pathExpr, name)
 	case ConflictingFields:
 		return fmt.Sprintf(`errOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
+	case ConflictingGroups:
+		params := v.paramsQuoted()
+		split := len(v.Groups[0])
+		return fmt.Sprintf(`errConflictingGroups(%s, []string{%s}, []string{%s})`, pathExpr, strings.Join(params[:split], ", "), strings.Join(params[split:], ", "))
 	case MoreThanOneValueSet:
 		return fmt.Sprintf(`errMoreThanOneOf(%s, %s)`, pathExpr, strings.Join(v.paramsQuoted(), ","))
 	case ExactlyOneValueSet:
@@ -285,6 +309,10 @@ func (v *Validation) TodoComment(field *Field) string {
 		return fmt.Sprintf("validation: valid identifier for %v if set", v.fieldsWithPath(field))
 	case ConflictingFields:
 		return fmt.Sprintf("validation: conflicting fields for %v", v.fieldsWithPath(field))
+	case ConflictingGroups:
+		fields := v.fieldsWithPath(field)
+		split := len(v.Groups[0])
+		return fmt.Sprintf("validation: no field from %v can be set together with a field from %v", fields[:split], fields[split:])
 	case MoreThanOneValueSet:
 		return fmt.Sprintf("validation: more than one field from %v cannot be set at the same time", v.fieldsWithPath(field))
 	case ExactlyOneValueSet:

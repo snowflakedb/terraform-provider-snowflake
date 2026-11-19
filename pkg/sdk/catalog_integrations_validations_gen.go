@@ -96,8 +96,8 @@ func (opts *AlterCatalogIntegrationOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterCatalogIntegrationOptions", "Set", "SetTags", "UnsetTags"))
 	}
 	if valueSet(opts.Set) {
-		if everyValueSet(opts.Set.SetOAuthRestAuthentication, opts.Set.SetBearerRestAuthentication) {
-			errs = append(errs, errOneOf("AlterCatalogIntegrationOptions.Set", "SetOAuthRestAuthentication", "SetBearerRestAuthentication"))
+		if anyValueSet(opts.Set.SetOAuthRestAuthentication) && anyValueSet(opts.Set.SetBearerRestAuthentication, opts.Set.Enabled, opts.Set.RefreshIntervalSeconds, opts.Set.Comment) {
+			errs = append(errs, errConflictingGroups("AlterCatalogIntegrationOptions.Set", []string{"SetOAuthRestAuthentication"}, []string{"SetBearerRestAuthentication", "Enabled", "RefreshIntervalSeconds", "Comment"}))
 		}
 		if !anyValueSet(opts.Set.SetOAuthRestAuthentication, opts.Set.SetBearerRestAuthentication, opts.Set.Enabled, opts.Set.RefreshIntervalSeconds, opts.Set.Comment) {
 			errs = append(errs, errAtLeastOneOf("AlterCatalogIntegrationOptions.Set", "SetOAuthRestAuthentication", "SetBearerRestAuthentication", "Enabled", "RefreshIntervalSeconds", "Comment"))

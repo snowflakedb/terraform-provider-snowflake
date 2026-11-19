@@ -103,22 +103,7 @@ func (opts *ReplicationGroupSet) additionalValidations() error {
 		!slices.Contains(opts.ObjectTypes, ReplicationGroupObjectTypeRoles) {
 		errs = append(errs, NewError("OBJECT_TYPES must include ROLES when ALLOWED_INTEGRATION_TYPES includes SECURITY INTEGRATIONS"))
 	}
-	if replicationGroupSetHasObjectLists(opts) && replicationGroupSetHasProperties(opts) {
-		errs = append(errs, NewError("SET cannot combine OBJECT_TYPES and allowed lists with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION"))
-	}
 	return JoinErrors(errs...)
-}
-
-func replicationGroupSetHasObjectLists(opts *ReplicationGroupSet) bool {
-	return len(opts.ObjectTypes) > 0 ||
-		len(opts.AllowedDatabases) > 0 ||
-		len(opts.AllowedExternalVolumes) > 0 ||
-		len(opts.AllowedShares) > 0 ||
-		len(opts.AllowedIntegrationTypes) > 0
-}
-
-func replicationGroupSetHasProperties(opts *ReplicationGroupSet) bool {
-	return opts.Comment != nil || opts.ReplicationSchedule != nil || opts.ErrorIntegration != nil
 }
 
 // SHOW tokens that differ from the create-page values. A token that is not listed is left unchanged.

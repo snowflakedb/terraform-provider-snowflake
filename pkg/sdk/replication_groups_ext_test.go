@@ -316,16 +316,6 @@ func init() {
 			id.FullyQualifiedName(),
 		).
 		withAdditionalValidationCase(
-			"validation_Alter_Set_exclusiveGroups",
-			func(opts *AlterReplicationGroupOptions) {
-				opts.Set = &ReplicationGroupSet{
-					ObjectTypes: []ReplicationGroupObjectType{ReplicationGroupObjectTypeDatabases},
-					Comment:     new("comment"),
-				}
-			},
-			NewError("SET cannot combine OBJECT_TYPES and allowed lists with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION"),
-		).
-		withAdditionalValidationCase(
 			"validation_Alter_Set_AllowedDatabases_requireDatabases",
 			func(opts *AlterReplicationGroupOptions) {
 				opts.Set = &ReplicationGroupSet{
@@ -537,6 +527,15 @@ func init() {
 				opts.Remove = &ReplicationGroupRemove{
 					FromAllowedDatabases: []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")},
 					FromAllowedAccounts:  []AccountIdentifier{NewAccountIdentifier("MY_ORG", "MY_ACCOUNT")},
+				}
+			},
+		).
+		withModify(
+			case_ReplicationGroups_validation_Alter_opts_Set_ConflictingGroups,
+			func(opts *AlterReplicationGroupOptions) {
+				opts.Set = &ReplicationGroupSet{
+					ObjectTypes: []ReplicationGroupObjectType{ReplicationGroupObjectTypeDatabases},
+					Comment:     new("comment"),
 				}
 			},
 		)

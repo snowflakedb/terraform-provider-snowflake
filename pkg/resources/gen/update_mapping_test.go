@@ -94,8 +94,7 @@ func Test_attachUpdateMappings_routesToStatements(t *testing.T) {
 		{Name: "schedule", Type: ssot.AttrString, UpdateMapping: ssot.StringAttributeUpdateBuilder},
 	}
 	obj := ssot.Object{
-		Name:           "Widget",
-		UnsetConflicts: [][]*ssot.Attribute{{&src[0], &src[2]}},
+		Name: "Widget",
 		Alter: ssot.AlterSpec{
 			Clauses: []ssot.AlterClause{
 				ssot.AlterSet(ssot.AlterGroup("Objects", &src[0]), ssot.AlterGroup(ssot.MainAlterGroup, &src[1], &src[2])),

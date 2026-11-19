@@ -697,16 +697,18 @@ func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
-func Test_AlterOperationFromObject_unsetConflicts(t *testing.T) {
+// Each pair of groups gets ConflictingGroups, in declaration order, because the resource sends each group in its own ALTER.
+func Test_AlterOperationFromObject_unsetGroupConflicts(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString}
 	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt}
 	obj := ssot.Object{
-		Name:           "Widget",
-		Attributes:     []ssot.Attribute{comment, schedule, expire},
-		UnsetConflicts: [][]*ssot.Attribute{{&schedule, &expire}},
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{comment, schedule, expire},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterUnset(
-			&comment, &schedule, &expire,
+			ssot.AlterGroup("Schedule", &schedule),
+			ssot.AlterGroup("Expire", &expire),
+			ssot.AlterGroup(ssot.MainAlterGroup, &comment),
 		)}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists(), ssot.SdkAlterWithoutExactlyOneValueSet()))},
 	}
@@ -720,11 +722,13 @@ func Test_AlterOperationFromObject_unsetConflicts(t *testing.T) {
 			OptionalQueryStructField(
 				"Unset",
 				NewQueryStruct("WidgetUnset").
-					OptionalSQL("COMMENT").
 					OptionalSQL("SCHEDULE").
 					OptionalSQL("EXPIRE_AFTER_DAYS").
-					WithValidation(AtLeastOneValueSet, "Comment", "Schedule", "ExpireAfterDays").
-					WithValidation(ConflictingFields, "Schedule", "ExpireAfterDays"),
+					OptionalSQL("COMMENT").
+					WithValidation(AtLeastOneValueSet, "Schedule", "ExpireAfterDays", "Comment").
+					WithConflictingGroups([]string{"Schedule"}, []string{"ExpireAfterDays"}).
+					WithConflictingGroups([]string{"Schedule"}, []string{"Comment"}).
+					WithConflictingGroups([]string{"ExpireAfterDays"}, []string{"Comment"}),
 				ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			WithValidation(ValidIdentifier, "name"),

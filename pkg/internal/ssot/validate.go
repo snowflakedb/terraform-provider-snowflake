@@ -67,7 +67,6 @@ func ValidateObject(obj Object) {
 	}
 	validateSqlSequence(obj, "SET", obj.SetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.UnsetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
-	validateUnsetConflicts(obj)
 	validateAlterSpec(obj)
 	validateAlterGroups(obj)
 	validateCustomOperations(obj, attrs)
@@ -683,44 +682,15 @@ func validateAttributeGroups(obj Object, label string, groups [][]*Attribute) {
 	}
 }
 
-func validateUnsetConflicts(obj Object) {
-	unsetAttributes := obj.UnsetAttributes()
-	inUnset := make(map[string]struct{}, len(unsetAttributes))
-	for _, attr := range unsetAttributes {
-		if attr != nil {
-			inUnset[attr.Name] = struct{}{}
-		}
-	}
-	for i, group := range obj.UnsetConflicts {
-		if len(group) < 2 {
-			panic(fmt.Sprintf("object %q: UnsetConflicts group %d needs at least two attributes", obj.Name, i))
-		}
-		seen := make(map[string]struct{}, len(group))
-		for _, member := range group {
-			if member == nil {
-				panic(fmt.Sprintf("object %q: UnsetConflicts group %d has a nil attribute", obj.Name, i))
-			}
-			if _, ok := inUnset[member.Name]; !ok {
-				panic(fmt.Sprintf("object %q: UnsetConflicts group %d attribute %q is not in Unset", obj.Name, i, member.Name))
-			}
-			if _, dup := seen[member.Name]; dup {
-				panic(fmt.Sprintf("object %q: UnsetConflicts group %d repeats attribute %q", obj.Name, i, member.Name))
-			}
-			seen[member.Name] = struct{}{}
-		}
-	}
-}
-
 // validateAlterGroups checks the groups of the SET and UNSET blocks. A block does not mix attributes and groups.
 // Each attribute is in one group. A named group has an exported Go identifier name that no other group repeats, and a
-// block has at most one main group. A conflicting pair cannot share a group, because one ALTER statement cannot hold
-// both attributes.
+// block has at most one main group.
 func validateAlterGroups(obj Object) {
-	validateAlterBlockGroups(obj, "SET", AlterClauseSet, obj.Alter.SetConflictingFields)
-	validateAlterBlockGroups(obj, "UNSET", AlterClauseUnset, obj.UnsetConflicts)
+	validateAlterBlockGroups(obj, "SET", AlterClauseSet)
+	validateAlterBlockGroups(obj, "UNSET", AlterClauseUnset)
 }
 
-func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind, conflicts [][]*Attribute) {
+func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind) {
 	if clause, _ := obj.alterClause(kind); clause.MixedForms {
 		panic(fmt.Sprintf("object %q: %s mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)", obj.Name, block))
 	}
@@ -759,17 +729,6 @@ func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind, co
 			}
 			owner[member.Name] = label
 		}
-		for _, pair := range conflicts {
-			inGroup := 0
-			for _, member := range pair {
-				if member != nil && slices.ContainsFunc(group.Attributes, func(attr *Attribute) bool { return attr != nil && attr.Name == member.Name }) {
-					inGroup++
-				}
-			}
-			if inGroup > 1 {
-				panic(fmt.Sprintf("object %q: %s holds attributes that cannot be sent together", obj.Name, label))
-			}
-		}
 	}
 }
 
@@ -782,16 +741,6 @@ func validateCreateSpec(obj Object, attrs map[string]struct{}) {
 }
 
 func validateAlterSpec(obj Object) {
-	for i, pair := range obj.Alter.SetConflictingFields {
-		if len(pair) != 2 {
-			panic(fmt.Sprintf("object %q: SetConflictingFields entry %d needs exactly two attributes", obj.Name, i))
-		}
-		for _, member := range pair {
-			if member == nil || !slices.ContainsFunc(obj.SetAttributes(), func(set *Attribute) bool { return set != nil && set.Name == member.Name }) {
-				panic(fmt.Sprintf("object %q: SetConflictingFields entry %d has an attribute that is not in Set", obj.Name, i))
-			}
-		}
-	}
 	seen := make(map[AlterClauseKind]struct{})
 	seenList := make(map[string]struct{})
 	for _, clause := range obj.Alter.Clauses {

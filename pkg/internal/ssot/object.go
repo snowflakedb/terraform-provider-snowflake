@@ -95,10 +95,7 @@ type Object struct {
 	// as groups, see SetAttributes and UnsetAttributes.
 	// A field in those slices may be absent from Attributes when it is not a resource attribute.
 	Create CreateSpec
-	// UnsetConflicts are groups of UNSET attributes that cannot be set together.
-	// Each group has at least two attributes from the UNSET groups. SDK UNSET adds ConflictingFields.
-	UnsetConflicts [][]*Attribute
-	Alter          AlterSpec
+	Alter  AlterSpec
 	// AdditionalEnums are SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field
 	// that the resource validates but the SQL does not send. They are emitted with the enums the object refers to.
 	AdditionalEnums []*Enum
@@ -292,6 +289,8 @@ type AlterGroupSpec struct {
 // skips a group with no values. Name is MainAlterGroup for the main group, whose request is set (unset). Any other
 // name is a Go identifier that starts with a capital letter, and its request field is set<Name> (unset<Name>),
 // such as setBody. A block has at most one main group. When it has none, an empty one is sent last.
+// Attributes of different groups cannot share a statement: the SDK SET (UNSET) struct holds every group, and its
+// validation rejects a value that sets fields of two groups.
 func AlterGroup(name string, attributes ...*Attribute) AlterGroupSpec {
 	return AlterGroupSpec{Name: name, Attributes: attributes}
 }
@@ -310,9 +309,6 @@ type AlterSpec struct {
 	AdditionalValidations    bool
 	SetAdditionalValidations bool
 	Clauses                  []AlterClause
-	// SetConflictingFields are pairs of SET attributes that cannot be set together. SET gets ConflictingFields for each pair.
-	// A pair must sit in different groups of the SET block, see validateAlterGroups.
-	SetConflictingFields [][]*Attribute
 }
 
 // LinkedAlterKeyword returns the ALTER keyword clause linked to the value of the bool attribute with this name.

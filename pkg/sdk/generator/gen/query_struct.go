@@ -43,6 +43,12 @@ func (v *QueryStruct) WithValidation(validationType ValidationType, fieldNames .
 	return v
 }
 
+// WithConflictingGroups rejects a value that sets a field of first together with a field of second.
+func (v *QueryStruct) WithConflictingGroups(first, second []string) *QueryStruct {
+	v.validations = append(v.validations, NewConflictingGroupsValidation(first, second))
+	return v
+}
+
 func (v *QueryStruct) WithAdditionalValidations() *QueryStruct {
 	return v.WithValidation(AdditionalValidations)
 }

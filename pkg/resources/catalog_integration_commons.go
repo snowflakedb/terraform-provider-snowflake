@@ -102,6 +102,20 @@ func handleCatalogIntegrationCommonPropsUpdate(d *schema.ResourceData, set *sdk.
 	return errs
 }
 
+// alterCatalogIntegrationSets sends each non-empty SET request in its own ALTER, in the order given.
+// The OAuth client secret is its own SET statement (the OauthRestAuthentication group), so it is sent apart from set.
+func alterCatalogIntegrationSets(ctx context.Context, client *sdk.Client, id sdk.AccountObjectIdentifier, sets ...*sdk.CatalogIntegrationSetRequest) error {
+	for _, set := range sets {
+		if reflect.DeepEqual(*set, *sdk.NewCatalogIntegrationSetRequest()) {
+			continue
+		}
+		if err := client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*set)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func deleteCatalogIntegrationFunc() schema.DeleteContextFunc {
 	return ResourceDeleteContextFunc(
 		sdk.ParseAccountObjectIdentifier,
