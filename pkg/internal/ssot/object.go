@@ -96,8 +96,9 @@ type Object struct {
 	// A field in those slices may be absent from Attributes when it is not a resource attribute.
 	Create CreateSpec
 	Alter  AlterSpec
-	// AdditionalEnums are SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field
-	// that the resource validates but the SQL does not send. They are emitted with the enums the object refers to.
+	// AdditionalEnums are SDK enums that the generator does not find from the object's attributes and clauses, such as enums
+	// of nested ALTER blocks and constraints, or the accepted values of a field that the resource validates but the SQL does not
+	// send. They are emitted with the enums the object refers to.
 	AdditionalEnums []*Enum
 	// CustomOperations are operations other than the object's CREATE and ALTER, including extra CREATE shapes.
 	// Clause order is the emission order. SdkCustomOperations turns them on.
@@ -143,6 +144,20 @@ const (
 	AlterClauseBlock       AlterClauseKind = "block"
 )
 
+// AlterBlockJoin is how a nested block is tagged on the ALTER options: the payload is Block, this is the join.
+type AlterBlockJoin string
+
+const (
+	// AlterBlockJoinParameter is a parameter clause, such as ADD STORAGE_LOCATION.
+	AlterBlockJoinParameter AlterBlockJoin = ""
+	// AlterBlockJoinKeyword space-joins the nested struct as a keyword field. SQL may be empty: the nested struct then
+	// carries the words, and the field tag is a bare keyword. Clustering and add/drop row access policy use this.
+	AlterBlockJoinKeyword AlterBlockJoin = "keyword"
+	// AlterBlockJoinComma comma-joins the nested struct's children with no parentheses (ddl list,no_parentheses),
+	// such as DROP ROW ACCESS POLICY …, ADD ROW ACCESS POLICY …. UNSET uses the same join.
+	AlterBlockJoinComma AlterBlockJoin = "comma"
+)
+
 // AlterClause is one ALTER entry. Keyword and list use SQL. The other kinds are the SET, UNSET, SET TAG, and UNSET TAG blocks.
 type AlterClause struct {
 	Kind AlterClauseKind
@@ -153,11 +168,11 @@ type AlterClause struct {
 	ListItem string
 	// Field is the Go field name of a block.
 	Field string
-	// Block is the attribute that a block clause is built from: a list of objects, whose element is the block, or a SqlOnly
-	// object attribute, whose Children are the block fields.
+	// Block is the nested struct: a list of objects, whose element is the block, or a SqlOnly object attribute whose
+	// Children are the block fields. It is not the ALTER field join; that is BlockJoin.
 	Block *Attribute
-	// BlockKeyword makes the block a keyword clause. Without it the block is a parameter clause.
-	BlockKeyword bool
+	// BlockJoin is how Block is tagged on the ALTER options. See AlterBlockJoin.
+	BlockJoin AlterBlockJoin
 	// Attribute and AttributeValue link a keyword to the bool attribute value that selects it, such as RESUME for an
 	// enabled attribute that is true. The SDK ignores them. See AlterKeywordFor.
 	Attribute      *Attribute
@@ -166,6 +181,9 @@ type AlterClause struct {
 	Groups []AlterGroupSpec
 	// MixedForms records an AlterSet or AlterUnset call that mixed attributes and groups. Validation rejects it.
 	MixedForms bool
+	// SharedToOpts generates a toOpts method for the block struct, because a struct of another SDK interface calls it.
+	// WithSharedToOpts sets it.
+	SharedToOpts bool
 }
 
 // AlterKeyword is an optional action keyword, such as RESUME or ENABLE MANAGED ACCESS.
@@ -220,9 +238,37 @@ func AlterParameterBlock(field, sql string, block *Attribute) AlterClause {
 	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block}
 }
 
-// AlterKeywordBlock is AlterParameterBlock as a keyword clause, such as UPDATE followed by the struct.
+// AlterKeywordBlock is AlterParameterBlock as a keyword clause (space-join). UPDATE followed by the struct.
+// An empty sql leaves the SQL prefix off. The nested struct carries the words.
 func AlterKeywordBlock(field, sql string, block *Attribute) AlterClause {
-	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block, BlockKeyword: true}
+	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block, BlockJoin: AlterBlockJoinKeyword}
+}
+
+// AlterCommaSeparatedBlock is a nested block whose children are comma-joined with no parentheses and no SQL prefix,
+// such as DROP ROW ACCESS POLICY …, ADD ROW ACCESS POLICY ….
+func AlterCommaSeparatedBlock(field string, block *Attribute) AlterClause {
+	return AlterClause{Kind: AlterClauseBlock, Field: field, Block: block, BlockJoin: AlterBlockJoinComma}
+}
+
+// BlockProjection is the statement of Block this clause embeds. A field named like the FieldName of the block's
+// SetSql or UnsetSql is that projection, such as SetAggregationPolicy. Any other field is the CREATE struct.
+func (c AlterClause) BlockProjection() ClauseUse {
+	switch {
+	case c.Block == nil:
+		return ClauseCreate
+	case c.Block.SetSql.Present && c.Block.SetSql.Field == c.Field:
+		return ClauseSet
+	case c.Block.UnsetSql.Present && c.Block.UnsetSql.Field == c.Field:
+		return ClauseUnset
+	default:
+		return ClauseCreate
+	}
+}
+
+// WithSharedToOpts makes the block struct generate a toOpts method, for a block that another SDK interface shares.
+func (c AlterClause) WithSharedToOpts() AlterClause {
+	c.SharedToOpts = true
+	return c
 }
 
 // AlterRenameTo is RENAME TO. The identifier type is the object's IdType.

@@ -20,7 +20,7 @@ const (
 	// SqlKindObject is a nested struct: the fields are the Children of the attribute, or the Children of the Elem object
 	// of a list. See ObjectParameter.
 	SqlKindObject SqlKind = "object"
-	// SqlKindPreexistingStruct is a struct that already exists in the SDK definition. See PreexistingStruct.
+	// SqlKindPreexistingStruct is a nested query struct built from another SSOT attribute. See PreexistingStructOf.
 	SqlKindPreexistingStruct SqlKind = "preexisting_struct"
 	// SqlKindPredefined is a Go type the SDK already has, such as DataType. See PredefinedType.
 	SqlKindPredefined SqlKind = "predefined"
@@ -102,20 +102,25 @@ type SqlClause struct {
 	// GoType is the Go type of a predefined field, such as DataType or []Column. PredefinedType sets it.
 	GoType string
 	// KeywordShape writes a predefined type as a keyword field instead of a parameter, for a Go type that prints itself,
-	// such as []Column or *ForeignKeyOnAction. KeywordShape sets it.
+	// such as []Column or *ForeignKeyOnAction. On a preexisting struct or a nested object it writes a keyword field
+	// instead of a list. KeywordShape sets it.
 	KeywordShape bool
-	// Shared marks a preexisting struct field as shared: the struct is generated once, and this field calls its toOpts.
-	// Shared sets it.
-	Shared bool
+	// SharedToOpts makes the struct this clause builds generate a standalone toOpts method, so another SDK interface can
+	// call it. SharedToOpts sets it on the attribute whose struct it is.
+	SharedToOpts bool
 	// ValueKeyword makes a keyword clause carry the value of the attribute instead of marking presence: the enum is written
 	// as a bare keyword. EnumKeyword sets it.
 	ValueKeyword bool
 	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
 	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
 	Variants []SqlVariant
-	// StructName is the name of the preexisting struct that the SDK definition supplies. PreexistingStruct sets it.
-	// On a nested struct or a list of objects it is the name of the struct generated for it. StructName sets it.
+	// StructName is the name of the nested struct or list-of-objects struct generated for this clause. StructName sets it.
 	StructName string
+	// StructAttr is the attribute whose struct the clause embeds. The generator builds that struct from the attribute.
+	// PreexistingStructOf sets it.
+	StructAttr *Attribute
+	// StructUse selects the statement of StructAttr: CREATE, SET, or UNSET. PreexistingStructOfUse sets it.
+	StructUse ClauseUse
 	// NoComma separates the elements of a nested struct without commas. NoComma sets it. ObjectParameter defaults to true;
 	// Commas() sets it false so EQUALITY (c1, c2, ANALYZER => '...') keeps commas.
 	NoComma bool
@@ -272,15 +277,20 @@ func PredefinedType(goType string, opts ...SqlClauseOption) SqlClause {
 	}, opts)
 }
 
-// PreexistingStruct is a field of the query struct structName. The SDK definition passes that struct to
-// CreateOperationFromObject or QueryStructFromAttribute. The struct and its fields stay in that definition, and the
-// generated statement embeds it.
+// PreexistingStructOf embeds the query struct the generator builds from attr's CREATE statement.
 // Parentheses() wraps the struct, NoComma() leaves the commas out, Sql is the text before it,
-// Shared does not generate the struct again, and Required makes the field a value
-// rather than a pointer. The Go field name is FieldName, or the attribute name in camel case.
-func PreexistingStruct(structName string, opts ...SqlClauseOption) SqlClause {
+// Required makes the field a value rather than a pointer. On an AttrList attribute the field is a list of that struct.
+// The Go field name is FieldName, or the attribute name in camel case.
+// Use PreexistingStructOfUse for the SET or UNSET struct.
+func PreexistingStructOf(attr *Attribute, opts ...SqlClauseOption) SqlClause {
+	return PreexistingStructOfUse(attr, ClauseCreate, opts...)
+}
+
+// PreexistingStructOfUse is PreexistingStructOf for the SET or UNSET struct of attr, such as the masking policy of a column.
+func PreexistingStructOfUse(attr *Attribute, use ClauseUse, opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindPreexistingStruct, func(c *SqlClause) {
-		c.StructName = structName
+		c.StructAttr = attr
+		c.StructUse = use
 	}, opts)
 }
 
@@ -391,6 +401,10 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.StructName != "" {
 		base.StructName = over.StructName
 	}
+	if over.StructAttr != nil {
+		base.StructAttr = over.StructAttr
+		base.StructUse = over.StructUse
+	}
 	if over.Enum != nil {
 		base.Enum = over.Enum
 	}
@@ -409,8 +423,8 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.KeywordShape {
 		base.KeywordShape = true
 	}
-	if over.Shared {
-		base.Shared = true
+	if over.SharedToOpts {
+		base.SharedToOpts = true
 	}
 	if over.ValueKeyword {
 		base.ValueKeyword = true
@@ -460,15 +474,17 @@ func ObjectParameter(opts ...SqlClauseOption) SqlClause {
 }
 
 // KeywordShape writes a predefined type as a keyword field, not a parameter. Sql is the text before it and Parentheses()
-// wraps it. Use it for a Go type that prints itself, such as []Column or *ForeignKeyOnAction.
+// wraps it. Use it for a Go type that prints itself, such as []Column or *ForeignKeyOnAction. On PreexistingStructOf and
+// ObjectParameter it writes the struct as a keyword field instead of a list, as a column embeds its constraint.
 func KeywordShape() SqlClauseOption {
 	return func(c *SqlClause) { c.KeywordShape = true }
 }
 
-// Shared marks a preexisting struct field as shared. The struct is generated with the object that defines it, and this
-// field calls that struct's toOpts.
-func Shared() SqlClauseOption {
-	return func(c *SqlClause) { c.Shared = true }
+// SharedToOpts marks the struct that the clause's attribute builds as shared. The struct gets a standalone toOpts
+// method, and another SDK interface that references the struct calls it. Put it on the attribute's own CREATE, SET, or
+// UNSET clause, so every object that embeds the struct gets the same method.
+func SharedToOpts() SqlClauseOption {
+	return func(c *SqlClause) { c.SharedToOpts = true }
 }
 
 // ListOfObjects is a parameter clause for a list or set whose Elem is an object. Sql is the text before the list and

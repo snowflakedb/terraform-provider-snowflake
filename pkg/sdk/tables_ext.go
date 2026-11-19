@@ -50,6 +50,15 @@ func (opts *CreateTableOptions) additionalValidations() error {
 	return JoinErrors(errs...)
 }
 
+// The ADD branch of ALTER TABLE ... ADD COLUMN for external tables is the only ExternalTableAction branch, so it is required.
+// ChildrenRule needs two alternatives, so the SSOT definition cannot express this.
+func (opts *AlterTableOptions) additionalValidations() error {
+	if valueSet(opts.ExternalTableAction) && !valueSet(opts.ExternalTableAction.Add) {
+		return errNotSet("AlterTableOptions.ExternalTableAction", "Add")
+	}
+	return nil
+}
+
 func (opts *ShowTableOptions) additionalValidations() error {
 	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
 		return ErrPatternRequiredForLikeKeyword

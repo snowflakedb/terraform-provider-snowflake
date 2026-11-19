@@ -106,6 +106,11 @@ func (opts *CreateTableOptions) validate() error {
 						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].MaskingPolicy", columnIdx), "MaskingPolicy"))
 					}
 				}
+				if valueSet(column.ProjectionPolicy) {
+					if !ValidObjectIdentifier(column.ProjectionPolicy.ProjectionPolicy) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateTableOptions.ColumnsAndConstraints.Columns[%d].ProjectionPolicy", columnIdx), "ProjectionPolicy"))
+					}
+				}
 				if valueSet(column.Tag) {
 					for tagIdx, tag := range column.Tag {
 						if !ValidObjectIdentifier(tag.Name) {
@@ -207,23 +212,24 @@ func (opts *AlterTableOptions) validate() error {
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "name"))
 	}
+	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy) {
+		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"))
+	}
 	if opts.RenameTo != nil && !ValidObjectIdentifier(opts.RenameTo) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "RenameTo"))
 	}
 	if opts.SwapWith != nil && !ValidObjectIdentifier(opts.SwapWith) {
 		errs = append(errs, errInvalidIdentifier("AlterTableOptions", "SwapWith"))
 	}
-	if !exactlyOneValueSet(opts.RenameTo, opts.SwapWith, opts.ClusteringAction, opts.ColumnAction, opts.ConstraintAction, opts.ExternalTableAction, opts.SearchOptimizationAction, opts.Set, opts.SetTags, opts.UnsetTags, opts.Unset, opts.AddRowAccessPolicy, opts.DropRowAccessPolicy, opts.DropAndAddRowAccessPolicy, opts.DropAllRowAccessPolicies, opts.AddStorageLifecyclePolicy, opts.DropStorageLifecyclePolicy, opts.SetAggregationPolicy, opts.UnsetAggregationPolicy, opts.SetJoinPolicy, opts.UnsetJoinPolicy) {
-		errs = append(errs, errExactlyOneOf("AlterTableOptions", "RenameTo", "SwapWith", "ClusteringAction", "ColumnAction", "ConstraintAction", "ExternalTableAction", "SearchOptimizationAction", "Set", "SetTags", "UnsetTags", "Unset", "AddRowAccessPolicy", "DropRowAccessPolicy", "DropAndAddRowAccessPolicy", "DropAllRowAccessPolicies", "AddStorageLifecyclePolicy", "DropStorageLifecyclePolicy", "SetAggregationPolicy", "UnsetAggregationPolicy", "SetJoinPolicy", "UnsetJoinPolicy"))
-	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ClusteringAction) {
 		if !exactlyOneValueSet(opts.ClusteringAction.ClusterBy, opts.ClusteringAction.Recluster, opts.ClusteringAction.ChangeReclusterState, opts.ClusteringAction.DropClusteringKey) {
 			errs = append(errs, errExactlyOneOf("AlterTableOptions.ClusteringAction", "ClusterBy", "Recluster", "ChangeReclusterState", "DropClusteringKey"))
 		}
 	}
 	if valueSet(opts.ColumnAction) {
-		if !exactlyOneValueSet(opts.ColumnAction.Add, opts.ColumnAction.Rename, opts.ColumnAction.Alter, opts.ColumnAction.SetMaskingPolicy, opts.ColumnAction.UnsetMaskingPolicy, opts.ColumnAction.SetTags, opts.ColumnAction.UnsetTags, opts.ColumnAction.DropColumns) {
-			errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction", "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns"))
+		if !exactlyOneValueSet(opts.ColumnAction.Add, opts.ColumnAction.Rename, opts.ColumnAction.Alter, opts.ColumnAction.SetMaskingPolicy, opts.ColumnAction.UnsetMaskingPolicy, opts.ColumnAction.SetProjectionPolicy, opts.ColumnAction.UnsetProjectionPolicy, opts.ColumnAction.SetTags, opts.ColumnAction.UnsetTags, opts.ColumnAction.DropColumns) {
+			errs = append(errs, errExactlyOneOf("AlterTableOptions.ColumnAction", "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetProjectionPolicy", "UnsetProjectionPolicy", "SetTags", "UnsetTags", "DropColumns"))
 		}
 		if valueSet(opts.ColumnAction.Add) {
 			if valueSet(opts.ColumnAction.Add.DefaultValue) {
@@ -297,6 +303,11 @@ func (opts *AlterTableOptions) validate() error {
 					errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.MaskingPolicy", "MaskingPolicy"))
 				}
 			}
+			if valueSet(opts.ColumnAction.Add.ProjectionPolicy) {
+				if !ValidObjectIdentifier(opts.ColumnAction.Add.ProjectionPolicy.ProjectionPolicy) {
+					errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.Add.ProjectionPolicy", "ProjectionPolicy"))
+				}
+			}
 			if valueSet(opts.ColumnAction.Add.Tag) {
 				for tagIdx, tag := range opts.ColumnAction.Add.Tag {
 					if !ValidObjectIdentifier(tag.Name) {
@@ -315,6 +326,11 @@ func (opts *AlterTableOptions) validate() error {
 		if valueSet(opts.ColumnAction.SetMaskingPolicy) {
 			if !ValidObjectIdentifier(opts.ColumnAction.SetMaskingPolicy.MaskingPolicy) {
 				errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.SetMaskingPolicy", "MaskingPolicy"))
+			}
+		}
+		if valueSet(opts.ColumnAction.SetProjectionPolicy) {
+			if !ValidObjectIdentifier(opts.ColumnAction.SetProjectionPolicy.ProjectionPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterTableOptions.ColumnAction.SetProjectionPolicy", "ProjectionPolicy"))
 			}
 		}
 		if valueSet(opts.ColumnAction.SetTags) {
@@ -396,11 +412,6 @@ func (opts *AlterTableOptions) validate() error {
 			if !exactlyOneValueSet(opts.ConstraintAction.Drop.ConstraintName, opts.ConstraintAction.Drop.PrimaryKey, opts.ConstraintAction.Drop.Unique, opts.ConstraintAction.Drop.ForeignKey) {
 				errs = append(errs, errExactlyOneOf("AlterTableOptions.ConstraintAction.Drop", "ConstraintName", "PrimaryKey", "Unique", "ForeignKey"))
 			}
-		}
-	}
-	if valueSet(opts.ExternalTableAction) {
-		if !valueSet(opts.ExternalTableAction.Add) {
-			errs = append(errs, errNotSet("AlterTableOptions.ExternalTableAction", "Add"))
 		}
 	}
 	if valueSet(opts.SearchOptimizationAction) {

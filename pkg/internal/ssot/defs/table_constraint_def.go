@@ -10,7 +10,7 @@ import (
 var MatchType = ssot.NewEnum("MatchType", "MatchTypes", "FULL", "SIMPLE", "PARTIAL")
 
 // The constraint structs follow https://docs.snowflake.com/en/sql-reference/sql/create-table-constraint.
-// Tables and iceberg tables embed them, so every struct keeps its name with StructName.
+// Table emits them with SharedToOpts, and iceberg tables reference them. Every struct keeps its name with StructName.
 //
 // Both wrappers nest UNIQUE or PRIMARY KEY, FOREIGN KEY, and CHECK as children, so one call to
 // QueryStructFromAttribute builds all of them.
@@ -161,7 +161,7 @@ var TableColumnInlineConstraint = ssot.Attribute{
 	Type:         ssot.AttrObject,
 	SqlOnly:      true,
 	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableColumnInlineConstraint")),
+	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableColumnInlineConstraint"), ssot.SharedToOpts()),
 	Children: []ssot.Attribute{
 		TableColumnInlineUniquePK,
 		TableColumnInlineFK,
@@ -199,7 +199,7 @@ var TableOutOfLineConstraint = ssot.Attribute{
 	Type:         ssot.AttrObject,
 	SqlOnly:      true,
 	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableOutOfLineConstraint")),
+	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableOutOfLineConstraint"), ssot.SharedToOpts()),
 	Children: []ssot.Attribute{
 		TableOutOfLineUniquePK,
 		TableOutOfLineFK,

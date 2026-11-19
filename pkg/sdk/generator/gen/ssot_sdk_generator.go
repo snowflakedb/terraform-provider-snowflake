@@ -357,9 +357,8 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 
 // CreateOperationFromObject adds CREATE from obj.SdkConfig.
 // Clauses are Create, optional OR REPLACE, Create.KeywordsBefore, SQL, optional IF NOT EXISTS, Name, then Create.Clauses, then ValidIdentifier.
-// helperStructs are query structs the attribute clauses name, other than an enum list item.
+// helperStructs are extra query structs to emit beside the statement, such as a list-parameter item.
 // A list of enums adds its item query struct here. The struct name is the enum name plus ListItem, and its field is Value.
-// Query structs named by a NestedStruct clause are embedded in the statement, not emitted as helper structs.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
 	if obj.VariantOf != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
@@ -369,38 +368,7 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
 	i.checkStructShapes = true
-	supplied, helpers := splitSuppliedStructs(obj, helperStructs)
-	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg, supplied), append(helpers, enumListItemStructs(obj)...)...)
-}
-
-// splitSuppliedStructs separates the helper structs named by a struct clause of CREATE from the rest.
-func splitSuppliedStructs(obj ssot.Object, helperStructs []IntoField) (map[string]*QueryStruct, []IntoField) {
-	named := make(map[string]struct{})
-	for _, list := range [][]*ssot.Attribute{obj.Create.KeywordsBefore, obj.Create.Clauses} {
-		for _, attr := range list {
-			if attr == nil || attr.IsTags() || attr.IsParameters() {
-				continue
-			}
-			if clause := attr.EffectiveSqlClause(ssot.ClauseCreate); clause.Present && clause.Kind == ssot.SqlKindPreexistingStruct {
-				named[clause.StructName] = struct{}{}
-			}
-		}
-	}
-	supplied := make(map[string]*QueryStruct, len(named))
-	helpers := make([]IntoField, 0, len(helperStructs))
-	for _, helper := range helperStructs {
-		if qs, ok := helper.(*QueryStruct); ok {
-			if _, used := named[qs.name]; used {
-				if _, dup := supplied[qs.name]; dup {
-					panic(fmt.Sprintf("object %q: struct %q is supplied twice", obj.Name, qs.name))
-				}
-				supplied[qs.name] = qs
-				continue
-			}
-		}
-		helpers = append(helpers, helper)
-	}
-	return supplied, helpers
+	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg, nil), append(helperStructs, enumListItemStructs(obj)...)...)
 }
 
 // CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
@@ -906,9 +874,11 @@ func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, cl
 
 // AlterOperationFromObject adds ALTER from obj.SdkConfig.
 // Clauses are Alter, SQL, optional IF EXISTS, Name, then obj.Alter in order, then ValidIdentifier.
+// helpers are preexisting structs a block or SET names. A helper whose name is a block attribute's
+// SqlStruct is that block. The rest are SET clauses, such as a stage file format.
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
 // ExactlyOneValueSet follows obj.Alter.
-func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
+func (i *Interface) AlterOperationFromObject(obj ssot.Object, helpers ...*QueryStruct) *Interface {
 	if obj.VariantOf != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
 	}
@@ -917,7 +887,7 @@ func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
 	}
 	i.checkStructShapes = true
-	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg)).withEnumListItems(obj)
+	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg, suppliedQueryStructs(helpers))).withEnumListItems(obj)
 }
 
 // AlterVariantOperationsFromObject emits each variant ALTER as a custom method.
@@ -939,7 +909,7 @@ func (i *Interface) AlterVariantOperationsFromObject(base ssot.Object) *Interfac
 			panic(fmt.Sprintf("object %q: variant ALTER has no spec", variant.Name))
 		}
 		cfg := variant.VariantAlterConfig()
-		q := alterQueryStructFromConfig(variant, cfg)
+		q := alterQueryStructFromConfig(variant, cfg, nil)
 		i = i.CustomOperation(variant.VariantAlterMethod(base.Name), cfg.AlterDoc, q)
 		i = i.withEnumListItems(variant)
 	}
@@ -1004,9 +974,10 @@ func enumListItemFields(obj ssot.Object) []*Field {
 	return out
 }
 
-func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, supplied map[string]*QueryStruct) *QueryStruct {
 	q := NewQueryStruct(cfg.AlterQueryStructName).Alter().SQL(cfg.AlterSql)
 	q.owner = obj.Name
+	q.suppliedStructs = supplied
 	if !cfg.AlterWithoutIfExists {
 		q = q.IfExists()
 	}
@@ -1076,10 +1047,28 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 			}
 			q = q.OptionalAssignmentWithFieldName(clause.SQL, "string", ParameterOptions().NoEquals(), clause.Field)
 		case ssot.AlterClauseBlock:
-			block := queryStructFromBlockAttribute(obj.Name, *clause.Block)
-			var transformer FieldTransformer = ParameterOptions().SQL(clause.SQL)
-			if clause.BlockKeyword {
-				transformer = KeywordOptions().SQL(clause.SQL)
+			block := alterBlockQueryStruct(q, obj, clause)
+			if clause.SharedToOpts {
+				block = block.WithSharedToOpts()
+			}
+			var transformer FieldTransformer
+			switch clause.BlockJoin {
+			case ssot.AlterBlockJoinComma:
+				opts := ListOptions().NoParentheses()
+				if clause.SQL != "" {
+					opts = opts.SQL(clause.SQL)
+				}
+				transformer = opts
+			case ssot.AlterBlockJoinKeyword:
+				opts := KeywordOptions()
+				if clause.SQL != "" {
+					opts = opts.SQL(clause.SQL)
+				}
+				transformer = opts
+			case ssot.AlterBlockJoinParameter:
+				transformer = ParameterOptions().SQL(clause.SQL)
+			default:
+				panic(fmt.Sprintf("object %q: ALTER block %q has unknown join %q", obj.Name, clause.Field, clause.BlockJoin))
 			}
 			q = q.OptionalQueryStructField(clause.Field, block, transformer)
 		default:
@@ -1107,14 +1096,19 @@ func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *Que
 	if cfg.AlterSetList {
 		setOptions = ListOptions().NoParentheses().SQL("SET")
 	}
-	return q.OptionalQueryStructField("Set", AlterSetQueryStruct(obj, cfg), setOptions)
+	return q.OptionalQueryStructField("Set", newAlterSetQueryStruct(obj, cfg, q.suppliedStructs), setOptions)
 }
 
 // AlterSetQueryStruct builds the SET struct. An object can call it before ALTER itself is generated.
 func AlterSetQueryStruct(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+	return newAlterSetQueryStruct(obj, cfg, nil)
+}
+
+func newAlterSetQueryStruct(obj ssot.Object, cfg ssot.SdkGenerator, supplied map[string]*QueryStruct) *QueryStruct {
 	setParams := parametersForStatement(obj, obj.SetAttributes(), "SET")
 	setStruct := NewQueryStruct(obj.Name + "Set")
 	setStruct.owner = obj.Name
+	setStruct.suppliedStructs = supplied
 	setStruct = setStruct.appendSqlSequenceParams(obj.SetAttributes(), attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
 	setStruct = setStruct.withConflictingAlterGroups(obj.AlterSetGroups(), attributeSqlSet, setParams)
@@ -1139,6 +1133,37 @@ func AlterUnsetQueryStruct(obj ssot.Object) *QueryStruct {
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
 	unsetStruct = unsetStruct.withConflictingAlterGroups(obj.AlterUnsetGroups(), attributeSqlUnset, unsetParams)
 	return unsetStruct
+}
+
+// alterBlockQueryStruct is the struct a block clause embeds. A SET or UNSET projection (BlockProjection) is built from the
+// attribute. For the CREATE struct, a helper whose name is the block attribute's SqlStruct wins. Otherwise the block is built from the attribute.
+func alterBlockQueryStruct(q *QueryStruct, obj ssot.Object, clause ssot.AlterClause) *QueryStruct {
+	if use := clause.BlockProjection(); use != ssot.ClauseCreate {
+		return queryStructFromObjectSupplied(obj.Name, *clause.Block, use, q.suppliedStructs)
+	}
+	name := clause.Block.SqlStructName(obj.Name)
+	if supplied, ok := q.suppliedStructs[name]; ok {
+		delete(q.suppliedStructs, name)
+		return supplied
+	}
+	if clause.Block.IsObjectList() {
+		return queryStructFromObjectList(obj.Name, *clause.Block)
+	}
+	return queryStructFromObjectSupplied(obj.Name, *clause.Block, ssot.ClauseCreate, q.suppliedStructs)
+}
+
+func suppliedQueryStructs(helpers []*QueryStruct) map[string]*QueryStruct {
+	supplied := make(map[string]*QueryStruct, len(helpers))
+	for _, helper := range helpers {
+		if helper == nil || helper.name == "" {
+			panic("alter query struct helper has no name")
+		}
+		if _, dup := supplied[helper.name]; dup {
+			panic(fmt.Sprintf("alter query struct helper %q is supplied twice", helper.name))
+		}
+		supplied[helper.name] = helper
+	}
+	return supplied
 }
 
 // withConflictingAlterGroups adds ConflictingGroups for each pair of groups of a SET or UNSET block, in declaration order.

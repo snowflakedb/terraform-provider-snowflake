@@ -7,34 +7,6 @@ import (
 	"strings"
 )
 
-type TableConstraintType string
-
-const (
-	TableConstraintTypePrimaryKey TableConstraintType = "PRIMARY KEY"
-	TableConstraintTypeUnique     TableConstraintType = "UNIQUE"
-	TableConstraintTypeForeignKey TableConstraintType = "FOREIGN KEY"
-)
-
-var AllTableConstraintTypes = []TableConstraintType{
-	TableConstraintTypePrimaryKey,
-	TableConstraintTypeUnique,
-	TableConstraintTypeForeignKey,
-}
-
-func ToTableConstraintType(s string) (TableConstraintType, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(TableConstraintTypePrimaryKey):
-		return TableConstraintTypePrimaryKey, nil
-	case string(TableConstraintTypeUnique):
-		return TableConstraintTypeUnique, nil
-	case string(TableConstraintTypeForeignKey):
-		return TableConstraintTypeForeignKey, nil
-	default:
-		return "", fmt.Errorf("invalid table constraint type: %s", s)
-	}
-}
-
 type TableScope string
 
 const (
@@ -87,27 +59,31 @@ func ToTableKind(s string) (TableKind, error) {
 	}
 }
 
-type CloneMoment string
+type TableConstraintType string
 
 const (
-	CloneMomentAt     CloneMoment = "AT"
-	CloneMomentBefore CloneMoment = "BEFORE"
+	TableConstraintTypePrimaryKey TableConstraintType = "PRIMARY KEY"
+	TableConstraintTypeUnique     TableConstraintType = "UNIQUE"
+	TableConstraintTypeForeignKey TableConstraintType = "FOREIGN KEY"
 )
 
-var AllCloneMoments = []CloneMoment{
-	CloneMomentAt,
-	CloneMomentBefore,
+var AllTableConstraintTypes = []TableConstraintType{
+	TableConstraintTypePrimaryKey,
+	TableConstraintTypeUnique,
+	TableConstraintTypeForeignKey,
 }
 
-func ToCloneMoment(s string) (CloneMoment, error) {
+func ToTableConstraintType(s string) (TableConstraintType, error) {
 	s = strings.ToUpper(s)
 	switch s {
-	case string(CloneMomentAt):
-		return CloneMomentAt, nil
-	case string(CloneMomentBefore):
-		return CloneMomentBefore, nil
+	case string(TableConstraintTypePrimaryKey):
+		return TableConstraintTypePrimaryKey, nil
+	case string(TableConstraintTypeUnique):
+		return TableConstraintTypeUnique, nil
+	case string(TableConstraintTypeForeignKey):
+		return TableConstraintTypeForeignKey, nil
 	default:
-		return "", fmt.Errorf("invalid clone moment: %s", s)
+		return "", fmt.Errorf("invalid table constraint type: %s", s)
 	}
 }
 
@@ -188,5 +164,29 @@ func ToTableSearchMethod(s string) (TableSearchMethod, error) {
 		return TableSearchMethodFullText, nil
 	default:
 		return "", fmt.Errorf("invalid table search method: %s", s)
+	}
+}
+
+type CloneMoment string
+
+const (
+	CloneMomentAt     CloneMoment = "AT"
+	CloneMomentBefore CloneMoment = "BEFORE"
+)
+
+var AllCloneMoments = []CloneMoment{
+	CloneMomentAt,
+	CloneMomentBefore,
+}
+
+func ToCloneMoment(s string) (CloneMoment, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(CloneMomentAt):
+		return CloneMomentAt, nil
+	case string(CloneMomentBefore):
+		return CloneMomentBefore, nil
+	default:
+		return "", fmt.Errorf("invalid clone moment: %s", s)
 	}
 }

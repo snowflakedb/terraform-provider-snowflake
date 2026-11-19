@@ -76,7 +76,6 @@ func init() {
 		streamlitsDef,
 		streamsDef,
 		systemFunctionsDef,
-		tablesDef,
 		tagReferencesDef,
 		tagsDef,
 		tasksDef,

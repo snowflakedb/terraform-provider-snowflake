@@ -116,23 +116,33 @@ func (v *QueryStruct) appendStaticClause(attr ssot.Attribute, clause ssot.SqlCla
 	return v.SQLWithCustomFieldName(clause.Field, clause.SQL)
 }
 
-// appendPreexistingStructClause embeds the supplied query struct that the clause names.
+// appendPreexistingStructClause embeds the struct of the clause, built from the attribute that StructAttr names.
 func (v *QueryStruct) appendPreexistingStructClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
-	nested, ok := v.suppliedStructs[clause.StructName]
-	if !ok {
-		panic(fmt.Sprintf("attribute %q: struct clause names %q, which the SDK definition did not supply", attr.Name, clause.StructName))
-	}
-	transformer := listOptionsFromClause(clause, required)
+	nested := v.preexistingStruct(attr, clause)
+	transformer := structFieldTransformer(clause, required)
 	name := clauseGoFieldName(attr, clause)
-	if required {
+	switch {
+	case attr.Type == ssot.AttrList:
+		v = v.ListQueryStructField(name, nested, transformer)
+	case required:
 		v = v.QueryStructField(name, nested, transformer)
-	} else {
+	default:
 		v = v.OptionalQueryStructField(name, nested, transformer)
 	}
-	if clause.Shared {
-		v.fields[len(v.fields)-1].IsShared = true
-	}
 	return v
+}
+
+// preexistingStruct is the query struct of a preexisting clause: built from StructAttr in the statement of StructUse.
+// A helper whose name is that generated struct name is reused. A shared struct is built too: its fields keep the DTO
+// complete, and the statement only calls its toOpts.
+func (v *QueryStruct) preexistingStruct(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
+	if clause.StructAttr == nil {
+		panic(fmt.Sprintf("attribute %q: preexisting struct clause has no attribute", attr.Name))
+	}
+	if supplied, ok := v.suppliedStructs[clause.StructAttr.SqlStructNameFor(v.owner, clause.StructUse)]; ok {
+		return supplied
+	}
+	return queryStructFromObjectSupplied(v.owner, *clause.StructAttr, clause.StructUse, v.suppliedStructs)
 }
 
 // appendPredefinedClause adds a field of a Go type the SDK already has.
@@ -142,17 +152,7 @@ func (v *QueryStruct) appendPredefinedClause(attr ssot.Attribute, clause ssot.Sq
 	}
 	name := clauseGoFieldName(attr, clause)
 	if clause.KeywordShape {
-		opts := KeywordOptions()
-		if clause.SQL != "" {
-			opts = opts.SQL(clause.SQL)
-		}
-		if clause.Parentheses == ssot.SqlParensYes {
-			opts = opts.Parentheses()
-		}
-		if required {
-			opts = opts.Required()
-		}
-		return v.PredefinedQueryStructField(name, clause.GoType, opts)
+		return v.PredefinedQueryStructField(name, clause.GoType, keywordShapeOptions(clause, required))
 	}
 	if clause.NoComma {
 		return v.PredefinedQueryStructField(name, clause.GoType, listOptionsFromClause(clause, required))
@@ -432,6 +432,29 @@ func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.Sq
 		return v.WithValidation(ValidIdentifier, name)
 	}
 	return v.OptionalIdentifier(name, clause.IdType, opts).WithValidation(ValidIdentifierIfSet, name)
+}
+
+// keywordShapeOptions writes a field as a keyword: Sql is the text before it and Parentheses() wraps it.
+func keywordShapeOptions(clause ssot.SqlClause, required bool) *KeywordTransformer {
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if required {
+		opts = opts.Required()
+	}
+	return opts
+}
+
+// structFieldTransformer is the shape of a nested struct field: a keyword with KeywordShape, or a list.
+func structFieldTransformer(clause ssot.SqlClause, required bool) FieldTransformer {
+	if clause.KeywordShape {
+		return keywordShapeOptions(clause, required)
+	}
+	return listOptionsFromClause(clause, required)
 }
 
 func listOptionsFromClause(clause ssot.SqlClause, required bool) *ListTransformer {

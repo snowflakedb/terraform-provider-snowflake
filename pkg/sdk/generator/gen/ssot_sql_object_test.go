@@ -557,9 +557,27 @@ func Test_CreateOperationFromObject_objectAsParameter(t *testing.T) {
 func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T) {
 	scope := ssot.NewEnum("WidgetScope", "WidgetScopes", "GLOBAL", "LOCAL")
 	scopeAttr := ssot.Attribute{Name: "scope", Type: ssot.AttrEnum, Enum: scope, SqlOnly: true, CreateSql: ssot.EnumKeyword()}
-	columns := ssot.Attribute{Name: "columns_and_constraints", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("CreateWidgetColumns", ssot.Parentheses(), ssot.Required())}
+	widgetColumns := ssot.Attribute{
+		Name:      "create_columns",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.StructName("CreateWidgetColumns")),
+		Children: []ssot.Attribute{
+			{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.Required())},
+		},
+	}
+	columns := ssot.Attribute{Name: "columns_and_constraints", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&widgetColumns, ssot.Parentheses(), ssot.Required())}
 	clusterBy := ssot.Attribute{Name: "cluster_by", Type: ssot.AttrList, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("CLUSTER BY"))}
-	format := ssot.Attribute{Name: "stage_file_format", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("WidgetFileFormat", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT ="))}
+	widgetFormat := ssot.Attribute{
+		Name:      "file_format",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.StructName("WidgetFileFormat")),
+		Children: []ssot.Attribute{
+			{Name: "format_name", Type: ssot.AttrString, SqlOnly: true},
+		},
+	}
+	format := ssot.Attribute{Name: "stage_file_format", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&widgetFormat, ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT ="))}
 	policy := ssot.Attribute{
 		Name:      "row_access_policy",
 		Type:      ssot.AttrObject,
@@ -604,7 +622,7 @@ func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T
 	}
 	unrelated := NewQueryStruct("WidgetUnrelated").Text("Name", KeywordOptions())
 
-	got := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newColumns(), newFormat(), unrelated)
+	got := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, unrelated)
 
 	want := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
@@ -628,12 +646,6 @@ func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T
 		unrelated,
 	)
 	requireSameOperations(t, want, got)
-
-	t.Run("a named struct that is not supplied panics", func(t *testing.T) {
-		require.PanicsWithValue(t, `attribute "columns_and_constraints": struct clause names "CreateWidgetColumns", which the SDK definition did not supply`, func() {
-			NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newFormat())
-		})
-	})
 }
 
 func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
@@ -847,22 +859,21 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
-	supplied := func() []*QueryStruct {
-		return []*QueryStruct{
-			NewQueryStruct("TableColumnInlineConstraint"),
-			NewQueryStruct("TableColumnMaskingPolicy"),
-			NewQueryStruct("TableSetColumnMaskingPolicy"),
-			NewQueryStruct("TableUnsetColumnMaskingPolicy"),
-			NewQueryStruct("TableRenameColumnAction"),
-			NewQueryStruct("TableSetColumnTags"),
-			NewQueryStruct("TableUnsetColumnTags"),
-			NewQueryStruct("TableDropColumnAction"),
-		}
-	}
-	helpers := supplied()
-	got := QueryStructFromAttribute("Table", attr, helpers...)
+	got := QueryStructFromAttribute("Table", attr)
 
-	expected := supplied()
+	// Table emits the structs the column statements embed, and each one carries its standalone toOpts.
+	inlineConstraint := QueryStructFromAttribute("Table", ssotdefs.TableColumnInlineConstraint)
+	maskingPolicy := QueryStructFromAttribute("Table", ssotdefs.TableColumnMaskingPolicy)
+	projectionPolicy := QueryStructFromAttribute("Table", ssotdefs.TableColumnProjectionPolicy)
+	renameColumn := QueryStructFromAttribute("Table", ssotdefs.TableRenameColumnAction)
+	setMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseSet)
+	unsetMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseUnset)
+	setProjection := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnProjectionPolicy, ssot.ClauseSet)
+	unsetProjection := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnProjectionPolicy, ssot.ClauseUnset)
+	setTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseSet)
+	unsetTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseUnset)
+	dropColumns := QueryStructFromAttribute("Table", ssotdefs.TableDropColumnAction)
+
 	add := NewQueryStruct("TableColumnAddAction").
 		SQL("COLUMN").
 		IfNotExists().
@@ -883,8 +894,9 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 				WithValidation(ExactlyOneValueSet, "Expression", "Identity"),
 			ListOptions().NoComma()).
 		OptionalSQL("NOT NULL").
-		OptionalSharedQueryStructField("InlineConstraint", expected[0], ListOptions().NoComma()).
-		OptionalSharedQueryStructField("MaskingPolicy", expected[1], ListOptions().NoComma()).
+		OptionalQueryStructField("InlineConstraint", inlineConstraint, ListOptions().NoComma()).
+		OptionalQueryStructField("MaskingPolicy", maskingPolicy, ListOptions().NoComma()).
+		OptionalQueryStructField("ProjectionPolicy", projectionPolicy, ListOptions().NoComma()).
 		OptionalTags().
 		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes())
 	alter := NewQueryStruct("TableColumnAlterAction").
@@ -908,14 +920,16 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 		WithValidation(ExactlyOneValueSet, "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment")
 	want := NewQueryStruct("TableColumnAction").
 		OptionalQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
-		OptionalSharedQueryStructField("Rename", expected[4], ListOptions().NoComma()).
+		OptionalQueryStructField("Rename", renameColumn, ListOptions().NoComma()).
 		ListQueryStructField("Alter", alter, KeywordOptions().SQL("ALTER")).
-		OptionalSharedQueryStructField("SetMaskingPolicy", expected[2], ListOptions().NoComma()).
-		OptionalSharedQueryStructField("UnsetMaskingPolicy", expected[3], ListOptions().NoComma()).
-		OptionalSharedQueryStructField("SetTags", expected[5], ListOptions().NoComma()).
-		OptionalSharedQueryStructField("UnsetTags", expected[6], ListOptions().NoComma()).
-		OptionalSharedQueryStructField("DropColumns", expected[7], ListOptions().NoComma()).
-		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetTags", "UnsetTags", "DropColumns")
+		OptionalQueryStructField("SetMaskingPolicy", setMasking, ListOptions().NoComma()).
+		OptionalQueryStructField("UnsetMaskingPolicy", unsetMasking, ListOptions().NoComma()).
+		OptionalQueryStructField("SetProjectionPolicy", setProjection, ListOptions().NoComma()).
+		OptionalQueryStructField("UnsetProjectionPolicy", unsetProjection, ListOptions().NoComma()).
+		OptionalQueryStructField("SetTags", setTags, ListOptions().NoComma()).
+		OptionalQueryStructField("UnsetTags", unsetTags, ListOptions().NoComma()).
+		OptionalQueryStructField("DropColumns", dropColumns, ListOptions().NoComma()).
+		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetProjectionPolicy", "UnsetProjectionPolicy", "SetTags", "UnsetTags", "DropColumns")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
 
@@ -956,7 +970,7 @@ func Test_queryStructFromObject_tableColumnActionStructs(t *testing.T) {
 		SQL("RENAME COLUMN").
 		Text("OldName", KeywordOptions().Required().DoubleQuotes()).
 		AssignmentWithFieldName("TO", "string", ParameterOptions().NoEquals().DoubleQuotes().Required(), "NewName").
-		IntoField(), rename.IntoField())
+		WithSharedToOpts().IntoField(), rename.IntoField())
 	setMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseSet)
 	require.Equal(t, NewQueryStruct("TableSetColumnMaskingPolicy").
 		SQL("ALTER COLUMN").
@@ -966,32 +980,32 @@ func Test_queryStructFromObject_tableColumnActionStructs(t *testing.T) {
 		ListAssignment("USING", "Column", ParameterOptions().NoEquals().Parentheses()).
 		OptionalSQL("FORCE").
 		WithValidation(ValidIdentifier, "MaskingPolicy").
-		IntoField(), setMasking.IntoField())
+		WithSharedToOpts().IntoField(), setMasking.IntoField())
 	unsetMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseUnset)
 	require.Equal(t, NewQueryStruct("TableUnsetColumnMaskingPolicy").
 		SQL("ALTER COLUMN").
 		Text("Name", KeywordOptions().Required().DoubleQuotes()).
 		SQL("UNSET").
 		SQL("MASKING POLICY").
-		IntoField(), unsetMasking.IntoField())
+		WithSharedToOpts().IntoField(), unsetMasking.IntoField())
 	setTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseSet)
 	require.Equal(t, NewQueryStruct("TableSetColumnTags").
 		SQL("ALTER COLUMN").
 		Text("Name", KeywordOptions().Required().DoubleQuotes()).
 		SetTags().
-		IntoField(), setTags.IntoField())
+		WithSharedToOpts().IntoField(), setTags.IntoField())
 	unsetTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseUnset)
 	require.Equal(t, NewQueryStruct("TableUnsetColumnTags").
 		SQL("ALTER COLUMN").
 		Text("Name", KeywordOptions().Required().DoubleQuotes()).
 		UnsetTags().
-		IntoField(), unsetTags.IntoField())
+		WithSharedToOpts().IntoField(), unsetTags.IntoField())
 	drop := QueryStructFromAttribute("Table", ssotdefs.TableDropColumnAction)
 	require.Equal(t, NewQueryStruct("TableDropColumnAction").
 		SQL("DROP COLUMN").
 		OptionalSQL("IF EXISTS").
 		PredefinedQueryStructField("Columns", "[]Column", ParameterOptions().NoEquals().Required()).
-		IntoField(), drop.IntoField())
+		WithSharedToOpts().IntoField(), drop.IntoField())
 }
 
 func Test_queryStructFromObject_tableConstraints(t *testing.T) {
@@ -1008,7 +1022,7 @@ func Test_queryStructFromObject_tableConstraints(t *testing.T) {
 				ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&tc.wrapper}}})
 			})
 			got := QueryStructFromAttribute("Table", tc.wrapper)
-			want := NewQueryStruct(tc.wrapper.CreateSql.StructName)
+			want := NewQueryStruct(tc.wrapper.CreateSql.StructName).WithSharedToOpts()
 			for _, kind := range tc.kinds {
 				want = want.OptionalQueryStructField(kind.CreateSql.Field, QueryStructFromAttribute("Table", kind), ListOptions().NoComma())
 			}
@@ -1023,8 +1037,7 @@ func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
-	add := NewQueryStruct("TableOutOfLineConstraint")
-	got := QueryStructFromAttribute("Table", attr, add)
+	got := QueryStructFromAttribute("Table", attr)
 	rename := NewQueryStruct("TableConstraintRenameAction").
 		Text("OldName", KeywordOptions().DoubleQuotes().Required()).
 		AssignmentWithFieldName("TO", "string", ParameterOptions().DoubleQuotes().NoEquals().Required(), "NewName")
@@ -1051,7 +1064,7 @@ func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
 		OptionalSQL("RESTRICT").
 		WithValidation(ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
 	want := NewQueryStruct("TableConstraintAction").
-		OptionalSharedQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
+		OptionalQueryStructField("Add", QueryStructFromAttribute("Table", ssotdefs.TableOutOfLineConstraint), ListOptions().NoComma().SQL("ADD")).
 		OptionalQueryStructField("Rename", rename, ListOptions().NoComma().SQL("RENAME CONSTRAINT")).
 		OptionalQueryStructField("Alter", alter, ListOptions().NoComma().SQL("ALTER")).
 		OptionalQueryStructField("Drop", drop, ListOptions().NoComma().SQL("DROP")).

@@ -15,8 +15,8 @@ type QueryStruct struct {
 	unsetParameters []ParameterField
 	// owner is the ssot object name that the statement struct belongs to. It prefixes the names of nested structs.
 	owner string
-	// suppliedStructs are the nested query structs that SDK-definition code passes to a FromObject call,
-	// by struct name. A struct clause of an ssot attribute embeds one of them.
+	// suppliedStructs are nested query structs that SDK-definition code passes to a FromObject call, by struct name.
+	// An ALTER block or a PreexistingStructOf clause whose generated name matches reuses one of them.
 	suppliedStructs map[string]*QueryStruct
 }
 

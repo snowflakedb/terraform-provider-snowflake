@@ -98,124 +98,6 @@ type IcebergTableColumn struct {
 	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
-type TableColumnInlineConstraint struct {
-	UniquePK *TableColumnInlineUniquePK `ddl:"list,no_comma"`
-	FK       *TableColumnInlineFK       `ddl:"list,no_comma"`
-	CH       *TableColumnInlineCH       `ddl:"list,no_comma"`
-}
-
-type TableColumnInlineUniquePK struct {
-	Name               *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	Unique             *bool   `ddl:"keyword" sql:"UNIQUE"`
-	PrimaryKey         *bool   `ddl:"keyword" sql:"PRIMARY KEY"`
-	Enforced           *bool   `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool   `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool   `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool   `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool   `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool   `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool   `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool   `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool   `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool   `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool   `ddl:"keyword" sql:"RELY"`
-	Norely             *bool   `ddl:"keyword" sql:"NORELY"`
-}
-
-type TableColumnInlineFK struct {
-	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
-	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
-	RefColumn          []Column               `ddl:"keyword,parentheses"`
-	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
-	On                 *ForeignKeyOnAction    `ddl:"keyword"`
-	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
-	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
-}
-
-type TableColumnInlineCH struct {
-	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	check            bool    `ddl:"static" sql:"CHECK"`
-	openParen        bool    `ddl:"static" sql:"("`
-	Expression       string  `ddl:"keyword,no_quotes"`
-	closeParen       bool    `ddl:"static" sql:")"`
-	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
-	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
-}
-
-type TableColumnProjectionPolicy struct {
-	ProjectionPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"PROJECTION POLICY"`
-}
-
-type TableOutOfLineConstraint struct {
-	UniquePK *TableOutOfLineUniquePK `ddl:"list,no_comma"`
-	FK       *TableOutOfLineFK       `ddl:"list,no_comma"`
-	CH       *TableOutOfLineCH       `ddl:"list,no_comma"`
-}
-
-type TableOutOfLineUniquePK struct {
-	Name               *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	Unique             *bool    `ddl:"keyword" sql:"UNIQUE"`
-	PrimaryKey         *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
-	Columns            []Column `ddl:"keyword,parentheses"`
-	Enforced           *bool    `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool    `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool    `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool    `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool    `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool    `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool    `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool    `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool    `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool    `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool    `ddl:"keyword" sql:"RELY"`
-	Norely             *bool    `ddl:"keyword" sql:"NORELY"`
-	Comment            *string  `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-}
-
-type TableOutOfLineFK struct {
-	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	foreignKey         bool                   `ddl:"static" sql:"FOREIGN KEY"`
-	Columns            []Column               `ddl:"keyword,parentheses"`
-	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
-	RefColumns         []Column               `ddl:"keyword,parentheses"`
-	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
-	On                 *ForeignKeyOnAction    `ddl:"keyword"`
-	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
-	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
-	Comment            *string                `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-}
-
-type TableOutOfLineCH struct {
-	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	check            bool    `ddl:"static" sql:"CHECK"`
-	openParen        bool    `ddl:"static" sql:"("`
-	Expression       string  `ddl:"keyword,no_quotes"`
-	closeParen       bool    `ddl:"static" sql:")"`
-	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
-	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
-}
-
 type IcebergTablePartitionExpression struct {
 	Identity *string                        `ddl:"keyword,double_quotes"`
 	Bucket   *IcebergTablePartitionBucket   `ddl:"keyword"`
@@ -393,23 +275,6 @@ type IcebergTableAddColumnAction struct {
 	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
 }
 
-type TableColumnMaskingPolicy struct {
-	MaskingPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
-	Using         []Column               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
-}
-
-type TableDropColumnAction struct {
-	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
-	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
-	Columns    []Column `ddl:"parameter,no_equals"`
-}
-
-type TableRenameColumnAction struct {
-	renameColumn bool   `ddl:"static" sql:"RENAME COLUMN"`
-	OldName      string `ddl:"keyword,double_quotes"`
-	NewName      string `ddl:"parameter,double_quotes,no_equals" sql:"TO"`
-}
-
 type IcebergTableAlterColumnAction struct {
 	column           bool                `ddl:"static" sql:"COLUMN"`
 	ColumnName       string              `ddl:"keyword,double_quotes"`
@@ -420,49 +285,6 @@ type IcebergTableAlterColumnAction struct {
 	UnsetComment     *bool               `ddl:"keyword" sql:"UNSET COMMENT"`
 	SetWriteDefault  *string             `ddl:"parameter,no_equals" sql:"SET WRITE DEFAULT"`
 	DropWriteDefault *bool               `ddl:"keyword" sql:"DROP WRITE DEFAULT"`
-}
-
-type TableSetColumnMaskingPolicy struct {
-	alterColumn   bool                   `ddl:"static" sql:"ALTER COLUMN"`
-	Name          string                 `ddl:"keyword,double_quotes"`
-	set           bool                   `ddl:"static" sql:"SET"`
-	MaskingPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
-	Using         []Column               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
-	Force         *bool                  `ddl:"keyword" sql:"FORCE"`
-}
-
-type TableUnsetColumnMaskingPolicy struct {
-	alterColumn   bool   `ddl:"static" sql:"ALTER COLUMN"`
-	Name          string `ddl:"keyword,double_quotes"`
-	unset         bool   `ddl:"static" sql:"UNSET"`
-	maskingPolicy bool   `ddl:"static" sql:"MASKING POLICY"`
-}
-
-type TableSetColumnProjectionPolicy struct {
-	alterColumn      bool                   `ddl:"static" sql:"ALTER COLUMN"`
-	Name             string                 `ddl:"keyword,double_quotes"`
-	set              bool                   `ddl:"static" sql:"SET"`
-	ProjectionPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"PROJECTION POLICY"`
-	Force            *bool                  `ddl:"keyword" sql:"FORCE"`
-}
-
-type TableUnsetColumnProjectionPolicy struct {
-	alterColumn      bool   `ddl:"static" sql:"ALTER COLUMN"`
-	Name             string `ddl:"keyword,double_quotes"`
-	unset            bool   `ddl:"static" sql:"UNSET"`
-	projectionPolicy bool   `ddl:"static" sql:"PROJECTION POLICY"`
-}
-
-type TableSetColumnTags struct {
-	alterColumn bool             `ddl:"static" sql:"ALTER COLUMN"`
-	Name        string           `ddl:"keyword,double_quotes"`
-	SetTags     []TagAssociation `ddl:"keyword" sql:"SET TAG"`
-}
-
-type TableUnsetColumnTags struct {
-	alterColumn bool               `ddl:"static" sql:"ALTER COLUMN"`
-	Name        string             `ddl:"keyword,double_quotes"`
-	UnsetTags   []ObjectIdentifier `ddl:"keyword" sql:"UNSET TAG"`
 }
 
 type IcebergTableClusteringAction struct {

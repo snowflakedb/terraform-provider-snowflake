@@ -251,13 +251,15 @@ func (a Attribute) validateClauseField(use ClauseUse) bool {
 }
 
 // fieldNameUsesAttributeName reports that an empty Field is the camel-cased attribute name.
-// An object, a preexisting struct, and a value keyword do that. A parameter, a plain keyword, and an identifier use the SQL text.
+// An object and a preexisting struct do that. A value keyword does that only with SQL: without SQL, an empty Field writes
+// the attribute name as the keyword, so a FieldName that leaves the keyword out is not redundant. A parameter, a plain
+// keyword, and an identifier use the SQL text.
 func (c SqlClause) fieldNameUsesAttributeName() bool {
 	switch c.Kind {
 	case SqlKindObject, SqlKindPreexistingStruct:
 		return true
 	case SqlKindKeyword:
-		return c.ValueKeyword
+		return c.ValueKeyword && c.SQL != ""
 	default:
 		return false
 	}
@@ -320,7 +322,9 @@ func (a Attribute) validateUnsetSql(place attributePlace) bool {
 // restatesDefaultClause compares the stored clause with EffectiveSqlClause of a zero clause.
 // The type default itself lives in defaultSqlClause.
 func (a Attribute) restatesDefaultClause(use ClauseUse, place attributePlace) bool {
-	if !a.rawSqlClause(use).Present || !a.hasSqlDefault(use) {
+	// A SqlOnly attribute has no schema and the validator requires its own CREATE clause, so omitting the clause
+	// produces no SQL. The type default is not there to restate.
+	if a.SqlOnly || !a.rawSqlClause(use).Present || !a.hasSqlDefault(use) {
 		return false
 	}
 	omitted := a.withoutClause(use)
