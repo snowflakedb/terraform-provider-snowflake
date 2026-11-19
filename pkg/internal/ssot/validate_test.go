@@ -486,10 +486,10 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": ALTER text is empty`, func() {
 		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterText("")}}})
 	})
-	require.PanicsWithValue(t, `object "Widget": ALTER block needs a field, SQL, and an attribute`, func() {
+	require.PanicsWithValue(t, `object "Widget": ALTER block needs a field and an attribute`, func() {
 		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", nil)}}})
 	})
-	require.PanicsWithValue(t, `object "Widget": ALTER block "ADD X" needs a list of objects or an object with Children`, func() {
+	require.PanicsWithValue(t, `object "Widget": ALTER block "Add" needs a list of objects or an object with Children`, func() {
 		scalar := Attribute{Name: "x", Type: AttrString}
 		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", &scalar)}}})
 	})
@@ -501,6 +501,15 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 				AlterParameterBlock("Add", "ADD X", &block),
 				AlterKeywordBlock("AddAgain", "ADD X", &block),
 			}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": ALTER block "Add" has unknown join "bogus"`, func() {
+		block := Attribute{Name: "x", Type: AttrObject, SqlOnly: true, Children: []Attribute{{Name: "y", Type: AttrString}}}
+		ValidateObject(Object{
+			Name: "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{{
+				Kind: AlterClauseBlock, Field: "Add", SQL: "ADD X", Block: &block, BlockJoin: "bogus",
+			}}},
 		})
 	})
 	require.PanicsWithValue(t, `object "Widget": ALTER list "ADD TABLES" is an exactly-one branch`, func() {
@@ -1754,8 +1763,15 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(objectWith(policy))
 	})
+	widgetFormat := Attribute{
+		Name:      "file_format",
+		Type:      AttrObject,
+		SqlOnly:   true,
+		CreateSql: ObjectParameter(),
+		Children:  []Attribute{{Name: "format_name", Type: AttrString, SqlOnly: true}},
+	}
 	require.NotPanics(t, func() {
-		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat", Parentheses(), NoComma())}))
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStructOf(&widgetFormat, Parentheses(), NoComma())}))
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects`, func() {
 		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"))}))
@@ -1763,11 +1779,11 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE string list keyword has quotes or equals`, func() {
 		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, Elem: &Attribute{Type: AttrString}, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"), SingleQuotes())}))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting struct clause has no struct name`, func() {
-		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("")}))
+	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting struct clause has no attribute`, func() {
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStructOf(nil)}))
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting_struct clause is CREATE only`, func() {
-		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat"), SetSql: PreexistingStruct("WidgetFormat")}
+		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStructOf(&widgetFormat), SetSql: PreexistingStructOf(&widgetFormat)}
 		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&attr)}}})
 	})
 }

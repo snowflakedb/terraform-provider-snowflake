@@ -417,7 +417,9 @@ OptionalSharedQueryStructField("Secrets", sharedStruct, g.ParameterOptions().SQL
 
 `SharedQueryStructField` and `ListSharedQueryStructField` do the same for a required field and for a list. The list mapping calls `.toOpts()` on each element.
 
-See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go](defs/notebooks_def.go) (reuser). [tables_def.go](defs/tables_def.go) reuses the constraint structs that [iceberg_tables_def.go](defs/iceberg_tables_def.go) generates. `WithSharedToOpts()` on those structs stops the generated `toOpts` from using the iceberg column-list variables, so iceberg tables emit the standalone methods and tables call them.
+See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go](defs/notebooks_def.go) (reuser).
+
+For tables, the originator is the Table SSOT definition in [table_def.go](../internal/ssot/defs/table_def.go). It marks the clauses that produce shared structs (column masking/projection policies, inline and out-of-line constraints, rename/drop column actions, set/unset tags and policies) with `ssot.SharedToOpts()`, so `tables_gen.go` emits the structs and their standalone `toOpts()` methods. [iceberg_tables_def.go](defs/iceberg_tables_def.go) does not emit them. It references them with `OptionalSharedQueryStructField` / `ListSharedQueryStructField`, and its generated `toOpts` calls the Table methods.
 
 ### Instance method arguments
 

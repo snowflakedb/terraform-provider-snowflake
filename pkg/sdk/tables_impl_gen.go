@@ -180,6 +180,9 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 			if v.MaskingPolicy != nil {
 				columns[i].MaskingPolicy = v.MaskingPolicy.toOpts()
 			}
+			if v.ProjectionPolicy != nil {
+				columns[i].ProjectionPolicy = v.ProjectionPolicy.toOpts()
+			}
 		}
 		opts.ColumnsAndConstraints.Columns = columns
 	}
@@ -270,6 +273,9 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 			if r.ColumnAction.Add.MaskingPolicy != nil {
 				opts.ColumnAction.Add.MaskingPolicy = r.ColumnAction.Add.MaskingPolicy.toOpts()
 			}
+			if r.ColumnAction.Add.ProjectionPolicy != nil {
+				opts.ColumnAction.Add.ProjectionPolicy = r.ColumnAction.Add.ProjectionPolicy.toOpts()
+			}
 		}
 		if r.ColumnAction.Rename != nil {
 			opts.ColumnAction.Rename = r.ColumnAction.Rename.toOpts()
@@ -304,6 +310,12 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		}
 		if r.ColumnAction.UnsetMaskingPolicy != nil {
 			opts.ColumnAction.UnsetMaskingPolicy = r.ColumnAction.UnsetMaskingPolicy.toOpts()
+		}
+		if r.ColumnAction.SetProjectionPolicy != nil {
+			opts.ColumnAction.SetProjectionPolicy = r.ColumnAction.SetProjectionPolicy.toOpts()
+		}
+		if r.ColumnAction.UnsetProjectionPolicy != nil {
+			opts.ColumnAction.UnsetProjectionPolicy = r.ColumnAction.UnsetProjectionPolicy.toOpts()
 		}
 		if r.ColumnAction.SetTags != nil {
 			opts.ColumnAction.SetTags = r.ColumnAction.SetTags.toOpts()
@@ -654,6 +666,197 @@ func (r tableCheckConstraintDetailsRow) convert() (*TableCheckConstraintDetails,
 		CheckClause:       r.CheckClause,
 	}
 	return result, nil
+}
+
+func (r *TableColumnInlineConstraintRequest) toOpts() *TableColumnInlineConstraint {
+	opts := &TableColumnInlineConstraint{}
+	if r.UniquePK != nil {
+		opts.UniquePK = &TableColumnInlineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+		}
+	}
+	if r.FK != nil {
+		opts.FK = &TableColumnInlineFK{
+			Name:               r.FK.Name,
+			ForeignKey:         r.FK.ForeignKey,
+			References:         r.FK.References,
+			RefColumn:          r.FK.RefColumn,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+		}
+	}
+	if r.CH != nil {
+		opts.CH = &TableColumnInlineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return opts
+}
+
+func (r *TableColumnMaskingPolicyRequest) toOpts() *TableColumnMaskingPolicy {
+	opts := &TableColumnMaskingPolicy{
+		MaskingPolicy: r.MaskingPolicy,
+		Using:         r.Using,
+	}
+	return opts
+}
+
+func (r *TableColumnProjectionPolicyRequest) toOpts() *TableColumnProjectionPolicy {
+	opts := &TableColumnProjectionPolicy{
+		ProjectionPolicy: r.ProjectionPolicy,
+	}
+	return opts
+}
+
+func (r *TableOutOfLineConstraintRequest) toOpts() *TableOutOfLineConstraint {
+	opts := &TableOutOfLineConstraint{}
+	if r.UniquePK != nil {
+		opts.UniquePK = &TableOutOfLineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Columns:            r.UniquePK.Columns,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+			Comment:            r.UniquePK.Comment,
+		}
+	}
+	if r.FK != nil {
+		opts.FK = &TableOutOfLineFK{
+			Name:               r.FK.Name,
+			Columns:            r.FK.Columns,
+			References:         r.FK.References,
+			RefColumns:         r.FK.RefColumns,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+			Comment:            r.FK.Comment,
+		}
+	}
+	if r.CH != nil {
+		opts.CH = &TableOutOfLineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return opts
+}
+
+func (r *TableRenameColumnActionRequest) toOpts() *TableRenameColumnAction {
+	opts := &TableRenameColumnAction{
+		OldName: r.OldName,
+		NewName: r.NewName,
+	}
+	return opts
+}
+
+func (r *TableSetColumnMaskingPolicyRequest) toOpts() *TableSetColumnMaskingPolicy {
+	opts := &TableSetColumnMaskingPolicy{
+		Name:          r.Name,
+		MaskingPolicy: r.MaskingPolicy,
+		Using:         r.Using,
+		Force:         r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetColumnMaskingPolicyRequest) toOpts() *TableUnsetColumnMaskingPolicy {
+	opts := &TableUnsetColumnMaskingPolicy{
+		Name: r.Name,
+	}
+	return opts
+}
+
+func (r *TableSetColumnProjectionPolicyRequest) toOpts() *TableSetColumnProjectionPolicy {
+	opts := &TableSetColumnProjectionPolicy{
+		Name:             r.Name,
+		ProjectionPolicy: r.ProjectionPolicy,
+		Force:            r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetColumnProjectionPolicyRequest) toOpts() *TableUnsetColumnProjectionPolicy {
+	opts := &TableUnsetColumnProjectionPolicy{
+		Name: r.Name,
+	}
+	return opts
+}
+
+func (r *TableSetColumnTagsRequest) toOpts() *TableSetColumnTags {
+	opts := &TableSetColumnTags{
+		Name:    r.Name,
+		SetTags: r.SetTags,
+	}
+	return opts
+}
+
+func (r *TableUnsetColumnTagsRequest) toOpts() *TableUnsetColumnTags {
+	opts := &TableUnsetColumnTags{
+		Name:      r.Name,
+		UnsetTags: r.UnsetTags,
+	}
+	return opts
+}
+
+func (r *TableDropColumnActionRequest) toOpts() *TableDropColumnAction {
+	opts := &TableDropColumnAction{
+		IfExists: r.IfExists,
+		Columns:  r.Columns,
+	}
+	return opts
 }
 
 func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimizationAction {

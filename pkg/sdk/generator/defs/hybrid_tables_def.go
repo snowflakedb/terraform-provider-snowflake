@@ -6,6 +6,7 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
@@ -27,7 +28,7 @@ var hybridTableOutOfLineForeignKey = g.NewQueryStruct("HybridTableOutOfLineForei
 	SQL("REFERENCES").
 	Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	PredefinedQueryStructField("ColumnNames", "[]Column", g.ParameterOptions().NoEquals().Parentheses()).
-	OptionalEnum("Match", MatchTypeEnumDef, g.ParameterOptions().NoEquals().SQL("MATCH")).
+	OptionalEnum("Match", ssotdefs.MatchType, g.ParameterOptions().NoEquals().SQL("MATCH")).
 	PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
 
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
@@ -126,7 +127,7 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("HybridTableReclusterChangeState").
-			OptionalEnum("State", ReclusterStateEnumDef, g.KeywordOptions()).
+			OptionalEnum("State", ssotdefs.ReclusterState, g.KeywordOptions()).
 			SQL("RECLUSTER"),
 		g.KeywordOptions(),
 	).

@@ -61,7 +61,7 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 		}
 		return v.OptionalQueryStructField(name, nested, opts)
 	}
-	opts := listOptionsFromClause(clause, required)
+	opts := structFieldTransformer(clause, required)
 	if required {
 		return v.QueryStructField(name, nested, opts)
 	}
@@ -69,11 +69,11 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 }
 
 // QueryStructFromAttribute builds the CREATE query struct of a SqlOnly object attribute. owner is the interface name, and the
-// struct name is the StructName of its clause or that owner plus the attribute name. helpers are the preexisting structs the attribute names.
+// struct name is the StructName of its clause or that owner plus the attribute name.
 // The SDK definition calls it for one ALTER field and keeps the rest of the operation handwritten. SET and UNSET projections
 // use QueryStructFromAttributeUse.
-func QueryStructFromAttribute(owner string, attr ssot.Attribute, helpers ...*QueryStruct) *QueryStruct {
-	return queryStructFromObjectSupplied(owner, attr, ssot.ClauseCreate, suppliedByName(attr, helpers))
+func QueryStructFromAttribute(owner string, attr ssot.Attribute) *QueryStruct {
+	return queryStructFromObjectUse(owner, attr, ssot.ClauseCreate)
 }
 
 // QueryStructFromAttributeUse builds the query struct of a SqlOnly object attribute for one statement projection.
@@ -81,21 +81,6 @@ func QueryStructFromAttribute(owner string, attr ssot.Attribute, helpers ...*Que
 // children that have that clause. Handwritten ALTER calls this so tables and iceberg tables share SET/UNSET structs.
 func QueryStructFromAttributeUse(owner string, attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
 	return queryStructFromObjectUse(owner, attr, use)
-}
-
-// suppliedByName indexes the helper structs by name, the way a PreexistingStruct clause refers to them.
-func suppliedByName(attr ssot.Attribute, helpers []*QueryStruct) map[string]*QueryStruct {
-	supplied := make(map[string]*QueryStruct, len(helpers))
-	for _, helper := range helpers {
-		if helper == nil || helper.name == "" {
-			panic(fmt.Sprintf("attribute %q: helper struct has no name", attr.Name))
-		}
-		if _, dup := supplied[helper.name]; dup {
-			panic(fmt.Sprintf("attribute %q: helper struct %q is supplied twice", attr.Name, helper.name))
-		}
-		supplied[helper.name] = helper
-	}
-	return supplied
 }
 
 func clauseUseStatement(use ssot.ClauseUse) attributeSqlStatement {
@@ -116,7 +101,7 @@ func queryStructFromObjectUse(owner string, attr ssot.Attribute, use ssot.Clause
 	return queryStructFromObjectSupplied(owner, attr, use, nil)
 }
 
-// queryStructFromObjectSupplied is queryStructFromObjectUse with the preexisting structs a child clause can name.
+// queryStructFromObjectSupplied is queryStructFromObjectUse with nested structs a child PreexistingStructOf clause can reuse.
 func queryStructFromObjectSupplied(owner string, attr ssot.Attribute, use ssot.ClauseUse, supplied map[string]*QueryStruct) *QueryStruct {
 	nested := NewQueryStruct(attr.SqlStructNameFor(owner, use))
 	nested.owner = owner
@@ -152,7 +137,25 @@ func queryStructFromObjectSupplied(owner string, attr ssot.Attribute, use ssot.C
 			nested = nested.WithValidation(ExactlyOneValueSet, names...)
 		}
 	}
+	if sharedToOptsClause(attr, use) {
+		nested = nested.WithSharedToOpts()
+	}
 	return nested
+}
+
+// sharedToOptsClause reports whether the attribute's clause for this statement asks for a standalone toOpts. A missing
+// clause is not shared, so the check reads the clause as written and does not resolve the type default.
+func sharedToOptsClause(attr ssot.Attribute, use ssot.ClauseUse) bool {
+	switch use {
+	case ssot.ClauseCreate:
+		return attr.CreateSql.SharedToOpts
+	case ssot.ClauseSet:
+		return attr.SetSql.SharedToOpts
+	case ssot.ClauseUnset:
+		return attr.UnsetSql.SharedToOpts
+	default:
+		panic("unknown sql clause")
+	}
 }
 
 // withSqlOnlyConflicts adds ConflictingFields for the ConflictsWith of the SqlOnly children of an object clause. They have

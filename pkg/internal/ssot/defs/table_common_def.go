@@ -26,7 +26,7 @@ var TableClusteringAction = ssot.Attribute{
 			SqlOnly:   true,
 			CreateSql: ssot.ObjectParameter(ssot.Sql("RECLUSTER"), ssot.FieldName("Recluster")),
 			Children: []ssot.Attribute{
-				{Name: "max_size", Type: ssot.AttrInt, SqlOnly: true, CreateSql: ssot.IntParameter(ssot.Sql("MAX_SIZE"))},
+				{Name: "max_size", Type: ssot.AttrInt, SqlOnly: true, CreateSql: ssot.IntParameter()},
 				{Name: "condition", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("WHERE"), ssot.NoEquals(), ssot.FieldName("Condition"))},
 			},
 		},

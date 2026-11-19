@@ -94,6 +94,11 @@ func (opts *CreateIcebergTableOptions) validate() error {
 						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].MaskingPolicy", columnIdx), "MaskingPolicy"))
 					}
 				}
+				if valueSet(column.ProjectionPolicy) {
+					if !ValidObjectIdentifier(column.ProjectionPolicy.ProjectionPolicy) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].ProjectionPolicy", columnIdx), "ProjectionPolicy"))
+					}
+				}
 				if valueSet(column.Tag) {
 					for tagIdx, tag := range column.Tag {
 						if !ValidObjectIdentifier(tag.Name) {
@@ -341,6 +346,11 @@ func (opts *AlterIcebergTableOptions) validate() error {
 				errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.MaskingPolicy", "MaskingPolicy"))
 			}
 		}
+		if valueSet(opts.AddColumnAction.ProjectionPolicy) {
+			if !ValidObjectIdentifier(opts.AddColumnAction.ProjectionPolicy.ProjectionPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.ProjectionPolicy", "ProjectionPolicy"))
+			}
+		}
 		if valueSet(opts.AddColumnAction.Tag) {
 			for tagIdx, tag := range opts.AddColumnAction.Tag {
 				if !ValidObjectIdentifier(tag.Name) {
@@ -359,6 +369,11 @@ func (opts *AlterIcebergTableOptions) validate() error {
 	if valueSet(opts.SetMaskingPolicyOnColumn) {
 		if !ValidObjectIdentifier(opts.SetMaskingPolicyOnColumn.MaskingPolicy) {
 			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.SetMaskingPolicyOnColumn", "MaskingPolicy"))
+		}
+	}
+	if valueSet(opts.SetProjectionPolicyOnColumn) {
+		if !ValidObjectIdentifier(opts.SetProjectionPolicyOnColumn.ProjectionPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.SetProjectionPolicyOnColumn", "ProjectionPolicy"))
 		}
 	}
 	if valueSet(opts.SetTagsOnColumn) {

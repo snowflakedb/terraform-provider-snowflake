@@ -41,6 +41,7 @@ const (
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely                                testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_FK_ConflictingFields_Rely_Norely"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields                                            testCaseName = "validation_Create_opts_ColumnsAndConstraints_Columns_InlineConstraint_CH_ConflictingFields"
 	case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier                                           testCaseName = "validation_Create_ColumnsAndConstraints_Columns_MaskingPolicy_MaskingPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier                                     testCaseName = "validation_Create_ColumnsAndConstraints_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier"
 	case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_Tag_ValidIdentifier                                                                   testCaseName = "validation_Create_ColumnsAndConstraints_Columns_Tag_ValidIdentifier"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet                                           testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet                                    testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet"
@@ -112,12 +113,14 @@ const (
 	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Rely_Norely                                               testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_FK_ConflictingFields_Rely_Norely"
 	case_IcebergTables_validation_Alter_opts_AddColumnAction_InlineConstraint_CH_ConflictingFields                                                           testCaseName = "validation_Alter_opts_AddColumnAction_InlineConstraint_CH_ConflictingFields"
 	case_IcebergTables_validation_Alter_AddColumnAction_MaskingPolicy_MaskingPolicy_ValidIdentifier                                                          testCaseName = "validation_Alter_AddColumnAction_MaskingPolicy_MaskingPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_AddColumnAction_ProjectionPolicy_ProjectionPolicy_ValidIdentifier                                                    testCaseName = "validation_Alter_AddColumnAction_ProjectionPolicy_ProjectionPolicy_ValidIdentifier"
 	case_IcebergTables_validation_Alter_AddColumnAction_Tag_ValidIdentifier                                                                                  testCaseName = "validation_Alter_AddColumnAction_Tag_ValidIdentifier"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet                                                                    testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet                                                             testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_MoreThanOneSet"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid                                                         testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_OneValidOneInvalid"
 	case_IcebergTables_validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid                                                                testCaseName = "validation_Alter_opts_AlterColumnAction_ExactlyOneValueSet_BothInvalid"
 	case_IcebergTables_validation_Alter_SetMaskingPolicyOnColumn_MaskingPolicy_ValidIdentifier                                                               testCaseName = "validation_Alter_SetMaskingPolicyOnColumn_MaskingPolicy_ValidIdentifier"
+	case_IcebergTables_validation_Alter_SetProjectionPolicyOnColumn_ProjectionPolicy_ValidIdentifier                                                         testCaseName = "validation_Alter_SetProjectionPolicyOnColumn_ProjectionPolicy_ValidIdentifier"
 	case_IcebergTables_validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier                                                                              testCaseName = "validation_Alter_SetTagsOnColumn_SetTags_ValidIdentifier"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet                                                                     testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_NoneSet"
 	case_IcebergTables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet                                                              testCaseName = "validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet"
@@ -422,6 +425,15 @@ var icebergTablesTests = IcebergTablesTestsContext{
 					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
 					opts.ColumnsAndConstraints.Columns[0].MaskingPolicy = &TableColumnMaskingPolicy{}
 					opts.ColumnsAndConstraints.Columns[0].MaskingPolicy.MaskingPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Create_ColumnsAndConstraints_Columns_ProjectionPolicy_ProjectionPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[0].ProjectionPolicy", "ProjectionPolicy"),
+				DefaultModify: func(opts *CreateIcebergTableOptions) {
+					opts.ColumnsAndConstraints.Columns = []IcebergTableColumn{{}}
+					opts.ColumnsAndConstraints.Columns[0].ProjectionPolicy = &TableColumnProjectionPolicy{}
+					opts.ColumnsAndConstraints.Columns[0].ProjectionPolicy.ProjectionPolicy = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateIcebergTableOptions]{
@@ -1090,6 +1102,15 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_AddColumnAction_ProjectionPolicy_ProjectionPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.ProjectionPolicy", "ProjectionPolicy"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.AddColumnAction = &IcebergTableAddColumnAction{}
+					opts.AddColumnAction.ProjectionPolicy = &TableColumnProjectionPolicy{}
+					opts.AddColumnAction.ProjectionPolicy.ProjectionPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
 				Name:        case_IcebergTables_validation_Alter_AddColumnAction_Tag_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.Tag[0]", "Name"),
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
@@ -1128,6 +1149,14 @@ var icebergTablesTests = IcebergTablesTestsContext{
 				DefaultModify: func(opts *AlterIcebergTableOptions) {
 					opts.SetMaskingPolicyOnColumn = &TableSetColumnMaskingPolicy{}
 					opts.SetMaskingPolicyOnColumn.MaskingPolicy = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AlterIcebergTableOptions]{
+				Name:        case_IcebergTables_validation_Alter_SetProjectionPolicyOnColumn_ProjectionPolicy_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AlterIcebergTableOptions.SetProjectionPolicyOnColumn", "ProjectionPolicy"),
+				DefaultModify: func(opts *AlterIcebergTableOptions) {
+					opts.SetProjectionPolicyOnColumn = &TableSetColumnProjectionPolicy{}
+					opts.SetProjectionPolicyOnColumn.ProjectionPolicy = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*AlterIcebergTableOptions]{

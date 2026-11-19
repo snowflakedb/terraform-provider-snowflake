@@ -52,8 +52,61 @@ type TableColumnRequest struct {
 	Collate          *string
 	DefaultValue     *ColumnDefaultValueRequest
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
+	ProjectionPolicy *TableColumnProjectionPolicyRequest
 	Tag              []TagAssociation
 	Comment          *string
+}
+
+type TableColumnInlineConstraintRequest struct {
+	UniquePK *TableColumnInlineUniquePKRequest
+	FK       *TableColumnInlineFKRequest
+	CH       *TableColumnInlineCHRequest
+}
+
+type TableColumnInlineUniquePKRequest struct {
+	Name               *string
+	Unique             *bool
+	PrimaryKey         *bool
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnInlineFKRequest struct {
+	Name               *string
+	ForeignKey         *bool
+	References         SchemaObjectIdentifier // required
+	RefColumn          []Column
+	Match              *MatchType
+	On                 *ForeignKeyOnAction
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+}
+
+type TableColumnInlineCHRequest struct {
+	Name             *string
+	Expression       string // required
+	EnableValidate   *bool
+	EnableNovalidate *bool
 }
 
 type ColumnDefaultValueRequest struct {
@@ -66,6 +119,70 @@ type ColumnIdentityRequest struct {
 	Increment int // required
 	Order     *bool
 	Noorder   *bool
+}
+
+type TableColumnMaskingPolicyRequest struct {
+	MaskingPolicy SchemaObjectIdentifier // required
+	Using         []Column
+}
+
+type TableColumnProjectionPolicyRequest struct {
+	ProjectionPolicy SchemaObjectIdentifier // required
+}
+
+type TableOutOfLineConstraintRequest struct {
+	UniquePK *TableOutOfLineUniquePKRequest
+	FK       *TableOutOfLineFKRequest
+	CH       *TableOutOfLineCHRequest
+}
+
+type TableOutOfLineUniquePKRequest struct {
+	Name               *string
+	Unique             *bool
+	PrimaryKey         *bool
+	Columns            []Column
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+	Comment            *string
+}
+
+type TableOutOfLineFKRequest struct {
+	Name               *string
+	Columns            []Column
+	References         SchemaObjectIdentifier // required
+	RefColumns         []Column
+	Match              *MatchType
+	On                 *ForeignKeyOnAction
+	Enforced           *bool
+	NotEnforced        *bool
+	Deferrable         *bool
+	NotDeferrable      *bool
+	InitiallyDeferred  *bool
+	InitiallyImmediate *bool
+	Enable             *bool
+	Disable            *bool
+	Validate           *bool
+	Novalidate         *bool
+	Rely               *bool
+	Norely             *bool
+	Comment            *string
+}
+
+type TableOutOfLineCHRequest struct {
+	Name             *string
+	Expression       string // required
+	EnableValidate   *bool
+	EnableNovalidate *bool
 }
 
 type TableRowAccessPolicyRequest struct {
@@ -126,14 +243,16 @@ type TableReclusterChangeStateRequest struct {
 }
 
 type TableColumnActionRequest struct {
-	Add                *TableColumnAddActionRequest
-	Rename             *TableRenameColumnActionRequest
-	Alter              []TableColumnAlterActionRequest
-	SetMaskingPolicy   *TableSetColumnMaskingPolicyRequest
-	UnsetMaskingPolicy *TableUnsetColumnMaskingPolicyRequest
-	SetTags            *TableSetColumnTagsRequest
-	UnsetTags          *TableUnsetColumnTagsRequest
-	DropColumns        *TableDropColumnActionRequest
+	Add                   *TableColumnAddActionRequest
+	Rename                *TableRenameColumnActionRequest
+	Alter                 []TableColumnAlterActionRequest
+	SetMaskingPolicy      *TableSetColumnMaskingPolicyRequest
+	UnsetMaskingPolicy    *TableUnsetColumnMaskingPolicyRequest
+	SetProjectionPolicy   *TableSetColumnProjectionPolicyRequest
+	UnsetProjectionPolicy *TableUnsetColumnProjectionPolicyRequest
+	SetTags               *TableSetColumnTagsRequest
+	UnsetTags             *TableUnsetColumnTagsRequest
+	DropColumns           *TableDropColumnActionRequest
 }
 
 type TableColumnAddActionRequest struct {
@@ -145,8 +264,14 @@ type TableColumnAddActionRequest struct {
 	NotNull          *bool
 	InlineConstraint *TableColumnInlineConstraintRequest
 	MaskingPolicy    *TableColumnMaskingPolicyRequest
+	ProjectionPolicy *TableColumnProjectionPolicyRequest
 	Tag              []TagAssociation
 	Comment          *string
+}
+
+type TableRenameColumnActionRequest struct {
+	OldName string // required
+	NewName string // required
 }
 
 type TableColumnAlterActionRequest struct {
@@ -167,6 +292,42 @@ type TableColumnNotNullConstraintRequest struct {
 type TableColumnAlterDataTypeRequest struct {
 	DataType DataType // required
 	Collate  *string
+}
+
+type TableSetColumnMaskingPolicyRequest struct {
+	Name          string                 // required
+	MaskingPolicy SchemaObjectIdentifier // required
+	Using         []Column
+	Force         *bool
+}
+
+type TableUnsetColumnMaskingPolicyRequest struct {
+	Name string // required
+}
+
+type TableSetColumnProjectionPolicyRequest struct {
+	Name             string                 // required
+	ProjectionPolicy SchemaObjectIdentifier // required
+	Force            *bool
+}
+
+type TableUnsetColumnProjectionPolicyRequest struct {
+	Name string // required
+}
+
+type TableSetColumnTagsRequest struct {
+	Name    string           // required
+	SetTags []TagAssociation // required
+}
+
+type TableUnsetColumnTagsRequest struct {
+	Name      string             // required
+	UnsetTags []ObjectIdentifier // required
+}
+
+type TableDropColumnActionRequest struct {
+	IfExists *bool
+	Columns  []Column // required
 }
 
 type TableConstraintActionRequest struct {

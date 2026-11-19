@@ -1865,6 +1865,60 @@ func Test_AlterOperationFromObject_textAndBlocks(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_AlterOperationFromObject_setUnsetProjectionBlocks(t *testing.T) {
+	policyIdentifier := ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("POLICY"), ssot.Required(), ssot.FieldName("Policy"))
+	policy := ssot.Attribute{
+		Name:      "policy",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		SetSql:    ssot.ObjectParameter(ssot.FieldName("SetPolicy")),
+		UnsetSql:  ssot.ObjectParameter(ssot.FieldName("UnsetPolicy")),
+		Children: []ssot.Attribute{
+			{Name: "set", SqlOnly: true, SetSql: ssot.StaticSQL("set", "SET")},
+			{
+				Name:           "policy",
+				Type:           ssot.AttrIdentifier,
+				IdentifierType: "AccountObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      policyIdentifier,
+				SetSql:         policyIdentifier,
+			},
+			{Name: "force", Type: ssot.AttrBool, SqlOnly: true, SetSql: ssot.BoolKeyword()},
+			{Name: "unset_policy", SqlOnly: true, UnsetSql: ssot.StaticSQL("unsetPolicy", "UNSET POLICY")},
+		},
+	}
+	obj := ssot.Object{
+		Name: "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterKeywordBlock("SetPolicy", "", &policy),
+			ssot.AlterKeywordBlock("UnsetPolicy", "", &policy),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
+	}
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			IfExists().
+			Name().
+			OptionalQueryStructField("SetPolicy", NewQueryStruct("WidgetSetPolicy").
+				SQL("SET").
+				Identifier("Policy", "AccountObjectIdentifier", IdentifierOptions().SQL("POLICY").Required()).
+				WithValidation(ValidIdentifier, "Policy").
+				OptionalSQL("FORCE"), KeywordOptions()).
+			OptionalQueryStructField("UnsetPolicy", NewQueryStruct("WidgetUnsetPolicy").
+				SQL("UNSET POLICY"), KeywordOptions()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "SetPolicy", "UnsetPolicy"),
+	)
+	requireSameOperations(t, want, got)
+}
+
 func Test_DescribeOperationFromObject_propertyList(t *testing.T) {
 	parent := ssot.Attribute{Name: "parent_property", Type: ssot.AttrString, Readonly: true}
 	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}

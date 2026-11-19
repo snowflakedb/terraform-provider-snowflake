@@ -468,7 +468,7 @@ func validateNestedShape(obj Object, attr Attribute) {
 		panic(fmt.Sprintf("object %q: attribute %q has Children but is not an object; declare the fields of a list or set on an object Elem (ObjectElem)", obj.Name, attr.Name))
 	}
 	if attr.Type == AttrObject {
-		// A preexisting struct names a struct built elsewhere, so it has no Children.
+		// A preexisting struct embeds another attribute's struct, so it has no Children.
 		if attr.CreateSql.Kind != SqlKindPreexistingStruct && (len(attr.Children) == 0 || (!attr.SqlOnly && len(attr.NestedFields()) == 0)) {
 			panic(fmt.Sprintf("object %q: attribute %q is an object with no Children", obj.Name, attr.Name))
 		}
@@ -791,16 +791,25 @@ func validateAlterSpec(obj Object) {
 			}
 			seenList[clause.SQL] = struct{}{}
 		case AlterClauseBlock:
-			if clause.Field == "" || clause.SQL == "" || clause.Block == nil {
-				panic(fmt.Sprintf("object %q: ALTER block needs a field, SQL, and an attribute", obj.Name))
+			if clause.Field == "" || clause.Block == nil {
+				panic(fmt.Sprintf("object %q: ALTER block needs a field and an attribute", obj.Name))
 			}
-			if !clause.Block.IsObjectList() && (clause.Block.Type != AttrObject || len(clause.Block.Children) == 0) {
-				panic(fmt.Sprintf("object %q: ALTER block %q needs a list of objects or an object with Children", obj.Name, clause.SQL))
+			if clause.Block != nil && !clause.Block.IsObjectList() && (clause.Block.Type != AttrObject || len(clause.Block.Children) == 0) {
+				panic(fmt.Sprintf("object %q: ALTER block %q needs a list of objects or an object with Children", obj.Name, clause.Field))
 			}
-			if _, dup := seenList[clause.SQL]; dup {
-				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
+			switch clause.BlockJoin {
+			case AlterBlockJoinParameter, AlterBlockJoinKeyword, AlterBlockJoinComma:
+			default:
+				panic(fmt.Sprintf("object %q: ALTER block %q has unknown join %q", obj.Name, clause.Field, clause.BlockJoin))
 			}
-			seenList[clause.SQL] = struct{}{}
+			key := clause.SQL
+			if key == "" {
+				key = clause.Field
+			}
+			if _, dup := seenList[key]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, key))
+			}
+			seenList[key] = struct{}{}
 		case AlterClauseRenameTo, AlterClauseSwapWith, AlterClauseSet, AlterClauseUnset, AlterClauseSetTags, AlterClauseUnsetTags:
 			if clause.NotExactlyOne {
 				panic(fmt.Sprintf("object %q: ALTER %s cannot leave exactly-one", obj.Name, clause.Kind))
@@ -1058,7 +1067,7 @@ func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[
 			validateAttribute(obj, *field)
 			validateSqlClauses(obj, *field)
 			// A CREATE-only object is not an attribute, so its children are checked here.
-			// A PreexistingStruct names a struct the SDK definition supplies and has no Children.
+			// A PreexistingStructOf clause has no Children; the embedded attribute does.
 			if field.EffectiveSqlClause(clauseUse(statement)).Kind == SqlKindObject {
 				validateNestedAttribute(obj, *field)
 			}
@@ -1103,8 +1112,8 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 	if clause.TextValue && clause.ValueKeyword {
 		panic(fmt.Sprintf("object %q: attribute %q %s text keyword is not a value keyword", obj.Name, attr.Name, statement))
 	}
-	if clause.Shared && clause.Kind != SqlKindPreexistingStruct {
-		panic(fmt.Sprintf("object %q: attribute %q %s shared clause is a preexisting struct", obj.Name, attr.Name, statement))
+	if clause.SharedToOpts && clause.Kind != SqlKindObject {
+		panic(fmt.Sprintf("object %q: attribute %q %s shared toOpts clause is not an object clause", obj.Name, attr.Name, statement))
 	}
 	if clause.StructName != "" && clause.Kind != SqlKindPreexistingStruct {
 		if clause.Kind != SqlKindObject && !((clause.Kind == SqlKindParameter || clause.Kind == SqlKindKeyword) && attr.IsObjectList()) {
@@ -1177,8 +1186,11 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		}
 	case SqlKindPreexistingStruct:
 		requireCreateOnlyClause(obj, attr, statement, clause)
-		if clause.StructName == "" {
-			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause has no struct name", obj.Name, attr.Name))
+		if clause.StructAttr == nil {
+			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause has no attribute", obj.Name, attr.Name))
+		}
+		if clause.StructName != "" {
+			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause names a nested struct, not an attribute", obj.Name, attr.Name))
 		}
 	case SqlKindPredefined:
 		requireCreateOnlyClause(obj, attr, statement, clause)

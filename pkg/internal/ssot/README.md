@@ -211,12 +211,12 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   An attribute that a `SqlOnly` nested struct holds counts as listed in the CREATE sequence when the struct
   is: this is how an attribute that is a Terraform field is also the field of a struct that is not (`security_integrations`
   is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ChildrenExactlyOne` requires one of the two).
-- **Clauses the SDK defines outside the statement.** An object that keeps a handwritten SDK definition has CREATE fields
-  whose structs stay in that definition because other operations and the request types use them.
-  `PreexistingStruct("CreateTableColumnsAndConstraints", Parentheses(), Required())` embeds a query struct by name.
-  The handwritten definition passes that struct to `CreateOperationFromObject` as a helper struct, and the call embeds
-  the struct whose name a clause names instead of emitting it beside the statement. A named struct that is not passed panics.
-  An attribute with this clause is `SqlOnly`. Its `Type` is not read.
+- **Clauses that embed another SSOT attribute's struct.** Nested SQL that is defined once and reused (CREATE TABLE columns,
+  ADD COLUMN masking policy, iceberg ALTER) is `PreexistingStructOf(&TableCreateColumnsAndConstraints, Parentheses(), Required())`.
+  The generator builds the nested query struct from that attribute. `PreexistingStructOfUse` selects the SET or UNSET
+  projection of the same attribute. An attribute with this clause is `SqlOnly`. On an `AttrList` attribute the field is a
+  list of that struct; otherwise its `Type` is not read. Handwritten ALTER still calls `QueryStructFromAttribute` (or
+  `QueryStructFromAttributeUse`) so tables and iceberg tables share the generated type.
   A list of strings is `StringListKeyword(Parentheses(), Sql("CLUSTER BY"))`: a keyword field of `[]string`. The attribute
   is a list or set of strings, and it can be a resource attribute (`cluster_by`).
   A struct this definition owns is an `AttrObject` with `Children` and `ObjectParameter()`. The generated struct is named
@@ -284,8 +284,9 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   attributes, unless the attribute's `UpdateMapping` updates it as one value (`AttributeMappedValueUpdate`), as a block that the SDK takes as a
   string does.
 - **Where each part is used.** CREATE reads the list attribute through `Create.Clauses`. ALTER reuses the same element with
-  `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), or a `SqlOnly` object with
-  `AlterKeywordBlock(field, sql, &object)`. Enums on the children, on their clauses (`EnumOf`), and in variants are emitted
+  `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), a `SqlOnly` object with
+  `AlterKeywordBlock(field, sql, &object)`, or `AlterCommaSeparatedBlock(field, &object)` when the nested children
+  are comma-joined (`DROP …, ADD …`). Enums on the children, on their clauses (`EnumOf`), and in variants are emitted
   with the object's enums. See [Generators](#generators) for the clause options.
 
 [external_volume_def.go](defs/external_volume_def.go) is the reference: a list of objects with four provider variants, nested
@@ -460,10 +461,16 @@ enable nothing.
   `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
   `StringListKeyword(Parentheses(), NoComma(), Sql("EXISTS"))` is a keyword list of strings in parentheses with no comma, such as `EXISTS ( <condition> )`. Without `NoComma()` the items are joined with commas.
   `WrapString(SQLBefore(field, sql), SQLAfter(field, sql))` is a string attribute whose CREATE field is a helper struct: one static field, the string, then one static field. The CREATE field name is the camel-cased attribute name. SHOW and DESCRIBE stay the string. See [Lists and nested objects](#lists-and-nested-objects).
-  `AlterParameterBlock(field, sql, &attr)` and `AlterKeywordBlock(field, sql, &attr)` are optional nested blocks, as a
-  parameter or a keyword clause. `attr` is a list of objects, and the block is one of its elements, with the same struct as in
+  `AlterParameterBlock(field, sql, &attr)`, `AlterKeywordBlock(field, sql, &attr)`, and
+  `AlterCommaSeparatedBlock(field, &attr)` are optional nested blocks. `Block` is the nested struct; `BlockJoin` is how
+  its children are joined on the ALTER field: a parameter clause, a keyword (space-join), or comma-separated with no
+  parentheses. `attr` is a list of objects, and the block is one of its elements, with the same struct as in
   CREATE (`ADD STORAGE_LOCATION`), or a SqlOnly object attribute whose `Children` are the fields and whose `CreateSql` are
   the field clauses (`UPDATE`). All three are branches of `ExactlyOneValueSet`.
+  A block whose field equals the `FieldName` of the SqlOnly object's `SetSql` or `UnsetSql` embeds that projection
+  (`NestedSqlFieldsFor`) instead of the CREATE struct, so one attribute serves CREATE and the sibling ALTER actions:
+  `AlterKeywordBlock("SetAggregationPolicy", "", &aggregationPolicy)` is `TableSetAggregationPolicy`. The same `FieldName`
+  names the struct `QueryStructFromAttributeUse` builds.
   A list of objects, its variants, and its nested structs are described on the attributes: see
   [Lists and nested objects](#lists-and-nested-objects). A `Clause(...)` on a child takes `Sql`, `Required`, `FieldName(name)`
   for the Go field name, and `EnumOf(enum)`. An identifier child with a parameter clause is quoted text. `AllowEmpty()` on a
@@ -964,10 +971,12 @@ Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 - `KeywordsBefore` holds attributes. `TRANSIENT` is the `is_transient` attribute. An alter keyword that is not an attribute, such as `RESUME` or `STOP ALL`, is an `AlterKeyword` entry on `Alter.Clauses`.
 - A SQL constructor does not take an `Attribute`. Set the clause on the attribute. `ValidateObject` checks it while walking the object.
 - An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`.
-- `TextKeyword` writes a string as a keyword field. `DoubleQuotes` quotes it. `PredefinedType` names a Go type the SDK already has, such as `DataType`. `NoComma()` with it writes the type as a list of its own fields, such as `TimeTravel`. `KeywordShape` on it writes the field as a keyword instead of a parameter, for a type that prints itself, such as `[]Column` or `*ForeignKeyOnAction`. `Shared` on a preexisting struct does not generate that struct again. `QueryStructFromAttribute` takes the structs those clauses name.
+- `TextKeyword` writes a string as a keyword field. `DoubleQuotes` quotes it. `PredefinedType` names a Go type the SDK already has, such as `DataType`. `NoComma()` with it writes the type as a list of its own fields, such as `TimeTravel`. `KeywordShape` on it writes the field as a keyword instead of a parameter, for a type that prints itself, such as `[]Column` or `*ForeignKeyOnAction`. `KeywordShape` on a `PreexistingStructOf` or `ObjectParameter` writes the nested struct with a keyword tag instead of a list tag. `QueryStructFromAttribute` builds the CREATE struct of an SSOT attribute for handwritten ALTER.
 - A `Tags` child of a SqlOnly object emits optional `TAG`. `ConflictsWith` on a SqlOnly child names a sibling it cannot be set with, and the SDK struct gets `ConflictingFields` for the pair once, in children order. `StructName` on an `ObjectParameter`, `ListOfObjects`, or object-list `ValueKeyword` clause keeps a nested struct name that other objects already use. Without it the name is the owner plus the attribute name.
 - An object clause with no `Sql` text and no `Parentheses()` writes its fields in place, with no wrapper keyword. `ChildrenRule` already skips `Required` children, since a required field is always set. A clause that only accompanies another one is a child of that clause's object, such as `COLLATE` under `SET DATA TYPE`, so it is not one of the alternatives.
+- `AlterOperationFromObject` takes the preexisting query structs a block or SET names. A helper whose name is the block attribute's `SqlStruct` is that block. `AlterKeywordBlock` may omit the SQL prefix when the nested struct carries the words. A block field named like the `SetSql` or `UnsetSql` `FieldName` of its attribute embeds that projection (`AlterClause.BlockProjection`); any other field embeds the CREATE struct. `AlterCommaSeparatedBlock` comma-joins the nested children with no parentheses. `AlterSuppliedKeywordBlock` names a supplied struct that has no block attribute, such as the SET projection of a shared attribute.
 - A `Tags` child with `TagForm` emits `SET TAG` or `UNSET TAG` instead of optional `TAG`, and belongs only to the SET or UNSET projection it names, so one attribute can carry both forms.
+- `BareValue` writes a parameter as a value rather than a pointer, without the required tag. `RequireValue` adds a value check on a predefined field.
 - The SDK generator calls the existing query-struct builders (`NumberAssignment`, `OptionalSQL`, `ListAssignment`, and the rest). It does not record a Go type on the clause, and it does not build `ddl` tags.
 - `AlterSetQueryStruct` and `AlterUnsetQueryStruct` build the SET and UNSET structs before ALTER itself is generated. UNSET is embedded as a list with no parentheses, so its fields are comma-separated.
 - Clauses Snowflake statements usually accept are on unless the object opts out: `OR REPLACE`, `IF NOT EXISTS`, ALTER `IF EXISTS`, `SET`, `UNSET`, `SET TAG`, `UNSET TAG`, and the exactly-one alter check. DROP `IF EXISTS` is always emitted. `SET` is a keyword. `SdkAlterSetList` opts into `list,no_parentheses`.
