@@ -258,7 +258,7 @@ With this experiment, string-typed parameter values must not be manually wrapped
 
 Without this experiment, the v2.22.x legacy write path is used: some string-typed values must be wrapped in single quotes manually, identifier-typed values are sent as a single-quoted string literal or as written, and the parameters that the legacy write path does not support (e.g. the parameters added in v2.22.0, like `DISABLE_UI_DOWNLOAD_BUTTON`) fail with an error.
 
-This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade). See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.
+This experiment also decides if `snowflake_account_parameter` is forward-compatible (new Snowflake parameters usable without a provider upgrade). With the experiment enabled, the `value_type` field sends a parameter that the provider does not support yet, rendering `value` by that type. It is behind this experiment, because the rules for the value (the provider quotes it by the parameter type) follow the behavior of this experiment. Without the experiment, `value_type` is not used. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.
 
 This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
 

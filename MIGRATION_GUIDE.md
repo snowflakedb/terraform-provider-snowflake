@@ -449,6 +449,32 @@ The trust policy of the IAM role that Snowflake assumes needs the external ID an
 
 No configuration changes are required. If you added `ignore_changes` for `sigv4_external_id` as a workaround, or adjusted the state manually after import, you can remove the workaround.
 
+### *(new feature)* Forward-compatible parameters in `snowflake_account_parameter`
+
+Until now, [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) rejected every parameter that the provider did not support, so a new Snowflake parameter required a provider upgrade.
+
+`key` now accepts any parameter name, and Snowflake validates that the parameter exists. The new optional `value_type` field (`STRING`, `IDENTIFIER`, `INTEGER`, `FLOAT`, or `BOOLEAN`, case-insensitive) tells how to render `value` for a parameter that the provider does not support. The value is rendered the same way as for the parameters that the provider supports (`STRING` is a single-quoted string and is also used for enum values, `IDENTIFIER` is a quoted identifier that may be fully qualified, the others are a number or a boolean):
+
+```terraform
+resource "snowflake_account_parameter" "new_parameter" {
+  key        = "SOME_NEW_PARAMETER"
+  value      = "10"
+  value_type = "INTEGER"
+}
+```
+
+- The supported parameters are listed in the `key` field description, and `value_type` is ignored for them. Setting it for a supported parameter logs a warning, so you can find and remove it. The provider logs are visible with `TF_LOG=WARN`, for example: `[WARN] value kind STRING is ignored for DATA_RETENTION_TIME_IN_DAYS, because the parameter catalog supports the parameter`.
+- A parameter that the provider does not support requires `value_type`. Without it, the resource fails with an error that points to the field.
+- `value_type` also sends enum values that the provider does not recognize yet.
+- The forward-compatible path is behind the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` experiment, which is enabled by default. The value of a parameter that the provider does not support yet follows the rules of that experiment (the provider quotes the value by its type, and you do not add quotes yourself), so it cannot work with the legacy write path. With the experiment disabled, the resource uses only the legacy write path, and a parameter that this path does not support fails with an error that names the experiment.
+- Deleting uses `UNSET` for the parameters that the provider does not support.
+
+When a later provider version starts to support the parameter, the parameter goes through the typed write path, which renders the same SQL for the same type. `value_type` is then ignored (the provider logs a warning), and adding, changing, or removing it does not show a plan difference. You do not have to change the configuration, and you can remove `value_type` whenever you like.
+
+This is true only if `value_type` matches the type of the parameter in Snowflake. Some types are easy to confuse: for example, an identifier (like a network policy name) is also accepted by Snowflake as a `STRING`, but once the provider supports the parameter, it is sent as a quoted, case-sensitive identifier, which may show a plan difference or fail. Check the parameter type in the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters) before choosing `value_type`. If the types differ, change `value_type` before the upgrade, or align `value` with the new type after it.
+
+No changes are required in your configuration.
+
 ### *(new feature)* `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` and `OBJECT_PARAMETER_PARSE_ON_SET` enabled by default
 
 The [`ACCOUNT_PARAMETER_CATALOG_WRITE_PATH`](#new-feature-opt-in-experiment-internal-quoting-for-snowflake_account_parameter) and [`OBJECT_PARAMETER_PARSE_ON_SET`](#new-feature-opt-in-experiment-parse-snowflake_object_parameter-values-on-set) experiments are now enabled by default. Opt out by listing the names in [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1). With the experiments, the provider parses `value` and quotes it based on the parameter type:

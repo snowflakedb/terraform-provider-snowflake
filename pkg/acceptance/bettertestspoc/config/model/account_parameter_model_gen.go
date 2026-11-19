@@ -11,8 +11,9 @@ import (
 )
 
 type AccountParameterModel struct {
-	Key   tfconfig.Variable `json:"key,omitempty"`
-	Value tfconfig.Variable `json:"value,omitempty"`
+	Key       tfconfig.Variable `json:"key,omitempty"`
+	Value     tfconfig.Variable `json:"value,omitempty"`
+	ValueType tfconfig.Variable `json:"value_type,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -90,6 +91,11 @@ func (a *AccountParameterModel) WithValue(value string) *AccountParameterModel {
 	return a
 }
 
+func (a *AccountParameterModel) WithValueType(valueType string) *AccountParameterModel {
+	a.ValueType = tfconfig.StringVariable(valueType)
+	return a
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -101,5 +107,10 @@ func (a *AccountParameterModel) WithKeyValue(value tfconfig.Variable) *AccountPa
 
 func (a *AccountParameterModel) WithValueValue(value tfconfig.Variable) *AccountParameterModel {
 	a.Value = value
+	return a
+}
+
+func (a *AccountParameterModel) WithValueTypeValue(value tfconfig.Variable) *AccountParameterModel {
+	a.ValueType = value
 	return a
 }

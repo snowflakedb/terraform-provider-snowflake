@@ -29,12 +29,9 @@ func buildAccountParameterSupportedParameters() []sdk.AccountParameter {
 	return params
 }
 
-func ToAccountParameter(s string) (sdk.AccountParameter, error) {
-	s = strings.ToUpper(s)
-	if !slices.Contains(accountParameterSupportedParameters, sdk.AccountParameter(s)) {
-		return "", fmt.Errorf("invalid account parameter: %s", s)
-	}
-	return sdk.AccountParameter(s), nil
+// suppressValueTypeForSupportedAccountParameter hides value_type diffs once the provider supports the parameter.
+func suppressValueTypeForSupportedAccountParameter(_, _, _ string, d *schema.ResourceData) bool {
+	return slices.Contains(accountParameterSupportedParameters, sdk.AccountParameter(strings.ToUpper(d.Get("key").(string))))
 }
 
 var accountParameterSchema = map[string]*schema.Schema{
@@ -42,10 +39,10 @@ var accountParameterSchema = map[string]*schema.Schema{
 		Type:             schema.TypeString,
 		Required:         true,
 		ForceNew:         true,
-		ValidateDiagFunc: sdkValidation(ToAccountParameter),
-		DiffSuppressFunc: NormalizeAndCompare(ToAccountParameter),
-		Description:      fmt.Sprintf("Name of account parameter. Valid values are (case-insensitive): %s. Deprecated parameters are not supported in the provider.", possibleValuesListed(sdk.AsStringList(accountParameterSupportedParameters))),
+		DiffSuppressFunc: ignoreCaseSuppressFunc,
+		Description:      fmt.Sprintf("Name of account parameter (case-insensitive). The provider supports the following parameters, and it parses and quotes their values itself: %s. Any other account parameter is sent to Snowflake as is, and requires `value_type`. Deprecated parameters are not supported in the provider.", possibleValuesListed(sdk.AsStringList(accountParameterSupportedParameters))),
 	},
+	"value_type": parameterValueTypeSchema("the `key` field description", experimentalfeatures.AccountParameterCatalogWritePath, suppressValueTypeForSupportedAccountParameter),
 	"value": {
 		Type:        schema.TypeString,
 		Required:    true,
@@ -70,6 +67,14 @@ func AccountParameter() *schema.Resource {
 	}
 }
 
+// withExperimentHint tells how to send a parameter that the legacy write path does not support.
+func withExperimentHint(err error) error {
+	if errors.Is(err, sdk.ErrParameterNotSupported) || errors.Is(err, sdk.ErrLegacyParameterNotSupported) {
+		return fmt.Errorf("%w; to send it, remove %s from `experimental_features_disabled` in the provider configuration (and set `value_type` if the provider does not support the parameter)", err, experimentalfeatures.AccountParameterCatalogWritePath)
+	}
+	return err
+}
+
 // CreateAccountParameter implements schema.CreateFunc.
 func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
@@ -77,19 +82,31 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	key := strings.ToUpper(d.Get("key").(string))
 	value := d.Get("value").(string)
 
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
-		handled, err := client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, sdk.ObjectParameter(key), value)
-		if err == nil && !handled {
-			err = fmt.Errorf("%w: %s", sdk.ErrParameterNotSupported, key)
-		}
-		if err != nil {
+	// Empty when value_type is not set.
+	var kind sdk.ParameterValueKind
+	if valueType := d.Get("value_type").(string); valueType != "" {
+		var err error
+		if kind, err = sdk.ToParameterValueKind(valueType); err != nil {
 			return diag.FromErr(err)
 		}
-	} else {
-		// TODO [SNOW-4258021]: when the legacy write path does not support the parameter, suggest the catalog write path
-		// (if it supports the parameter) or the forward-compatible path in the error.
+	}
+
+	switch {
+	case !providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath):
 		if err := client.Parameters.SetAccountParameterLegacy(ctx, sdk.AccountParameter(key), value); err != nil {
+			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w", withExperimentHint(err)))
+		}
+	case kind != "":
+		if err := client.Parameters.SetAccountParameterWithGenericFallback(ctx, key, kind, value); err != nil {
 			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w", err))
+		}
+	default:
+		handled, err := client.Parameters.SetObjectParameterOnAccountViaCatalog(ctx, sdk.ObjectParameter(key), value)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w", err))
+		}
+		if !handled {
+			return diag.FromErr(fmt.Errorf("error creating account parameter err = %w: %s; to send it anyway, set the `value_type` field (one of: %s)", sdk.ErrParameterNotSupported, key, strings.Join(sdk.AsStringList(sdk.AllParameterValueKinds), ", ")))
 		}
 	}
 
@@ -100,12 +117,7 @@ func CreateAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 // ReadAccountParameter implements schema.ReadFunc.
 func ReadAccountParameter(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*provider.Context).Client
-	parameterNameRaw := d.Id()
-	parameterName, err := ToAccountParameter(parameterNameRaw)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	parameter, err := client.Parameters.ShowAccountParameter(ctx, parameterName)
+	parameter, err := client.Parameters.ShowAccountParameter(ctx, sdk.AccountParameter(strings.ToUpper(d.Id())))
 	if err != nil {
 		return diag.FromErr(fmt.Errorf("reading account parameter: %w", err))
 	}
@@ -131,17 +143,11 @@ func DeleteAccountParameter(ctx context.Context, d *schema.ResourceData, meta an
 	key := strings.ToUpper(d.Get("key").(string))
 
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.AccountParameterCatalogWritePath) {
-		handled, err := client.Parameters.UnsetObjectParameterOnAccountViaCatalog(ctx, sdk.ObjectParameter(key))
-		if err == nil && !handled {
-			err = fmt.Errorf("%w: %s", sdk.ErrParameterNotSupported, key)
-		}
-		if err != nil {
+		if err := client.Parameters.UnsetAccountParameterWithGenericFallback(ctx, key); err != nil {
 			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
 		}
-	} else {
-		if err := client.Parameters.UnsetAccountParameterLegacy(ctx, sdk.AccountParameter(key)); err != nil {
-			return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", err))
-		}
+	} else if err := client.Parameters.UnsetAccountParameterLegacy(ctx, sdk.AccountParameter(key)); err != nil {
+		return diag.FromErr(fmt.Errorf("unsetting account parameter: %w", withExperimentHint(err)))
 	}
 
 	d.SetId("")
