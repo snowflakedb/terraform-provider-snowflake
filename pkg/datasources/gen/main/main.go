@@ -18,7 +18,8 @@ func main() {
 	genhelpers.NewGenerator(
 		genhelpers.NewPreambleModel(name, version).
 			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources").
-			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"),
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures").
+			WithImport("github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"),
 		gen.GetAllObjects,
 		gen.ModelFromInputObject,
 		dataSourceFilename,

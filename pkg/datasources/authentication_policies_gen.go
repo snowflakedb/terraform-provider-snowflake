@@ -33,26 +33,8 @@ var authenticationPoliciesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all authentication policy details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					map[string]*schema.Schema{
-						resources.ShowOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW AUTHENTICATION POLICIES.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowAuthenticationPolicySchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.DescribeOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of DESCRIBE AUTHENTICATION POLICY.",
-							Elem: &schema.Resource{
-								Schema: schemas.DescribeAuthenticationPolicyDetailsSchema,
-							},
-						},
-					},
+					showOutputListSchema(sdk.ObjectTypeAuthenticationPolicy.Plural(), schemas.ShowAuthenticationPolicySchema),
+					describeOutputListSchema(sdk.ObjectTypeAuthenticationPolicy, schemas.DescribeAuthenticationPolicyDetailsSchema),
 				),
 			},
 		},

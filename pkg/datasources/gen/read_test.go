@@ -187,7 +187,7 @@ func TestParameters(t *testing.T) {
 	across := syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkShowParameters()})
 	across.ShowParametersDetailsAdditionalLevels = []ssot.ParameterLevel{ssot.ParameterLevel("WIDGET_EXTRA")}
 	require.Contains(t, renderTemplate(t, "parametersOutputSet", modelOf(across)), "schemas.AllWidgetParametersToSchema(parameters, providerCtx)")
-	require.Contains(t, renderTemplate(t, "parametersOutputSchema", modelOf(across)), "schemas.ShowAllWidgetParametersSchema(),")
+	require.Contains(t, renderTemplate(t, "parametersOutputSchema", modelOf(across)), "parametersOutputListSchema(sdk.ObjectTypeWidget, schemas.ShowAllWidgetParametersSchema()),")
 
 	custom := modelOf(syntheticObject([]ssot.SdkOption{ssot.SdkShow(), ssot.SdkShowParameters()},
 		ssot.WithDataSourceShowParametersInSdk(ssot.ExtCall()), ssot.WithDataSourceParametersOutputSet(ssot.ExtCall())))

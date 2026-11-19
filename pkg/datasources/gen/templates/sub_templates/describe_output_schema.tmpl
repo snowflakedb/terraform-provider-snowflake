@@ -1,15 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
 {{- if .Hooks.DescribeOutputSchema.Generate -}}
-	map[string]*schema.Schema{
-		resources.DescribeOutputAttributeName: {
-			Type:        schema.TypeList,
-			Computed:    true,
-			Description: {{ printf "%q" .DescribeOutputDescription }},
-			Elem: &schema.Resource{
-				Schema: schemas.Describe{{ .DescribeSchemaName }}Schema,
-			},
-		},
-	},
+	describeOutputListSchema(sdk.ObjectType{{ .Name }}, schemas.Describe{{ .DescribeSchemaName }}Schema{{ .AdditionalDescribeOutputArg }}),
 {{ else if .Hooks.DescribeOutputSchema.Present -}}
 	{{ .Prefix }}DescribeOutputSchemaExt,
 {{ end -}}

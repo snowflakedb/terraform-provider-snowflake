@@ -29,26 +29,8 @@ var catalogIntegrationsSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all catalog integration details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					map[string]*schema.Schema{
-						resources.ShowOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of SHOW CATALOG INTEGRATIONS.",
-							Elem: &schema.Resource{
-								Schema: schemas.ShowCatalogIntegrationSchema,
-							},
-						},
-					},
-					map[string]*schema.Schema{
-						resources.DescribeOutputAttributeName: {
-							Type:        schema.TypeList,
-							Computed:    true,
-							Description: "Holds the output of DESCRIBE CATALOG INTEGRATION.",
-							Elem: &schema.Resource{
-								Schema: schemas.DescribeCatalogIntegrationDetailsSchema,
-							},
-						},
-					},
+					showOutputListSchema(sdk.ObjectTypeCatalogIntegration.Plural(), schemas.ShowCatalogIntegrationSchema),
+					describeOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.DescribeCatalogIntegrationDetailsSchema),
 				),
 			},
 		},
