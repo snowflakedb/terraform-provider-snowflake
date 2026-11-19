@@ -475,6 +475,36 @@ This is true only if `value_type` matches the type of the parameter in Snowflake
 
 No changes are required in your configuration.
 
+### *(new feature)* Forward-compatible parameters and object types in `snowflake_object_parameter`
+
+Until now, [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) sent the value untyped for every parameter and object type that the typed write path did not support, and it could not read back the parameters of some object types. A new Snowflake parameter, or a parameter on an object type that the provider does not support yet, required a provider upgrade or manual quoting.
+
+The resource now has an optional `value_type` field (`STRING`, `IDENTIFIER`, `INTEGER`, `FLOAT`, or `BOOLEAN`, case-insensitive), which works the same way as in [`snowflake_account_parameter`](#new-feature-forward-compatible-parameters-in-snowflake_account_parameter):
+
+```terraform
+resource "snowflake_object_parameter" "new_object_type" {
+  key         = "DATA_RETENTION_TIME_IN_DAYS"
+  value       = "2"
+  value_type  = "INTEGER"
+  object_type = "TABLE"
+  object_identifier {
+    database = "DB"
+    schema   = "SCHEMA"
+    name     = "TABLE"
+  }
+}
+```
+
+- The supported parameters are listed per object type (and for `on_account = true`) in the `key` field description, and the supported object types (Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table) in the `object_type` field description. `value_type` is ignored for the supported parameters. Setting `value_type` for a supported parameter logs a warning, so you can find and remove it. The provider logs are visible with `TF_LOG=WARN`, for example: `[WARN] value kind STRING is ignored for DATA_RETENTION_TIME_IN_DAYS, because the parameter catalog supports the parameter`.
+- `object_type` accepts any object type that Snowflake supports. For a parameter or an object type that the provider does not support (e.g. `TABLE`, `PIPE`, or a function), `value` is rendered with `value_type` when it is set. Without `value_type`, the behavior does not change, and the value is sent as written.
+- The parameters of any object type can be read back now.
+- The forward-compatible path is behind the `OBJECT_PARAMETER_PARSE_ON_SET` experiment, which is enabled by default. The value of a parameter that the provider does not support yet follows the rules of that experiment (the provider quotes the value by its type), so it cannot work without it. With the experiment disabled, the resource uses only the legacy write path, `value_type` is not used, and an account-level parameter that this path does not support fails with an error that names the experiment.
+- Deleting uses `UNSET` for the parameters that the provider does not support.
+
+When a later provider version starts to support the parameter or the object type, the same configuration goes through the typed write path, `value_type` is ignored, and it does not show a plan difference, as long as `value_type` matches the type of the parameter in Snowflake. See the [`snowflake_account_parameter`](#new-feature-forward-compatible-parameters-in-snowflake_account_parameter) entry for the details and for how to choose `value_type`.
+
+No changes are required in your configuration.
+
 ### *(new feature)* `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` and `OBJECT_PARAMETER_PARSE_ON_SET` enabled by default
 
 The [`ACCOUNT_PARAMETER_CATALOG_WRITE_PATH`](#new-feature-opt-in-experiment-internal-quoting-for-snowflake_account_parameter) and [`OBJECT_PARAMETER_PARSE_ON_SET`](#new-feature-opt-in-experiment-parse-snowflake_object_parameter-values-on-set) experiments are now enabled by default. Opt out by listing the names in [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1). With the experiments, the provider parses `value` and quotes it based on the parameter type:
