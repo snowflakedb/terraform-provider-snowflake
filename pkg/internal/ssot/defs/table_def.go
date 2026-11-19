@@ -176,6 +176,8 @@ var (
 	// ReclusterState is RESUME or SUSPEND before the static RECLUSTER keyword.
 	ReclusterState    = ssot.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
 	TableSearchMethod = ssot.NewEnum("TableSearchMethod", "TableSearchMethods", "SUBSTRING", "EQUALITY", "FULL_TEXT")
+	// TableCopyOption is COPY = ( COMMENTS | TAGS | GRANTS ).
+	TableCopyOption = ssot.NewEnum("TableCopyOption", "TableCopyOptions", "COMMENTS", "TAGS", "GRANTS")
 )
 
 // TableStorageLifecyclePolicy is ADD STORAGE LIFECYCLE POLICY policy ON (columns).
@@ -192,6 +194,20 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 }
 
 var tableColumnIdentityOrder = ssot.Attribute{Name: "order", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword()}
+
+// TableColumnVirtual is [ GENERATED ALWAYS ] AS ( expr ) [ VIRTUAL ] on CREATE TABLE and ALTER TABLE ADD COLUMN.
+var TableColumnVirtual = ssot.Attribute{
+	Name:      "virtual",
+	Type:      ssot.AttrObject,
+	SqlOnly:   true,
+	CreateSql: ssot.ObjectParameter(ssot.StructName("TableColumnVirtual")),
+	Children: []ssot.Attribute{
+		{Name: "generated_always", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("GENERATED ALWAYS"))},
+		// Callers include the parentheses in the expression. The ddl renderer does not wrap an unquoted parameter.
+		{Name: "expression", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("AS"), ssot.NoEquals(), ssot.MustParentheses(), ssot.NoQuotes(), ssot.Required())},
+		{Name: "virtual", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword()},
+	},
+}
 
 // TableColumnDefaultValue is DEFAULT or IDENTITY on a column. CREATE and ALTER ADD COLUMN share this struct, and its
 // name stays ColumnDefaultValue because hybrid and iceberg tables refer to that type.
@@ -377,6 +393,7 @@ var TableColumn = ssot.Attribute{
 				{Name: "if_not_exists", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("IF NOT EXISTS"))},
 				{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required())},
 				{Name: "column_type", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PredefinedType("DataType", ssot.NoEquals(), ssot.Required())},
+				ssot.WithCreateSql(&TableColumnVirtual, ssot.ObjectParameter(ssot.StructName("TableColumnVirtual"), ssot.NoComma())),
 				{Name: "collate", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.NoEquals())},
 				TableColumnDefaultValue,
 				{Name: "not_null", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOT NULL"))},
@@ -554,6 +571,7 @@ var TableCreateColumn = ssot.Attribute{
 	Children: []ssot.Attribute{
 		{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required())},
 		{Name: "column_type", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.PredefinedType("DataType", ssot.KeywordShape(), ssot.Required())},
+		ssot.WithCreateSql(&TableColumnVirtual, ssot.ObjectParameter(ssot.StructName("TableColumnVirtual"), ssot.KeywordShape())),
 		{Name: "inline_constraint", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&TableColumnInlineConstraint, ssot.KeywordShape())},
 		{Name: "not_null", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOT NULL"))},
 		{Name: "collate", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COLLATE"), ssot.NoEquals())},
@@ -596,7 +614,12 @@ var TableCreateAttrs = struct {
 	EnableSchemaEvolution      ssot.Attribute
 	MaxDataExtensionTimeInDays ssot.Attribute
 	DefaultDdlCollation        ssot.Attribute
-	CopyGrants                 ssot.Attribute
+	ErrorLogging               ssot.Attribute
+	Copy                       ssot.Attribute
+	IcebergDefaultDdlCollation ssot.Attribute
+	RowTimestamp               ssot.Attribute
+	Contact                    ssot.Attribute
+	StorageLifecyclePolicy     ssot.Attribute
 	RowAccessPolicy            ssot.Attribute
 	AggregationPolicy          ssot.Attribute
 	JoinPolicy                 ssot.Attribute
@@ -638,11 +661,51 @@ var TableCreateAttrs = struct {
 		CreateSql: ssot.StringParameter(ssot.AllowEmpty()),
 		SetSql:    ssot.StringParameter(ssot.AllowEmpty()),
 	},
-	CopyGrants: ssot.Attribute{
-		Name:      "copy_grants",
-		Type:      ssot.AttrBool,
+	ErrorLogging: ssot.Attribute{
+		Name:    "error_logging",
+		Type:    ssot.AttrBool,
+		SqlOnly: true,
+	},
+	Copy: ssot.Attribute{
+		Name:      "copy",
+		Type:      ssot.AttrList,
 		SqlOnly:   true,
-		CreateSql: ssot.BoolKeyword(ssot.Sql("COPY GRANTS")),
+		Elem:      &ssot.Attribute{Type: ssot.AttrEnum, Enum: TableCopyOption},
+		CreateSql: ssot.ListParameter(TableCopyOption.Name, ssot.Parentheses(), ssot.NoQuotes()),
+	},
+	IcebergDefaultDdlCollation: ssot.Attribute{
+		Name:    "iceberg_default_ddl_collation",
+		Type:    ssot.AttrString,
+		SqlOnly: true,
+		SetSql:  ssot.StringParameter(ssot.AllowEmpty()),
+	},
+	RowTimestamp: ssot.Attribute{
+		Name:    "row_timestamp",
+		Type:    ssot.AttrBool,
+		SqlOnly: true,
+	},
+	// CREATE is WITH CONTACT ( purpose = contact ). SET is CONTACT purpose = contact and may mix
+	// with other SET properties. UNSET CONTACT <purpose> is its own ALTER statement (Snowflake
+	// rejects mixing CONTACT with other UNSET properties). The Go type for CREATE/SET is the
+	// handwritten TableContact iceberg tables already use; UNSET is the purpose string.
+	Contact: ssot.Attribute{
+		Name:      "contact",
+		Type:      ssot.AttrString,
+		SqlOnly:   true,
+		CreateSql: ssot.PredefinedType("[]TableContact", ssot.KeywordShape(), ssot.Parentheses(), ssot.Sql("WITH CONTACT"), ssot.FieldName("Contact")),
+		SetSql:    ssot.PredefinedType("[]TableContact", ssot.KeywordShape(), ssot.Sql("CONTACT")),
+		UnsetSql:  ssot.PlainParameter(ssot.NoEquals()),
+	},
+	// CREATE is STORAGE LIFECYCLE POLICY policy ON (columns). ALTER ADD stays TableStorageLifecyclePolicy.
+	StorageLifecyclePolicy: ssot.Attribute{
+		Name:      "storage_lifecycle_policy",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.StructName("CreateTableStorageLifecyclePolicy")),
+		Children: []ssot.Attribute{
+			{Name: "storage_lifecycle_policy", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true, SqlOnly: true, CreateSql: ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("STORAGE LIFECYCLE POLICY"), ssot.Required(), ssot.FieldName("StorageLifecyclePolicy"))},
+			{Name: "on", Type: ssot.AttrList, Required: true, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.ListParameter("Column", ssot.Sql("ON"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("On"))},
+		},
 	},
 	RowAccessPolicy: ssot.Attribute{
 		Name:      "row_access_policy",
@@ -720,7 +783,7 @@ var Table = ssot.Object{
 	Name:       "Table",
 	NamePlural: "Tables",
 	// These enums are in the nested ALTER blocks and constraints, which the enum walk does not reach.
-	AdditionalEnums:        []*ssot.Enum{TableConstraintType, ReclusterState, MatchType, TableSearchMethod},
+	AdditionalEnums:        []*ssot.Enum{TableConstraintType, ReclusterState, MatchType, TableSearchMethod, TableCopyOption, TableDataMetricScheduleStatusOperation, TableDataMetricSensitivity},
 	IdType:                 "SchemaObjectIdentifier",
 	PreviewFeature:         true,
 	DescribeFailRead:       true,
@@ -773,12 +836,16 @@ var Table = ssot.Object{
 			&TableCreateAttrs.MaxDataExtensionTimeInDays,
 			&TableAttrs.ChangeTracking,
 			&TableCreateAttrs.DefaultDdlCollation,
-			&TableCreateAttrs.CopyGrants,
+			&TableCreateAttrs.ErrorLogging,
+			&TableCreateAttrs.Copy,
 			&TableCreateAttrs.RowAccessPolicy,
 			&TableCreateAttrs.AggregationPolicy,
 			&TableCreateAttrs.JoinPolicy,
+			&TableCreateAttrs.StorageLifecyclePolicy,
 			ssot.Tags,
+			&TableCreateAttrs.Contact,
 			&TableAttrs.Comment,
+			&TableCreateAttrs.RowTimestamp,
 		},
 	},
 	Show: ssot.OutputSpec{
@@ -837,17 +904,27 @@ var Table = ssot.Object{
 				&TableCreateAttrs.MaxDataExtensionTimeInDays,
 				&TableAttrs.ChangeTracking,
 				&TableCreateAttrs.DefaultDdlCollation,
+				&TableCreateAttrs.IcebergDefaultDdlCollation,
+				&TableCreateAttrs.ErrorLogging,
+				&TableCreateAttrs.Contact,
 				&TableAttrs.Comment,
+				&TableCreateAttrs.RowTimestamp,
 			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 			ssot.AlterUnset(
-				&TableAttrs.DataRetentionTimeInDays,
-				&TableCreateAttrs.MaxDataExtensionTimeInDays,
-				&TableAttrs.ChangeTracking,
-				&TableCreateAttrs.DefaultDdlCollation,
-				&TableCreateAttrs.EnableSchemaEvolution,
-				&TableAttrs.Comment,
+				ssot.AlterGroup("Contact", &TableCreateAttrs.Contact),
+				ssot.AlterGroup(ssot.MainAlterGroup,
+					&TableAttrs.DataRetentionTimeInDays,
+					&TableCreateAttrs.MaxDataExtensionTimeInDays,
+					&TableAttrs.ChangeTracking,
+					&TableCreateAttrs.DefaultDdlCollation,
+					&TableCreateAttrs.IcebergDefaultDdlCollation,
+					&TableCreateAttrs.EnableSchemaEvolution,
+					&TableCreateAttrs.ErrorLogging,
+					&TableAttrs.Comment,
+					&TableCreateAttrs.RowTimestamp,
+				),
 			),
 			ssot.AlterKeywordBlock("AddRowAccessPolicy", "", &TableAddRowAccessPolicy).WithSharedToOpts(),
 			ssot.AlterKeywordBlock("DropRowAccessPolicy", "", &TableDropRowAccessPolicy).WithSharedToOpts(),
@@ -859,6 +936,11 @@ var Table = ssot.Object{
 			ssot.AlterKeywordBlock("UnsetAggregationPolicy", "", &TableAggregationPolicy).WithSharedToOpts(),
 			ssot.AlterKeywordBlock("SetJoinPolicy", "", &TableJoinPolicy).WithSharedToOpts(),
 			ssot.AlterKeywordBlock("UnsetJoinPolicy", "", &TableJoinPolicy).WithSharedToOpts(),
+			ssot.AlterKeywordBlock("SetDataMetricSchedule", "", &TableSetDataMetricSchedule),
+			ssot.AlterKeyword("UNSET DATA_METRIC_SCHEDULE"),
+			ssot.AlterKeywordBlock("AddDataMetricFunction", "", &TableAddDataMetricFunction),
+			ssot.AlterKeywordBlock("DropDataMetricFunction", "", &TableDropDataMetricFunction),
+			ssot.AlterKeywordBlock("ModifyDataMetricFunction", "", &TableModifyDataMetricFunction),
 		},
 	},
 	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.

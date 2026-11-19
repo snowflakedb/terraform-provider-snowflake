@@ -59,6 +59,34 @@ func ToTableKind(s string) (TableKind, error) {
 	}
 }
 
+type TableCopyOption string
+
+const (
+	TableCopyOptionComments TableCopyOption = "COMMENTS"
+	TableCopyOptionTags     TableCopyOption = "TAGS"
+	TableCopyOptionGrants   TableCopyOption = "GRANTS"
+)
+
+var AllTableCopyOptions = []TableCopyOption{
+	TableCopyOptionComments,
+	TableCopyOptionTags,
+	TableCopyOptionGrants,
+}
+
+func ToTableCopyOption(s string) (TableCopyOption, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableCopyOptionComments):
+		return TableCopyOptionComments, nil
+	case string(TableCopyOptionTags):
+		return TableCopyOptionTags, nil
+	case string(TableCopyOptionGrants):
+		return TableCopyOptionGrants, nil
+	default:
+		return "", fmt.Errorf("invalid table copy option: %s", s)
+	}
+}
+
 type TableConstraintType string
 
 const (
@@ -164,6 +192,58 @@ func ToTableSearchMethod(s string) (TableSearchMethod, error) {
 		return TableSearchMethodFullText, nil
 	default:
 		return "", fmt.Errorf("invalid table search method: %s", s)
+	}
+}
+
+type TableDataMetricScheduleStatusOperation string
+
+const (
+	TableDataMetricScheduleStatusOperationResume  TableDataMetricScheduleStatusOperation = "RESUME"
+	TableDataMetricScheduleStatusOperationSuspend TableDataMetricScheduleStatusOperation = "SUSPEND"
+)
+
+var AllTableDataMetricScheduleStatusOperations = []TableDataMetricScheduleStatusOperation{
+	TableDataMetricScheduleStatusOperationResume,
+	TableDataMetricScheduleStatusOperationSuspend,
+}
+
+func ToTableDataMetricScheduleStatusOperation(s string) (TableDataMetricScheduleStatusOperation, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableDataMetricScheduleStatusOperationResume):
+		return TableDataMetricScheduleStatusOperationResume, nil
+	case string(TableDataMetricScheduleStatusOperationSuspend):
+		return TableDataMetricScheduleStatusOperationSuspend, nil
+	default:
+		return "", fmt.Errorf("invalid table data metric schedule status operation: %s", s)
+	}
+}
+
+type TableDataMetricSensitivity string
+
+const (
+	TableDataMetricSensitivityLow    TableDataMetricSensitivity = "LOW"
+	TableDataMetricSensitivityMedium TableDataMetricSensitivity = "MEDIUM"
+	TableDataMetricSensitivityHigh   TableDataMetricSensitivity = "HIGH"
+)
+
+var AllTableDataMetricSensitivities = []TableDataMetricSensitivity{
+	TableDataMetricSensitivityLow,
+	TableDataMetricSensitivityMedium,
+	TableDataMetricSensitivityHigh,
+}
+
+func ToTableDataMetricSensitivity(s string) (TableDataMetricSensitivity, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableDataMetricSensitivityLow):
+		return TableDataMetricSensitivityLow, nil
+	case string(TableDataMetricSensitivityMedium):
+		return TableDataMetricSensitivityMedium, nil
+	case string(TableDataMetricSensitivityHigh):
+		return TableDataMetricSensitivityHigh, nil
+	default:
+		return "", fmt.Errorf("invalid table data metric sensitivity: %s", s)
 	}
 }
 

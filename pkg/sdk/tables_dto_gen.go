@@ -31,12 +31,16 @@ type CreateTableRequest struct {
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
 	DefaultDdlCollation        *StringAllowEmpty
-	CopyGrants                 *bool
+	ErrorLogging               *bool
+	Copy                       []TableCopyOption
 	RowAccessPolicy            *TableRowAccessPolicyRequest
 	AggregationPolicy          *TableAggregationPolicyRequest
 	JoinPolicy                 *TableJoinPolicyRequest
+	StorageLifecyclePolicy     *CreateTableStorageLifecyclePolicyRequest
 	Tag                        []TagAssociation
+	Contact                    []TableContact
 	Comment                    *string
+	RowTimestamp               *bool
 }
 
 type CreateTableColumnsAndConstraintsRequest struct {
@@ -47,6 +51,7 @@ type CreateTableColumnsAndConstraintsRequest struct {
 type TableColumnRequest struct {
 	Name             string   // required
 	ColumnType       DataType // required
+	Virtual          *TableColumnVirtualRequest
 	InlineConstraint *TableColumnInlineConstraintRequest
 	NotNull          *bool
 	Collate          *string
@@ -55,6 +60,12 @@ type TableColumnRequest struct {
 	ProjectionPolicy *TableColumnProjectionPolicyRequest
 	Tag              []TagAssociation
 	Comment          *string
+}
+
+type TableColumnVirtualRequest struct {
+	GeneratedAlways *bool
+	As              string // required
+	Virtual         *bool
 }
 
 type TableColumnInlineConstraintRequest struct {
@@ -200,6 +211,11 @@ type TableJoinPolicyRequest struct {
 	AllowedJoinKeys []Column
 }
 
+type CreateTableStorageLifecyclePolicyRequest struct {
+	StorageLifecyclePolicy SchemaObjectIdentifier // required
+	On                     []Column               // required
+}
+
 type AlterTableRequest struct {
 	IfExists                   *bool
 	name                       SchemaObjectIdentifier // required
@@ -224,6 +240,11 @@ type AlterTableRequest struct {
 	UnsetAggregationPolicy     *TableUnsetAggregationPolicyRequest
 	SetJoinPolicy              *TableSetJoinPolicyRequest
 	UnsetJoinPolicy            *TableUnsetJoinPolicyRequest
+	SetDataMetricSchedule      *TableSetDataMetricScheduleRequest
+	UnsetDataMetricSchedule    *bool
+	AddDataMetricFunction      *TableAddDataMetricFunctionRequest
+	DropDataMetricFunction     *TableDropDataMetricFunctionRequest
+	ModifyDataMetricFunction   *TableModifyDataMetricFunctionRequest
 }
 
 type TableClusteringActionRequest struct {
@@ -259,6 +280,7 @@ type TableColumnAddActionRequest struct {
 	IfNotExists      *bool
 	Name             string   // required
 	ColumnType       DataType // required
+	Virtual          *TableColumnVirtualRequest
 	Collate          *string
 	DefaultValue     *ColumnDefaultValueRequest
 	NotNull          *bool
@@ -413,16 +435,24 @@ type TableSetRequest struct {
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
 	DefaultDdlCollation        *StringAllowEmpty
+	IcebergDefaultDdlCollation *StringAllowEmpty
+	ErrorLogging               *bool
+	Contact                    []TableContact
 	Comment                    *string
+	RowTimestamp               *bool
 }
 
 type TableUnsetRequest struct {
+	Contact                    *string
 	DataRetentionTimeInDays    *bool
 	MaxDataExtensionTimeInDays *bool
 	ChangeTracking             *bool
 	DefaultDdlCollation        *bool
+	IcebergDefaultDdlCollation *bool
 	EnableSchemaEvolution      *bool
+	ErrorLogging               *bool
 	Comment                    *bool
+	RowTimestamp               *bool
 }
 
 type TableAddRowAccessPolicyRequest struct {
@@ -459,6 +489,75 @@ type TableSetJoinPolicyRequest struct {
 
 type TableUnsetJoinPolicyRequest struct{}
 
+type TableSetDataMetricScheduleRequest struct {
+	DataMetricSchedule string // required
+}
+
+type TableAddDataMetricFunctionRequest struct {
+	AddedFunctions []TableAddedFunctionsRequest // required
+}
+
+type TableAddedFunctionsRequest struct {
+	DataMetricFunction SchemaObjectIdentifier // required
+	On                 []Column               // required
+	WithinGroup        []Column
+	GroupLimit         *int
+	Filter             *string
+	Expectations       []TableExpectationsRequest
+	ExecuteAsRole      *AccountObjectIdentifier
+	AnomalyDetection   *bool
+	Sensitivity        *TableDataMetricSensitivity
+}
+
+type TableExpectationsRequest struct {
+	Name       string // required
+	Expression string // required
+}
+
+type TableDropDataMetricFunctionRequest struct {
+	DroppedFunctions []TableDroppedFunctionsRequest // required
+}
+
+type TableDroppedFunctionsRequest struct {
+	DataMetricFunction SchemaObjectIdentifier // required
+	On                 []Column               // required
+}
+
+type TableModifyDataMetricFunctionRequest struct {
+	ModifiedFunctions []TableModifiedFunctionsRequest // required
+}
+
+type TableModifiedFunctionsRequest struct {
+	DataMetricFunction SchemaObjectIdentifier // required
+	On                 []Column               // required
+	Status             *TableDataMetricScheduleStatusOperation
+	AddExpectation     []TableAddExpectationRequest
+	ModifyExpectation  []TableModifyExpectationRequest
+	DropExpectation    []TableDropExpectationRequest
+	Filter             *string
+	Set                *TableModifyDataMetricFunctionSetRequest
+}
+
+type TableAddExpectationRequest struct {
+	Name       string // required
+	Expression string // required
+}
+
+type TableModifyExpectationRequest struct {
+	Name       string // required
+	Expression string // required
+}
+
+type TableDropExpectationRequest struct {
+	Name string // required
+}
+
+type TableModifyDataMetricFunctionSetRequest struct {
+	AnomalyDetection        *bool
+	Sensitivity             *TableDataMetricSensitivity
+	DataQualityNotification *bool
+}
+
 type DropTableRequest struct {
 	IfExists *bool
 	name     SchemaObjectIdentifier // required
@@ -480,7 +579,7 @@ type CreateAsSelectTableRequest struct {
 	name            SchemaObjectIdentifier       // required
 	Columns         []TableAsSelectColumnRequest // required
 	ClusterBy       []string
-	CopyGrants      *bool
+	Copy            []TableCopyOption
 	RowAccessPolicy *TableRowAccessPolicyRequest
 	Query           string // required
 }
@@ -492,10 +591,10 @@ type TableAsSelectColumnRequest struct {
 }
 
 type CreateUsingTemplateTableRequest struct {
-	OrReplace  *bool
-	name       SchemaObjectIdentifier // required
-	CopyGrants *bool
-	Query      []string
+	OrReplace *bool
+	name      SchemaObjectIdentifier // required
+	Copy      []TableCopyOption
+	Query     []string
 }
 
 type CreateLikeTableRequest struct {
@@ -503,7 +602,7 @@ type CreateLikeTableRequest struct {
 	name        SchemaObjectIdentifier // required
 	SourceTable SchemaObjectIdentifier // required
 	ClusterBy   []string
-	CopyGrants  *bool
+	Copy        []TableCopyOption
 }
 
 type CreateCloneTableRequest struct {
@@ -511,7 +610,7 @@ type CreateCloneTableRequest struct {
 	name        SchemaObjectIdentifier // required
 	SourceTable SchemaObjectIdentifier // required
 	ClonePoint  *TableClonePointRequest
-	CopyGrants  *bool
+	Copy        []TableCopyOption
 }
 
 type TableClonePointRequest struct {

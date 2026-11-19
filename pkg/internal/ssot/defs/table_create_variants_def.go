@@ -89,7 +89,7 @@ var tableCreateVariantOperations = []ssot.CustomOperationSpec{
 		Clauses: tableCreateVariantClauses(
 			ssot.CustomAttribute(&tableCreateVariantAttrs.AsSelectColumns),
 			ssot.CustomAttribute(&TableAttrs.ClusterBy),
-			ssot.CustomAttribute(&TableCreateAttrs.CopyGrants),
+			ssot.CustomAttribute(&TableCreateAttrs.Copy),
 			ssot.CustomAttribute(&TableCreateAttrs.RowAccessPolicy),
 			ssot.CustomAttribute(&tableCreateVariantAttrs.AsSelectQuery),
 		),
@@ -99,7 +99,7 @@ var tableCreateVariantOperations = []ssot.CustomOperationSpec{
 		Doc:             "https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template",
 		QueryStructName: "CreateTableUsingTemplate",
 		Clauses: tableCreateVariantClauses(
-			ssot.CustomAttribute(&TableCreateAttrs.CopyGrants),
+			ssot.CustomAttribute(&TableCreateAttrs.Copy),
 			ssot.CustomAttribute(&tableCreateVariantAttrs.UsingTemplateQuery),
 		),
 	},
@@ -110,7 +110,7 @@ var tableCreateVariantOperations = []ssot.CustomOperationSpec{
 		Clauses: tableCreateVariantClauses(
 			ssot.CustomAttribute(&tableCreateVariantAttrs.LikeSourceTable),
 			ssot.CustomAttribute(&TableAttrs.ClusterBy),
-			ssot.CustomAttribute(&TableCreateAttrs.CopyGrants),
+			ssot.CustomAttribute(&TableCreateAttrs.Copy),
 		),
 	},
 	{
@@ -120,7 +120,8 @@ var tableCreateVariantOperations = []ssot.CustomOperationSpec{
 		Clauses: tableCreateVariantClauses(
 			ssot.CustomAttribute(&tableCreateVariantAttrs.CloneSourceTable),
 			ssot.CustomAttribute(&tableCreateVariantAttrs.ClonePoint),
-			ssot.CustomAttribute(&TableCreateAttrs.CopyGrants),
+			ssot.CustomAttribute(&TableCreateAttrs.Copy),
 		),
 	},
+	// TODO [SNOW-4532966]: add the CREATE TABLE ... FROM BACKUP SET <backup_set> IDENTIFIER '<identifier>' variant (CreateFromBackupSet).
 }

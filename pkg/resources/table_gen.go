@@ -130,6 +130,11 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 			return diag.FromErr(err)
 		}
 	}
+	if !reflect.DeepEqual(*setUnset.unsetContact, *sdk.NewTableUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(*setUnset.unsetContact)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewTableUnsetRequest()) {
 		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(*setUnset.unset)); err != nil {
 			return diag.FromErr(err)
@@ -164,12 +169,13 @@ func tableApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateTabl
 
 // tableAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
 type tableAlterRequests struct {
-	set   *sdk.TableSetRequest
-	unset *sdk.TableUnsetRequest
+	set          *sdk.TableSetRequest
+	unsetContact *sdk.TableUnsetRequest
+	unset        *sdk.TableUnsetRequest
 }
 
 func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequests, error) {
-	set, unset := sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest()
+	set, unsetContact, unset := sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest(), sdk.NewTableUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
 		intAttributeWithSpecialDefaultUpdateBuilder(d, "data_retention_time_in_days", set.WithDataRetentionTimeInDays, unset.WithDataRetentionTimeInDays),
@@ -178,7 +184,7 @@ func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequests, error) {
 	if errs != nil {
 		return nil, errs
 	}
-	return &tableAlterRequests{set: set, unset: unset}, nil
+	return &tableAlterRequests{set: set, unsetContact: unsetContact, unset: unset}, nil
 }
 
 func DeleteTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

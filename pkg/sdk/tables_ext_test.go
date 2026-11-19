@@ -21,6 +21,9 @@ func init() {
 	aggregationPolicyId := randomSchemaObjectIdentifier()
 	joinPolicyId := randomSchemaObjectIdentifier()
 	storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+	contactId := randomSchemaObjectIdentifier()
+	dataMetricFunctionId := randomSchemaObjectIdentifier()
+	executeAsRole := randomAccountObjectIdentifier()
 	columnTagId1 := randomSchemaObjectIdentifier()
 	columnTagId2 := randomSchemaObjectIdentifierInSchema(columnTagId1.SchemaId())
 	tableTagId1 := randomSchemaObjectIdentifierInSchema(columnTagId1.SchemaId())
@@ -90,6 +93,10 @@ func init() {
 							{Name: columnTagId2, Value: "v2"},
 						},
 						InlineConstraint: &TableColumnInlineConstraint{UniquePK: &TableColumnInlineUniquePK{Name: new("Inline_Constraint"), PrimaryKey: new(true)}},
+					}, {
+						Name:       "DOUBLE_ID",
+						ColumnType: DataTypeNumber,
+						Virtual:    &TableColumnVirtual{GeneratedAlways: new(true), As: "(1 + 1)", Virtual: new(true)},
 					}},
 					OutOfLineConstraint: []TableOutOfLineConstraint{
 						{FK: &TableOutOfLineFK{
@@ -126,16 +133,24 @@ func init() {
 				opts.MaxDataExtensionTimeInDays = new(100)
 				opts.ChangeTracking = new(true)
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en"})
+				opts.ErrorLogging = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
 				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
 				opts.AggregationPolicy = &TableAggregationPolicy{AggregationPolicy: aggregationPolicyId, EntityKey: []Column{{Value: "COLUMN_1"}}}
 				opts.JoinPolicy = &TableJoinPolicy{JoinPolicy: joinPolicyId, AllowedJoinKeys: []Column{{Value: "COLUMN_1"}}}
+				opts.StorageLifecyclePolicy = &CreateTableStorageLifecyclePolicy{
+					StorageLifecyclePolicy: storageLifecyclePolicyId,
+					On:                     []Column{{Value: "FIRST_COLUMN"}},
+				}
 				opts.Tag = []TagAssociation{
 					{Name: tableTagId1, Value: "v1"},
 					{Name: tableTagId2, Value: "v2"},
 				}
+				opts.Contact = []TableContact{{Purpose: "SUPPORT", Contact: contactId}}
 				opts.Comment = &tableComment
+				opts.RowTimestamp = new(true)
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', "DOUBLE_ID" NUMBER GENERATED ALWAYS AS (1 + 1) VIRTUAL, CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ERROR_LOGGING = true COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN") TAG (%s = 'v1', %s = 'v2') WITH CONTACT (SUPPORT = %s) COMMENT = '%s' ROW_TIMESTAMP = true`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -145,8 +160,10 @@ func init() {
 			rowAccessPolicyId.FullyQualifiedName(),
 			aggregationPolicyId.FullyQualifiedName(),
 			joinPolicyId.FullyQualifiedName(),
+			storageLifecyclePolicyId.FullyQualifiedName(),
 			tableTagId1.FullyQualifiedName(),
 			tableTagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
 			tableComment,
 		).
 		withAdditionalSqlCasef(
@@ -161,9 +178,9 @@ func init() {
 			"sql_Create_orReplace",
 			func(opts *CreateTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionGrants}
 			},
-			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR) COPY GRANTS`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR) COPY = (GRANTS)`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -204,17 +221,17 @@ func init() {
 			case_Tables_sql_CreateAsSelect_all,
 			func(opts *CreateAsSelectTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
 				opts.Columns = []TableAsSelectColumn{{
 					Name:          "FIRST_COLUMN",
 					ColumnType:    new(DataTypeVARCHAR),
 					MaskingPolicy: &maskingPolicyId,
 				}}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
 				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
 				opts.Query = "SELECT * FROM ANOTHER_TABLE"
 			},
-			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
@@ -235,9 +252,9 @@ func init() {
 			case_Tables_sql_CreateUsingTemplate_all,
 			func(opts *CreateUsingTemplateTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
 			},
-			`CREATE OR REPLACE TABLE %s COPY GRANTS USING TEMPLATE (sample_data)`,
+			`CREATE OR REPLACE TABLE %s COPY = (COMMENTS, TAGS, GRANTS) USING TEMPLATE (sample_data)`,
 			id.FullyQualifiedName(),
 		)
 
@@ -256,10 +273,10 @@ func init() {
 			case_Tables_sql_CreateLike_all,
 			func(opts *CreateLikeTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
 				opts.ClusterBy = []string{"date", "id"}
 			},
-			`CREATE OR REPLACE TABLE %s LIKE %s CLUSTER BY (date, id) COPY GRANTS`,
+			`CREATE OR REPLACE TABLE %s LIKE %s CLUSTER BY (date, id) COPY = (COMMENTS, TAGS, GRANTS)`,
 			id.FullyQualifiedName(), sourceTable.FullyQualifiedName(),
 		)
 
@@ -278,13 +295,13 @@ func init() {
 			case_Tables_sql_CreateClone_all,
 			func(opts *CreateCloneTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
 				opts.ClonePoint = &TableClonePoint{
 					Moment: CloneMomentAt,
 					At:     TimeTravel{Offset: new(0)},
 				}
 			},
-			`CREATE OR REPLACE TABLE %s CLONE %s AT (OFFSET => 0) COPY GRANTS`,
+			`CREATE OR REPLACE TABLE %s CLONE %s AT (OFFSET => 0) COPY = (COMMENTS, TAGS, GRANTS)`,
 			id.FullyQualifiedName(), sourceTable.FullyQualifiedName(),
 		)
 
@@ -313,6 +330,31 @@ func init() {
 				{DropDefault: new(true)},
 				{},
 			}}
+		}).
+		withModify(case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
+			opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+				ModifiedFunctions: []TableModifiedFunctions{{
+					DataMetricFunction: dataMetricFunctionId,
+					On:                 []Column{{Value: "ID"}},
+					Status:             new(TableDataMetricScheduleStatusOperationSuspend),
+					Filter:             new("ID > 0"),
+				}},
+			}
+		}).
+		withModify(case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_OneValidOneInvalid, func(opts *AlterTableOptions) {
+			opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+				ModifiedFunctions: []TableModifiedFunctions{
+					{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						Status:             new(TableDataMetricScheduleStatusOperationSuspend),
+					},
+					{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+					},
+				},
+			}
 		}).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_RenameTo,
@@ -366,6 +408,18 @@ func init() {
 				}}
 			},
 			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS "NEXT_COLUMN" VARCHAR COLLATE 'utf8' IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addVirtualColumn",
+			func(opts *AlterTableOptions) {
+				opts.ColumnAction = &TableColumnAction{Add: &TableColumnAddAction{
+					Name:       "DOUBLE_ID",
+					ColumnType: DataTypeNumber,
+					Virtual:    &TableColumnVirtual{GeneratedAlways: new(true), As: "(ID * 2)", Virtual: new(true)},
+				}}
+			},
+			`ALTER TABLE %s ADD COLUMN "DOUBLE_ID" NUMBER GENERATED ALWAYS AS (ID * 2) VIRTUAL`,
+			id.FullyQualifiedName(),
 		).
 		// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
 		// Adding a column with a non-identity default used to panic in TableColumnActionRequest.toOpts.
@@ -630,11 +684,15 @@ func init() {
 					MaxDataExtensionTimeInDays: new(90),
 					ChangeTracking:             new(false),
 					DefaultDdlCollation:        new(StringAllowEmpty{Value: "us"}),
+					IcebergDefaultDdlCollation: new(StringAllowEmpty{Value: "en-ci"}),
+					ErrorLogging:               new(true),
+					Contact:                    []TableContact{{Purpose: "SUPPORT", Contact: contactId}},
 					Comment:                    &tableComment,
+					RowTimestamp:               new(true),
 				}
 			},
-			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
-			id.FullyQualifiedName(), tableComment,
+			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' ICEBERG_DEFAULT_DDL_COLLATION = 'en-ci' ERROR_LOGGING = true CONTACT SUPPORT = %s COMMENT = '%s' ROW_TIMESTAMP = true`,
+			id.FullyQualifiedName(), contactId.FullyQualifiedName(), tableComment,
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_emptyDefaultDdlCollation",
@@ -671,11 +729,22 @@ func init() {
 					MaxDataExtensionTimeInDays: new(true),
 					ChangeTracking:             new(true),
 					DefaultDdlCollation:        new(true),
+					IcebergDefaultDdlCollation: new(true),
 					EnableSchemaEvolution:      new(true),
+					ErrorLogging:               new(true),
 					Comment:                    new(true),
+					RowTimestamp:               new(true),
 				}
 			},
-			`ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION, COMMENT`,
+			`ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ICEBERG_DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION, ERROR_LOGGING, COMMENT, ROW_TIMESTAMP`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_UnsetContact",
+			func(opts *AlterTableOptions) {
+				opts.Unset = &TableUnset{Contact: new("SUPPORT")}
+			},
+			`ALTER TABLE %s UNSET CONTACT SUPPORT`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -766,6 +835,97 @@ func init() {
 			case_Tables_sql_Alter_UnsetJoinPolicy,
 			func(opts *AlterTableOptions) { opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{} },
 			`ALTER TABLE %s UNSET JOIN POLICY`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_SetDataMetricSchedule,
+			func(opts *AlterTableOptions) {
+				opts.SetDataMetricSchedule = &TableSetDataMetricSchedule{DataMetricSchedule: "TRIGGER_ON_CHANGES"}
+			},
+			`ALTER TABLE %s SET DATA_METRIC_SCHEDULE = 'TRIGGER_ON_CHANGES'`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_UnsetDataMetricSchedule,
+			func(opts *AlterTableOptions) { opts.UnsetDataMetricSchedule = new(true) },
+			`ALTER TABLE %s UNSET DATA_METRIC_SCHEDULE`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_AddDataMetricFunction,
+			func(opts *AlterTableOptions) {
+				opts.AddDataMetricFunction = &TableAddDataMetricFunction{
+					AddedFunctions: []TableAddedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						WithinGroup:        []Column{{Value: "REGION"}},
+						GroupLimit:         new(10),
+						Filter:             new("(ID > 0)"),
+						Expectations:       []TableExpectations{{Name: "nonzero", Expression: "(COUNT(*) > 0)"}},
+						ExecuteAsRole:      &executeAsRole,
+						AnomalyDetection:   new(true),
+						Sensitivity:        new(TableDataMetricSensitivityHigh),
+					}},
+				}
+			},
+			`ALTER TABLE %s ADD DATA METRIC FUNCTION %s ON ("ID") WITHIN GROUP ("REGION") GROUP LIMIT 10 FILTER (ID > 0) EXPECTATION "nonzero" (COUNT(*) > 0) EXECUTE AS ROLE %s ANOMALY_DETECTION = true SENSITIVITY = 'HIGH'`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(), executeAsRole.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_DropDataMetricFunction,
+			func(opts *AlterTableOptions) {
+				opts.DropDataMetricFunction = &TableDropDataMetricFunction{
+					DroppedFunctions: []TableDroppedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+					}},
+				}
+			},
+			`ALTER TABLE %s DROP DATA METRIC FUNCTION %s ON ("ID")`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_ModifyDataMetricFunction,
+			func(opts *AlterTableOptions) {
+				opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+					ModifiedFunctions: []TableModifiedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						Status:             new(TableDataMetricScheduleStatusOperationSuspend),
+					}},
+				}
+			},
+			`ALTER TABLE %s MODIFY DATA METRIC FUNCTION %s ON ("ID") SUSPEND`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_modifyDataMetricFunction_addExpectation",
+			func(opts *AlterTableOptions) {
+				opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+					ModifiedFunctions: []TableModifiedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						AddExpectation:     []TableAddExpectation{{Name: "nonzero", Expression: "(COUNT(*) > 0)"}},
+					}},
+				}
+			},
+			`ALTER TABLE %s MODIFY DATA METRIC FUNCTION %s ON ("ID") ADD EXPECTATION "nonzero" (COUNT(*) > 0)`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_modifyDataMetricFunction_set",
+			func(opts *AlterTableOptions) {
+				opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+					ModifiedFunctions: []TableModifiedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						Set: &TableModifyDataMetricFunctionSet{
+							AnomalyDetection:        new(true),
+							Sensitivity:             new(TableDataMetricSensitivityMedium),
+							DataQualityNotification: new(true),
+						},
+					}},
+				}
+			},
+			`ALTER TABLE %s MODIFY DATA METRIC FUNCTION %s ON ("ID") SET ANOMALY_DETECTION = true SENSITIVITY = 'MEDIUM' DATA_QUALITY_NOTIFICATION = true`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
 		)
 
 	tablesTests.Drop.
@@ -822,6 +982,8 @@ func init() {
 			func(opts *ShowTableOptions) { opts.Like = &Like{} },
 			ErrPatternRequiredForLikeKeyword,
 		)
+
+	// TODO [SNOW-4532966]: add CreateFromBackupSet unit tests once the CREATE TABLE ... FROM BACKUP SET variant is added back to the SSOT definition.
 
 	tablesTests.DescribeColumns.
 		withExpectedSqlf(

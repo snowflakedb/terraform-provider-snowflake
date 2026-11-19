@@ -1786,6 +1786,10 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStructOf(&widgetFormat), SetSql: PreexistingStructOf(&widgetFormat)}
 		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&attr)}}})
 	})
+	require.NotPanics(t, func() {
+		attr := Attribute{Name: "contact", SqlOnly: true, CreateSql: PredefinedType("[]TableContact", KeywordShape(), Parentheses(), Sql("WITH CONTACT")), SetSql: PredefinedType("[]TableContact", KeywordShape(), Sql("CONTACT"))}
+		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&attr)}}})
+	})
 }
 
 func Test_ValidateObject_schemaName(t *testing.T) {
