@@ -1339,6 +1339,18 @@ This resource is in preview. To use it, `snowflake_failover_group_resource` must
 
 No configuration changes are required for existing configurations unless you want to manage these settings with Terraform. After upgrading, the next plan may report the new attributes as `false`. If Optimized Refresh or RPO Assurance was already enabled outside Terraform, add the matching field to the configuration; otherwise the next apply will unset it.
 
+### *(bug fix)* `snowflake_table` keeps apostrophes in column names
+
+Previously, [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) escaped `'` in `column.name` when it created or added a column. A column configured as `name = "my'id"` was created as `"my\'id"`.
+
+The provider now sends the name as a [double-quoted identifier](https://docs.snowflake.com/en/sql-reference/identifiers-syntax). The same configuration creates `"my'id"` on [CREATE TABLE](https://docs.snowflake.com/en/sql-reference/sql/create-table) and when a column is added.
+
+This resource is still in preview and will be reworked in the future.
+
+No configuration changes are required. A table that was already created with the escaped name keeps that name in Snowflake; replace the table if you need the unescaped name.
+
+Reference: [#2844](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2844).
+
 ### *(bug fix)* Setting `default_ddl_collation = ""` now applies in one step
 
 Previously, changing `default_ddl_collation` from a non-empty value straight to `""` did not run `SET DEFAULT_DDL_COLLATION = ''`. SDKv2 treats `""` as unset on an optional computed attribute, so the provider either planned nothing or kept showing an update that never applied. Since [v2.5.0](#v24x--v250) the documented workaround was to set the field to `null`, apply, then set `""` and apply again.

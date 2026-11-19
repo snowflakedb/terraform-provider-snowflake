@@ -1959,6 +1959,43 @@ resource "snowflake_table" "test_table" {
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/2844 is fixed
+func TestAcc_Table_issue2844_apostropheInColumnName(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	columnName := "my'id"
+	tableModel := model.TableWithId("test", tableId, []sdk.TableColumnSignature{{Name: columnName, Type: testdatatypes.DataTypeInteger}})
+	ref := tableModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tableModel),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasNameString(tableId.Name()),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.name", columnName)),
+					assert.Check(func(*terraform.State) error {
+						cols := testClient().Table.GetTableColumnsFor(t, tableId)
+						if len(cols) != 1 {
+							return fmt.Errorf("expected 1 Snowflake column; got %d", len(cols))
+						}
+						if cols[0].ColumnName != columnName {
+							return fmt.Errorf("expected Snowflake column name %q; got %q", columnName, cols[0].ColumnName)
+						}
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+
 // TestAcc_Table_migrateFromV2_23_0 checks the state upgrader.
 func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
