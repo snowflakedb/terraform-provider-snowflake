@@ -74,6 +74,26 @@ func showResultSchemaDetailsFromSsot(obj ssot.Object, isDescribe bool) ShowResul
 	}
 }
 
+// propertyRowSchemaDetailsFromSsot is the DescribeRows schema used as a list element.
+// The name is the plain DESCRIBE row, such as sdk.AuthenticationPolicyProperty.
+func propertyRowSchemaDetailsFromSsot(obj ssot.Object) ShowResultSchemaDetails {
+	attrs := obj.PairedDescribeColumns()
+	if len(attrs) == 0 {
+		panic(fmt.Sprintf("object %q: schema used as a list entry needs DESCRIBE rows", obj.Name))
+	}
+	fields := make([]genhelpers.Field, 0, len(attrs))
+	for _, attr := range attrs {
+		if attr == nil {
+			panic(fmt.Sprintf("object %q: nil DESCRIBE row column", obj.Name))
+		}
+		fields = append(fields, ssot.ColumnField(obj, attr.ForDescribe()))
+	}
+	return ShowResultSchemaDetails{
+		UsedAsListEntry: true,
+		StructDetails:   genhelpers.StructDetails{Name: "sdk." + obj.DescribePlainName(), Fields: fields},
+	}
+}
+
 // emittedSchemaKey is the schema key ModelFromStructDetails matches.
 // SchemaName is that key. Otherwise the column keeps OutputKey, which is the generated key for a snake_case column.
 func emittedSchemaKey(attr *ssot.Attribute) string {

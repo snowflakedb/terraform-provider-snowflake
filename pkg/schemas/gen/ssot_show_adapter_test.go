@@ -112,3 +112,23 @@ func Test_showResultSchemaDetailsFromSsot_overridesSetColumnsToTypeSet(t *testin
 	got := showResultSchemaDetailsFromSsot(obj, false)
 	require.Equal(t, map[string]schema.ValueType{"allowed_accounts": schema.TypeSet}, got.TypeOverrides)
 }
+
+func Test_propertyRowSchemaDetailsFromSsot_usedAsListEntry(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	value := ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "AuthenticationPolicy",
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property, &value}},
+		Generators:   []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaUsedAsListEntry())},
+	}
+
+	got := propertyRowSchemaDetailsFromSsot(obj)
+	require.True(t, got.UsedAsListEntry)
+	require.False(t, got.IsDescribe)
+	require.Equal(t, "sdk.AuthenticationPolicyProperty", got.Name)
+	require.Equal(t, []genhelpers.Field{
+		ssot.ColumnField(obj, property),
+		ssot.ColumnField(obj, value),
+	}, got.Fields)
+	require.Panics(t, func() { propertyRowSchemaDetailsFromSsot(ssot.Object{Name: "Widget"}) })
+}

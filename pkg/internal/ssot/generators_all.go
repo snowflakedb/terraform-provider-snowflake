@@ -70,6 +70,11 @@ func WithoutObjectAssertShow() GeneratorOption {
 		g.ObjectAssert.ShowProjection = ""
 		g.ObjectAssert.ShowRowFromBase = false
 		g.ObjectAssert.ShowNestedFields = nil
+		g.ObjectAssert.NoShowById = false
+		g.ObjectAssert.ShowNoIdentifiableObject = false
+		g.ObjectAssert.ShowByParentId = nil
+		g.ObjectAssert.ShowFromObjectIDExpr = ""
+		g.ObjectAssert.ShowObjectTypeName = ""
 	}
 }
 
@@ -82,6 +87,7 @@ func WithoutObjectAssertDescribe() GeneratorOption {
 		g.ObjectAssert.DescribeMethod = ""
 		g.ObjectAssert.DescribeOnBase = false
 		g.ObjectAssert.DescribeNestedFields = nil
+		g.ObjectAssert.DescribeFromObjectIDExpr = ""
 	}
 }
 
