@@ -251,26 +251,25 @@ var authenticationPolicyPatAtLeastOneOf = []ssot.Attribute{
 }
 
 var AuthenticationPolicyAttrs = struct {
-	AuthenticationMethods    ssot.Attribute
-	MfaAuthenticationMethods ssot.Attribute
-	MfaEnrollment            ssot.Attribute
-	ClientTypes              ssot.Attribute
-	ClientPolicy             ssot.Attribute
-	MfaPolicy                ssot.Attribute
-	PatPolicy                ssot.Attribute
-	WorkloadIdentityPolicy   ssot.Attribute
-	SecurityIntegrations     ssot.Attribute
-	Comment                  ssot.Attribute
-	CreatedOn                ssot.Attribute
-	Name                     ssot.Attribute
-	DatabaseName             ssot.Attribute
-	SchemaName               ssot.Attribute
-	Kind                     ssot.Attribute
-	Owner                    ssot.Attribute
-	OwnerRoleType            ssot.Attribute
-	Options                  ssot.Attribute
-	TargetScopes             ssot.Attribute
-	// DESCRIBE-only columns whose shape is not the writable attribute: a read enum, security_integrations, and client_policy.
+	AuthenticationMethods        ssot.Attribute
+	MfaAuthenticationMethods     ssot.Attribute
+	MfaEnrollment                ssot.Attribute
+	ClientTypes                  ssot.Attribute
+	ClientPolicy                 ssot.Attribute
+	MfaPolicy                    ssot.Attribute
+	PatPolicy                    ssot.Attribute
+	WorkloadIdentityPolicy       ssot.Attribute
+	SecurityIntegrations         ssot.Attribute
+	Comment                      ssot.Attribute
+	CreatedOn                    ssot.Attribute
+	Name                         ssot.Attribute
+	DatabaseName                 ssot.Attribute
+	SchemaName                   ssot.Attribute
+	Kind                         ssot.Attribute
+	Owner                        ssot.Attribute
+	OwnerRoleType                ssot.Attribute
+	Options                      ssot.Attribute
+	TargetScopes                 ssot.Attribute
 	DescribeSecurityIntegrations ssot.Attribute
 	DescribeClientPolicy         ssot.Attribute
 	// The DESCRIBE rows are a property list, which the SDK parses into the details that Describe.Columns models.

@@ -78,6 +78,46 @@ func Test_ObjectGenerators_options(t *testing.T) {
 
 	g = ObjectGenerators(WithObjectAssert())
 	require.Equal(t, Generators{}, g)
+
+	g = ObjectGenerators(WithSchema(SchemaUsedAsListEntry()))
+	require.Equal(t, Generators{Schema: SchemaGenerator{UsedAsListEntry: true}}, g)
+
+	g = ObjectGenerators(WithObjectAssert(
+		ObjectAssertShow(
+			ObjectAssertNoShowById(),
+			ObjectAssertShowNoIdentifiableObject(),
+			ObjectAssertShowByParentId("sdk.AccountObjectIdentifier", "User", "ShowProgrammaticAccessToken"),
+			ObjectAssertShowFromObjectIDExpr("token.ID().Name()"),
+			ObjectAssertShowObjectTypeName("Account"),
+		),
+		ObjectAssertDescribe(ObjectAssertDescribeFromObjectIDExpr("userDetails.Name")),
+	))
+	require.Equal(t, Generators{ObjectAssert: ObjectAssertGenerator{
+		Show:                     true,
+		Describe:                 true,
+		NoShowById:               true,
+		ShowNoIdentifiableObject: true,
+		ShowByParentId: &ObjectAssertParentId{
+			ParentIdType:   "sdk.AccountObjectIdentifier",
+			ClientName:     "User",
+			ShowMethodName: "ShowProgrammaticAccessToken",
+		},
+		ShowFromObjectIDExpr:     "token.ID().Name()",
+		DescribeFromObjectIDExpr: "userDetails.Name",
+		ShowObjectTypeName:       "Account",
+	}}, g)
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertShow(ObjectAssertShowByParentId("", "User", "Show"))))
+	})
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromObjectIDExpr(""))))
+	})
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertDescribe(ObjectAssertDescribeFromObjectIDExpr(""))))
+	})
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertShow(ObjectAssertShowObjectTypeName(""))))
+	})
 }
 
 func Test_ShowFromBase(t *testing.T) {

@@ -103,6 +103,9 @@ func ValidateObject(obj Object) {
 	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.PairedShowColumns(), g.ShowOutputAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
 	obj.ShowFromBase()
+	if g.Schema.UsedAsListEntry && len(obj.DescribeRows.Columns) == 0 {
+		panic(fmt.Sprintf("object %q: schema used as a list entry needs DESCRIBE rows", obj.Name))
+	}
 	validateShowReuse(obj, g)
 	validateShowOutputAssertReuse(obj, g)
 	obj.ParameterAssertionNames()
@@ -1590,6 +1593,9 @@ func validateShowReuse(obj Object, g Generators) {
 		}
 		if g.ObjectAssert.ShowProjection != "" {
 			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set a show projection", obj.Name, base.Name))
+		}
+		if g.ObjectAssert.NoShowById || g.ObjectAssert.ShowNoIdentifiableObject || g.ObjectAssert.ShowByParentId != nil || g.ObjectAssert.ShowFromObjectIDExpr != "" || g.ObjectAssert.ShowObjectTypeName != "" {
+			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set show constructor options", obj.Name, base.Name))
 		}
 	}
 }

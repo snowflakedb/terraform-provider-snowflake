@@ -8,6 +8,52 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_objectAssertionDetailsFromSsot_showConstructorOptions(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:   "Token",
+		IdType: "SchemaObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(
+				ssot.ObjectAssertNoShowById(),
+				ssot.ObjectAssertShowNoIdentifiableObject(),
+				ssot.ObjectAssertShowByParentId("sdk.AccountObjectIdentifier", "User", "ShowToken"),
+				ssot.ObjectAssertShowFromObjectIDExpr("token.ID().Name()"),
+				ssot.ObjectAssertShowObjectTypeName("Account"),
+			)),
+		},
+		Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}
+
+	details := objectAssertionDetailsFromSsot(obj, false)
+	require.True(t, details.NoShowById)
+	require.True(t, details.NoIdentifiableObject)
+	require.Equal(t, "Account", details.ObjectTypeName)
+	require.Equal(t, "token.ID().Name()", details.FromObjectIDExpr)
+	require.Equal(t, &genhelpers.ShowByParentIdDef{
+		ParentIdType:   "sdk.AccountObjectIdentifier",
+		ClientName:     "User",
+		ShowMethodName: "ShowToken",
+	}, details.ShowByParentId)
+}
+
+func Test_objectAssertionDetailsFromSsot_describeFromObjectIDExpr(t *testing.T) {
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:   "User",
+		IdType: "AccountObjectIdentifier",
+		Generators: []ssot.GeneratorOption{
+			ssot.WithObjectAssert(ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromObjectIDExpr("userDetails.Name"))),
+		},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
+	}
+
+	details := objectAssertionDetailsFromSsot(obj, true)
+	require.Equal(t, "userDetails.Name", details.FromObjectIDExpr)
+	require.False(t, details.NoShowById)
+	require.Nil(t, details.ShowByParentId)
+}
+
 func Test_SnowflakeObjectAssertionsFromSsot_usesShowAndDescribeColumns(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	errorCode := ssot.Attribute{Name: "error_code", Type: ssot.AttrString}

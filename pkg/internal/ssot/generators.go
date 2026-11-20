@@ -19,6 +19,9 @@ type SchemaGenerator struct {
 	// An AttrSet column is generated as TypeSet. Listed columns stay TypeList, the type the SDK slice maps to.
 	ShowListFields     []*Attribute
 	DescribeListFields []*Attribute
+	// UsedAsListEntry emits the property-row schema from DescribeRows. The schema variable is the plain
+	// DESCRIBE row name with no Show or Describe prefix, such as AuthenticationPolicyPropertySchema.
+	UsedAsListEntry bool
 }
 
 type SdkGenerator struct {
@@ -206,6 +209,26 @@ type ObjectAssertGenerator struct {
 	// The column gets the nested assertion adapter (Has<Field>With) instead of a plain Has*.
 	ShowNestedFields     []ObjectAssertNestedField
 	DescribeNestedFields []ObjectAssertNestedField
+
+	// NoShowById suppresses the ShowByID constructor. The object is listed some other way.
+	NoShowById bool
+	// ShowNoIdentifiableObject suppresses the SHOW constructor and New*Assert the way NoIdentifiableObject does for DESCRIBE.
+	ShowNoIdentifiableObject bool
+	// ShowByParentId fetches the object through a parent identifier.
+	ShowByParentId *ObjectAssertParentId
+	// ShowFromObjectIDExpr and DescribeFromObjectIDExpr replace <object>.ID() in FromObject.
+	ShowFromObjectIDExpr     string
+	DescribeFromObjectIDExpr string
+	// ShowObjectTypeName is the object type constant when it is not this object's name.
+	// Empty keeps the name, or VariantOf.Name when ObjectAssertShowFromBase is set.
+	ShowObjectTypeName string
+}
+
+// ObjectAssertParentId is the parent fetch of a SHOW object assertion.
+type ObjectAssertParentId struct {
+	ParentIdType   string
+	ClientName     string
+	ShowMethodName string
 }
 
 // ObjectAssertNestedField is a nested-block column. The nested assertion type is derived from the Go type of
@@ -311,6 +334,12 @@ func SchemaDescribeManualFields(attrs ...*Attribute) SchemaDescribeOption {
 // Each argument is the *Attribute already listed in Describe.Columns.
 func SchemaDescribeListFields(attrs ...*Attribute) SchemaDescribeOption {
 	return func(s *SchemaGenerator) { s.DescribeListFields = append(s.DescribeListFields, attrs...) }
+}
+
+// SchemaUsedAsListEntry copies UsedAsListEntry from the old show schema def.
+// The schema is the DescribeRows property row, used as a list element. It is not a SHOW or DESCRIBE schema.
+func SchemaUsedAsListEntry() SchemaOption {
+	return func(s *SchemaGenerator) { s.UsedAsListEntry = true }
 }
 
 func WithSchema(opts ...SchemaOption) GeneratorOption {
@@ -838,6 +867,51 @@ func ObjectAssertShowRowFromBase() ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) { a.ShowRowFromBase = true }
 }
 
+// ObjectAssertNoShowById copies NoShowById from the old show object-assertion def.
+func ObjectAssertNoShowById() ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.NoShowById = true }
+}
+
+// ObjectAssertShowNoIdentifiableObject copies NoIdentifiableObject from a SHOW entry of the old object-assertion def.
+// WithNoIdentifiableObject is the DESCRIBE setting.
+func ObjectAssertShowNoIdentifiableObject() ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.ShowNoIdentifiableObject = true }
+}
+
+// ObjectAssertShowByParentId copies ShowByParentId from the old show object-assertion def.
+func ObjectAssertShowByParentId(parentIdType, clientName, showMethodName string) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		if parentIdType == "" || clientName == "" || showMethodName == "" {
+			panic("object assertion show by parent id needs a parent id type, a client name, and a show method")
+		}
+		a.ShowByParentId = &ObjectAssertParentId{
+			ParentIdType:   parentIdType,
+			ClientName:     clientName,
+			ShowMethodName: showMethodName,
+		}
+	}
+}
+
+// ObjectAssertShowFromObjectIDExpr copies FromObjectIDExpr from a SHOW entry of the old object-assertion def.
+func ObjectAssertShowFromObjectIDExpr(expr string) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		if expr == "" {
+			panic("object assertion show from-object id expression is empty")
+		}
+		a.ShowFromObjectIDExpr = expr
+	}
+}
+
+// ObjectAssertShowObjectTypeName copies ObjectTypeName from the old show object-assertion def.
+func ObjectAssertShowObjectTypeName(name string) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		if name == "" {
+			panic("object assertion show object type name is empty")
+		}
+		a.ShowObjectTypeName = name
+	}
+}
+
 // ShowFromBase is the SHOW fetch for a variant object assertion.
 // ClientName is VariantOf.Name. Method is the ObjectAssertShowFromBase argument.
 type ShowFromBase struct {
@@ -977,6 +1051,16 @@ func ObjectAssertDescribeNestedField(attr *Attribute, opts ...ObjectAssertNested
 
 func WithNoIdentifiableObject() ObjectAssertDescribeOption {
 	return func(a *ObjectAssertGenerator) { a.NoIdentifiableObject = true }
+}
+
+// ObjectAssertDescribeFromObjectIDExpr copies FromObjectIDExpr from a DESCRIBE entry of the old object-assertion def.
+func ObjectAssertDescribeFromObjectIDExpr(expr string) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		if expr == "" {
+			panic("object assertion describe from-object id expression is empty")
+		}
+		a.DescribeFromObjectIDExpr = expr
+	}
 }
 
 // ObjectAssertDescribeSkipFields copies SkipFields from the old describe object-assertion def.

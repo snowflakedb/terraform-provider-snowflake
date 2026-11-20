@@ -15,6 +15,9 @@ func ssotShowResultSchemaDetails() []ShowResultSchemaDetails {
 		if g.Schema.Describe && selectsForSchemaDescribe(obj) {
 			details = append(details, showResultSchemaDetailsFromSsot(obj, true))
 		}
+		if g.Schema.UsedAsListEntry {
+			details = append(details, propertyRowSchemaDetailsFromSsot(obj))
+		}
 	}
 	return details
 }
