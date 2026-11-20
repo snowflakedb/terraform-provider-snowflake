@@ -218,6 +218,12 @@ func validateAttribute(obj Object, a Attribute) {
 			panic(fmt.Sprintf("object %q: enum attribute %q has no Enum", obj.Name, name))
 		}
 	}
+	if a.DescribeString && a.DescribeEnum != nil {
+		panic(fmt.Sprintf("object %q: attribute %q sets DescribeString and DescribeEnum", obj.Name, a.Name))
+	}
+	if a.DescribeEnum != nil && a.Type != AttrEnum {
+		panic(fmt.Sprintf("object %q: attribute %q sets DescribeEnum and is not an enum", obj.Name, a.Name))
+	}
 	if a.Elem != nil {
 		validateAttribute(obj, *a.Elem)
 	}
@@ -1508,7 +1514,7 @@ func validateDescribeDetailsParse(obj Object, sdk SdkGenerator) {
 			panic(fmt.Sprintf("object %q: DESCRIBE details prefix mapping %q must be a nested field", obj.Name, m.Attr.Name))
 		case m.Parsed && m.Prefix:
 			panic(fmt.Sprintf("object %q: DESCRIBE details mapping %q cannot be a prefix and parsed", obj.Name, m.Attr.Name))
-		case !m.Prefix && !m.Parsed && (isNested || m.Attr.Type != AttrString || m.Attr.OptionalInShow):
+		case !m.Prefix && !m.Parsed && (isNested || m.Attr.ForDescribe().Type != AttrString || m.Attr.OptionalInShow):
 			panic(fmt.Sprintf("object %q: DESCRIBE details property mapping %q must be a required string column", obj.Name, m.Attr.Name))
 		}
 	}

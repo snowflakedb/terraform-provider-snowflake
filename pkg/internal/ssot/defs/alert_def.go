@@ -30,7 +30,6 @@ var AlertAttrs = struct {
 	SchemaName    ssot.Attribute
 	Owner         ssot.Attribute
 	State         ssot.Attribute
-	DescribeState ssot.Attribute
 	OwnerRoleType ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
@@ -125,8 +124,7 @@ var AlertAttrs = struct {
 	DatabaseName:  ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
 	SchemaName:    ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, Readonly: true},
 	Owner:         ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true},
-	State:         ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: alertStateEnum, Readonly: true},
-	DescribeState: ssot.Attribute{Name: "state", Type: ssot.AttrString, Readonly: true},
+	State:         ssot.Attribute{Name: "state", Type: ssot.AttrEnum, Enum: alertStateEnum, DescribeString: true, Readonly: true},
 	OwnerRoleType: ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
 }
 
@@ -249,7 +247,7 @@ var Alert = ssot.Object{
 			&AlertAttrs.Comment,
 			&AlertAttrs.Warehouse,
 			&AlertAttrs.AlertSchedule,
-			&AlertAttrs.DescribeState,
+			&AlertAttrs.State,
 			&AlertAttrs.Condition,
 			&AlertAttrs.Action,
 		},

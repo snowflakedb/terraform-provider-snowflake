@@ -49,9 +49,19 @@ type Attribute struct {
 	Max            *int
 	RawDescription bool
 	Enum           *Enum
-	// ShowEnum is the SHOW, DESCRIBE, and CREATE/SET enum when it differs from Enum.
-	// Empty uses Enum. Resource schema and model builders keep Enum.
+	// ShowEnum is the SHOW and CREATE/SET enum when it differs from Enum.
+	// Empty uses Enum. Resource schema and model builders keep Enum. DESCRIBE uses DescribeEnum or Enum.
 	ShowEnum *Enum
+	// ShowString makes the SHOW column a string. The resource, CREATE, and SET keep Type.
+	// A string attribute leaves it unset.
+	ShowString bool
+	// DescribeString makes the DESCRIBE column a string. The resource, CREATE, SET, and SHOW keep Type.
+	// A string attribute leaves it unset. It is not combined with DescribeEnum.
+	DescribeString bool
+	// DescribeEnum is the DESCRIBE enum when it differs from Enum.
+	// Empty uses Enum. SHOW and CREATE/SET keep ShowEnum or Enum. The resource schema keeps Enum.
+	// Leave it unset when it is Enum. It is not combined with DescribeString.
+	DescribeEnum *Enum
 	// IncludeAliasedInTheDescription lists aliases in the resource description.
 	// Empty lists canonical values.
 	IncludeAliasedInTheDescription bool
@@ -216,12 +226,46 @@ func (a Attribute) ChangesInPlace() bool {
 	return !a.ForceNew && !a.Readonly && !a.Computed && !a.CreateOnly && !a.SqlOnly
 }
 
-// ColumnEnum is the enum used for a SHOW, DESCRIBE, or CREATE/SET column.
+// ColumnEnum returns ShowEnum when it is set, and Enum otherwise.
+// SHOW and CREATE/SET use that result. DESCRIBE calls it on ForDescribe, which has cleared ShowEnum.
 func (a Attribute) ColumnEnum() *Enum {
 	if a.ShowEnum != nil {
 		return a.ShowEnum
 	}
 	return a.Enum
+}
+
+// ForShow is the attribute as a SHOW column reads it. ShowString makes that column a string.
+func (a Attribute) ForShow() Attribute {
+	if !a.ShowString {
+		return a
+	}
+	a.Type = AttrString
+	a.Enum = nil
+	a.ShowEnum = nil
+	a.Elem = nil
+	a.Children = nil
+	return a
+}
+
+// ForDescribe is the attribute as a DESCRIBE column reads it.
+// DescribeString makes that column a string. DescribeEnum replaces the enum for that column.
+func (a Attribute) ForDescribe() Attribute {
+	if a.DescribeString {
+		a.Type = AttrString
+		a.Enum = nil
+		a.ShowEnum = nil
+		a.DescribeEnum = nil
+		a.Elem = nil
+		a.Children = nil
+		return a
+	}
+	if a.DescribeEnum != nil {
+		a.Enum = a.DescribeEnum
+	}
+	// DESCRIBE uses DescribeEnum or Enum. ShowEnum stays on SHOW and CREATE/SET.
+	a.ShowEnum = nil
+	return a
 }
 
 // IsEnumCollection reports a list or set whose element is an enum.

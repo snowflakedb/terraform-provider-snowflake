@@ -118,6 +118,24 @@ func Test_validateShowEnum(t *testing.T) {
 	require.False(t, Attribute{Name: "family", Type: AttrEnum, Enum: family, ShowEnum: other}.validateShowEnum())
 }
 
+func Test_validateShowString(t *testing.T) {
+	require.True(t, Attribute{Name: "name", Type: AttrString, ShowString: true}.validateShowString())
+	require.False(t, Attribute{Name: "cluster_by", Type: AttrList, ShowString: true, Elem: &Attribute{Type: AttrString}}.validateShowString())
+}
+
+func Test_validateDescribeString(t *testing.T) {
+	require.True(t, Attribute{Name: "name", Type: AttrString, DescribeString: true}.validateDescribeString())
+	require.False(t, Attribute{Name: "allow_writes", Type: AttrBool, DescribeString: true}.validateDescribeString())
+}
+
+func Test_validateDescribeEnum(t *testing.T) {
+	family := NewEnum("Family", "Families", "SMALL")
+	other := NewEnum("Other", "Others", "SMALL")
+
+	require.True(t, Attribute{Name: "family", Type: AttrEnum, Enum: family, DescribeEnum: family}.validateDescribeEnum())
+	require.False(t, Attribute{Name: "family", Type: AttrEnum, Enum: family, DescribeEnum: other}.validateDescribeEnum())
+}
+
 func Test_validateExplicitDefaults_message(t *testing.T) {
 	attr := Attribute{Name: "comment", Type: AttrString, ShowName: "comment", CreateSql: StringParameter()}
 	require.Equal(t, []string{

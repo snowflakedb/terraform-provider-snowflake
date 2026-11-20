@@ -697,6 +697,7 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 			return
 		}
 		addEnum(attr.ColumnEnum())
+		addEnum(attr.DescribeEnum)
 		if attr.Elem != nil {
 			addEnum(attr.Elem.ColumnEnum())
 		}
