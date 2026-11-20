@@ -1200,6 +1200,149 @@ func Test_ParseDataType_StructuredArray(t *testing.T) {
 	}
 }
 
+func Test_ParseDataType_Map(t *testing.T) {
+	type test struct {
+		input                string
+		expectedKeyType      string
+		expectedValueType    string
+		expectedValueNotNull bool
+		expectedSql          string
+		expectedCanonical    string
+	}
+
+	positiveTestCases := []test{
+		{
+			input:             "MAP(VARCHAR, VARCHAR)",
+			expectedKeyType:   "VARCHAR",
+			expectedValueType: "VARCHAR",
+			expectedSql:       fmt.Sprintf("MAP(VARCHAR(%[1]d), VARCHAR(%[1]d))", DefaultVarcharLength),
+			expectedCanonical: fmt.Sprintf("MAP(VARCHAR(%[1]d), VARCHAR(%[1]d))", DefaultVarcharLength),
+		},
+		{
+			input:             "map(number, int)",
+			expectedKeyType:   "NUMBER",
+			expectedValueType: "INT",
+			expectedSql:       "MAP(NUMBER(38, 0), INT)",
+			expectedCanonical: "MAP(NUMBER(38,0), NUMBER(38,0))",
+		},
+		{
+			input:                "MAP(VARCHAR(10), NUMBER(10, 2) NOT NULL)",
+			expectedKeyType:      "VARCHAR(10)",
+			expectedValueType:    "NUMBER(10, 2)",
+			expectedValueNotNull: true,
+			expectedSql:          "MAP(VARCHAR(10), NUMBER(10, 2) NOT NULL)",
+			expectedCanonical:    "MAP(VARCHAR(10), NUMBER(10,2) NOT NULL)",
+		},
+		{
+			input:                "  MAP  (  NUMBER(38,0)  ,	 DOUBLE PRECISION   not   null  )  ",
+			expectedKeyType:      "NUMBER(38,0)",
+			expectedValueType:    "DOUBLE PRECISION",
+			expectedValueNotNull: true,
+			expectedSql:          "MAP(NUMBER(38, 0), DOUBLE PRECISION NOT NULL)",
+			expectedCanonical:    "MAP(NUMBER(38,0), FLOAT NOT NULL)",
+		},
+		{
+			input:             "MAP(VARCHAR(5), VARIANT)",
+			expectedKeyType:   "VARCHAR(5)",
+			expectedValueType: "VARIANT",
+			expectedSql:       "MAP(VARCHAR(5), VARIANT)",
+			expectedCanonical: "MAP(VARCHAR(5), VARIANT)",
+		},
+		{
+			input:             "MAP(VARCHAR(5), TIMESTAMP WITH LOCAL TIME ZONE(3))",
+			expectedKeyType:   "VARCHAR(5)",
+			expectedValueType: "TIMESTAMP WITH LOCAL TIME ZONE(3)",
+			expectedSql:       "MAP(VARCHAR(5), TIMESTAMP WITH LOCAL TIME ZONE(3))",
+			expectedCanonical: "MAP(VARCHAR(5), TIMESTAMP_LTZ(3))",
+		},
+		// nested structured types (object keys keep their case)
+		{
+			input:             "MAP(INT, ARRAY(INT NOT NULL))",
+			expectedKeyType:   "INT",
+			expectedValueType: "ARRAY(INT NOT NULL)",
+			expectedSql:       "MAP(INT, ARRAY(INT NOT NULL))",
+			expectedCanonical: "MAP(NUMBER(38,0), ARRAY(NUMBER(38,0) NOT NULL))",
+		},
+		{
+			input:                "map(varchar(5), object(MixedCase int, b varchar(5) not null) not null)",
+			expectedKeyType:      "VARCHAR(5)",
+			expectedValueType:    "OBJECT(MixedCase INT, b VARCHAR(5) NOT NULL)",
+			expectedValueNotNull: true,
+			expectedSql:          "MAP(VARCHAR(5), OBJECT(MixedCase INT, b VARCHAR(5) NOT NULL) NOT NULL)",
+			expectedCanonical:    "MAP(VARCHAR(5), OBJECT(MixedCase NUMBER(38,0), b VARCHAR(5) NOT NULL) NOT NULL)",
+		},
+		{
+			input:             "MAP(INT, MAP(VARCHAR(5), BOOLEAN))",
+			expectedKeyType:   "INT",
+			expectedValueType: "MAP(VARCHAR(5), BOOLEAN)",
+			expectedSql:       "MAP(INT, MAP(VARCHAR(5), BOOLEAN))",
+			expectedCanonical: "MAP(NUMBER(38,0), MAP(VARCHAR(5), BOOLEAN))",
+		},
+	}
+
+	negativeTestCases := []string{
+		"MAP",
+		"map",
+		"MAP()",
+		"MAP(   )",
+		"MAPS",
+		"M A P",
+		"MAP(",
+		"MAP)",
+		"MAP(VARCHAR, INT",
+		"MAP VARCHAR, INT)",
+		"MAP(VARCHAR, INT))",
+		"MAP(VARCHAR, INT) NOT NULL",
+		"MAP(VARCHAR)",
+		"MAP(VARCHAR INT)",
+		"MAP(VARCHAR, INT, INT)",
+		"MAP(, INT)",
+		"MAP(VARCHAR, )",
+		"MAP(VARCHAR, INT,)",
+		"MAP(other, INT)",
+		"MAP(VARCHAR, other)",
+		"MAP(VARCHAR, NOT NULL)",
+		"MAP(VARCHAR NOT NULL, INT)",
+		"MAP(VARCHAR, INT NULL)",
+		"MAP(VARCHAR, TABLE(a INT))",
+		"MAP(VARCHAR, MAP(VARCHAR))",
+	}
+
+	for _, tc := range positiveTestCases {
+		t.Run(tc.input, func(t *testing.T) {
+			parsed, err := ParseDataType(tc.input)
+
+			require.NoError(t, err)
+			require.IsType(t, &MapDataType{}, parsed)
+
+			mapType := parsed.(*MapDataType)
+			assert.Equal(t, MapLegacyDataType, mapType.underlyingType)
+			assert.Equal(t, tc.expectedValueNotNull, mapType.valueNotNull)
+
+			expectedKeyType, err := ParseDataType(tc.expectedKeyType)
+			require.NoError(t, err)
+			assert.Equal(t, expectedKeyType, mapType.keyType)
+
+			expectedValueType, err := ParseDataType(tc.expectedValueType)
+			require.NoError(t, err)
+			assert.Equal(t, expectedValueType, mapType.valueType)
+
+			assert.Equal(t, MapLegacyDataType, parsed.ToLegacyDataTypeSql())
+			assert.Equal(t, tc.expectedSql, parsed.ToSql())
+			assert.Equal(t, tc.expectedCanonical, parsed.Canonical())
+		})
+	}
+
+	for _, input := range negativeTestCases {
+		t.Run(input, func(t *testing.T) {
+			parsed, err := ParseDataType(input)
+
+			require.Error(t, err)
+			require.Nil(t, parsed)
+		})
+	}
+}
+
 func Test_ParseDataType_Geography(t *testing.T) {
 	type test struct {
 		input                  string
@@ -1397,6 +1540,7 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(A VECTOR(FLOAT, 256), B NUMBER)", expectedColumns: []column{{"A", "VECTOR(FLOAT, 256)"}, {"B", "NUMBER"}}},
 		{input: "TABLE(A ARRAY(NUMBER(38,0) NOT NULL), B ARRAY)", expectedColumns: []column{{"A", "ARRAY(NUMBER(38,0) NOT NULL)"}, {"B", "ARRAY"}}},
 		{input: "TABLE(A OBJECT(city VARCHAR, zip NUMBER NOT NULL), B OBJECT)", expectedColumns: []column{{"A", "OBJECT(city VARCHAR, zip NUMBER NOT NULL)"}, {"B", "OBJECT"}}},
+		{input: "TABLE(A MAP(VARCHAR, NUMBER NOT NULL), B MAP(INT, ARRAY))", expectedColumns: []column{{"A", "MAP(VARCHAR, NUMBER NOT NULL)"}, {"B", "MAP(INT, ARRAY)"}}},
 		// type-only columns (abbreviated argument/grant form)
 		{input: "TABLE(DATE)", expectedColumns: []column{{"", "DATE"}}},
 		{input: "TABLE(INT)", expectedColumns: []column{{"", "INT"}}},
@@ -1593,6 +1737,18 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "OBJECT(a OBJECT(b INT))", d2: "OBJECT(a OBJECT)", expectedOutcome: false},
 		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(a NUMBER))", expectedOutcome: true},
 		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(A INT))", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR, INT)", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, INT)", d2: fmt.Sprintf("MAP(VARCHAR(%d), NUMBER(38,0))", DefaultVarcharLength), expectedOutcome: true},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR(10), INT)", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(NUMBER, INT)", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR, VARCHAR)", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR, NUMBER(20, 2))", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR, INT NOT NULL)", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT NOT NULL)", d2: "MAP(VARCHAR, NUMBER(38,0) NOT NULL)", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, MAP(INT, OBJECT(a INT)))", d2: "MAP(VARCHAR, MAP(NUMBER, OBJECT(a NUMBER(38,0))))", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, MAP(INT, OBJECT(a INT)))", d2: "MAP(VARCHAR, MAP(INT, OBJECT(A INT)))", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, OBJECT)", d2: "OBJECT", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, OBJECT)", d2: "OBJECT(a VARCHAR)", expectedOutcome: false},
 	}
 
 	for _, tc := range testCases {
@@ -1721,6 +1877,20 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "OBJECT(a OBJECT(b INT))", d2: "OBJECT(a OBJECT)", expectedOutcome: true},
 		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(a NUMBER))", expectedOutcome: false},
 		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(A INT))", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR, INT)", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT)", d2: fmt.Sprintf("MAP(VARCHAR(%d), NUMBER(38,0))", DefaultVarcharLength), expectedOutcome: false},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR(10), INT)", expectedOutcome: false},
+		{d1: "MAP(VARCHAR(5), INT)", d2: "MAP(VARCHAR(10), INT)", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(NUMBER, INT)", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR, VARCHAR)", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, NUMBER)", d2: "MAP(VARCHAR, NUMBER(20, 2))", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, NUMBER(20, 1))", d2: "MAP(VARCHAR, NUMBER(20, 2))", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, INT)", d2: "MAP(VARCHAR, INT NOT NULL)", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, INT NOT NULL)", d2: "MAP(VARCHAR, NUMBER(38,0) NOT NULL)", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, MAP(INT, OBJECT(a INT)))", d2: "MAP(VARCHAR, MAP(NUMBER, OBJECT(a NUMBER(38,0))))", expectedOutcome: false},
+		{d1: "MAP(VARCHAR, MAP(INT, OBJECT(a INT)))", d2: "MAP(VARCHAR, MAP(INT, OBJECT(A INT)))", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, OBJECT)", d2: "OBJECT", expectedOutcome: true},
+		{d1: "MAP(VARCHAR, OBJECT)", d2: "OBJECT(a VARCHAR)", expectedOutcome: true},
 	}
 
 	for _, tc := range testCases {
@@ -1797,6 +1967,11 @@ func Test_ToSqlWithoutUnknowns(t *testing.T) {
 		{dt: "OBJECT(str VARCHAR NOT NULL, num NUMBER(10, 2))"},
 		{dt: "OBJECT(a ARRAY(INT NOT NULL), b OBJECT(c TIME))"},
 		{dt: "ARRAY(OBJECT(City VARCHAR(10)) NOT NULL)"},
+		{dt: "MAP(VARCHAR, INT)"},
+		{dt: "MAP(VARCHAR(10), NUMBER(20, 4) NOT NULL)"},
+		{dt: "MAP(INT, MAP(VARCHAR, OBJECT(Key TIME) NOT NULL))"},
+		{dt: "ARRAY(MAP(VARCHAR, ARRAY(BOOLEAN)))"},
+		{dt: "OBJECT(m MAP(NUMBER, VARIANT) NOT NULL)"},
 	}
 
 	for _, tc := range testCases {

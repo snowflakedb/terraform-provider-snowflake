@@ -88,6 +88,18 @@ No configuration changes are required unless you want to turn the extra queries 
 
 No configuration changes are required. Update any references that compare `describe_output` types as strings.
 
+### *(new feature)* Structured `ARRAY`, `OBJECT`, and `MAP` data types
+
+We have added support for [structured types](https://docs.snowflake.com/en/sql-reference/data-types-structured) in every field that takes a Snowflake data type. Previously, the provider recognized only the semi-structured `ARRAY` and `OBJECT`, so a structured type such as `ARRAY(NUMBER)` failed with an `invalid data type` error. The provider now accepts:
+
+- `ARRAY(<element_type> [ NOT NULL ])`, for example `ARRAY(VARCHAR NOT NULL)`;
+- `OBJECT([ <key> <value_type> [ NOT NULL ] [ , ... ] ])`, for example `OBJECT(city VARCHAR, zip NUMBER NOT NULL)`;
+- `MAP(<key_type>, <value_type> [ NOT NULL ])`, for example `MAP(VARCHAR, NUMBER)`.
+
+The provider compares structured types by their parts, so a type that differs only in the defaults Snowflake fills in, such as `ARRAY(NUMBER)` and `ARRAY(NUMBER(38,0))`, shows no plan difference. Object keys are case-sensitive, and their order is part of the type.
+
+No other configuration changes are required.
+
 ### *(new feature)* Hierarchy renames rolled out to more resources
 
 The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.
