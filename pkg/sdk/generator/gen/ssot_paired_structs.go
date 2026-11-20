@@ -57,7 +57,7 @@ func DescribeDetailsPlain(obj ssot.Object) *Plain {
 		if column == nil {
 			panic(fmt.Sprintf("object %q: nil DESCRIBE column", obj.Name))
 		}
-		kind := detailsFieldKind(obj, *column, cfg.DescribeDetailsNestedFields)
+		kind := detailsFieldKind(obj, column.ForDescribe(), cfg.DescribeDetailsNestedFields)
 		plain = plain.Field(sqlToFieldName(column.OutputKey(), true), kind)
 	}
 	if cfg.DescribeDetailsRowsField != nil {
@@ -82,6 +82,7 @@ func detailsFieldKind(obj ssot.Object, attr ssot.Attribute, nested []*ssot.Attri
 // detailsGoType is the Go type of a column in a details struct. A list or set of enums is a slice of the enum there,
 // unlike in a SHOW row, where it is []string.
 func detailsGoType(obj ssot.Object, attr ssot.Attribute) string {
+	attr = attr.ForDescribe()
 	if attr.IsEnumCollection() && attr.Elem.ColumnEnum() != nil {
 		return "[]" + attr.Elem.ColumnEnum().Name
 	}
@@ -94,7 +95,7 @@ func detailsGoType(obj ssot.Object, attr ssot.Attribute) string {
 func DescribeNestedPlains(obj ssot.Object) []*Plain {
 	var plains []*Plain
 	for _, column := range obj.Describe.Columns {
-		if column == nil || column.SdkType() != ssot.AttrObject {
+		if column == nil || column.ForDescribe().SdkType() != ssot.AttrObject {
 			continue
 		}
 		plain := PlainStruct(ssot.NestedObjectDetails(obj, *column))
@@ -119,7 +120,7 @@ func plainFromColumns(obj ssot.Object, name string, columns []*ssot.Attribute) *
 		if column == nil {
 			panic(fmt.Sprintf("object %q: nil plain SHOW column", obj.Name))
 		}
-		pairs = appendPairedColumn(pairs, obj, *column)
+		pairs = appendPairedColumn(pairs, obj, column.ForShow())
 	}
 	return pairs.asPlainStruct()
 }
@@ -153,7 +154,11 @@ func pairedStructsFromColumns(obj ssot.Object, describe bool, dbName, plainName 
 		if !describe && slices.Contains(plainOnly, column) {
 			continue
 		}
-		pairs = appendPairedColumn(pairs, obj, *column)
+		view := column.ForShow()
+		if describe {
+			view = column.ForDescribe()
+		}
+		pairs = appendPairedColumn(pairs, obj, view)
 	}
 	return pairs
 }
@@ -171,7 +176,7 @@ func pairedShowFromSpec(obj ssot.Object, paired *ssot.CustomPairedShow) *PairedS
 			pairs = pairs.PlainOnlyField(column.Name, column.PlainOnlyKind)
 			continue
 		}
-		pairs = appendPairedColumn(pairs, obj, *column)
+		pairs = appendPairedColumn(pairs, obj, column.ForShow())
 	}
 	for _, field := range paired.PlainOnly {
 		pairs = pairs.PlainOnlyField(field.Name, field.Kind)

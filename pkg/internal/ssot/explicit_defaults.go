@@ -195,6 +195,15 @@ func (a Attribute) validateExplicitDefaults(where string, place attributePlace) 
 	if a.validateShowEnum() {
 		findings = append(findings, explicitDefaultFinding(where, "ShowEnum"))
 	}
+	if a.validateShowString() {
+		findings = append(findings, explicitDefaultFinding(where, "ShowString"))
+	}
+	if a.validateDescribeString() {
+		findings = append(findings, explicitDefaultFinding(where, "DescribeString"))
+	}
+	if a.validateDescribeEnum() {
+		findings = append(findings, explicitDefaultFinding(where, "DescribeEnum"))
+	}
 	if a.validateCreateMapping(place) {
 		findings = append(findings, explicitDefaultFinding(where, "CreateMapping"))
 	}
@@ -388,4 +397,19 @@ func (a Attribute) validateSchemaName() bool {
 // validateShowEnum reports a ShowEnum set to Enum. ColumnEnum already uses Enum when ShowEnum is empty.
 func (a Attribute) validateShowEnum() bool {
 	return a.ShowEnum != nil && a.ShowEnum == a.Enum
+}
+
+// validateShowString reports ShowString on an attribute the SHOW column already reads as a string.
+func (a Attribute) validateShowString() bool {
+	return a.ShowString && a.SdkType() == AttrString
+}
+
+// validateDescribeString reports DescribeString on an attribute the DESCRIBE column already reads as a string.
+func (a Attribute) validateDescribeString() bool {
+	return a.DescribeString && a.SdkType() == AttrString
+}
+
+// validateDescribeEnum reports a DescribeEnum set to Enum. ForDescribe already uses Enum when DescribeEnum is empty.
+func (a Attribute) validateDescribeEnum() bool {
+	return a.DescribeEnum != nil && a.DescribeEnum == a.Enum
 }

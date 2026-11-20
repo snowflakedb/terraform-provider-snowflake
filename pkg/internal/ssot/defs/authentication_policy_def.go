@@ -271,7 +271,6 @@ var AuthenticationPolicyAttrs = struct {
 	Options                  ssot.Attribute
 	TargetScopes             ssot.Attribute
 	// DESCRIBE-only columns whose shape is not the writable attribute: a read enum, security_integrations, and client_policy.
-	DescribeMfaEnrollment        ssot.Attribute
 	DescribeSecurityIntegrations ssot.Attribute
 	DescribeClientPolicy         ssot.Attribute
 	// The DESCRIBE rows are a property list, which the SDK parses into the details that Describe.Columns models.
@@ -312,6 +311,7 @@ var AuthenticationPolicyAttrs = struct {
 			"Note that when you set this value to OPTIONAL, and your account setup forces users to enroll in MFA, then Snowflake may set quietly this value to `REQUIRED_PASSWORD_ONLY`, which may cause permadiff. " +
 			"In this case, you may want to adjust this field value.",
 		Enum:         MfaEnrollmentOption,
+		DescribeEnum: MfaEnrollmentReadOption,
 		DiffSuppress: ssot.SuppressDescribe,
 		CreateSql:    ssot.PlainParameter(),
 		SetSql:       ssot.PlainParameter(),
@@ -385,15 +385,14 @@ var AuthenticationPolicyAttrs = struct {
 		Type:        ssot.AttrString,
 		Description: "Specifies a comment for the authentication policy.",
 	},
-	CreatedOn:             ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, OptionalInDb: true, Readonly: true},
-	Name:                  ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
-	DatabaseName:          ssot.Attribute{Name: "database_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
-	SchemaName:            ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
-	Kind:                  ssot.Attribute{Name: "kind", Type: ssot.AttrString, Readonly: true},
-	Owner:                 ssot.Attribute{Name: "owner", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
-	OwnerRoleType:         ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
-	Options:               ssot.Attribute{Name: "options", Type: ssot.AttrString, Readonly: true},
-	DescribeMfaEnrollment: ssot.Attribute{Name: "describe_mfa_enrollment", ShowName: "mfa_enrollment", Type: ssot.AttrEnum, Enum: MfaEnrollmentReadOption, Readonly: true},
+	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, OptionalInDb: true, Readonly: true},
+	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	DatabaseName:  ssot.Attribute{Name: "database_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
+	SchemaName:    ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
+	Kind:          ssot.Attribute{Name: "kind", Type: ssot.AttrString, Readonly: true},
+	Owner:         ssot.Attribute{Name: "owner", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	OwnerRoleType: ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	Options:       ssot.Attribute{Name: "options", Type: ssot.AttrString, Readonly: true},
 	DescribeSecurityIntegrations: ssot.Attribute{
 		Name: "describe_security_integrations", ShowName: "security_integrations", Type: ssot.AttrObject, Required: true, Readonly: true,
 		Children: []ssot.Attribute{
@@ -479,7 +478,7 @@ var AuthenticationPolicy = ssot.Object{
 						ssot.DescribeProperty(&AuthenticationPolicyAttrs.Name, "NAME"),
 						ssot.DescribeProperty(&AuthenticationPolicyAttrs.Owner, "OWNER"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.AuthenticationMethods, "AUTHENTICATION_METHODS"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeMfaEnrollment, "MFA_ENROLLMENT"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.MfaEnrollment, "MFA_ENROLLMENT"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.ClientTypes, "CLIENT_TYPES"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations, "SECURITY_INTEGRATIONS"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.Comment, "COMMENT"),
@@ -517,7 +516,8 @@ var AuthenticationPolicy = ssot.Object{
 		"v2_9_0_AuthenticationPolicyStateUpgrader",
 	},
 	// DESCRIBE returns the READ variants. mfa_authentication_methods uses MfaAuthenticationMethodsOption on the attribute.
-	AdditionalEnums: []*ssot.Enum{MfaAuthenticationMethodsReadOption, MfaEnrollmentReadOption},
+	// mfa_authentication_methods keeps the write enum. DESCRIBE can return OIDC, which is only on the read enum.
+	AdditionalEnums: []*ssot.Enum{MfaAuthenticationMethodsReadOption},
 	Attributes: []ssot.Attribute{
 		AuthenticationPolicyAttrs.AuthenticationMethods,
 		AuthenticationPolicyAttrs.MfaAuthenticationMethods,
@@ -598,7 +598,7 @@ var AuthenticationPolicy = ssot.Object{
 			&AuthenticationPolicyAttrs.Name,
 			&AuthenticationPolicyAttrs.Owner,
 			&AuthenticationPolicyAttrs.AuthenticationMethods,
-			&AuthenticationPolicyAttrs.DescribeMfaEnrollment,
+			&AuthenticationPolicyAttrs.MfaEnrollment,
 			&AuthenticationPolicyAttrs.ClientTypes,
 			&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
 			&AuthenticationPolicyAttrs.Comment,

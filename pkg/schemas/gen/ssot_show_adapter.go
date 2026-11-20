@@ -42,7 +42,11 @@ func showResultSchemaDetailsFromSsot(obj ssot.Object, isDescribe bool) ShowResul
 			}
 			panic(fmt.Sprintf("object %q: nil %s column", obj.Name, kind))
 		}
-		fields = append(fields, ssot.ColumnField(obj, *attr))
+		view := attr.ForShow()
+		if isDescribe {
+			view = attr.ForDescribe()
+		}
+		fields = append(fields, ssot.ColumnField(obj, view))
 		if attr.SkipInSchema {
 			skip = append(skip, emittedSchemaKey(attr))
 		}
@@ -50,7 +54,7 @@ func showResultSchemaDetailsFromSsot(obj ssot.Object, isDescribe bool) ShowResul
 		// Skipped, manual, and list-kept columns are left to the mapper.
 		_, keep := keepList[attr]
 		_, manualAttr := manualSet[attr]
-		if attr.Type == ssot.AttrSet && !attr.SkipInSchema && !keep && !manualAttr {
+		if view.Type == ssot.AttrSet && !attr.SkipInSchema && !keep && !manualAttr {
 			if overrides == nil {
 				overrides = make(map[string]schema.ValueType)
 			}

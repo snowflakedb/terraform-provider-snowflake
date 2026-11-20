@@ -182,18 +182,17 @@ var (
 
 // ExternalVolumeAttrs holds the external volume fields that SHOW and DESCRIBE reuse.
 // DESCRIBE EXTERNAL VOLUME returns a generic property list (DescribeRows), which the generated
-// ParseExternalVolumeDescribed parses into the details that Describe.Columns models. Every DESCRIBE value, including allow_writes, is a plain string, unlike
-// SHOW's typed bool, so DescribeAllowWrites is a separate attribute from AllowWrites.
+// ParseExternalVolumeDescribed parses into the details that Describe.Columns models. allow_writes is a bool
+// on the resource and in SHOW. DescribeString makes the DESCRIBE details field the property string.
 // StorageLocations is skipped or manual in the generators: its nested per-provider JSON shape has
 // no ssot representation yet.
 var ExternalVolumeAttrs = struct {
-	Comment             ssot.Attribute
-	AllowWrites         ssot.Attribute
-	StorageLocation     ssot.Attribute
-	Name                ssot.Attribute
-	Active              ssot.Attribute
-	DescribeAllowWrites ssot.Attribute
-	StorageLocations    ssot.Attribute
+	Comment          ssot.Attribute
+	AllowWrites      ssot.Attribute
+	StorageLocation  ssot.Attribute
+	Name             ssot.Attribute
+	Active           ssot.Attribute
+	StorageLocations ssot.Attribute
 	// The DESCRIBE rows are a generic property list, which the SDK parses into the details the Describe columns model.
 	ParentProperty  ssot.Attribute
 	Property        ssot.Attribute
@@ -208,9 +207,10 @@ var ExternalVolumeAttrs = struct {
 		OptionalInDb: true,
 	},
 	AllowWrites: ssot.Attribute{
-		Name:        "allow_writes",
-		Type:        ssot.AttrBool,
-		Description: "Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog.",
+		Name:           "allow_writes",
+		Type:           ssot.AttrBool,
+		DescribeString: true,
+		Description:    "Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog.",
 		// The object has no UNSET for it, so a removed value is set to the default, which is true.
 		UpdateMapping: ssot.BooleanStringAttributeUnsetFallbackUpdate(true),
 	},
@@ -253,10 +253,6 @@ var ExternalVolumeAttrs = struct {
 	},
 	Name:   ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
 	Active: ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true},
-	// DescribeAllowWrites is a plain string on DESCRIBE's property list, unlike SHOW's AllowWrites
-	// bool. Name differs from AllowWrites (ssot forbids a second Readonly column reusing a writable
-	// CREATE/ALTER attribute's Name); ShowName restores the real "allow_writes" output key.
-	DescribeAllowWrites: ssot.Attribute{Name: "describe_allow_writes", ShowName: "allow_writes", Type: ssot.AttrString, Readonly: true},
 	// StorageLocations only needs to exist so the schema/assertion ManualFields/SkipFields generator
 	// options can target it; its nested per-provider JSON shape is not expressible as an ssot Elem.
 	StorageLocations: ssot.Attribute{
@@ -308,7 +304,7 @@ var ExternalVolumeObject = ssot.Object{
 					ssot.SdkDescribeDetailsParse(
 						ssot.DescribeProperty(&ExternalVolumeAttrs.Comment, "COMMENT"),
 						ssot.DescribeProperty(&ExternalVolumeAttrs.Active, "ACTIVE"),
-						ssot.DescribeProperty(&ExternalVolumeAttrs.DescribeAllowWrites, "ALLOW_WRITES"),
+						ssot.DescribeProperty(&ExternalVolumeAttrs.AllowWrites, "ALLOW_WRITES"),
 						ssot.DescribePropertyPrefix(&ExternalVolumeAttrs.StorageLocations, "STORAGE_LOCATION_"),
 					),
 				),
@@ -356,7 +352,7 @@ var ExternalVolumeObject = ssot.Object{
 			&ExternalVolumeAttrs.StorageLocations,
 			&ExternalVolumeAttrs.Active,
 			&ExternalVolumeAttrs.Comment,
-			&ExternalVolumeAttrs.DescribeAllowWrites,
+			&ExternalVolumeAttrs.AllowWrites,
 		},
 	},
 	DescribeRows: ssot.OutputSpec{

@@ -135,6 +135,38 @@ func ToMfaEnrollmentOption(s string) (MfaEnrollmentOption, error) {
 	}
 }
 
+type MfaEnrollmentReadOption string
+
+const (
+	MfaEnrollmentReadOptionRequired                        MfaEnrollmentReadOption = "REQUIRED"
+	MfaEnrollmentReadOptionRequiredPasswordOnly            MfaEnrollmentReadOption = "REQUIRED_PASSWORD_ONLY"
+	MfaEnrollmentReadOptionOptional                        MfaEnrollmentReadOption = "OPTIONAL"
+	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly MfaEnrollmentReadOption = "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"
+)
+
+var AllMfaEnrollmentReadOptions = []MfaEnrollmentReadOption{
+	MfaEnrollmentReadOptionRequired,
+	MfaEnrollmentReadOptionRequiredPasswordOnly,
+	MfaEnrollmentReadOptionOptional,
+	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly,
+}
+
+func ToMfaEnrollmentReadOption(s string) (MfaEnrollmentReadOption, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(MfaEnrollmentReadOptionRequired):
+		return MfaEnrollmentReadOptionRequired, nil
+	case string(MfaEnrollmentReadOptionRequiredPasswordOnly):
+		return MfaEnrollmentReadOptionRequiredPasswordOnly, nil
+	case string(MfaEnrollmentReadOptionOptional):
+		return MfaEnrollmentReadOptionOptional, nil
+	case string(MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly):
+		return MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly, nil
+	default:
+		return "", fmt.Errorf("invalid mfa enrollment read option: %s", s)
+	}
+}
+
 type ClientTypesOption string
 
 const (
@@ -404,37 +436,5 @@ func ToMfaAuthenticationMethodsReadOption(s string) (MfaAuthenticationMethodsRea
 		return MfaAuthenticationMethodsReadOptionOidc, nil
 	default:
 		return "", fmt.Errorf("invalid mfa authentication methods read option: %s", s)
-	}
-}
-
-type MfaEnrollmentReadOption string
-
-const (
-	MfaEnrollmentReadOptionRequired                        MfaEnrollmentReadOption = "REQUIRED"
-	MfaEnrollmentReadOptionRequiredPasswordOnly            MfaEnrollmentReadOption = "REQUIRED_PASSWORD_ONLY"
-	MfaEnrollmentReadOptionOptional                        MfaEnrollmentReadOption = "OPTIONAL"
-	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly MfaEnrollmentReadOption = "REQUIRED_SNOWFLAKE_UI_PASSWORD_ONLY"
-)
-
-var AllMfaEnrollmentReadOptions = []MfaEnrollmentReadOption{
-	MfaEnrollmentReadOptionRequired,
-	MfaEnrollmentReadOptionRequiredPasswordOnly,
-	MfaEnrollmentReadOptionOptional,
-	MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly,
-}
-
-func ToMfaEnrollmentReadOption(s string) (MfaEnrollmentReadOption, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(MfaEnrollmentReadOptionRequired):
-		return MfaEnrollmentReadOptionRequired, nil
-	case string(MfaEnrollmentReadOptionRequiredPasswordOnly):
-		return MfaEnrollmentReadOptionRequiredPasswordOnly, nil
-	case string(MfaEnrollmentReadOptionOptional):
-		return MfaEnrollmentReadOptionOptional, nil
-	case string(MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly):
-		return MfaEnrollmentReadOptionRequiredSnowflakeUiPasswordOnly, nil
-	default:
-		return "", fmt.Errorf("invalid mfa enrollment read option: %s", s)
 	}
 }

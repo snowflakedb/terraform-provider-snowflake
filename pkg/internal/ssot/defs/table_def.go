@@ -38,6 +38,8 @@ var TableAttrs = struct {
 	ClusterBy: ssot.Attribute{
 		Name:          "cluster_by",
 		Type:          ssot.AttrList,
+		ShowString:    true,
+		OptionalInDb:  true,
 		Description:   "A list of one or more table columns/expressions to be used as clustering key(s) for the table",
 		Elem:          &ssot.Attribute{Type: ssot.AttrString},
 		CreateMapping: ssot.AttributeMappedValueCreate("toTableClusterBy"),
@@ -755,7 +757,6 @@ var (
 	tableShowSchemaName                 = tableShowString("schema_name", false, false)
 	tableShowDatabaseName               = tableShowString("database_name", false, false)
 	tableShowKind                       = tableShowString("kind", false, false)
-	tableShowClusterBy                  = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
 	tableShowOwner                      = tableShowString("owner", false, false)
 	tableShowRows                       = tableShowInt("rows", false)
 	tableShowBytes                      = tableShowInt("bytes", true)
@@ -856,7 +857,7 @@ var Table = ssot.Object{
 			&tableShowDatabaseName,
 			&tableShowKind,
 			&TableAttrs.Comment,
-			&tableShowClusterBy,
+			&TableAttrs.ClusterBy,
 			&tableShowRows,
 			&tableShowBytes,
 			&tableShowOwner,

@@ -91,7 +91,11 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 // A SHOW list or set of enums stays []string, as does a columnar DESCRIBE. SdkDescribeDetails stores
 // that list as a slice of the enum. A SHOW plain-only column uses its plain kind, with the sdk prefix.
 func objectAssertColumnField(obj ssot.Object, attr *ssot.Attribute, isDescribe bool) genhelpers.Field {
-	field := ssot.ColumnField(obj, *attr)
+	view := attr.ForShow()
+	if isDescribe {
+		view = attr.ForDescribe()
+	}
+	field := ssot.ColumnField(obj, view)
 	concrete, underlying, ok := objectAssertOverrideType(obj, attr, isDescribe)
 	if !ok {
 		return field
