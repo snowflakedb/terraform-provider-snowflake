@@ -101,10 +101,15 @@ func withExternalTableFileFormats(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalQueryStructField("RawFileFormat", rawFileFormat(), g.ListOptions().Parentheses().SQL("FILE_FORMAT ="))
 }
 
+var externalTableRowAccessPolicy = g.NewQueryStruct("ExternalTableRowAccessPolicy").
+	Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	NamedListWithParens("ON", g.KindOfT[string](), g.KeywordOptions()).
+	WithValidation(g.ValidIdentifier, "Name")
+
 func withExternalTablePolicyAndTags(qs *g.QueryStruct) *g.QueryStruct {
 	return qs.
 		OptionalComment().
-		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
+		OptionalQueryStructField("RowAccessPolicy", externalTableRowAccessPolicy, g.KeywordOptions()).
 		OptionalTags()
 }
 

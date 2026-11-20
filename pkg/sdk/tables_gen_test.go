@@ -69,6 +69,7 @@ const (
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Rely_Norely                                     testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_FK_ConflictingFields_Rely_Norely"
 	case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_CH_ConflictingFields                                                 testCaseName = "validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_CH_ConflictingFields"
 	case_Tables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                                                                testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
+	case_Tables_validation_Create_RowAccessPolicy_On_ValidateValueSet                                                                                 testCaseName = "validation_Create_RowAccessPolicy_On_ValidateValueSet"
 	case_Tables_validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier                                                                 testCaseName = "validation_Create_AggregationPolicy_AggregationPolicy_ValidIdentifier"
 	case_Tables_validation_Create_JoinPolicy_JoinPolicy_ValidIdentifier                                                                               testCaseName = "validation_Create_JoinPolicy_JoinPolicy_ValidIdentifier"
 	case_Tables_validation_Create_StorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier                                                       testCaseName = "validation_Create_StorageLifecyclePolicy_StorageLifecyclePolicy_ValidIdentifier"
@@ -212,6 +213,7 @@ const (
 	case_Tables_validation_CreateAsSelect_Query_ValidateValueSet                                                                                      testCaseName = "validation_CreateAsSelect_Query_ValidateValueSet"
 	case_Tables_validation_CreateAsSelect_Columns_MaskingPolicy_ValidIdentifierIfSet                                                                  testCaseName = "validation_CreateAsSelect_Columns_MaskingPolicy_ValidIdentifierIfSet"
 	case_Tables_validation_CreateAsSelect_RowAccessPolicy_Name_ValidIdentifier                                                                        testCaseName = "validation_CreateAsSelect_RowAccessPolicy_Name_ValidIdentifier"
+	case_Tables_validation_CreateAsSelect_RowAccessPolicy_On_ValidateValueSet                                                                         testCaseName = "validation_CreateAsSelect_RowAccessPolicy_On_ValidateValueSet"
 	case_Tables_sql_CreateAsSelect_basic                                                                                                              testCaseName = "sql_CreateAsSelect_basic"
 	case_Tables_sql_CreateAsSelect_all                                                                                                                testCaseName = "sql_CreateAsSelect_all"
 	case_Tables_validation_CreateUsingTemplate_name_ValidIdentifier                                                                                   testCaseName = "validation_CreateUsingTemplate_name_ValidIdentifier"
@@ -721,6 +723,14 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *CreateTableOptions) {
 					opts.RowAccessPolicy = &TableRowAccessPolicy{}
 					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateTableOptions]{
+				Name:        case_Tables_validation_Create_RowAccessPolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateTableOptions.RowAccessPolicy", "On"),
+				DefaultModify: func(opts *CreateTableOptions) {
+					opts.RowAccessPolicy = &TableRowAccessPolicy{}
+					opts.RowAccessPolicy.On = nil
 				},
 			},
 			validationCase[*CreateTableOptions]{
@@ -1928,6 +1938,14 @@ var tablesTests = TablesTestsContext{
 				DefaultModify: func(opts *CreateAsSelectTableOptions) {
 					opts.RowAccessPolicy = &TableRowAccessPolicy{}
 					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateAsSelectTableOptions]{
+				Name:        case_Tables_validation_CreateAsSelect_RowAccessPolicy_On_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateAsSelectTableOptions.RowAccessPolicy", "On"),
+				DefaultModify: func(opts *CreateAsSelectTableOptions) {
+					opts.RowAccessPolicy = &TableRowAccessPolicy{}
+					opts.RowAccessPolicy.On = nil
 				},
 			},
 		).

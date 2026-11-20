@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -21,16 +22,12 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	identity["start_num"].Default = 1
 	identity["step_num"].Default = 1
 
-	// TODO [SNOW-1348114]: consider adding fully_qualified_name for columns.
-	column["schema_evolution_record"] = &schema.Schema{
-		Type:        schema.TypeString,
-		Computed:    true,
-		Description: "Record of schema evolution.",
+	s["primary_key"].Deprecated = "Use snowflake_table_constraint instead"
+
+	// Identifier validation is not generated for nested-block fields (identifierSchemaType skips InBlock).
+	for _, key := range []string{"row_access_policy", "aggregation_policy", "join_policy"} {
+		s[key].Elem.(*schema.Resource).Schema["policy_name"].ValidateDiagFunc = IsValidIdentifier[sdk.SchemaObjectIdentifier]()
 	}
 
-	s["primary_key"].Deprecated = "Use snowflake_table_constraint instead"
-	s["change_tracking"].DiffSuppressFunc = IgnoreChangeToCurrentSnowflakeValueInShowWithMapping("change_tracking", func(x any) any {
-		return x.(bool)
-	})
 	return s
 }

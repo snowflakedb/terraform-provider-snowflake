@@ -71,8 +71,9 @@ func Test_constructorArg(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, &CreateConstructorArg{Var: "postgresInstance", Get: `d.Get("postgres_instance").(string)`}, got)
 
-	_, ok = arg(block, ssot.Attribute{Name: "schema_object", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true})
-	require.False(t, ok)
+	got, ok = arg(block, ssot.Attribute{Name: "schema_object", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true})
+	require.True(t, ok)
+	require.Equal(t, &CreateConstructorArg{Var: "schemaObject", Get: `d.Get(prefix+"schema_object").(string)`, Parser: "sdk.ParseSchemaObjectIdentifier"}, got)
 
 	got, ok = arg(object, ssot.Attribute{Name: "primary", Type: ssot.AttrIdentifier, IdentifierType: "ExternalObjectIdentifier", Required: true})
 	require.True(t, ok)
@@ -465,9 +466,9 @@ func Test_attachCreateMappings_fourLevelBlocksWithDeepSet(t *testing.T) {
 
 func Test_attachCreateMappings_fourLevelBlocksWithUnmappedLeafStayHandwritten(t *testing.T) {
 	model := createOptionalsModel("Widget", []ssot.Attribute{fourLevelBlock(func(d *ssot.Attribute) {
-		d.Elem.Children[1].Type = ssot.AttrIdentifier
-		d.Elem.Children[1].IdentifierType = "SchemaObjectIdentifier"
+		d.Elem.Children[1].Type = ssot.AttrList
 		d.Elem.Children[1].Required = true
+		d.Elem.Children[1].Elem = &ssot.Attribute{Type: ssot.AttrString}
 	})})
 
 	require.Empty(t, model.CreateBlockFuncs())
@@ -581,6 +582,45 @@ func Test_attachCreateMappings_skipCreateLeavesScalarOut(t *testing.T) {
 	require.Nil(t, model.Attributes[0].CreateOptionalCall)
 	require.Nil(t, model.Attributes[0].CreateConstructorArg)
 	require.Equal(t, "stringAttributeCreateBuilder", model.Attributes[1].CreateOptionalCall.Helper)
+}
+
+func Test_attachCreateMappings_nestedSchemaObjectIdentifierConstructor(t *testing.T) {
+	model := createOptionalsModel("Widget", []ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
+			Name:           "policy_name",
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
+			Required:       true,
+		}, {
+			Name:          "entity_key",
+			Type:          ssot.AttrSet,
+			Elem:          &ssot.Attribute{Type: ssot.AttrString},
+			CreateMapping: ssot.SetMappedValueCreate("toTableColumn"),
+		}},
+	}})
+
+	require.Equal(t, `func widgetApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateWidgetRequest) error {
+	return errors.Join(
+		singleBlockAttributeCreate(d, "policy", request.WithPolicy, parseWidgetPolicy),
+	)
+}
+`, renderTemplate(t, "generatedApplyCreateOptionals", model))
+	blocks := model.CreateBlockFuncs()
+	require.Len(t, blocks, 1)
+	require.Equal(t, `func parseWidgetPolicy(d *tfschema.ResourceData, prefix string) (sdk.WidgetPolicyRequest, error) {
+	policyName, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix+"policy_name").(string))
+	if err != nil {
+		return sdk.WidgetPolicyRequest{}, err
+	}
+	request := sdk.NewWidgetPolicyRequest(policyName)
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"entity_key", request.WithEntityKey, toTableColumn),
+	)
+	return *request, errs
+}
+`, renderTemplate(t, "generatedCreateRequest", blocks[0]))
 }
 
 func Test_attachCreateMappings_nativeBool(t *testing.T) {

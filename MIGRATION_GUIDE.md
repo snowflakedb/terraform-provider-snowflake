@@ -52,6 +52,105 @@ The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflak
 
 The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
 
+#### New fields
+
+We have added the following fields to the resource:
+
+- `is_transient` creates a [transient table](https://docs.snowflake.com/en/user-guide/tables-temp-transient#transient-tables). Changing it recreates the table.
+- `enable_schema_evolution`, `error_logging`, and `row_timestamp` manage the matching [table properties](https://docs.snowflake.com/en/sql-reference/sql/create-table). Removing a value from the configuration unsets the property.
+- `max_data_extension_time_in_days` and `default_ddl_collation` are object parameters. Omitting them inherits the parent value. An empty `default_ddl_collation` is a real value. `data_retention_time_in_days` became an object parameter too; see below.
+- `row_access_policy` (`policy_name`, `on`) and `aggregation_policy` (`policy_name`, `entity_key`) attach those policies to the table. They follow the same rules as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table).
+- `join_policy` (`policy_name`, `allowed_join_keys`) attaches a join policy. Regular tables support it; Iceberg tables do not.
+
+We have also added these computed fields:
+
+- `show_output` holds the output of [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables).
+- `describe_output` holds the output of [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table) `TYPE = COLUMNS`, including `schema_evolution_record`.
+- `parameters` holds the output of [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters), including Iceberg-only keys that are not resource attributes.
+
+The next plan updates every existing `snowflake_table` to fill these blocks. No configuration changes are required unless you want to reference the new outputs.
+
+References: [#1272](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1272), [#2676](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2676), [#4266](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4266).
+
+#### `column.schema_evolution_record` replaced by `describe_output`
+
+The computed `column.schema_evolution_record` field was removed. It duplicated the `SCHEMA EVOLUTION RECORD` column of [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table). Use `describe_output[*].schema_evolution_record` instead. The same key is on [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) `describe_output`.
+
+Before:
+
+```terraform
+output "schema_evolution_record" {
+  value = snowflake_table.example.column[0].schema_evolution_record
+}
+```
+
+After:
+
+```terraform
+output "schema_evolution_record" {
+  value = snowflake_table.example.describe_output[0].schema_evolution_record
+}
+```
+
+State is upgraded automatically. The next refresh drops the removed field from the state and fills `describe_output`. The configuration is unchanged unless you referenced `column.schema_evolution_record`.
+
+#### `owner` replaced by `show_output`
+
+The `owner` field was removed. Use `show_output[0].owner` instead.
+
+Before:
+
+```terraform
+output "owner" {
+  value = snowflake_table.example.owner
+}
+```
+
+After:
+
+```terraform
+output "owner" {
+  value = snowflake_table.example.show_output[0].owner
+}
+```
+
+State is upgraded automatically. The next refresh drops the removed field from the state and fills `show_output`.
+
+The owner cannot be set in `snowflake_table`. To give the table to another role, use [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership).
+
+Reference: [#4161](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4161).
+
+#### `tag` replaced by `snowflake_tag_association`
+
+The `tag` field was removed, because tags are managed by the dedicated [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) resource. It lets you set tags on any object in the same way and without a dependency cycle between the tag and the table.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  tag {
+    name     = snowflake_tag.example.name
+    database = snowflake_tag.example.database
+    schema   = snowflake_tag.example.schema
+    value    = "value"
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_tag_association" "example" {
+  object_identifiers = [snowflake_table.example.fully_qualified_name]
+  object_type        = "TABLE"
+  tag_id             = snowflake_tag.example.fully_qualified_name
+  tag_value          = "value"
+}
+```
+
+State is upgraded automatically. The next refresh drops the removed field from the state, and the tag stays on the table in Snowflake, so you can adopt it by importing the new `snowflake_tag_association`.
+
 #### `terse` and `history` filters in `snowflake_tables`
 
 We have added two optional filters to the preview [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) data source. They match the `TERSE` and `HISTORY` options of [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables):
@@ -82,17 +181,11 @@ data "snowflake_tables" "example" {
 
 No configuration changes are required unless you want to turn the extra queries off.
 
-#### `change_tracking` is a boolean string
+#### `change_tracking` no longer defaults to `false`
 
-[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `change_tracking` is now a boolean string (`"true"`, `"false"`, or `"default"`), matching the other resources. Previously it was a Terraform boolean that defaulted to `false` and always sent `CHANGE_TRACKING` on create.
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `change_tracking` is still a Terraform boolean. Previously it defaulted to `false` and always sent `CHANGE_TRACKING` on create. The schema Default is gone: omit the field to use Snowflake’s default ([SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) still reports `false`). Keep `true` or `false` in configuration when you want to set it. The next plan fills `show_output` with the value Snowflake reports.
 
-```terraform
-change_tracking = "false" # previously a Terraform boolean (`false`)
-```
-
-Omit the field when you want Snowflake’s default. State is not upgraded automatically. Change boolean values in your configuration to `"true"` or `"false"` before you apply. The next plan also fills `show_output.show_change_tracking` from [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables).
-
-#### `data_retention_time_in_days` is a native parameter
+#### `data_retention_time_in_days` is an object parameter
 
 [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `data_retention_time_in_days` is now a native [table parameter](https://docs.snowflake.com/en/sql-reference/parameters). Previously `-1` meant “inherit from the parent.” That sentinel is gone: omit the field to inherit.
 
@@ -102,33 +195,9 @@ Omit the field when you want Snowflake’s default. State is not upgraded automa
 
 State is not upgraded automatically. Remove `-1` from the configuration. After upgrade, the next plan stores the effective value and the `parameters` block from [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters). Setting the field still sends `DATA_RETENTION_TIME_IN_DAYS` on create and alter.
 
-#### Computed `show_output`, `describe_output`, and `parameters`
-
-We have added computed `show_output`, `describe_output`, and `parameters` on [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table). They hold [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables), [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table), and [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters). The next plan updates every existing `snowflake_table` to fill those blocks. No configuration changes are required unless you want to reference the new outputs.
-
 #### Import requires the table to exist
 
 Import of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) now looks the table up in Snowflake. Previously the importer only copied the id into state. Import fails if the table is missing. Use the fully qualified name as the import id. This resource is still in preview and will be reworked in the future.
-
-#### `owner` is removed
-
-The computed `owner` field of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) is gone. Use `show_output.owner` from [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables).
-
-```terraform
-# owner is gone; use show_output.0.owner
-```
-
-The configuration is unchanged unless it referenced `owner`. State is not upgraded automatically. The next plan drops `owner` from state and fills `show_output`.
-
-#### `tag` is removed
-
-The deprecated `tag` block of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) is gone. Associate tags with [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) instead.
-
-```terraform
-# remove the tag { ... } block; use snowflake_tag_association instead
-```
-
-State is not upgraded automatically. Remove `tag` from the table configuration. Existing tag assignments in Snowflake stay until you manage them with `snowflake_tag_association` or drop them yourself.
 
 #### Column data types are parsed
 

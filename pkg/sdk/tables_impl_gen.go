@@ -1077,8 +1077,9 @@ func (r *TableUnsetAggregationPolicyRequest) toOpts() *TableUnsetAggregationPoli
 
 func (r *TableSetJoinPolicyRequest) toOpts() *TableSetJoinPolicy {
 	opts := &TableSetJoinPolicy{
-		JoinPolicy: r.JoinPolicy,
-		Force:      r.Force,
+		JoinPolicy:      r.JoinPolicy,
+		AllowedJoinKeys: r.AllowedJoinKeys,
+		Force:           r.Force,
 	}
 	return opts
 }

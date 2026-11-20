@@ -4,6 +4,7 @@ package resources
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -133,11 +134,114 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 		Description: "Definitions of primary key constraint to create on table",
 	},
 	"change_tracking": {
+		Type:             tfschema.TypeBool,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("change_tracking"),
+		Description:      "Specifies whether to enable change tracking on the table. Default false.",
+	},
+	"is_transient": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Specifies a transient table. Transient tables participate in time travel to a limited degree, but they do not have a Fail-safe period, so they do not incur additional storage costs once they leave Time Travel. Changing this value recreates the table. Temporary and volatile tables are not supported by the resource."),
+		Default:          BooleanDefault,
+	},
+	"enable_schema_evolution": {
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: validateBooleanString,
-		Description:      booleanStringFieldDescription("Specifies whether to enable change tracking on the table."),
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("enable_schema_evolution"),
+		Description:      booleanStringFieldDescription("Specifies whether to enable automatic table schema changes from data loaded into the table from source files, including semi-structured files. For more information, see [Table schema evolution](https://docs.snowflake.com/en/user-guide/data-load-schema-evolution)."),
 		Default:          BooleanDefault,
+	},
+	"error_logging": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("error_logging"),
+		Description:      booleanStringFieldDescription("Specifies whether to turn on DML error logging for the table. If the `ERROR_LOGGING` session parameter is set to `TRUE`, DML error logging is not turned on, regardless of whether it is turned on for specific tables."),
+		Default:          BooleanDefault,
+	},
+	"row_timestamp": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("row_timestamp"),
+		Description:      booleanStringFieldDescription("Specifies whether to enable row timestamps on the table. You must use a role with the OWNERSHIP privilege on the table. **Note:** setting it to `false` permanently deletes all stored `METADATA$ROW_LAST_COMMIT_TIME` values."),
+		Default:          BooleanDefault,
+	},
+	"row_access_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"policy_name": {
+					Type:             tfschema.TypeString,
+					Required:         true,
+					DiffSuppressFunc: suppressIdentifierQuoting,
+					Description:      relatedResourceDescription("Row access policy name.", resources.RowAccessPolicy),
+				},
+				"on": {
+					Type:     tfschema.TypeSet,
+					Required: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Defines which columns are affected by the policy.",
+				},
+			},
+		},
+		Description: "Specifies the row access policy to set on a table.",
+	},
+	"aggregation_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"policy_name": {
+					Type:             tfschema.TypeString,
+					Required:         true,
+					DiffSuppressFunc: suppressIdentifierQuoting,
+					Description:      "Aggregation policy name.",
+				},
+				"entity_key": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Defines which columns uniquely identify an entity within the table.",
+				},
+			},
+		},
+		Description: "Specifies the aggregation policy to set on a table.",
+	},
+	"join_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"policy_name": {
+					Type:             tfschema.TypeString,
+					Required:         true,
+					DiffSuppressFunc: suppressIdentifierQuoting,
+					Description:      "Join policy name.",
+				},
+				"allowed_join_keys": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Defines which columns can be used as join keys on the table.",
+				},
+			},
+		},
+		Description: "Specifies the join policy to set on a table.",
 	},
 })
 

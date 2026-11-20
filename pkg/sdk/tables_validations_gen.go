@@ -183,6 +183,9 @@ func (opts *CreateTableOptions) validate() error {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"))
 		}
+		if !valueSet(opts.RowAccessPolicy.On) {
+			errs = append(errs, errNotSet("CreateTableOptions.RowAccessPolicy", "On"))
+		}
 	}
 	if valueSet(opts.AggregationPolicy) {
 		if !ValidObjectIdentifier(opts.AggregationPolicy.AggregationPolicy) {
@@ -594,6 +597,9 @@ func (opts *CreateAsSelectTableOptions) validate() error {
 	if valueSet(opts.RowAccessPolicy) {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
 			errs = append(errs, errInvalidIdentifier("CreateAsSelectTableOptions.RowAccessPolicy", "Name"))
+		}
+		if !valueSet(opts.RowAccessPolicy.On) {
+			errs = append(errs, errNotSet("CreateAsSelectTableOptions.RowAccessPolicy", "On"))
 		}
 	}
 	return JoinErrors(errs...)

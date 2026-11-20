@@ -2,6 +2,7 @@ package gen
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -39,6 +40,38 @@ func TestParameterHooks_schemaTemplateMatchesHandWrittenMappings(t *testing.T) {
 	require.Contains(t, got, "schemaParseIdExt(d.Id())")
 	require.NotContains(t, got, "ssot.")
 	require.NotContains(t, got, "ssotdefs.")
+}
+
+func TestParameterHooks_resourceParametersAllowlist(t *testing.T) {
+	model := ResourceModel{
+		Name:       "Table",
+		NamePlural: "Tables",
+		ResourceParameters: []ssot.ParameterDef{
+			ssotdefs.DefaultDdlCollation,
+			ssotdefs.DataRetentionTimeInDays,
+			ssotdefs.MaxDataExtensionTimeInDays,
+		},
+		Hooks: ssot.DefaultResourceExtHooks(
+			ssot.WithParametersAttributesSchema(ssot.Generated()),
+			ssot.WithApplyParametersCreate(ssot.Generated()),
+			ssot.WithParametersCustomDiff(ssot.Generated()),
+			ssot.WithParseId(ssot.Generated()),
+		),
+	}
+	var rendered bytes.Buffer
+	require.NoError(t, ParametersTemplate.Execute(&rendered, model))
+	got := rendered.String()
+
+	require.Contains(t, got, `"data_retention_time_in_days": parameterSchemaFromDefinition(`)
+	require.Contains(t, got, `"default_ddl_collation": parameterSchemaFromDefinition(`)
+	require.Contains(t, got, `"max_data_extension_time_in_days": parameterSchemaFromDefinition(`)
+	require.Contains(t, got, `handleParameterCreate(d, "data_retention_time_in_days", &req.DataRetentionTimeInDays),`)
+	require.Contains(t, got, `handleParameterCreateWithMapping(d, "default_ddl_collation", &req.DefaultDdlCollation, stringToStringAllowEmpty),`)
+	require.NotContains(t, got, `"catalog"`)
+	require.NotContains(t, got, "Catalog")
+	require.NotContains(t, got, "external_volume")
+	require.Less(t, strings.Index(got, `"data_retention_time_in_days"`), strings.Index(got, `"default_ddl_collation"`))
+	require.Less(t, strings.Index(got, `"default_ddl_collation"`), strings.Index(got, `"max_data_extension_time_in_days"`))
 }
 
 func TestParameterHooks_customDiffUsesConfiguredParseId(t *testing.T) {

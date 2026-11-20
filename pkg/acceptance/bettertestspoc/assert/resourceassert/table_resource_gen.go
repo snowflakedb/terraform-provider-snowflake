@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type TableResourceAssert struct {
@@ -49,23 +48,10 @@ func (t *TableResourceAssert) HasName(expected string) *TableResourceAssert {
 	return t
 }
 
-func (t *TableResourceAssert) HasCatalog(expected string) *TableResourceAssert {
-	t.StringValueSet("catalog", expected)
-	return t
-}
+// typed assert for "aggregation_policy" (type: List) is not currently supported
 
-func (t *TableResourceAssert) HasCatalogSdk(expected sdk.AccountObjectIdentifier) *TableResourceAssert {
-	t.StringValueSet("catalog", expected.Name())
-	return t
-}
-
-func (t *TableResourceAssert) HasChangeTracking(expected string) *TableResourceAssert {
-	t.StringValueSet("change_tracking", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasChangeTrackingBool(expected bool) *TableResourceAssert {
-	t.StringValueSet("change_tracking", strconv.FormatBool(expected))
+func (t *TableResourceAssert) HasChangeTracking(expected bool) *TableResourceAssert {
+	t.BoolValueSet("change_tracking", expected)
 	return t
 }
 
@@ -91,18 +77,23 @@ func (t *TableResourceAssert) HasDefaultDdlCollation(expected string) *TableReso
 	return t
 }
 
-func (t *TableResourceAssert) HasEnableConsoleOutput(expected bool) *TableResourceAssert {
-	t.BoolValueSet("enable_console_output", expected)
+func (t *TableResourceAssert) HasEnableSchemaEvolution(expected string) *TableResourceAssert {
+	t.StringValueSet("enable_schema_evolution", expected)
 	return t
 }
 
-func (t *TableResourceAssert) HasExternalVolume(expected string) *TableResourceAssert {
-	t.StringValueSet("external_volume", expected)
+func (t *TableResourceAssert) HasEnableSchemaEvolutionBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("enable_schema_evolution", strconv.FormatBool(expected))
 	return t
 }
 
-func (t *TableResourceAssert) HasExternalVolumeSdk(expected sdk.AccountObjectIdentifier) *TableResourceAssert {
-	t.StringValueSet("external_volume", expected.Name())
+func (t *TableResourceAssert) HasErrorLogging(expected string) *TableResourceAssert {
+	t.StringValueSet("error_logging", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasErrorLoggingBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("error_logging", strconv.FormatBool(expected))
 	return t
 }
 
@@ -111,25 +102,17 @@ func (t *TableResourceAssert) HasFullyQualifiedName(expected string) *TableResou
 	return t
 }
 
-func (t *TableResourceAssert) HasLogEventLevel(expected string) *TableResourceAssert {
-	t.StringValueSet("log_event_level", expected)
+func (t *TableResourceAssert) HasIsTransient(expected string) *TableResourceAssert {
+	t.StringValueSet("is_transient", expected)
 	return t
 }
 
-func (t *TableResourceAssert) HasLogEventLevelSdk(expected sdk.LogLevel) *TableResourceAssert {
-	t.StringValueSet("log_event_level", string(expected))
+func (t *TableResourceAssert) HasIsTransientBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("is_transient", strconv.FormatBool(expected))
 	return t
 }
 
-func (t *TableResourceAssert) HasLogLevel(expected string) *TableResourceAssert {
-	t.StringValueSet("log_level", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasLogLevelSdk(expected sdk.LogLevel) *TableResourceAssert {
-	t.StringValueSet("log_level", string(expected))
-	return t
-}
+// typed assert for "join_policy" (type: List) is not currently supported
 
 func (t *TableResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *TableResourceAssert {
 	t.IntValueSet("max_data_extension_time_in_days", expected)
@@ -138,23 +121,15 @@ func (t *TableResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *Table
 
 // typed assert for "primary_key" (type: List) is not currently supported
 
-func (t *TableResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *TableResourceAssert {
-	t.BoolValueSet("quoted_identifiers_ignore_case", expected)
+// typed assert for "row_access_policy" (type: List) is not currently supported
+
+func (t *TableResourceAssert) HasRowTimestamp(expected string) *TableResourceAssert {
+	t.StringValueSet("row_timestamp", expected)
 	return t
 }
 
-func (t *TableResourceAssert) HasReplaceInvalidCharacters(expected bool) *TableResourceAssert {
-	t.BoolValueSet("replace_invalid_characters", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasStorageSerializationPolicy(expected string) *TableResourceAssert {
-	t.StringValueSet("storage_serialization_policy", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasStorageSerializationPolicySdk(expected sdk.StorageSerializationPolicy) *TableResourceAssert {
-	t.StringValueSet("storage_serialization_policy", string(expected))
+func (t *TableResourceAssert) HasRowTimestampBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("row_timestamp", strconv.FormatBool(expected))
 	return t
 }
 
@@ -174,11 +149,6 @@ func (t *TableResourceAssert) HasSchemaString(expected string) *TableResourceAss
 
 func (t *TableResourceAssert) HasNameString(expected string) *TableResourceAssert {
 	t.ValueSet("name", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasCatalogString(expected string) *TableResourceAssert {
-	t.ValueSet("catalog", expected)
 	return t
 }
 
@@ -202,13 +172,13 @@ func (t *TableResourceAssert) HasDefaultDdlCollationString(expected string) *Tab
 	return t
 }
 
-func (t *TableResourceAssert) HasEnableConsoleOutputString(expected string) *TableResourceAssert {
-	t.ValueSet("enable_console_output", expected)
+func (t *TableResourceAssert) HasEnableSchemaEvolutionString(expected string) *TableResourceAssert {
+	t.ValueSet("enable_schema_evolution", expected)
 	return t
 }
 
-func (t *TableResourceAssert) HasExternalVolumeString(expected string) *TableResourceAssert {
-	t.ValueSet("external_volume", expected)
+func (t *TableResourceAssert) HasErrorLoggingString(expected string) *TableResourceAssert {
+	t.ValueSet("error_logging", expected)
 	return t
 }
 
@@ -217,13 +187,8 @@ func (t *TableResourceAssert) HasFullyQualifiedNameString(expected string) *Tabl
 	return t
 }
 
-func (t *TableResourceAssert) HasLogEventLevelString(expected string) *TableResourceAssert {
-	t.ValueSet("log_event_level", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasLogLevelString(expected string) *TableResourceAssert {
-	t.ValueSet("log_level", expected)
+func (t *TableResourceAssert) HasIsTransientString(expected string) *TableResourceAssert {
+	t.ValueSet("is_transient", expected)
 	return t
 }
 
@@ -232,18 +197,8 @@ func (t *TableResourceAssert) HasMaxDataExtensionTimeInDaysString(expected strin
 	return t
 }
 
-func (t *TableResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *TableResourceAssert {
-	t.ValueSet("quoted_identifiers_ignore_case", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasReplaceInvalidCharactersString(expected string) *TableResourceAssert {
-	t.ValueSet("replace_invalid_characters", expected)
-	return t
-}
-
-func (t *TableResourceAssert) HasStorageSerializationPolicyString(expected string) *TableResourceAssert {
-	t.ValueSet("storage_serialization_policy", expected)
+func (t *TableResourceAssert) HasRowTimestampString(expected string) *TableResourceAssert {
+	t.ValueSet("row_timestamp", expected)
 	return t
 }
 
@@ -263,11 +218,6 @@ func (t *TableResourceAssert) HasNoSchema() *TableResourceAssert {
 
 func (t *TableResourceAssert) HasNoName() *TableResourceAssert {
 	t.ValueNotSet("name")
-	return t
-}
-
-func (t *TableResourceAssert) HasNoCatalog() *TableResourceAssert {
-	t.ValueNotSet("catalog")
 	return t
 }
 
@@ -291,13 +241,13 @@ func (t *TableResourceAssert) HasNoDefaultDdlCollation() *TableResourceAssert {
 	return t
 }
 
-func (t *TableResourceAssert) HasNoEnableConsoleOutput() *TableResourceAssert {
-	t.ValueNotSet("enable_console_output")
+func (t *TableResourceAssert) HasNoEnableSchemaEvolution() *TableResourceAssert {
+	t.ValueNotSet("enable_schema_evolution")
 	return t
 }
 
-func (t *TableResourceAssert) HasNoExternalVolume() *TableResourceAssert {
-	t.ValueNotSet("external_volume")
+func (t *TableResourceAssert) HasNoErrorLogging() *TableResourceAssert {
+	t.ValueNotSet("error_logging")
 	return t
 }
 
@@ -306,13 +256,8 @@ func (t *TableResourceAssert) HasNoFullyQualifiedName() *TableResourceAssert {
 	return t
 }
 
-func (t *TableResourceAssert) HasNoLogEventLevel() *TableResourceAssert {
-	t.ValueNotSet("log_event_level")
-	return t
-}
-
-func (t *TableResourceAssert) HasNoLogLevel() *TableResourceAssert {
-	t.ValueNotSet("log_level")
+func (t *TableResourceAssert) HasNoIsTransient() *TableResourceAssert {
+	t.ValueNotSet("is_transient")
 	return t
 }
 
@@ -321,18 +266,8 @@ func (t *TableResourceAssert) HasNoMaxDataExtensionTimeInDays() *TableResourceAs
 	return t
 }
 
-func (t *TableResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *TableResourceAssert {
-	t.ValueNotSet("quoted_identifiers_ignore_case")
-	return t
-}
-
-func (t *TableResourceAssert) HasNoReplaceInvalidCharacters() *TableResourceAssert {
-	t.ValueNotSet("replace_invalid_characters")
-	return t
-}
-
-func (t *TableResourceAssert) HasNoStorageSerializationPolicy() *TableResourceAssert {
-	t.ValueNotSet("storage_serialization_policy")
+func (t *TableResourceAssert) HasNoRowTimestamp() *TableResourceAssert {
+	t.ValueNotSet("row_timestamp")
 	return t
 }
 
@@ -340,8 +275,8 @@ func (t *TableResourceAssert) HasNoStorageSerializationPolicy() *TableResourceAs
 // Attribute empty checks //
 ////////////////////////////
 
-func (t *TableResourceAssert) HasCatalogEmpty() *TableResourceAssert {
-	t.ValueSet("catalog", "")
+func (t *TableResourceAssert) HasAggregationPolicyEmpty() *TableResourceAssert {
+	t.ValueSet("aggregation_policy.#", "0")
 	return t
 }
 
@@ -370,13 +305,13 @@ func (t *TableResourceAssert) HasDefaultDdlCollationEmpty() *TableResourceAssert
 	return t
 }
 
-func (t *TableResourceAssert) HasEnableConsoleOutputEmpty() *TableResourceAssert {
-	t.ValueSet("enable_console_output", "")
+func (t *TableResourceAssert) HasEnableSchemaEvolutionEmpty() *TableResourceAssert {
+	t.ValueSet("enable_schema_evolution", "")
 	return t
 }
 
-func (t *TableResourceAssert) HasExternalVolumeEmpty() *TableResourceAssert {
-	t.ValueSet("external_volume", "")
+func (t *TableResourceAssert) HasErrorLoggingEmpty() *TableResourceAssert {
+	t.ValueSet("error_logging", "")
 	return t
 }
 
@@ -385,13 +320,13 @@ func (t *TableResourceAssert) HasFullyQualifiedNameEmpty() *TableResourceAssert 
 	return t
 }
 
-func (t *TableResourceAssert) HasLogEventLevelEmpty() *TableResourceAssert {
-	t.ValueSet("log_event_level", "")
+func (t *TableResourceAssert) HasIsTransientEmpty() *TableResourceAssert {
+	t.ValueSet("is_transient", "")
 	return t
 }
 
-func (t *TableResourceAssert) HasLogLevelEmpty() *TableResourceAssert {
-	t.ValueSet("log_level", "")
+func (t *TableResourceAssert) HasJoinPolicyEmpty() *TableResourceAssert {
+	t.ValueSet("join_policy.#", "0")
 	return t
 }
 
@@ -405,18 +340,13 @@ func (t *TableResourceAssert) HasPrimaryKeyEmpty() *TableResourceAssert {
 	return t
 }
 
-func (t *TableResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *TableResourceAssert {
-	t.ValueSet("quoted_identifiers_ignore_case", "")
+func (t *TableResourceAssert) HasRowAccessPolicyEmpty() *TableResourceAssert {
+	t.ValueSet("row_access_policy.#", "0")
 	return t
 }
 
-func (t *TableResourceAssert) HasReplaceInvalidCharactersEmpty() *TableResourceAssert {
-	t.ValueSet("replace_invalid_characters", "")
-	return t
-}
-
-func (t *TableResourceAssert) HasStorageSerializationPolicyEmpty() *TableResourceAssert {
-	t.ValueSet("storage_serialization_policy", "")
+func (t *TableResourceAssert) HasRowTimestampEmpty() *TableResourceAssert {
+	t.ValueSet("row_timestamp", "")
 	return t
 }
 
@@ -436,11 +366,6 @@ func (t *TableResourceAssert) HasSchemaNotEmpty() *TableResourceAssert {
 
 func (t *TableResourceAssert) HasNameNotEmpty() *TableResourceAssert {
 	t.ValuePresent("name")
-	return t
-}
-
-func (t *TableResourceAssert) HasCatalogNotEmpty() *TableResourceAssert {
-	t.ValuePresent("catalog")
 	return t
 }
 
@@ -464,13 +389,13 @@ func (t *TableResourceAssert) HasDefaultDdlCollationNotEmpty() *TableResourceAss
 	return t
 }
 
-func (t *TableResourceAssert) HasEnableConsoleOutputNotEmpty() *TableResourceAssert {
-	t.ValuePresent("enable_console_output")
+func (t *TableResourceAssert) HasEnableSchemaEvolutionNotEmpty() *TableResourceAssert {
+	t.ValuePresent("enable_schema_evolution")
 	return t
 }
 
-func (t *TableResourceAssert) HasExternalVolumeNotEmpty() *TableResourceAssert {
-	t.ValuePresent("external_volume")
+func (t *TableResourceAssert) HasErrorLoggingNotEmpty() *TableResourceAssert {
+	t.ValuePresent("error_logging")
 	return t
 }
 
@@ -479,13 +404,8 @@ func (t *TableResourceAssert) HasFullyQualifiedNameNotEmpty() *TableResourceAsse
 	return t
 }
 
-func (t *TableResourceAssert) HasLogEventLevelNotEmpty() *TableResourceAssert {
-	t.ValuePresent("log_event_level")
-	return t
-}
-
-func (t *TableResourceAssert) HasLogLevelNotEmpty() *TableResourceAssert {
-	t.ValuePresent("log_level")
+func (t *TableResourceAssert) HasIsTransientNotEmpty() *TableResourceAssert {
+	t.ValuePresent("is_transient")
 	return t
 }
 
@@ -494,17 +414,7 @@ func (t *TableResourceAssert) HasMaxDataExtensionTimeInDaysNotEmpty() *TableReso
 	return t
 }
 
-func (t *TableResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *TableResourceAssert {
-	t.ValuePresent("quoted_identifiers_ignore_case")
-	return t
-}
-
-func (t *TableResourceAssert) HasReplaceInvalidCharactersNotEmpty() *TableResourceAssert {
-	t.ValuePresent("replace_invalid_characters")
-	return t
-}
-
-func (t *TableResourceAssert) HasStorageSerializationPolicyNotEmpty() *TableResourceAssert {
-	t.ValuePresent("storage_serialization_policy")
+func (t *TableResourceAssert) HasRowTimestampNotEmpty() *TableResourceAssert {
+	t.ValuePresent("row_timestamp")
 	return t
 }

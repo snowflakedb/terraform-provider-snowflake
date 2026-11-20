@@ -113,7 +113,6 @@ func (r *CreateExternalTableRequest) toOpts() *CreateExternalTableOptions {
 		AwsSnsTopic:     r.AwsSnsTopic,
 		CopyGrants:      r.CopyGrants,
 		Comment:         r.Comment,
-		RowAccessPolicy: r.RowAccessPolicy,
 		Tag:             r.Tag,
 	}
 	if r.Columns != nil {
@@ -174,6 +173,12 @@ func (r *CreateExternalTableRequest) toOpts() *CreateExternalTableOptions {
 	if r.RawFileFormat != nil {
 		opts.RawFileFormat = &RawFileFormat{
 			Format: r.RawFileFormat.Format,
+		}
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
 		}
 	}
 	return opts
@@ -181,15 +186,14 @@ func (r *CreateExternalTableRequest) toOpts() *CreateExternalTableOptions {
 
 func (r *CreateWithManualPartitioningExternalTableRequest) toOpts() *CreateWithManualPartitioningExternalTableOptions {
 	opts := &CreateWithManualPartitioningExternalTableOptions{
-		OrReplace:       r.OrReplace,
-		IfNotExists:     r.IfNotExists,
-		name:            r.name,
-		PartitionBy:     r.PartitionBy,
-		Location:        r.Location,
-		CopyGrants:      r.CopyGrants,
-		Comment:         r.Comment,
-		RowAccessPolicy: r.RowAccessPolicy,
-		Tag:             r.Tag,
+		OrReplace:   r.OrReplace,
+		IfNotExists: r.IfNotExists,
+		name:        r.name,
+		PartitionBy: r.PartitionBy,
+		Location:    r.Location,
+		CopyGrants:  r.CopyGrants,
+		Comment:     r.Comment,
+		Tag:         r.Tag,
 	}
 	if r.Columns != nil {
 		columns := make([]ExternalTableColumn, len(r.Columns))
@@ -249,6 +253,12 @@ func (r *CreateWithManualPartitioningExternalTableRequest) toOpts() *CreateWithM
 	if r.RawFileFormat != nil {
 		opts.RawFileFormat = &RawFileFormat{
 			Format: r.RawFileFormat.Format,
+		}
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
 		}
 	}
 	return opts
@@ -265,7 +275,6 @@ func (r *CreateDeltaLakeExternalTableRequest) toOpts() *CreateDeltaLakeExternalT
 		AutoRefresh:     r.AutoRefresh,
 		CopyGrants:      r.CopyGrants,
 		Comment:         r.Comment,
-		RowAccessPolicy: r.RowAccessPolicy,
 		Tag:             r.Tag,
 	}
 	if r.Columns != nil {
@@ -326,6 +335,12 @@ func (r *CreateDeltaLakeExternalTableRequest) toOpts() *CreateDeltaLakeExternalT
 	if r.RawFileFormat != nil {
 		opts.RawFileFormat = &RawFileFormat{
 			Format: r.RawFileFormat.Format,
+		}
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
 		}
 	}
 	return opts
@@ -344,7 +359,6 @@ func (r *CreateUsingTemplateExternalTableRequest) toOpts() *CreateUsingTemplateE
 		Pattern:         r.Pattern,
 		AwsSnsTopic:     r.AwsSnsTopic,
 		Comment:         r.Comment,
-		RowAccessPolicy: r.RowAccessPolicy,
 		Tag:             r.Tag,
 	}
 	if r.CloudProviderParams != nil {
@@ -390,6 +404,12 @@ func (r *CreateUsingTemplateExternalTableRequest) toOpts() *CreateUsingTemplateE
 	if r.RawFileFormat != nil {
 		opts.RawFileFormat = &RawFileFormat{
 			Format: r.RawFileFormat.Format,
+		}
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
 		}
 	}
 	return opts

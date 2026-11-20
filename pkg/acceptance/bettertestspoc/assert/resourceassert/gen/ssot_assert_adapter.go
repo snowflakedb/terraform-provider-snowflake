@@ -54,7 +54,7 @@ func parameterDefsForObject(obj ssot.Object) []ssot.ParameterDef {
 		return nil
 	}
 	level := ssot.ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
-	parameters := ssotdefs.ParameterDefsForLevel(level)
+	parameters := ssot.FilterResourceParameters(ssotdefs.ParameterDefsForLevel(level), obj.ResourceParameters)
 	if len(parameters) == 0 {
 		panic(fmt.Sprintf("object %q: parameter attributes are generated but level %q has no parameters", obj.Name, level))
 	}

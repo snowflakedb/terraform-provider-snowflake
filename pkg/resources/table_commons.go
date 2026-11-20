@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -520,53 +519,82 @@ func aggregationPolicyTableUpdateRequests(d *schema.ResourceData) (set *sdk.Tabl
 	return set.WithForce(true), nil, nil
 }
 
-// handlePolicyReferences populates row_access_policy and aggregation_policy from the given policy references.
-func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.ResourceData) error {
-	var aggregationPolicies []map[string]any
-	var rowAccessPolicies []map[string]any
-	for _, p := range policyRefs {
-		policyName := sdk.NewSchemaObjectIdentifier(*p.PolicyDb, *p.PolicySchema, p.PolicyName)
-		switch p.PolicyKind {
-		case sdk.PolicyKindAggregationPolicy:
-			var entityKey []string
-			if p.RefArgColumnNames != nil {
-				entityKey = sdk.ParseCommaSeparatedStringArray(*p.RefArgColumnNames, true)
-			}
-			aggregationPolicies = append(aggregationPolicies, map[string]any{
-				"policy_name": policyName.FullyQualifiedName(),
-				"entity_key":  entityKey,
-			})
-		case sdk.PolicyKindRowAccessPolicy:
-			var on []string
-			if p.RefArgColumnNames != nil {
-				on = sdk.ParseCommaSeparatedStringArray(*p.RefArgColumnNames, true)
-			}
-			rowAccessPolicies = append(rowAccessPolicies, map[string]any{
-				"policy_name": policyName.FullyQualifiedName(),
-				"on":          on,
-			})
-		default:
-			log.Printf("[DEBUG] unexpected policy kind %v in policy references returned from Snowflake", p.PolicyKind)
+func joinPolicyCreateRequest(d *schema.ResourceData) (id sdk.SchemaObjectIdentifier, allowedJoinKeys []sdk.Column, ok bool, err error) {
+	v := d.Get("join_policy")
+	if len(v.([]any)) == 0 {
+		return sdk.SchemaObjectIdentifier{}, nil, false, nil
+	}
+	id, allowedJoinKeys, err = extractPolicyWithColumnsSet(v, "allowed_join_keys")
+	if err != nil {
+		return sdk.SchemaObjectIdentifier{}, nil, false, err
+	}
+	return id, allowedJoinKeys, true, nil
+}
+
+func joinPolicyTableUpdateRequests(d *schema.ResourceData) (set *sdk.TableSetJoinPolicyRequest, unset *sdk.TableUnsetJoinPolicyRequest, err error) {
+	v, ok := d.GetOk("join_policy")
+	if !ok {
+		return nil, sdk.NewTableUnsetJoinPolicyRequest(), nil
+	}
+	id, _, err := extractPolicyWithColumnsSet(v, "allowed_join_keys")
+	if err != nil {
+		return nil, nil, err
+	}
+	set = sdk.NewTableSetJoinPolicyRequest(id)
+	return set.WithForce(true), nil, nil
+}
+
+type rootLevelPolicyMapping struct {
+	field      string
+	columnsKey string
+}
+
+var rootLevelPolicyMappings = map[sdk.PolicyKind]rootLevelPolicyMapping{
+	sdk.PolicyKindRowAccessPolicy:   {field: "row_access_policy", columnsKey: "on"},
+	sdk.PolicyKindAggregationPolicy: {field: "aggregation_policy", columnsKey: "entity_key"},
+	sdk.PolicyKindJoinPolicy:        {field: "join_policy", columnsKey: "allowed_join_keys"},
+}
+
+// handlePolicyReferences populates the resource attributes for the allowed root-level policy kinds.
+func handlePolicyReferences(policyRefs []sdk.PolicyReference, d *schema.ResourceData, allowed ...sdk.PolicyKind) error {
+	byKind := make(map[sdk.PolicyKind][]map[string]any, len(allowed))
+	for _, kind := range allowed {
+		if _, ok := rootLevelPolicyMappings[kind]; !ok {
+			return fmt.Errorf("unsupported root-level policy kind %v", kind)
 		}
+		byKind[kind] = nil
 	}
-	if err := d.Set("aggregation_policy", aggregationPolicies); err != nil {
-		return err
+	for _, p := range policyRefs {
+		if _, ok := byKind[p.PolicyKind]; !ok {
+			continue
+		}
+		mapping := rootLevelPolicyMappings[p.PolicyKind]
+		var columns []string
+		if p.RefArgColumnNames != nil {
+			columns = sdk.ParseCommaSeparatedStringArray(*p.RefArgColumnNames, true)
+		}
+		byKind[p.PolicyKind] = append(byKind[p.PolicyKind], map[string]any{
+			"policy_name":      sdk.NewSchemaObjectIdentifier(*p.PolicyDb, *p.PolicySchema, p.PolicyName).FullyQualifiedName(),
+			mapping.columnsKey: columns,
+		})
 	}
-	if err := d.Set("row_access_policy", rowAccessPolicies); err != nil {
-		return err
+	for _, kind := range allowed {
+		if err := d.Set(rootLevelPolicyMappings[kind].field, byKind[kind]); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 // readRootLevelPolicies fetches the policy references for id in the given domain, populates
-// row_access_policy and aggregation_policy in the resource state, and returns the fetched references
+// the allowed root-level policy attributes in the resource state, and returns the fetched references
 // so callers can also derive column-level (masking/projection) policy state from them.
-func readRootLevelPolicies(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, domain sdk.PolicyEntityDomain, d *schema.ResourceData) ([]sdk.PolicyReference, error) {
+func readRootLevelPolicies(ctx context.Context, client *sdk.Client, id sdk.SchemaObjectIdentifier, domain sdk.PolicyEntityDomain, d *schema.ResourceData, allowed ...sdk.PolicyKind) ([]sdk.PolicyReference, error) {
 	policyRefs, err := client.PolicyReferences.GetForEntity(ctx, sdk.NewGetForEntityPolicyReferenceRequestCustom(id, domain))
 	if err != nil {
 		return nil, err
 	}
-	if err := handlePolicyReferences(policyRefs, d); err != nil {
+	if err := handlePolicyReferences(policyRefs, d, allowed...); err != nil {
 		return nil, err
 	}
 	return policyRefs, nil

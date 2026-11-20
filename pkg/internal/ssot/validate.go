@@ -1054,6 +1054,10 @@ func requirePresentClausesListed(obj Object, statement string, clause func(Attri
 		if !clause(attr).Present {
 			continue
 		}
+		// SkipUpdate attributes are altered outside SET/UNSET (for example ALTER ... SET AGGREGATION POLICY).
+		if attr.SkipUpdate && (statement == "SET" || statement == "UNSET") {
+			continue
+		}
 		if _, ok := seen[attr.Name]; !ok {
 			panic(fmt.Sprintf("object %q: attribute %q %s clause is not in the %s sequence", obj.Name, attr.Name, statement, statement))
 		}

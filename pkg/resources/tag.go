@@ -135,7 +135,7 @@ var tagSchema = map[string]*schema.Schema{
 	},
 }
 
-// TODO(SNOW-1348114, SNOW-1348110, SNOW-1348355, SNOW-1348353): remove after rework of external table, materialized view, stage and table
+// TODO(SNOW-1348110, SNOW-1348355, SNOW-1348353): remove after rework of external table, materialized view, and stage
 var tagReferenceSchema = &schema.Schema{
 	Type:        schema.TypeList,
 	Optional:    true,

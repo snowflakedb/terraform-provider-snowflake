@@ -22,7 +22,7 @@ const (
 	SqlKindObject SqlKind = "object"
 	// SqlKindPreexistingStruct is a nested query struct built from another SSOT attribute. See PreexistingStructOf.
 	SqlKindPreexistingStruct SqlKind = "preexisting_struct"
-	// SqlKindPredefined is a Go type the SDK already has, such as DataType. See PredefinedType.
+	// SqlKindPredefined is a Go type the SDK already has, such as datatypes.DataType. See PredefinedType.
 	SqlKindPredefined SqlKind = "predefined"
 	// SqlKindWrapString is a helper struct around a string: static SQL, the string, then static SQL. See WrapString.
 	SqlKindWrapString SqlKind = "wrap_string"
@@ -268,7 +268,7 @@ func TextKeyword(opts ...SqlClauseOption) SqlClause {
 	}, opts)
 }
 
-// PredefinedType is a field of Go type goType, which the SDK already has, such as DataType or []Column.
+// PredefinedType is a field of Go type goType, which the SDK already has, such as datatypes.DataType or []Column.
 // It is a parameter. NoEquals with no Sql prints the value. Sql is the text before it, and Required makes it
 // mandatory. The Go field name is FieldName, or the attribute name in camel case.
 func PredefinedType(goType string, opts ...SqlClauseOption) SqlClause {

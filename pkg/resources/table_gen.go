@@ -116,12 +116,15 @@ func ReadTableFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 		if diags := tableSetParametersFields(d, tableParameters); diags != nil {
 			return diags
 		}
-		if err = tableHandleExternalChangesExt(d, table, withExternalChangesMarking); err != nil {
+		if err = tableHandleExternalChanges(d, table, withExternalChangesMarking); err != nil {
 			return diag.FromErr(err)
 		}
 
 		if err = setStateToValuesFromConfig(d, tableSchema, []string{
-			"change_tracking",
+			"is_transient",
+			"enable_schema_evolution",
+			"error_logging",
+			"row_timestamp",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -195,7 +198,7 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 var tableCustomizeDiff = TrackingCustomDiffWrapper(resources.Table, customdiff.All(
 	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
 	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
-	ComputedIfAnyAttributeChanged(tableSchema, ShowOutputAttributeName, "name", "comment", "change_tracking"),
+	ComputedIfAnyAttributeChanged(tableSchema, ShowOutputAttributeName, "name", "comment", "change_tracking", "enable_schema_evolution", "row_timestamp", "error_logging"),
 	ComputedIfAnyAttributeChanged(tableParametersAttributesSchema, ParametersAttributeName, tableParametersFieldNames...),
 	ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 	tableParametersCustomDiff,
@@ -213,8 +216,37 @@ func tableApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateTabl
 	return errors.Join(
 		attributeMappedValueCreateBuilder(d, "cluster_by", request.WithClusterBy, toTableClusterBy),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		booleanStringAttributeCreateBuilder(d, "change_tracking", request.WithChangeTracking),
+		boolAttributeCreateBuilder(d, "change_tracking", request.WithChangeTracking),
+		booleanStringAttributeCreateBuilder(d, "enable_schema_evolution", request.WithEnableSchemaEvolution),
+		booleanStringAttributeCreateBuilder(d, "error_logging", request.WithErrorLogging),
+		booleanStringAttributeCreateBuilder(d, "row_timestamp", request.WithRowTimestamp),
+		singleBlockAttributeCreate(d, "aggregation_policy", request.WithAggregationPolicy, parseTableAggregationPolicy),
+		singleBlockAttributeCreate(d, "join_policy", request.WithJoinPolicy, parseTableJoinPolicy),
 	)
+}
+
+func parseTableAggregationPolicy(d *tfschema.ResourceData, prefix string) (sdk.TableAggregationPolicyRequest, error) {
+	policyName, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix + "policy_name").(string))
+	if err != nil {
+		return sdk.TableAggregationPolicyRequest{}, err
+	}
+	request := sdk.NewTableAggregationPolicyRequest(policyName)
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"entity_key", request.WithEntityKey, toTableColumn),
+	)
+	return *request, errs
+}
+
+func parseTableJoinPolicy(d *tfschema.ResourceData, prefix string) (sdk.TableJoinPolicyRequest, error) {
+	policyName, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix + "policy_name").(string))
+	if err != nil {
+		return sdk.TableJoinPolicyRequest{}, err
+	}
+	request := sdk.NewTableJoinPolicyRequest(policyName)
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"allowed_join_keys", request.WithAllowedJoinKeys, toTableColumn),
+	)
+	return *request, errs
 }
 
 // tableAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
@@ -228,12 +260,27 @@ func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequests, error) {
 	set, unsetContact, unset := sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest(), sdk.NewTableUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
-		booleanStringAttributeUpdateBuilder(d, "change_tracking", set.WithChangeTracking, unset.WithChangeTracking),
+		booleanAttributeUpdateSetOnlyBuilder(d, "change_tracking", set.WithChangeTracking),
+		booleanStringAttributeUpdateBuilder(d, "enable_schema_evolution", set.WithEnableSchemaEvolution, unset.WithEnableSchemaEvolution),
+		booleanStringAttributeUpdateBuilder(d, "error_logging", set.WithErrorLogging, unset.WithErrorLogging),
+		booleanStringAttributeUpdateBuilder(d, "row_timestamp", set.WithRowTimestamp, unset.WithRowTimestamp),
 	)
 	if errs != nil {
 		return nil, errs
 	}
 	return &tableAlterRequests{set: set, unsetContact: unsetContact, unset: unset}, nil
+}
+
+func tableHandleExternalChanges(d *tfschema.ResourceData, table *sdk.Table, withExternalChangesMarking bool) error {
+	if !withExternalChangesMarking {
+		return nil
+	}
+	return handleExternalChangesToObjectInShow(d,
+		outputMapping{"change_tracking", "change_tracking", table.ChangeTracking, table.ChangeTracking, nil},
+		outputMapping{"enable_schema_evolution", "enable_schema_evolution", table.EnableSchemaEvolution, booleanStringFromBool(table.EnableSchemaEvolution), nil},
+		outputMapping{"row_timestamp", "row_timestamp", table.RowTimestamp, booleanStringFromBool(table.RowTimestamp), nil},
+		outputMapping{"error_logging", "error_logging", table.ErrorLogging, booleanStringFromBool(table.ErrorLogging), nil},
+	)
 }
 
 func DeleteTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

@@ -79,7 +79,7 @@ func (s *CreateExternalTableRequest) WithComment(comment string) *CreateExternal
 	return s
 }
 
-func (s *CreateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateExternalTableRequest {
+func (s *CreateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy ExternalTableRowAccessPolicyRequest) *CreateExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -287,6 +287,19 @@ func NewRawFileFormatRequest(
 	return &s
 }
 
+func NewExternalTableRowAccessPolicyRequest(
+	name SchemaObjectIdentifier,
+) *ExternalTableRowAccessPolicyRequest {
+	s := ExternalTableRowAccessPolicyRequest{}
+	s.Name = name
+	return &s
+}
+
+func (s *ExternalTableRowAccessPolicyRequest) WithOn(on []string) *ExternalTableRowAccessPolicyRequest {
+	s.On = on
+	return s
+}
+
 func NewCreateWithManualPartitioningExternalTableRequest(
 	name SchemaObjectIdentifier,
 	location string,
@@ -342,7 +355,7 @@ func (s *CreateWithManualPartitioningExternalTableRequest) WithComment(comment s
 	return s
 }
 
-func (s *CreateWithManualPartitioningExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateWithManualPartitioningExternalTableRequest {
+func (s *CreateWithManualPartitioningExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy ExternalTableRowAccessPolicyRequest) *CreateWithManualPartitioningExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -417,7 +430,7 @@ func (s *CreateDeltaLakeExternalTableRequest) WithComment(comment string) *Creat
 	return s
 }
 
-func (s *CreateDeltaLakeExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateDeltaLakeExternalTableRequest {
+func (s *CreateDeltaLakeExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy ExternalTableRowAccessPolicyRequest) *CreateDeltaLakeExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
@@ -497,7 +510,7 @@ func (s *CreateUsingTemplateExternalTableRequest) WithComment(comment string) *C
 	return s
 }
 
-func (s *CreateUsingTemplateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateUsingTemplateExternalTableRequest {
+func (s *CreateUsingTemplateExternalTableRequest) WithRowAccessPolicy(rowAccessPolicy ExternalTableRowAccessPolicyRequest) *CreateUsingTemplateExternalTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }

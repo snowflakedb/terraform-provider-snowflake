@@ -195,7 +195,7 @@ func attachBlockCreate(scope createScope, src ssot.Attribute, dst *ResourceAttri
 }
 
 // constructorArg is the constructor argument for a required field with no CreateMapping.
-// A type the constructor cannot take panics for an object field. Inside a block it returns false, so the block is not parsed.
+// A type the constructor cannot take panics for an object field. Inside a block it returns false, so the block is not parsed, except for identifiers the constructor can parse.
 func constructorArg(scope createScope, src ssot.Attribute, resolved ResourceAttribute) (*CreateConstructorArg, bool) {
 	if src.CreateMapping != nil || !src.Required {
 		return nil, false
@@ -208,10 +208,9 @@ func constructorArg(scope createScope, src ssot.Attribute, resolved ResourceAttr
 		cast = "string"
 	case ssot.AttrIdentifier:
 		// An account object name is one string. Another identifier is a typed constructor argument, parsed from the string.
-		// Inside a block, nested identifiers stay handwritten.
 		if src.IdentifierType == "AccountObjectIdentifier" {
 			cast = "string"
-		} else if src.IdentifierType != "" && !scope.inBlock {
+		} else if src.IdentifierType != "" {
 			cast = "string"
 			parser = "sdk.Parse" + src.IdentifierType
 		}

@@ -1,28 +1,39 @@
-resource "snowflake_schema" "schema" {
-  database            = "database"
-  name                = "schema"
-  data_retention_days = 1
+# Basic - only required fields
+resource "snowflake_table" "basic" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "TABLE"
+
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+  }
 }
 
-resource "snowflake_sequence" "sequence" {
-  database = snowflake_schema.schema.database
-  schema   = snowflake_schema.schema.name
-  name     = "sequence"
-}
+# Complete - every configurable field set. column.default and column.identity are
+# mutually exclusive, and the three default kinds (constant, expression, sequence)
+# are mutually exclusive, so each is shown on a different column.
+resource "snowflake_table" "complete" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "TABLE"
+  comment  = "A table."
 
-resource "snowflake_table" "table" {
-  database                    = snowflake_schema.schema.database
-  schema                      = snowflake_schema.schema.name
-  name                        = "table"
-  comment                     = "A table."
-  cluster_by                  = ["to_date(DATE)"]
-  data_retention_time_in_days = snowflake_schema.schema.data_retention_time_in_days
-  change_tracking             = false
+  is_transient                    = "true"
+  cluster_by                      = ["to_date(DATE)"]
+  change_tracking                 = true
+  enable_schema_evolution         = "true"
+  data_retention_time_in_days     = 1
+  max_data_extension_time_in_days = 30
+  default_ddl_collation           = "en-ci"
+  error_logging                   = "true"
+  row_timestamp                   = "true"
 
   column {
     name     = "id"
-    type     = "int"
+    type     = "NUMBER(38,0)"
     nullable = true
+    comment  = "sequence-backed id"
 
     default {
       sequence = snowflake_sequence.sequence.fully_qualified_name
@@ -45,11 +56,22 @@ resource "snowflake_table" "table" {
     type     = "text"
     nullable = false
     collate  = "en-ci"
+    comment  = "collated text"
+
+    default {
+      constant = "pending"
+    }
+
+    masking_policy = "DATABASE.SCHEMA.MASKING_POLICY"
   }
 
   column {
     name = "DATE"
     type = "TIMESTAMP_NTZ(9)"
+
+    default {
+      expression = "CURRENT_TIMESTAMP()"
+    }
   }
 
   column {
@@ -57,4 +79,25 @@ resource "snowflake_table" "table" {
     type    = "VARIANT"
     comment = "extra data"
   }
+
+  row_access_policy {
+    policy_name = "DATABASE.SCHEMA.ROW_ACCESS_POLICY"
+    on          = ["id"]
+  }
+
+  aggregation_policy {
+    policy_name = "DATABASE.SCHEMA.AGGREGATION_POLICY"
+    entity_key  = ["id"]
+  }
+
+  join_policy {
+    policy_name       = "DATABASE.SCHEMA.JOIN_POLICY"
+    allowed_join_keys = ["id"]
+  }
+}
+
+resource "snowflake_sequence" "sequence" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "sequence"
 }
