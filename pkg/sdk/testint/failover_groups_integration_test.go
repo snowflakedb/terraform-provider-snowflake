@@ -540,6 +540,12 @@ func TestInt_FailoverGroups(t *testing.T) {
 	})
 
 	// SHOW prints the read-only mode of a primary failover group in is_primary_read_only (the documentation calls the column read_only).
+	// The read-only tests use only the object types limited with an allowed_* list (createPrimary has DATABASES). The read-only mode of a group
+	// with ROLES or WAREHOUSES blocks creating them in the whole account, and the tests running in parallel fail, e.g.:
+	//   500051 (2F003): Cannot create role because roles are part of a read-only replication or failover group in this account.
+	//   500053 (2F003): Cannot CREATE WAREHOUSE because WAREHOUSE is part of a read-only replication or failover group in this account.
+	// SECURITY INTEGRATIONS cannot be used there either, because Snowflake requires ROLES to replicate them, e.g.:
+	//   500052 (55000): ALLOWED_INTEGRATION_TYPES contains SECURITY INTEGRATIONS but OBJECT_TYPES does not include ROLES. ROLES is required for replicating SECURITY INTEGRATIONS.
 	t.Run("alter: read only", func(t *testing.T) {
 		id := createPrimary(t)
 		assertThatObject(t, objectassert.FailoverGroup(t, id).HasIsPrimaryReadOnly(false))
