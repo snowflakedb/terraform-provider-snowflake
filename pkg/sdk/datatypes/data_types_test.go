@@ -877,9 +877,28 @@ func Test_ParseDataType_Object(t *testing.T) {
 		negative("OBJECT(38, 0)"),
 		negative("OBJECT(38, 2)"),
 		negative("OBJECT(38)"),
-		negative("OBJECT()"),
 		negative("O B J E C T"),
+		negative("OBJECTS"),
 		negative("other"),
+		// structured
+		negative("OBJECT("),
+		negative("OBJECT)"),
+		negative("OBJECT(a NUMBER"),
+		negative("OBJECT a NUMBER)"),
+		negative("OBJECT(a NUMBER))"),
+		negative("OBJECT(a)"),
+		negative("OBJECT(NUMBER)"),
+		negative("OBJECT(a NOT NULL)"),
+		negative("OBJECT(a other)"),
+		negative("OBJECT(a NUMBER(x))"),
+		negative("OBJECT(a NUMBER,)"),
+		negative("OBJECT(, a NUMBER)"),
+		negative("OBJECT(a NUMBER b VARCHAR)"),
+		negative("OBJECT(a NUMBER NULL)"),
+		negative("OBJECT(a NUMBER NOT NULL NOT NULL)"),
+		negative("OBJECT(a TABLE(b NUMBER))"),
+		negative("OBJECT(a OBJECT(b other))"),
+		negative("ARRAY(OBJECT(a))"),
 	}
 
 	for _, tc := range positiveTestCases {
@@ -890,6 +909,8 @@ func Test_ParseDataType_Object(t *testing.T) {
 			require.IsType(t, &ObjectDataType{}, parsed)
 
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*ObjectDataType).underlyingType)
+			assert.False(t, parsed.(*ObjectDataType).structured)
+			assert.Nil(t, parsed.(*ObjectDataType).fields)
 
 			assert.Equal(t, ObjectLegacyDataType, parsed.ToLegacyDataTypeSql())
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.ToSql())
@@ -903,6 +924,141 @@ func Test_ParseDataType_Object(t *testing.T) {
 
 			require.Error(t, err)
 			require.Nil(t, parsed)
+		})
+	}
+}
+
+func Test_ParseDataType_StructuredObject(t *testing.T) {
+	type field struct {
+		Name    string
+		Type    string
+		NotNull bool
+	}
+	type test struct {
+		input             string
+		expectedFields    []field
+		expectedSql       string
+		expectedCanonical string
+	}
+
+	positiveTestCases := []test{
+		{
+			input:             "OBJECT()",
+			expectedFields:    []field{},
+			expectedSql:       "OBJECT()",
+			expectedCanonical: "OBJECT()",
+		},
+		{
+			input:             "object()",
+			expectedFields:    []field{},
+			expectedSql:       "OBJECT()",
+			expectedCanonical: "OBJECT()",
+		},
+		{
+			input:             "OBJECT (  	 )",
+			expectedFields:    []field{},
+			expectedSql:       "OBJECT()",
+			expectedCanonical: "OBJECT()",
+		},
+		{
+			input:             "OBJECT(a NUMBER)",
+			expectedFields:    []field{{"a", "NUMBER", false}},
+			expectedSql:       "OBJECT(a NUMBER(38, 0))",
+			expectedCanonical: "OBJECT(a NUMBER(38,0))",
+		},
+		{
+			input:             "OBJECT(A NUMBER)",
+			expectedFields:    []field{{"A", "NUMBER", false}},
+			expectedSql:       "OBJECT(A NUMBER(38, 0))",
+			expectedCanonical: "OBJECT(A NUMBER(38,0))",
+		},
+		{
+			input:             "object(MixedCase int)",
+			expectedFields:    []field{{"MixedCase", "INT", false}},
+			expectedSql:       "OBJECT(MixedCase INT)",
+			expectedCanonical: "OBJECT(MixedCase NUMBER(38,0))",
+		},
+		{
+			input:             "OBJECT(str VARCHAR NOT NULL, num NUMBER(38,0))",
+			expectedFields:    []field{{"str", "VARCHAR", true}, {"num", "NUMBER(38,0)", false}},
+			expectedSql:       fmt.Sprintf("OBJECT(str VARCHAR(%d) NOT NULL, num NUMBER(38, 0))", DefaultVarcharLength),
+			expectedCanonical: fmt.Sprintf("OBJECT(str VARCHAR(%d) NOT NULL, num NUMBER(38,0))", DefaultVarcharLength),
+		},
+		{
+			input:             "OBJECT(city VARCHAR(100), zipcode NUMBER(10, 2) not null)",
+			expectedFields:    []field{{"city", "VARCHAR(100)", false}, {"zipcode", "NUMBER(10, 2)", true}},
+			expectedSql:       "OBJECT(city VARCHAR(100), zipcode NUMBER(10, 2) NOT NULL)",
+			expectedCanonical: "OBJECT(city VARCHAR(100), zipcode NUMBER(10,2) NOT NULL)",
+		},
+		{
+			input:             "  OBJECT  (  a   DOUBLE PRECISION   NOT   NULL ,	b  TIMESTAMP WITH LOCAL TIME ZONE(3)  )  ",
+			expectedFields:    []field{{"a", "DOUBLE PRECISION", true}, {"b", "TIMESTAMP WITH LOCAL TIME ZONE(3)", false}},
+			expectedSql:       "OBJECT(a DOUBLE PRECISION NOT NULL, b TIMESTAMP WITH LOCAL TIME ZONE(3))",
+			expectedCanonical: "OBJECT(a FLOAT NOT NULL, b TIMESTAMP_LTZ(3))",
+		},
+		{
+			input:             "OBJECT(a VARIANT, b ARRAY, c OBJECT)",
+			expectedFields:    []field{{"a", "VARIANT", false}, {"b", "ARRAY", false}, {"c", "OBJECT", false}},
+			expectedSql:       "OBJECT(a VARIANT, b ARRAY, c OBJECT)",
+			expectedCanonical: "OBJECT(a VARIANT, b ARRAY, c OBJECT)",
+		},
+		{
+			input:             "OBJECT(v VECTOR(FLOAT, 256))",
+			expectedFields:    []field{{"v", "VECTOR(FLOAT, 256)", false}},
+			expectedSql:       "OBJECT(v VECTOR(FLOAT, 256))",
+			expectedCanonical: "OBJECT(v VECTOR(FLOAT, 256))",
+		},
+		// nested structured types
+		{
+			input:             "OBJECT(city VARCHAR(10), zipcode NUMBER, val ARRAY(BOOLEAN))",
+			expectedFields:    []field{{"city", "VARCHAR(10)", false}, {"zipcode", "NUMBER", false}, {"val", "ARRAY(BOOLEAN)", false}},
+			expectedSql:       "OBJECT(city VARCHAR(10), zipcode NUMBER(38, 0), val ARRAY(BOOLEAN))",
+			expectedCanonical: "OBJECT(city VARCHAR(10), zipcode NUMBER(38,0), val ARRAY(BOOLEAN))",
+		},
+		{
+			input:             "OBJECT(a ARRAY(INT NOT NULL) NOT NULL)",
+			expectedFields:    []field{{"a", "ARRAY(INT NOT NULL)", true}},
+			expectedSql:       "OBJECT(a ARRAY(INT NOT NULL) NOT NULL)",
+			expectedCanonical: "OBJECT(a ARRAY(NUMBER(38,0) NOT NULL) NOT NULL)",
+		},
+		{
+			input:             "OBJECT(inner OBJECT(x INT, y INT NOT NULL), empty OBJECT())",
+			expectedFields:    []field{{"inner", "OBJECT(x INT, y INT NOT NULL)", false}, {"empty", "OBJECT()", false}},
+			expectedSql:       "OBJECT(inner OBJECT(x INT, y INT NOT NULL), empty OBJECT())",
+			expectedCanonical: "OBJECT(inner OBJECT(x NUMBER(38,0), y NUMBER(38,0) NOT NULL), empty OBJECT())",
+		},
+		// keys are case-sensitive
+		{
+			input:             "OBJECT(a INT, A INT)",
+			expectedFields:    []field{{"a", "INT", false}, {"A", "INT", false}},
+			expectedSql:       "OBJECT(a INT, A INT)",
+			expectedCanonical: "OBJECT(a NUMBER(38,0), A NUMBER(38,0))",
+		},
+	}
+
+	for _, tc := range positiveTestCases {
+		t.Run(tc.input, func(t *testing.T) {
+			parsed, err := ParseDataType(tc.input)
+
+			require.NoError(t, err)
+			require.IsType(t, &ObjectDataType{}, parsed)
+
+			objectType := parsed.(*ObjectDataType)
+			assert.Equal(t, ObjectLegacyDataType, objectType.underlyingType)
+			assert.True(t, objectType.structured)
+			require.Len(t, objectType.fields, len(tc.expectedFields))
+			for i, f := range tc.expectedFields {
+				parsedField := objectType.fields[i]
+				assert.Equal(t, f.Name, parsedField.name)
+				assert.Equal(t, f.NotNull, parsedField.notNull)
+				expectedType, err := ParseDataType(f.Type)
+				require.NoError(t, err)
+				assert.Equal(t, expectedType.ToSql(), parsedField.dataType.ToSql())
+			}
+
+			assert.Equal(t, ObjectLegacyDataType, parsed.ToLegacyDataTypeSql())
+			assert.Equal(t, tc.expectedSql, parsed.ToSql())
+			assert.Equal(t, tc.expectedCanonical, parsed.Canonical())
 		})
 	}
 }
@@ -1004,7 +1160,6 @@ func Test_ParseDataType_StructuredArray(t *testing.T) {
 		{input: "ARRAY(BOOLEAN)", expectedElementType: "BOOLEAN", expectedSql: "ARRAY(BOOLEAN)", expectedCanonical: "ARRAY(BOOLEAN)"},
 		{input: "ARRAY(VARIANT)", expectedElementType: "VARIANT", expectedSql: "ARRAY(VARIANT)", expectedCanonical: "ARRAY(VARIANT)"},
 		{input: "ARRAY(OBJECT)", expectedElementType: "OBJECT", expectedSql: "ARRAY(OBJECT)", expectedCanonical: "ARRAY(OBJECT)"},
-		{input: "ARRAY(GEOGRAPHY)", expectedElementType: "GEOGRAPHY", expectedSql: "ARRAY(GEOGRAPHY)", expectedCanonical: "ARRAY(GEOGRAPHY)"},
 		{input: "ARRAY(VECTOR(INT, 3))", expectedElementType: "VECTOR(INT, 3)", expectedSql: "ARRAY(VECTOR(INT, 3))", expectedCanonical: "ARRAY(VECTOR(INT, 3))"},
 		{input: "ARRAY(NUMBER NOT NULL)", expectedElementType: "NUMBER", expectedElementNotNull: true, expectedSql: "ARRAY(NUMBER(38, 0) NOT NULL)", expectedCanonical: "ARRAY(NUMBER(38,0) NOT NULL)"},
 		{input: "array(number not null)", expectedElementType: "NUMBER", expectedElementNotNull: true, expectedSql: "ARRAY(NUMBER(38, 0) NOT NULL)", expectedCanonical: "ARRAY(NUMBER(38,0) NOT NULL)"},
@@ -1016,6 +1171,9 @@ func Test_ParseDataType_StructuredArray(t *testing.T) {
 		{input: "ARRAY(ARRAY(NUMBER))", expectedElementType: "ARRAY(NUMBER)", expectedSql: "ARRAY(ARRAY(NUMBER(38, 0)))", expectedCanonical: "ARRAY(ARRAY(NUMBER(38,0)))"},
 		{input: "ARRAY(ARRAY(INT NOT NULL) NOT NULL)", expectedElementType: "ARRAY(INT NOT NULL)", expectedElementNotNull: true, expectedSql: "ARRAY(ARRAY(INT NOT NULL) NOT NULL)", expectedCanonical: "ARRAY(ARRAY(NUMBER(38,0) NOT NULL) NOT NULL)"},
 		{input: "ARRAY(ARRAY(ARRAY(VARCHAR(5))))", expectedElementType: "ARRAY(ARRAY(VARCHAR(5)))", expectedSql: "ARRAY(ARRAY(ARRAY(VARCHAR(5))))", expectedCanonical: "ARRAY(ARRAY(ARRAY(VARCHAR(5))))"},
+		// structured objects as the element type (keys keep their case)
+		{input: "ARRAY(OBJECT())", expectedElementType: "OBJECT()", expectedSql: "ARRAY(OBJECT())", expectedCanonical: "ARRAY(OBJECT())"},
+		{input: "array(object(city varchar(10), Zip int not null) not null)", expectedElementType: "OBJECT(city VARCHAR(10), Zip INT NOT NULL)", expectedElementNotNull: true, expectedSql: "ARRAY(OBJECT(city VARCHAR(10), Zip INT NOT NULL) NOT NULL)", expectedCanonical: "ARRAY(OBJECT(city VARCHAR(10), Zip NUMBER(38,0) NOT NULL) NOT NULL)"},
 	}
 
 	for _, tc := range positiveTestCases {
@@ -1238,6 +1396,7 @@ func Test_ParseDataType_Table(t *testing.T) {
 		{input: "TABLE(A VARCHAR(100), B NUMBER(5,2))", expectedColumns: []column{{"A", "VARCHAR(100)"}, {"B", "NUMBER(5,2)"}}},
 		{input: "TABLE(A VECTOR(FLOAT, 256), B NUMBER)", expectedColumns: []column{{"A", "VECTOR(FLOAT, 256)"}, {"B", "NUMBER"}}},
 		{input: "TABLE(A ARRAY(NUMBER(38,0) NOT NULL), B ARRAY)", expectedColumns: []column{{"A", "ARRAY(NUMBER(38,0) NOT NULL)"}, {"B", "ARRAY"}}},
+		{input: "TABLE(A OBJECT(city VARCHAR, zip NUMBER NOT NULL), B OBJECT)", expectedColumns: []column{{"A", "OBJECT(city VARCHAR, zip NUMBER NOT NULL)"}, {"B", "OBJECT"}}},
 		// type-only columns (abbreviated argument/grant form)
 		{input: "TABLE(DATE)", expectedColumns: []column{{"", "DATE"}}},
 		{input: "TABLE(INT)", expectedColumns: []column{{"", "INT"}}},
@@ -1416,6 +1575,24 @@ func Test_AreTheSame(t *testing.T) {
 		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY)", expectedOutcome: false},
 		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY(NUMBER NOT NULL))", expectedOutcome: false},
 		{d1: "ARRAY(NUMBER)", d2: "NUMBER", expectedOutcome: false},
+		{d1: "OBJECT", d2: "OBJECT", expectedOutcome: true},
+		{d1: "OBJECT", d2: "OBJECT()", expectedOutcome: false},
+		{d1: "OBJECT()", d2: "OBJECT()", expectedOutcome: true},
+		{d1: "OBJECT()", d2: "OBJECT(a NUMBER)", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER(38,0))", expectedOutcome: true},
+		{d1: "OBJECT(a INT)", d2: "OBJECT(a NUMBER)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(A NUMBER)", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(b NUMBER)", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a VARCHAR)", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER(20, 2))", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER NOT NULL)", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER, b VARCHAR)", d2: "OBJECT(a NUMBER, b VARCHAR)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER, b VARCHAR)", d2: "OBJECT(b VARCHAR, a NUMBER)", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER, b VARCHAR)", expectedOutcome: false},
+		{d1: "OBJECT(a OBJECT(b INT))", d2: "OBJECT(a OBJECT(b NUMBER(38,0)))", expectedOutcome: true},
+		{d1: "OBJECT(a OBJECT(b INT))", d2: "OBJECT(a OBJECT)", expectedOutcome: false},
+		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(a NUMBER))", expectedOutcome: true},
+		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(A INT))", expectedOutcome: false},
 	}
 
 	for _, tc := range testCases {
@@ -1525,6 +1702,25 @@ func Test_AreDefinitelyDifferent(t *testing.T) {
 		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY)", expectedOutcome: true},
 		{d1: "ARRAY(ARRAY(NUMBER))", d2: "ARRAY(ARRAY(NUMBER NOT NULL))", expectedOutcome: true},
 		{d1: "ARRAY(NUMBER)", d2: "NUMBER", expectedOutcome: true},
+		{d1: "OBJECT", d2: "OBJECT", expectedOutcome: false},
+		{d1: "OBJECT", d2: "OBJECT()", expectedOutcome: true},
+		{d1: "OBJECT()", d2: "OBJECT", expectedOutcome: true},
+		{d1: "OBJECT()", d2: "OBJECT()", expectedOutcome: false},
+		{d1: "OBJECT()", d2: "OBJECT(a NUMBER)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER(38,0))", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER(20, 2))", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER(20, 1))", d2: "OBJECT(a NUMBER(20, 2))", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(A NUMBER)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(b NUMBER)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a VARCHAR)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER NOT NULL)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER, b VARCHAR)", d2: "OBJECT(a NUMBER, b VARCHAR(100))", expectedOutcome: false},
+		{d1: "OBJECT(a NUMBER, b VARCHAR)", d2: "OBJECT(b VARCHAR, a NUMBER)", expectedOutcome: true},
+		{d1: "OBJECT(a NUMBER)", d2: "OBJECT(a NUMBER, b VARCHAR)", expectedOutcome: true},
+		{d1: "OBJECT(a OBJECT(b INT))", d2: "OBJECT(a OBJECT(b NUMBER(38,0)))", expectedOutcome: false},
+		{d1: "OBJECT(a OBJECT(b INT))", d2: "OBJECT(a OBJECT)", expectedOutcome: true},
+		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(a NUMBER))", expectedOutcome: false},
+		{d1: "ARRAY(OBJECT(a INT))", d2: "ARRAY(OBJECT(A INT))", expectedOutcome: true},
 	}
 
 	for _, tc := range testCases {
@@ -1595,6 +1791,12 @@ func Test_ToSqlWithoutUnknowns(t *testing.T) {
 		{dt: "ARRAY(VARCHAR(15))"},
 		{dt: "ARRAY(ARRAY)"},
 		{dt: "ARRAY(ARRAY(TIMESTAMPLTZ) NOT NULL)"},
+		{dt: "OBJECT"},
+		{dt: "OBJECT()"},
+		{dt: "OBJECT(a NUMBER)"},
+		{dt: "OBJECT(str VARCHAR NOT NULL, num NUMBER(10, 2))"},
+		{dt: "OBJECT(a ARRAY(INT NOT NULL), b OBJECT(c TIME))"},
+		{dt: "ARRAY(OBJECT(City VARCHAR(10)) NOT NULL)"},
 	}
 
 	for _, tc := range testCases {

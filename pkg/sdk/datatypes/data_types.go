@@ -70,11 +70,11 @@ func ParseDataType(raw string) (DataType, error) {
 	if slices.Contains(VariantDataTypeSynonyms, dataTypeRaw) {
 		return parseVariantDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
 	}
-	if slices.Contains(ObjectDataTypeSynonyms, dataTypeRaw) {
-		return parseObjectDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
+	if idx := slices.IndexFunc(ObjectDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
+		return parseObjectDataTypeRaw(sanitizedDataTypeRaw{strings.TrimSpace(raw), ObjectDataTypeSynonyms[idx]})
 	}
 	if idx := slices.IndexFunc(ArrayDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseArrayDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, ArrayDataTypeSynonyms[idx]})
+		return parseArrayDataTypeRaw(sanitizedDataTypeRaw{strings.TrimSpace(raw), ArrayDataTypeSynonyms[idx]})
 	}
 	if slices.Contains(GeographyDataTypeSynonyms, dataTypeRaw) {
 		return parseGeographyDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
@@ -127,7 +127,7 @@ func AreTheSame(a DataType, b DataType) bool {
 	case *NumberDataType:
 		return castSuccessfully(v, b, areNumberDataTypesTheSame)
 	case *ObjectDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
+		return castSuccessfully(v, b, areObjectDataTypesTheSame)
 	case *TableDataType:
 		return castSuccessfully(v, b, areTableDataTypesTheSame)
 	case *TextDataType:
@@ -207,7 +207,7 @@ func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	case *NumberDataType:
 		return castSuccessfully(v, b, areNumberDataTypesDefinitelyDifferent)
 	case *ObjectDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
+		return castSuccessfully(v, b, areObjectDataTypesDefinitelyDifferent)
 	case *TableDataType:
 		return castSuccessfully(v, b, areTableDataTypesDefinitelyDifferent)
 	case *TextDataType:
