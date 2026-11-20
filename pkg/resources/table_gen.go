@@ -9,8 +9,10 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -43,6 +45,24 @@ func Table() *tfschema.Resource {
 	}
 }
 
+func ImportTable(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
+	id, err := tableParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	table, err := meta.(*provider.Context).Client.Tables.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := tableSetFieldsNotSetByReadExt(d, id, table, importPermissiveMode); err != nil {
+		return nil, err
+	}
+	return []*tfschema.ResourceData{d}, nil
+}
+
 func CreateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
 	id, err := tableParseIdFromConfig(d)
 	if err != nil {
@@ -56,6 +76,10 @@ func CreateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 
 	if err := tableApplyCreateOptionals(d, req); err != nil {
 		return diag.FromErr(err)
+	}
+
+	if diags := tableApplyParametersCreate(d, req); diags != nil {
+		return diags
 	}
 
 	if err := meta.(*provider.Context).Client.Tables.Create(ctx, req); err != nil {
@@ -73,17 +97,38 @@ func ReadTableFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		table, diags := tableShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		table, err := meta.(*provider.Context).Client.Tables.ShowByIDSafely(ctx, id)
+		if err != nil {
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeTable, id, err)
 		}
 		tableDetails, err := tableDescribeInSdkExt(ctx, meta, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		rawTableParameters, err := meta.(*provider.Context).Client.Tables.ShowParameters(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		tableParameters, err := sdk.ToTableParametersDetails(rawTableParameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := tableSetParametersFields(d, tableParameters); diags != nil {
+			return diags
+		}
+		if err = tableHandleExternalChangesExt(d, table, withExternalChangesMarking); err != nil {
+			return diag.FromErr(err)
+		}
 
+		if err = setStateToValuesFromConfig(d, tableSchema, []string{
+			"change_tracking",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.TableToSchema(table)}),
 			tableSetDescribeOutputExt(d, id, tableDetails, nil, withExternalChangesMarking),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.TableParametersToSchema(rawTableParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			tableSetConfigFieldsExt(ctx, d, meta, table),
 		)
@@ -125,6 +170,9 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if diags := tableApplyParametersChanges(d, setUnset.set, setUnset.unset); diags != nil {
+		return diags
+	}
 	if !reflect.DeepEqual(*setUnset.set, *sdk.NewTableSetRequest()) {
 		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*setUnset.set)); err != nil {
 			return diag.FromErr(err)
@@ -147,7 +195,10 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 var tableCustomizeDiff = TrackingCustomDiffWrapper(resources.Table, customdiff.All(
 	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
 	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+	ComputedIfAnyAttributeChanged(tableSchema, ShowOutputAttributeName, "name", "comment", "change_tracking"),
+	ComputedIfAnyAttributeChanged(tableParametersAttributesSchema, ParametersAttributeName, tableParametersFieldNames...),
 	ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
+	tableParametersCustomDiff,
 ))
 
 func tableParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
@@ -162,8 +213,7 @@ func tableApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateTabl
 	return errors.Join(
 		attributeMappedValueCreateBuilder(d, "cluster_by", request.WithClusterBy, toTableClusterBy),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		intAttributeWithSpecialDefaultCreateBuilder(d, "data_retention_time_in_days", request.WithDataRetentionTimeInDays),
-		boolAttributeCreateBuilder(d, "change_tracking", request.WithChangeTracking),
+		booleanStringAttributeCreateBuilder(d, "change_tracking", request.WithChangeTracking),
 	)
 }
 
@@ -178,8 +228,7 @@ func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequests, error) {
 	set, unsetContact, unset := sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest(), sdk.NewTableUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
-		intAttributeWithSpecialDefaultUpdateBuilder(d, "data_retention_time_in_days", set.WithDataRetentionTimeInDays, unset.WithDataRetentionTimeInDays),
-		booleanAttributeUpdateSetOnlyBuilder(d, "change_tracking", set.WithChangeTracking),
+		booleanStringAttributeUpdateBuilder(d, "change_tracking", set.WithChangeTracking, unset.WithChangeTracking),
 	)
 	if errs != nil {
 		return nil, errs

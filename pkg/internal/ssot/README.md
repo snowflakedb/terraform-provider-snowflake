@@ -28,6 +28,7 @@ or the Terraform schema it ends up in. Keep this in mind when adding a feature:
 - `Show` / `Describe` - output columns ([SHOW and DESCRIBE](#show-and-describe))
 - `Generators` - which generators may consume those lists ([Generators](#generators))
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
+- `ResourceParameters` - the subset of the object's parameter catalog that is a resource attribute. Empty uses the full `ParameterLevel()` catalog. A non-empty list is still emitted in catalog order. `ValidateObject` panics when an entry is missing `SqlName`, is duplicated, or is not in that catalog.
 - `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`
 - `VariantOf` - base of this role. `Name` starts with the base `Name`, and `NamePlural` matches the base, so they share one SDK interface. The variant also shares the base object's SDK parameter details, SET/UNSET requests, and `ParameterType` names. Parameter catalog membership still comes from the variant's own `Name`
 - `VariantEntityCreateName` - optional SQL object words for a variant CREATE. Empty uses `VariantOf.ObjectType` (`WarehouseAdaptive` emits `WAREHOUSE`). Set it when the words differ, as interactive CREATE does with `INTERACTIVE WAREHOUSE`
@@ -628,6 +629,7 @@ resources. `ExtCall` keeps the ext `SchemaVersion` and `StateUpgraders` pair. `V
 `TrackingCustomDiffWrapper` around `customdiff.All`. Call order is the hierarchy-rename ForceNew workaround for
 `database` and `schema` when the generated hierarchy rename moves a schema object, then `show_output`, `describe_output`,
 the parameters computed-if, `fully_qualified_name`, then `<prefix>ParametersCustomDiff` when that hook is present.
+`ResourceParameters` filters those generated parameter attributes (schema, field names, create, update, read, custom-diff) to a subset of `ParameterDefsForLevel`. Empty keeps the full catalog. The computed `parameters` output is still the whole SHOW PARAMETERS result.
 `AdditionalCustomizeDiffs` on the object is an ordered list of `schema.CustomizeDiffFunc` names in package resources.
 Those names are appended after the generated calls. The function bodies stay in the ext file. `RecreateWhenResourceBoolFieldChangedExternally("is_primary", true)` is an example: a replica promoted outside Terraform recreates the resource. `ValidateObject` panics
 when the list is non-empty without `WithCustomizeDiff(Generated())`, when an entry is empty, or when an entry is not

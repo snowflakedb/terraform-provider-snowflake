@@ -56,11 +56,14 @@ type Object struct {
 	// VariantBaseOnly marks an object that only is the base of its variants and is not a Terraform resource itself:
 	// the variants are separate resources and the base owns what they share, such as the SDK interface.
 	// The resource generator skips it.
-	VariantBaseOnly          bool
-	Attributes               []Attribute
-	ComputedAttributes       []Attribute // Read-only resource state; never used for CREATE/ALTER.
-	AttributesModification   bool
-	ResourceHooks            []ResourceHookOption
+	VariantBaseOnly        bool
+	Attributes             []Attribute
+	ComputedAttributes     []Attribute // Read-only resource state; never used for CREATE/ALTER.
+	AttributesModification bool
+	ResourceHooks          []ResourceHookOption
+	// ResourceParameters is the subset of the object's parameter catalog that is a resource attribute.
+	// Empty uses the full ParameterLevel() catalog. A non-empty list is still emitted in catalog order.
+	ResourceParameters       []ParameterDef
 	DataSourceHooks          []DataSourceHookOption // Exceptions to the defaults of EffectiveDataSourceHooks.
 	Generators               []GeneratorOption
 	SchemaStateUpgraders     []StateUpgraderFunc

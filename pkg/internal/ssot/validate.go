@@ -111,6 +111,7 @@ func ValidateObject(obj Object) {
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 	validateCustomizeDiff(obj)
+	validateResourceParameters(obj)
 	validateSetAfterCreate(obj)
 	validateIdentityNamesCreatedBySnowflake(obj)
 	validateSuspendForAlter(obj)
@@ -248,6 +249,23 @@ func validateCustomizeDiff(obj Object) {
 	}
 	if len(obj.AdditionalCustomizeDiffs) > 0 && !hooks.CustomizeDiff.Generate {
 		panic(fmt.Sprintf("object %q: AdditionalCustomizeDiffs require WithCustomizeDiff(Generated())", obj.Name))
+	}
+}
+
+func validateResourceParameters(obj Object) {
+	level := obj.ParameterLevel()
+	seen := make(map[string]struct{}, len(obj.ResourceParameters))
+	for _, p := range obj.ResourceParameters {
+		if p.SqlName == "" {
+			panic(fmt.Sprintf("object %q: ResourceParameters entry has empty SqlName", obj.Name))
+		}
+		if _, dup := seen[p.SqlName]; dup {
+			panic(fmt.Sprintf("object %q: duplicate ResourceParameters entry %q", obj.Name, p.SqlName))
+		}
+		seen[p.SqlName] = struct{}{}
+		if !slices.Contains(p.Levels, level) {
+			panic(fmt.Sprintf("object %q: ResourceParameters entry %q is not in the %s catalog", obj.Name, p.SqlName, level))
+		}
 	}
 }
 
