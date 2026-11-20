@@ -17,31 +17,42 @@ Resource used to manage tables. For more information, check [CREATE TABLE docume
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
-resource "snowflake_schema" "schema" {
-  database            = "database"
-  name                = "schema"
-  data_retention_days = 1
+# Basic - only required fields
+resource "snowflake_table" "basic" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "TABLE"
+
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+  }
 }
 
-resource "snowflake_sequence" "sequence" {
-  database = snowflake_schema.schema.database
-  schema   = snowflake_schema.schema.name
-  name     = "sequence"
-}
+# Complete - every configurable field set. column.default and column.identity are
+# mutually exclusive, and the three default kinds (constant, expression, sequence)
+# are mutually exclusive, so each is shown on a different column.
+resource "snowflake_table" "complete" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "TABLE"
+  comment  = "A table."
 
-resource "snowflake_table" "table" {
-  database                    = snowflake_schema.schema.database
-  schema                      = snowflake_schema.schema.name
-  name                        = "table"
-  comment                     = "A table."
-  cluster_by                  = ["to_date(DATE)"]
-  data_retention_time_in_days = snowflake_schema.schema.data_retention_time_in_days
-  change_tracking             = false
+  is_transient                    = "true"
+  cluster_by                      = ["to_date(DATE)"]
+  change_tracking                 = true
+  enable_schema_evolution         = "true"
+  data_retention_time_in_days     = 1
+  max_data_extension_time_in_days = 30
+  default_ddl_collation           = "en-ci"
+  error_logging                   = "true"
+  row_timestamp                   = "true"
 
   column {
     name     = "id"
-    type     = "int"
+    type     = "NUMBER(38,0)"
     nullable = true
+    comment  = "sequence-backed id"
 
     default {
       sequence = snowflake_sequence.sequence.fully_qualified_name
@@ -64,11 +75,22 @@ resource "snowflake_table" "table" {
     type     = "text"
     nullable = false
     collate  = "en-ci"
+    comment  = "collated text"
+
+    default {
+      constant = "pending"
+    }
+
+    masking_policy = "DATABASE.SCHEMA.MASKING_POLICY"
   }
 
   column {
     name = "DATE"
     type = "TIMESTAMP_NTZ(9)"
+
+    default {
+      expression = "CURRENT_TIMESTAMP()"
+    }
   }
 
   column {
@@ -76,6 +98,27 @@ resource "snowflake_table" "table" {
     type    = "VARIANT"
     comment = "extra data"
   }
+
+  row_access_policy {
+    policy_name = "DATABASE.SCHEMA.ROW_ACCESS_POLICY"
+    on          = ["id"]
+  }
+
+  aggregation_policy {
+    policy_name = "DATABASE.SCHEMA.AGGREGATION_POLICY"
+    entity_key  = ["id"]
+  }
+
+  join_policy {
+    policy_name       = "DATABASE.SCHEMA.JOIN_POLICY"
+    allowed_join_keys = ["id"]
+  }
+}
+
+resource "snowflake_sequence" "sequence" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "sequence"
 }
 ```
 
@@ -93,11 +136,20 @@ resource "snowflake_table" "table" {
 
 ### Optional
 
-- `change_tracking` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to enable change tracking on the table. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `aggregation_policy` (Block List, Max: 1) Specifies the aggregation policy to set on a table. (see [below for nested schema](#nestedblock--aggregation_policy))
+- `change_tracking` (Boolean) Specifies whether to enable change tracking on the table. Default false.
 - `cluster_by` (List of String) A list of one or more table columns/expressions to be used as clustering key(s) for the table
 - `comment` (String) Specifies a comment for the table.
 - `data_retention_time_in_days` (Number) Specifies the number of days for which Time Travel actions (CLONE and UNDROP) can be performed on the database, as well as specifying the default Time Travel retention time for all schemas created in the database. For more details, see [Understanding & Using Time Travel](https://docs.snowflake.com/en/user-guide/data-time-travel). For more information, check [DATA_RETENTION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#data-retention-time-in-days).
+- `default_ddl_collation` (String) Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification). For more information, check [DEFAULT_DDL_COLLATION docs](https://docs.snowflake.com/en/sql-reference/parameters#default-ddl-collation).
+- `enable_schema_evolution` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to enable automatic table schema changes from data loaded into the table from source files, including semi-structured files. For more information, see [Table schema evolution](https://docs.snowflake.com/en/user-guide/data-load-schema-evolution). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `error_logging` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to turn on DML error logging for the table. If the `ERROR_LOGGING` session parameter is set to `TRUE`, DML error logging is not turned on, regardless of whether it is turned on for specific tables. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `is_transient` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies a transient table. Transient tables participate in time travel to a limited degree, but they do not have a Fail-safe period, so they do not incur additional storage costs once they leave Time Travel. Changing this value recreates the table. Temporary and volatile tables are not supported by the resource. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `join_policy` (Block List, Max: 1) Specifies the join policy to set on a table. (see [below for nested schema](#nestedblock--join_policy))
+- `max_data_extension_time_in_days` (Number) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for tables in the database to prevent streams on the tables from becoming stale. For more information, check [MAX_DATA_EXTENSION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#max-data-extension-time-in-days).
 - `primary_key` (Block List, Max: 1, Deprecated) Definitions of primary key constraint to create on table (see [below for nested schema](#nestedblock--primary_key))
+- `row_access_policy` (Block List, Max: 1) Specifies the row access policy to set on a table. (see [below for nested schema](#nestedblock--row_access_policy))
+- `row_timestamp` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to enable row timestamps on the table. You must use a role with the OWNERSHIP privilege on the table. **Note:** setting it to `false` permanently deletes all stored `METADATA$ROW_LAST_COMMIT_TIME` values. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -125,10 +177,6 @@ Optional:
 - `masking_policy` (String) (Default: ``) Masking policy to apply on column. It has to be a fully qualified name.
 - `nullable` (Boolean) (Default: `true`) Whether this column can contain null values. **Note**: Depending on your Snowflake version, the default value will not suffice if this column is used in a primary key constraint.
 
-Read-Only:
-
-- `schema_evolution_record` (String) Record of schema evolution.
-
 <a id="nestedblock--column--default"></a>
 ### Nested Schema for `column.default`
 
@@ -149,6 +197,30 @@ Optional:
 
 
 
+<a id="nestedblock--aggregation_policy"></a>
+### Nested Schema for `aggregation_policy`
+
+Required:
+
+- `policy_name` (String) Aggregation policy name.
+
+Optional:
+
+- `entity_key` (Set of String) Defines which columns uniquely identify an entity within the table.
+
+
+<a id="nestedblock--join_policy"></a>
+### Nested Schema for `join_policy`
+
+Required:
+
+- `policy_name` (String) Join policy name.
+
+Optional:
+
+- `allowed_join_keys` (Set of String) Defines which columns can be used as join keys on the table.
+
+
 <a id="nestedblock--primary_key"></a>
 ### Nested Schema for `primary_key`
 
@@ -159,6 +231,15 @@ Required:
 Optional:
 
 - `name` (String) Name of constraint
+
+
+<a id="nestedblock--row_access_policy"></a>
+### Nested Schema for `row_access_policy`
+
+Required:
+
+- `on` (Set of String) Defines which columns are affected by the policy.
+- `policy_name` (String) Row access policy name. For more information about this resource, see [docs](./row_access_policy).
 
 
 <a id="nestedblock--timeouts"></a>

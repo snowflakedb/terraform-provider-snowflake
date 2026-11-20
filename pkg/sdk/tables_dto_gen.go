@@ -200,7 +200,7 @@ type TableOutOfLineCHRequest struct {
 
 type TableRowAccessPolicyRequest struct {
 	Name SchemaObjectIdentifier // required
-	On   []string               // required
+	On   []Column               // required
 }
 
 type TableAggregationPolicyRequest struct {
@@ -485,8 +485,9 @@ type TableSetAggregationPolicyRequest struct {
 type TableUnsetAggregationPolicyRequest struct{}
 
 type TableSetJoinPolicyRequest struct {
-	JoinPolicy SchemaObjectIdentifier // required
-	Force      *bool
+	JoinPolicy      SchemaObjectIdentifier // required
+	AllowedJoinKeys []Column
+	Force           *bool
 }
 
 type TableUnsetJoinPolicyRequest struct{}

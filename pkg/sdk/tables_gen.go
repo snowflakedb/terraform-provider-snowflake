@@ -240,7 +240,7 @@ type TableOutOfLineCH struct {
 
 type TableRowAccessPolicy struct {
 	Name SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
-	On   []string               `ddl:"keyword,parentheses" sql:"ON"`
+	On   []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
 type TableAggregationPolicy struct {
@@ -553,9 +553,10 @@ type TableUnsetAggregationPolicy struct {
 }
 
 type TableSetJoinPolicy struct {
-	set        bool                   `ddl:"static" sql:"SET"`
-	JoinPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
-	Force      *bool                  `ddl:"keyword" sql:"FORCE"`
+	set             bool                   `ddl:"static" sql:"SET"`
+	JoinPolicy      SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
+	AllowedJoinKeys []Column               `ddl:"parameter,parentheses,no_equals" sql:"ALLOWED JOIN KEYS"`
+	Force           *bool                  `ddl:"keyword" sql:"FORCE"`
 }
 
 type TableUnsetJoinPolicy struct {

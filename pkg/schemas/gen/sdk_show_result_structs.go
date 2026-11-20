@@ -108,7 +108,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.StorageLifecyclePolicy{}},
 	{ObjectStruct: sdk.Streamlit{}},
 	{ObjectStruct: sdk.Stream{}},
-	{ObjectStruct: sdk.Table{}},
 	{ObjectStruct: sdk.Tag{}, TypeOverrides: map[string]schema.ValueType{"allowed_values": schema.TypeSet}},
 	{ObjectStruct: sdk.Task{}, ManualFields: []string{"task_relations", "target_completion_interval"}, TypeOverrides: map[string]schema.ValueType{"predecessors": schema.TypeSet}},
 	{ObjectStruct: sdk.User{}},

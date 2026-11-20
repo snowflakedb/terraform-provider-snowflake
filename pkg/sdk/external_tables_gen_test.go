@@ -25,6 +25,7 @@ const (
 	case_ExternalTables_validation_Create_opts_CloudProviderParams_ConflictingFields                              testCaseName = "validation_Create_opts_CloudProviderParams_ConflictingFields"
 	case_ExternalTables_validation_Create_opts_FileFormat_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_Create_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_ExternalTables_validation_Create_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_Create_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                                    testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
 	case_ExternalTables_validation_Create_Tag_ValidIdentifier                                                     testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_ExternalTables_sql_Create_basic                                                                          testCaseName = "sql_Create_basic"
 	case_ExternalTables_sql_Create_all                                                                            testCaseName = "sql_Create_all"
@@ -36,6 +37,7 @@ const (
 	case_ExternalTables_validation_CreateWithManualPartitioning_opts_CloudProviderParams_ConflictingFields        testCaseName = "validation_CreateWithManualPartitioning_opts_CloudProviderParams_ConflictingFields"
 	case_ExternalTables_validation_CreateWithManualPartitioning_opts_FileFormat_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateWithManualPartitioning_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_ExternalTables_validation_CreateWithManualPartitioning_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateWithManualPartitioning_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalTables_validation_CreateWithManualPartitioning_RowAccessPolicy_Name_ValidIdentifier              testCaseName = "validation_CreateWithManualPartitioning_RowAccessPolicy_Name_ValidIdentifier"
 	case_ExternalTables_validation_CreateWithManualPartitioning_Tag_ValidIdentifier                               testCaseName = "validation_CreateWithManualPartitioning_Tag_ValidIdentifier"
 	case_ExternalTables_sql_CreateWithManualPartitioning_basic                                                    testCaseName = "sql_CreateWithManualPartitioning_basic"
 	case_ExternalTables_sql_CreateWithManualPartitioning_all                                                      testCaseName = "sql_CreateWithManualPartitioning_all"
@@ -47,6 +49,7 @@ const (
 	case_ExternalTables_validation_CreateDeltaLake_opts_CloudProviderParams_ConflictingFields                     testCaseName = "validation_CreateDeltaLake_opts_CloudProviderParams_ConflictingFields"
 	case_ExternalTables_validation_CreateDeltaLake_opts_FileFormat_ExactlyOneValueSet_NoneSet                     testCaseName = "validation_CreateDeltaLake_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_ExternalTables_validation_CreateDeltaLake_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet              testCaseName = "validation_CreateDeltaLake_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalTables_validation_CreateDeltaLake_RowAccessPolicy_Name_ValidIdentifier                           testCaseName = "validation_CreateDeltaLake_RowAccessPolicy_Name_ValidIdentifier"
 	case_ExternalTables_validation_CreateDeltaLake_Tag_ValidIdentifier                                            testCaseName = "validation_CreateDeltaLake_Tag_ValidIdentifier"
 	case_ExternalTables_sql_CreateDeltaLake_basic                                                                 testCaseName = "sql_CreateDeltaLake_basic"
 	case_ExternalTables_sql_CreateDeltaLake_all                                                                   testCaseName = "sql_CreateDeltaLake_all"
@@ -58,6 +61,7 @@ const (
 	case_ExternalTables_validation_CreateUsingTemplate_opts_CloudProviderParams_ConflictingFields                 testCaseName = "validation_CreateUsingTemplate_opts_CloudProviderParams_ConflictingFields"
 	case_ExternalTables_validation_CreateUsingTemplate_opts_FileFormat_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_CreateUsingTemplate_opts_FileFormat_ExactlyOneValueSet_NoneSet"
 	case_ExternalTables_validation_CreateUsingTemplate_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_CreateUsingTemplate_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet"
+	case_ExternalTables_validation_CreateUsingTemplate_RowAccessPolicy_Name_ValidIdentifier                       testCaseName = "validation_CreateUsingTemplate_RowAccessPolicy_Name_ValidIdentifier"
 	case_ExternalTables_validation_CreateUsingTemplate_Tag_ValidIdentifier                                        testCaseName = "validation_CreateUsingTemplate_Tag_ValidIdentifier"
 	case_ExternalTables_sql_CreateUsingTemplate_basic                                                             testCaseName = "sql_CreateUsingTemplate_basic"
 	case_ExternalTables_sql_CreateUsingTemplate_all                                                               testCaseName = "sql_CreateUsingTemplate_all"
@@ -175,6 +179,14 @@ var externalTablesTests = ExternalTablesTestsContext{
 				ExpectedErr: errExactlyOneOf("CreateExternalTableOptions.FileFormat", "Name", "FileFormatType"),
 			},
 			validationCase[*CreateExternalTableOptions]{
+				Name:        case_ExternalTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateExternalTableOptions.RowAccessPolicy", "Name"),
+				DefaultModify: func(opts *CreateExternalTableOptions) {
+					opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{}
+					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateExternalTableOptions]{
 				Name:        case_ExternalTables_validation_Create_Tag_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateExternalTableOptions.Tag[0]", "Name"),
 				DefaultModify: func(opts *CreateExternalTableOptions) {
@@ -259,6 +271,14 @@ var externalTablesTests = ExternalTablesTestsContext{
 			validationCase[*CreateWithManualPartitioningExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateWithManualPartitioning_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateWithManualPartitioningExternalTableOptions.FileFormat", "Name", "FileFormatType"),
+			},
+			validationCase[*CreateWithManualPartitioningExternalTableOptions]{
+				Name:        case_ExternalTables_validation_CreateWithManualPartitioning_RowAccessPolicy_Name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateWithManualPartitioningExternalTableOptions.RowAccessPolicy", "Name"),
+				DefaultModify: func(opts *CreateWithManualPartitioningExternalTableOptions) {
+					opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{}
+					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
 			},
 			validationCase[*CreateWithManualPartitioningExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateWithManualPartitioning_Tag_ValidIdentifier,
@@ -347,6 +367,14 @@ var externalTablesTests = ExternalTablesTestsContext{
 				ExpectedErr: errExactlyOneOf("CreateDeltaLakeExternalTableOptions.FileFormat", "Name", "FileFormatType"),
 			},
 			validationCase[*CreateDeltaLakeExternalTableOptions]{
+				Name:        case_ExternalTables_validation_CreateDeltaLake_RowAccessPolicy_Name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateDeltaLakeExternalTableOptions.RowAccessPolicy", "Name"),
+				DefaultModify: func(opts *CreateDeltaLakeExternalTableOptions) {
+					opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{}
+					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*CreateDeltaLakeExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateDeltaLake_Tag_ValidIdentifier,
 				ExpectedErr: errInvalidIdentifier("CreateDeltaLakeExternalTableOptions.Tag[0]", "Name"),
 				DefaultModify: func(opts *CreateDeltaLakeExternalTableOptions) {
@@ -430,6 +458,14 @@ var externalTablesTests = ExternalTablesTestsContext{
 			validationCase[*CreateUsingTemplateExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateUsingTemplate_opts_FileFormat_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("CreateUsingTemplateExternalTableOptions.FileFormat", "Name", "FileFormatType"),
+			},
+			validationCase[*CreateUsingTemplateExternalTableOptions]{
+				Name:        case_ExternalTables_validation_CreateUsingTemplate_RowAccessPolicy_Name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateUsingTemplateExternalTableOptions.RowAccessPolicy", "Name"),
+				DefaultModify: func(opts *CreateUsingTemplateExternalTableOptions) {
+					opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{}
+					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
+				},
 			},
 			validationCase[*CreateUsingTemplateExternalTableOptions]{
 				Name:        case_ExternalTables_validation_CreateUsingTemplate_Tag_ValidIdentifier,

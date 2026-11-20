@@ -63,7 +63,7 @@ func init() {
 		withAdditionalValidationCase(
 			"validation_Create_RowAccessPolicy_invalidIdentifier",
 			func(opts *CreateTableOptions) {
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: emptySchemaObjectIdentifier, On: []string{"COLUMN_1"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: emptySchemaObjectIdentifier, On: []Column{{Value: "COLUMN_1"}}}
 			},
 			errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"),
 		).
@@ -136,7 +136,7 @@ func init() {
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en"})
 				opts.ErrorLogging = new(true)
 				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}}}
 				opts.AggregationPolicy = &TableAggregationPolicy{AggregationPolicy: aggregationPolicyId, EntityKey: []Column{{Value: "COLUMN_1"}}}
 				opts.JoinPolicy = &TableJoinPolicy{JoinPolicy: joinPolicyId, AllowedJoinKeys: []Column{{Value: "COLUMN_1"}}}
 				opts.StorageLifecyclePolicy = &CreateTableStorageLifecyclePolicy{
@@ -151,7 +151,7 @@ func init() {
 				opts.Comment = &tableComment
 				opts.RowTimestamp = new(true)
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR(16777216) CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', "DOUBLE_ID" NUMBER(38, 0) GENERATED ALWAYS AS (1 + 1) VIRTUAL, CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ERROR_LOGGING = true COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN") TAG (%s = 'v1', %s = 'v2') WITH CONTACT (SUPPORT = %s) COMMENT = '%s' ROW_TIMESTAMP = true`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR(16777216) CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', "DOUBLE_ID" NUMBER(38, 0) GENERATED ALWAYS AS (1 + 1) VIRTUAL, CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ERROR_LOGGING = true COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON ("COLUMN_1", "COLUMN_2") AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN") TAG (%s = 'v1', %s = 'v2') WITH CONTACT (SUPPORT = %s) COMMENT = '%s' ROW_TIMESTAMP = true`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -229,10 +229,10 @@ func init() {
 				}}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
 				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}}}
 				opts.Query = "SELECT * FROM ANOTHER_TABLE"
 			},
-			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216) MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216) MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON ("COLUMN_1", "COLUMN_2") AS SELECT * FROM ANOTHER_TABLE`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
@@ -827,9 +827,9 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_SetJoinPolicy,
 			func(opts *AlterTableOptions) {
-				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, Force: new(true)}
+				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, AllowedJoinKeys: []Column{{Value: "FIRST_COLUMN"}}, Force: new(true)}
 			},
-			`ALTER TABLE %s SET JOIN POLICY %s FORCE`,
+			`ALTER TABLE %s SET JOIN POLICY %s ALLOWED JOIN KEYS ("FIRST_COLUMN") FORCE`,
 			id.FullyQualifiedName(), joinPolicyId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

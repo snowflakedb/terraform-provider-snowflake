@@ -708,7 +708,7 @@ func Test_queryStructFromObject_tableSearchOptimizationAction(t *testing.T) {
 }
 
 func Test_queryStructFromObject_tableAggregationPolicy(t *testing.T) {
-	attr := ssotdefs.TableCreateAttrs.AggregationPolicy
+	attr := ssotdefs.TableAttrs.AggregationPolicy
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
@@ -721,7 +721,7 @@ func Test_queryStructFromObject_tableAggregationPolicy(t *testing.T) {
 }
 
 func Test_queryStructFromObject_tableJoinPolicy(t *testing.T) {
-	attr := ssotdefs.TableCreateAttrs.JoinPolicy
+	attr := ssotdefs.TableAttrs.JoinPolicy
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
@@ -769,6 +769,7 @@ func Test_queryStructFromObject_tableSetJoinPolicy(t *testing.T) {
 		SQL("SET").
 		Identifier("JoinPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("JOIN POLICY").Required()).
 		WithValidation(ValidIdentifier, "JoinPolicy").
+		ListAssignment("ALLOWED JOIN KEYS", "Column", ParameterOptions().NoEquals().Parentheses()).
 		OptionalSQL("FORCE")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }

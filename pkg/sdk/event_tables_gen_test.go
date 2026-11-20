@@ -11,6 +11,7 @@ var eventTablesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 const (
 	case_EventTables_validation_Create_name_ValidIdentifier                                          testCaseName = "validation_Create_name_ValidIdentifier"
 	case_EventTables_validation_Create_opts_ConflictingFields                                        testCaseName = "validation_Create_opts_ConflictingFields"
+	case_EventTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier                          testCaseName = "validation_Create_RowAccessPolicy_Name_ValidIdentifier"
 	case_EventTables_validation_Create_Tag_ValidIdentifier                                           testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_EventTables_sql_Create_basic                                                                testCaseName = "sql_Create_basic"
 	case_EventTables_sql_Create_all                                                                  testCaseName = "sql_Create_all"
@@ -77,6 +78,14 @@ var eventTablesTests = EventTablesTestsContext{
 				DefaultModify: func(opts *CreateEventTableOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
+				},
+			},
+			validationCase[*CreateEventTableOptions]{
+				Name:        case_EventTables_validation_Create_RowAccessPolicy_Name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateEventTableOptions.RowAccessPolicy", "Name"),
+				DefaultModify: func(opts *CreateEventTableOptions) {
+					opts.RowAccessPolicy = &EventTableRowAccessPolicy{}
+					opts.RowAccessPolicy.Name = emptySchemaObjectIdentifier
 				},
 			},
 			validationCase[*CreateEventTableOptions]{

@@ -31,7 +31,7 @@ var (
 	tableDescriptionExt = docs.WithPreviewFeatureMark() + "Resource used to manage tables. For more information, check [CREATE TABLE documentation](https://docs.snowflake.com/en/sql-reference/sql/create-table)."
 
 	tableImporterExt = &schema.ResourceImporter{
-		StateContext: TrackingImportWrapper(resources.Table, importTableExt),
+		StateContext: TrackingImportWrapper(resources.Table, ImportTable),
 	}
 )
 
@@ -44,32 +44,53 @@ func tableNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
+	request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(tableColumnRequests))
+	// is_transient is not sent by generated ApplyCreateOptionals: TRANSIENT is the table kind of the CREATE statement.
+	if err := booleanStringAttributeCreateBuilder(d, "is_transient", func(isTransient bool) *sdk.CreateTableRequest {
+		if isTransient {
+			return request.WithKind(sdk.TableKindTransient)
+		}
+		return request
+	}); err != nil {
+		return nil, err
+	}
 
-	return sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(tableColumnRequests)), nil
+	if policyId, columns, ok, err := rowAccessPolicyCreateRequest(d); err != nil {
+		return nil, err
+	} else if ok {
+		request.WithRowAccessPolicy(*sdk.NewTableRowAccessPolicyRequest(policyId, columns))
+	}
+	return request, nil
 }
 
 func toTableClusterBy(value []any) ([]string, error) {
 	return expandStringList(value), nil
 }
 
-func tableSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, table *sdk.Table) error {
-	return errors.Join(
+func toTableColumn(value any) (sdk.Column, error) {
+	s, ok := value.(string)
+	if !ok {
+		return sdk.Column{}, fmt.Errorf("expected column name string, got %T", value)
+	}
+	return sdk.Column{Value: s}, nil
+}
+
+func tableSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, table *sdk.Table) error {
+	if err := errors.Join(
 		d.Set("comment", table.Comment),
 		d.Set("cluster_by", table.GetClusterByKeys()),
-	)
-}
-
-func tableHandleExternalChangesExt(d *schema.ResourceData, table *sdk.Table, withExternalChangesMarking bool) error {
-	if !withExternalChangesMarking {
-		return nil
+		d.Set("change_tracking", table.ChangeTracking),
+	); err != nil {
+		return err
 	}
-	return handleExternalChangesToObjectInShow(d, tableOutputMappingsExt(table)...)
-}
 
-func tableOutputMappingsExt(table *sdk.Table) []outputMapping {
-	return []outputMapping{
-		{"change_tracking", "change_tracking", table.ChangeTracking, booleanStringFromBool(table.ChangeTracking), nil},
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return err
 	}
+	_, err = readRootLevelPolicies(ctx, meta.(*provider.Context).Client, id, sdk.PolicyEntityDomainTable, d,
+		sdk.PolicyKindRowAccessPolicy, sdk.PolicyKindAggregationPolicy, sdk.PolicyKindJoinPolicy)
+	return err
 }
 
 func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, describeErr error, _ bool) error {
@@ -83,32 +104,17 @@ func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentif
 	)
 }
 
-func importTableExt(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	results, err := ImportTable(ctx, d, meta)
-	if err != nil {
-		return nil, err
-	}
-	id, err := tableParseId(d.Id())
-	if err != nil {
-		return nil, err
-	}
-	details, err := tableDescribeInSdkExt(ctx, meta, id)
-	if err != nil {
-		return nil, err
-	}
-	if err := d.Set("column", toColumnConfig(details)); err != nil {
-		return nil, err
-	}
-	return results, nil
-}
-
+// tableSetFieldsNotSetByReadExt sets the fields Read does not write from the configuration. Import calls it, so the
+// optional boolean fields get the values Snowflake reports instead of staying empty.
 func tableSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, table *sdk.Table, _ bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
 		d.Set("schema", id.SchemaName()),
-		d.Set("comment", table.Comment),
-		d.Set("change_tracking", booleanStringFromBool(table.ChangeTracking)),
+		d.Set("enable_schema_evolution", booleanStringFromBool(table.EnableSchemaEvolution)),
+		d.Set("error_logging", booleanStringFromBool(table.ErrorLogging)),
+		d.Set("row_timestamp", booleanStringFromBool(table.RowTimestamp)),
+		d.Set("is_transient", booleanStringFromBool(table.Kind == string(sdk.TableKindTransient))),
 	)
 }
 
@@ -119,7 +125,64 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 	if diags := tableAfterAlterColumnsExt(ctx, d, meta, id); diags != nil {
 		return diags
 	}
-	return tableAfterAlterPrimaryKeyExt(ctx, d, meta, id)
+	if diags := tableAfterAlterPrimaryKeyExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+	client := meta.(*provider.Context).Client
+	if d.HasChange("row_access_policy") {
+		addReq, dropReq, err := rowAccessPolicyUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		alterReq := sdk.NewAlterTableRequest(id)
+		switch {
+		case addReq != nil && dropReq != nil:
+			alterReq.WithDropAndAddRowAccessPolicy(*sdk.NewTableDropAndAddRowAccessPolicyRequest(
+				*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy),
+				*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
+			))
+		case addReq != nil:
+			alterReq.WithAddRowAccessPolicy(*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On))
+		case dropReq != nil:
+			alterReq.WithDropRowAccessPolicy(*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy))
+		}
+		if err := client.Tables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating row access policy on %v: %w", d.Id(), err))
+		}
+	}
+
+	if d.HasChange("aggregation_policy") {
+		setReq, unsetReq, err := aggregationPolicyTableUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		alterReq := sdk.NewAlterTableRequest(id)
+		if setReq != nil {
+			alterReq.WithSetAggregationPolicy(*setReq)
+		} else {
+			alterReq.WithUnsetAggregationPolicy(*unsetReq)
+		}
+		if err := client.Tables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating aggregation policy on %v: %w", d.Id(), err))
+		}
+	}
+
+	if d.HasChange("join_policy") {
+		setReq, unsetReq, err := joinPolicyTableUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		alterReq := sdk.NewAlterTableRequest(id)
+		if setReq != nil {
+			alterReq.WithSetJoinPolicy(*setReq)
+		} else {
+			alterReq.WithUnsetJoinPolicy(*unsetReq)
+		}
+		if err := client.Tables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating join policy on %v: %w", d.Id(), err))
+		}
+	}
+	return nil
 }
 
 func tableAfterAlterClusterByExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
@@ -599,10 +662,6 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 			if def != nil {
 				flat["default"] = []any{def}
 			}
-		}
-
-		if td.SchemaEvolutionRecord != nil {
-			flat["schema_evolution_record"] = *td.SchemaEvolutionRecord
 		}
 
 		flattened = append(flattened, flat)

@@ -707,7 +707,7 @@ func (s *TableOutOfLineCHRequest) WithEnableNovalidate(enableNovalidate bool) *T
 
 func NewTableRowAccessPolicyRequest(
 	name SchemaObjectIdentifier,
-	on []string,
+	on []Column,
 ) *TableRowAccessPolicyRequest {
 	s := TableRowAccessPolicyRequest{}
 	s.Name = name
@@ -1646,6 +1646,11 @@ func NewTableSetJoinPolicyRequest(
 	s := TableSetJoinPolicyRequest{}
 	s.JoinPolicy = joinPolicy
 	return &s
+}
+
+func (s *TableSetJoinPolicyRequest) WithAllowedJoinKeys(allowedJoinKeys []Column) *TableSetJoinPolicyRequest {
+	s.AllowedJoinKeys = allowedJoinKeys
+	return s
 }
 
 func (s *TableSetJoinPolicyRequest) WithForce(force bool) *TableSetJoinPolicyRequest {

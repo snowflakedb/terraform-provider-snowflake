@@ -205,6 +205,8 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(aggregationPolicyCleanup)
 		joinPolicy, joinPolicyCleanup := testClientHelper().JoinPolicy.Create(t)
 		t.Cleanup(joinPolicyCleanup)
+		rowAccessPolicy, rowAccessPolicyCleanup := testClientHelper().RowAccessPolicy.CreateRowAccessPolicy(t)
+		t.Cleanup(rowAccessPolicyCleanup)
 		comment := random.Comment()
 
 		columnTags := []sdk.TagAssociation{
@@ -274,6 +276,7 @@ func TestInt_Table(t *testing.T) {
 			WithStorageLifecyclePolicy(*sdk.NewCreateTableStorageLifecyclePolicyRequest(storageLifecyclePolicyId, []sdk.Column{{Value: "column_1"}})).
 			WithAggregationPolicy(*sdk.NewTableAggregationPolicyRequest(aggregationPolicy).WithEntityKey([]sdk.Column{{Value: "column_1"}})).
 			WithJoinPolicy(*sdk.NewTableJoinPolicyRequest(joinPolicy).WithAllowedJoinKeys([]sdk.Column{{Value: "column_1"}})).
+			WithRowAccessPolicy(*sdk.NewTableRowAccessPolicyRequest(rowAccessPolicy.ID(), []sdk.Column{{Value: "column_2"}})).
 			WithTag([]sdk.TagAssociation{{Name: tag1.ID(), Value: "v1"}})
 
 		err := client.Tables.Create(ctx, request)
@@ -298,6 +301,9 @@ func TestInt_Table(t *testing.T) {
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
 		require.NoError(t, err)
 		assertThatObject(t, objectassert.PolicyReferenceFromObject(t, new(references[0])).HasRefEntityName(id.Name()))
+		require.True(t, slices.ContainsFunc(references, func(r sdk.PolicyReference) bool {
+			return r.PolicyKind == sdk.PolicyKindRowAccessPolicy && r.PolicyName == rowAccessPolicy.Name
+		}))
 
 		tableColumns := testClientHelper().Table.GetTableColumnsFor(t, table.ID())
 		expectedColumns := []expectedColumn{
@@ -1193,22 +1199,35 @@ func TestInt_Table(t *testing.T) {
 		t.Cleanup(cleanupTableProvider(tableId))
 
 		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
-			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy1)))
+			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy1).
+				WithAllowedJoinKeys([]sdk.Column{{Value: "COLUMN_1"}})))
 		require.NoError(t, err)
 
 		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
 		require.NoError(t, err)
 		require.Len(t, references, 1)
-		assert.Equal(t, joinPolicy1.Name(), references[0].PolicyName)
+		assertThatObject(
+			t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
+				HasPolicyName(joinPolicy1.Name()).
+				HasPolicyKind(sdk.PolicyKindJoinPolicy).
+				HasRefArgColumnNames(`[ "COLUMN_1" ]`),
+		)
 
 		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
-			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy2).WithForce(true)))
+			WithSetJoinPolicy(*sdk.NewTableSetJoinPolicyRequest(joinPolicy2).
+				WithAllowedJoinKeys([]sdk.Column{{Value: "COLUMN_1"}}).
+				WithForce(true)))
 		require.NoError(t, err)
 
 		references, err = testClientHelper().PolicyReferences.GetPolicyReferences(t, tableId, sdk.PolicyEntityDomainTable)
 		require.NoError(t, err)
 		require.Len(t, references, 1)
-		assert.Equal(t, joinPolicy2.Name(), references[0].PolicyName)
+		assertThatObject(
+			t, objectassert.PolicyReferenceFromObject(t, new(references[0])).
+				HasPolicyName(joinPolicy2.Name()).
+				HasPolicyKind(sdk.PolicyKindJoinPolicy).
+				HasRefArgColumnNames(`[ "COLUMN_1" ]`),
+		)
 
 		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(tableId).
 			WithUnsetJoinPolicy(*sdk.NewTableUnsetJoinPolicyRequest()))

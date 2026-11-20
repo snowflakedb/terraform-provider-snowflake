@@ -90,7 +90,7 @@ var tableCreateVariantOperations = []ssot.CustomOperationSpec{
 			ssot.CustomAttribute(&tableCreateVariantAttrs.AsSelectColumns),
 			ssot.CustomAttribute(&TableAttrs.ClusterBy),
 			ssot.CustomAttribute(&TableCreateAttrs.Copy),
-			ssot.CustomAttribute(&TableCreateAttrs.RowAccessPolicy),
+			ssot.CustomAttribute(&TableAttrs.RowAccessPolicy),
 			ssot.CustomAttribute(&tableCreateVariantAttrs.AsSelectQuery),
 		),
 	},

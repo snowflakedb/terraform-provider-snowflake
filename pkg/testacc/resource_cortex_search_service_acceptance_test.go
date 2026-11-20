@@ -28,13 +28,13 @@ func TestAcc_CortexSearchService_basic(t *testing.T) {
 	tableModelBasic := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
 		{Name: "SOME_TEXT", Type: testdatatypes.DataTypeVarchar},
-	}).WithChangeTrackingBool(true)
+	}).WithChangeTracking(true)
 
 	tableModelComplete := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
 		{Name: "SOME_TEXT", Type: testdatatypes.DataTypeVarchar},
 		{Name: "SOME_OTHER_TEXT", Type: dataTypeVarchar32},
-	}).WithChangeTrackingBool(true)
+	}).WithChangeTracking(true)
 
 	cssModel := model.CortexSearchService("css", TestDatabaseName, TestSchemaName, id.Name(), "SOME_TEXT",
 		fmt.Sprintf("select SOME_TEXT from %s", tableId.FullyQualifiedName()), "2 minutes", TestWarehouseName).

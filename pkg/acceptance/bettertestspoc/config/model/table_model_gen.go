@@ -13,25 +13,24 @@ import (
 )
 
 type TableModel struct {
-	Database                    tfconfig.Variable `json:"database,omitempty"`
-	Schema                      tfconfig.Variable `json:"schema,omitempty"`
-	Name                        tfconfig.Variable `json:"name,omitempty"`
-	Catalog                     tfconfig.Variable `json:"catalog,omitempty"`
-	ChangeTracking              tfconfig.Variable `json:"change_tracking,omitempty"`
-	ClusterBy                   tfconfig.Variable `json:"cluster_by,omitempty"`
-	Column                      tfconfig.Variable `json:"column,omitempty"`
-	Comment                     tfconfig.Variable `json:"comment,omitempty"`
-	DataRetentionTimeInDays     tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
-	DefaultDdlCollation         tfconfig.Variable `json:"default_ddl_collation,omitempty"`
-	EnableConsoleOutput         tfconfig.Variable `json:"enable_console_output,omitempty"`
-	ExternalVolume              tfconfig.Variable `json:"external_volume,omitempty"`
-	LogEventLevel               tfconfig.Variable `json:"log_event_level,omitempty"`
-	LogLevel                    tfconfig.Variable `json:"log_level,omitempty"`
-	MaxDataExtensionTimeInDays  tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
-	PrimaryKey                  tfconfig.Variable `json:"primary_key,omitempty"`
-	QuotedIdentifiersIgnoreCase tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
-	ReplaceInvalidCharacters    tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
-	StorageSerializationPolicy  tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
+	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
+	AggregationPolicy          tfconfig.Variable `json:"aggregation_policy,omitempty"`
+	ChangeTracking             tfconfig.Variable `json:"change_tracking,omitempty"`
+	ClusterBy                  tfconfig.Variable `json:"cluster_by,omitempty"`
+	Column                     tfconfig.Variable `json:"column,omitempty"`
+	Comment                    tfconfig.Variable `json:"comment,omitempty"`
+	DataRetentionTimeInDays    tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
+	DefaultDdlCollation        tfconfig.Variable `json:"default_ddl_collation,omitempty"`
+	EnableSchemaEvolution      tfconfig.Variable `json:"enable_schema_evolution,omitempty"`
+	ErrorLogging               tfconfig.Variable `json:"error_logging,omitempty"`
+	IsTransient                tfconfig.Variable `json:"is_transient,omitempty"`
+	JoinPolicy                 tfconfig.Variable `json:"join_policy,omitempty"`
+	MaxDataExtensionTimeInDays tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
+	PrimaryKey                 tfconfig.Variable `json:"primary_key,omitempty"`
+	RowAccessPolicy            tfconfig.Variable `json:"row_access_policy,omitempty"`
+	RowTimestamp               tfconfig.Variable `json:"row_timestamp,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -122,23 +121,10 @@ func (t *TableModel) WithName(name string) *TableModel {
 	return t
 }
 
-func (t *TableModel) WithCatalog(catalog string) *TableModel {
-	t.Catalog = tfconfig.StringVariable(catalog)
-	return t
-}
+// aggregation_policy attribute type is not yet supported, so WithAggregationPolicy can't be generated
 
-func (t *TableModel) WithCatalogSdk(catalog sdk.AccountObjectIdentifier) *TableModel {
-	t.Catalog = tfconfig.StringVariable(catalog.Name())
-	return t
-}
-
-func (t *TableModel) WithChangeTracking(changeTracking string) *TableModel {
-	t.ChangeTracking = tfconfig.StringVariable(changeTracking)
-	return t
-}
-
-func (t *TableModel) WithChangeTrackingBool(changeTracking bool) *TableModel {
-	t.ChangeTracking = tfconfig.StringVariable(strconv.FormatBool(changeTracking))
+func (t *TableModel) WithChangeTracking(changeTracking bool) *TableModel {
+	t.ChangeTracking = tfconfig.BoolVariable(changeTracking)
 	return t
 }
 
@@ -161,40 +147,37 @@ func (t *TableModel) WithDefaultDdlCollation(defaultDdlCollation string) *TableM
 	return t
 }
 
-func (t *TableModel) WithEnableConsoleOutput(enableConsoleOutput bool) *TableModel {
-	t.EnableConsoleOutput = tfconfig.BoolVariable(enableConsoleOutput)
+func (t *TableModel) WithEnableSchemaEvolution(enableSchemaEvolution string) *TableModel {
+	t.EnableSchemaEvolution = tfconfig.StringVariable(enableSchemaEvolution)
 	return t
 }
 
-func (t *TableModel) WithExternalVolume(externalVolume string) *TableModel {
-	t.ExternalVolume = tfconfig.StringVariable(externalVolume)
+func (t *TableModel) WithEnableSchemaEvolutionBool(enableSchemaEvolution bool) *TableModel {
+	t.EnableSchemaEvolution = tfconfig.StringVariable(strconv.FormatBool(enableSchemaEvolution))
 	return t
 }
 
-func (t *TableModel) WithExternalVolumeSdk(externalVolume sdk.AccountObjectIdentifier) *TableModel {
-	t.ExternalVolume = tfconfig.StringVariable(externalVolume.Name())
+func (t *TableModel) WithErrorLogging(errorLogging string) *TableModel {
+	t.ErrorLogging = tfconfig.StringVariable(errorLogging)
 	return t
 }
 
-func (t *TableModel) WithLogEventLevel(logEventLevel string) *TableModel {
-	t.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+func (t *TableModel) WithErrorLoggingBool(errorLogging bool) *TableModel {
+	t.ErrorLogging = tfconfig.StringVariable(strconv.FormatBool(errorLogging))
 	return t
 }
 
-func (t *TableModel) WithLogEventLevelSdk(logEventLevel sdk.LogLevel) *TableModel {
-	t.LogEventLevel = tfconfig.StringVariable(string(logEventLevel))
+func (t *TableModel) WithIsTransient(isTransient string) *TableModel {
+	t.IsTransient = tfconfig.StringVariable(isTransient)
 	return t
 }
 
-func (t *TableModel) WithLogLevel(logLevel string) *TableModel {
-	t.LogLevel = tfconfig.StringVariable(logLevel)
+func (t *TableModel) WithIsTransientBool(isTransient bool) *TableModel {
+	t.IsTransient = tfconfig.StringVariable(strconv.FormatBool(isTransient))
 	return t
 }
 
-func (t *TableModel) WithLogLevelSdk(logLevel sdk.LogLevel) *TableModel {
-	t.LogLevel = tfconfig.StringVariable(string(logLevel))
-	return t
-}
+// join_policy attribute type is not yet supported, so WithJoinPolicy can't be generated
 
 func (t *TableModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *TableModel {
 	t.MaxDataExtensionTimeInDays = tfconfig.IntegerVariable(maxDataExtensionTimeInDays)
@@ -203,23 +186,15 @@ func (t *TableModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays i
 
 // primary_key attribute type is not yet supported, so WithPrimaryKey can't be generated
 
-func (t *TableModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *TableModel {
-	t.QuotedIdentifiersIgnoreCase = tfconfig.BoolVariable(quotedIdentifiersIgnoreCase)
+// row_access_policy attribute type is not yet supported, so WithRowAccessPolicy can't be generated
+
+func (t *TableModel) WithRowTimestamp(rowTimestamp string) *TableModel {
+	t.RowTimestamp = tfconfig.StringVariable(rowTimestamp)
 	return t
 }
 
-func (t *TableModel) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *TableModel {
-	t.ReplaceInvalidCharacters = tfconfig.BoolVariable(replaceInvalidCharacters)
-	return t
-}
-
-func (t *TableModel) WithStorageSerializationPolicy(storageSerializationPolicy string) *TableModel {
-	t.StorageSerializationPolicy = tfconfig.StringVariable(storageSerializationPolicy)
-	return t
-}
-
-func (t *TableModel) WithStorageSerializationPolicySdk(storageSerializationPolicy sdk.StorageSerializationPolicy) *TableModel {
-	t.StorageSerializationPolicy = tfconfig.StringVariable(string(storageSerializationPolicy))
+func (t *TableModel) WithRowTimestampBool(rowTimestamp bool) *TableModel {
+	t.RowTimestamp = tfconfig.StringVariable(strconv.FormatBool(rowTimestamp))
 	return t
 }
 
@@ -242,8 +217,8 @@ func (t *TableModel) WithNameValue(value tfconfig.Variable) *TableModel {
 	return t
 }
 
-func (t *TableModel) WithCatalogValue(value tfconfig.Variable) *TableModel {
-	t.Catalog = value
+func (t *TableModel) WithAggregationPolicyValue(value tfconfig.Variable) *TableModel {
+	t.AggregationPolicy = value
 	return t
 }
 
@@ -277,23 +252,23 @@ func (t *TableModel) WithDefaultDdlCollationValue(value tfconfig.Variable) *Tabl
 	return t
 }
 
-func (t *TableModel) WithEnableConsoleOutputValue(value tfconfig.Variable) *TableModel {
-	t.EnableConsoleOutput = value
+func (t *TableModel) WithEnableSchemaEvolutionValue(value tfconfig.Variable) *TableModel {
+	t.EnableSchemaEvolution = value
 	return t
 }
 
-func (t *TableModel) WithExternalVolumeValue(value tfconfig.Variable) *TableModel {
-	t.ExternalVolume = value
+func (t *TableModel) WithErrorLoggingValue(value tfconfig.Variable) *TableModel {
+	t.ErrorLogging = value
 	return t
 }
 
-func (t *TableModel) WithLogEventLevelValue(value tfconfig.Variable) *TableModel {
-	t.LogEventLevel = value
+func (t *TableModel) WithIsTransientValue(value tfconfig.Variable) *TableModel {
+	t.IsTransient = value
 	return t
 }
 
-func (t *TableModel) WithLogLevelValue(value tfconfig.Variable) *TableModel {
-	t.LogLevel = value
+func (t *TableModel) WithJoinPolicyValue(value tfconfig.Variable) *TableModel {
+	t.JoinPolicy = value
 	return t
 }
 
@@ -307,17 +282,12 @@ func (t *TableModel) WithPrimaryKeyValue(value tfconfig.Variable) *TableModel {
 	return t
 }
 
-func (t *TableModel) WithQuotedIdentifiersIgnoreCaseValue(value tfconfig.Variable) *TableModel {
-	t.QuotedIdentifiersIgnoreCase = value
+func (t *TableModel) WithRowAccessPolicyValue(value tfconfig.Variable) *TableModel {
+	t.RowAccessPolicy = value
 	return t
 }
 
-func (t *TableModel) WithReplaceInvalidCharactersValue(value tfconfig.Variable) *TableModel {
-	t.ReplaceInvalidCharacters = value
-	return t
-}
-
-func (t *TableModel) WithStorageSerializationPolicyValue(value tfconfig.Variable) *TableModel {
-	t.StorageSerializationPolicy = value
+func (t *TableModel) WithRowTimestampValue(value tfconfig.Variable) *TableModel {
+	t.RowTimestamp = value
 	return t
 }

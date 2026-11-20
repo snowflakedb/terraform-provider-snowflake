@@ -50,12 +50,12 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 	modelBasic := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
 	modelWithAlterableOptional := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
 		WithComment(comment).
-		WithChangeTracking("true").
+		WithChangeTracking(true).
 		WithDataRetentionTimeInDays(5).
 		WithClusterBy("ID")
 	modelWithAlterableOptionalChanged := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
 		WithComment(commentChanged).
-		WithChangeTracking("true").
+		WithChangeTracking(true).
 		WithDataRetentionTimeInDays(3).
 		WithClusterBy("NAME")
 	modelWithAlterableOptionalUnset := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
@@ -72,7 +72,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasNameString(id.Name()).
 			HasCommentEmpty().
-			HasChangeTrackingString("default").
+			HasChangeTrackingEmpty().
 			HasClusterByEmpty().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
 		resourceshowoutputassert.TableShowOutput(t, ref).
@@ -96,7 +96,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasNameString(id.Name()).
 			HasComment(comment).
-			HasChangeTrackingString("true").
+			HasChangeTracking(true).
 			HasClusterBy("ID").
 			HasDataRetentionTimeInDays(5).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -133,7 +133,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasNameString(id.Name()).
 			HasComment(commentChanged).
-			HasChangeTrackingString("true").
+			HasChangeTracking(true).
 			HasClusterBy("NAME").
 			HasDataRetentionTimeInDays(3).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -159,11 +159,10 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Import
 			{
-				Config:                  accconfig.FromModels(t, modelBasic),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"change_tracking"},
+				Config:            accconfig.FromModels(t, modelBasic),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Change only alterable fields - expect an in-place update
 			{
@@ -177,11 +176,10 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Import with all alterable fields set
 			{
-				Config:                  accconfig.FromModels(t, modelWithAlterableOptional),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"change_tracking"},
+				Config:            accconfig.FromModels(t, modelWithAlterableOptional),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Change the alterable fields externally and detect drift - expect Terraform to fix it with an update
 			{
@@ -276,7 +274,7 @@ func TestAcc_Table_CompleteUseCase(t *testing.T) {
 
 	modelComplete := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
 		WithComment(comment).
-		WithChangeTracking("true").
+		WithChangeTracking(true).
 		WithDataRetentionTimeInDays(5).
 		WithClusterBy("ID", "NAME")
 
@@ -298,7 +296,7 @@ func TestAcc_Table_CompleteUseCase(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasNameString(id.Name()).
 						HasComment(comment).
-						HasChangeTrackingString("true").
+						HasChangeTracking(true).
 						HasClusterBy("ID", "NAME").
 						HasDataRetentionTimeInDays(5).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
@@ -315,11 +313,10 @@ func TestAcc_Table_CompleteUseCase(t *testing.T) {
 				),
 			},
 			{
-				Config:                  accconfig.FromModels(t, modelComplete),
-				ResourceName:            ref,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"change_tracking"},
+				Config:            accconfig.FromModels(t, modelComplete),
+				ResourceName:      ref,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})
@@ -436,8 +433,8 @@ func TestAcc_Table_Validations(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
-				Config:      accconfig.FromModels(t, model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).WithChangeTracking("INVALID")),
-				ExpectError: regexp.MustCompile(`expected .*change_tracking.* to be one of .*, got INVALID`),
+				Config:      accconfig.FromModels(t, model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).WithEnableSchemaEvolution("INVALID")),
+				ExpectError: regexp.MustCompile(`expected .*enable_schema_evolution.* to be one of .*, got INVALID`),
 			},
 		},
 	})
@@ -1455,43 +1452,6 @@ resource "snowflake_table" "test_table" {
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
 }
 
-// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/2844 is fixed
-func TestAcc_Table_issue2844_apostropheInColumnName(t *testing.T) {
-	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-	columnName := "my'id"
-	tableModel := model.TableWithId("test", tableId, []sdk.TableColumnSignature{{Name: columnName, Type: testdatatypes.DataTypeInteger}})
-	ref := tableModel.ResourceReference()
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Table),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, tableModel),
-				Check: assertThat(
-					t,
-					resourceassert.TableResource(t, ref).
-						HasNameString(tableId.Name()),
-					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.name", columnName)),
-					assert.Check(func(*terraform.State) error {
-						cols := testClient().Table.GetTableColumnsFor(t, tableId)
-						if len(cols) != 1 {
-							return fmt.Errorf("expected 1 Snowflake column; got %d", len(cols))
-						}
-						if cols[0].ColumnName != columnName {
-							return fmt.Errorf("expected Snowflake column name %q; got %q", columnName, cols[0].ColumnName)
-						}
-						return nil
-					}),
-				),
-			},
-		},
-	})
-}
-
 // TestAcc_Table_migrateFromV2_23_0 checks the state upgrader.
 func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -1969,4 +1929,302 @@ resource "snowflake_table" "test_table" {
 	}
 }
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+}
+
+func TestAcc_Table_Transient(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	tableModelTransient := model.TableWithId("test_table", tableId, columns).
+		WithIsTransient("true")
+	tableModelPermanent := model.TableWithId("test_table", tableId, columns).
+		WithIsTransient("false")
+	tableModelWithoutTransient := model.TableWithId("test_table", tableId, columns)
+	ref := tableModelTransient.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tableModelTransient),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasIsTransient("true"),
+					resourceshowoutputassert.TableShowOutput(t, ref).
+						HasKind("TRANSIENT"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, tableModelPermanent),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasIsTransient("false"),
+					resourceshowoutputassert.TableShowOutput(t, ref).
+						HasKind("TABLE"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, tableModelWithoutTransient),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+			},
+		},
+	})
+}
+
+func TestAcc_Table_BasicUseCase_Policies(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	rowAccessPolicy, rowAccessPolicyCleanup := testClient().RowAccessPolicy.CreateRowAccessPolicyWithDataType(t, testdatatypes.DataTypeNumber)
+	t.Cleanup(rowAccessPolicyCleanup)
+	aggregationPolicy, aggregationPolicyCleanup := testClient().AggregationPolicy.CreateAggregationPolicy(t)
+	t.Cleanup(aggregationPolicyCleanup)
+	joinPolicy, joinPolicyCleanup := testClient().JoinPolicy.Create(t)
+	t.Cleanup(joinPolicyCleanup)
+
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+	tableWithoutPolicies := model.TableWithId("test_table", tableId, columns)
+	tableWithPolicies := model.TableWithId("test_table", tableId, columns).
+		WithRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+		WithAggregationPolicy(aggregationPolicy, "ID").
+		WithJoinPolicy(joinPolicy, "ID")
+	ref := tableWithoutPolicies.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tableWithPolicies),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+						HasAggregationPolicy(aggregationPolicy, "ID").
+						HasJoinPolicy(joinPolicy, "ID"),
+				),
+			},
+			{
+				PreConfig: func() {
+					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(tableId).WithDropAllRowAccessPolicies(true))
+					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(tableId).WithUnsetAggregationPolicy(*sdk.NewTableUnsetAggregationPolicyRequest()))
+					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(tableId).WithUnsetJoinPolicy(*sdk.NewTableUnsetJoinPolicyRequest()))
+				},
+				Config: accconfig.FromModels(t, tableWithPolicies),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+						HasAggregationPolicy(aggregationPolicy, "ID").
+						HasJoinPolicy(joinPolicy, "ID"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, tableWithoutPolicies),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasRowAccessPolicyEmpty().
+						HasAggregationPolicyEmpty().
+						HasJoinPolicyEmpty(),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, tableWithPolicies),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasRowAccessPolicy(rowAccessPolicy.ID(), "ID").
+						HasAggregationPolicy(aggregationPolicy, "ID").
+						HasJoinPolicy(joinPolicy, "ID"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Table_SchemaEvolutionErrorLoggingRowTimestamp(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	modelBasic := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
+	modelSet := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithEnableSchemaEvolution("true").
+		WithErrorLogging("true").
+		WithRowTimestamp("true")
+	modelChanged := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithEnableSchemaEvolution("false").
+		WithErrorLogging("false").
+		WithRowTimestamp("false")
+	ref := modelBasic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelSet),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasEnableSchemaEvolution("true").
+						HasErrorLogging("true").
+						HasRowTimestamp("true"),
+					resourceshowoutputassert.TableShowOutput(t, ref).
+						HasEnableSchemaEvolution(true).
+						HasErrorLogging(true).
+						HasRowTimestamp(true),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelChanged),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasEnableSchemaEvolution("false").
+						HasErrorLogging("false").
+						HasRowTimestamp("false"),
+					resourceshowoutputassert.TableShowOutput(t, ref).
+						HasEnableSchemaEvolution(false).
+						HasErrorLogging(false).
+						HasRowTimestamp(false),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasEnableSchemaEvolutionString("default").
+						HasErrorLoggingString("default").
+						HasRowTimestampString("default"),
+					resourceshowoutputassert.TableShowOutput(t, ref).
+						HasEnableSchemaEvolution(false).
+						HasErrorLogging(false).
+						HasRowTimestamp(false),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Table_MaxDataExtensionTimeAndDefaultDdlCollation(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	modelSet := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithMaxDataExtensionTimeInDays(20).
+		WithDefaultDdlCollation("en-ci")
+	modelChanged := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithMaxDataExtensionTimeInDays(30).
+		WithDefaultDdlCollation("en-cs")
+	modelInherit := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
+	ref := modelSet.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelSet),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasMaxDataExtensionTimeInDays(20).
+						HasDefaultDdlCollation("en-ci"),
+					resourceparametersassert.TableResourceParameters(t, ref).
+						HasMaxDataExtensionTimeInDays(20).
+						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeTable).
+						HasDefaultDdlCollation("en-ci").
+						HasDefaultDdlCollationLevel(sdk.ParameterTypeTable),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelChanged),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasMaxDataExtensionTimeInDays(30).
+						HasDefaultDdlCollation("en-cs"),
+					resourceparametersassert.TableResourceParameters(t, ref).
+						HasMaxDataExtensionTimeInDays(30).
+						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeTable).
+						HasDefaultDdlCollation("en-cs").
+						HasDefaultDdlCollationLevel(sdk.ParameterTypeTable),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelInherit),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasMaxDataExtensionTimeInDaysNotEmpty().
+						HasDefaultDdlCollationEmpty(),
+					resourceparametersassert.TableResourceParameters(t, ref).
+						HasMaxDataExtensionTimeInDaysLevel(sdk.ParameterTypeDatabase).
+						HasDefaultDdlCollationLevel(sdk.ParameterTypeSnowflakeDefault),
+				),
+			},
+		},
+	})
 }

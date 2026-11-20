@@ -76,3 +76,46 @@ func (t *TableModel) WithClusterBy(clusterBy ...string) *TableModel {
 		return tfconfig.StringVariable(s)
 	})...))
 }
+
+func (t *TableModel) WithRowAccessPolicy(rap sdk.SchemaObjectIdentifier, on string) *TableModel {
+	return t.WithRowAccessPolicyValue(
+		tfconfig.ObjectVariable(
+			map[string]tfconfig.Variable{
+				"policy_name": tfconfig.StringVariable(rap.FullyQualifiedName()),
+				"on":          tfconfig.ListVariable(tfconfig.StringVariable(on)),
+			},
+		),
+	)
+}
+
+func (t *TableModel) WithAggregationPolicy(ap sdk.SchemaObjectIdentifier, entityKey ...string) *TableModel {
+	m := map[string]tfconfig.Variable{
+		"policy_name": tfconfig.StringVariable(ap.FullyQualifiedName()),
+	}
+	if len(entityKey) > 0 {
+		m["entity_key"] = tfconfig.ListVariable(collections.Map(entityKey, func(s string) tfconfig.Variable {
+			return tfconfig.StringVariable(s)
+		})...)
+	}
+	return t.WithAggregationPolicyValue(
+		tfconfig.ObjectVariable(
+			m,
+		),
+	)
+}
+
+func (t *TableModel) WithJoinPolicy(jp sdk.SchemaObjectIdentifier, allowedJoinKeys ...string) *TableModel {
+	m := map[string]tfconfig.Variable{
+		"policy_name": tfconfig.StringVariable(jp.FullyQualifiedName()),
+	}
+	if len(allowedJoinKeys) > 0 {
+		m["allowed_join_keys"] = tfconfig.ListVariable(collections.Map(allowedJoinKeys, func(s string) tfconfig.Variable {
+			return tfconfig.StringVariable(s)
+		})...)
+	}
+	return t.WithJoinPolicyValue(
+		tfconfig.ObjectVariable(
+			m,
+		),
+	)
+}

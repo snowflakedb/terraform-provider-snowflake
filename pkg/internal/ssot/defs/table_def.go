@@ -5,12 +5,22 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // TableAttrs holds reusable table fields.
 //
 // Omitted from Attributes and added in tableAttributesModificationExt:
+//   - primary_key stays a deprecated field until the constraint-block PR.
 //   - column.schema_evolution_record: a computed child. Nested attributes have no computed shape.
 //
+// row_access_policy, aggregation_policy, and join_policy are TableAttrs entries too. Their ALTER statements are separate
+// keyword blocks (ADD/DROP ROW ACCESS POLICY, SET/UNSET AGGREGATION POLICY, ...), not fields of the SET/UNSET request,
+// so they are SkipUpdate and applied in tableAfterAlterExt (the same way share accounts use SkipUpdate with BeforeAlter).
+// aggregation_policy and join_policy generate CREATE parse. row_access_policy is still SkipCreate and is sent by
+// tableNewCreateRequestExt; generating it is a follow-up.
+// Iceberg keeps its own handwritten schema and reuses the CREATE/ALTER SQL structs.
+//
 // The resource has show_output, describe_output (DESCRIBE TABLE ... TYPE = COLUMNS), and a computed parameters block.
-// Read currently copies DESCRIBE onto column as well; follow-up should keep column on import and drift only.
-// data_retention_time_in_days is the only catalog parameter on the resource (ResourceParameters).
-// Other table-level catalog parameters are not resource attributes; they still appear in the computed parameters output.
+// data_retention_time_in_days, max_data_extension_time_in_days, and default_ddl_collation are ResourceParameters.
+// Read also writes the DESCRIBE values onto column in tableSetDescribeOutputExt.
+// The boolean attributes are their own SHOW columns, like change_tracking, so the generator adds the show_output
+// drift suppression and the external-change mapping. cluster_by is the exception: SHOW returns a string such as
+// LINEAR(a, b), so it keeps a separate show_cluster_by column and tableSetConfigFieldsExt converts it to a list.
 //
 // Chrome the generator does not emit is applied in tableAttributesModificationExt:
 //   - column.type: IsDataTypeValid and DiffSuppressDataTypes.
@@ -18,7 +28,6 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 //   - column.comment, masking_policy, and collate: Default "".
 //   - column.identity start_num and step_num: Default 1.
 //   - primary_key: Deprecated.
-//   - change_tracking: IgnoreChangeToCurrentSnowflakeValueInShowWithMapping from the SHOW bool.
 //
 // Identity and default on a column are mutually exclusive. Snowflake rejects that combination,
 // so the schema does not enforce it. constant, expression, and sequence cannot use ConflictsWith
@@ -27,17 +36,25 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // TODO [SNOW-1348114]: there is no such separation of column default kinds on the SDK. Should we keep it in V1?
 // TODO [SNOW-1348114]: consider adding fully_qualified_name for columns.
 var TableAttrs = struct {
-	ClusterBy      ssot.Attribute
-	Column         ssot.Attribute
-	Comment        ssot.Attribute
-	PrimaryKey     ssot.Attribute
-	ChangeTracking ssot.Attribute
+	ClusterBy                  ssot.Attribute
+	Column                     ssot.Attribute
+	Comment                    ssot.Attribute
+	PrimaryKey                 ssot.Attribute
+	DataRetentionTimeInDays    ssot.Attribute
+	ChangeTracking             ssot.Attribute
+	IsTransient                ssot.Attribute
+	EnableSchemaEvolution      ssot.Attribute
+	MaxDataExtensionTimeInDays ssot.Attribute
+	DefaultDdlCollation        ssot.Attribute
+	ErrorLogging               ssot.Attribute
+	RowTimestamp               ssot.Attribute
+	RowAccessPolicy            ssot.Attribute
+	AggregationPolicy          ssot.Attribute
+	JoinPolicy                 ssot.Attribute
 }{
 	ClusterBy: ssot.Attribute{
 		Name:          "cluster_by",
 		Type:          ssot.AttrList,
-		ShowString:    true,
-		OptionalInDb:  true,
 		Description:   "A list of one or more table columns/expressions to be used as clustering key(s) for the table",
 		Elem:          &ssot.Attribute{Type: ssot.AttrString},
 		CreateMapping: ssot.AttributeMappedValueCreate("toTableClusterBy"),
@@ -149,14 +166,66 @@ var TableAttrs = struct {
 			},
 		},
 	},
+	DataRetentionTimeInDays: ssot.Attribute{
+		Name:        "data_retention_time_in_days",
+		Type:        ssot.AttrInt,
+		Description: "Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table.",
+	},
 	ChangeTracking: ssot.Attribute{
 		Name:          "change_tracking",
+		Type:          ssot.AttrBool,
+		NativeBool:    true,
+		StoredAsText:  true,
+		OptionalInDb:  true,
+		BoolTrueValue: "ON",
+		Description:   "Specifies whether to enable change tracking on the table. Default false.",
+	},
+	IsTransient: ssot.Attribute{
+		Name:        "is_transient",
+		Type:        ssot.AttrBool,
+		ForceNew:    true,
+		SkipCreate:  true,
+		Description: "Specifies a transient table. Transient tables participate in time travel to a limited degree, but they do not have a Fail-safe period, so they do not incur additional storage costs once they leave Time Travel. Changing this value recreates the table. Temporary and volatile tables are not supported by the resource.",
+	},
+	EnableSchemaEvolution: ssot.Attribute{
+		Name:          "enable_schema_evolution",
+		Type:          ssot.AttrBool,
+		StoredAsText:  true,
+		OptionalInDb:  true,
+		BoolTrueValue: "Y",
+		Description:   "Specifies whether to enable automatic table schema changes from data loaded into the table from source files, including semi-structured files. For more information, see [Table schema evolution](https://docs.snowflake.com/en/user-guide/data-load-schema-evolution).",
+	},
+	MaxDataExtensionTimeInDays: ssot.Attribute{
+		Name:        "max_data_extension_time_in_days",
+		Type:        ssot.AttrInt,
+		Description: "Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for the table to prevent streams on the table from becoming stale.",
+	},
+	DefaultDdlCollation: ssot.Attribute{
+		Name:        "default_ddl_collation",
+		Type:        ssot.AttrString,
+		Description: "Specifies a default collation specification for the columns in the table, including columns added to the table in the future.",
+		CreateSql:   ssot.StringParameter(ssot.AllowEmpty()),
+		SetSql:      ssot.StringParameter(ssot.AllowEmpty()),
+	},
+	ErrorLogging: ssot.Attribute{
+		Name:          "error_logging",
 		Type:          ssot.AttrBool,
 		StoredAsText:  true,
 		OptionalInDb:  true,
 		BoolTrueValue: "ON",
-		Description:   "Specifies whether to enable change tracking on the table.",
+		Description:   "Specifies whether to turn on DML error logging for the table. If the `ERROR_LOGGING` session parameter is set to `TRUE`, DML error logging is not turned on, regardless of whether it is turned on for specific tables.",
 	},
+	RowTimestamp: ssot.Attribute{
+		Name:          "row_timestamp",
+		Type:          ssot.AttrBool,
+		StoredAsText:  true,
+		OptionalInDb:  true,
+		BoolTrueValue: "ON",
+		Description:   "Specifies whether to enable row timestamps on the table. You must use a role with the OWNERSHIP privilege on the table. **Note:** setting it to `false` permanently deletes all stored `METADATA$ROW_LAST_COMMIT_TIME` values.",
+	},
+	RowAccessPolicy:   TableRowAccessPolicy,
+	AggregationPolicy: TableAggregationPolicy,
+	JoinPolicy:        TableJoinPolicy,
 }
 
 // TableScope and TableKind are the CREATE TABLE keywords before TABLE. The SDK Create request holds them,
@@ -589,33 +658,24 @@ var TableCreateColumnsAndConstraints = ssot.Attribute{
 	},
 }
 
-// TableCreateAttrs are the CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema,
-// resource, model, and assertion generators skip them.
+// TableCreateAttrs are CREATE TABLE clauses that are not resource attributes. They are SqlOnly, so the schema, resource,
+// model, and assertion generators skip them. The policies that are resource attributes live in TableAttrs.
 //
 // The column list names TableCreateColumnsAndConstraints by PreexistingStructOf. The SDK definition builds that struct
 // from this attribute, and the shared structs it names, through the attribute-backed clause. Search optimization,
-// clustering, and storage lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. CREATE row access policy is generated
-// here as TableRowAccessPolicy. ALTER add, drop, and drop-and-add are TableAddRowAccessPolicy, TableDropRowAccessPolicy,
-// and TableDropAndAddRowAccessPolicy in table_common_def.go; iceberg ALTER reuses those structs. Aggregation and join
-// policies are TableAggregationPolicy and TableJoinPolicy in table_common_def.go. Iceberg CREATE reuses the CREATE
+// clustering, and storage lifecycle policy are SSOT attributes reused through QueryStructFromAttribute. CREATE row access,
+// aggregation, and join policies are TableRowAccessPolicy, TableAggregationPolicy, and TableJoinPolicy in
+// table_common_def.go. ALTER add, drop, and drop-and-add RAP are TableAddRowAccessPolicy, TableDropRowAccessPolicy, and
+// TableDropAndAddRowAccessPolicy there; iceberg ALTER reuses those structs. Iceberg CREATE reuses the CREATE
 // structs; iceberg ALTER reuses the SET/UNSET projections.
 var TableCreateAttrs = struct {
 	Scope                      ssot.Attribute
 	Kind                       ssot.Attribute
 	ColumnsAndConstraints      ssot.Attribute
-	EnableSchemaEvolution      ssot.Attribute
-	DataRetentionTimeInDays    ssot.Attribute
-	MaxDataExtensionTimeInDays ssot.Attribute
-	DefaultDdlCollation        ssot.Attribute
-	ErrorLogging               ssot.Attribute
 	Copy                       ssot.Attribute
 	IcebergDefaultDdlCollation ssot.Attribute
-	RowTimestamp               ssot.Attribute
 	Contact                    ssot.Attribute
 	StorageLifecyclePolicy     ssot.Attribute
-	RowAccessPolicy            ssot.Attribute
-	AggregationPolicy          ssot.Attribute
-	JoinPolicy                 ssot.Attribute
 }{
 	Scope: ssot.Attribute{
 		Name:      "scope",
@@ -637,33 +697,6 @@ var TableCreateAttrs = struct {
 		SqlOnly:   true,
 		CreateSql: ssot.PreexistingStructOf(&TableCreateColumnsAndConstraints, ssot.Parentheses(), ssot.Required()),
 	},
-	EnableSchemaEvolution: ssot.Attribute{
-		Name:    "enable_schema_evolution",
-		Type:    ssot.AttrBool,
-		SqlOnly: true,
-	},
-	DataRetentionTimeInDays: ssot.Attribute{
-		Name:    "data_retention_time_in_days",
-		Type:    ssot.AttrInt,
-		SqlOnly: true,
-	},
-	MaxDataExtensionTimeInDays: ssot.Attribute{
-		Name:    "max_data_extension_time_in_days",
-		Type:    ssot.AttrInt,
-		SqlOnly: true,
-	},
-	DefaultDdlCollation: ssot.Attribute{
-		Name:      "default_ddl_collation",
-		Type:      ssot.AttrString,
-		SqlOnly:   true,
-		CreateSql: ssot.StringParameter(ssot.AllowEmpty()),
-		SetSql:    ssot.StringParameter(ssot.AllowEmpty()),
-	},
-	ErrorLogging: ssot.Attribute{
-		Name:    "error_logging",
-		Type:    ssot.AttrBool,
-		SqlOnly: true,
-	},
 	Copy: ssot.Attribute{
 		Name:      "copy",
 		Type:      ssot.AttrList,
@@ -676,11 +709,6 @@ var TableCreateAttrs = struct {
 		Type:    ssot.AttrString,
 		SqlOnly: true,
 		SetSql:  ssot.StringParameter(ssot.AllowEmpty()),
-	},
-	RowTimestamp: ssot.Attribute{
-		Name:    "row_timestamp",
-		Type:    ssot.AttrBool,
-		SqlOnly: true,
 	},
 	// CREATE is WITH CONTACT ( purpose = contact ). SET is CONTACT purpose = contact and may mix
 	// with other SET properties. UNSET CONTACT <purpose> is its own ALTER statement (Snowflake
@@ -705,32 +733,6 @@ var TableCreateAttrs = struct {
 			{Name: "on", Type: ssot.AttrList, Required: true, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.ListParameter("Column", ssot.Sql("ON"), ssot.NoEquals(), ssot.Required(), ssot.FieldName("On"))},
 		},
 	},
-	RowAccessPolicy: ssot.Attribute{
-		Name:      "row_access_policy",
-		Type:      ssot.AttrObject,
-		SqlOnly:   true,
-		CreateSql: ssot.ObjectParameter(),
-		Children: []ssot.Attribute{
-			{
-				Name:           "name",
-				Type:           ssot.AttrIdentifier,
-				IdentifierType: "SchemaObjectIdentifier",
-				Required:       true,
-				SqlOnly:        true,
-				CreateSql:      ssot.IdentifierKeyword("SchemaObjectIdentifier", ssot.Sql("ROW ACCESS POLICY"), ssot.FieldName("Name")),
-			},
-			{
-				Name:      "on",
-				Type:      ssot.AttrList,
-				Required:  true,
-				SqlOnly:   true,
-				Elem:      &ssot.Attribute{Type: ssot.AttrString},
-				CreateSql: ssot.StringListKeyword(ssot.Parentheses()),
-			},
-		},
-	},
-	AggregationPolicy: TableAggregationPolicy,
-	JoinPolicy:        TableJoinPolicy,
 }
 
 func tableShowString(name string, optionalInDb, optionalInShow bool) ssot.Attribute {
@@ -748,32 +750,22 @@ func tableShowBool(name, trueValue string) ssot.Attribute {
 }
 
 var (
-	tableShowCreatedOn           = tableShowString("created_on", false, false)
-	tableShowName                = tableShowString("name", false, false)
-	tableShowSchemaName          = tableShowString("schema_name", false, false)
-	tableShowDatabaseName        = tableShowString("database_name", false, false)
-	tableShowKind                = tableShowString("kind", false, false)
-	tableShowClusterBy           = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
-	tableShowOwner               = tableShowString("owner", false, false)
-	tableShowRows                = tableShowInt("rows", false)
-	tableShowBytes               = tableShowInt("bytes", true)
-	tableShowRetentionTime       = tableShowInt("retention_time", false)
-	tableShowDroppedOn           = tableShowString("dropped_on", true, true)
-	tableShowAutomaticClustering = tableShowBool("automatic_clustering", "ON")
-	tableShowChangeTracking      = ssot.Attribute{
-		Name:          "show_change_tracking",
-		ShowName:      "change_tracking",
-		Type:          ssot.AttrBool,
-		Readonly:      true,
-		StoredAsText:  true,
-		OptionalInDb:  true,
-		BoolTrueValue: "ON",
-	}
+	tableShowCreatedOn                  = tableShowString("created_on", false, false)
+	tableShowName                       = tableShowString("name", false, false)
+	tableShowSchemaName                 = tableShowString("schema_name", false, false)
+	tableShowDatabaseName               = tableShowString("database_name", false, false)
+	tableShowKind                       = tableShowString("kind", false, false)
+	tableShowClusterBy                  = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
+	tableShowOwner                      = tableShowString("owner", false, false)
+	tableShowRows                       = tableShowInt("rows", false)
+	tableShowBytes                      = tableShowInt("bytes", true)
+	tableShowRetentionTime              = tableShowInt("retention_time", false)
+	tableShowDroppedOn                  = tableShowString("dropped_on", true, true)
+	tableShowAutomaticClustering        = tableShowBool("automatic_clustering", "ON")
 	tableShowSearchOptimization         = tableShowBool("search_optimization", "ON")
 	tableShowSearchOptimizationProgress = tableShowString("search_optimization_progress", true, false)
 	tableShowSearchOptimizationBytes    = tableShowInt("search_optimization_bytes", true)
 	tableShowIsExternal                 = tableShowBool("is_external", "Y")
-	tableShowEnableSchemaEvolution      = tableShowBool("enable_schema_evolution", "Y")
 	tableShowOwnerRoleType              = tableShowString("owner_role_type", true, false)
 	tableShowIsEvent                    = tableShowBool("is_event", "Y")
 	tableShowIsHybrid                   = tableShowBool("is_hybrid", "Y")
@@ -781,8 +773,6 @@ var (
 	tableShowIsDynamic                  = tableShowBool("is_dynamic", "Y")
 	tableShowIsImmutable                = tableShowBool("is_immutable", "Y")
 	tableShowIsInteractive              = tableShowBool("is_interactive", "Y")
-	tableShowRowTimestamp               = tableShowBool("row_timestamp", "ON")
-	tableShowErrorLogging               = tableShowBool("error_logging", "ON")
 	tableShowBudget                     = tableShowString("budget", true, true)
 )
 
@@ -821,9 +811,9 @@ var Table = ssot.Object{
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedIn, ssot.SdkShowByIDLike),
 			),
 			ssot.SdkCustomOperations(),
-			ssot.SdkAlter(ssot.SdkAlterAdditionalValidations()),
 			ssot.SdkShowParameters(),
 			ssot.SdkShowParametersDetails(),
+			ssot.SdkAlter(ssot.SdkAlterAdditionalValidations()),
 		),
 		ssot.WithDataSource(
 			ssot.DataSourceWithTerse(),
@@ -843,21 +833,21 @@ var Table = ssot.Object{
 		Clauses: []*ssot.Attribute{
 			&TableCreateAttrs.ColumnsAndConstraints,
 			&TableAttrs.ClusterBy,
-			&TableCreateAttrs.EnableSchemaEvolution,
-			&TableCreateAttrs.DataRetentionTimeInDays,
-			&TableCreateAttrs.MaxDataExtensionTimeInDays,
+			&TableAttrs.EnableSchemaEvolution,
+			&TableAttrs.DataRetentionTimeInDays,
+			&TableAttrs.MaxDataExtensionTimeInDays,
 			&TableAttrs.ChangeTracking,
-			&TableCreateAttrs.DefaultDdlCollation,
-			&TableCreateAttrs.ErrorLogging,
+			&TableAttrs.DefaultDdlCollation,
+			&TableAttrs.ErrorLogging,
 			&TableCreateAttrs.Copy,
-			&TableCreateAttrs.RowAccessPolicy,
-			&TableCreateAttrs.AggregationPolicy,
-			&TableCreateAttrs.JoinPolicy,
+			&TableAttrs.RowAccessPolicy,
+			&TableAttrs.AggregationPolicy,
+			&TableAttrs.JoinPolicy,
 			&TableCreateAttrs.StorageLifecyclePolicy,
 			ssot.Tags,
 			&TableCreateAttrs.Contact,
 			&TableAttrs.Comment,
-			&TableCreateAttrs.RowTimestamp,
+			&TableAttrs.RowTimestamp,
 		},
 	},
 	Show: ssot.OutputSpec{
@@ -868,19 +858,19 @@ var Table = ssot.Object{
 			&tableShowDatabaseName,
 			&tableShowKind,
 			&TableAttrs.Comment,
-			&TableAttrs.ClusterBy,
+			&tableShowClusterBy,
 			&tableShowRows,
 			&tableShowBytes,
 			&tableShowOwner,
 			&tableShowRetentionTime,
 			&tableShowDroppedOn,
 			&tableShowAutomaticClustering,
-			&tableShowChangeTracking,
+			&TableAttrs.ChangeTracking,
 			&tableShowSearchOptimization,
 			&tableShowSearchOptimizationProgress,
 			&tableShowSearchOptimizationBytes,
 			&tableShowIsExternal,
-			&tableShowEnableSchemaEvolution,
+			&TableAttrs.EnableSchemaEvolution,
 			&tableShowOwnerRoleType,
 			&tableShowIsEvent,
 			&tableShowIsHybrid,
@@ -888,8 +878,8 @@ var Table = ssot.Object{
 			&tableShowIsDynamic,
 			&tableShowIsImmutable,
 			&tableShowIsInteractive,
-			&tableShowRowTimestamp,
-			&tableShowErrorLogging,
+			&TableAttrs.RowTimestamp,
+			&TableAttrs.ErrorLogging,
 			&tableShowBudget,
 		},
 	},
@@ -911,31 +901,31 @@ var Table = ssot.Object{
 			// SET and UNSET are the alter-table parameters. UNSET is comma-separated: the alter-table
 			// grammar repeats the properties with [ , ... ].
 			ssot.AlterSet(
-				&TableCreateAttrs.EnableSchemaEvolution,
-				&TableCreateAttrs.DataRetentionTimeInDays,
-				&TableCreateAttrs.MaxDataExtensionTimeInDays,
+				&TableAttrs.EnableSchemaEvolution,
+				&TableAttrs.DataRetentionTimeInDays,
+				&TableAttrs.MaxDataExtensionTimeInDays,
 				&TableAttrs.ChangeTracking,
-				&TableCreateAttrs.DefaultDdlCollation,
+				&TableAttrs.DefaultDdlCollation,
 				&TableCreateAttrs.IcebergDefaultDdlCollation,
-				&TableCreateAttrs.ErrorLogging,
+				&TableAttrs.ErrorLogging,
 				&TableCreateAttrs.Contact,
 				&TableAttrs.Comment,
-				&TableCreateAttrs.RowTimestamp,
+				&TableAttrs.RowTimestamp,
 			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 			ssot.AlterUnset(
 				ssot.AlterGroup("Contact", &TableCreateAttrs.Contact),
 				ssot.AlterGroup(ssot.MainAlterGroup,
-					&TableCreateAttrs.DataRetentionTimeInDays,
-					&TableCreateAttrs.MaxDataExtensionTimeInDays,
+					&TableAttrs.DataRetentionTimeInDays,
+					&TableAttrs.MaxDataExtensionTimeInDays,
 					&TableAttrs.ChangeTracking,
-					&TableCreateAttrs.DefaultDdlCollation,
+					&TableAttrs.DefaultDdlCollation,
 					&TableCreateAttrs.IcebergDefaultDdlCollation,
-					&TableCreateAttrs.EnableSchemaEvolution,
-					&TableCreateAttrs.ErrorLogging,
+					&TableAttrs.EnableSchemaEvolution,
+					&TableAttrs.ErrorLogging,
 					&TableAttrs.Comment,
-					&TableCreateAttrs.RowTimestamp,
+					&TableAttrs.RowTimestamp,
 				),
 			),
 			ssot.AlterKeywordBlock("AddRowAccessPolicy", "", &TableAddRowAccessPolicy).WithSharedToOpts(),
@@ -955,19 +945,18 @@ var Table = ssot.Object{
 			ssot.AlterKeywordBlock("ModifyDataMetricFunction", "", &TableModifyDataMetricFunction),
 		},
 	},
-	// Column stays in NewCreateRequestExt: it is a required list block.
-	// Describe uses DescribeColumns. describe_output is a list of rows, so DescribeOutputSet stays omitted and
-	// SetDescribeOutput writes describe_output and column (follow-up: column from import and drift only).
-	// Column diffs and primary key stay in AfterAlter.
-	// change_tracking external changes are mapped from SHOW ON/OFF in the extension.
+	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.
+	// Describe uses DescribeColumns. describe_output is the DESCRIBE column list; SetDescribeOutput also copies those
+	// rows onto column. SetConfigFields copies owner and cluster keys. Column diffs, primary key, and tags stay in the
+	// extension. Generated AfterAlter is unimplemented. Import is generated (SHOW BY ID, then SetFieldsNotSetByRead).
+	// ResourceParameters is the three CREATE/ALTER table parameters; the rest of SHOW PARAMETERS IN TABLE is Iceberg-only.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
-		ssot.WithHandleExternalChanges(ssot.ExtCall()),
+		ssot.WithHandleExternalChanges(ssot.Generated()),
 		ssot.WithSetStateToValuesFromConfig(ssot.Generated()),
-		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.Generated()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
@@ -978,6 +967,8 @@ var Table = ssot.Object{
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
 		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
+		// Generated DescribeOutputSet maps a single *Details struct. DESCRIBE TABLE TYPE = COLUMNS is a list of rows.
+		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
 		ssot.WithApplyParametersCreate(ssot.Generated()),
@@ -991,10 +982,11 @@ var Table = ssot.Object{
 		ssot.WithParametersFieldNames(ssot.Generated()),
 		ssot.WithParametersCustomDiff(ssot.Generated()),
 	},
-	// ResourceParameters is the one CREATE/ALTER table parameter that is a resource attribute.
-	// The rest of SHOW PARAMETERS IN TABLE is still in the computed parameters output.
+	// ResourceParameters is the three CREATE/ALTER table parameters; the rest of SHOW PARAMETERS IN TABLE is Iceberg-only.
 	ResourceParameters: []ssot.ParameterDef{
 		DataRetentionTimeInDays,
+		MaxDataExtensionTimeInDays,
+		DefaultDdlCollation,
 	},
 	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
@@ -1007,5 +999,12 @@ var Table = ssot.Object{
 		TableAttrs.Comment,
 		TableAttrs.PrimaryKey,
 		TableAttrs.ChangeTracking,
+		TableAttrs.IsTransient,
+		TableAttrs.EnableSchemaEvolution,
+		TableAttrs.ErrorLogging,
+		TableAttrs.RowTimestamp,
+		TableAttrs.RowAccessPolicy,
+		TableAttrs.AggregationPolicy,
+		TableAttrs.JoinPolicy,
 	},
 }

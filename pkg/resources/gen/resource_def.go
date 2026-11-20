@@ -24,6 +24,10 @@ var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
 	},
+	"Table": {
+		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
+		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
+	},
 	"Warehouse": {
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
@@ -33,10 +37,6 @@ var resourceGenerationSettings = map[string]*genhelpers.ObjectGenerationSettings
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
 	},
 	"WarehouseInteractive": {
-		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
-		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
-	},
-	"Table": {
 		AllowedGenerationParts: []genhelpers.GenerationPartNamer{PartDefault, PartSchema, PartParameters},
 		EnabledGenerationParts: []genhelpers.GenerationPartNamer{PartParameters},
 	},
