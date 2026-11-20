@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
@@ -28,10 +28,10 @@ var (
 	tableReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.TableResource), TrackingReadWrapper(resources.Table, ReadTableFunc(true)))
 	tableUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.TableResource), TrackingUpdateWrapper(resources.Table, UpdateTable))
 
-	tableDescriptionExt = docs.WithPreviewFeatureMark()
+	tableDescriptionExt = docs.WithPreviewFeatureMark() + "Resource used to manage tables. For more information, check [CREATE TABLE documentation](https://docs.snowflake.com/en/sql-reference/sql/create-table)."
 
 	tableImporterExt = &schema.ResourceImporter{
-		StateContext: schema.ImportStatePassthroughContext,
+		StateContext: TrackingImportWrapper(resources.Table, importTableExt),
 	}
 )
 
@@ -45,12 +45,7 @@ func tableNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentif
 		return nil, err
 	}
 
-	request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(tableColumnRequests))
-	// tag is not an attribute, so generated ApplyCreateOptionals does not see it.
-	if _, ok := d.GetOk("tag"); ok {
-		request.WithTag(getPropertyTags(d, "tag"))
-	}
-	return request, nil
+	return sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(tableColumnRequests)), nil
 }
 
 func toTableClusterBy(value []any) ([]string, error) {
@@ -58,216 +53,249 @@ func toTableClusterBy(value []any) ([]string, error) {
 }
 
 func tableSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, table *sdk.Table) error {
-	// Set the relevant data in the state
-	toSet := map[string]any{
-		"name":            table.Name,
-		"owner":           table.Owner,
-		"database":        table.DatabaseName,
-		"schema":          table.SchemaName,
-		"comment":         table.Comment,
-		"cluster_by":      table.GetClusterByKeys(),
-		"change_tracking": table.ChangeTracking,
+	return errors.Join(
+		d.Set("comment", table.Comment),
+		d.Set("cluster_by", table.GetClusterByKeys()),
+	)
+}
+
+func tableHandleExternalChangesExt(d *schema.ResourceData, table *sdk.Table, withExternalChangesMarking bool) error {
+	if !withExternalChangesMarking {
+		return nil
+	}
+	return handleExternalChangesToObjectInShow(d, tableOutputMappingsExt(table)...)
+}
+
+func tableOutputMappingsExt(table *sdk.Table) []outputMapping {
+	return []outputMapping{
+		{"change_tracking", "change_tracking", table.ChangeTracking, booleanStringFromBool(table.ChangeTracking), nil},
+	}
+}
+
+func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, describeErr error, _ bool) error {
+	if describeErr != nil {
+		return describeErr
+	}
+	// TODO: stop copying DESCRIBE onto column on every Read (nested-block drift, like authentication policy). Follow-up.
+	return errors.Join(
+		d.Set("column", toColumnConfig(tableDescription)),
+		d.Set(DescribeOutputAttributeName, schemas.TableColumnDetailsListToSchema(tableDescription)),
+	)
+}
+
+func importTableExt(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	results, err := ImportTable(ctx, d, meta)
+	if err != nil {
+		return nil, err
+	}
+	id, err := tableParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+	details, err := tableDescribeInSdkExt(ctx, meta, id)
+	if err != nil {
+		return nil, err
+	}
+	if err := d.Set("column", toColumnConfig(details)); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
+func tableSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, table *sdk.Table, _ bool) error {
+	return errors.Join(
+		d.Set("name", id.Name()),
+		d.Set("database", id.DatabaseName()),
+		d.Set("schema", id.SchemaName()),
+		d.Set("comment", table.Comment),
+		d.Set("change_tracking", booleanStringFromBool(table.ChangeTracking)),
+	)
+}
+
+func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if diags := tableAfterAlterClusterByExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+	if diags := tableAfterAlterColumnsExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+	return tableAfterAlterPrimaryKeyExt(ctx, d, meta, id)
+}
+
+func tableAfterAlterClusterByExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("cluster_by") {
+		return nil
+	}
+	client := meta.(*provider.Context).Client
+	cb := expandStringList(d.Get("cluster_by").([]any))
+	if len(cb) != 0 {
+		if err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithClusterBy(cb))); err != nil {
+			return diag.FromErr(fmt.Errorf("error clustering table %v: %w", id.FullyQualifiedName(), err))
+		}
+		return nil
+	}
+	if err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithDropClusteringKey(true))); err != nil {
+		return diag.FromErr(fmt.Errorf("error dropping clustering key on table %v: %w", id.FullyQualifiedName(), err))
+	}
+	return nil
+}
+
+func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("column") {
+		return nil
+	}
+	client := meta.(*provider.Context).Client
+	t, n := d.GetChange("column")
+	removed, added, changed := getColumns(t).diffs(getColumns(n))
+
+	if len(removed) > 0 {
+		removedColumnNames := make([]string, len(removed))
+		for i, r := range removed {
+			removedColumnNames[i] = r.name
+		}
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithDropColumns(*sdk.NewTableDropColumnActionRequest(toColumns(removedColumnNames)))))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error dropping columns on table %v: %w", id.FullyQualifiedName(), err))
+		}
 	}
 
-	for key, val := range toSet {
-		if err := d.Set(key, val); err != nil { // lintignore:R001
-			return err
+	for _, cA := range added {
+		dataType, err := datatypes.ParseDataType(cA.dataType)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+		}
+		addRequest := sdk.NewTableColumnAddActionRequest(cA.name, dataType)
+		if !cA.nullable {
+			addRequest.WithNotNull(true)
+		}
+
+		if cA._default != nil {
+			if cA._default._type() != "constant" {
+				return diag.FromErr(fmt.Errorf("failed to add column %v => Only adding a column as a constant is supported by Snowflake", cA.name))
+			}
+			var expression string
+			if datatypes.IsTextDataType(dataType) {
+				expression = snowflake.EscapeSnowflakeString(*cA._default.constant)
+			} else {
+				expression = *cA._default.constant
+			}
+			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(expression))
+		}
+
+		if cA.identity != nil {
+			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(cA.identity.startNum, cA.identity.stepNum)))
+		}
+
+		if cA.maskingPolicy != "" {
+			addRequest.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.maskingPolicy)))
+		}
+
+		if cA.comment != "" {
+			addRequest.WithComment(cA.comment)
+		}
+
+		if cA.collate != "" && datatypes.IsTextDataType(dataType) {
+			addRequest.WithCollate(cA.collate)
+		}
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(*addRequest)))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error adding column %v on table %v: %w", cA.name, id.FullyQualifiedName(), err))
+		}
+	}
+	for _, cA := range changed {
+		if cA.changedDataType || cA.changedCollate {
+			dataType, err := datatypes.ParseDataType(cA.newColumn.dataType)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
+			}
+			dataTypeRequest := sdk.NewTableColumnAlterDataTypeRequest(dataType)
+			if datatypes.IsTextDataType(dataType) && cA.newColumn.collate != "" {
+				dataTypeRequest.WithCollate(cA.newColumn.collate)
+			}
+			columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDataType(*dataTypeRequest)
+			err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column type on table %v: %w", id.FullyQualifiedName(), err))
+			}
+		}
+		if cA.changedNullConstraint {
+			nullabilityRequest := sdk.NewTableColumnNotNullConstraintRequest()
+			if !cA.newColumn.nullable {
+				nullabilityRequest.WithSet(true)
+			} else {
+				nullabilityRequest.WithDrop(true)
+			}
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithNotNullConstraint(*nullabilityRequest)})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column null constraint on table %v: %w", id.FullyQualifiedName(), err))
+			}
+		}
+		if cA.droppedDefault {
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDropDefault(true)})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error dropping column default on table %v: %w", id.FullyQualifiedName(), err))
+			}
+		}
+		if cA.changedComment {
+			columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name)
+			if cA.newColumn.comment == "" {
+				columnAlterActionRequest.WithUnsetComment(true)
+			} else {
+				columnAlterActionRequest.WithComment(cA.newColumn.comment)
+			}
+
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column comment on table %v: %w", id.FullyQualifiedName(), err))
+			}
+		}
+		if cA.changedMaskingPolicy {
+			columnAction := sdk.NewTableColumnActionRequest()
+			if strings.TrimSpace(cA.newColumn.maskingPolicy) == "" {
+				columnAction.WithUnsetMaskingPolicy(*sdk.NewTableUnsetColumnMaskingPolicyRequest(cA.newColumn.name))
+			} else {
+				columnAction.WithSetMaskingPolicy(*sdk.NewTableSetColumnMaskingPolicyRequest(cA.newColumn.name, sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.newColumn.maskingPolicy)).WithForce(true))
+			}
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column masking policy on table %v: %w", id.FullyQualifiedName(), err))
+			}
 		}
 	}
 	return nil
 }
 
-func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, _ error, _ bool) error {
-	return d.Set("column", toColumnConfig(tableDescription))
-}
-
-// tableAfterAlterExt runs the ALTER TABLE statements issued after SET/UNSET: clustering, columns, primary key, and tags.
-func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+func tableAfterAlterPrimaryKeyExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("primary_key") {
+		return nil
+	}
 	client := meta.(*provider.Context).Client
+	o, n := d.GetChange("primary_key")
+	newKey := getPrimaryKey(n)
+	oldKey := getPrimaryKey(o)
 
-	if d.HasChange("cluster_by") {
-		cb := expandStringList(d.Get("cluster_by").([]any))
-
-		if len(cb) != 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithClusterBy(cb)))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
-		} else {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithDropClusteringKey(true)))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
+	if len(oldKey.keys) > 0 || len(newKey.keys) == 0 {
+		// drop our pk if there was an old primary key, or pk has been removed
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
+			*sdk.NewTableConstraintActionRequest().
+				WithDrop(*sdk.NewTableConstraintDropActionRequest().WithPrimaryKey(true)),
+		))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error dropping primary key on table %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 
-	if d.HasChange("column") {
-		t, n := d.GetChange("column")
-		removed, added, changed := getColumns(t).diffs(getColumns(n))
-
-		if len(removed) > 0 {
-			removedColumnNames := make([]string, len(removed))
-			for i, r := range removed {
-				removedColumnNames[i] = r.name
-			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithDropColumns(*sdk.NewTableDropColumnActionRequest(toColumns(removedColumnNames)))))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
+	if len(newKey.keys) > 0 {
+		primaryKey := sdk.NewTableOutOfLineUniquePKRequest().WithPrimaryKey(true).WithColumns(toColumns(newKey.keys))
+		if newKey.name != "" {
+			primaryKey.WithName(newKey.name)
 		}
-
-		for _, cA := range added {
-			dataType, err := datatypes.ParseDataType(cA.dataType)
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
-			}
-			addRequest := sdk.NewTableColumnAddActionRequest(cA.name, dataType)
-			if !cA.nullable {
-				addRequest.WithNotNull(true)
-			}
-
-			if cA._default != nil {
-				if cA._default._type() != "constant" {
-					return diag.FromErr(fmt.Errorf("failed to add column %v => Only adding a column as a constant is supported by Snowflake", cA.name))
-				}
-				var expression string
-				if datatypes.IsTextDataType(dataType) {
-					expression = snowflake.EscapeSnowflakeString(*cA._default.constant)
-				} else {
-					expression = *cA._default.constant
-				}
-				addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(expression))
-			}
-
-			if cA.identity != nil {
-				addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(cA.identity.startNum, cA.identity.stepNum)))
-			}
-
-			if cA.maskingPolicy != "" {
-				addRequest.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.maskingPolicy)))
-			}
-
-			if cA.comment != "" {
-				addRequest.WithComment(cA.comment)
-			}
-
-			if cA.collate != "" && datatypes.IsTextDataType(dataType) {
-				addRequest.WithCollate(cA.collate)
-			}
-
-			err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(*addRequest)))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error adding column: %w", err))
-			}
-		}
-		for _, cA := range changed {
-			if cA.changedDataType || cA.changedCollate {
-				dataType, err := datatypes.ParseDataType(cA.newColumn.dataType)
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
-				dataTypeRequest := sdk.NewTableColumnAlterDataTypeRequest(dataType)
-				if datatypes.IsTextDataType(dataType) && cA.newColumn.collate != "" {
-					dataTypeRequest.WithCollate(cA.newColumn.collate)
-				}
-				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDataType(*dataTypeRequest)
-				err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
-			}
-			if cA.changedNullConstraint {
-				nullabilityRequest := sdk.NewTableColumnNotNullConstraintRequest()
-				if !cA.newColumn.nullable {
-					nullabilityRequest.WithSet(true)
-				} else {
-					nullabilityRequest.WithDrop(true)
-				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithNotNullConstraint(*nullabilityRequest)})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
-			}
-			if cA.droppedDefault {
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDropDefault(true)})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
-			}
-			if cA.changedComment {
-				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name)
-				if cA.newColumn.comment == "" {
-					columnAlterActionRequest.WithUnsetComment(true)
-				} else {
-					columnAlterActionRequest.WithComment(cA.newColumn.comment)
-				}
-
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
-			}
-			if cA.changedMaskingPolicy {
-				columnAction := sdk.NewTableColumnActionRequest()
-				if strings.TrimSpace(cA.newColumn.maskingPolicy) == "" {
-					columnAction.WithUnsetMaskingPolicy(*sdk.NewTableUnsetColumnMaskingPolicyRequest(cA.newColumn.name))
-				} else {
-					columnAction.WithSetMaskingPolicy(*sdk.NewTableSetColumnMaskingPolicyRequest(cA.newColumn.name, sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.newColumn.maskingPolicy)).WithForce(true))
-				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
-			}
-		}
-	}
-
-	if d.HasChange("primary_key") {
-		o, n := d.GetChange("primary_key")
-
-		newKey := getPrimaryKey(n)
-		oldKey := getPrimaryKey(o)
-
-		if len(oldKey.keys) > 0 || len(newKey.keys) == 0 {
-			// drop our pk if there was an old primary key, or pk has been removed
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
-				*sdk.NewTableConstraintActionRequest().
-					WithDrop(*sdk.NewTableConstraintDropActionRequest().WithPrimaryKey(true)),
-			))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
-		}
-
-		if len(newKey.keys) > 0 {
-			primaryKey := sdk.NewTableOutOfLineUniquePKRequest().WithPrimaryKey(true).WithColumns(toColumns(newKey.keys))
-			if newKey.name != "" {
-				primaryKey.WithName(newKey.name)
-			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
-				*sdk.NewTableConstraintActionRequest().WithAdd(*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*primaryKey)),
-			))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
-		}
-	}
-
-	if d.HasChange("tag") {
-		unsetTags, setTags := GetTagsDiff(d, "tag")
-
-		if len(unsetTags) > 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(unsetTags))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
-			}
-		}
-
-		if len(setTags) > 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(setTags))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
-			}
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
+			*sdk.NewTableConstraintActionRequest().WithAdd(*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*primaryKey)),
+		))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error adding primary key on table %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 	return nil
@@ -276,48 +304,6 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 // =============================================================================
 // SDK incision points
 // =============================================================================
-
-func tableShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Table, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-
-	table, err := client.Tables.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query table. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Table id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-
-	s, err := client.Schemas.ShowByID(ctx, sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName()))
-	if err != nil {
-		log.Printf("[DEBUG] schema (%s) not found", d.Id())
-		d.SetId("")
-		return nil, diag.Diagnostics{}
-	}
-
-	// "retention_time" may sometimes be empty string instead of an integer.
-	retentionTime := s.RetentionTime
-	if retentionTime == "" {
-		retentionTime = "0"
-	}
-	schemaRetentionTime, err := strconv.ParseInt(retentionTime, 10, 64)
-	if err != nil {
-		return nil, diag.FromErr(err)
-	}
-	if v := d.Get("data_retention_time_in_days"); v.(int) != IntDefault || int64(table.RetentionTime) != schemaRetentionTime {
-		if err := d.Set("data_retention_time_in_days", table.RetentionTime); err != nil {
-			return nil, diag.FromErr(err)
-		}
-	}
-	return table, nil
-}
 
 func tableDescribeInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) ([]sdk.TableColumnDetails, error) {
 	client := meta.(*provider.Context).Client

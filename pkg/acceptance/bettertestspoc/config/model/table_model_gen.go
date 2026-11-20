@@ -4,6 +4,7 @@ package model
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -12,18 +13,25 @@ import (
 )
 
 type TableModel struct {
-	Database                tfconfig.Variable `json:"database,omitempty"`
-	Schema                  tfconfig.Variable `json:"schema,omitempty"`
-	Name                    tfconfig.Variable `json:"name,omitempty"`
-	ChangeTracking          tfconfig.Variable `json:"change_tracking,omitempty"`
-	ClusterBy               tfconfig.Variable `json:"cluster_by,omitempty"`
-	Column                  tfconfig.Variable `json:"column,omitempty"`
-	Comment                 tfconfig.Variable `json:"comment,omitempty"`
-	DataRetentionTimeInDays tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
-	FullyQualifiedName      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Owner                   tfconfig.Variable `json:"owner,omitempty"`
-	PrimaryKey              tfconfig.Variable `json:"primary_key,omitempty"`
-	Tag                     tfconfig.Variable `json:"tag,omitempty"`
+	Database                    tfconfig.Variable `json:"database,omitempty"`
+	Schema                      tfconfig.Variable `json:"schema,omitempty"`
+	Name                        tfconfig.Variable `json:"name,omitempty"`
+	Catalog                     tfconfig.Variable `json:"catalog,omitempty"`
+	ChangeTracking              tfconfig.Variable `json:"change_tracking,omitempty"`
+	ClusterBy                   tfconfig.Variable `json:"cluster_by,omitempty"`
+	Column                      tfconfig.Variable `json:"column,omitempty"`
+	Comment                     tfconfig.Variable `json:"comment,omitempty"`
+	DataRetentionTimeInDays     tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
+	DefaultDdlCollation         tfconfig.Variable `json:"default_ddl_collation,omitempty"`
+	EnableConsoleOutput         tfconfig.Variable `json:"enable_console_output,omitempty"`
+	ExternalVolume              tfconfig.Variable `json:"external_volume,omitempty"`
+	LogEventLevel               tfconfig.Variable `json:"log_event_level,omitempty"`
+	LogLevel                    tfconfig.Variable `json:"log_level,omitempty"`
+	MaxDataExtensionTimeInDays  tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
+	PrimaryKey                  tfconfig.Variable `json:"primary_key,omitempty"`
+	QuotedIdentifiersIgnoreCase tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
+	ReplaceInvalidCharacters    tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
+	StorageSerializationPolicy  tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -114,8 +122,23 @@ func (t *TableModel) WithName(name string) *TableModel {
 	return t
 }
 
-func (t *TableModel) WithChangeTracking(changeTracking bool) *TableModel {
-	t.ChangeTracking = tfconfig.BoolVariable(changeTracking)
+func (t *TableModel) WithCatalog(catalog string) *TableModel {
+	t.Catalog = tfconfig.StringVariable(catalog)
+	return t
+}
+
+func (t *TableModel) WithCatalogSdk(catalog sdk.AccountObjectIdentifier) *TableModel {
+	t.Catalog = tfconfig.StringVariable(catalog.Name())
+	return t
+}
+
+func (t *TableModel) WithChangeTracking(changeTracking string) *TableModel {
+	t.ChangeTracking = tfconfig.StringVariable(changeTracking)
+	return t
+}
+
+func (t *TableModel) WithChangeTrackingBool(changeTracking bool) *TableModel {
+	t.ChangeTracking = tfconfig.StringVariable(strconv.FormatBool(changeTracking))
 	return t
 }
 
@@ -133,19 +156,72 @@ func (t *TableModel) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *T
 	return t
 }
 
-func (t *TableModel) WithFullyQualifiedName(fullyQualifiedName string) *TableModel {
-	t.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (t *TableModel) WithDefaultDdlCollation(defaultDdlCollation string) *TableModel {
+	t.DefaultDdlCollation = tfconfig.StringVariable(defaultDdlCollation)
 	return t
 }
 
-func (t *TableModel) WithOwner(owner string) *TableModel {
-	t.Owner = tfconfig.StringVariable(owner)
+func (t *TableModel) WithEnableConsoleOutput(enableConsoleOutput bool) *TableModel {
+	t.EnableConsoleOutput = tfconfig.BoolVariable(enableConsoleOutput)
+	return t
+}
+
+func (t *TableModel) WithExternalVolume(externalVolume string) *TableModel {
+	t.ExternalVolume = tfconfig.StringVariable(externalVolume)
+	return t
+}
+
+func (t *TableModel) WithExternalVolumeSdk(externalVolume sdk.AccountObjectIdentifier) *TableModel {
+	t.ExternalVolume = tfconfig.StringVariable(externalVolume.Name())
+	return t
+}
+
+func (t *TableModel) WithLogEventLevel(logEventLevel string) *TableModel {
+	t.LogEventLevel = tfconfig.StringVariable(logEventLevel)
+	return t
+}
+
+func (t *TableModel) WithLogEventLevelSdk(logEventLevel sdk.LogLevel) *TableModel {
+	t.LogEventLevel = tfconfig.StringVariable(string(logEventLevel))
+	return t
+}
+
+func (t *TableModel) WithLogLevel(logLevel string) *TableModel {
+	t.LogLevel = tfconfig.StringVariable(logLevel)
+	return t
+}
+
+func (t *TableModel) WithLogLevelSdk(logLevel sdk.LogLevel) *TableModel {
+	t.LogLevel = tfconfig.StringVariable(string(logLevel))
+	return t
+}
+
+func (t *TableModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *TableModel {
+	t.MaxDataExtensionTimeInDays = tfconfig.IntegerVariable(maxDataExtensionTimeInDays)
 	return t
 }
 
 // primary_key attribute type is not yet supported, so WithPrimaryKey can't be generated
 
-// tag attribute type is not yet supported, so WithTag can't be generated
+func (t *TableModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *TableModel {
+	t.QuotedIdentifiersIgnoreCase = tfconfig.BoolVariable(quotedIdentifiersIgnoreCase)
+	return t
+}
+
+func (t *TableModel) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *TableModel {
+	t.ReplaceInvalidCharacters = tfconfig.BoolVariable(replaceInvalidCharacters)
+	return t
+}
+
+func (t *TableModel) WithStorageSerializationPolicy(storageSerializationPolicy string) *TableModel {
+	t.StorageSerializationPolicy = tfconfig.StringVariable(storageSerializationPolicy)
+	return t
+}
+
+func (t *TableModel) WithStorageSerializationPolicySdk(storageSerializationPolicy sdk.StorageSerializationPolicy) *TableModel {
+	t.StorageSerializationPolicy = tfconfig.StringVariable(string(storageSerializationPolicy))
+	return t
+}
 
 //////////////////////////////////////////
 // below it's possible to set any value //
@@ -163,6 +239,11 @@ func (t *TableModel) WithSchemaValue(value tfconfig.Variable) *TableModel {
 
 func (t *TableModel) WithNameValue(value tfconfig.Variable) *TableModel {
 	t.Name = value
+	return t
+}
+
+func (t *TableModel) WithCatalogValue(value tfconfig.Variable) *TableModel {
+	t.Catalog = value
 	return t
 }
 
@@ -191,13 +272,33 @@ func (t *TableModel) WithDataRetentionTimeInDaysValue(value tfconfig.Variable) *
 	return t
 }
 
-func (t *TableModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *TableModel {
-	t.FullyQualifiedName = value
+func (t *TableModel) WithDefaultDdlCollationValue(value tfconfig.Variable) *TableModel {
+	t.DefaultDdlCollation = value
 	return t
 }
 
-func (t *TableModel) WithOwnerValue(value tfconfig.Variable) *TableModel {
-	t.Owner = value
+func (t *TableModel) WithEnableConsoleOutputValue(value tfconfig.Variable) *TableModel {
+	t.EnableConsoleOutput = value
+	return t
+}
+
+func (t *TableModel) WithExternalVolumeValue(value tfconfig.Variable) *TableModel {
+	t.ExternalVolume = value
+	return t
+}
+
+func (t *TableModel) WithLogEventLevelValue(value tfconfig.Variable) *TableModel {
+	t.LogEventLevel = value
+	return t
+}
+
+func (t *TableModel) WithLogLevelValue(value tfconfig.Variable) *TableModel {
+	t.LogLevel = value
+	return t
+}
+
+func (t *TableModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Variable) *TableModel {
+	t.MaxDataExtensionTimeInDays = value
 	return t
 }
 
@@ -206,7 +307,17 @@ func (t *TableModel) WithPrimaryKeyValue(value tfconfig.Variable) *TableModel {
 	return t
 }
 
-func (t *TableModel) WithTagValue(value tfconfig.Variable) *TableModel {
-	t.Tag = value
+func (t *TableModel) WithQuotedIdentifiersIgnoreCaseValue(value tfconfig.Variable) *TableModel {
+	t.QuotedIdentifiersIgnoreCase = value
+	return t
+}
+
+func (t *TableModel) WithReplaceInvalidCharactersValue(value tfconfig.Variable) *TableModel {
+	t.ReplaceInvalidCharacters = value
+	return t
+}
+
+func (t *TableModel) WithStorageSerializationPolicyValue(value tfconfig.Variable) *TableModel {
+	t.StorageSerializationPolicy = value
 	return t
 }

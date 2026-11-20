@@ -36,7 +36,7 @@ func TestAcc_DynamicTable_basic(t *testing.T) {
 
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
 		{Name: "id", Type: testdatatypes.DataTypeNumber},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	modelBasic := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
@@ -181,7 +181,7 @@ func TestAcc_DynamicTable_issue2173(t *testing.T) {
 
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
 		{Name: "ID", Type: testdatatypes.DataTypeNumber},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
@@ -252,7 +252,7 @@ func TestAcc_DynamicTable_issue2134(t *testing.T) {
 
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
 		{Name: "id", Type: testdatatypes.DataTypeNumber},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	dtModelInitial := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
@@ -317,7 +317,7 @@ func TestAcc_DynamicTable_issue2276(t *testing.T) {
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
 		{Name: "id", Type: testdatatypes.DataTypeNumber},
 		{Name: "data", Type: testdatatypes.DataTypeVarchar},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	dtModelInitial := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
@@ -366,7 +366,7 @@ func TestAcc_DynamicTable_issue2329(t *testing.T) {
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
 		{Name: "id", Type: testdatatypes.DataTypeNumber},
 		{Name: "data", Type: testdatatypes.DataTypeVarchar},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName,
 		// spaces added on purpose
@@ -413,7 +413,7 @@ func TestAcc_DynamicTable_issue2329_with_matching_comment(t *testing.T) {
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableName, []sdk.TableColumnSignature{
 		{Name: "id", Type: testdatatypes.DataTypeNumber},
 		{Name: "data", Type: testdatatypes.DataTypeVarchar},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableName, query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
@@ -448,7 +448,7 @@ func TestAcc_DynamicTable_issue5097_AdaptiveRefreshMode(t *testing.T) {
 
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
 		{Name: "id", Type: testdatatypes.DataTypeNumber},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).
@@ -483,7 +483,7 @@ func TestAcc_DynamicTable_issue3355_timeout(t *testing.T) {
 
 	tableModel := model.Table("t", TestDatabaseName, TestSchemaName, tableId.Name(), []sdk.TableColumnSignature{
 		{Name: "id", Type: testdatatypes.DataTypeNumber},
-	}).WithChangeTracking(true)
+	}).WithChangeTrackingBool(true)
 
 	dtModel := model.DynamicTable("dt", TestDatabaseName, TestSchemaName, dynamicTableId.Name(), query,
 		[]sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).

@@ -28,6 +28,22 @@ type Tables interface {
 	SelectTableConstraints(ctx context.Context, request *SelectTableConstraintsTableRequest) ([]TableConstraintDetails, error)
 	SelectCheckConstraints(ctx context.Context, request *SelectCheckConstraintsTableRequest) ([]TableCheckConstraintDetails, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*TableParametersDetails, error)
+}
+
+// TableParametersDetails holds the object's parameters with values parsed into their Go types.
+type TableParametersDetails struct {
+	Catalog                     TypedParameter[AccountObjectIdentifier]
+	DataRetentionTimeInDays     TypedParameter[int]
+	DefaultDdlCollation         TypedParameter[string]
+	EnableConsoleOutput         TypedParameter[bool]
+	ExternalVolume              TypedParameter[AccountObjectIdentifier]
+	LogEventLevel               TypedParameter[LogLevel]
+	LogLevel                    TypedParameter[LogLevel]
+	MaxDataExtensionTimeInDays  TypedParameter[int]
+	QuotedIdentifiersIgnoreCase TypedParameter[bool]
+	ReplaceInvalidCharacters    TypedParameter[bool]
+	StorageSerializationPolicy  TypedParameter[StorageSerializationPolicy]
 }
 
 // CreateTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.

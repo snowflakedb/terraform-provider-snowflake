@@ -6,7 +6,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.Schema{
@@ -133,18 +132,12 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 		},
 		Description: "Definitions of primary key constraint to create on table",
 	},
-	"data_retention_time_in_days": {
-		Type:             tfschema.TypeInt,
-		Optional:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(-1, 90)),
-		Description:      "Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table. If you wish to inherit the parent schema setting then pass in the schema attribute to this argument or do not fill this parameter at all; the default value for this field is -1, which is a fallback to use Snowflake default - in this case the schema value",
-		Default:          IntDefault,
-	},
 	"change_tracking": {
-		Type:             tfschema.TypeBool,
+		Type:             tfschema.TypeString,
 		Optional:         true,
-		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("change_tracking"),
-		Description:      "Specifies whether to enable change tracking on the table. Default false.",
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Specifies whether to enable change tracking on the table."),
+		Default:          BooleanDefault,
 	},
 })
 
@@ -170,7 +163,29 @@ var tableSchema = collections.MergeMaps(
 		},
 	},
 	tableAttributesSchema,
+	tableParametersAttributesSchema,
 	map[string]*tfschema.Schema{
 		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
 	},
+	map[string]*tfschema.Schema{
+		ShowOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `SHOW TABLES` for the given table.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.ShowTableSchema,
+			},
+		},
+	},
+	map[string]*tfschema.Schema{
+		DescribeOutputAttributeName: {
+			Type:        tfschema.TypeList,
+			Computed:    true,
+			Description: "Outputs the result of `DESCRIBE TABLE` for the given table. The statement is DESCRIBE TABLE ... TYPE = COLUMNS.",
+			Elem: &tfschema.Resource{
+				Schema: schemas.DescribeTableColumnDetailsSchema,
+			},
+		},
+	},
+	tableParametersOutputSchema,
 )

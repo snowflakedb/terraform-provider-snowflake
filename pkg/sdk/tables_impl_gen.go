@@ -4,7 +4,9 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -1084,4 +1086,33 @@ func (r *TableSetJoinPolicyRequest) toOpts() *TableSetJoinPolicy {
 func (r *TableUnsetJoinPolicyRequest) toOpts() *TableUnsetJoinPolicy {
 	opts := &TableUnsetJoinPolicy{}
 	return opts
+}
+
+func ToTableParametersDetails(params []*Parameter) (*TableParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d TableParametersDetails
+	if err := errors.Join(
+		byKey["CATALOG"].fillTyped(ParseAccountObjectIdentifier, &d.Catalog),
+		byKey["DATA_RETENTION_TIME_IN_DAYS"].fillTyped(strconv.Atoi, &d.DataRetentionTimeInDays),
+		byKey["DEFAULT_DDL_COLLATION"].fillTyped(identityParse, &d.DefaultDdlCollation),
+		byKey["ENABLE_CONSOLE_OUTPUT"].fillTyped(strconv.ParseBool, &d.EnableConsoleOutput),
+		byKey["EXTERNAL_VOLUME"].fillTyped(ParseAccountObjectIdentifier, &d.ExternalVolume),
+		byKey["LOG_EVENT_LEVEL"].fillTyped(ToLogLevel, &d.LogEventLevel),
+		byKey["LOG_LEVEL"].fillTyped(ToLogLevel, &d.LogLevel),
+		byKey["MAX_DATA_EXTENSION_TIME_IN_DAYS"].fillTyped(strconv.Atoi, &d.MaxDataExtensionTimeInDays),
+		byKey["QUOTED_IDENTIFIERS_IGNORE_CASE"].fillTyped(strconv.ParseBool, &d.QuotedIdentifiersIgnoreCase),
+		byKey["REPLACE_INVALID_CHARACTERS"].fillTyped(strconv.ParseBool, &d.ReplaceInvalidCharacters),
+		byKey["STORAGE_SERIALIZATION_POLICY"].fillTyped(ToStorageSerializationPolicy, &d.StorageSerializationPolicy),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *tables) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*TableParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ToTableParametersDetails(params)
 }

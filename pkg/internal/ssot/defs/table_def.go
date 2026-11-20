@@ -5,12 +5,12 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // TableAttrs holds reusable table fields.
 //
 // Omitted from Attributes and added in tableAttributesModificationExt:
-//   - owner: computed. Readonly cannot sit on Attributes, and there is no computed schema shape.
-//   - tag: the shared deprecated tagReferenceSchema.
 //   - column.schema_evolution_record: a computed child. Nested attributes have no computed shape.
 //
-// The resource has no show_output and no describe_output. Read writes SHOW and DESCRIBE
-// values onto the attribute fields and the computed fields added in the modification function.
+// The resource has show_output, describe_output (DESCRIBE TABLE ... TYPE = COLUMNS), and a computed parameters block.
+// Read currently copies DESCRIBE onto column as well; follow-up should keep column on import and drift only.
+// data_retention_time_in_days is the only catalog parameter on the resource (ResourceParameters).
+// Other table-level catalog parameters are not resource attributes; they still appear in the computed parameters output.
 //
 // Chrome the generator does not emit is applied in tableAttributesModificationExt:
 //   - column.type: IsDataTypeValid and DiffSuppressDataTypes.
@@ -18,8 +18,7 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 //   - column.comment, masking_policy, and collate: Default "".
 //   - column.identity start_num and step_num: Default 1.
 //   - primary_key: Deprecated.
-//   - data_retention_time_in_days: Min and Max emit ValidateDiagFunc. The resource uses ValidateFunc.
-//   - change_tracking: Default false.
+//   - change_tracking: IgnoreChangeToCurrentSnowflakeValueInShowWithMapping from the SHOW bool.
 //
 // Identity and default on a column are mutually exclusive. Snowflake rejects that combination,
 // so the schema does not enforce it. constant, expression, and sequence cannot use ConflictsWith
@@ -28,12 +27,11 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // TODO [SNOW-1348114]: there is no such separation of column default kinds on the SDK. Should we keep it in V1?
 // TODO [SNOW-1348114]: consider adding fully_qualified_name for columns.
 var TableAttrs = struct {
-	ClusterBy               ssot.Attribute
-	Column                  ssot.Attribute
-	Comment                 ssot.Attribute
-	PrimaryKey              ssot.Attribute
-	DataRetentionTimeInDays ssot.Attribute
-	ChangeTracking          ssot.Attribute
+	ClusterBy      ssot.Attribute
+	Column         ssot.Attribute
+	Comment        ssot.Attribute
+	PrimaryKey     ssot.Attribute
+	ChangeTracking ssot.Attribute
 }{
 	ClusterBy: ssot.Attribute{
 		Name:          "cluster_by",
@@ -151,21 +149,13 @@ var TableAttrs = struct {
 			},
 		},
 	},
-	DataRetentionTimeInDays: ssot.Attribute{
-		Name:        "data_retention_time_in_days",
-		Type:        ssot.AttrInt,
-		Min:         new(-1),
-		Max:         new(90),
-		Description: "Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table. If you wish to inherit the parent schema setting then pass in the schema attribute to this argument or do not fill this parameter at all; the default value for this field is -1, which is a fallback to use Snowflake default - in this case the schema value",
-	},
 	ChangeTracking: ssot.Attribute{
 		Name:          "change_tracking",
 		Type:          ssot.AttrBool,
-		NativeBool:    true,
 		StoredAsText:  true,
 		OptionalInDb:  true,
 		BoolTrueValue: "ON",
-		Description:   "Specifies whether to enable change tracking on the table. Default false.",
+		Description:   "Specifies whether to enable change tracking on the table.",
 	},
 }
 
@@ -614,6 +604,7 @@ var TableCreateAttrs = struct {
 	Kind                       ssot.Attribute
 	ColumnsAndConstraints      ssot.Attribute
 	EnableSchemaEvolution      ssot.Attribute
+	DataRetentionTimeInDays    ssot.Attribute
 	MaxDataExtensionTimeInDays ssot.Attribute
 	DefaultDdlCollation        ssot.Attribute
 	ErrorLogging               ssot.Attribute
@@ -649,6 +640,11 @@ var TableCreateAttrs = struct {
 	EnableSchemaEvolution: ssot.Attribute{
 		Name:    "enable_schema_evolution",
 		Type:    ssot.AttrBool,
+		SqlOnly: true,
+	},
+	DataRetentionTimeInDays: ssot.Attribute{
+		Name:    "data_retention_time_in_days",
+		Type:    ssot.AttrInt,
 		SqlOnly: true,
 	},
 	MaxDataExtensionTimeInDays: ssot.Attribute{
@@ -752,17 +748,27 @@ func tableShowBool(name, trueValue string) ssot.Attribute {
 }
 
 var (
-	tableShowCreatedOn                  = tableShowString("created_on", false, false)
-	tableShowName                       = tableShowString("name", false, false)
-	tableShowSchemaName                 = tableShowString("schema_name", false, false)
-	tableShowDatabaseName               = tableShowString("database_name", false, false)
-	tableShowKind                       = tableShowString("kind", false, false)
-	tableShowOwner                      = tableShowString("owner", false, false)
-	tableShowRows                       = tableShowInt("rows", false)
-	tableShowBytes                      = tableShowInt("bytes", true)
-	tableShowRetentionTime              = tableShowInt("retention_time", false)
-	tableShowDroppedOn                  = tableShowString("dropped_on", true, true)
-	tableShowAutomaticClustering        = tableShowBool("automatic_clustering", "ON")
+	tableShowCreatedOn           = tableShowString("created_on", false, false)
+	tableShowName                = tableShowString("name", false, false)
+	tableShowSchemaName          = tableShowString("schema_name", false, false)
+	tableShowDatabaseName        = tableShowString("database_name", false, false)
+	tableShowKind                = tableShowString("kind", false, false)
+	tableShowClusterBy           = ssot.Attribute{Name: "show_cluster_by", ShowName: "cluster_by", Type: ssot.AttrString, Readonly: true, OptionalInDb: true}
+	tableShowOwner               = tableShowString("owner", false, false)
+	tableShowRows                = tableShowInt("rows", false)
+	tableShowBytes               = tableShowInt("bytes", true)
+	tableShowRetentionTime       = tableShowInt("retention_time", false)
+	tableShowDroppedOn           = tableShowString("dropped_on", true, true)
+	tableShowAutomaticClustering = tableShowBool("automatic_clustering", "ON")
+	tableShowChangeTracking      = ssot.Attribute{
+		Name:          "show_change_tracking",
+		ShowName:      "change_tracking",
+		Type:          ssot.AttrBool,
+		Readonly:      true,
+		StoredAsText:  true,
+		OptionalInDb:  true,
+		BoolTrueValue: "ON",
+	}
 	tableShowSearchOptimization         = tableShowBool("search_optimization", "ON")
 	tableShowSearchOptimizationProgress = tableShowString("search_optimization_progress", true, false)
 	tableShowSearchOptimizationBytes    = tableShowInt("search_optimization_bytes", true)
@@ -784,14 +790,18 @@ var Table = ssot.Object{
 	Name:       "Table",
 	NamePlural: "Tables",
 	// These enums are in the nested ALTER blocks and constraints, which the enum walk does not reach.
-	AdditionalEnums:        []*ssot.Enum{TableConstraintType, ReclusterState, MatchType, TableSearchMethod, TableCopyOption, TableDataMetricScheduleStatusOperation, TableDataMetricSensitivity},
-	IdType:                 "SchemaObjectIdentifier",
-	PreviewFeature:         true,
-	DescribeFailRead:       true,
-	AttributesModification: true,
+	AdditionalEnums:                     []*ssot.Enum{TableConstraintType, ReclusterState, MatchType, TableSearchMethod, TableCopyOption, TableDataMetricScheduleStatusOperation, TableDataMetricSensitivity},
+	IdType:                              "SchemaObjectIdentifier",
+	PreviewFeature:                      true,
+	DescribeFailRead:                    true,
+	DescribeDetailsName:                 "TableColumnDetails",
+	AdditionalDescribeOutputDescription: "The statement is DESCRIBE TABLE ... TYPE = COLUMNS.",
+	AttributesModification:              true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithResource(),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
+		ssot.WithAllGenerators(
+			ssot.WithModel(ssot.ModelRequestType(&TableAttrs.Column, "[]sdk.TableColumnSignature")),
+			ssot.WithoutObjectAssertDescribe(),
+		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(ssot.SdkCreateAdditionalValidations()),
@@ -813,6 +823,7 @@ var Table = ssot.Object{
 			ssot.SdkCustomOperations(),
 			ssot.SdkAlter(ssot.SdkAlterAdditionalValidations()),
 			ssot.SdkShowParameters(),
+			ssot.SdkShowParametersDetails(),
 		),
 		ssot.WithDataSource(
 			ssot.DataSourceWithTerse(),
@@ -833,7 +844,7 @@ var Table = ssot.Object{
 			&TableCreateAttrs.ColumnsAndConstraints,
 			&TableAttrs.ClusterBy,
 			&TableCreateAttrs.EnableSchemaEvolution,
-			&TableAttrs.DataRetentionTimeInDays,
+			&TableCreateAttrs.DataRetentionTimeInDays,
 			&TableCreateAttrs.MaxDataExtensionTimeInDays,
 			&TableAttrs.ChangeTracking,
 			&TableCreateAttrs.DefaultDdlCollation,
@@ -864,7 +875,7 @@ var Table = ssot.Object{
 			&tableShowRetentionTime,
 			&tableShowDroppedOn,
 			&tableShowAutomaticClustering,
-			&TableAttrs.ChangeTracking,
+			&tableShowChangeTracking,
 			&tableShowSearchOptimization,
 			&tableShowSearchOptimizationProgress,
 			&tableShowSearchOptimizationBytes,
@@ -901,7 +912,7 @@ var Table = ssot.Object{
 			// grammar repeats the properties with [ , ... ].
 			ssot.AlterSet(
 				&TableCreateAttrs.EnableSchemaEvolution,
-				&TableAttrs.DataRetentionTimeInDays,
+				&TableCreateAttrs.DataRetentionTimeInDays,
 				&TableCreateAttrs.MaxDataExtensionTimeInDays,
 				&TableAttrs.ChangeTracking,
 				&TableCreateAttrs.DefaultDdlCollation,
@@ -916,7 +927,7 @@ var Table = ssot.Object{
 			ssot.AlterUnset(
 				ssot.AlterGroup("Contact", &TableCreateAttrs.Contact),
 				ssot.AlterGroup(ssot.MainAlterGroup,
-					&TableAttrs.DataRetentionTimeInDays,
+					&TableCreateAttrs.DataRetentionTimeInDays,
 					&TableCreateAttrs.MaxDataExtensionTimeInDays,
 					&TableAttrs.ChangeTracking,
 					&TableCreateAttrs.DefaultDdlCollation,
@@ -944,19 +955,18 @@ var Table = ssot.Object{
 			ssot.AlterKeywordBlock("ModifyDataMetricFunction", "", &TableModifyDataMetricFunction),
 		},
 	},
-	// Column stays in NewCreateRequestExt: it is a required list block. Tag stays there too, because it is not an attribute.
-	// ShowByIdSafely stays in the extension because Read compares schema retention before describing columns.
-	// Describe uses DescribeColumns. SetConfigFields copies owner and cluster keys. Column diffs,
-	// primary key, and tags stay in the extension. Generated AfterAlter and SetDescribeOutput are unimplemented.
-	// The importer is a passthrough, so ShowByIdInSdk stays omitted.
+	// Column stays in NewCreateRequestExt: it is a required list block.
+	// Describe uses DescribeColumns. describe_output is a list of rows, so DescribeOutputSet stays omitted and
+	// SetDescribeOutput writes describe_output and column (follow-up: column from import and drift only).
+	// Column diffs and primary key stay in AfterAlter.
+	// change_tracking external changes are mapped from SHOW ON/OFF in the extension.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithCreateInSdk(ssot.Generated()),
-		ssot.WithHandleExternalChanges(ssot.Omitted()),
-		ssot.WithSetStateToValuesFromConfig(ssot.Omitted()),
-		ssot.WithShowOutputSet(ssot.Omitted()),
+		ssot.WithHandleExternalChanges(ssot.ExtCall()),
+		ssot.WithSetStateToValuesFromConfig(ssot.Generated()),
 		ssot.WithDescribeOutputSet(ssot.Omitted()),
 		ssot.WithSetDescribeOutput(ssot.ExtCall()),
 		ssot.WithHierarchyRename(ssot.Generated()),
@@ -965,12 +975,26 @@ var Table = ssot.Object{
 		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Generated()),
 		ssot.WithAfterAlter(ssot.ExtCall()),
-		ssot.WithShowByIdInSdk(ssot.Omitted()),
-		ssot.WithSetFieldsNotSetByRead(ssot.Omitted()),
-		ssot.WithShowOutputSchema(ssot.Omitted()),
-		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithSetFieldsNotSetByRead(ssot.ExtCall()),
 		ssot.WithDropSafelyInSdk(ssot.Generated()),
 		ssot.WithStateUpgraders(ssot.Generated()),
+		ssot.WithApplyParametersCreate(ssot.Generated()),
+		ssot.WithShowParametersInSdk(ssot.Generated()),
+		ssot.WithParametersDetailsFromRaw(ssot.Generated()),
+		ssot.WithSetParametersFields(ssot.Generated()),
+		ssot.WithParametersOutputSet(ssot.Generated()),
+		ssot.WithApplyParametersChanges(ssot.Generated()),
+		ssot.WithParametersAttributesSchema(ssot.Generated()),
+		ssot.WithParametersOutputSchema(ssot.Generated()),
+		ssot.WithParametersFieldNames(ssot.Generated()),
+		ssot.WithParametersCustomDiff(ssot.Generated()),
+	},
+	// ResourceParameters is the one CREATE/ALTER table parameter that is a resource attribute.
+	// The rest of SHOW PARAMETERS IN TABLE is still in the computed parameters output.
+	ResourceParameters: []ssot.ParameterDef{
+		DataRetentionTimeInDays,
 	},
 	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
@@ -982,7 +1006,6 @@ var Table = ssot.Object{
 		TableAttrs.Column,
 		TableAttrs.Comment,
 		TableAttrs.PrimaryKey,
-		TableAttrs.DataRetentionTimeInDays,
 		TableAttrs.ChangeTracking,
 	},
 }

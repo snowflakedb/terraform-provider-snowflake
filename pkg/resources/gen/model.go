@@ -41,6 +41,7 @@ type ResourceModel struct {
 	Hooks                    ssot.ResourceHooks
 	SchemaStateUpgraders     []ssot.StateUpgraderFunc
 	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
+	ResourceParameters       []ssot.ParameterDef
 	BeforeCreateSteps        BeforeCreateSteps
 	// SuspendForAlter is the data of WithSuspendForAlter(Generated()). See SuspendForAlterModel.
 	SuspendForAlter  *SuspendForAlterModel
@@ -138,7 +139,10 @@ func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
 
 // ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
 func (m ResourceModel) ParameterHooks() []ParameterHookModel {
-	parameters := ssotdefs.ParameterDefsForLevel(ssot.Object{Name: m.Name}.ParameterLevel())
+	parameters := ssot.FilterResourceParameters(
+		ssotdefs.ParameterDefsForLevel(ssot.Object{Name: m.Name}.ParameterLevel()),
+		m.ResourceParameters,
+	)
 	hooks := make([]ParameterHookModel, 0, len(parameters))
 	for _, parameter := range parameters {
 		hooks = append(hooks, newParameterHookModel(parameter))
@@ -318,6 +322,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		Hooks:                               hooks,
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
+		ResourceParameters:                  input.ResourceParameters,
 		BeforeCreateSteps:                   beforeCreateSteps(input.Object),
 		SuspendForAlter:                     suspendForAlterModel(input.Object),
 		AfterCreateSteps:                    afterCreateSteps(input.Object, resourceAttributes),

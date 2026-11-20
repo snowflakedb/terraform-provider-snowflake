@@ -168,7 +168,7 @@ func TestAcc_GrantPrivilegesToShare_BasicUseCase_OnDynamicTable(t *testing.T) {
 	baseTableId := sdk.NewSchemaObjectIdentifier(id.DatabaseName(), id.SchemaName(), id.Name()+"_base")
 
 	baseTableModel := model.TableWithId("base_table", baseTableId, []sdk.TableColumnSignature{{Name: "id", Type: testdatatypes.DataTypeNumber}}).
-		WithChangeTracking(true)
+		WithChangeTrackingBool(true)
 	dynamicTableQuery := fmt.Sprintf(`select "id" from %s`, baseTableId.FullyQualifiedName())
 	dynamicTableModel := model.DynamicTable("test_dynamic_table", id.DatabaseName(), id.SchemaName(), id.Name(),
 		dynamicTableQuery, []sdk.TargetLag{{MaximumDuration: sdk.String("2 minutes")}}, TestWarehouseName).

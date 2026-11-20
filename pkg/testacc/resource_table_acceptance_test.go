@@ -14,6 +14,8 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -22,6 +24,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -34,8 +37,250 @@ import (
 
 // TODO [SNOW-3151661]: test creation with DECFLOAT column
 
-func TestAcc_TableWithSeparateDataRetentionObjectParameterWithoutLifecycle(t *testing.T) {
-	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+func TestAcc_Table_BasicUseCase(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+	comment := random.Comment()
+	commentChanged := random.Comment()
+	externalComment := random.Comment()
+
+	modelBasic := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
+	modelWithAlterableOptional := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithComment(comment).
+		WithChangeTracking("true").
+		WithDataRetentionTimeInDays(5).
+		WithClusterBy("ID")
+	modelWithAlterableOptionalChanged := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithComment(commentChanged).
+		WithChangeTracking("true").
+		WithDataRetentionTimeInDays(3).
+		WithClusterBy("NAME")
+	modelWithAlterableOptionalUnset := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
+	modelWithClusterByIdName := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithClusterBy("ID", "NAME")
+	modelWithClusterByNameId := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithClusterBy("NAME", "ID")
+
+	ref := modelBasic.ResourceReference()
+
+	basicAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.TableResource(t, ref).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasNameString(id.Name()).
+			HasCommentEmpty().
+			HasChangeTrackingString("default").
+			HasClusterByEmpty().
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		resourceshowoutputassert.TableShowOutput(t, ref).
+			HasName(id.Name()).
+			HasDatabaseName(id.DatabaseName()).
+			HasSchemaName(id.SchemaName()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment("").
+			HasChangeTracking(false),
+		resourceparametersassert.TableResourceParameters(t, ref).
+			HasDataRetentionTimeInDays(1).
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeDatabase),
+		resourceshowoutputassert.TableColumnDescribeOutputOnIdx(t, ref, 0).
+			HasName("ID").
+			HasKind("COLUMN"),
+	}
+
+	alterableOptionalAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.TableResource(t, ref).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasNameString(id.Name()).
+			HasComment(comment).
+			HasChangeTrackingString("true").
+			HasClusterBy("ID").
+			HasDataRetentionTimeInDays(5).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		resourceshowoutputassert.TableShowOutput(t, ref).
+			HasName(id.Name()).
+			HasOwner(snowflakeroles.Accountadmin.Name()).
+			HasComment(comment).
+			HasChangeTracking(true),
+		resourceparametersassert.TableResourceParameters(t, ref).
+			HasDataRetentionTimeInDays(5).
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable),
+	}
+
+	clusterByIdNameAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.TableResource(t, ref).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasNameString(id.Name()).
+			HasClusterBy("ID", "NAME").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+	}
+	clusterByNameIdAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.TableResource(t, ref).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasNameString(id.Name()).
+			HasClusterBy("NAME", "ID").
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+	}
+
+	changedOptionalAssertions := []assert.TestCheckFuncProvider{
+		resourceassert.TableResource(t, ref).
+			HasDatabaseString(id.DatabaseName()).
+			HasSchemaString(id.SchemaName()).
+			HasNameString(id.Name()).
+			HasComment(commentChanged).
+			HasChangeTrackingString("true").
+			HasClusterBy("NAME").
+			HasDataRetentionTimeInDays(3).
+			HasFullyQualifiedNameString(id.FullyQualifiedName()),
+		resourceshowoutputassert.TableShowOutput(t, ref).
+			HasComment(commentChanged).
+			HasChangeTracking(true),
+		resourceparametersassert.TableResourceParameters(t, ref).
+			HasDataRetentionTimeInDays(3).
+			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			// Create with only required fields
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				Check:  assertThat(t, basicAssertions...),
+			},
+			// Import
+			{
+				Config:                  accconfig.FromModels(t, modelBasic),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"change_tracking"},
+			},
+			// Change only alterable fields - expect an in-place update
+			{
+				Config: accconfig.FromModels(t, modelWithAlterableOptional),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, alterableOptionalAssertions...),
+			},
+			// Import with all alterable fields set
+			{
+				Config:                  accconfig.FromModels(t, modelWithAlterableOptional),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"change_tracking"},
+			},
+			// Change the alterable fields externally and detect drift - expect Terraform to fix it with an update
+			{
+				PreConfig: func() {
+					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(id).WithSet(*sdk.NewTableSetRequest().
+						WithComment(externalComment).
+						WithChangeTracking(false).
+						WithDataRetentionTimeInDays(1)))
+					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(id).WithClusteringAction(
+						*sdk.NewTableClusteringActionRequest().WithDropClusteringKey(true),
+					))
+				},
+				Config: accconfig.FromModels(t, modelWithAlterableOptionalChanged),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, changedOptionalAssertions...),
+			},
+			// Unset all alterable optional fields - expect an in-place update
+			{
+				Config: accconfig.FromModels(t, modelWithAlterableOptionalUnset),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, basicAssertions...),
+			},
+			// Set cluster_by - expect an in-place update
+			{
+				Config: accconfig.FromModels(t, modelWithAlterableOptional),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, alterableOptionalAssertions...),
+			},
+			// Change cluster_by - expect an in-place update
+			{
+				Config: accconfig.FromModels(t, modelWithAlterableOptionalChanged),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, changedOptionalAssertions...),
+			},
+			// Unset cluster_by (and the other alterable fields) - expect an in-place update
+			{
+				Config: accconfig.FromModels(t, modelWithAlterableOptionalUnset),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, basicAssertions...),
+			},
+			// Set two cluster_by keys - expect an in-place update
+			{
+				Config: accconfig.FromModels(t, modelWithClusterByIdName),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, clusterByIdNameAssertions...),
+			},
+			// Reorder cluster_by keys - expect an in-place update
+			{
+				Config: accconfig.FromModels(t, modelWithClusterByNameId),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, clusterByNameIdAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_Table_CompleteUseCase(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+	comment := random.Comment()
+
+	modelComplete := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithComment(comment).
+		WithChangeTracking("true").
+		WithDataRetentionTimeInDays(5).
+		WithClusterBy("ID", "NAME")
+
+	ref := modelComplete.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -45,45 +290,75 @@ func TestAcc_TableWithSeparateDataRetentionObjectParameterWithoutLifecycle(t *te
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
-				Config: tableConfig(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARIANT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.comment", ""),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
+				Config: accconfig.FromModels(t, modelComplete),
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasNameString(id.Name()).
+						HasComment(comment).
+						HasChangeTrackingString("true").
+						HasClusterBy("ID", "NAME").
+						HasDataRetentionTimeInDays(5).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceshowoutputassert.TableShowOutput(t, ref).
+						HasName(id.Name()).
+						HasDatabaseName(id.DatabaseName()).
+						HasSchemaName(id.SchemaName()).
+						HasOwner(snowflakeroles.Accountadmin.Name()).
+						HasComment(comment).
+						HasChangeTracking(true),
+					resourceparametersassert.TableResourceParameters(t, ref).
+						HasDataRetentionTimeInDays(5).
+						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable),
 				),
 			},
 			{
-				Config: tableAndDataRetentionParameterConfigWithoutLifecycle(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_object_parameter.data_retention_in_time", "value", "30"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
-				ExpectNonEmptyPlan: true,
+				Config:                  accconfig.FromModels(t, modelComplete),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"change_tracking"},
 			},
 		},
 	})
 }
 
-func TestAcc_TableWithSeparateDataRetentionObjectParameterWithLifecycle(t *testing.T) {
-	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	placeholder := []sdk.TableColumnSignature{
+		{Name: "COL1", Type: testdatatypes.DataTypeVarchar},
+	}
+	commentA := random.Comment()
+	commentB := random.Comment()
+
+	columnsCreate := []model.TableColumnConfig{
+		{Name: "COL1", Type: testdatatypes.DataTypeVarchar, Comment: commentA},
+		{Name: "COL2", Type: testdatatypes.DataTypeFloat},
+	}
+	columnsCommentsAltered := []model.TableColumnConfig{
+		{Name: "COL1", Type: testdatatypes.DataTypeVarchar},
+		{Name: "COL2", Type: testdatatypes.DataTypeFloat, Comment: commentB},
+	}
+	columnsReplaced := []model.TableColumnConfig{
+		{Name: "COL2", Type: testdatatypes.DataTypeFloat, Comment: commentB},
+		{Name: "COLUMN3", Type: testdatatypes.DataTypeNumber_38_0},
+	}
+	columnsNullableFalse := []model.TableColumnConfig{
+		{Name: "COL2", Type: testdatatypes.DataTypeFloat, Comment: commentB},
+		{Name: "COLUMN3", Type: testdatatypes.DataTypeNumber_38_0, Nullable: new(false)},
+	}
+
+	modelCreate := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsCreate...)
+	modelCommentsAltered := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsCommentsAltered...)
+	modelReplaced := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsReplaced...)
+	modelNullableFalse := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsNullableFalse...)
+	ref := modelCreate.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -93,63 +368,65 @@ func TestAcc_TableWithSeparateDataRetentionObjectParameterWithLifecycle(t *testi
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
-				Config: tableConfig(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARIANT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.comment", ""),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
+				Config: accconfig.FromModels(t, modelCreate),
+				Check:  assertThat(t, tableColumnListChecks(ref, columnsCreate)...),
 			},
 			{
-				Config: tableAndDataRetentionParameterConfigWithLifecycle(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_object_parameter.data_retention_in_time", "value", "30"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
+				Config: accconfig.FromModels(t, modelCommentsAltered),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, tableColumnListChecks(ref, columnsCommentsAltered)...),
 			},
 			{
-				Config: updatedTableAndDataRetentionParameterConfigWithLifecycle(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Table with a separate data retention parameter"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_object_parameter.data_retention_in_time", "value", "30"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
+				Config: accconfig.FromModels(t, modelReplaced),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, tableColumnListChecks(ref, columnsReplaced)...),
+			},
+			{
+				Config: accconfig.FromModels(t, modelNullableFalse),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, tableColumnListChecks(ref, columnsNullableFalse)...),
 			},
 		},
 	})
 }
 
-func TestAcc_Table(t *testing.T) {
-	table1Id := testClient().Ids.RandomSchemaObjectIdentifier()
-	table2Id := testClient().Ids.RandomSchemaObjectIdentifier()
-	table3Id := testClient().Ids.RandomSchemaObjectIdentifier()
+func tableColumnListChecks(ref string, columns []model.TableColumnConfig) []assert.TestCheckFuncProvider {
+	checks := []assert.TestCheckFuncProvider{
+		assert.Check(resource.TestCheckResourceAttr(ref, "column.#", strconv.Itoa(len(columns)))),
+	}
+	for i, c := range columns {
+		nullable := true
+		if c.Nullable != nil {
+			nullable = *c.Nullable
+		}
+		prefix := fmt.Sprintf("column.%d.", i)
+		checks = append(checks,
+			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"name", c.Name)),
+			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"type", c.Type.Canonical())),
+			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"comment", c.Comment)),
+			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"nullable", strconv.FormatBool(nullable))),
+		)
+	}
+	return checks
+}
+
+func TestAcc_Table_Validations(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -159,412 +436,11 @@ func TestAcc_Table(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
-				Config: tableConfig(table1Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "id", table1Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", table1Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", table1Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARIANT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.schema_evolution_record", ""),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig2(table1Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", table1Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", table1Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "FLOAT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.comment", ""),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig3(table2Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "name", table2Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "fully_qualified_name", table2Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.name", "COL1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.name", "col2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "cluster_by.#", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "cluster_by.0", "COL1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.type", "FLOAT"),
-				),
-			},
-			{
-				Config: tableConfig4(table2Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "name", table2Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "fully_qualified_name", table2Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.name", "COL1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.name", "col2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "cluster_by.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "cluster_by.1", "\"col2\""),
-				),
-			},
-			{
-				Config: tableConfig5(table2Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "name", table2Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "fully_qualified_name", table2Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.name", "COL1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.name", "col2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "cluster_by.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "cluster_by.0", "\"col2\""),
-				),
-			},
-			{
-				Config: tableConfig6(table1Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", table1Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", table1Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.nullable", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "FLOAT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.nullable", "false"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig7(table1Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", table1Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", table1Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.nullable", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "FLOAT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.nullable", "false"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "cluster_by.0"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "primary_key.0.keys.0", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "primary_key.0.name", ""),
-				),
-			},
-			{
-				Config: tableConfig8(table1Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", table1Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", table1Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.nullable", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "FLOAT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.nullable", "false"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "cluster_by.0"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "primary_key.0.keys.0", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "primary_key.0.keys.1", "column3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "primary_key.0.name", "new_name"),
-				),
-			},
-			{
-				Config: tableConfig9CreateTableWithColumnComment(table2Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "name", table2Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "fully_qualified_name", table2Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.name", "COL1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.nullable", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.name", "COL2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.type", "FLOAT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.nullable", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.comment", "some comment"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table2", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table2", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig10AlterTableColumnComment(table2Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "name", table2Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "fully_qualified_name", table2Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.name", "COL1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.nullable", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.comment", "other comment"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.name", "COL2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.type", "FLOAT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.nullable", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.comment", ""),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table2", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table2", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig11AlterTableAddColumnWithComment(table2Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "name", table2Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "fully_qualified_name", table2Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.#", "4"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.name", "COL1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.nullable", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.0.comment", "other comment"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.name", "COL2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.type", "FLOAT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.nullable", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.1.comment", ""),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.2.name", "COL3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.2.type", "NUMBER(38,0)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.2.nullable", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.2.comment", "extra"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.3.name", "col4"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.3.type", "NUMBER(38,0)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.3.nullable", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table2", "column.3.comment", "extra"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table2", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table2", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig12CreateTableWithDataRetention(table3Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "name", table3Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "fully_qualified_name", table3Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "data_retention_time_in_days", "10"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.0.type", "VARIANT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.1.name", "column2"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table3", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table3", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig13AlterTableDataRetention(table3Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "name", table3Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "fully_qualified_name", table3Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "data_retention_time_in_days", "0"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "change_tracking", "false"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.0.type", "VARIANT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.1.name", "column2"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table3", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table3", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig14AlterTableEnableChangeTracking(table3Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "name", table3Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "fully_qualified_name", table3Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "data_retention_time_in_days", "0"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "change_tracking", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.0.type", "VARIANT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table3", "column.1.name", "column2"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table3", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table3", "primary_key.0"),
-				),
-			},
-			{
-				Config: tableConfig15CreateTableWithChangeTracking(table1Id),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", table1Id.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "fully_qualified_name", table1Id.FullyQualifiedName()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "data_retention_time_in_days", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "true"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARIANT"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "cluster_by.0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
+				Config:      accconfig.FromModels(t, model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).WithChangeTracking("INVALID")),
+				ExpectError: regexp.MustCompile(`expected .*change_tracking.* to be one of .*, got INVALID`),
 			},
 		},
 	})
-}
-
-func tableAndDataRetentionParameterConfigWithoutLifecycle(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-
-	column {
-		name = "column1"
-		type = "VARIANT"
-	}
-	column {
-		name = "column2"
-		type = "VARCHAR(16)"
-	}
-}
-
-resource "snowflake_object_parameter" "data_retention_in_time" {
-	key = "DATA_RETENTION_TIME_IN_DAYS"
-	value = "30"
-    object_type = "TABLE"
-    object_identifier {
-		database = "%[1]s"
-		schema   = "%[2]s"
-		name     = "%[3]s"
-	}
-	depends_on = [snowflake_table.test_table]
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableAndDataRetentionParameterConfigWithLifecycle(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-
-	column {
-		name = "column1"
-		type = "VARIANT"
-	}
-	column {
-		name = "column2"
-		type = "VARCHAR(16)"
-	}
-	lifecycle {
-		ignore_changes = [
-			"data_retention_time_in_days"
-		]
-	}
-}
-
-resource "snowflake_object_parameter" "data_retention_in_time" {
-	key = "DATA_RETENTION_TIME_IN_DAYS"
-	value = "30"
-    object_type = "TABLE"
-    object_identifier {
-		database = "%[1]s"
-		schema   = "%[2]s"
-		name     = "%[3]s"
-	}
-	depends_on = [snowflake_table.test_table]
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func updatedTableAndDataRetentionParameterConfigWithLifecycle(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Table with a separate data retention parameter"
-	column {
-		name = "column1"
-		type = "VARIANT"
-	}
-	column {
-		name = "column2"
-		type = "VARCHAR(16)"
-	}
-	lifecycle {
-		ignore_changes = [
-			"data_retention_time_in_days"
-		]
-	}
-}
-resource "snowflake_object_parameter" "data_retention_in_time" {
-	key = "DATA_RETENTION_TIME_IN_DAYS"
-	value = "30"
-    object_type = "TABLE"
-    object_identifier {
-		database = "%[1]s"
-		schema   = "%[2]s"
-		name     = "%[3]s"
-	}
-	depends_on = [snowflake_table.test_table]
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
 }
 
 func tableConfig(tableId sdk.SchemaObjectIdentifier) string {
@@ -575,319 +451,6 @@ resource "snowflake_table" "test_table" {
 	name     = "%[3]s"
 	data_retention_time_in_days = 1
 	comment  = "Terraform acceptance test"
-	column {
-		name = "column1"
-		type = "VARIANT"
-	}
-	column {
-		name = "column2"
-		type = "VARCHAR(16)"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig2(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	column {
-		name = "column2"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name = "column3"
-		type = "FLOAT"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig3(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table2" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	data_retention_time_in_days = 1
-	comment  = "Terraform acceptance test"
-	cluster_by = ["COL1"]
-	column {
-		name = "COL1"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name = "col2"
-		type = "FLOAT"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig4(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table2" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	cluster_by = ["COL1","\"col2\""]
-	column {
-		name = "COL1"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name = "col2"
-		type = "FLOAT"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig5(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table2" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	cluster_by = ["\"col2\"","COL1"]
-	column {
-		name = "COL1"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name = "col2"
-		type = "FLOAT"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig6(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	column {
-		name = "column2"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name = "column3"
-		type = "FLOAT"
-		nullable = false
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig7(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	column {
-		name = "column2"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name = "column3"
-		type = "FLOAT"
-		nullable = false
-	}
-	primary_key {
-		keys = ["column2"]
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig8(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	column {
-		name = "column2"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name = "column3"
-		type = "FLOAT"
-		nullable = false
-	}
-	primary_key {
-		name = "new_name"
-		keys = ["column2","column3"]
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig9CreateTableWithColumnComment(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table2" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	column {
-		name = "COL1"
-		type = "VARCHAR(16777216)"
-	}
-	column {
-		name     = "COL2"
-		type     = "FLOAT"
-		nullable = false
-		comment  = "some comment"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig10AlterTableColumnComment(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table2" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment             = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	column {
-		name    = "COL1"
-		type    = "VARCHAR(16777216)"
-		comment = "other comment"
-	}
-	column {
-		name     = "COL2"
-		type     = "FLOAT"
-		nullable = false
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig11AlterTableAddColumnWithComment(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table2" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment             = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	column {
-		name    = "COL1"
-		type    = "VARCHAR(16777216)"
-		comment = "other comment"
-	}
-	column {
-		name     = "COL2"
-		type     = "FLOAT"
-		nullable = false
-	}
-	column {
-		name     = "COL3"
-		type     = "NUMBER(38,0)"
-		nullable = false
-		comment  = "extra"
-	}
-	column {
-		name     = "col4"
-		type     = "NUMBER(38,0)"
-		nullable = false
-		comment  = "extra"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig12CreateTableWithDataRetention(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table3" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment             = "Terraform acceptance test"
-	data_retention_time_in_days = 10
-	column {
-		name = "column1"
-		type = "VARIANT"
-	}
-	column {
-		name = "column2"
-		type = "VARCHAR(16)"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig13AlterTableDataRetention(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table3" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment             = "Terraform acceptance test"
-	data_retention_time_in_days = 0
-	column {
-		name = "column1"
-		type = "VARIANT"
-	}
-	column {
-		name = "column2"
-		type = "VARCHAR(16)"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig14AlterTableEnableChangeTracking(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table3" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment             = "Terraform acceptance test"
-	data_retention_time_in_days = 0
-	change_tracking     = true
-	column {
-		name = "column1"
-		type = "VARIANT"
-	}
-	column {
-		name = "column2"
-		type = "VARCHAR(16)"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func tableConfig15CreateTableWithChangeTracking(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment             = "Terraform acceptance test"
-	data_retention_time_in_days = 1
-	change_tracking     = true
 	column {
 		name = "column1"
 		type = "VARIANT"
@@ -1034,73 +597,6 @@ resource "snowflake_table" "test_table" {
 	}
 }
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
-func TestAcc_TableTags(t *testing.T) {
-	tag1, tag1Cleanup := testClient().Tag.CreateTag(t)
-	t.Cleanup(tag1Cleanup)
-
-	tag2, tag2Cleanup := testClient().Tag.CreateTag(t)
-	t.Cleanup(tag2Cleanup)
-
-	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-	tagValue := random.AlphaN(4)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Table),
-		Steps: []resource.TestStep{
-			{
-				Config: tableWithTags(tableId, tag1.ID(), tag2.ID(), tagValue),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.0.name", tag1.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.0.value", tagValue),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.0.database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.0.schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.1.name", tag2.ID().Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.1.value", tagValue),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.1.database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "tag.1.schema", TestSchemaName),
-				),
-			},
-		},
-	})
-}
-
-func tableWithTags(tableId sdk.SchemaObjectIdentifier, tagId sdk.SchemaObjectIdentifier, tag2Id sdk.SchemaObjectIdentifier, tagValue string) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment             = "Terraform acceptance test"
-
-	column {
-		name = "column1"
-		type = "VARCHAR(16)"
-	}
-
-	tag {
-		database = "%[1]s"
-		schema = "%[2]s"
-		name = "%[4]s"
-		value = "%[6]s"
-	}
-
-	tag {
-		database = "%[1]s"
-		schema = "%[2]s"
-		name = "%[5]s"
-		value = "%[6]s"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), tagId.Name(), tag2Id.Name(), tagValue)
 }
 
 func TestAcc_TableIdentity(t *testing.T) {

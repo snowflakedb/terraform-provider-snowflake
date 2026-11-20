@@ -82,6 +82,54 @@ data "snowflake_tables" "example" {
 
 No configuration changes are required unless you want to turn the extra queries off.
 
+#### `change_tracking` is a boolean string
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `change_tracking` is now a boolean string (`"true"`, `"false"`, or `"default"`), matching the other resources. Previously it was a Terraform boolean that defaulted to `false` and always sent `CHANGE_TRACKING` on create.
+
+```terraform
+change_tracking = "false" # previously a Terraform boolean (`false`)
+```
+
+Omit the field when you want Snowflake’s default. State is not upgraded automatically. Change boolean values in your configuration to `"true"` or `"false"` before you apply. The next plan also fills `show_output.show_change_tracking` from [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables).
+
+#### `data_retention_time_in_days` is a native parameter
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `data_retention_time_in_days` is now a native [table parameter](https://docs.snowflake.com/en/sql-reference/parameters). Previously `-1` meant “inherit from the parent.” That sentinel is gone: omit the field to inherit.
+
+```terraform
+# data_retention_time_in_days = -1  # remove this; omit the field to inherit
+```
+
+State is not upgraded automatically. Remove `-1` from the configuration. After upgrade, the next plan stores the effective value and the `parameters` block from [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters). Setting the field still sends `DATA_RETENTION_TIME_IN_DAYS` on create and alter.
+
+#### Computed `show_output`, `describe_output`, and `parameters`
+
+We have added computed `show_output`, `describe_output`, and `parameters` on [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table). They hold [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables), [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table), and [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters). The next plan updates every existing `snowflake_table` to fill those blocks. No configuration changes are required unless you want to reference the new outputs.
+
+#### Import requires the table to exist
+
+Import of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) now looks the table up in Snowflake. Previously the importer only copied the id into state. Import fails if the table is missing. Use the fully qualified name as the import id. This resource is still in preview and will be reworked in the future.
+
+#### `owner` is removed
+
+The computed `owner` field of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) is gone. Use `show_output.owner` from [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables).
+
+```terraform
+# owner is gone; use show_output.0.owner
+```
+
+The configuration is unchanged unless it referenced `owner`. State is not upgraded automatically. The next plan drops `owner` from state and fills `show_output`.
+
+#### `tag` is removed
+
+The deprecated `tag` block of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) is gone. Associate tags with [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) instead.
+
+```terraform
+# remove the tag { ... } block; use snowflake_tag_association instead
+```
+
+State is not upgraded automatically. Remove `tag` from the table configuration. Existing tag assignments in Snowflake stay until you manage them with `snowflake_tag_association` or drop them yourself.
+
 #### Column data types are parsed
 
 `tables.*.describe_output.*.type` in [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) is now parsed and shown in a normalized format, e.g. `NUMBER(38, 0)` instead of `NUMBER(38,0)`. When the provider cannot parse a type, it shows the value returned by DESCRIBE TABLE. `column.*.type` in `snowflake_table` is unchanged.

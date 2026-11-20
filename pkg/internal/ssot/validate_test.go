@@ -251,6 +251,54 @@ func Test_ValidateObject_additionalCustomizeDiffsEmptyEntry(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_resourceParametersNotInCatalog(t *testing.T) {
+	require.PanicsWithValue(t, `object "Table": ResourceParameters entry "CATALOG" is not in the TABLE catalog`, func() {
+		ValidateObject(Object{
+			Name: "Table",
+			ResourceParameters: []ParameterDef{{
+				SqlName: "CATALOG",
+				Levels:  []ParameterLevel{ParameterLevelSchema},
+			}},
+		})
+	})
+}
+
+func Test_ValidateObject_resourceParametersDuplicate(t *testing.T) {
+	require.PanicsWithValue(t, `object "Table": duplicate ResourceParameters entry "DATA_RETENTION_TIME_IN_DAYS"`, func() {
+		p := ParameterDef{
+			SqlName: "DATA_RETENTION_TIME_IN_DAYS",
+			Levels:  []ParameterLevel{ParameterLevelTable},
+		}
+		ValidateObject(Object{
+			Name:               "Table",
+			ResourceParameters: []ParameterDef{p, p},
+		})
+	})
+}
+
+func Test_ValidateObject_resourceParametersEmptySqlName(t *testing.T) {
+	require.PanicsWithValue(t, `object "Table": ResourceParameters entry has empty SqlName`, func() {
+		ValidateObject(Object{
+			Name: "Table",
+			ResourceParameters: []ParameterDef{{
+				Levels: []ParameterLevel{ParameterLevelTable},
+			}},
+		})
+	})
+}
+
+func Test_ValidateObject_resourceParametersInCatalog(t *testing.T) {
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Table",
+			ResourceParameters: []ParameterDef{{
+				SqlName: "DATA_RETENTION_TIME_IN_DAYS",
+				Levels:  []ParameterLevel{ParameterLevelTable},
+			}},
+		})
+	})
+}
+
 func Test_ValidateObject_additionalCustomizeDiffsNotAFunctionName(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": AdditionalCustomizeDiffs entry "not a func" is not a function name`, func() {
 		ValidateObject(Object{

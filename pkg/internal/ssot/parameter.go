@@ -3,6 +3,7 @@ package ssot
 import (
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 )
 
@@ -63,6 +64,24 @@ type ParameterDef struct {
 	// Deprecated marks a parameter that Snowflake deprecated. SHOW PARAMETERS may not return it,
 	// and Snowflake may reject setting or unsetting it.
 	Deprecated bool
+	// TODO [next PRs]: mark catalog parameters that SHOW PARAMETERS returns but the object cannot SET
+	// (inherited / read-only on this object). ResourceParameters is the allowlist workaround until then.
+}
+
+// FilterResourceParameters returns catalog in catalog order when allowlist is empty.
+// Otherwise it keeps catalog entries whose SqlName is in allowlist.
+func FilterResourceParameters(catalog, allowlist []ParameterDef) []ParameterDef {
+	if len(allowlist) == 0 {
+		return catalog
+	}
+	allowed := make(map[string]struct{}, len(allowlist))
+	for _, p := range allowlist {
+		allowed[p.SqlName] = struct{}{}
+	}
+	return collections.Filter(catalog, func(p ParameterDef) bool {
+		_, ok := allowed[p.SqlName]
+		return ok
+	})
 }
 
 // FieldName is the Terraform attribute name: the SQL name in lowercase.
