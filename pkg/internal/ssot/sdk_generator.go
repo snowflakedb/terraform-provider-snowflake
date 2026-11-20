@@ -382,14 +382,10 @@ func (obj Object) VariantAlterConfig() SdkGenerator {
 	if !obj.HasAlterSpec() {
 		panic(fmt.Sprintf("object %q: variant ALTER has no spec", obj.Name))
 	}
-	stem := obj.SdkCreateRequestObjectName
-	if stem == "" {
-		stem = obj.Name
-	}
 	return SdkGenerator{
 		AlterDoc:                      obj.Alter.Doc,
 		AlterSql:                      obj.variantEntityName(obj.VariantEntityAlterName),
-		AlterQueryStructName:          "Alter" + stem,
+		AlterQueryStructName:          "Alter" + obj.requestStem(),
 		AlterAdditionalValidations:    obj.Alter.AdditionalValidations,
 		AlterSetAdditionalValidations: obj.Alter.SetAdditionalValidations,
 	}
@@ -403,17 +399,21 @@ func (obj Object) VariantCreateConfig() SdkGenerator {
 	if !obj.HasCreateSpec() {
 		panic(fmt.Sprintf("object %q: variant CREATE has no spec", obj.Name))
 	}
-	stem := obj.SdkCreateRequestObjectName
-	if stem == "" {
-		stem = obj.Name
-	}
 	return SdkGenerator{
 		CreateDoc:                   obj.Create.Doc,
 		CreateSql:                   obj.variantEntityName(obj.VariantEntityCreateName),
-		CreateQueryStructName:       "Create" + stem,
+		CreateQueryStructName:       "Create" + obj.requestStem(),
 		CreateAdditionalValidations: obj.Create.AdditionalValidations,
 		CreateWithoutOrReplace:      obj.Create.WithoutOrReplace,
 	}
+}
+
+// requestStem is the name the SDK request and query structs are built from: SdkCreateRequestObjectName, or Name.
+func (obj Object) requestStem() string {
+	if obj.SdkCreateRequestObjectName != "" {
+		return obj.SdkCreateRequestObjectName
+	}
+	return obj.Name
 }
 
 // variantEntityName is the SQL object words for a variant statement.
