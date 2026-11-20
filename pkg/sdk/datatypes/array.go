@@ -2,8 +2,6 @@ package datatypes
 
 import (
 	"fmt"
-	"regexp"
-	"strings"
 )
 
 // ArrayDataType is based on:
@@ -50,43 +48,28 @@ func (t *ArrayDataType) format(arrayType string, formatElementType func(DataType
 	if !t.IsStructured() {
 		return arrayType
 	}
-	if t.elementNotNull {
-		return fmt.Sprintf("%s(%s NOT NULL)", arrayType, formatElementType(t.elementType))
-	}
-	return fmt.Sprintf("%s(%s)", arrayType, formatElementType(t.elementType))
+	return fmt.Sprintf("%s(%s)", arrayType, formatWithNotNull(formatElementType(t.elementType), t.elementNotNull))
 }
 
-var (
-	ArrayDataTypeSynonyms = []string{ArrayLegacyDataType}
-
-	arrayElementNotNullSuffix = regexp.MustCompile(`\s+NOT\s+NULL$`)
-)
+var ArrayDataTypeSynonyms = []string{ArrayLegacyDataType}
 
 // parseArrayDataTypeRaw returns the semi-structured ARRAY when no arguments are given
 // and the structured ARRAY when the element type (with optional NOT NULL) is given in parentheses.
 func parseArrayDataTypeRaw(raw sanitizedDataTypeRaw) (*ArrayDataType, error) {
-	r := strings.TrimSpace(strings.TrimPrefix(raw.raw, raw.matchedByType))
-	if r == "" {
-		return &ArrayDataType{underlyingType: raw.matchedByType}, nil
-	}
-	if !strings.HasPrefix(r, "(") || !strings.HasSuffix(r, ")") {
+	args, hasArguments, ok := structuredTypeArguments(raw)
+	if !ok {
 		return nil, fmt.Errorf(`array %s could not be parsed, use "%s" or "%s(element_type [ NOT NULL ])" format`, raw.raw, raw.matchedByType, raw.matchedByType)
 	}
-	elementTypeRaw := strings.TrimSpace(r[1 : len(r)-1])
-	elementNotNull := false
-	if loc := arrayElementNotNullSuffix.FindStringIndex(elementTypeRaw); loc != nil {
-		elementNotNull = true
-		elementTypeRaw = strings.TrimSpace(elementTypeRaw[:loc[0]])
+	if !hasArguments {
+		return &ArrayDataType{underlyingType: raw.matchedByType}, nil
 	}
+	elementTypeRaw, elementNotNull := trimNotNullSuffix(args)
 	if elementTypeRaw == "" {
 		return nil, fmt.Errorf(`array %s could not be parsed, element type is missing; use "%s(element_type [ NOT NULL ])" format`, raw.raw, raw.matchedByType)
 	}
-	elementType, err := ParseDataType(elementTypeRaw)
+	elementType, err := parseNestedDataType(elementTypeRaw)
 	if err != nil {
 		return nil, fmt.Errorf(`could not parse the array's element type: "%s", err: %w`, elementTypeRaw, err)
-	}
-	if _, ok := elementType.(*TableDataType); ok {
-		return nil, fmt.Errorf(`array's element type cannot be a table: "%s"`, elementTypeRaw)
 	}
 	return &ArrayDataType{
 		elementType:    elementType,
