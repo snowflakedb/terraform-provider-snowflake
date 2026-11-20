@@ -740,8 +740,16 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 	errorIntegration, cleanupErrorIntegration := testClient().NotificationIntegration.Create(t)
 	t.Cleanup(cleanupErrorIntegration)
 
-	objectTypes := []string{"ROLES", "DATABASES", "SHARES", "EXTERNAL VOLUMES", "INTEGRATIONS", "WAREHOUSES"}
-	integrationTypes := []string{"API INTEGRATIONS", "EXTERNAL ACCESS INTEGRATIONS", "NOTIFICATION INTEGRATIONS", "SECURITY INTEGRATIONS", "STORAGE INTEGRATIONS"}
+	// The group goes into the read-only mode, so it cannot contain ROLES or WAREHOUSES (or other types that are not limited with an allowed_* list).
+	// A read-only failover group replicates them account-wide, so creating them fails in the whole account, and the tests running in parallel fail, e.g.:
+	//   500051 (2F003): Cannot create role because roles are part of a read-only replication or failover group in this account.
+	//   500053 (2F003): Cannot CREATE WAREHOUSE because WAREHOUSE is part of a read-only replication or failover group in this account.
+	// DATABASES, SHARES, EXTERNAL VOLUMES, and INTEGRATIONS are limited to the objects from the allowed_* lists, so the other objects are not affected.
+	// SECURITY INTEGRATIONS are left out of the integration types, because Snowflake requires ROLES to replicate them, e.g.:
+	//   500052 (55000): ALLOWED_INTEGRATION_TYPES contains SECURITY INTEGRATIONS but OBJECT_TYPES does not include ROLES. ROLES is required for replicating SECURITY INTEGRATIONS.
+	// They are covered by TestAcc_FailoverGroup_SecurityIntegrations, which does not use the read-only mode.
+	objectTypes := []string{"DATABASES", "SHARES", "EXTERNAL VOLUMES", "INTEGRATIONS"}
+	integrationTypes := []string{"API INTEGRATIONS", "EXTERNAL ACCESS INTEGRATIONS", "NOTIFICATION INTEGRATIONS", "STORAGE INTEGRATIONS"}
 
 	basic := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, []string{"ROLES"})
 	withOptionals := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, objectTypes).
@@ -832,9 +840,9 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 		objectassert.FailoverGroup(t, id).
 			HasName(id.Name()).
 			HasIsPrimary(true).
-			HasObjectTypesInAnyOrder(sdk.FailoverGroupObjectTypeRoles, sdk.FailoverGroupObjectTypeDatabases, sdk.FailoverGroupObjectTypeShares, sdk.FailoverGroupObjectTypeExternalVolumes, sdk.FailoverGroupObjectTypeIntegrations, sdk.FailoverGroupObjectTypeWarehouses).
+			HasObjectTypesInAnyOrder(sdk.FailoverGroupObjectTypeDatabases, sdk.FailoverGroupObjectTypeShares, sdk.FailoverGroupObjectTypeExternalVolumes, sdk.FailoverGroupObjectTypeIntegrations).
 			HasAllowedAccountsInAnyOrder(sourceAccount, targetAccount).
-			HasAllowedIntegrationTypesInAnyOrder(sdk.AllFailoverGroupIntegrationTypes...).
+			HasAllowedIntegrationTypesInAnyOrder(sdk.FailoverGroupIntegrationTypeApiIntegrations, sdk.FailoverGroupIntegrationTypeExternalAccessIntegrations, sdk.FailoverGroupIntegrationTypeNotificationIntegrations, sdk.FailoverGroupIntegrationTypeStorageIntegrations).
 			HasReplicationSchedule("10 MINUTE").
 			HasComment(comment).
 			HasErrorIntegration(errorIntegration.ID()).
@@ -890,7 +898,7 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, nil, sdk.String(comment)),
 						planchecks.ExpectChange(ref, "replication_schedule", tfjson.ActionUpdate, nil, sdk.String("10 MINUTE")),
-						planchecks.ExpectSetElementsChange(ref, "object_types", tfjson.ActionUpdate, []string{"DATABASES", "SHARES", "EXTERNAL VOLUMES", "INTEGRATIONS", "WAREHOUSES"}, nil),
+						planchecks.ExpectSetElementsChange(ref, "object_types", tfjson.ActionUpdate, []string{"DATABASES", "SHARES", "EXTERNAL VOLUMES", "INTEGRATIONS"}, []string{"ROLES"}),
 					},
 				},
 				Config: config.FromModels(t, withOptionals),
@@ -957,10 +965,58 @@ func TestAcc_FailoverGroup_BasicUseCase(t *testing.T) {
 	})
 }
 
+// SECURITY INTEGRATIONS need ROLES in the object types, and a read-only group with ROLES blocks creating roles in the whole account,
+// so this test does not use the read-only mode, see TestAcc_FailoverGroup_BasicUseCase.
+func TestAcc_FailoverGroup_SecurityIntegrations(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	targetAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+
+	objectTypes := []string{"ROLES", "INTEGRATIONS"}
+	m := model.FailoverGroup("t", id.Name(), []string{targetAccount.FullyQualifiedName()}, objectTypes).
+		WithAllowedIntegrationTypes([]string{"SECURITY INTEGRATIONS"})
+	ref := m.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.FailoverGroup),
+		Steps: []resource.TestStep{
+			// 1. Create
+			{
+				Config: config.FromModels(t, m),
+				Check: assertThat(t,
+					resourceassert.FailoverGroupResource(t, ref).
+						HasNameString(id.Name()).
+						HasObjectTypes(objectTypes...).
+						HasAllowedIntegrationTypes("SECURITY INTEGRATIONS").
+						HasReadOnlyString("false"),
+					objectassert.FailoverGroup(t, id).
+						HasName(id.Name()).
+						HasObjectTypesInAnyOrder(sdk.FailoverGroupObjectTypeRoles, sdk.FailoverGroupObjectTypeIntegrations).
+						HasAllowedIntegrationTypesInAnyOrder(sdk.FailoverGroupIntegrationTypeSecurityIntegrations).
+						HasIsPrimaryReadOnly(false),
+				),
+			},
+			// 2. Import
+			{
+				Config:                  config.FromModels(t, m),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ignore_edition_check"},
+			},
+		},
+	})
+}
+
 // Snowflake rejects the membership changes of a failover group in the read-only mode, so the plan fails when read_only stays true.
 // Switching read_only off in the same apply leaves the read-only mode before the change, and switching it on is done afterwards.
 // SHOW returns the read-only mode of a primary failover group in is_primary_read_only, so the checks read it back.
 // The FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH experiment lifts this restriction, see TestAcc_FailoverGroup_ReadOnlyMode_AutoSwitch.
+// Only DATABASES limited with allowed_databases are used, because the read-only mode of a group with account-wide object types
+// (like ROLES or WAREHOUSES) blocks creating them in the whole account, see TestAcc_FailoverGroup_BasicUseCase.
 func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	resourceId := helpers.EncodeResourceIdentifier(id)
@@ -1107,6 +1163,8 @@ func TestAcc_FailoverGroup_ReadOnlyMode(t *testing.T) {
 
 // With the FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH experiment the plan passes while read_only stays true,
 // and the update leaves the read-only mode before the membership change and enters it again afterwards.
+// Only DATABASES limited with allowed_databases are used, because the read-only mode of a group with account-wide object types
+// (like ROLES or WAREHOUSES) blocks creating them in the whole account, see TestAcc_FailoverGroup_BasicUseCase.
 func TestAcc_FailoverGroup_ReadOnlyMode_AutoSwitch(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	sourceAccount := testClient().Account.GetAccountIdentifier(t)
