@@ -28,5 +28,5 @@ func GetAllObjects() []DataSourceObject {
 
 // selectsForDataSource takes the base of a plural that has an SDK SHOW. A variant is covered by its base.
 func selectsForDataSource(obj ssot.Object) bool {
-	return obj.VariantOf == nil && len(obj.PairedShowColumns()) > 0 && obj.SdkConfig().Show
+	return obj.VariantBase() == nil && len(obj.PairedShowColumns()) > 0 && obj.SdkConfig().Show
 }

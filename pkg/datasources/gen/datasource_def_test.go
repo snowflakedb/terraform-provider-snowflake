@@ -21,17 +21,17 @@ func Test_selectsForDataSource(t *testing.T) {
 	t.Run("a variant is covered by its base", func(t *testing.T) {
 		variant := base
 		variant.Name = "ThingSecondary"
-		variant.VariantOf = &base
+		variant.Variant = &ssot.ObjectVariant{Of: &base}
 		require.False(t, selectsForDataSource(variant))
 	})
 	t.Run("a base-only object", func(t *testing.T) {
 		baseOnly := base
-		baseOnly.VariantBaseOnly = true
+		baseOnly.BaseVariant = &ssot.BaseVariant{NotResource: true}
 		require.True(t, selectsForDataSource(baseOnly))
 	})
 	t.Run("the paired SHOW union counts as show columns", func(t *testing.T) {
 		generic := base
-		generic.ShowGeneric = generic.Show
+		generic.BaseVariant = &ssot.BaseVariant{ShowGeneric: generic.Show}
 		generic.Show = ssot.OutputSpec{}
 		require.True(t, selectsForDataSource(generic))
 	})

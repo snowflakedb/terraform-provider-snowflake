@@ -39,28 +39,32 @@ func RedundantExplicitDefaults(obj Object) []string {
 }
 
 // redundantObjectDefaults lists object name overrides set to the value omission already produces.
-// DescribeDetailsName empty is Name plus Details. ShowPlainName, SdkCreateRequestObjectName empty is Name.
-// VariantEntityCreateName and VariantEntityAlterName empty are the base object's type words.
+// DescribeDetailsName empty is Name plus Details. BaseVariant.ShowPlainName, SdkCreateRequestObjectName empty is Name.
+// Variant.CreateName and Variant.AlterName empty are the base object's type words.
+// Variant.RequestObjectName empty is Name.
 func (obj Object) redundantObjectDefaults() []string {
 	var findings []string
 	if obj.DescribeDetailsName != "" && obj.DescribeDetailsName == obj.Name+"Details" {
 		findings = append(findings, explicitDefaultFinding(obj.Name, "DescribeDetailsName"))
 	}
-	if obj.ShowPlainName != "" && obj.ShowPlainName == obj.Name {
-		findings = append(findings, explicitDefaultFinding(obj.Name, "ShowPlainName"))
+	if obj.ShowPlainName() != "" && obj.ShowPlainName() == obj.Name {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "BaseVariant.ShowPlainName"))
 	}
 	if obj.SdkCreateRequestObjectName != "" && obj.SdkCreateRequestObjectName == obj.Name {
 		findings = append(findings, explicitDefaultFinding(obj.Name, "SdkCreateRequestObjectName"))
 	}
-	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+	if obj.Variant == nil || obj.Variant.Of == nil || obj.Variant.Of.Name == "" {
 		return findings
 	}
-	base := obj.VariantOf.ObjectType()
-	if obj.VariantEntityCreateName != "" && obj.VariantEntityCreateName == base {
-		findings = append(findings, explicitDefaultFinding(obj.Name, "VariantEntityCreateName"))
+	if obj.Variant.RequestObjectName != "" && obj.Variant.RequestObjectName == obj.Name {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "Variant.RequestObjectName"))
 	}
-	if obj.VariantEntityAlterName != "" && obj.VariantEntityAlterName == base {
-		findings = append(findings, explicitDefaultFinding(obj.Name, "VariantEntityAlterName"))
+	base := obj.Variant.Of.ObjectType()
+	if obj.Variant.CreateName != "" && obj.Variant.CreateName == base {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "Variant.CreateName"))
+	}
+	if obj.Variant.AlterName != "" && obj.Variant.AlterName == base {
+		findings = append(findings, explicitDefaultFinding(obj.Name, "Variant.AlterName"))
 	}
 	return findings
 }
@@ -126,7 +130,7 @@ func (obj Object) explicitDefaultRoots() []*Attribute {
 		attributePointers(obj.ComputedAttributes),
 		obj.Show.Columns,
 		obj.Describe.Columns,
-		obj.ShowGeneric.Columns,
+		obj.ShowGenericColumns(),
 		obj.DescribeRows.Columns,
 		obj.Create.Clauses,
 		obj.Create.KeywordsBefore,

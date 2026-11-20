@@ -54,16 +54,18 @@ func ValidateObject(obj Object) {
 	validateExactlyOneOf(obj)
 	validateAtLeastOneOf(obj)
 	switch {
-	case obj.VariantOf != nil:
+	case obj.Variant != nil:
+		if obj.BaseVariant != nil {
+			panic(fmt.Sprintf("object %q: Variant and BaseVariant are both set", obj.Name))
+		}
+		if obj.Variant.Of == nil || obj.Variant.Of.Name == "" {
+			panic(fmt.Sprintf("object %q: Variant.Of needs a base", obj.Name))
+		}
 		if obj.Create.Sql != "" {
-			panic(fmt.Sprintf("object %q: variant CREATE words are VariantEntityCreateName", obj.Name))
+			panic(fmt.Sprintf("object %q: variant CREATE words are Variant.CreateName", obj.Name))
 		}
 	case obj.Create.WithoutOrReplace:
 		panic(fmt.Sprintf("object %q: Create.WithoutOrReplace is for a variant", obj.Name))
-	case obj.VariantEntityCreateName != "":
-		panic(fmt.Sprintf("object %q: VariantEntityCreateName is for a variant", obj.Name))
-	case obj.VariantEntityAlterName != "":
-		panic(fmt.Sprintf("object %q: VariantEntityAlterName is for a variant", obj.Name))
 	}
 	validateSqlSequence(obj, "SET", obj.SetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.UnsetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
@@ -85,7 +87,7 @@ func ValidateObject(obj Object) {
 	}
 	nested := nestedAttributeNames(obj)
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, sqlOnly, nested)
-	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, sqlOnly, nested)
+	validateColumnList(obj, "SHOW generic", obj.ShowGenericColumns(), attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE rows", obj.DescribeRows.Columns, attrs, sqlOnly, nested)
 	validateSchemaKeys(obj, obj.Name, obj.PairedShowColumns())
@@ -124,11 +126,11 @@ func validateDataSource(obj Object, g Generators) {
 		if !g.DataSource.Enabled {
 			panic(fmt.Sprintf("object %q: DataSourceHooks need WithDataSource()", obj.Name))
 		}
-		if obj.VariantOf != nil {
+		if obj.VariantBase() != nil {
 			panic(fmt.Sprintf("object %q: DataSourceHooks belong to the base, a variant is covered by it", obj.Name))
 		}
 	}
-	if !g.DataSource.Enabled || obj.VariantOf != nil {
+	if !g.DataSource.Enabled || obj.VariantBase() != nil {
 		return
 	}
 	hooks := obj.EffectiveDataSourceHooks()
@@ -364,12 +366,12 @@ func validateSuspendForAlter(obj Object) {
 	if suspend.Enabled != nil && !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == suspend.Enabled.Name && a.Type == AttrBool && a.NativeBool }) {
 		panic(fmt.Sprintf("object %q: SuspendForAlter.Enabled %q is not a NativeBool attribute of the object", obj.Name, suspend.Enabled.Name))
 	}
-	if obj.VariantOf != nil {
+	if obj.VariantBase() != nil {
 		if suspend.State != nil || suspend.Started != "" || suspend.Suspended != "" {
-			panic(fmt.Sprintf("object %q: a variant uses SuspendIfStarted of %q, so SuspendForAlter sets only When and Enabled", obj.Name, obj.VariantOf.Name))
+			panic(fmt.Sprintf("object %q: a variant uses SuspendIfStarted of %q, so SuspendForAlter sets only When and Enabled", obj.Name, obj.VariantBase().Name))
 		}
-		if obj.VariantOf.SuspendForAlter == nil || !obj.VariantOf.SdkConfig().SuspendIfStarted {
-			panic(fmt.Sprintf("object %q: SuspendForAlter needs SuspendIfStarted on the base %q", obj.Name, obj.VariantOf.Name))
+		if obj.VariantBase().SuspendForAlter == nil || !obj.VariantBase().SdkConfig().SuspendIfStarted {
+			panic(fmt.Sprintf("object %q: SuspendForAlter needs SuspendIfStarted on the base %q", obj.Name, obj.VariantBase().Name))
 		}
 		return
 	}
@@ -1317,7 +1319,7 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 			panic(fmt.Sprintf("object %q: %s entry %q is SQL-only", obj.Name, kind, a.Name))
 		}
 		// A variant SHOW struct reuses the parent's show attributes, not this object's resource fields.
-		if obj.VariantOf == nil {
+		if obj.VariantBase() == nil {
 			if a.Readonly {
 				if _, w := attrs[a.Name]; w {
 					panic(fmt.Sprintf("object %q: %s Readonly %q duplicates a CREATE/ALTER attribute", obj.Name, kind, a.Name))
@@ -1506,7 +1508,7 @@ func validateDescribeDetails(obj Object) {
 		return
 	}
 	// The rows of a variant are the rows of its base.
-	if !sdk.Describe || (len(obj.DescribeRows.Columns) == 0 && obj.VariantOf == nil) {
+	if !sdk.Describe || (len(obj.DescribeRows.Columns) == 0 && obj.VariantBase() == nil) {
 		panic(fmt.Sprintf("object %q: SdkDescribeDetails needs SdkDescribe and DescribeRows", obj.Name))
 	}
 	validateGeneratorSkips(obj, "sdk-describe-details nested", "DESCRIBE", true, obj.Describe.Columns, sdk.DescribeDetailsNestedFields)
@@ -1598,6 +1600,17 @@ func validateSdkString(obj Object, attr Attribute) {
 // Reuse is a deliberate choice. The base must generate the artifact, and a variant that needs any show-side override
 // drops the reuse setting and configures SHOW itself.
 func validateShowReuse(obj Object, g Generators) {
+	if obj.Variant != nil {
+		if obj.Variant.SchemaShowFromBase && !g.Schema.Show {
+			panic(fmt.Sprintf("object %q: Variant.SchemaShowFromBase needs SchemaShow", obj.Name))
+		}
+		if obj.Variant.ObjectAssertShowRowFromBase && !g.ObjectAssert.Show {
+			panic(fmt.Sprintf("object %q: Variant.ObjectAssertShowRowFromBase needs ObjectAssertShow", obj.Name))
+		}
+		if obj.Variant.ObjectAssertShowFromBase != "" && !g.ObjectAssert.Show {
+			panic(fmt.Sprintf("object %q: Variant.ObjectAssertShowFromBase needs ObjectAssertShow", obj.Name))
+		}
+	}
 	if obj.ReusesBaseSchemaShow() {
 		base := validateShowReuseBase(obj, "schema SHOW", func(b Generators) bool { return b.Schema.Show })
 		if len(g.Schema.ShowManualFields) > 0 || len(g.Schema.ShowListFields) > 0 {
@@ -1609,7 +1622,7 @@ func validateShowReuse(obj Object, g Generators) {
 		if len(g.ObjectAssert.ShowSkipFields) > 0 || len(g.ObjectAssert.ShowNestedFields) > 0 {
 			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set skip or nested fields", obj.Name, base.Name))
 		}
-		if g.ObjectAssert.ShowProjection != "" {
+		if obj.Variant != nil && obj.Variant.ObjectAssertShowFromBase != "" {
 			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set a show projection", obj.Name, base.Name))
 		}
 		if g.ObjectAssert.NoShowById || g.ObjectAssert.ShowNoIdentifiableObject || g.ObjectAssert.ShowByParentId != nil || g.ObjectAssert.ShowFromObjectIDExpr != "" || g.ObjectAssert.ShowObjectTypeName != "" {
@@ -1619,6 +1632,9 @@ func validateShowReuse(obj Object, g Generators) {
 }
 
 func validateShowOutputAssertReuse(obj Object, g Generators) {
+	if obj.Variant != nil && obj.Variant.ShowOutputShowRowFromBase && !g.ShowOutputAssert.Show {
+		panic(fmt.Sprintf("object %q: Variant.ShowOutputShowRowFromBase needs ShowOutputShow", obj.Name))
+	}
 	if !obj.ReusesBaseShowOutputAssertShow() {
 		return
 	}

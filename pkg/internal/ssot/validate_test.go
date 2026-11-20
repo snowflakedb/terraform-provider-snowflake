@@ -1063,7 +1063,7 @@ func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
 	comment := Attribute{Name: "comment", Type: AttrString}
 	obj := Object{
 		Name:       "WarehouseAdaptive",
-		VariantOf:  &base,
+		Variant:    &ObjectVariant{Of: &base},
 		Attributes: []Attribute{kind, comment},
 		Create:     CreateSpec{Clauses: []*Attribute{&kind, &comment}},
 	}
@@ -1073,12 +1073,12 @@ func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
 
 	withSql := obj
 	withSql.Create.Sql = "WAREHOUSE"
-	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE words are VariantEntityCreateName`, func() {
+	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE words are Variant.CreateName`, func() {
 		ValidateObject(withSql)
 	})
 
-	require.PanicsWithValue(t, `object "Widget": VariantEntityCreateName is for a variant`, func() {
-		ValidateObject(Object{Name: "Widget", VariantEntityCreateName: "WIDGET"})
+	require.PanicsWithValue(t, `object "Widget": Variant.Of needs a base`, func() {
+		ValidateObject(Object{Name: "Widget", Variant: &ObjectVariant{CreateName: "WIDGET"}})
 	})
 	require.PanicsWithValue(t, `object "Widget": Create.WithoutOrReplace is for a variant`, func() {
 		ValidateObject(Object{Name: "Widget", Create: CreateSpec{WithoutOrReplace: true}})
@@ -1654,7 +1654,7 @@ func Test_ValidateObject_describeDetailsObjectColumnsAndVariants(t *testing.T) {
 	newVariant := func(withDetails bool) Object {
 		obj := Object{
 			Name:       "WidgetMini",
-			VariantOf:  &base,
+			Variant:    &ObjectVariant{Of: &base},
 			Attributes: []Attribute{config},
 			Describe:   OutputSpec{Columns: []*Attribute{&active, &config}},
 		}
@@ -1676,7 +1676,7 @@ func Test_ValidateObject_describeDetailsObjectColumnsAndVariants(t *testing.T) {
 
 	t.Run("an object without a variant needs rows", func(t *testing.T) {
 		obj := newVariant(true)
-		obj.VariantOf = nil
+		obj.Variant = nil
 		require.PanicsWithValue(t, `object "WidgetMini": SdkDescribeDetails needs SdkDescribe and DescribeRows`, func() { ValidateObject(obj) })
 	})
 }
@@ -1937,16 +1937,24 @@ func Test_ValidateObject_showReuse(t *testing.T) {
 	baseWithShow := func() *Object {
 		return showReuseBaseObject(WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
 	}
-	variant := func(base *Object, opts ...GeneratorOption) Object {
-		return Object{Name: "Variant", VariantOf: base, Generators: opts}
+	variant := func(base *Object, schemaFromBase, assertFromBase bool, opts ...GeneratorOption) Object {
+		return Object{
+			Name: "Variant",
+			Variant: &ObjectVariant{
+				Of:                          base,
+				SchemaShowFromBase:          schemaFromBase,
+				ObjectAssertShowRowFromBase: assertFromBase,
+			},
+			Generators: opts,
+		}
 	}
 	reuseBoth := []GeneratorOption{
-		WithSchema(SchemaShow(SchemaShowFromBase())),
-		WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase())),
+		WithSchema(SchemaShow()),
+		WithObjectAssert(ObjectAssertShow()),
 	}
 
 	t.Run("valid reuse resolves to the base", func(t *testing.T) {
-		obj := variant(baseWithShow(), reuseBoth...)
+		obj := variant(baseWithShow(), true, true, reuseBoth...)
 		require.NotPanics(t, func() { ValidateObject(obj) })
 		require.True(t, obj.ReusesBaseSchemaShow())
 		require.True(t, obj.ReusesBaseObjectAssertShow())
@@ -1954,86 +1962,102 @@ func Test_ValidateObject_showReuse(t *testing.T) {
 		require.Equal(t, "Base", obj.ObjectAssertShowOwnerName())
 	})
 	t.Run("without reuse the object owns its artifacts", func(t *testing.T) {
-		obj := variant(baseWithShow(), WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
+		obj := variant(baseWithShow(), false, false, WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
 		require.False(t, obj.ReusesBaseSchemaShow())
 		require.False(t, obj.ReusesBaseObjectAssertShow())
 		require.Equal(t, "Variant", obj.SchemaShowOwnerName())
 		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
 	})
 	t.Run("reuse is independent per generator", func(t *testing.T) {
-		obj := variant(baseWithShow(), WithSchema(SchemaShow(SchemaShowFromBase())), WithObjectAssert(ObjectAssertShow()))
+		obj := variant(baseWithShow(), true, false, WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
 		require.Equal(t, "Base", obj.SchemaShowOwnerName())
 		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
 	})
-	t.Run("requires VariantOf", func(t *testing.T) {
+	t.Run("requires Variant.Of", func(t *testing.T) {
 		require.Panics(t, func() {
-			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithSchema(SchemaShow(SchemaShowFromBase()))}})
+			ValidateObject(Object{
+				Name:       "Lone",
+				Variant:    &ObjectVariant{SchemaShowFromBase: true},
+				Generators: []GeneratorOption{WithSchema(SchemaShow())},
+			})
 		})
 		require.Panics(t, func() {
-			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))}})
+			ValidateObject(Object{
+				Name:       "Lone",
+				Variant:    &ObjectVariant{ObjectAssertShowRowFromBase: true},
+				Generators: []GeneratorOption{WithObjectAssert(ObjectAssertShow())},
+			})
 		})
 	})
 	t.Run("the base must generate the artifact", func(t *testing.T) {
 		require.Panics(t, func() {
-			ValidateObject(variant(showReuseBaseObject(WithObjectAssert(ObjectAssertShow())), WithSchema(SchemaShow(SchemaShowFromBase()))))
+			ValidateObject(variant(showReuseBaseObject(WithObjectAssert(ObjectAssertShow())), true, false, WithSchema(SchemaShow())))
 		})
 		require.Panics(t, func() {
-			ValidateObject(variant(showReuseBaseObject(WithSchema(SchemaShow())), WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))))
+			ValidateObject(variant(showReuseBaseObject(WithSchema(SchemaShow())), false, true, WithObjectAssert(ObjectAssertShow())))
 		})
 	})
 	t.Run("a reusing variant cannot override show-side options", func(t *testing.T) {
 		tables := Attribute{Name: "tables"}
-		obj := func(opts ...GeneratorOption) Object {
+		obj := func(schemaFromBase, assertFromBase bool, opts ...GeneratorOption) Object {
 			return Object{
-				Name:       "Variant",
-				VariantOf:  baseWithShow(),
+				Name: "Variant",
+				Variant: &ObjectVariant{
+					Of:                          baseWithShow(),
+					SchemaShowFromBase:          schemaFromBase,
+					ObjectAssertShowRowFromBase: assertFromBase,
+				},
 				Attributes: []Attribute{tables},
 				Show:       OutputSpec{Columns: []*Attribute{&tables}},
 				Generators: opts,
 			}
 		}
 		require.Panics(t, func() {
-			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowManualFields(&tables)))))
+			ValidateObject(obj(true, false, WithSchema(SchemaShow(SchemaShowManualFields(&tables)))))
 		})
 		require.Panics(t, func() {
-			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowListFields(&tables)))))
+			ValidateObject(obj(true, false, WithSchema(SchemaShow(SchemaShowListFields(&tables)))))
 		})
 		require.Panics(t, func() {
-			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowSkipFields(&tables)))))
+			ValidateObject(obj(false, true, WithObjectAssert(ObjectAssertShow(ObjectAssertShowSkipFields(&tables)))))
 		})
 		require.Panics(t, func() {
-			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowNestedField(&tables)))))
+			ValidateObject(obj(false, true, WithObjectAssert(ObjectAssertShow(ObjectAssertShowNestedField(&tables)))))
 		})
 	})
 }
 
 func Test_ValidateObject_showOutputAssertReuse(t *testing.T) {
 	base := func(opts ...GeneratorOption) *Object { return &Object{Name: "Base", Generators: opts} }
-	variant := func(b *Object, opts ...ShowOutputShowOption) Object {
-		return Object{Name: "Variant", VariantOf: b, Generators: []GeneratorOption{WithShowOutputAssert(ShowOutputShow(opts...))}}
+	variant := func(b *Object, fromBase bool, opts ...ShowOutputShowOption) Object {
+		return Object{
+			Name:       "Variant",
+			Variant:    &ObjectVariant{Of: b, ShowOutputShowRowFromBase: fromBase},
+			Generators: []GeneratorOption{WithShowOutputAssert(ShowOutputShow(opts...))},
+		}
 	}
 	baseWithShowOutput := func() *Object { return base(WithShowOutputAssert(ShowOutputShow())) }
 
 	t.Run("valid reuse resolves to the base", func(t *testing.T) {
-		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase())
+		obj := variant(baseWithShowOutput(), true)
 		require.NotPanics(t, func() { ValidateObject(obj) })
 		require.True(t, obj.ReusesBaseShowOutputAssertShow())
 		require.Equal(t, "Base", obj.ShowOutputAssertShowOwnerName())
 	})
 	t.Run("without reuse the object owns its assertion", func(t *testing.T) {
-		obj := variant(baseWithShowOutput())
+		obj := variant(baseWithShowOutput(), false)
 		require.False(t, obj.ReusesBaseShowOutputAssertShow())
 		require.Equal(t, "Variant", obj.ShowOutputAssertShowOwnerName())
 	})
 	t.Run("requires VariantOf", func(t *testing.T) {
-		require.Panics(t, func() { ValidateObject(variant(nil, ShowOutputShowRowFromBase())) })
+		require.Panics(t, func() { ValidateObject(variant(nil, true)) })
 	})
 	t.Run("the base must generate the assertion", func(t *testing.T) {
-		require.Panics(t, func() { ValidateObject(variant(base(), ShowOutputShowRowFromBase())) })
+		require.Panics(t, func() { ValidateObject(variant(base(), true)) })
 	})
 	t.Run("cannot set skip fields", func(t *testing.T) {
 		tables := Attribute{Name: "tables"}
-		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase(), ShowOutputShowSkipFields(&tables))
+		obj := variant(baseWithShowOutput(), true, ShowOutputShowSkipFields(&tables))
 		obj.Attributes = []Attribute{tables}
 		obj.Show = OutputSpec{Columns: []*Attribute{&tables}}
 		require.Panics(t, func() { ValidateObject(obj) })
@@ -2152,7 +2176,7 @@ func suspendForAlterVariant(change func(*Object)) Object {
 	size := Attribute{Name: "size", Type: AttrInt}
 	obj := Object{
 		Name:            "WidgetSmall",
-		VariantOf:       &base,
+		Variant:         &ObjectVariant{Of: &base},
 		Attributes:      []Attribute{size},
 		SuspendForAlter: &SuspendForAlter{When: []*Attribute{&size}},
 		ResourceHooks:   []ResourceHookOption{WithSuspendForAlter(Generated())},
@@ -2270,9 +2294,9 @@ func Test_ValidateObject_suspendForAlter(t *testing.T) {
 		"variant of a base without the SDK method": {
 			func() Object {
 				return suspendForAlterVariant(func(o *Object) {
-					base := *o.VariantOf
+					base := *o.Variant.Of
 					base.SuspendForAlter = nil
-					o.VariantOf = &base
+					o.Variant.Of = &base
 				})
 			},
 			`object "WidgetSmall": SuspendForAlter needs SuspendIfStarted on the base "Widget"`,

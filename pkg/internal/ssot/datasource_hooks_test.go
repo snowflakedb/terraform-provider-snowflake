@@ -205,7 +205,7 @@ func Test_ValidateObject_dataSource(t *testing.T) {
 		base := dataSourceTestObject()
 		variant := dataSourceTestObject(WithDataSource())
 		variant.Name = "ThingSecondary"
-		variant.VariantOf = &base
+		variant.Variant = &ObjectVariant{Of: &base}
 		require.NotPanics(t, func() { ValidateObject(variant) })
 	})
 	t.Run("hooks need WithDataSource", func(t *testing.T) {
@@ -218,7 +218,7 @@ func Test_ValidateObject_dataSource(t *testing.T) {
 		base := dataSourceTestObject()
 		variant := withHooks(dataSourceTestObject(WithDataSource()), WithDataSourceItemExtra(ExtCall()))
 		variant.Name = "ThingSecondary"
-		variant.VariantOf = &base
+		variant.Variant = &ObjectVariant{Of: &base}
 		require.Panics(t, func() { ValidateObject(variant) })
 	})
 	t.Run("generated describe needs DESCRIBE", func(t *testing.T) {

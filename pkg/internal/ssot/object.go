@@ -43,20 +43,14 @@ type Object struct {
 	// database. With WithBeforeCreate(Generated()), creating one of them adopts the existing object instead: the generated
 	// code sets the id and runs Update. Names are compared ignoring case and outer spaces.
 	IdentityNamesCreatedBySnowflake []string
-	SdkCreateRequestObjectName      string // SDK CREATE request stem, and the variant CREATE and ALTER query-struct stem. Empty uses Name
-	// VariantOf is the base of this role. Name starts with the base Name, and NamePlural matches the base.
-	// The variant also shares SDK parameter details, SET/UNSET requests, and ParameterType names. Catalog membership still uses Name.
-	VariantOf *Object
-	// VariantEntityCreateName overrides the SQL object words a variant CREATE emits.
-	// Empty uses VariantOf.ObjectType, so WarehouseAdaptive emits WAREHOUSE. Interactive CREATE sets INTERACTIVE WAREHOUSE.
-	VariantEntityCreateName string
-	// VariantEntityAlterName overrides the SQL object words a variant ALTER emits.
-	// Empty uses VariantOf.ObjectType, the same default as CREATE.
-	VariantEntityAlterName string
-	// VariantBaseOnly marks an object that only is the base of its variants and is not a Terraform resource itself:
-	// the variants are separate resources and the base owns what they share, such as the SDK interface.
-	// The resource generator skips it.
-	VariantBaseOnly        bool
+	// SdkCreateRequestObjectName is the CREATE request stem when it differs from Name.
+	// Empty uses Name. A variant sets Variant.RequestObjectName instead. PostgresMirrorArguments is one.
+	SdkCreateRequestObjectName string
+	// Variant groups the settings of one role of a base object. Nil means this object is not a variant.
+	Variant *ObjectVariant
+	// BaseVariant groups the settings of an object that is the base of variants.
+	// Nil means this object is not such a base.
+	BaseVariant            *BaseVariant
 	Attributes             []Attribute
 	ComputedAttributes     []Attribute // Read-only resource state; never used for CREATE/ALTER.
 	AttributesModification bool
@@ -72,26 +66,11 @@ type Object struct {
 	// that does it, and WithSuspendForAlter(Generated()) calls it once per update.
 	SuspendForAlter *SuspendForAlter
 	Show            OutputSpec
-	// ShowGeneric is the temporary union of every variant SHOW column.
-	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
-	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
-	ShowGeneric OutputSpec
-	Describe    OutputSpec
+	Describe        OutputSpec
 	// DescribeRows is the DESCRIBE row when the SDK Describe method returns raw rows that differ from Describe.Columns.
 	// A property-list DESCRIBE is one: the rows are (property, property_type, ...) and the SDK parses them into the details
 	// that Describe.Columns models. Only the SDK paired struct reads DescribeRows. Schema and assertions read Describe.Columns.
 	DescribeRows OutputSpec
-	// ShowPlainName is the plain SHOW struct name when it differs from Name.
-	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
-	// The projection on the paired SHOW struct is As plus this name with Name removed, so WarehouseRegular is AsRegular.
-	// When ShowByID is generated, that suffix also emits ShowByIDRegular and ShowByIDSafelyRegular.
-	ShowPlainName string
-	// ShowVariants are plain SHOW structs emitted with this object's DESCRIBE.
-	// Each variant's Show.Columns is that struct. The variant does not set SdkShow.
-	// The projection is As plus the variant name with Name removed, so WarehouseAdaptive is AsAdaptive.
-	// When ShowByID is generated, that suffix also emits ShowByIDAdaptive and ShowByIDSafelyAdaptive.
-	// TODO [next PRs]: Emit these structs from ShowOperationFromObject. Show() still returns the union row.
-	ShowVariants []*Object
 	// Create and Alter are the SQL field order for those statements.
 	// Presence in a slice is membership. The slice order is the order generation emits.
 	// Alter is the order of the blocks and action keywords after the name. The SET and UNSET blocks carry their fields
@@ -120,6 +99,105 @@ type Object struct {
 	// ShowParametersDetailsAdditionalLevels adds parameters from these levels onto ShowParametersDetails.
 	// A name already in ParameterLevel() is kept once.
 	ShowParametersDetailsAdditionalLevels []ParameterLevel
+}
+
+// ObjectVariant is one role of a base object.
+// Name starts with the base Name, and NamePlural matches the base.
+// The variant shares the base SDK interface, parameter details, SET and UNSET requests, and ParameterType names.
+// Catalog membership still uses the variant Name.
+type ObjectVariant struct {
+	// Of is the base.
+	Of *Object
+	// CreateName overrides the SQL object words CREATE emits.
+	// Empty uses Of.ObjectType, so WarehouseAdaptive emits WAREHOUSE. Interactive CREATE sets INTERACTIVE WAREHOUSE.
+	CreateName string
+	// AlterName overrides the SQL object words ALTER emits.
+	// Empty uses Of.ObjectType, the same default as CREATE.
+	AlterName string
+	// RequestObjectName is the CREATE and ALTER query-struct stem when it differs from Name.
+	// Empty uses Name. AdaptiveWarehouse yields CreateAdaptiveWarehouse.
+	RequestObjectName string
+	// SchemaShowFromBase reuses the base SHOW schema. SchemaShow stays on.
+	// No Show<Variant>Schema is generated. The variant resource uses Show<Base>Schema.
+	SchemaShowFromBase bool
+	// ObjectAssertShowRowFromBase reuses the base SHOW object assertion. ObjectAssertShow stays on.
+	// No <Variant> assertion is generated. Tests use the base assertion.
+	ObjectAssertShowRowFromBase bool
+	// ShowOutputShowRowFromBase reuses the base SHOW show-output assertion. ShowOutputShow stays on.
+	// Only the constructors <Variant>ShowOutput and Imported<Variant>ShowOutput are generated, and they return the base type.
+	ShowOutputShowRowFromBase bool
+	// ObjectAssertShowFromBase is the SHOW fetch method on the base client, such as ShowByIDAdaptive.
+	// Empty keeps testClient.<Object>.Show. The row type stays sdk.<Variant>.
+	// The object type constant is sdk.ObjectType<Base> when ObjectAssertShowObjectTypeName is empty.
+	ObjectAssertShowFromBase string
+}
+
+// BaseVariant groups the settings of an object that is the base of variants.
+type BaseVariant struct {
+	// NotResource marks a base that is not a Terraform resource itself: the variants are separate resources
+	// and the base owns what they share, such as the SDK interface. The resource generators skip it.
+	NotResource bool
+	// ShowGeneric is the temporary union of every variant SHOW column.
+	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
+	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
+	ShowGeneric OutputSpec
+	// ShowPlainName is the plain SHOW struct name when it differs from Name.
+	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
+	// The projection on the paired SHOW struct is As plus this name with Name removed, so WarehouseRegular is AsRegular.
+	// When ShowByID is generated, that suffix also emits ShowByIDRegular and ShowByIDSafelyRegular.
+	ShowPlainName string
+	// ShowVariants are plain SHOW structs emitted with this object's DESCRIBE.
+	// Each variant's Show.Columns is that struct. The variant does not set SdkShow.
+	// The projection is As plus the variant name with Name removed, so WarehouseAdaptive is AsAdaptive.
+	// When ShowByID is generated, that suffix also emits ShowByIDAdaptive and ShowByIDSafelyAdaptive.
+	// TODO [next PRs]: Emit these structs from ShowOperationFromObject. Show() still returns the union row.
+	ShowVariants []*Object
+}
+
+// VariantBase is the base object, or nil when this object is not a variant.
+func (obj Object) VariantBase() *Object {
+	if obj.Variant == nil {
+		return nil
+	}
+	return obj.Variant.Of
+}
+
+// IsVariantBaseOnly says the object only is the base of its variants and is not a Terraform resource itself.
+func (obj Object) IsVariantBaseOnly() bool {
+	return obj.BaseVariant != nil && obj.BaseVariant.NotResource
+}
+
+// ShowGenericColumns is the union SHOW of a variant base, or nil when this object is not one.
+func (obj Object) ShowGenericColumns() []*Attribute {
+	if obj.BaseVariant == nil {
+		return nil
+	}
+	return obj.BaseVariant.ShowGeneric.Columns
+}
+
+// ShowPlainName is the plain SHOW struct name of a variant base. Empty uses Name.
+func (obj Object) ShowPlainName() string {
+	if obj.BaseVariant == nil {
+		return ""
+	}
+	return obj.BaseVariant.ShowPlainName
+}
+
+// ShowVariants are the plain SHOW structs a variant base emits with DESCRIBE.
+func (obj Object) ShowVariants() []*Object {
+	if obj.BaseVariant == nil {
+		return nil
+	}
+	return obj.BaseVariant.ShowVariants
+}
+
+// RequestObjectName is the CREATE request stem, and a variant's CREATE and ALTER query-struct stem.
+// A variant uses Variant.RequestObjectName. Any other object uses SdkCreateRequestObjectName. Empty uses Name.
+func (obj Object) RequestObjectName() string {
+	if obj.Variant != nil && obj.Variant.RequestObjectName != "" {
+		return obj.Variant.RequestObjectName
+	}
+	return obj.SdkCreateRequestObjectName
 }
 
 // ParameterLevelsFor is the catalog levels a Parameters entry spreads.
@@ -352,7 +430,7 @@ func AlterUnsetTags() AlterClause { return AlterClause{Kind: AlterClauseUnsetTag
 
 // AlterSpec is the ALTER statement order after the name.
 // Doc overrides the generated doc URL. AdditionalValidations marks the query struct.
-// A variant's SQL words are VariantEntityAlterName, or VariantOf.ObjectType when that override is empty.
+// A variant's SQL words are Variant.AlterName, or the base object type when that override is empty.
 type AlterSpec struct {
 	Doc                      string
 	AdditionalValidations    bool
@@ -437,7 +515,7 @@ func (obj Object) HasAlterSpec() bool {
 // Clauses is the order after the name.
 // KeywordsBefore is the order after OR REPLACE and before the object words.
 // Doc and Sql override the generated doc URL and object words. Empty Sql is the uppercase words of Name.
-// A variant does not set Sql. Variant CREATE uses VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
+// A variant does not set Sql. Variant CREATE uses Variant.CreateName, or Variant.Of.ObjectType when that override is empty.
 // WithoutOrReplace leaves OR REPLACE out of a variant CREATE. The base uses SdkCreateWithoutOrReplace.
 type CreateSpec struct {
 	Doc                   string
@@ -465,14 +543,14 @@ func (obj Object) ResourceAttributes() []Attribute {
 func (obj Object) ObjectName() string { return obj.Name }
 
 // ParameterLevel is the catalog level for this object, derived from Name (Schema is ParameterLevelSchema).
-// VariantOf does not change this level. A variant that needs a different catalog level
+// Variant.Of does not change this level. A variant that needs a different catalog level
 // will require an explicit SSOT parameter-level override.
 func (obj Object) ParameterLevel() ParameterLevel {
 	return ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
 }
 
 // ParameterAssertionNames is the SDK parameter constant prefix and object type name for assertions.
-// Both are empty when the object is not a variant. A variant uses VariantOf.Name for both.
+// Both are empty when the object is not a variant. A variant uses Variant.Of.Name for both.
 // The catalog level stays ParameterLevel.
 type ParameterAssertionNames struct {
 	ConstantPrefix string
@@ -481,15 +559,16 @@ type ParameterAssertionNames struct {
 
 // ParameterAssertionNames returns the assertion names for this object.
 func (obj Object) ParameterAssertionNames() ParameterAssertionNames {
-	if obj.VariantOf == nil {
+	base := obj.VariantBase()
+	if base == nil {
 		return ParameterAssertionNames{}
 	}
-	if obj.VariantOf.Name == "" {
-		panic(fmt.Sprintf("object %q: VariantOf has an empty Name", obj.Name))
+	if base.Name == "" {
+		panic(fmt.Sprintf("object %q: Variant.Of has an empty Name", obj.Name))
 	}
 	return ParameterAssertionNames{
-		ConstantPrefix: obj.VariantOf.Name,
-		ObjectTypeName: obj.VariantOf.Name,
+		ConstantPrefix: base.Name,
+		ObjectTypeName: base.Name,
 	}
 }
 

@@ -369,7 +369,7 @@ This is separate from [property-list DESCRIBE](#property-list-describe). That pa
 
 `ShowByIDProjection(suffix)` emits `ShowByID` plus the suffix and `ShowByIDSafely` plus the suffix. `Mini` emits `ShowByIDMini` and `ShowByIDSafelyMini`. The body calls `ShowByID`, then `As` plus the suffix, and returns `ShowObjectName` plus the suffix. `ShowByIDSafelyMini` passes `ShowByIDMini` to `SafeShowById`. Call it after `Show`, so `ShowByID` and `ShowObjectName` already exist. Generation panics when the suffix or `ShowObjectName` is empty, or when the interface has no `ShowByID`.
 
-From ssot, `DescribeOperationFromObject` emits one projection for `ShowPlainName` and one for each `ShowVariants` entry. The method is `As` plus the plain name with the object name removed. When `ShowByID` is already registered, the same suffix is passed to `ShowByIDProjection`. `Show()` still returns the union row.
+From ssot, `DescribeOperationFromObject` emits one projection for `BaseVariant.ShowPlainName` and one for each `BaseVariant.ShowVariants` entry. The method is `As` plus the plain name with the object name removed. When `ShowByID` is already registered, the same suffix is passed to `ShowByIDProjection`. `Show()` still returns the union row.
 
 See [show_projection_example_def.go](example/defs/show_projection_example_def.go).
 

@@ -152,9 +152,14 @@ var catalogIntegrationOpenCatalogCatalogSourceStatic = ssot.Attribute{
 }
 
 var CatalogIntegrationOpenCatalog = ssot.Object{
-	Name:                   "CatalogIntegrationOpenCatalog",
-	NamePlural:             "CatalogIntegrations",
-	VariantOf:              &CatalogIntegration,
+	Name:       "CatalogIntegrationOpenCatalog",
+	NamePlural: "CatalogIntegrations",
+	Variant: &ssot.ObjectVariant{
+		Of:                          &CatalogIntegration,
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
@@ -166,7 +171,7 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			ssot.WithSchema(
-				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaShow(),
 				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
 					&CatalogIntegrationOpenCatalogAttrs.RestConfig,
 					&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
@@ -177,7 +182,7 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 				ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication, "[]sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest"),
 			),
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertShow(),
 				ssot.ObjectAssertDescribe(
 					ssot.ObjectAssertDescribeFromBase("DescribeOpenCatalog"),
 					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestConfig),
@@ -185,7 +190,7 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 				),
 			),
 			ssot.WithShowOutputAssert(
-				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputShow(),
 				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
 					&CatalogIntegrationOpenCatalogAttrs.RestConfig,
 					&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,

@@ -223,9 +223,14 @@ var (
 )
 
 var CatalogIntegrationIcebergRest = ssot.Object{
-	Name:                   "CatalogIntegrationIcebergRest",
-	NamePlural:             "CatalogIntegrations",
-	VariantOf:              &CatalogIntegration,
+	Name:       "CatalogIntegrationIcebergRest",
+	NamePlural: "CatalogIntegrations",
+	Variant: &ssot.ObjectVariant{
+		Of:                          &CatalogIntegration,
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
@@ -237,7 +242,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			ssot.WithSchema(
-				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaShow(),
 				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
 					&CatalogIntegrationIcebergRestAttrs.RestConfig,
 					&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
@@ -250,7 +255,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 				"[]sdk.CatalogIntegrationIcebergRestRestConfigRequest",
 			)),
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertShow(),
 				ssot.ObjectAssertDescribe(
 					ssot.ObjectAssertDescribeFromBase("DescribeIcebergRest"),
 					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.RestConfig),
@@ -260,7 +265,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 				),
 			),
 			ssot.WithShowOutputAssert(
-				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputShow(),
 				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
 					&CatalogIntegrationIcebergRestAttrs.RestConfig,
 					&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,

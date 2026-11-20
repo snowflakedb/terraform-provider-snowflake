@@ -54,18 +54,18 @@ func Test_selectsForSchemaShow(t *testing.T) {
 		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
 		Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow())},
 	}
-	variant := func(opts ...ssot.SchemaShowOption) ssot.Object {
+	variant := func(fromBase bool) ssot.Object {
 		return ssot.Object{
 			Name:       "WidgetGlue",
-			VariantOf:  &base,
+			Variant:    &ssot.ObjectVariant{Of: &base, SchemaShowFromBase: fromBase},
 			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-			Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow(opts...))},
+			Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow())},
 		}
 	}
 
 	require.True(t, selectsForSchemaShow(base))
-	require.True(t, selectsForSchemaShow(variant()))
-	require.False(t, selectsForSchemaShow(variant(ssot.SchemaShowFromBase())), "a variant reusing the base schema is not generated")
+	require.True(t, selectsForSchemaShow(variant(false)))
+	require.False(t, selectsForSchemaShow(variant(true)), "a variant reusing the base schema is not generated")
 	require.False(t, selectsForSchemaShow(ssot.Object{Name: "Empty"}), "no SHOW columns")
 }
 

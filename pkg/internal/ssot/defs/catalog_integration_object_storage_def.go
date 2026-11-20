@@ -65,9 +65,14 @@ var catalogIntegrationObjectStorageCatalogSourceStatic = ssot.Attribute{
 }
 
 var CatalogIntegrationObjectStorage = ssot.Object{
-	Name:                   "CatalogIntegrationObjectStorage",
-	NamePlural:             "CatalogIntegrations",
-	VariantOf:              &CatalogIntegration,
+	Name:       "CatalogIntegrationObjectStorage",
+	NamePlural: "CatalogIntegrations",
+	Variant: &ssot.ObjectVariant{
+		Of:                          &CatalogIntegration,
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
@@ -79,15 +84,15 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			ssot.WithSchema(
-				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaShow(),
 				ssot.SchemaDescribe(),
 			),
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertShow(),
 				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeObjectStorage")),
 			),
 			ssot.WithShowOutputAssert(
-				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputShow(),
 				ssot.ShowOutputDescribe(),
 			),
 		),

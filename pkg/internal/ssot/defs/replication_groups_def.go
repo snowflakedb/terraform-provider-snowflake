@@ -552,21 +552,26 @@ var ReplicationGroup = ssot.Object{
 
 // ReplicationGroupSecondary is the target-account role.
 // The name starts with ReplicationGroup so the methods are CreateSecondary and AlterSecondary.
-// SdkCreateRequestObjectName keeps the query struct CreateSecondaryReplicationGroup.
+// Variant.RequestObjectName keeps the query struct CreateSecondaryReplicationGroup.
 // CreateSecondary and AlterSecondary are emitted from this object.
 var ReplicationGroupSecondary = ssot.Object{
-	Name:                       "ReplicationGroupSecondary",
-	NamePlural:                 "ReplicationGroups",
-	IdType:                     "AccountObjectIdentifier",
-	PreviewFeature:             true,
-	IdentityNameForceNew:       true,
-	SdkCreateRequestObjectName: "SecondaryReplicationGroup",
-	VariantOf:                  &ReplicationGroup,
+	Name:                 "ReplicationGroupSecondary",
+	NamePlural:           "ReplicationGroups",
+	IdType:               "AccountObjectIdentifier",
+	PreviewFeature:       true,
+	IdentityNameForceNew: true,
+	Variant: &ssot.ObjectVariant{
+		Of:                          &ReplicationGroup,
+		RequestObjectName:           "SecondaryReplicationGroup",
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
-			ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()), ssot.ShowOutputDescribe()),
-			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase()), ssot.SchemaDescribe()),
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()), ssot.ObjectAssertDescribe()),
+			ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+			ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		),
 	},
 	// SHOW is the base row. The schema is ShowReplicationGroupSchema. Create and alter use the variant methods.
