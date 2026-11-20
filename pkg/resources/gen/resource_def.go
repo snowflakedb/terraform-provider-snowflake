@@ -61,5 +61,5 @@ func GetAllObjects() []ResourceObject {
 
 // selectsForResource is the one filter of the resource generator: the object is a resource and has attributes.
 func selectsForResource(obj ssot.Object) bool {
-	return !obj.VariantBaseOnly && len(obj.Attributes) > 0
+	return !obj.IsVariantBaseOnly() && len(obj.Attributes) > 0
 }

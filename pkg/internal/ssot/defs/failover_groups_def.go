@@ -652,23 +652,28 @@ var FailoverGroup = ssot.Object{
 
 // FailoverGroupSecondary is the target-account role.
 // The name starts with FailoverGroup so the methods are CreateSecondary and AlterSecondary.
-// SdkCreateRequestObjectName makes the query struct CreateSecondaryFailoverGroup. It cannot be SecondaryReplicationGroup (the
+// Variant.RequestObjectName makes the query struct CreateSecondaryFailoverGroup. It cannot be SecondaryReplicationGroup (the
 // replication group variant emits CreateSecondaryReplicationGroup in the same package); the handwritten operation was named
 // CreateSecondaryReplicationGroup, with FailoverGroup appended to its types.
 // Unlike a replication group, a failover group can be promoted (ALTER ... PRIMARY).
 var FailoverGroupSecondary = ssot.Object{
-	Name:                       "FailoverGroupSecondary",
-	NamePlural:                 "FailoverGroups",
-	IdType:                     "AccountObjectIdentifier",
-	PreviewFeature:             true,
-	IdentityNameForceNew:       true,
-	SdkCreateRequestObjectName: "SecondaryFailoverGroup",
-	VariantOf:                  &FailoverGroup,
+	Name:                 "FailoverGroupSecondary",
+	NamePlural:           "FailoverGroups",
+	IdType:               "AccountObjectIdentifier",
+	PreviewFeature:       true,
+	IdentityNameForceNew: true,
+	Variant: &ssot.ObjectVariant{
+		Of:                          &FailoverGroup,
+		RequestObjectName:           "SecondaryFailoverGroup",
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
-			ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()), ssot.ShowOutputDescribe()),
-			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase()), ssot.SchemaDescribe()),
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()), ssot.ObjectAssertDescribe()),
+			ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+			ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		),
 	},
 	// is_primary is a computed attribute, not a resource attribute, so it stays out of CREATE and ALTER.

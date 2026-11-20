@@ -43,7 +43,7 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 // The field chain comes from DescribePairedStructs. The query struct is Describe, SQL,
 // Name, and ValidIdentifier on name.
 // helperStructs are extra structs the describe operation emits.
-// ShowPlainName and ShowVariants are emitted here too. Each one gets a projection on the paired SHOW struct.
+// BaseVariant.ShowPlainName and BaseVariant.ShowVariants are emitted here too. Each one gets a projection on the paired SHOW struct.
 // When ShowByID is already registered, each plain also gets ShowByID and ShowByIDSafely for that suffix.
 // TODO [next PRs]: those plain structs are SHOW structs. Emit them from ShowOperationFromObject. Show() still returns the union row.
 func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
@@ -105,7 +105,7 @@ func describeDetailsVariants(base ssot.Object) []ssot.Object {
 		panic(fmt.Sprintf("object %q: variant DESCRIBE details generation has no variants with SdkDescribeDetails", base.Name))
 	}
 	for _, variant := range variants {
-		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+		if variant.VariantBase() == nil || variant.VariantBase().Name != base.Name {
 			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
 		}
 	}
@@ -157,13 +157,13 @@ func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseCo
 
 func plainShowHelpers(obj ssot.Object) []*Plain {
 	var out []*Plain
-	if obj.ShowPlainName != "" {
+	if obj.ShowPlainName() != "" {
 		if len(obj.Show.Columns) == 0 {
-			panic(fmt.Sprintf("object %q: ShowPlainName %q has no SHOW columns", obj.Name, obj.ShowPlainName))
+			panic(fmt.Sprintf("object %q: BaseVariant.ShowPlainName %q has no SHOW columns", obj.Name, obj.ShowPlainName()))
 		}
-		out = append(out, plainFromColumns(obj, obj.ShowPlainName, obj.Show.Columns))
+		out = append(out, plainFromColumns(obj, obj.ShowPlainName(), obj.Show.Columns))
 	}
-	for _, variant := range obj.ShowVariants {
+	for _, variant := range obj.ShowVariants() {
 		if variant == nil || variant.Name == "" || len(variant.Show.Columns) == 0 {
 			panic(fmt.Sprintf("object %q: show variant needs a name and SHOW columns", obj.Name))
 		}
@@ -360,7 +360,7 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 // helperStructs are extra query structs to emit beside the statement, such as a list-parameter item.
 // A list of enums adds its item query struct here. The struct name is the enum name plus ListItem, and its field is Value.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
-	if obj.VariantOf != nil {
+	if obj.VariantBase() != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
 	}
 	cfg := obj.SdkConfig()
@@ -383,7 +383,7 @@ func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interfa
 		panic(fmt.Sprintf("object %q: variant CREATE generation has no variants", base.Name))
 	}
 	for _, variant := range variants {
-		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+		if variant.VariantBase() == nil || variant.VariantBase().Name != base.Name {
 			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
 		}
 		if !variant.HasCreateSpec() {
@@ -649,7 +649,7 @@ type SdkInterfaceOverride func(*Interface)
 func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterfaceOverride) []*Interface {
 	counts := make(map[string]int, len(objects))
 	for _, obj := range objects {
-		if obj.NamePlural == "" || obj.VariantOf != nil {
+		if obj.NamePlural == "" || obj.VariantBase() != nil {
 			continue
 		}
 		counts[obj.NamePlural]++
@@ -880,7 +880,7 @@ func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, cl
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
 // ExactlyOneValueSet follows obj.Alter.
 func (i *Interface) AlterOperationFromObject(obj ssot.Object, helpers ...*QueryStruct) *Interface {
-	if obj.VariantOf != nil {
+	if obj.VariantBase() != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
 	}
 	cfg := obj.SdkConfig()
@@ -903,7 +903,7 @@ func (i *Interface) AlterVariantOperationsFromObject(base ssot.Object) *Interfac
 		panic(fmt.Sprintf("object %q: variant ALTER generation has no variants", base.Name))
 	}
 	for _, variant := range variants {
-		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+		if variant.VariantBase() == nil || variant.VariantBase().Name != base.Name {
 			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
 		}
 		if !variant.HasAlterSpec() {

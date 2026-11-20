@@ -211,15 +211,11 @@ func Test_objectAssertionDetailsFromSsot_showProjection(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	base := ssot.Object{Name: "Widget"}
 	obj := ssot.Object{
-		Name:      "WidgetAdaptive",
-		IdType:    "AccountObjectIdentifier",
-		VariantOf: &base,
+		Name:    "WidgetAdaptive",
+		IdType:  "AccountObjectIdentifier",
+		Variant: &ssot.ObjectVariant{Of: &base, ObjectAssertShowFromBase: "ShowByIDAdaptive"},
 		Generators: []ssot.GeneratorOption{
-			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(
-					ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
-				),
-			),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow()),
 		},
 		Show: ssot.OutputSpec{
 			Columns: []*ssot.Attribute{
@@ -381,18 +377,18 @@ func Test_selectsForObjectAssertShow(t *testing.T) {
 		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
 		Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())},
 	}
-	variant := func(opts ...ssot.ObjectAssertShowOption) ssot.Object {
+	variant := func(fromBase bool) ssot.Object {
 		return ssot.Object{
 			Name:       "WidgetGlue",
-			VariantOf:  &base,
+			Variant:    &ssot.ObjectVariant{Of: &base, ObjectAssertShowRowFromBase: fromBase},
 			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-			Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow(opts...))},
+			Generators: []ssot.GeneratorOption{ssot.WithObjectAssert(ssot.ObjectAssertShow())},
 		}
 	}
 
 	require.True(t, selectsForObjectAssertShow(base))
-	require.True(t, selectsForObjectAssertShow(variant()))
-	require.False(t, selectsForObjectAssertShow(variant(ssot.ObjectAssertShowRowFromBase())), "a variant reusing the base assertion is not generated")
+	require.True(t, selectsForObjectAssertShow(variant(false)))
+	require.False(t, selectsForObjectAssertShow(variant(true)), "a variant reusing the base assertion is not generated")
 	require.False(t, selectsForObjectAssertShow(ssot.Object{Name: "Empty"}), "no SHOW columns")
 }
 
@@ -400,9 +396,9 @@ func Test_objectAssertionDetailsFromSsot_describeFetch(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	base := ssot.Object{Name: "Widget"}
 	variant := ssot.Object{
-		Name:      "WidgetGlue",
-		IdType:    "AccountObjectIdentifier",
-		VariantOf: &base,
+		Name:    "WidgetGlue",
+		IdType:  "AccountObjectIdentifier",
+		Variant: &ssot.ObjectVariant{Of: &base},
 		Generators: []ssot.GeneratorOption{
 			ssot.WithObjectAssert(ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeGlue"))),
 		},

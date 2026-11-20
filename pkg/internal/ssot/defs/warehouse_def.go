@@ -294,7 +294,7 @@ func init() {
 			Warehouse.Attributes[i].ConflictsWith = WarehouseAttrs.Generation.ConflictsWith
 		}
 	}
-	Warehouse.ShowVariants = []*ssot.Object{&WarehouseAdaptive, &WarehouseInteractive}
+	Warehouse.BaseVariant.ShowVariants = []*ssot.Object{&WarehouseAdaptive, &WarehouseInteractive}
 }
 
 var Warehouse = ssot.Object{
@@ -494,7 +494,6 @@ var Warehouse = ssot.Object{
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 	}},
-	ShowPlainName: "WarehouseRegular",
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
 			&WarehouseAttrs.Name,
@@ -530,45 +529,48 @@ var Warehouse = ssot.Object{
 	},
 	// Union of all SHOW WAREHOUSES columns (AllDetails analog).
 	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
-	ShowGeneric: ssot.OutputSpec{
-		Columns: []*ssot.Attribute{
-			&WarehouseAttrs.Name,
-			&WarehouseAttrs.State,
-			&WarehouseAttrs.WarehouseType,
-			&WarehouseAttrs.WarehouseSize,
-			&WarehouseAttrs.MinClusterCount,
-			&WarehouseAttrs.MaxClusterCount,
-			&WarehouseAttrs.StartedClusters,
-			&WarehouseAttrs.Running,
-			&WarehouseAttrs.Queued,
-			&WarehouseAttrs.IsDefault,
-			&WarehouseAttrs.IsCurrent,
-			&WarehouseAttrs.AutoSuspend,
-			&WarehouseAttrs.AutoResume,
-			&WarehouseAttrs.Available,
-			&WarehouseAttrs.Provisioning,
-			&WarehouseAttrs.Quiescing,
-			&WarehouseAttrs.Other,
-			&WarehouseAttrs.CreatedOn,
-			&WarehouseAttrs.ResumedOn,
-			&WarehouseAttrs.UpdatedOn,
-			&WarehouseAttrs.Owner,
-			&WarehouseAttrs.Comment,
-			&WarehouseAttrs.EnableQueryAcceleration,
-			&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
-			&WarehouseAttrs.ResourceMonitor,
-			&WarehouseAttrs.Actives,
-			&WarehouseAttrs.Pendings,
-			&WarehouseAttrs.Failed,
-			&WarehouseAttrs.Suspended,
-			&WarehouseAttrs.Uuid,
-			&WarehouseAttrs.ScalingPolicy,
-			&WarehouseAttrs.OwnerRoleType,
-			&WarehouseAttrs.ResourceConstraint,
-			&WarehouseAttrs.Generation,
-			&WarehouseAttrs.MaxQueryPerformanceLevel,
-			&WarehouseAttrs.QueryThroughputMultiplier,
-			&WarehouseAttrs.Tables,
+	BaseVariant: &ssot.BaseVariant{
+		ShowPlainName: "WarehouseRegular",
+		ShowGeneric: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&WarehouseAttrs.Name,
+				&WarehouseAttrs.State,
+				&WarehouseAttrs.WarehouseType,
+				&WarehouseAttrs.WarehouseSize,
+				&WarehouseAttrs.MinClusterCount,
+				&WarehouseAttrs.MaxClusterCount,
+				&WarehouseAttrs.StartedClusters,
+				&WarehouseAttrs.Running,
+				&WarehouseAttrs.Queued,
+				&WarehouseAttrs.IsDefault,
+				&WarehouseAttrs.IsCurrent,
+				&WarehouseAttrs.AutoSuspend,
+				&WarehouseAttrs.AutoResume,
+				&WarehouseAttrs.Available,
+				&WarehouseAttrs.Provisioning,
+				&WarehouseAttrs.Quiescing,
+				&WarehouseAttrs.Other,
+				&WarehouseAttrs.CreatedOn,
+				&WarehouseAttrs.ResumedOn,
+				&WarehouseAttrs.UpdatedOn,
+				&WarehouseAttrs.Owner,
+				&WarehouseAttrs.Comment,
+				&WarehouseAttrs.EnableQueryAcceleration,
+				&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+				&WarehouseAttrs.ResourceMonitor,
+				&WarehouseAttrs.Actives,
+				&WarehouseAttrs.Pendings,
+				&WarehouseAttrs.Failed,
+				&WarehouseAttrs.Suspended,
+				&WarehouseAttrs.Uuid,
+				&WarehouseAttrs.ScalingPolicy,
+				&WarehouseAttrs.OwnerRoleType,
+				&WarehouseAttrs.ResourceConstraint,
+				&WarehouseAttrs.Generation,
+				&WarehouseAttrs.MaxQueryPerformanceLevel,
+				&WarehouseAttrs.QueryThroughputMultiplier,
+				&WarehouseAttrs.Tables,
+			},
 		},
 	},
 	Describe: ssot.OutputSpec{

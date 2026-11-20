@@ -16,7 +16,7 @@ func Test_ResourceObject_implementsHasObjectGenerationSettings(t *testing.T) {
 
 func Test_GetAllObjects_skipsVariantBaseOnlyObjects(t *testing.T) {
 	for _, obj := range GetAllObjects() {
-		require.False(t, obj.VariantBaseOnly, obj.Name)
+		require.False(t, obj.IsVariantBaseOnly(), obj.Name)
 	}
 }
 

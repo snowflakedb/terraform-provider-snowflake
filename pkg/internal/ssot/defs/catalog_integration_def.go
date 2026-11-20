@@ -146,10 +146,10 @@ var catalogIntegrationDescribeColumns = struct {
 // CatalogIntegration is the base of the catalog integration variants. All of them are the same Snowflake object,
 // CATALOG INTEGRATION, and share one SDK interface, which is built from this object.
 var CatalogIntegration = ssot.Object{
-	Name:            "CatalogIntegration",
-	NamePlural:      "CatalogIntegrations",
-	IdType:          "AccountObjectIdentifier",
-	VariantBaseOnly: true,
+	Name:        "CatalogIntegration",
+	NamePlural:  "CatalogIntegrations",
+	IdType:      "AccountObjectIdentifier",
+	BaseVariant: &ssot.BaseVariant{NotResource: true},
 	// The enums of the variants are the SDK enums of the shared interface. The REST authentication type is only in DESCRIBE.
 	AdditionalEnums: []*ssot.Enum{
 		CatalogIntegrationCatalogSourceType,

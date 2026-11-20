@@ -42,7 +42,6 @@ func WithoutSchema() GeneratorOption {
 func WithoutSchemaShow() GeneratorOption {
 	return func(g *Generators) {
 		g.Schema.Show = false
-		g.Schema.ShowFromBase = false
 		g.Schema.ShowManualFields = nil
 		g.Schema.ShowListFields = nil
 	}
@@ -67,8 +66,6 @@ func WithoutObjectAssertShow() GeneratorOption {
 	return func(g *Generators) {
 		g.ObjectAssert.Show = false
 		g.ObjectAssert.ShowSkipFields = nil
-		g.ObjectAssert.ShowProjection = ""
-		g.ObjectAssert.ShowRowFromBase = false
 		g.ObjectAssert.ShowNestedFields = nil
 		g.ObjectAssert.NoShowById = false
 		g.ObjectAssert.ShowNoIdentifiableObject = false
@@ -100,7 +97,6 @@ func WithoutShowOutputAssert() GeneratorOption {
 func WithoutShowOutputAssertShow() GeneratorOption {
 	return func(g *Generators) {
 		g.ShowOutputAssert.Show = false
-		g.ShowOutputAssert.ShowRowFromBase = false
 		g.ShowOutputAssert.ShowSkipFields = nil
 	}
 }

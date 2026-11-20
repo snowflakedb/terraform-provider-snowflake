@@ -123,10 +123,10 @@ func Test_ObjectGenerators_options(t *testing.T) {
 func Test_ShowFromBase(t *testing.T) {
 	base := Object{Name: "Widget"}
 	obj := Object{
-		Name:      "WidgetAdaptive",
-		VariantOf: &base,
+		Name:    "WidgetAdaptive",
+		Variant: &ObjectVariant{Of: &base, ObjectAssertShowFromBase: "ShowByIDAdaptive"},
 		Generators: []GeneratorOption{
-			WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
+			WithObjectAssert(ObjectAssertShow()),
 		},
 	}
 	got, ok := obj.ShowFromBase()
@@ -138,10 +138,8 @@ func Test_ShowFromBase(t *testing.T) {
 
 	require.Panics(t, func() {
 		Object{
-			Name: "WidgetAdaptive",
-			Generators: []GeneratorOption{
-				WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
-			},
+			Name:    "WidgetAdaptive",
+			Variant: &ObjectVariant{ObjectAssertShowFromBase: "ShowByIDAdaptive"},
 		}.ShowFromBase()
 	})
 }
@@ -150,11 +148,11 @@ func Test_ParameterAssertionNames(t *testing.T) {
 	require.Equal(t, ParameterAssertionNames{}, Object{Name: "Schema"}.ParameterAssertionNames())
 
 	base := Object{Name: "Warehouse"}
-	got := Object{Name: "WarehouseAdaptive", VariantOf: &base}.ParameterAssertionNames()
+	got := Object{Name: "WarehouseAdaptive", Variant: &ObjectVariant{Of: &base}}.ParameterAssertionNames()
 	require.Equal(t, ParameterAssertionNames{ConstantPrefix: "Warehouse", ObjectTypeName: "Warehouse"}, got)
 
 	require.Panics(t, func() {
-		Object{Name: "WarehouseAdaptive", VariantOf: &Object{}}.ParameterAssertionNames()
+		Object{Name: "WarehouseAdaptive", Variant: &ObjectVariant{Of: &Object{}}}.ParameterAssertionNames()
 	})
 }
 

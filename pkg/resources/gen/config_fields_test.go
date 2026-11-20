@@ -105,7 +105,7 @@ func Test_setConfigFields_template(t *testing.T) {
 
 	t.Run("generated variant show type", func(t *testing.T) {
 		model := lifecycleModel(func(obj *ssot.Object) {
-			obj.VariantOf = &ssot.Object{Name: "Warehouse"}
+			obj.Variant = &ssot.ObjectVariant{Of: &ssot.Object{Name: "Warehouse"}}
 			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithSetConfigFields(ssot.Generated())}
 		})
 		require.Contains(t, renderTemplate(t, "generatedSetConfigFields", model), "obj *sdk.Warehouse")

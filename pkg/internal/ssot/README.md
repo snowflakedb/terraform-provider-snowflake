@@ -29,11 +29,9 @@ or the Terraform schema it ends up in. Keep this in mind when adding a feature:
 - `Generators` - which generators may consume those lists ([Generators](#generators))
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
 - `ResourceParameters` - the subset of the object's parameter catalog that is a resource attribute. Empty uses the full `ParameterLevel()` catalog. A non-empty list is still emitted in catalog order. `ValidateObject` panics when an entry is missing `SqlName`, is duplicated, or is not in that catalog.
-- `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`
-- `VariantOf` - base of this role. `Name` starts with the base `Name`, and `NamePlural` matches the base, so they share one SDK interface. The variant also shares the base object's SDK parameter details, SET/UNSET requests, and `ParameterType` names. Parameter catalog membership still comes from the variant's own `Name`
-- `VariantEntityCreateName` - optional SQL object words for a variant CREATE. Empty uses `VariantOf.ObjectType` (`WarehouseAdaptive` emits `WAREHOUSE`). Set it when the words differ, as interactive CREATE does with `INTERACTIVE WAREHOUSE`
-- `VariantEntityAlterName` - optional SQL object words for a variant ALTER. Empty uses the same base default as CREATE
-- `VariantBaseOnly` - the object only is the base of its `VariantOf` variants and is not a Terraform resource itself (catalog integration: each source type is its own resource). The base owns what the variants share, such as the SDK interface. The resource generator skips it
+- `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`. A variant sets `Variant.RequestObjectName` instead
+- `Variant` - one role of a base object. `Of` is the base. `Name` starts with the base `Name`, and `NamePlural` matches the base, so they share one SDK interface. The variant also shares the base object's SDK parameter details, SET/UNSET requests, and `ParameterType` names. Parameter catalog membership still comes from the variant's own `Name`. `CreateName` and `AlterName` are the SQL object words when they differ from the base type words (`WarehouseAdaptive` emits `WAREHOUSE`; interactive CREATE sets `INTERACTIVE WAREHOUSE`). `RequestObjectName` is the CREATE and ALTER query-struct stem when it differs from `Name`. `SchemaShowFromBase`, `ObjectAssertShowRowFromBase`, and `ShowOutputShowRowFromBase` reuse the base SHOW schema, object assertion, and show-output assertion. `ObjectAssertShowFromBase` is the SHOW fetch method on the base client, such as `ShowByIDAdaptive`. The matching `SchemaShow`, `ObjectAssertShow`, or `ShowOutputShow` stays on
+- `BaseVariant` - settings of an object that is the base of variants. `ShowGeneric` is the temporary union SHOW. `ShowPlainName` is the plain struct when that union uses `Name`. `ShowVariants` are the plain structs emitted with DESCRIBE. `NotResource` says the base is not a Terraform resource itself (catalog integration: each source type is its own resource). The base owns what the variants share, such as the SDK interface. The resource generators skip it
 - `ExactlyOneOf` - groups of optional top-level attributes of which exactly one is set, declared once with pointers to the
   attributes: `ExactlyOneOf: [][]*ssot.Attribute{{&oauth, &bearer, &sigv4}}`. Validation needs at least two attributes per group,
   all of them optional attributes of the object, and none in two groups. SDK CREATE adds `ExactlyOneValueSet` over the Go fields
@@ -60,7 +58,7 @@ It calls `sdk.Parse<IdType>` for current ids and `helpers.DecodeSnowflakeIDErrLe
 The default `ExtCall` keeps the handwritten parser. `PreviewFeature` marks a preview resource. Generated `Delete`
 wraps `DeleteContext` with `PreviewFeatureDeleteContextWrapper` and `previewfeatures.<Name>Resource`.
 
-`VariantOf` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
+`Variant.Of` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
 parameter types and usually the same parameter set. Different sets can already use a variant-specific catalog level
 derived from `Name`, as interactive warehouses do. If a variant needs a catalog level other than the one derived from
 its `Name`, extend SSOT with an explicit parameter-level override.
@@ -303,7 +301,7 @@ order.
 
 `OutputSpec.Columns` is membership and Snowflake order. Presence in `Columns` is the only SHOW/DESCRIBE membership.
 
-Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGeneric` is the temporary union and the one paired SHOW. `ShowPlainName` and `ShowVariants` are plain structs emitted with DESCRIBE. Each one gets a projection on the paired SHOW struct: `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. When `ShowByID` is generated, the same suffix also emits `ShowByIDRegular` and `ShowByIDSafelyRegular`. `Show()` still returns the union row. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
+Each warehouse variant declares its show in `Show.Columns`. `Warehouse.BaseVariant.ShowGeneric` is the temporary union and the one paired SHOW. `ShowPlainName` and `ShowVariants` on that same struct are plain structs emitted with DESCRIBE. Each one gets a projection on the paired SHOW struct: `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. When `ShowByID` is generated, the same suffix also emits `ShowByIDRegular` and `ShowByIDSafelyRegular`. `Show()` still returns the union row. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
 
 ### OptionalInShow vs OptionalInDb
 
@@ -340,7 +338,7 @@ enable nothing.
   `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
   key stays in the generated schema map, and its mapping line is not generated — `*_ext.go` must implement the
   generated `additionalSchemaMapper[T]` stub instead. `SchemaDescribe(SchemaDescribeManualFields(&attrs.Password))`
-  is the describe-side copy. `SchemaShow(SchemaShowFromBase())` reuses the base's SHOW schema: no `Show<Variant>Schema` or
+  is the describe-side copy. `Variant.SchemaShowFromBase` reuses the base's SHOW schema: no `Show<Variant>Schema` or
   `<Variant>ToSchema` is generated, and the variant resource uses `Show<VariantOf.Name>Schema` and
   `<VariantOf.Name>ToSchema`. See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
 - `WithModel()` - resource config model builders (`make generate-resource-model-builders`).
@@ -375,7 +373,7 @@ enable nothing.
   `ShowOutputShow(ShowOutputShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The argument is
   the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not generated.
   `ShowOutputDescribe(ShowOutputDescribeSkipFields(&attrs.Password))` is the describe-side copy.
-  `ShowOutputShow(ShowOutputShowRowFromBase())` makes a variant whose SHOW row is the base type generate only the
+  `Variant.ShowOutputShowRowFromBase` makes a variant whose SHOW row is the base type generate only the
   constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, which return the base's assertion type. Without it
   the assertion is named after the variant.
   See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
@@ -401,13 +399,13 @@ enable nothing.
   `ObjectAssertDescribe(ObjectAssertDescribeFromBase("DescribeAwsGlue"))` fetches through `testClient.<VariantOf.Name>.<method>`. The details type stays `sdk.<Object>Details`.
   Identified rows provide `ID()` in SDK extensions when it is not generated.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
-  slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowRowFromBase())` reuses the base's SHOW object assertion: no `<Variant>`
+  slice and the row has no `ID()`. `Variant.ObjectAssertShowRowFromBase` reuses the base's SHOW object assertion: no `<Variant>`
   assertion is generated, and tests assert the variant through the base's (`testClient.<VariantOf.Name>.Show`).
   See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
-  `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through
-  `testClient.<VariantOf.Name>.ShowByIDAdaptive` and keeps `sdk.<Variant>` as the row. `Object.ShowFromBase` resolves that
-  client from `VariantOf`. The object type constant is `sdk.ObjectType<VariantOf.Name>`. These are settings of
-  object-assertion show or describe, not their own generators.
+  `Variant.ObjectAssertShowFromBase` set to `ShowByIDAdaptive` fetches through
+  `testClient.<Variant.Of.Name>.ShowByIDAdaptive` and keeps `sdk.<Variant>` as the row. `Object.ShowFromBase` resolves that
+  client from `Variant.Of`. The object type constant is `sdk.ObjectType<Variant.Of.Name>`. The SHOW generator stays on.
+  These are settings of the variant, and the SHOW generator stays the switch that emits the artifact.
 - `WithObjectParametersAssert()` - Snowflake object parameters assertions (
   `make generate-snowflake-object-parameters-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-parameters-assertions).
@@ -462,7 +460,7 @@ enable nothing.
   fields first, then the other fields in the struct.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
-  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `ShowPlainName`, `SdkCreateRequestObjectName`, `VariantEntityCreateName`, or `VariantEntityAlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
+  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of the UNSET block
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
@@ -490,11 +488,11 @@ enable nothing.
   fields as `Children`.
   When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. A variant does not set `SdkCreate()` or `SdkAlter()`. Calling either on a variant panics. `SdkCreateForVariants()` emits
   each variant CREATE as a method on the base interface. The variant fills `Create` (`Doc`, clauses,
-  `AdditionalValidations`, and `WithoutOrReplace`). Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. A non-variant that sets it panics. The base uses `SdkCreateWithoutOrReplace()` for the same omission. The SQL object words are `VariantEntityCreateName`, or `VariantOf.ObjectType` when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The variant `Name` starts with the base `Name`. The method name is `Create` plus the rest of that name, so `ReplicationGroupSecondary` is `CreateSecondary`. The query
-  struct name is `Create` plus `SdkCreateRequestObjectName`, or `Create` plus `Name` when that stem is empty. Set the stem when the struct should not use the full variant name: `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. `SdkAlterForVariants()` emits each variant ALTER the same way.
-  The variant fills `Alter` (`Doc`, clauses, and `AdditionalValidations`). Variant ALTER includes `IF EXISTS` and exactly one clause. SQL words are `VariantEntityAlterName`, or the same base default.
+  `AdditionalValidations`, and `WithoutOrReplace`). Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. A non-variant that sets it panics. The base uses `SdkCreateWithoutOrReplace()` for the same omission. The SQL object words are `Variant.CreateName`, or the base type words when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The variant `Name` starts with the base `Name`. The method name is `Create` plus the rest of that name, so `ReplicationGroupSecondary` is `CreateSecondary`. The query
+  struct name is `Create` plus `Variant.RequestObjectName`, or `Create` plus `Name` when that stem is empty. Set the stem when the struct should not use the full variant name: `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. `SdkAlterForVariants()` emits each variant ALTER the same way.
+  The variant fills `Alter` (`Doc`, clauses, and `AdditionalValidations`). Variant ALTER includes `IF EXISTS` and exactly one clause. SQL words are `Variant.AlterName`, or the same base default.
   The method name is `Alter` plus the rest of the variant name. The query struct name is `Alter` plus
-  `SdkCreateRequestObjectName`. SET and UNSET structs, and an ALTER block, are named from the object that owns the ALTER: the variant `Name` plus `Set`, `Unset`, or the attribute name. A suspend block on `ReplicationGroupSecondary` is `ReplicationGroupSecondarySuspend`.
+  `Variant.RequestObjectName`. SET and UNSET structs, and an ALTER block, are named from the object that owns the ALTER: the variant `Name` plus `Set`, `Unset`, or the attribute name. A suspend block on `ReplicationGroupSecondary` is `ReplicationGroupSecondarySuspend`.
   TODO [next PRs]: the same switch for variant SHOW/DESCRIBE. `SdkCustomOperations()` emits
   [`CustomOperations`](custom_operation.go) from one call, in slice order. Place that call after the dedicated operation
   methods and before custom interface methods. The generated interface lists every operation, then the custom interface
@@ -789,7 +787,7 @@ values from DESCRIBE, keeps `ExtCall`.
 
 The data source generator (`make generate-datasource`) writes `pkg/datasources/<plural_snake>_gen.go` for each object that has
 it enabled (`WithAllGenerators`, or `WithDataSource()`). A data source lists one plural, so it takes the base of that plural: a variant is covered by its base,
-and so is a `VariantBaseOnly` base. The object needs an SDK SHOW and SHOW columns. `make generate-datasource-check` fails
+and so is a `BaseVariant.NotResource` base. The object needs an SDK SHOW and SHOW columns. `make generate-datasource-check` fails
 on a file that differs from the committed one, and on a file left over from an object that no longer enables it.
 
 The data source follows the object, so a definition lists only the exceptions:
@@ -878,7 +876,7 @@ constants, the docs templates, the examples, the config model, the assertions, o
 The SDK (`WithSdk`) is not part of it. Pass `WithSdk(...)` next to it in `Generators`.
 
 An enabled generator that has no input for the object is skipped by its selector (no parameters, no SHOW or DESCRIBE
-columns, a `VariantBaseOnly` object, a variant that reuses the base), so the defaults are safe for a finished object. Do
+columns, a `BaseVariant.NotResource` object, a variant that reuses the base), so the defaults are safe for a finished object. Do
 not use it for an object that is still being migrated: a generator that has input but cannot yet produce valid code for
 it (for example a model with a nested block that needs `ModelRequestType`) fails, and `Table` and `PostgresMirror`
 currently stay on individual settings for that reason.
@@ -899,7 +897,8 @@ Overrides modify the defaults:
   ```
 
 - A `Without*` option turns a generator off, or one side of it, and drops the settings that belong to it, so the
-  validation of skip, manual, list, and reuse settings does not fail on a side that is off. Whole generators:
+  validation of skip, manual, and list settings does not fail on a side that is off. A `Variant` reuse flag stays, and
+  validation fails when that flag is set on a side that is off. Whole generators:
   `WithoutSchema`, `WithoutObjectAssert`, `WithoutShowOutputAssert`, `WithoutModel`, `WithoutResource`,
   `WithoutResourceAssert`, `WithoutObjectParametersAssert`, `WithoutResourceParametersAssert`. One side:
   `WithoutSchemaShow`, `WithoutSchemaDescribe`, `WithoutObjectAssertShow`, `WithoutObjectAssertDescribe`,
@@ -909,15 +908,15 @@ A later override wins over an earlier one, so `WithAllGenerators(WithoutModel(),
 
 #### Variants that reuse the base SHOW row
 
-A variant (`VariantOf` set) whose SHOW row is the base's row, such as the catalog integration variants and
-`ReplicationGroupSecondary`, does not need its own copy of the artifacts that only describe that row. It declares the
-reuse once per generator, and the generators keep separate settings:
+A variant (`Variant` set) whose SHOW row is the base's row, such as the catalog integration variants and
+`ReplicationGroupSecondary`, does not need its own copy of the artifacts that only describe that row. The reuse flags
+sit on `Variant`, and the SHOW side of each generator stays on:
 
 | Setting | The variant reuses | Still generated for the variant |
 |---|---|---|
-| `SchemaShow(SchemaShowFromBase())` | `Show<Base>Schema` and `<Base>ToSchema` | DESCRIBE schema |
-| `ObjectAssertShow(ObjectAssertShowRowFromBase())` | the base's SHOW object assertion | DESCRIBE object assertion |
-| `ShowOutputShow(ShowOutputShowRowFromBase())` | the base's SHOW show output assertion type | the constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, and the DESCRIBE assertion |
+| `Variant.SchemaShowFromBase` | `Show<Base>Schema` and `<Base>ToSchema` | DESCRIBE schema |
+| `Variant.ObjectAssertShowRowFromBase` | the base's SHOW object assertion | DESCRIBE object assertion |
+| `Variant.ShowOutputShowRowFromBase` | the base's SHOW show output assertion type | the constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, and the DESCRIBE assertion |
 
 Artifacts named after the Terraform resource, such as the resource assertions and the show output constructors, are still
 generated per variant, because tests refer to them by resource. Reuse is a deliberate choice: validation panics when the
@@ -944,7 +943,7 @@ function in the generator's plug (`selectsFor<Generator>`), the same rule for ev
 the generator's input is skipped instead of panicking. `defs.SelectObjects(enabled, selects)` is the shared `All()` loop.
 The selectors are: schema, object assertion, and show output assertion SHOW and DESCRIBE take `Object.HasShowOutput()`
 and `Object.HasDescribeOutput()`. Model builders, resource assertions, and the resource generator take an object that is
-not `VariantBaseOnly` and has `Attributes`. The parameter assertions take an object with catalog entries at its
+not `BaseVariant.NotResource` and has `Attributes`. The parameter assertions take an object with catalog entries at its
 `ParameterLevel()`. The SDK generator has no selector yet.
 
 `SchemaShow`, `SchemaDescribe`, `SdkShow`, `SdkDescribe`, `SdkDrop`, `SdkCreate`, `SdkAlter`, `ShowOutputShow`,
@@ -953,7 +952,7 @@ not `VariantBaseOnly` and has `Attributes`. The parameter assertions take an obj
 `SdkDrop()` with no options still sets `Drop`. `SdkCreate()` with no options still sets `Create`. `SdkAlter()` with no
 options still sets `Alter`. `ShowOutputShow()` with no options sets `Show` and leaves `ShowSkipFields` nil.
 `ShowOutputDescribe()` with no options sets `Describe` and leaves `DescribeSkipFields` nil. `ObjectAssertShow()` with no
-options sets `Show` and leaves `ShowSkipFields` nil and `ShowProjection` empty. `ObjectAssertShowFromBase` sets `ShowProjection` on that same call. The client name is `VariantOf.Name`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
+options sets `Show` and leaves `ShowSkipFields` nil. `Variant.ObjectAssertShowFromBase` is the fetch method on the base client. The client name is `Variant.Of.Name`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
 `NoIdentifiableObject` false and `DescribeSkipFields` nil. `WithModel()`, `WithResourceAssert()`, and `WithResource()` take a variadic of
 `ModelOption`, `ResourceAssertOption`, and `ResourceOption`. No constructors exist for those option types. Zero options still sets
 `Enabled`. A later setting is another option on that call, not a new `Generators` entry. Consumers read the fields
@@ -1016,7 +1015,7 @@ Until a piece has moved, do not assume it is already in ssot:
   ShowByID filtering, the ShowByID find predicate, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
   handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
-  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `ShowPlainName`, `SdkCreateRequestObjectName`, `VariantEntityCreateName`, or `VariantEntityAlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
+  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
   ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). The SET and UNSET groups are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
   When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is
@@ -1125,7 +1124,7 @@ lists are mapped by the first two, and any other type is mapped by `DescribeProp
 
 `SdkDescribeDetailsFromIdentifier()` is a setting of `SdkDescribe` for a columnar DESCRIBE, the one that returns one `<Name>Details` value. It emits `DescribeDetails`: the method calls `Describe` and copies plain-only identifier fields from the id. `SchemaObjectIdentifier` copies `DatabaseName` and `SchemaName`. `DatabaseObjectIdentifier` copies `DatabaseName`. Each copied field is a `SdkDescribePlainOnlyField` of kind `string`, and at least one is present. Every plain-only field is one of those names. When that list covers every plain-only field, `convert` does not call `additionalConvert`. When the details struct has the identifier parts (`DatabaseName`, `SchemaName`, and `Name` for a schema object; `DatabaseName` and `Name` for a database object) as strings, the generator emits `ID()`. The same `ID()` is emitted when those fields are already DESCRIBE columns. Otherwise `ID()` stays in the SDK ext file. A property-list DESCRIBE uses `DescribeRows` and `SdkDescribeDetailsMethod()`. `SdkDescribeDetailsFromIdentifier()` cannot be combined with `DescribeRows` or `SdkDescribeDetails`.
 
-A generator that needs the paired SHOW reads `PairedShowColumns`: `ShowGeneric` when that list is set, otherwise `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
+A generator that needs the paired SHOW reads `PairedShowColumns`: `BaseVariant.ShowGeneric` when that list is set, otherwise `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
 derive one from the other, and it does not derive either from `Attributes`.
 
 #### Generators do not depend on each other
@@ -1181,7 +1180,7 @@ repeat for an object that ssot does not emit stays. Do not delete it.
 
 SDK interfaces come from two lists. The old list is the handwritten defs. ssot adds an interface when `SdkDefineFromSsot()`
 is on and `NamePlural` is unique among objects that are not variants in [`defs.All()`](defs/all.go). A variant shares the base interface: the variants of
-`Warehouse`, and the four catalog integration sources of `CatalogIntegration`, which is a `VariantBaseOnly` base. The base supplies the
+`Warehouse`, and the four catalog integration sources of `CatalogIntegration`, which is a `BaseVariant.NotResource` base. The base supplies the
 interface and each variant supplies its own part of it: `SdkCreateForVariants()` and `SdkAlterForVariants()` the methods named from the variant stem,
 `SdkDescribeDetailsForVariants()` the `Describe<Variant>Details` methods and their structs. That option defines the interface from this
 ssot object and its variants. It contains the operation parts whose flags are on. A part whose flag is off is absent. An object that already has a handwritten SDK definition does not set this flag, so the merge does not drop that interface. The SDK
@@ -1202,7 +1201,7 @@ A new Snowflake object is one definition in [defs](defs), registered in [`All()`
 
 Public documentation only. Implement a command, clause, column, or parameter when a public Snowflake page for this object shows it: the SQL reference, or the user guide when no SQL reference page exists. A missing page is not filled from another object, from the parser, or from a live query. Record what was left out, which page was checked, and where the capability was seen. `CREATE OR ALTER` is the exception: never implement it and never list it as left out, because our resources do not use it. Parameters and tags stay off unless that page shows them. When the default SQL reference URL does not exist, override it with `SdkCreateDoc`, `SdkShowDoc`, `SdkDropDoc`, `SdkAlterDoc`, or `SdkDescribeDoc`.
 
-When the public pages give one Snowflake object a dedicated CREATE and a dedicated ALTER for each role, define those roles as variants of one base. Warehouses are the reference. Register each role in [`All()`](defs/all.go). Its `NamePlural` is the base's, so the methods share one SDK interface. Its `Name` starts with the base `Name`. The method names are `Create` and `Alter` plus the rest of that name: `ReplicationGroupSecondary` is `CreateSecondary` and `AlterSecondary`. Set `SdkCreateRequestObjectName` when the query struct should not be `Create` or `Alter` plus the full variant name. `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. The variant fills `Create` and `Alter` and sets no generators. The base keeps the shared interface, SHOW, DROP, and the CREATE and ALTER that belong to the base. Each other role sets `VariantOf` to the base. The base turns on `SdkCreateForVariants()` and `SdkAlterForVariants()` as separate settings, one step each. The step that turns one on also removes those clauses from the base statement, or removes the custom operation that was emitting them, and moves the ext tests with them. Set `VariantEntityCreateName` or `VariantEntityAlterName` when the SQL object words differ from the base object type. Leave them empty when the words are the same and only the clauses differ. A secondary replication group is that case: the primary keeps the normal CREATE and the source-account ALTER, and the secondary keeps `CREATE ... AS REPLICA OF` and the target-account ALTER (`REFRESH`, `SUSPEND`, `RESUME`). SHOW stays on the base when one SHOW returns every role. An ALTER block's query struct is named from the object that owns the ALTER, so the secondary suspend block is `ReplicationGroupSecondarySuspend`. Do not put every clause on one CREATE and one ALTER. Do not add the second CREATE as a custom operation. Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. The base uses `SdkCreateWithoutOrReplace()` for the same omission. `WithVariants` stays the mechanism for alternatives inside one clause.
+When the public pages give one Snowflake object a dedicated CREATE and a dedicated ALTER for each role, define those roles as variants of one base. Warehouses are the reference. Register each role in [`All()`](defs/all.go). Its `NamePlural` is the base's, so the methods share one SDK interface. Its `Name` starts with the base `Name`. The method names are `Create` and `Alter` plus the rest of that name: `ReplicationGroupSecondary` is `CreateSecondary` and `AlterSecondary`. Set `Variant.RequestObjectName` when the query struct should not be `Create` or `Alter` plus the full variant name. `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. The variant fills `Create` and `Alter` and sets no generators. The base keeps the shared interface, SHOW, DROP, and the CREATE and ALTER that belong to the base. Each other role sets `Variant.Of` to the base. The base turns on `SdkCreateForVariants()` and `SdkAlterForVariants()` as separate settings, one step each. The step that turns one on also removes those clauses from the base statement, or removes the custom operation that was emitting them, and moves the ext tests with them. Set `Variant.CreateName` or `Variant.AlterName` when the SQL object words differ from the base object type. Leave them empty when the words are the same and only the clauses differ. A secondary replication group is that case: the primary keeps the normal CREATE and the source-account ALTER, and the secondary keeps `CREATE ... AS REPLICA OF` and the target-account ALTER (`REFRESH`, `SUSPEND`, `RESUME`). SHOW stays on the base when one SHOW returns every role. An ALTER block's query struct is named from the object that owns the ALTER, so the secondary suspend block is `ReplicationGroupSecondarySuspend`. Do not put every clause on one CREATE and one ALTER. Do not add the second CREATE as a custom operation. Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. The base uses `SdkCreateWithoutOrReplace()` for the same omission. `WithVariants` stays the mechanism for alternatives inside one clause.
 
 When a public page shows a command and no column list, the columns come from an uncommitted integration test. Give it a build tag so `go test ./...` does not run it. The test uses the default Snowflake profile, creates only what that command needs, runs the command, logs column names, database types, and every row, and drops what it created. It is not kept in the repository. After that test has been run, put those columns on the matching `Columns` list in the logged order and enable the generator setting for that command. Record that the list came from the probe. A string column that came back null is optional in SHOW and in the DB row. A time column that is nullable in the driver is `OptionalInDb` only: an optional plain time is not mapped, and the plain field stays `time.Time`. Do not mark `name`, `database_name`, or `schema_name` optional when the SHOW row's `ID()` is built from them. A column list from a page is checked against the live output too. A documented column that the command does not return is always NULL, so it is left out and the gap is recorded. A returned column that the page does not list is added when no documented column carries that value, and the gap is recorded as well. For failover groups the page lists `read_only`, SHOW returns `is_primary_read_only`, and `error_integration` is not documented at all.
 

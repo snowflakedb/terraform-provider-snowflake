@@ -101,7 +101,7 @@ func TestParameterHooks_variantRetainsOwnCatalog(t *testing.T) {
 		Name:       "WarehouseInteractive",
 		NamePlural: "Warehouses",
 		IdType:     "AccountObjectIdentifier",
-		VariantOf:  &ssotdefs.Warehouse,
+		Variant:    &ssot.ObjectVariant{Of: &ssotdefs.Warehouse},
 		ResourceHooks: []ssot.ResourceHookOption{
 			ssot.WithParametersAttributesSchema(ssot.Generated()),
 			ssot.WithApplyParametersChanges(ssot.Generated()),
