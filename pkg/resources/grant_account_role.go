@@ -93,8 +93,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	roleName := d.Get("role_name").(string)
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
 
-	safePublicRole := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole) &&
-		roleIdentifier.Name() == snowflakeroles.Public.Name()
+	safePublicRole := roleIdentifier.Name() == snowflakeroles.Public.Name()
 
 	// format of snowflakeResourceID is <role_identifier>|<object type>|<target_identifier>
 	var snowflakeResourceID string
@@ -121,7 +120,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	}
 	d.SetId(snowflakeResourceID)
 	if safePublicRole {
-		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", snowflakeResourceID, experimentalfeatures.GrantAccountRoleSafePublicRole)
+		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s)", snowflakeResourceID)
 		return nil
 	}
 	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleShowCaching) {
@@ -147,9 +146,8 @@ func ReadGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta any)
 	roleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(roleName)
 
 	// PUBLIC is always implicitly granted; SHOW GRANTS won't list it as an explicit grant.
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole) &&
-		roleIdentifier.Name() == snowflakeroles.Public.Name() {
-		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
+	if roleIdentifier.Name() == snowflakeroles.Public.Name() {
+		log.Printf("[DEBUG] skipping SHOW GRANTS for PUBLIC role grant (%s)", d.Id())
 		return nil
 	}
 
@@ -198,17 +196,13 @@ func DeleteGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	granteeIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(granteeName)
 
 	// PUBLIC is always implicitly granted and cannot be explicitly revoked.
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantAccountRoleSafePublicRole) &&
-		id.Name() == snowflakeroles.Public.Name() {
-		log.Printf("[DEBUG] skipping REVOKE for PUBLIC role grant (%s) — experiment %s enabled", d.Id(), experimentalfeatures.GrantAccountRoleSafePublicRole)
+	if id.Name() == snowflakeroles.Public.Name() {
+		log.Printf("[DEBUG] skipping REVOKE for PUBLIC role grant (%s)", d.Id())
 		d.SetId("")
 		return nil
 	}
 
-	revokeFunc := client.Roles.Revoke
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
-		revokeFunc = client.Roles.RevokeSafely
-	}
+	revokeFunc := client.Roles.RevokeSafely
 	var err error
 	switch objectType {
 	case "ROLE":

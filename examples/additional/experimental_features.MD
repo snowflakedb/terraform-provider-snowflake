@@ -133,41 +133,6 @@ The following experiments are enabled by default. They are the provider's curren
 
 To share feedback please reach out to us through your Snowflake account manager.
 
-#### WAREHOUSE_SHOW_IMPROVED_PERFORMANCE
-It's meant to improve the performance for accounts with many warehouses.
-
-When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).
-
-Currently supported by: `snowflake_warehouse`, `snowflake_warehouse_adaptive`, `snowflake_warehouse_interactive`.
-
-This feature is enabled by default on the Snowflake side.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
-
-#### GRANTS_STRICT_PRIVILEGE_MANAGEMENT
-The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.
-
-It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.
-
-Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.
-
-This feature works independently of the `GRANTS_IMPORT_VALIDATION` flag.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
-
-#### PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL
-Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).
-
-When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
-
 #### USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY
 The `default_workload_identity` field on the `snowflake_legacy_service_user` and `snowflake_service_user` resources manages workload identity federation (WIF).
 
@@ -178,63 +143,6 @@ Read more in our [migration guide](https://github.com/snowflakedb/terraform-prov
 This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
 
 It will be promoted in v2.24.0 or v2.25.0.
-
-#### GRANTS_IMPORT_VALIDATION
-Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.
-
-When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.
-
-This feature works independently of the `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` flag.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
-
-#### GRANTS_SAFE_DESTROY
-When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.
-
-Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.
-
-This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.
-
-Without this experiment, destroying such resources fails with `does not exist or not authorized`.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
-
-#### TAG_ASSOCIATION_SAFE_DESTROY
-When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.
-
-Currently supported by: `snowflake_tag_association`.
-
-This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.
-
-Without this experiment, destroying such resources fails with `does not exist or not authorized`.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
-
-#### GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE
-When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.
-
-Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.
-
-With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
-
-#### INHERITED_GRANTS
-Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.
-
-Without this experiment, using an `inherited` block results in an error.
-
-This experiment is enabled by default. Opt out by listing it in `experimental_features_disabled`.
-
-It will be promoted in v2.23.0 or v2.24.0.
 
 #### OBJECT_PARAMETER_PARSE_ON_SET
 Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.
@@ -265,5 +173,19 @@ This experiment is enabled by default. Opt out by listing it in `experimental_fe
 It will be promoted in v2.25.0 or v2.26.0.
 
 
+### Promoted experiments
+
+The following experiments are now default provider behavior.
+Setting them in `experimental_features_enabled` or `experimental_features_disabled` will have no effect on the provider's behavior.
+They will be removed from the allowed-value lists in the next major release of the provider.
+
+- `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`
+- `GRANTS_STRICT_PRIVILEGE_MANAGEMENT`
+- `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL`
+- `GRANTS_IMPORT_VALIDATION`
+- `GRANTS_SAFE_DESTROY`
+- `TAG_ASSOCIATION_SAFE_DESTROY`
+- `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE`
+- `INHERITED_GRANTS`
 
 

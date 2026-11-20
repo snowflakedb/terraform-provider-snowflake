@@ -2180,32 +2180,6 @@ func TestAcc_GrantPrivilegesToAccountRole_Inherited_Validation(t *testing.T) {
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_Inherited_Validation_MissingExperimentFlag(t *testing.T) {
-	role, roleCleanup := testClient().Role.CreateRole(t)
-	t.Cleanup(roleCleanup)
-
-	providerModel := providermodel.SnowflakeProvider().
-		WithAllEnabledByDefaultExperimentsDisabled()
-	resourceModelMissingExperiment := model.GrantPrivilegesToAccountRole("test", role.ID().FullyQualifiedName()).
-		WithPrivileges(string(sdk.AccountObjectPrivilegeUsage)).
-		WithOnInheritedAccountObjects(sdk.PluralObjectTypeWarehouses)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckAccountRolePrivilegesRevoked(t),
-		Steps: []resource.TestStep{
-			{
-				Config:      accconfig.FromModels(t, providerModel, resourceModelMissingExperiment),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled. Remove it from the `experimental_features_disabled` list"),
-			},
-		},
-	})
-}
-
 // prove https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2803 is fixed
 func TestAcc_GrantPrivilegesToAccountRole_ImportedPrivileges_issue2803(t *testing.T) {
 	role, roleCleanup := testClient().Role.CreateRole(t)
@@ -3478,32 +3452,6 @@ func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Updates(t *testin
 	})
 }
 
-func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation_MissingExperimentFlag(t *testing.T) {
-	role, roleCleanup := testClient().Role.CreateRole(t)
-	t.Cleanup(roleCleanup)
-
-	providerModel := providermodel.SnowflakeProvider().
-		WithAllEnabledByDefaultExperimentsDisabled()
-	resourceModelMissingExperiment := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
-		WithPrivileges(string(sdk.GlobalPrivilegeCreateDatabase)).
-		WithOnAccount(true).
-		WithStrictPrivilegeManagement(true)
-
-	resource.Test(t, resource.TestCase{
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
-		Steps: []resource.TestStep{
-			{
-				Config:      accconfig.FromModels(t, providerModel, resourceModelMissingExperiment),
-				ExpectError: regexp.MustCompile("to use `strict_privilege_management`, you need the .*GRANTS_STRICT_PRIVILEGE_MANAGEMENT.* experiment to be enabled. Remove it from the `experimental_features_disabled` list"),
-			},
-		},
-	})
-}
-
 func TestAcc_GrantPrivilegesToAccountRole_StrictRoleManagement_Validation_ConflictingFields(t *testing.T) {
 	resourceModelAllPrivileges := model.GrantPrivilegesToAccountRole("test", "test_role").
 		WithOnAccount(true).
@@ -4086,48 +4034,6 @@ func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_MismatchedPrivilege(t
 				ImportState:   true,
 				ImportStateId: importId,
 				ExpectError:   regexp.MustCompile("privileges granted in Snowflake do not match the expected privileges"),
-			},
-		},
-	})
-}
-
-func TestAcc_GrantPrivilegesToAccountRole_ImportValidation_Disabled(t *testing.T) {
-	role, roleCleanup := testClient().Role.CreateRole(t)
-	t.Cleanup(roleCleanup)
-
-	database, databaseCleanup := testClient().Database.CreateDatabase(t)
-	t.Cleanup(databaseCleanup)
-
-	// Grant with with_grant_option=true
-	testClient().Grant.GrantPrivilegesOnDatabaseToAccountRole(t, role.ID(), database.ID(), []sdk.AccountObjectPrivilege{sdk.AccountObjectPrivilegeMonitor}, true)
-
-	providerModel := providermodel.SnowflakeProvider().
-		WithAllEnabledByDefaultExperimentsDisabled()
-	resourceModel := model.GrantPrivilegesToAccountRole("test", role.ID().Name()).
-		WithPrivileges(string(sdk.AccountObjectPrivilegeMonitor)).
-		WithOnAccountObject(sdk.ObjectTypeDatabase, database.ID()).
-		WithWithGrantOption(false)
-
-	resource.Test(t, resource.TestCase{
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-		CheckDestroy:             CheckAccountRolePrivilegesRevoked(t),
-		Steps: []resource.TestStep{
-			{
-				Config: accconfig.FromModels(t, providerModel, resourceModel),
-				// We expect a non-empty plan because the privilege is not granted with the correct grant option.
-				ExpectNonEmptyPlan: true,
-			},
-			// Import with experiment disabled - should succeed (default behavior preserved)
-			{
-				Config:            accconfig.FromModels(t, providerModel, resourceModel),
-				ResourceName:      resourceModel.ResourceReference(),
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Privileges are not verified because the config is not matching the current state, and this field is overridden by the read function.
-				ImportStateVerifyIgnore: []string{"account_role_name", "on_account_object.0.object_name", "privileges"},
 			},
 		},
 	})
