@@ -317,6 +317,13 @@ A list or set with `CustomParser`, `OptionalInDb`, and no `OptionalInShow` is a 
 
 ### Generators
 
+Generated code stays short. When a template repeats a block of Go across objects, the block moves to a hand-written
+helper (for example `showByIdErrorDiagnostics`, `handleThreeLevelHierarchyRenameIfEnabledWithEncoding`, or the datasource
+`showOutputListSchema`) and the template emits one call. A choice that several templates make from the same flag, such as the
+resource id encoding, is a method on the generator model (`EncodeId`, `DecodeId`). Sub-templates are the files of
+`templates/sub_templates`. A file named `show_by_id_in_sdk.tmpl` is the template `showByIdInSdk`, and it needs no
+registration.
+
 `Generators` is per-object enablement, not an implicit `All()` feed. Each generator is one entry. SHOW and DESCRIBE are
 settings of that entry. `WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, and `WithObjectAssert()` with no settings
 enable nothing.
