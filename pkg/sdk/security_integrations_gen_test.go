@@ -847,7 +847,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 			},
 			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "Enabled", "ExternalOauthType", "ExternalOauthIssuer", "ExternalOauthTokenUserMappingClaim", "ExternalOauthSnowflakeUserMappingAttribute", "ExternalOauthJwsKeysUrl", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList", "ExternalOauthRsaPublicKey", "ExternalOauthRsaPublicKey2", "ExternalOauthAudienceList", "ExternalOauthAnyRoleMode", "ExternalOauthScopeDelimiter", "ExternalOauthScopeMappingAttribute", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Set", "Enabled", "ExternalOauthType", "ExternalOauthIssuer", "ExternalOauthTokenUserMappingClaim", "ExternalOauthSnowflakeUserMappingAttribute", "ExternalOauthJwsKeysUrl", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList", "ExternalOauthRsaPublicKey", "ExternalOauthRsaPublicKey2", "ExternalOauthAudienceList", "ExternalOauthAnyRoleMode", "ExternalOauthScopeDelimiter", "ExternalOauthScopeMappingAttribute", "IsAgentic", "Comment"),
 				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 					opts.Set = &ExternalOauthIntegrationSet{}
 					opts.Set.Enabled = nil
@@ -864,6 +864,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 					opts.Set.ExternalOauthAnyRoleMode = nil
 					opts.Set.ExternalOauthScopeDelimiter = nil
 					opts.Set.ExternalOauthScopeMappingAttribute = nil
+					opts.Set.IsAgentic = nil
 					opts.Set.Comment = nil
 				},
 			},
@@ -887,11 +888,12 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 			},
 			validationCase[*AlterExternalOauthSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterExternalOauth_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Unset", "Enabled", "ExternalOauthAudienceList"),
+				ExpectedErr: errAtLeastOneOf("AlterExternalOauthSecurityIntegrationOptions.Unset", "Enabled", "ExternalOauthAudienceList", "IsAgentic"),
 				DefaultModify: func(opts *AlterExternalOauthSecurityIntegrationOptions) {
 					opts.Unset = &ExternalOauthIntegrationUnset{}
 					opts.Unset.Enabled = nil
 					opts.Unset.ExternalOauthAudienceList = nil
+					opts.Unset.IsAgentic = nil
 				},
 			},
 		).
@@ -1050,7 +1052,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 			},
 			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set", "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList", "AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Set", "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList", "AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "IsAgentic", "Comment"),
 				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
 					opts.Set = &OauthForCustomClientsIntegrationSet{}
 					opts.Set.Enabled = nil
@@ -1066,6 +1068,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 					opts.Set.NetworkPolicy = nil
 					opts.Set.OauthClientRsaPublicKey = nil
 					opts.Set.OauthClientRsaPublicKey2 = nil
+					opts.Set.IsAgentic = nil
 					opts.Set.Comment = nil
 				},
 			},
@@ -1098,7 +1101,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 			},
 			validationCase[*AlterOauthForCustomClientsSecurityIntegrationOptions]{
 				Name:        case_SecurityIntegrations_validation_AlterOauthForCustomClients_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Unset", "Enabled", "NetworkPolicy", "OauthUseSecondaryRoles", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2"),
+				ExpectedErr: errAtLeastOneOf("AlterOauthForCustomClientsSecurityIntegrationOptions.Unset", "Enabled", "NetworkPolicy", "OauthUseSecondaryRoles", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "IsAgentic"),
 				DefaultModify: func(opts *AlterOauthForCustomClientsSecurityIntegrationOptions) {
 					opts.Unset = &OauthForCustomClientsIntegrationUnset{}
 					opts.Unset.Enabled = nil
@@ -1106,6 +1109,7 @@ var securityIntegrationsTests = SecurityIntegrationsTestsContext{
 					opts.Unset.OauthUseSecondaryRoles = nil
 					opts.Unset.OauthClientRsaPublicKey = nil
 					opts.Unset.OauthClientRsaPublicKey2 = nil
+					opts.Unset.IsAgentic = nil
 				},
 			},
 		).

@@ -234,6 +234,8 @@ func AsOauthCustom(properties []SecurityIntegrationProperty) *OauthIntegrationFo
 			details.OauthAllowedAuthorizationEndpoints = &p
 		case "OAUTH_ALLOWED_TOKEN_ENDPOINTS":
 			details.OauthAllowedTokenEndpoints = &p
+		case "IS_AGENTIC":
+			details.IsAgentic = &p
 		}
 	}
 	return details
@@ -272,6 +274,8 @@ func AsExternalOauth(properties []SecurityIntegrationProperty) *ExternalOauthSec
 			details.ExternalOauthSnowflakeUserMappingAttribute = &p
 		case "EXTERNAL_OAUTH_SCOPE_DELIMITER":
 			details.ExternalOauthScopeDelimiter = &p
+		case "IS_AGENTIC":
+			details.IsAgentic = &p
 		case "COMMENT":
 			details.Comment = &p
 		}

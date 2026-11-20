@@ -125,6 +125,16 @@ Without the experiment, the behavior of these resources does not change. No conf
 
 Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5361).
 
+### *(new feature)* `is_agentic` on OAuth security integrations
+
+[`snowflake_oauth_integration_for_custom_clients`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_custom_clients) and [`snowflake_external_oauth_integration`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_oauth_integration) now accept `is_agentic`, matching the [`IS_AGENTIC`](https://docs.snowflake.com/en/sql-reference/sql/create-security-integration-oauth-snowflake) property. When it's `"true"`, Snowflake treats every session authenticated through the integration as an agent session, so `SYS_CONTEXT('SNOWFLAKE$CURRENT', 'IS_AGENT_ACTIVATED')` returns `TRUE` for it. Valid values are `"true"` and `"false"`. Leave it unset to keep the Snowflake default (`FALSE`); the provider stores that as `"default"`, omits `IS_AGENTIC` from `CREATE SECURITY INTEGRATION`, and runs `ALTER SECURITY INTEGRATION ... UNSET IS_AGENTIC` when the attribute is removed from the configuration. `describe_output` in both resources, and in the [`snowflake_security_integrations`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/security_integrations) data source, now includes `is_agentic`.
+
+Snowflake doesn't accept `IS_AGENTIC` on partner application integrations, so [`snowflake_oauth_integration_for_partner_applications`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/oauth_integration_for_partner_applications) is unchanged.
+
+Existing state is upgraded to `is_agentic = "default"` without calling Snowflake, so the first plan after upgrading doesn't change the integration, even when `IS_AGENTIC` was set outside the resource. If you set it with raw SQL (for example in a `snowflake_execute` resource), add `is_agentic = "true"` to the integration and then remove the raw SQL. Make sure the removed resource doesn't revert the property on destroy, for example through the `revert` statement of `snowflake_execute`.
+
+Reference: [#5377](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5377).
+
 ### *(new feature)* Backup set resource and data source
 
 We have added a new preview resource, [`snowflake_backup_set`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_set), for managing [backup sets](https://docs.snowflake.com/en/user-guide/backups). Exactly one of `for_table`, `for_dynamic_table`, `for_schema`, or `for_database` is required and cannot be changed after creation. An attached `backup_policy` can be changed to another policy, but it cannot be removed.

@@ -31,6 +31,7 @@ var DescribeOauthIntegrationForCustomClientsDetailsSchema = mergeSchema(map[stri
 	// oauth_token_endpoint: manual addition and mapping is needed
 	// oauth_allowed_authorization_endpoints: manual addition and mapping is needed
 	// oauth_allowed_token_endpoints: manual addition and mapping is needed
+	// is_agentic: manual addition and mapping is needed
 }, oauthIntegrationForCustomClientsDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeOauthIntegrationForCustomClientsDetailsSchema
@@ -55,6 +56,7 @@ func OauthIntegrationForCustomClientsDetailsToSchema(oauthIntegrationForCustomCl
 	// oauth_token_endpoint: manual addition and mapping is needed
 	// oauth_allowed_authorization_endpoints: manual addition and mapping is needed
 	// oauth_allowed_token_endpoints: manual addition and mapping is needed
+	// is_agentic: manual addition and mapping is needed
 	oauthIntegrationForCustomClientsDetailsToSchemaMapper{}.additionalToSchema(oauthIntegrationForCustomClientsDetails, oauthIntegrationForCustomClientsDetailsSchema)
 	return oauthIntegrationForCustomClientsDetailsSchema
 }

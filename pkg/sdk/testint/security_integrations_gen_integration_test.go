@@ -441,6 +441,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 				WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionEnable).
 				WithExternalOauthScopeDelimiter(" ").
 				WithExternalOauthScopeMappingAttribute("scp").
+				WithIsAgentic(true).
 				WithComment("foo")
 		})
 		details, err := client.SecurityIntegrations.Describe(ctx, id)
@@ -460,6 +461,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			externalOauthScopeDelimiter:                " ",
 			comment:                                    "foo",
 		})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "IS_AGENTIC", Type: "Boolean", Value: "true", Default: "false"})
 
 		assertSecurityIntegration(t, integration, id, "EXTERNAL_OAUTH - CUSTOM", false, "foo")
 	})
@@ -520,7 +522,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 				WithOauthIssueRefreshTokens(true).
 				WithOauthRefreshTokenValidity(12345).
 				WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone).
-				WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: []sdk.AccountObjectIdentifier{role2.ID()}})
+				WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: []sdk.AccountObjectIdentifier{role2.ID()}}).
+				WithIsAgentic(true)
 		})
 		details, err := client.SecurityIntegrations.Describe(ctx, id)
 		require.NoError(t, err)
@@ -536,6 +539,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			networkPolicy:           networkPolicy.Name,
 			comment:                 "a",
 		}, "true", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic), "true", rsaKeyHash, rsaKeyHash)
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "IS_AGENTIC", Type: "Boolean", Value: "true", Default: "false"})
 
 		assertSecurityIntegration(t, integration, id, "OAUTH - CUSTOM", true, "a")
 	})
@@ -811,6 +815,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 					WithExternalOauthAudienceList(sdk.AudienceListRequest{AudienceList: []sdk.AudienceListItem{{Item: "foo"}}}).
 					WithExternalOauthAnyRoleMode(sdk.ExternalOauthSecurityIntegrationAnyRoleModeOptionDisable).
 					WithExternalOauthScopeDelimiter(" ").
+					WithIsAgentic(true).
 					WithComment(sdk.StringAllowEmpty{Value: "foo"}),
 			)
 		err := client.SecurityIntegrations.AlterExternalOauth(ctx, setRequest)
@@ -833,12 +838,14 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			externalOauthScopeDelimiter:                " ",
 			comment:                                    "foo",
 		})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "IS_AGENTIC", Type: "Boolean", Value: "true", Default: "false"})
 
 		unsetRequest := sdk.NewAlterExternalOauthSecurityIntegrationRequest(id).
 			WithUnset(
 				*sdk.NewExternalOauthIntegrationUnsetRequest().
 					WithEnabled(true).
-					WithExternalOauthAudienceList(true),
+					WithExternalOauthAudienceList(true).
+					WithIsAgentic(true),
 			)
 		err = client.SecurityIntegrations.AlterExternalOauth(ctx, unsetRequest)
 		require.NoError(t, err)
@@ -848,6 +855,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "ENABLED", Type: "Boolean", Value: "true", Default: "true"})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "EXTERNAL_OAUTH_AUDIENCE_LIST", Type: "List", Value: "", Default: "[]"})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "IS_AGENTIC", Type: "Boolean", Value: "false", Default: "false"})
 	})
 
 	t.Run("AlterOauthPartner", func(t *testing.T) {
@@ -932,7 +940,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 					WithOauthRedirectUri("http://example2.com").
 					WithOauthRefreshTokenValidity(22222).
 					WithOauthUseSecondaryRoles(sdk.OauthSecurityIntegrationUseSecondaryRolesOptionNone).
-					WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: []sdk.AccountObjectIdentifier{role2.ID()}}),
+					WithPreAuthorizedRolesList(sdk.PreAuthorizedRolesListRequest{PreAuthorizedRolesList: []sdk.AccountObjectIdentifier{role2.ID()}}).
+					WithIsAgentic(true),
 			)
 		err := client.SecurityIntegrations.AlterOauthForCustomClients(ctx, setRequest)
 		require.NoError(t, err)
@@ -951,6 +960,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 			networkPolicy:           networkPolicy.Name,
 			comment:                 "a",
 		}, "true", string(sdk.OauthSecurityIntegrationClientTypeOptionPublic), "true", rsaKeyHash, rsaKeyHash)
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "IS_AGENTIC", Type: "Boolean", Value: "true", Default: "false"})
 
 		unsetRequest := sdk.NewAlterOauthForCustomClientsSecurityIntegrationRequest(id).
 			WithUnset(
@@ -959,7 +969,8 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 					WithOauthUseSecondaryRoles(true).
 					WithNetworkPolicy(true).
 					WithOauthClientRsaPublicKey(true).
-					WithOauthClientRsaPublicKey2(true),
+					WithOauthClientRsaPublicKey2(true).
+					WithIsAgentic(true),
 			)
 		err = client.SecurityIntegrations.AlterOauthForCustomClients(ctx, unsetRequest)
 		require.NoError(t, err)
@@ -972,6 +983,7 @@ func TestInt_SecurityIntegrations(t *testing.T) {
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "NETWORK_POLICY", Type: "String", Value: "", Default: ""})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_CLIENT_RSA_PUBLIC_KEY_FP", Type: "String", Value: "", Default: ""})
 		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "OAUTH_CLIENT_RSA_PUBLIC_KEY_2_FP", Type: "String", Value: "", Default: ""})
+		assert.Contains(t, details, sdk.SecurityIntegrationProperty{Name: "IS_AGENTIC", Type: "Boolean", Value: "false", Default: "false"})
 	})
 
 	// Prove that altering a security integration with a specified network policy id with lower case characters fails. This is a bug in Snowflake.

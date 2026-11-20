@@ -216,6 +216,7 @@ func (r *CreateExternalOauthSecurityIntegrationRequest) toOpts() *CreateExternal
 		ExternalOauthAnyRoleMode:                   r.ExternalOauthAnyRoleMode,
 		ExternalOauthScopeDelimiter:                r.ExternalOauthScopeDelimiter,
 		ExternalOauthScopeMappingAttribute:         r.ExternalOauthScopeMappingAttribute,
+		IsAgentic:                                  r.IsAgentic,
 		Comment:                                    r.Comment,
 	}
 	if r.ExternalOauthBlockedRolesList != nil {
@@ -278,6 +279,7 @@ func (r *CreateOauthForCustomClientsSecurityIntegrationRequest) toOpts() *Create
 		NetworkPolicy:               r.NetworkPolicy,
 		OauthClientRsaPublicKey:     r.OauthClientRsaPublicKey,
 		OauthClientRsaPublicKey2:    r.OauthClientRsaPublicKey2,
+		IsAgentic:                   r.IsAgentic,
 		Comment:                     r.Comment,
 	}
 	if r.PreAuthorizedRolesList != nil {
@@ -450,6 +452,7 @@ func (r *AlterExternalOauthSecurityIntegrationRequest) toOpts() *AlterExternalOa
 			ExternalOauthAnyRoleMode:                   r.Set.ExternalOauthAnyRoleMode,
 			ExternalOauthScopeDelimiter:                r.Set.ExternalOauthScopeDelimiter,
 			ExternalOauthScopeMappingAttribute:         r.Set.ExternalOauthScopeMappingAttribute,
+			IsAgentic:                                  r.Set.IsAgentic,
 			Comment:                                    r.Set.Comment,
 		}
 		if r.Set.ExternalOauthBlockedRolesList != nil {
@@ -472,6 +475,7 @@ func (r *AlterExternalOauthSecurityIntegrationRequest) toOpts() *AlterExternalOa
 		opts.Unset = &ExternalOauthIntegrationUnset{
 			Enabled:                   r.Unset.Enabled,
 			ExternalOauthAudienceList: r.Unset.ExternalOauthAudienceList,
+			IsAgentic:                 r.Unset.IsAgentic,
 		}
 	}
 	return opts
@@ -532,6 +536,7 @@ func (r *AlterOauthForCustomClientsSecurityIntegrationRequest) toOpts() *AlterOa
 			NetworkPolicy:               r.Set.NetworkPolicy,
 			OauthClientRsaPublicKey:     r.Set.OauthClientRsaPublicKey,
 			OauthClientRsaPublicKey2:    r.Set.OauthClientRsaPublicKey2,
+			IsAgentic:                   r.Set.IsAgentic,
 			Comment:                     r.Set.Comment,
 		}
 		if r.Set.PreAuthorizedRolesList != nil {
@@ -557,6 +562,7 @@ func (r *AlterOauthForCustomClientsSecurityIntegrationRequest) toOpts() *AlterOa
 			OauthClientRsaPublicKey:  r.Unset.OauthClientRsaPublicKey,
 			OauthClientRsaPublicKey2: r.Unset.OauthClientRsaPublicKey2,
 			OauthUseSecondaryRoles:   r.Unset.OauthUseSecondaryRoles,
+			IsAgentic:                r.Unset.IsAgentic,
 		}
 	}
 	return opts

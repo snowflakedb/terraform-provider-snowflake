@@ -92,6 +92,7 @@ type CreateExternalOauthSecurityIntegrationRequest struct {
 	ExternalOauthAnyRoleMode                   *ExternalOauthSecurityIntegrationAnyRoleModeOption
 	ExternalOauthScopeDelimiter                *string
 	ExternalOauthScopeMappingAttribute         *string
+	IsAgentic                                  *bool
 	Comment                                    *string
 }
 
@@ -140,6 +141,7 @@ type CreateOauthForCustomClientsSecurityIntegrationRequest struct {
 	NetworkPolicy               *AccountObjectIdentifier
 	OauthClientRsaPublicKey     *string
 	OauthClientRsaPublicKey2    *string
+	IsAgentic                   *bool
 	Comment                     *string
 }
 
@@ -288,12 +290,14 @@ type ExternalOauthIntegrationSetRequest struct {
 	ExternalOauthAnyRoleMode                   *ExternalOauthSecurityIntegrationAnyRoleModeOption
 	ExternalOauthScopeDelimiter                *string
 	ExternalOauthScopeMappingAttribute         *string
+	IsAgentic                                  *bool
 	Comment                                    *StringAllowEmpty
 }
 
 type ExternalOauthIntegrationUnsetRequest struct {
 	Enabled                   *bool
 	ExternalOauthAudienceList *bool
+	IsAgentic                 *bool
 }
 
 type AlterOauthForPartnerApplicationsSecurityIntegrationRequest struct {
@@ -344,6 +348,7 @@ type OauthForCustomClientsIntegrationSetRequest struct {
 	NetworkPolicy               *AccountObjectIdentifier
 	OauthClientRsaPublicKey     *string
 	OauthClientRsaPublicKey2    *string
+	IsAgentic                   *bool
 	Comment                     *string
 }
 
@@ -353,6 +358,7 @@ type OauthForCustomClientsIntegrationUnsetRequest struct {
 	OauthClientRsaPublicKey  *bool
 	OauthClientRsaPublicKey2 *bool
 	OauthUseSecondaryRoles   *bool
+	IsAgentic                *bool
 }
 
 type AlterSaml2SecurityIntegrationRequest struct {

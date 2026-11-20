@@ -122,6 +122,7 @@ Read-Only:
 - `external_oauth_scope_delimiter` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--external_oauth_scope_delimiter))
 - `external_oauth_snowflake_user_mapping_attribute` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--external_oauth_snowflake_user_mapping_attribute))
 - `external_oauth_token_user_mapping_claim` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--external_oauth_token_user_mapping_claim))
+- `is_agentic` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--is_agentic))
 - `network_policy` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--network_policy))
 - `oauth_access_token_validity` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_access_token_validity))
 - `oauth_allow_non_tls_redirect_uri` (List of Object) (see [below for nested schema](#nestedobjatt--security_integrations--describe_output--oauth_allow_non_tls_redirect_uri))
@@ -347,6 +348,17 @@ Read-Only:
 
 <a id="nestedobjatt--security_integrations--describe_output--external_oauth_token_user_mapping_claim"></a>
 ### Nested Schema for `security_integrations.describe_output.external_oauth_token_user_mapping_claim`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--security_integrations--describe_output--is_agentic"></a>
+### Nested Schema for `security_integrations.describe_output.is_agentic`
 
 Read-Only:
 

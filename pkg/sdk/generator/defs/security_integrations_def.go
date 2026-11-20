@@ -128,7 +128,9 @@ func oauthIntegrationDetailsFields(name string) *g.Plain {
 
 var oauthIntegrationForPartnerApplicationsDetailsDef = oauthIntegrationDetailsFields("OauthIntegrationForPartnerApplicationsDetails")
 
-var oauthIntegrationForCustomClientsDetailsDef = oauthIntegrationDetailsFields("OauthIntegrationForCustomClientsDetails")
+// IS_AGENTIC is only accepted by custom clients, not partner applications.
+var oauthIntegrationForCustomClientsDetailsDef = oauthIntegrationDetailsFields("OauthIntegrationForCustomClientsDetails").
+	OptionalField("IsAgentic", "SecurityIntegrationProperty")
 
 var externalOauthSecurityIntegrationDetailsDef = g.PlainStruct("ExternalOauthSecurityIntegrationDetails").
 	OptionalField("Enabled", "SecurityIntegrationProperty").
@@ -143,6 +145,7 @@ var externalOauthSecurityIntegrationDetailsDef = g.PlainStruct("ExternalOauthSec
 	OptionalField("ExternalOauthTokenUserMappingClaim", "SecurityIntegrationProperty").
 	OptionalField("ExternalOauthSnowflakeUserMappingAttribute", "SecurityIntegrationProperty").
 	OptionalField("ExternalOauthScopeDelimiter", "SecurityIntegrationProperty").
+	OptionalField("IsAgentic", "SecurityIntegrationProperty").
 	OptionalField("Comment", "SecurityIntegrationProperty")
 
 var apiAuthenticationSecurityIntegrationDetailsDef = g.PlainStruct("ApiAuthenticationSecurityIntegrationDetails").
@@ -276,6 +279,7 @@ var externalOauthIntegrationSetDef = g.NewQueryStruct("ExternalOauthIntegrationS
 	).
 	OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_DELIMITER", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE", g.ParameterOptions().SingleQuotes()).
+	OptionalBooleanAssignment("IS_AGENTIC", g.ParameterOptions()).
 	// TODO(SNOW-1461780): use COMMENT in unset and here use OptionalComment
 	OptionalAssignment("COMMENT", "StringAllowEmpty", g.ParameterOptions()).
 	WithValidation(g.ConflictingFields, "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList").
@@ -283,12 +287,13 @@ var externalOauthIntegrationSetDef = g.NewQueryStruct("ExternalOauthIntegrationS
 	WithValidation(g.ConflictingFields, "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey2").
 	WithValidation(g.AtLeastOneValueSet, "Enabled", "ExternalOauthType", "ExternalOauthIssuer", "ExternalOauthTokenUserMappingClaim", "ExternalOauthSnowflakeUserMappingAttribute",
 		"ExternalOauthJwsKeysUrl", "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList", "ExternalOauthRsaPublicKey", "ExternalOauthRsaPublicKey2",
-		"ExternalOauthAudienceList", "ExternalOauthAnyRoleMode", "ExternalOauthScopeDelimiter", "ExternalOauthScopeMappingAttribute", "Comment")
+		"ExternalOauthAudienceList", "ExternalOauthAnyRoleMode", "ExternalOauthScopeDelimiter", "ExternalOauthScopeMappingAttribute", "IsAgentic", "Comment")
 
 var externalOauthIntegrationUnsetDef = g.NewQueryStruct("ExternalOauthIntegrationUnset").
 	OptionalSQL("ENABLED").
 	OptionalSQL("EXTERNAL_OAUTH_AUDIENCE_LIST").
-	WithValidation(g.AtLeastOneValueSet, "Enabled", "ExternalOauthAudienceList")
+	OptionalSQL("IS_AGENTIC").
+	WithValidation(g.AtLeastOneValueSet, "Enabled", "ExternalOauthAudienceList", "IsAgentic")
 
 var oauthForPartnerApplicationsIntegrationSetDef = g.NewQueryStruct("OauthForPartnerApplicationsIntegrationSet").
 	OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
@@ -329,10 +334,11 @@ var oauthForCustomClientsIntegrationSetDef = g.NewQueryStruct("OauthForCustomCli
 	OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals().SingleQuotes()).
 	OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY", g.ParameterOptions().SingleQuotes()).
 	OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes()).
+	OptionalBooleanAssignment("IS_AGENTIC", g.ParameterOptions()).
 	OptionalComment().
 	WithValidation(g.AtLeastOneValueSet, "Enabled", "OauthRedirectUri", "OauthAllowNonTlsRedirectUri", "OauthEnforcePkce", "PreAuthorizedRolesList",
 		"AllowedRolesList", "BlockedRolesList", "OauthIssueRefreshTokens", "OauthRefreshTokenValidity", "OauthUseSecondaryRoles", "NetworkPolicy", "OauthClientRsaPublicKey",
-		"OauthClientRsaPublicKey2", "Comment")
+		"OauthClientRsaPublicKey2", "IsAgentic", "Comment")
 
 var oauthForCustomClientsIntegrationUnsetDef = g.NewQueryStruct("OauthForCustomClientsIntegrationUnset").
 	OptionalSQL("ENABLED").
@@ -340,7 +346,8 @@ var oauthForCustomClientsIntegrationUnsetDef = g.NewQueryStruct("OauthForCustomC
 	OptionalSQL("OAUTH_CLIENT_RSA_PUBLIC_KEY").
 	OptionalSQL("OAUTH_CLIENT_RSA_PUBLIC_KEY_2").
 	OptionalSQL("OAUTH_USE_SECONDARY_ROLES").
-	WithValidation(g.AtLeastOneValueSet, "Enabled", "NetworkPolicy", "OauthUseSecondaryRoles", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2")
+	OptionalSQL("IS_AGENTIC").
+	WithValidation(g.AtLeastOneValueSet, "Enabled", "NetworkPolicy", "OauthUseSecondaryRoles", "OauthClientRsaPublicKey", "OauthClientRsaPublicKey2", "IsAgentic")
 
 var saml2IntegrationSetDef = g.NewQueryStruct("Saml2IntegrationSet").
 	OptionalBooleanAssignment("ENABLED", g.ParameterOptions()).
@@ -492,6 +499,7 @@ var securityIntegrationsDef = g.NewInterface(
 				).
 				OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_DELIMITER", g.ParameterOptions().SingleQuotes()).
 				OptionalTextAssignment("EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE", g.ParameterOptions().SingleQuotes()).
+				OptionalBooleanAssignment("IS_AGENTIC", g.ParameterOptions()).
 				WithValidation(g.ConflictingFields, "ExternalOauthBlockedRolesList", "ExternalOauthAllowedRolesList").
 				WithValidation(g.ExactlyOneValueSet, "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey").
 				WithValidation(g.ConflictingFields, "ExternalOauthJwsKeysUrl", "ExternalOauthRsaPublicKey2")
@@ -555,7 +563,8 @@ var securityIntegrationsDef = g.NewInterface(
 				OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions()).
 				OptionalIdentifier("NetworkPolicy", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("NETWORK_POLICY").Equals().SingleQuotes()).
 				OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY", g.ParameterOptions().SingleQuotes()).
-				OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes())
+				OptionalTextAssignment("OAUTH_CLIENT_RSA_PUBLIC_KEY_2", g.ParameterOptions().SingleQuotes()).
+				OptionalBooleanAssignment("IS_AGENTIC", g.ParameterOptions())
 		}),
 	).
 	CustomOperation(

@@ -62,6 +62,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedName(e
 	return o
 }
 
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasIsAgentic(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.StringValueSet("is_agentic", expected)
+	return o
+}
+
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNetworkPolicy(expected string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.StringValueSet("network_policy", expected)
 	return o
@@ -143,6 +148,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedNameSt
 	return o
 }
 
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasIsAgenticString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
+	o.ValueSet("is_agentic", expected)
+	return o
+}
+
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNetworkPolicyString(expected string) *OauthIntegrationForCustomClientsResourceAssert {
 	o.ValueSet("network_policy", expected)
 	return o
@@ -214,6 +224,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoEnabled() *OauthIn
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoFullyQualifiedName() *OauthIntegrationForCustomClientsResourceAssert {
 	o.ValueNotSet("fully_qualified_name")
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasNoIsAgentic() *OauthIntegrationForCustomClientsResourceAssert {
+	o.ValueNotSet("is_agentic")
 	return o
 }
 
@@ -296,6 +311,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedNameEm
 	return o
 }
 
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasIsAgenticEmpty() *OauthIntegrationForCustomClientsResourceAssert {
+	o.ValueSet("is_agentic", "")
+	return o
+}
+
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasNetworkPolicyEmpty() *OauthIntegrationForCustomClientsResourceAssert {
 	o.ValueSet("network_policy", "")
 	return o
@@ -367,6 +387,11 @@ func (o *OauthIntegrationForCustomClientsResourceAssert) HasEnabledNotEmpty() *O
 
 func (o *OauthIntegrationForCustomClientsResourceAssert) HasFullyQualifiedNameNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
 	o.ValuePresent("fully_qualified_name")
+	return o
+}
+
+func (o *OauthIntegrationForCustomClientsResourceAssert) HasIsAgenticNotEmpty() *OauthIntegrationForCustomClientsResourceAssert {
+	o.ValuePresent("is_agentic")
 	return o
 }
 

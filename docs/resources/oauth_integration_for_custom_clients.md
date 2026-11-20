@@ -43,6 +43,7 @@ resource "snowflake_oauth_integration_for_custom_clients" "complete" {
   network_policy                   = snowflake_network_policy.example.fully_qualified_name
   oauth_client_rsa_public_key      = file("rsa.pub")
   oauth_client_rsa_public_key_2    = file("rsa2.pub")
+  is_agentic                       = "true"
   comment                          = "my oauth integration"
 }
 ```
@@ -66,6 +67,7 @@ resource "snowflake_oauth_integration_for_custom_clients" "complete" {
 - `blocked_roles_list` (Set of String) A set of Snowflake roles that a user cannot explicitly consent to using after authenticating. By default, this list includes the ACCOUNTADMIN, ORGADMIN and SECURITYADMIN roles. To remove these privileged roles from the list, use the ALTER ACCOUNT command to set the OAUTH_ADD_PRIVILEGED_ROLES_TO_BLOCKED_LIST account parameter to FALSE. For more information about this resource, see [docs](./account_role).
 - `comment` (String) Specifies a comment for the OAuth integration.
 - `enabled` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether this OAuth integration is enabled or disabled. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `is_agentic` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether sessions authenticated through this integration are treated as agent sessions. When true, Snowflake marks every session authenticated through this integration as an agent session, so `SYS_CONTEXT('SNOWFLAKE$CURRENT', 'IS_AGENT_ACTIVATED')` returns `TRUE` for it. For more information, check [agent identity documentation](https://docs.snowflake.com/en/user-guide/agent-identity). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `network_policy` (String) Specifies an existing network policy. This network policy controls network traffic that is attempting to exchange an authorization code for an access or refresh token or to use a refresh token to obtain a new access token. For more information about this resource, see [docs](./network_policy).
 - `oauth_allow_non_tls_redirect_uri` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) If true, allows setting oauth_redirect_uri to a URI not protected by TLS. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `oauth_client_rsa_public_key` (String) Specifies a Base64-encoded RSA public key, without the -----BEGIN PUBLIC KEY----- and -----END PUBLIC KEY----- headers. External changes for this field won't be detected. In case you want to apply external changes, you can re-create the resource manually using "terraform taint".
@@ -105,6 +107,7 @@ Read-Only:
 - `blocked_roles_list` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--blocked_roles_list))
 - `comment` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--comment))
 - `enabled` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--enabled))
+- `is_agentic` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--is_agentic))
 - `network_policy` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--network_policy))
 - `oauth_allow_non_tls_redirect_uri` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_allow_non_tls_redirect_uri))
 - `oauth_allowed_authorization_endpoints` (List of Object) (see [below for nested schema](#nestedobjatt--describe_output--oauth_allowed_authorization_endpoints))
@@ -155,6 +158,17 @@ Read-Only:
 
 <a id="nestedobjatt--describe_output--enabled"></a>
 ### Nested Schema for `describe_output.enabled`
+
+Read-Only:
+
+- `default` (String)
+- `name` (String)
+- `type` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--describe_output--is_agentic"></a>
+### Nested Schema for `describe_output.is_agentic`
 
 Read-Only:
 

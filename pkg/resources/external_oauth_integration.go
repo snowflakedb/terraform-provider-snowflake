@@ -122,6 +122,14 @@ var externalOauthIntegrationSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Description: "Specifies the access token claim to map the access token to an account role. If removed from the config, the resource is recreated.",
 	},
+	"is_agentic": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("is_agentic"),
+		Description:      booleanStringFieldDescription("Specifies whether sessions authenticated through this integration are treated as agent sessions. When true, Snowflake marks every session authenticated through this integration as an agent session, so `SYS_CONTEXT('SNOWFLAKE$CURRENT', 'IS_AGENT_ACTIVATED')` returns `TRUE` for it. For more information, check [agent identity documentation](https://docs.snowflake.com/en/user-guide/agent-identity)."),
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -173,19 +181,26 @@ func ExternalOauthIntegration() *schema.Resource {
 			ComputedIfAnyAttributeChanged(externalOauthIntegrationSchema, DescribeOutputAttributeName, "enabled", "external_oauth_issuer", "external_oauth_jws_keys_url", "external_oauth_any_role_mode",
 				"external_oauth_rsa_public_key", "external_oauth_rsa_public_key_2", "external_oauth_blocked_roles_list", "external_oauth_allowed_roles_list",
 				"external_oauth_audience_list", "external_oauth_token_user_mapping_claim", "external_oauth_snowflake_user_mapping_attribute", "external_oauth_scope_delimiter",
-				"comment"),
+				"is_agentic", "comment"),
 		)),
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.ExternalOauthSecurityIntegration, ImportExternalOauthIntegration),
 		},
 
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
 				// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
 				Type:    cty.EmptyObject,
 				Upgrade: v092ExternalOauthIntegrationStateUpgrader,
+			},
+			// v1 state has no is_agentic. Leaving it empty would plan a change to the schema default on the next
+			// apply, and that apply would run UNSET IS_AGENTIC on an integration that may have it set outside Terraform.
+			{
+				Version: 1,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_23_0_IsAgenticSecurityIntegrationStateUpgrader,
 			},
 		},
 		Timeouts: defaultTimeouts,
@@ -304,6 +319,11 @@ func ImportExternalOauthIntegration(ctx context.Context, d *schema.ResourceData,
 			}
 		}
 	}
+	if prop, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool { return property.Name == "IS_AGENTIC" }); err == nil {
+		if err = d.Set("is_agentic", prop.Value); err != nil {
+			return nil, err
+		}
+	}
 	if prop, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool { return property.Name == "COMMENT" }); err == nil {
 		if err = d.Set("comment", prop.Value); err != nil {
 			return nil, err
@@ -408,6 +428,10 @@ func CreateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 
 	if v, ok := d.GetOk("external_oauth_scope_mapping_attribute"); ok {
 		req.WithExternalOauthScopeMappingAttribute(v.(string))
+	}
+
+	if err := booleanStringAttributeCreateBuilder(d, "is_agentic", req.WithIsAgentic); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if err := client.SecurityIntegrations.CreateExternalOauth(ctx, req); err != nil {
@@ -532,20 +556,28 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			if err = handleExternalChangesToObjectInDescribe(
-				d,
-				describeMapping{"external_oauth_issuer", "external_oauth_issuer", externalOauthIssuer.Value, externalOauthIssuer.Value, nil},
-				describeMapping{"external_oauth_jws_keys_url", "external_oauth_jws_keys_url", externalOauthJwsKeysUrl.Value, sdk.ParseCommaSeparatedStringArray(externalOauthJwsKeysUrl.Value, false), nil},
-				describeMapping{"external_oauth_any_role_mode", "external_oauth_any_role_mode", externalOauthAnyRoleMode.Value, externalOauthAnyRoleMode.Value, nil},
-				describeMapping{"external_oauth_rsa_public_key", "external_oauth_rsa_public_key", externalOauthRsaPublicKey.Value, externalOauthRsaPublicKey.Value, nil},
-				describeMapping{"external_oauth_rsa_public_key_2", "external_oauth_rsa_public_key_2", externalOauthRsaPublicKey2.Value, externalOauthRsaPublicKey2.Value, nil},
-				describeMapping{"external_oauth_blocked_roles_list", "external_oauth_blocked_roles_list", externalOauthBlockedRolesList.Value, sdk.ParseCommaSeparatedStringArray(externalOauthBlockedRolesList.Value, false), nil},
-				describeMapping{"external_oauth_allowed_roles_list", "external_oauth_allowed_roles_list", externalOauthAllowedRolesList.Value, sdk.ParseCommaSeparatedStringArray(externalOauthAllowedRolesList.Value, false), nil},
-				describeMapping{"external_oauth_audience_list", "external_oauth_audience_list", externalOauthAudienceList.Value, sdk.ParseCommaSeparatedStringArray(externalOauthAudienceList.Value, false), nil},
-				describeMapping{"external_oauth_token_user_mapping_claim", "external_oauth_token_user_mapping_claim", externalOauthTokenUserMappingClaim.Value, sdk.ParseCommaSeparatedStringArray(externalOauthTokenUserMappingClaim.Value, true), nil},
-				describeMapping{"external_oauth_snowflake_user_mapping_attribute", "external_oauth_snowflake_user_mapping_attribute", externalOauthSnowflakeUserMappingAttribute.Value, externalOauthSnowflakeUserMappingAttribute.Value, nil},
-				describeMapping{"external_oauth_scope_delimiter", "external_oauth_scope_delimiter", externalOauthScopeDelimiter.Value, externalOauthScopeDelimiter.Value, nil},
-			); err != nil {
+			describeMappings := []describeMapping{
+				{"external_oauth_issuer", "external_oauth_issuer", externalOauthIssuer.Value, externalOauthIssuer.Value, nil},
+				{"external_oauth_jws_keys_url", "external_oauth_jws_keys_url", externalOauthJwsKeysUrl.Value, sdk.ParseCommaSeparatedStringArray(externalOauthJwsKeysUrl.Value, false), nil},
+				{"external_oauth_any_role_mode", "external_oauth_any_role_mode", externalOauthAnyRoleMode.Value, externalOauthAnyRoleMode.Value, nil},
+				{"external_oauth_rsa_public_key", "external_oauth_rsa_public_key", externalOauthRsaPublicKey.Value, externalOauthRsaPublicKey.Value, nil},
+				{"external_oauth_rsa_public_key_2", "external_oauth_rsa_public_key_2", externalOauthRsaPublicKey2.Value, externalOauthRsaPublicKey2.Value, nil},
+				{"external_oauth_blocked_roles_list", "external_oauth_blocked_roles_list", externalOauthBlockedRolesList.Value, sdk.ParseCommaSeparatedStringArray(externalOauthBlockedRolesList.Value, false), nil},
+				{"external_oauth_allowed_roles_list", "external_oauth_allowed_roles_list", externalOauthAllowedRolesList.Value, sdk.ParseCommaSeparatedStringArray(externalOauthAllowedRolesList.Value, false), nil},
+				{"external_oauth_audience_list", "external_oauth_audience_list", externalOauthAudienceList.Value, sdk.ParseCommaSeparatedStringArray(externalOauthAudienceList.Value, false), nil},
+				{"external_oauth_token_user_mapping_claim", "external_oauth_token_user_mapping_claim", externalOauthTokenUserMappingClaim.Value, sdk.ParseCommaSeparatedStringArray(externalOauthTokenUserMappingClaim.Value, true), nil},
+				{"external_oauth_snowflake_user_mapping_attribute", "external_oauth_snowflake_user_mapping_attribute", externalOauthSnowflakeUserMappingAttribute.Value, externalOauthSnowflakeUserMappingAttribute.Value, nil},
+				{"external_oauth_scope_delimiter", "external_oauth_scope_delimiter", externalOauthScopeDelimiter.Value, externalOauthScopeDelimiter.Value, nil},
+			}
+
+			// IS_AGENTIC is a newer property; skip external change detection instead of failing the read if DESCRIBE does not return it.
+			if isAgentic, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
+				return property.Name == "IS_AGENTIC"
+			}); err == nil {
+				describeMappings = append(describeMappings, describeMapping{"is_agentic", "is_agentic", isAgentic.Value, isAgentic.Value, nil})
+			}
+
+			if err = handleExternalChangesToObjectInDescribe(d, describeMappings...); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -560,6 +592,7 @@ func ReadContextExternalOauthIntegration(withExternalChangesMarking bool) schema
 			"external_oauth_any_role_mode",
 			"external_oauth_scope_delimiter",
 			"external_oauth_scope_mapping_attribute",
+			"is_agentic",
 			"comment",
 		}); err != nil {
 			return diag.FromErr(err)
@@ -733,6 +766,10 @@ func UpdateContextExternalOauthIntegration(ctx context.Context, d *schema.Resour
 			}
 		}
 		set.WithExternalOauthTokenUserMappingClaim(claims)
+	}
+
+	if err := booleanStringAttributeUpdate(d, "is_agentic", &set.IsAgentic, &unset.IsAgentic); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("external_oauth_type") {
