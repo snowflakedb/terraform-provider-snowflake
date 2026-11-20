@@ -11,11 +11,9 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/validators"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -95,7 +93,6 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 			"This means, the flag update doesn't revoke immediately any externally granted privileges.",
 			"This is a Terraform limitation, and two steps are needed to properly show the potential privilege changes (e.g., revoking privileges not specified in the configuration) in the plan.",
 			"External privileges will be detected regardless of their grant option.",
-			experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.GrantsStrictPrivilegeManagement),
 			"Regular and future grants are treated separately, meaning, more resources need to be defined to control regular and future grants for a given object and role (and for a given database or schema they're defined in for future grants).",
 			"See our [Strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide for more information.",
 		),
@@ -159,7 +156,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future account objects of a given type in the account. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future account objects of a given type in the account. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details."),
 					MaxItems:    1,
 					ConflictsWith: []string{
 						"on_account_object.0.object_type",
@@ -243,7 +240,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in either the account or a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in either the account or a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details."),
 					MaxItems:    1,
 					ExactlyOneOf: []string{
 						"on_schema.0.schema_name",
@@ -368,7 +365,7 @@ var grantPrivilegesToAccountRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in the account, a database, or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in the account, a database, or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details."),
 					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: getGrantPrivilegesOnAccountRoleInheritedSchemaObjectSchema(),
@@ -475,9 +472,6 @@ func GrantPrivilegesToAccountRole() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToAccountRole, ImportGrantPrivilegesToAccountRole),
 		},
 		Timeouts: defaultTimeouts,
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.GrantPrivilegesToAccountRole, customdiff.All(
-			inheritedGrantsRequireExperiment("on_account_object", "on_schema", "on_schema_object"),
-		)),
 		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
 			func(ctx context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
 				rawPrivileges := req.RawConfig.GetAttr("privileges")
@@ -639,11 +633,8 @@ func ImportGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 		}
 	}
 
-	providerCtx := m.(*provider.Context)
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsImportValidation) {
-		if err := validateGrantPrivilegesToAccountRoleImport(ctx, m, id); err != nil {
-			return nil, fmt.Errorf("grant import validation: %w", err)
-		}
+	if err := validateGrantPrivilegesToAccountRoleImport(ctx, m, id); err != nil {
+		return nil, fmt.Errorf("grant import validation: %w", err)
 	}
 
 	return []*schema.ResourceData{d}, nil
@@ -968,8 +959,7 @@ func DeleteGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceD
 
 	privileges := getAccountRolePrivilegesFromSchema(d)
 	opts := sdk.NewRevokePrivilegesFromAccountRoleRequest(id.RoleName)
-	safely := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy)
-	err = revokeAccountRolePrivileges(ctx, client, d, id, privileges, opts, safely)
+	err = revokeAccountRolePrivileges(ctx, client, d, id, privileges, opts, true)
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{
@@ -991,9 +981,6 @@ func ReadGrantPrivilegesToAccountRole(ctx context.Context, d *schema.ResourceDat
 	providerCtx := meta.(*provider.Context)
 
 	strictPrivilegeManagement := d.Get("strict_privilege_management").(bool)
-	if strictPrivilegeManagement && !providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsStrictPrivilegeManagement) {
-		return diag.Errorf("to use `strict_privilege_management`, you need the %q experiment to be enabled. Remove it from the `experimental_features_disabled` list in the provider configuration", experimentalfeatures.GrantsStrictPrivilegeManagement)
-	}
 
 	id, err := ParseGrantPrivilegesToAccountRoleId(d.Id())
 	if err != nil {

@@ -108,28 +108,9 @@ func NewDiscontinuedExperiment(name ExperimentalFeature) Experiment {
 }
 
 var allExperiments = []Experiment{
-	NewEnabledByDefaultExperiment(
-		WarehouseShowImprovedPerformance,
-		[]string{"v2.23.0", "v2.24.0"},
-		"It's meant to improve the performance for accounts with many warehouses.",
-		"When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).",
-		"Currently supported by: `snowflake_warehouse`, `snowflake_warehouse_adaptive`, `snowflake_warehouse_interactive`.",
-		"This feature is enabled by default on the Snowflake side.",
-	),
-	NewEnabledByDefaultExperiment(
-		GrantsStrictPrivilegeManagement,
-		[]string{"v2.23.0", "v2.24.0"},
-		"The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.",
-		"It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.",
-		"Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.",
-		fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsImportValidation),
-	),
-	NewEnabledByDefaultExperiment(
-		ParametersIgnoreValueChangesIfNotOnObjectLevel,
-		[]string{"v2.23.0", "v2.24.0"},
-		"Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).",
-		"When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.",
-	),
+	NewPromotedExperiment(WarehouseShowImprovedPerformance),
+	NewPromotedExperiment(GrantsStrictPrivilegeManagement),
+	NewPromotedExperiment(ParametersIgnoreValueChangesIfNotOnObjectLevel),
 	NewOptInExperiment(
 		ParametersReducedOutput,
 		"Currently, the `parameters` field in various resources contains a verbatim output for the `SHOW PARAMETERS IN <object>` command. One of the fields contained in the output is the `description`. It does not change and is repeated for all objects containing the given parameter. It leads to an excessive output (check e.g., [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)).",
@@ -143,13 +124,7 @@ var allExperiments = []Experiment{
 		"When the field is omitted, a workload identity configured outside Terraform is unset on the next apply.",
 		"Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-user_enable_default_workload_identity-enabled-by-default).",
 	),
-	NewEnabledByDefaultExperiment(
-		GrantsImportValidation,
-		[]string{"v2.23.0", "v2.24.0"},
-		"Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.",
-		"When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.",
-		fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
-	),
+	NewPromotedExperiment(GrantsImportValidation),
 	NewOptInExperiment(
 		TagsAllowEmptyAllowedValues,
 		"Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.",
@@ -170,22 +145,8 @@ var allExperiments = []Experiment{
 		"When enabled, the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.",
 		"Note: this is currently supported on the `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, `snowflake_compute_pool`, `snowflake_external_volume`, `snowflake_openflow_deployment_snowflake_managed`, `snowflake_pipe`, `snowflake_postgres_mirror`, `snowflake_share`, `snowflake_warehouse`, `snowflake_warehouse_adaptive`, and `snowflake_warehouse_interactive` resources.",
 	),
-	NewEnabledByDefaultExperiment(
-		GrantsSafeDestroy,
-		[]string{"v2.23.0", "v2.24.0"},
-		"When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.",
-		"Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.",
-		"This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.",
-		"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
-	),
-	NewEnabledByDefaultExperiment(
-		TagAssociationSafeDestroy,
-		[]string{"v2.23.0", "v2.24.0"},
-		"When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.",
-		"Currently supported by: `snowflake_tag_association`.",
-		"This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.",
-		"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
-	),
+	NewPromotedExperiment(GrantsSafeDestroy),
+	NewPromotedExperiment(TagAssociationSafeDestroy),
 	NewOptInExperiment(
 		GrantAccountRoleShowCaching,
 		"Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.",
@@ -211,13 +172,7 @@ var allExperiments = []Experiment{
 		fmt.Sprintf("This is a separate flag from `%s`: enabling this does not enable caching for `snowflake_grant_account_role`, and vice versa. Both can be enabled together.", GrantAccountRoleShowCaching),
 		"Intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.",
 	),
-	NewEnabledByDefaultExperiment(
-		GrantAccountRoleSafePublicRole,
-		[]string{"v2.23.0", "v2.24.0"},
-		"When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.",
-		"Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.",
-		"With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.",
-	),
+	NewPromotedExperiment(GrantAccountRoleSafePublicRole),
 	NewOptInExperiment(
 		HierarchyRenames,
 		"When enabled, allows in-place handling of hierarchy renames and moves for supported resources.",
@@ -225,12 +180,7 @@ var allExperiments = []Experiment{
 		"Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on the other supported resources may force resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.",
 		"For more information, see the [object renaming guide](./guides/object_renaming_guide).",
 	),
-	NewEnabledByDefaultExperiment(
-		InheritedGrants,
-		[]string{"v2.23.0", "v2.24.0"},
-		"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.",
-		"Without this experiment, using an `inherited` block results in an error.",
-	),
+	NewPromotedExperiment(InheritedGrants),
 	NewOptInExperiment(
 		ObjectParameterUnsetOnDelete,
 		"Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.",

@@ -8,7 +8,6 @@ import (
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -317,7 +316,7 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 				grantFrom,
 			),
 		)
-		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			err = nil
 		}
 		if err != nil {
@@ -344,7 +343,7 @@ func DeleteGrantOwnership(ctx context.Context, d *schema.ResourceData, meta any)
 			grantOwnershipReq.WithCurrentGrants(*currentGrants)
 		}
 		err = client.Grants.GrantOwnership(ctx, grantOwnershipReq)
-		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) && providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			err = nil
 		}
 		if err != nil {

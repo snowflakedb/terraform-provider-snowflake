@@ -329,6 +329,25 @@ No changes are required for existing configurations unless you want to adopt the
 
 The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
 
+### *(improvement)* Experiments enabled by default in v2.22.0 promoted
+
+The following experiments, enabled by default since v2.22.0, are now promoted. Their behavior is now the provider's default and can no longer be turned off:
+
+- `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`: [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) always read warehouse details with the narrower `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1` query.
+- `GRANTS_STRICT_PRIVILEGE_MANAGEMENT`: the `strict_privilege_management` field of [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) is always available.
+- `GRANTS_IMPORT_VALIDATION`: importing [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) with a fixed set of privileges always validates that these privileges exist in Snowflake with the matching `with_grant_option`.
+- `INHERITED_GRANTS`: the `inherited` block of [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) and [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) is always available.
+- `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL`: when a parameter is not set in the configuration, changes of its value on the higher levels (e.g., account or database) no longer cause a non-empty plan; only a value set on the object level does.
+- `GRANTS_SAFE_DESTROY`: destroying the grant resources (`snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, and `snowflake_grant_ownership`) succeeds when the underlying object no longer exists.
+- `TAG_ASSOCIATION_SAFE_DESTROY`: destroying [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) succeeds when the tagged object no longer exists.
+- `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE`: [`snowflake_grant_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_account_role) treats granting the `PUBLIC` role as a no-op instead of failing.
+
+Listing these names in `experimental_features_enabled` or `experimental_features_disabled` now has no effect and produces a warning. Remove them from the provider configuration; the names will be rejected in the next major version.
+
+If you had opted out of any of these experiments, the provider now behaves as if you had not. Review your plans after upgrading, in particular for `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` (the `strict_privilege_management` field defaults to `false`, so nothing changes unless you set it) and `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL`.
+
+No configuration changes are required unless you listed these experiments in the provider configuration.
+
 ### *(improvement)* `primary` in `snowflake_replication_group_secondary` is required at plan time
 
 Previously, [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) marked `primary` as optional in the schema, so a configuration without it passed `terraform validate` and `terraform plan` and failed only on `terraform apply` with "primary is required". The group is created with [`CREATE REPLICATION GROUP ... AS REPLICA OF <primary>`](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group), which always needs the primary group.

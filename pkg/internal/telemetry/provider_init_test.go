@@ -39,7 +39,7 @@ func Test_providerInitFields(t *testing.T) {
 	providerCtx := &internalprovider.Context{
 		Experiments: experimentalfeatures.New(
 			[]string{string(experimentalfeatures.HierarchyRenames)},
-			[]string{string(experimentalfeatures.WarehouseShowImprovedPerformance)},
+			[]string{string(experimentalfeatures.UserEnableDefaultWorkloadIdentity)},
 		),
 		EnabledFeatures: []string{
 			string(previewfeatures.AlertResource),
@@ -47,8 +47,8 @@ func Test_providerInitFields(t *testing.T) {
 	}
 	got := providerInitFields(providerCtx)
 	require.Equal(t, string(experimentalfeatures.HierarchyRenames), got["experimental_features_enabled"])
-	require.Equal(t, string(experimentalfeatures.WarehouseShowImprovedPerformance), got["experimental_features_disabled"])
-	require.Equal(t, "ACCOUNT_PARAMETER_CATALOG_WRITE_PATH,GRANTS_IMPORT_VALIDATION,GRANTS_SAFE_DESTROY,GRANTS_STRICT_PRIVILEGE_MANAGEMENT,GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE,HIERARCHY_RENAMES,INHERITED_GRANTS,OBJECT_PARAMETER_PARSE_ON_SET,PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL,TAG_ASSOCIATION_SAFE_DESTROY,USER_ENABLE_DEFAULT_WORKLOAD_IDENTITY", got["experimental_features_effective_enabled"])
+	require.Equal(t, string(experimentalfeatures.UserEnableDefaultWorkloadIdentity), got["experimental_features_disabled"])
+	require.Equal(t, "ACCOUNT_PARAMETER_CATALOG_WRITE_PATH,HIERARCHY_RENAMES,OBJECT_PARAMETER_PARSE_ON_SET", got["experimental_features_effective_enabled"])
 	require.Equal(t, string(previewfeatures.AlertResource), got["preview_features_enabled"])
 	require.Equal(t, runtime.GOOS, got["os"])
 	require.Equal(t, runtime.GOARCH, got["arch"])
