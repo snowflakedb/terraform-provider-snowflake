@@ -70,6 +70,13 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 								Optional:    true,
 								Description: "Step size to increment by.",
 							},
+							"order": {
+								Type:             tfschema.TypeString,
+								Optional:         true,
+								ValidateDiagFunc: validateBooleanString,
+								Description:      booleanStringFieldDescription("Specifies whether the identity values are generated in increasing order (`ORDER`) or with no order guarantee (`NOORDER`). When not set, Snowflake applies the [NOORDER_SEQUENCE_AS_DEFAULT](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default) parameter. Changing it on an existing column is not applied, the same as `start_num` and `step_num`."),
+								Default:          BooleanDefault,
+							},
 						},
 					},
 					Description: "Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive.",

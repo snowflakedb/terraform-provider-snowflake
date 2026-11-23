@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"strconv"
-	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
@@ -247,7 +245,11 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 		}
 
 		if cA.identity != nil {
-			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(cA.identity.startNum, cA.identity.stepNum)))
+			identityRequest, err := cA.identity.toRequest()
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+			}
+			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*identityRequest))
 		}
 
 		if cA.maskingPolicy != nil {
@@ -399,6 +401,22 @@ type columnDefault struct {
 type columnIdentity struct {
 	startNum int
 	stepNum  int
+	order    string
+}
+
+func (identity *columnIdentity) toRequest() (*sdk.ColumnIdentityRequest, error) {
+	request := sdk.NewColumnIdentityRequest(identity.startNum, identity.stepNum)
+	if identity.order == "" || identity.order == BooleanDefault {
+		return request, nil
+	}
+	order, err := booleanStringToBool(identity.order)
+	if err != nil {
+		return nil, err
+	}
+	if order {
+		return request.WithOrder(true), nil
+	}
+	return request.WithNoorder(true), nil
 }
 
 type column struct {
@@ -547,7 +565,8 @@ func getColumnIdentity(identity map[string]any) *columnIdentity {
 	if len(identity) > 0 {
 		startNum := identity["start_num"].(int)
 		stepNum := identity["step_num"].(int)
-		return &columnIdentity{startNum, stepNum}
+		order, _ := identity["order"].(string)
+		return &columnIdentity{startNum, stepNum, order}
 	}
 
 	return nil
@@ -564,7 +583,9 @@ func getColumn(from any) (to column) {
 		cd = &columnDefault{expression: &expression}
 	}
 	if len(identity) == 1 {
-		id = getColumnIdentity(identity[0].(map[string]any))
+		if identityProp, ok := identity[0].(map[string]any); ok {
+			id = getColumnIdentity(identityProp)
+		}
 	}
 
 	return column{
@@ -604,10 +625,13 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 
 	identity := c["identity"].([]any)
 	if len(identity) == 1 {
-		identityProp := identity[0].(map[string]any)
-		startNum := identityProp["start_num"].(int)
-		stepNum := identityProp["step_num"].(int)
-		request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(startNum, stepNum)))
+		if identityProp, ok := identity[0].(map[string]any); ok && len(identityProp) > 0 {
+			identityRequest, err := getColumnIdentity(identityProp).toRequest()
+			if err != nil {
+				return nil, err
+			}
+			request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*identityRequest))
+		}
 	}
 
 	if maskingPolicy := getColumnMaskingPolicy(c["masking_policy"].([]any)); maskingPolicy != nil {
@@ -700,28 +724,23 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 	return map[string]any{"expression": *td.Default}
 }
 
+// TODO [SNOW-1031688]: move calling sdk.ParseColumnIdentity to the SDK, so the conversion of DESCRIBE TABLE happens
+// automatically (TableColumnDetails would hold the parsed identity). The show and describe schemas stay as they are for now.
 func toColumnIdentityConfig(td sdk.TableColumnDetails) map[string]any {
-	// if autoincrement is used this is reflected back IDENTITY START 1 INCREMENT 1
 	if td.Default == nil {
 		return nil
 	}
-
-	defaultRaw := *td.Default
-
-	if strings.Contains(defaultRaw, "IDENTITY") {
-		identity := map[string]any{}
-
-		split := strings.Split(defaultRaw, " ")
-		start, err := strconv.Atoi(split[2])
-		if err == nil {
-			identity["start_num"] = start
-		}
-		step, err := strconv.Atoi(split[4])
-		if err == nil {
-			identity["step_num"] = step
-		}
-
-		return identity
+	identity, ok := sdk.ParseColumnIdentity(*td.Default)
+	if !ok {
+		return nil
 	}
-	return nil
+	order := BooleanDefault
+	if identity.Order != nil {
+		order = booleanStringFromBool(*identity.Order)
+	}
+	return map[string]any{
+		"start_num": identity.Start,
+		"step_num":  identity.Increment,
+		"order":     order,
+	}
 }

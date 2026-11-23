@@ -1026,6 +1026,37 @@ func TestInt_Table(t *testing.T) {
 		assert.Empty(t, tableDetails[0].PolicyName)
 	})
 
+	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/3221
+	t.Run("create table with identity order", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		identityColumn := func(name string, identity *sdk.ColumnIdentityRequest) sdk.TableColumnRequest {
+			return *sdk.NewTableColumnRequest(name, testdatatypes.DataTypeNumber).WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*identity))
+		}
+		columns := []sdk.TableColumnRequest{
+			identityColumn("ORDERED", sdk.NewColumnIdentityRequest(1, 1).WithOrder(true)),
+			identityColumn("NOT_ORDERED", sdk.NewColumnIdentityRequest(2, 3).WithNoorder(true)),
+		}
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns)))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(id))
+
+		tableDetails, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeColumnsTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, tableDetails, 2)
+
+		ordered, ok := sdk.ParseColumnIdentity(*tableDetails[0].Default)
+		require.True(t, ok)
+		assert.Equal(t, sdk.TableColumnIdentityDetails{Start: 1, Increment: 1, Order: sdk.Bool(true)}, *ordered)
+
+		notOrdered, ok := sdk.ParseColumnIdentity(*tableDetails[1].Default)
+		require.True(t, ok)
+		assert.Equal(t, sdk.TableColumnIdentityDetails{Start: 2, Increment: 3, Order: sdk.Bool(false)}, *notOrdered)
+
+		// Snowflake has no ALTER COLUMN clause for the identity order, so the table resource cannot apply a change.
+		_, err = client.ExecForTests(ctx, fmt.Sprintf(`ALTER TABLE %s ALTER COLUMN "ORDERED" SET NOORDER`, id.FullyQualifiedName()))
+		require.ErrorContains(t, err, "SQL compilation error")
+	})
+
 	t.Run("create table with projection policy on column", func(t *testing.T) {
 		projectionPolicyId, projectionPolicyCleanup := testClientHelper().ProjectionPolicy.CreateProjectionPolicy(t)
 		t.Cleanup(projectionPolicyCleanup)

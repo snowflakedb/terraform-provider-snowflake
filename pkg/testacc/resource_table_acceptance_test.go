@@ -1040,6 +1040,23 @@ func TestAcc_Table_EmptyStringColumnDefault_issue2406(t *testing.T) {
 
 func TestAcc_TableIdentity(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	ref := "snowflake_table.test_table"
+
+	noDriftAfterApply := resource.ConfigPlanChecks{
+		PostApplyPostRefresh: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+		},
+	}
+	tableChecks := func(columns ...resourceassert.ExpectedTableColumn) assert.TestCheckFuncProvider {
+		return resourceassert.TableResource(t, ref).
+			HasNameString(tableId.Name()).
+			HasDatabaseString(TestDatabaseName).
+			HasSchemaString(TestSchemaName).
+			HasNoChangeTracking().
+			HasCommentString("Terraform acceptance test").
+			HasPrimaryKeyEmpty().
+			HasColumns(columns...)
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1050,46 +1067,24 @@ func TestAcc_TableIdentity(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tableColumnWithIdentityDefault(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "NUMBER(38,0)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.default.#", "0"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "TIMESTAMP_NTZ(9)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.name", "column3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.type", "NUMBER(38,0)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.#", "0"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.identity.0.start_num", "1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.identity.0.step_num", "1"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
+				// order is not set, so the value Snowflake reports does not plan a change
+				ConfigPlanChecks: noDriftAfterApply,
+				Check: assertThat(t, tableChecks(
+					resourceassert.ExpectedTableColumn{Name: "column1", Type: "NUMBER(38,0)"},
+					resourceassert.ExpectedTableColumn{Name: "column2", Type: "TIMESTAMP_NTZ(9)"},
+					resourceassert.ExpectedTableColumn{Name: "column3", Type: "NUMBER(38,0)", Identity: &resourceassert.ExpectedTableColumnIdentity{StartNum: 1, StepNum: 1}},
+				)),
 			},
+			// https://github.com/snowflakedb/terraform-provider-snowflake/issues/3221
+			// the previous identity column is dropped, and adding a new column as an identity works
 			{
-				Config: tableColumnWithIdentity(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "NUMBER(38,0)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.default.#", "0"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "TIMESTAMP_NTZ(9)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.#", "0"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.identity.0.start_num"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.identity.0.step_num"),
-					// we've dropped the previous identity column and making sure that adding a new column as an identity works
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.identity.0.start_num", "2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.identity.0.step_num", "4"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
-				),
+				Config:           tableColumnWithIdentity(tableId),
+				ConfigPlanChecks: noDriftAfterApply,
+				Check: assertThat(t, tableChecks(
+					resourceassert.ExpectedTableColumn{Name: "column1", Type: "NUMBER(38,0)"},
+					resourceassert.ExpectedTableColumn{Name: "column2", Type: "TIMESTAMP_NTZ(9)"},
+					resourceassert.ExpectedTableColumn{Name: "column4", Type: "NUMBER(38,0)", Identity: &resourceassert.ExpectedTableColumnIdentity{StartNum: 2, StepNum: 4, Order: new(true)}},
+				)),
 			},
 		},
 	})
@@ -1157,6 +1152,7 @@ resource "snowflake_table" "test_table" {
 		identity {
 			start_num = 2
 			step_num = 4
+			order = "true"
 		}
 	}
 	depends_on = [snowflake_sequence.test_seq]
@@ -1940,9 +1936,9 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 							resourceassert.ExpectedTableColumn{Name: "BOOLEAN_DEFAULT", Type: "BOOLEAN", DefaultExpression: "FALSE"},
 							resourceassert.ExpectedTableColumn{Name: "EXPRESSION_DEFAULT", Type: "TIMESTAMP_NTZ(9)", DefaultExpression: "CURRENT_TIMESTAMP()"},
 							resourceassert.ExpectedTableColumn{Name: "SEQUENCE_DEFAULT", Type: "NUMBER(38,0)", DefaultExpression: sequenceNextval},
-							resourceassert.ExpectedTableColumn{Name: "MASKED", Type: "VARCHAR(16)"},
+							resourceassert.ExpectedTableColumn{Name: "MASKED", Type: "VARCHAR(16)", MaskingPolicy: new(maskingPolicy.ID()), MaskingPolicyUsing: []string{"MASKED"}},
+							resourceassert.ExpectedTableColumn{Name: "IDENTITY_COLUMN", Type: "NUMBER(38,0)", Identity: &resourceassert.ExpectedTableColumnIdentity{StartNum: 2, StepNum: 3}},
 						),
-					assert.Check(resource.TestCheckResourceAttr(ref, "column.5.masking_policy.0.policy_name", maskingPolicy.ID().FullyQualifiedName())),
 				),
 			},
 		},
@@ -1964,7 +1960,15 @@ func tableMigrationV2_23_0Columns(sequenceId sdk.SchemaObjectIdentifier, masking
 		tableMigrationColumn("MASKED", "VARCHAR(16)", map[string]tfconfig.Variable{
 			"masking_policy": tfconfig.StringVariable(fmt.Sprintf("%s.%s.%s", maskingPolicyId.DatabaseName(), maskingPolicyId.SchemaName(), maskingPolicyId.Name())),
 		}),
+		tableMigrationColumn("IDENTITY_COLUMN", "NUMBER(38,0)", tableMigrationIdentity()),
 	)
+}
+
+func tableMigrationIdentity() map[string]tfconfig.Variable {
+	return map[string]tfconfig.Variable{"identity": tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+		"start_num": tfconfig.IntegerVariable(2),
+		"step_num":  tfconfig.IntegerVariable(3),
+	})}
 }
 
 func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier, maskingPolicyId sdk.SchemaObjectIdentifier) tfconfig.Variable {
@@ -1980,6 +1984,7 @@ func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier, masking
 		tableMigrationColumn("MASKED", "VARCHAR(16)", map[string]tfconfig.Variable{
 			"masking_policy": tfconfig.ObjectVariable(map[string]tfconfig.Variable{"policy_name": tfconfig.StringVariable(maskingPolicyId.FullyQualifiedName())}),
 		}),
+		tableMigrationColumn("IDENTITY_COLUMN", "NUMBER(38,0)", tableMigrationIdentity()),
 	)
 }
 

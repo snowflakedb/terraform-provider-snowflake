@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -90,6 +91,41 @@ func (r tableColumnDetailsRow) splitTypeAndCollation() (string, *string) {
 		return strings.TrimSpace(collateRegexp.ReplaceAllString(r.Type, "")), &collation
 	}
 	return r.Type, nil
+}
+
+// TableColumnIdentityDetails is an IDENTITY column default as DESCRIBE TABLE returns it, for example
+// IDENTITY START 1 INCREMENT 1 ORDER. Order is nil when the value has no ORDER or NOORDER keyword.
+type TableColumnIdentityDetails struct {
+	Start     int
+	Increment int
+	Order     *bool
+}
+
+// ParseColumnIdentity parses an IDENTITY column default. It returns false for any other default.
+func ParseColumnIdentity(raw string) (*TableColumnIdentityDetails, bool) {
+	fields := strings.Fields(strings.ToUpper(raw))
+	if len(fields) < 5 || fields[0] != "IDENTITY" || fields[1] != "START" || fields[3] != "INCREMENT" {
+		return nil, false
+	}
+	start, err := strconv.Atoi(fields[2])
+	if err != nil {
+		return nil, false
+	}
+	increment, err := strconv.Atoi(fields[4])
+	if err != nil {
+		return nil, false
+	}
+	identity := &TableColumnIdentityDetails{Start: start, Increment: increment}
+	switch {
+	case len(fields) == 5:
+	case len(fields) == 6 && fields[5] == "ORDER":
+		identity.Order = Bool(true)
+	case len(fields) == 6 && fields[5] == "NOORDER":
+		identity.Order = Bool(false)
+	default:
+		return nil, false
+	}
+	return identity, true
 }
 
 // TypeString returns the SQL of the parsed type, falling back to the raw DESCRIBE value when parsing failed.

@@ -2,6 +2,7 @@ package resourceassert
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
@@ -15,6 +16,16 @@ type ExpectedTableColumn struct {
 	// MaskingPolicy is nil when the column has no `masking_policy` block.
 	MaskingPolicy      *sdk.SchemaObjectIdentifier
 	MaskingPolicyUsing []string
+	// Identity is nil when the column has no `identity` block.
+	Identity *ExpectedTableColumnIdentity
+}
+
+// ExpectedTableColumnIdentity describes the `identity` block of a column.
+type ExpectedTableColumnIdentity struct {
+	StartNum int
+	StepNum  int
+	// Order is nil when it was not configured: Snowflake reports ORDER or NOORDER either way, so only its presence is asserted.
+	Order *bool
 }
 
 // HasColumns asserts all the columns, in the order of the configuration.
@@ -30,6 +41,19 @@ func (t *TableResourceAssert) HasColumns(columns ...ExpectedTableColumn) *TableR
 			t.ValueSet(prefix+"default.0.expression", column.DefaultExpression)
 		} else {
 			t.CollectionLength(prefix+"default", 0)
+		}
+
+		if column.Identity != nil {
+			t.CollectionLength(prefix+"identity", 1)
+			t.ValueSet(prefix+"identity.0.start_num", strconv.Itoa(column.Identity.StartNum))
+			t.ValueSet(prefix+"identity.0.step_num", strconv.Itoa(column.Identity.StepNum))
+			if column.Identity.Order != nil {
+				t.ValueSet(prefix+"identity.0.order", strconv.FormatBool(*column.Identity.Order))
+			} else {
+				t.ValuePresent(prefix + "identity.0.order")
+			}
+		} else {
+			t.CollectionLength(prefix+"identity", 0)
 		}
 
 		if column.MaskingPolicy != nil {

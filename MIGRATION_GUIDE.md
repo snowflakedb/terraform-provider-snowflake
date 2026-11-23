@@ -308,6 +308,29 @@ State is upgraded automatically: the policy name moves to `masking_policy.policy
 
 Reference: [#4679](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679).
 
+#### `column.identity.order`
+
+We have added `order` to [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.identity`. It sets `ORDER` (`"true"`) or `NOORDER` (`"false"`) for the identity column, as described in [CREATE TABLE](https://docs.snowflake.com/en/sql-reference/sql/create-table). When it is `"default"` or omitted, Snowflake applies the [NOORDER_SEQUENCE_AS_DEFAULT](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default) parameter, and the value Snowflake reports does not plan a change.
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+    identity {
+      start_num = 1
+      step_num  = 1
+      order     = "true"
+    }
+  }
+}
+```
+
+Snowflake cannot change the order of an existing identity column, so changing `order` later is not applied, the same as `start_num` and `step_num`. No configuration changes are required.
+
+Reference: [#3221](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3221).
+
 ### *(new feature)* `VECTOR` arguments in `snowflake_masking_policy` and `snowflake_row_access_policy`
 
 [`snowflake_masking_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/masking_policy) and [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy) now support [`VECTOR`](https://docs.snowflake.com/en/sql-reference/data-types-vector) arguments, for example `VECTOR(FLOAT, 768)`. Previously, the provider created such a policy but failed to read its signature back from Snowflake.
