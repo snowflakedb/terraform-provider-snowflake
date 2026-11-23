@@ -480,8 +480,7 @@ func parseHybridColumn(from any) column {
 }
 
 // getHybridColumnDefault fills every non-empty default sub-field present in
-// the schema, unlike table.go's getColumnDefault which short-circuits on the
-// first match. The build helper (buildHybridColumnDefaultValue) requires
+// the schema instead of short-circuiting on the first match. The build helper (buildHybridColumnDefaultValue) requires
 // visibility into all set fields to enforce mutual exclusivity — short-
 // circuiting at parse time would silently drop the conflict and let apply
 // proceed with whichever field was checked first.

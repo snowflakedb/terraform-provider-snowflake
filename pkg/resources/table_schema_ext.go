@@ -6,6 +6,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -27,6 +28,10 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	column["collate"].DiffSuppressFunc = func(k, old, new string, d *schema.ResourceData) bool {
 		return new == "" && old != "" && isColumnCollateOmitted(k, d)
 	}
+
+	defaultExpression := column["default"].Elem.(*schema.Resource).Schema["expression"]
+	defaultExpression.ValidateDiagFunc = validateTableColumnDefaultExpression
+	defaultExpression.DiffSuppressFunc = suppressColumnDefaultExpressionDifferences
 
 	identity := column["identity"].Elem.(*schema.Resource).Schema
 	identity["start_num"].Default = 1
@@ -59,4 +64,62 @@ func isColumnCollateOmitted(key string, d *schema.ResourceData) bool {
 		return true
 	}
 	return value.IsNull()
+}
+
+// validateTableColumnDefaultExpression rejects an expression that is only whitespace. An empty expression ("") is
+// valid and means an empty string default (see getColumnDefaultExpression), but "  " is most likely a mistake and
+// would not be read back from DESCRIBE TABLE as the same value.
+func validateTableColumnDefaultExpression(value any, path cty.Path) diag.Diagnostics {
+	if expression, ok := value.(string); ok && expression != "" && strings.TrimSpace(expression) == "" {
+		return diag.Diagnostics{{
+			Severity:      diag.Error,
+			Summary:       "Invalid column default expression",
+			Detail:        "The default expression cannot be only whitespace. Use \"\" or \"''\" for an empty string default.",
+			AttributePath: path,
+		}}
+	}
+	return nil
+}
+
+// suppressColumnDefaultExpressionDifferences hides the differences between the configured default expression and
+// the one DESCRIBE TABLE returns that do not change the default:
+//   - an empty expression ("") is created as the empty string literal, which DESCRIBE TABLE returns as two single quotes;
+//   - the quoting of the sequence in <sequence>.NEXTVAL (see suppressColumnDefaultSequenceQuoting).
+func suppressColumnDefaultExpressionDifferences(k, oldValue, newValue string, d *schema.ResourceData) bool {
+	if isEmptyStringDefault(oldValue) && isEmptyStringDefault(newValue) {
+		return true
+	}
+	return suppressColumnDefaultSequenceQuoting(k, oldValue, newValue, d)
+}
+
+func isEmptyStringDefault(expression string) bool {
+	return expression == "" || expression == columnDefaultEmptyStringLiteral
+}
+
+// suppressColumnDefaultSequenceQuoting compares <sequence>.NEXTVAL defaults by the sequence identifier, because
+// DESCRIBE TABLE returns the sequence name without the double quotes a fully qualified name has.
+func suppressColumnDefaultSequenceQuoting(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	oldSequence, oldIsSequence := cutNextval(oldValue)
+	newSequence, newIsSequence := cutNextval(newValue)
+	if !oldIsSequence || !newIsSequence {
+		return false
+	}
+	oldId, err := sdk.ParseSchemaObjectIdentifier(oldSequence)
+	if err != nil {
+		return false
+	}
+	newId, err := sdk.ParseSchemaObjectIdentifier(newSequence)
+	if err != nil {
+		return false
+	}
+	return oldId.FullyQualifiedName() == newId.FullyQualifiedName()
+}
+
+func cutNextval(expression string) (string, bool) {
+	const nextval = ".NEXTVAL"
+	expression = strings.TrimSpace(expression)
+	if len(expression) <= len(nextval) || !strings.EqualFold(expression[len(expression)-len(nextval):], nextval) {
+		return "", false
+	}
+	return expression[:len(expression)-len(nextval)], true
 }

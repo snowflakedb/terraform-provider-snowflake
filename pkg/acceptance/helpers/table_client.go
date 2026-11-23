@@ -212,6 +212,16 @@ func (c *TableClient) SetDataRetentionTime(t *testing.T, id sdk.SchemaObjectIden
 	require.NoError(t, err)
 }
 
+// DescribeColumns is based on https://docs.snowflake.com/en/sql-reference/sql/desc-table.
+func (c *TableClient) DescribeColumns(t *testing.T, id sdk.SchemaObjectIdentifier) []sdk.TableColumnDetails {
+	t.Helper()
+
+	details, err := c.client().DescribeColumns(context.Background(), sdk.NewDescribeColumnsTableRequest(id))
+	require.NoError(t, err)
+
+	return details
+}
+
 // GetTableColumnsFor is based on https://docs.snowflake.com/en/sql-reference/info-schema/columns.
 // TODO: extract getting table columns as resource (like getting tag in system functions)
 func (c *TableClient) GetTableColumnsFor(t *testing.T, tableId sdk.SchemaObjectIdentifier) []InformationSchemaColumns {

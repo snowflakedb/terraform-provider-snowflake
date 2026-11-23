@@ -33,13 +33,18 @@ func Table() *tfschema.Resource {
 
 		CustomizeDiff: tableCustomizeDiff,
 		Timeouts:      defaultTimeouts,
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
 		StateUpgraders: []tfschema.StateUpgrader{
 			{
 				Version: 0,
 				Type:    cty.EmptyObject,
-				Upgrade: migrateTableIdAndNewBooleanStringFields,
+				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+			},
+			{
+				Version: 1,
+				Type:    cty.EmptyObject,
+				Upgrade: migrateTableToV2_24_0,
 			},
 		},
 	}

@@ -11,8 +11,9 @@ resource "snowflake_table" "basic" {
 }
 
 # Complete - every configurable field set. column.default and column.identity are
-# mutually exclusive, and the three default kinds (constant, expression, sequence)
-# are mutually exclusive, so each is shown on a different column.
+# mutually exclusive. column.default.expression is a raw SQL expression, so string
+# literals keep their quotes and a sequence is referenced with NEXTVAL. An empty
+# expression ("") is an empty string default, the same as the literal "''".
 resource "snowflake_table" "complete" {
   database = "DATABASE"
   schema   = "SCHEMA"
@@ -36,7 +37,7 @@ resource "snowflake_table" "complete" {
     comment  = "sequence-backed id"
 
     default {
-      sequence = snowflake_sequence.sequence.fully_qualified_name
+      expression = "${snowflake_sequence.sequence.fully_qualified_name}.NEXTVAL"
     }
   }
 
@@ -59,7 +60,7 @@ resource "snowflake_table" "complete" {
     comment  = "collated text"
 
     default {
-      constant = "pending"
+      expression = "'pending'"
     }
 
     masking_policy = "DATABASE.SCHEMA.MASKING_POLICY"
@@ -71,6 +72,16 @@ resource "snowflake_table" "complete" {
 
     default {
       expression = "CURRENT_TIMESTAMP()"
+    }
+  }
+
+  column {
+    name = "notes"
+    type = "VARCHAR(256)"
+
+    # An empty string default. "''" is equivalent.
+    default {
+      expression = ""
     }
   }
 

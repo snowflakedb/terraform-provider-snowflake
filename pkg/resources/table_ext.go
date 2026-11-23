@@ -14,7 +14,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -232,17 +231,8 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 			addRequest.WithNotNull(true)
 		}
 
-		if cA._default != nil {
-			if cA._default._type() != "constant" {
-				return diag.FromErr(fmt.Errorf("failed to add column %v => Only adding a column as a constant is supported by Snowflake", cA.name))
-			}
-			var expression string
-			if datatypes.IsTextDataType(dataType) {
-				expression = snowflake.EscapeSnowflakeString(*cA._default.constant)
-			} else {
-				expression = *cA._default.constant
-			}
-			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(expression))
+		if cA._default != nil && cA._default.expression != nil {
+			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(*cA._default.expression))
 		}
 
 		if cA.identity != nil {
@@ -383,22 +373,6 @@ type columnDefault struct {
 	sequence   *string
 }
 
-func (cd *columnDefault) _type() string {
-	if cd.constant != nil {
-		return "constant"
-	}
-
-	if cd.expression != nil {
-		return "expression"
-	}
-
-	if cd.sequence != nil {
-		return "sequence"
-	}
-
-	return "unknown"
-}
-
 type columnIdentity struct {
 	startNum int
 	stepNum  int
@@ -466,32 +440,29 @@ func (c columns) diffs(new columns) (removed columns, added columns, changed cha
 	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
 }
 
-func getColumnDefault(def map[string]any) *columnDefault {
-	if c, ok := def["constant"]; ok {
-		if constant, ok := c.(string); ok && len(constant) > 0 {
-			return &columnDefault{
-				constant: &constant,
-			}
-		}
-	}
+// columnDefaultEmptyStringLiteral is the SQL literal of an empty string. It is what Snowflake stores and
+// DESCRIBE TABLE returns for a column created with an empty string default (two single quotes).
+const columnDefaultEmptyStringLiteral = "''"
 
-	if e, ok := def["expression"]; ok {
-		if expr, ok := e.(string); ok && len(expr) > 0 {
-			return &columnDefault{
-				expression: &expr,
-			}
-		}
+// getColumnDefaultExpression returns the expression of a column default block. The block is optional, but its
+// expression is required, so a block that is present always has a default. An empty expression is sent as the
+// empty string literal, because `DEFAULT` without an expression is not valid SQL.
+//
+// SDKv2 decodes a block whose fields are all zero values (here: `expression = ""`) as a nil element, so the element
+// is not type-asserted directly.
+func getColumnDefaultExpression(defaults []any) (string, bool) {
+	if len(defaults) != 1 {
+		return "", false
 	}
-
-	if s, ok := def["sequence"]; ok {
-		if seq := s.(string); ok && len(seq) > 0 {
-			return &columnDefault{
-				sequence: &seq,
-			}
-		}
+	def, ok := defaults[0].(map[string]any)
+	if !ok {
+		return columnDefaultEmptyStringLiteral, true
 	}
-
-	return nil
+	expression, _ := def["expression"].(string)
+	if expression == "" {
+		return columnDefaultEmptyStringLiteral, true
+	}
+	return expression, true
 }
 
 func getColumnIdentity(identity map[string]any) *columnIdentity {
@@ -509,11 +480,10 @@ func getColumn(from any) (to column) {
 	var cd *columnDefault
 	var id *columnIdentity
 
-	_default := c["default"].([]any)
 	identity := c["identity"].([]any)
 
-	if len(_default) == 1 {
-		cd = getColumnDefault(_default[0].(map[string]any))
+	if expression, ok := getColumnDefaultExpression(c["default"].([]any)); ok {
+		cd = &columnDefault{expression: &expression}
 	}
 	if len(identity) == 1 {
 		id = getColumnIdentity(identity[0].(map[string]any))
@@ -550,30 +520,7 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 
 	request := sdk.NewTableColumnRequest(c["name"].(string), dataType)
 
-	_default := c["default"].([]any)
-	var expression string
-	if len(_default) == 1 {
-		if c, ok := _default[0].(map[string]any)["constant"]; ok {
-			if constant, ok := c.(string); ok && len(constant) > 0 {
-				if datatypes.IsTextDataType(dataType) {
-					expression = snowflake.EscapeSnowflakeString(constant)
-				} else {
-					expression = constant
-				}
-			}
-		}
-
-		if e, ok := _default[0].(map[string]any)["expression"]; ok {
-			if expr, ok := e.(string); ok && len(expr) > 0 {
-				expression = expr
-			}
-		}
-
-		if s, ok := _default[0].(map[string]any)["sequence"]; ok {
-			if seq, ok2 := s.(string); ok2 && len(seq) > 0 {
-				expression = fmt.Sprintf(`%v.NEXTVAL`, seq)
-			}
-		}
+	if expression, ok := getColumnDefaultExpression(c["default"].([]any)); ok {
 		request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(expression))
 	}
 
@@ -674,27 +621,7 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 		return nil
 	}
 
-	defaultRaw := *td.Default
-	def := map[string]any{}
-	if before, ok := strings.CutSuffix(defaultRaw, ".NEXTVAL"); ok {
-		// TODO [SNOW-867240]: SHOW TABLE returns last part of id without double quotes... we have to quote it again. Move it to SDK.
-		sequenceIdRaw := before
-		def["sequence"] = sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(sequenceIdRaw).FullyQualifiedName()
-		return def
-	}
-
-	if strings.Contains(defaultRaw, "(") && strings.Contains(defaultRaw, ")") {
-		def["expression"] = defaultRaw
-		return def
-	}
-
-	if td.Type != nil && datatypes.IsTextDataType(td.Type) {
-		def["constant"] = snowflake.UnescapeSnowflakeString(defaultRaw)
-		return def
-	}
-
-	def["constant"] = defaultRaw
-	return def
+	return map[string]any{"expression": *td.Default}
 }
 
 func toColumnIdentityConfig(td sdk.TableColumnDetails) map[string]any {

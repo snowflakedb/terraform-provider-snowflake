@@ -45,21 +45,10 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 					MaxItems: 1,
 					Elem: &tfschema.Resource{
 						Schema: map[string]*tfschema.Schema{
-							"constant": {
-								Type:        tfschema.TypeString,
-								Optional:    true,
-								Description: "The default constant value for the column",
-							},
 							"expression": {
 								Type:        tfschema.TypeString,
-								Optional:    true,
-								Description: "The default expression value for the column",
-							},
-							"sequence": {
-								Type:             tfschema.TypeString,
-								Optional:         true,
-								DiffSuppressFunc: suppressIdentifierQuoting,
-								Description:      "The default sequence to use for the column",
+								Required:    true,
+								Description: "The default value as a SQL expression, sent unchanged as `DEFAULT <expression>`. Quote string literals, for example `'pending'`. An empty string (`\"\"`) is an empty string default: it is sent as `''`, and Snowflake returns it as `''`, so `\"\"` and `\"''\"` show no difference. Use `<sequence>.NEXTVAL` for a sequence, for example `\"${snowflake_sequence.example.fully_qualified_name}.NEXTVAL\"`.",
 							},
 						},
 					},
