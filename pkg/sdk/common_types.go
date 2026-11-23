@@ -111,56 +111,6 @@ type TableColumnSignature struct {
 	Name string             `ddl:"keyword,double_quotes"`
 	Type datatypes.DataType `ddl:"parameter,no_equals"`
 }
-
-// Format in database is `(column <data_type>)`
-// TODO(SNOW-1596962): Fully support VECTOR data type
-// TODO(SNOW-1660588): Use ParseFunctionArgumentsFromString
-func ParseTableColumnSignature(signature string) ([]TableColumnSignature, error) {
-	plainSignature := strings.ReplaceAll(signature, "(", "")
-	plainSignature = strings.ReplaceAll(plainSignature, ")", "")
-	signatureParts := strings.Split(plainSignature, ", ")
-	arguments := make([]TableColumnSignature, len(signatureParts))
-
-	for i, elem := range signatureParts {
-		parts := strings.Split(elem, " ")
-		if len(parts) < 2 {
-			return []TableColumnSignature{}, fmt.Errorf("expected argument name and type, got %s", elem)
-		}
-		dataType, err := datatypes.ParseDataType(parts[len(parts)-1])
-		if err != nil {
-			return []TableColumnSignature{}, err
-		}
-		arguments[i] = TableColumnSignature{
-			Name: strings.Join(parts[:len(parts)-1], " "),
-			Type: dataType,
-		}
-	}
-	return arguments, nil
-}
-
-// ParseTableColumnSignatureWithVectorSupport parses a signature of the form
-// `(column <data_type>)` and, unlike ParseTableColumnSignature, supports types
-// whose attributes contain commas/spaces (e.g. VECTOR(FLOAT, 768)).
-// TODO(next-prs): Rename to ParseTableColumnSignature and remove old implementation
-func ParseTableColumnSignatureWithVectorSupport(signature string) ([]TableColumnSignature, error) {
-	parsedArgs, err := ParseFunctionAndProcedureArguments(signature)
-	if err != nil {
-		return nil, err
-	}
-	arguments := make([]TableColumnSignature, len(parsedArgs))
-	for i, arg := range parsedArgs {
-		dataType, err := datatypes.ParseDataType(arg.ArgType)
-		if err != nil {
-			return nil, err
-		}
-		arguments[i] = TableColumnSignature{
-			Name: arg.ArgName,
-			Type: dataType,
-		}
-	}
-	return arguments, nil
-}
-
 type StringProperty struct {
 	Value        string
 	DefaultValue string

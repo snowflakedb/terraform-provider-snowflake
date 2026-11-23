@@ -50,7 +50,7 @@ func WithRequiredInPlain() PairedFieldOption {
 // The function must have signature func(string) (T, error) where T matches the plain kind.
 // Example:
 //
-//	Field("signature", "string", "[]TableColumnSignature", WithCustomParser("ParseTableColumnSignature"))
+//	Field("signature", "string", "[]TableColumnSignature", WithCustomParser("parseDescribeSignatureToTableColumnSignatures"))
 func WithCustomParser(funcName string) PairedFieldOption {
 	return func(f *pairedField) {
 		f.customParser = funcName

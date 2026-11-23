@@ -43,6 +43,9 @@ var (
 	dataTypeVectorInt_20, _               = datatypes.ParseDataType("VECTOR(INT, 20)")
 	dataTypeVectorFloat_10, _             = datatypes.ParseDataType("VECTOR(FLOAT, 10)")
 	dataTypeTableDate, _                  = datatypes.ParseDataType("TABLE(DATE)")
+	dataTypeObjectStructured, _           = datatypes.ParseDataType("OBJECT(a VARCHAR, b NUMBER NOT NULL)")
+	dataTypeArrayNumber, _                = datatypes.ParseDataType("ARRAY(NUMBER)")
+	dataTypeMapVarcharNumber, _           = datatypes.ParseDataType("MAP(VARCHAR, NUMBER)")
 )
 
 func randomSchemaObjectIdentifierWithArguments(argumentDataTypes ...datatypes.DataType) SchemaObjectIdentifierWithArguments {

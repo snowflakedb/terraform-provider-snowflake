@@ -108,7 +108,7 @@ var storageLifecyclePoliciesDef = g.NewInterface(
 			Text("name").
 			PlainOnlyField("DatabaseName", "string").
 			PlainOnlyField("SchemaName", "string").
-			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignatureWithVectorSupport")).
+			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("parseDescribeSignatureToTableColumnSignatures")).
 			DataType("return_type").
 			Text("body").
 			OptionalNumber("archive_for_days").
