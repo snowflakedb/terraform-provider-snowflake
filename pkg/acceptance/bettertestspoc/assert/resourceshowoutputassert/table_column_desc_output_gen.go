@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type TableColumnDescribeOutputAssert struct {
@@ -59,8 +60,8 @@ func (t *TableColumnDescribeOutputAssert) HasTypeRaw(expected string) *TableColu
 	return t
 }
 
-func (t *TableColumnDescribeOutputAssert) HasKind(expected string) *TableColumnDescribeOutputAssert {
-	t.StringValueSet("kind", expected)
+func (t *TableColumnDescribeOutputAssert) HasKind(expected sdk.TableColumnKind) *TableColumnDescribeOutputAssert {
+	t.StringValueSet("kind", string(expected))
 	return t
 }
 

@@ -77,22 +77,11 @@ func (t *TableColumnDetailsAssert) HasTypeRawNotEmpty() *TableColumnDetailsAsser
 	return t
 }
 
-func (t *TableColumnDetailsAssert) HasKind(expected string) *TableColumnDetailsAssert {
+func (t *TableColumnDetailsAssert) HasKind(expected sdk.TableColumnKind) *TableColumnDetailsAssert {
 	t.AddAssertion(func(t *testing.T, o *sdk.TableColumnDetails) error {
 		t.Helper()
 		if o.Kind != expected {
 			return fmt.Errorf("expected kind: %v; got: %v", expected, o.Kind)
-		}
-		return nil
-	})
-	return t
-}
-
-func (t *TableColumnDetailsAssert) HasKindNotEmpty() *TableColumnDetailsAssert {
-	t.AddAssertion(func(t *testing.T, o *sdk.TableColumnDetails) error {
-		t.Helper()
-		if o.Kind == "" {
-			return fmt.Errorf("expected kind to be non-empty")
 		}
 		return nil
 	})

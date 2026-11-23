@@ -115,6 +115,11 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 					Optional:    true,
 					Description: "Column collation, e.g. utf8",
 				},
+				"as": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					Description: "Makes the column a [virtual column](https://docs.snowflake.com/en/sql-reference/virtual-columns) computed from this SQL expression, sent as `AS (<expression>)`. The expression can use literals, operators, deterministic system-defined functions, and virtual columns defined earlier in the table. The column `type` must be compatible with the type of the expression. A virtual column cannot have `default` or `identity`. Differences in letter case, whitespace, double quotes, and outer parentheses do not plan a change, because Snowflake reports the expression in a normalized form. Changing the expression drops the column and adds it again at the end of the table.",
+				},
 			},
 		},
 		Description: "Definitions of a column to create in the table. Minimum one required.",

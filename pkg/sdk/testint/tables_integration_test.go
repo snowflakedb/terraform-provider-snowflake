@@ -925,6 +925,23 @@ func TestInt_Table(t *testing.T) {
 				WithVirtual(*sdk.NewTableColumnVirtualRequest("(1 + 1)").WithGeneratedAlways(true).WithVirtual(true)),
 		)))
 		require.NoError(t, err)
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(
+			*sdk.NewTableColumnAddActionRequest("COLUMN_1_IS_NULL", testdatatypes.DataTypeBoolean).
+				WithVirtual(*sdk.NewTableColumnVirtualRequest(`("COLUMN_1" is null)`)),
+		)))
+		require.NoError(t, err)
+
+		// DESCRIBE TABLE reports virtual columns with the VIRTUAL kind and a normalized expression without the outer
+		// parentheses and the identifier quotes.
+		tableDetails, err := client.Tables.DescribeColumns(ctx, sdk.NewDescribeColumnsTableRequest(id))
+		require.NoError(t, err)
+		require.Len(t, tableDetails, 5)
+		assert.Equal(t, sdk.TableColumnKindVirtual, tableDetails[3].Kind)
+		assert.Equal(t, "1 + 1", *tableDetails[3].Expression)
+		assert.Nil(t, tableDetails[3].Default)
+		assert.Equal(t, sdk.TableColumnKindVirtual, tableDetails[4].Kind)
+		assert.Equal(t, "COLUMN_1 IS NULL", *tableDetails[4].Expression)
 	})
 
 	// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730

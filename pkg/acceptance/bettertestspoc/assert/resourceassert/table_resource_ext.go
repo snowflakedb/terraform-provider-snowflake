@@ -10,12 +10,16 @@ import (
 // ExpectedTableColumn describes the fields of a single `column` block to assert on.
 // An empty DefaultExpression means that the column has no `default` block.
 type ExpectedTableColumn struct {
-	Name              string
-	Type              string
+	Name string
+	Type string
+	// Comment is not asserted when it is empty.
+	Comment           string
 	DefaultExpression string
 	// MaskingPolicy is nil when the column has no `masking_policy` block.
 	MaskingPolicy      *sdk.SchemaObjectIdentifier
 	MaskingPolicyUsing []string
+	// Virtual is the expression of a virtual column. An empty value means that the column is not asserted to be virtual.
+	Virtual string
 	// Identity is nil when the column has no `identity` block.
 	Identity *ExpectedTableColumnIdentity
 }
@@ -36,11 +40,19 @@ func (t *TableResourceAssert) HasColumns(columns ...ExpectedTableColumn) *TableR
 		t.ValueSet(prefix+"name", column.Name)
 		t.ValueSet(prefix+"type", column.Type)
 
+		if column.Comment != "" {
+			t.ValueSet(prefix+"comment", column.Comment)
+		}
+
 		if column.DefaultExpression != "" {
 			t.CollectionLength(prefix+"default", 1)
 			t.ValueSet(prefix+"default.0.expression", column.DefaultExpression)
 		} else {
 			t.CollectionLength(prefix+"default", 0)
+		}
+
+		if column.Virtual != "" {
+			t.ValueSet(prefix+"as", column.Virtual)
 		}
 
 		if column.Identity != nil {

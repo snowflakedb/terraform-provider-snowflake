@@ -113,6 +113,13 @@ resource "snowflake_table" "complete" {
     comment = "extra data"
   }
 
+  # A virtual column is computed from the expression at query time and is not stored.
+  column {
+    name = "double_id"
+    type = "NUMBER(38,0)"
+    as   = "\"id\" * 2"
+  }
+
   row_access_policy {
     policy_name = "DATABASE.SCHEMA.ROW_ACCESS_POLICY"
     on          = ["id"]
@@ -184,6 +191,7 @@ Required:
 
 Optional:
 
+- `as` (String) Makes the column a [virtual column](https://docs.snowflake.com/en/sql-reference/virtual-columns) computed from this SQL expression, sent as `AS (<expression>)`. The expression can use literals, operators, deterministic system-defined functions, and virtual columns defined earlier in the table. The column `type` must be compatible with the type of the expression. A virtual column cannot have `default` or `identity`. Differences in letter case, whitespace, double quotes, and outer parentheses do not plan a change, because Snowflake reports the expression in a normalized form. Changing the expression drops the column and adds it again at the end of the table.
 - `collate` (String) (Default: ``) Column collation, e.g. utf8
 - `comment` (String) (Default: ``) Column comment
 - `default` (Block List, Max: 1) Defines the column default value; note due to limitations of Snowflake's ALTER TABLE ADD/MODIFY COLUMN updates to default will not be applied (see [below for nested schema](#nestedblock--column--default))

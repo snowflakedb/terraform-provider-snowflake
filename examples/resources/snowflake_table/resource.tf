@@ -94,6 +94,13 @@ resource "snowflake_table" "complete" {
     comment = "extra data"
   }
 
+  # A virtual column is computed from the expression at query time and is not stored.
+  column {
+    name = "double_id"
+    type = "NUMBER(38,0)"
+    as   = "\"id\" * 2"
+  }
+
   row_access_policy {
     policy_name = "DATABASE.SCHEMA.ROW_ACCESS_POLICY"
     on          = ["id"]

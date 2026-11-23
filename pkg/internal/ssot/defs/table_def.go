@@ -28,6 +28,7 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 //   - column.nullable: Default true. NativeBool keeps TypeBool and does not emit Default.
 //   - column.comment and collate: Default "".
 //   - column.default.expression: rejects an empty value and suppresses quoting differences of <sequence>.NEXTVAL.
+//   - column.as: suppresses the normalization DESCRIBE TABLE applies to virtual column expressions.
 //   - column.identity start_num and step_num: Default 1.
 //   - primary_key: Deprecated.
 //
@@ -154,6 +155,11 @@ var TableAttrs = struct {
 				Type:        ssot.AttrString,
 				Description: "Column collation, e.g. utf8",
 			},
+			{
+				Name:        "as",
+				Type:        ssot.AttrString,
+				Description: "Makes the column a [virtual column](https://docs.snowflake.com/en/sql-reference/virtual-columns) computed from this SQL expression, sent as `AS (<expression>)`. The expression can use literals, operators, deterministic system-defined functions, and virtual columns defined earlier in the table. The column `type` must be compatible with the type of the expression. A virtual column cannot have `default` or `identity`. Differences in letter case, whitespace, double quotes, and outer parentheses do not plan a change, because Snowflake reports the expression in a normalized form. Changing the expression drops the column and adds it again at the end of the table.",
+			},
 		}),
 	},
 	Comment: ssot.Attribute{
@@ -249,6 +255,8 @@ var (
 	TableScope          = ssot.NewEnum("TableScope", "TableScopes", "GLOBAL", "LOCAL")
 	TableKind           = ssot.NewEnum("TableKind", "TableKinds", "TEMPORARY", "VOLATILE", "TRANSIENT")
 	TableConstraintType = ssot.NewEnum("TableConstraintType", "TableConstraintTypes", "PRIMARY KEY", "UNIQUE", "FOREIGN KEY")
+	// TableColumnKind is the kind DESCRIBE TABLE ... TYPE = COLUMNS reports for a column: a regular or a virtual one.
+	TableColumnKind = ssot.NewEnum("TableColumnKind", "TableColumnKinds", "COLUMN", "VIRTUAL")
 	// ReclusterState is RESUME or SUSPEND before the static RECLUSTER keyword.
 	ReclusterState    = ssot.NewEnum("ReclusterState", "ReclusterStates", "RESUME", "SUSPEND")
 	TableSearchMethod = ssot.NewEnum("TableSearchMethod", "TableSearchMethods", "SUBSTRING", "EQUALITY", "FULL_TEXT")
@@ -795,7 +803,7 @@ var Table = ssot.Object{
 	Name:       "Table",
 	NamePlural: "Tables",
 	// These enums are in the nested ALTER blocks and constraints, which the enum walk does not reach.
-	AdditionalEnums:                     []*ssot.Enum{TableConstraintType, ReclusterState, MatchType, TableSearchMethod, TableCopyOption, TableDataMetricScheduleStatusOperation, TableDataMetricSensitivity},
+	AdditionalEnums:                     []*ssot.Enum{TableConstraintType, TableColumnKind, ReclusterState, MatchType, TableSearchMethod, TableCopyOption, TableDataMetricScheduleStatusOperation, TableDataMetricSensitivity},
 	IdType:                              "SchemaObjectIdentifier",
 	PreviewFeature:                      true,
 	DescribeFailRead:                    true,
@@ -1008,6 +1016,10 @@ var Table = ssot.Object{
 		DefaultDdlCollation,
 	},
 	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
+	// A virtual column cannot have a default or an identity. column is a list, so ConflictsWith cannot express it.
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"tableVirtualColumnConflicts",
+	},
 	// v2.24.0 added fields and changed the shape of column fields. One upgrader covers every change of that release.
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
 		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",

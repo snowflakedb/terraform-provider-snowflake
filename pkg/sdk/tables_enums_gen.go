@@ -115,6 +115,30 @@ func ToTableConstraintType(s string) (TableConstraintType, error) {
 	}
 }
 
+type TableColumnKind string
+
+const (
+	TableColumnKindColumn  TableColumnKind = "COLUMN"
+	TableColumnKindVirtual TableColumnKind = "VIRTUAL"
+)
+
+var AllTableColumnKinds = []TableColumnKind{
+	TableColumnKindColumn,
+	TableColumnKindVirtual,
+}
+
+func ToTableColumnKind(s string) (TableColumnKind, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableColumnKindColumn):
+		return TableColumnKindColumn, nil
+	case string(TableColumnKindVirtual):
+		return TableColumnKindVirtual, nil
+	default:
+		return "", fmt.Errorf("invalid table column kind: %s", s)
+	}
+}
+
 type ReclusterState string
 
 const (

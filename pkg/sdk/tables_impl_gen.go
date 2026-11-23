@@ -694,11 +694,11 @@ func (r *DescribeColumnsTableRequest) toOpts() *DescribeColumnsTableOptions {
 func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 	result := &TableColumnDetails{
 		Name:       r.Name,
-		Kind:       r.Kind,
 		Null:       r.Null == "Y",
 		PrimaryKey: r.PrimaryKey == "Y",
 		UniqueKey:  r.UniqueKey == "Y",
 	}
+	mapStringWithMapping(&result.Kind, r.Kind, ToTableColumnKind)
 	mapNullString(&result.Default, r.Default)
 	mapNullStringToBool(&result.Check, r.Check)
 	mapNullString(&result.Expression, r.Expression)

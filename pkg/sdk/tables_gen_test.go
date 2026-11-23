@@ -11,6 +11,7 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableKind]{"TableKind", AllTableKinds, ToTableKind})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableCopyOption]{"TableCopyOption", AllTableCopyOptions, ToTableCopyOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableConstraintType]{"TableConstraintType", AllTableConstraintTypes, ToTableConstraintType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableColumnKind]{"TableColumnKind", AllTableColumnKinds, ToTableColumnKind})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ReclusterState]{"ReclusterState", AllReclusterStates, ToReclusterState})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MatchType]{"MatchType", AllMatchTypes, ToMatchType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableSearchMethod]{"TableSearchMethod", AllTableSearchMethods, ToTableSearchMethod})

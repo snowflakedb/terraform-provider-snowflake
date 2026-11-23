@@ -331,6 +331,31 @@ Snowflake cannot change the order of an existing identity column, so changing `o
 
 Reference: [#3221](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3221).
 
+#### Virtual columns
+
+We have added `as` to [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column`. It makes the column a [virtual column](https://docs.snowflake.com/en/sql-reference/virtual-columns) computed from the expression, sent as `AS (<expression>)`. The expression can use literals, operators, deterministic system-defined functions, and virtual columns defined earlier in the table (see [Virtual columns](https://docs.snowflake.com/en/sql-reference/virtual-columns) for the allowed and prohibited expressions). The column `type` must be compatible with the type of the expression, and a virtual column cannot have `default` or `identity`.
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "ID"
+    type = "NUMBER(38,0)"
+  }
+  column {
+    name = "DOUBLE_ID"
+    type = "NUMBER(38,0)"
+    as   = "ID * 2"
+  }
+}
+```
+
+[DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table) reports the expression in a normalized form (`id*2` becomes `ID * 2`), so differences in letter case, whitespace, double quotes, and outer parentheses do not plan a change. Snowflake cannot alter the expression, so changing `as` drops the column and adds it again at the end of the table. Keep virtual columns last in the configuration to avoid a difference in the column order.
+
+Previously, Read skipped virtual columns, so a virtual column created outside of Terraform was not in the state. The provider now reads them. After upgrading, the next plan drops every virtual column that is not in the configuration. Add these columns to the configuration with `as` before you apply.
+
+Reference: [#2418](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2418).
+
 ### *(new feature)* `VECTOR` arguments in `snowflake_masking_policy` and `snowflake_row_access_policy`
 
 [`snowflake_masking_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/masking_policy) and [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy) now support [`VECTOR`](https://docs.snowflake.com/en/sql-reference/data-types-vector) arguments, for example `VECTOR(FLOAT, 768)`. Previously, the provider created such a policy but failed to read its signature back from Snowflake.

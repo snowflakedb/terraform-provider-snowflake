@@ -813,7 +813,7 @@ type TableColumnDetails struct {
 	Name                  string
 	Type                  datatypes.DataType
 	TypeRaw               string
-	Kind                  string
+	Kind                  TableColumnKind
 	Null                  bool
 	Default               *string
 	PrimaryKey            bool
