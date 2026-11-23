@@ -104,6 +104,7 @@ func parseFunctionOrProcedureReturns(returns string) (datatypes.DataType, bool, 
 }
 
 // Format in Snowflake DB is: (argName argType, argName argType, ...).
+// TODO [SNOW-1850370]: use ParseDescribeSignature in the functions and procedures rework (it supports VECTOR and names with spaces)
 func parseFunctionOrProcedureSignature(signature string) ([]NormalizedArgument, error) {
 	normalizedArguments := make([]NormalizedArgument, 0)
 	trimmed := strings.TrimSpace(signature)

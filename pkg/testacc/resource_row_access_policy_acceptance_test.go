@@ -39,7 +39,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		},
 		{
 			Name: "B",
-			Type: testdatatypes.DataTypeVarchar,
+			Type: testdatatypes.DataTypeVectorFloat_768,
 		},
 	}
 
@@ -90,7 +90,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.name", "A")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.name", "B")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DataTypeVectorFloat_768.ToSql())),
 	}
 
 	assertComplete := []assert.TestCheckFuncProvider{
@@ -132,7 +132,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.name", "A")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.name", "B")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DataTypeVectorFloat_768.ToSql())),
 	}
 
 	resource.Test(t, resource.TestCase{

@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
@@ -36,7 +37,7 @@ func (v *Table) GetClusterByKeys() []string {
 	}
 
 	statementWithoutLinear := strings.TrimSuffix(strings.Replace(v.ClusterBy, "LINEAR(", "", 1), ")")
-	return splitOuter(statementWithoutLinear, '(', ')')
+	return collections.Map(splitOuter(statementWithoutLinear, '(', ')', true), strings.TrimSpace)
 }
 
 func (opts *CreateTableOptions) additionalValidations() error {

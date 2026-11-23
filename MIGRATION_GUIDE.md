@@ -205,6 +205,12 @@ Import of [`snowflake_table`](https://registry.terraform.io/providers/snowflaked
 
 No configuration changes are required. Update any references that compare `describe_output` types as strings.
 
+### *(new feature)* `VECTOR` arguments in `snowflake_masking_policy` and `snowflake_row_access_policy`
+
+[`snowflake_masking_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/masking_policy) and [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy) now support [`VECTOR`](https://docs.snowflake.com/en/sql-reference/data-types-vector) arguments, for example `VECTOR(FLOAT, 768)`. Previously, the provider created such a policy but failed to read its signature back from Snowflake.
+
+No configuration changes are required.
+
 ### *(new feature)* Structured `ARRAY`, `OBJECT`, and `MAP` data types
 
 We have added support for [structured types](https://docs.snowflake.com/en/sql-reference/data-types-structured) in every field that takes a Snowflake data type. Previously, the provider recognized only the semi-structured `ARRAY` and `OBJECT`, so a structured type such as `ARRAY(NUMBER)` failed with an `invalid data type` error. The provider now accepts:
