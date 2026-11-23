@@ -5,7 +5,9 @@ package testacc
 import (
 	"context"
 	"fmt"
+	"maps"
 	"regexp"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -466,6 +468,33 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 		{Name: "COLUMN3", Type: testdatatypes.DataTypeNumber_38_0, Nullable: new(false)},
 	}
 
+	// The masking policies take VARCHAR arguments. The conditional one has two of them.
+	maskingPolicy1, maskingPolicy1Cleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
+	t.Cleanup(maskingPolicy1Cleanup)
+	maskingPolicy2, maskingPolicy2Cleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
+	t.Cleanup(maskingPolicy2Cleanup)
+	conditionalMaskingPolicy, conditionalMaskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
+	t.Cleanup(conditionalMaskingPolicyCleanup)
+
+	columnsVarcharAdded := append(slices.Clone(columnsNullableFalse),
+		model.TableColumnConfig{Name: "COL4", Type: testdatatypes.DataTypeVarchar},
+		model.TableColumnConfig{Name: "COL5", Type: testdatatypes.DataTypeVarchar},
+	)
+	withMaskingPolicyOnCol4 := func(col4 model.TableColumnConfig) []model.TableColumnConfig {
+		return append(slices.Clone(columnsNullableFalse), col4, model.TableColumnConfig{Name: "COL5", Type: testdatatypes.DataTypeVarchar})
+	}
+	columnsMaskingPolicy := withMaskingPolicyOnCol4(model.TableColumnConfig{
+		Name: "COL4", Type: testdatatypes.DataTypeVarchar, MaskingPolicy: new(maskingPolicy1.ID()),
+	})
+	// An unquoted policy name does not drift (https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679,
+	// https://github.com/Snowflake-Labs/terraform-provider-snowflake/pull/2186).
+	columnsMaskingPolicyChanged := withMaskingPolicyOnCol4(model.TableColumnConfig{
+		Name: "COL4", Type: testdatatypes.DataTypeVarchar, MaskingPolicy: new(maskingPolicy2.ID()), MaskingPolicyUnquoted: true,
+	})
+	columnsConditionalMaskingPolicy := withMaskingPolicyOnCol4(model.TableColumnConfig{
+		Name: "COL4", Type: testdatatypes.DataTypeVarchar, MaskingPolicy: new(conditionalMaskingPolicy.ID()), MaskingPolicyUsing: []string{"COL4", "COL5"},
+	})
+
 	modelCreate := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
 		WithColumnConfigs(columnsCreate...)
 	modelCommentsAltered := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
@@ -474,7 +503,24 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 		WithColumnConfigs(columnsReplaced...)
 	modelNullableFalse := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
 		WithColumnConfigs(columnsNullableFalse...)
+	modelVarcharAdded := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsVarcharAdded...)
+	modelMaskingPolicy := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsMaskingPolicy...)
+	modelMaskingPolicyChanged := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsMaskingPolicyChanged...)
+	modelConditionalMaskingPolicy := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsConditionalMaskingPolicy...)
 	ref := modelCreate.ResourceReference()
+
+	updateWithoutDrift := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+		},
+		PostApplyPostRefresh: []plancheck.PlanCheck{
+			plancheck.ExpectEmptyPlan(),
+		},
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -485,7 +531,7 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelCreate),
-				Check:  assertThat(t, tableColumnListChecks(ref, columnsCreate)...),
+				Check:  assertThat(t, tableColumnListChecks(t, ref, columnsCreate)...),
 			},
 			{
 				Config: accconfig.FromModels(t, modelCommentsAltered),
@@ -494,7 +540,7 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, tableColumnListChecks(ref, columnsCommentsAltered)...),
+				Check: assertThat(t, tableColumnListChecks(t, ref, columnsCommentsAltered)...),
 			},
 			{
 				Config: accconfig.FromModels(t, modelReplaced),
@@ -503,7 +549,7 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, tableColumnListChecks(ref, columnsReplaced)...),
+				Check: assertThat(t, tableColumnListChecks(t, ref, columnsReplaced)...),
 			},
 			{
 				Config: accconfig.FromModels(t, modelNullableFalse),
@@ -512,26 +558,65 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, tableColumnListChecks(ref, columnsNullableFalse)...),
+				Check: assertThat(t, tableColumnListChecks(t, ref, columnsNullableFalse)...),
+			},
+			{
+				Config:           accconfig.FromModels(t, modelVarcharAdded),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsVarcharAdded)...),
+			},
+			// set the masking policy on an existing column
+			{
+				Config:           accconfig.FromModels(t, modelMaskingPolicy),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsMaskingPolicy)...),
+			},
+			// change it to another policy, written without quotes
+			{
+				Config:           accconfig.FromModels(t, modelMaskingPolicyChanged),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsMaskingPolicyChanged)...),
+			},
+			// change it to a conditional policy
+			{
+				Config:           accconfig.FromModels(t, modelConditionalMaskingPolicy),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsConditionalMaskingPolicy)...),
+			},
+			// unset it
+			{
+				Config:           accconfig.FromModels(t, modelVarcharAdded),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsVarcharAdded)...),
 			},
 		},
 	})
 }
 
-func tableColumnListChecks(ref string, columns []model.TableColumnConfig) []assert.TestCheckFuncProvider {
-	checks := []assert.TestCheckFuncProvider{
-		assert.Check(resource.TestCheckResourceAttr(ref, "column.#", strconv.Itoa(len(columns)))),
+// tableColumnListChecks asserts the columns in the state. A masking policy without USING is reported with the column
+// itself as the only USING argument.
+func tableColumnListChecks(t *testing.T, ref string, columns []model.TableColumnConfig) []assert.TestCheckFuncProvider {
+	t.Helper()
+	expected := make([]resourceassert.ExpectedTableColumn, len(columns))
+	for i, c := range columns {
+		expected[i] = resourceassert.ExpectedTableColumn{
+			Name:               c.Name,
+			Type:               c.Type.Canonical(),
+			MaskingPolicy:      c.MaskingPolicy,
+			MaskingPolicyUsing: c.MaskingPolicyUsing,
+		}
+		if c.MaskingPolicy != nil && len(c.MaskingPolicyUsing) == 0 {
+			expected[i].MaskingPolicyUsing = []string{c.Name}
+		}
 	}
+	checks := []assert.TestCheckFuncProvider{resourceassert.TableResource(t, ref).HasColumns(expected...)}
 	for i, c := range columns {
 		nullable := true
 		if c.Nullable != nil {
 			nullable = *c.Nullable
 		}
 		prefix := fmt.Sprintf("column.%d.", i)
-		checks = append(
-			checks,
-			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"name", c.Name)),
-			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"type", c.Type.Canonical())),
+		checks = append(checks,
 			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"comment", c.Comment)),
 			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"nullable", strconv.FormatBool(nullable))),
 		)
@@ -1269,82 +1354,6 @@ resource "snowflake_table" "test_table" {
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), comment)
 }
 
-func TestAcc_Table_MaskingPolicy(t *testing.T) {
-	maskingPolicy1, maskingPolicy1Cleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
-	t.Cleanup(maskingPolicy1Cleanup)
-
-	maskingPolicy2, maskingPolicy2Cleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
-	t.Cleanup(maskingPolicy2Cleanup)
-
-	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDestroy(t, resources.Table),
-		Steps: []resource.TestStep{
-			{
-				Config: tableWithMaskingPolicy(tableId, maskingPolicy1.ID()),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.masking_policy", maskingPolicy1.ID().FullyQualifiedName()),
-				),
-			},
-			// this step proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/pull/2186
-			{
-				Config: tableWithMaskingPolicy(tableId, maskingPolicy2.ID()),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.masking_policy", maskingPolicy2.ID().FullyQualifiedName()),
-				),
-			},
-			{
-				Config: tableWithoutMaskingPolicy(tableId),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.masking_policy", ""),
-				),
-			},
-		},
-	})
-}
-
-func tableWithMaskingPolicy(tableId sdk.SchemaObjectIdentifier, maskingPolicyId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-
-	column {
-		name = "column1"
-		type = "VARCHAR(16)"
-		masking_policy = "\"%s\".\"%s\".\"%s\""
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), maskingPolicyId.DatabaseName(), maskingPolicyId.SchemaName(), maskingPolicyId.Name())
-}
-
-func tableWithoutMaskingPolicy(tableId sdk.SchemaObjectIdentifier) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database = "%[1]s"
-	schema   = "%[2]s"
-	name     = "%[3]s"
-	comment  = "Terraform acceptance test"
-
-	column {
-		name           = "column1"
-		type           = "VARCHAR(16)"
-		masking_policy = ""
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
-}
-
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2356 issue is fixed.
 func TestAcc_Table_DefaultDataRetentionTime(t *testing.T) {
 	database, databaseCleanup := testClient().Database.CreateDatabaseWithParametersSet(t)
@@ -1688,7 +1697,7 @@ func TestAcc_ColumnTypeChangeWithNonTextType(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: accconfig.FromModels(t, modelWide),
-				Check:  assertThat(t, tableColumnListChecks(ref, columnsWide)...),
+				Check:  assertThat(t, tableColumnListChecks(t, ref, columnsWide)...),
 			},
 			// Decreasing the precision is an in-place ALTER without COLLATE.
 			{
@@ -1698,7 +1707,7 @@ func TestAcc_ColumnTypeChangeWithNonTextType(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, tableColumnListChecks(ref, columnsNarrow)...),
+				Check: assertThat(t, tableColumnListChecks(t, ref, columnsNarrow)...),
 			},
 			{
 				Config: accconfig.FromModels(t, modelWide),
@@ -1707,7 +1716,7 @@ func TestAcc_ColumnTypeChangeWithNonTextType(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, tableColumnListChecks(ref, columnsWide)...),
+				Check: assertThat(t, tableColumnListChecks(t, ref, columnsWide)...),
 			},
 		},
 	})
@@ -1877,12 +1886,14 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 	comment := random.Comment()
 	sequenceId, sequenceCleanup := testClient().Sequence.Create(t)
 	t.Cleanup(sequenceCleanup)
+	maskingPolicy, maskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicyIdentity(t, testdatatypes.DataTypeVarchar)
+	t.Cleanup(maskingPolicyCleanup)
 
 	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.TableResource))
 	tableModelV2_23_0 := model.TableWithId("test", id, tableColumns).WithComment(comment).
-		WithColumnValue(tableMigrationV2_23_0Columns(sequenceId))
+		WithColumnValue(tableMigrationV2_23_0Columns(sequenceId, maskingPolicy.ID()))
 	tableModel := model.TableWithId("test", id, tableColumns).WithComment(comment).
-		WithColumnValue(tableMigrationCurrentColumns(sequenceId))
+		WithColumnValue(tableMigrationCurrentColumns(sequenceId, maskingPolicy.ID()))
 	ref := tableModel.ResourceReference()
 	// DESCRIBE TABLE returns the sequence name without the double quotes, unlike its database and schema.
 	sequenceNextval := fmt.Sprintf(`"%s"."%s".%s.NEXTVAL`, sequenceId.DatabaseName(), sequenceId.SchemaName(), sequenceId.Name())
@@ -1893,10 +1904,12 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 		},
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
-			// Create - the previous provider with the pipe-separated id
+			// Create - the previous provider with the pipe-separated id. The unquoted masking policy name plans an update
+			// in v2.23.0 (https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679).
 			{
-				ExternalProviders: ExternalProviderWithExactVersion("2.23.0"),
-				Config:            accconfig.FromModels(t, providerModel, tableModelV2_23_0),
+				ExternalProviders:  ExternalProviderWithExactVersion("2.23.0"),
+				ExpectNonEmptyPlan: true,
+				Config:             accconfig.FromModels(t, providerModel, tableModelV2_23_0),
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id))),
@@ -1927,7 +1940,9 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 							resourceassert.ExpectedTableColumn{Name: "BOOLEAN_DEFAULT", Type: "BOOLEAN", DefaultExpression: "FALSE"},
 							resourceassert.ExpectedTableColumn{Name: "EXPRESSION_DEFAULT", Type: "TIMESTAMP_NTZ(9)", DefaultExpression: "CURRENT_TIMESTAMP()"},
 							resourceassert.ExpectedTableColumn{Name: "SEQUENCE_DEFAULT", Type: "NUMBER(38,0)", DefaultExpression: sequenceNextval},
+							resourceassert.ExpectedTableColumn{Name: "MASKED", Type: "VARCHAR(16)"},
 						),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.5.masking_policy.0.policy_name", maskingPolicy.ID().FullyQualifiedName())),
 				),
 			},
 		},
@@ -1936,19 +1951,25 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 
 // tableMigrationV2_23_0Columns and tableMigrationCurrentColumns hold the same columns in the v2.23.0 schema and in
 // the current one. Every v2.24.0 change of the column fields adds its columns to both.
-func tableMigrationV2_23_0Columns(sequenceId sdk.SchemaObjectIdentifier) tfconfig.Variable {
+func tableMigrationV2_23_0Columns(sequenceId sdk.SchemaObjectIdentifier, maskingPolicyId sdk.SchemaObjectIdentifier) tfconfig.Variable {
+	oldDefault := func(kind string, value string) map[string]tfconfig.Variable {
+		return map[string]tfconfig.Variable{"default": tfconfig.ObjectVariable(map[string]tfconfig.Variable{kind: tfconfig.StringVariable(value)})}
+	}
 	return tfconfig.ListVariable(
 		tableMigrationColumn("ID", "NUMBER(38,0)", nil),
-		tableMigrationColumn("TEXT_DEFAULT", "VARCHAR(16)", map[string]tfconfig.Variable{"constant": tfconfig.StringVariable("hello")}),
-		tableMigrationColumn("BOOLEAN_DEFAULT", "BOOLEAN", map[string]tfconfig.Variable{"constant": tfconfig.StringVariable("FALSE")}),
-		tableMigrationColumn("EXPRESSION_DEFAULT", "TIMESTAMP_NTZ(9)", map[string]tfconfig.Variable{"expression": tfconfig.StringVariable("CURRENT_TIMESTAMP()")}),
-		tableMigrationColumn("SEQUENCE_DEFAULT", "NUMBER(38,0)", map[string]tfconfig.Variable{"sequence": tfconfig.StringVariable(sequenceId.FullyQualifiedName())}),
+		tableMigrationColumn("TEXT_DEFAULT", "VARCHAR(16)", oldDefault("constant", "hello")),
+		tableMigrationColumn("BOOLEAN_DEFAULT", "BOOLEAN", oldDefault("constant", "FALSE")),
+		tableMigrationColumn("EXPRESSION_DEFAULT", "TIMESTAMP_NTZ(9)", oldDefault("expression", "CURRENT_TIMESTAMP()")),
+		tableMigrationColumn("SEQUENCE_DEFAULT", "NUMBER(38,0)", oldDefault("sequence", sequenceId.FullyQualifiedName())),
+		tableMigrationColumn("MASKED", "VARCHAR(16)", map[string]tfconfig.Variable{
+			"masking_policy": tfconfig.StringVariable(fmt.Sprintf("%s.%s.%s", maskingPolicyId.DatabaseName(), maskingPolicyId.SchemaName(), maskingPolicyId.Name())),
+		}),
 	)
 }
 
-func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier) tfconfig.Variable {
+func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier, maskingPolicyId sdk.SchemaObjectIdentifier) tfconfig.Variable {
 	expression := func(value string) map[string]tfconfig.Variable {
-		return map[string]tfconfig.Variable{"expression": tfconfig.StringVariable(value)}
+		return map[string]tfconfig.Variable{"default": tfconfig.ObjectVariable(map[string]tfconfig.Variable{"expression": tfconfig.StringVariable(value)})}
 	}
 	return tfconfig.ListVariable(
 		tableMigrationColumn("ID", "NUMBER(38,0)", nil),
@@ -1956,17 +1977,18 @@ func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier) tfconfi
 		tableMigrationColumn("BOOLEAN_DEFAULT", "BOOLEAN", expression("FALSE")),
 		tableMigrationColumn("EXPRESSION_DEFAULT", "TIMESTAMP_NTZ(9)", expression("CURRENT_TIMESTAMP()")),
 		tableMigrationColumn("SEQUENCE_DEFAULT", "NUMBER(38,0)", expression(sequenceId.FullyQualifiedName()+".NEXTVAL")),
+		tableMigrationColumn("MASKED", "VARCHAR(16)", map[string]tfconfig.Variable{
+			"masking_policy": tfconfig.ObjectVariable(map[string]tfconfig.Variable{"policy_name": tfconfig.StringVariable(maskingPolicyId.FullyQualifiedName())}),
+		}),
 	)
 }
 
-func tableMigrationColumn(name string, columnType string, defaultValue map[string]tfconfig.Variable) tfconfig.Variable {
+func tableMigrationColumn(name string, columnType string, fields map[string]tfconfig.Variable) tfconfig.Variable {
 	column := map[string]tfconfig.Variable{
 		"name": tfconfig.StringVariable(name),
 		"type": tfconfig.StringVariable(columnType),
 	}
-	if defaultValue != nil {
-		column["default"] = tfconfig.ObjectVariable(defaultValue)
-	}
+	maps.Copy(column, fields)
 	return tfconfig.ObjectVariable(column)
 }
 

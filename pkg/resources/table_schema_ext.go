@@ -19,7 +19,6 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	column["type"].DiffSuppressFunc = DiffSuppressDataTypes
 	column["nullable"].Default = true
 	column["comment"].Default = ""
-	column["masking_policy"].Default = ""
 	column["collate"].Default = ""
 	// A column without an explicit collation inherits the table's default_ddl_collation at the moment it is created,
 	// and DESCRIBE keeps reporting it after the table default is changed or unset. An omitted collate is therefore
@@ -28,6 +27,10 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	column["collate"].DiffSuppressFunc = func(k, old, new string, d *schema.ResourceData) bool {
 		return new == "" && old != "" && isColumnCollateOmitted(k, d)
 	}
+
+	maskingPolicy := column["masking_policy"].Elem.(*schema.Resource).Schema
+	maskingPolicy["policy_name"].ValidateDiagFunc = IsValidIdentifier[sdk.SchemaObjectIdentifier]()
+	maskingPolicy["using"].DiffSuppressFunc = IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("name")
 
 	defaultExpression := column["default"].Elem.(*schema.Resource).Schema["expression"]
 	defaultExpression.ValidateDiagFunc = validateTableColumnDefaultExpression

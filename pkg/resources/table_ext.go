@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -86,16 +87,26 @@ func tableSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta a
 	if err != nil {
 		return err
 	}
-	_, err = readRootLevelPolicies(ctx, meta.(*provider.Context).Client, id, sdk.PolicyEntityDomainTable, d,
+	policyRefs, err := readRootLevelPolicies(ctx, meta.(*provider.Context).Client, id, sdk.PolicyEntityDomainTable, d,
 		sdk.PolicyKindRowAccessPolicy, sdk.PolicyKindAggregationPolicy, sdk.PolicyKindJoinPolicy)
-	return err
+	if err != nil {
+		return err
+	}
+	columns, err := withColumnMaskingPolicies(d.Get("column").([]any), policyRefs)
+	if err != nil {
+		return err
+	}
+	return d.Set("column", columns)
 }
 
 func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, describeErr error, _ bool) error {
 	if describeErr != nil {
 		return describeErr
 	}
-	// TODO: stop copying DESCRIBE onto column on every Read (nested-block drift, like authentication policy). Follow-up.
+	// Columns are rebuilt from DESCRIBE TABLE on every Read, like in snowflake_iceberg_table. DESCRIBE is the only source
+	// of the columns, so this is how columns added, dropped, or changed outside of Terraform show up in the plan.
+	// Comparing describe_output instead would miss changes it does not hold, such as masking policy USING columns.
+	// Formatting differences are handled by the diff suppressors of the column fields.
 	return errors.Join(
 		d.Set("column", toColumnConfig(tableDescription)),
 		d.Set(DescribeOutputAttributeName, schemas.TableColumnDetailsListToSchema(tableDescription)),
@@ -239,8 +250,12 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(cA.identity.startNum, cA.identity.stepNum)))
 		}
 
-		if cA.maskingPolicy != "" {
-			addRequest.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.maskingPolicy)))
+		if cA.maskingPolicy != nil {
+			maskingPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.maskingPolicy.name)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+			}
+			addRequest.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicyId).WithUsing(toColumns(cA.maskingPolicy.using)))
 		}
 
 		if cA.comment != "" {
@@ -305,10 +320,18 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 		}
 		if cA.changedMaskingPolicy {
 			columnAction := sdk.NewTableColumnActionRequest()
-			if strings.TrimSpace(cA.newColumn.maskingPolicy) == "" {
+			if cA.newColumn.maskingPolicy == nil {
 				columnAction.WithUnsetMaskingPolicy(*sdk.NewTableUnsetColumnMaskingPolicyRequest(cA.newColumn.name))
 			} else {
-				columnAction.WithSetMaskingPolicy(*sdk.NewTableSetColumnMaskingPolicyRequest(cA.newColumn.name, sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.newColumn.maskingPolicy)).WithForce(true))
+				maskingPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.newColumn.maskingPolicy.name)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("error altering column masking policy on table %v: %w", id.FullyQualifiedName(), err))
+				}
+				setRequest := sdk.NewTableSetColumnMaskingPolicyRequest(cA.newColumn.name, maskingPolicyId).WithForce(true)
+				if len(cA.newColumn.maskingPolicy.using) > 0 {
+					setRequest.WithUsing(toColumns(cA.newColumn.maskingPolicy.using))
+				}
+				columnAction.WithSetMaskingPolicy(*setRequest)
 			}
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction))
 			if err != nil {
@@ -385,8 +408,13 @@ type column struct {
 	_default      *columnDefault
 	identity      *columnIdentity
 	comment       string
-	maskingPolicy string
+	maskingPolicy *columnMaskingPolicy
 	collate       string
+}
+
+type columnMaskingPolicy struct {
+	name  string
+	using []string
 }
 
 type columns []column
@@ -422,7 +450,7 @@ func (c columns) getChangedColumnProperties(new columns) (changed changedColumns
 				changeColumn.changedComment = true
 			}
 
-			if cO.name == cN.name && cO.maskingPolicy != cN.maskingPolicy {
+			if cO.name == cN.name && !cO.maskingPolicy.equal(cN.maskingPolicy) {
 				changeColumn.changedMaskingPolicy = true
 			}
 
@@ -465,6 +493,56 @@ func getColumnDefaultExpression(defaults []any) (string, bool) {
 	return expression, true
 }
 
+func getColumnMaskingPolicy(maskingPolicies []any) *columnMaskingPolicy {
+	if len(maskingPolicies) != 1 {
+		return nil
+	}
+	maskingPolicy, ok := maskingPolicies[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+	name, _ := maskingPolicy["policy_name"].(string)
+	if name == "" {
+		return nil
+	}
+	var using []string
+	if usingRaw, ok := maskingPolicy["using"].([]any); ok {
+		using = expandStringList(usingRaw)
+	}
+	return &columnMaskingPolicy{name: name, using: using}
+}
+
+// equal compares the policies as they are in the state. Formatting differences (identifier quoting, the column itself as
+// the only USING argument) are handled by the diff suppressors of the masking_policy schema, so they never reach here.
+func (p *columnMaskingPolicy) equal(other *columnMaskingPolicy) bool {
+	if p == nil || other == nil {
+		return p == other
+	}
+	return p.name == other.name && slices.Equal(p.using, other.using)
+}
+
+// withColumnMaskingPolicies sets each column's masking_policy from POLICY_REFERENCES, like in snowflake_iceberg_table.
+func withColumnMaskingPolicies(columns []any, policyRefs []sdk.PolicyReference) ([]any, error) {
+	var errs []error
+	for _, c := range columns {
+		column, ok := c.(map[string]any)
+		if !ok {
+			continue
+		}
+		name, _ := column["name"].(string)
+		columnPolicies, err := columnPoliciesToState(name, policyRefs)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("column %q: %w", name, err))
+		}
+		if maskingPolicy, ok := columnPolicies["masking_policy"]; ok {
+			column["masking_policy"] = maskingPolicy
+		} else {
+			column["masking_policy"] = []any{}
+		}
+	}
+	return columns, errors.Join(errs...)
+}
+
 func getColumnIdentity(identity map[string]any) *columnIdentity {
 	if len(identity) > 0 {
 		startNum := identity["start_num"].(int)
@@ -497,7 +575,7 @@ func getColumn(from any) (to column) {
 		identity:      id,
 		comment:       c["comment"].(string),
 		collate:       c["collate"].(string),
-		maskingPolicy: c["masking_policy"].(string),
+		maskingPolicy: getColumnMaskingPolicy(c["masking_policy"].([]any)),
 	}
 }
 
@@ -532,9 +610,12 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 		request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(startNum, stepNum)))
 	}
 
-	maskingPolicy := c["masking_policy"].(string)
-	if maskingPolicy != "" {
-		request.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(maskingPolicy)))
+	if maskingPolicy := getColumnMaskingPolicy(c["masking_policy"].([]any)); maskingPolicy != nil {
+		maskingPolicyId, err := sdk.ParseSchemaObjectIdentifier(maskingPolicy.name)
+		if err != nil {
+			return nil, err
+		}
+		request.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicyId).WithUsing(toColumns(maskingPolicy.using)))
 	}
 
 	if datatypes.IsTextDataType(dataType) {
@@ -594,11 +675,6 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 
 		if td.Collation != nil {
 			flat["collate"] = *td.Collation
-		}
-
-		if td.PolicyName != nil {
-			// TODO [SNOW-867240]: SHOW TABLE returns last part of id without double quotes... we have to quote it again. Move it to SDK.
-			flat["masking_policy"] = sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(*td.PolicyName).FullyQualifiedName()
 		}
 
 		identity := toColumnIdentityConfig(td)

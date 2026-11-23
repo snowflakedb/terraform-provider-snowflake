@@ -1004,8 +1004,15 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 
 		require.Len(t, tableDetails, 2)
-		// TODO [SNOW-1348114]: make nicer during the table rework
-		assert.Equal(t, maskingPolicy.ID().FullyQualifiedName(), sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(*tableDetails[0].PolicyName).FullyQualifiedName())
+		assert.NotEmpty(t, tableDetails[0].PolicyName)
+
+		// DESCRIBE TABLE returns the policy name as text; POLICY_REFERENCES returns its database, schema, and name.
+		references, err := testClientHelper().PolicyReferences.GetPolicyReferences(t, id, sdk.PolicyEntityDomainTable)
+		require.NoError(t, err)
+		require.Len(t, references, 1)
+		assert.Equal(t, sdk.PolicyKindMaskingPolicy, references[0].PolicyKind)
+		assert.Equal(t, "COLUMN_1", *references[0].RefColumnName)
+		assert.Equal(t, maskingPolicy.ID(), sdk.NewSchemaObjectIdentifier(*references[0].PolicyDb, *references[0].PolicySchema, references[0].PolicyName))
 
 		alterRequest := sdk.NewAlterTableRequest(id).
 			WithColumnAction(*sdk.NewTableColumnActionRequest().WithUnsetMaskingPolicy(*sdk.NewTableUnsetColumnMaskingPolicyRequest("COLUMN_1")))

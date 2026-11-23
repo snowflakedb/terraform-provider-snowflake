@@ -12,6 +12,9 @@ type ExpectedTableColumn struct {
 	Name              string
 	Type              string
 	DefaultExpression string
+	// MaskingPolicy is nil when the column has no `masking_policy` block.
+	MaskingPolicy      *sdk.SchemaObjectIdentifier
+	MaskingPolicyUsing []string
 }
 
 // HasColumns asserts all the columns, in the order of the configuration.
@@ -27,6 +30,17 @@ func (t *TableResourceAssert) HasColumns(columns ...ExpectedTableColumn) *TableR
 			t.ValueSet(prefix+"default.0.expression", column.DefaultExpression)
 		} else {
 			t.CollectionLength(prefix+"default", 0)
+		}
+
+		if column.MaskingPolicy != nil {
+			t.CollectionLength(prefix+"masking_policy", 1)
+			t.ValueSet(prefix+"masking_policy.0.policy_name", column.MaskingPolicy.FullyQualifiedName())
+			t.CollectionLength(prefix+"masking_policy.0.using", len(column.MaskingPolicyUsing))
+			for using, columnName := range column.MaskingPolicyUsing {
+				t.ValueSet(fmt.Sprintf("%smasking_policy.0.using.%d", prefix, using), columnName)
+			}
+		} else {
+			t.CollectionLength(prefix+"masking_policy", 0)
 		}
 	}
 	return t

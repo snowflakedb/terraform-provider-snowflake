@@ -74,15 +74,34 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 					},
 					Description: "Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive.",
 				},
+				"masking_policy": {
+					Type:     tfschema.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &tfschema.Resource{
+						Schema: map[string]*tfschema.Schema{
+							"policy_name": {
+								Type:             tfschema.TypeString,
+								Required:         true,
+								DiffSuppressFunc: suppressIdentifierQuoting,
+								Description:      relatedResourceDescription("Masking policy name.", resources.MaskingPolicy),
+							},
+							"using": {
+								Type:     tfschema.TypeList,
+								Optional: true,
+								Elem: &tfschema.Schema{
+									Type: tfschema.TypeString,
+								},
+								Description: "Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.",
+							},
+						},
+					},
+					Description: relatedResourceDescription("Specifies the masking policy to set on a column.", resources.MaskingPolicy),
+				},
 				"comment": {
 					Type:        tfschema.TypeString,
 					Optional:    true,
 					Description: "Column comment",
-				},
-				"masking_policy": {
-					Type:        tfschema.TypeString,
-					Optional:    true,
-					Description: "Masking policy to apply on column. It has to be a fully qualified name.",
 				},
 				"collate": {
 					Type:        tfschema.TypeString,

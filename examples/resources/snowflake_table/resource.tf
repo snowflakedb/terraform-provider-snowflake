@@ -63,7 +63,10 @@ resource "snowflake_table" "complete" {
       expression = "'pending'"
     }
 
-    masking_policy = "DATABASE.SCHEMA.MASKING_POLICY"
+    masking_policy {
+      policy_name = "DATABASE.SCHEMA.MASKING_POLICY"
+      using       = ["data", "extra"]
+    }
   }
 
   column {
