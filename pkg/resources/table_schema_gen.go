@@ -27,7 +27,7 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 				"name": {
 					Type:        tfschema.TypeString,
 					Required:    true,
-					Description: "Column name",
+					Description: "Column name. The provider always double-quotes it, so the name is case-sensitive: `id` and `ID` are different columns. Use uppercase to get the same column as an unquoted identifier in SQL.",
 				},
 				"type": {
 					Type:        tfschema.TypeString,

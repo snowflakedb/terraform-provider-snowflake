@@ -1920,10 +1920,10 @@ func TestInt_IcebergTables(t *testing.T) {
 		assert.ErrorIs(t, err, sdk.ErrObjectNotExistOrAuthorized)
 	})
 
-	t.Run("describe iceberg table: unparseable nested data type does not fail", func(t *testing.T) {
+	t.Run("describe iceberg table: structured nested data type is parsed", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		// datatypes.DataType (and therefore the structured CreateIcebergTableRequest builder) has no
-		// representation for structured OBJECT/ARRAY/MAP types, so this table is created via raw SQL.
+		// The structured CreateIcebergTableRequest builder has no representation for structured
+		// OBJECT/ARRAY/MAP types, so this table is created via raw SQL. DESCRIBE still parses them.
 		_, err := client.ExecForTests(ctx, fmt.Sprintf(
 			"CREATE OR REPLACE ICEBERG TABLE %s (c1 TEXT, c2 OBJECT(foo TEXT))",
 			id.FullyQualifiedName(),
@@ -1945,10 +1945,12 @@ func TestInt_IcebergTables(t *testing.T) {
 		)
 		assert.Equal(t, testdatatypes.DataTypeVarcharIceberg.ToSql(), details[0].TypeString())
 
+		expectedObjectType, err := datatypes.ParseDataType("OBJECT(foo VARCHAR(134217728))")
+		require.NoError(t, err)
 		assertThatObject(
 			t, objectassert.IcebergTableDetailsFromObject(t, &details[1]).
 				HasName("C2").
-				HasTypeEmpty().
+				HasType(expectedObjectType).
 				HasDataTypeRaw("OBJECT(foo VARCHAR(134217728))"),
 		)
 		assert.Equal(t, "OBJECT(foo VARCHAR(134217728))", details[1].TypeString())

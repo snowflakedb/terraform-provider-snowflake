@@ -789,17 +789,20 @@ func Test_alterSetQueryStruct_table(t *testing.T) {
 	require.NotPanics(t, func() { ssot.ValidateObject(ssotdefs.Table) })
 	got := AlterSetQueryStruct(ssotdefs.Table, ssot.SdkGenerator{})
 	want := NewQueryStruct("TableSet").
+		PredefinedQueryStructField("Contact", "[]TableContact", KeywordOptions().SQL("CONTACT")).
+		OptionalBooleanAssignment("ERROR_LOGGING", ParameterOptions()).
 		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", ParameterOptions()).
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", ParameterOptions()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", ParameterOptions()).
 		OptionalBooleanAssignment("CHANGE_TRACKING", ParameterOptions()).
 		OptionalAssignment("DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
 		OptionalAssignment("ICEBERG_DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
-		OptionalBooleanAssignment("ERROR_LOGGING", ParameterOptions()).
-		PredefinedQueryStructField("Contact", "[]TableContact", KeywordOptions().SQL("CONTACT")).
 		OptionalComment().
 		OptionalBooleanAssignment("ROW_TIMESTAMP", ParameterOptions()).
-		WithValidation(AtLeastOneValueSet, "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "ErrorLogging", "Contact", "Comment", "RowTimestamp")
+		WithConflictingGroups([]string{"Contact"}, []string{"ErrorLogging"}).
+		WithConflictingGroups([]string{"Contact"}, []string{"EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp"}).
+		WithConflictingGroups([]string{"ErrorLogging"}, []string{"EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp"}).
+		WithValidation(AtLeastOneValueSet, "Contact", "ErrorLogging", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp")
 	require.Equal(t, want.IntoField(), got.IntoField())
 
 	unset := AlterUnsetQueryStruct(ssotdefs.Table)

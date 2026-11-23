@@ -23,12 +23,15 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -72,7 +75,6 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasNameString(id.Name()).
 			HasCommentEmpty().
-			HasChangeTrackingEmpty().
 			HasClusterByEmpty().
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),
 		resourceshowoutputassert.TableShowOutput(t, ref).
@@ -89,6 +91,11 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			HasName("ID").
 			HasKind("COLUMN"),
 	}
+
+	// change_tracking is absent from the state when it was never set. After it is removed from the configuration, the
+	// external change detection writes the value now reported by Snowflake, and the diff suppressor hides it from the plan.
+	basicNeverSetAssertions := append([]assert.TestCheckFuncProvider{resourceassert.TableResource(t, ref).HasNoChangeTracking()}, basicAssertions...)
+	basicUnsetAssertions := append([]assert.TestCheckFuncProvider{resourceassert.TableResource(t, ref).HasChangeTracking(false)}, basicAssertions...)
 
 	alterableOptionalAssertions := []assert.TestCheckFuncProvider{
 		resourceassert.TableResource(t, ref).
@@ -145,8 +152,10 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable),
 	}
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -154,19 +163,22 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with only required fields
 			{
-				Config: accconfig.FromModels(t, modelBasic),
-				Check:  assertThat(t, basicAssertions...),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelBasic),
+				Check:                    assertThat(t, basicNeverSetAssertions...),
 			},
-			// Import
+			// Import - without optionals, permissive mode
 			{
-				Config:            accconfig.FromModels(t, modelBasic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, modelBasic),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// Change only alterable fields - expect an in-place update
 			{
-				Config: accconfig.FromModels(t, modelWithAlterableOptional),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithAlterableOptional),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -174,15 +186,17 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 				},
 				Check: assertThat(t, alterableOptionalAssertions...),
 			},
-			// Import with all alterable fields set
+			// Import with all alterable fields set, permissive mode
 			{
-				Config:            accconfig.FromModels(t, modelWithAlterableOptional),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, modelWithAlterableOptional),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 			// Change the alterable fields externally and detect drift - expect Terraform to fix it with an update
 			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				PreConfig: func() {
 					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(id).WithSet(*sdk.NewTableSetRequest().
 						WithComment(externalComment).
@@ -202,17 +216,19 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Unset all alterable optional fields - expect an in-place update
 			{
-				Config: accconfig.FromModels(t, modelWithAlterableOptionalUnset),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithAlterableOptionalUnset),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, basicAssertions...),
+				Check: assertThat(t, basicUnsetAssertions...),
 			},
 			// Set cluster_by - expect an in-place update
 			{
-				Config: accconfig.FromModels(t, modelWithAlterableOptional),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithAlterableOptional),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -222,7 +238,8 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Change cluster_by - expect an in-place update
 			{
-				Config: accconfig.FromModels(t, modelWithAlterableOptionalChanged),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithAlterableOptionalChanged),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -232,17 +249,19 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Unset cluster_by (and the other alterable fields) - expect an in-place update
 			{
-				Config: accconfig.FromModels(t, modelWithAlterableOptionalUnset),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithAlterableOptionalUnset),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, basicAssertions...),
+				Check: assertThat(t, basicUnsetAssertions...),
 			},
 			// Set two cluster_by keys - expect an in-place update
 			{
-				Config: accconfig.FromModels(t, modelWithClusterByIdName),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithClusterByIdName),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -252,13 +271,95 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Reorder cluster_by keys - expect an in-place update
 			{
-				Config: accconfig.FromModels(t, modelWithClusterByNameId),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelWithClusterByNameId),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
 				Check: assertThat(t, clusterByNameIdAssertions...),
+			},
+		},
+	})
+}
+
+func TestAcc_Table_BasicUseCase_Import(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	resourceId := helpers.EncodeResourceIdentifier(id)
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+		{Name: "NAME", Type: testdatatypes.DataTypeVarchar},
+	}
+
+	modelBasic := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
+	ref := modelBasic.ResourceReference()
+
+	_, cleanup := testClient().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber_38_0),
+		*sdk.NewTableColumnRequest("NAME", testdatatypes.DataTypeVarchar),
+	})))
+	t.Cleanup(cleanup)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			// Import - without optionals, enforcing mode
+			{
+				Config:             accconfig.FromModels(t, modelBasic),
+				ResourceName:       ref,
+				ImportState:        true,
+				ImportStateId:      resourceId,
+				ImportStatePersist: true,
+				ImportStateCheck: assertThatImport(
+					t,
+					resourceassert.ImportedTableResource(t, resourceId).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentEmpty().
+						HasChangeTracking(false).
+						HasEnableSchemaEvolution("false").
+						HasErrorLogging("false").
+						HasRowTimestamp("false").
+						HasIsTransient("false"),
+				),
+			},
+			// Expect empty plan after the plan after import is applied.
+			// is_transient forces a new resource, so resetting it to the unset value replaces the table.
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
+						planchecks.ExpectChange(ref, "enable_schema_evolution", tfjson.ActionDelete, new("false"), new(r.BooleanDefault)),
+						planchecks.ExpectChange(ref, "error_logging", tfjson.ActionDelete, new("false"), new(r.BooleanDefault)),
+						planchecks.ExpectChange(ref, "row_timestamp", tfjson.ActionDelete, new("false"), new(r.BooleanDefault)),
+						planchecks.ExpectChange(ref, "is_transient", tfjson.ActionDelete, new("false"), new(r.BooleanDefault)),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasNameString(id.Name()).
+						HasDatabaseString(id.DatabaseName()).
+						HasSchemaString(id.SchemaName()).
+						HasFullyQualifiedNameString(id.FullyQualifiedName()).
+						HasCommentEmpty().
+						HasNoChangeTracking().
+						HasEnableSchemaEvolution(r.BooleanDefault).
+						HasErrorLogging(r.BooleanDefault).
+						HasRowTimestamp(r.BooleanDefault).
+						HasIsTransient(r.BooleanDefault),
+				),
 			},
 		},
 	})
@@ -280,15 +381,18 @@ func TestAcc_Table_CompleteUseCase(t *testing.T) {
 
 	ref := modelComplete.ResourceReference()
 
+	providerModelImportPermissiveMode := providermodel.SnowflakeProvider().
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ImportPermissiveMode)
+
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
-				Config: accconfig.FromModels(t, modelComplete),
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelComplete),
 				Check: assertThat(
 					t,
 					resourceassert.TableResource(t, ref).
@@ -312,11 +416,24 @@ func TestAcc_Table_CompleteUseCase(t *testing.T) {
 						HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeTable),
 				),
 			},
+			// import - complete, enforcing mode
+			// The configuration omits these fields, so the state after the create holds the unset value ("default"),
+			// while the enforcing import writes the value reported by Snowflake.
 			{
-				Config:            accconfig.FromModels(t, modelComplete),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, modelComplete),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateVerify:        true,
+				ImportStateVerifyIgnore:  []string{"is_transient", "enable_schema_evolution", "error_logging", "row_timestamp"},
+			},
+			// import - complete, permissive mode
+			{
+				ProtoV6ProviderFactories: importPermissiveModeProviderFactory,
+				Config:                   accconfig.FromModels(t, providerModelImportPermissiveMode, modelComplete),
+				ResourceName:             ref,
+				ImportState:              true,
+				ImportStateKind:          resource.ImportBlockWithID,
 			},
 		},
 	})
@@ -409,7 +526,8 @@ func tableColumnListChecks(ref string, columns []model.TableColumnConfig) []asse
 			nullable = *c.Nullable
 		}
 		prefix := fmt.Sprintf("column.%d.", i)
-		checks = append(checks,
+		checks = append(
+			checks,
 			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"name", c.Name)),
 			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"type", c.Type.Canonical())),
 			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"comment", c.Comment)),
@@ -417,6 +535,107 @@ func tableColumnListChecks(ref string, columns []model.TableColumnConfig) []asse
 		)
 	}
 	return checks
+}
+
+func TestAcc_Table_ColumnCollate_Inherited(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	placeholder := []sdk.TableColumnSignature{
+		{Name: "COL1", Type: testdatatypes.DataTypeVarchar},
+	}
+	columnOmitted := model.TableColumnConfig{Name: "COL1", Type: testdatatypes.DataTypeVarchar}
+
+	// The column is created without collate, so it inherits the table default_ddl_collation. DESCRIBE reports it,
+	// but an omitted collate is not managed, so it must not plan a change, also after the table default changes.
+	modelInherited := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnOmitted).
+		WithDefaultDdlCollation("en-ci")
+	modelInheritedTableDefaultChanged := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnOmitted).
+		WithDefaultDdlCollation("en-cs")
+	ref := modelInherited.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelInherited),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.collate", "en-ci")),
+				),
+			},
+			{
+				Config:   accconfig.FromModels(t, modelInherited),
+				PlanOnly: true,
+			},
+			{
+				Config: accconfig.FromModels(t, modelInheritedTableDefaultChanged),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TableResource(t, ref).HasDefaultDdlCollation("en-cs"),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.collate", "en-ci")),
+				),
+			},
+			{
+				Config:   accconfig.FromModels(t, modelInheritedTableDefaultChanged),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+func TestAcc_Table_ColumnCollate_ExplicitAndCleared(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	placeholder := []sdk.TableColumnSignature{
+		{Name: "COL1", Type: testdatatypes.DataTypeVarchar},
+	}
+	columnOmitted := model.TableColumnConfig{Name: "COL1", Type: testdatatypes.DataTypeVarchar}
+	columnEn := model.TableColumnConfig{Name: "COL1", Type: testdatatypes.DataTypeVarchar, Collate: new("en")}
+	columnCleared := model.TableColumnConfig{Name: "COL1", Type: testdatatypes.DataTypeVarchar, Collate: new("")}
+
+	modelEn := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).WithColumnConfigs(columnEn)
+	modelOmitted := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).WithColumnConfigs(columnOmitted)
+	modelCleared := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).WithColumnConfigs(columnCleared)
+	ref := modelEn.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelEn),
+				Check: assertThat(t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.collate", "en")),
+				),
+			},
+			// Removing collate from the config means "not managed": no change is planned.
+			{
+				Config:   accconfig.FromModels(t, modelOmitted),
+				PlanOnly: true,
+			},
+			// An explicit empty collate is managed, so it is a planned change. Snowflake cannot change the collation
+			// of an existing column, so the apply fails with its error instead of the diff being hidden.
+			{
+				Config: accconfig.FromModels(t, modelCleared),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				ExpectError: regexp.MustCompile(`because they have incompatible collations`),
+			},
+		},
+	})
 }
 
 func TestAcc_Table_Validations(t *testing.T) {
@@ -476,7 +695,7 @@ func TestAcc_TableDefaults(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
+					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "change_tracking"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
@@ -503,7 +722,7 @@ func TestAcc_TableDefaults(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
+					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "change_tracking"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
@@ -612,7 +831,6 @@ func TestAcc_TableIdentity(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
@@ -638,7 +856,6 @@ func TestAcc_TableIdentity(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
@@ -877,7 +1094,6 @@ func TestAcc_TableRename(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", oldComment),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARIANT"),
@@ -898,7 +1114,6 @@ func TestAcc_TableRename(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", newComment),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "change_tracking", "false"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARIANT"),
@@ -1023,7 +1238,7 @@ func TestAcc_Table_DefaultDataRetentionTime(t *testing.T) {
 				},
 				Config: tableConfigWithoutDataRetentionTimeInDays(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
+					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", "5"),
 					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 5, 5, 5),
 				),
 			},
@@ -1033,7 +1248,7 @@ func TestAcc_Table_DefaultDataRetentionTime(t *testing.T) {
 				},
 				Config: tableConfigWithoutDataRetentionTimeInDays(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
+					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", "10"),
 					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 5, 10, 10),
 				),
 			},
@@ -1058,7 +1273,7 @@ func TestAcc_Table_DefaultDataRetentionTime(t *testing.T) {
 			{
 				Config: tableConfigWithoutDataRetentionTimeInDays(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
+					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", "3"),
 					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 10, 3, 3),
 				),
 			},
@@ -1068,7 +1283,7 @@ func TestAcc_Table_DefaultDataRetentionTime(t *testing.T) {
 				},
 				Config: tableConfigWithoutDataRetentionTimeInDays(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
+					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", "10"),
 					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 10, 10, 10),
 				),
 			},
@@ -1147,7 +1362,7 @@ func TestAcc_Table_DefaultDataRetentionTime_SetOutsideOfTerraform(t *testing.T) 
 				},
 				Config: tableConfigWithoutDataRetentionTimeInDays(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
+					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", "5"),
 					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 5, 5, 5),
 				),
 			},
@@ -1157,7 +1372,7 @@ func TestAcc_Table_DefaultDataRetentionTime_SetOutsideOfTerraform(t *testing.T) 
 				},
 				Config: tableConfigWithoutDataRetentionTimeInDays(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
+					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", "5"),
 					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 5, 5, 5),
 				),
 			},
@@ -1209,23 +1424,9 @@ func TestAcc_Table_DefaultDataRetentionTimeSettingUnsetting(t *testing.T) {
 				),
 			},
 			{
-				Config: tableConfigWithDataRetentionTimeInDays(tableId, -1),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
-					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 10, 3, 3),
-				),
-			},
-			{
 				Config: tableConfigWithoutDataRetentionTimeInDays(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
-					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 10, 3, 3),
-				),
-			},
-			{
-				Config: tableConfigWithDataRetentionTimeInDays(tableId, -1),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", r.IntDefaultString),
+					resource.TestCheckResourceAttr("snowflake_table.test", "data_retention_time_in_days", "3"),
 					checkDatabaseSchemaAndTableDataRetentionTime(tableId, 10, 3, 3),
 				),
 			},
@@ -1336,12 +1537,17 @@ resource "snowflake_table" "test_table" {
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
 }
 
-// TODO [SNOW-1348114]: do not trim the data type (e.g. NUMBER(38,0) -> NUMBER(36,0) diff is ignored); finish the test
-// proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2588 is fixed
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/2588 is fixed
 func TestAcc_ColumnTypeChangeWithNonTextType(t *testing.T) {
-	t.Skipf("Will be fixed with tables redesign in SNOW-1348114")
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	placeholder := []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0}}
 
-	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	columnsWide := []model.TableColumnConfig{{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0}}
+	columnsNarrow := []model.TableColumnConfig{{Name: "ID", Type: testdatatypes.DataTypeNumber_36_0}}
+
+	modelWide := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).WithColumnConfigs(columnsWide...)
+	modelNarrow := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).WithColumnConfigs(columnsNarrow...)
+	ref := modelWide.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -1351,42 +1557,30 @@ func TestAcc_ColumnTypeChangeWithNonTextType(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
-				Config: tableConfigWithNumberColumnType(tableId, "NUMBER(38,0)"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "id"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "NUMBER(38,0)"),
-				),
+				Config: accconfig.FromModels(t, modelWide),
+				Check:  assertThat(t, tableColumnListChecks(ref, columnsWide)...),
+			},
+			// Decreasing the precision is an in-place ALTER without COLLATE.
+			{
+				Config: accconfig.FromModels(t, modelNarrow),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, tableColumnListChecks(ref, columnsNarrow)...),
 			},
 			{
-				Config: tableConfigWithNumberColumnType(tableId, "NUMBER(36,0)"),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "id"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "NUMBER(36,0)"),
-				),
+				Config: accconfig.FromModels(t, modelWide),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(t, tableColumnListChecks(ref, columnsWide)...),
 			},
 		},
 	})
-}
-
-func tableConfigWithNumberColumnType(tableId sdk.SchemaObjectIdentifier, columnType string) string {
-	return fmt.Sprintf(`
-resource "snowflake_table" "test_table" {
-	database            = "%[1]s"
-	schema              = "%[2]s"
-	name                = "%[3]s"
-
-	column {
-		name = "id"
-		type = "%[4]s"
-	}
-}
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), columnType)
 }
 
 // proves https://github.com/Snowflake-Labs/terraform-provider-snowflake/issues/2733 is fixed
@@ -1450,6 +1644,101 @@ resource "snowflake_table" "test_table" {
   }
 }
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+}
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/2844 is fixed
+// and documents https://github.com/snowflakedb/terraform-provider-snowflake/issues/1387 (column names are case-sensitive)
+func TestAcc_Table_issue2844_apostropheInColumnName(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+	columnNames := []string{"my'id", `My"Col`, "project_id"}
+	tableModel := model.TableWithId("test", tableId, collections.Map(columnNames, func(name string) sdk.TableColumnSignature {
+		return sdk.TableColumnSignature{Name: name, Type: testdatatypes.DataTypeInteger}
+	}))
+	ref := tableModel.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, tableModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasNameString(tableId.Name()),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.name", columnNames[0])),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.1.name", columnNames[1])),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.2.name", columnNames[2])),
+					assert.Check(func(*terraform.State) error {
+						cols := testClient().Table.GetTableColumnsFor(t, tableId)
+						if len(cols) != len(columnNames) {
+							return fmt.Errorf("expected %d Snowflake columns; got %d", len(columnNames), len(cols))
+						}
+						for i, name := range columnNames {
+							if cols[i].ColumnName != name {
+								return fmt.Errorf("expected Snowflake column name %q; got %q", name, cols[i].ColumnName)
+							}
+						}
+						return nil
+					}),
+				),
+			},
+		},
+	})
+}
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/4146 is fixed
+func TestAcc_Table_StructuredArray_issue4146(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	placeholder := []sdk.TableColumnSignature{{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0}}
+	withArrayType := func(arrayType string) *model.TableModel {
+		return model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+			WithColumnValue(tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"name": tfconfig.StringVariable("SOME_STRUCTURED_ARRAY"),
+				"type": tfconfig.StringVariable(arrayType),
+			})))
+	}
+	modelExplicit := withArrayType("ARRAY(NUMBER(38,0))")
+	modelShort := withArrayType("ARRAY(NUMBER)")
+	ref := modelExplicit.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelExplicit),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.type", "ARRAY(NUMBER(38,0))")),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, modelShort),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+					},
+				},
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.0.type", "ARRAY(NUMBER(38,0))")),
+				),
+			},
+		},
+	})
 }
 
 // TestAcc_Table_migrateFromV2_23_0 checks the state upgrader.
@@ -1667,7 +1956,6 @@ func TestAcc_Table_issue3007_textColumn(t *testing.T) {
 	})
 }
 
-// TODO [SNOW-1348114]: visit with table rework (e.g. changing scale is not supported: err 040052 (22000): SQL compilation error: cannot change column SOME_COLUMN from type NUMBER(38,0) to NUMBER(11,2) because changing the scale of a number is not supported.)
 func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
@@ -1735,6 +2023,12 @@ func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "column.1.type", defaultNumber),
 				),
+			},
+			// Snowflake cannot change the scale of a NUMBER column in place.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   tableConfigIssue3007(tableId, "NUMBER(38,2)"),
+				ExpectError:              regexp.MustCompile("changing the scale of a number is not supported"),
 			},
 		},
 	})
@@ -1981,7 +2275,8 @@ func TestAcc_Table_Transient(t *testing.T) {
 				Config: accconfig.FromModels(t, tableModelWithoutTransient),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						// is_transient forces a new resource, so removing it from the configuration replaces the table.
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionDestroyBeforeCreate),
 					},
 				},
 			},
@@ -2146,6 +2441,52 @@ func TestAcc_Table_SchemaEvolutionErrorLoggingRowTimestamp(t *testing.T) {
 						HasEnableSchemaEvolution(false).
 						HasErrorLogging(false).
 						HasRowTimestamp(false),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Table_ErrorLoggingAndCommentInOneApply(t *testing.T) {
+	id := testClient().Ids.RandomSchemaObjectIdentifier()
+	comment := random.Comment()
+	columns := []sdk.TableColumnSignature{
+		{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0},
+	}
+
+	modelBasic := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns)
+	// Snowflake silently ignores the other properties of a SET that enables ERROR_LOGGING,
+	// so the provider has to apply error_logging separately from the comment.
+	modelBoth := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).
+		WithErrorLogging("true").
+		WithComment(comment)
+	ref := modelBasic.ResourceReference()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			{
+				Config: accconfig.FromModels(t, modelBasic),
+			},
+			{
+				Config: accconfig.FromModels(t, modelBoth),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: assertThat(
+					t,
+					resourceassert.TableResource(t, ref).
+						HasErrorLogging("true").
+						HasComment(comment),
+					resourceshowoutputassert.TableShowOutput(t, ref).
+						HasErrorLogging(true).
+						HasComment(comment),
 				),
 			},
 		},

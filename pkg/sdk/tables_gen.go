@@ -495,14 +495,14 @@ type TableDropSearchOptimizationOn struct {
 }
 
 type TableSet struct {
+	Contact                    []TableContact    `ddl:"keyword" sql:"CONTACT"`
+	ErrorLogging               *bool             `ddl:"parameter" sql:"ERROR_LOGGING"`
 	EnableSchemaEvolution      *bool             `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
 	DataRetentionTimeInDays    *int              `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int              `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	ChangeTracking             *bool             `ddl:"parameter" sql:"CHANGE_TRACKING"`
 	DefaultDdlCollation        *StringAllowEmpty `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
 	IcebergDefaultDdlCollation *StringAllowEmpty `ddl:"parameter" sql:"ICEBERG_DEFAULT_DDL_COLLATION"`
-	ErrorLogging               *bool             `ddl:"parameter" sql:"ERROR_LOGGING"`
-	Contact                    []TableContact    `ddl:"keyword" sql:"CONTACT"`
 	Comment                    *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
 	RowTimestamp               *bool             `ddl:"parameter" sql:"ROW_TIMESTAMP"`
 }

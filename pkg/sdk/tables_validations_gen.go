@@ -440,8 +440,17 @@ func (opts *AlterTableOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.IcebergDefaultDdlCollation, opts.Set.ErrorLogging, opts.Set.Contact, opts.Set.Comment, opts.Set.RowTimestamp) {
-			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Set", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "ErrorLogging", "Contact", "Comment", "RowTimestamp"))
+		if anyValueSet(opts.Set.Contact) && anyValueSet(opts.Set.ErrorLogging) {
+			errs = append(errs, errConflictingGroups("AlterTableOptions.Set", []string{"Contact"}, []string{"ErrorLogging"}))
+		}
+		if anyValueSet(opts.Set.Contact) && anyValueSet(opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.IcebergDefaultDdlCollation, opts.Set.Comment, opts.Set.RowTimestamp) {
+			errs = append(errs, errConflictingGroups("AlterTableOptions.Set", []string{"Contact"}, []string{"EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp"}))
+		}
+		if anyValueSet(opts.Set.ErrorLogging) && anyValueSet(opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.IcebergDefaultDdlCollation, opts.Set.Comment, opts.Set.RowTimestamp) {
+			errs = append(errs, errConflictingGroups("AlterTableOptions.Set", []string{"ErrorLogging"}, []string{"EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp"}))
+		}
+		if !anyValueSet(opts.Set.Contact, opts.Set.ErrorLogging, opts.Set.EnableSchemaEvolution, opts.Set.DataRetentionTimeInDays, opts.Set.MaxDataExtensionTimeInDays, opts.Set.ChangeTracking, opts.Set.DefaultDdlCollation, opts.Set.IcebergDefaultDdlCollation, opts.Set.Comment, opts.Set.RowTimestamp) {
+			errs = append(errs, errAtLeastOneOf("AlterTableOptions.Set", "Contact", "ErrorLogging", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp"))
 		}
 	}
 	if valueSet(opts.SetTags) {

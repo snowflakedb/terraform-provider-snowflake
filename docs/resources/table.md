@@ -165,7 +165,7 @@ resource "snowflake_sequence" "sequence" {
 
 Required:
 
-- `name` (String) Column name
+- `name` (String) Column name. The provider always double-quotes it, so the name is case-sensitive: `id` and `ID` are different columns. Use uppercase to get the same column as an unquoted identifier in SQL.
 - `type` (String) Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).
 
 Optional:

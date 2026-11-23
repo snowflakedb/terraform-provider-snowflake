@@ -307,6 +307,18 @@ func init() {
 		)
 
 	tablesTests.Alter.
+		withModify(case_Tables_validation_Alter_opts_Set_ConflictingGroups_Contact_ErrorLogging, func(opts *AlterTableOptions) {
+			opts.Set = &TableSet{
+				Contact:      []TableContact{{Purpose: "SUPPORT", Contact: contactId}},
+				ErrorLogging: new(true),
+			}
+		}).
+		withModify(case_Tables_validation_Alter_opts_Set_ConflictingGroups_Contact_EnableSchemaEvolution_DataRetentionTimeInDays_MaxDataExtensionTimeInDays_ChangeTracking_DefaultDdlCollation_IcebergDefaultDdlCollation_Comment_RowTimestamp, func(opts *AlterTableOptions) {
+			opts.Set = &TableSet{
+				Contact:               []TableContact{{Purpose: "SUPPORT", Contact: contactId}},
+				EnableSchemaEvolution: new(true),
+			}
+		}).
 		withModify(case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
 			opts.ClusteringAction = &TableClusteringAction{ClusterBy: []string{"a"}, DropClusteringKey: new(true)}
 		}).
@@ -686,14 +698,28 @@ func init() {
 					ChangeTracking:             new(false),
 					DefaultDdlCollation:        new(StringAllowEmpty{Value: "us"}),
 					IcebergDefaultDdlCollation: new(StringAllowEmpty{Value: "en-ci"}),
-					ErrorLogging:               new(true),
-					Contact:                    []TableContact{{Purpose: "SUPPORT", Contact: contactId}},
 					Comment:                    &tableComment,
 					RowTimestamp:               new(true),
 				}
 			},
-			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' ICEBERG_DEFAULT_DDL_COLLATION = 'en-ci' ERROR_LOGGING = true CONTACT SUPPORT = %s COMMENT = '%s' ROW_TIMESTAMP = true`,
-			id.FullyQualifiedName(), contactId.FullyQualifiedName(), tableComment,
+			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' ICEBERG_DEFAULT_DDL_COLLATION = 'en-ci' COMMENT = '%s' ROW_TIMESTAMP = true`,
+			id.FullyQualifiedName(), tableComment,
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_SetErrorLogging",
+			func(opts *AlterTableOptions) {
+				opts.Set = &TableSet{ErrorLogging: new(true)}
+			},
+			`ALTER TABLE %s SET ERROR_LOGGING = true`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_SetContact",
+			func(opts *AlterTableOptions) {
+				opts.Set = &TableSet{Contact: []TableContact{{Purpose: "SUPPORT", Contact: contactId}}}
+			},
+			`ALTER TABLE %s SET CONTACT SUPPORT = %s`,
+			id.FullyQualifiedName(), contactId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_emptyDefaultDdlCollation",

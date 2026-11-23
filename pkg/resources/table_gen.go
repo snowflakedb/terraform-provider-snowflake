@@ -39,7 +39,7 @@ func Table() *tfschema.Resource {
 			{
 				Version: 0,
 				Type:    cty.EmptyObject,
-				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
+				Upgrade: migrateTableIdAndNewBooleanStringFields,
 			},
 		},
 	}
@@ -176,6 +176,16 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	if diags := tableApplyParametersChanges(d, setUnset.set, setUnset.unset); diags != nil {
 		return diags
 	}
+	if !reflect.DeepEqual(*setUnset.setContact, *sdk.NewTableSetRequest()) {
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*setUnset.setContact)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.setErrorLogging, *sdk.NewTableSetRequest()) {
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*setUnset.setErrorLogging)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	if !reflect.DeepEqual(*setUnset.set, *sdk.NewTableSetRequest()) {
 		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*setUnset.set)); err != nil {
 			return diag.FromErr(err)
@@ -251,24 +261,26 @@ func parseTableJoinPolicy(d *tfschema.ResourceData, prefix string) (sdk.TableJoi
 
 // tableAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
 type tableAlterRequests struct {
-	set          *sdk.TableSetRequest
-	unsetContact *sdk.TableUnsetRequest
-	unset        *sdk.TableUnsetRequest
+	setContact      *sdk.TableSetRequest
+	setErrorLogging *sdk.TableSetRequest
+	set             *sdk.TableSetRequest
+	unsetContact    *sdk.TableUnsetRequest
+	unset           *sdk.TableUnsetRequest
 }
 
 func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequests, error) {
-	set, unsetContact, unset := sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest(), sdk.NewTableUnsetRequest()
+	setContact, setErrorLogging, set, unsetContact, unset := sdk.NewTableSetRequest(), sdk.NewTableSetRequest(), sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest(), sdk.NewTableUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
 		booleanAttributeUpdateSetOnlyBuilder(d, "change_tracking", set.WithChangeTracking),
 		booleanStringAttributeUpdateBuilder(d, "enable_schema_evolution", set.WithEnableSchemaEvolution, unset.WithEnableSchemaEvolution),
-		booleanStringAttributeUpdateBuilder(d, "error_logging", set.WithErrorLogging, unset.WithErrorLogging),
+		booleanStringAttributeUpdateBuilder(d, "error_logging", setErrorLogging.WithErrorLogging, unset.WithErrorLogging),
 		booleanStringAttributeUpdateBuilder(d, "row_timestamp", set.WithRowTimestamp, unset.WithRowTimestamp),
 	)
 	if errs != nil {
 		return nil, errs
 	}
-	return &tableAlterRequests{set: set, unsetContact: unsetContact, unset: unset}, nil
+	return &tableAlterRequests{setContact: setContact, setErrorLogging: setErrorLogging, set: set, unsetContact: unsetContact, unset: unset}, nil
 }
 
 func tableHandleExternalChanges(d *tfschema.ResourceData, table *sdk.Table, withExternalChangesMarking bool) error {

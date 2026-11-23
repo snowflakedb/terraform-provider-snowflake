@@ -44,12 +44,13 @@ func (t *TableModel) WithColumn(column []sdk.TableColumnSignature) *TableModel {
 }
 
 // TableColumnConfig is a richer column definition used in tests that need
-// column fields beyond name and type (comment, nullable).
+// column fields beyond name and type (comment, nullable, collate). A nil Collate leaves the field out of the config.
 type TableColumnConfig struct {
 	Name     string
 	Type     datatypes.DataType
 	Comment  string
 	Nullable *bool
+	Collate  *string
 }
 
 func (t *TableModel) WithColumnConfigs(columns ...TableColumnConfig) *TableModel {
@@ -64,6 +65,9 @@ func (t *TableModel) WithColumnConfigs(columns ...TableColumnConfig) *TableModel
 		}
 		if c.Nullable != nil {
 			m["nullable"] = tfconfig.BoolVariable(*c.Nullable)
+		}
+		if c.Collate != nil {
+			m["collate"] = tfconfig.StringVariable(*c.Collate)
 		}
 		vars[idx] = tfconfig.ObjectVariable(m)
 	}

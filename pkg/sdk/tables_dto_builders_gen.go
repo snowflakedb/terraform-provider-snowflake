@@ -1474,6 +1474,16 @@ func NewTableSetRequest() *TableSetRequest {
 	return &s
 }
 
+func (s *TableSetRequest) WithContact(contact []TableContact) *TableSetRequest {
+	s.Contact = contact
+	return s
+}
+
+func (s *TableSetRequest) WithErrorLogging(errorLogging bool) *TableSetRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
 func (s *TableSetRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *TableSetRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
 	return s
@@ -1501,16 +1511,6 @@ func (s *TableSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllo
 
 func (s *TableSetRequest) WithIcebergDefaultDdlCollation(icebergDefaultDdlCollation StringAllowEmpty) *TableSetRequest {
 	s.IcebergDefaultDdlCollation = &icebergDefaultDdlCollation
-	return s
-}
-
-func (s *TableSetRequest) WithErrorLogging(errorLogging bool) *TableSetRequest {
-	s.ErrorLogging = &errorLogging
-	return s
-}
-
-func (s *TableSetRequest) WithContact(contact []TableContact) *TableSetRequest {
-	s.Contact = contact
 	return s
 }
 

@@ -432,14 +432,14 @@ type TableDropSearchOptimizationOnRequest struct {
 }
 
 type TableSetRequest struct {
+	Contact                    []TableContact
+	ErrorLogging               *bool
 	EnableSchemaEvolution      *bool
 	DataRetentionTimeInDays    *int
 	MaxDataExtensionTimeInDays *int
 	ChangeTracking             *bool
 	DefaultDdlCollation        *StringAllowEmpty
 	IcebergDefaultDdlCollation *StringAllowEmpty
-	ErrorLogging               *bool
-	Contact                    []TableContact
 	Comment                    *string
 	RowTimestamp               *bool
 }
