@@ -308,6 +308,25 @@ State is upgraded automatically: the policy name moves to `masking_policy.policy
 
 Reference: [#4679](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679).
 
+#### `column.projection_policy`
+
+We have added `projection_policy` to [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column`, the same block as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table). It attaches a [projection policy](https://docs.snowflake.com/en/user-guide/projection-policies) to the column. Unlike in `snowflake_iceberg_table`, changing or removing it does not recreate the table: the provider sends `ALTER COLUMN ... SET PROJECTION POLICY ... FORCE` or `UNSET PROJECTION POLICY`.
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "email"
+    type = "VARCHAR"
+    projection_policy {
+      policy_name = snowflake_projection_policy.example.fully_qualified_name
+    }
+  }
+}
+```
+
+The provider reads the policy from [POLICY_REFERENCES](https://docs.snowflake.com/en/sql-reference/functions/policy_references), so a projection policy set outside of Terraform shows up in the next plan. No configuration changes are required unless you want to use the field.
+
 #### `column.nullable` replaced by `column.not_null`
 
 [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.nullable` was removed. Use `column.not_null`, which has the opposite meaning and is the same boolean field as in [`snowflake_hybrid_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/hybrid_table). `not_null = true` creates the column with `NOT NULL`. When you omit it, or set it to `false`, the column accepts null values, which is what `nullable = true` (the default) did. Changing `not_null` on an existing column is still applied in place with `ALTER COLUMN ... SET NOT NULL` or `DROP NOT NULL`.

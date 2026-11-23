@@ -90,7 +90,7 @@ func tableSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta a
 	if err != nil {
 		return err
 	}
-	columns, err := withColumnMaskingPolicies(d.Get("column").([]any), policyRefs)
+	columns, err := withColumnPolicies(d.Get("column").([]any), policyRefs)
 	if err != nil {
 		return err
 	}
@@ -266,6 +266,14 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 			addRequest.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicyId).WithUsing(toColumns(cA.maskingPolicy.using)))
 		}
 
+		if cA.projectionPolicy != "" {
+			projectionPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.projectionPolicy)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+			}
+			addRequest.WithProjectionPolicy(*sdk.NewTableColumnProjectionPolicyRequest(projectionPolicyId))
+		}
+
 		if cA.comment != "" {
 			addRequest.WithComment(cA.comment)
 		}
@@ -344,6 +352,21 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction))
 			if err != nil {
 				return diag.FromErr(fmt.Errorf("error altering column masking policy on table %v: %w", id.FullyQualifiedName(), err))
+			}
+		}
+		if cA.changedProjectionPolicy {
+			columnAction := sdk.NewTableColumnActionRequest()
+			if cA.newColumn.projectionPolicy == "" {
+				columnAction.WithUnsetProjectionPolicy(*sdk.NewTableUnsetColumnProjectionPolicyRequest(cA.newColumn.name))
+			} else {
+				projectionPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.newColumn.projectionPolicy)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("error altering column projection policy on table %v: %w", id.FullyQualifiedName(), err))
+				}
+				columnAction.WithSetProjectionPolicy(*sdk.NewTableSetColumnProjectionPolicyRequest(cA.newColumn.name, projectionPolicyId).WithForce(true))
+			}
+			if err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction)); err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column projection policy on table %v: %w", id.FullyQualifiedName(), err))
 			}
 		}
 	}
@@ -433,8 +456,10 @@ type column struct {
 	identity      *columnIdentity
 	comment       string
 	maskingPolicy *columnMaskingPolicy
-	collate       string
-	as            string
+	// projectionPolicy is the policy name, empty when the column has none.
+	projectionPolicy string
+	collate          string
+	as               string
 }
 
 type columnMaskingPolicy struct {
@@ -447,20 +472,21 @@ type columns []column
 type changedColumns []changedColumn
 
 type changedColumn struct {
-	newColumn             column // our new column
-	changedDataType       bool
-	changedNullConstraint bool
-	droppedDefault        bool
-	changedComment        bool
-	changedMaskingPolicy  bool
-	changedCollate        bool
+	newColumn               column // our new column
+	changedDataType         bool
+	changedNullConstraint   bool
+	droppedDefault          bool
+	changedComment          bool
+	changedMaskingPolicy    bool
+	changedProjectionPolicy bool
+	changedCollate          bool
 }
 
 func (c columns) getChangedColumnProperties(new columns) (changed changedColumns) {
 	changed = make(changedColumns, 0, len(new)*len(c))
 	for _, cO := range c {
 		for _, cN := range new {
-			changeColumn := changedColumn{cN, false, false, false, false, false, false}
+			changeColumn := changedColumn{newColumn: cN}
 			if cO.name == cN.name && cO.dataType != cN.dataType {
 				changeColumn.changedDataType = true
 			}
@@ -477,6 +503,10 @@ func (c columns) getChangedColumnProperties(new columns) (changed changedColumns
 
 			if cO.name == cN.name && !cO.maskingPolicy.equal(cN.maskingPolicy) {
 				changeColumn.changedMaskingPolicy = true
+			}
+
+			if cO.name == cN.name && cO.projectionPolicy != cN.projectionPolicy {
+				changeColumn.changedProjectionPolicy = true
 			}
 
 			if cO.name == cN.name && cO.collate != cN.collate {
@@ -563,8 +593,21 @@ func (p *columnMaskingPolicy) equal(other *columnMaskingPolicy) bool {
 	return p.name == other.name && slices.Equal(p.using, other.using)
 }
 
-// withColumnMaskingPolicies sets each column's masking_policy from POLICY_REFERENCES, like in snowflake_iceberg_table.
-func withColumnMaskingPolicies(columns []any, policyRefs []sdk.PolicyReference) ([]any, error) {
+func getColumnProjectionPolicy(projectionPolicies []any) string {
+	if len(projectionPolicies) != 1 {
+		return ""
+	}
+	projectionPolicy, ok := projectionPolicies[0].(map[string]any)
+	if !ok {
+		return ""
+	}
+	name, _ := projectionPolicy["policy_name"].(string)
+	return name
+}
+
+// withColumnPolicies sets each column's masking_policy and projection_policy from POLICY_REFERENCES, like in
+// snowflake_iceberg_table.
+func withColumnPolicies(columns []any, policyRefs []sdk.PolicyReference) ([]any, error) {
 	var errs []error
 	for _, c := range columns {
 		column, ok := c.(map[string]any)
@@ -576,10 +619,12 @@ func withColumnMaskingPolicies(columns []any, policyRefs []sdk.PolicyReference) 
 		if err != nil {
 			errs = append(errs, fmt.Errorf("column %q: %w", name, err))
 		}
-		if maskingPolicy, ok := columnPolicies["masking_policy"]; ok {
-			column["masking_policy"] = maskingPolicy
-		} else {
-			column["masking_policy"] = []any{}
+		for _, key := range []string{"masking_policy", "projection_policy"} {
+			if policy, ok := columnPolicies[key]; ok {
+				column[key] = policy
+			} else {
+				column[key] = []any{}
+			}
 		}
 	}
 	return columns, errors.Join(errs...)
@@ -613,15 +658,16 @@ func getColumn(from any) (to column) {
 	}
 
 	return column{
-		name:          c["name"].(string),
-		dataType:      c["type"].(string),
-		notNull:       c["not_null"].(bool),
-		_default:      cd,
-		identity:      id,
-		comment:       c["comment"].(string),
-		collate:       c["collate"].(string),
-		maskingPolicy: getColumnMaskingPolicy(c["masking_policy"].([]any)),
-		as:            c["as"].(string),
+		name:             c["name"].(string),
+		dataType:         c["type"].(string),
+		notNull:          c["not_null"].(bool),
+		_default:         cd,
+		identity:         id,
+		comment:          c["comment"].(string),
+		collate:          c["collate"].(string),
+		maskingPolicy:    getColumnMaskingPolicy(c["masking_policy"].([]any)),
+		projectionPolicy: getColumnProjectionPolicy(c["projection_policy"].([]any)),
+		as:               c["as"].(string),
 	}
 }
 
@@ -669,6 +715,14 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 			return nil, err
 		}
 		request.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicyId).WithUsing(toColumns(maskingPolicy.using)))
+	}
+
+	if projectionPolicy := getColumnProjectionPolicy(c["projection_policy"].([]any)); projectionPolicy != "" {
+		projectionPolicyId, err := sdk.ParseSchemaObjectIdentifier(projectionPolicy)
+		if err != nil {
+			return nil, err
+		}
+		request.WithProjectionPolicy(*sdk.NewTableColumnProjectionPolicyRequest(projectionPolicyId))
 	}
 
 	if collate := c["collate"].(string); datatypes.IsTextDataType(dataType) && (collate != "" || c["as"].(string) == "") {

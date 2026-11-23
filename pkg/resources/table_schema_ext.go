@@ -28,6 +28,7 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	maskingPolicy := column["masking_policy"].Elem.(*schema.Resource).Schema
 	maskingPolicy["policy_name"].ValidateDiagFunc = IsValidIdentifier[sdk.SchemaObjectIdentifier]()
 	maskingPolicy["using"].DiffSuppressFunc = IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("name")
+	column["projection_policy"].Elem.(*schema.Resource).Schema["policy_name"].ValidateDiagFunc = IsValidIdentifier[sdk.SchemaObjectIdentifier]()
 
 	column["as"].DiffSuppressFunc = suppressVirtualColumnExpressionNormalization
 

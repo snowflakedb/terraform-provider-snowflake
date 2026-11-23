@@ -57,6 +57,7 @@ type TableColumnConfig struct {
 	Collate            *string
 	MaskingPolicy      *sdk.SchemaObjectIdentifier
 	MaskingPolicyUsing []string
+	ProjectionPolicy   *sdk.SchemaObjectIdentifier
 	// MaskingPolicyUnquoted renders the masking policy name without double quotes (database.schema.name).
 	MaskingPolicyUnquoted bool
 }
@@ -99,6 +100,11 @@ func (t *TableModel) WithColumnConfigs(columns ...TableColumnConfig) *TableModel
 				})...)
 			}
 			m["masking_policy"] = tfconfig.ObjectVariable(maskingPolicy)
+		}
+		if c.ProjectionPolicy != nil {
+			m["projection_policy"] = tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+				"policy_name": tfconfig.StringVariable(c.ProjectionPolicy.FullyQualifiedName()),
+			})
 		}
 		vars[idx] = tfconfig.ObjectVariable(m)
 	}
