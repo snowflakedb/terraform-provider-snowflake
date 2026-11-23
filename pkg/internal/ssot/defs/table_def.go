@@ -26,14 +26,16 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 //   - column.type: IsDataTypeValid and DiffSuppressDataTypes.
 //   - column.nullable: Default true. NativeBool keeps TypeBool and does not emit Default.
 //   - column.comment, masking_policy, and collate: Default "".
+//   - column.default.expression: rejects an empty value and suppresses quoting differences of <sequence>.NEXTVAL.
 //   - column.identity start_num and step_num: Default 1.
 //   - primary_key: Deprecated.
 //
-// Identity and default on a column are mutually exclusive. Snowflake rejects that combination,
-// so the schema does not enforce it. constant, expression, and sequence cannot use ConflictsWith
-// because column is a list.
+// column.default.expression is the raw SQL expression, like in snowflake_iceberg_table. It is sent as DEFAULT
+// unchanged and read back as DESCRIBE TABLE returns it, so string literals keep their quotes.
 //
-// TODO [SNOW-1348114]: there is no such separation of column default kinds on the SDK. Should we keep it in V1?
+// Identity and default on a column are mutually exclusive. Snowflake rejects that combination,
+// so the schema does not enforce it.
+//
 // TODO [SNOW-1348114]: consider adding fully_qualified_name for columns.
 var TableAttrs = struct {
 	ClusterBy                  ssot.Attribute
@@ -90,20 +92,10 @@ var TableAttrs = struct {
 				Description: "Defines the column default value; note due to limitations of Snowflake's ALTER TABLE ADD/MODIFY COLUMN updates to default will not be applied",
 				Children: []ssot.Attribute{
 					{
-						Name:        "constant",
-						Type:        ssot.AttrString,
-						Description: "The default constant value for the column",
-					},
-					{
 						Name:        "expression",
 						Type:        ssot.AttrString,
-						Description: "The default expression value for the column",
-					},
-					{
-						Name:           "sequence",
-						Type:           ssot.AttrIdentifier,
-						IdentifierType: "SchemaObjectIdentifier",
-						Description:    "The default sequence to use for the column",
+						Required:    true,
+						Description: "The default value as a SQL expression, sent unchanged as `DEFAULT <expression>`. Quote string literals, for example `'pending'`. An empty string (`\"\"`) is an empty string default: it is sent as `''`, and Snowflake returns it as `''`, so `\"\"` and `\"''\"` show no difference. Use `<sequence>.NEXTVAL` for a sequence, for example `\"${snowflake_sequence.example.fully_qualified_name}.NEXTVAL\"`.",
 					},
 				},
 			},
@@ -993,8 +985,10 @@ var Table = ssot.Object{
 		DefaultDdlCollation,
 	},
 	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
+	// v2.24.0 added fields and changed the shape of column fields. One upgrader covers every change of that release.
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
-		"migrateTableIdAndNewBooleanStringFields",
+		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
+		"migrateTableToV2_24_0",
 	},
 	CustomOperations: append(tableCreateVariantOperations, tableDescribeOperations...),
 	Attributes: []ssot.Attribute{

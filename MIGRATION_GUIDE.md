@@ -68,7 +68,7 @@ We have also added these computed fields:
 - `describe_output` holds the output of [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table) `TYPE = COLUMNS`, including `schema_evolution_record`.
 - `parameters` holds the output of [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters), including Iceberg-only keys that are not resource attributes.
 
-The next plan updates every existing `snowflake_table` to fill these blocks. No configuration changes are required unless you want to reference the new outputs.
+The next plan updates every existing `snowflake_table` to fill these blocks. State is upgraded automatically: `is_transient`, `enable_schema_evolution`, `error_logging`, and `row_timestamp` are set to `default` in the existing state, so the upgrade does not recreate the table. No configuration changes are required unless you want to reference the new outputs.
 
 References: [#1272](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1272), [#2676](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2676), [#4266](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4266).
 
@@ -204,6 +204,72 @@ Import of [`snowflake_table`](https://registry.terraform.io/providers/snowflaked
 `tables.*.describe_output.*.type` in [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) is now parsed and shown in a normalized format, e.g. `NUMBER(38, 0)` instead of `NUMBER(38,0)`. When the provider cannot parse a type, it shows the value returned by DESCRIBE TABLE. `column.*.type` in `snowflake_table` is unchanged.
 
 No configuration changes are required. Update any references that compare `describe_output` types as strings.
+
+#### `column.default` is a single expression
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.default` now has one required field, `expression`, the same as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table). The `constant` and `sequence` fields were removed.
+
+Snowflake keeps one default expression per column, and [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table) returns it as SQL text. The provider used to guess which of the three fields a value belonged to, and it guessed wrong in some cases: a text default such as `'NUMBER(38,15)'` was read back as an `expression` and planned an update on every run, and a `constant = ""` crashed the provider. The provider now sends `expression` unchanged as `DEFAULT <expression>` and stores the value DESCRIBE TABLE returns. String literals keep their quotes. An empty `expression` (`""`) is an empty string default: the provider sends it as `''`, which is what DESCRIBE TABLE returns for it, so `""` and `"''"` are interchangeable and neither plans a change after the other. A bare `DEFAULT` without an expression is not valid SQL, so the provider never sends one. An `expression` made only of whitespace is rejected. A `<sequence>.NEXTVAL` expression shows no difference when only the quoting of the sequence name differs.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "status"
+    type = "VARCHAR(16)"
+    default {
+      constant = "pending"
+    }
+  }
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+    default {
+      sequence = snowflake_sequence.example.fully_qualified_name
+    }
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "status"
+    type = "VARCHAR(16)"
+    default {
+      expression = "'pending'"
+    }
+  }
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+    default {
+      expression = "${snowflake_sequence.example.fully_qualified_name}.NEXTVAL"
+    }
+  }
+}
+```
+
+State is upgraded automatically. A `constant` on a text column becomes a quoted string literal (`pending` becomes `'pending'`), a `constant` on any other type is kept as it is (`FALSE` stays `FALSE`), a `sequence` becomes `<sequence>.NEXTVAL`, and an `expression` is kept. Update the configuration the same way. If you keep the old fields, the plan fails because they no longer exist.
+
+An empty string default, which `constant = ""` could not express, is now `expression = ""` (or the equivalent `expression = "''"`):
+
+```terraform
+column {
+  name = "notes"
+  type = "VARCHAR(256)"
+  default {
+    expression = ""
+  }
+}
+```
+
+References: [#2406](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2406), [#5167](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5167).
 
 ### *(new feature)* `VECTOR` arguments in `snowflake_masking_policy` and `snowflake_row_access_policy`
 

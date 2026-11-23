@@ -13,6 +13,7 @@ import (
 	tfjson "github.com/hashicorp/terraform-json"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceparametersassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
@@ -36,6 +37,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
+	"github.com/stretchr/testify/require"
 )
 
 // TODO [SNOW-3151661]: test creation with DECFLOAT column
@@ -655,6 +657,13 @@ func TestAcc_Table_Validations(t *testing.T) {
 				Config:      accconfig.FromModels(t, model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), columns).WithEnableSchemaEvolution("INVALID")),
 				ExpectError: regexp.MustCompile(`expected .*enable_schema_evolution.* to be one of .*, got INVALID`),
 			},
+			// An expression that contains only whitespace is rejected, unlike "" which is an empty string default.
+			{
+				Config: accconfig.FromModels(t, model.TableWithId("test", id, nil).WithColumnConfigs(
+					model.TableColumnConfig{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0, DefaultExpression: new("  ")},
+				)),
+				ExpectError: regexp.MustCompile(`The default expression cannot be only whitespace`),
+			},
 		},
 	})
 }
@@ -691,28 +700,33 @@ func TestAcc_TableDefaults(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: tableColumnWithDefaults(tableId),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("snowflake_table.test_table", plancheck.ResourceActionNoop),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "database", TestDatabaseName),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "schema", TestSchemaName),
 					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "change_tracking"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "comment", "Terraform acceptance test"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "5"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARCHAR(16)"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.default.0.constant", "hello"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.type.default.0.expression"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.type.default.0.sequence"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.default.0.expression", "'hello'"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "TIMESTAMP_NTZ(9)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.1.type.default.0.constant"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.default.0.expression", "CURRENT_TIMESTAMP()"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.1.type.default.0.sequence"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.name", "column3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.type", "NUMBER(38,0)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.constant"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.expression"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.0.sequence", fmt.Sprintf(`"%v"."%v"."%v"`, TestDatabaseName, TestSchemaName, tableId.Name())),
+					resource.TestMatchResourceAttr("snowflake_table.test_table", "column.2.default.0.expression", regexp.MustCompile(`(?i)\.NEXTVAL$`)),
+					// https://github.com/snowflakedb/terraform-provider-snowflake/issues/2406
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.3.name", "column4"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.3.default.0.expression", "''"),
+					// https://github.com/snowflakedb/terraform-provider-snowflake/issues/5167
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.4.name", "column5"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.4.default.0.expression", "'NUMBER(38,15)'"),
 					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
 				),
 			},
@@ -727,15 +741,13 @@ func TestAcc_TableDefaults(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "VARCHAR(16)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.default.0"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.default.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "TIMESTAMP_NTZ(9)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.1.type.default"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.default.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.name", "column3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.type", "NUMBER(38,0)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.constant"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.expression"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.0.sequence", fmt.Sprintf(`"%v"."%v"."%v"`, TestDatabaseName, TestSchemaName, tableId.Name())),
+					resource.TestMatchResourceAttr("snowflake_table.test_table", "column.2.default.0.expression", regexp.MustCompile(`(?i)\.NEXTVAL$`)),
 					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
 				),
 			},
@@ -761,7 +773,7 @@ resource "snowflake_table" "test_table" {
 		name = "column1"
 		type = "VARCHAR(16)"
 		default {
-			constant = "hello"
+			expression = "'hello'"
 		}
 	}
 	column {
@@ -775,7 +787,21 @@ resource "snowflake_table" "test_table" {
 		name = "column3"
 		type = "NUMBER(38,0)"
 		default {
-			sequence = snowflake_sequence.test_seq.fully_qualified_name
+			expression = "${snowflake_sequence.test_seq.fully_qualified_name}.NEXTVAL"
+		}
+	}
+	column {
+		name = "column4"
+		type = "VARCHAR(22)"
+		default {
+			expression = "''"
+		}
+	}
+	column {
+		name = "column5"
+		type = "STRING"
+		default {
+			expression = "'NUMBER(38,15)'"
 		}
 	}
 }
@@ -808,11 +834,123 @@ resource "snowflake_table" "test_table" {
 		name = "column3"
 		type = "NUMBER(38,0)"
 		default {
-			sequence = snowflake_sequence.test_seq.fully_qualified_name
+			expression = "${snowflake_sequence.test_seq.fully_qualified_name}.NEXTVAL"
 		}
 	}
 }
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+}
+
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/2406 is fixed
+// An empty column.default.expression is an empty string default. It is sent as the empty string literal (a bare DEFAULT
+// is not valid SQL) and does not drift against the literal returned by DESCRIBE TABLE, so both spellings are interchangeable.
+func TestAcc_Table_EmptyStringColumnDefault_issue2406(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	emptyExpression := model.TableColumnConfig{Name: "EMPTY_EXPRESSION", Type: testdatatypes.DataTypeVarchar_50, DefaultExpression: new("")}
+	emptyLiteral := model.TableColumnConfig{Name: "EMPTY_LITERAL", Type: testdatatypes.DataTypeVarchar_50, DefaultExpression: new("''")}
+	emptyExpressionAsLiteral := model.TableColumnConfig{Name: emptyExpression.Name, Type: emptyExpression.Type, DefaultExpression: emptyLiteral.DefaultExpression}
+	emptyLiteralAsExpression := model.TableColumnConfig{Name: emptyLiteral.Name, Type: emptyLiteral.Type, DefaultExpression: emptyExpression.DefaultExpression}
+	text := model.TableColumnConfig{Name: "TEXT", Type: testdatatypes.DataTypeVarchar_50, DefaultExpression: new("'text'")}
+	addedEmptyExpression := model.TableColumnConfig{Name: "ADDED_EMPTY_EXPRESSION", Type: testdatatypes.DataTypeVarchar_50, DefaultExpression: new("")}
+
+	tableModel := func(columns ...model.TableColumnConfig) *model.TableModel {
+		return model.TableWithId("test", tableId, nil).WithColumnConfigs(columns...)
+	}
+	modelBasic := tableModel(emptyExpression, emptyLiteral, text)
+	modelSwapped := tableModel(emptyExpressionAsLiteral, emptyLiteralAsExpression, text)
+	modelWithAddedColumn := tableModel(emptyExpression, emptyLiteral, text, addedEmptyExpression)
+	ref := modelBasic.ResourceReference()
+
+	// DESCRIBE TABLE returns the empty string default as '' regardless of how it was configured
+	assertSnowflakeColumnDefaults := func(expectedDefaults map[string]string) assert.TestCheckFuncProvider {
+		return assert.Check(func(*terraform.State) error {
+			details := testClient().Table.DescribeColumns(t, tableId)
+			require.Len(t, details, len(expectedDefaults))
+			for _, column := range details {
+				assertThatObject(t, objectassert.TableColumnDetailsFromObject(t, &column).
+					HasName(column.Name).
+					HasDefault(expectedDefaults[column.Name]),
+				)
+			}
+			return nil
+		})
+	}
+
+	expectedColumn := func(column model.TableColumnConfig) resourceassert.ExpectedTableColumn {
+		return resourceassert.ExpectedTableColumn{Name: column.Name, Type: column.Type.ToSql(), DefaultExpression: *column.DefaultExpression}
+	}
+	// the empty string default is reported as '' whichever way it was configured
+	expectedEmptyDefault := func(column model.TableColumnConfig) resourceassert.ExpectedTableColumn {
+		return resourceassert.ExpectedTableColumn{Name: column.Name, Type: column.Type.ToSql(), DefaultExpression: "''"}
+	}
+
+	emptyPlanAfterApply := resource.ConfigPlanChecks{
+		PostApplyPostRefresh: []plancheck.PlanCheck{
+			plancheck.ExpectEmptyPlan(),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			// Create: an empty expression and the explicit literal produce the same default.
+			{
+				Config:           accconfig.FromModels(t, modelBasic),
+				ConfigPlanChecks: emptyPlanAfterApply,
+				Check: assertThat(t,
+					resourceassert.TableResource(t, ref).
+						HasNameString(tableId.Name()).
+						HasColumns(expectedEmptyDefault(emptyExpression), expectedEmptyDefault(emptyLiteral), expectedColumn(text)),
+					assertSnowflakeColumnDefaults(map[string]string{
+						emptyExpression.Name: "''",
+						emptyLiteral.Name:    "''",
+						text.Name:            "'text'",
+					}),
+				),
+			},
+			// Swap the two spellings: the default is the same, so there is nothing to change.
+			{
+				Config: accconfig.FromModels(t, modelSwapped),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
+				Check: assertThat(t,
+					resourceassert.TableResource(t, ref).
+						HasColumns(expectedEmptyDefault(emptyExpressionAsLiteral), expectedEmptyDefault(emptyLiteralAsExpression), expectedColumn(text)),
+					assertSnowflakeColumnDefaults(map[string]string{
+						emptyExpression.Name: "''",
+						emptyLiteral.Name:    "''",
+						text.Name:            "'text'",
+					}),
+				),
+			},
+			// Add a column with an empty expression to the existing table (ALTER TABLE ... ADD COLUMN).
+			{
+				Config:           accconfig.FromModels(t, modelWithAddedColumn),
+				ConfigPlanChecks: emptyPlanAfterApply,
+				Check: assertThat(t,
+					resourceassert.TableResource(t, ref).
+						HasColumns(expectedEmptyDefault(emptyExpression), expectedEmptyDefault(emptyLiteral), expectedColumn(text), expectedEmptyDefault(addedEmptyExpression)),
+					assertSnowflakeColumnDefaults(map[string]string{
+						emptyExpression.Name:      "''",
+						emptyLiteral.Name:         "''",
+						text.Name:                 "'text'",
+						addedEmptyExpression.Name: "''",
+					}),
+				),
+			},
+		},
+	})
 }
 
 func TestAcc_TableIdentity(t *testing.T) {
@@ -835,16 +973,12 @@ func TestAcc_TableIdentity(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "NUMBER(38,0)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.type.default.0.expression"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.type.default.0.sequence"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.default.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "TIMESTAMP_NTZ(9)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.1.type.default.0.constant"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.1.type.default.0.sequence"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.name", "column3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.type", "NUMBER(38,0)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.constant"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.expression"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.identity.0.start_num", "1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.identity.0.step_num", "1"),
 					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "primary_key.0"),
@@ -860,14 +994,10 @@ func TestAcc_TableIdentity(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.name", "column1"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.type", "NUMBER(38,0)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.type.default.0.expression"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.type.default.0.sequence"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.0.default.#", "0"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "column2"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.type", "TIMESTAMP_NTZ(9)"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.1.type.default.0.constant"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.1.type.default.0.sequence"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.constant"),
-					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.2.type.default.0.expression"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.#", "0"),
 					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.identity.0.start_num"),
 					resource.TestCheckNoResourceAttr("snowflake_table.test_table", "column.0.identity.0.step_num"),
 					// we've dropped the previous identity column and making sure that adding a new column as an identity works
@@ -1745,10 +1875,17 @@ func TestAcc_Table_StructuredArray_issue4146(t *testing.T) {
 func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	comment := random.Comment()
+	sequenceId, sequenceCleanup := testClient().Sequence.Create(t)
+	t.Cleanup(sequenceCleanup)
 
 	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.TableResource))
-	tableModel := model.TableWithId("test", id, tableColumns).WithComment(comment)
+	tableModelV2_23_0 := model.TableWithId("test", id, tableColumns).WithComment(comment).
+		WithColumnValue(tableMigrationV2_23_0Columns(sequenceId))
+	tableModel := model.TableWithId("test", id, tableColumns).WithComment(comment).
+		WithColumnValue(tableMigrationCurrentColumns(sequenceId))
 	ref := tableModel.ResourceReference()
+	// DESCRIBE TABLE returns the sequence name without the double quotes, unlike its database and schema.
+	sequenceNextval := fmt.Sprintf(`"%s"."%s".%s.NEXTVAL`, sequenceId.DatabaseName(), sequenceId.SchemaName(), sequenceId.Name())
 
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -1759,13 +1896,13 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 			// Create - the previous provider with the pipe-separated id
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.23.0"),
-				Config:            accconfig.FromModels(t, providerModel, tableModel),
+				Config:            accconfig.FromModels(t, providerModel, tableModelV2_23_0),
 				Check: assertThat(
 					t,
 					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id))),
 				),
 			},
-			// Upgrade - the state upgrader rewrites the id
+			// Upgrade - the state upgraders rewrite the id and the column fields
 			{
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1783,10 +1920,54 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasCommentString(comment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
+					resourceassert.TableResource(t, ref).
+						HasColumns(
+							resourceassert.ExpectedTableColumn{Name: "ID", Type: "NUMBER(38,0)"},
+							resourceassert.ExpectedTableColumn{Name: "TEXT_DEFAULT", Type: "VARCHAR(16)", DefaultExpression: "'hello'"},
+							resourceassert.ExpectedTableColumn{Name: "BOOLEAN_DEFAULT", Type: "BOOLEAN", DefaultExpression: "FALSE"},
+							resourceassert.ExpectedTableColumn{Name: "EXPRESSION_DEFAULT", Type: "TIMESTAMP_NTZ(9)", DefaultExpression: "CURRENT_TIMESTAMP()"},
+							resourceassert.ExpectedTableColumn{Name: "SEQUENCE_DEFAULT", Type: "NUMBER(38,0)", DefaultExpression: sequenceNextval},
+						),
 				),
 			},
 		},
 	})
+}
+
+// tableMigrationV2_23_0Columns and tableMigrationCurrentColumns hold the same columns in the v2.23.0 schema and in
+// the current one. Every v2.24.0 change of the column fields adds its columns to both.
+func tableMigrationV2_23_0Columns(sequenceId sdk.SchemaObjectIdentifier) tfconfig.Variable {
+	return tfconfig.ListVariable(
+		tableMigrationColumn("ID", "NUMBER(38,0)", nil),
+		tableMigrationColumn("TEXT_DEFAULT", "VARCHAR(16)", map[string]tfconfig.Variable{"constant": tfconfig.StringVariable("hello")}),
+		tableMigrationColumn("BOOLEAN_DEFAULT", "BOOLEAN", map[string]tfconfig.Variable{"constant": tfconfig.StringVariable("FALSE")}),
+		tableMigrationColumn("EXPRESSION_DEFAULT", "TIMESTAMP_NTZ(9)", map[string]tfconfig.Variable{"expression": tfconfig.StringVariable("CURRENT_TIMESTAMP()")}),
+		tableMigrationColumn("SEQUENCE_DEFAULT", "NUMBER(38,0)", map[string]tfconfig.Variable{"sequence": tfconfig.StringVariable(sequenceId.FullyQualifiedName())}),
+	)
+}
+
+func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier) tfconfig.Variable {
+	expression := func(value string) map[string]tfconfig.Variable {
+		return map[string]tfconfig.Variable{"expression": tfconfig.StringVariable(value)}
+	}
+	return tfconfig.ListVariable(
+		tableMigrationColumn("ID", "NUMBER(38,0)", nil),
+		tableMigrationColumn("TEXT_DEFAULT", "VARCHAR(16)", expression("'hello'")),
+		tableMigrationColumn("BOOLEAN_DEFAULT", "BOOLEAN", expression("FALSE")),
+		tableMigrationColumn("EXPRESSION_DEFAULT", "TIMESTAMP_NTZ(9)", expression("CURRENT_TIMESTAMP()")),
+		tableMigrationColumn("SEQUENCE_DEFAULT", "NUMBER(38,0)", expression(sequenceId.FullyQualifiedName()+".NEXTVAL")),
+	)
+}
+
+func tableMigrationColumn(name string, columnType string, defaultValue map[string]tfconfig.Variable) tfconfig.Variable {
+	column := map[string]tfconfig.Variable{
+		"name": tfconfig.StringVariable(name),
+		"type": tfconfig.StringVariable(columnType),
+	}
+	if defaultValue != nil {
+		column["default"] = tfconfig.ObjectVariable(defaultValue)
+	}
+	return tfconfig.ObjectVariable(column)
 }
 
 func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
@@ -1845,21 +2026,26 @@ func TestAcc_Table_SuppressQuotingOnDefaultSequence_issue2644(t *testing.T) {
 				PreConfig:          func() { SetV097CompatibleConfigWithServiceUserPathEnv(t) },
 				ExternalProviders:  ExternalProviderWithExactVersion("0.94.1"),
 				ExpectNonEmptyPlan: true,
-				Config:             providerConfig + tableConfigWithSequence(tableId),
+				Config:             providerConfig + tableConfigWithSequence(tableId, fmt.Sprintf(`sequence = "%s.%s.%s"`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())),
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
-				Config:                   tableConfigWithSequence(tableId),
+				Config:                   tableConfigWithSequence(tableId, fmt.Sprintf(`expression = %q`, tableId.FullyQualifiedName()+".NEXTVAL")),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionNoop),
+					},
+				},
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "column.0.default.0.sequence", tableId.FullyQualifiedName()),
+					resource.TestMatchResourceAttr(resourceName, "column.0.default.0.expression", regexp.MustCompile(`(?i)\.NEXTVAL$`)),
 				),
 			},
 		},
 	})
 }
 
-func tableConfigWithSequence(tableId sdk.SchemaObjectIdentifier) string {
+func tableConfigWithSequence(tableId sdk.SchemaObjectIdentifier, defaultValue string) string {
 	return fmt.Sprintf(`
 resource "snowflake_sequence" "test_sequence" {
 	database = "%[1]s"
@@ -1877,12 +2063,12 @@ resource "snowflake_table" "test_table" {
 		name = "column1"
 		type = "NUMBER"
 		default {
-			sequence = "%[1]s.%[2]s.%[3]s"
+			%[4]s
 		}
 	}
 	depends_on = [snowflake_sequence.test_sequence]
 }
-`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
+`, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name(), defaultValue)
 }
 
 func TestAcc_Table_issue3007_textColumn(t *testing.T) {
@@ -2172,9 +2358,9 @@ func TestAcc_Table_AddColumnWithConstantDefault_issue4730(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "name", tableId.Name()),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.#", "3"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.name", "COLUMN_2"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.default.0.constant", "FALSE"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.1.default.0.expression", "FALSE"),
 					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.name", "column_3"),
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.0.constant", "FALSE"),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "column.2.default.0.expression", "FALSE"),
 				),
 			},
 		},
@@ -2211,14 +2397,14 @@ resource "snowflake_table" "test_table" {
 		name = "COLUMN_2"
 		type = "BOOLEAN"
 		default {
-			constant = "FALSE"
+			expression = "FALSE"
 		}
 	}
 	column {
 		name = "column_3"
 		type = "BOOLEAN"
 		default {
-			constant = "FALSE"
+			expression = "FALSE"
 		}
 	}
 }

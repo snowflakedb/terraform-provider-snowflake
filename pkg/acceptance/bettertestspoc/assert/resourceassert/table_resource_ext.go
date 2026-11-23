@@ -1,8 +1,36 @@
 package resourceassert
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
+
+// ExpectedTableColumn describes the fields of a single `column` block to assert on.
+// An empty DefaultExpression means that the column has no `default` block.
+type ExpectedTableColumn struct {
+	Name              string
+	Type              string
+	DefaultExpression string
+}
+
+// HasColumns asserts all the columns, in the order of the configuration.
+func (t *TableResourceAssert) HasColumns(columns ...ExpectedTableColumn) *TableResourceAssert {
+	t.CollectionLength("column", len(columns))
+	for index, column := range columns {
+		prefix := fmt.Sprintf("column.%d.", index)
+		t.ValueSet(prefix+"name", column.Name)
+		t.ValueSet(prefix+"type", column.Type)
+
+		if column.DefaultExpression != "" {
+			t.CollectionLength(prefix+"default", 1)
+			t.ValueSet(prefix+"default.0.expression", column.DefaultExpression)
+		} else {
+			t.CollectionLength(prefix+"default", 0)
+		}
+	}
+	return t
+}
 
 func (t *TableResourceAssert) HasRowAccessPolicy(rowAccessPolicy sdk.SchemaObjectIdentifier, on ...string) *TableResourceAssert {
 	t.ValueSet("row_access_policy.0.policy_name", rowAccessPolicy.FullyQualifiedName())
