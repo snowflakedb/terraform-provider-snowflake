@@ -10,8 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO [SNOW-1031688]: move data manipulation logic to the SDK - SQL generation or builders part (e.g. different default types/identity)
-
 // tableAttributesModificationExt restores schema chrome the generator does not emit.
 func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*schema.Schema {
 	column := s["column"].Elem.(*schema.Resource).Schema
@@ -39,6 +37,7 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	identity := column["identity"].Elem.(*schema.Resource).Schema
 	identity["start_num"].Default = 1
 	identity["step_num"].Default = 1
+	identity["order"].DiffSuppressFunc = SuppressBooleanStringDefaultAgainstKnownValue
 
 	s["primary_key"].Deprecated = "Use snowflake_table_constraint instead"
 

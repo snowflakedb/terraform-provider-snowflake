@@ -305,6 +305,12 @@ func IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem(columnNameField stri
 	}
 }
 
+// SuppressBooleanStringDefaultAgainstKnownValue keeps the value Read reports (true or false) when the configuration
+// leaves a boolean string field at "default", like not_null of snowflake_iceberg_table and order of the table identity.
+func SuppressBooleanStringDefaultAgainstKnownValue(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	return (oldValue == BooleanTrue || oldValue == BooleanFalse) && newValue == BooleanDefault
+}
+
 func ignoreTrimSpaceSuppressFunc(_, old, new string, _ *schema.ResourceData) bool {
 	return strings.TrimSpace(old) == strings.TrimSpace(new)
 }

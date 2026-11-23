@@ -115,6 +115,11 @@ var TableAttrs = struct {
 						Type:        ssot.AttrInt,
 						Description: "Step size to increment by.",
 					},
+					{
+						Name:        "order",
+						Type:        ssot.AttrBool,
+						Description: "Specifies whether the identity values are generated in increasing order (`ORDER`) or with no order guarantee (`NOORDER`). When not set, Snowflake applies the [NOORDER_SEQUENCE_AS_DEFAULT](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default) parameter. Changing it on an existing column is not applied, the same as `start_num` and `step_num`.",
+					},
 				},
 			},
 			{

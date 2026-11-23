@@ -1142,6 +1142,31 @@ func TestTable_GetClusterByKeys(t *testing.T) {
 	})
 }
 
+func TestParseColumnIdentity(t *testing.T) {
+	testCases := []struct {
+		raw      string
+		expected *TableColumnIdentityDetails
+	}{
+		{raw: "IDENTITY START 1 INCREMENT 1", expected: &TableColumnIdentityDetails{Start: 1, Increment: 1}},
+		{raw: "IDENTITY START 2 INCREMENT 4 ORDER", expected: &TableColumnIdentityDetails{Start: 2, Increment: 4, Order: Bool(true)}},
+		{raw: "IDENTITY START -10 INCREMENT -5 NOORDER", expected: &TableColumnIdentityDetails{Start: -10, Increment: -5, Order: Bool(false)}},
+		{raw: "  identity start 1   increment 3 noorder ", expected: &TableColumnIdentityDetails{Start: 1, Increment: 3, Order: Bool(false)}},
+		{raw: "IDENTITY START 1 INCREMENT 1 SOMETHING"},
+		{raw: "IDENTITY START x INCREMENT 1"},
+		{raw: "IDENTITY START 1 INCREMENT"},
+		{raw: "DB.SCH.SEQ.NEXTVAL"},
+		{raw: "'IDENTITY START 1 INCREMENT 1'"},
+		{raw: ""},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.raw, func(t *testing.T) {
+			identity, ok := ParseColumnIdentity(tc.raw)
+			assert.Equal(t, tc.expected != nil, ok)
+			assert.Equal(t, tc.expected, identity)
+		})
+	}
+}
+
 func Test_Table_convertIsDynamic(t *testing.T) {
 	convert := func(t *testing.T, value sql.NullString) *Table {
 		t.Helper()
