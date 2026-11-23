@@ -69,7 +69,7 @@ func TableColumnDetailsToSchema(tableColumnDetails *sdk.TableColumnDetails) map[
 	tableColumnDetailsSchema["name"] = tableColumnDetails.Name
 	// type: manual addition and mapping is needed
 	// type_raw is skipped and won't be generated
-	tableColumnDetailsSchema["kind"] = tableColumnDetails.Kind
+	tableColumnDetailsSchema["kind"] = string(tableColumnDetails.Kind)
 	tableColumnDetailsSchema["is_nullable"] = tableColumnDetails.Null
 	if tableColumnDetails.Default != nil {
 		tableColumnDetailsSchema["default"] = (*tableColumnDetails.Default)

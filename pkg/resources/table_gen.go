@@ -217,6 +217,7 @@ var tableCustomizeDiff = TrackingCustomDiffWrapper(resources.Table, customdiff.A
 	ComputedIfAnyAttributeChanged(tableParametersAttributesSchema, ParametersAttributeName, tableParametersFieldNames...),
 	ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
 	tableParametersCustomDiff,
+	tableVirtualColumnConflicts,
 ))
 
 func tableParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {

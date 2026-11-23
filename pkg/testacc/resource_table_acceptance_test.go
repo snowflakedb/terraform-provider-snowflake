@@ -23,6 +23,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/importchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -93,7 +94,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			HasDataRetentionTimeInDaysLevel(sdk.ParameterTypeDatabase),
 		resourceshowoutputassert.TableColumnDescribeOutputOnIdx(t, ref, 0).
 			HasName("ID").
-			HasKind("COLUMN"),
+			HasKind(sdk.TableColumnKindColumn),
 	}
 
 	// change_tracking is absent from the state when it was never set. After it is removed from the configuration, the
@@ -1876,6 +1877,101 @@ func TestAcc_Table_StructuredArray_issue4146(t *testing.T) {
 	})
 }
 
+// proves https://github.com/snowflakedb/terraform-provider-snowflake/issues/2418 is fixed
+func TestAcc_Table_VirtualColumn_issue2418(t *testing.T) {
+	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
+
+	id := model.TableColumnConfig{Name: "ID", Type: testdatatypes.DataTypeNumber_38_0}
+	doubleId := func(expression string) model.TableColumnConfig {
+		return model.TableColumnConfig{Name: "DOUBLE_ID", Type: testdatatypes.DataTypeNumber_38_0, As: expression, Comment: "computed"}
+	}
+	plusOne := model.TableColumnConfig{Name: "PLUS_ONE", Type: testdatatypes.DataTypeNumber_38_0, As: `"ID" + 1`}
+	invalid := model.TableColumnConfig{Name: "INVALID", Type: testdatatypes.DataTypeNumber_38_0, As: "ID + 2", DefaultExpression: new("1")}
+
+	tableModel := func(columns ...model.TableColumnConfig) *model.TableModel {
+		return model.TableWithId("test_table", tableId, nil).WithColumnConfigs(columns...)
+	}
+	modelSnowflakeNormalized := tableModel(id, doubleId("id*2"))
+	modelChangedExpression := tableModel(id, doubleId("ID * 3"))
+	modelWithAddedColumn := tableModel(id, doubleId("ID * 3"), plusOne)
+	modelWithDefault := tableModel(id, doubleId("ID * 3"), invalid)
+	ref := modelSnowflakeNormalized.ResourceReference()
+
+	noDriftAfterApply := []plancheck.PlanCheck{
+		plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.Table),
+		Steps: []resource.TestStep{
+			// Snowflake reports the expression as ID * 2, which does not plan a change.
+			{
+				Config:           accconfig.FromModels(t, modelSnowflakeNormalized),
+				ConfigPlanChecks: resource.ConfigPlanChecks{PostApplyPostRefresh: noDriftAfterApply},
+				Check: assertThat(t,
+					resourceassert.TableResource(t, ref).
+						HasColumns(
+							resourceassert.ExpectedTableColumn{Name: "ID", Type: "NUMBER(38,0)"},
+							resourceassert.ExpectedTableColumn{Name: "DOUBLE_ID", Type: "NUMBER(38,0)", Comment: "computed", Virtual: "ID * 2"},
+						),
+				),
+			},
+			{
+				ResourceName: ref,
+				ImportState:  true,
+				ImportStateCheck: importchecks.ComposeImportStateCheck(
+					importchecks.TestCheckResourceAttrInstanceState(tableId.FullyQualifiedName(), "column.#", "2"),
+					importchecks.TestCheckResourceAttrInstanceState(tableId.FullyQualifiedName(), "column.1.as", "ID * 2"),
+				),
+			},
+			// Changing the expression drops the column and adds it again.
+			{
+				Config: accconfig.FromModels(t, modelChangedExpression),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+					PostApplyPostRefresh: noDriftAfterApply,
+				},
+				Check: assertThat(t,
+					resourceassert.TableResource(t, ref).
+						HasColumns(
+							resourceassert.ExpectedTableColumn{Name: "ID", Type: "NUMBER(38,0)"},
+							resourceassert.ExpectedTableColumn{Name: "DOUBLE_ID", Type: "NUMBER(38,0)", Comment: "computed", Virtual: "ID * 3"},
+						),
+				),
+			},
+			// Adding a virtual column uses ALTER TABLE ADD COLUMN.
+			{
+				Config: accconfig.FromModels(t, modelWithAddedColumn),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+					PostApplyPostRefresh: noDriftAfterApply,
+				},
+				Check: assertThat(t,
+					resourceassert.TableResource(t, ref).
+						HasColumns(
+							resourceassert.ExpectedTableColumn{Name: "ID", Type: "NUMBER(38,0)"},
+							resourceassert.ExpectedTableColumn{Name: "DOUBLE_ID", Type: "NUMBER(38,0)", Comment: "computed", Virtual: "ID * 3"},
+							resourceassert.ExpectedTableColumn{Name: "PLUS_ONE", Type: "NUMBER(38,0)", Virtual: "ID + 1"},
+						),
+				),
+			},
+			// A virtual column cannot have a default.
+			{
+				Config:      accconfig.FromModels(t, modelWithDefault),
+				ExpectError: regexp.MustCompile("a virtual column \\(as\\) cannot have default or identity"),
+			},
+		},
+	})
+}
+
 // TestAcc_Table_migrateFromV2_23_0 checks the state upgrader.
 func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -1888,7 +1984,11 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 	providerModel := providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.TableResource))
 	tableModelV2_23_0 := model.TableWithId("test", id, tableColumns).WithComment(comment).
 		WithColumnValue(tableMigrationV2_23_0Columns(sequenceId, maskingPolicy.ID()))
+	// v2.23.0 did not read virtual columns, so the virtual column is added outside of Terraform before the upgrade.
+	virtualColumn := tableMigrationColumn("VIRTUAL_COLUMN", "NUMBER(38,0)", map[string]tfconfig.Variable{"as": tfconfig.StringVariable("ID * 2")})
 	tableModel := model.TableWithId("test", id, tableColumns).WithComment(comment).
+		WithColumnValue(tableMigrationCurrentColumns(sequenceId, maskingPolicy.ID(), virtualColumn))
+	tableModelWithoutVirtualColumn := model.TableWithId("test", id, tableColumns).WithComment(comment).
 		WithColumnValue(tableMigrationCurrentColumns(sequenceId, maskingPolicy.ID()))
 	ref := tableModel.ResourceReference()
 	// DESCRIBE TABLE returns the sequence name without the double quotes, unlike its database and schema.
@@ -1911,8 +2011,13 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id))),
 				),
 			},
-			// Upgrade - the state upgraders rewrite the id and the column fields
+			// Upgrade - the state upgraders rewrite the id and the column fields, and Read now reports the virtual column
 			{
+				PreConfig: func() {
+					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(
+						*sdk.NewTableColumnAddActionRequest("VIRTUAL_COLUMN", testdatatypes.DataTypeNumber_38_0).WithVirtual(*sdk.NewTableColumnVirtualRequest("(ID * 2)")),
+					)))
+				},
 				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1938,7 +2043,22 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 							resourceassert.ExpectedTableColumn{Name: "SEQUENCE_DEFAULT", Type: "NUMBER(38,0)", DefaultExpression: sequenceNextval},
 							resourceassert.ExpectedTableColumn{Name: "MASKED", Type: "VARCHAR(16)", MaskingPolicy: new(maskingPolicy.ID()), MaskingPolicyUsing: []string{"MASKED"}},
 							resourceassert.ExpectedTableColumn{Name: "IDENTITY_COLUMN", Type: "NUMBER(38,0)", Identity: &resourceassert.ExpectedTableColumnIdentity{StartNum: 2, StepNum: 3}},
+							resourceassert.ExpectedTableColumn{Name: "VIRTUAL_COLUMN", Type: "NUMBER(38,0)", Virtual: "ID * 2"},
 						),
+				),
+			},
+			// A virtual column that is not in the configuration is dropped.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				Config: accconfig.FromModels(t, providerModel, tableModelWithoutVirtualColumn),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.#", "7")),
 				),
 			},
 		},
@@ -1971,11 +2091,11 @@ func tableMigrationIdentity() map[string]tfconfig.Variable {
 	})}
 }
 
-func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier, maskingPolicyId sdk.SchemaObjectIdentifier) tfconfig.Variable {
+func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier, maskingPolicyId sdk.SchemaObjectIdentifier, extraColumns ...tfconfig.Variable) tfconfig.Variable {
 	expression := func(value string) map[string]tfconfig.Variable {
 		return map[string]tfconfig.Variable{"default": tfconfig.ObjectVariable(map[string]tfconfig.Variable{"expression": tfconfig.StringVariable(value)})}
 	}
-	return tfconfig.ListVariable(
+	return tfconfig.ListVariable(append([]tfconfig.Variable{
 		tableMigrationColumn("ID", "NUMBER(38,0)", nil),
 		tableMigrationColumn("TEXT_DEFAULT", "VARCHAR(16)", expression("'hello'")),
 		tableMigrationColumn("BOOLEAN_DEFAULT", "BOOLEAN", expression("FALSE")),
@@ -1985,7 +2105,7 @@ func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier, masking
 			"masking_policy": tfconfig.ObjectVariable(map[string]tfconfig.Variable{"policy_name": tfconfig.StringVariable(maskingPolicyId.FullyQualifiedName())}),
 		}),
 		tableMigrationColumn("IDENTITY_COLUMN", "NUMBER(38,0)", tableMigrationIdentity()),
-	)
+	}, extraColumns...)...)
 }
 
 func tableMigrationColumn(name string, columnType string, fields map[string]tfconfig.Variable) tfconfig.Variable {

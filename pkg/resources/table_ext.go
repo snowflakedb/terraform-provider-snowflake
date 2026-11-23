@@ -217,7 +217,9 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 	}
 	client := meta.(*provider.Context).Client
 	t, n := d.GetChange("column")
-	removed, added, changed := getColumns(t).diffs(getColumns(n))
+	oldColumns, newColumns := getColumns(t), getColumns(n)
+	removed, added, changed := oldColumns.diffs(newColumns)
+	removed, added, changed = withRecreatedVirtualColumns(oldColumns, newColumns, removed, added, changed)
 
 	if len(removed) > 0 {
 		removedColumnNames := make([]string, len(removed))
@@ -238,6 +240,10 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 		addRequest := sdk.NewTableColumnAddActionRequest(cA.name, dataType)
 		if !cA.nullable {
 			addRequest.WithNotNull(true)
+		}
+
+		if cA.as != "" {
+			addRequest.WithVirtual(*sdk.NewTableColumnVirtualRequest(virtualColumnExpressionSql(cA.as)))
 		}
 
 		if cA._default != nil && cA._default.expression != nil {
@@ -428,6 +434,7 @@ type column struct {
 	comment       string
 	maskingPolicy *columnMaskingPolicy
 	collate       string
+	as            string
 }
 
 type columnMaskingPolicy struct {
@@ -484,6 +491,23 @@ func (c columns) getChangedColumnProperties(new columns) (changed changedColumns
 
 func (c columns) diffs(new columns) (removed columns, added columns, changed changedColumns) {
 	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
+}
+
+// withRecreatedVirtualColumns drops and adds again every column whose virtual expression changed, because Snowflake
+// cannot alter it. The column is added at the end of the table.
+func withRecreatedVirtualColumns(old, new columns, removed, added columns, changed changedColumns) (columns, columns, changedColumns) {
+	recreated := make(map[string]bool)
+	for _, cO := range old {
+		for _, cN := range new {
+			if cO.name == cN.name && !virtualColumnExpressionsEqual(cO.as, cN.as) {
+				recreated[cN.name] = true
+				removed = append(removed, cO)
+				added = append(added, cN)
+			}
+		}
+	}
+	changed = slices.DeleteFunc(changed, func(c changedColumn) bool { return recreated[c.newColumn.name] })
+	return removed, added, changed
 }
 
 // columnDefaultEmptyStringLiteral is the SQL literal of an empty string. It is what Snowflake stores and
@@ -597,6 +621,7 @@ func getColumn(from any) (to column) {
 		comment:       c["comment"].(string),
 		collate:       c["collate"].(string),
 		maskingPolicy: getColumnMaskingPolicy(c["masking_policy"].([]any)),
+		as:            c["as"].(string),
 	}
 }
 
@@ -618,6 +643,10 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 	}
 
 	request := sdk.NewTableColumnRequest(c["name"].(string), dataType)
+
+	if as := c["as"].(string); as != "" {
+		request.WithVirtual(*sdk.NewTableColumnVirtualRequest(virtualColumnExpressionSql(as)))
+	}
 
 	if expression, ok := getColumnDefaultExpression(c["default"].([]any)); ok {
 		request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(expression))
@@ -642,8 +671,8 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 		request.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicyId).WithUsing(toColumns(maskingPolicy.using)))
 	}
 
-	if datatypes.IsTextDataType(dataType) {
-		request.WithCollate(c["collate"].(string))
+	if collate := c["collate"].(string); datatypes.IsTextDataType(dataType) && (collate != "" || c["as"].(string) == "") {
+		request.WithCollate(collate)
 	}
 
 	return request.
@@ -681,10 +710,35 @@ func getPrimaryKey(from any) (to primarykey) {
 	return to
 }
 
+// virtualColumnExpressionSql wraps the expression in the parentheses AS requires. The SDK does not add them.
+func virtualColumnExpressionSql(expression string) string {
+	return fmt.Sprintf("(%s)", expression)
+}
+
+// tableVirtualColumnConflicts rejects a virtual column with a default or an identity, which Snowflake does not allow.
+func tableVirtualColumnConflicts(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	var errs []error
+	for _, c := range d.Get("column").([]any) {
+		column, ok := c.(map[string]any)
+		if !ok {
+			continue
+		}
+		if as, _ := column["as"].(string); as == "" {
+			continue
+		}
+		defaults, _ := column["default"].([]any)
+		identity, _ := column["identity"].([]any)
+		if len(defaults) > 0 || len(identity) > 0 {
+			errs = append(errs, fmt.Errorf("column %q: a virtual column (as) cannot have default or identity", column["name"]))
+		}
+	}
+	return errors.Join(errs...)
+}
+
 func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 	flattened := make([]any, 0)
 	for _, td := range descriptions {
-		if td.Kind != "COLUMN" {
+		if td.Kind != sdk.TableColumnKindColumn && td.Kind != sdk.TableColumnKindVirtual {
 			continue
 		}
 
@@ -699,6 +753,14 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 
 		if td.Collation != nil {
 			flat["collate"] = *td.Collation
+		}
+
+		if td.Kind == sdk.TableColumnKindVirtual {
+			if td.Expression != nil {
+				flat["as"] = *td.Expression
+			}
+			flattened = append(flattened, flat)
+			continue
 		}
 
 		identity := toColumnIdentityConfig(td)

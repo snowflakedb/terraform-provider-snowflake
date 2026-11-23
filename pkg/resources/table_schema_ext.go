@@ -30,6 +30,8 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	maskingPolicy["policy_name"].ValidateDiagFunc = IsValidIdentifier[sdk.SchemaObjectIdentifier]()
 	maskingPolicy["using"].DiffSuppressFunc = IgnoreMatchingColumnNameAndMaskingPolicyUsingFirstElem("name")
 
+	column["as"].DiffSuppressFunc = suppressVirtualColumnExpressionNormalization
+
 	defaultExpression := column["default"].Elem.(*schema.Resource).Schema["expression"]
 	defaultExpression.ValidateDiagFunc = validateTableColumnDefaultExpression
 	defaultExpression.DiffSuppressFunc = suppressColumnDefaultExpressionDifferences
@@ -115,6 +117,44 @@ func suppressColumnDefaultSequenceQuoting(_, oldValue, newValue string, _ *schem
 		return false
 	}
 	return oldId.FullyQualifiedName() == newId.FullyQualifiedName()
+}
+
+func suppressVirtualColumnExpressionNormalization(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+	return virtualColumnExpressionsEqual(oldValue, newValue)
+}
+
+// virtualColumnExpressionsEqual compares expressions the way DESCRIBE TABLE normalizes them: it drops the outer
+// parentheses, unquotes identifiers, uppercases them, and reformats the whitespace.
+func virtualColumnExpressionsEqual(a, b string) bool {
+	return normalizeVirtualColumnExpression(a) == normalizeVirtualColumnExpression(b)
+}
+
+func normalizeVirtualColumnExpression(expression string) string {
+	expression = strings.TrimSpace(expression)
+	for isWrappedInParentheses(expression) {
+		expression = strings.TrimSpace(expression[1 : len(expression)-1])
+	}
+	expression = strings.ReplaceAll(expression, `"`, "")
+	return strings.ToUpper(strings.Join(strings.Fields(expression), ""))
+}
+
+func isWrappedInParentheses(expression string) bool {
+	if len(expression) < 2 || expression[0] != '(' || expression[len(expression)-1] != ')' {
+		return false
+	}
+	depth := 0
+	for i, r := range expression {
+		switch r {
+		case '(':
+			depth++
+		case ')':
+			depth--
+			if depth == 0 && i != len(expression)-1 {
+				return false
+			}
+		}
+	}
+	return depth == 0
 }
 
 func cutNextval(expression string) (string, bool) {
