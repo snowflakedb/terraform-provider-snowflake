@@ -20,6 +20,8 @@ type ExpectedTableColumn struct {
 	// MaskingPolicy is nil when the column has no `masking_policy` block.
 	MaskingPolicy      *sdk.SchemaObjectIdentifier
 	MaskingPolicyUsing []string
+	// ProjectionPolicy is nil when the column has no `projection_policy` block.
+	ProjectionPolicy *sdk.SchemaObjectIdentifier
 	// Virtual is the expression of a virtual column. An empty value means that the column is not asserted to be virtual.
 	Virtual string
 	// Identity is nil when the column has no `identity` block.
@@ -80,6 +82,13 @@ func (t *TableResourceAssert) HasColumns(columns ...ExpectedTableColumn) *TableR
 			}
 		} else {
 			t.CollectionLength(prefix+"masking_policy", 0)
+		}
+
+		if column.ProjectionPolicy != nil {
+			t.CollectionLength(prefix+"projection_policy", 1)
+			t.ValueSet(prefix+"projection_policy.0.policy_name", column.ProjectionPolicy.FullyQualifiedName())
+		} else {
+			t.CollectionLength(prefix+"projection_policy", 0)
 		}
 	}
 	return t

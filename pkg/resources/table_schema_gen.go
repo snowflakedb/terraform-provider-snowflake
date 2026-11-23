@@ -105,6 +105,22 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 					},
 					Description: relatedResourceDescription("Specifies the masking policy to set on a column.", resources.MaskingPolicy),
 				},
+				"projection_policy": {
+					Type:     tfschema.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &tfschema.Resource{
+						Schema: map[string]*tfschema.Schema{
+							"policy_name": {
+								Type:             tfschema.TypeString,
+								Required:         true,
+								DiffSuppressFunc: suppressIdentifierQuoting,
+								Description:      "Projection policy name.",
+							},
+						},
+					},
+					Description: "Specifies the projection policy to set on a column.",
+				},
 				"comment": {
 					Type:        tfschema.TypeString,
 					Optional:    true,

@@ -477,24 +477,43 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 	conditionalMaskingPolicy, conditionalMaskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
 	t.Cleanup(conditionalMaskingPolicyCleanup)
 
+	projectionPolicy1, projectionPolicy1Cleanup := testClient().ProjectionPolicy.CreateProjectionPolicy(t)
+	t.Cleanup(projectionPolicy1Cleanup)
+	projectionPolicy2, projectionPolicy2Cleanup := testClient().ProjectionPolicy.CreateProjectionPolicy(t)
+	t.Cleanup(projectionPolicy2Cleanup)
+
 	columnsVarcharAdded := append(slices.Clone(columnsNotNull),
 		model.TableColumnConfig{Name: "COL4", Type: testdatatypes.DataTypeVarchar},
 		model.TableColumnConfig{Name: "COL5", Type: testdatatypes.DataTypeVarchar},
 	)
-	withMaskingPolicyOnCol4 := func(col4 model.TableColumnConfig) []model.TableColumnConfig {
-		return append(slices.Clone(columnsNotNull), col4, model.TableColumnConfig{Name: "COL5", Type: testdatatypes.DataTypeVarchar})
+	// withCol4 builds the columns of the policy steps: the not null columns, COL4 as given, COL5, and the extra columns.
+	withCol4 := func(col4 model.TableColumnConfig, extra ...model.TableColumnConfig) []model.TableColumnConfig {
+		return append(slices.Clone(columnsNotNull), append([]model.TableColumnConfig{col4, {Name: "COL5", Type: testdatatypes.DataTypeVarchar}}, extra...)...)
 	}
-	columnsMaskingPolicy := withMaskingPolicyOnCol4(model.TableColumnConfig{
+	columnsMaskingPolicy := withCol4(model.TableColumnConfig{
 		Name: "COL4", Type: testdatatypes.DataTypeVarchar, MaskingPolicy: new(maskingPolicy1.ID()),
 	})
 	// An unquoted policy name does not drift (https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679,
 	// https://github.com/Snowflake-Labs/terraform-provider-snowflake/pull/2186).
-	columnsMaskingPolicyChanged := withMaskingPolicyOnCol4(model.TableColumnConfig{
+	columnsMaskingPolicyChanged := withCol4(model.TableColumnConfig{
 		Name: "COL4", Type: testdatatypes.DataTypeVarchar, MaskingPolicy: new(maskingPolicy2.ID()), MaskingPolicyUnquoted: true,
 	})
-	columnsConditionalMaskingPolicy := withMaskingPolicyOnCol4(model.TableColumnConfig{
+	columnsConditionalMaskingPolicy := withCol4(model.TableColumnConfig{
 		Name: "COL4", Type: testdatatypes.DataTypeVarchar, MaskingPolicy: new(conditionalMaskingPolicy.ID()), MaskingPolicyUsing: []string{"COL4", "COL5"},
 	})
+
+	columnsProjectionPolicy := withCol4(model.TableColumnConfig{
+		Name: "COL4", Type: testdatatypes.DataTypeVarchar, ProjectionPolicy: &projectionPolicy1,
+	})
+	// changes the policy of COL4 and adds COL6 with a policy
+	columnsProjectionPolicyChangedAndAdded := withCol4(
+		model.TableColumnConfig{Name: "COL4", Type: testdatatypes.DataTypeVarchar, ProjectionPolicy: &projectionPolicy2},
+		model.TableColumnConfig{Name: "COL6", Type: testdatatypes.DataTypeVarchar, ProjectionPolicy: &projectionPolicy1},
+	)
+	columnsProjectionPolicyUnset := withCol4(
+		model.TableColumnConfig{Name: "COL4", Type: testdatatypes.DataTypeVarchar},
+		model.TableColumnConfig{Name: "COL6", Type: testdatatypes.DataTypeVarchar},
+	)
 
 	modelCreate := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
 		WithColumnConfigs(columnsCreate...)
@@ -512,6 +531,12 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 		WithColumnConfigs(columnsMaskingPolicyChanged...)
 	modelConditionalMaskingPolicy := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
 		WithColumnConfigs(columnsConditionalMaskingPolicy...)
+	modelProjectionPolicy := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsProjectionPolicy...)
+	modelProjectionPolicyChangedAndAdded := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsProjectionPolicyChangedAndAdded...)
+	modelProjectionPolicyUnset := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsProjectionPolicyUnset...)
 	ref := modelCreate.ResourceReference()
 
 	updateWithoutDrift := resource.ConfigPlanChecks{
@@ -590,6 +615,24 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 				ConfigPlanChecks: updateWithoutDrift,
 				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsVarcharAdded)...),
 			},
+			// set the projection policy on an existing column
+			{
+				Config:           accconfig.FromModels(t, modelProjectionPolicy),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsProjectionPolicy)...),
+			},
+			// change it and add a column with a projection policy
+			{
+				Config:           accconfig.FromModels(t, modelProjectionPolicyChangedAndAdded),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsProjectionPolicyChangedAndAdded)...),
+			},
+			// unset them
+			{
+				Config:           accconfig.FromModels(t, modelProjectionPolicyUnset),
+				ConfigPlanChecks: updateWithoutDrift,
+				Check:            assertThat(t, tableColumnListChecks(t, ref, columnsProjectionPolicyUnset)...),
+			},
 		},
 	})
 }
@@ -607,6 +650,7 @@ func tableColumnListChecks(t *testing.T, ref string, columns []model.TableColumn
 			NotNull:            c.NotNull != nil && *c.NotNull,
 			MaskingPolicy:      c.MaskingPolicy,
 			MaskingPolicyUsing: c.MaskingPolicyUsing,
+			ProjectionPolicy:   c.ProjectionPolicy,
 		}
 		if c.MaskingPolicy != nil && len(c.MaskingPolicyUsing) == 0 {
 			expected[i].MaskingPolicyUsing = []string{c.Name}

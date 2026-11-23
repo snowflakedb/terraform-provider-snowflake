@@ -198,6 +198,7 @@ Optional:
 - `identity` (Block List, Max: 1) Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive. (see [below for nested schema](#nestedblock--column--identity))
 - `masking_policy` (Block List, Max: 1) Specifies the masking policy to set on a column. For more information about this resource, see [docs](./masking_policy). (see [below for nested schema](#nestedblock--column--masking_policy))
 - `not_null` (Boolean) Whether to restrict the column to NOT NULL values. When it is not set or `false`, the column allows null values, and an external change of the NOT NULL constraint is planned as a change. **Note**: A column used in a primary key constraint is NOT NULL in Snowflake, so set it to `true` for such a column.
+- `projection_policy` (Block List, Max: 1) Specifies the projection policy to set on a column. (see [below for nested schema](#nestedblock--column--projection_policy))
 
 <a id="nestedblock--column--default"></a>
 ### Nested Schema for `column.default`
@@ -227,6 +228,14 @@ Required:
 Optional:
 
 - `using` (List of String) Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.
+
+
+<a id="nestedblock--column--projection_policy"></a>
+### Nested Schema for `column.projection_policy`
+
+Required:
+
+- `policy_name` (String) Projection policy name.
 
 
 
