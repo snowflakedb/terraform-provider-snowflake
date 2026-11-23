@@ -70,7 +70,7 @@ var TableAttrs = struct {
 				Name:        "name",
 				Type:        ssot.AttrString,
 				Required:    true,
-				Description: "Column name",
+				Description: "Column name. The provider always double-quotes it, so the name is case-sensitive: `id` and `ID` are different columns. Use uppercase to get the same column as an unquoted identifier in SQL.",
 			},
 			{
 				Name:        "type",
@@ -899,18 +899,22 @@ var Table = ssot.Object{
 			ssot.AlterKeywordBlock("ExternalTableAction", "", &TableExternalTableAction),
 			ssot.AlterKeywordBlock("SearchOptimizationAction", "", &TableSearchOptimizationAction).WithSharedToOpts(),
 			// SET and UNSET are the alter-table parameters. UNSET is comma-separated: the alter-table
-			// grammar repeats the properties with [ , ... ].
+			// grammar repeats the properties with [ , ... ]. Snowflake rejects CONTACT mixed with the other
+			// SET (and UNSET) properties, so it is its own ALTER statement. A SET that enables ERROR_LOGGING
+			// silently ignores the other properties of the same statement, so ERROR_LOGGING is its own SET too.
 			ssot.AlterSet(
-				&TableAttrs.EnableSchemaEvolution,
-				&TableAttrs.DataRetentionTimeInDays,
-				&TableAttrs.MaxDataExtensionTimeInDays,
-				&TableAttrs.ChangeTracking,
-				&TableAttrs.DefaultDdlCollation,
-				&TableCreateAttrs.IcebergDefaultDdlCollation,
-				&TableAttrs.ErrorLogging,
-				&TableCreateAttrs.Contact,
-				&TableAttrs.Comment,
-				&TableAttrs.RowTimestamp,
+				ssot.AlterGroup("Contact", &TableCreateAttrs.Contact),
+				ssot.AlterGroup("ErrorLogging", &TableAttrs.ErrorLogging),
+				ssot.AlterGroup(ssot.MainAlterGroup,
+					&TableAttrs.EnableSchemaEvolution,
+					&TableAttrs.DataRetentionTimeInDays,
+					&TableAttrs.MaxDataExtensionTimeInDays,
+					&TableAttrs.ChangeTracking,
+					&TableAttrs.DefaultDdlCollation,
+					&TableCreateAttrs.IcebergDefaultDdlCollation,
+					&TableAttrs.Comment,
+					&TableAttrs.RowTimestamp,
+				),
 			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
@@ -990,7 +994,7 @@ var Table = ssot.Object{
 	},
 	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
 	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
-		"migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName",
+		"migrateTableIdAndNewBooleanStringFields",
 	},
 	CustomOperations: append(tableCreateVariantOperations, tableDescribeOperations...),
 	Attributes: []ssot.Attribute{

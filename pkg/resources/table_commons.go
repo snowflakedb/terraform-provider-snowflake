@@ -536,11 +536,14 @@ func joinPolicyTableUpdateRequests(d *schema.ResourceData) (set *sdk.TableSetJoi
 	if !ok {
 		return nil, sdk.NewTableUnsetJoinPolicyRequest(), nil
 	}
-	id, _, err := extractPolicyWithColumnsSet(v, "allowed_join_keys")
+	id, allowedJoinKeys, err := extractPolicyWithColumnsSet(v, "allowed_join_keys")
 	if err != nil {
 		return nil, nil, err
 	}
 	set = sdk.NewTableSetJoinPolicyRequest(id)
+	if len(allowedJoinKeys) > 0 {
+		set.WithAllowedJoinKeys(allowedJoinKeys)
+	}
 	return set.WithForce(true), nil, nil
 }
 

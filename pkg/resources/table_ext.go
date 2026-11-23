@@ -79,7 +79,6 @@ func tableSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta a
 	if err := errors.Join(
 		d.Set("comment", table.Comment),
 		d.Set("cluster_by", table.GetClusterByKeys()),
-		d.Set("change_tracking", table.ChangeTracking),
 	); err != nil {
 		return err
 	}
@@ -104,17 +103,18 @@ func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentif
 	)
 }
 
-// tableSetFieldsNotSetByReadExt sets the fields Read does not write from the configuration. Import calls it, so the
-// optional boolean fields get the values Snowflake reports instead of staying empty.
-func tableSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, table *sdk.Table, _ bool) error {
+// tableSetFieldsNotSetByReadExt sets the fields Read does not write from the configuration. Import calls it. In enforcing
+// mode the optional boolean fields get the values Snowflake reports; in permissive mode they get their unset values.
+func tableSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, table *sdk.Table, importPermissiveMode bool) error {
 	return errors.Join(
 		d.Set("name", id.Name()),
 		d.Set("database", id.DatabaseName()),
 		d.Set("schema", id.SchemaName()),
-		d.Set("enable_schema_evolution", booleanStringFromBool(table.EnableSchemaEvolution)),
-		d.Set("error_logging", booleanStringFromBool(table.ErrorLogging)),
-		d.Set("row_timestamp", booleanStringFromBool(table.RowTimestamp)),
-		d.Set("is_transient", booleanStringFromBool(table.Kind == string(sdk.TableKindTransient))),
+		importBooleanAttribute(d, "change_tracking", importPermissiveMode, table.ChangeTracking),
+		importBooleanStringAttribute(d, "enable_schema_evolution", importPermissiveMode, table.EnableSchemaEvolution),
+		importBooleanStringAttribute(d, "error_logging", importPermissiveMode, table.ErrorLogging),
+		importBooleanStringAttribute(d, "row_timestamp", importPermissiveMode, table.RowTimestamp),
+		importBooleanStringAttribute(d, "is_transient", importPermissiveMode, table.Kind == string(sdk.TableKindTransient)),
 	)
 }
 

@@ -50,7 +50,7 @@ The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflak
 
 #### Table id is the fully qualified name
 
-The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
+The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. The same upgrader sets the new `is_transient`, `enable_schema_evolution`, `error_logging`, and `row_timestamp` fields (see below) to their unset value in the existing state, so upgrading does not recreate or change the table. No configuration changes are required.
 
 #### New fields
 
@@ -222,6 +222,8 @@ We have added support for [structured types](https://docs.snowflake.com/en/sql-r
 The provider compares structured types by their parts, so a type that differs only in the defaults Snowflake fills in, such as `ARRAY(NUMBER)` and `ARRAY(NUMBER(38,0))`, shows no plan difference. Object keys are case-sensitive, and their order is part of the type.
 
 No other configuration changes are required.
+
+Reference: [#4146](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4146).
 
 ### *(new feature)* Hierarchy renames rolled out to more resources
 
@@ -1162,6 +1164,7 @@ The experiment is currently supported on the following resources:
 - [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe)
 - [`snowflake_postgres_mirror`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_mirror) (preview)
 - [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share)
+- [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) (preview)
 - [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse)
 - [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)
 - [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive)

@@ -408,14 +408,14 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 	}
 	if r.Set != nil {
 		opts.Set = &TableSet{
+			Contact:                    r.Set.Contact,
+			ErrorLogging:               r.Set.ErrorLogging,
 			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
 			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
 			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
 			ChangeTracking:             r.Set.ChangeTracking,
 			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
 			IcebergDefaultDdlCollation: r.Set.IcebergDefaultDdlCollation,
-			ErrorLogging:               r.Set.ErrorLogging,
-			Contact:                    r.Set.Contact,
 			Comment:                    r.Set.Comment,
 			RowTimestamp:               r.Set.RowTimestamp,
 		}

@@ -1472,6 +1472,15 @@ func TestInt_Table(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("alter table: SET with ERROR_LOGGING mixed with other properties is rejected", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+
+		// Snowflake silently ignores the other properties of a SET that enables ERROR_LOGGING, so the SDK rejects the mix.
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).
+			WithSet(*sdk.NewTableSetRequest().WithErrorLogging(true).WithComment("comment")))
+		require.ErrorContains(t, err, "ErrorLogging")
+	})
+
 	t.Run("alter table: set and unset complete options", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		comment := random.Comment()
@@ -1496,10 +1505,19 @@ func TestInt_Table(t *testing.T) {
 				WithChangeTracking(false).
 				WithDefaultDdlCollation(sdk.StringAllowEmpty{Value: "us"}).
 				WithIcebergDefaultDdlCollation(sdk.StringAllowEmpty{Value: "en-ci"}).
-				WithErrorLogging(true).
-				WithContact([]sdk.TableContact{{Purpose: "SUPPORT", Contact: contactId}}).
 				WithComment(comment).
 				WithRowTimestamp(true)))
+		require.NoError(t, err)
+
+		// Snowflake silently ignores the other properties of a SET that enables ERROR_LOGGING, so it is set separately.
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).
+			WithSet(*sdk.NewTableSetRequest().WithErrorLogging(true)))
+		require.NoError(t, err)
+
+		// Snowflake rejects CONTACT mixed with the other SET properties.
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).
+			WithSet(*sdk.NewTableSetRequest().
+				WithContact([]sdk.TableContact{{Purpose: "SUPPORT", Contact: contactId}})))
 		require.NoError(t, err)
 
 		table, err := client.Tables.ShowByID(ctx, id)
