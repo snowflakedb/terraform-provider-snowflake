@@ -472,7 +472,7 @@ func parseHybridColumn(from any) column {
 	return column{
 		name:     c["name"].(string),
 		dataType: c["type"].(string),
-		nullable: !c["not_null"].(bool),
+		notNull:  c["not_null"].(bool),
 		_default: cd,
 		collate:  c["collate"].(string),
 		comment:  c["comment"].(string),
@@ -600,7 +600,7 @@ func buildHybridTableColumnRequests(cols []any) ([]sdk.HybridTableColumnRequest,
 		}
 
 		req := sdk.NewHybridTableColumnRequest(col.name, spec.dataType)
-		if !col.nullable {
+		if col.notNull {
 			req.WithNotNull(true)
 		}
 		if spec.defaultValue != nil {
@@ -1345,7 +1345,7 @@ func forceNewIfColumnCollateChanged() schema.CustomizeDiffFunc {
 // schema default.
 func forceNewIfColumnNotNullChanged() schema.CustomizeDiffFunc {
 	return forceNewIfColumnFieldChanged("not_null", func(o, n column) bool {
-		return o.nullable != n.nullable
+		return o.notNull != n.notNull
 	})
 }
 
@@ -1370,7 +1370,7 @@ func requireNotNullOnPrimaryKeyColumns() schema.CustomizeDiffFunc {
 			}
 		}
 		for _, c := range parseHybridColumns(diff.Get("column")) {
-			if _, isPK := pkKeys[strings.ToUpper(c.name)]; isPK && c.nullable {
+			if _, isPK := pkKeys[strings.ToUpper(c.name)]; isPK && !c.notNull {
 				return fmt.Errorf("primary key column %q must set not_null = true because NOT NULL is implied by the primary key", c.name)
 			}
 		}

@@ -238,7 +238,7 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 			return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
 		}
 		addRequest := sdk.NewTableColumnAddActionRequest(cA.name, dataType)
-		if !cA.nullable {
+		if cA.notNull {
 			addRequest.WithNotNull(true)
 		}
 
@@ -297,7 +297,7 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 		}
 		if cA.changedNullConstraint {
 			nullabilityRequest := sdk.NewTableColumnNotNullConstraintRequest()
-			if !cA.newColumn.nullable {
+			if cA.newColumn.notNull {
 				nullabilityRequest.WithSet(true)
 			} else {
 				nullabilityRequest.WithDrop(true)
@@ -428,7 +428,7 @@ func (identity *columnIdentity) toRequest() (*sdk.ColumnIdentityRequest, error) 
 type column struct {
 	name          string
 	dataType      string
-	nullable      bool
+	notNull       bool
 	_default      *columnDefault
 	identity      *columnIdentity
 	comment       string
@@ -464,7 +464,7 @@ func (c columns) getChangedColumnProperties(new columns) (changed changedColumns
 			if cO.name == cN.name && cO.dataType != cN.dataType {
 				changeColumn.changedDataType = true
 			}
-			if cO.name == cN.name && cO.nullable != cN.nullable {
+			if cO.name == cN.name && cO.notNull != cN.notNull {
 				changeColumn.changedNullConstraint = true
 			}
 			if cO.name == cN.name && cO._default != nil && cN._default == nil {
@@ -615,7 +615,7 @@ func getColumn(from any) (to column) {
 	return column{
 		name:          c["name"].(string),
 		dataType:      c["type"].(string),
-		nullable:      c["nullable"].(bool),
+		notNull:       c["not_null"].(bool),
 		_default:      cd,
 		identity:      id,
 		comment:       c["comment"].(string),
@@ -676,7 +676,7 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 	}
 
 	return request.
-		WithNotNull(!c["nullable"].(bool)).
+		WithNotNull(c["not_null"].(bool)).
 		WithComment(c["comment"].(string)), nil
 }
 
@@ -745,7 +745,7 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 		flat := map[string]any{}
 		flat["name"] = td.Name
 		flat["type"] = td.TypeRaw
-		flat["nullable"] = td.Null
+		flat["not_null"] = !td.Null
 
 		if td.Comment != nil {
 			flat["comment"] = *td.Comment

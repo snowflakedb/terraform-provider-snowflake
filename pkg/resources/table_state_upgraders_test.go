@@ -113,9 +113,31 @@ func Test_migrateTableToV2_24_0(t *testing.T) {
 	}
 	for _, tc := range maskingPolicyTestCases {
 		t.Run(tc.name, func(t *testing.T) {
+			tc.expected["not_null"] = false
 			state, err := migrateTableToV2_24_0(context.Background(), map[string]any{"column": []any{tc.column}}, nil)
 			require.NoError(t, err)
 			assert.Equal(t, withBooleanDefaults(map[string]any{"column": []any{tc.expected}}), state)
+		})
+	}
+
+	notNullTestCases := []struct {
+		name     string
+		column   map[string]any
+		expected bool
+	}{
+		{name: "nullable false becomes not_null true", column: map[string]any{"nullable": false}, expected: true},
+		{name: "nullable true becomes not_null false", column: map[string]any{"nullable": true}, expected: false},
+		{name: "missing nullable becomes not_null false", column: map[string]any{}, expected: false},
+		{name: "null nullable becomes not_null false", column: map[string]any{"nullable": nil}, expected: false},
+		{name: "already upgraded not_null is kept", column: map[string]any{"not_null": true}, expected: true},
+	}
+	for _, tc := range notNullTestCases {
+		t.Run(tc.name, func(t *testing.T) {
+			state, err := migrateTableToV2_24_0(context.Background(), map[string]any{"column": []any{tc.column}}, nil)
+			require.NoError(t, err)
+			column := state["column"].([]any)[0].(map[string]any)
+			assert.Equal(t, tc.expected, column["not_null"])
+			assert.NotContains(t, column, "nullable")
 		})
 	}
 
@@ -123,6 +145,7 @@ func Test_migrateTableToV2_24_0(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			tc.column["masking_policy"] = ""
 			tc.expected["masking_policy"] = []any{}
+			tc.expected["not_null"] = false
 			state, err := migrateTableToV2_24_0(context.Background(), map[string]any{"column": []any{tc.column}}, nil)
 			require.NoError(t, err)
 			assert.Equal(t, withBooleanDefaults(map[string]any{"column": []any{tc.expected}}), state)

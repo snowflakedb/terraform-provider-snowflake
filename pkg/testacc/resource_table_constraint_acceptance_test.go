@@ -60,7 +60,7 @@ resource "snowflake_table" "fk_t" {
 	column {
 		name     = "fk_col1"
 		type     = "text"
-		nullable = false
+		not_null = true
 	  }
 }
 

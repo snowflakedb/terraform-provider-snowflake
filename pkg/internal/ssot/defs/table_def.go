@@ -25,7 +25,8 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 //
 // Chrome the generator does not emit is applied in tableAttributesModificationExt:
 //   - column.type: IsDataTypeValid and DiffSuppressDataTypes.
-//   - column.nullable: Default true. NativeBool keeps TypeBool and does not emit Default.
+//   - column.identity.order: "default" does not plan a change against the value Read reports.
+//   - column.not_null: NativeBool keeps TypeBool, like in snowflake_hybrid_table, so it is false when it is not set.
 //   - column.comment and collate: Default "".
 //   - column.default.expression: rejects an empty value and suppresses quoting differences of <sequence>.NEXTVAL.
 //   - column.as: suppresses the normalization DESCRIBE TABLE applies to virtual column expressions.
@@ -83,10 +84,10 @@ var TableAttrs = struct {
 				Description: "Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).",
 			},
 			{
-				Name:        "nullable",
+				Name:        "not_null",
 				Type:        ssot.AttrBool,
 				NativeBool:  true,
-				Description: "Whether this column can contain null values. **Note**: Depending on your Snowflake version, the default value will not suffice if this column is used in a primary key constraint.",
+				Description: "Whether to restrict the column to NOT NULL values. When it is not set or `false`, the column allows null values, and an external change of the NOT NULL constraint is planned as a change. **Note**: A column used in a primary key constraint is NOT NULL in Snowflake, so set it to `true` for such a column.",
 			},
 			{
 				Name:        "default",

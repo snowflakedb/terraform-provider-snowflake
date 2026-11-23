@@ -33,7 +33,7 @@ resource "snowflake_table" "complete" {
   column {
     name     = "id"
     type     = "NUMBER(38,0)"
-    nullable = true
+    not_null = false
     comment  = "sequence-backed id"
 
     default {
@@ -44,7 +44,7 @@ resource "snowflake_table" "complete" {
   column {
     name     = "identity"
     type     = "NUMBER(38,0)"
-    nullable = true
+    not_null = false
 
     identity {
       start_num = 1
@@ -55,7 +55,7 @@ resource "snowflake_table" "complete" {
   column {
     name     = "data"
     type     = "text"
-    nullable = false
+    not_null = true
     collate  = "en-ci"
     comment  = "collated text"
 

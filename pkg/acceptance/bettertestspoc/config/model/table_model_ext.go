@@ -44,7 +44,7 @@ func (t *TableModel) WithColumn(column []sdk.TableColumnSignature) *TableModel {
 }
 
 // TableColumnConfig is a richer column definition used in tests that need
-// column fields beyond name and type (comment, as, nullable, default expression, collate, masking policy). A nil Collate leaves the field out of the config.
+// column fields beyond name and type (comment, as, not_null, default expression, collate, masking policy). A nil Collate leaves the field out of the config.
 type TableColumnConfig struct {
 	Name    string
 	Type    datatypes.DataType
@@ -53,7 +53,7 @@ type TableColumnConfig struct {
 	As string
 	// DefaultExpression is a pointer to tell an unset default from an empty one ("" is an empty string default).
 	DefaultExpression  *string
-	Nullable           *bool
+	NotNull            *bool
 	Collate            *string
 	MaskingPolicy      *sdk.SchemaObjectIdentifier
 	MaskingPolicyUsing []string
@@ -79,8 +79,8 @@ func (t *TableModel) WithColumnConfigs(columns ...TableColumnConfig) *TableModel
 				"expression": tfconfig.StringVariable(*c.DefaultExpression),
 			})
 		}
-		if c.Nullable != nil {
-			m["nullable"] = tfconfig.BoolVariable(*c.Nullable)
+		if c.NotNull != nil {
+			m["not_null"] = tfconfig.BoolVariable(*c.NotNull)
 		}
 		if c.Collate != nil {
 			m["collate"] = tfconfig.StringVariable(*c.Collate)

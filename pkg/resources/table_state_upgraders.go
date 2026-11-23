@@ -27,8 +27,24 @@ func migrateTableToV2_24_0(_ context.Context, rawState map[string]any, _ any) (m
 		}
 		upgradeColumnDefault(column)
 		upgradeColumnMaskingPolicy(column)
+		upgradeColumnNotNull(column)
 	}
 	return rawState, nil
+}
+
+// upgradeColumnNotNull replaces nullable with its inverse, not_null. A column without a boolean nullable, or one that
+// already has not_null, keeps not_null as it is, and a missing not_null becomes false.
+func upgradeColumnNotNull(column map[string]any) {
+	nullable, hasNullable := column["nullable"]
+	delete(column, "nullable")
+	if _, ok := column["not_null"].(bool); ok {
+		return
+	}
+	if nullable, ok := nullable.(bool); ok && hasNullable {
+		column["not_null"] = !nullable
+		return
+	}
+	column["not_null"] = false
 }
 
 // upgradeColumnMaskingPolicy converts the masking policy name to the masking_policy block. Without it, the old string

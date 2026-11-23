@@ -308,6 +308,48 @@ State is upgraded automatically: the policy name moves to `masking_policy.policy
 
 Reference: [#4679](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679).
 
+#### `column.nullable` replaced by `column.not_null`
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.nullable` was removed. Use `column.not_null`, which has the opposite meaning and is the same boolean field as in [`snowflake_hybrid_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/hybrid_table). `not_null = true` creates the column with `NOT NULL`. When you omit it, or set it to `false`, the column accepts null values, which is what `nullable = true` (the default) did. Changing `not_null` on an existing column is still applied in place with `ALTER COLUMN ... SET NOT NULL` or `DROP NOT NULL`.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name     = "id"
+    type     = "NUMBER(38,0)"
+    nullable = false
+  }
+  column {
+    name = "comment"
+    type = "VARCHAR"
+    # nullable = true is the default
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name     = "id"
+    type     = "NUMBER(38,0)"
+    not_null = true
+  }
+  column {
+    name = "comment"
+    type = "VARCHAR"
+    # not_null = false is the default
+  }
+}
+```
+
+State is upgraded automatically: `nullable` is removed from the existing state, and `not_null` is set to its inverse, so the upgrade does not change the table. Update the configuration the same way: replace `nullable = false` with `not_null = true`, and remove `nullable = true`. If you keep `nullable`, the plan fails because the field no longer exists.
+
 #### `column.identity.order`
 
 We have added `order` to [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.identity`. It sets `ORDER` (`"true"`) or `NOORDER` (`"false"`) for the identity column, as described in [CREATE TABLE](https://docs.snowflake.com/en/sql-reference/sql/create-table). When it is `"default"` or omitted, Snowflake applies the [NOORDER_SEQUENCE_AS_DEFAULT](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default) parameter, and the value Snowflake reports does not plan a change.
