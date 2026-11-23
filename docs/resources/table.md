@@ -52,7 +52,7 @@ resource "snowflake_table" "complete" {
   column {
     name     = "id"
     type     = "NUMBER(38,0)"
-    nullable = true
+    not_null = false
     comment  = "sequence-backed id"
 
     default {
@@ -63,7 +63,7 @@ resource "snowflake_table" "complete" {
   column {
     name     = "identity"
     type     = "NUMBER(38,0)"
-    nullable = true
+    not_null = false
 
     identity {
       start_num = 1
@@ -74,7 +74,7 @@ resource "snowflake_table" "complete" {
   column {
     name     = "data"
     type     = "text"
-    nullable = false
+    not_null = true
     collate  = "en-ci"
     comment  = "collated text"
 
@@ -197,7 +197,7 @@ Optional:
 - `default` (Block List, Max: 1) Defines the column default value; note due to limitations of Snowflake's ALTER TABLE ADD/MODIFY COLUMN updates to default will not be applied (see [below for nested schema](#nestedblock--column--default))
 - `identity` (Block List, Max: 1) Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive. (see [below for nested schema](#nestedblock--column--identity))
 - `masking_policy` (Block List, Max: 1) Specifies the masking policy to set on a column. For more information about this resource, see [docs](./masking_policy). (see [below for nested schema](#nestedblock--column--masking_policy))
-- `nullable` (Boolean) (Default: `true`) Whether this column can contain null values. **Note**: Depending on your Snowflake version, the default value will not suffice if this column is used in a primary key constraint.
+- `not_null` (Boolean) Whether to restrict the column to NOT NULL values. When it is not set or `false`, the column allows null values, and an external change of the NOT NULL constraint is planned as a change. **Note**: A column used in a primary key constraint is NOT NULL in Snowflake, so set it to `true` for such a column.
 
 <a id="nestedblock--column--default"></a>
 ### Nested Schema for `column.default`

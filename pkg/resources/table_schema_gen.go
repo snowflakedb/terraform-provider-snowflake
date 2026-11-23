@@ -34,10 +34,10 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 					Required:    true,
 					Description: "Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).",
 				},
-				"nullable": {
+				"not_null": {
 					Type:        tfschema.TypeBool,
 					Optional:    true,
-					Description: "Whether this column can contain null values. **Note**: Depending on your Snowflake version, the default value will not suffice if this column is used in a primary key constraint.",
+					Description: "Whether to restrict the column to NOT NULL values. When it is not set or `false`, the column allows null values, and an external change of the NOT NULL constraint is planned as a change. **Note**: A column used in a primary key constraint is NOT NULL in Snowflake, so set it to `true` for such a column.",
 				},
 				"default": {
 					Type:     tfschema.TypeList,

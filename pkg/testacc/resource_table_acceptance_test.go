@@ -464,9 +464,9 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 		{Name: "COL2", Type: testdatatypes.DataTypeFloat, Comment: commentB},
 		{Name: "COLUMN3", Type: testdatatypes.DataTypeNumber_38_0},
 	}
-	columnsNullableFalse := []model.TableColumnConfig{
+	columnsNotNull := []model.TableColumnConfig{
 		{Name: "COL2", Type: testdatatypes.DataTypeFloat, Comment: commentB},
-		{Name: "COLUMN3", Type: testdatatypes.DataTypeNumber_38_0, Nullable: new(false)},
+		{Name: "COLUMN3", Type: testdatatypes.DataTypeNumber_38_0, NotNull: new(true)},
 	}
 
 	// The masking policies take VARCHAR arguments. The conditional one has two of them.
@@ -477,12 +477,12 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 	conditionalMaskingPolicy, conditionalMaskingPolicyCleanup := testClient().MaskingPolicy.CreateMaskingPolicy(t)
 	t.Cleanup(conditionalMaskingPolicyCleanup)
 
-	columnsVarcharAdded := append(slices.Clone(columnsNullableFalse),
+	columnsVarcharAdded := append(slices.Clone(columnsNotNull),
 		model.TableColumnConfig{Name: "COL4", Type: testdatatypes.DataTypeVarchar},
 		model.TableColumnConfig{Name: "COL5", Type: testdatatypes.DataTypeVarchar},
 	)
 	withMaskingPolicyOnCol4 := func(col4 model.TableColumnConfig) []model.TableColumnConfig {
-		return append(slices.Clone(columnsNullableFalse), col4, model.TableColumnConfig{Name: "COL5", Type: testdatatypes.DataTypeVarchar})
+		return append(slices.Clone(columnsNotNull), col4, model.TableColumnConfig{Name: "COL5", Type: testdatatypes.DataTypeVarchar})
 	}
 	columnsMaskingPolicy := withMaskingPolicyOnCol4(model.TableColumnConfig{
 		Name: "COL4", Type: testdatatypes.DataTypeVarchar, MaskingPolicy: new(maskingPolicy1.ID()),
@@ -502,8 +502,8 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 		WithColumnConfigs(columnsCommentsAltered...)
 	modelReplaced := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
 		WithColumnConfigs(columnsReplaced...)
-	modelNullableFalse := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
-		WithColumnConfigs(columnsNullableFalse...)
+	modelNotNull := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
+		WithColumnConfigs(columnsNotNull...)
 	modelVarcharAdded := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
 		WithColumnConfigs(columnsVarcharAdded...)
 	modelMaskingPolicy := model.TableWithDefaultMeta(id.DatabaseName(), id.SchemaName(), id.Name(), placeholder).
@@ -553,13 +553,13 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 				Check: assertThat(t, tableColumnListChecks(t, ref, columnsReplaced)...),
 			},
 			{
-				Config: accconfig.FromModels(t, modelNullableFalse),
+				Config: accconfig.FromModels(t, modelNotNull),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 					},
 				},
-				Check: assertThat(t, tableColumnListChecks(t, ref, columnsNullableFalse)...),
+				Check: assertThat(t, tableColumnListChecks(t, ref, columnsNotNull)...),
 			},
 			{
 				Config:           accconfig.FromModels(t, modelVarcharAdded),
@@ -603,6 +603,8 @@ func tableColumnListChecks(t *testing.T, ref string, columns []model.TableColumn
 		expected[i] = resourceassert.ExpectedTableColumn{
 			Name:               c.Name,
 			Type:               c.Type.Canonical(),
+			Comment:            c.Comment,
+			NotNull:            c.NotNull != nil && *c.NotNull,
 			MaskingPolicy:      c.MaskingPolicy,
 			MaskingPolicyUsing: c.MaskingPolicyUsing,
 		}
@@ -610,19 +612,7 @@ func tableColumnListChecks(t *testing.T, ref string, columns []model.TableColumn
 			expected[i].MaskingPolicyUsing = []string{c.Name}
 		}
 	}
-	checks := []assert.TestCheckFuncProvider{resourceassert.TableResource(t, ref).HasColumns(expected...)}
-	for i, c := range columns {
-		nullable := true
-		if c.Nullable != nil {
-			nullable = *c.Nullable
-		}
-		prefix := fmt.Sprintf("column.%d.", i)
-		checks = append(checks,
-			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"comment", c.Comment)),
-			assert.Check(resource.TestCheckResourceAttr(ref, prefix+"nullable", strconv.FormatBool(nullable))),
-		)
-	}
-	return checks
+	return []assert.TestCheckFuncProvider{resourceassert.TableResource(t, ref).HasColumns(expected...)}
 }
 
 func TestAcc_Table_ColumnCollate_Inherited(t *testing.T) {
@@ -1667,7 +1657,7 @@ resource "snowflake_table" "test_table" {
     column {
         name     = "LAST_LOAD_TIME"
         type     = "TIMESTAMP_LTZ(6)"
-        nullable = true
+        not_null = false
     }
 }
 `, tableId.DatabaseName(), tableId.SchemaName(), tableId.Name())
@@ -2043,6 +2033,7 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 							resourceassert.ExpectedTableColumn{Name: "SEQUENCE_DEFAULT", Type: "NUMBER(38,0)", DefaultExpression: sequenceNextval},
 							resourceassert.ExpectedTableColumn{Name: "MASKED", Type: "VARCHAR(16)", MaskingPolicy: new(maskingPolicy.ID()), MaskingPolicyUsing: []string{"MASKED"}},
 							resourceassert.ExpectedTableColumn{Name: "IDENTITY_COLUMN", Type: "NUMBER(38,0)", Identity: &resourceassert.ExpectedTableColumnIdentity{StartNum: 2, StepNum: 3}},
+							resourceassert.ExpectedTableColumn{Name: "REQUIRED", Type: "VARCHAR(16)", NotNull: true},
 							resourceassert.ExpectedTableColumn{Name: "VIRTUAL_COLUMN", Type: "NUMBER(38,0)", Virtual: "ID * 2"},
 						),
 				),
@@ -2058,7 +2049,7 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 				Config: accconfig.FromModels(t, providerModel, tableModelWithoutVirtualColumn),
 				Check: assertThat(
 					t,
-					assert.Check(resource.TestCheckResourceAttr(ref, "column.#", "7")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "column.#", "8")),
 				),
 			},
 		},
@@ -2081,6 +2072,7 @@ func tableMigrationV2_23_0Columns(sequenceId sdk.SchemaObjectIdentifier, masking
 			"masking_policy": tfconfig.StringVariable(fmt.Sprintf("%s.%s.%s", maskingPolicyId.DatabaseName(), maskingPolicyId.SchemaName(), maskingPolicyId.Name())),
 		}),
 		tableMigrationColumn("IDENTITY_COLUMN", "NUMBER(38,0)", tableMigrationIdentity()),
+		tableMigrationColumn("REQUIRED", "VARCHAR(16)", map[string]tfconfig.Variable{"nullable": tfconfig.BoolVariable(false)}),
 	)
 }
 
@@ -2105,6 +2097,7 @@ func tableMigrationCurrentColumns(sequenceId sdk.SchemaObjectIdentifier, masking
 			"masking_policy": tfconfig.ObjectVariable(map[string]tfconfig.Variable{"policy_name": tfconfig.StringVariable(maskingPolicyId.FullyQualifiedName())}),
 		}),
 		tableMigrationColumn("IDENTITY_COLUMN", "NUMBER(38,0)", tableMigrationIdentity()),
+		tableMigrationColumn("REQUIRED", "VARCHAR(16)", map[string]tfconfig.Variable{"not_null": tfconfig.BoolVariable(true)}),
 	}, extraColumns...)...)
 }
 

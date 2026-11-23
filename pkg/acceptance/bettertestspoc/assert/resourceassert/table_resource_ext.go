@@ -13,7 +13,9 @@ type ExpectedTableColumn struct {
 	Name string
 	Type string
 	// Comment is not asserted when it is empty.
-	Comment           string
+	Comment string
+	// NotNull is asserted always, so false means that the column is nullable.
+	NotNull           bool
 	DefaultExpression string
 	// MaskingPolicy is nil when the column has no `masking_policy` block.
 	MaskingPolicy      *sdk.SchemaObjectIdentifier
@@ -39,6 +41,7 @@ func (t *TableResourceAssert) HasColumns(columns ...ExpectedTableColumn) *TableR
 		prefix := fmt.Sprintf("column.%d.", index)
 		t.ValueSet(prefix+"name", column.Name)
 		t.ValueSet(prefix+"type", column.Type)
+		t.ValueSet(prefix+"not_null", strconv.FormatBool(column.NotNull))
 
 		if column.Comment != "" {
 			t.ValueSet(prefix+"comment", column.Comment)

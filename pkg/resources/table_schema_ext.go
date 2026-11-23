@@ -15,7 +15,6 @@ func tableAttributesModificationExt(s map[string]*schema.Schema) map[string]*sch
 	column := s["column"].Elem.(*schema.Resource).Schema
 	column["type"].ValidateDiagFunc = IsDataTypeValid
 	column["type"].DiffSuppressFunc = DiffSuppressDataTypes
-	column["nullable"].Default = true
 	column["comment"].Default = ""
 	column["collate"].Default = ""
 	// A column without an explicit collation inherits the table's default_ddl_collation at the moment it is created,
