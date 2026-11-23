@@ -44,15 +44,19 @@ func (t *TableModel) WithColumn(column []sdk.TableColumnSignature) *TableModel {
 }
 
 // TableColumnConfig is a richer column definition used in tests that need
-// column fields beyond name and type (comment, nullable, default expression, collate). A nil Collate leaves the field out of the config.
+// column fields beyond name and type (comment, nullable, default expression, collate, masking policy). A nil Collate leaves the field out of the config.
 type TableColumnConfig struct {
 	Name    string
 	Type    datatypes.DataType
 	Comment string
 	// DefaultExpression is a pointer to tell an unset default from an empty one ("" is an empty string default).
-	DefaultExpression *string
-	Nullable          *bool
-	Collate           *string
+	DefaultExpression  *string
+	Nullable           *bool
+	Collate            *string
+	MaskingPolicy      *sdk.SchemaObjectIdentifier
+	MaskingPolicyUsing []string
+	// MaskingPolicyUnquoted renders the masking policy name without double quotes (database.schema.name).
+	MaskingPolicyUnquoted bool
 }
 
 func (t *TableModel) WithColumnConfigs(columns ...TableColumnConfig) *TableModel {
@@ -75,6 +79,21 @@ func (t *TableModel) WithColumnConfigs(columns ...TableColumnConfig) *TableModel
 		}
 		if c.Collate != nil {
 			m["collate"] = tfconfig.StringVariable(*c.Collate)
+		}
+		if c.MaskingPolicy != nil {
+			policyName := c.MaskingPolicy.FullyQualifiedName()
+			if c.MaskingPolicyUnquoted {
+				policyName = fmt.Sprintf("%s.%s.%s", c.MaskingPolicy.DatabaseName(), c.MaskingPolicy.SchemaName(), c.MaskingPolicy.Name())
+			}
+			maskingPolicy := map[string]tfconfig.Variable{
+				"policy_name": tfconfig.StringVariable(policyName),
+			}
+			if len(c.MaskingPolicyUsing) > 0 {
+				maskingPolicy["using"] = tfconfig.ListVariable(collections.Map(c.MaskingPolicyUsing, func(s string) tfconfig.Variable {
+					return tfconfig.StringVariable(s)
+				})...)
+			}
+			m["masking_policy"] = tfconfig.ObjectVariable(maskingPolicy)
 		}
 		vars[idx] = tfconfig.ObjectVariable(m)
 	}

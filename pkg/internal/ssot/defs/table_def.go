@@ -17,7 +17,8 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 //
 // The resource has show_output, describe_output (DESCRIBE TABLE ... TYPE = COLUMNS), and a computed parameters block.
 // data_retention_time_in_days, max_data_extension_time_in_days, and default_ddl_collation are ResourceParameters.
-// Read also writes the DESCRIBE values onto column in tableSetDescribeOutputExt.
+// Read also writes the DESCRIBE values onto column in tableSetDescribeOutputExt, and tableSetConfigFieldsExt adds the
+// column masking policies from POLICY_REFERENCES.
 // The boolean attributes are their own SHOW columns, like change_tracking, so the generator adds the show_output
 // drift suppression and the external-change mapping. cluster_by is the exception: SHOW returns a string such as
 // LINEAR(a, b), so it keeps a separate show_cluster_by column and tableSetConfigFieldsExt converts it to a list.
@@ -25,7 +26,7 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // Chrome the generator does not emit is applied in tableAttributesModificationExt:
 //   - column.type: IsDataTypeValid and DiffSuppressDataTypes.
 //   - column.nullable: Default true. NativeBool keeps TypeBool and does not emit Default.
-//   - column.comment, masking_policy, and collate: Default "".
+//   - column.comment and collate: Default "".
 //   - column.default.expression: rejects an empty value and suppresses quoting differences of <sequence>.NEXTVAL.
 //   - column.identity start_num and step_num: Default 1.
 //   - primary_key: Deprecated.
@@ -117,14 +118,31 @@ var TableAttrs = struct {
 				},
 			},
 			{
+				Name:            "masking_policy",
+				Type:            ssot.AttrObject,
+				RelatedResource: &ssot.Object{Name: "MaskingPolicy"},
+				Description:     "Specifies the masking policy to set on a column.",
+				Children: []ssot.Attribute{
+					{
+						Name:            "policy_name",
+						Type:            ssot.AttrIdentifier,
+						IdentifierType:  "SchemaObjectIdentifier",
+						Required:        true,
+						RelatedResource: &ssot.Object{Name: "MaskingPolicy"},
+						Description:     "Masking policy name.",
+					},
+					{
+						Name:        "using",
+						Type:        ssot.AttrList,
+						Elem:        &ssot.Attribute{Type: ssot.AttrString},
+						Description: "Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.",
+					},
+				},
+			},
+			{
 				Name:        "comment",
 				Type:        ssot.AttrString,
 				Description: "Column comment",
-			},
-			{
-				Name:        "masking_policy",
-				Type:        ssot.AttrString,
-				Description: "Masking policy to apply on column. It has to be a fully qualified name.",
 			},
 			{
 				Name:        "collate",

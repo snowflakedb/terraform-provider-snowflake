@@ -80,8 +80,49 @@ func Test_migrateTableToV2_24_0(t *testing.T) {
 		return state
 	}
 
+	maskingPolicyTestCases := []struct {
+		name     string
+		column   map[string]any
+		expected map[string]any
+	}{
+		{
+			name:     "masking policy name becomes a block",
+			column:   map[string]any{"masking_policy": "DB.SCH.POLICY"},
+			expected: map[string]any{"masking_policy": []any{map[string]any{"policy_name": "DB.SCH.POLICY", "using": []any{}}}},
+		},
+		{
+			name:     "empty masking policy becomes an empty block list",
+			column:   map[string]any{"masking_policy": ""},
+			expected: map[string]any{"masking_policy": []any{}},
+		},
+		{
+			name:     "missing masking policy becomes an empty block list",
+			column:   map[string]any{},
+			expected: map[string]any{"masking_policy": []any{}},
+		},
+		{
+			name:     "already upgraded masking policy is kept",
+			column:   map[string]any{"masking_policy": []any{map[string]any{"policy_name": `"DB"."SCH"."POLICY"`, "using": []any{"A", "B"}}}},
+			expected: map[string]any{"masking_policy": []any{map[string]any{"policy_name": `"DB"."SCH"."POLICY"`, "using": []any{"A", "B"}}}},
+		},
+		{
+			name:     "old default and old masking policy are both upgraded",
+			column:   map[string]any{"type": "VARCHAR(16)", "default": defaultBlock(map[string]any{"constant": "x"}), "masking_policy": "DB.SCH.POLICY"},
+			expected: map[string]any{"type": "VARCHAR(16)", "default": expressionDefault("'x'"), "masking_policy": []any{map[string]any{"policy_name": "DB.SCH.POLICY", "using": []any{}}}},
+		},
+	}
+	for _, tc := range maskingPolicyTestCases {
+		t.Run(tc.name, func(t *testing.T) {
+			state, err := migrateTableToV2_24_0(context.Background(), map[string]any{"column": []any{tc.column}}, nil)
+			require.NoError(t, err)
+			assert.Equal(t, withBooleanDefaults(map[string]any{"column": []any{tc.expected}}), state)
+		})
+	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			tc.column["masking_policy"] = ""
+			tc.expected["masking_policy"] = []any{}
 			state, err := migrateTableToV2_24_0(context.Background(), map[string]any{"column": []any{tc.column}}, nil)
 			require.NoError(t, err)
 			assert.Equal(t, withBooleanDefaults(map[string]any{"column": []any{tc.expected}}), state)

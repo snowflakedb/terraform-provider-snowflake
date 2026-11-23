@@ -271,6 +271,43 @@ column {
 
 References: [#2406](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2406), [#5167](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5167).
 
+#### `column.masking_policy` is a block
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.masking_policy` is now a block with `policy_name` and `using`, the same as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table). Previously, it was a string, and a name written without quotes, such as `MY_DB.MY_SCHEMA.MY_POLICY`, planned an update on every run because the provider stored the quoted name. The provider now compares `policy_name` regardless of quoting, reads the policy from [POLICY_REFERENCES](https://docs.snowflake.com/en/sql-reference/functions/policy_references), and supports `using` for [conditional masking policies](https://docs.snowflake.com/en/user-guide/security-column-advanced). Like in `snowflake_iceberg_table`, `using` may be omitted when the policy takes only the masked column.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name           = "email"
+    type           = "VARCHAR"
+    masking_policy = "MY_DB.MY_SCHEMA.MY_POLICY"
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "email"
+    type = "VARCHAR"
+    masking_policy {
+      policy_name = "MY_DB.MY_SCHEMA.MY_POLICY"
+      # using     = ["email", "role_column"] # for a conditional masking policy
+    }
+  }
+}
+```
+
+State is upgraded automatically: the policy name moves to `masking_policy.policy_name`, and an empty value removes the block. Update the configuration the same way. Manage a column's masking policy in one place only: if you use [`snowflake_table_column_masking_policy_application`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table_column_masking_policy_application) for a column, keep `ignore_changes = [column[<index>].masking_policy]` on the table.
+
+Reference: [#4679](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679).
+
 ### *(new feature)* `VECTOR` arguments in `snowflake_masking_policy` and `snowflake_row_access_policy`
 
 [`snowflake_masking_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/masking_policy) and [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy) now support [`VECTOR`](https://docs.snowflake.com/en/sql-reference/data-types-vector) arguments, for example `VECTOR(FLOAT, 768)`. Previously, the provider created such a policy but failed to read its signature back from Snowflake.

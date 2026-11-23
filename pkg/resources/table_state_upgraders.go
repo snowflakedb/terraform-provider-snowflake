@@ -26,8 +26,24 @@ func migrateTableToV2_24_0(_ context.Context, rawState map[string]any, _ any) (m
 			continue
 		}
 		upgradeColumnDefault(column)
+		upgradeColumnMaskingPolicy(column)
 	}
 	return rawState, nil
+}
+
+// upgradeColumnMaskingPolicy converts the masking policy name to the masking_policy block. Without it, the old string
+// value cannot be decoded into the list.
+func upgradeColumnMaskingPolicy(column map[string]any) {
+	switch maskingPolicy := column["masking_policy"].(type) {
+	case []any:
+		return
+	case string:
+		if maskingPolicy != "" {
+			column["masking_policy"] = []any{map[string]any{"policy_name": maskingPolicy, "using": []any{}}}
+			return
+		}
+	}
+	column["masking_policy"] = []any{}
 }
 
 // upgradeTableBooleanStringDefaults sets the boolean string fields added in v2.24.0 to their schema default. Without

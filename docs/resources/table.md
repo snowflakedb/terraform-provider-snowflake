@@ -82,7 +82,10 @@ resource "snowflake_table" "complete" {
       expression = "'pending'"
     }
 
-    masking_policy = "DATABASE.SCHEMA.MASKING_POLICY"
+    masking_policy {
+      policy_name = "DATABASE.SCHEMA.MASKING_POLICY"
+      using       = ["data", "extra"]
+    }
   }
 
   column {
@@ -185,7 +188,7 @@ Optional:
 - `comment` (String) (Default: ``) Column comment
 - `default` (Block List, Max: 1) Defines the column default value; note due to limitations of Snowflake's ALTER TABLE ADD/MODIFY COLUMN updates to default will not be applied (see [below for nested schema](#nestedblock--column--default))
 - `identity` (Block List, Max: 1) Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive. (see [below for nested schema](#nestedblock--column--identity))
-- `masking_policy` (String) (Default: ``) Masking policy to apply on column. It has to be a fully qualified name.
+- `masking_policy` (Block List, Max: 1) Specifies the masking policy to set on a column. For more information about this resource, see [docs](./masking_policy). (see [below for nested schema](#nestedblock--column--masking_policy))
 - `nullable` (Boolean) (Default: `true`) Whether this column can contain null values. **Note**: Depending on your Snowflake version, the default value will not suffice if this column is used in a primary key constraint.
 
 <a id="nestedblock--column--default"></a>
@@ -203,6 +206,18 @@ Optional:
 
 - `start_num` (Number) (Default: `1`) The number to start incrementing at.
 - `step_num` (Number) (Default: `1`) Step size to increment by.
+
+
+<a id="nestedblock--column--masking_policy"></a>
+### Nested Schema for `column.masking_policy`
+
+Required:
+
+- `policy_name` (String) Masking policy name. For more information about this resource, see [docs](./masking_policy).
+
+Optional:
+
+- `using` (List of String) Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.
 
 
 
