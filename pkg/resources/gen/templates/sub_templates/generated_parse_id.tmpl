@@ -1,4 +1,4 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 func {{ .Prefix }}ParseId(id string) (sdk.{{ .IdType }}, error) {
-	return {{ .DecodeId }}(id)
+	return sdk.Parse{{ .IdType }}(id)
 }

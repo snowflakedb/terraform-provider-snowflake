@@ -27,18 +27,9 @@ func renderLifecycle(t *testing.T, model ResourceModel) string {
 	return b.String()
 }
 
-func Test_lifecycle_setIdEncoding(t *testing.T) {
-	t.Run("current id", func(t *testing.T) {
-		got := renderLifecycle(t, lifecycleModel())
-		require.Contains(t, got, "d.SetId(helpers.EncodeResourceIdentifier(id))")
-		require.NotContains(t, got, "EncodeSnowflakeID")
-	})
-
-	t.Run("legacy id", func(t *testing.T) {
-		got := renderLifecycle(t, lifecycleModel(func(obj *ssot.Object) { obj.LegacyIdEncoding = true }))
-		require.Contains(t, got, "d.SetId(helpers.EncodeSnowflakeID(id))")
-		require.NotContains(t, got, "EncodeResourceIdentifier")
-	})
+func Test_lifecycle_setId(t *testing.T) {
+	got := renderLifecycle(t, lifecycleModel())
+	require.Contains(t, got, "d.SetId(helpers.EncodeResourceIdentifier(id))")
 }
 
 func Test_lifecycle_beforeCreate(t *testing.T) {
@@ -83,11 +74,6 @@ func Test_lifecycle_beforeCreate(t *testing.T) {
 	t.Run("any of the names", func(t *testing.T) {
 		got := renderTemplate(t, "beforeCreate", adopt(func(obj *ssot.Object) { obj.IdentityNamesCreatedBySnowflake = []string{"PUBLIC", "DEFAULT"} }))
 		require.Contains(t, got, `if strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "PUBLIC") || strings.EqualFold(strings.TrimSpace(d.Get("name").(string)), "DEFAULT") {`)
-	})
-
-	t.Run("legacy id", func(t *testing.T) {
-		got := renderTemplate(t, "beforeCreate", adopt(func(obj *ssot.Object) { obj.LegacyIdEncoding = true }))
-		require.Contains(t, got, "d.SetId(helpers.EncodeSnowflakeID(id))")
 	})
 
 	t.Run("the model holds the adopt data", func(t *testing.T) {
@@ -248,21 +234,6 @@ func Test_lifecycle_dropSafelyInSdk(t *testing.T) {
 		require.Contains(t, got, "func DeletePool(")
 	})
 
-	t.Run("legacy id", func(t *testing.T) {
-		model := lifecycleModel(withHooks(ssot.WithDropSafelyInSdk(ssot.Generated())), func(obj *ssot.Object) {
-			obj.LegacyIdEncoding = true
-		})
-		require.Equal(t, `func DeletePool(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
-	return ResourceDeleteContextFunc(
-		helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier],
-		func(client *sdk.Client) DropSafelyFunc[sdk.SchemaObjectIdentifier] {
-			return client.Pools.DropSafely
-		},
-	)(ctx, d, meta)
-}
-`, renderTemplate(t, "generatedDelete", model))
-	})
-
 	t.Run("preview feature", func(t *testing.T) {
 		model := lifecycleModel(withHooks(ssot.WithDropSafelyInSdk(ssot.Generated())), func(obj *ssot.Object) {
 			obj.PreviewFeature = true
@@ -361,17 +332,6 @@ func Test_hierarchyRename(t *testing.T) {
 		require.NotContains(t, got, `d.HasChange("schema")`)
 		require.NotContains(t, got, "handleThreeLevelHierarchyRename")
 		require.NotContains(t, got, "HierarchyRenameExt")
-	})
-
-	t.Run("legacy id encoding", func(t *testing.T) {
-		model := lifecycleModel(func(obj *ssot.Object) {
-			obj.LegacyIdEncoding = true
-			obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithHierarchyRename(ssot.Generated())}
-		})
-		got := renderTemplate(t, "hierarchyRename", model)
-		require.Contains(t, got, "helpers.EncodeSnowflakeID(newId)")
-		require.Contains(t, got, "helpers.EncodeSnowflakeID(renamed[0])")
-		require.NotContains(t, got, "EncodeResourceIdentifier")
 	})
 
 	t.Run("neither identity field force new handles database schema and name", func(t *testing.T) {

@@ -9,11 +9,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_ParseId_identifierKindsAndEncoding(t *testing.T) {
+func Test_ParseId_identifierKinds(t *testing.T) {
 	tests := []struct {
 		name   string
 		idType string
-		legacy bool
 		want   string
 	}{
 		{
@@ -37,33 +36,11 @@ func Test_ParseId_identifierKindsAndEncoding(t *testing.T) {
 }
 `,
 		},
-		{
-			name: "legacy account", idType: "AccountObjectIdentifier", legacy: true,
-			want: `func poolParseId(id string) (sdk.AccountObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.AccountObjectIdentifier](id)
-}
-`,
-		},
-		{
-			name: "legacy database", idType: "DatabaseObjectIdentifier", legacy: true,
-			want: `func poolParseId(id string) (sdk.DatabaseObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.DatabaseObjectIdentifier](id)
-}
-`,
-		},
-		{
-			name: "legacy schema", idType: "SchemaObjectIdentifier", legacy: true,
-			want: `func poolParseId(id string) (sdk.SchemaObjectIdentifier, error) {
-	return helpers.DecodeSnowflakeIDErrLegacy[sdk.SchemaObjectIdentifier](id)
-}
-`,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			model := lifecycleModel(func(obj *ssot.Object) {
 				obj.IdType = tt.idType
-				obj.LegacyIdEncoding = tt.legacy
 				obj.ResourceHooks = []ssot.ResourceHookOption{ssot.WithParseId(ssot.Generated())}
 			})
 			require.Equal(t, tt.want, renderTemplate(t, "generatedParseId", model))

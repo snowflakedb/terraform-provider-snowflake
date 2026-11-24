@@ -11,7 +11,7 @@
 			return client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(currentId).WithRenameTo(targetId))
 		},
 		client.{{ .NamePlural }}.ShowByID,
-		{{ .EncodeIdFn }},
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
 		sdk.ObjectType{{ .Name }},
 	); diags != nil {
 		return diags
@@ -23,7 +23,7 @@
 		if err := meta.(*provider.Context).Client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(err)
 		}
-		d.SetId({{ .EncodeId "newId" }})
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
 {{ end -}}

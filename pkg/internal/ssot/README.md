@@ -49,12 +49,10 @@ or the Terraform schema it ends up in. Keep this in mind when adding a feature:
   `SdkDefineFromSsot()` needs so the hand-written SDK definition has nothing left to list
 - `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
-Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
-(`db|schema|name`, `helpers.EncodeSnowflakeID`) that older resources store. The generated Create calls it instead of
+Identity (`Name`, `IdType`, ...) is separate from `Attributes`. The generated Create encodes the resource id with
 `helpers.EncodeResourceIdentifier`. The identity schema is the same for every object: `name`, and `database` and `schema`
-when the `IdType` has them, use `blocklistedCharactersFieldDescription` and `suppressIdentifierQuoting`, whatever
-`LegacyIdEncoding` is. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
-It calls `sdk.Parse<IdType>` for current ids and `helpers.DecodeSnowflakeIDErrLegacy[<IdType>]` for legacy ids.
+when the `IdType` has them, use `blocklistedCharactersFieldDescription` and `suppressIdentifierQuoting`.
+`WithParseId(Generated())` emits a named parser used by Import, Read, and Update. It calls `sdk.Parse<IdType>`.
 The default `ExtCall` keeps the handwritten parser. `PreviewFeature` marks a preview resource. Generated `Delete`
 wraps `DeleteContext` with `PreviewFeatureDeleteContextWrapper` and `previewfeatures.<Name>Resource`.
 
@@ -318,8 +316,8 @@ A list or set with `CustomParser`, `OptionalInDb`, and no `OptionalInShow` is a 
 
 Generated code stays short. When a template repeats a block of Go across objects, the block moves to a hand-written
 helper (for example `showByIdErrorDiagnostics`, `handleThreeLevelHierarchyRenameIfEnabledWithEncoding`, or the datasource
-`showOutputListSchema`) and the template emits one call. A choice that several templates make from the same flag, such as the
-resource id encoding, is a method on the generator model (`EncodeId`, `DecodeId`). Sub-templates are the files of
+`showOutputListSchema`) and the template emits one call. A choice that several templates make from the same flag, such as
+whether Update moves parents (`HierarchyRenameParents`), is a method on the generator model. Sub-templates are the files of
 `templates/sub_templates`. A file named `show_by_id_in_sdk.tmpl` is the template `showByIdInSdk`, and it needs no
 registration.
 
@@ -542,8 +540,7 @@ A subtemplate calls the ext function by default (`ExtCall`). Set that hook to `G
 template. Until the subtemplate body is written, generation panics through `Unimplemented`. Each hook is switched on its
 own, with its `With` option. See [resource_hooks.go](resource_hooks.go). `DropSafelyInSdk` defaults to omitted, which
 keeps `DeleteExt`. Set it to `Generated` to emit `Delete` and point `DeleteContext` at that function. `Delete` calls
-`ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`. An object with `LegacyIdEncoding` uses
-`helpers.DecodeSnowflakeIDErrLegacy` instead. An object with `PreviewFeature` wraps that `DeleteContext` in
+`ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`. An object with `PreviewFeature` wraps that `DeleteContext` in
 `PreviewFeatureDeleteContextWrapper` using `previewfeatures.<Name>Resource`.
 
 `ShowOutputSet`, `DescribeOutputSet`, and `FqnSet` default to `Generated`. They emit the `d.Set` call for `show_output`,

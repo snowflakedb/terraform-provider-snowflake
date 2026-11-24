@@ -30,8 +30,6 @@ type Object struct {
 	// Empty uses Name plus Details.
 	DescribeDetailsName string
 	IdType              string
-	// LegacyIdEncoding keeps the pipe-delimited resource id (db|schema|name) that older resources store.
-	LegacyIdEncoding bool
 	// PreviewFeature marks a preview resource. Generated Delete wraps DeleteContext with previewfeatures.<Name>Resource.
 	PreviewFeature       bool
 	IdentityNameForceNew bool

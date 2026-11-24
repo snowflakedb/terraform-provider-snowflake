@@ -41,7 +41,7 @@ func Create{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 {{ template "applyParametersCreate" . }}
 {{ template "createInSdk" . }}
 
-	d.SetId({{ .EncodeId "id" }})
+	d.SetId(helpers.EncodeResourceIdentifier(id))
 {{ template "afterCreate" . }}
 }
 
