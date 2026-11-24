@@ -79,6 +79,8 @@ func Test_ParseDataType_Number(t *testing.T) {
 		negative("NUM BER"),
 		negative("INT(30)"),
 		negative("INT(30, 2)"),
+		negative("INTERVAL"),
+		negative("NUMBER 38"),
 	}
 
 	for _, tc := range positiveTestCases {
@@ -147,6 +149,7 @@ func Test_ParseDataType_Decfloat(t *testing.T) {
 		negative("DECFLOAT(38, 2)"),
 		negative("DECFLOAT()"),
 		negative("D E C F L O A T"),
+		negative("DECFLOATX"),
 		negative("other"),
 		negative("other(3)"),
 	}
@@ -158,12 +161,12 @@ func Test_ParseDataType_Decfloat(t *testing.T) {
 			require.NoError(t, err)
 			require.IsType(t, &DecfloatDataType{}, parsed)
 
-			assert.Equal(t, tc.expectedPrecision, parsed.(*DecfloatDataType).precision)
+			assert.Equal(t, tc.expectedPrecision, parsed.(*DecfloatDataType).size)
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*DecfloatDataType).underlyingType)
 
 			assert.Equal(t, DecfloatLegacyDataType, parsed.ToLegacyDataTypeSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*DecfloatDataType).underlyingType, parsed.(*DecfloatDataType).precision), parsed.ToSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", DecfloatLegacyDataType, parsed.(*DecfloatDataType).precision), parsed.Canonical())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*DecfloatDataType).underlyingType, parsed.(*DecfloatDataType).size), parsed.ToSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", DecfloatLegacyDataType, parsed.(*DecfloatDataType).size), parsed.Canonical())
 		})
 	}
 
@@ -322,6 +325,9 @@ func Test_ParseDataType_Text(t *testing.T) {
 		negative("CHAR("),
 		negative("CHAR)"),
 		negative("CH AR"),
+		negative("STRINGS"),
+		negative("VARCHAR NOT NULL"),
+		negative("CHARACTER VARYING"),
 	}
 
 	for _, tc := range positiveTestCases {
@@ -331,12 +337,12 @@ func Test_ParseDataType_Text(t *testing.T) {
 			require.NoError(t, err)
 			require.IsType(t, &TextDataType{}, parsed)
 
-			assert.Equal(t, tc.expectedLength, parsed.(*TextDataType).length)
+			assert.Equal(t, tc.expectedLength, parsed.(*TextDataType).size)
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*TextDataType).underlyingType)
 
 			assert.Equal(t, VarcharLegacyDataType, parsed.ToLegacyDataTypeSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TextDataType).underlyingType, parsed.(*TextDataType).length), parsed.ToSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", VarcharLegacyDataType, parsed.(*TextDataType).length), parsed.Canonical())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TextDataType).underlyingType, parsed.(*TextDataType).size), parsed.ToSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", VarcharLegacyDataType, parsed.(*TextDataType).size), parsed.Canonical())
 		})
 	}
 
@@ -562,6 +568,8 @@ func Test_ParseDataType_Time(t *testing.T) {
 		negative("TIME(38, 2)"),
 		negative("TIME()"),
 		negative("T I M E"),
+		negative("TIMESTAMP"),
+		negative("TIMESTAMP(3)"),
 		negative("other"),
 	}
 
@@ -573,7 +581,7 @@ func Test_ParseDataType_Time(t *testing.T) {
 			require.IsType(t, &TimeDataType{}, parsed)
 
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*TimeDataType).underlyingType)
-			assert.Equal(t, tc.expectedPrecision, parsed.(*TimeDataType).precision)
+			assert.Equal(t, tc.expectedPrecision, parsed.(*TimeDataType).size)
 
 			assert.Equal(t, TimeLegacyDataType, parsed.ToLegacyDataTypeSql())
 			assert.Equal(t, fmt.Sprintf("%s(%d)", tc.expectedUnderlyingType, tc.expectedPrecision), parsed.ToSql())
@@ -640,12 +648,12 @@ func Test_ParseDataType_TimestampLtz(t *testing.T) {
 			require.NoError(t, err)
 			require.IsType(t, &TimestampLtzDataType{}, parsed)
 
-			assert.Equal(t, tc.expectedPrecision, parsed.(*TimestampLtzDataType).precision)
+			assert.Equal(t, tc.expectedPrecision, parsed.(*TimestampLtzDataType).size)
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*TimestampLtzDataType).underlyingType)
 
 			assert.Equal(t, TimestampLtzLegacyDataType, parsed.ToLegacyDataTypeSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TimestampLtzDataType).underlyingType, parsed.(*TimestampLtzDataType).precision), parsed.ToSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", TimestampLtzLegacyDataType, parsed.(*TimestampLtzDataType).precision), parsed.Canonical())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TimestampLtzDataType).underlyingType, parsed.(*TimestampLtzDataType).size), parsed.ToSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", TimestampLtzLegacyDataType, parsed.(*TimestampLtzDataType).size), parsed.Canonical())
 		})
 	}
 
@@ -710,12 +718,12 @@ func Test_ParseDataType_TimestampNtz(t *testing.T) {
 			require.NoError(t, err)
 			require.IsType(t, &TimestampNtzDataType{}, parsed)
 
-			assert.Equal(t, tc.expectedPrecision, parsed.(*TimestampNtzDataType).precision)
+			assert.Equal(t, tc.expectedPrecision, parsed.(*TimestampNtzDataType).size)
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*TimestampNtzDataType).underlyingType)
 
 			assert.Equal(t, TimestampNtzLegacyDataType, parsed.ToLegacyDataTypeSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TimestampNtzDataType).underlyingType, parsed.(*TimestampNtzDataType).precision), parsed.ToSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", TimestampNtzLegacyDataType, parsed.(*TimestampNtzDataType).precision), parsed.Canonical())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TimestampNtzDataType).underlyingType, parsed.(*TimestampNtzDataType).size), parsed.ToSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", TimestampNtzLegacyDataType, parsed.(*TimestampNtzDataType).size), parsed.Canonical())
 		})
 	}
 
@@ -778,12 +786,12 @@ func Test_ParseDataType_TimestampTz(t *testing.T) {
 			require.NoError(t, err)
 			require.IsType(t, &TimestampTzDataType{}, parsed)
 
-			assert.Equal(t, tc.expectedPrecision, parsed.(*TimestampTzDataType).precision)
+			assert.Equal(t, tc.expectedPrecision, parsed.(*TimestampTzDataType).size)
 			assert.Equal(t, tc.expectedUnderlyingType, parsed.(*TimestampTzDataType).underlyingType)
 
 			assert.Equal(t, TimestampTzLegacyDataType, parsed.ToLegacyDataTypeSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TimestampTzDataType).underlyingType, parsed.(*TimestampTzDataType).precision), parsed.ToSql())
-			assert.Equal(t, fmt.Sprintf("%s(%d)", TimestampTzLegacyDataType, parsed.(*TimestampTzDataType).precision), parsed.Canonical())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", parsed.(*TimestampTzDataType).underlyingType, parsed.(*TimestampTzDataType).size), parsed.ToSql())
+			assert.Equal(t, fmt.Sprintf("%s(%d)", TimestampTzLegacyDataType, parsed.(*TimestampTzDataType).size), parsed.Canonical())
 		})
 	}
 
@@ -1049,11 +1057,11 @@ func Test_ParseDataType_StructuredObject(t *testing.T) {
 			require.Len(t, objectType.fields, len(tc.expectedFields))
 			for i, f := range tc.expectedFields {
 				parsedField := objectType.fields[i]
-				assert.Equal(t, f.Name, parsedField.name)
-				assert.Equal(t, f.NotNull, parsedField.notNull)
+				assert.Equal(t, f.Name, parsedField.Name)
+				assert.Equal(t, f.NotNull, parsedField.NotNull)
 				expectedType, err := ParseDataType(f.Type)
 				require.NoError(t, err)
-				assert.Equal(t, expectedType.ToSql(), parsedField.dataType.ToSql())
+				assert.Equal(t, expectedType.ToSql(), parsedField.DataType.ToSql())
 			}
 
 			assert.Equal(t, ObjectLegacyDataType, parsed.ToLegacyDataTypeSql())

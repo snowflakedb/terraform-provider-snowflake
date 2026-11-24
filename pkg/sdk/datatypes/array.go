@@ -16,6 +16,19 @@ type ArrayDataType struct {
 	underlyingType string
 }
 
+func NewArrayDataType() DataType {
+	return &ArrayDataType{
+		underlyingType: ArrayLegacyDataType,
+	}
+}
+
+func NewStructuredArrayDataType(elementType DataType) DataType {
+	return &ArrayDataType{
+		elementType:    elementType,
+		underlyingType: ArrayLegacyDataType,
+	}
+}
+
 func (t *ArrayDataType) ToSql() string {
 	return t.format(t.underlyingType, func(dt DataType) string { return dt.ToSql() })
 }

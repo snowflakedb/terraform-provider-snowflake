@@ -3,8 +3,6 @@ package datatypes
 import (
 	"fmt"
 	"slices"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -19,31 +17,27 @@ const (
 // Length can be known or unknown.
 // It does have synonyms that allow specifying length but differ with the default length when length is omitted; here called subtypes.
 type TextDataType struct {
-	length         int
-	underlyingType string
-
-	lengthKnown bool
+	sizedDataType
 }
 
-func (t *TextDataType) ToSql() string {
-	return fmt.Sprintf("%s(%d)", t.underlyingType, t.length)
+func NewVarcharDataType() DataType {
+	return newTextDataType(DefaultVarcharLength, VarcharLegacyDataType, false)
 }
 
-func (t *TextDataType) ToLegacyDataTypeSql() string {
-	return VarcharLegacyDataType
+func NewVarcharDataTypeWithLength(length int) DataType {
+	return newTextDataType(length, VarcharLegacyDataType, true)
 }
 
-func (t *TextDataType) Canonical() string {
-	return fmt.Sprintf("%s(%d)", VarcharLegacyDataType, t.length)
+func NewCharDataType() DataType {
+	return newTextDataType(DefaultCharLength, "CHAR", false)
 }
 
-func (t *TextDataType) ToSqlWithoutUnknowns() string {
-	switch {
-	case t.lengthKnown:
-		return fmt.Sprintf("%s(%d)", t.underlyingType, t.length)
-	default:
-		return fmt.Sprintf("%s", t.underlyingType)
-	}
+func NewCharDataTypeWithLength(length int) DataType {
+	return newTextDataType(length, "CHAR", true)
+}
+
+func newTextDataType(length int, underlyingType string, lengthKnown bool) *TextDataType {
+	return &TextDataType{sizedDataType{length, underlyingType, VarcharLegacyDataType, lengthKnown}}
 }
 
 var (
@@ -55,36 +49,18 @@ var (
 // parseTextDataTypeRaw extracts length from the raw text data type input.
 // It returns default if it can't parse arguments, data type is different, or no length argument was provided.
 func parseTextDataTypeRaw(raw sanitizedDataTypeRaw) (*TextDataType, error) {
-	r := strings.TrimSpace(strings.TrimPrefix(raw.raw, raw.matchedByType))
-	if r == "" {
-		switch {
-		case slices.Contains(TextDataTypeSynonyms, raw.matchedByType):
-			return &TextDataType{DefaultVarcharLength, raw.matchedByType, false}, nil
-		case slices.Contains(TextDataTypeSubtypes, raw.matchedByType):
-			return &TextDataType{DefaultCharLength, raw.matchedByType, false}, nil
-		default:
-			return nil, fmt.Errorf("unknown text data type: %s", raw.raw)
-		}
+	var defaultLength int
+	switch {
+	case slices.Contains(TextDataTypeSynonyms, raw.matchedByType):
+		defaultLength = DefaultVarcharLength
+	case slices.Contains(TextDataTypeSubtypes, raw.matchedByType):
+		defaultLength = DefaultCharLength
+	default:
+		return nil, fmt.Errorf("unknown text data type: %s", raw.raw)
 	}
-	if !strings.HasPrefix(r, "(") || !strings.HasSuffix(r, ")") {
-		return nil, fmt.Errorf(`text %s could not be parsed, use "%s(length)" format`, raw.raw, raw.matchedByType)
-	}
-	lengthRaw := r[1 : len(r)-1]
-	length, err := strconv.Atoi(strings.TrimSpace(lengthRaw))
+	length, known, err := parseSize(raw, "varchar", "length", defaultLength)
 	if err != nil {
-		return nil, fmt.Errorf(`could not parse the varchar's length: "%s", err: %w`, lengthRaw, err)
+		return nil, err
 	}
-	return &TextDataType{length, raw.matchedByType, true}, nil
-}
-
-func areTextDataTypesTheSame(a, b *TextDataType) bool {
-	return a.length == b.length
-}
-
-func areTextDataTypesDefinitelyDifferent(a, b *TextDataType) bool {
-	var lengthDefinitelyDifferent bool
-	if a.lengthKnown && b.lengthKnown {
-		lengthDefinitelyDifferent = a.length != b.length
-	}
-	return lengthDefinitelyDifferent
+	return newTextDataType(length, raw.matchedByType, known), nil
 }

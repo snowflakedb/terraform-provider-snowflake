@@ -15,6 +15,14 @@ type MapDataType struct {
 	underlyingType string
 }
 
+func NewMapDataType(keyType, valueType DataType) DataType {
+	return &MapDataType{
+		keyType:        keyType,
+		valueType:      valueType,
+		underlyingType: MapLegacyDataType,
+	}
+}
+
 func (t *MapDataType) ToSql() string {
 	return t.format(t.underlyingType, func(dt DataType) string { return dt.ToSql() })
 }

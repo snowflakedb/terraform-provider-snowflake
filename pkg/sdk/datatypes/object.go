@@ -15,19 +15,33 @@ import (
 // Structured OBJECT consists of an ordered list of fields (key, value type, and optional NOT NULL constraint); may be empty.
 // Structured OBJECT without fields (OBJECT()) is different from the semi-structured OBJECT.
 type ObjectDataType struct {
-	fields         []objectDataTypeField
+	fields         []ObjectDataTypeField
 	structured     bool
 	underlyingType string
 }
 
-type objectDataTypeField struct {
-	name     string
-	dataType DataType
-	notNull  bool
+type ObjectDataTypeField struct {
+	Name     string
+	DataType DataType
+	NotNull  bool
 }
 
-func (f *objectDataTypeField) format(formatType func(DataType) string) string {
-	return formatWithNotNull(fmt.Sprintf("%s %s", f.name, formatType(f.dataType)), f.notNull)
+func NewObjectDataType() DataType {
+	return &ObjectDataType{
+		underlyingType: ObjectLegacyDataType,
+	}
+}
+
+func NewStructuredObjectDataType(fields ...ObjectDataTypeField) DataType {
+	return &ObjectDataType{
+		fields:         fields,
+		structured:     true,
+		underlyingType: ObjectLegacyDataType,
+	}
+}
+
+func (f *ObjectDataTypeField) format(formatType func(DataType) string) string {
+	return formatWithNotNull(fmt.Sprintf("%s %s", f.Name, formatType(f.DataType)), f.NotNull)
 }
 
 func (t *ObjectDataType) ToSql() string {
@@ -50,7 +64,7 @@ func (t *ObjectDataType) format(objectType string, formatType func(DataType) str
 	if !t.structured {
 		return objectType
 	}
-	fields := strings.Join(collections.Map(t.fields, func(f objectDataTypeField) string {
+	fields := strings.Join(collections.Map(t.fields, func(f ObjectDataTypeField) string {
 		return f.format(formatType)
 	}), ", ")
 	return fmt.Sprintf("%s(%s)", objectType, fields)
@@ -70,7 +84,7 @@ func parseObjectDataTypeRaw(raw sanitizedDataTypeRaw) (*ObjectDataType, error) {
 	}
 	if args == "" {
 		return &ObjectDataType{
-			fields:         make([]objectDataTypeField, 0),
+			fields:         make([]ObjectDataTypeField, 0),
 			structured:     true,
 			underlyingType: raw.matchedByType,
 		}, nil
@@ -86,22 +100,22 @@ func parseObjectDataTypeRaw(raw sanitizedDataTypeRaw) (*ObjectDataType, error) {
 	}, nil
 }
 
-func parseObjectDataTypeField(field string) (objectDataTypeField, error) {
+func parseObjectDataTypeField(field string) (ObjectDataTypeField, error) {
 	trimmed, notNull := trimNotNullSuffix(strings.TrimSpace(field))
 	parts := strings.Fields(trimmed)
 	if len(parts) < 2 {
-		return objectDataTypeField{}, fmt.Errorf("could not parse object field: %s, it should contain the following format `<key> <value_type> [ NOT NULL ]`", field)
+		return ObjectDataTypeField{}, fmt.Errorf("could not parse object field: %s, it should contain the following format `<key> <value_type> [ NOT NULL ]`", field)
 	}
 	name := parts[0]
 	valueTypeRaw := strings.TrimSpace(strings.TrimPrefix(trimmed, name))
 	valueType, err := parseNestedDataType(valueTypeRaw)
 	if err != nil {
-		return objectDataTypeField{}, fmt.Errorf(`could not parse the object's value type for key "%s": "%s", err: %w`, name, valueTypeRaw, err)
+		return ObjectDataTypeField{}, fmt.Errorf(`could not parse the object's value type for key "%s": "%s", err: %w`, name, valueTypeRaw, err)
 	}
-	return objectDataTypeField{
-		name:     name,
-		dataType: valueType,
-		notNull:  notNull,
+	return ObjectDataTypeField{
+		Name:     name,
+		DataType: valueType,
+		NotNull:  notNull,
 	}, nil
 }
 
@@ -111,7 +125,7 @@ func areObjectDataTypesTheSame(a, b *ObjectDataType) bool {
 	}
 	for i := range a.fields {
 		aField, bField := a.fields[i], b.fields[i]
-		if aField.name != bField.name || aField.notNull != bField.notNull || !AreTheSame(aField.dataType, bField.dataType) {
+		if aField.Name != bField.Name || aField.NotNull != bField.NotNull || !AreTheSame(aField.DataType, bField.DataType) {
 			return false
 		}
 	}
@@ -129,7 +143,7 @@ func areObjectDataTypesDefinitelyDifferent(a, b *ObjectDataType) bool {
 	}
 	for i := range a.fields {
 		aField, bField := a.fields[i], b.fields[i]
-		if aField.name != bField.name || aField.notNull != bField.notNull || AreDefinitelyDifferent(aField.dataType, bField.dataType) {
+		if aField.Name != bField.Name || aField.NotNull != bField.NotNull || AreDefinitelyDifferent(aField.DataType, bField.DataType) {
 			return true
 		}
 	}
