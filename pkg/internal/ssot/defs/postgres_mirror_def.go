@@ -7,6 +7,9 @@ var PostgresMirrorTargetTableType = ssot.NewEnum(
 	"SNOWFLAKE", "ICEBERG",
 )
 
+// postgresMirrorRefreshIntervalFields are the units of a refresh interval. Exactly one of them is set.
+var postgresMirrorRefreshIntervalFields = []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "seconds"}}
+
 // PostgresMirrorAttrs holds the Postgres mirror fields. A mirror has no SHOW and no DDL: every operation calls a
 // procedure of the SNOWFLAKE application, so the SDK stays handwritten and the attributes carry no SQL clauses.
 // The Describe columns follow postgresMirrorDetailsPairs. The columns that are not resource attributes are Readonly.
@@ -95,26 +98,24 @@ var PostgresMirrorAttrs = struct {
 		Description:  "Specifies how often changes are merged into the target tables. Set exactly one of `hours`, `minutes`, or `seconds`. When not set, Snowflake uses its default interval. Removing the block keeps the current interval, because `ALTER_MIRROR` cannot reset it.",
 		Children: []ssot.Attribute{
 			{
-				Name:          "hours",
-				Type:          ssot.AttrInt,
-				ConflictsWith: []ssot.Attribute{{Name: "minutes"}, {Name: "seconds"}},
-				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "seconds"}},
-				Description:   "Specifies the refresh interval in hours. (conflicts with `minutes` and `seconds`)",
+				Name:        "hours",
+				Type:        ssot.AttrInt,
+				Description: "Specifies the refresh interval in hours. (conflicts with `minutes` and `seconds`)",
 			},
 			{
-				Name:          "minutes",
-				Type:          ssot.AttrInt,
-				ConflictsWith: []ssot.Attribute{{Name: "hours"}, {Name: "seconds"}},
-				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "seconds"}},
-				Description:   "Specifies the refresh interval in minutes. (conflicts with `hours` and `seconds`)",
+				Name:        "minutes",
+				Type:        ssot.AttrInt,
+				Description: "Specifies the refresh interval in minutes. (conflicts with `hours` and `seconds`)",
 			},
 			{
-				Name:          "seconds",
-				Type:          ssot.AttrInt,
-				ConflictsWith: []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}},
-				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "seconds"}},
-				Description:   "Specifies the refresh interval in seconds. (conflicts with `hours` and `minutes`)",
+				Name:        "seconds",
+				Type:        ssot.AttrInt,
+				Description: "Specifies the refresh interval in seconds. (conflicts with `hours` and `minutes`)",
 			},
+		},
+		Validations: []ssot.Validation{
+			ssot.Conflicting(postgresMirrorRefreshIntervalFields...),
+			ssot.AtLeastOneOf(postgresMirrorRefreshIntervalFields...),
 		},
 	},
 	TargetTableType: ssot.Attribute{

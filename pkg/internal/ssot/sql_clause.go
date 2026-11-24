@@ -2,7 +2,6 @@ package ssot
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -619,20 +618,12 @@ func (a Attribute) inSqlProjection(use ClauseUse) bool {
 	}
 }
 
-// RuleFields are the Children that ChildrenRule is applied to: the CREATE fields of the SQL struct that are not a fixed
-// text, and not Required, in Children order. A child with no explicit clause uses the type default.
-// ChildrenRuleFields narrows them to the named Children.
-func (a Attribute) RuleFields() []Attribute {
-	return a.RuleFieldsFor(ClauseCreate)
-}
-
-// RuleFieldsFor is RuleFields for one statement projection.
-func (a Attribute) RuleFieldsFor(use ClauseUse) []Attribute {
+// ValidationCandidatesFor are the Children that a Validation of the object can name in one statement projection: the
+// fields of the SQL struct that are not a fixed text, not tags, and not Required, in Children order. A CREATE child with
+// no explicit clause uses the type default.
+func (a Attribute) ValidationCandidatesFor(use ClauseUse) []Attribute {
 	return collections.Filter(a.NestedSqlFieldsFor(use), func(child Attribute) bool {
 		if child.Required {
-			return false
-		}
-		if len(a.ChildrenRuleFields) > 0 && !slices.Contains(a.ChildrenRuleFields, child.Name) {
 			return false
 		}
 		clause := child.rawSqlClause(use)
@@ -641,6 +632,16 @@ func (a Attribute) RuleFieldsFor(use ClauseUse) []Attribute {
 		}
 		return clause.Kind != SqlKindStatic && !child.IsTags()
 	})
+}
+
+// ValidationFieldsFor are the Children of one Validation of the object in one statement projection, in Children order.
+// A Validation with no Fields covers every candidate.
+func (a Attribute) ValidationFieldsFor(v Validation, use ClauseUse) []Attribute {
+	candidates := a.ValidationCandidatesFor(use)
+	if len(v.Fields) == 0 {
+		return candidates
+	}
+	return collections.Filter(candidates, func(child Attribute) bool { return v.Names(child.Name) })
 }
 
 // IsObjectList reports whether the attribute is a list or set whose elements are objects.

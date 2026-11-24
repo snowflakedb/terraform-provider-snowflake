@@ -149,11 +149,17 @@ var TableModifyDataMetricFunction = ssot.Attribute{
 			SqlOnly:   true,
 			CreateSql: ssot.ValueKeyword(ssot.Sql("DATA METRIC FUNCTION"), ssot.Required()),
 			Elem: &ssot.Attribute{
-				Type:               ssot.AttrObject,
-				SqlOnly:            true,
-				ChildrenRule:       ssot.ChildrenExactlyOne,
-				ChildrenRuleFields: []string{"status", "add_expectation", "modify_expectation", "drop_expectation", "filter", "set"},
-				CreateSql:          ssot.ObjectParameter(ssot.StructName("TableModifyDataMetricFunctionItem")),
+				Type:    ssot.AttrObject,
+				SqlOnly: true,
+				Validations: []ssot.Validation{ssot.ExactlyOneOf(
+					ssot.Attribute{Name: "status"},
+					ssot.Attribute{Name: "add_expectation"},
+					ssot.Attribute{Name: "modify_expectation"},
+					ssot.Attribute{Name: "drop_expectation"},
+					ssot.Attribute{Name: "filter"},
+					ssot.Attribute{Name: "set"},
+				)},
+				CreateSql: ssot.ObjectParameter(ssot.StructName("TableModifyDataMetricFunctionItem")),
 				Children: []ssot.Attribute{
 					tableDataMetricFunctionIdentifier(),
 					tableDataMetricFunctionOnAttr(),

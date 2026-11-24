@@ -19,16 +19,6 @@ const (
 	AttrObject AttributeType = "object"
 )
 
-// ChildrenRule is a validation over the fields of the SQL struct of an object attribute.
-type ChildrenRule string
-
-const (
-	// ChildrenAtLeastOne requires at least one field to be set (AtLeastOneValueSet).
-	ChildrenAtLeastOne ChildrenRule = "at_least_one"
-	// ChildrenExactlyOne requires exactly one field to be set (ExactlyOneValueSet).
-	ChildrenExactlyOne ChildrenRule = "exactly_one"
-)
-
 // ObjectElem is the Elem of a list or set of objects: an AttrObject whose Children are the fields of each element.
 func ObjectElem(children []Attribute) *Attribute {
 	return &Attribute{Type: AttrObject, Children: children}
@@ -76,18 +66,12 @@ type Attribute struct {
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
 	// Resource alter generation skips a nested attribute and every field under it.
 	Children []Attribute
-	// ChildrenRule adds a validation over the Children that are fields of the SQL struct of an object, not fixed texts and
-	// not Required: at least one of them is set, or exactly one. A Required child is always set, so it is never "the one".
-	// The order is the Children order. It is valid only on an object with at least two such Children. The schema-side
-	// AtLeastOneOf is not generated from it.
-	ChildrenRule ChildrenRule
-	// ChildrenRuleFields names the Children that ChildrenRule applies to, when some fields of the SQL struct sit beside the choice,
-	// such as the enforcement flags next to the constraint name and the key kinds. Empty means every field, as described above.
-	// It is valid only with ChildrenRule, and each name is a child that is a field and is not Required.
-	ChildrenRuleFields []string
-	OptionalInShow     bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
-	OptionalInDb       bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
-	StoredAsText       bool // the db column is text, and the plain kind stays the semantic type
+	// Validations are rules over the Children of an object: a single block, an Elem, or a SqlOnly nested struct. Each names
+	// Children that are fields of the SQL struct, not fixed texts, tags, or Required. See Validation and the README.
+	Validations    []Validation
+	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
+	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
+	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
 	// BoolTrueValue, with StoredAsText, is the text that converts to true, such as Y, YES, or ON.
 	// Empty uses strconv.ParseBool.
 	BoolTrueValue string
@@ -149,15 +133,6 @@ type Attribute struct {
 	// A SHOW column does not need this: every optional scalar SHOW column is drift-tracked.
 	// Leave it unset when the omitted value is empty, as catalog_namespace is.
 	ServerDefault bool
-	// ConflictsWith names other attributes on the same level. The generator emits schema.ConflictsWith
-	// as a path from the resource root: the name at the top, and parent.0.name under a single object.
-	// A set, or a list of objects, cannot name these relations.
-	// On a SqlOnly child of an object clause there is no schema, and the SDK query struct gets ConflictingFields for the
-	// pair instead, such as ORDER and NOORDER. The other attribute has to be a child of the same object.
-	ConflictsWith []Attribute
-	// AtLeastOneOf names attributes of which at least one must be set. Paths follow ConflictsWith.
-	// The list may include this attribute.
-	AtLeastOneOf []Attribute
 	// Sensitive marks the Terraform schema field sensitive.
 	Sensitive bool
 	// Deprecated is the schema Deprecated message. Empty means the attribute is not deprecated.

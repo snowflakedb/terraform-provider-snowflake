@@ -1,10 +1,6 @@
 package defs
 
-import (
-	"slices"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-)
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
 // MatchType is the MATCH clause of a foreign key.
 var MatchType = ssot.NewEnum("MatchType", "MatchTypes", "FULL", "SIMPLE", "PARTIAL")
@@ -27,11 +23,16 @@ func constraintFlag(name, sql string) ssot.Attribute {
 }
 
 // constraintFlagPair is two keywords that cannot be set together, such as ENFORCED and NOT ENFORCED.
-func constraintFlagPair(first, firstSql, second, secondSql string) []ssot.Attribute {
-	other := constraintFlag(second, secondSql)
-	flag := constraintFlag(first, firstSql)
-	flag.ConflictsWith = []ssot.Attribute{other}
-	return []ssot.Attribute{flag, other}
+type constraintFlagPair struct {
+	first, firstSql, second, secondSql string
+}
+
+func (p constraintFlagPair) flags() []ssot.Attribute {
+	return []ssot.Attribute{constraintFlag(p.first, p.firstSql), constraintFlag(p.second, p.secondSql)}
+}
+
+func (p constraintFlagPair) conflict() ssot.Validation {
+	return ssot.Conflicting(p.flags()...)
 }
 
 func constraintColumns(name, field string) ssot.Attribute {
@@ -62,17 +63,33 @@ func constraintOn() ssot.Attribute {
 	}
 }
 
-// constraintProperties are the ENFORCED, DEFERRABLE, INITIALLY, ENABLE, VALIDATE, and RELY pairs that UNIQUE,
-// PRIMARY KEY, and FOREIGN KEY constraints share. Each pair conflicts.
+// constraintPropertyPairs are the ENFORCED, DEFERRABLE, INITIALLY, ENABLE, VALIDATE, and RELY pairs that UNIQUE,
+// PRIMARY KEY, and FOREIGN KEY constraints share.
+var constraintPropertyPairs = []constraintFlagPair{
+	{"enforced", "ENFORCED", "not_enforced", "NOT ENFORCED"},
+	{"deferrable", "DEFERRABLE", "not_deferrable", "NOT DEFERRABLE"},
+	{"initially_deferred", "INITIALLY DEFERRED", "initially_immediate", "INITIALLY IMMEDIATE"},
+	{"enable", "ENABLE", "disable", "DISABLE"},
+	{"validate", "VALIDATE", "novalidate", "NOVALIDATE"},
+	{"rely", "RELY", "norely", "NORELY"},
+}
+
+// constraintProperties are the flags of constraintPropertyPairs.
 func constraintProperties() []ssot.Attribute {
-	return slices.Concat(
-		constraintFlagPair("enforced", "ENFORCED", "not_enforced", "NOT ENFORCED"),
-		constraintFlagPair("deferrable", "DEFERRABLE", "not_deferrable", "NOT DEFERRABLE"),
-		constraintFlagPair("initially_deferred", "INITIALLY DEFERRED", "initially_immediate", "INITIALLY IMMEDIATE"),
-		constraintFlagPair("enable", "ENABLE", "disable", "DISABLE"),
-		constraintFlagPair("validate", "VALIDATE", "novalidate", "NOVALIDATE"),
-		constraintFlagPair("rely", "RELY", "norely", "NORELY"),
-	)
+	var flags []ssot.Attribute
+	for _, pair := range constraintPropertyPairs {
+		flags = append(flags, pair.flags()...)
+	}
+	return flags
+}
+
+// constraintPropertyConflicts are the validations of constraintPropertyPairs: each pair conflicts.
+func constraintPropertyConflicts() []ssot.Validation {
+	conflicts := make([]ssot.Validation, 0, len(constraintPropertyPairs))
+	for _, pair := range constraintPropertyPairs {
+		conflicts = append(conflicts, pair.conflict())
+	}
+	return conflicts
 }
 
 func constraintComment() ssot.Attribute {
@@ -84,12 +101,12 @@ func constraintComment() ssot.Attribute {
 
 func constraintCheck(structName, field string) ssot.Attribute {
 	validate, novalidate := constraintFlag("enable_validate", "ENABLE VALIDATE"), constraintFlag("enable_novalidate", "ENABLE NOVALIDATE")
-	validate.ConflictsWith = []ssot.Attribute{novalidate}
 	return ssot.Attribute{
-		Name:      "check",
-		Type:      ssot.AttrObject,
-		SqlOnly:   true,
-		CreateSql: constraintClause(structName, field),
+		Name:        "check",
+		Type:        ssot.AttrObject,
+		SqlOnly:     true,
+		CreateSql:   constraintClause(structName, field),
+		Validations: []ssot.Validation{ssot.Conflicting(validate, novalidate)},
 		Children: []ssot.Attribute{
 			constraintName(),
 			{Name: "check", SqlOnly: true, CreateSql: ssot.StaticSQL("check", "CHECK")},
@@ -118,13 +135,14 @@ func constraintUniquePK(structName, field string, columns, comment bool) ssot.At
 		children = append(children, constraintComment())
 	}
 	return ssot.Attribute{
-		Name:               "unique_pk",
-		Type:               ssot.AttrObject,
-		SqlOnly:            true,
-		ChildrenRule:       ssot.ChildrenExactlyOne,
-		ChildrenRuleFields: []string{"unique", "primary_key"},
-		CreateSql:          constraintClause(structName, field),
-		Children:           children,
+		Name:    "unique_pk",
+		Type:    ssot.AttrObject,
+		SqlOnly: true,
+		Validations: append(constraintPropertyConflicts(),
+			ssot.ExactlyOneOf(ssot.Attribute{Name: "unique"}, ssot.Attribute{Name: "primary_key"}),
+		),
+		CreateSql: constraintClause(structName, field),
+		Children:  children,
 	}
 }
 
@@ -137,10 +155,11 @@ var TableColumnInlineUniquePK = constraintUniquePK("TableColumnInlineUniquePK", 
 
 // TableColumnInlineFK is an inline FOREIGN KEY constraint. The FOREIGN KEY keyword is optional inline.
 var TableColumnInlineFK = ssot.Attribute{
-	Name:      "fk",
-	Type:      ssot.AttrObject,
-	SqlOnly:   true,
-	CreateSql: constraintClause("TableColumnInlineFK", "FK"),
+	Name:        "fk",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	CreateSql:   constraintClause("TableColumnInlineFK", "FK"),
+	Validations: constraintPropertyConflicts(),
 	Children: append([]ssot.Attribute{
 		constraintName(),
 		constraintFlag("foreign_key", "FOREIGN KEY"),
@@ -157,11 +176,11 @@ var TableColumnInlineCH = constraintCheck("TableColumnInlineCH", "CH")
 // TableColumnInlineConstraint is one inline constraint on a column: UNIQUE or PRIMARY KEY, FOREIGN KEY, or CHECK. The
 // three kinds are its children, so the three structs are generated with it.
 var TableColumnInlineConstraint = ssot.Attribute{
-	Name:         "inline_constraint",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableColumnInlineConstraint"), ssot.SharedToOpts()),
+	Name:        "inline_constraint",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(ssot.StructName("TableColumnInlineConstraint"), ssot.SharedToOpts()),
 	Children: []ssot.Attribute{
 		TableColumnInlineUniquePK,
 		TableColumnInlineFK,
@@ -174,10 +193,11 @@ var TableOutOfLineUniquePK = constraintUniquePK("TableOutOfLineUniquePK", "Uniqu
 
 // TableOutOfLineFK is an out-of-line FOREIGN KEY constraint.
 var TableOutOfLineFK = ssot.Attribute{
-	Name:      "fk",
-	Type:      ssot.AttrObject,
-	SqlOnly:   true,
-	CreateSql: constraintClause("TableOutOfLineFK", "FK"),
+	Name:        "fk",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	CreateSql:   constraintClause("TableOutOfLineFK", "FK"),
+	Validations: constraintPropertyConflicts(),
 	Children: append(append([]ssot.Attribute{
 		constraintName(),
 		{Name: "foreign_key", SqlOnly: true, CreateSql: ssot.StaticSQL("foreignKey", "FOREIGN KEY")},
@@ -195,11 +215,11 @@ var TableOutOfLineCH = constraintCheck("TableOutOfLineCH", "CH")
 // TableOutOfLineConstraint is one out-of-line constraint: UNIQUE or PRIMARY KEY, FOREIGN KEY, or CHECK. The three kinds
 // are its children, so the three structs are generated with it.
 var TableOutOfLineConstraint = ssot.Attribute{
-	Name:         "out_of_line_constraint",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableOutOfLineConstraint"), ssot.SharedToOpts()),
+	Name:        "out_of_line_constraint",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(ssot.StructName("TableOutOfLineConstraint"), ssot.SharedToOpts()),
 	Children: []ssot.Attribute{
 		TableOutOfLineUniquePK,
 		TableOutOfLineFK,

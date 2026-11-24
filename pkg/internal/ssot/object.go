@@ -86,14 +86,9 @@ type Object struct {
 	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.
 	// SdkCustomInterfaceMethods turns them on.
 	CustomInterfaceMethods []CustomInterfaceMethodSpec
-	// ExactlyOneOf are groups of optional top-level attributes of which exactly one is set. Each group is declared once,
-	// with pointers to the attributes. SDK CREATE adds ExactlyOneValueSet to a statement that has all of the group,
-	// and the generated schema gets ExactlyOneOf on each attribute of the group.
-	ExactlyOneOf [][]*Attribute
-	// AtLeastOneOf are groups of optional top-level attributes of which at least one is set. Each group is declared once,
-	// with pointers to the attributes. SDK CREATE adds AtLeastOneValueSet to a statement that has all of the group.
-	// The schema-side AtLeastOneOf is not generated from it.
-	AtLeastOneOf [][]*Attribute
+	// Validations are rules over the optional top-level attributes, such as exactly one of three authentications.
+	// See Validation and the README.
+	Validations []Validation
 	// ShowParametersDetailsAdditionalLevels adds parameters from these levels onto ShowParametersDetails.
 	// A name already in ParameterLevel() is kept once.
 	ShowParametersDetailsAdditionalLevels []ParameterLevel

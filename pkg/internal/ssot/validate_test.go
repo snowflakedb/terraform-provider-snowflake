@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/stretchr/testify/require"
 )
 
@@ -65,18 +66,6 @@ func Test_ValidateObject_identifierRequiresType(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_conflictsWithUnknownAttribute(t *testing.T) {
-	require.PanicsWithValue(t, `object "Warehouse": attribute "resource_constraint" conflicts with unknown attribute "generation"`, func() {
-		ValidateObject(Object{
-			Name: "Warehouse",
-			Attributes: []Attribute{{
-				Name:          "resource_constraint",
-				ConflictsWith: []Attribute{{Name: "generation"}},
-			}},
-		})
-	})
-}
-
 func Test_ValidateObject_objectAssertSkipMustBeColumn(t *testing.T) {
 	tables := Attribute{Name: "tables", Type: AttrString, Readonly: true}
 	other := Attribute{Name: "other", Type: AttrString, Readonly: true}
@@ -105,80 +94,6 @@ func Test_ValidateObject_objectAssertSkipMustBeColumn(t *testing.T) {
 				WithObjectAssert(ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&tables))),
 			},
 			Show: OutputSpec{Columns: []*Attribute{&tables}},
-		})
-	})
-}
-
-func Test_ValidateObject_conflictsWithItself(t *testing.T) {
-	require.PanicsWithValue(t, `object "Warehouse": attribute "generation" conflicts with itself`, func() {
-		ValidateObject(Object{
-			Name: "Warehouse",
-			Attributes: []Attribute{{
-				Name:          "generation",
-				ConflictsWith: []Attribute{{Name: "generation"}},
-			}},
-		})
-	})
-}
-
-func Test_ValidateObject_atLeastOneOfAndNestedRelations(t *testing.T) {
-	require.NotPanics(t, func() {
-		ValidateObject(Object{
-			Name: "AuthenticationPolicy",
-			Attributes: []Attribute{{
-				Name: "mfa_policy",
-				Type: AttrObject,
-				Children: []Attribute{
-					{Name: "enforce_mfa_on_external_authentication", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-				},
-			}},
-		})
-	})
-	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "allowed_methods" at least one of unknown attribute "missing"`, func() {
-		ValidateObject(Object{
-			Name: "AuthenticationPolicy",
-			Attributes: []Attribute{{
-				Name: "mfa_policy",
-				Type: AttrObject,
-				Children: []Attribute{
-					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "missing"}}},
-				},
-			}},
-		})
-	})
-	require.PanicsWithValue(t, `object "Widget": attribute "items" relations require a single block`, func() {
-		ValidateObject(Object{
-			Name: "Widget",
-			Attributes: []Attribute{{
-				Name: "items",
-				Type: AttrSet,
-				Elem: ObjectElem([]Attribute{
-					{Name: "left", ConflictsWith: []Attribute{{Name: "right"}}},
-					{Name: "right"},
-				}),
-			}},
-		})
-	})
-	require.PanicsWithValue(t, `object "Widget": ConflictsWith attribute "left" is required`, func() {
-		ValidateObject(Object{
-			Name: "Widget",
-			Attributes: []Attribute{
-				{Name: "left", Required: true, ConflictsWith: []Attribute{{Name: "right"}}},
-				{Name: "right"},
-			},
-		})
-	})
-}
-
-func Test_ValidateObject_conflictsWithKnownAttribute(t *testing.T) {
-	require.NotPanics(t, func() {
-		ValidateObject(Object{
-			Name: "Warehouse",
-			Attributes: []Attribute{
-				{Name: "resource_constraint", ConflictsWith: []Attribute{{Name: "generation"}}},
-				{Name: "generation", ConflictsWith: []Attribute{{Name: "resource_constraint"}}},
-			},
 		})
 	})
 }
@@ -1510,42 +1425,52 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_exactlyOneOf(t *testing.T) {
+func Test_ValidateObject_objectValidations(t *testing.T) {
 	one := Attribute{Name: "one", Type: AttrString}
 	two := Attribute{Name: "two", Type: AttrString}
 	three := Attribute{Name: "three", Type: AttrString}
 	required := Attribute{Name: "required", Type: AttrString, Required: true}
 	static := Attribute{Name: "static", SqlOnly: true, CreateSql: StaticSQL("static", "A = B")}
 	outside := Attribute{Name: "outside", Type: AttrString}
-	newObject := func(groups ...[]*Attribute) Object {
+	newObject := func(validations ...Validation) Object {
 		return Object{
-			Name:         "Widget",
-			Attributes:   []Attribute{one, two, three, required, static},
-			ExactlyOneOf: groups,
-			Create:       CreateSpec{Clauses: []*Attribute{&static}},
+			Name:        "Widget",
+			Attributes:  []Attribute{one, two, three, required, static},
+			Validations: validations,
+			Create:      CreateSpec{Clauses: []*Attribute{&static}},
 		}
 	}
 
-	require.NotPanics(t, func() { ValidateObject(newObject()) }, "no group")
-	require.NotPanics(t, func() { ValidateObject(newObject([]*Attribute{&one, &two})) })
+	require.NotPanics(t, func() { ValidateObject(newObject()) }, "no validation")
+	require.NotPanics(t, func() { ValidateObject(newObject(ExactlyOneOf(one, two), AtLeastOneOf(one, three))) }, "a field in two kinds")
+	require.NotPanics(t, func() { ValidateObject(newObject(Conflicting(one, two), Conflicting(one, three))) }, "conflicting validations sharing a field")
 
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 needs at least two attributes`, func() {
-		ValidateObject(newObject([]*Attribute{&one}))
+	require.PanicsWithValue(t, `object "Widget": validation 0 names no attributes`, func() {
+		ValidateObject(newObject(ExactlyOneOf()))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 has a nil attribute`, func() {
-		ValidateObject(newObject([]*Attribute{&one, nil}))
+	require.PanicsWithValue(t, `object "Widget": exactly_one validation 0 needs at least two fields`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one)))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "outside" is not an attribute of the object`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &outside}))
+	require.PanicsWithValue(t, `object "Widget": validation 0 has unknown kind "some_of"`, func() {
+		ValidateObject(newObject(Validation{Kind: "some_of", Fields: []Attribute{one, two}}))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "static" is not an attribute of the object`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &static}))
+	require.PanicsWithValue(t, `object "Widget": exactly_one validation 0 field "outside" is not an optional attribute of the object`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one, outside)))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "required" is required`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &required}))
+	require.PanicsWithValue(t, `object "Widget": conflicting validation 0 field "static" is not an optional attribute of the object`, func() {
+		ValidateObject(newObject(Conflicting(one, static)))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "one" is in more than one ExactlyOneOf group, or twice in one`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &two}, []*Attribute{&one, &three}))
+	require.PanicsWithValue(t, `object "Widget": at_least_one validation 0 field "required" is not an optional attribute of the object`, func() {
+		ValidateObject(newObject(AtLeastOneOf(one, required)))
+	})
+	require.PanicsWithValue(t, `object "Widget": exactly_one validation 0 names "one" twice`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one, one)))
+	})
+	require.PanicsWithValue(t, `object "Widget": field "one" is in more than one exactly_one validation`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one, two), ExactlyOneOf(one, three)))
+	})
+	require.PanicsWithValue(t, `object "Widget": fields "one" and "two" are in more than one conflicting validation`, func() {
+		ValidateObject(newObject(Conflicting(one, two, three), Conflicting(two, one)))
 	})
 }
 
@@ -1704,33 +1629,40 @@ func Test_Attribute_IsOptionalColumn(t *testing.T) {
 	require.False(t, Attribute{Type: AttrObject, Required: true}.IsOptionalColumn())
 }
 
-func Test_ValidateObject_childrenAtLeastOneValueSet(t *testing.T) {
+func Test_ValidateObject_attributeValidations(t *testing.T) {
 	obj := func(policy Attribute) Object {
 		return Object{Name: "Widget", Attributes: []Attribute{policy}}
 	}
-	children := []Attribute{{Name: "limit", Type: AttrInt}, {Name: "size", Type: AttrInt}}
+	policy := func(children []Attribute, validations ...Validation) Attribute {
+		return Attribute{Name: "policy", Type: AttrObject, Children: children, Validations: validations}
+	}
+	limit, size := Attribute{Name: "limit", Type: AttrInt}, Attribute{Name: "size", Type: AttrInt}
+	on, off := Attribute{Name: "on", Type: AttrBool}, Attribute{Name: "off", Type: AttrBool}
+	children := []Attribute{limit, size, on, off}
+
+	require.NotPanics(t, func() { ValidateObject(obj(policy(children, AtLeastOneOf()))) }, "no fields cover every candidate")
 	require.NotPanics(t, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, Children: children}))
-	})
-	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRule and needs at least two Children that are fields`, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, Children: children[:1]}))
-	})
-	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRule but is not an object`, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrString, ChildrenRule: ChildrenAtLeastOne}))
-	})
-	beside := append([]Attribute{{Name: "flag", Type: AttrBool}}, children...)
+		ValidateObject(obj(policy(children, ExactlyOneOf(limit, size), Conflicting(on, off))))
+	}, "several validations on exclusive subsets")
 	require.NotPanics(t, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenExactlyOne, ChildrenRuleFields: []string{"limit", "size"}, Children: beside}))
+		ValidateObject(obj(Attribute{Name: "items", Type: AttrSet, Elem: &Attribute{Type: AttrObject, Children: children, Validations: []Validation{ExactlyOneOf(on, off)}}}))
+	}, "an Elem object")
+
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": validation 0 needs at least two Children that are fields`, func() {
+		ValidateObject(obj(policy(children[:1], AtLeastOneOf())))
 	})
-	ruleFields := Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenExactlyOne, ChildrenRuleFields: []string{"limit", "size"}, Children: beside}.RuleFields()
-	require.Len(t, ruleFields, 2)
-	require.Equal(t, "limit", ruleFields[0].Name)
-	require.Equal(t, "size", ruleFields[1].Name)
-	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRuleFields without ChildrenRule`, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRuleFields: []string{"limit"}, Children: children}))
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": validation 1 names no Children, which is valid only for its sole validation`, func() {
+		ValidateObject(obj(policy(children, ExactlyOneOf(on, off), AtLeastOneOf())))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "policy" has ChildrenRuleFields entry "missing" that is not a Child that is a field and not Required`, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, ChildrenRuleFields: []string{"limit", "size", "missing"}, Children: children}))
+	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets Validations but is not an object`, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrString, Validations: []Validation{AtLeastOneOf()}}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": at_least_one validation 0 field "missing" is not a Child that is a field and not Required`, func() {
+		ValidateObject(obj(policy(children, AtLeastOneOf(limit, Attribute{Name: "missing"}))))
+	})
+	required := Attribute{Name: "required", Type: AttrInt, Required: true}
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": conflicting validation 0 field "required" is not a Child that is a field and not Required`, func() {
+		ValidateObject(obj(policy(append(children, required), Conflicting(limit, required))))
 	})
 }
 
@@ -2332,21 +2264,19 @@ func Test_Object_SuspendForAlterWhen(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_sqlOnlyConflictsWith(t *testing.T) {
+func Test_ValidateObject_sqlOnlyValidations(t *testing.T) {
 	order := Attribute{Name: "order", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("ORDER"))}
-	noorder := func(conflicts ...Attribute) Attribute {
-		return Attribute{Name: "noorder", Type: AttrBool, SqlOnly: true, ConflictsWith: conflicts, CreateSql: BoolKeyword(Sql("NOORDER"))}
-	}
-	objectWith := func(children ...Attribute) Object {
-		identity := Attribute{Name: "identity", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(), Children: children}
+	noorder := Attribute{Name: "noorder", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("NOORDER"))}
+	objectWith := func(children []Attribute, validations ...Validation) Object {
+		identity := Attribute{Name: "identity", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(), Children: children, Validations: validations}
 		return Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&identity}}}
 	}
-	require.NotPanics(t, func() { ValidateObject(objectWith(order, noorder(order))) })
-	require.PanicsWithValue(t, `object "Widget": attribute "identity"."noorder" conflicts with itself`, func() {
-		ValidateObject(objectWith(order, noorder(noorder())))
+	require.NotPanics(t, func() { ValidateObject(objectWith([]Attribute{order, noorder}, Conflicting(order, noorder))) })
+	require.PanicsWithValue(t, `object "Widget": attribute "identity": conflicting validation 0 names "noorder" twice`, func() {
+		ValidateObject(objectWith([]Attribute{order, noorder}, Conflicting(noorder, noorder)))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "identity"."noorder" conflicts with "order", which is not a child of "identity"`, func() {
-		ValidateObject(objectWith(noorder(order)))
+	require.PanicsWithValue(t, `object "Widget": attribute "identity": conflicting validation 0 field "order" is not a Child that is a field and not Required`, func() {
+		ValidateObject(objectWith([]Attribute{noorder}, Conflicting(noorder, order)))
 	})
 }
 
@@ -2376,13 +2306,13 @@ func Test_ValidateObject_structName(t *testing.T) {
 	})
 }
 
-func Test_Attribute_RuleFields_skipsRequired(t *testing.T) {
+func Test_Attribute_ValidationFieldsFor(t *testing.T) {
 	attr := Attribute{
-		Name:         "alter",
-		Type:         AttrObject,
-		SqlOnly:      true,
-		ChildrenRule: ChildrenExactlyOne,
-		CreateSql:    ObjectParameter(),
+		Name:        "alter",
+		Type:        AttrObject,
+		SqlOnly:     true,
+		Validations: []Validation{ExactlyOneOf()},
+		CreateSql:   ObjectParameter(),
 		Children: []Attribute{
 			{Name: "column", SqlOnly: true, CreateSql: StaticSQL("column", "COLUMN")},
 			{Name: "name", Type: AttrString, Required: true, SqlOnly: true, CreateSql: TextKeyword(Required())},
@@ -2390,10 +2320,10 @@ func Test_Attribute_RuleFields_skipsRequired(t *testing.T) {
 			{Name: "unset_comment", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("UNSET COMMENT"))},
 		},
 	}
-	fields := attr.RuleFields()
-	names := make([]string, 0, len(fields))
-	for _, field := range fields {
-		names = append(names, field.Name)
+	names := func(fields []Attribute) []string {
+		return collections.Map(fields, func(a Attribute) string { return a.Name })
 	}
-	require.Equal(t, []string{"drop_default", "unset_comment"}, names)
+	require.Equal(t, []string{"drop_default", "unset_comment"}, names(attr.ValidationFieldsFor(attr.Validations[0], ClauseCreate)), "no fields cover every candidate, skipping static and Required children")
+	named := ExactlyOneOf(attr.Children[3], attr.Children[2])
+	require.Equal(t, []string{"drop_default", "unset_comment"}, names(attr.ValidationFieldsFor(named, ClauseCreate)), "named fields follow Children order")
 }

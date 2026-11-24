@@ -32,16 +32,8 @@ or the Terraform schema it ends up in. Keep this in mind when adding a feature:
 - `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`. A variant sets `Variant.RequestObjectName` instead
 - `Variant` - one role of a base object. `Of` is the base. `Name` starts with the base `Name`, and `NamePlural` matches the base, so they share one SDK interface. The variant also shares the base object's SDK parameter details, SET/UNSET requests, and `ParameterType` names. Parameter catalog membership still comes from the variant's own `Name`. `CreateName` and `AlterName` are the SQL object words when they differ from the base type words (`WarehouseAdaptive` emits `WAREHOUSE`; interactive CREATE sets `INTERACTIVE WAREHOUSE`). `RequestObjectName` is the CREATE and ALTER query-struct stem when it differs from `Name`. `SchemaShowFromBase`, `ObjectAssertShowRowFromBase`, and `ShowOutputShowRowFromBase` reuse the base SHOW schema, object assertion, and show-output assertion. `ObjectAssertShowFromBase` is the SHOW fetch method on the base client, such as `ShowByIDAdaptive`. The matching `SchemaShow`, `ObjectAssertShow`, or `ShowOutputShow` stays on
 - `BaseVariant` - settings of an object that is the base of variants. `ShowGeneric` is the temporary union SHOW. `ShowPlainName` is the plain struct when that union uses `Name`. `ShowVariants` are the plain structs emitted with DESCRIBE. `NotResource` says the base is not a Terraform resource itself (catalog integration: each source type is its own resource). The base owns what the variants share, such as the SDK interface. The resource generators skip it
-- `ExactlyOneOf` - groups of optional top-level attributes of which exactly one is set, declared once with pointers to the
-  attributes: `ExactlyOneOf: [][]*ssot.Attribute{{&oauth, &bearer, &sigv4}}`. Validation needs at least two attributes per group,
-  all of them optional attributes of the object, and none in two groups. SDK CREATE adds `ExactlyOneValueSet` over the Go fields
-  of the group to a statement that has all of its attributes in `Create.Clauses`, and panics when it has only some of them.
-  The Go field name is the one the clause gets, so `FieldName` on the clause renames it. The generated schema gets Terraform
-  `ExactlyOneOf` on each attribute of the group, with the names of the whole group.
-- `AtLeastOneOf` - groups of optional top-level attributes of which at least one is set, declared the same way as
-  `ExactlyOneOf`. SDK CREATE adds `AtLeastOneValueSet` over the Go fields of a group that is entirely in `Create.Clauses`.
-  A custom operation that includes every attribute of a group gets the same check. The schema-side `AtLeastOneOf` is not
-  generated from it.
+- `Validations` - rules over optional top-level attributes, such as `ssot.ExactlyOneOf(attrs.Oauth, attrs.Bearer)`. See
+  [Validations](#validations).
 - `Alter.Clauses` SET and UNSET blocks - `ssot.AlterSet(...)` and `ssot.AlterUnset(...)` take the attributes of the block, or
   `ssot.AlterGroup(...)` values when Snowflake needs several ALTER statements. See [ALTER statements](#alter-statements).
 - `AdditionalEnums` - SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field the
@@ -153,10 +145,7 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   Terraform's empty value. The generator drift-tracks the field and suppresses a diff against `describe_output`.
   Optional scalar SHOW columns get the same treatment without this flag. `catalog_namespace` stays unset because
   Snowflake reports an empty namespace.
-- `ConflictsWith` names other attributes on the same level. The generator emits `schema.ConflictsWith` as a path from
-  the resource root: the attribute name at the top, and `parent.0.name` for a child of a single object (`AttrObject`).
-  A set, or a list of objects, cannot name these relations. `AtLeastOneOf` uses the same paths and may include
-  this attribute.
+- `Validations` on an `AttrObject` attribute or an object `Elem` - rules over its `Children`. See [Validations](#validations).
 - `Sensitive` marks the schema field sensitive.
 - `SkipInSchema` - the SHOW/DESCRIBE schema generator (`WithSchema`) omits the column from the generated schema map
   and `ToSchema`; the key is dropped entirely (comment left in place). The column still participates in every other
@@ -164,6 +153,44 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 
 Def files keep attributes as vars (`ComputePoolAttrs`) so `Columns` can point at them instead of restating snake_case
 strings.
+
+### Validations
+
+`Validations []ssot.Validation` states which fields may or must be set together. `Object.Validations` covers top-level
+attributes. `Attribute.Validations` covers the `Children` of an `AttrObject` attribute or of an object `Elem`. A parent may
+have several validations, for example `ExactlyOneOf` over the key kinds and `Conflicting` over two flags beside them.
+
+- `ssot.AtLeastOneOf(fields...)` - at least one field is set. SDK: `AtLeastOneValueSet`. Schema: Terraform `AtLeastOneOf`.
+- `ssot.ExactlyOneOf(fields...)` - exactly one field is set. SDK: `ExactlyOneValueSet`. Schema: Terraform `ExactlyOneOf`.
+- `ssot.Conflicting(fields...)` - at most one field is set. SDK: `ConflictingFields` for two fields and
+  `MoreThanOneValueSet` for more. Schema: each field gets the others in Terraform `ConflictsWith`.
+
+`.SchemaOnly()` on a validation leaves it out of the SDK and keeps it in the schema. Use it when the SDK would count a sent
+value as unset, such as `BLOCKED_ROLES_LIST = ()`, an empty list that clears `pat_policy.blocked_roles_list`.
+
+Fields are matched by `Name`, so a definition can name a var (`WarehouseAttrs.Generation`) or a child literal. Generated
+checks list the fields in the parent's order (`Object.Attributes` or `Children`), not in the order of the call.
+
+Validation rules (`ValidateObject` panics otherwise):
+
+- The kind is one of the three above, and a validation names at least two fields, none twice.
+- An object-level field is an optional attribute of the object that is not `SqlOnly`. A child-level field is a `Child` that
+  is a field of the SQL struct (not a fixed text, not tags) and not `Required`.
+- A child-level validation with no fields covers every such `Child`. It must be the parent's only validation, and the
+  parent needs at least two such `Children`. An object-level validation always names its fields.
+- A field is in at most one `AtLeastOneOf` and one `ExactlyOneOf`, because Terraform has one list of each. `Conflicting`
+  validations may share a field, but not a pair of fields.
+- Only an object attribute sets `Validations`.
+
+Generation:
+
+- SDK, object level. CREATE and a custom operation get the check over the Go fields of their clauses, and the Go field name
+  is the one the clause gets, so `FieldName` renames it. `AtLeastOneOf` and `ExactlyOneOf` need all of their fields in the
+  statement or none, and the generator panics on some. `Conflicting` covers the fields the statement has.
+- SDK, child level. Each struct built from the parent gets the check over the fields it has, in `Children` order. A
+  validation with fewer than two of them in the struct is skipped.
+- Schema. A validation is emitted at the top level and under a chain of single objects, as paths from the resource root
+  (`parent.0.child`). It is skipped under a set or a list of objects, and when any field is `SqlOnly`.
 
 ### Lists and nested objects
 
@@ -178,8 +205,8 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   `TypeList` with `MaxItems: 1`, and `MinItems: 1` when it is `Required`. The definition sets no `Min`, `Max`, or
   `Elem`. Its SQL is its own `CreateSql`, `ObjectParameter(Sql("REST_CONFIG ="), Parentheses())`, and each child has the
   `CreateSql` it needs. Generated create parses it with `singleBlockAttributeCreate` (`Attribute.IsSingleBlock()`). A single
-  object that is a `SqlOnly` attribute is the same struct and is not a Terraform field. Child `ConflictsWith` and
-  `AtLeastOneOf` use `name.0.child` paths.
+  object that is a `SqlOnly` attribute is the same struct and is not a Terraform field. Schema-side
+  [Validations](#validations) of its children use `name.0.child` paths.
 
   ```go
   {
@@ -192,10 +219,9 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   }
   ```
 
-  `ChildrenRule` on the object (`ChildrenAtLeastOne` or `ChildrenExactlyOne`) adds `AtLeastOneValueSet` or `ExactlyOneValueSet` over
-  the `Children` that are fields of its SQL struct, so not the fixed texts, in `Children` order. It does not generate the
-  schema-side `AtLeastOneOf`. `ChildrenRuleFields` narrows the rule to the named `Children`, for a struct whose other fields sit
-  beside the choice, such as the enforcement flags next to a constraint name and the key kinds.
+  `Validations: []ssot.Validation{ssot.AtLeastOneOf()}` on the object requires one of its fields. Naming the fields
+  narrows a rule for a struct whose other fields sit beside the choice, such as the enforcement flags next to a
+  constraint name and the key kinds.
   A fixed text of its struct, such as `TYPE = OAUTH`, is a `SqlOnly` child with `StaticSQL`, in SQL position. It is not a
   Terraform field: `NestedFields()` skips it and `NestedSqlFields()` has it. Only SDK SQL reads `NestedSqlFields()`.
   The same holds for the `Children` of a list element.
@@ -210,7 +236,7 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   or a predefined Go type (`PredefinedType("DataType")`).
   An attribute that a `SqlOnly` nested struct holds counts as listed in the CREATE sequence when the struct
   is: this is how an attribute that is a Terraform field is also the field of a struct that is not (`security_integrations`
-  is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ChildrenExactlyOne` requires one of the two).
+  is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ssot.ExactlyOneOf()` requires one of the two).
 - **Clauses that embed another SSOT attribute's struct.** Nested SQL that is defined once and reused (CREATE TABLE columns,
   ADD COLUMN masking policy, iceberg ALTER) is `PreexistingStructOf(&TableCreateColumnsAndConstraints, Parentheses(), Required())`.
   The generator builds the nested query struct from that attribute. `PreexistingStructOfUse` selects the SET or UNSET
@@ -437,8 +463,8 @@ enable nothing.
   CREATE from `Name`: `CREATE`, optional `OR REPLACE`, `Create.KeywordsBefore`, the uppercase words, `IF NOT EXISTS`,
   and the name, then `Create.Clauses`. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those
   clauses out. When both clauses are
-  present they are marked conflicting. `AtLeastOneOf` adds `AtLeastOneValueSet` for each group that is entirely in
-  `Create.Clauses`. `SdkCreateAdditionalValidations()` adds that validation call. `SdkShowAdditionalValidations()` marks the SHOW query struct the same way. `SdkAlter()` builds
+  present they are marked conflicting. `Object.Validations` add their checks (see [Validations](#validations)).
+  `SdkCreateAdditionalValidations()` adds that validation call. `SdkShowAdditionalValidations()` marks the SHOW query struct the same way. `SdkAlter()` builds
   ALTER from `Name`: `ALTER`, the uppercase words, `IF EXISTS`, and the name, then [`Alter`](object.go) in list order.
   `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out.
   `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkAlterSetList()` makes that `SET` a list with no
@@ -689,8 +715,9 @@ A top-level set of identifiers emits `NormalizeAndCompareIdentifiersInSet`. A to
 `NormalizeAndCompareEnumsInSet`. A list of enums, and a nested set of enums, emit `NormalizeAndCompare` on the
 collection. A resource that must keep a nested set case-sensitive clears that suppressor in the attributes
 modification function. A list or set element is validated: an enum element uses `sdkValidation`, and an identifier
-element uses `IsValidIdentifier` for the element's `IdentifierType`. `ConflictsWith`, `AtLeastOneOf`, `Sensitive`,
-and `Deprecated` are emitted on the schema field. See [Attribute](#attribute).
+element uses `IsValidIdentifier` for the element's `IdentifierType`. `Sensitive` and `Deprecated` are emitted on the
+schema field. See [Attribute](#attribute). [Validations](#validations) emit `ConflictsWith`, `AtLeastOneOf`, and
+`ExactlyOneOf`.
 
 `WithAlterSetInSdk(Generated())` and `WithAlterUnsetInSdk(Generated())` call `Client.<NamePlural>.Alter` with
 `NewAlter<Name>Request(id).WithSet` or `WithUnset`. They compare the corresponding request against
@@ -980,8 +1007,8 @@ Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 - A SQL constructor does not take an `Attribute`. Set the clause on the attribute. `ValidateObject` checks it while walking the object.
 - An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`.
 - `TextKeyword` writes a string as a keyword field. `DoubleQuotes` quotes it. `PredefinedType` names a Go type the SDK already has, such as `DataType`. It is valid on CREATE and SET, so SET can reuse a handwritten type such as `[]TableContact`. `NoComma()` with it writes the type as a list of its own fields, such as `TimeTravel`. `KeywordShape` on it writes the field as a keyword instead of a parameter, for a type that prints itself, such as `[]Column` or `*ForeignKeyOnAction`. `KeywordShape` on a `PreexistingStructOf` or `ObjectParameter` writes the nested struct with a keyword tag instead of a list tag. `QueryStructFromAttribute` builds the CREATE struct of an SSOT attribute for handwritten ALTER.
-- A `Tags` child of a SqlOnly object emits optional `TAG`. `ConflictsWith` on a SqlOnly child names a sibling it cannot be set with, and the SDK struct gets `ConflictingFields` for the pair once, in children order. `StructName` on an `ObjectParameter`, `ListOfObjects`, or object-list `ValueKeyword` clause keeps a nested struct name that other objects already use. Without it the name is the owner plus the attribute name.
-- An object clause with no `Sql` text and no `Parentheses()` writes its fields in place, with no wrapper keyword. `ChildrenRule` already skips `Required` children, since a required field is always set. A clause that only accompanies another one is a child of that clause's object, such as `COLLATE` under `SET DATA TYPE`, so it is not one of the alternatives.
+- A `Tags` child of a SqlOnly object emits optional `TAG`. `ssot.Conflicting` on a SqlOnly object names children that cannot be set together, and the SDK struct gets `ConflictingFields` for a pair, in children order. `StructName` on an `ObjectParameter`, `ListOfObjects`, or object-list `ValueKeyword` clause keeps a nested struct name that other objects already use. Without it the name is the owner plus the attribute name.
+- An object clause with no `Sql` text and no `Parentheses()` writes its fields in place, with no wrapper keyword. A child-level validation already skips `Required` children, since a required field is always set. A clause that only accompanies another one is a child of that clause's object, such as `COLLATE` under `SET DATA TYPE`, so it is not one of the alternatives.
 - `AlterOperationFromObject` takes the preexisting query structs a block or SET names. A helper whose name is the block attribute's `SqlStruct` is that block. `AlterKeywordBlock` may omit the SQL prefix when the nested struct carries the words. A block field named like the `SetSql` or `UnsetSql` `FieldName` of its attribute embeds that projection (`AlterClause.BlockProjection`); any other field embeds the CREATE struct. `AlterCommaSeparatedBlock` comma-joins the nested children with no parentheses. `AlterSuppliedKeywordBlock` names a supplied struct that has no block attribute, such as the SET projection of a shared attribute.
 - A `Tags` child with `TagForm` emits `SET TAG` or `UNSET TAG` instead of optional `TAG`, and belongs only to the SET or UNSET projection it names, so one attribute can carry both forms.
 - `BareValue` writes a parameter as a value rather than a pointer, without the required tag. `RequireValue` adds a value check on a predefined field.

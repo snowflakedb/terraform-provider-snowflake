@@ -230,20 +230,21 @@ func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
 		Children:  []ssot.Attribute{token},
 	}
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	newObject := func(group []*ssot.Attribute, clauses ...*ssot.Attribute) ssot.Object {
+	newObject := func(validation ssot.Validation, clauses ...*ssot.Attribute) ssot.Object {
 		return ssot.Object{
-			Name:         "Widget",
-			NamePlural:   "Widgets",
-			IdType:       "AccountObjectIdentifier",
-			Attributes:   []ssot.Attribute{oauth, bearer, comment},
-			ExactlyOneOf: [][]*ssot.Attribute{group},
-			Create:       ssot.CreateSpec{Clauses: clauses},
-			Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+			Name:        "Widget",
+			NamePlural:  "Widgets",
+			IdType:      "AccountObjectIdentifier",
+			Attributes:  []ssot.Attribute{oauth, bearer, comment},
+			Validations: []ssot.Validation{validation},
+			Create:      ssot.CreateSpec{Clauses: clauses},
+			Generators:  []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
 		}
 	}
+	exactlyOne := ssot.ExactlyOneOf(oauth, bearer)
 
 	t.Run("all members in the statement", func(t *testing.T) {
-		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &oauth, &bearer, &comment)
+		obj := newObject(exactlyOne, &oauth, &bearer, &comment)
 		ssot.ValidateObject(obj)
 		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
@@ -276,7 +277,7 @@ func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
 	})
 
 	t.Run("no member in the statement", func(t *testing.T) {
-		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &comment)
+		obj := newObject(exactlyOne, &comment)
 		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 		for _, validation := range got.Operations[0].OptsField.Validations {
 			require.NotEqual(t, ExactlyOneValueSet, validation.Type)
@@ -284,10 +285,21 @@ func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
 	})
 
 	t.Run("some members in the statement", func(t *testing.T) {
-		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &oauth, &comment)
+		obj := newObject(exactlyOne, &oauth, &comment)
 		require.Panics(t, func() {
 			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 		})
+	})
+
+	t.Run("conflicting covers the members in the statement", func(t *testing.T) {
+		obj := newObject(ssot.Conflicting(oauth, bearer, comment), &oauth, &bearer, &comment)
+		ssot.ValidateObject(obj)
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		require.Contains(t, got.Operations[0].OptsField.Validations, &Validation{Type: MoreThanOneValueSet, FieldNames: []string{"OAuthAuthentication", "BearerAuthentication", "Comment"}})
+
+		obj = newObject(ssot.Conflicting(oauth, bearer, comment), &oauth, &comment)
+		got = NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		require.Contains(t, got.Operations[0].OptsField.Validations, &Validation{Type: ConflictingFields, FieldNames: []string{"OAuthAuthentication", "Comment"}})
 	})
 }
 
@@ -351,10 +363,10 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 func Test_CreateOperationFromObject_singleBlockWithEnumSetsAndAtLeastOne(t *testing.T) {
 	family := ssot.NewEnum("WidgetFamily", "WidgetFamilies", "SMALL")
 	policy := ssot.Attribute{
-		Name:         "policy",
-		Type:         ssot.AttrObject,
-		CreateSql:    ssot.ObjectParameter(ssot.Sql("POLICY ="), ssot.Parentheses()),
-		ChildrenRule: ssot.ChildrenAtLeastOne,
+		Name:        "policy",
+		Type:        ssot.AttrObject,
+		CreateSql:   ssot.ObjectParameter(ssot.Sql("POLICY ="), ssot.Parentheses()),
+		Validations: []ssot.Validation{ssot.AtLeastOneOf()},
 		Children: []ssot.Attribute{
 			{Name: "limit", Type: ssot.AttrInt},
 			{Name: "families", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: family}},
@@ -457,7 +469,7 @@ func Test_CreateOperationFromObject_exactlyOneKeywordAndIdentifierList(t *testin
 			{Name: "names_all", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("('ALL')"), ssot.FieldName("All"))},
 			names,
 		},
-		ChildrenRule: ssot.ChildrenExactlyOne,
+		Validations: []ssot.Validation{ssot.ExactlyOneOf()},
 	}
 	obj := ssot.Object{
 		Name:       "Widget",
@@ -948,18 +960,52 @@ func Test_queryStructFromObject_tableColumn(t *testing.T) {
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
 
-func Test_queryStructFromObject_sqlOnlyConflictsWith(t *testing.T) {
+func Test_queryStructFromObject_childValidations(t *testing.T) {
 	order := ssot.Attribute{Name: "order", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("ORDER"))}
-	noorder := ssot.Attribute{Name: "noorder", Type: ssot.AttrBool, SqlOnly: true, ConflictsWith: []ssot.Attribute{order}, CreateSql: ssot.BoolKeyword(ssot.Sql("NOORDER"))}
-	// Both sides name each other, and the pair is still added once, in the order of the children.
-	order.ConflictsWith = []ssot.Attribute{noorder}
-	attr := ssot.Attribute{Name: "identity", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.ObjectParameter(), Children: []ssot.Attribute{noorder, order}}
-	got := QueryStructFromAttribute("Widget", attr)
-	want := NewQueryStruct("WidgetIdentity").
-		OptionalSQL("NOORDER").
-		OptionalSQL("ORDER").
-		WithValidation(ConflictingFields, "Noorder", "Order")
-	require.Equal(t, want.IntoField(), got.IntoField())
+	noorder := ssot.Attribute{Name: "noorder", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOORDER"))}
+	cycle := ssot.Attribute{Name: "cycle", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("CYCLE"))}
+	nocycle := ssot.Attribute{Name: "nocycle", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOCYCLE"))}
+	identity := func(validations ...ssot.Validation) ssot.Attribute {
+		return ssot.Attribute{
+			Name: "identity", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.ObjectParameter(),
+			Children:    []ssot.Attribute{noorder, order, cycle, nocycle},
+			Validations: validations,
+		}
+	}
+	fields := func(q *QueryStruct) *QueryStruct {
+		return q.OptionalSQL("NOORDER").OptionalSQL("ORDER").OptionalSQL("CYCLE").OptionalSQL("NOCYCLE")
+	}
+
+	t.Run("fields follow the Children order", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.Conflicting(order, noorder)))
+		want := fields(NewQueryStruct("WidgetIdentity")).WithValidation(ConflictingFields, "Noorder", "Order")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("several validations on exclusive subsets, in declaration order", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.ExactlyOneOf(cycle, nocycle), ssot.AtLeastOneOf(order, noorder)))
+		want := fields(NewQueryStruct("WidgetIdentity")).
+			WithValidation(ExactlyOneValueSet, "Cycle", "Nocycle").
+			WithValidation(AtLeastOneValueSet, "Noorder", "Order")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("more than two conflicting fields", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.Conflicting(order, noorder, cycle)))
+		want := fields(NewQueryStruct("WidgetIdentity")).WithValidation(MoreThanOneValueSet, "Noorder", "Order", "Cycle")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("no fields cover every candidate", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.ExactlyOneOf()))
+		want := fields(NewQueryStruct("WidgetIdentity")).WithValidation(ExactlyOneValueSet, "Noorder", "Order", "Cycle", "Nocycle")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("schema only adds no SDK validation", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.AtLeastOneOf().SchemaOnly()))
+		require.Equal(t, fields(NewQueryStruct("WidgetIdentity")).IntoField(), got.IntoField())
+	})
 }
 
 func Test_queryStructFromObject_tableColumnActionStructs(t *testing.T) {

@@ -318,8 +318,8 @@ func replicationGroupReverseIdentifierList(name, sql, idType string) ssot.Attrib
 	}
 }
 
-// TODO [SNOW-4490849]: MOVE needs exactly one of the three lists, but ChildrenRule also counts the always set `to`, so it cannot express this.
-// The SDK extension validates it. Move them here when validations can be declared in a better way.
+// TODO [SNOW-4490849]: MOVE needs exactly one of the three lists. The SDK extension validates it. Move it to an ExactlyOneOf
+// validation that names the three lists, so the always set `to` is not counted.
 var replicationGroupMove = ssot.Attribute{
 	Name:      "move",
 	Type:      ssot.AttrObject,
@@ -338,9 +338,9 @@ var replicationGroupMove = ssot.Attribute{
 	},
 }
 
-// TODO [SNOW-4490849]: ADD needs exactly one of the four lists, but ChildrenRule also counts ignore_edition_check, so it cannot express this.
-// IGNORE EDITION CHECK is allowed only together with allowed_accounts, a dependency between fields that no rule expresses.
-// The SDK extension validates both. Move them here when validations can be declared in a better way.
+// TODO [SNOW-4490849]: ADD needs exactly one of the four lists. Move it to an ExactlyOneOf validation that names the four
+// lists, so ignore_edition_check is not counted. IGNORE EDITION CHECK is allowed only together with allowed_accounts, a
+// dependency between fields that no validation expresses. The SDK extension validates both.
 var replicationGroupAdd = ssot.Attribute{
 	Name:      "add",
 	Type:      ssot.AttrObject,
@@ -360,11 +360,11 @@ var replicationGroupAdd = ssot.Attribute{
 }
 
 var replicationGroupRemove = ssot.Attribute{
-	Name:         "remove",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(),
+	Name:        "remove",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		replicationGroupReverseIdentifierList("allowed_databases", "FROM ALLOWED_DATABASES", "AccountObjectIdentifier"),
 		replicationGroupReverseIdentifierList("allowed_external_volumes", "FROM ALLOWED_EXTERNAL_VOLUMES", "AccountObjectIdentifier"),

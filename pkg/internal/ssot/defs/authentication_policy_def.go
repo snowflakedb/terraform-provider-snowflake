@@ -75,12 +75,11 @@ var (
 
 var authenticationPolicyMfaPolicyChildren = []ssot.Attribute{
 	{
-		Name:         "enforce_mfa_on_external_authentication",
-		Type:         ssot.AttrEnum,
-		Description:  "Determines whether multi-factor authentication (MFA) is enforced on external authentication.",
-		Enum:         EnforceMfaOnExternalAuthenticationOption,
-		CreateSql:    ssot.PlainParameter(),
-		AtLeastOneOf: authenticationPolicyMfaAtLeastOneOf,
+		Name:        "enforce_mfa_on_external_authentication",
+		Type:        ssot.AttrEnum,
+		Description: "Determines whether multi-factor authentication (MFA) is enforced on external authentication.",
+		Enum:        EnforceMfaOnExternalAuthenticationOption,
+		CreateSql:   ssot.PlainParameter(),
 	},
 	{
 		Name:        "allowed_methods",
@@ -90,53 +89,46 @@ var authenticationPolicyMfaPolicyChildren = []ssot.Attribute{
 			Type: ssot.AttrEnum,
 			Enum: MfaPolicyAllowedMethodsOption,
 		},
-		AtLeastOneOf: authenticationPolicyMfaAtLeastOneOf,
 	},
 }
 
 var authenticationPolicyPatPolicyChildren = []ssot.Attribute{
 	{
-		Name:         "default_expiry_in_days",
-		Type:         ssot.AttrInt,
-		CreateSql:    ssot.IntParameter(ssot.NoQuotes()),
-		Description:  "Specifies the default expiration time (in days) for a programmatic access token.",
-		Min:          new(1),
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "default_expiry_in_days",
+		Type:        ssot.AttrInt,
+		CreateSql:   ssot.IntParameter(ssot.NoQuotes()),
+		Description: "Specifies the default expiration time (in days) for a programmatic access token.",
+		Min:         new(1),
 	},
 	{
-		Name:         "max_expiry_in_days",
-		Type:         ssot.AttrInt,
-		CreateSql:    ssot.IntParameter(ssot.NoQuotes()),
-		Description:  "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
-		Min:          new(1),
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "max_expiry_in_days",
+		Type:        ssot.AttrInt,
+		CreateSql:   ssot.IntParameter(ssot.NoQuotes()),
+		Description: "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
+		Min:         new(1),
 	},
 	{
-		Name:         "require_role_restriction_for_service_users",
-		Type:         ssot.AttrBool,
-		Description:  "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role.",
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "require_role_restriction_for_service_users",
+		Type:        ssot.AttrBool,
+		Description: "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role.",
 	},
 	{
-		Name:         "require_role_restriction_for_person_users",
-		Type:         ssot.AttrBool,
-		Description:  "If true, when you generate a programmatic access token for a person user, you must restrict the use of that token to a specific role.",
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "require_role_restriction_for_person_users",
+		Type:        ssot.AttrBool,
+		Description: "If true, when you generate a programmatic access token for a person user, you must restrict the use of that token to a specific role.",
 	},
 	{
-		Name:         "blocked_roles_list",
-		Type:         ssot.AttrSet,
-		Description:  "Specifies the roles that cannot be used as the role restriction for a programmatic access token.",
-		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
-		CreateSql:    ssot.ListParameter("StringListItemWrapper", ssot.MustParentheses()),
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "blocked_roles_list",
+		Type:        ssot.AttrSet,
+		Description: "Specifies the roles that cannot be used as the role restriction for a programmatic access token.",
+		Elem:        &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql:   ssot.ListParameter("StringListItemWrapper", ssot.MustParentheses()),
 	},
 	{
-		Name:         "network_policy_evaluation",
-		Type:         ssot.AttrEnum,
-		Description:  "Specifies the network policy evaluation for the PAT.",
-		Enum:         NetworkPolicyEvaluationOption,
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "network_policy_evaluation",
+		Type:        ssot.AttrEnum,
+		Description: "Specifies the network policy evaluation for the PAT.",
+		Enum:        NetworkPolicyEvaluationOption,
 	},
 }
 
@@ -222,7 +214,7 @@ var authenticationPolicySecurityIntegrationsOption = ssot.Attribute{
 		{Name: "security_integrations_all", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("('ALL')"), ssot.FieldName("All"))},
 		authenticationPolicySecurityIntegrations,
 	},
-	ChildrenRule: ssot.ChildrenExactlyOne,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
 }
 
 // AuthenticationPolicyAttrs holds reusable Authentication Policy fields so SHOW and DESCRIBE
@@ -236,20 +228,6 @@ var authenticationPolicySecurityIntegrationsOption = ssot.Attribute{
 // security integrations option is mapped as a whole, because the SDK takes one option request.
 // The nested blocks are omitted from DESCRIBE Columns. A writable column must be in
 // Attributes, and the raw DESCRIBE property strings are not a separate attribute.
-var authenticationPolicyMfaAtLeastOneOf = []ssot.Attribute{
-	{Name: "enforce_mfa_on_external_authentication"},
-	{Name: "allowed_methods"},
-}
-
-var authenticationPolicyPatAtLeastOneOf = []ssot.Attribute{
-	{Name: "default_expiry_in_days"},
-	{Name: "max_expiry_in_days"},
-	{Name: "require_role_restriction_for_service_users"},
-	{Name: "require_role_restriction_for_person_users"},
-	{Name: "blocked_roles_list"},
-	{Name: "network_policy_evaluation"},
-}
-
 var AuthenticationPolicyAttrs = struct {
 	AuthenticationMethods        ssot.Attribute
 	MfaAuthenticationMethods     ssot.Attribute
@@ -355,7 +333,7 @@ var AuthenticationPolicyAttrs = struct {
 		Type:          ssot.AttrObject,
 		CreateSql:     authenticationPolicyMfaPolicyClause,
 		SetSql:        authenticationPolicyMfaPolicyClause,
-		ChildrenRule:  ssot.ChildrenAtLeastOne,
+		Validations:   []ssot.Validation{ssot.AtLeastOneOf()},
 		Description:   "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
 		Children:      authenticationPolicyMfaPolicyChildren,
 	},
@@ -365,8 +343,10 @@ var AuthenticationPolicyAttrs = struct {
 		Type:          ssot.AttrObject,
 		CreateSql:     authenticationPolicyPatPolicyClause,
 		SetSql:        authenticationPolicyPatPolicyClause,
-		Description:   "Specifies the policy for programmatic access tokens.",
-		Children:      authenticationPolicyPatPolicyChildren,
+		// The update sends BLOCKED_ROLES_LIST = () to clear the list, which the SDK would count as unset.
+		Validations: []ssot.Validation{ssot.AtLeastOneOf().SchemaOnly()},
+		Description: "Specifies the policy for programmatic access tokens.",
+		Children:    authenticationPolicyPatPolicyChildren,
 	},
 	WorkloadIdentityPolicy: ssot.Attribute{
 		Name:          "workload_identity_policy",
@@ -374,7 +354,6 @@ var AuthenticationPolicyAttrs = struct {
 		Type:          ssot.AttrObject,
 		CreateSql:     authenticationPolicyWorkloadIdentityPolicyClause,
 		SetSql:        authenticationPolicyWorkloadIdentityPolicyClause,
-		ChildrenRule:  ssot.ChildrenAtLeastOne,
 		Description:   "Specifies the policy for workload identity federation.",
 		Children:      authenticationPolicyWorkloadIdentityPolicyChildren,
 	},

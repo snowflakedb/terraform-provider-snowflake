@@ -269,12 +269,12 @@ var BackupSet = ssot.Object{
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
-	ExactlyOneOf: [][]*ssot.Attribute{{
-		&BackupSetAttrs.ForTable,
-		&BackupSetAttrs.ForDynamicTable,
-		&BackupSetAttrs.ForSchema,
-		&BackupSetAttrs.ForDatabase,
-	}},
+	Validations: []ssot.Validation{ssot.ExactlyOneOf(
+		BackupSetAttrs.ForTable,
+		BackupSetAttrs.ForDynamicTable,
+		BackupSetAttrs.ForSchema,
+		BackupSetAttrs.ForDatabase,
+	)},
 	Attributes: []ssot.Attribute{
 		BackupSetAttrs.ForTable,
 		BackupSetAttrs.ForDynamicTable,

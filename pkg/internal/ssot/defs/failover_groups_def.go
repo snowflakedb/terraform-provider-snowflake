@@ -229,8 +229,6 @@ var FailoverGroupAttrs = struct {
 		CreateSql:   ssot.BoolKeyword(ssot.Sql("IGNORE EDITION CHECK")),
 	},
 	ReplicationSchedule: ssot.Attribute{
-		// RPO_ASSURANCE needs the schedule to be unset.
-		ConflictsWith:  []ssot.Attribute{{Name: "rpo_assurance"}},
 		Name:           "replication_schedule",
 		Type:           ssot.AttrString,
 		OptionalInShow: true,
@@ -238,20 +236,16 @@ var FailoverGroupAttrs = struct {
 		Description:    "Schedule for refreshing secondary failover groups. An interval (`<num> MINUTE`) or `USING CRON <expr> <time_zone>`. Remove the attribute to unset the schedule.",
 	},
 	OptimizedRefresh: ssot.Attribute{
-		// RPO_ASSURANCE enables Optimized Refresh itself.
-		ConflictsWith: []ssot.Attribute{{Name: "rpo_assurance"}},
-		Name:          "optimized_refresh",
-		Type:          ssot.AttrBool,
-		NativeBool:    true,
-		Description:   "Specifies whether the failover group uses Optimized Refresh. Set on the primary failover group only. When true, a `replication_schedule` with an interval of 6 hours or less is required (Snowflake recommends `10 MINUTE` or less). Cannot be set together with `rpo_assurance`.",
+		Name:        "optimized_refresh",
+		Type:        ssot.AttrBool,
+		NativeBool:  true,
+		Description: "Specifies whether the failover group uses Optimized Refresh. Set on the primary failover group only. When true, a `replication_schedule` with an interval of 6 hours or less is required (Snowflake recommends `10 MINUTE` or less). Cannot be set together with `rpo_assurance`.",
 	},
 	RpoAssurance: ssot.Attribute{
-		// See ReplicationSchedule and OptimizedRefresh.
-		ConflictsWith: []ssot.Attribute{{Name: "replication_schedule"}, {Name: "optimized_refresh"}},
-		Name:          "rpo_assurance",
-		Type:          ssot.AttrBool,
-		NativeBool:    true,
-		Description:   "Specifies whether the failover group uses RPO Assurance. Set on the primary failover group only. Needs no replication schedule, enables Optimized Refresh automatically, and cannot be set together with `optimized_refresh`.",
+		Name:        "rpo_assurance",
+		Type:        ssot.AttrBool,
+		NativeBool:  true,
+		Description: "Specifies whether the failover group uses RPO Assurance. Set on the primary failover group only. Needs no replication schedule, enables Optimized Refresh automatically, and cannot be set together with `optimized_refresh`.",
 	},
 	// SHOW returns the integration name on a primary group and NULL on a secondary group. The documentation does not list the column.
 	ErrorIntegration: ssot.Attribute{
@@ -339,8 +333,8 @@ var failoverGroupAsReplicaOf = ssot.Attribute{
 	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("AsReplicaOf")),
 }
 
-// TODO [SNOW-4490849]: MOVE needs at least one of the three lists, but ChildrenRule also counts the always set `to`, so it cannot express this.
-// The SDK extension validates it. Move them here when validations can be declared in a better way.
+// TODO [SNOW-4490849]: MOVE needs at least one of the three lists. The SDK extension validates it. Move it to an AtLeastOneOf
+// validation that names the three lists, so the always set `to` is not counted.
 var failoverGroupMove = ssot.Attribute{
 	Name:      "move",
 	Type:      ssot.AttrObject,
@@ -359,9 +353,9 @@ var failoverGroupMove = ssot.Attribute{
 	},
 }
 
-// TODO [SNOW-4490849]: ADD needs exactly one of the four lists, but ChildrenRule also counts ignore_edition_check, so it cannot express this.
-// IGNORE EDITION CHECK is allowed only together with allowed_accounts, a dependency between fields that no rule expresses.
-// The SDK extension validates both. Move them here when validations can be declared in a better way.
+// TODO [SNOW-4490849]: ADD needs exactly one of the four lists. Move it to an ExactlyOneOf validation that names the four
+// lists, so ignore_edition_check is not counted. IGNORE EDITION CHECK is allowed only together with allowed_accounts, a
+// dependency between fields that no validation expresses. The SDK extension validates both.
 var failoverGroupAdd = ssot.Attribute{
 	Name:      "add",
 	Type:      ssot.AttrObject,
@@ -381,11 +375,11 @@ var failoverGroupAdd = ssot.Attribute{
 }
 
 var failoverGroupRemove = ssot.Attribute{
-	Name:         "remove",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(),
+	Name:        "remove",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		failoverGroupReverseIdentifierList("allowed_databases", "FROM ALLOWED_DATABASES", "AccountObjectIdentifier"),
 		failoverGroupReverseIdentifierList("allowed_external_volumes", "FROM ALLOWED_EXTERNAL_VOLUMES", "AccountObjectIdentifier"),
@@ -416,6 +410,11 @@ var FailoverGroup = ssot.Object{
 	NamePlural:     "FailoverGroups",
 	IdType:         "AccountObjectIdentifier",
 	PreviewFeature: true,
+	// RPO_ASSURANCE needs the schedule to be unset, and it enables Optimized Refresh itself.
+	Validations: []ssot.Validation{
+		ssot.Conflicting(FailoverGroupAttrs.ReplicationSchedule, FailoverGroupAttrs.RpoAssurance),
+		ssot.Conflicting(FailoverGroupAttrs.OptimizedRefresh, FailoverGroupAttrs.RpoAssurance),
+	},
 	// The description of allowed_external_volumes is extended in the schema extension.
 	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{

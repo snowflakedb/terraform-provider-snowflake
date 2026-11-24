@@ -125,18 +125,7 @@ func queryStructFromObjectSupplied(owner string, attr ssot.Attribute, use ssot.C
 		}
 		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(use), statement)
 	}
-	nested = withSqlOnlyConflicts(nested, fields, statement)
-	if attr.ChildrenRule != "" {
-		names := collections.Map(attr.RuleFieldsFor(use), func(child ssot.Attribute) string {
-			return clauseFieldName(child, statement)
-		})
-		switch attr.ChildrenRule {
-		case ssot.ChildrenAtLeastOne:
-			nested = nested.WithValidation(AtLeastOneValueSet, names...)
-		case ssot.ChildrenExactlyOne:
-			nested = nested.WithValidation(ExactlyOneValueSet, names...)
-		}
-	}
+	nested = nested.withChildValidations(attr, use)
 	if sharedToOptsClause(attr, use) {
 		nested = nested.WithSharedToOpts()
 	}
@@ -158,37 +147,41 @@ func sharedToOptsClause(attr ssot.Attribute, use ssot.ClauseUse) bool {
 	}
 }
 
-// withSqlOnlyConflicts adds ConflictingFields for the ConflictsWith of the SqlOnly children of an object clause. They have
-// no schema, so the SDK query struct carries the pair. A pair declared by both children is added once, in the order of
-// the children.
-func withSqlOnlyConflicts(nested *QueryStruct, fields []ssot.Attribute, statement attributeSqlStatement) *QueryStruct {
-	indexOf := func(name string) int {
-		for i, field := range fields {
-			if field.Name == name {
-				return i
-			}
-		}
-		return -1
-	}
-	seen := make(map[[2]int]struct{})
-	for i, child := range fields {
-		if !child.SqlOnly {
+// withChildValidations adds the Validations of an object attribute over the Children in the struct of one statement, in
+// Children order. A validation with fewer than two of its Children in the statement is left out.
+func (v *QueryStruct) withChildValidations(attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
+	statement := clauseUseStatement(use)
+	for _, validation := range attr.Validations {
+		if validation.NotInSdk {
 			continue
 		}
-		for _, other := range child.ConflictsWith {
-			j := indexOf(other.Name)
-			if j < 0 {
-				panic(fmt.Sprintf("attribute %q conflicts with %q, which is not a field of the same statement", child.Name, other.Name))
-			}
-			pair := [2]int{min(i, j), max(i, j)}
-			if _, ok := seen[pair]; ok {
-				continue
-			}
-			seen[pair] = struct{}{}
-			nested = nested.WithValidation(ConflictingFields, clauseFieldName(fields[pair[0]], statement), clauseFieldName(fields[pair[1]], statement))
-		}
+		names := collections.Map(attr.ValidationFieldsFor(validation, use), func(child ssot.Attribute) string {
+			return clauseFieldName(child, statement)
+		})
+		v = v.withValidationOf(validation.Kind, names)
 	}
-	return nested
+	return v
+}
+
+// withValidationOf adds the SDK validation of one ssot validation kind over the Go fields. Fewer than two fields add
+// nothing. Two conflicting fields are ConflictingFields, and more are MoreThanOneValueSet.
+func (v *QueryStruct) withValidationOf(kind ssot.ValidationKind, names []string) *QueryStruct {
+	if len(names) < 2 {
+		return v
+	}
+	switch kind {
+	case ssot.ValidationAtLeastOne:
+		return v.WithValidation(AtLeastOneValueSet, names...)
+	case ssot.ValidationExactlyOne:
+		return v.WithValidation(ExactlyOneValueSet, names...)
+	case ssot.ValidationConflicting:
+		if len(names) == 2 {
+			return v.WithValidation(ConflictingFields, names...)
+		}
+		return v.WithValidation(MoreThanOneValueSet, names...)
+	default:
+		panic(fmt.Sprintf("unknown validation kind %q", kind))
+	}
 }
 
 // queryStructFromBlockAttribute builds the struct of an ALTER block: one element of a list of objects, or a SqlOnly object.
@@ -251,16 +244,8 @@ func queryStructFromObjectList(owner string, list ssot.Attribute) *QueryStruct {
 	if len(variantFields) > 1 {
 		element = element.WithValidation(ExactlyOneValueSet, variantFields...)
 	}
-	if list.Elem != nil && list.Elem.ChildrenRule != "" {
-		names := collections.Map(list.Elem.RuleFields(), func(child ssot.Attribute) string {
-			return clauseFieldName(child, attributeSqlCreate)
-		})
-		switch list.Elem.ChildrenRule {
-		case ssot.ChildrenAtLeastOne:
-			element = element.WithValidation(AtLeastOneValueSet, names...)
-		case ssot.ChildrenExactlyOne:
-			element = element.WithValidation(ExactlyOneValueSet, names...)
-		}
+	if list.Elem != nil {
+		element = element.withChildValidations(*list.Elem, ssot.ClauseCreate)
 	}
 	if clause.Parentheses != ssot.SqlParensYes {
 		return element

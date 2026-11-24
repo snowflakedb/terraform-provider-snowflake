@@ -91,9 +91,8 @@ var AlertAttrs = struct {
 		UnsetSql:       ssot.BoolKeyword(ssot.Sql("SCHEDULE"), ssot.FieldName("Schedule")),
 		Children: []ssot.Attribute{
 			{
-				Name:          "cron",
-				Type:          ssot.AttrObject,
-				ConflictsWith: []ssot.Attribute{{Name: "interval"}},
+				Name: "cron",
+				Type: ssot.AttrObject,
 				Description: "Specifies the cron expression for the alert. The cron expression must be in the following format: \"minute hour day-of-month month day-of-week\". " +
 					"The following values are supported: minute: 0-59 hour: 0-23 day-of-month: 1-31 month: 1-12 day-of-week: 0-6 (0 is Sunday)",
 				Children: []ssot.Attribute{
@@ -112,12 +111,12 @@ var AlertAttrs = struct {
 				},
 			},
 			{
-				Name:          "interval",
-				Type:          ssot.AttrInt,
-				ConflictsWith: []ssot.Attribute{{Name: "cron"}},
-				Description:   "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
+				Name:        "interval",
+				Type:        ssot.AttrInt,
+				Description: "Specifies the interval in minutes for the alert schedule. The interval must be greater than 0 and less than 1440 (24 hours).",
 			},
 		},
+		Validations: []ssot.Validation{ssot.Conflicting(ssot.Attribute{Name: "cron"}, ssot.Attribute{Name: "interval"})},
 	},
 	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, Readonly: true},
 	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},

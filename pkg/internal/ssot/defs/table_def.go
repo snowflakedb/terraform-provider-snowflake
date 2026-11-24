@@ -292,7 +292,10 @@ var TableStorageLifecyclePolicy = ssot.Attribute{
 	},
 }
 
-var tableColumnIdentityOrder = ssot.Attribute{Name: "order", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword()}
+var (
+	tableColumnIdentityOrder   = ssot.Attribute{Name: "order", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword()}
+	tableColumnIdentityNoorder = ssot.Attribute{Name: "noorder", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword()}
+)
 
 // TableColumnVirtual is [ GENERATED ALWAYS ] AS ( expr ) [ VIRTUAL ] on CREATE TABLE and ALTER TABLE ADD COLUMN.
 var TableColumnVirtual = ssot.Attribute{
@@ -311,11 +314,11 @@ var TableColumnVirtual = ssot.Attribute{
 // TableColumnDefaultValue is DEFAULT or IDENTITY on a column. CREATE and ALTER ADD COLUMN share this struct, and its
 // name stays ColumnDefaultValue because hybrid and iceberg tables refer to that type.
 var TableColumnDefaultValue = ssot.Attribute{
-	Name:         "default_value",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(ssot.StructName("ColumnDefaultValue")),
+	Name:        "default_value",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(ssot.StructName("ColumnDefaultValue")),
 	Children: []ssot.Attribute{
 		{
 			Name:      "expression",
@@ -332,9 +335,10 @@ var TableColumnDefaultValue = ssot.Attribute{
 				{Name: "start", Type: ssot.AttrInt, Required: true, SqlOnly: true, CreateSql: ssot.IntParameter(ssot.NoQuotes(), ssot.NoEquals(), ssot.Required())},
 				{Name: "increment", Type: ssot.AttrInt, Required: true, SqlOnly: true, CreateSql: ssot.IntParameter(ssot.NoQuotes(), ssot.NoEquals(), ssot.Required())},
 				tableColumnIdentityOrder,
-				// ORDER and NOORDER cannot both be set. Either can be absent.
-				{Name: "noorder", Type: ssot.AttrBool, SqlOnly: true, ConflictsWith: []ssot.Attribute{tableColumnIdentityOrder}, CreateSql: ssot.BoolKeyword()},
+				tableColumnIdentityNoorder,
 			},
+			// ORDER and NOORDER cannot both be set. Either can be absent.
+			Validations: []ssot.Validation{ssot.Conflicting(tableColumnIdentityOrder, tableColumnIdentityNoorder)},
 		},
 	},
 }
@@ -475,11 +479,11 @@ var TableDropColumnAction = ssot.Attribute{
 // TableDropColumnAction are defined above with SharedToOpts. TableColumnInlineConstraint and TableColumnMaskingPolicy
 // are defined with SharedToOpts too, and TableColumnProjectionPolicy is embedded as well.
 var TableColumn = ssot.Attribute{
-	Name:         "column",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableColumnAction")),
+	Name:        "column",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(ssot.StructName("TableColumnAction")),
 	Children: []ssot.Attribute{
 		{
 			// ADD COLUMN. NOT NULL is its own flag, which is what the table resource sets.
@@ -511,10 +515,10 @@ var TableColumn = ssot.Attribute{
 			SqlOnly:   true,
 			CreateSql: ssot.ValueKeyword(ssot.StructName("TableColumnAlterAction")),
 			Elem: &ssot.Attribute{
-				Type:         ssot.AttrObject,
-				SqlOnly:      true,
-				ChildrenRule: ssot.ChildrenExactlyOne,
-				CreateSql:    ssot.ObjectParameter(),
+				Type:        ssot.AttrObject,
+				SqlOnly:     true,
+				Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+				CreateSql:   ssot.ObjectParameter(),
 				Children: []ssot.Attribute{
 					{Name: "column", SqlOnly: true, CreateSql: ssot.StaticSQL("column", "COLUMN")},
 					{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes(), ssot.Required())},
@@ -569,16 +573,24 @@ var TableConstraintRenameAction = ssot.Attribute{
 	},
 }
 
+// tableConstraintTargetValidations pick the constraint that ALTER CONSTRAINT and DROP CONSTRAINT act on: its name, or one
+// key kind.
+var tableConstraintTargetValidations = []ssot.Validation{ssot.ExactlyOneOf(
+	ssot.Attribute{Name: "constraint_name"},
+	ssot.Attribute{Name: "primary_key"},
+	ssot.Attribute{Name: "unique"},
+	ssot.Attribute{Name: "foreign_key"},
+)}
+
 // TableConstraintAlterAction is ALTER TABLE ALTER CONSTRAINT. Exactly one of the name and the key kinds is set.
-// The columns and the enforcement flags sit beside that choice, so ChildrenRuleFields names the fields the rule covers.
+// The columns and the enforcement flags sit beside that choice, so the validation names the fields it covers.
 // It is a child of TableConstraintAction.
 var TableConstraintAlterAction = ssot.Attribute{
-	Name:               "constraint_alter_action",
-	Type:               ssot.AttrObject,
-	SqlOnly:            true,
-	ChildrenRule:       ssot.ChildrenExactlyOne,
-	ChildrenRuleFields: []string{"constraint_name", "primary_key", "unique", "foreign_key"},
-	CreateSql:          ssot.ObjectParameter(ssot.Sql("ALTER"), ssot.NoComma(), ssot.FieldName("Alter"), ssot.StructName("TableConstraintAlterAction")),
+	Name:        "constraint_alter_action",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: tableConstraintTargetValidations,
+	CreateSql:   ssot.ObjectParameter(ssot.Sql("ALTER"), ssot.NoComma(), ssot.FieldName("Alter"), ssot.StructName("TableConstraintAlterAction")),
 	Children: []ssot.Attribute{
 		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.DoubleQuotes(), ssot.FieldName("ConstraintName"))},
 		{Name: "primary_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("PRIMARY KEY"))},
@@ -595,15 +607,14 @@ var TableConstraintAlterAction = ssot.Attribute{
 }
 
 // TableConstraintDropAction is ALTER TABLE DROP CONSTRAINT. Exactly one of the name and the key kinds is set.
-// The columns and the CASCADE and RESTRICT flags sit beside that choice, so ChildrenRuleFields names the fields the rule covers.
+// The columns and the CASCADE and RESTRICT flags sit beside that choice, so the validation names the fields it covers.
 // It is a child of TableConstraintAction.
 var TableConstraintDropAction = ssot.Attribute{
-	Name:               "constraint_drop_action",
-	Type:               ssot.AttrObject,
-	SqlOnly:            true,
-	ChildrenRule:       ssot.ChildrenExactlyOne,
-	ChildrenRuleFields: []string{"constraint_name", "primary_key", "unique", "foreign_key"},
-	CreateSql:          ssot.ObjectParameter(ssot.Sql("DROP"), ssot.NoComma(), ssot.FieldName("Drop"), ssot.StructName("TableConstraintDropAction")),
+	Name:        "constraint_drop_action",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: tableConstraintTargetValidations,
+	CreateSql:   ssot.ObjectParameter(ssot.Sql("DROP"), ssot.NoComma(), ssot.FieldName("Drop"), ssot.StructName("TableConstraintDropAction")),
 	Children: []ssot.Attribute{
 		{Name: "constraint_name", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.PlainParameter(ssot.Sql("CONSTRAINT"), ssot.NoEquals(), ssot.DoubleQuotes(), ssot.FieldName("ConstraintName"))},
 		{Name: "primary_key", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("PRIMARY KEY"))},
@@ -618,11 +629,11 @@ var TableConstraintDropAction = ssot.Attribute{
 // TableConstraintAction is one ALTER TABLE constraint branch. It composes the rename, alter, and drop attributes above.
 // ADD is the out-of-line constraint, so it is the one preexisting struct. Table emits it with SharedToOpts, and iceberg tables reference it.
 var TableConstraintAction = ssot.Attribute{
-	Name:         "constraint_action",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(ssot.StructName("TableConstraintAction")),
+	Name:        "constraint_action",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(ssot.StructName("TableConstraintAction")),
 	Children: []ssot.Attribute{
 		{Name: "add", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&TableOutOfLineConstraint, ssot.NoComma(), ssot.Sql("ADD"))},
 		TableConstraintRenameAction,
@@ -649,7 +660,7 @@ var TableExternalTableColumnAddAction = ssot.Attribute{
 }
 
 // TableExternalTableAction is the external table column branch of ALTER TABLE. ADD is the only one: renaming and
-// dropping a column use the regular column actions. ChildrenRule needs two alternatives, so the SDK extension
+// dropping a column use the regular column actions. A validation needs two alternatives, so the SDK extension
 // (pkg/sdk/tables_ext.go) requires ADD.
 var TableExternalTableAction = ssot.Attribute{
 	Name:      "external_table_action",
@@ -1031,7 +1042,7 @@ var Table = ssot.Object{
 		DefaultDdlCollation,
 	},
 	// The id changed from the pipe-separated format (db|schema|name) to the fully qualified name.
-	// A virtual column cannot have a default or an identity. column is a list, so ConflictsWith cannot express it.
+	// A virtual column cannot have a default or an identity. column is a list, so the schema cannot express it.
 	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
 		"tableVirtualColumnConflicts",
 	},

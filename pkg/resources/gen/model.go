@@ -273,7 +273,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
 	resourceAttributes := input.ResourceAttributes()
 	attributes := applyResourceAttributeRules(input.IdType, resourceAttributes)
-	applyExactlyOneOf(input.ExactlyOneOf, attributes)
+	applyValidations(input.Validations, input.ValidationFields, "", attributes)
 	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
 		attachCreateMappings(input.Name, resourceAttributes, attributes)
 	}

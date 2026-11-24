@@ -7,11 +7,11 @@ import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot
 // the handwritten ALTER field is a keyword with no SQL prefix, the same shape as AlterKeywordBlock. The rest of ALTER
 // stays handwritten.
 var TableClusteringAction = ssot.Attribute{
-	Name:         "clustering_action",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(),
+	Name:        "clustering_action",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		{
 			Name:      "cluster_by",
@@ -85,11 +85,11 @@ var tableSearchMethodWithTargetFields = []ssot.Attribute{
 
 // TableSearchOptimizationAction is ADD or DROP SEARCH OPTIMIZATION. Iceberg tables reuse the same structs.
 var TableSearchOptimizationAction = ssot.Attribute{
-	Name:         "search_optimization_action",
-	Type:         ssot.AttrObject,
-	SqlOnly:      true,
-	ChildrenRule: ssot.ChildrenExactlyOne,
-	CreateSql:    ssot.ObjectParameter(),
+	Name:        "search_optimization_action",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		{
 			Name:      "add_search_optimization",
@@ -125,10 +125,10 @@ var TableSearchOptimizationAction = ssot.Attribute{
 					SqlOnly:   true,
 					CreateSql: ssot.ValueKeyword(ssot.Sql("ON"), ssot.FieldName("On")),
 					Elem: &ssot.Attribute{
-						Type:         ssot.AttrObject,
-						SqlOnly:      true,
-						ChildrenRule: ssot.ChildrenExactlyOne,
-						CreateSql:    ssot.ObjectParameter(),
+						Type:        ssot.AttrObject,
+						SqlOnly:     true,
+						Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+						CreateSql:   ssot.ObjectParameter(),
 						Children: []ssot.Attribute{
 							{
 								Name:      "search_method_with_target",

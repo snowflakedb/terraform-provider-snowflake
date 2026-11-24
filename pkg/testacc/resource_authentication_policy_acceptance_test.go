@@ -725,12 +725,7 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 			*sdk.NewAuthenticationPolicyMfaPolicyRequest().
 				WithEnforceMfaOnExternalAuthentication(sdk.EnforceMfaOnExternalAuthenticationOptionNone),
 		).
-		WithWorkloadIdentityPolicy(
-			*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest().
-				WithAllowedProviders([]sdk.AllowedProviderOptionListItem{
-					{Value: sdk.AllowedProviderOptionAzure},
-				}),
-		)
+		WithWorkloadIdentityPolicy(*sdk.NewAuthenticationPolicyWorkloadIdentityPolicyRequest())
 
 	modelWithSwappedLists := model.AuthenticationPolicy("test", id.DatabaseName(), id.SchemaName(), id.Name()).
 		WithPatPolicy(swappedPatPolicy).
@@ -815,6 +810,7 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 						HasClientTypesEmpty().
 						HasSecurityIntegrationsEmpty().
 						HasPatPolicy(emptyPatPolicy),
+					assert.Check(resource.TestCheckResourceAttr(ref, "workload_identity_policy.#", "1")),
 					resourceshowoutputassert.AuthenticationPolicyShowOutput(t, ref).
 						HasCreatedOnNotEmpty().
 						HasName(id.Name()).
@@ -835,7 +831,8 @@ func TestAcc_AuthenticationPolicy_handlingLists(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.security_integrations", "[ALL]")),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_enrollment", testClient().SnowflakeDefaults.DefaultMfaEnrollment(t))),
 					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.mfa_policy", "{ALLOWED_METHODS=[ALL], ENFORCE_MFA_ON_EXTERNAL_AUTHENTICATION=NONE}")),
-					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")), assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[AZURE], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.pat_policy", "{DEFAULT_EXPIRY_IN_DAYS=15, MAX_EXPIRY_IN_DAYS=365, NETWORK_POLICY_EVALUATION=ENFORCED_REQUIRED, REQUIRE_ROLE_RESTRICTION_FOR_SERVICE_USERS=true, REQUIRE_ROLE_RESTRICTION_FOR_PERSON_USERS=false, BLOCKED_ROLES_LIST=[]}")),
+					assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.workload_identity_policy", "{ALLOWED_PROVIDERS=[ALL], ALLOWED_AWS_ACCOUNTS=[ALL], ALLOWED_AWS_PARTITIONS=[ALL], ALLOWED_AZURE_ISSUERS=[ALL], ALLOWED_OIDC_ISSUERS=[ALL]}")),
 				),
 			},
 			{

@@ -280,27 +280,16 @@ var WarehouseAttrs = struct {
 	Kind: ssot.Attribute{Name: "kind", Type: ssot.AttrString, Readonly: true},
 }
 
-// ConflictsWith is assigned here. The two attributes reference each other, so setting it inside the
-// WarehouseAttrs literal is an initialization cycle.
-// ShowVariants points back at objects that are declared after Warehouse, so it is set here too.
+// ShowVariants points back at objects that are declared after Warehouse, so it is set here.
 func init() {
-	WarehouseAttrs.ResourceConstraint.ConflictsWith = []ssot.Attribute{WarehouseAttrs.Generation}
-	WarehouseAttrs.Generation.ConflictsWith = []ssot.Attribute{WarehouseAttrs.ResourceConstraint}
-	for i := range Warehouse.Attributes {
-		switch Warehouse.Attributes[i].Name {
-		case WarehouseAttrs.ResourceConstraint.Name:
-			Warehouse.Attributes[i].ConflictsWith = WarehouseAttrs.ResourceConstraint.ConflictsWith
-		case WarehouseAttrs.Generation.Name:
-			Warehouse.Attributes[i].ConflictsWith = WarehouseAttrs.Generation.ConflictsWith
-		}
-	}
 	Warehouse.BaseVariant.ShowVariants = []*ssot.Object{&WarehouseAdaptive, &WarehouseInteractive}
 }
 
 var Warehouse = ssot.Object{
-	Name:       "Warehouse",
-	NamePlural: "Warehouses",
-	IdType:     "AccountObjectIdentifier",
+	Name:        "Warehouse",
+	NamePlural:  "Warehouses",
+	IdType:      "AccountObjectIdentifier",
+	Validations: []ssot.Validation{ssot.Conflicting(WarehouseAttrs.ResourceConstraint, WarehouseAttrs.Generation)},
 	// ShowParametersDetails lists interactive parameters such as FALLBACK_WAREHOUSE.
 	ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
 	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{

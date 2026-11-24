@@ -422,40 +422,33 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, supplie
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
 	q = q.withIdentifierParameterValidations(createParams)
-	q = q.withExactlyOneOfValidations(obj, obj.Create.Clauses)
-	q = q.withAtLeastOneOfValidations(obj, obj.Create.Clauses)
+	q = q.withObjectValidations(obj, obj.Create.Clauses)
 	if cfg.CreateAdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
 	return q
 }
 
-// withExactlyOneOfValidations adds ExactlyOneValueSet for each ExactlyOneOf group of obj whose attributes are all in clauses.
-// A group that has only some of them in the statement is a mistake in the definition.
-func (v *QueryStruct) withExactlyOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
-	return v.withValueSetGroups(obj, "ExactlyOneOf", obj.ExactlyOneOf, ExactlyOneValueSet, clauses)
-}
-
-// withAtLeastOneOfValidations adds AtLeastOneValueSet for each AtLeastOneOf group of obj whose attributes are all in clauses.
-// A group that has only some of them in the statement is a mistake in the definition.
-func (v *QueryStruct) withAtLeastOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
-	return v.withValueSetGroups(obj, "AtLeastOneOf", obj.AtLeastOneOf, AtLeastOneValueSet, clauses)
-}
-
-func (v *QueryStruct) withValueSetGroups(obj ssot.Object, label string, groups [][]*ssot.Attribute, kind ValidationType, clauses []*ssot.Attribute) *QueryStruct {
-	for _, group := range groups {
-		present := collections.Filter(group, func(member *ssot.Attribute) bool {
-			return slices.ContainsFunc(clauses, func(clause *ssot.Attribute) bool { return clause != nil && clause.Name == member.Name })
-		})
-		switch len(present) {
-		case 0:
-		case len(group):
-			v = v.WithValidation(kind, collections.Map(group, func(member *ssot.Attribute) string {
-				return clauseFieldName(*member, attributeSqlCreate)
-			})...)
-		default:
-			panic(fmt.Sprintf("object %q: only some attributes of an %s group are in the statement", obj.Name, label))
+// withObjectValidations adds the Validations of obj over the attributes of a CREATE-like statement. An AtLeastOne or
+// ExactlyOne validation that has only some of its attributes in the statement is a mistake in the definition. A
+// Conflicting one covers the attributes in the statement.
+func (v *QueryStruct) withObjectValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
+	for _, validation := range obj.Validations {
+		if validation.NotInSdk {
+			continue
 		}
+		fields := obj.ValidationFields(validation)
+		var names []string
+		for _, member := range fields {
+			i := slices.IndexFunc(clauses, func(clause *ssot.Attribute) bool { return clause != nil && clause.Name == member.Name })
+			if i >= 0 {
+				names = append(names, clauseFieldName(*clauses[i], attributeSqlCreate))
+			}
+		}
+		if len(names) != 0 && len(names) != len(fields) && validation.Kind != ssot.ValidationConflicting {
+			panic(fmt.Sprintf("object %q: only some attributes of a %s validation are in the statement", obj.Name, validation.Kind))
+		}
+		v = v.withValidationOf(validation.Kind, names)
 	}
 	return v
 }
@@ -839,7 +832,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 	if sawOrReplace && sawIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
-	q = q.withAtLeastOneOfValidations(obj, attributes)
+	q = q.withObjectValidations(obj, attributes)
 	for _, attr := range attributes {
 		clause := attr.EffectiveSqlClause(ssot.ClauseCreate)
 		if clauseRequired(*attr, clause, attributeSqlCreate) && attr.SdkType() == ssot.AttrString {

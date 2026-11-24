@@ -298,11 +298,11 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
 		CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
 	},
-	ExactlyOneOf: [][]*ssot.Attribute{{
-		&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
-		&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
-		&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
-	}},
+	Validations: []ssot.Validation{ssot.ExactlyOneOf(
+		CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+		CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+		CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+	)},
 	Create: ssot.CreateSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-rest",
 		Clauses: []*ssot.Attribute{

@@ -637,11 +637,11 @@ func Test_CreateOperationFromObject_atLeastOneOf(t *testing.T) {
 	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt, CreateSql: ssot.IntParameter()}
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
 	obj := ssot.Object{
-		Name:         "Widget",
-		Attributes:   []ssot.Attribute{schedule, expire, comment},
-		AtLeastOneOf: [][]*ssot.Attribute{{&schedule, &expire}},
-		Create:       ssot.CreateSpec{Clauses: []*ssot.Attribute{&schedule, &expire, &comment}},
-		Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+		Name:        "Widget",
+		Attributes:  []ssot.Attribute{schedule, expire, comment},
+		Validations: []ssot.Validation{ssot.AtLeastOneOf(schedule, expire)},
+		Create:      ssot.CreateSpec{Clauses: []*ssot.Attribute{&schedule, &expire, &comment}},
+		Generators:  []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
 	}
 	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(

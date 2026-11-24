@@ -51,8 +51,7 @@ func ValidateObject(obj Object) {
 		validateAttributeOptions(obj.Name, a, false)
 	}
 	validateCreateSpec(obj, attrs)
-	validateExactlyOneOf(obj)
-	validateAtLeastOneOf(obj)
+	validateObjectValidations(obj)
 	switch {
 	case obj.Variant != nil:
 		if obj.BaseVariant != nil {
@@ -83,7 +82,6 @@ func ValidateObject(obj Object) {
 		if a.BoolTrueValue != "" && !a.StoredAsText {
 			panic(fmt.Sprintf("object %q: attribute %q sets BoolTrueValue without StoredAsText", obj.Name, a.Name))
 		}
-		validateAttributeRelations(obj, a, obj.Attributes)
 	}
 	nested := nestedAttributeNames(obj)
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, sqlOnly, nested)
@@ -151,59 +149,6 @@ func validateDataSource(obj Object, g Generators) {
 	if hooks.ShowParametersInSdk.Generate && !obj.HasDataSourceParameters() {
 		panic(fmt.Sprintf("object %q: the generated data source parameters need SdkShowParameters()", obj.Name))
 	}
-}
-
-func validateAttributeRelations(obj Object, a Attribute, siblings []Attribute) {
-	siblingByName := make(map[string]Attribute, len(siblings))
-	for _, sibling := range siblings {
-		siblingByName[sibling.Name] = sibling
-	}
-	for _, other := range a.ConflictsWith {
-		if other.Name == a.Name {
-			panic(fmt.Sprintf("object %q: attribute %q conflicts with itself", obj.Name, a.Name))
-		}
-		target, ok := siblingByName[other.Name]
-		if !ok {
-			panic(fmt.Sprintf("object %q: attribute %q conflicts with unknown attribute %q", obj.Name, a.Name, other.Name))
-		}
-		if target.Required {
-			panic(fmt.Sprintf("object %q: attribute %q conflicts with required attribute %q", obj.Name, a.Name, other.Name))
-		}
-	}
-	if len(a.ConflictsWith) > 0 && a.Required {
-		panic(fmt.Sprintf("object %q: ConflictsWith attribute %q is required", obj.Name, a.Name))
-	}
-	for _, other := range a.AtLeastOneOf {
-		target, ok := siblingByName[other.Name]
-		if !ok {
-			panic(fmt.Sprintf("object %q: attribute %q at least one of unknown attribute %q", obj.Name, a.Name, other.Name))
-		}
-		if target.Required {
-			panic(fmt.Sprintf("object %q: attribute %q at least one of required attribute %q", obj.Name, a.Name, other.Name))
-		}
-	}
-	if len(a.AtLeastOneOf) > 0 && a.Required {
-		panic(fmt.Sprintf("object %q: AtLeastOneOf attribute %q is required", obj.Name, a.Name))
-	}
-	fields := a.NestedFields()
-	if len(fields) == 0 {
-		return
-	}
-	if nestedRelations(fields) && !a.IsSingleBlock() {
-		panic(fmt.Sprintf("object %q: attribute %q relations require a single block", obj.Name, a.Name))
-	}
-	for _, child := range fields {
-		validateAttributeRelations(obj, child, fields)
-	}
-}
-
-func nestedRelations(fields []Attribute) bool {
-	for _, field := range fields {
-		if len(field.ConflictsWith) > 0 || len(field.AtLeastOneOf) > 0 || nestedRelations(field.NestedFields()) {
-			return true
-		}
-	}
-	return false
 }
 
 func validateAttribute(obj Object, a Attribute) {
@@ -463,7 +408,7 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 	}
 	if attr.IsObjectList() {
 		validateObjectVariants(obj, attr)
-		if attr.Elem != nil && attr.Elem.Type == AttrObject && attr.Elem.ChildrenRule != "" {
+		if attr.Elem != nil && attr.Elem.Type == AttrObject && len(attr.Elem.Validations) > 0 {
 			validateNestedShape(obj, *attr.Elem)
 		}
 	}
@@ -505,58 +450,13 @@ func validateNestedShape(obj Object, attr Attribute) {
 			panic(fmt.Sprintf("object %q: attribute %q is an object and has an Elem; the fields of an object are its Children", obj.Name, attr.Name))
 		}
 	}
-	if attr.ChildrenRule != "" {
-		if attr.ChildrenRule != ChildrenAtLeastOne && attr.ChildrenRule != ChildrenExactlyOne {
-			panic(fmt.Sprintf("object %q: attribute %q has unknown ChildrenRule %q", obj.Name, attr.Name, attr.ChildrenRule))
-		}
-		if attr.Type != AttrObject {
-			panic(fmt.Sprintf("object %q: attribute %q sets ChildrenRule but is not an object", obj.Name, attr.Name))
-		}
-		if len(attr.RuleFields()) < 2 {
-			panic(fmt.Sprintf("object %q: attribute %q sets ChildrenRule and needs at least two Children that are fields", obj.Name, attr.Name))
-		}
-	}
-	if len(attr.ChildrenRuleFields) > 0 {
-		if attr.ChildrenRule == "" {
-			panic(fmt.Sprintf("object %q: attribute %q sets ChildrenRuleFields without ChildrenRule", obj.Name, attr.Name))
-		}
-		eligible := collections.Map(attr.RuleFields(), func(child Attribute) string { return child.Name })
-		for _, name := range attr.ChildrenRuleFields {
-			if !slices.Contains(eligible, name) {
-				panic(fmt.Sprintf("object %q: attribute %q has ChildrenRuleFields entry %q that is not a Child that is a field and not Required", obj.Name, attr.Name, name))
-			}
-		}
-	}
-	validateSqlOnlyConflicts(obj, attr)
+	validateAttributeValidations(obj, attr)
 	if attr.Elem != nil && attr.Elem.Type == AttrObject {
 		if attr.Type != AttrList && attr.Type != AttrSet {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem and needs to be a list or set", obj.Name, attr.Name))
 		}
 		if len(attr.NestedSqlFields()) == 0 {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem with no Children", obj.Name, attr.Name))
-		}
-	}
-}
-
-// validateSqlOnlyConflicts checks ConflictsWith on the SqlOnly children of an object clause. They have no schema, so the
-// SDK query struct gets the ConflictingFields. Each name has to be another child of the same object.
-func validateSqlOnlyConflicts(obj Object, attr Attribute) {
-	children := attr.NestedSqlFields()
-	names := make(map[string]struct{}, len(children))
-	for _, child := range children {
-		names[child.Name] = struct{}{}
-	}
-	for _, child := range children {
-		if !child.SqlOnly {
-			continue
-		}
-		for _, other := range child.ConflictsWith {
-			if other.Name == child.Name {
-				panic(fmt.Sprintf("object %q: attribute %q.%q conflicts with itself", obj.Name, attr.Name, child.Name))
-			}
-			if _, ok := names[other.Name]; !ok {
-				panic(fmt.Sprintf("object %q: attribute %q.%q conflicts with %q, which is not a child of %q", obj.Name, attr.Name, child.Name, other.Name, attr.Name))
-			}
 		}
 	}
 }
@@ -677,36 +577,85 @@ func sqlClauseStatement(attr Attribute) (string, bool) {
 	}
 }
 
-// validateExactlyOneOf checks the groups: at least two optional top-level attributes each, none in two groups.
-func validateExactlyOneOf(obj Object) {
-	validateAttributeGroups(obj, "ExactlyOneOf", obj.ExactlyOneOf)
-}
-
-// validateAtLeastOneOf checks the groups: at least two optional top-level attributes each, none in two groups.
-func validateAtLeastOneOf(obj Object) {
-	validateAttributeGroups(obj, "AtLeastOneOf", obj.AtLeastOneOf)
-}
-
-func validateAttributeGroups(obj Object, label string, groups [][]*Attribute) {
-	inGroup := make(map[string]struct{})
-	for i, group := range groups {
-		if len(group) < 2 {
-			panic(fmt.Sprintf("object %q: %s group %d needs at least two attributes", obj.Name, label, i))
+// validateObjectValidations checks Object.Validations: each names at least two optional top-level attributes that are not
+// SqlOnly. See validateValidations for the rules shared with Attribute.Validations.
+func validateObjectValidations(obj Object) {
+	candidates := collections.Filter(obj.Attributes, func(a Attribute) bool { return !a.SqlOnly && !a.Required })
+	for i, v := range obj.Validations {
+		if len(v.Fields) == 0 {
+			panic(fmt.Sprintf("object %q: validation %d names no attributes", obj.Name, i))
 		}
-		for _, member := range group {
-			if member == nil {
-				panic(fmt.Sprintf("object %q: %s group %d has a nil attribute", obj.Name, label, i))
+	}
+	validateValidations(fmt.Sprintf("object %q", obj.Name), "an optional attribute of the object", obj.Validations, candidates)
+}
+
+// validateAttributeValidations checks Attribute.Validations: the attribute is an object, and each validation names at least
+// two Children that are candidates (ValidationCandidatesFor CREATE). Only a sole validation may leave Fields empty.
+func validateAttributeValidations(obj Object, attr Attribute) {
+	if len(attr.Validations) == 0 {
+		return
+	}
+	owner := fmt.Sprintf("object %q: attribute %q", obj.Name, attr.Name)
+	if attr.Type != AttrObject {
+		panic(fmt.Sprintf("%s sets Validations but is not an object", owner))
+	}
+	candidates := attr.ValidationCandidatesFor(ClauseCreate)
+	for i, v := range attr.Validations {
+		if len(v.Fields) == 0 && len(attr.Validations) > 1 {
+			panic(fmt.Sprintf("%s: validation %d names no Children, which is valid only for its sole validation", owner, i))
+		}
+		if len(v.Fields) == 0 && len(candidates) < 2 {
+			panic(fmt.Sprintf("%s: validation %d needs at least two Children that are fields", owner, i))
+		}
+	}
+	validateValidations(owner, "a Child that is a field and not Required", attr.Validations, candidates)
+}
+
+// validateValidations checks the rules shared by both levels. A kind is known, and the named fields are candidates, at least
+// two and none twice. A field is in at most one AtLeastOne and one ExactlyOne validation, because the Terraform schema has one
+// list for each. Conflicting validations may share a field, but not a pair of fields.
+func validateValidations(owner, candidate string, validations []Validation, candidates []Attribute) {
+	inKind := make(map[ValidationKind]map[string]struct{})
+	conflictingPairs := make(map[[2]string]struct{})
+	for i, v := range validations {
+		switch v.Kind {
+		case ValidationAtLeastOne, ValidationExactlyOne, ValidationConflicting:
+		default:
+			panic(fmt.Sprintf("%s: validation %d has unknown kind %q", owner, i, v.Kind))
+		}
+		if len(v.Fields) == 1 {
+			panic(fmt.Sprintf("%s: %s validation %d needs at least two fields", owner, v.Kind, i))
+		}
+		seen := make(map[string]struct{}, len(v.Fields))
+		for _, field := range v.Fields {
+			if !slices.ContainsFunc(candidates, func(a Attribute) bool { return a.Name == field.Name }) {
+				panic(fmt.Sprintf("%s: %s validation %d field %q is not %s", owner, v.Kind, i, field.Name, candidate))
 			}
-			if !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == member.Name && !a.SqlOnly }) {
-				panic(fmt.Sprintf("object %q: %s group %d attribute %q is not an attribute of the object", obj.Name, label, i, member.Name))
+			if _, dup := seen[field.Name]; dup {
+				panic(fmt.Sprintf("%s: %s validation %d names %q twice", owner, v.Kind, i, field.Name))
 			}
-			if member.Required {
-				panic(fmt.Sprintf("object %q: %s group %d attribute %q is required", obj.Name, label, i, member.Name))
+			seen[field.Name] = struct{}{}
+		}
+		if v.Kind == ValidationConflicting {
+			for a := range v.Fields {
+				for b := a + 1; b < len(v.Fields); b++ {
+					pair := [2]string{min(v.Fields[a].Name, v.Fields[b].Name), max(v.Fields[a].Name, v.Fields[b].Name)}
+					if _, dup := conflictingPairs[pair]; dup {
+						panic(fmt.Sprintf("%s: fields %q and %q are in more than one conflicting validation", owner, pair[0], pair[1]))
+					}
+					conflictingPairs[pair] = struct{}{}
+				}
 			}
-			if _, dup := inGroup[member.Name]; dup {
-				panic(fmt.Sprintf("object %q: attribute %q is in more than one %s group, or twice in one", obj.Name, member.Name, label))
+			continue
+		}
+		if inKind[v.Kind] == nil {
+			inKind[v.Kind] = make(map[string]struct{})
+		}
+		for _, field := range v.Fields {
+			if _, dup := inKind[v.Kind][field.Name]; dup {
+				panic(fmt.Sprintf("%s: field %q is in more than one %s validation", owner, field.Name, v.Kind))
 			}
-			inGroup[member.Name] = struct{}{}
+			inKind[v.Kind][field.Name] = struct{}{}
 		}
 	}
 }
