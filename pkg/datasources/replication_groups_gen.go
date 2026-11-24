@@ -34,7 +34,7 @@ var replicationGroupsSchema = collections.MergeMaps(
 			Description: "Holds the output of SHOW REPLICATION GROUPS.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeReplicationGroup.Plural(), schemas.ShowReplicationGroupSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeReplicationGroup, schemas.ShowReplicationGroupSchema),
 				),
 			},
 		},

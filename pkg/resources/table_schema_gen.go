@@ -6,6 +6,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -304,28 +305,8 @@ var tableSchema = collections.MergeMaps(
 	},
 	tableAttributesSchema,
 	tableParametersAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW TABLES` for the given table.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowTableSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE TABLE` for the given table. The statement is DESCRIBE TABLE ... TYPE = COLUMNS.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeTableColumnDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeTable, schemas.ShowTableSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeTable, schemas.DescribeTableColumnDetailsSchema, "The statement is DESCRIBE TABLE ... TYPE = COLUMNS."),
 	tableParametersOutputSchema,
 )

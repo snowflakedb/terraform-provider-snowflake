@@ -31,8 +31,8 @@ var computePoolsSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all compute pool details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeComputePool.Plural(), schemas.ShowComputePoolSchema),
-					describeOutputListSchema(sdk.ObjectTypeComputePool, schemas.DescribeComputePoolDetailsSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeComputePool, schemas.ShowComputePoolSchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeComputePool, schemas.DescribeComputePoolDetailsSchema),
 				),
 			},
 		},

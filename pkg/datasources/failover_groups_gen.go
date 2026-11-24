@@ -34,7 +34,7 @@ var failoverGroupsSchema = collections.MergeMaps(
 			Description: "Holds the output of SHOW FAILOVER GROUPS.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeFailoverGroup.Plural(), schemas.ShowFailoverGroupSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeFailoverGroup, schemas.ShowFailoverGroupSchema),
 				),
 			},
 		},

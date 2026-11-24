@@ -31,8 +31,8 @@ var codeBundlesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all code bundle details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeCodeBundle.Plural(), schemas.ShowCodeBundleSchema),
-					describeOutputListSchema(sdk.ObjectTypeCodeBundle, schemas.DescribeCodeBundleDetailsSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeCodeBundle, schemas.ShowCodeBundleSchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeCodeBundle, schemas.DescribeCodeBundleDetailsSchema),
 				),
 			},
 		},

@@ -138,17 +138,6 @@ var failoverGroupSchema = collections.MergeMaps(
 		},
 	},
 	failoverGroupAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW FAILOVER GROUPS` for the given failover group.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowFailoverGroupSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeFailoverGroup, schemas.ShowFailoverGroupSchema),
 )

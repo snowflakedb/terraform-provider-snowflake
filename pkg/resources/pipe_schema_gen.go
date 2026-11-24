@@ -5,6 +5,7 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -83,28 +84,8 @@ var pipeSchema = collections.MergeMaps(
 	},
 	pipeAttributesSchema,
 	pipeParametersAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW PIPES` for the given pipe.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowPipeSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE PIPE` for the given pipe.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribePipeDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypePipe, schemas.ShowPipeSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypePipe, schemas.DescribePipeDetailsSchema),
 	pipeParametersOutputSchema,
 )

@@ -34,8 +34,8 @@ var alertsSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all alert details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeAlert.Plural(), schemas.ShowAlertSchema),
-					describeOutputListSchema(sdk.ObjectTypeAlert, schemas.DescribeAlertDetailsSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeAlert, schemas.ShowAlertSchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeAlert, schemas.DescribeAlertDetailsSchema),
 				),
 			},
 		},

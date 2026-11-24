@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -210,6 +211,13 @@ func (m ResourceModel) EffectiveSdkParametersObjectName() string {
 // A variant uses its own name, so WarehouseAdaptive is WarehouseAdaptiveSetRequest.
 func (m ResourceModel) EffectiveSdkAlterObjectName() string {
 	return m.Name
+}
+
+func (m ResourceModel) AdditionalDescribeOutputArg() string {
+	if m.AdditionalDescribeOutputDescription == "" {
+		return ""
+	}
+	return ", " + strconv.Quote(m.AdditionalDescribeOutputDescription)
 }
 
 func (m ResourceModel) ParseIdFunc() string {

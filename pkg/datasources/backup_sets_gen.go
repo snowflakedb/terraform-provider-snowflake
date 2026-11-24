@@ -34,8 +34,8 @@ var backupSetsSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all backup set details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeBackupSet.Plural(), schemas.ShowBackupSetSchema),
-					describeOutputListSchema(sdk.ObjectTypeBackupSet, schemas.DescribeBackupSetDetailsSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeBackupSet, schemas.ShowBackupSetSchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeBackupSet, schemas.DescribeBackupSetDetailsSchema),
 				),
 			},
 		},

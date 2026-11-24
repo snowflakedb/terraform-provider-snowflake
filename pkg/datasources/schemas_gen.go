@@ -33,9 +33,9 @@ var schemasSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all schema details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeSchema.Plural(), schemas.ShowSchemaSchema),
-					describeOutputListSchema(sdk.ObjectTypeSchema, schemas.DescribeSchemaDetailsSchema),
-					parametersOutputListSchema(sdk.ObjectTypeSchema, schemas.ShowSchemaParametersSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeSchema, schemas.ShowSchemaSchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeSchema, schemas.DescribeSchemaDetailsSchema),
+					schemas.ParametersOutputListSchema(sdk.ObjectTypeSchema, schemas.ShowSchemaParametersSchema),
 				),
 			},
 		},

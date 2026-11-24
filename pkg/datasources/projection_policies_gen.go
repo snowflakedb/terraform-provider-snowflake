@@ -34,8 +34,8 @@ var projectionPoliciesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all projection policy details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeProjectionPolicy.Plural(), schemas.ShowProjectionPolicySchema),
-					describeOutputListSchema(sdk.ObjectTypeProjectionPolicy, schemas.DescribeProjectionPolicyDetailsSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeProjectionPolicy, schemas.ShowProjectionPolicySchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeProjectionPolicy, schemas.DescribeProjectionPolicyDetailsSchema),
 				),
 			},
 		},

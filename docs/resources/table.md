@@ -175,11 +175,11 @@ resource "snowflake_sequence" "sequence" {
 
 ### Read-Only
 
-- `describe_output` (List of Object) Outputs the result of `DESCRIBE TABLE` for the given table. The statement is DESCRIBE TABLE ... TYPE = COLUMNS. (see [below for nested schema](#nestedatt--describe_output))
+- `describe_output` (List of Object) Holds the output of `DESCRIBE TABLE` for the given table. The statement is DESCRIBE TABLE ... TYPE = COLUMNS. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN TABLE` for the given table. (see [below for nested schema](#nestedatt--parameters))
-- `show_output` (List of Object) Outputs the result of `SHOW TABLES` for the given table. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Holds the output of `SHOW TABLES` for the given table. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--column"></a>
 ### Nested Schema for `column`

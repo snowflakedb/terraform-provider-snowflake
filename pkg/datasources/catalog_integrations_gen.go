@@ -29,8 +29,8 @@ var catalogIntegrationsSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all catalog integration details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeCatalogIntegration.Plural(), schemas.ShowCatalogIntegrationSchema),
-					describeOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.DescribeCatalogIntegrationDetailsSchema),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.ShowCatalogIntegrationSchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.DescribeCatalogIntegrationDetailsSchema),
 				),
 			},
 		},

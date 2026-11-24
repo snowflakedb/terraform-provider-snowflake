@@ -111,17 +111,6 @@ var replicationGroupSchema = collections.MergeMaps(
 		},
 	},
 	replicationGroupAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW REPLICATION GROUPS` for the given replication group.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowReplicationGroupSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeReplicationGroup, schemas.ShowReplicationGroupSchema),
 )

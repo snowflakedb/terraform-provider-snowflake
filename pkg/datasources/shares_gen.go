@@ -33,8 +33,8 @@ var sharesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all share details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeShare.Plural(), schemas.ShowShareSchema, "SHOW SHARES lists at most three accounts of an outbound share, so for a share with more accounts the full list of `to` is read from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (it needs `SELECT` on that view and a warehouse in the connection, and the view can be up to 3 hours behind). If that fails, a warning is reported and `to` holds the accounts listed by SHOW SHARES. `to_total` is the number of accounts reported by SHOW SHARES."),
-					describeOutputListSchema(sdk.ObjectTypeShare, schemas.DescribeShareDetailsSchema, "DESCRIBE SHARE returns a row for every object granted to the share, including the system objects that Snowflake adds to the shared database. A share that cannot be described (for example because of missing privileges) is reported with a warning and has an empty output."),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeShare, schemas.ShowShareSchema, "SHOW SHARES lists at most three accounts of an outbound share, so for a share with more accounts the full list of `to` is read from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (it needs `SELECT` on that view and a warehouse in the connection, and the view can be up to 3 hours behind). If that fails, a warning is reported and `to` holds the accounts listed by SHOW SHARES. `to_total` is the number of accounts reported by SHOW SHARES."),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeShare, schemas.DescribeShareDetailsSchema, "DESCRIBE SHARE returns a row for every object granted to the share, including the system objects that Snowflake adds to the shared database. A share that cannot be described (for example because of missing privileges) is reported with a warning and has an empty output."),
 				),
 			},
 		},

@@ -37,9 +37,9 @@ var tablesSchema = collections.MergeMaps(
 			Description: "Holds the aggregated output of all table details queries.",
 			Elem: &schema.Resource{
 				Schema: collections.MergeMaps(
-					showOutputListSchema(sdk.ObjectTypeTable.Plural(), schemas.ShowTableSchema),
-					describeOutputListSchema(sdk.ObjectTypeTable, schemas.DescribeTableColumnDetailsSchema, "The statement is DESCRIBE TABLE ... TYPE = COLUMNS. It is empty for a dropped table that `history` returns."),
-					parametersOutputListSchema(sdk.ObjectTypeTable, schemas.ShowTableParametersSchema, "It is empty for a dropped table that `history` returns."),
+					schemas.ShowOutputListSchema(sdk.ObjectTypeTable, schemas.ShowTableSchema),
+					schemas.DescribeOutputListSchema(sdk.ObjectTypeTable, schemas.DescribeTableColumnDetailsSchema, "The statement is DESCRIBE TABLE ... TYPE = COLUMNS. It is empty for a dropped table that `history` returns."),
+					schemas.ParametersOutputListSchema(sdk.ObjectTypeTable, schemas.ShowTableParametersSchema, "It is empty for a dropped table that `history` returns."),
 				),
 			},
 		},

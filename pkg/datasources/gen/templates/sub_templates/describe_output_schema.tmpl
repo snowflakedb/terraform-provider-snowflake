@@ -1,6 +1,6 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
 {{- if .Hooks.DescribeOutputSchema.Generate -}}
-	describeOutputListSchema(sdk.ObjectType{{ .Name }}, schemas.Describe{{ .DescribeSchemaName }}Schema{{ .AdditionalDescribeOutputArg }}),
+	schemas.DescribeOutputListSchema(sdk.ObjectType{{ .Name }}, schemas.Describe{{ .DescribeSchemaName }}Schema{{ .AdditionalDescribeOutputArg }}),
 {{ else if .Hooks.DescribeOutputSchema.Present -}}
 	{{ .Prefix }}DescribeOutputSchemaExt,
 {{ end -}}
