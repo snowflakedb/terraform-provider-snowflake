@@ -58,7 +58,7 @@ func TestAcc_ImageRepositories_CompleteUseCase(t *testing.T) {
 						HasOwner(snowflakeroles.Accountadmin.Name()).
 						HasOwnerRoleType("ROLE").
 						HasComment(comment).
-						HasPrivatelinkRepositoryUrl(""),
+						HasPrivatelinkRepositoryUrlNotEmpty(),
 				),
 			},
 		},
