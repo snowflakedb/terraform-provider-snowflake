@@ -485,7 +485,8 @@ func (r *AlterDirectoryTableStageRequest) toOpts() *AlterDirectoryTableStageOpti
 	}
 	if r.SetDirectory != nil {
 		opts.SetDirectory = &DirectoryTableSet{
-			Enable: r.SetDirectory.Enable,
+			Enable:                  r.SetDirectory.Enable,
+			NotificationIntegration: r.SetDirectory.NotificationIntegration,
 		}
 	}
 	if r.Refresh != nil {

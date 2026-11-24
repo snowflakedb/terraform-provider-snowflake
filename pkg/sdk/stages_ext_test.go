@@ -1174,6 +1174,17 @@ func init() {
 				opts.Refresh = &DirectoryTableRefresh{Subpath: new("subpath")}
 			},
 			`ALTER STAGE IF EXISTS %s REFRESH SUBPATH = 'subpath'`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AlterDirectoryTable_notificationIntegration",
+			func(opts *AlterDirectoryTableStageOptions) {
+				opts.IfExists = new(true)
+				opts.SetDirectory = &DirectoryTableSet{
+					Enable:                  true,
+					NotificationIntegration: new("EXTERNAL_STAGE_INBOUND_NOTIFICATION_PRD"),
+				}
+			},
+			`ALTER STAGE IF EXISTS %s SET DIRECTORY = (ENABLE = true NOTIFICATION_INTEGRATION = 'EXTERNAL_STAGE_INBOUND_NOTIFICATION_PRD')`, id.FullyQualifiedName(),
 		)
 
 	stagesTests.Drop.
@@ -1239,4 +1250,22 @@ func TestStageDescribeProjections(t *testing.T) {
 	require.Equal(t, d.FileFormatName, compatible.FileFormatName)
 	require.Equal(t, d.Location, compatible.Location)
 	require.Nil(t, (*StageDetails)(nil).AsAwsCompatible())
+}
+
+func TestParseDirectoryTableNotificationIntegration(t *testing.T) {
+	details, err := ParseStageDetails([]StageProperty{
+		{Parent: "DIRECTORY", Name: "ENABLE", Value: "true"},
+		{Parent: "DIRECTORY", Name: "AUTO_REFRESH", Value: "true"},
+		{Parent: "DIRECTORY", Name: "NOTIFICATION_INTEGRATION", Value: "EXTERNAL_STAGE_INBOUND_NOTIFICATION_PRD"},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, details.DirectoryTable)
+	require.NotNil(t, details.DirectoryTable.NotificationIntegration)
+	require.Equal(t, "EXTERNAL_STAGE_INBOUND_NOTIFICATION_PRD", *details.DirectoryTable.NotificationIntegration)
+
+	withoutIntegration, err := ParseStageDetails([]StageProperty{
+		{Parent: "DIRECTORY", Name: "ENABLE", Value: "true"},
+	})
+	require.NoError(t, err)
+	require.Nil(t, withoutIntegration.DirectoryTable.NotificationIntegration)
 }
