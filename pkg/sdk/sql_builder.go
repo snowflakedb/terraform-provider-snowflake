@@ -835,7 +835,8 @@ type sqlSystemReferenceClause struct {
 }
 
 func (v sqlSystemReferenceClause) String() (string, error) {
-	args := []string{SingleQuotes.Modify(v.objectType), SingleQuotes.Modify(v.object.FullyQualifiedNameEscaped())}
+	args := make([]string, 0, 2+len(v.extraArgs))
+	args = append(args, SingleQuotes.Modify(v.objectType), SingleQuotes.Modify(v.object.FullyQualifiedNameEscaped()))
 	for _, arg := range v.extraArgs {
 		args = append(args, SingleQuotes.Modify(arg))
 	}
