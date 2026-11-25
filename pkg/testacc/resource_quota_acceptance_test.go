@@ -16,6 +16,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/planchecks"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -485,10 +486,10 @@ func TestAcc_Quota_WarehouseWithActions(t *testing.T) {
 	warehouse, warehouseCleanup := testClient().Warehouse.CreateWarehouse(t)
 	t.Cleanup(warehouseCleanup)
 	// the first argument of an action procedure receives the IDs of the users who crossed the threshold
-	actionProcedure, actionProcedureCleanup := testClient().Procedure.Create(t, sdk.DataTypeVARCHAR)
+	actionProcedure, actionProcedureCleanup := testClient().Procedure.Create(t, testdatatypes.DataTypeVarchar)
 	t.Cleanup(actionProcedureCleanup)
 	grantProcedureToSnowflakeApplication(t, actionProcedure.ID())
-	actionProcedureWithArgument, actionProcedureWithArgumentCleanup := testClient().Procedure.Create(t, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+	actionProcedureWithArgument, actionProcedureWithArgumentCleanup := testClient().Procedure.Create(t, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 	t.Cleanup(actionProcedureWithArgumentCleanup)
 	t.Cleanup(testClient().Grant.GrantUsageOnProcedureToSnowflakeApplication(t, actionProcedureWithArgument.ID()))
 	cycleStartProcedure, cycleStartProcedureCleanup := testClient().Procedure.Create(t)
