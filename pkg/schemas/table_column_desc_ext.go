@@ -13,10 +13,15 @@ func (tableColumnDetailsToSchemaMapper) additionalSchema() map[string]*schema.Sc
 			Type:     schema.TypeString,
 			Computed: true,
 		},
+		"type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 	}
 }
 
 func (tableColumnDetailsToSchemaMapper) additionalToSchema(src *sdk.TableColumnDetails, dst map[string]any) {
+	dst["type"] = src.TypeString()
 	if src.Check != nil {
 		dst["check"] = strconv.FormatBool(*src.Check)
 	}

@@ -30,8 +30,6 @@ type Object struct {
 	// Empty uses Name plus Details.
 	DescribeDetailsName string
 	IdType              string
-	// LegacyIdEncoding keeps the pipe-delimited resource id (db|schema|name) that older resources store.
-	LegacyIdEncoding bool
 	// PreviewFeature marks a preview resource. Generated Delete wraps DeleteContext with previewfeatures.<Name>Resource.
 	PreviewFeature       bool
 	IdentityNameForceNew bool
@@ -43,24 +41,22 @@ type Object struct {
 	// database. With WithBeforeCreate(Generated()), creating one of them adopts the existing object instead: the generated
 	// code sets the id and runs Update. Names are compared ignoring case and outer spaces.
 	IdentityNamesCreatedBySnowflake []string
-	SdkCreateRequestObjectName      string // SDK CREATE request stem, and the variant CREATE and ALTER query-struct stem. Empty uses Name
-	// VariantOf is the base of this role. Name starts with the base Name, and NamePlural matches the base.
-	// The variant also shares SDK parameter details, SET/UNSET requests, and ParameterType names. Catalog membership still uses Name.
-	VariantOf *Object
-	// VariantEntityCreateName overrides the SQL object words a variant CREATE emits.
-	// Empty uses VariantOf.ObjectType, so WarehouseAdaptive emits WAREHOUSE. Interactive CREATE sets INTERACTIVE WAREHOUSE.
-	VariantEntityCreateName string
-	// VariantEntityAlterName overrides the SQL object words a variant ALTER emits.
-	// Empty uses VariantOf.ObjectType, the same default as CREATE.
-	VariantEntityAlterName string
-	// VariantBaseOnly marks an object that only is the base of its variants and is not a Terraform resource itself:
-	// the variants are separate resources and the base owns what they share, such as the SDK interface.
-	// The resource generator skips it.
-	VariantBaseOnly          bool
-	Attributes               []Attribute
-	ComputedAttributes       []Attribute // Read-only resource state; never used for CREATE/ALTER.
-	AttributesModification   bool
-	ResourceHooks            []ResourceHookOption
+	// SdkCreateRequestObjectName is the CREATE request stem when it differs from Name.
+	// Empty uses Name. A variant sets Variant.RequestObjectName instead. PostgresMirrorArguments is one.
+	SdkCreateRequestObjectName string
+	// Variant groups the settings of one role of a base object. Nil means this object is not a variant.
+	Variant *ObjectVariant
+	// BaseVariant groups the settings of an object that is the base of variants.
+	// Nil means this object is not such a base.
+	BaseVariant            *BaseVariant
+	Attributes             []Attribute
+	ComputedAttributes     []Attribute // Read-only resource state; never used for CREATE/ALTER.
+	AttributesModification bool
+	ResourceHooks          []ResourceHookOption
+	// ResourceParameters is the subset of the object's parameter catalog that is a resource attribute.
+	// Empty uses the full ParameterLevel() catalog. A non-empty list is still emitted in catalog order.
+	ResourceParameters       []ParameterDef
+	DataSourceHooks          []DataSourceHookOption // Exceptions to the defaults of EffectiveDataSourceHooks.
 	Generators               []GeneratorOption
 	SchemaStateUpgraders     []StateUpgraderFunc
 	AdditionalCustomizeDiffs []CustomizeDiffFunc
@@ -68,15 +64,76 @@ type Object struct {
 	// that does it, and WithSuspendForAlter(Generated()) calls it once per update.
 	SuspendForAlter *SuspendForAlter
 	Show            OutputSpec
-	// ShowGeneric is the temporary union of every variant SHOW column.
-	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
-	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
-	ShowGeneric OutputSpec
-	Describe    OutputSpec
+	Describe        OutputSpec
 	// DescribeRows is the DESCRIBE row when the SDK Describe method returns raw rows that differ from Describe.Columns.
 	// A property-list DESCRIBE is one: the rows are (property, property_type, ...) and the SDK parses them into the details
 	// that Describe.Columns models. Only the SDK paired struct reads DescribeRows. Schema and assertions read Describe.Columns.
 	DescribeRows OutputSpec
+	// Create and Alter are the SQL field order for those statements.
+	// Presence in a slice is membership. The slice order is the order generation emits.
+	// Alter is the order of the blocks and action keywords after the name. The SET and UNSET blocks carry their fields
+	// as groups, see SetAttributes and UnsetAttributes.
+	// A field in those slices may be absent from Attributes when it is not a resource attribute.
+	Create CreateSpec
+	Alter  AlterSpec
+	// AdditionalEnums are SDK enums that the generator does not find from the object's attributes and clauses, such as enums
+	// of nested ALTER blocks and constraints, or the accepted values of a field that the resource validates but the SQL does not
+	// send. They are emitted with the enums the object refers to.
+	AdditionalEnums []*Enum
+	// CustomOperations are operations other than the object's CREATE and ALTER, including extra CREATE shapes.
+	// Clause order is the emission order. SdkCustomOperations turns them on.
+	CustomOperations []CustomOperationSpec
+	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.
+	// SdkCustomInterfaceMethods turns them on.
+	CustomInterfaceMethods []CustomInterfaceMethodSpec
+	// Validations are rules over the optional top-level attributes, such as exactly one of three authentications.
+	// See Validation and the README.
+	Validations []Validation
+	// ShowParametersDetailsAdditionalLevels adds parameters from these levels onto ShowParametersDetails.
+	// A name already in ParameterLevel() is kept once.
+	ShowParametersDetailsAdditionalLevels []ParameterLevel
+}
+
+// ObjectVariant is one role of a base object.
+// Name starts with the base Name, and NamePlural matches the base.
+// The variant shares the base SDK interface, parameter details, SET and UNSET requests, and ParameterType names.
+// Catalog membership still uses the variant Name.
+type ObjectVariant struct {
+	// Of is the base.
+	Of *Object
+	// CreateName overrides the SQL object words CREATE emits.
+	// Empty uses Of.ObjectType, so WarehouseAdaptive emits WAREHOUSE. Interactive CREATE sets INTERACTIVE WAREHOUSE.
+	CreateName string
+	// AlterName overrides the SQL object words ALTER emits.
+	// Empty uses Of.ObjectType, the same default as CREATE.
+	AlterName string
+	// RequestObjectName is the CREATE and ALTER query-struct stem when it differs from Name.
+	// Empty uses Name. AdaptiveWarehouse yields CreateAdaptiveWarehouse.
+	RequestObjectName string
+	// SchemaShowFromBase reuses the base SHOW schema. SchemaShow stays on.
+	// No Show<Variant>Schema is generated. The variant resource uses Show<Base>Schema.
+	SchemaShowFromBase bool
+	// ObjectAssertShowRowFromBase reuses the base SHOW object assertion. ObjectAssertShow stays on.
+	// No <Variant> assertion is generated. Tests use the base assertion.
+	ObjectAssertShowRowFromBase bool
+	// ShowOutputShowRowFromBase reuses the base SHOW show-output assertion. ShowOutputShow stays on.
+	// Only the constructors <Variant>ShowOutput and Imported<Variant>ShowOutput are generated, and they return the base type.
+	ShowOutputShowRowFromBase bool
+	// ObjectAssertShowFromBase is the SHOW fetch method on the base client, such as ShowByIDAdaptive.
+	// Empty keeps testClient.<Object>.Show. The row type stays sdk.<Variant>.
+	// The object type constant is sdk.ObjectType<Base> when ObjectAssertShowObjectTypeName is empty.
+	ObjectAssertShowFromBase string
+}
+
+// BaseVariant groups the settings of an object that is the base of variants.
+type BaseVariant struct {
+	// NotResource marks a base that is not a Terraform resource itself: the variants are separate resources
+	// and the base owns what they share, such as the SDK interface. The resource generators skip it.
+	NotResource bool
+	// ShowGeneric is the temporary union of every variant SHOW column.
+	// It is the one paired SHOW. Each variant, including the main one, declares its own show in Show.
+	// TODO [next PRs]: Each variant's Show.Columns becomes a paired SHOW with its dedicated type, and ShowGeneric goes away.
+	ShowGeneric OutputSpec
 	// ShowPlainName is the plain SHOW struct name when it differs from Name.
 	// Empty uses Name. Set it when ShowGeneric uses Name for the paired SHOW struct.
 	// The projection on the paired SHOW struct is As plus this name with Name removed, so WarehouseRegular is AsRegular.
@@ -88,36 +145,52 @@ type Object struct {
 	// When ShowByID is generated, that suffix also emits ShowByIDAdaptive and ShowByIDSafelyAdaptive.
 	// TODO [next PRs]: Emit these structs from ShowOperationFromObject. Show() still returns the union row.
 	ShowVariants []*Object
-	// Create and Alter are the SQL field order for those statements.
-	// Presence in a slice is membership. The slice order is the order generation emits.
-	// Alter is the order of the blocks and action keywords after the name. The SET and UNSET blocks carry their fields
-	// as groups, see SetAttributes and UnsetAttributes.
-	// A field in those slices may be absent from Attributes when it is not a resource attribute.
-	Create CreateSpec
-	// UnsetConflicts are groups of UNSET attributes that cannot be set together.
-	// Each group has at least two attributes from the UNSET groups. SDK UNSET adds ConflictingFields.
-	UnsetConflicts [][]*Attribute
-	Alter          AlterSpec
-	// AdditionalEnums are SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field
-	// that the resource validates but the SQL does not send. They are emitted with the enums the object refers to.
-	AdditionalEnums []*Enum
-	// CustomOperations are operations other than CREATE and ALTER.
-	// Clause order is the emission order. SdkCustomOperations turns them on.
-	CustomOperations []CustomOperationSpec
-	// CustomInterfaceMethods are interface declarations whose bodies stay in the SDK ext file.
-	// SdkCustomInterfaceMethods turns them on.
-	CustomInterfaceMethods []CustomInterfaceMethodSpec
-	// ExactlyOneOf are groups of optional top-level attributes of which exactly one is set. Each group is declared once,
-	// with pointers to the attributes. SDK CREATE adds ExactlyOneValueSet to a statement that has all of the group,
-	// and the generated schema gets ExactlyOneOf on each attribute of the group.
-	ExactlyOneOf [][]*Attribute
-	// AtLeastOneOf are groups of optional top-level attributes of which at least one is set. Each group is declared once,
-	// with pointers to the attributes. SDK CREATE adds AtLeastOneValueSet to a statement that has all of the group.
-	// The schema-side AtLeastOneOf is not generated from it.
-	AtLeastOneOf [][]*Attribute
-	// ShowParametersDetailsAdditionalLevels adds parameters from these levels onto ShowParametersDetails.
-	// A name already in ParameterLevel() is kept once.
-	ShowParametersDetailsAdditionalLevels []ParameterLevel
+}
+
+// VariantBase is the base object, or nil when this object is not a variant.
+func (obj Object) VariantBase() *Object {
+	if obj.Variant == nil {
+		return nil
+	}
+	return obj.Variant.Of
+}
+
+// IsVariantBaseOnly says the object only is the base of its variants and is not a Terraform resource itself.
+func (obj Object) IsVariantBaseOnly() bool {
+	return obj.BaseVariant != nil && obj.BaseVariant.NotResource
+}
+
+// ShowGenericColumns is the union SHOW of a variant base, or nil when this object is not one.
+func (obj Object) ShowGenericColumns() []*Attribute {
+	if obj.BaseVariant == nil {
+		return nil
+	}
+	return obj.BaseVariant.ShowGeneric.Columns
+}
+
+// ShowPlainName is the plain SHOW struct name of a variant base. Empty uses Name.
+func (obj Object) ShowPlainName() string {
+	if obj.BaseVariant == nil {
+		return ""
+	}
+	return obj.BaseVariant.ShowPlainName
+}
+
+// ShowVariants are the plain SHOW structs a variant base emits with DESCRIBE.
+func (obj Object) ShowVariants() []*Object {
+	if obj.BaseVariant == nil {
+		return nil
+	}
+	return obj.BaseVariant.ShowVariants
+}
+
+// RequestObjectName is the CREATE request stem, and a variant's CREATE and ALTER query-struct stem.
+// A variant uses Variant.RequestObjectName. Any other object uses SdkCreateRequestObjectName. Empty uses Name.
+func (obj Object) RequestObjectName() string {
+	if obj.Variant != nil && obj.Variant.RequestObjectName != "" {
+		return obj.Variant.RequestObjectName
+	}
+	return obj.SdkCreateRequestObjectName
 }
 
 // ParameterLevelsFor is the catalog levels a Parameters entry spreads.
@@ -125,6 +198,16 @@ type Object struct {
 // ShowParametersDetails appends ShowParametersDetailsAdditionalLevels itself.
 func (obj Object) ParameterLevelsFor(string) []ParameterLevel {
 	return []ParameterLevel{obj.ParameterLevel()}
+}
+
+// AlterOwner is the object whose ALTER spec this object's update sends. A variant without an ALTER spec of its own
+// (a catalog integration source type) is altered with the ALTER of its base, so the base owns the SET and UNSET groups and
+// the SDK request names. Any other object owns its own ALTER.
+func (obj Object) AlterOwner() Object {
+	if base := obj.VariantBase(); !obj.HasAlterSpec() && base != nil && base.HasAlterSpec() {
+		return *base
+	}
+	return obj
 }
 
 // AlterClauseKind is one entry in an ALTER statement after the name.
@@ -145,6 +228,20 @@ const (
 	AlterClauseBlock       AlterClauseKind = "block"
 )
 
+// AlterBlockJoin is how a nested block is tagged on the ALTER options: the payload is Block, this is the join.
+type AlterBlockJoin string
+
+const (
+	// AlterBlockJoinParameter is a parameter clause, such as ADD STORAGE_LOCATION.
+	AlterBlockJoinParameter AlterBlockJoin = ""
+	// AlterBlockJoinKeyword space-joins the nested struct as a keyword field. SQL may be empty: the nested struct then
+	// carries the words, and the field tag is a bare keyword. Clustering and add/drop row access policy use this.
+	AlterBlockJoinKeyword AlterBlockJoin = "keyword"
+	// AlterBlockJoinComma comma-joins the nested struct's children with no parentheses (ddl list,no_parentheses),
+	// such as DROP ROW ACCESS POLICY …, ADD ROW ACCESS POLICY …. UNSET uses the same join.
+	AlterBlockJoinComma AlterBlockJoin = "comma"
+)
+
 // AlterClause is one ALTER entry. Keyword and list use SQL. The other kinds are the SET, UNSET, SET TAG, and UNSET TAG blocks.
 type AlterClause struct {
 	Kind AlterClauseKind
@@ -155,11 +252,11 @@ type AlterClause struct {
 	ListItem string
 	// Field is the Go field name of a block.
 	Field string
-	// Block is the attribute that a block clause is built from: a list of objects, whose element is the block, or a SqlOnly
-	// object attribute, whose Children are the block fields.
+	// Block is the nested struct: a list of objects, whose element is the block, or a SqlOnly object attribute whose
+	// Children are the block fields. It is not the ALTER field join; that is BlockJoin.
 	Block *Attribute
-	// BlockKeyword makes the block a keyword clause. Without it the block is a parameter clause.
-	BlockKeyword bool
+	// BlockJoin is how Block is tagged on the ALTER options. See AlterBlockJoin.
+	BlockJoin AlterBlockJoin
 	// Attribute and AttributeValue link a keyword to the bool attribute value that selects it, such as RESUME for an
 	// enabled attribute that is true. The SDK ignores them. See AlterKeywordFor.
 	Attribute      *Attribute
@@ -168,6 +265,9 @@ type AlterClause struct {
 	Groups []AlterGroupSpec
 	// MixedForms records an AlterSet or AlterUnset call that mixed attributes and groups. Validation rejects it.
 	MixedForms bool
+	// SharedToOpts generates a toOpts method for the block struct, because a struct of another SDK interface calls it.
+	// WithSharedToOpts sets it.
+	SharedToOpts bool
 }
 
 // AlterKeyword is an optional action keyword, such as RESUME or ENABLE MANAGED ACCESS.
@@ -222,9 +322,37 @@ func AlterParameterBlock(field, sql string, block *Attribute) AlterClause {
 	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block}
 }
 
-// AlterKeywordBlock is AlterParameterBlock as a keyword clause, such as UPDATE followed by the struct.
+// AlterKeywordBlock is AlterParameterBlock as a keyword clause (space-join). UPDATE followed by the struct.
+// An empty sql leaves the SQL prefix off. The nested struct carries the words.
 func AlterKeywordBlock(field, sql string, block *Attribute) AlterClause {
-	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block, BlockKeyword: true}
+	return AlterClause{Kind: AlterClauseBlock, Field: field, SQL: sql, Block: block, BlockJoin: AlterBlockJoinKeyword}
+}
+
+// AlterCommaSeparatedBlock is a nested block whose children are comma-joined with no parentheses and no SQL prefix,
+// such as DROP ROW ACCESS POLICY …, ADD ROW ACCESS POLICY ….
+func AlterCommaSeparatedBlock(field string, block *Attribute) AlterClause {
+	return AlterClause{Kind: AlterClauseBlock, Field: field, Block: block, BlockJoin: AlterBlockJoinComma}
+}
+
+// BlockProjection is the statement of Block this clause embeds. A field named like the FieldName of the block's
+// SetSql or UnsetSql is that projection, such as SetAggregationPolicy. Any other field is the CREATE struct.
+func (c AlterClause) BlockProjection() ClauseUse {
+	switch {
+	case c.Block == nil:
+		return ClauseCreate
+	case c.Block.SetSql.Present && c.Block.SetSql.Field == c.Field:
+		return ClauseSet
+	case c.Block.UnsetSql.Present && c.Block.UnsetSql.Field == c.Field:
+		return ClauseUnset
+	default:
+		return ClauseCreate
+	}
+}
+
+// WithSharedToOpts makes the block struct generate a toOpts method, for a block that another SDK interface shares.
+func (c AlterClause) WithSharedToOpts() AlterClause {
+	c.SharedToOpts = true
+	return c
 }
 
 // AlterRenameTo is RENAME TO. The identifier type is the object's IdType.
@@ -291,6 +419,8 @@ type AlterGroupSpec struct {
 // skips a group with no values. Name is MainAlterGroup for the main group, whose request is set (unset). Any other
 // name is a Go identifier that starts with a capital letter, and its request field is set<Name> (unset<Name>),
 // such as setBody. A block has at most one main group. When it has none, an empty one is sent last.
+// Attributes of different groups cannot share a statement: the SDK SET (UNSET) struct holds every group, and its
+// validation rejects a value that sets fields of two groups.
 func AlterGroup(name string, attributes ...*Attribute) AlterGroupSpec {
 	return AlterGroupSpec{Name: name, Attributes: attributes}
 }
@@ -303,15 +433,12 @@ func AlterUnsetTags() AlterClause { return AlterClause{Kind: AlterClauseUnsetTag
 
 // AlterSpec is the ALTER statement order after the name.
 // Doc overrides the generated doc URL. AdditionalValidations marks the query struct.
-// A variant's SQL words are VariantEntityAlterName, or VariantOf.ObjectType when that override is empty.
+// A variant's SQL words are Variant.AlterName, or the base object type when that override is empty.
 type AlterSpec struct {
 	Doc                      string
 	AdditionalValidations    bool
 	SetAdditionalValidations bool
 	Clauses                  []AlterClause
-	// SetConflictingFields are pairs of SET attributes that cannot be set together. SET gets ConflictingFields for each pair.
-	// A pair must sit in different groups of the SET block, see validateAlterGroups.
-	SetConflictingFields [][]*Attribute
 }
 
 // LinkedAlterKeyword returns the ALTER keyword clause linked to the value of the bool attribute with this name.
@@ -391,7 +518,7 @@ func (obj Object) HasAlterSpec() bool {
 // Clauses is the order after the name.
 // KeywordsBefore is the order after OR REPLACE and before the object words.
 // Doc and Sql override the generated doc URL and object words. Empty Sql is the uppercase words of Name.
-// A variant does not set Sql. Variant CREATE uses VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
+// A variant does not set Sql. Variant CREATE uses Variant.CreateName, or Variant.Of.ObjectType when that override is empty.
 // WithoutOrReplace leaves OR REPLACE out of a variant CREATE. The base uses SdkCreateWithoutOrReplace.
 type CreateSpec struct {
 	Doc                   string
@@ -419,14 +546,14 @@ func (obj Object) ResourceAttributes() []Attribute {
 func (obj Object) ObjectName() string { return obj.Name }
 
 // ParameterLevel is the catalog level for this object, derived from Name (Schema is ParameterLevelSchema).
-// VariantOf does not change this level. A variant that needs a different catalog level
+// Variant.Of does not change this level. A variant that needs a different catalog level
 // will require an explicit SSOT parameter-level override.
 func (obj Object) ParameterLevel() ParameterLevel {
 	return ParameterLevel(strings.ToUpper(genhelpers.ToSnakeCase(obj.Name)))
 }
 
 // ParameterAssertionNames is the SDK parameter constant prefix and object type name for assertions.
-// Both are empty when the object is not a variant. A variant uses VariantOf.Name for both.
+// Both are empty when the object is not a variant. A variant uses Variant.Of.Name for both.
 // The catalog level stays ParameterLevel.
 type ParameterAssertionNames struct {
 	ConstantPrefix string
@@ -435,15 +562,16 @@ type ParameterAssertionNames struct {
 
 // ParameterAssertionNames returns the assertion names for this object.
 func (obj Object) ParameterAssertionNames() ParameterAssertionNames {
-	if obj.VariantOf == nil {
+	base := obj.VariantBase()
+	if base == nil {
 		return ParameterAssertionNames{}
 	}
-	if obj.VariantOf.Name == "" {
-		panic(fmt.Sprintf("object %q: VariantOf has an empty Name", obj.Name))
+	if base.Name == "" {
+		panic(fmt.Sprintf("object %q: Variant.Of has an empty Name", obj.Name))
 	}
 	return ParameterAssertionNames{
-		ConstantPrefix: obj.VariantOf.Name,
-		ObjectTypeName: obj.VariantOf.Name,
+		ConstantPrefix: base.Name,
+		ObjectTypeName: base.Name,
 	}
 }
 

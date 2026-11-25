@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -47,7 +48,7 @@ func Test_Encoding_And_Parsing_Of_ResourceIdentifier_Identifier(t *testing.T) {
 		{Input: []sdk.AccountObjectIdentifier{sdk.NewAccountObjectIdentifier("a"), sdk.NewAccountObjectIdentifier("b")}, Expected: `a|b`},
 		{Input: []sdk.DatabaseObjectIdentifier{sdk.NewDatabaseObjectIdentifier("a", "b"), sdk.NewDatabaseObjectIdentifier("b", "c")}, Expected: `"a"."b"|"b"."c"`},
 		{Input: []sdk.SchemaObjectIdentifier{sdk.NewSchemaObjectIdentifier("a", "b", "c"), sdk.NewSchemaObjectIdentifier("c", "b", "a")}, Expected: `"a"."b"."c"|"c"."b"."a"`},
-		{Input: []sdk.SchemaObjectIdentifierWithArguments{sdk.NewSchemaObjectIdentifierWithArguments("a", "b", "c", sdk.DataTypeFloat), sdk.NewSchemaObjectIdentifierWithArguments("c", "b", "a", sdk.DataTypeInt)}, Expected: `"a"."b"."c"(FLOAT)|"c"."b"."a"(NUMBER)`},
+		{Input: []sdk.SchemaObjectIdentifierWithArguments{sdk.NewSchemaObjectIdentifierWithArguments("a", "b", "c", testdatatypes.DataTypeFloat), sdk.NewSchemaObjectIdentifierWithArguments("c", "b", "a", testdatatypes.DataTypeInteger)}, Expected: `"a"."b"."c"(FLOAT)|"c"."b"."a"(NUMBER)`},
 		{Input: []sdk.SchemaObjectIdentifierWithArguments{sdk.NewSchemaObjectIdentifierWithArguments("a", "b", "c"), sdk.NewSchemaObjectIdentifierWithArguments("c", "b", "a")}, Expected: `"a"."b"."c"()|"c"."b"."a"()`},
 		{Input: []sdk.TableColumnIdentifier{sdk.NewTableColumnIdentifier("a", "b", "c", "d"), sdk.NewTableColumnIdentifier("c", "b", "a", "f")}, Expected: `"a"."b"."c"."d"|"c"."b"."a"."f"`},
 		{Input: []sdk.ExternalObjectIdentifier{sdk.NewExternalObjectIdentifier(sdk.NewAccountIdentifier("o", "a"), sdk.NewAccountObjectIdentifier("ob")), sdk.NewExternalObjectIdentifier(sdk.NewAccountIdentifier("o2", "a2"), sdk.NewAccountObjectIdentifier("ob2"))}, Expected: `"o"."a"."ob"|"o2"."a2"."ob2"`},

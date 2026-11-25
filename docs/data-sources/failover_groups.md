@@ -2,14 +2,14 @@
 page_title: "snowflake_failover_groups Data Source - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Data source used to get details of filtered failover groups. Filtering is aligned with the current possibilities for SHOW FAILOVER GROUPS https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups query. The results of SHOW are encapsulated in one output collection failover_groups.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_failover_groups (Data Source)
 
-
+Data source used to get details of filtered failover groups. Filtering is aligned with the current possibilities for [SHOW FAILOVER GROUPS](https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups) query. The results of SHOW are encapsulated in one output collection `failover_groups`.
 
 
 
@@ -20,11 +20,11 @@ description: |-
 
 ### Optional
 
-- `in_account` (String) Specifies the identifier for the account
+- `in_account` (String) Limits results to failover groups in this account, as organization and account name. Matches [SHOW FAILOVER GROUPS](https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups) `IN ACCOUNT`.
 
 ### Read-Only
 
-- `failover_groups` (List of Object) List of all the failover groups available in the system. (see [below for nested schema](#nestedatt--failover_groups))
+- `failover_groups` (List of Object) Holds the output of SHOW FAILOVER GROUPS. (see [below for nested schema](#nestedatt--failover_groups))
 - `id` (String) The ID of this resource.
 
 <a id="nestedatt--failover_groups"></a>
@@ -32,20 +32,33 @@ description: |-
 
 Read-Only:
 
+- `show_output` (List of Object) (see [below for nested schema](#nestedobjatt--failover_groups--show_output))
+
+<a id="nestedobjatt--failover_groups--show_output"></a>
+### Nested Schema for `failover_groups.show_output`
+
+Read-Only:
+
 - `account_locator` (String)
 - `account_name` (String)
-- `allowed_accounts` (List of String)
-- `allowed_integration_types` (List of String)
+- `allowed_accounts` (Set of String)
+- `allowed_integration_types` (Set of String)
 - `comment` (String)
 - `created_on` (String)
+- `error_integration` (String)
+- `is_listing_auto_fulfillment_group` (Boolean)
+- `is_optimized_refresh_enabled` (Boolean)
 - `is_primary` (Boolean)
+- `is_primary_read_only` (Boolean)
+- `name` (String)
 - `next_scheduled_refresh` (String)
-- `object_types` (List of String)
+- `object_types` (Set of String)
 - `organization_name` (String)
 - `owner` (String)
 - `primary` (String)
 - `region_group` (String)
 - `replication_schedule` (String)
+- `rpo_assurance` (Boolean)
 - `secondary_state` (String)
 - `snowflake_region` (String)
 - `type` (String)

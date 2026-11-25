@@ -7,7 +7,9 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/require"
 )
 
@@ -71,14 +73,14 @@ func Test_GrantsModel(t *testing.T) {
 	})
 
 	t.Run("on schema object with arguments", func(t *testing.T) {
-		id := randomSchemaObjectIdentifierWithArguments(sdk.DataTypeVARCHAR)
+		id := randomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeVarchar)
 		expected := fmt.Sprintf(`data "snowflake_grants" "test" {
   grants_on {
     object_name = "\"%s\".\"%s\".\"%s\"(%s)"
     object_type = "FUNCTION"
   }
 }
-`, id.DatabaseName(), id.SchemaName(), id.Name(), sdk.DataTypeVARCHAR)
+`, id.DatabaseName(), id.SchemaName(), id.Name(), testdatatypes.DataTypeVarchar.ToLegacyDataTypeSql())
 
 		result := config.FromModels(t, datasourcemodel.GrantsOnSchemaObjectWithArguments("test", id, sdk.ObjectTypeFunction))
 
@@ -87,8 +89,7 @@ func Test_GrantsModel(t *testing.T) {
 
 	t.Run("on empty", func(t *testing.T) {
 		expected := `data "snowflake_grants" "test" {
-  grants_on {
-  }
+  grants_on {}
 }
 `
 
@@ -110,6 +111,6 @@ func randomSchemaObjectIdentifier() sdk.SchemaObjectIdentifier {
 	return sdk.NewSchemaObjectIdentifier(random.AlphaN(12), random.AlphaN(12), random.AlphaN(12))
 }
 
-func randomSchemaObjectIdentifierWithArguments(argumentDataTypes ...sdk.DataType) sdk.SchemaObjectIdentifierWithArguments {
+func randomSchemaObjectIdentifierWithArguments(argumentDataTypes ...datatypes.DataType) sdk.SchemaObjectIdentifierWithArguments {
 	return sdk.NewSchemaObjectIdentifierWithArguments(random.AlphaN(12), random.AlphaN(12), random.AlphaN(12), argumentDataTypes...)
 }

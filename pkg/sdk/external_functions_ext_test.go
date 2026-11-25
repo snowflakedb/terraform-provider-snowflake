@@ -22,14 +22,14 @@ func init() {
 		withDefaultOpts(func() *CreateExternalFunctionOptions {
 			return &CreateExternalFunctionOptions{
 				name:           id,
-				ResultDataType: DataTypeVARCHAR,
+				ResultDataType: dataTypeVarchar,
 				ApiIntegration: &apiIntegration,
 				As:             as,
 			}
 		}).
 		withExpectedSqlf(
 			case_ExternalFunctions_sql_Create_basic,
-			`CREATE EXTERNAL FUNCTION %s () RETURNS VARCHAR API_INTEGRATION = "api_integration" AS '%s'`,
+			`CREATE EXTERNAL FUNCTION %s () RETURNS VARCHAR(16777216) API_INTEGRATION = "api_integration" AS '%s'`,
 			id.FullyQualifiedName(), as,
 		).
 		withModifyAndExpectedSqlf(
@@ -38,8 +38,8 @@ func init() {
 				opts.OrReplace = new(true)
 				opts.Secure = new(true)
 				opts.Arguments = []ExternalFunctionArgument{
-					{ArgName: "id", ArgDataType: DataTypeNumber},
-					{ArgName: "name", ArgDataType: DataTypeVARCHAR},
+					{ArgName: "id", ArgDataType: dataTypeNumber},
+					{ArgName: "name", ArgDataType: dataTypeVarchar},
 				}
 				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
 				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
@@ -52,7 +52,7 @@ func init() {
 				opts.RequestTranslator = &requestTranslatorId
 				opts.ResponseTranslator = &responseTranslatorId
 			},
-			`CREATE OR REPLACE SECURE EXTERNAL FUNCTION %s (id NUMBER, name VARCHAR) RETURNS VARCHAR NOT NULL CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' API_INTEGRATION = "api_integration" HEADERS = ('header1' = 'value1', 'header2' = 'value2') CONTEXT_HEADERS = (CURRENT_ACCOUNT, CURRENT_USER) MAX_BATCH_ROWS = 100 COMPRESSION = GZIP REQUEST_TRANSLATOR = %s RESPONSE_TRANSLATOR = %s AS '%s'`,
+			`CREATE OR REPLACE SECURE EXTERNAL FUNCTION %s (id NUMBER(38, 0), name VARCHAR(16777216)) RETURNS VARCHAR(16777216) NOT NULL CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' API_INTEGRATION = "api_integration" HEADERS = ('header1' = 'value1', 'header2' = 'value2') CONTEXT_HEADERS = (CURRENT_ACCOUNT, CURRENT_USER) MAX_BATCH_ROWS = 100 COMPRESSION = GZIP REQUEST_TRANSLATOR = %s RESPONSE_TRANSLATOR = %s AS '%s'`,
 			id.FullyQualifiedName(), requestTranslatorId.FullyQualifiedName(), responseTranslatorId.FullyQualifiedName(), as,
 		)
 

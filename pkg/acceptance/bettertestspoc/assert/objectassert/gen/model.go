@@ -76,6 +76,10 @@ func (f SnowflakeObjectFieldAssertion) ComparisonFunc() string {
 	}
 }
 
+func (f SnowflakeObjectFieldAssertion) IsDataTypeCompare() bool {
+	return f.ComparisonMethod == ComparisonMethodDataTypeCompare
+}
+
 func (m SnowflakeObjectAssertionsModel) PlaceholderIdentifier() string {
 	switch m.IdType {
 	case "sdk.AccountObjectIdentifier":

@@ -6,6 +6,7 @@ import (
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
@@ -16,7 +17,7 @@ var hybridTableParameterFieldNames = collections.Map(hybridTableParameters, g.Pa
 
 var hybridTableColumn = g.NewQueryStruct("HybridTableColumn").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("DataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
 	OptionalSQL("NOT NULL").
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
@@ -27,7 +28,7 @@ var hybridTableOutOfLineForeignKey = g.NewQueryStruct("HybridTableOutOfLineForei
 	SQL("REFERENCES").
 	Identifier("TableName", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required()).
 	PredefinedQueryStructField("ColumnNames", "[]Column", g.ParameterOptions().NoEquals().Parentheses()).
-	OptionalEnum("Match", MatchTypeEnumDef, g.ParameterOptions().NoEquals().SQL("MATCH")).
+	OptionalEnum("Match", ssotdefs.MatchType, g.ParameterOptions().NoEquals().SQL("MATCH")).
 	PredefinedQueryStructField("On", g.KindOfTPointer[sdkcommons.ForeignKeyOnAction](), g.KeywordOptions())
 
 var hybridTableOutOfLineConstraint = g.NewQueryStruct("HybridTableOutOfLineConstraint").
@@ -55,7 +56,7 @@ var hybridTableAddColumnAction = g.NewQueryStruct("HybridTableAddColumnAction").
 	SQL("COLUMN").
 	OptionalSQL("IF NOT EXISTS").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
-	PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+	PredefinedQueryStructField("DataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 	OptionalTextAssignment("COLLATE", g.ParameterOptions().NoEquals().SingleQuotes()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
 	PredefinedQueryStructField("InlineConstraint", g.KindOfTPointer[sdkcommons.ColumnInlineConstraint](), g.KeywordOptions()).
@@ -98,7 +99,7 @@ var hybridTableAlterColumnAction = g.NewQueryStruct("HybridTableAlterColumnActio
 	Text("ColumnName", g.KeywordOptions().Required().DoubleQuotes()).
 	OptionalSQL("DROP DEFAULT").
 	WithField(g.OptionalEnumLegacy[sdkcommons.SequenceName]("SetDefault", g.ParameterOptions().NoEquals().SQL("SET DEFAULT"))).
-	PredefinedQueryStructField("DataType", "*DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
+	PredefinedQueryStructField("DataType", "*datatypes.DataType", g.ParameterOptions().NoEquals().SQL("SET DATA TYPE")).
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes()).
 	OptionalSQL("UNSET COMMENT").
 	WithValidation(g.ExactlyOneValueSet, "DropDefault", "SetDefault", "DataType", "Comment", "UnsetComment")
@@ -126,7 +127,7 @@ var hybridTableClusteringAction = g.NewQueryStruct("HybridTableClusteringAction"
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("HybridTableReclusterChangeState").
-			OptionalEnum("State", ReclusterStateEnumDef, g.KeywordOptions()).
+			OptionalEnum("State", ssotdefs.ReclusterState, g.KeywordOptions()).
 			SQL("RECLUSTER"),
 		g.KeywordOptions(),
 	).
@@ -271,7 +272,8 @@ var hybridTablesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-table",
 	g.StructPair("hybridTableDetailsRow", "HybridTableDetails").
 		Text("name").
-		Text("type", g.WithManualConvert()).
+		DataType("type", g.WithManualConvert()).
+		PlainOnlyField("DataTypeRaw", "string").
 		PlainOnlyField("Collation", "*string").
 		Text("kind").
 		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).

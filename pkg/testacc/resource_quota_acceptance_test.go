@@ -48,7 +48,7 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 		WithComment(comment).
 		WithSharedResources(
 			model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainAiFunction},
-			model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainCortexCode, Instance: "CORTEX_CODE_CLI"},
+			model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainSnowflakeCoco, Instance: "SNOWFLAKE_COCO_CLI"},
 		).
 		WithIncludedUsers(user.ID().Name()).
 		WithPerUserLimitMonthly(1000).
@@ -101,7 +101,7 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 			HasCommentString(comment).
 			HasSharedResourcesCount(2).
 			HasSharedResource(sdk.QuotaSharedResourceDomainAiFunction, "").
-			HasSharedResource(sdk.QuotaSharedResourceDomainCortexCode, "CORTEX_CODE_CLI").
+			HasSharedResource(sdk.QuotaSharedResourceDomainSnowflakeCoco, "SNOWFLAKE_COCO_CLI").
 			HasIncludedUsers(user.ID().Name()).
 			HasPerUserLimitMonthly(1000).
 			HasPerUserLimitWeekly(0).
@@ -148,7 +148,7 @@ func TestAcc_Quota_BasicUseCase(t *testing.T) {
 		resource.TestStep{
 			PreConfig: func() {
 				testClient().Quota.SetPerUserLimit(t, id, 5000, sdk.QuotaCycleMonthly)
-				testClient().Quota.AddSharedResource(t, id, sdk.QuotaSharedResourceDomainSnowflakeIntelligence, "")
+				testClient().Quota.AddSharedResource(t, id, sdk.QuotaSharedResourceDomainSnowflakeCowork, "")
 			},
 			ConfigPlanChecks: resource.ConfigPlanChecks{
 				PreApply: []plancheck.PlanCheck{
@@ -201,7 +201,7 @@ func TestAcc_Quota_CompleteUseCase(t *testing.T) {
 		WithSharedResources(
 			model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainAiFunction, Instance: "AI_CLASSIFY"},
 			model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainCortexAgent, Instance: agentId.FullyQualifiedName()},
-			model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainSnowflakeIntelligence},
+			model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainSnowflakeCowork},
 		).
 		WithUserTags(sdk.QuotaUserTagsOperatorIntersection,
 			model.QuotaTagValueModel{Tag: tag.ID(), Value: "finance"},
@@ -233,7 +233,7 @@ func TestAcc_Quota_CompleteUseCase(t *testing.T) {
 					HasSharedResourcesCount(3).
 					HasSharedResource(sdk.QuotaSharedResourceDomainAiFunction, "AI_CLASSIFY").
 					HasSharedResource(sdk.QuotaSharedResourceDomainCortexAgent, agentId.FullyQualifiedName()).
-					HasSharedResource(sdk.QuotaSharedResourceDomainSnowflakeIntelligence, "").
+					HasSharedResource(sdk.QuotaSharedResourceDomainSnowflakeCowork, "").
 					HasUserTags(sdk.QuotaUserTagsOperatorIntersection, 2).
 					HasUserTag(tag.ID(), "finance").
 					HasUserTag(tag.ID(), "Analytics").
@@ -283,7 +283,8 @@ func TestAcc_Quota_EquivalentSpellings(t *testing.T) {
 	aiDomains := model.QuotaFromId("test", id).
 		WithSharedResources(
 			model.QuotaSharedResourceModel{Domain: "ai function", Instance: "ai_classify"},
-			model.QuotaSharedResourceModel{Domain: "cortex code"},
+			// Snowflake returns the instance by its former name, CORTEX_CODE_CLI
+			model.QuotaSharedResourceModel{Domain: "snowflake coco", Instance: "snowflake_coco_cli"},
 		).
 		WithUserTags("union", model.QuotaTagValueModel{Tag: tag.ID(), Value: "finance"}).
 		WithIncludedUsers(user.ID().FullyQualifiedName()).
@@ -361,6 +362,18 @@ func TestAcc_Quota_UserTags(t *testing.T) {
 					HasIncludedUsers(user.ID().Name()),
 			),
 		},
+		// removing the user tags applies the quota to all users again, which clears the excluded tags and the user lists in
+		// Snowflake; they're set again
+		resource.TestStep{
+			Config: accconfig.FromModels(t, excludedTags),
+			Check: assertThat(t,
+				resourceassert.QuotaResource(t, ref).
+					HasUserTagsEmpty().
+					HasExcludedUserTag(tag.ID(), "contractor").
+					HasIncludedUsers(user.ID().Name()),
+				assert.Check(resource.TestCheckResourceAttr(ref, "describe_output.0.scope.0.user_tags_operator", string(sdk.QuotaUserTagsOperatorAllUsers))),
+			),
+		},
 		resource.TestStep{
 			Config: accconfig.FromModels(t, noTags),
 			Check: assertThat(t,
@@ -430,11 +443,11 @@ func TestAcc_Quota_Domains(t *testing.T) {
 	for _, sharedResource := range []model.QuotaSharedResourceModel{
 		{Domain: sdk.QuotaSharedResourceDomainAiFunction},
 		{Domain: sdk.QuotaSharedResourceDomainAiFunction, Instance: "AI_CLASSIFY"},
-		{Domain: sdk.QuotaSharedResourceDomainCortexCode},
-		{Domain: sdk.QuotaSharedResourceDomainCortexCode, Instance: "CORTEX_CODE_SNOWSIGHT"},
+		{Domain: sdk.QuotaSharedResourceDomainSnowflakeCoco},
+		{Domain: sdk.QuotaSharedResourceDomainSnowflakeCoco, Instance: "SNOWFLAKE_COCO_SNOWSIGHT"},
 		{Domain: sdk.QuotaSharedResourceDomainCortexAgent},
 		{Domain: sdk.QuotaSharedResourceDomainCortexAgent, Instance: agentId.FullyQualifiedName()},
-		{Domain: sdk.QuotaSharedResourceDomainSnowflakeIntelligence},
+		{Domain: sdk.QuotaSharedResourceDomainSnowflakeCowork},
 		{Domain: sdk.QuotaSharedResourceDomainAiGateway},
 		{Domain: sdk.QuotaSharedResourceDomainWarehouse},
 		{Domain: sdk.QuotaSharedResourceDomainWarehouse, Instance: warehouse.ID().Name()},

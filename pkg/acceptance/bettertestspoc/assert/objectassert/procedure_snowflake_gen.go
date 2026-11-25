@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type ProcedureAssert struct {
@@ -176,35 +177,79 @@ func (p *ProcedureAssert) HasArgumentsRawNotEmpty() *ProcedureAssert {
 	return p
 }
 
-func (p *ProcedureAssert) HasArgumentsOld(expected ...sdk.DataType) *ProcedureAssert {
+func (p *ProcedureAssert) HasArguments(expected ...datatypes.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
-		mapped := collections.Map(o.ArgumentsOld, func(item sdk.DataType) any { return item })
-		mappedExpected := collections.Map(expected, func(item sdk.DataType) any { return item })
+		if !slices.EqualFunc(o.Arguments, expected, datatypes.AreTheSame) {
+			return fmt.Errorf("expected arguments: %v; got: %v", expected, o.Arguments)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProcedureAssert) HasNoArguments() *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if len(o.Arguments) > 0 {
+			return fmt.Errorf("expected arguments to be empty; got: %v", o.Arguments)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProcedureAssert) HasArgumentsRawList(expected ...string) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		mapped := collections.Map(o.ArgumentsRawList, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
-			return fmt.Errorf("expected arguments old: %v; got: %v", expected, o.ArgumentsOld)
+			return fmt.Errorf("expected arguments raw list: %v; got: %v", expected, o.ArgumentsRawList)
 		}
 		return nil
 	})
 	return p
 }
 
-func (p *ProcedureAssert) HasNoArgumentsOld() *ProcedureAssert {
+func (p *ProcedureAssert) HasNoArgumentsRawList() *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
-		if len(o.ArgumentsOld) > 0 {
-			return fmt.Errorf("expected arguments old to be empty; got: %v", o.ArgumentsOld)
+		if len(o.ArgumentsRawList) > 0 {
+			return fmt.Errorf("expected arguments raw list to be empty; got: %v", o.ArgumentsRawList)
 		}
 		return nil
 	})
 	return p
 }
 
-func (p *ProcedureAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureAssert {
+func (p *ProcedureAssert) HasReturnType(expected datatypes.DataType) *ProcedureAssert {
 	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
 		t.Helper()
-		if o.ReturnTypeOld != expected {
-			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
+		if !datatypes.AreTheSame(o.ReturnType, expected) {
+			return fmt.Errorf("expected return type: %v; got: %v", expected.ToSql(), o.ReturnType.ToSql())
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProcedureAssert) HasReturnTypeRaw(expected string) *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.ReturnTypeRaw != expected {
+			return fmt.Errorf("expected return type raw: %v; got: %v", expected, o.ReturnTypeRaw)
+		}
+		return nil
+	})
+	return p
+}
+
+func (p *ProcedureAssert) HasReturnTypeRawNotEmpty() *ProcedureAssert {
+	p.AddAssertion(func(t *testing.T, o *sdk.Procedure) error {
+		t.Helper()
+		if o.ReturnTypeRaw == "" {
+			return fmt.Errorf("expected return type raw to be non-empty")
 		}
 		return nil
 	})

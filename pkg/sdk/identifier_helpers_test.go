@@ -3,6 +3,8 @@ package sdk
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,11 +35,8 @@ func TestNewSchemaObjectIdentifierFromFullyQualifiedName(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "\"MY_DB\".\"MY_SCHEMA\".\"multiply\"(number, number)", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "multiply", arguments: []DataType{DataTypeNumber, DataTypeNumber}}},
-		{input: "MY_DB.MY_SCHEMA.add(number, number)", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "add", arguments: []DataType{DataTypeNumber, DataTypeNumber}}},
-		{input: "\"MY_DB\".\"MY_SCHEMA\".\"MY_UDF\"()", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_UDF", arguments: []DataType{}}},
-		{input: "\"MY_DB\".\"MY_SCHEMA\".\"MY_PIPE\"", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_PIPE", arguments: nil}},
-		{input: "MY_DB.MY_SCHEMA.MY_STAGE", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_STAGE", arguments: nil}},
+		{input: "\"MY_DB\".\"MY_SCHEMA\".\"MY_PIPE\"", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_PIPE"}},
+		{input: "MY_DB.MY_SCHEMA.MY_STAGE", want: SchemaObjectIdentifier{databaseName: "MY_DB", schemaName: "MY_SCHEMA", name: "MY_STAGE"}},
 	}
 	for _, tc := range tests {
 		t.Run(tc.input, func(t *testing.T) {
@@ -312,6 +311,39 @@ func Test_quoteIdentifierPartIfNeeded(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.expected, quoteIdentifierPartIfNeeded(tt.part))
+		})
+	}
+}
+
+func TestSchemaObjectIdentifierWithArguments_FullyQualifiedName(t *testing.T) {
+	schemaId := NewDatabaseObjectIdentifier("MY_DB", "MY_SCHEMA")
+
+	tests := []struct {
+		name        string
+		arguments   []datatypes.DataType
+		expectedFqn string
+	}{
+		{
+			name:        "no arguments",
+			arguments:   []datatypes.DataType{},
+			expectedFqn: `"MY_DB"."MY_SCHEMA"."MY_FUNC"()`,
+		},
+		{
+			name:        "multiple arguments",
+			arguments:   []datatypes.DataType{testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeFloat},
+			expectedFqn: `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR, FLOAT)`,
+		},
+		{
+			name:        "arguments with attributes",
+			arguments:   []datatypes.DataType{testdatatypes.DataTypeNumber_36_2, testdatatypes.DataTypeVarchar_100},
+			expectedFqn: `"MY_DB"."MY_SCHEMA"."MY_FUNC"(NUMBER, VARCHAR)`,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			id := NewSchemaObjectIdentifierWithArgumentsInSchema(schemaId, "MY_FUNC", tt.arguments...)
+
+			assert.Equal(t, tt.expectedFqn, id.FullyQualifiedName())
 		})
 	}
 }

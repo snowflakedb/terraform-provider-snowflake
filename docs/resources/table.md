@@ -2,14 +2,14 @@
 page_title: "snowflake_table Resource - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  
+  Resource used to manage tables. For more information, check CREATE TABLE documentation https://docs.snowflake.com/en/sql-reference/sql/create-table.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_table (Resource)
 
-
+Resource used to manage tables. For more information, check [CREATE TABLE documentation](https://docs.snowflake.com/en/sql-reference/sql/create-table).
 
 ## Example Usage
 
@@ -17,41 +17,53 @@ description: |-
 <!-- TODO(SNOW-1634854): include an example showing both methods-->
 
 ```terraform
-resource "snowflake_schema" "schema" {
-  database            = "database"
-  name                = "schema"
-  data_retention_days = 1
+# Basic - only required fields
+resource "snowflake_table" "basic" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "TABLE"
+
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+  }
 }
 
-resource "snowflake_sequence" "sequence" {
-  database = snowflake_schema.schema.database
-  schema   = snowflake_schema.schema.name
-  name     = "sequence"
-}
+# Complete - every configurable field set. column.default and column.identity are
+# mutually exclusive. column.default.expression is a raw SQL expression, so string
+# literals keep their quotes and a sequence is referenced with NEXTVAL. An empty
+# expression ("") is an empty string default, the same as the literal "''".
+resource "snowflake_table" "complete" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "TABLE"
+  comment  = "A table."
 
-resource "snowflake_table" "table" {
-  database                    = snowflake_schema.schema.database
-  schema                      = snowflake_schema.schema.name
-  name                        = "table"
-  comment                     = "A table."
-  cluster_by                  = ["to_date(DATE)"]
-  data_retention_time_in_days = snowflake_schema.schema.data_retention_time_in_days
-  change_tracking             = false
+  is_transient                    = "true"
+  cluster_by                      = ["to_date(DATE)"]
+  change_tracking                 = true
+  enable_schema_evolution         = "true"
+  data_retention_time_in_days     = 1
+  max_data_extension_time_in_days = 30
+  default_ddl_collation           = "en-ci"
+  error_logging                   = "true"
+  row_timestamp                   = "true"
 
   column {
     name     = "id"
-    type     = "int"
-    nullable = true
+    type     = "NUMBER(38,0)"
+    not_null = false
+    comment  = "sequence-backed id"
 
     default {
-      sequence = snowflake_sequence.sequence.fully_qualified_name
+      expression = "${snowflake_sequence.sequence.fully_qualified_name}.NEXTVAL"
     }
   }
 
   column {
     name     = "identity"
     type     = "NUMBER(38,0)"
-    nullable = true
+    not_null = false
 
     identity {
       start_num = 1
@@ -62,13 +74,37 @@ resource "snowflake_table" "table" {
   column {
     name     = "data"
     type     = "text"
-    nullable = false
+    not_null = true
     collate  = "en-ci"
+    comment  = "collated text"
+
+    default {
+      expression = "'pending'"
+    }
+
+    masking_policy {
+      policy_name = "DATABASE.SCHEMA.MASKING_POLICY"
+      using       = ["data", "extra"]
+    }
   }
 
   column {
     name = "DATE"
     type = "TIMESTAMP_NTZ(9)"
+
+    default {
+      expression = "CURRENT_TIMESTAMP()"
+    }
+  }
+
+  column {
+    name = "notes"
+    type = "VARCHAR(256)"
+
+    # An empty string default. "''" is equivalent.
+    default {
+      expression = ""
+    }
   }
 
   column {
@@ -76,6 +112,34 @@ resource "snowflake_table" "table" {
     type    = "VARIANT"
     comment = "extra data"
   }
+
+  # A virtual column is computed from the expression at query time and is not stored.
+  column {
+    name = "double_id"
+    type = "NUMBER(38,0)"
+    as   = "\"id\" * 2"
+  }
+
+  row_access_policy {
+    policy_name = "DATABASE.SCHEMA.ROW_ACCESS_POLICY"
+    on          = ["id"]
+  }
+
+  aggregation_policy {
+    policy_name = "DATABASE.SCHEMA.AGGREGATION_POLICY"
+    entity_key  = ["id"]
+  }
+
+  join_policy {
+    policy_name       = "DATABASE.SCHEMA.JOIN_POLICY"
+    allowed_join_keys = ["id"]
+  }
+}
+
+resource "snowflake_sequence" "sequence" {
+  database = "DATABASE"
+  schema   = "SCHEMA"
+  name     = "sequence"
 }
 ```
 
@@ -93,49 +157,55 @@ resource "snowflake_table" "table" {
 
 ### Optional
 
-- `change_tracking` (Boolean) (Default: `false`) Specifies whether to enable change tracking on the table. Default false.
+- `aggregation_policy` (Block List, Max: 1) Specifies the aggregation policy to set on a table. (see [below for nested schema](#nestedblock--aggregation_policy))
+- `change_tracking` (Boolean) Specifies whether to enable change tracking on the table. Default false.
 - `cluster_by` (List of String) A list of one or more table columns/expressions to be used as clustering key(s) for the table
 - `comment` (String) Specifies a comment for the table.
-- `data_retention_time_in_days` (Number) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`-1`)) Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table. If you wish to inherit the parent schema setting then pass in the schema attribute to this argument or do not fill this parameter at all; the default value for this field is -1, which is a fallback to use Snowflake default - in this case the schema value
+- `data_retention_time_in_days` (Number) Specifies the number of days for which Time Travel actions (CLONE and UNDROP) can be performed on the database, as well as specifying the default Time Travel retention time for all schemas created in the database. For more details, see [Understanding & Using Time Travel](https://docs.snowflake.com/en/user-guide/data-time-travel). For more information, check [DATA_RETENTION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#data-retention-time-in-days).
+- `default_ddl_collation` (String) Specifies a default collation specification for all schemas and tables added to the database. It can be overridden on schema or table level. For more information, see [collation specification](https://docs.snowflake.com/en/sql-reference/collation#label-collation-specification). For more information, check [DEFAULT_DDL_COLLATION docs](https://docs.snowflake.com/en/sql-reference/parameters#default-ddl-collation).
+- `enable_schema_evolution` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to enable automatic table schema changes from data loaded into the table from source files, including semi-structured files. For more information, see [Table schema evolution](https://docs.snowflake.com/en/user-guide/data-load-schema-evolution). Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `error_logging` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to turn on DML error logging for the table. If the `ERROR_LOGGING` session parameter is set to `TRUE`, DML error logging is not turned on, regardless of whether it is turned on for specific tables. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `is_transient` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies a transient table. Transient tables participate in time travel to a limited degree, but they do not have a Fail-safe period, so they do not incur additional storage costs once they leave Time Travel. Changing this value recreates the table. Temporary and volatile tables are not supported by the resource. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
+- `join_policy` (Block List, Max: 1) Specifies the join policy to set on a table. (see [below for nested schema](#nestedblock--join_policy))
+- `max_data_extension_time_in_days` (Number) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for tables in the database to prevent streams on the tables from becoming stale. For more information, check [MAX_DATA_EXTENSION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#max-data-extension-time-in-days).
 - `primary_key` (Block List, Max: 1, Deprecated) Definitions of primary key constraint to create on table (see [below for nested schema](#nestedblock--primary_key))
-- `tag` (Block List, Deprecated) Definitions of a tag to associate with the resource. (see [below for nested schema](#nestedblock--tag))
+- `row_access_policy` (Block List, Max: 1) Specifies the row access policy to set on a table. (see [below for nested schema](#nestedblock--row_access_policy))
+- `row_timestamp` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether to enable row timestamps on the table. You must use a role with the OWNERSHIP privilege on the table. **Note:** setting it to `false` permanently deletes all stored `METADATA$ROW_LAST_COMMIT_TIME` values. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `describe_output` (List of Object) Holds the output of `DESCRIBE TABLE` for the given table. The statement is DESCRIBE TABLE ... TYPE = COLUMNS. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `owner` (String) Name of the role that owns the table.
+- `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN TABLE` for the given table. (see [below for nested schema](#nestedatt--parameters))
+- `show_output` (List of Object) Holds the output of `SHOW TABLES` for the given table. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--column"></a>
 ### Nested Schema for `column`
 
 Required:
 
-- `name` (String) Column name
+- `name` (String) Column name. The provider always double-quotes it, so the name is case-sensitive: `id` and `ID` are different columns. Use uppercase to get the same column as an unquoted identifier in SQL.
 - `type` (String) Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).
 
 Optional:
 
+- `as` (String) Makes the column a [virtual column](https://docs.snowflake.com/en/sql-reference/virtual-columns) computed from this SQL expression, sent as `AS (<expression>)`. The expression can use literals, operators, deterministic system-defined functions, and virtual columns defined earlier in the table. The column `type` must be compatible with the type of the expression. A virtual column cannot have `default` or `identity`. Differences in letter case, whitespace, double quotes, and outer parentheses do not plan a change, because Snowflake reports the expression in a normalized form. Changing the expression drops the column and adds it again at the end of the table.
 - `collate` (String) (Default: ``) Column collation, e.g. utf8
 - `comment` (String) (Default: ``) Column comment
 - `default` (Block List, Max: 1) Defines the column default value; note due to limitations of Snowflake's ALTER TABLE ADD/MODIFY COLUMN updates to default will not be applied (see [below for nested schema](#nestedblock--column--default))
 - `identity` (Block List, Max: 1) Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive. (see [below for nested schema](#nestedblock--column--identity))
-- `masking_policy` (String) (Default: ``) Masking policy to apply on column. It has to be a fully qualified name.
-- `nullable` (Boolean) (Default: `true`) Whether this column can contain null values. **Note**: Depending on your Snowflake version, the default value will not suffice if this column is used in a primary key constraint.
-
-Read-Only:
-
-- `schema_evolution_record` (String) Record of schema evolution.
+- `masking_policy` (Block List, Max: 1) Specifies the masking policy to set on a column. For more information about this resource, see [docs](./masking_policy). (see [below for nested schema](#nestedblock--column--masking_policy))
+- `not_null` (Boolean) Whether to restrict the column to NOT NULL values. When it is not set or `false`, the column allows null values, and an external change of the NOT NULL constraint is planned as a change. **Note**: A column used in a primary key constraint is NOT NULL in Snowflake, so set it to `true` for such a column.
+- `projection_policy` (Block List, Max: 1) Specifies the projection policy to set on a column. (see [below for nested schema](#nestedblock--column--projection_policy))
 
 <a id="nestedblock--column--default"></a>
 ### Nested Schema for `column.default`
 
-Optional:
+Required:
 
-- `constant` (String) The default constant value for the column
-- `expression` (String) The default expression value for the column
-- `sequence` (String) The default sequence to use for the column
+- `expression` (String) The default value as a SQL expression, sent unchanged as `DEFAULT <expression>`. Quote string literals, for example `'pending'`. An empty string (`""`) is an empty string default: it is sent as `''`, and Snowflake returns it as `''`, so `""` and `"''"` show no difference. Use `<sequence>.NEXTVAL` for a sequence, for example `"${snowflake_sequence.example.fully_qualified_name}.NEXTVAL"`.
 
 
 <a id="nestedblock--column--identity"></a>
@@ -143,9 +213,54 @@ Optional:
 
 Optional:
 
+- `order` (String) (Default: fallback to Snowflake default - uses special value that cannot be set in the configuration manually (`default`)) Specifies whether the identity values are generated in increasing order (`ORDER`) or with no order guarantee (`NOORDER`). When not set, Snowflake applies the [NOORDER_SEQUENCE_AS_DEFAULT](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default) parameter. Changing it on an existing column is not applied, the same as `start_num` and `step_num`. Available options are: "true" or "false". When the value is not set in the configuration the provider will put "default" there which means to use the Snowflake default for this value.
 - `start_num` (Number) (Default: `1`) The number to start incrementing at.
 - `step_num` (Number) (Default: `1`) Step size to increment by.
 
+
+<a id="nestedblock--column--masking_policy"></a>
+### Nested Schema for `column.masking_policy`
+
+Required:
+
+- `policy_name` (String) Masking policy name. For more information about this resource, see [docs](./masking_policy).
+
+Optional:
+
+- `using` (List of String) Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.
+
+
+<a id="nestedblock--column--projection_policy"></a>
+### Nested Schema for `column.projection_policy`
+
+Required:
+
+- `policy_name` (String) Projection policy name.
+
+
+
+<a id="nestedblock--aggregation_policy"></a>
+### Nested Schema for `aggregation_policy`
+
+Required:
+
+- `policy_name` (String) Aggregation policy name.
+
+Optional:
+
+- `entity_key` (Set of String) Defines which columns uniquely identify an entity within the table.
+
+
+<a id="nestedblock--join_policy"></a>
+### Nested Schema for `join_policy`
+
+Required:
+
+- `policy_name` (String) Join policy name.
+
+Optional:
+
+- `allowed_join_keys` (Set of String) Defines which columns can be used as join keys on the table.
 
 
 <a id="nestedblock--primary_key"></a>
@@ -160,18 +275,13 @@ Optional:
 - `name` (String) Name of constraint
 
 
-<a id="nestedblock--tag"></a>
-### Nested Schema for `tag`
+<a id="nestedblock--row_access_policy"></a>
+### Nested Schema for `row_access_policy`
 
 Required:
 
-- `name` (String) Tag name, e.g. department.
-- `value` (String) Tag value, e.g. marketing_info.
-
-Optional:
-
-- `database` (String) Name of the database that the tag was created in.
-- `schema` (String) Name of the schema that the tag was created in.
+- `on` (Set of String) Defines which columns are affected by the policy.
+- `policy_name` (String) Row access policy name. For more information about this resource, see [docs](./row_access_policy).
 
 
 <a id="nestedblock--timeouts"></a>
@@ -183,6 +293,212 @@ Optional:
 - `delete` (String)
 - `read` (String)
 - `update` (String)
+
+
+<a id="nestedatt--describe_output"></a>
+### Nested Schema for `describe_output`
+
+Read-Only:
+
+- `check` (String)
+- `collation` (String)
+- `comment` (String)
+- `default` (String)
+- `expression` (String)
+- `is_nullable` (Boolean)
+- `is_primary` (Boolean)
+- `is_unique` (Boolean)
+- `kind` (String)
+- `name` (String)
+- `policy_name` (String)
+- `schema_evolution_record` (String)
+- `type` (String)
+
+
+<a id="nestedatt--parameters"></a>
+### Nested Schema for `parameters`
+
+Read-Only:
+
+- `catalog` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--catalog))
+- `data_retention_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--data_retention_time_in_days))
+- `default_ddl_collation` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--default_ddl_collation))
+- `enable_console_output` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--enable_console_output))
+- `external_volume` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--external_volume))
+- `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
+- `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_level))
+- `max_data_extension_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--max_data_extension_time_in_days))
+- `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--quoted_identifiers_ignore_case))
+- `replace_invalid_characters` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--replace_invalid_characters))
+- `storage_serialization_policy` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--storage_serialization_policy))
+
+<a id="nestedobjatt--parameters--catalog"></a>
+### Nested Schema for `parameters.catalog`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--data_retention_time_in_days"></a>
+### Nested Schema for `parameters.data_retention_time_in_days`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--default_ddl_collation"></a>
+### Nested Schema for `parameters.default_ddl_collation`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--enable_console_output"></a>
+### Nested Schema for `parameters.enable_console_output`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--external_volume"></a>
+### Nested Schema for `parameters.external_volume`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--log_event_level"></a>
+### Nested Schema for `parameters.log_event_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--log_level"></a>
+### Nested Schema for `parameters.log_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--max_data_extension_time_in_days"></a>
+### Nested Schema for `parameters.max_data_extension_time_in_days`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--quoted_identifiers_ignore_case"></a>
+### Nested Schema for `parameters.quoted_identifiers_ignore_case`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--replace_invalid_characters"></a>
+### Nested Schema for `parameters.replace_invalid_characters`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--storage_serialization_policy"></a>
+### Nested Schema for `parameters.storage_serialization_policy`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+
+<a id="nestedatt--show_output"></a>
+### Nested Schema for `show_output`
+
+Read-Only:
+
+- `automatic_clustering` (Boolean)
+- `budget` (String)
+- `bytes` (Number)
+- `change_tracking` (Boolean)
+- `cluster_by` (String)
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `dropped_on` (String)
+- `enable_schema_evolution` (Boolean)
+- `error_logging` (Boolean)
+- `is_dynamic` (Boolean)
+- `is_event` (Boolean)
+- `is_external` (Boolean)
+- `is_hybrid` (Boolean)
+- `is_iceberg` (Boolean)
+- `is_immutable` (Boolean)
+- `is_interactive` (Boolean)
+- `kind` (String)
+- `name` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `retention_time` (Number)
+- `row_timestamp` (Boolean)
+- `rows` (Number)
+- `schema_name` (String)
+- `search_optimization` (Boolean)
+- `search_optimization_bytes` (Number)
+- `search_optimization_progress` (String)
 
 ## Import
 

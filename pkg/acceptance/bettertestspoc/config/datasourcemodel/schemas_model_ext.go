@@ -30,3 +30,27 @@ func (s *SchemasModel) WithInDatabase(databaseId sdk.AccountObjectIdentifier) *S
 		}),
 	)
 }
+
+func (s *SchemasModel) WithInAccount() *SchemasModel {
+	return s.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
+
+func (s *SchemasModel) WithInApplication(applicationId sdk.AccountObjectIdentifier) *SchemasModel {
+	return s.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"application": tfconfig.StringVariable(applicationId.Name()),
+		}),
+	)
+}
+
+func (s *SchemasModel) WithInApplicationPackage(applicationPackageId sdk.AccountObjectIdentifier) *SchemasModel {
+	return s.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"application_package": tfconfig.StringVariable(applicationPackageId.Name()),
+		}),
+	)
+}

@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -96,17 +95,7 @@ func ReadAuthenticationPolicyFunc(withExternalChangesMarking bool) tfschema.Read
 		var diags diag.Diagnostics
 		authenticationPolicy, err := meta.(*provider.Context).Client.AuthenticationPolicies.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query authentication policy. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Authentication policy id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeAuthenticationPolicy, id, err)
 		}
 		authenticationPolicyDetails, err := authenticationPolicyDescribeInSdkExt(ctx, meta, id)
 		if err != nil {
@@ -145,25 +134,17 @@ func UpdateAuthenticationPolicy(ctx context.Context, d *tfschema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, &id,
-			rename,
-			client.AuthenticationPolicies.ShowByID,
-			func(renamed sdk.SchemaObjectIdentifier) string {
-				return helpers.EncodeResourceIdentifier(renamed)
-			},
-			"authentication policy",
-		); diags != nil {
-			return diags
-		}
+	client := meta.(*provider.Context).Client
+	if diags := handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.AuthenticationPolicies.Alter(ctx, sdk.NewAlterAuthenticationPolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.AuthenticationPolicies.ShowByID,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		sdk.ObjectTypeAuthenticationPolicy,
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

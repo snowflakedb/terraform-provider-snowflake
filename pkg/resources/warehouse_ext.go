@@ -7,7 +7,6 @@ import (
 	"log"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -249,67 +248,49 @@ func warehouseShowByIdInSdkExt(ctx context.Context, meta any, id sdk.AccountObje
 }
 
 func showWarehouseRegularByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		return warehouse.AsRegular(), nil
+	warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	return providerCtx.Client.Warehouses.ShowByIDRegular(ctx, id)
+	return warehouse.AsRegular(), nil
 }
 
 func showWarehouseRegularByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseRegular, error) {
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		return warehouse.AsRegular(), nil
+	warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	return providerCtx.Client.Warehouses.ShowByIDSafelyRegular(ctx, id)
+	return warehouse.AsRegular(), nil
 }
 
 func showWarehouseAdaptiveByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, error) {
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		return warehouse.AsAdaptive(), nil
+	warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	return providerCtx.Client.Warehouses.ShowByIDAdaptive(ctx, id)
+	return warehouse.AsAdaptive(), nil
 }
 
 func showWarehouseAdaptiveByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseAdaptive, error) {
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		return warehouse.AsAdaptive(), nil
+	warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	return providerCtx.Client.Warehouses.ShowByIDSafelyAdaptive(ctx, id)
+	return warehouse.AsAdaptive(), nil
 }
 
 func showWarehouseInteractiveByID(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		return warehouse.AsInteractive(), nil
+	warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimental(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	return providerCtx.Client.Warehouses.ShowByIDInteractive(ctx, id)
+	return warehouse.AsInteractive(), nil
 }
 
 func showWarehouseInteractiveByIDSafely(ctx context.Context, providerCtx *provider.Context, id sdk.AccountObjectIdentifier) (*sdk.WarehouseInteractive, error) {
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.WarehouseShowImprovedPerformance) {
-		warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
-		if err != nil {
-			return nil, err
-		}
-		return warehouse.AsInteractive(), nil
+	warehouse, err := providerCtx.Client.Warehouses.ShowByIDExperimentalSafely(ctx, id)
+	if err != nil {
+		return nil, err
 	}
-	return providerCtx.Client.Warehouses.ShowByIDSafelyInteractive(ctx, id)
+	return warehouse.AsInteractive(), nil
 }

@@ -59,35 +59,40 @@ func (s *SchemaParametersAssert) HasDefaultParameterValueOnLevel(parameterName s
 	return s
 }
 
+func (s *SchemaParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.SchemaParameter) *SchemaParametersAssert {
+	s.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return s
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (s *SchemaParametersAssert) HasAllDefaults() *SchemaParametersAssert {
 	return s.
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterCatalog, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterDataRetentionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterExternalVolume, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterMaxDataExtensionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterPipeExecutionPaused, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterReplaceInvalidCharacters, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterStorageSerializationPolicy, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.SchemaParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterCatalog).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterDataRetentionTimeInDays).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterDefaultDdlCollation).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterDefaultNotebookComputePoolCpu).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterDefaultNotebookComputePoolGpu).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterEnableConsoleOutput).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterExternalVolume).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterLogEventLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterLogLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterMaxDataExtensionTimeInDays).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterPipeExecutionPaused).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterQuotedIdentifiersIgnoreCase).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterReplaceInvalidCharacters).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterStorageSerializationPolicy).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterSuspendTaskAfterNumFailures).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterTaskAutoRetryAttempts).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterTraceLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterUserTaskManagedInitialWarehouseSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterUserTaskMinimumTriggerIntervalInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.SchemaParameterUserTaskTimeoutMs)
 }
 
 func (s *SchemaParametersAssert) HasAllDefaultsExplicit() *SchemaParametersAssert {

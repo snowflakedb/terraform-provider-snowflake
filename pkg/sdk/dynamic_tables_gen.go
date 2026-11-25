@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type DynamicTables interface {
@@ -162,15 +164,16 @@ type dynamicTableDetailsRow struct {
 }
 
 type DynamicTableDetails struct {
-	Name       string
-	Type       DataType
-	Kind       string
-	IsNull     bool
-	Default    string
-	PrimaryKey string
-	UniqueKey  string
-	Check      string
-	Expression string
-	Comment    string
-	PolicyName string
+	Name        string
+	Type        datatypes.DataType
+	DataTypeRaw string
+	Kind        string
+	IsNull      bool
+	Default     string
+	PrimaryKey  string
+	UniqueKey   string
+	Check       string
+	Expression  string
+	Comment     string
+	PolicyName  string
 }

@@ -2,7 +2,7 @@
 page_title: "snowflake_schemas Data Source - terraform-provider-snowflake"
 subcategory: "Stable"
 description: |-
-  Data source used to get details of filtered schemas. Filtering is aligned with the current possibilities for SHOW SCHEMAS https://docs.snowflake.com/en/sql-reference/sql/show-schemas query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS IN are encapsulated in one output collection.
+  Data source used to get details of filtered schemas. Filtering is aligned with the current possibilities for SHOW SCHEMAS https://docs.snowflake.com/en/sql-reference/sql/show-schemas query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection schemas.
 ---
 
 <!-- TODO(SNOW-1844996): Remove this note.-->
@@ -10,7 +10,7 @@ description: |-
 
 # snowflake_schemas (Data Source)
 
-Data source used to get details of filtered schemas. Filtering is aligned with the current possibilities for [SHOW SCHEMAS](https://docs.snowflake.com/en/sql-reference/sql/show-schemas) query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS IN are encapsulated in one output collection.
+Data source used to get details of filtered schemas. Filtering is aligned with the current possibilities for [SHOW SCHEMAS](https://docs.snowflake.com/en/sql-reference/sql/show-schemas) query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `schemas`.
 
 ## Example Usage
 
@@ -107,17 +107,17 @@ check "schema_check" {
 
 ### Optional
 
-- `in` (Block List, Max: 1) IN clause to filter the list of streamlits (see [below for nested schema](#nestedblock--in))
+- `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
-- `with_describe` (Boolean) (Default: `true`) Runs DESC SCHEMA for each schema returned by SHOW SCHEMAS. The output of describe is saved to the description field. By default this value is set to true.
-- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR SCHEMA for each schema returned by SHOW SCHEMAS. The output of describe is saved to the parameters field as a map. By default this value is set to true.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC SCHEMA for each schema returned by SHOW SCHEMAS. The output of describe is saved to the describe_output field. By default this value is set to true.
+- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR SCHEMA for each schema returned by SHOW SCHEMAS. The output of SHOW PARAMETERS is saved to the parameters field as a map. By default this value is set to true.
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `schemas` (List of Object) Holds the aggregated output of all SCHEMA details queries. (see [below for nested schema](#nestedatt--schemas))
+- `schemas` (List of Object) Holds the aggregated output of all schema details queries. (see [below for nested schema](#nestedatt--schemas))
 
 <a id="nestedblock--in"></a>
 ### Nested Schema for `in`
@@ -127,7 +127,7 @@ Optional:
 - `account` (Boolean) Returns records for the entire account.
 - `application` (String) Returns records for the specified application.
 - `application_package` (String) Returns records for the specified application package.
-- `database` (String) Returns records for the current database in use or for a specified database (db_name).
+- `database` (String) Returns records for the current database in use or for a specified database.
 
 
 <a id="nestedblock--limit"></a>

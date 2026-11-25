@@ -45,6 +45,44 @@ func Test_ShowOperationFromObject_plainIn(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
+func Test_ShowOperationFromObject_extendedInWithoutSchema(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
+	obj := ssot.Object{
+		Name:       "Fake",
+		NamePlural: "Fakes",
+		IdType:     "DatabaseObjectIdentifier",
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(
+			ssot.SdkShowOptionalLike(),
+			ssot.SdkShowOptionalExtendedInWithoutSchema(),
+			ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedInWithoutSchema, ssot.SdkShowByIDLike),
+		))},
+	}
+	got := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").ShowOperationFromObject(obj)
+	want := NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").ShowOperationWithPairedStructs(
+		"https://docs.snowflake.com/en/sql-reference/sql/show-fakes",
+		ShowPairedStructs(obj),
+		NewQueryStruct("ShowFakes").
+			Show().
+			SQL("FAKES").
+			OptionalLike().
+			OptionalExtendedInWithoutSchema(),
+		ShowByIDExtendedInWithoutSchemaFiltering,
+		ShowByIDLikeFiltering,
+	)
+	requireSameOperations(t, want, got)
+
+	t.Run("cannot be combined with another IN", func(t *testing.T) {
+		for _, other := range []ssot.SdkShowOption{ssot.SdkShowOptionalIn(), ssot.SdkShowOptionalExtendedIn(), ssot.SdkShowOptionalInAccount()} {
+			combined := obj
+			combined.Generators = []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(ssot.SdkShowOptionalExtendedInWithoutSchema(), other))}
+			require.Panics(t, func() {
+				NewInterface("Fakes", "Fake", "DatabaseObjectIdentifier").ShowOperationFromObject(combined)
+			})
+		}
+	})
+}
+
 func Test_ShowOperationFromObject_inAccount(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	obj := ssot.Object{
@@ -187,26 +225,28 @@ func Test_DescribeOperationFromObject_plainShowVariants(t *testing.T) {
 		CustomParser:   "ParseAccountObjectIdentifierExcludingExplicitNullString",
 	}
 	main := ssot.Object{
-		Name:          "Widget",
-		NamePlural:    "Widgets",
-		IdType:        "AccountObjectIdentifier",
-		Describe:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
-		ShowPlainName: "WidgetRegular",
-		Show:          ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &running}},
-		ShowGeneric:   ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &running, &monitor}},
-		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Describe:   ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &running}},
+		BaseVariant: &ssot.BaseVariant{
+			ShowPlainName: "WidgetRegular",
+			ShowGeneric:   ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &running, &monitor}},
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
 	}
 	adaptive := ssot.Object{
-		Name:      "WidgetAdaptive",
-		VariantOf: &main,
-		Show:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &monitor}},
+		Name:    "WidgetAdaptive",
+		Variant: &ssot.ObjectVariant{Of: &main},
+		Show:    ssot.OutputSpec{Columns: []*ssot.Attribute{&name, &monitor}},
 	}
 	interactive := ssot.Object{
-		Name:      "WidgetInteractive",
-		VariantOf: &main,
-		Show:      ssot.OutputSpec{Columns: []*ssot.Attribute{&running}},
+		Name:    "WidgetInteractive",
+		Variant: &ssot.ObjectVariant{Of: &main},
+		Show:    ssot.OutputSpec{Columns: []*ssot.Attribute{&running}},
 	}
-	main.ShowVariants = []*ssot.Object{&adaptive, &interactive}
+	main.BaseVariant.ShowVariants = []*ssot.Object{&adaptive, &interactive}
 
 	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(main)
 	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationWithPairedStructs(
@@ -234,20 +274,22 @@ func Test_DescribeOperationFromObject_plainShowVariants(t *testing.T) {
 func Test_DescribeOperationFromObject_showByIDProjections(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	main := ssot.Object{
-		Name:          "Widget",
-		NamePlural:    "Widgets",
-		IdType:        "AccountObjectIdentifier",
-		Describe:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
-		ShowPlainName: "WidgetRegular",
-		Show:          ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
-		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe())},
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Describe:   ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		BaseVariant: &ssot.BaseVariant{
+			ShowPlainName: "WidgetRegular",
+		},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(), ssot.SdkDescribe())},
 	}
 	adaptive := ssot.Object{
-		Name:      "WidgetAdaptive",
-		VariantOf: &main,
-		Show:      ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
+		Name:    "WidgetAdaptive",
+		Variant: &ssot.ObjectVariant{Of: &main},
+		Show:    ssot.OutputSpec{Columns: []*ssot.Attribute{&name}},
 	}
-	main.ShowVariants = []*ssot.Object{&adaptive}
+	main.BaseVariant.ShowVariants = []*ssot.Object{&adaptive}
 
 	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").
 		ShowOperationFromObject(main).
@@ -262,11 +304,11 @@ func Test_DescribeOperationFromObject_showProjectionPanics(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString}
 	column := ssot.OutputSpec{Columns: []*ssot.Attribute{&name}}
 	obj := ssot.Object{
-		Name:          "Widget",
-		ShowPlainName: "Other",
-		Show:          column,
-		Describe:      column,
-		Generators:    []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
+		Name:        "Widget",
+		BaseVariant: &ssot.BaseVariant{ShowPlainName: "Other"},
+		Show:        column,
+		Describe:    column,
+		Generators:  []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe())},
 	}
 	require.Panics(t, func() {
 		NewInterface("Widgets", "Widget", "AccountObjectIdentifier").DescribeOperationFromObject(obj)
@@ -595,11 +637,11 @@ func Test_CreateOperationFromObject_atLeastOneOf(t *testing.T) {
 	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt, CreateSql: ssot.IntParameter()}
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, CreateSql: ssot.StringParameter()}
 	obj := ssot.Object{
-		Name:         "Widget",
-		Attributes:   []ssot.Attribute{schedule, expire, comment},
-		AtLeastOneOf: [][]*ssot.Attribute{{&schedule, &expire}},
-		Create:       ssot.CreateSpec{Clauses: []*ssot.Attribute{&schedule, &expire, &comment}},
-		Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+		Name:        "Widget",
+		Attributes:  []ssot.Attribute{schedule, expire, comment},
+		Validations: []ssot.Validation{ssot.AtLeastOneOf(schedule, expire)},
+		Create:      ssot.CreateSpec{Clauses: []*ssot.Attribute{&schedule, &expire, &comment}},
+		Generators:  []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
 	}
 	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
@@ -659,16 +701,18 @@ func Test_CreateOperationFromObject_fakeObject(t *testing.T) {
 	requireSameOperations(t, want, got)
 }
 
-func Test_AlterOperationFromObject_unsetConflicts(t *testing.T) {
+// Each pair of groups gets ConflictingGroups, in declaration order, because the resource sends each group in its own ALTER.
+func Test_AlterOperationFromObject_unsetGroupConflicts(t *testing.T) {
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
 	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString}
 	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt}
 	obj := ssot.Object{
-		Name:           "Widget",
-		Attributes:     []ssot.Attribute{comment, schedule, expire},
-		UnsetConflicts: [][]*ssot.Attribute{{&schedule, &expire}},
+		Name:       "Widget",
+		Attributes: []ssot.Attribute{comment, schedule, expire},
 		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterUnset(
-			&comment, &schedule, &expire,
+			ssot.AlterGroup("Schedule", &schedule),
+			ssot.AlterGroup("Expire", &expire),
+			ssot.AlterGroup(ssot.MainAlterGroup, &comment),
 		)}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter(ssot.SdkAlterWithoutIfExists(), ssot.SdkAlterWithoutExactlyOneValueSet()))},
 	}
@@ -682,11 +726,13 @@ func Test_AlterOperationFromObject_unsetConflicts(t *testing.T) {
 			OptionalQueryStructField(
 				"Unset",
 				NewQueryStruct("WidgetUnset").
-					OptionalSQL("COMMENT").
 					OptionalSQL("SCHEDULE").
 					OptionalSQL("EXPIRE_AFTER_DAYS").
-					WithValidation(AtLeastOneValueSet, "Comment", "Schedule", "ExpireAfterDays").
-					WithValidation(ConflictingFields, "Schedule", "ExpireAfterDays"),
+					OptionalSQL("COMMENT").
+					WithValidation(AtLeastOneValueSet, "Schedule", "ExpireAfterDays", "Comment").
+					WithConflictingGroups([]string{"Schedule"}, []string{"ExpireAfterDays"}).
+					WithConflictingGroups([]string{"Schedule"}, []string{"Comment"}).
+					WithConflictingGroups([]string{"ExpireAfterDays"}, []string{"Comment"}),
 				ListOptions().NoParentheses().SQL("UNSET"),
 			).
 			WithValidation(ValidIdentifier, "name"),
@@ -1189,10 +1235,8 @@ func Test_CreateVariantOperationsFromObject_fakeObject(t *testing.T) {
 		},
 	}
 	variant := ssot.Object{
-		Name:                       "WidgetMini",
-		VariantOf:                  &base,
-		VariantEntityCreateName:    "MINI WIDGET",
-		SdkCreateRequestObjectName: "MiniWidget",
+		Name:    "WidgetMini",
+		Variant: &ssot.ObjectVariant{Of: &base, CreateName: "MINI WIDGET", RequestObjectName: "MiniWidget"},
 		Create: ssot.CreateSpec{
 			Doc:                   "https://docs.example.com/mini",
 			AdditionalValidations: true,
@@ -1230,10 +1274,8 @@ func Test_CreateVariantOperationsFromObject_withoutOrReplace(t *testing.T) {
 		},
 	}
 	variant := ssot.Object{
-		Name:                       "WidgetMini",
-		VariantOf:                  &base,
-		VariantEntityCreateName:    "MINI WIDGET",
-		SdkCreateRequestObjectName: "MiniWidget",
+		Name:    "WidgetMini",
+		Variant: &ssot.ObjectVariant{Of: &base, CreateName: "MINI WIDGET", RequestObjectName: "MiniWidget"},
 		Create: ssot.CreateSpec{
 			Doc:              "https://docs.example.com/mini",
 			WithoutOrReplace: true,
@@ -1260,7 +1302,7 @@ func Test_CreateVariantOperationsFromObject_withoutOrReplace(t *testing.T) {
 
 func Test_CreateVariantOperationsFromObject_panics(t *testing.T) {
 	base := ssot.Object{Name: "Widget"}
-	variant := ssot.Object{Name: "WidgetMini", VariantOf: &base}
+	variant := ssot.Object{Name: "WidgetMini", Variant: &ssot.ObjectVariant{Of: &base}}
 	orig := variantsOf
 	t.Cleanup(func() { variantsOf = orig })
 	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
@@ -1289,9 +1331,8 @@ func Test_AlterVariantOperationsFromObject_fakeObject(t *testing.T) {
 		},
 	}
 	variant := ssot.Object{
-		Name:                       "WidgetMini",
-		VariantOf:                  &base,
-		SdkCreateRequestObjectName: "MiniWidget",
+		Name:    "WidgetMini",
+		Variant: &ssot.ObjectVariant{Of: &base, RequestObjectName: "MiniWidget"},
 		Alter: ssot.AlterSpec{
 			Doc:                   "https://docs.example.com/alter-mini",
 			AdditionalValidations: true,
@@ -1343,7 +1384,7 @@ func Test_AlterVariantOperationsFromObject_fakeObject(t *testing.T) {
 
 func Test_AlterVariantOperationsFromObject_panics(t *testing.T) {
 	base := ssot.Object{Name: "Widget"}
-	variant := ssot.Object{Name: "WidgetMini", VariantOf: &base}
+	variant := ssot.Object{Name: "WidgetMini", Variant: &ssot.ObjectVariant{Of: &base}}
 	orig := variantsOf
 	t.Cleanup(func() { variantsOf = orig })
 	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{variant} }
@@ -1675,7 +1716,7 @@ func Test_SdkInterfacesFromSsot_uniquePluralAndFlag(t *testing.T) {
 		Name:       "WarehouseAdaptive",
 		NamePlural: "Warehouses",
 		IdType:     "AccountObjectIdentifier",
-		VariantOf:  &base,
+		Variant:    &ssot.ObjectVariant{Of: &base},
 	}
 	objects := []ssot.Object{
 		{
@@ -1819,6 +1860,60 @@ func Test_AlterOperationFromObject_textAndBlocks(t *testing.T) {
 				TextAssignment("LOCATION", ParameterOptions().SingleQuotes().NoEquals().Required()), KeywordOptions().SQL("UPDATE")).
 			WithValidation(ValidIdentifier, "name").
 			WithValidation(ExactlyOneValueSet, "RemoveLocation", "AddLocation", "UpdateLocation"),
+	)
+	requireSameOperations(t, want, got)
+}
+
+func Test_AlterOperationFromObject_setUnsetProjectionBlocks(t *testing.T) {
+	policyIdentifier := ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Sql("POLICY"), ssot.Required(), ssot.FieldName("Policy"))
+	policy := ssot.Attribute{
+		Name:      "policy",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(),
+		SetSql:    ssot.ObjectParameter(ssot.FieldName("SetPolicy")),
+		UnsetSql:  ssot.ObjectParameter(ssot.FieldName("UnsetPolicy")),
+		Children: []ssot.Attribute{
+			{Name: "set", SqlOnly: true, SetSql: ssot.StaticSQL("set", "SET")},
+			{
+				Name:           "policy",
+				Type:           ssot.AttrIdentifier,
+				IdentifierType: "AccountObjectIdentifier",
+				Required:       true,
+				SqlOnly:        true,
+				CreateSql:      policyIdentifier,
+				SetSql:         policyIdentifier,
+			},
+			{Name: "force", Type: ssot.AttrBool, SqlOnly: true, SetSql: ssot.BoolKeyword()},
+			{Name: "unset_policy", SqlOnly: true, UnsetSql: ssot.StaticSQL("unsetPolicy", "UNSET POLICY")},
+		},
+	}
+	obj := ssot.Object{
+		Name: "Widget",
+		Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
+			ssot.AlterKeywordBlock("SetPolicy", "", &policy),
+			ssot.AlterKeywordBlock("UnsetPolicy", "", &policy),
+		}},
+		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
+	}
+
+	got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperationFromObject(obj)
+	want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").AlterOperation(
+		"https://docs.snowflake.com/en/sql-reference/sql/alter-widget",
+		NewQueryStruct("AlterWidget").
+			Alter().
+			SQL("WIDGET").
+			IfExists().
+			Name().
+			OptionalQueryStructField("SetPolicy", NewQueryStruct("WidgetSetPolicy").
+				SQL("SET").
+				Identifier("Policy", "AccountObjectIdentifier", IdentifierOptions().SQL("POLICY").Required()).
+				WithValidation(ValidIdentifier, "Policy").
+				OptionalSQL("FORCE"), KeywordOptions()).
+			OptionalQueryStructField("UnsetPolicy", NewQueryStruct("WidgetUnsetPolicy").
+				SQL("UNSET POLICY"), KeywordOptions()).
+			WithValidation(ValidIdentifier, "name").
+			WithValidation(ExactlyOneValueSet, "SetPolicy", "UnsetPolicy"),
 	)
 	requireSameOperations(t, want, got)
 }
@@ -2139,7 +2234,7 @@ func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
 			{Name: "fixed", SqlOnly: true, CreateSql: ssot.StaticSQL("fixed", "A = B")},
 		},
 	}
-	auth := ssot.Attribute{Name: "o_auth_config", Type: ssot.AttrObject, Children: []ssot.Attribute{{Name: "token", Type: ssot.AttrString}}}
+	auth := ssot.Attribute{Name: "o_auth_config", Type: ssot.AttrObject, OptionalInShow: true, Children: []ssot.Attribute{{Name: "token", Type: ssot.AttrString}}}
 	base := ssot.Object{
 		Name:         "Widget",
 		NamePlural:   "Widgets",
@@ -2150,26 +2245,26 @@ func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
 		))},
 	}
 	mini := ssot.Object{
-		Name:      "WidgetMini",
-		IdType:    "AccountObjectIdentifier",
-		VariantOf: &base,
-		Describe:  ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
+		Name:     "WidgetMini",
+		IdType:   "AccountObjectIdentifier",
+		Variant:  &ssot.ObjectVariant{Of: &base},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&active}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
 			ssot.SdkDescribeSql("WIDGET"),
 			ssot.SdkDescribeDetails(),
 		))},
 	}
 	maxi := ssot.Object{
-		Name:      "WidgetMaxi",
-		IdType:    "AccountObjectIdentifier",
-		VariantOf: &base,
-		Describe:  ssot.OutputSpec{Columns: []*ssot.Attribute{&active, &config, &auth}},
+		Name:     "WidgetMaxi",
+		IdType:   "AccountObjectIdentifier",
+		Variant:  &ssot.ObjectVariant{Of: &base},
+		Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&active, &config, &auth}},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkDescribe(
 			ssot.SdkDescribeSql("WIDGET"),
 			ssot.SdkDescribeDetails(),
 		))},
 	}
-	other := ssot.Object{Name: "WidgetOther", IdType: "AccountObjectIdentifier", VariantOf: &base, Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&active}}}
+	other := ssot.Object{Name: "WidgetOther", IdType: "AccountObjectIdentifier", Variant: &ssot.ObjectVariant{Of: &base}, Describe: ssot.OutputSpec{Columns: []*ssot.Attribute{&active}}}
 	orig := variantsOf
 	t.Cleanup(func() { variantsOf = orig })
 	variantsOf = func(ssot.Object) []ssot.Object { return []ssot.Object{mini, other, maxi} }
@@ -2192,7 +2287,7 @@ func Test_DescribeOperationFromObject_detailsForVariants(t *testing.T) {
 			Field("OAuthConfig", "*WidgetMaxiOAuthConfigDetails").
 			IntoField(),
 		DescribeDetailsPlain(maxi).IntoField(),
-		"an object column is a struct of its Children, a pointer when it is not required",
+		"an object column is a struct of its Children, a pointer when OptionalInShow is set",
 	)
 
 	nested := DescribeNestedPlains(maxi)

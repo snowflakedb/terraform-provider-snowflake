@@ -192,7 +192,7 @@ func UpdateFileFormatOrc(ctx context.Context, d *schema.ResourceData, meta any) 
 			return client.FileFormats.AlterOrc(ctx, sdk.NewAlterOrcFileFormatRequest(currentId).WithRenameTo(targetId))
 		},
 		client.FileFormats.ShowByID,
-		"file format",
+		sdk.ObjectTypeFileFormat,
 	); diags != nil {
 		return diags
 	}

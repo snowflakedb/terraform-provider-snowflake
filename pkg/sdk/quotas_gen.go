@@ -42,7 +42,7 @@ type Quotas interface {
 	DescribeDetails(ctx context.Context, id SchemaObjectIdentifier) (*QuotaDetails, error)
 }
 
-// CreateQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#use-sql-to-create-a-per-user-quota.
+// CreateQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#create-a-quota.
 type CreateQuotaOptions struct {
 	create             bool                   `ddl:"static" sql:"CREATE"`
 	OrReplace          *bool                  `ddl:"keyword" sql:"OR REPLACE"`
@@ -118,7 +118,7 @@ func (v *Quota) ObjectType() ObjectType {
 	return ObjectTypeQuota
 }
 
-// AddSharedResourceQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#monitored-domains.
+// AddSharedResourceQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#monitored-domains.
 type AddSharedResourceQuotaOptions struct {
 	call bool                       `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier     `ddl:"identifier,instance_method" sql:"ADD_SHARED_RESOURCE"`
@@ -126,15 +126,50 @@ type AddSharedResourceQuotaOptions struct {
 }
 
 type QuotaAddSharedResourceArgs struct {
-	Domain                QuotaSharedResourceDomain `ddl:"keyword,single_quotes"`
-	InstanceName          *string                   `ddl:"keyword,single_quotes"`
-	Warehouse             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
-	CortexAgent           *SchemaObjectIdentifier   `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
-	SnowflakeIntelligence *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"SNOWFLAKE INTELLIGENCE"`
-	AiGateway             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"AI GATEWAY"`
+	WholeDomain     *QuotaAddSharedResourceArgsWholeDomain     `ddl:"list"`
+	AiFunction      *QuotaAddSharedResourceArgsAiFunction      `ddl:"list"`
+	SnowflakeCoco   *QuotaAddSharedResourceArgsSnowflakeCoco   `ddl:"list"`
+	Warehouse       *QuotaAddSharedResourceArgsWarehouse       `ddl:"list"`
+	CortexAgent     *QuotaAddSharedResourceArgsCortexAgent     `ddl:"list"`
+	SnowflakeCowork *QuotaAddSharedResourceArgsSnowflakeCowork `ddl:"list"`
+	AiGateway       *QuotaAddSharedResourceArgsAiGateway       `ddl:"list"`
 }
 
-// RemoveSharedResourceQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#monitored-domains.
+type QuotaAddSharedResourceArgsWholeDomain struct {
+	Domain QuotaSharedResourceDomain `ddl:"keyword,single_quotes"`
+}
+
+type QuotaAddSharedResourceArgsAiFunction struct {
+	domain bool   `ddl:"static" sql:"'AI FUNCTION'"`
+	Name   string `ddl:"keyword,single_quotes"`
+}
+
+type QuotaAddSharedResourceArgsSnowflakeCoco struct {
+	domain bool   `ddl:"static" sql:"'SNOWFLAKE COCO'"`
+	Name   string `ddl:"keyword,single_quotes"`
+}
+
+type QuotaAddSharedResourceArgsWarehouse struct {
+	domain bool                    `ddl:"static" sql:"'WAREHOUSE'"`
+	Id     AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
+}
+
+type QuotaAddSharedResourceArgsCortexAgent struct {
+	domain bool                   `ddl:"static" sql:"'CORTEX AGENT'"`
+	Id     SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
+}
+
+type QuotaAddSharedResourceArgsSnowflakeCowork struct {
+	domain bool                    `ddl:"static" sql:"'SNOWFLAKE COWORK'"`
+	Id     AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"SNOWFLAKE INTELLIGENCE"`
+}
+
+type QuotaAddSharedResourceArgsAiGateway struct {
+	domain bool                    `ddl:"static" sql:"'AI GATEWAY'"`
+	Id     AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"AI GATEWAY"`
+}
+
+// RemoveSharedResourceQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#monitored-domains.
 type RemoveSharedResourceQuotaOptions struct {
 	call bool                          `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier        `ddl:"identifier,instance_method" sql:"REMOVE_SHARED_RESOURCE"`
@@ -142,15 +177,50 @@ type RemoveSharedResourceQuotaOptions struct {
 }
 
 type QuotaRemoveSharedResourceArgs struct {
-	Domain                QuotaSharedResourceDomain `ddl:"keyword,single_quotes"`
-	InstanceName          *string                   `ddl:"keyword,single_quotes"`
-	Warehouse             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
-	CortexAgent           *SchemaObjectIdentifier   `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
-	SnowflakeIntelligence *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"SNOWFLAKE INTELLIGENCE"`
-	AiGateway             *AccountObjectIdentifier  `ddl:"identifier,system_reference" sql:"AI GATEWAY"`
+	WholeDomain     *QuotaRemoveSharedResourceArgsWholeDomain     `ddl:"list"`
+	AiFunction      *QuotaRemoveSharedResourceArgsAiFunction      `ddl:"list"`
+	SnowflakeCoco   *QuotaRemoveSharedResourceArgsSnowflakeCoco   `ddl:"list"`
+	Warehouse       *QuotaRemoveSharedResourceArgsWarehouse       `ddl:"list"`
+	CortexAgent     *QuotaRemoveSharedResourceArgsCortexAgent     `ddl:"list"`
+	SnowflakeCowork *QuotaRemoveSharedResourceArgsSnowflakeCowork `ddl:"list"`
+	AiGateway       *QuotaRemoveSharedResourceArgsAiGateway       `ddl:"list"`
 }
 
-// SetUserTagsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#user-scope.
+type QuotaRemoveSharedResourceArgsWholeDomain struct {
+	Domain QuotaSharedResourceDomain `ddl:"keyword,single_quotes"`
+}
+
+type QuotaRemoveSharedResourceArgsAiFunction struct {
+	domain bool   `ddl:"static" sql:"'AI FUNCTION'"`
+	Name   string `ddl:"keyword,single_quotes"`
+}
+
+type QuotaRemoveSharedResourceArgsSnowflakeCoco struct {
+	domain bool   `ddl:"static" sql:"'SNOWFLAKE COCO'"`
+	Name   string `ddl:"keyword,single_quotes"`
+}
+
+type QuotaRemoveSharedResourceArgsWarehouse struct {
+	domain bool                    `ddl:"static" sql:"'WAREHOUSE'"`
+	Id     AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
+}
+
+type QuotaRemoveSharedResourceArgsCortexAgent struct {
+	domain bool                   `ddl:"static" sql:"'CORTEX AGENT'"`
+	Id     SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"CORTEX AGENT"`
+}
+
+type QuotaRemoveSharedResourceArgsSnowflakeCowork struct {
+	domain bool                    `ddl:"static" sql:"'SNOWFLAKE COWORK'"`
+	Id     AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"SNOWFLAKE INTELLIGENCE"`
+}
+
+type QuotaRemoveSharedResourceArgsAiGateway struct {
+	domain bool                    `ddl:"static" sql:"'AI GATEWAY'"`
+	Id     AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"AI GATEWAY"`
+}
+
+// SetUserTagsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-user-scope#legacy-scope-methods.
 type SetUserTagsQuotaOptions struct {
 	call bool                   `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier `ddl:"identifier,instance_method" sql:"SET_USER_TAGS"`
@@ -163,23 +233,11 @@ type QuotaSetUserTagsArgs struct {
 }
 
 type QuotaUserTag struct {
-	Reference QuotaUserTagReference `ddl:"list,no_comma"`
-	Value     string                `ddl:"keyword,single_quotes"`
+	Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"TAG,SESSION,APPLYBUDGET"`
+	Value string                 `ddl:"keyword,single_quotes"`
 }
 
-type QuotaUserTagReference struct {
-	function  bool                           `ddl:"static" sql:"SYSTEM$REFERENCE"`
-	Arguments QuotaUserTagReferenceArguments `ddl:"list,must_parentheses"`
-}
-
-type QuotaUserTagReferenceArguments struct {
-	objectType bool                   `ddl:"static" sql:"'TAG'"`
-	Tag        SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
-	scope      bool                   `ddl:"static" sql:"'SESSION'"`
-	privilege  bool                   `ddl:"static" sql:"'APPLYBUDGET'"`
-}
-
-// ExcludeUsersQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#user-scope.
+// ExcludeUsersQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-user-scope#legacy-scope-methods.
 type ExcludeUsersQuotaOptions struct {
 	call bool                   `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier `ddl:"identifier,instance_method" sql:"EXCLUDE_USERS"`
@@ -197,20 +255,8 @@ type QuotaExcludeUsersByTag struct {
 }
 
 type QuotaExcludedUserTag struct {
-	Reference QuotaExcludedUserTagReference `ddl:"list,no_comma"`
-	Value     string                        `ddl:"keyword,single_quotes"`
-}
-
-type QuotaExcludedUserTagReference struct {
-	function  bool                                   `ddl:"static" sql:"SYSTEM$REFERENCE"`
-	Arguments QuotaExcludedUserTagReferenceArguments `ddl:"list,must_parentheses"`
-}
-
-type QuotaExcludedUserTagReferenceArguments struct {
-	objectType bool                   `ddl:"static" sql:"'TAG'"`
-	Tag        SchemaObjectIdentifier `ddl:"identifier,single_quotes"`
-	scope      bool                   `ddl:"static" sql:"'SESSION'"`
-	privilege  bool                   `ddl:"static" sql:"'APPLYBUDGET'"`
+	Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"TAG,SESSION,APPLYBUDGET"`
+	Value string                 `ddl:"keyword,single_quotes"`
 }
 
 type QuotaExcludeUsersByUser struct {
@@ -218,7 +264,7 @@ type QuotaExcludeUsersByUser struct {
 	Users []string `ddl:"list,must_brackets,single_quotes"`
 }
 
-// IncludeUsersQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#user-scope.
+// IncludeUsersQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-user-scope#legacy-scope-methods.
 type IncludeUsersQuotaOptions struct {
 	call bool                   `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier `ddl:"identifier,instance_method" sql:"INCLUDE_USERS"`
@@ -229,7 +275,7 @@ type QuotaIncludeUsersArgs struct {
 	Users []string `ddl:"list,must_brackets,single_quotes"`
 }
 
-// GetQuotaScopeQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#user-scope.
+// GetQuotaScopeQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-user-scope#legacy-scope-methods.
 type GetQuotaScopeQuotaOptions struct {
 	call bool                   `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier `ddl:"identifier,instance_method" sql:"GET_QUOTA_SCOPE"`
@@ -238,7 +284,7 @@ type GetQuotaScopeQuotaOptions struct {
 
 type quotaGetQuotaScopeArgs struct{}
 
-// SetPerUserLimitQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#spending-limits.
+// SetPerUserLimitQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#spending-limits.
 type SetPerUserLimitQuotaOptions struct {
 	call bool                     `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier   `ddl:"identifier,instance_method" sql:"SET_PER_USER_LIMIT"`
@@ -250,7 +296,7 @@ type QuotaSetPerUserLimitArgs struct {
 	Cycle *QuotaCycle `ddl:"keyword,single_quotes"`
 }
 
-// UnsetPerUserLimitQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#spending-limits.
+// UnsetPerUserLimitQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#spending-limits.
 type UnsetPerUserLimitQuotaOptions struct {
 	call bool                       `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier     `ddl:"identifier,instance_method" sql:"UNSET_PER_USER_LIMIT"`
@@ -261,7 +307,7 @@ type QuotaUnsetPerUserLimitArgs struct {
 	Cycle QuotaCycle `ddl:"keyword,single_quotes"`
 }
 
-// SetBlockEnforcementEnabledQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#enforcement.
+// SetBlockEnforcementEnabledQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#enforcement.
 type SetBlockEnforcementEnabledQuotaOptions struct {
 	call bool                                `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier              `ddl:"identifier,instance_method" sql:"SET_BLOCK_ENFORCEMENT_ENABLED"`
@@ -273,7 +319,7 @@ type QuotaSetBlockEnforcementEnabledArgs struct {
 	NotifyUsers *bool `ddl:"parameter,no_equals"`
 }
 
-// GetConfigQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#spending-limits.
+// GetConfigQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#spending-limits.
 type GetConfigQuotaOptions struct {
 	call bool                   `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier `ddl:"identifier,instance_method" sql:"GET_CONFIG"`
@@ -306,7 +352,7 @@ type QuotaConfig struct {
 
 type quotaGetConfigArgs struct{}
 
-// AddNotificationThresholdQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#notifications.
+// AddNotificationThresholdQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type AddNotificationThresholdQuotaOptions struct {
 	call bool                              `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier            `ddl:"identifier,instance_method" sql:"ADD_NOTIFICATION_THRESHOLD"`
@@ -320,7 +366,7 @@ type QuotaAddNotificationThresholdArgs struct {
 	Cycle         QuotaCycle         `ddl:"keyword,single_quotes"`
 }
 
-// RemoveNotificationThresholdQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#notifications.
+// RemoveNotificationThresholdQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type RemoveNotificationThresholdQuotaOptions struct {
 	call bool                                 `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier               `ddl:"identifier,instance_method" sql:"REMOVE_NOTIFICATION_THRESHOLD"`
@@ -333,7 +379,7 @@ type QuotaRemoveNotificationThresholdArgs struct {
 	Cycle         *QuotaCycle        `ddl:"keyword,single_quotes"`
 }
 
-// GetNotificationThresholdsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#notifications.
+// GetNotificationThresholdsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type GetNotificationThresholdsQuotaOptions struct {
 	call bool                               `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier             `ddl:"identifier,instance_method" sql:"GET_NOTIFICATION_THRESHOLDS"`
@@ -358,7 +404,7 @@ type QuotaNotificationThreshold struct {
 
 type quotaGetNotificationThresholdsArgs struct{}
 
-// AddNotificationIntegrationQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#notifications.
+// AddNotificationIntegrationQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type AddNotificationIntegrationQuotaOptions struct {
 	call bool                                `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier              `ddl:"identifier,instance_method" sql:"ADD_NOTIFICATION_INTEGRATION"`
@@ -369,7 +415,7 @@ type QuotaAddNotificationIntegrationArgs struct {
 	Integration AccountObjectIdentifier `ddl:"identifier,single_quotes"`
 }
 
-// RemoveNotificationIntegrationQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#notifications.
+// RemoveNotificationIntegrationQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type RemoveNotificationIntegrationQuotaOptions struct {
 	call bool                                   `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier                 `ddl:"identifier,instance_method" sql:"REMOVE_NOTIFICATION_INTEGRATION"`
@@ -380,7 +426,7 @@ type QuotaRemoveNotificationIntegrationArgs struct {
 	Integration AccountObjectIdentifier `ddl:"identifier,single_quotes"`
 }
 
-// GetNotificationIntegrationsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#notifications.
+// GetNotificationIntegrationsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type GetNotificationIntegrationsQuotaOptions struct {
 	call bool                                 `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier               `ddl:"identifier,instance_method" sql:"GET_NOTIFICATION_INTEGRATIONS"`
@@ -401,7 +447,7 @@ type QuotaNotificationIntegration struct {
 
 type quotaGetNotificationIntegrationsArgs struct{}
 
-// SetAdminEmailsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#notifications.
+// SetAdminEmailsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type SetAdminEmailsQuotaOptions struct {
 	call bool                    `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier  `ddl:"identifier,instance_method" sql:"SET_ADMIN_EMAILS"`
@@ -412,7 +458,7 @@ type QuotaSetAdminEmailsArgs struct {
 	Emails string `ddl:"keyword,single_quotes"`
 }
 
-// AddCustomActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#custom-actions.
+// AddCustomActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#custom-actions.
 type AddCustomActionQuotaOptions struct {
 	call bool                     `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier   `ddl:"identifier,instance_method" sql:"ADD_CUSTOM_ACTION"`
@@ -426,7 +472,7 @@ type QuotaAddCustomActionArgs struct {
 	Threshold     int                                 `ddl:"parameter,no_equals"`
 }
 
-// RemoveCustomActionsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#custom-actions.
+// RemoveCustomActionsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#custom-actions.
 type RemoveCustomActionsQuotaOptions struct {
 	call bool                         `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier       `ddl:"identifier,instance_method" sql:"REMOVE_CUSTOM_ACTIONS"`
@@ -438,7 +484,7 @@ type QuotaRemoveCustomActionsArgs struct {
 	ProcedureFqn *string `ddl:"keyword,single_quotes"`
 }
 
-// GetCustomActionsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#custom-actions.
+// GetCustomActionsQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#custom-actions.
 type GetCustomActionsQuotaOptions struct {
 	call bool                      `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier    `ddl:"identifier,instance_method" sql:"GET_CUSTOM_ACTIONS"`
@@ -467,7 +513,7 @@ type QuotaCustomAction struct {
 
 type quotaGetCustomActionsArgs struct{}
 
-// SetCycleStartActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#cycle-start-action.
+// SetCycleStartActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#cycle-start-action.
 type SetCycleStartActionQuotaOptions struct {
 	call bool                         `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier       `ddl:"identifier,instance_method" sql:"SET_CYCLE_START_ACTION"`
@@ -479,7 +525,7 @@ type QuotaSetCycleStartActionArgs struct {
 	Arguments []string                            `ddl:"list,must_brackets,single_quotes"`
 }
 
-// RemoveCycleStartActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#cycle-start-action.
+// RemoveCycleStartActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#cycle-start-action.
 type RemoveCycleStartActionQuotaOptions struct {
 	call bool                            `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier          `ddl:"identifier,instance_method" sql:"REMOVE_CYCLE_START_ACTION"`
@@ -488,7 +534,7 @@ type RemoveCycleStartActionQuotaOptions struct {
 
 type quotaRemoveCycleStartActionArgs struct{}
 
-// GetCycleStartActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas#cycle-start-action.
+// GetCycleStartActionQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#cycle-start-action.
 type GetCycleStartActionQuotaOptions struct {
 	call bool                         `ddl:"static" sql:"CALL"`
 	name SchemaObjectIdentifier       `ddl:"identifier,instance_method" sql:"GET_CYCLE_START_ACTION"`

@@ -78,15 +78,55 @@ func Test_ObjectGenerators_options(t *testing.T) {
 
 	g = ObjectGenerators(WithObjectAssert())
 	require.Equal(t, Generators{}, g)
+
+	g = ObjectGenerators(WithSchema(SchemaUsedAsListEntry()))
+	require.Equal(t, Generators{Schema: SchemaGenerator{UsedAsListEntry: true}}, g)
+
+	g = ObjectGenerators(WithObjectAssert(
+		ObjectAssertShow(
+			ObjectAssertNoShowById(),
+			ObjectAssertShowNoIdentifiableObject(),
+			ObjectAssertShowByParentId("sdk.AccountObjectIdentifier", "User", "ShowProgrammaticAccessToken"),
+			ObjectAssertShowFromObjectIDExpr("token.ID().Name()"),
+			ObjectAssertShowObjectTypeName("Account"),
+		),
+		ObjectAssertDescribe(ObjectAssertDescribeFromObjectIDExpr("userDetails.Name")),
+	))
+	require.Equal(t, Generators{ObjectAssert: ObjectAssertGenerator{
+		Show:                     true,
+		Describe:                 true,
+		NoShowById:               true,
+		ShowNoIdentifiableObject: true,
+		ShowByParentId: &ObjectAssertParentId{
+			ParentIdType:   "sdk.AccountObjectIdentifier",
+			ClientName:     "User",
+			ShowMethodName: "ShowProgrammaticAccessToken",
+		},
+		ShowFromObjectIDExpr:     "token.ID().Name()",
+		DescribeFromObjectIDExpr: "userDetails.Name",
+		ShowObjectTypeName:       "Account",
+	}}, g)
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertShow(ObjectAssertShowByParentId("", "User", "Show"))))
+	})
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromObjectIDExpr(""))))
+	})
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertDescribe(ObjectAssertDescribeFromObjectIDExpr(""))))
+	})
+	require.Panics(t, func() {
+		ObjectGenerators(WithObjectAssert(ObjectAssertShow(ObjectAssertShowObjectTypeName(""))))
+	})
 }
 
 func Test_ShowFromBase(t *testing.T) {
 	base := Object{Name: "Widget"}
 	obj := Object{
-		Name:      "WidgetAdaptive",
-		VariantOf: &base,
+		Name:    "WidgetAdaptive",
+		Variant: &ObjectVariant{Of: &base, ObjectAssertShowFromBase: "ShowByIDAdaptive"},
 		Generators: []GeneratorOption{
-			WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
+			WithObjectAssert(ObjectAssertShow()),
 		},
 	}
 	got, ok := obj.ShowFromBase()
@@ -98,10 +138,8 @@ func Test_ShowFromBase(t *testing.T) {
 
 	require.Panics(t, func() {
 		Object{
-			Name: "WidgetAdaptive",
-			Generators: []GeneratorOption{
-				WithObjectAssert(ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))),
-			},
+			Name:    "WidgetAdaptive",
+			Variant: &ObjectVariant{ObjectAssertShowFromBase: "ShowByIDAdaptive"},
 		}.ShowFromBase()
 	})
 }
@@ -110,11 +148,11 @@ func Test_ParameterAssertionNames(t *testing.T) {
 	require.Equal(t, ParameterAssertionNames{}, Object{Name: "Schema"}.ParameterAssertionNames())
 
 	base := Object{Name: "Warehouse"}
-	got := Object{Name: "WarehouseAdaptive", VariantOf: &base}.ParameterAssertionNames()
+	got := Object{Name: "WarehouseAdaptive", Variant: &ObjectVariant{Of: &base}}.ParameterAssertionNames()
 	require.Equal(t, ParameterAssertionNames{ConstantPrefix: "Warehouse", ObjectTypeName: "Warehouse"}, got)
 
 	require.Panics(t, func() {
-		Object{Name: "WarehouseAdaptive", VariantOf: &Object{}}.ParameterAssertionNames()
+		Object{Name: "WarehouseAdaptive", Variant: &ObjectVariant{Of: &Object{}}}.ParameterAssertionNames()
 	})
 }
 
@@ -136,6 +174,7 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		SdkShowOptionalSql("HISTORY", "FUTURE"),
 		SdkShowOptionalLike(),
 		SdkShowOptionalExtendedIn(),
+		SdkShowOptionalExtendedInWithoutSchema(),
 		SdkShowOptionalOn(),
 		SdkShowOptionalStartsWith(),
 		SdkShowOptionalLimitFrom(),
@@ -151,26 +190,27 @@ func Test_ObjectGenerators_sdk(t *testing.T) {
 		SdkDescribeQueryStructName("DescThing"),
 	)))
 	require.Equal(t, Generators{Sdk: SdkGenerator{
-		Show:                    true,
-		Describe:                true,
-		ShowDoc:                 "https://show",
-		ShowSql:                 "THINGS",
-		ShowTerse:               true,
-		ShowOptionalSql:         []string{"HISTORY", "FUTURE"},
-		ShowOptionalLike:        true,
-		ShowOptionalExtendedIn:  true,
-		ShowOptionalOn:          true,
-		ShowOptionalStartsWith:  true,
-		ShowOptionalLimitFrom:   true,
-		ShowOptionalLimit:       true,
-		ShowByIDFiltering:       []SdkShowByIDFilteringKind{SdkShowByIDExtendedIn, SdkShowByIDLike},
-		ShowByIDPredicate:       SdkShowByIDPredicateNameAndLocator,
-		ShowResultFilterHook:    true,
-		ShowPlainOnlyFields:     []SdkShowPlainOnlyField{{Column: &scopes, Kind: "[]Scope"}},
-		DescribeDoc:             "https://desc",
-		DescribeSql:             "THING",
-		DescribeMapping:         SdkDescriptionMappingSlice,
-		DescribeQueryStructName: "DescThing",
+		Show:                                true,
+		Describe:                            true,
+		ShowDoc:                             "https://show",
+		ShowSql:                             "THINGS",
+		ShowTerse:                           true,
+		ShowOptionalSql:                     []string{"HISTORY", "FUTURE"},
+		ShowOptionalLike:                    true,
+		ShowOptionalExtendedIn:              true,
+		ShowOptionalExtendedInWithoutSchema: true,
+		ShowOptionalOn:                      true,
+		ShowOptionalStartsWith:              true,
+		ShowOptionalLimitFrom:               true,
+		ShowOptionalLimit:                   true,
+		ShowByIDFiltering:                   []SdkShowByIDFilteringKind{SdkShowByIDExtendedIn, SdkShowByIDLike},
+		ShowByIDPredicate:                   SdkShowByIDPredicateNameAndLocator,
+		ShowResultFilterHook:                true,
+		ShowPlainOnlyFields:                 []SdkShowPlainOnlyField{{Column: &scopes, Kind: "[]Scope"}},
+		DescribeDoc:                         "https://desc",
+		DescribeSql:                         "THING",
+		DescribeMapping:                     SdkDescriptionMappingSlice,
+		DescribeQueryStructName:             "DescThing",
 	}}, g)
 
 	g = ObjectGenerators(WithSdk(SdkDescribe(

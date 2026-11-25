@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -37,10 +36,6 @@ var (
 // =============================================================================
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
-
-type catalogIntegrationIcebergRestAlterRequestsExt struct {
-	set *sdk.CatalogIntegrationSetRequest
-}
 
 func catalogIntegrationIcebergRestNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateIcebergRestCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
@@ -94,23 +89,6 @@ func catalogIntegrationIcebergRestSetConfigFieldsExt(_ context.Context, d *schem
 		d.Set("enabled", catalogIntegration.Enabled),
 		d.Set("comment", catalogIntegration.Comment),
 	)
-}
-
-func catalogIntegrationIcebergRestApplySetUnsetExt(d *schema.ResourceData) (*catalogIntegrationIcebergRestAlterRequestsExt, error) {
-	set := sdk.NewCatalogIntegrationSetRequest()
-
-	if errs := errors.Join(
-		attributeMappedValueUpdateSetOnlyAlways(d, "oauth_rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, func(secret string) (sdk.CatalogIntegrationSetOauthRestAuthenticationRequest, error) {
-			return *sdk.NewCatalogIntegrationSetOauthRestAuthenticationRequest(secret), nil
-		}),
-		attributeMappedValueUpdateSetOnlyAlways(d, "bearer_rest_authentication.0.bearer_token", &set.SetBearerRestAuthentication, func(token string) (sdk.CatalogIntegrationSetBearerRestAuthenticationRequest, error) {
-			return *sdk.NewCatalogIntegrationSetBearerRestAuthenticationRequest(token), nil
-		}),
-		handleCatalogIntegrationCommonPropsUpdate(d, set),
-	); errs != nil {
-		return nil, errs
-	}
-	return &catalogIntegrationIcebergRestAlterRequestsExt{set: set}, nil
 }
 
 func catalogIntegrationIcebergRestSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationIcebergRestDetails, importPermissiveMode bool) error {
@@ -172,17 +150,6 @@ func catalogIntegrationIcebergRestDescribeInSdkExt(ctx context.Context, meta any
 		return nil, fmt.Errorf("could not describe Iceberg REST catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 	}
 	return details, nil
-}
-
-func catalogIntegrationIcebergRestAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationIcebergRestAlterRequestsExt) error {
-	client := meta.(*provider.Context).Client
-	if !reflect.DeepEqual(*reqs.set, *sdk.NewCatalogIntegrationSetRequest()) {
-		req := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*reqs.set)
-		if err := client.CatalogIntegrations.Alter(ctx, req); err != nil {
-			return fmt.Errorf("error updating Iceberg REST catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
-		}
-	}
-	return nil
 }
 
 // =============================================================================

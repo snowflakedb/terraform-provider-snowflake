@@ -38,9 +38,6 @@ func (opts *CreateIcebergTableOptions) validate() error {
 						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint", columnIdx), "UniquePK", "FK", "CH"))
 					}
 					if valueSet(column.InlineConstraint.UniquePK) {
-						if !exactlyOneValueSet(column.InlineConstraint.UniquePK.Unique, column.InlineConstraint.UniquePK.PrimaryKey) {
-							errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Unique", "PrimaryKey"))
-						}
 						if everyValueSet(column.InlineConstraint.UniquePK.Enforced, column.InlineConstraint.UniquePK.NotEnforced) {
 							errs = append(errs, errOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Enforced", "NotEnforced"))
 						}
@@ -58,6 +55,9 @@ func (opts *CreateIcebergTableOptions) validate() error {
 						}
 						if everyValueSet(column.InlineConstraint.UniquePK.Rely, column.InlineConstraint.UniquePK.Norely) {
 							errs = append(errs, errOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Rely", "Norely"))
+						}
+						if !exactlyOneValueSet(column.InlineConstraint.UniquePK.Unique, column.InlineConstraint.UniquePK.PrimaryKey) {
+							errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].InlineConstraint.UniquePK", columnIdx), "Unique", "PrimaryKey"))
 						}
 					}
 					if valueSet(column.InlineConstraint.FK) {
@@ -94,6 +94,11 @@ func (opts *CreateIcebergTableOptions) validate() error {
 						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].MaskingPolicy", columnIdx), "MaskingPolicy"))
 					}
 				}
+				if valueSet(column.ProjectionPolicy) {
+					if !ValidObjectIdentifier(column.ProjectionPolicy.ProjectionPolicy) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.Columns[%d].ProjectionPolicy", columnIdx), "ProjectionPolicy"))
+					}
+				}
 				if valueSet(column.Tag) {
 					for tagIdx, tag := range column.Tag {
 						if !ValidObjectIdentifier(tag.Name) {
@@ -109,9 +114,6 @@ func (opts *CreateIcebergTableOptions) validate() error {
 					errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d]", outOfLineConstraintIdx), "UniquePK", "FK", "CH"))
 				}
 				if valueSet(outOfLineConstraint.UniquePK) {
-					if !exactlyOneValueSet(outOfLineConstraint.UniquePK.Unique, outOfLineConstraint.UniquePK.PrimaryKey) {
-						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Unique", "PrimaryKey"))
-					}
 					if everyValueSet(outOfLineConstraint.UniquePK.Enforced, outOfLineConstraint.UniquePK.NotEnforced) {
 						errs = append(errs, errOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Enforced", "NotEnforced"))
 					}
@@ -129,6 +131,9 @@ func (opts *CreateIcebergTableOptions) validate() error {
 					}
 					if everyValueSet(outOfLineConstraint.UniquePK.Rely, outOfLineConstraint.UniquePK.Norely) {
 						errs = append(errs, errOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Rely", "Norely"))
+					}
+					if !exactlyOneValueSet(outOfLineConstraint.UniquePK.Unique, outOfLineConstraint.UniquePK.PrimaryKey) {
+						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateIcebergTableOptions.ColumnsAndConstraints.OutOfLineConstraint[%d].UniquePK", outOfLineConstraintIdx), "Unique", "PrimaryKey"))
 					}
 				}
 				if valueSet(outOfLineConstraint.FK) {
@@ -285,9 +290,6 @@ func (opts *AlterIcebergTableOptions) validate() error {
 				errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint", "UniquePK", "FK", "CH"))
 			}
 			if valueSet(opts.AddColumnAction.InlineConstraint.UniquePK) {
-				if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Unique, opts.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey) {
-					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
-				}
 				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Enforced, opts.AddColumnAction.InlineConstraint.UniquePK.NotEnforced) {
 					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Enforced", "NotEnforced"))
 				}
@@ -305,6 +307,9 @@ func (opts *AlterIcebergTableOptions) validate() error {
 				}
 				if everyValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Rely, opts.AddColumnAction.InlineConstraint.UniquePK.Norely) {
 					errs = append(errs, errOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Rely", "Norely"))
+				}
+				if !exactlyOneValueSet(opts.AddColumnAction.InlineConstraint.UniquePK.Unique, opts.AddColumnAction.InlineConstraint.UniquePK.PrimaryKey) {
+					errs = append(errs, errExactlyOneOf("AlterIcebergTableOptions.AddColumnAction.InlineConstraint.UniquePK", "Unique", "PrimaryKey"))
 				}
 			}
 			if valueSet(opts.AddColumnAction.InlineConstraint.FK) {
@@ -341,6 +346,11 @@ func (opts *AlterIcebergTableOptions) validate() error {
 				errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.MaskingPolicy", "MaskingPolicy"))
 			}
 		}
+		if valueSet(opts.AddColumnAction.ProjectionPolicy) {
+			if !ValidObjectIdentifier(opts.AddColumnAction.ProjectionPolicy.ProjectionPolicy) {
+				errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.AddColumnAction.ProjectionPolicy", "ProjectionPolicy"))
+			}
+		}
 		if valueSet(opts.AddColumnAction.Tag) {
 			for tagIdx, tag := range opts.AddColumnAction.Tag {
 				if !ValidObjectIdentifier(tag.Name) {
@@ -354,6 +364,16 @@ func (opts *AlterIcebergTableOptions) validate() error {
 			if !exactlyOneValueSet(alterColumnAction.SetNotNull, alterColumnAction.DropNotNull, alterColumnAction.DataType, alterColumnAction.Comment, alterColumnAction.UnsetComment, alterColumnAction.SetWriteDefault, alterColumnAction.DropWriteDefault) {
 				errs = append(errs, errExactlyOneOf(fmt.Sprintf("AlterIcebergTableOptions.AlterColumnAction[%d]", alterColumnActionIdx), "SetNotNull", "DropNotNull", "DataType", "Comment", "UnsetComment", "SetWriteDefault", "DropWriteDefault"))
 			}
+		}
+	}
+	if valueSet(opts.SetMaskingPolicyOnColumn) {
+		if !ValidObjectIdentifier(opts.SetMaskingPolicyOnColumn.MaskingPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.SetMaskingPolicyOnColumn", "MaskingPolicy"))
+		}
+	}
+	if valueSet(opts.SetProjectionPolicyOnColumn) {
+		if !ValidObjectIdentifier(opts.SetProjectionPolicyOnColumn.ProjectionPolicy) {
+			errs = append(errs, errInvalidIdentifier("AlterIcebergTableOptions.SetProjectionPolicyOnColumn", "ProjectionPolicy"))
 		}
 	}
 	if valueSet(opts.SetTagsOnColumn) {

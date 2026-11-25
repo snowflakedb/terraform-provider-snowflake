@@ -29,7 +29,7 @@ func TestAcc_FunctionSql_ParametersIgnoreValueChangesIfNotOnObjectLevel(t *testi
 
 	argName := "abc"
 	dataType := testdatatypes.DataTypeFloat
-	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
+	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schema.ID(), dataType)
 
 	definition := secondaryTestClient().Function.SampleSqlDefinitionWithArgument(t, argName)
 

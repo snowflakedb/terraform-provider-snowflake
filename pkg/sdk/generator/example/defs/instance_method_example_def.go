@@ -9,25 +9,11 @@ var addNotificationIntegrationArgs = g.NewQueryStruct("AddNotificationIntegratio
 	Identifier("IntegrationName", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
 	WithValidation(g.ValidIdentifier, "IntegrationName")
 
-// renders as [SYSTEM$REFERENCE ('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET'), '<value>']
+// renders as [SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET'), '<value>']
 var exampleTagValue = g.NewQueryStruct("ExampleTagValue").
-	QueryStructField(
-		"Reference",
-		g.NewQueryStruct("ExampleTagReference").
-			SQLWithCustomFieldName("function", "SYSTEM$REFERENCE").
-			QueryStructField(
-				"Arguments",
-				g.NewQueryStruct("ExampleTagReferenceArguments").
-					SQLWithCustomFieldName("objectType", "'TAG'").
-					Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SingleQuotes().Required()).
-					SQLWithCustomFieldName("scope", "'SESSION'").
-					SQLWithCustomFieldName("privilege", "'APPLYBUDGET'").
-					WithValidation(g.ValidIdentifier, "Tag"),
-				g.ListOptions().MustParentheses().Required(),
-			),
-		g.ListOptions().NoComma().Required(),
-	).
-	Text("Value", g.KeywordOptions().SingleQuotes().Required())
+	Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET")).
+	Text("Value", g.KeywordOptions().SingleQuotes().Required()).
+	WithValidation(g.ValidIdentifier, "Tag")
 
 // renders as ([[<tag reference>, '<value>'], ...], ['<user>', ...], <bool>)
 var setScopeArgs = g.NewQueryStruct("SetScopeArgs").

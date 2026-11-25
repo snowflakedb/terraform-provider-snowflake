@@ -54,8 +54,8 @@ func TestAcc_View_BasicUseCase(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	resourceId := helpers.EncodeResourceIdentifier(id)
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("FOO", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("FOO", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup)
 	statement := fmt.Sprintf("SELECT id, foo FROM %s", table.ID().FullyQualifiedName())
@@ -470,8 +470,8 @@ func TestAcc_View_temporary(t *testing.T) {
 
 func TestAcc_View_CompleteUseCase(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("FOO", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("FOO", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup)
 
@@ -625,9 +625,9 @@ end;;
 
 func TestAcc_View_columns(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("FOO", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("BAR", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("FOO", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("BAR", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup)
 
@@ -769,9 +769,9 @@ end;;
 func TestAcc_View_columnsWithMaskingPolicyWithoutUsing(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("FOO", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("BAR", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("FOO", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("BAR", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup)
 
@@ -1398,8 +1398,8 @@ resource "snowflake_view" "test" {
 
 func TestAcc_View_Issue3676_proof(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("FOO", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("FOO", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup)
 
@@ -1449,8 +1449,8 @@ func TestAcc_View_Issue3676_proof(t *testing.T) {
 
 func TestAcc_View_Issue3676_fix(t *testing.T) {
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
-		*sdk.NewTableColumnRequest("FOO", sdk.DataTypeNumber),
+		*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+		*sdk.NewTableColumnRequest("FOO", testdatatypes.DataTypeNumber),
 	})
 	t.Cleanup(tableCleanup)
 
@@ -1505,8 +1505,8 @@ func TestAcc_View_MaskingPolicyWithoutUsingClausePanicFix(t *testing.T) {
 	t.Cleanup(maskingPolicyCleanup)
 
 	table, tableCleanup := testClient().Table.CreateWithColumns(t, []sdk.TableColumnRequest{
-		*sdk.NewTableColumnRequest("COL1", sdk.DataTypeVARCHAR),
-		*sdk.NewTableColumnRequest("COL2", sdk.DataTypeVARCHAR),
+		*sdk.NewTableColumnRequest("COL1", testdatatypes.DataTypeVarchar),
+		*sdk.NewTableColumnRequest("COL2", testdatatypes.DataTypeVarchar),
 	})
 	t.Cleanup(tableCleanup)
 

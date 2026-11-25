@@ -16,6 +16,7 @@ func renderIdentitySchema(t *testing.T, model ResourceModel) string {
 	return b.String()
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestIdentitySchema_preservesGeneratedSentences(t *testing.T) {
 	schemaModel := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
 	got := renderSchemaTemplate(t, "identitySchema", schemaModel)
@@ -97,6 +98,7 @@ func Test_identitySchema_hierarchyForceNew(t *testing.T) {
 	})
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestIdentitySchema_hierarchyForceNew(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Alert}, nil, nil)
 	require.True(t, model.Hooks.IdentitySchema.Generate)
@@ -109,6 +111,7 @@ func TestIdentitySchema_hierarchyForceNew(t *testing.T) {
 	require.Contains(t, got, "DiffSuppressFunc: suppressIdentifierQuoting")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestIdentitySchema_legacyIdEncodingUsesQuotingSuppression(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Pipe}, nil, nil)
 	require.True(t, model.Hooks.IdentitySchema.Generate)
@@ -121,6 +124,7 @@ func TestIdentitySchema_legacyIdEncodingUsesQuotingSuppression(t *testing.T) {
 	require.Contains(t, got, "DiffSuppressFunc: suppressIdentifierQuoting")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestIdentitySchema_nameDescription(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Warehouse}, nil, nil)
 	require.True(t, model.Hooks.IdentitySchema.Generate)
@@ -132,6 +136,7 @@ func TestIdentitySchema_nameDescription(t *testing.T) {
 	require.NotContains(t, got, "\"database\"")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestIdentitySchema_legacyIdEncodingKeepsQuotingSuppression(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Table}, nil, nil)
 	require.True(t, model.Hooks.IdentitySchema.Generate)

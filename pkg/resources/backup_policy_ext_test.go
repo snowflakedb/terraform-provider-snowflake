@@ -115,11 +115,9 @@ func Test_backupPolicyRequestsExt(t *testing.T) {
 		require.Equal(t, sdk.NewBackupPolicyUnsetRequest(), requests.unset)
 	})
 
-	t.Run("removing the schedule unsets it in its own request", func(t *testing.T) {
-		state := &terraform.InstanceState{
-			ID:         "id",
-			Attributes: map[string]string{"schedule.#": "1", "schedule.0.hours": "2", "schedule.0.minutes": "0", "schedule.0.using_cron": ""},
-		}
+	removing := func(t *testing.T, attributes map[string]string) *backupPolicyAlterRequests {
+		t.Helper()
+		state := &terraform.InstanceState{ID: "id", Attributes: attributes}
 		diff, err := schema.InternalMap(backupPolicySchema).Diff(context.Background(), state, terraform.NewResourceConfigRaw(map[string]any{}), nil, nil, true)
 		require.NoError(t, err)
 		d, err := schema.InternalMap(backupPolicySchema).Data(state, diff)
@@ -127,8 +125,19 @@ func Test_backupPolicyRequestsExt(t *testing.T) {
 		requests, err := backupPolicyApplySetUnset(d)
 		require.NoError(t, err)
 		require.Equal(t, sdk.NewBackupPolicySetRequest(), requests.set)
+		return requests
+	}
+
+	t.Run("removing the schedule unsets it in the main request", func(t *testing.T) {
+		requests := removing(t, map[string]string{"schedule.#": "1", "schedule.0.hours": "2", "schedule.0.minutes": "0", "schedule.0.using_cron": ""})
+		require.Equal(t, sdk.NewBackupPolicyUnsetRequest().WithSchedule(true), requests.unset)
+		require.Equal(t, sdk.NewBackupPolicyUnsetRequest(), requests.unsetExpireAfterDays)
+	})
+
+	t.Run("removing the expiration unsets it in its own request", func(t *testing.T) {
+		requests := removing(t, map[string]string{"expire_after_days": "7"})
 		require.Equal(t, sdk.NewBackupPolicyUnsetRequest(), requests.unset)
-		require.Equal(t, sdk.NewBackupPolicyUnsetRequest().WithSchedule(true), requests.unsetSchedule)
+		require.Equal(t, sdk.NewBackupPolicyUnsetRequest().WithExpireAfterDays(true), requests.unsetExpireAfterDays)
 	})
 
 	t.Run("invalid schedule fails the update", func(t *testing.T) {

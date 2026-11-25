@@ -145,10 +145,9 @@ func (r *CreateForJavaProcedureRequest) toOpts() *CreateForJavaProcedureOptions 
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -156,10 +155,9 @@ func (r *CreateForJavaProcedureRequest) toOpts() *CreateForJavaProcedureOptions 
 	opts.Returns = ProcedureReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			Null:              r.Returns.ResultDataType.Null,
-			NotNull:           r.Returns.ResultDataType.NotNull,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
+			Null:           r.Returns.ResultDataType.Null,
+			NotNull:        r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -168,9 +166,8 @@ func (r *CreateForJavaProcedureRequest) toOpts() *CreateForJavaProcedureOptions 
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -203,7 +200,6 @@ func (r *CreateForJavaScriptProcedureRequest) toOpts() *CreateForJavaScriptProce
 		Secure:                r.Secure,
 		name:                  r.name,
 		CopyGrants:            r.CopyGrants,
-		ResultDataTypeOld:     r.ResultDataTypeOld,
 		ResultDataType:        r.ResultDataType,
 		NotNull:               r.NotNull,
 		NullInputBehavior:     r.NullInputBehavior,
@@ -216,10 +212,9 @@ func (r *CreateForJavaScriptProcedureRequest) toOpts() *CreateForJavaScriptProce
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -247,10 +242,9 @@ func (r *CreateForPythonProcedureRequest) toOpts() *CreateForPythonProcedureOpti
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -258,10 +252,9 @@ func (r *CreateForPythonProcedureRequest) toOpts() *CreateForPythonProcedureOpti
 	opts.Returns = ProcedureReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			Null:              r.Returns.ResultDataType.Null,
-			NotNull:           r.Returns.ResultDataType.NotNull,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
+			Null:           r.Returns.ResultDataType.Null,
+			NotNull:        r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -270,9 +263,8 @@ func (r *CreateForPythonProcedureRequest) toOpts() *CreateForPythonProcedureOpti
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -320,10 +312,9 @@ func (r *CreateForScalaProcedureRequest) toOpts() *CreateForScalaProcedureOption
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -331,10 +322,9 @@ func (r *CreateForScalaProcedureRequest) toOpts() *CreateForScalaProcedureOption
 	opts.Returns = ProcedureReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			Null:              r.Returns.ResultDataType.Null,
-			NotNull:           r.Returns.ResultDataType.NotNull,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
+			Null:           r.Returns.ResultDataType.Null,
+			NotNull:        r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -343,9 +333,8 @@ func (r *CreateForScalaProcedureRequest) toOpts() *CreateForScalaProcedureOption
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -388,10 +377,9 @@ func (r *CreateForSQLProcedureRequest) toOpts() *CreateForSQLProcedureOptions {
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -401,8 +389,7 @@ func (r *CreateForSQLProcedureRequest) toOpts() *CreateForSQLProcedureOptions {
 	}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureSQLReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -411,9 +398,8 @@ func (r *CreateForSQLProcedureRequest) toOpts() *CreateForSQLProcedureOptions {
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -539,10 +525,9 @@ func (r *CreateAndCallForJavaProcedureRequest) toOpts() *CreateAndCallForJavaPro
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -550,10 +535,9 @@ func (r *CreateAndCallForJavaProcedureRequest) toOpts() *CreateAndCallForJavaPro
 	opts.Returns = ProcedureReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			Null:              r.Returns.ResultDataType.Null,
-			NotNull:           r.Returns.ResultDataType.NotNull,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
+			Null:           r.Returns.ResultDataType.Null,
+			NotNull:        r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -562,9 +546,8 @@ func (r *CreateAndCallForJavaProcedureRequest) toOpts() *CreateAndCallForJavaPro
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -613,10 +596,9 @@ func (r *CreateAndCallForScalaProcedureRequest) toOpts() *CreateAndCallForScalaP
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -624,10 +606,9 @@ func (r *CreateAndCallForScalaProcedureRequest) toOpts() *CreateAndCallForScalaP
 	opts.Returns = ProcedureReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			Null:              r.Returns.ResultDataType.Null,
-			NotNull:           r.Returns.ResultDataType.NotNull,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
+			Null:           r.Returns.ResultDataType.Null,
+			NotNull:        r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -636,9 +617,8 @@ func (r *CreateAndCallForScalaProcedureRequest) toOpts() *CreateAndCallForScalaP
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -679,7 +659,6 @@ func (r *CreateAndCallForScalaProcedureRequest) toOpts() *CreateAndCallForScalaP
 func (r *CreateAndCallForJavaScriptProcedureRequest) toOpts() *CreateAndCallForJavaScriptProcedureOptions {
 	opts := &CreateAndCallForJavaScriptProcedureOptions{
 		Name:                r.Name,
-		ResultDataTypeOld:   r.ResultDataTypeOld,
 		ResultDataType:      r.ResultDataType,
 		NotNull:             r.NotNull,
 		NullInputBehavior:   r.NullInputBehavior,
@@ -692,10 +671,9 @@ func (r *CreateAndCallForJavaScriptProcedureRequest) toOpts() *CreateAndCallForJ
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -729,10 +707,9 @@ func (r *CreateAndCallForPythonProcedureRequest) toOpts() *CreateAndCallForPytho
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -740,10 +717,9 @@ func (r *CreateAndCallForPythonProcedureRequest) toOpts() *CreateAndCallForPytho
 	opts.Returns = ProcedureReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			Null:              r.Returns.ResultDataType.Null,
-			NotNull:           r.Returns.ResultDataType.NotNull,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
+			Null:           r.Returns.ResultDataType.Null,
+			NotNull:        r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -752,9 +728,8 @@ func (r *CreateAndCallForPythonProcedureRequest) toOpts() *CreateAndCallForPytho
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -805,10 +780,9 @@ func (r *CreateAndCallForSQLProcedureRequest) toOpts() *CreateAndCallForSQLProce
 		arguments := make([]ProcedureArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = ProcedureArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -816,10 +790,9 @@ func (r *CreateAndCallForSQLProcedureRequest) toOpts() *CreateAndCallForSQLProce
 	opts.Returns = ProcedureReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &ProcedureReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
-			Null:              r.Returns.ResultDataType.Null,
-			NotNull:           r.Returns.ResultDataType.NotNull,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
+			Null:           r.Returns.ResultDataType.Null,
+			NotNull:        r.Returns.ResultDataType.NotNull,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -828,9 +801,8 @@ func (r *CreateAndCallForSQLProcedureRequest) toOpts() *CreateAndCallForSQLProce
 			columns := make([]ProcedureColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = ProcedureColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns

@@ -49,7 +49,11 @@ func showOutputDetailsFromSsot(obj ssot.Object, isDescribe bool) SdkObjectShowOu
 			fields = append(fields, genhelpers.Field{Name: ssot.ColumnFieldName(*attr)})
 			continue
 		}
-		fields = append(fields, ssot.ColumnField(obj, *attr))
+		view := attr.ForShow()
+		if isDescribe {
+			view = attr.ForDescribe()
+		}
+		fields = append(fields, ssot.ColumnField(obj, view))
 	}
 	skip := showOutputSkipNames(skipped)
 	dataSource, _ := dataSourceMappingNormalized[name]

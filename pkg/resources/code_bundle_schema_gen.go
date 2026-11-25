@@ -5,6 +5,7 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -47,27 +48,7 @@ var codeBundleSchema = collections.MergeMaps(
 		},
 	},
 	codeBundleAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW CODE BUNDLES` for the given code bundle.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowCodeBundleSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE CODE BUNDLE` for the given code bundle.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeCodeBundleDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeCodeBundle, schemas.ShowCodeBundleSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeCodeBundle, schemas.DescribeCodeBundleDetailsSchema),
 )

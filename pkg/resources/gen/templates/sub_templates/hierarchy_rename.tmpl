@@ -4,25 +4,17 @@
 {{ Unimplemented "HierarchyRename" }}
 {{- end -}}
 {{- if .HierarchyRenameParents }}
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(currentId).WithRenameTo(targetId))
-			}
-		}
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, &id,
-			rename,
-			client.{{ .NamePlural }}.ShowByID,
-			func(renamed sdk.SchemaObjectIdentifier) string {
-				return {{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(renamed){{ else }}helpers.EncodeResourceIdentifier(renamed){{ end }}
-			},
-			{{ Quote (CamelToWords .Name) }},
-		); diags != nil {
-			return diags
-		}
+	client := meta.(*provider.Context).Client
+	if diags := handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(currentId).WithRenameTo(targetId))
+		},
+		client.{{ .NamePlural }}.ShowByID,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		sdk.ObjectType{{ .Name }},
+	); diags != nil {
+		return diags
 	}
 {{ end -}}
 {{- if .HierarchyRenameName }}
@@ -31,7 +23,7 @@
 		if err := meta.(*provider.Context).Client.{{ .NamePlural }}.Alter(ctx, sdk.NewAlter{{ .Name }}Request(id).WithRenameTo(newId)); err != nil {
 			return diag.FromErr(err)
 		}
-		d.SetId({{ if .LegacyIdEncoding }}helpers.EncodeSnowflakeID(newId){{ else }}helpers.EncodeResourceIdentifier(newId){{ end }})
+		d.SetId(helpers.EncodeResourceIdentifier(newId))
 		id = newId
 	}
 {{ end -}}

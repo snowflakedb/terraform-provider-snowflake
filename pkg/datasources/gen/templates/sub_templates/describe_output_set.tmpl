@@ -1,0 +1,12 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.DescribeOutputSet.Generate -}}
+{{- if .Describe.Slice -}}
+			describeOutput = collections.Map(describeResult, func(details sdk.{{ .DescribeSchemaName }}) map[string]any {
+				return schemas.{{ .DescribeSchemaName }}ToSchema(&details)
+			})
+{{- else -}}
+			describeOutput = []map[string]any{schemas.{{ .DescribeSchemaName }}ToSchema(describeResult)}
+{{- end }}
+{{ else if .Hooks.DescribeOutputSet.Present -}}
+			describeOutput = {{ .Prefix }}DescribeOutputSetExt(describeResult)
+{{ end -}}

@@ -92,6 +92,11 @@ func (s *SharedDatabaseResourceAssert) HasLogLevel(expected string) *SharedDatab
 	return s
 }
 
+func (s *SharedDatabaseResourceAssert) HasMetricLevel(expected string) *SharedDatabaseResourceAssert {
+	s.StringValueSet("metric_level", expected)
+	return s
+}
+
 func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *SharedDatabaseResourceAssert {
 	s.BoolValueSet("quoted_identifiers_ignore_case", expected)
 	return s
@@ -99,6 +104,11 @@ func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expected b
 
 func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharacters(expected bool) *SharedDatabaseResourceAssert {
 	s.BoolValueSet("replace_invalid_characters", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasServiceCallerTokenValiditySecs(expected int) *SharedDatabaseResourceAssert {
+	s.IntValueSet("service_caller_token_validity_secs", expected)
 	return s
 }
 
@@ -201,6 +211,11 @@ func (s *SharedDatabaseResourceAssert) HasLogLevelString(expected string) *Share
 	return s
 }
 
+func (s *SharedDatabaseResourceAssert) HasMetricLevelString(expected string) *SharedDatabaseResourceAssert {
+	s.ValueSet("metric_level", expected)
+	return s
+}
+
 func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *SharedDatabaseResourceAssert {
 	s.ValueSet("quoted_identifiers_ignore_case", expected)
 	return s
@@ -208,6 +223,11 @@ func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expe
 
 func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharactersString(expected string) *SharedDatabaseResourceAssert {
 	s.ValueSet("replace_invalid_characters", expected)
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasServiceCallerTokenValiditySecsString(expected string) *SharedDatabaseResourceAssert {
+	s.ValueSet("service_caller_token_validity_secs", expected)
 	return s
 }
 
@@ -310,6 +330,11 @@ func (s *SharedDatabaseResourceAssert) HasNoLogLevel() *SharedDatabaseResourceAs
 	return s
 }
 
+func (s *SharedDatabaseResourceAssert) HasNoMetricLevel() *SharedDatabaseResourceAssert {
+	s.ValueNotSet("metric_level")
+	return s
+}
+
 func (s *SharedDatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *SharedDatabaseResourceAssert {
 	s.ValueNotSet("quoted_identifiers_ignore_case")
 	return s
@@ -317,6 +342,11 @@ func (s *SharedDatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *Share
 
 func (s *SharedDatabaseResourceAssert) HasNoReplaceInvalidCharacters() *SharedDatabaseResourceAssert {
 	s.ValueNotSet("replace_invalid_characters")
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasNoServiceCallerTokenValiditySecs() *SharedDatabaseResourceAssert {
+	s.ValueNotSet("service_caller_token_validity_secs")
 	return s
 }
 
@@ -409,6 +439,11 @@ func (s *SharedDatabaseResourceAssert) HasLogLevelEmpty() *SharedDatabaseResourc
 	return s
 }
 
+func (s *SharedDatabaseResourceAssert) HasMetricLevelEmpty() *SharedDatabaseResourceAssert {
+	s.ValueSet("metric_level", "")
+	return s
+}
+
 func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *SharedDatabaseResourceAssert {
 	s.ValueSet("quoted_identifiers_ignore_case", "")
 	return s
@@ -416,6 +451,11 @@ func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *Sh
 
 func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharactersEmpty() *SharedDatabaseResourceAssert {
 	s.ValueSet("replace_invalid_characters", "")
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasServiceCallerTokenValiditySecsEmpty() *SharedDatabaseResourceAssert {
+	s.ValueSet("service_caller_token_validity_secs", "")
 	return s
 }
 
@@ -518,6 +558,11 @@ func (s *SharedDatabaseResourceAssert) HasLogLevelNotEmpty() *SharedDatabaseReso
 	return s
 }
 
+func (s *SharedDatabaseResourceAssert) HasMetricLevelNotEmpty() *SharedDatabaseResourceAssert {
+	s.ValuePresent("metric_level")
+	return s
+}
+
 func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *SharedDatabaseResourceAssert {
 	s.ValuePresent("quoted_identifiers_ignore_case")
 	return s
@@ -525,6 +570,11 @@ func (s *SharedDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() 
 
 func (s *SharedDatabaseResourceAssert) HasReplaceInvalidCharactersNotEmpty() *SharedDatabaseResourceAssert {
 	s.ValuePresent("replace_invalid_characters")
+	return s
+}
+
+func (s *SharedDatabaseResourceAssert) HasServiceCallerTokenValiditySecsNotEmpty() *SharedDatabaseResourceAssert {
+	s.ValuePresent("service_caller_token_validity_secs")
 	return s
 }
 

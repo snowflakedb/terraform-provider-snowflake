@@ -2,14 +2,14 @@
 page_title: "snowflake_pipes Data Source - terraform-provider-snowflake"
 subcategory: "Preview"
 description: |-
-  Data source used to get details of filtered pipes. Filtering is aligned with the current possibilities for SHOW PIPES https://docs.snowflake.com/en/sql-reference/sql/show-pipes query (like and in, including application and application_package). The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection pipes.
+  Data source used to get details of filtered pipes. Filtering is aligned with the current possibilities for SHOW PIPES https://docs.snowflake.com/en/sql-reference/sql/show-pipes query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection pipes.
 ---
 
 !> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
 
 # snowflake_pipes (Data Source)
 
-Data source used to get details of filtered pipes. Filtering is aligned with the current possibilities for [SHOW PIPES](https://docs.snowflake.com/en/sql-reference/sql/show-pipes) query (`like` and `in`, including `application` and `application_package`). The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `pipes`.
+Data source used to get details of filtered pipes. Filtering is aligned with the current possibilities for [SHOW PIPES](https://docs.snowflake.com/en/sql-reference/sql/show-pipes) query. The results of SHOW, DESCRIBE, and SHOW PARAMETERS are encapsulated in one output collection `pipes`.
 
 ## Example Usage
 
@@ -127,7 +127,7 @@ check "pipe_check" {
 - `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `with_describe` (Boolean) (Default: `true`) Runs DESC PIPE for each pipe returned by SHOW PIPES. The output of describe is saved to the describe_output field. By default this value is set to true.
-- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR PIPE for each pipe returned by SHOW PIPES. The output of describe is saved to the parameters field as a map. By default this value is set to true.
+- `with_parameters` (Boolean) (Default: `true`) Runs SHOW PARAMETERS FOR PIPE for each pipe returned by SHOW PIPES. The output of SHOW PARAMETERS is saved to the parameters field as a map. By default this value is set to true.
 
 ### Read-Only
 

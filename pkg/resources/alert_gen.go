@@ -102,17 +102,7 @@ func ReadAlertFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 
 		alert, err := meta.(*provider.Context).Client.Alerts.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query alert. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Alert id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeAlert, id, err)
 		}
 		alertDetails, err := meta.(*provider.Context).Client.Alerts.Describe(ctx, id)
 		if err != nil {

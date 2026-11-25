@@ -16,6 +16,22 @@ type VectorDataType struct {
 	underlyingType string
 }
 
+func NewVectorIntDataType(dimension int) DataType {
+	return &VectorDataType{
+		innerType:      "INT",
+		dimension:      dimension,
+		underlyingType: VectorDataTypeSynonyms[0],
+	}
+}
+
+func NewVectorFloatDataType(dimension int) DataType {
+	return &VectorDataType{
+		innerType:      "FLOAT",
+		dimension:      dimension,
+		underlyingType: VectorDataTypeSynonyms[0],
+	}
+}
+
 func (t *VectorDataType) ToSql() string {
 	return fmt.Sprintf("%s(%s, %d)", t.underlyingType, t.innerType, t.dimension)
 }

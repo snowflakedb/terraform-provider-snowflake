@@ -1026,7 +1026,7 @@ func TestAcc_Schema_migrateFromV0941_ensureSmoothUpgradeWithNewResourceId(t *tes
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				Config:            providerConfig + accconfig.FromModels(t, basicSchemaModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(id)),
+					resource.TestCheckResourceAttr(basicSchemaModel.ResourceReference(), "id", helpers.EncodeSnowflakeIDLegacy(id)),
 				),
 			},
 			{

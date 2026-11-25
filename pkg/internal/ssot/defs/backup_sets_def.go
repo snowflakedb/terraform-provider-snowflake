@@ -176,7 +176,7 @@ var backupSetApplyPolicy = ssot.Attribute{
 		{
 			Name:      "force",
 			Type:      ssot.AttrBool,
-			CreateSql: ssot.BoolKeyword(ssot.Sql("FORCE")),
+			CreateSql: ssot.BoolKeyword(),
 		},
 	},
 }
@@ -223,9 +223,10 @@ var (
 // BackupSet is one schema object. The four FOR targets are mutually exclusive and permanent.
 // SHOW and DESCRIBE publish the same columns, in this order.
 var BackupSet = ssot.Object{
-	Name:       "BackupSet",
-	NamePlural: "BackupSets",
-	IdType:     "SchemaObjectIdentifier",
+	Name:           "BackupSet",
+	NamePlural:     "BackupSets",
+	IdType:         "SchemaObjectIdentifier",
+	PreviewFeature: true,
 	// DROP and ALTER pages omit IF EXISTS. Both stay on until a probe shows Snowflake rejects the clause.
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),
@@ -268,12 +269,12 @@ var BackupSet = ssot.Object{
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
-	ExactlyOneOf: [][]*ssot.Attribute{{
-		&BackupSetAttrs.ForTable,
-		&BackupSetAttrs.ForDynamicTable,
-		&BackupSetAttrs.ForSchema,
-		&BackupSetAttrs.ForDatabase,
-	}},
+	Validations: []ssot.Validation{ssot.ExactlyOneOf(
+		BackupSetAttrs.ForTable,
+		BackupSetAttrs.ForDynamicTable,
+		BackupSetAttrs.ForSchema,
+		BackupSetAttrs.ForDatabase,
+	)},
 	Attributes: []ssot.Attribute{
 		BackupSetAttrs.ForTable,
 		BackupSetAttrs.ForDynamicTable,

@@ -59,16 +59,21 @@ func (s *ServiceParametersAssert) HasDefaultParameterValueOnLevel(parameterName 
 	return s
 }
 
+func (s *ServiceParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.ServiceParameter) *ServiceParametersAssert {
+	s.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return s
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (s *ServiceParametersAssert) HasAllDefaults() *ServiceParametersAssert {
 	return s.
-		HasDefaultParameterValueOnLevel(sdk.ServiceParameterServiceCallerTokenValiditySecs, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.ServiceParameterServiceCallerTokenValiditySecs)
 }
 
 func (s *ServiceParametersAssert) HasAllDefaultsExplicit() *ServiceParametersAssert {

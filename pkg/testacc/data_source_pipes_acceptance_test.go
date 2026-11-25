@@ -40,6 +40,18 @@ func TestAcc_Pipes_BasicUseCase(t *testing.T) {
 		WithInDatabase(id.DatabaseId()).
 		WithDependsOn(pipeModel.ResourceReference())
 
+	pipesModelWithoutDescribe := datasourcemodel.Pipes("test").
+		WithWithDescribe(false).
+		WithLike(id.Name()).
+		WithInDatabase(id.DatabaseId()).
+		WithDependsOn(pipeModel.ResourceReference())
+
+	pipesModelWithoutParameters := datasourcemodel.Pipes("test").
+		WithWithParameters(false).
+		WithLike(id.Name()).
+		WithInDatabase(id.DatabaseId()).
+		WithDependsOn(pipeModel.ResourceReference())
+
 	showOutputAssertions := resourceshowoutputassert.PipesDatasourceShowOutput(t, pipesModel.DatasourceReference()).
 		HasName(id.Name()).
 		HasDatabaseName(id.DatabaseName()).
@@ -88,6 +100,24 @@ func TestAcc_Pipes_BasicUseCase(t *testing.T) {
 					assert.Check(resource.TestCheckResourceAttr(pipesModelWithoutAdditional.DatasourceReference(), "pipes.0.parameters.#", "0")),
 				),
 			},
+			{
+				Config: accconfig.FromModels(t, pipeModel, pipesModelWithoutDescribe),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(pipesModelWithoutDescribe.DatasourceReference(), "pipes.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(pipesModelWithoutDescribe.DatasourceReference(), "pipes.0.describe_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(pipesModelWithoutDescribe.DatasourceReference(), "pipes.0.parameters.#", "1")),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, pipeModel, pipesModelWithoutParameters),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(pipesModelWithoutParameters.DatasourceReference(), "pipes.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(pipesModelWithoutParameters.DatasourceReference(), "pipes.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(pipesModelWithoutParameters.DatasourceReference(), "pipes.0.parameters.#", "0")),
+				),
+			},
 		},
 	})
 }
@@ -119,6 +149,10 @@ func TestAcc_Pipes_Filtering(t *testing.T) {
 		WithLike(prefix + "%").
 		WithInDatabase(id1.DatabaseId()).
 		WithDependsOn(dependsOn...)
+	likePrefixInAccount := datasourcemodel.Pipes("test").
+		WithLike(prefix + "%").
+		WithInAccount().
+		WithDependsOn(dependsOn...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -137,6 +171,10 @@ func TestAcc_Pipes_Filtering(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, model1, model2, model3, likePrefixInDatabase),
 				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(likePrefixInDatabase.DatasourceReference(), "pipes.#", "3")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, likePrefixInAccount),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(likePrefixInAccount.DatasourceReference(), "pipes.#", "3")),
 			},
 		},
 	})

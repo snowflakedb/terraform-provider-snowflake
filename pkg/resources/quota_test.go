@@ -31,6 +31,10 @@ func (f *fakeQuotas) SetUserTags(context.Context, *sdk.SetUserTagsQuotaRequest) 
 	return f.record("SET_USER_TAGS")
 }
 
+func (f *fakeQuotas) ExcludeUsers(context.Context, *sdk.ExcludeUsersQuotaRequest) (*string, error) {
+	return f.record("EXCLUDE_USERS")
+}
+
 func (f *fakeQuotas) IncludeUsers(context.Context, *sdk.IncludeUsersQuotaRequest) (*string, error) {
 	return f.record("INCLUDE_USERS")
 }
@@ -81,6 +85,48 @@ func Test_applyQuotaConfiguration(t *testing.T) {
 			"SET_BLOCK_ENFORCEMENT_ENABLED",
 		}, calls)
 	})
+
+	update := func(t *testing.T, oldConfig map[string]any, newConfig map[string]any) []string {
+		t.Helper()
+		for _, config := range []map[string]any{oldConfig, newConfig} {
+			config["database"], config["schema"], config["name"] = "DB", "SCH", "QUOTA"
+		}
+		stateData := schema.TestResourceDataRaw(t, quotaSchema, oldConfig)
+		stateData.SetId("id")
+		state := stateData.State()
+		diff, err := schema.InternalMap(quotaSchema).Diff(context.Background(), state, terraform.NewResourceConfigRaw(newConfig), nil, nil, true)
+		require.NoError(t, err)
+		d, err := schema.InternalMap(quotaSchema).Data(state, diff)
+		require.NoError(t, err)
+		fake := &fakeQuotas{}
+		require.NoError(t, applyQuotaConfiguration(context.Background(), d, fake, id))
+		return fake.calls
+	}
+	scope := func(userTags []any) map[string]any {
+		return map[string]any{
+			"user_tags":         userTags,
+			"excluded_user_tag": []any{map[string]any{"tag": "DB.SCH.TAG", "value": "b"}},
+			"included_users":    []any{"ALICE"},
+			"excluded_users":    []any{"BOB"},
+		}
+	}
+
+	// SET_USER_TAGS([], 'ALL_USERS') also clears the excluded tags and both user lists
+	t.Run("removing the user tags sets the excluded tags and user lists again", func(t *testing.T) {
+		calls := update(t, scope([]any{map[string]any{"operator": "UNION", "tag": []any{map[string]any{"tag": "DB.SCH.TAG", "value": "a"}}}}), scope([]any{}))
+		assert.Equal(t, []string{
+			"SET_USER_TAGS",
+			"EXCLUDE_USERS",
+			"INCLUDE_USERS",
+			"EXCLUDE_USERS",
+		}, calls)
+	})
+
+	t.Run("changing the user tags keeps the other lists", func(t *testing.T) {
+		calls := update(t, scope([]any{map[string]any{"operator": "UNION", "tag": []any{map[string]any{"tag": "DB.SCH.TAG", "value": "a"}}}}),
+			scope([]any{map[string]any{"operator": "UNION", "tag": []any{map[string]any{"tag": "DB.SCH.TAG", "value": "c"}}}}))
+		assert.Equal(t, []string{"SET_USER_TAGS"}, calls)
+	})
 }
 
 func Test_quotaSetHashes(t *testing.T) {
@@ -96,6 +142,7 @@ func Test_quotaSetHashes(t *testing.T) {
 		{"plain instance case", quotaSharedResourceHash, sharedResource("AI FUNCTION", "ai_classify"), sharedResource("AI FUNCTION", "AI_CLASSIFY")},
 		{"quoted warehouse", quotaSharedResourceHash, sharedResource("WAREHOUSE", `"WH"`), sharedResource("WAREHOUSE", "WH")},
 		{"quoted agent", quotaSharedResourceHash, sharedResource("CORTEX AGENT", `"DB"."SCH"."AGENT"`), sharedResource("CORTEX AGENT", "DB.SCH.AGENT")},
+		{"former Snowflake CoCo instance name", quotaSharedResourceHash, sharedResource("SNOWFLAKE COCO", "CORTEX_CODE_CLI"), sharedResource("SNOWFLAKE COCO", "snowflake_coco_cli")},
 		{"quoted tag", quotaTagValueHash, map[string]any{"tag": `"DB"."SCH"."TAG"`, "value": "a"}, map[string]any{"tag": "DB.SCH.TAG", "value": "a"}},
 		{
 			"threshold enum case", quotaNotificationThresholdHash,
@@ -110,7 +157,7 @@ func Test_quotaSetHashes(t *testing.T) {
 	}
 
 	t.Run("different resources hash differently", func(t *testing.T) {
-		assert.NotEqual(t, quotaSharedResourceHash(sharedResource("AI FUNCTION", "")), quotaSharedResourceHash(sharedResource("CORTEX CODE", "")))
+		assert.NotEqual(t, quotaSharedResourceHash(sharedResource("AI FUNCTION", "")), quotaSharedResourceHash(sharedResource("SNOWFLAKE COCO", "")))
 		assert.NotEqual(t, quotaSharedResourceHash(sharedResource("WAREHOUSE", `"wh"`)), quotaSharedResourceHash(sharedResource("WAREHOUSE", `"WH"`)))
 		assert.NotEqual(t, quotaTagValueHash(map[string]any{"tag": "DB.SCH.TAG", "value": "a"}), quotaTagValueHash(map[string]any{"tag": "DB.SCH.TAG", "value": "A"}))
 	})
@@ -119,19 +166,22 @@ func Test_quotaSetHashes(t *testing.T) {
 func Test_quotaSharedResourcesToSchema(t *testing.T) {
 	agentId := sdk.NewSchemaObjectIdentifier("DB", "SCH", "AGENT")
 	scope := sdk.QuotaScope{SharedResources: []sdk.QuotaScopeSharedResource{
-		{Domain: "AI_FUNCTION", Id: "-1", Name: "[ALL-CORTEX AI FUNCTIONS]"},
-		{Domain: "CORTEX_CODE", Id: "3", Name: "CORTEX_CODE_CLI"},
-		{Domain: "CORTEX_AGENT", Id: "42", Name: "AGENT", CortexAgentId: &agentId},
-		{Domain: "WAREHOUSE", Id: "7", Name: "WH"},
-		{Domain: "WAREHOUSE", Id: "9", Name: "with.dot"},
-		{Domain: "NEW_DOMAIN", Id: "-1", Name: "[ALL]"},
-		{Domain: "NEW_DOMAIN", Id: "5", Name: "INSTANCE"},
+		{Domain: "AI_FUNCTION", Id: -1, Name: "[ALL-CORTEX AI FUNCTIONS]"},
+		{Domain: "CORTEX_CODE", Id: 3, Name: "CORTEX_CODE_CLI"},
+		{Domain: "SNOWFLAKE_INTELLIGENCE", Id: -1, Name: "[ALL-SNOWFLAKE INTELLIGENCES]"},
+		{Domain: "CORTEX_AGENT", Id: 42, Name: "AGENT", CortexAgentId: &agentId},
+		{Domain: "WAREHOUSE", Id: 7, Name: "WH"},
+		{Domain: "WAREHOUSE", Id: 9, Name: "with.dot"},
+		{Domain: "NEW_DOMAIN", Id: -1, Name: "[ALL]"},
+		{Domain: "NEW_DOMAIN", Id: 5, Name: "INSTANCE"},
 	}}
 
 	sharedResources, unsupported := quotaSharedResourcesToSchema(scope)
 	assert.Equal(t, []map[string]any{
 		{"domain": "AI FUNCTION", "instance": ""},
-		{"domain": "CORTEX CODE", "instance": "CORTEX_CODE_CLI"},
+		// GET_QUOTA_SCOPE returns the former names of SNOWFLAKE COCO, its instances, and SNOWFLAKE COWORK
+		{"domain": "SNOWFLAKE COCO", "instance": "SNOWFLAKE_COCO_CLI"},
+		{"domain": "SNOWFLAKE COWORK", "instance": ""},
 		{"domain": "CORTEX AGENT", "instance": agentId.FullyQualifiedName()},
 		{"domain": "WAREHOUSE", "instance": "WH"},
 		{"domain": "WAREHOUSE", "instance": `"with.dot"`},
@@ -174,7 +224,7 @@ func Test_quotaSetChange_sharedResources(t *testing.T) {
 	})
 
 	t.Run("removing a domain", func(t *testing.T) {
-		removed, added := change(t, []any{sharedResource("AI FUNCTION", ""), sharedResource("CORTEX CODE", "")}, []any{sharedResource("CORTEX CODE", "")})
+		removed, added := change(t, []any{sharedResource("AI FUNCTION", ""), sharedResource("SNOWFLAKE COCO", "")}, []any{sharedResource("SNOWFLAKE COCO", "")})
 		assert.Equal(t, []any{sharedResource("AI FUNCTION", "")}, removed)
 		assert.Empty(t, added)
 	})

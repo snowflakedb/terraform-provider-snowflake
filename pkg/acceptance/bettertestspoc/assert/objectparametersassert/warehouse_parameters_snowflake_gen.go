@@ -59,18 +59,23 @@ func (w *WarehouseParametersAssert) HasDefaultParameterValueOnLevel(parameterNam
 	return w
 }
 
+func (w *WarehouseParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.WarehouseParameter) *WarehouseParametersAssert {
+	w.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return w
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (w *WarehouseParametersAssert) HasAllDefaults() *WarehouseParametersAssert {
 	return w.
-		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterMaxConcurrencyLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.WarehouseParameterStatementTimeoutInSeconds, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.WarehouseParameterMaxConcurrencyLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.WarehouseParameterStatementQueuedTimeoutInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.WarehouseParameterStatementTimeoutInSeconds)
 }
 
 func (w *WarehouseParametersAssert) HasAllDefaultsExplicit() *WarehouseParametersAssert {

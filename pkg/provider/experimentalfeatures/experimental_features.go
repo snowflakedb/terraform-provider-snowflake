@@ -36,6 +36,7 @@ const (
 	AccountParameterCatalogWritePath     ExperimentalFeature = "ACCOUNT_PARAMETER_CATALOG_WRITE_PATH"
 	ObjectParameterParseOnSet            ExperimentalFeature = "OBJECT_PARAMETER_PARSE_ON_SET"
 	WriteOnlyAttributes                  ExperimentalFeature = "WRITE_ONLY_ATTRIBUTES"
+	FailoverGroupReadOnlyAutoSwitch      ExperimentalFeature = "FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH"
 )
 
 type experimentalFeatureState string
@@ -107,28 +108,9 @@ func NewDiscontinuedExperiment(name ExperimentalFeature) Experiment {
 }
 
 var allExperiments = []Experiment{
-	NewEnabledByDefaultExperiment(
-		WarehouseShowImprovedPerformance,
-		[]string{"v2.23.0", "v2.24.0"},
-		"It's meant to improve the performance for accounts with many warehouses.",
-		"When enabled, it uses a slightly different SHOW query to read warehouse details (`SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1`).",
-		"Currently supported by: `snowflake_warehouse`, `snowflake_warehouse_adaptive`, `snowflake_warehouse_interactive`.",
-		"This feature is enabled by default on the Snowflake side.",
-	),
-	NewEnabledByDefaultExperiment(
-		GrantsStrictPrivilegeManagement,
-		[]string{"v2.23.0", "v2.24.0"},
-		"The new `strict_privilege_management` flag was added to the `snowflake_grant_privileges_to_account_role` resource.",
-		"It has similar behavior to the `enable_multiple_grants` flag present in the old grant resources, and it makes the resource able to detect external changes for privileges other than those present in the configuration which can make the `snowflake_grant_privileges_to_account_role` resource a central point of knowledge privilege management for a given object and role.",
-		"Read more in our [strict privilege management](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/strict_privilege_management) guide.",
-		fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsImportValidation),
-	),
-	NewEnabledByDefaultExperiment(
-		ParametersIgnoreValueChangesIfNotOnObjectLevel,
-		[]string{"v2.23.0", "v2.24.0"},
-		"Currently, not setting the parameter value on the object level can unnecessarily react to external changes to this parameter's value on the higher levels (e.g. not setting `data_retention_time_in_days` on `snowflake_schema` can result in non-empty plan when the parameter value changes on the database/account level).",
-		"When enabled, the provider ignores changes to the parameter value happening on the higher hierarchy levels.",
-	),
+	NewPromotedExperiment(WarehouseShowImprovedPerformance),
+	NewPromotedExperiment(GrantsStrictPrivilegeManagement),
+	NewPromotedExperiment(ParametersIgnoreValueChangesIfNotOnObjectLevel),
 	NewOptInExperiment(
 		ParametersReducedOutput,
 		"Currently, the `parameters` field in various resources contains a verbatim output for the `SHOW PARAMETERS IN <object>` command. One of the fields contained in the output is the `description`. It does not change and is repeated for all objects containing the given parameter. It leads to an excessive output (check e.g., [#3118](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3118)).",
@@ -142,13 +124,7 @@ var allExperiments = []Experiment{
 		"When the field is omitted, a workload identity configured outside Terraform is unset on the next apply.",
 		"Read more in our [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-user_enable_default_workload_identity-enabled-by-default).",
 	),
-	NewEnabledByDefaultExperiment(
-		GrantsImportValidation,
-		[]string{"v2.23.0", "v2.24.0"},
-		"Enables import validation for the `snowflake_grant_privileges_to_account_role` resource.",
-		"When enabled, importing a grant resource with a fixed set of privileges (`privileges` field) will validate that the specified privileges actually exist in Snowflake with the correct `with_grant_option` setting, and error immediately if they don't match.",
-		fmt.Sprintf("This feature works independently of the `%s` flag.", GrantsStrictPrivilegeManagement),
-	),
+	NewPromotedExperiment(GrantsImportValidation),
 	NewOptInExperiment(
 		TagsAllowEmptyAllowedValues,
 		"Enables behavior changes for the `allowed_values` field in the `snowflake_tag` resource.",
@@ -167,24 +143,10 @@ var allExperiments = []Experiment{
 		"Switches imports to the permissive mode.",
 		"By default, imports use the enforcing mode: the plan after import shows a change for every attribute that the configuration omits but that has a value in Snowflake. Applying that plan resets these attributes to their Snowflake defaults.",
 		"When enabled, the provider accepts the values the object already has for the attributes that the configuration omits, so the plan after import shows no change for them. This applies only to the import itself: external changes made after the import are detected as usual.",
-		"Note: this is currently supported on the `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, `snowflake_compute_pool`, `snowflake_external_volume`, `snowflake_openflow_deployment_snowflake_managed`, `snowflake_pipe`, `snowflake_postgres_mirror`, `snowflake_share`, `snowflake_warehouse`, `snowflake_warehouse_adaptive`, and `snowflake_warehouse_interactive` resources.",
+		"Note: this is currently supported on the `snowflake_authentication_policy`, `snowflake_backup_policy`, `snowflake_backup_set`, `snowflake_catalog_integration_aws_glue`, `snowflake_catalog_integration_iceberg_rest`, `snowflake_catalog_integration_object_storage`, `snowflake_catalog_integration_open_catalog`, `snowflake_compute_pool`, `snowflake_external_volume`, `snowflake_openflow_deployment_snowflake_managed`, `snowflake_pipe`, `snowflake_postgres_mirror`, `snowflake_share`, `snowflake_table`, `snowflake_warehouse`, `snowflake_warehouse_adaptive`, and `snowflake_warehouse_interactive` resources.",
 	),
-	NewEnabledByDefaultExperiment(
-		GrantsSafeDestroy,
-		[]string{"v2.23.0", "v2.24.0"},
-		"When enabled, grant destroy operations silently succeed when the underlying Snowflake object (or its dependencies) no longer exists.",
-		"Currently supported by: `snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, `snowflake_grant_ownership`.",
-		"This prevents errors when, for example, a warehouse or role is deleted externally and the corresponding grant resource is later removed from the Terraform configuration.",
-		"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
-	),
-	NewEnabledByDefaultExperiment(
-		TagAssociationSafeDestroy,
-		[]string{"v2.23.0", "v2.24.0"},
-		"When enabled, tag association destroy operations silently succeed when the tagged object (or its parent hierarchy) no longer exists.",
-		"Currently supported by: `snowflake_tag_association`.",
-		"This prevents errors when, for example, a table or schema is deleted externally and the corresponding tag association resource is later removed from the Terraform configuration.",
-		"Without this experiment, destroying such resources fails with `does not exist or not authorized`.",
-	),
+	NewPromotedExperiment(GrantsSafeDestroy),
+	NewPromotedExperiment(TagAssociationSafeDestroy),
 	NewOptInExperiment(
 		GrantAccountRoleShowCaching,
 		"Enables per-plan in-memory caching of `SHOW GRANTS OF ROLE` results for the `snowflake_grant_account_role` resource.",
@@ -210,13 +172,7 @@ var allExperiments = []Experiment{
 		fmt.Sprintf("This is a separate flag from `%s`: enabling this does not enable caching for `snowflake_grant_account_role`, and vice versa. Both can be enabled together.", GrantAccountRoleShowCaching),
 		"Intended for large configurations (thousands of grant resources) where plan and apply time is dominated by redundant `SHOW GRANTS` calls.",
 	),
-	NewEnabledByDefaultExperiment(
-		GrantAccountRoleSafePublicRole,
-		[]string{"v2.23.0", "v2.24.0"},
-		"When enabled, `snowflake_grant_account_role` treats granting the PUBLIC role as a silent no-op instead of producing an error.",
-		"Snowflake implicitly grants PUBLIC to every role and user (see [Snowflake documentation](https://docs.snowflake.com/en/user-guide/security-access-control-overview#system-defined-roles)), so an explicit `GRANT ROLE PUBLIC` is always a no-op at the SQL level. However, the provider's Read function cannot find the explicit grant via `SHOW GRANTS` and clears the state, causing an inconsistent-result error.",
-		"With this experiment, Create, Read, and Delete all treat PUBLIC role grants as permanent fixtures that require no actual SQL.",
-	),
+	NewPromotedExperiment(GrantAccountRoleSafePublicRole),
 	NewOptInExperiment(
 		HierarchyRenames,
 		"When enabled, allows in-place handling of hierarchy renames and moves for supported resources.",
@@ -224,25 +180,21 @@ var allExperiments = []Experiment{
 		"Without this experiment, changing the `database` field on `snowflake_schema` or the `database`/`schema` fields on the other supported resources may force resource recreation. With this experiment, the provider detects whether the parent was renamed or the object should be moved, and handles it without recreation.",
 		"For more information, see the [object renaming guide](./guides/object_renaming_guide).",
 	),
-	NewEnabledByDefaultExperiment(
-		InheritedGrants,
-		[]string{"v2.23.0", "v2.24.0"},
-		"Enables the `inherited` block in the `on_account_object`, `on_schema`, and `on_schema_object` blocks of the `snowflake_grant_privileges_to_account_role` resource, and in the `on_schema` and `on_schema_object` blocks of the `snowflake_grant_privileges_to_database_role` resource.",
-		"Without this experiment, using an `inherited` block results in an error.",
-	),
+	NewPromotedExperiment(InheritedGrants),
 	NewOptInExperiment(
 		ObjectParameterUnsetOnDelete,
 		"Changes the delete behavior of the `snowflake_object_parameter` resource to use `ALTER <OBJECT_TYPE> <identifier> UNSET <PARAMETER>` instead of resetting the parameter to its default value.",
 		"Without this experiment, deleting the resource fetches the parameter's default value and explicitly sets it back, which is fragile and doesn't truly remove the object-level override.",
 		"When enabled, the parameter is properly unset, allowing the inherited value from the higher hierarchy level to take effect.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		ObjectParameterParseOnSet,
+		[]string{"v2.25.0", "v2.26.0"},
 		"Changes how `snowflake_object_parameter` handles the `value` field for covered parameters.",
-		"Without this experiment, `value` is sent as a raw SQL token. You supply any quoting, and a value that does not match the parameter is not checked by the provider.",
 		"With this experiment, covered parameters are parsed with the same rules as the typed SDK fields. A value that does not match the parameter fails in the provider. String values are quoted by the provider, so a configuration such as `DEFAULT_DDL_COLLATION = \"en-ci-upper\"` is stored as written. Identifier parameters stay a bare name in configuration. Numeric and boolean values need no quoting either way.",
-		"Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. Account-level parameters already parse values this way. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior.",
-		"See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-parse-snowflake_object_parameter-values-on-set.",
+		"Covered today: account-level (`on_account = true`) parameters and Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table. A parameter or object type that is not covered yet keeps the previous behavior, including Function and Procedure, because this resource does not capture argument types. An enum value the catalog does not recognize is logged and also keeps the previous behavior. This experiment also decides if `snowflake_object_parameter` is forward-compatible: with the experiment enabled, the `value_type` field sends a parameter or an object type that is not covered yet, rendering `value` by that type. It is behind this experiment, because the rules for the value (the provider quotes it by the parameter type) follow the behavior of this experiment. Without the experiment, `value_type` is not used.",
+		"Without this experiment, `value` is sent as a raw SQL token for parameters set on objects, and account-level parameters use the v2.22.x legacy write path. You supply any quoting, and a value that does not match the parameter is not checked by the provider.",
+		"See the migration guide for a detailed view: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.",
 	),
 	NewOptInExperiment(
 		AuthenticatorExplicitOnly,
@@ -256,17 +208,25 @@ var allExperiments = []Experiment{
 		"When enabled, you can set `account` instead of setting `organization_name` and `account_name` separately. The field accepts both the `org-name` format (e.g. `\"myorg-myaccount\"`) and an account locator (e.g. `\"xy12345\"`). If both `organization_name` and `account_name` are set, they take precedence over `account`. The `SNOWFLAKE_ACCOUNT` environment variable is used as the `account` value only when this experiment is enabled.",
 		"Without this experiment, setting the `account` field in the provider configuration or in a TOML profile results in an error directing you to enable this experiment. A value coming from the `SNOWFLAKE_ACCOUNT` environment variable is ignored with a warning instead, because this experiment will be enabled by default in v3 and the variable will be taken into account from that version on.",
 	),
-	NewOptInExperiment(
+	NewEnabledByDefaultExperiment(
 		AccountParameterCatalogWritePath,
+		[]string{"v2.25.0", "v2.26.0"},
 		"Changes how `snowflake_account_parameter` builds the SQL it sends for the `value` field of string-typed and identifier-typed parameters.",
-		"String-typed parameter values no longer need to be manually wrapped in single quotes within `value` — quoting is now handled internally. Identifier-typed parameters (e.g. referencing a network policy by name) require no `value` change, but are now sent as a quoted identifier instead of a single-quoted string literal.",
-		"This experiment is also the first step toward forward-compatible parameter support (new Snowflake parameters usable without a provider upgrade); for now it only changes how existing parameters are written. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#opt-in-experiment-internal-quoting-for-snowflake_account_parameter.",
+		"With this experiment, string-typed parameter values must not be manually wrapped in single quotes within `value`, because quoting is handled by the provider. Identifier-typed parameters (e.g. referencing a network policy by name) are sent as a quoted identifier, so `value` must match the name stored in Snowflake.",
+		"Without this experiment, the v2.22.x legacy write path is used: some string-typed values must be wrapped in single quotes manually, identifier-typed values are sent as a single-quoted string literal or as written, and the parameters that the legacy write path does not support (e.g. the parameters added in v2.22.0, like `DISABLE_UI_DOWNLOAD_BUTTON`) fail with an error.",
+		"This experiment also decides if `snowflake_account_parameter` is forward-compatible (new Snowflake parameters usable without a provider upgrade). With the experiment enabled, the `value_type` field sends a parameter that the provider does not support yet, rendering `value` by that type. It is behind this experiment, because the rules for the value (the provider quotes it by the parameter type) follow the behavior of this experiment. Without the experiment, `value_type` is not used. See the migration guide for a detailed, before/after view of the configuration changes: https://github.com/snowflakedb/terraform-provider-snowflake/blob/dev/MIGRATION_GUIDE.md#new-feature-account_parameter_catalog_write_path-and-object_parameter_parse_on_set-enabled-by-default.",
 	),
 	NewOptInExperiment(
 		WriteOnlyAttributes,
 		"Enables write-only attributes. Their values are never saved in the Terraform plan or state, so they can be set from an ephemeral resource. They require Terraform 1.11 or later.",
 		"Currently supported by: `rsa_public_key_wo` and `rsa_public_key_2_wo`, with their `rsa_public_key_wo_version` and `rsa_public_key_2_wo_version` version counters, on `snowflake_user`, `snowflake_service_user`, and `snowflake_legacy_service_user`.",
 		"Without this experiment, using a write-only attribute that is behind it results in an error.",
+	),
+	NewOptInExperiment(
+		FailoverGroupReadOnlyAutoSwitch,
+		"Lets the `snowflake_failover_group` resource change the membership of a failover group that stays in the read-only mode.",
+		"Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` while a failover group is read-only. Without this experiment, the plan fails when `read_only` stays `true` and one of these attributes changes.",
+		"When enabled, the plan passes. The provider leaves the read-only mode before the change and enters it again afterwards, in the same apply.",
 	),
 }
 

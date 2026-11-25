@@ -152,14 +152,11 @@ func quotaScopeToSchema(scope sdk.QuotaScope) map[string]any {
 		if normalized, err := resource.NormalizedDomain(); err == nil {
 			domain = string(normalized)
 		}
-		resourceSchema := map[string]any{
+		sharedResources[i] = map[string]any{
 			"domain": domain,
+			"id":     resource.Id,
 			"name":   resource.Name,
 		}
-		if id, err := resource.Id.Int64(); err == nil {
-			resourceSchema["id"] = int(id)
-		}
-		sharedResources[i] = resourceSchema
 	}
 	userNames := func(users []sdk.QuotaScopeUser) []string {
 		names := make([]string, len(users))

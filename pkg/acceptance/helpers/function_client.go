@@ -29,7 +29,7 @@ func (c *FunctionClient) client() sdk.Functions {
 	return c.context.client.Functions
 }
 
-func (c *FunctionClient) Create(t *testing.T, arguments ...sdk.DataType) *sdk.Function {
+func (c *FunctionClient) Create(t *testing.T, arguments ...datatypes.DataType) *sdk.Function {
 	t.Helper()
 	return c.CreateWithIdentifier(t, c.ids.RandomSchemaObjectIdentifierWithArguments(arguments...))
 }
@@ -41,14 +41,14 @@ func (c *FunctionClient) CreateWithIdentifier(t *testing.T, id sdk.SchemaObjectI
 		t, id,
 		sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
 			id.SchemaObjectId(),
-			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeInt)),
+			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(testdatatypes.DataTypeInteger)),
 			"SELECT 1",
 		),
 	)
 }
 
 // TODO [SNOW-1850370]: improve this helper (all  other types creation)
-func (c *FunctionClient) CreateSecure(t *testing.T, arguments ...sdk.DataType) *sdk.Function {
+func (c *FunctionClient) CreateSecure(t *testing.T, arguments ...datatypes.DataType) *sdk.Function {
 	t.Helper()
 	id := c.ids.RandomSchemaObjectIdentifierWithArguments(arguments...)
 
@@ -56,7 +56,7 @@ func (c *FunctionClient) CreateSecure(t *testing.T, arguments ...sdk.DataType) *
 		t, id,
 		sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
 			id.SchemaObjectId(),
-			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeInt)),
+			*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(testdatatypes.DataTypeInteger)),
 			"SELECT 1",
 		).WithSecure(true),
 	)
@@ -65,7 +65,7 @@ func (c *FunctionClient) CreateSecure(t *testing.T, arguments ...sdk.DataType) *
 func (c *FunctionClient) CreateSql(t *testing.T) (*sdk.Function, func()) {
 	t.Helper()
 	dataType := testdatatypes.DataTypeFloat
-	id := c.ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+	id := c.ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	return c.CreateSqlWithIdentifierAndArgument(t, id.SchemaObjectId(), dataType)
 }
 
@@ -73,7 +73,7 @@ func (c *FunctionClient) CreateSqlWithIdentifierAndArgument(t *testing.T, id sdk
 	t.Helper()
 	ctx := context.Background()
 
-	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
+	idWithArgs := sdk.NewSchemaObjectIdentifierWithArgumentsInSchema(id.SchemaId(), id.Name(), dataType)
 	argName := "x"
 	definition := c.SampleSqlDefinition(t)
 	dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -122,7 +122,7 @@ func (c *FunctionClient) CreateJava(t *testing.T) (*sdk.Function, func()) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := c.ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+	id := c.ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 	dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 	returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -147,7 +147,7 @@ func (c *FunctionClient) CreatePythonInSchema(t *testing.T, schemaId sdk.Databas
 	ctx := context.Background()
 
 	dataType := testdatatypes.DataTypeNumber_36_2
-	id := c.ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+	id := c.ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId, dataType)
 
 	funcName := "some_function"
 	argName := "x"
@@ -194,7 +194,7 @@ func (c *FunctionClient) CreateWithRequest(t *testing.T, id sdk.SchemaObjectIden
 	ctx := context.Background()
 	argumentRequests := make([]sdk.FunctionArgumentRequest, len(id.ArgumentDataTypes()))
 	for i, argumentDataType := range id.ArgumentDataTypes() {
-		argumentRequests[i] = *sdk.NewFunctionArgumentRequest(c.ids.Alpha(), nil).WithArgDataTypeOld(argumentDataType)
+		argumentRequests[i] = *sdk.NewFunctionArgumentRequest(c.ids.Alpha(), argumentDataType)
 	}
 	err := c.client().CreateForSQL(ctx, req.WithArguments(argumentRequests))
 	require.NoError(t, err)

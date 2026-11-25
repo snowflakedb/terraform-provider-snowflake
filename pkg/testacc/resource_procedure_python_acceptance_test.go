@@ -31,8 +31,8 @@ func TestAcc_ProcedurePython_InlineBasic(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SamplePythonDefinition(t, funcName, argName)
 
@@ -141,7 +141,7 @@ func TestAcc_ProcedurePython_InlineFull(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SamplePythonDefinition(t, funcName, argName)
 
@@ -279,7 +279,7 @@ func TestAcc_ProcedurePython_Bcr2325ArtifactRepositoryPackages(t *testing.T) {
 	dataType := testdatatypes.DataTypeVarchar_100
 	snowparkVersion := "1.14.0"
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schema.ID(), dataType)
 	definition := testClient().Procedure.SamplePythonDefinition(t, funcName, argName)
 
 	procedureModel := model.ProcedurePythonBasicInline("w", id, dataType, funcName, definition).
@@ -344,7 +344,7 @@ func TestAcc_ProcedurePython_ImportsDiffSuppression(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SamplePythonDefinition(t, funcName, argName)
 
@@ -428,7 +428,7 @@ func TestAcc_ProcedurePython_ChangeImports(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SamplePythonDefinition(t, funcName, argName)
 

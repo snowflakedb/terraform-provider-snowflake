@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -268,10 +267,7 @@ func DeleteContextGrantApplicationRole(ctx context.Context, d *schema.ResourceDa
 	}
 	objectType := parts[1]
 	granteeName := parts[2]
-	revokeFunc := client.ApplicationRoles.Revoke
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
-		revokeFunc = client.ApplicationRoles.RevokeSafely
-	}
+	revokeFunc := client.ApplicationRoles.RevokeSafely
 	switch objectType {
 	case "ACCOUNT_ROLE":
 		applicationRoleName, err := sdk.ParseAccountObjectIdentifier(granteeName)

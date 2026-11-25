@@ -1,68 +1,30 @@
 package datatypes
 
-import (
-	"fmt"
-	"strconv"
-	"strings"
-)
-
 // TimestampNtzDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-datetime#timestamp-ltz-timestamp-ntz-timestamp-tz
 // It does have synonyms. It does have optional precision attribute.
 // Precision can be known or unknown.
 type TimestampNtzDataType struct {
-	precision      int
-	underlyingType string
-
-	precisionKnown bool
+	sizedDataType
 }
 
-func (t *TimestampNtzDataType) ToSql() string {
-	return fmt.Sprintf("%s(%d)", t.underlyingType, t.precision)
+func NewTimestampNtzDataType() DataType {
+	return newTimestampNtzDataType(DefaultTimestampPrecision, TimestampNtzLegacyDataType, false)
 }
 
-func (t *TimestampNtzDataType) ToLegacyDataTypeSql() string {
-	return TimestampNtzLegacyDataType
+func NewTimestampNtzDataTypeWithPrecision(precision int) DataType {
+	return newTimestampNtzDataType(precision, TimestampNtzLegacyDataType, true)
 }
 
-func (t *TimestampNtzDataType) Canonical() string {
-	return fmt.Sprintf("%s(%d)", TimestampNtzLegacyDataType, t.precision)
-}
-
-func (t *TimestampNtzDataType) ToSqlWithoutUnknowns() string {
-	switch {
-	case t.precisionKnown:
-		return fmt.Sprintf("%s(%d)", t.underlyingType, t.precision)
-	default:
-		return fmt.Sprintf("%s", t.underlyingType)
-	}
+func newTimestampNtzDataType(precision int, underlyingType string, precisionKnown bool) *TimestampNtzDataType {
+	return &TimestampNtzDataType{sizedDataType{precision, underlyingType, TimestampNtzLegacyDataType, precisionKnown}}
 }
 
 var TimestampNtzDataTypeSynonyms = []string{TimestampNtzLegacyDataType, "TIMESTAMPNTZ", "TIMESTAMP WITHOUT TIME ZONE", "DATETIME"}
 
 func parseTimestampNtzDataTypeRaw(raw sanitizedDataTypeRaw) (*TimestampNtzDataType, error) {
-	r := strings.TrimSpace(strings.TrimPrefix(raw.raw, raw.matchedByType))
-	if r == "" {
-		return &TimestampNtzDataType{DefaultTimestampPrecision, raw.matchedByType, false}, nil
-	}
-	if !strings.HasPrefix(r, "(") || !strings.HasSuffix(r, ")") {
-		return nil, fmt.Errorf(`timestamp ntz %s could not be parsed, use "%s(precision)" format`, raw.raw, raw.matchedByType)
-	}
-	precisionRaw := r[1 : len(r)-1]
-	precision, err := strconv.Atoi(strings.TrimSpace(precisionRaw))
+	precision, known, err := parseSize(raw, "timestamp ntz", "precision", DefaultTimestampPrecision)
 	if err != nil {
-		return nil, fmt.Errorf(`could not parse the timestamp's precision: "%s", err: %w`, precisionRaw, err)
+		return nil, err
 	}
-	return &TimestampNtzDataType{precision, raw.matchedByType, true}, nil
-}
-
-func areTimestampNtzDataTypesTheSame(a, b *TimestampNtzDataType) bool {
-	return a.precision == b.precision
-}
-
-func areTimestampNtzDataTypesDefinitelyDifferent(a, b *TimestampNtzDataType) bool {
-	var precisionDefinitelyDifferent bool
-	if a.precisionKnown && b.precisionKnown {
-		precisionDefinitelyDifferent = a.precision != b.precision
-	}
-	return precisionDefinitelyDifferent
+	return newTimestampNtzDataType(precision, raw.matchedByType, known), nil
 }

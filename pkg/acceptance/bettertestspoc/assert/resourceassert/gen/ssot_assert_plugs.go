@@ -32,7 +32,7 @@ func ssotResourceAssertionModels() []ResourceAssertionsModel {
 
 // selectsForResourceAssert is the one filter of the resource assertion generator: the object is a resource and has attributes.
 func selectsForResourceAssert(obj ssot.Object) bool {
-	return !obj.VariantBaseOnly && len(obj.Attributes) > 0
+	return !obj.IsVariantBaseOnly() && len(obj.Attributes) > 0
 }
 
 func WithPreamble(model ResourceAssertionsModel, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceAssertionsModel {

@@ -69,7 +69,6 @@ var ExternalVolumeStorageLocationAttrs = struct {
 		Type:        ssot.AttrString,
 		Required:    true,
 		Description: "Specifies the base URL for your cloud storage location.",
-		CreateSql:   ssot.Clause(),
 	},
 	AwsRoleArn: ssot.Attribute{
 		Name:        "storage_aws_role_arn",
@@ -81,7 +80,6 @@ var ExternalVolumeStorageLocationAttrs = struct {
 		Name:        "storage_aws_external_id",
 		Type:        ssot.AttrString,
 		Description: "External ID that Snowflake uses to establish a trust relationship with AWS.",
-		CreateSql:   ssot.Clause(),
 	},
 	EncryptionType: ssot.Attribute{
 		Name:        "encryption_type",
@@ -99,13 +97,11 @@ var ExternalVolumeStorageLocationAttrs = struct {
 		Name:        "storage_aws_access_point_arn",
 		Type:        ssot.AttrString,
 		Description: "Specifies the access point ARN for the S3 bucket containing your data files. Only applicable for S3 and S3GOV storage providers.",
-		CreateSql:   ssot.Clause(),
 	},
 	UsePrivatelinkEndpoint: ssot.Attribute{
 		Name:        "use_privatelink_endpoint",
 		Type:        ssot.AttrBool,
 		Description: "Specifies whether to use a privatelink endpoint for the storage location. Only applicable for S3, S3GOV, and AZURE storage providers.",
-		CreateSql:   ssot.Clause(),
 	},
 	AzureTenantId: ssot.Attribute{
 		Name:        "azure_tenant_id",
@@ -186,18 +182,17 @@ var (
 
 // ExternalVolumeAttrs holds the external volume fields that SHOW and DESCRIBE reuse.
 // DESCRIBE EXTERNAL VOLUME returns a generic property list (DescribeRows), which the generated
-// ParseExternalVolumeDescribed parses into the details that Describe.Columns models. Every DESCRIBE value, including allow_writes, is a plain string, unlike
-// SHOW's typed bool, so DescribeAllowWrites is a separate attribute from AllowWrites.
+// ParseExternalVolumeDescribed parses into the details that Describe.Columns models. allow_writes is a bool
+// on the resource and in SHOW. DescribeString makes the DESCRIBE details field the property string.
 // StorageLocations is skipped or manual in the generators: its nested per-provider JSON shape has
 // no ssot representation yet.
 var ExternalVolumeAttrs = struct {
-	Comment             ssot.Attribute
-	AllowWrites         ssot.Attribute
-	StorageLocation     ssot.Attribute
-	Name                ssot.Attribute
-	Active              ssot.Attribute
-	DescribeAllowWrites ssot.Attribute
-	StorageLocations    ssot.Attribute
+	Comment          ssot.Attribute
+	AllowWrites      ssot.Attribute
+	StorageLocation  ssot.Attribute
+	Name             ssot.Attribute
+	Active           ssot.Attribute
+	StorageLocations ssot.Attribute
 	// The DESCRIBE rows are a generic property list, which the SDK parses into the details the Describe columns model.
 	ParentProperty  ssot.Attribute
 	Property        ssot.Attribute
@@ -206,17 +201,16 @@ var ExternalVolumeAttrs = struct {
 	PropertyDefault ssot.Attribute
 }{
 	Comment: ssot.Attribute{
-		Name:          "comment",
-		Type:          ssot.AttrString,
-		Description:   "Specifies a comment for the external volume.",
-		OptionalInDb:  true,
-		CreateMapping: ssot.StringAttributeCreateBuilder,
+		Name:         "comment",
+		Type:         ssot.AttrString,
+		Description:  "Specifies a comment for the external volume.",
+		OptionalInDb: true,
 	},
 	AllowWrites: ssot.Attribute{
-		Name:          "allow_writes",
-		Type:          ssot.AttrBool,
-		Description:   "Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog.",
-		CreateMapping: ssot.BooleanStringAttributeCreateBuilder,
+		Name:           "allow_writes",
+		Type:           ssot.AttrBool,
+		DescribeString: true,
+		Description:    "Specifies whether write operations are allowed for the external volume; must be set to TRUE for Iceberg tables that use Snowflake as the catalog.",
 		// The object has no UNSET for it, so a removed value is set to the default, which is true.
 		UpdateMapping: ssot.BooleanStringAttributeUnsetFallbackUpdate(true),
 	},
@@ -224,7 +218,6 @@ var ExternalVolumeAttrs = struct {
 		Name:      "storage_location",
 		Type:      ssot.AttrList,
 		Required:  true,
-		MinItems:  new(1),
 		CreateSql: ssot.ListOfObjects(ssot.Sql("STORAGE_LOCATIONS"), ssot.Parentheses()),
 		Description: "List of named cloud storage locations in different regions and, optionally, cloud platforms. Minimum 1 required. " +
 			"The order of the list is important as it impacts the active storage location, and updates will be triggered if it changes. " +
@@ -260,10 +253,6 @@ var ExternalVolumeAttrs = struct {
 	},
 	Name:   ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
 	Active: ssot.Attribute{Name: "active", Type: ssot.AttrString, Readonly: true},
-	// DescribeAllowWrites is a plain string on DESCRIBE's property list, unlike SHOW's AllowWrites
-	// bool. Name differs from AllowWrites (ssot forbids a second Readonly column reusing a writable
-	// CREATE/ALTER attribute's Name); ShowName restores the real "allow_writes" output key.
-	DescribeAllowWrites: ssot.Attribute{Name: "describe_allow_writes", ShowName: "allow_writes", Type: ssot.AttrString, Readonly: true},
 	// StorageLocations only needs to exist so the schema/assertion ManualFields/SkipFields generator
 	// options can target it; its nested per-provider JSON shape is not expressible as an ssot Elem.
 	StorageLocations: ssot.Attribute{
@@ -315,7 +304,7 @@ var ExternalVolumeObject = ssot.Object{
 					ssot.SdkDescribeDetailsParse(
 						ssot.DescribeProperty(&ExternalVolumeAttrs.Comment, "COMMENT"),
 						ssot.DescribeProperty(&ExternalVolumeAttrs.Active, "ACTIVE"),
-						ssot.DescribeProperty(&ExternalVolumeAttrs.DescribeAllowWrites, "ALLOW_WRITES"),
+						ssot.DescribeProperty(&ExternalVolumeAttrs.AllowWrites, "ALLOW_WRITES"),
 						ssot.DescribePropertyPrefix(&ExternalVolumeAttrs.StorageLocations, "STORAGE_LOCATION_"),
 					),
 				),
@@ -363,7 +352,7 @@ var ExternalVolumeObject = ssot.Object{
 			&ExternalVolumeAttrs.StorageLocations,
 			&ExternalVolumeAttrs.Active,
 			&ExternalVolumeAttrs.Comment,
-			&ExternalVolumeAttrs.DescribeAllowWrites,
+			&ExternalVolumeAttrs.AllowWrites,
 		},
 	},
 	DescribeRows: ssot.OutputSpec{

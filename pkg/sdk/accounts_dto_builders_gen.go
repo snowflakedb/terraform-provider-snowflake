@@ -744,6 +744,11 @@ func (s *AccountParametersRequest) WithServerlessTaskMinStatementSize(serverless
 	return s
 }
 
+func (s *AccountParametersRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *AccountParametersRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
+	return s
+}
+
 func (s *AccountParametersRequest) WithShareRestrictions(shareRestrictions bool) *AccountParametersRequest {
 	s.ShareRestrictions = &shareRestrictions
 	return s
@@ -1130,6 +1135,8 @@ func (s *AccountParametersRequest) SetParameterFromRaw(key string, value string)
 		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMaxStatementSize)
 	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
 		return assignParsedEnumParameter(value, ToWarehouseSize, &s.ServerlessTaskMinStatementSize)
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
 	case "SHARE_RESTRICTIONS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ShareRestrictions)
 	case "SIMULATED_DATA_SHARING_CONSUMER":
@@ -1859,6 +1866,11 @@ func (s *AccountParametersUnsetRequest) WithServerlessTaskMinStatementSize(serve
 	return s
 }
 
+func (s *AccountParametersUnsetRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs bool) *AccountParametersUnsetRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
+	return s
+}
+
 func (s *AccountParametersUnsetRequest) WithShareRestrictions(shareRestrictions bool) *AccountParametersUnsetRequest {
 	s.ShareRestrictions = &shareRestrictions
 	return s
@@ -2245,6 +2257,8 @@ func (s *AccountParametersUnsetRequest) UnsetParameterFromRaw(key string) error 
 		s.ServerlessTaskMaxStatementSize = Bool(true)
 	case "SERVERLESS_TASK_MIN_STATEMENT_SIZE":
 		s.ServerlessTaskMinStatementSize = Bool(true)
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		s.ServiceCallerTokenValiditySecs = Bool(true)
 	case "SHARE_RESTRICTIONS":
 		s.ShareRestrictions = Bool(true)
 	case "SIMULATED_DATA_SHARING_CONSUMER":

@@ -7,16 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type dynamicTableDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.DynamicTableDetails] = dynamicTableDetailsToSchemaMapper{}
+
 // DescribeDynamicTableDetailsSchema represents output of DESCRIBE query for the single DynamicTableDetails.
-var DescribeDynamicTableDetailsSchema = map[string]*schema.Schema{
+var DescribeDynamicTableDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"type": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	"kind": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -53,14 +55,15 @@ var DescribeDynamicTableDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, dynamicTableDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeDynamicTableDetailsSchema
 
 func DynamicTableDetailsToSchema(dynamicTableDetails *sdk.DynamicTableDetails) map[string]any {
 	dynamicTableDetailsSchema := make(map[string]any)
 	dynamicTableDetailsSchema["name"] = dynamicTableDetails.Name
-	dynamicTableDetailsSchema["type"] = string(dynamicTableDetails.Type)
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	dynamicTableDetailsSchema["kind"] = dynamicTableDetails.Kind
 	dynamicTableDetailsSchema["is_null"] = dynamicTableDetails.IsNull
 	dynamicTableDetailsSchema["default"] = dynamicTableDetails.Default
@@ -70,6 +73,7 @@ func DynamicTableDetailsToSchema(dynamicTableDetails *sdk.DynamicTableDetails) m
 	dynamicTableDetailsSchema["expression"] = dynamicTableDetails.Expression
 	dynamicTableDetailsSchema["comment"] = dynamicTableDetails.Comment
 	dynamicTableDetailsSchema["policy_name"] = dynamicTableDetails.PolicyName
+	dynamicTableDetailsToSchemaMapper{}.additionalToSchema(dynamicTableDetails, dynamicTableDetailsSchema)
 	return dynamicTableDetailsSchema
 }
 

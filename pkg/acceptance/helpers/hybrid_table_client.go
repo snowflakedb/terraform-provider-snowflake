@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -25,7 +26,7 @@ func (c *HybridTableClient) Create(t *testing.T) (sdk.SchemaObjectIdentifier, fu
 	return c.CreateWithColumns(t, []sdk.HybridTableColumnRequest{
 		{
 			Name:     "id",
-			DataType: sdk.DataType("INT"),
+			DataType: testdatatypes.DataTypeInteger,
 			InlineConstraint: &sdk.ColumnInlineConstraint{
 				Type: sdk.ColumnConstraintTypePrimaryKey,
 			},

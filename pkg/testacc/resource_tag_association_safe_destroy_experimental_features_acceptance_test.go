@@ -3,26 +3,21 @@
 package testacc
 
 import (
-	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
 // TestAcc_Experimental_TagAssociation_SafeDestroy verifies that destroying a tag_association for columns
-// fails when the backing object is removed externally (default behavior), and succeeds when the
-// TAG_ASSOCIATION_SAFE_DESTROY experiment is enabled.
+// succeeds when the backing object is removed externally.
 //
 // Regression test for https://github.com/snowflakedb/terraform-provider-snowflake/issues/3869.
 func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
-	disabledProviderModel := providermodel.SnowflakeProvider().
-		WithAllEnabledByDefaultExperimentsDisabled()
-
 	cases := []struct {
 		name  string
 		setup func(t *testing.T) (tagAssociationModel *model.TagAssociationModel, preDestroy func())
@@ -68,7 +63,7 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 			},
 		},
 		{
-			// Without experiment, Delete can surface ErrDoesNotExistOrOperationCannotBePerformed from
+			// Delete can surface ErrDoesNotExistOrOperationCannotBePerformed from
 			// SHOW TABLES IN SCHEMA on a dropped schema (see skipColumnIfDoesNotExist).
 			name: "missing_schema",
 			setup: func(t *testing.T) (*model.TagAssociationModel, func()) {
@@ -81,7 +76,7 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 				table, _ := testClient().Table.CreateWithRequest(
 					t,
 					sdk.NewCreateTableRequest(
-						testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeInt), *sdk.NewTableColumnRequest("ID2", sdk.DataTypeInt)})),
+						testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID()), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeInteger), *sdk.NewTableColumnRequest("ID2", testdatatypes.DataTypeInteger)})),
 				)
 
 				columnId := sdk.NewTableColumnIdentifier(table.ID().DatabaseName(), table.ID().SchemaName(), table.ID().Name(), "ID")
@@ -109,14 +104,8 @@ func TestAcc_Experimental_TagAssociation_SafeDestroy(t *testing.T) {
 						Config:                   config.FromModels(t, tagAssociationModel),
 					},
 					{
-						ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-						PreConfig:                preDestroy,
-						Config:                   config.FromModels(t, disabledProviderModel, tagAssociationModel),
-						Destroy:                  true,
-						ExpectError:              regexp.MustCompile("does not exist or not authorized"),
-					},
-					{
 						ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+						PreConfig:                preDestroy,
 						Config:                   config.FromModels(t, tagAssociationModel),
 						Destroy:                  true,
 					},

@@ -107,27 +107,7 @@ var alertSchema = collections.MergeMaps(
 		},
 	},
 	alertAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW ALERTS` for the given alert.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowAlertSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE ALERT` for the given alert.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeAlertDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeAlert, schemas.ShowAlertSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeAlert, schemas.DescribeAlertDetailsSchema),
 )

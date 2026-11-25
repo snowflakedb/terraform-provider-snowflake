@@ -19,16 +19,6 @@ const (
 	AttrObject AttributeType = "object"
 )
 
-// ChildrenRule is a validation over the fields of the SQL struct of an object attribute.
-type ChildrenRule string
-
-const (
-	// ChildrenAtLeastOne requires at least one field to be set (AtLeastOneValueSet).
-	ChildrenAtLeastOne ChildrenRule = "at_least_one"
-	// ChildrenExactlyOne requires exactly one field to be set (ExactlyOneValueSet).
-	ChildrenExactlyOne ChildrenRule = "exactly_one"
-)
-
 // ObjectElem is the Elem of a list or set of objects: an AttrObject whose Children are the fields of each element.
 func ObjectElem(children []Attribute) *Attribute {
 	return &Attribute{Type: AttrObject, Children: children}
@@ -42,17 +32,26 @@ type Attribute struct {
 	Description           string
 	AdditionalDescription string
 	ForceNew              bool
-	Min                   *int
-	Max                   *int
-	// MinItems and MaxItems are Terraform list or set bounds. Nil means unset.
-	// A list with MinItems and no MaxItems holds multiple items, as storage_location does.
-	MinItems       *int
-	MaxItems       *int
+	// Min and Max are inclusive bounds. An int bounds its value. A list or set bounds its number of items. Nil means
+	// unset. A required AttrList deduces MinItems 1 when Min is nil, so omit Min on a required list unless setting a
+	// higher bound (Min of 0 or 1 is rejected).
+	Min            *int
+	Max            *int
 	RawDescription bool
 	Enum           *Enum
-	// ShowEnum is the SHOW, DESCRIBE, and CREATE/SET enum when it differs from Enum.
-	// Empty uses Enum. Resource schema and model builders keep Enum.
+	// ShowEnum is the SHOW and CREATE/SET enum when it differs from Enum.
+	// Empty uses Enum. Resource schema and model builders keep Enum. DESCRIBE uses DescribeEnum or Enum.
 	ShowEnum *Enum
+	// ShowString makes the SHOW column a string. The resource, CREATE, and SET keep Type.
+	// A string attribute leaves it unset.
+	ShowString bool
+	// DescribeString makes the DESCRIBE column a string. The resource, CREATE, SET, and SHOW keep Type.
+	// A string attribute leaves it unset. It is not combined with DescribeEnum.
+	DescribeString bool
+	// DescribeEnum is the DESCRIBE enum when it differs from Enum.
+	// Empty uses Enum. SHOW and CREATE/SET keep ShowEnum or Enum. The resource schema keeps Enum.
+	// Leave it unset when it is Enum. It is not combined with DescribeString.
+	DescribeEnum *Enum
 	// IncludeAliasedInTheDescription lists aliases in the resource description.
 	// Empty lists canonical values.
 	IncludeAliasedInTheDescription bool
@@ -61,16 +60,15 @@ type Attribute struct {
 	Elem *Attribute
 	// Children are the fields of an AttrObject: a single block, an Elem, or a SqlOnly nested struct. They are valid only
 	// there: a list or set of objects declares its fields on an Elem object (ObjectElem), never on the list itself.
-	// A single block sets no MinItems or MaxItems: Terraform gets MaxItems 1, and MinItems 1 when it is Required.
+	// A single block sets no Min or Max: Terraform gets at most one item, and one item when it is Required.
 	// A SqlOnly child is fixed text of the SQL struct, such as TYPE = OAUTH: a StaticSQL clause, valid when the object has an
 	// object clause. It is in NestedSqlFields and not in NestedFields, so it is not a Terraform field.
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
 	// Resource alter generation skips a nested attribute and every field under it.
 	Children []Attribute
-	// ChildrenRule adds a validation over the Children that are fields of the SQL struct of an object, not fixed texts:
-	// at least one of them is set, or exactly one. The order is the Children order. It is valid only on an object with at
-	// least two such Children. The schema-side AtLeastOneOf is not generated from it.
-	ChildrenRule   ChildrenRule
+	// Validations are rules over the Children of an object: a single block, an Elem, or a SqlOnly nested struct. Each names
+	// Children that are fields of the SQL struct, not fixed texts, tags, or Required. See Validation and the README.
+	Validations    []Validation
 	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
 	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
 	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
@@ -135,14 +133,6 @@ type Attribute struct {
 	// A SHOW column does not need this: every optional scalar SHOW column is drift-tracked.
 	// Leave it unset when the omitted value is empty, as catalog_namespace is.
 	ServerDefault bool
-	// ConflictsWith names other attributes on the same level. The generator emits schema.ConflictsWith
-	// as a path from the resource root: the name at the top, and parent.0.name under a single block
-	// (an object, or a list of objects with MaxItems 1).
-	// A set, or a list without that bound, cannot name these relations.
-	ConflictsWith []Attribute
-	// AtLeastOneOf names attributes of which at least one must be set. Paths follow ConflictsWith.
-	// The list may include this attribute.
-	AtLeastOneOf []Attribute
 	// Sensitive marks the Terraform schema field sensitive.
 	Sensitive bool
 	// Deprecated is the schema Deprecated message. Empty means the attribute is not deprecated.
@@ -160,8 +150,20 @@ type Attribute struct {
 	// The generator emits resources.<Name>. Nil means no link.
 	RelatedResource *Object
 	Tags            bool // optional TAG clause. Only valid on a CREATE list, not on Attributes.
-	Parameters      bool // parameter catalog spread. Valid on a CREATE, SET, or UNSET list, not on Attributes.
+	// TagForm selects SET TAG or UNSET TAG when Tags is set. Empty emits optional TAG.
+	TagForm    TagForm
+	Parameters bool // parameter catalog spread. Valid on a CREATE, SET, or UNSET list, not on Attributes.
 }
+
+// TagForm selects the TAG clause a Tags child emits.
+type TagForm string
+
+const (
+	// TagFormSet emits SET TAG.
+	TagFormSet TagForm = "set"
+	// TagFormUnset emits UNSET TAG.
+	TagFormUnset TagForm = "unset"
+)
 
 // Tags is the optional TAG clause. Put it on a CREATE list. It is not an Attributes entry.
 var Tags = &Attribute{Name: "tags", Tags: true}
@@ -199,12 +201,46 @@ func (a Attribute) ChangesInPlace() bool {
 	return !a.ForceNew && !a.Readonly && !a.Computed && !a.CreateOnly && !a.SqlOnly
 }
 
-// ColumnEnum is the enum used for a SHOW, DESCRIBE, or CREATE/SET column.
+// ColumnEnum returns ShowEnum when it is set, and Enum otherwise.
+// SHOW and CREATE/SET use that result. DESCRIBE calls it on ForDescribe, which has cleared ShowEnum.
 func (a Attribute) ColumnEnum() *Enum {
 	if a.ShowEnum != nil {
 		return a.ShowEnum
 	}
 	return a.Enum
+}
+
+// ForShow is the attribute as a SHOW column reads it. ShowString makes that column a string.
+func (a Attribute) ForShow() Attribute {
+	if !a.ShowString {
+		return a
+	}
+	a.Type = AttrString
+	a.Enum = nil
+	a.ShowEnum = nil
+	a.Elem = nil
+	a.Children = nil
+	return a
+}
+
+// ForDescribe is the attribute as a DESCRIBE column reads it.
+// DescribeString makes that column a string. DescribeEnum replaces the enum for that column.
+func (a Attribute) ForDescribe() Attribute {
+	if a.DescribeString {
+		a.Type = AttrString
+		a.Enum = nil
+		a.ShowEnum = nil
+		a.DescribeEnum = nil
+		a.Elem = nil
+		a.Children = nil
+		return a
+	}
+	if a.DescribeEnum != nil {
+		a.Enum = a.DescribeEnum
+	}
+	// DESCRIBE uses DescribeEnum or Enum. ShowEnum stays on SHOW and CREATE/SET.
+	a.ShowEnum = nil
+	return a
 }
 
 // IsEnumCollection reports a list or set whose element is an enum.

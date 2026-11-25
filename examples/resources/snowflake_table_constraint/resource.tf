@@ -15,19 +15,19 @@ resource "snowflake_table" "t" {
   column {
     name     = "col1"
     type     = "text"
-    nullable = false
+    not_null = true
   }
 
   column {
     name     = "col2"
     type     = "text"
-    nullable = false
+    not_null = true
   }
 
   column {
     name     = "col3"
     type     = "text"
-    nullable = false
+    not_null = true
   }
 }
 
@@ -39,13 +39,13 @@ resource "snowflake_table" "fk_t" {
   column {
     name     = "fk_col1"
     type     = "text"
-    nullable = false
+    not_null = true
   }
 
   column {
     name     = "fk_col2"
     type     = "text"
-    nullable = false
+    not_null = true
   }
 }
 

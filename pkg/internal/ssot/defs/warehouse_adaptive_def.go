@@ -89,16 +89,17 @@ var (
 )
 
 var WarehouseAdaptive = ssot.Object{
-	Name:                       "WarehouseAdaptive",
-	NamePlural:                 "Warehouses",
-	IdType:                     "AccountObjectIdentifier",
-	SdkCreateRequestObjectName: "AdaptiveWarehouse",
-	VariantOf:                  &Warehouse,
+	Name:       "WarehouseAdaptive",
+	NamePlural: "Warehouses",
+	IdType:     "AccountObjectIdentifier",
+	Variant: &ssot.ObjectVariant{
+		Of:                       &Warehouse,
+		RequestObjectName:        "AdaptiveWarehouse",
+		ObjectAssertShowFromBase: "ShowByIDAdaptive",
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(
-				ssot.ObjectAssertShowFromBase("ShowByIDAdaptive"),
-			), ssot.ObjectAssertDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		),
 	},
 	ResourceHooks: []ssot.ResourceHookOption{

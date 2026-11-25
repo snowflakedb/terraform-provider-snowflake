@@ -64,9 +64,9 @@ var quotaSchema = map[string]*schema.Schema{
 					Optional: true,
 					Description: joinWithSpace(
 						"A single instance of the domain; if not set, the whole domain is monitored.",
-						"For `AI FUNCTION` and `CORTEX CODE`, the instance name (e.g. `AI_CLASSIFY`, `CORTEX_CODE_CLI`).",
+						"For `AI FUNCTION` and `SNOWFLAKE COCO`, the instance name (e.g. `AI_CLASSIFY`, `SNOWFLAKE_COCO_CLI`).",
 						"For `CORTEX AGENT`, the fully qualified agent name; Snowflake returns only the agent's name, so it's read back only when one agent in the account has it.",
-						"For `WAREHOUSE`, `SNOWFLAKE INTELLIGENCE`, and `AI GATEWAY`, the object name.",
+						"For `WAREHOUSE`, `SNOWFLAKE COWORK` (a Snowflake Intelligence object), and `AI GATEWAY`, the object name.",
 					),
 					DiffSuppressFunc: suppressQuotaSharedResourceInstance,
 				},
@@ -84,7 +84,7 @@ var quotaSchema = map[string]*schema.Schema{
 					Type:             schema.TypeString,
 					Optional:         true,
 					Default:          string(sdk.QuotaUserTagsOperatorUnion),
-					Description:      joinWithSpace("How the tags are combined.", enumValuesDescription(sdk.AllQuotaUserTagsOperators)),
+					Description:      joinWithSpace("How the tags are combined.", enumValuesDescription(quotaUserTagsOperators)),
 					ValidateDiagFunc: sdkValidation(sdk.ToQuotaUserTagsOperator),
 					DiffSuppressFunc: NormalizeAndCompare(sdk.ToQuotaUserTagsOperator),
 				},
@@ -448,6 +448,8 @@ func applyQuotaConfiguration(ctx context.Context, d *schema.ResourceData, quotas
 		return err
 	}
 
+	// set when removing the user tags clears the excluded tags and both user lists, which are then set again
+	scopeReset := false
 	steps := []func() error{
 		func() error {
 			if blockEnforcementChanged && !blockEnforcementEnabled {
@@ -456,16 +458,19 @@ func applyQuotaConfiguration(ctx context.Context, d *schema.ResourceData, quotas
 			return nil
 		},
 		func() error { return updateQuotaSharedResources(ctx, d, quotas, id) },
-		func() error { return updateQuotaUserTags(ctx, d, quotas, id) },
-		func() error { return updateQuotaExcludedUserTags(ctx, d, quotas, id) },
+		func() (err error) {
+			scopeReset, err = updateQuotaUserTags(ctx, d, quotas, id)
+			return err
+		},
+		func() error { return updateQuotaExcludedUserTags(ctx, d, quotas, id, scopeReset) },
 		func() error {
-			return updateQuotaUserList(d, "included_users", func(users []string) error {
+			return updateQuotaUserList(d, "included_users", scopeReset, func(users []string) error {
 				_, err := quotas.IncludeUsers(ctx, sdk.NewIncludeUsersQuotaRequest(id, *sdk.NewQuotaIncludeUsersArgsRequest(users)))
 				return err
 			})
 		},
 		func() error {
-			return updateQuotaUserList(d, "excluded_users", func(users []string) error {
+			return updateQuotaUserList(d, "excluded_users", scopeReset, func(users []string) error {
 				args := sdk.NewQuotaExcludeUsersArgsRequest().WithByUser(*sdk.NewQuotaExcludeUsersByUserRequest(users))
 				_, err := quotas.ExcludeUsers(ctx, sdk.NewExcludeUsersQuotaRequest(id, *args))
 				return err
@@ -538,43 +543,51 @@ func updateQuotaSharedResources(ctx context.Context, d *schema.ResourceData, quo
 	)
 }
 
-// SET_USER_TAGS replaces all the tags, and an empty list clears them.
-func updateQuotaUserTags(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) error {
+// quotaUserTagsOperators are the operators that combine user tags; ALL_USERS is used only to remove them.
+var quotaUserTagsOperators = []sdk.QuotaUserTagsOperator{sdk.QuotaUserTagsOperatorUnion, sdk.QuotaUserTagsOperatorIntersection}
+
+// SET_USER_TAGS replaces all the tags. Removing them applies the quota to all users again with SET_USER_TAGS([], 'ALL_USERS'),
+// which also clears the excluded tags and both user lists; the returned value reports that they need to be set again.
+func updateQuotaUserTags(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) (bool, error) {
 	if !d.HasChange("user_tags") {
-		return nil
+		return false, nil
 	}
-	operator := sdk.QuotaUserTagsOperatorUnion
+	userTags := d.Get("user_tags").([]any)
+	if len(userTags) == 0 || userTags[0] == nil {
+		_, err := quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(id, *sdk.NewQuotaSetUserTagsArgsRequest(nil, sdk.QuotaUserTagsOperatorAllUsers)))
+		return err == nil, err
+	}
+	block := userTags[0].(map[string]any)
+	operator, err := sdk.ToQuotaUserTagsOperator(block["operator"].(string))
+	if err != nil {
+		return false, err
+	}
 	tags := make([]sdk.QuotaUserTagRequest, 0)
-	if userTags := d.Get("user_tags").([]any); len(userTags) > 0 && userTags[0] != nil {
-		block := userTags[0].(map[string]any)
-		var err error
-		if operator, err = sdk.ToQuotaUserTagsOperator(block["operator"].(string)); err != nil {
-			return err
+	for _, raw := range block["tag"].(*schema.Set).List() {
+		tag, value, err := quotaTagValueFromRaw(raw)
+		if err != nil {
+			return false, err
 		}
-		for _, raw := range block["tag"].(*schema.Set).List() {
-			tag, value, err := quotaTagValueFromRaw(raw)
-			if err != nil {
-				return err
-			}
-			tags = append(tags, *sdk.NewQuotaUserTagRequestFromTag(tag, value))
-		}
+		tags = append(tags, *sdk.NewQuotaUserTagRequest(tag, value))
 	}
-	_, err := quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(id, *sdk.NewQuotaSetUserTagsArgsRequest(tags, operator)))
-	return err
+	_, err = quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(id, *sdk.NewQuotaSetUserTagsArgsRequest(tags, operator)))
+	return false, err
 }
 
-// EXCLUDE_USERS('TAG', ...) replaces all the excluded tags, and an empty list clears them.
-func updateQuotaExcludedUserTags(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier) error {
-	if !d.HasChange("excluded_user_tag") {
+// EXCLUDE_USERS('TAG', ...) replaces all the excluded tags, and an empty list clears them. After a scope reset, the configured
+// tags are set again.
+func updateQuotaExcludedUserTags(ctx context.Context, d *schema.ResourceData, quotas sdk.Quotas, id sdk.SchemaObjectIdentifier, scopeReset bool) error {
+	configured := d.Get("excluded_user_tag").(*schema.Set).List()
+	if !d.HasChange("excluded_user_tag") && (!scopeReset || len(configured) == 0) {
 		return nil
 	}
 	tags := make([]sdk.QuotaExcludedUserTagRequest, 0)
-	for _, raw := range d.Get("excluded_user_tag").(*schema.Set).List() {
+	for _, raw := range configured {
 		tag, value, err := quotaTagValueFromRaw(raw)
 		if err != nil {
 			return err
 		}
-		tags = append(tags, *sdk.NewQuotaExcludedUserTagRequestFromTag(tag, value))
+		tags = append(tags, *sdk.NewQuotaExcludedUserTagRequest(tag, value))
 	}
 	args := sdk.NewQuotaExcludeUsersArgsRequest().WithByTag(*sdk.NewQuotaExcludeUsersByTagRequest(tags))
 	_, err := quotas.ExcludeUsers(ctx, sdk.NewExcludeUsersQuotaRequest(id, *args))
@@ -582,12 +595,9 @@ func updateQuotaExcludedUserTags(ctx context.Context, d *schema.ResourceData, qu
 }
 
 // INCLUDE_USERS and EXCLUDE_USERS('USER', ...) add to their lists, and an empty list clears them. Removing a user therefore
-// clears the list and sets the remaining users again. Names are passed without identifier quotes.
-func updateQuotaUserList(d *schema.ResourceData, key string, set func([]string) error) error {
-	if !d.HasChange(key) {
-		return nil
-	}
-	removed, added := quotaSetChange(d, key)
+// clears the list and sets the remaining users again. After a scope reset, the list is empty, so the configured users are set
+// again. Names are passed without identifier quotes.
+func updateQuotaUserList(d *schema.ResourceData, key string, scopeReset bool, set func([]string) error) error {
 	userNames := func(raw []any) []string {
 		names := expandStringList(raw)
 		for i, name := range names {
@@ -595,13 +605,24 @@ func updateQuotaUserList(d *schema.ResourceData, key string, set func([]string) 
 		}
 		return names
 	}
+	desired := d.Get(key).(*schema.Set).List()
+	switch {
+	case scopeReset:
+		if len(desired) == 0 {
+			return nil
+		}
+		return set(userNames(desired))
+	case !d.HasChange(key):
+		return nil
+	}
+	removed, added := quotaSetChange(d, key)
 	if len(removed) == 0 {
 		return set(userNames(added))
 	}
 	if err := set([]string{}); err != nil {
 		return err
 	}
-	if desired := d.Get(key).(*schema.Set).List(); len(desired) > 0 {
+	if len(desired) > 0 {
 		return set(userNames(desired))
 	}
 	return nil
@@ -729,6 +750,8 @@ func quotaSharedResourcesToSchema(scope sdk.QuotaScope) ([]map[string]any, []str
 		case resource.IsWholeDomain():
 		case resource.CortexAgentId != nil:
 			instance = resource.CortexAgentId.FullyQualifiedName()
+		case domain == sdk.QuotaSharedResourceDomainSnowflakeCoco:
+			instance = quotaSnowflakeCocoInstance(resource.Name)
 		case slices.Contains(quotaDomainsWithPlainInstances, domain), !strings.ContainsAny(resource.Name, `."`):
 			instance = resource.Name
 		default:
@@ -785,7 +808,17 @@ func quotaNotificationIntegrationNames(integrations []sdk.QuotaNotificationInteg
 	return names
 }
 
-var quotaDomainsWithPlainInstances = []sdk.QuotaSharedResourceDomain{sdk.QuotaSharedResourceDomainAiFunction, sdk.QuotaSharedResourceDomainCortexCode}
+var quotaDomainsWithPlainInstances = []sdk.QuotaSharedResourceDomain{sdk.QuotaSharedResourceDomainAiFunction, sdk.QuotaSharedResourceDomainSnowflakeCoco}
+
+// quotaSnowflakeCocoInstance returns a SNOWFLAKE COCO instance by its current name; GET_QUOTA_SCOPE returns the former one
+// (e.g. CORTEX_CODE_CLI for SNOWFLAKE_COCO_CLI), and Snowflake accepts both.
+func quotaSnowflakeCocoInstance(instance string) string {
+	upper := strings.ToUpper(instance)
+	if surface, found := strings.CutPrefix(upper, "CORTEX_CODE_"); found {
+		return "SNOWFLAKE_COCO_" + surface
+	}
+	return upper
+}
 
 // quotaInstanceKey normalizes an instance of a shared resource domain, so that its equivalent spellings hash and compare the same.
 func quotaInstanceKey(domainRaw string, instance string) string {
@@ -793,6 +826,8 @@ func quotaInstanceKey(domainRaw string, instance string) string {
 	switch {
 	case instance == "", err != nil:
 		return instance
+	case domain == sdk.QuotaSharedResourceDomainSnowflakeCoco:
+		return quotaSnowflakeCocoInstance(instance)
 	case slices.Contains(quotaDomainsWithPlainInstances, domain):
 		return strings.ToUpper(instance)
 	case domain == sdk.QuotaSharedResourceDomainCortexAgent:

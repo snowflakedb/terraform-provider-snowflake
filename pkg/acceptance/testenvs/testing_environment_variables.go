@@ -19,6 +19,9 @@ const (
 	TestAccountCreate                   env = "TEST_SF_TF_TEST_ACCOUNT_CREATE"
 	// TestOpenflow gates tests needing an account with the Openflow object model enabled and configured.
 	TestOpenflow env = envPrefix + "TEST_OPENFLOW"
+	// TestPostgresInstances gates Postgres instance tests. Each instance takes minutes to become READY,
+	// so these tests run in a dedicated pipeline instead of the account-level one.
+	TestPostgresInstances env = envPrefix + "TEST_POSTGRES_INSTANCES"
 
 	AwsExternalBucketUrl   env = "TEST_SF_TF_AWS_EXTERNAL_BUCKET_URL"
 	AwsExternalKeyId       env = "TEST_SF_TF_AWS_EXTERNAL_KEY_ID"

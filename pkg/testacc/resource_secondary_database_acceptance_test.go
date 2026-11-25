@@ -65,7 +65,9 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasDefaultUserTaskTimeoutMsValueExplicit().
 			HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit().
 			HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
-			HasDefaultEnableConsoleOutputValueExplicit(),
+			HasDefaultEnableConsoleOutputValueExplicit().
+			HasDefaultMetricLevelValueExplicit().
+			HasDefaultServiceCallerTokenValiditySecsValueExplicit(),
 
 		resourceassert.SecondaryDatabaseResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
@@ -94,7 +96,9 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 		WithUserTaskTimeoutMs(1200000).
 		WithUserTaskMinimumTriggerIntervalInSeconds(60).
 		WithQuotedIdentifiersIgnoreCase(true).
-		WithEnableConsoleOutput(true)
+		WithEnableConsoleOutput(true).
+		WithMetricLevel(string(sdk.MetricLevelAll)).
+		WithServiceCallerTokenValiditySecs(1800)
 
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.Database(t, newId).
@@ -122,7 +126,9 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasUserTaskTimeoutMs(1200000).
 			HasUserTaskMinimumTriggerIntervalInSeconds(60).
 			HasQuotedIdentifiersIgnoreCase(true).
-			HasEnableConsoleOutput(true),
+			HasEnableConsoleOutput(true).
+			HasMetricLevel(sdk.MetricLevelAll).
+			HasServiceCallerTokenValiditySecs(1800),
 
 		resourceassert.SecondaryDatabaseResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
@@ -147,7 +153,9 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 			HasUserTaskTimeoutMsString("1200000").
 			HasUserTaskMinimumTriggerIntervalInSecondsString("60").
 			HasQuotedIdentifiersIgnoreCaseString("true").
-			HasEnableConsoleOutputString("true"),
+			HasEnableConsoleOutputString("true").
+			HasMetricLevelString(string(sdk.MetricLevelAll)).
+			HasServiceCallerTokenValiditySecsString("1800"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -216,6 +224,8 @@ func TestAcc_SecondaryDatabase_BasicUseCase(t *testing.T) {
 							WithUserTaskTimeoutMs(3600001).
 							WithUserTaskMinimumTriggerIntervalInSeconds(31).
 							WithEnableConsoleOutput(true).
+							WithMetricLevel(sdk.MetricLevelAll).
+							WithServiceCallerTokenValiditySecs(1800).
 							WithComment(random.Comment()),
 					))
 				},
@@ -287,7 +297,9 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 		WithUserTaskTimeoutMs(1200000).
 		WithUserTaskMinimumTriggerIntervalInSeconds(60).
 		WithQuotedIdentifiersIgnoreCase(true).
-		WithEnableConsoleOutput(true)
+		WithEnableConsoleOutput(true).
+		WithMetricLevel(string(sdk.MetricLevelAll)).
+		WithServiceCallerTokenValiditySecs(1800)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -323,7 +335,9 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasUserTaskTimeoutMs(1200000).
 						HasUserTaskMinimumTriggerIntervalInSeconds(60).
 						HasQuotedIdentifiersIgnoreCase(true).
-						HasEnableConsoleOutput(true),
+						HasEnableConsoleOutput(true).
+						HasMetricLevel(sdk.MetricLevelAll).
+						HasServiceCallerTokenValiditySecs(1800),
 
 					resourceassert.SecondaryDatabaseResource(t, completeModel.ResourceReference()).
 						HasNameString(id.Name()).
@@ -348,7 +362,9 @@ func TestAcc_SecondaryDatabase_CompleteUseCase(t *testing.T) {
 						HasUserTaskTimeoutMsString("1200000").
 						HasUserTaskMinimumTriggerIntervalInSecondsString("60").
 						HasQuotedIdentifiersIgnoreCaseString("true").
-						HasEnableConsoleOutputString("true")),
+						HasEnableConsoleOutputString("true").
+						HasMetricLevelString(string(sdk.MetricLevelAll)).
+						HasServiceCallerTokenValiditySecsString("1800")),
 			},
 			// Import - with all parameters
 			{
@@ -397,7 +413,9 @@ func TestAcc_CreateSecondaryDatabase_DataRetentionTimeInDays(t *testing.T) {
 			WithUserTaskTimeoutMs(1200000).
 			WithUserTaskMinimumTriggerIntervalInSeconds(120).
 			WithQuotedIdentifiersIgnoreCase(true).
-			WithEnableConsoleOutput(true)
+			WithEnableConsoleOutput(true).
+			WithMetricLevel(string(sdk.MetricLevelAll)).
+			WithServiceCallerTokenValiditySecs(1800)
 
 		if dataRetentionTimeInDays != nil {
 			secondaryDatabaseModel.WithDataRetentionTimeInDays(*dataRetentionTimeInDays)
