@@ -193,8 +193,8 @@ func (a Attribute) validateExplicitDefaults(where string, place attributePlace) 
 	if a.validateShowName() {
 		findings = append(findings, explicitDefaultFinding(where, "ShowName"))
 	}
-	if a.validateSchemaName() {
-		findings = append(findings, explicitDefaultFinding(where, "SchemaName"))
+	if a.validateOutputSchemaKey() {
+		findings = append(findings, explicitDefaultFinding(where, "OutputSchemaKey"))
 	}
 	if a.validateShowEnum() {
 		findings = append(findings, explicitDefaultFinding(where, "ShowEnum"))
@@ -383,19 +383,19 @@ func (a Attribute) hasSqlDefault(use ClauseUse) bool {
 	}
 }
 
-// validateShowName reports a ShowName set to Name. OutputKey already uses Name when ShowName is empty.
+// validateShowName reports a ShowName set to Name. EffectiveShowName already uses Name when ShowName is empty.
 func (a Attribute) validateShowName() bool {
 	return a.ShowName != "" && a.ShowName == a.Name
 }
 
-// validateSchemaName reports a SchemaName set to the snake_case of the Go field. SchemaKey already produces that when SchemaName is empty.
-func (a Attribute) validateSchemaName() bool {
-	if a.SchemaName == "" {
+// validateOutputSchemaKey reports an OutputSchemaKey set to the snake_case of the Go field. EffectiveOutputSchemaKey already produces that when OutputSchemaKey is empty.
+func (a Attribute) validateOutputSchemaKey() bool {
+	if a.OutputSchemaKey == "" {
 		return false
 	}
 	cleared := a
-	cleared.SchemaName = ""
-	return a.SchemaName == cleared.SchemaKey()
+	cleared.OutputSchemaKey = ""
+	return a.OutputSchemaKey == cleared.EffectiveOutputSchemaKey()
 }
 
 // validateShowEnum reports a ShowEnum set to Enum. ColumnEnum already uses Enum when ShowEnum is empty.

@@ -28,7 +28,7 @@ func ObjectElem(children []Attribute) *Attribute {
 type Attribute struct {
 	// --- Identity and type: what the attribute is.
 
-	// Name is the snake_case key of the attribute: the Terraform name, and the SHOW/DESCRIBE column key unless ShowName is set.
+	// Name is the snake_case key of the attribute: the Terraform name, and the SHOW/DESCRIBE key unless ShowName is set.
 	Name string
 	Type AttributeType
 	// IdentifierType is the SDK identifier type without the sdk prefix, such as AccountObjectIdentifier. Required for AttrIdentifier.
@@ -89,7 +89,8 @@ type Attribute struct {
 	// Readonly marks a SHOW or DESCRIBE column that Snowflake reports and the resource never writes.
 	// A Readonly column is not in Attributes, and every other column must be in Attributes: validation enforces both.
 	Readonly bool
-	// ShowName is the SHOW/DESCRIBE column key when it differs from Name.
+	// ShowName is the SHOW/DESCRIBE key when it differs from Name: a SHOW or columnar DESCRIBE column, such as type for
+	// warehouse_type, or the property of a property-list DESCRIBE row, such as mfa_enrollment.
 	ShowName string
 	// OptionalInShow makes the SHOW/DESCRIBE SDK field a pointer, nil when Snowflake reports no value.
 	// The generated schema ToSchema then guards against nil. Independent of OptionalInDb.
@@ -116,10 +117,11 @@ type Attribute struct {
 	// NativeBool keeps an optional bool as Terraform TypeBool. Optional bools otherwise use boolean-string.
 	NativeBool   bool
 	DiffSuppress DiffSuppress
-	// SchemaName is the Terraform key of a SHOW/DESCRIBE column when it differs from the snake_case of the Go field,
-	// such as is_nullable for the null? column. It does not change the Go field, the db tag, or OutputKey.
-	SchemaName string
-	// SkipInSchema omits a SHOW/DESCRIBE column from the generated public schema only.
+	// OutputSchemaKey is the key a SHOW/DESCRIBE column has in show_output or describe_output when it differs from the
+	// snake_case of the Go field, such as is_nullable for the null? column. It does not change the Go field, the db tag,
+	// or EffectiveShowName.
+	OutputSchemaKey string
+	// SkipInSchema omits a SHOW/DESCRIBE column from the show_output or describe_output schema only.
 	// The column stays on the SDK struct and in assertions.
 	SkipInSchema bool
 
@@ -220,7 +222,8 @@ func (a *Attribute) hasClauseKind(kind SqlKind) bool {
 	return a != nil && (a.CreateSql.Kind == kind || a.SetSql.Kind == kind || a.UnsetSql.Kind == kind)
 }
 
-func (a *Attribute) OutputKey() string {
+// EffectiveShowName is the SHOW/DESCRIBE key of the attribute: ShowName, otherwise Name.
+func (a *Attribute) EffectiveShowName() string {
 	if a.ShowName != "" {
 		return a.ShowName
 	}

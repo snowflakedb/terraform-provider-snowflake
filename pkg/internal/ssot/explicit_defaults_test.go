@@ -105,9 +105,9 @@ func Test_validateShowName(t *testing.T) {
 	require.False(t, Attribute{Name: "for_application", ShowName: "application"}.validateShowName())
 }
 
-func Test_validateSchemaName(t *testing.T) {
-	require.True(t, Attribute{Name: "comment", Type: AttrString, SchemaName: "comment"}.validateSchemaName())
-	require.False(t, Attribute{Name: "null?", Type: AttrBool, SchemaName: "is_nullable"}.validateSchemaName())
+func Test_validateOutputSchemaKey(t *testing.T) {
+	require.True(t, Attribute{Name: "comment", Type: AttrString, OutputSchemaKey: "comment"}.validateOutputSchemaKey())
+	require.False(t, Attribute{Name: "null?", Type: AttrBool, OutputSchemaKey: "is_nullable"}.validateOutputSchemaKey())
 }
 
 func Test_validateShowEnum(t *testing.T) {

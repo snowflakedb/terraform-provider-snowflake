@@ -48,7 +48,7 @@ func showResultSchemaDetailsFromSsot(obj ssot.Object, isDescribe bool) ShowResul
 		}
 		fields = append(fields, ssot.ColumnField(obj, view))
 		if attr.SkipInSchema {
-			skip = append(skip, emittedSchemaKey(attr))
+			skip = append(skip, attr.EffectiveOutputSchemaKey())
 		}
 		// The mapper sees only the SDK slice, so a set column needs an explicit override.
 		// Skipped, manual, and list-kept columns are left to the mapper.
@@ -58,12 +58,12 @@ func showResultSchemaDetailsFromSsot(obj ssot.Object, isDescribe bool) ShowResul
 			if overrides == nil {
 				overrides = make(map[string]schema.ValueType)
 			}
-			overrides[emittedSchemaKey(attr)] = schema.TypeSet
+			overrides[attr.EffectiveOutputSchemaKey()] = schema.TypeSet
 		}
 	}
 	var manual []string
 	if len(manualAttrs) > 0 {
-		manual = collections.Map(manualAttrs, emittedSchemaKey)
+		manual = collections.Map(manualAttrs, (*ssot.Attribute).EffectiveOutputSchemaKey)
 	}
 	return ShowResultSchemaDetails{
 		IsDescribe:    isDescribe,
@@ -92,15 +92,6 @@ func propertyRowSchemaDetailsFromSsot(obj ssot.Object) ShowResultSchemaDetails {
 		UsedAsListEntry: true,
 		StructDetails:   genhelpers.StructDetails{Name: "sdk." + obj.DescribePlainName(), Fields: fields},
 	}
-}
-
-// emittedSchemaKey is the schema key ModelFromStructDetails matches.
-// SchemaName is that key. Otherwise the column keeps OutputKey, which is the generated key for a snake_case column.
-func emittedSchemaKey(attr *ssot.Attribute) string {
-	if attr.SchemaName != "" {
-		return attr.SchemaName
-	}
-	return attr.OutputKey()
 }
 
 // stampSchemaNames copies SchemaName onto reflected fields. The index key is the SDK type name.

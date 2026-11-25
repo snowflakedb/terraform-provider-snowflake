@@ -49,7 +49,7 @@ func (m ResourceModel) ConfigFieldSets() []ConfigFieldSet {
 }
 
 func configFieldCode(obj ssot.Object, col ssot.Attribute) string {
-	field := "obj." + genhelpers.SnakeCaseToCamel(col.OutputKey())
+	field := "obj." + genhelpers.SnakeCaseToCamel(col.EffectiveShowName())
 	if col.OptionalInShow {
 		return field
 	}

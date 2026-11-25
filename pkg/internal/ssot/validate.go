@@ -917,7 +917,7 @@ func validateCustomOperationClauses(obj Object, spec CustomOperationSpec, attrs 
 }
 
 // validateSchemaKeys rejects two columns of one plain struct that emit the same Terraform key,
-// and a SchemaName that collides with another column's generated key.
+// and an OutputSchemaKey that collides with another column's generated key.
 func validateSchemaKeys(obj Object, structName string, columns []*Attribute) {
 	if structName == "" {
 		return
@@ -929,31 +929,31 @@ func validateSchemaKeys(obj Object, structName string, columns []*Attribute) {
 			continue
 		}
 		generated[genhelpers.ToSnakeCase(column.PlainGoName())] = column
-		key := column.SchemaKey()
+		key := column.EffectiveOutputSchemaKey()
 		if prev, ok := emitted[key]; ok {
 			panic(fmt.Sprintf("object %q: %s columns %q and %q share schema key %q", obj.Name, structName, prev, column.Name, key))
 		}
 		emitted[key] = column.Name
 	}
 	for _, column := range columns {
-		if column == nil || column.SchemaName == "" {
+		if column == nil || column.OutputSchemaKey == "" {
 			continue
 		}
-		other, ok := generated[column.SchemaName]
+		other, ok := generated[column.OutputSchemaKey]
 		if ok && other.Name != column.Name {
-			panic(fmt.Sprintf("object %q: %s column %q schema name %q collides with the generated key of %q", obj.Name, structName, column.Name, column.SchemaName, other.Name))
+			panic(fmt.Sprintf("object %q: %s column %q schema name %q collides with the generated key of %q", obj.Name, structName, column.Name, column.OutputSchemaKey, other.Name))
 		}
 	}
 }
 
-// SchemaNameIndex maps "sdk." plus the plain struct name to Go field name to SchemaName.
-// Columns with an empty SchemaName are left out.
-func SchemaNameIndex(objects []Object) map[string]map[string]string {
+// OutputSchemaKeyIndex maps "sdk." plus the plain struct name to Go field name to OutputSchemaKey.
+// Columns with an empty OutputSchemaKey are left out.
+func OutputSchemaKeyIndex(objects []Object) map[string]map[string]string {
 	index := make(map[string]map[string]string)
 	add := func(obj Object, structName string, columns []*Attribute) {
 		validateSchemaKeys(obj, structName, columns)
 		for _, column := range columns {
-			if column == nil || column.SchemaName == "" {
+			if column == nil || column.OutputSchemaKey == "" {
 				continue
 			}
 			key := "sdk." + structName
@@ -961,10 +961,10 @@ func SchemaNameIndex(objects []Object) map[string]map[string]string {
 				index[key] = make(map[string]string)
 			}
 			goName := column.PlainGoName()
-			if prev, ok := index[key][goName]; ok && prev != column.SchemaName {
-				panic(fmt.Sprintf("object %q: %s field %q has schema names %q and %q", obj.Name, structName, goName, prev, column.SchemaName))
+			if prev, ok := index[key][goName]; ok && prev != column.OutputSchemaKey {
+				panic(fmt.Sprintf("object %q: %s field %q has schema names %q and %q", obj.Name, structName, goName, prev, column.OutputSchemaKey))
 			}
-			index[key][goName] = column.SchemaName
+			index[key][goName] = column.OutputSchemaKey
 		}
 	}
 	for _, obj := range objects {
@@ -1271,7 +1271,7 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 				panic(fmt.Sprintf("object %q: %s entry %q is writable but not in Attributes", obj.Name, kind, a.Name))
 			}
 		}
-		key := a.OutputKey()
+		key := a.EffectiveShowName()
 		if _, dup := seenKey[key]; dup {
 			panic(fmt.Sprintf("object %q: duplicate %s output key %q", obj.Name, kind, key))
 		}
@@ -1309,7 +1309,7 @@ func validateDescribePlainOnlyFields(obj Object) {
 		if column == nil {
 			continue
 		}
-		seen[genhelpers.SnakeCaseToCamel(column.OutputKey())] = struct{}{}
+		seen[genhelpers.SnakeCaseToCamel(column.EffectiveShowName())] = struct{}{}
 	}
 	for _, field := range fields {
 		if field.Name == "" || field.Kind == "" {
@@ -1485,7 +1485,7 @@ func validateDescribeDetailsParse(obj Object, sdk SdkGenerator) {
 		}
 	}
 	for _, column := range obj.Describe.Columns {
-		if _, ok := mapped[column]; !ok && column.OutputKey() != "id" {
+		if _, ok := mapped[column]; !ok && column.EffectiveShowName() != "id" {
 			panic(fmt.Sprintf("object %q: DESCRIBE column %q has no details mapping", obj.Name, column.Name))
 		}
 	}

@@ -66,7 +66,7 @@ func outputKeys(attrs []*Attribute) []string {
 		if a == nil {
 			continue
 		}
-		keys = append(keys, a.OutputKey())
+		keys = append(keys, a.EffectiveShowName())
 	}
 	return keys
 }

@@ -70,7 +70,7 @@ func Test_selectsForSchemaShow(t *testing.T) {
 }
 
 func Test_showResultSchemaDetailsFromSsot_schemaName(t *testing.T) {
-	nullable := ssot.Attribute{Name: "created_on", Type: ssot.AttrString, SchemaName: "created", SkipInSchema: true}
+	nullable := ssot.Attribute{Name: "created_on", Type: ssot.AttrString, OutputSchemaKey: "created", SkipInSchema: true}
 	obj := ssot.Object{Name: "Widget", Show: ssot.OutputSpec{Columns: []*ssot.Attribute{&nullable}}}
 
 	got := showResultSchemaDetailsFromSsot(obj, false)

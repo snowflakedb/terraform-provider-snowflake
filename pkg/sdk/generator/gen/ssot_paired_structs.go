@@ -19,7 +19,7 @@ func ShowPairedStructs(obj ssot.Object) *PairedStructs {
 	cfg := ssot.ObjectGenerators(obj.Generators...).Sdk
 	pairs := pairedStructsFromColumns(obj, false, unexported(obj.NamePlural)+"Row", obj.Name)
 	for _, field := range cfg.ShowPlainOnlyFields {
-		pairs = pairs.PlainOnlyField(sqlToFieldName(field.Column.OutputKey(), true), field.Kind)
+		pairs = pairs.PlainOnlyField(sqlToFieldName(field.Column.EffectiveShowName(), true), field.Kind)
 	}
 	if cfg.ShowResultFilterHook {
 		pairs = pairs.WithShowResultFilterHook()
@@ -49,7 +49,7 @@ func DescribeDetailsPlain(obj ssot.Object) *Plain {
 		panic(fmt.Sprintf("object %q is not enabled for SDK DESCRIBE details generation", obj.Name))
 	}
 	plain := PlainStruct(obj.Name + "Details")
-	hasId := slices.ContainsFunc(obj.Describe.Columns, func(c *ssot.Attribute) bool { return c != nil && c.OutputKey() == "id" })
+	hasId := slices.ContainsFunc(obj.Describe.Columns, func(c *ssot.Attribute) bool { return c != nil && c.EffectiveShowName() == "id" })
 	if !hasId {
 		plain = plain.Field("Id", obj.IdType)
 	}
@@ -58,7 +58,7 @@ func DescribeDetailsPlain(obj ssot.Object) *Plain {
 			panic(fmt.Sprintf("object %q: nil DESCRIBE column", obj.Name))
 		}
 		kind := detailsFieldKind(obj, column.ForDescribe(), cfg.DescribeDetailsNestedFields)
-		plain = plain.Field(sqlToFieldName(column.OutputKey(), true), kind)
+		plain = plain.Field(sqlToFieldName(column.EffectiveShowName(), true), kind)
 	}
 	if cfg.DescribeDetailsRowsField != nil {
 		plain = plain.Field(cfg.DescribeDetailsRowsField.Name, cfg.DescribeDetailsRowsField.Kind)
@@ -185,7 +185,7 @@ func pairedShowFromSpec(obj ssot.Object, paired *ssot.CustomPairedShow) *PairedS
 }
 
 func appendPairedColumn(pairs *PairedStructs, obj ssot.Object, attr ssot.Attribute) *PairedStructs {
-	key := attr.OutputKey()
+	key := attr.EffectiveShowName()
 	if attr.PairedPlainKind != "" {
 		if attr.OptionalInShow || attr.OptionalInDb {
 			panicPairedColumn(obj, attr, "a paired kind override is a required field")
@@ -311,7 +311,7 @@ func customListElementKind(attr ssot.Attribute) (string, bool) {
 
 func boolFromTextOpts(attr ssot.Attribute) []PairedFieldOption {
 	if attr.BoolTrueValue != "" && !attr.StoredAsText {
-		panic(fmt.Sprintf("column %q sets BoolTrueValue without StoredAsText", attr.OutputKey()))
+		panic(fmt.Sprintf("column %q sets BoolTrueValue without StoredAsText", attr.EffectiveShowName()))
 	}
 	opts := plainRequiredOpt(attr)
 	if attr.BoolTrueValue != "" {
@@ -337,5 +337,5 @@ func plainRequiredOpt(attr ssot.Attribute) []PairedFieldOption {
 }
 
 func panicPairedColumn(obj ssot.Object, attr ssot.Attribute, reason string) {
-	panic(fmt.Sprintf("object %q: column %q cannot be a paired struct field: %s", obj.Name, attr.OutputKey(), reason))
+	panic(fmt.Sprintf("object %q: column %q cannot be a paired struct field: %s", obj.Name, attr.EffectiveShowName(), reason))
 }

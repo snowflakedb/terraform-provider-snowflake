@@ -51,7 +51,7 @@ func AttributeGoTypes(obj Object, attr Attribute) (concrete, underlying string) 
 // the object Name, the column key in camel case, and Details. Its fields are the Children of the column.
 // CatalogIntegrationOpenCatalog with rest_config is CatalogIntegrationOpenCatalogRestConfigDetails.
 func NestedObjectDetails(obj Object, attr Attribute) string {
-	return obj.Name + genhelpers.SnakeCaseToCamel(attr.OutputKey()) + "Details"
+	return obj.Name + genhelpers.SnakeCaseToCamel(attr.EffectiveShowName()) + "Details"
 }
 
 // IsOptionalColumn reports whether the column is a pointer in the details. OptionalInShow is that switch.
@@ -66,16 +66,16 @@ func NestedDetailsElem(obj Object, attr *Attribute) string {
 	if attr.Type != AttrList && attr.Type != AttrSet {
 		panic(fmt.Sprintf("object %q: nested column %q is not a list or set", obj.Name, attr.Name))
 	}
-	return obj.Name + strings.TrimSuffix(genhelpers.SnakeCaseToCamel(attr.OutputKey()), "s") + "Details"
+	return obj.Name + strings.TrimSuffix(genhelpers.SnakeCaseToCamel(attr.EffectiveShowName()), "s") + "Details"
 }
 
-// ColumnFieldName is the Go field name of a column. It comes from OutputKey.
+// ColumnFieldName is the Go field name of a column. It comes from EffectiveShowName.
 func ColumnFieldName(attr Attribute) string {
-	return genhelpers.SnakeCaseToCamel(attr.OutputKey())
+	return genhelpers.SnakeCaseToCamel(attr.EffectiveShowName())
 }
 
 // ColumnField is the field ExtractStructDetails would report for one column.
-// The name comes from OutputKey. OptionalInShow prefixes "*" on both type strings.
+// The name comes from EffectiveShowName. OptionalInShow prefixes "*" on both type strings.
 func ColumnField(obj Object, attr Attribute) genhelpers.Field {
 	concrete, underlying := AttributeGoTypes(obj, attr)
 	if attr.IsOptionalColumn() {
@@ -86,7 +86,7 @@ func ColumnField(obj Object, attr Attribute) genhelpers.Field {
 		Name:           ColumnFieldName(attr),
 		ConcreteType:   concrete,
 		UnderlyingType: underlying,
-		SchemaName:     attr.SchemaName,
+		SchemaName:     attr.OutputSchemaKey,
 	}
 }
 
@@ -96,14 +96,14 @@ func (a Attribute) PlainGoName() string {
 	if a.PlainOnlyKind != "" {
 		return a.Name
 	}
-	return genhelpers.SqlToGoName(a.OutputKey(), true)
+	return genhelpers.SqlToGoName(a.EffectiveShowName(), true)
 }
 
-// SchemaKey is the Terraform schema key of a SHOW or DESCRIBE column.
-// SchemaName overrides it. Otherwise it is the snake_case of PlainGoName.
-func (a Attribute) SchemaKey() string {
-	if a.SchemaName != "" {
-		return a.SchemaName
+// EffectiveOutputSchemaKey is the key a SHOW or DESCRIBE column has in show_output or describe_output: OutputSchemaKey,
+// otherwise the snake_case of PlainGoName.
+func (a Attribute) EffectiveOutputSchemaKey() string {
+	if a.OutputSchemaKey != "" {
+		return a.OutputSchemaKey
 	}
 	return genhelpers.ToSnakeCase(a.PlainGoName())
 }

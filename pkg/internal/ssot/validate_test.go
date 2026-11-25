@@ -1773,23 +1773,23 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 }
 
 func Test_ValidateObject_schemaName(t *testing.T) {
-	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "is_nullable"}
+	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, OutputSchemaKey: "is_nullable"}
 	same := Attribute{Name: "is_nullable", Type: AttrString, Readonly: true}
 	require.PanicsWithValue(t, `object "Widget": TableColumnDetails columns "null?" and "is_nullable" share schema key "is_nullable"`, func() {
 		ValidateObject(widgetWithColumns(&nullable, &same))
 	})
 
-	note := Attribute{Name: "comment", Type: AttrString, Readonly: true, SchemaName: "note"}
-	renamed := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "comment"}
+	note := Attribute{Name: "comment", Type: AttrString, Readonly: true, OutputSchemaKey: "note"}
+	renamed := Attribute{Name: "null?", Type: AttrBool, Readonly: true, OutputSchemaKey: "comment"}
 	require.PanicsWithValue(t, `object "Widget": TableColumnDetails column "null?" schema name "comment" collides with the generated key of "comment"`, func() {
 		ValidateObject(widgetWithColumns(&renamed, &note))
 	})
 }
 
 func Test_SchemaNameIndex(t *testing.T) {
-	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, SchemaName: "is_nullable"}
+	nullable := Attribute{Name: "null?", Type: AttrBool, Readonly: true, OutputSchemaKey: "is_nullable"}
 	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
-	index := SchemaNameIndex([]Object{widgetWithColumns(&nullable, &name)})
+	index := OutputSchemaKeyIndex([]Object{widgetWithColumns(&nullable, &name)})
 	require.Equal(t, map[string]map[string]string{
 		"sdk.TableColumnDetails": {"Null": "is_nullable"},
 	}, index)

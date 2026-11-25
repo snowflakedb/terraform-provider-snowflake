@@ -250,7 +250,7 @@ var resourceAttributeRules = []resourceAttributeRule{
 			for _, suppress := range suppressors {
 				key := suppress.Key
 				if key == "" {
-					key = in.OutputKey()
+					key = in.EffectiveShowName()
 				}
 				var expression string
 				switch suppress.Kind {

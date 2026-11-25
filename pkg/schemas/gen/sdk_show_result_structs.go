@@ -331,7 +331,7 @@ func GetShowResultSchemaDetails() []ShowResultSchemaDetails {
 		plugged[details.Name] = struct{}{}
 	}
 	allDetails := make([]ShowResultSchemaDetails, 0, len(SdkShowResultStructs)+len(ssotDetails))
-	schemaNames := ssot.SchemaNameIndex(defs.All())
+	schemaNames := ssot.OutputSchemaKeyIndex(defs.All())
 	for _, d := range SdkShowResultStructs {
 		extracted := stampSchemaNames(genhelpers.ExtractStructDetails(d.ObjectStruct), schemaNames)
 		if _, ok := plugged[extracted.Name]; ok {

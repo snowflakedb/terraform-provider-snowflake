@@ -68,7 +68,7 @@ each field.
 | Snowflake constraints | `Required`, `ForceNew`, `CreateOnly`, `Sensitive`, `Min`, `Max`, `ServerDefault`, `Validations` |
 | Snowflake SQL | `CreateSql`, `SetSql`, `UnsetSql`, `SqlOnly` |
 | Snowflake SHOW and DESCRIBE | `Readonly`, `ShowName`, `OptionalInShow`, `ShowString`, `DescribeString`, `DescribeEnum`, `StoredAsText`, `BoolTrueValue` |
-| Terraform | `Computed`, `NativeBool`, `DiffSuppress`, `SchemaName`, `SkipInSchema` |
+| Terraform | `Computed`, `NativeBool`, `DiffSuppress`, `OutputSchemaKey`, `SkipInSchema` |
 | Docs | `Description`, `AdditionalDescription`, `RawDescription`, `IncludeAliasedInTheDescription`, `RelatedResource` |
 | Provider SDK mapping | `OptionalInDb`, `SdkString`, `CustomParser`, `ManualConvert`, `PlainOnlyKind`, `PairedPlainKind` |
 | Provider generation | `SkipCreate`, `SkipUpdate`, `SetAfterCreate`, `CreateMapping`, `UpdateMapping` |
@@ -83,12 +83,13 @@ Add a new field to the group that matches its purpose, and to this table.
 - `SqlOnly` - the attribute stays on a SQL sequence and is left out of schema, resource, model, and assertion generation.
   [`ResourceAttributes`](object.go) is that filtered list. A fixed CREATE value uses [`StaticSQL`](sql_clause.go): the
   field is the unexported Go name and the SQL is the ddl text, such as `WAREHOUSE_TYPE = 'ADAPTIVE'`.
-- `ShowName` - SHOW/DESCRIBE key when it differs from the resource name (`for_application` → `application`).
-  `Name` stays the resource attribute and the CREATE field. `OutputKey()` is `ShowName` or `Name`.
+- `ShowName` - SHOW/DESCRIBE key when it differs from the resource name (`for_application` → `application`): a SHOW or
+  columnar DESCRIBE column, or the property of a property-list DESCRIBE row (`mfa_enrollment`).
+  `Name` stays the resource attribute and the CREATE field. `EffectiveShowName()` is `ShowName` or `Name`.
   Leave `ShowName` unset when it equals `Name`.
   `FieldName` on a clause renames the SDK request field. It is not how the output column is named.
-- `SchemaName` - the Terraform schema key when it differs from the snake_case of the Go field (`null?` is published as
-  `is_nullable`). Empty keeps that snake_case. Leave `SchemaName` unset when it equals that snake_case. It does not change the Go field, the `db` tag, or `OutputKey()`.
+- `OutputSchemaKey` - the key a SHOW or DESCRIBE column has in `show_output` or `describe_output` when it differs from the snake_case of the Go field (`null?` is published as
+  `is_nullable`). Empty keeps that snake_case. Leave `OutputSchemaKey` unset when it equals that snake_case. It does not change the Go field, the `db` tag, or `EffectiveShowName()`.
 - `ShowEnum` - the SHOW and CREATE/SET enum when it differs from `Enum`. Empty uses `Enum`. Resource schema and model builders keep `Enum`. DESCRIBE uses `DescribeEnum` or `Enum`. Leave `ShowEnum` unset when it is `Enum`.
 - `ShowString` - the SHOW column is a string. The resource, CREATE, and SET keep `Type`. Leave it unset when `Type` is already a string. `OptionalInDb` still belongs to that SHOW column, as on table `cluster_by`.
 - `DescribeString` - the DESCRIBE column is a string. The resource, CREATE, SET, and SHOW keep `Type`. Leave it unset when `Type` is already a string. External volume `allow_writes` and alert `state` use it.
@@ -511,7 +512,7 @@ enable nothing.
   fields first, then the other fields in the struct.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
-  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
+  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `OutputSchemaKey`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of the UNSET block
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
@@ -721,7 +722,7 @@ attribute, it is not create-only, it is not an identifier field (`database`, `sc
 column that is already a SHOW column, and includes a column only when `ServerDefault` is set. The schema suppressor
 is derived from the same rule: SHOW uses `IgnoreChangeToCurrentSnowflakeValueInShow`, and a describe-only
 `ServerDefault` field uses `IgnoreChangeToCurrentSnowflakeValueInDescribe`. Column order is the mapping order. The output key is
-`OutputKey()`. The config key is `Name`. The SDK field is the camel-case output key. Compare and set are that field.
+`EffectiveShowName()`. The config key is `Name`. The SDK field is the camel-case output key. Compare and set are that field.
 An enum compare is `string(field)`. A boolean string uses `booleanStringFromBool`. An optional SHOW field uses
 `optionalStringOutputMapping`, `optionalBooleanStringOutputMapping`, or `optionalIntOutputMapping`. An optional int
 whose schema default is `IntDefault` uses `optionalIntOutputMappingIntDefault`. An `AccountObjectIdentifier` uses
@@ -1068,7 +1069,7 @@ Until a piece has moved, do not assume it is already in ssot:
   ShowByID filtering, the ShowByID find predicate, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
   handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
-  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
+  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `OutputSchemaKey`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
   ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). The SET and UNSET groups are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
   When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is
@@ -1105,7 +1106,7 @@ the enum type in a details struct (also in its nested structs).
 
 - Authentication policy `security_integrations` and `client_policy` are still two attributes each. The writable one is the resource field. The DESCRIBE one is a different shape with its own children, so `ShowString`, `DescribeString`, and `DescribeEnum` do not cover it. `security_integrations` is a set of identifiers in Terraform and a details object with `all` and a list of identifiers. `client_policy` is a set of objects (`client_type`, `minimum_version`) in Terraform and a details list whose element is the handwritten `AuthenticationPolicyClientPolicyDetails`. The DESCRIBE column stands in with a string `Elem`.
 - Paired struct field names have no override, for SHOW or for DESCRIBE. The db field and the plain field are both the
-  camel-cased `OutputKey()`, so a column cannot map to a differently named plain field (the handwritten defs use
+  camel-cased `EffectiveShowName()`, so a column cannot map to a differently named plain field (the handwritten defs use
   `WithPlainFieldName` for that, such as `property_value` to `Value`). An object moved to ssot may end up with slightly
   different plain struct fields than its handwritten def had. That is acceptable for now: the SDK is internal, so callers
   are renamed with the move. Add an override to both paths together if a real need appears.
@@ -1133,7 +1134,7 @@ object words. `Create.Clauses`, and the groups of the SET and UNSET blocks, are 
 after the name.
 `OutputSpec.Columns` is membership and Snowflake order for one operation.
 Presence in that slice is the only membership. The same `Attribute` var is pointed at from `Columns` so the snake_case
-name is not restated. `ShowName` is the output key when it differs from `Name`. `OutputKey()` is `ShowName` or `Name`.
+name is not restated. `ShowName` is the output key when it differs from `Name`. `EffectiveShowName()` is `ShowName` or `Name`.
 See [SHOW and DESCRIBE](#show-and-describe).
 
 `Attributes` cannot drive those lists:

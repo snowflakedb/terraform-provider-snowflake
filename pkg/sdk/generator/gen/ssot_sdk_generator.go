@@ -126,7 +126,7 @@ func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseCo
 	}
 	// The property and value fields of the row are the columns property and property_value, or value.
 	for _, column := range obj.DescribeRows.Columns {
-		switch column.OutputKey() {
+		switch column.EffectiveShowName() {
 		case "property":
 			config.PropertyField = ssot.ColumnFieldName(*column)
 		case "property_value", "value":
@@ -134,7 +134,7 @@ func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseCo
 		}
 	}
 	for _, mapping := range cfg.DescribeDetailsParse {
-		field := sqlToFieldName(mapping.Attr.OutputKey(), true)
+		field := sqlToFieldName(mapping.Attr.EffectiveShowName(), true)
 		if !mapping.Prefix {
 			property := DescribeParseProperty{Property: mapping.Property, Field: field}
 			if mapping.Parsed {

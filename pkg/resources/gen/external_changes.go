@@ -89,7 +89,7 @@ func (m *ResourceModel) applyDerivedOutputDiffSuppress(attrs []ssot.Attribute) {
 			if hasSuppressKind(attr.DiffSuppress, ssot.SuppressShow) {
 				continue
 			}
-			expr := fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInShow(%q)", col.OutputKey())
+			expr := fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInShow(%q)", col.EffectiveShowName())
 			m.Attributes[i].DiffSuppressExpr = composeDiffSuppress(m.Attributes[i].DiffSuppressExpr, expr)
 			continue
 		}
@@ -97,7 +97,7 @@ func (m *ResourceModel) applyDerivedOutputDiffSuppress(attrs []ssot.Attribute) {
 		if !ok || !attr.ServerDefault || hasSuppressKind(attr.DiffSuppress, ssot.SuppressDescribe) {
 			continue
 		}
-		expr := fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInDescribe(%q)", col.OutputKey())
+		expr := fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInDescribe(%q)", col.EffectiveShowName())
 		m.Attributes[i].DiffSuppressExpr = composeDiffSuppress(m.Attributes[i].DiffSuppressExpr, expr)
 	}
 }
@@ -164,9 +164,9 @@ func (m ResourceModel) includeExternalChange(col *ssot.Attribute, covered, ident
 }
 
 func (m ResourceModel) mappingFor(col *ssot.Attribute, resolved ResourceAttribute, receiver string, build *ExternalChangeBuild) ExternalChangeMapping {
-	goField := receiver + "." + genhelpers.SnakeCaseToCamel(col.OutputKey())
+	goField := receiver + "." + genhelpers.SnakeCaseToCamel(col.EffectiveShowName())
 	compare, set := m.outputValues(col, resolved, goField, build)
-	return ExternalChangeMapping{OutputKey: col.OutputKey(), ConfigKey: col.Name, Compare: compare, Set: set}
+	return ExternalChangeMapping{OutputKey: col.EffectiveShowName(), ConfigKey: col.Name, Compare: compare, Set: set}
 }
 
 // outputValues is the compare and set expressions for one outputMapping.
