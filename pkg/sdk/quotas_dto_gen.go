@@ -3,33 +3,39 @@
 package sdk
 
 var (
-	_ optionsProvider[CreateQuotaOptions]                        = new(CreateQuotaRequest)
-	_ optionsProvider[AlterQuotaOptions]                         = new(AlterQuotaRequest)
-	_ optionsProvider[DropQuotaOptions]                          = new(DropQuotaRequest)
-	_ optionsProvider[ShowQuotaOptions]                          = new(ShowQuotaRequest)
-	_ optionsProvider[AddSharedResourceQuotaOptions]             = new(AddSharedResourceQuotaRequest)
-	_ optionsProvider[RemoveSharedResourceQuotaOptions]          = new(RemoveSharedResourceQuotaRequest)
-	_ optionsProvider[SetUserTagsQuotaOptions]                   = new(SetUserTagsQuotaRequest)
-	_ optionsProvider[ExcludeUsersQuotaOptions]                  = new(ExcludeUsersQuotaRequest)
-	_ optionsProvider[IncludeUsersQuotaOptions]                  = new(IncludeUsersQuotaRequest)
-	_ optionsProvider[GetQuotaScopeQuotaOptions]                 = new(GetQuotaScopeQuotaRequest)
-	_ optionsProvider[SetPerUserLimitQuotaOptions]               = new(SetPerUserLimitQuotaRequest)
-	_ optionsProvider[UnsetPerUserLimitQuotaOptions]             = new(UnsetPerUserLimitQuotaRequest)
-	_ optionsProvider[SetBlockEnforcementEnabledQuotaOptions]    = new(SetBlockEnforcementEnabledQuotaRequest)
-	_ optionsProvider[GetConfigQuotaOptions]                     = new(GetConfigQuotaRequest)
-	_ optionsProvider[AddNotificationThresholdQuotaOptions]      = new(AddNotificationThresholdQuotaRequest)
-	_ optionsProvider[RemoveNotificationThresholdQuotaOptions]   = new(RemoveNotificationThresholdQuotaRequest)
-	_ optionsProvider[GetNotificationThresholdsQuotaOptions]     = new(GetNotificationThresholdsQuotaRequest)
-	_ optionsProvider[AddNotificationIntegrationQuotaOptions]    = new(AddNotificationIntegrationQuotaRequest)
-	_ optionsProvider[RemoveNotificationIntegrationQuotaOptions] = new(RemoveNotificationIntegrationQuotaRequest)
-	_ optionsProvider[GetNotificationIntegrationsQuotaOptions]   = new(GetNotificationIntegrationsQuotaRequest)
-	_ optionsProvider[SetAdminEmailsQuotaOptions]                = new(SetAdminEmailsQuotaRequest)
-	_ optionsProvider[AddCustomActionQuotaOptions]               = new(AddCustomActionQuotaRequest)
-	_ optionsProvider[RemoveCustomActionsQuotaOptions]           = new(RemoveCustomActionsQuotaRequest)
-	_ optionsProvider[GetCustomActionsQuotaOptions]              = new(GetCustomActionsQuotaRequest)
-	_ optionsProvider[SetCycleStartActionQuotaOptions]           = new(SetCycleStartActionQuotaRequest)
-	_ optionsProvider[RemoveCycleStartActionQuotaOptions]        = new(RemoveCycleStartActionQuotaRequest)
-	_ optionsProvider[GetCycleStartActionQuotaOptions]           = new(GetCycleStartActionQuotaRequest)
+	_ optionsProvider[CreateQuotaOptions]                          = new(CreateQuotaRequest)
+	_ optionsProvider[AlterQuotaOptions]                           = new(AlterQuotaRequest)
+	_ optionsProvider[DropQuotaOptions]                            = new(DropQuotaRequest)
+	_ optionsProvider[ShowQuotaOptions]                            = new(ShowQuotaRequest)
+	_ optionsProvider[AddSharedResourceQuotaOptions]               = new(AddSharedResourceQuotaRequest)
+	_ optionsProvider[RemoveSharedResourceQuotaOptions]            = new(RemoveSharedResourceQuotaRequest)
+	_ optionsProvider[SetUserTagsQuotaOptions]                     = new(SetUserTagsQuotaRequest)
+	_ optionsProvider[ExcludeUsersQuotaOptions]                    = new(ExcludeUsersQuotaRequest)
+	_ optionsProvider[IncludeUsersQuotaOptions]                    = new(IncludeUsersQuotaRequest)
+	_ optionsProvider[GetQuotaScopeQuotaOptions]                   = new(GetQuotaScopeQuotaRequest)
+	_ optionsProvider[SetPerUserLimitQuotaOptions]                 = new(SetPerUserLimitQuotaRequest)
+	_ optionsProvider[UnsetPerUserLimitQuotaOptions]               = new(UnsetPerUserLimitQuotaRequest)
+	_ optionsProvider[SetBlockEnforcementEnabledQuotaOptions]      = new(SetBlockEnforcementEnabledQuotaRequest)
+	_ optionsProvider[GetConfigQuotaOptions]                       = new(GetConfigQuotaRequest)
+	_ optionsProvider[SetUserQuotaOverrideQuotaOptions]            = new(SetUserQuotaOverrideQuotaRequest)
+	_ optionsProvider[ListUserQuotaOverridesQuotaOptions]          = new(ListUserQuotaOverridesQuotaRequest)
+	_ optionsProvider[RemoveUserQuotaOverrideQuotaOptions]         = new(RemoveUserQuotaOverrideQuotaRequest)
+	_ optionsProvider[RemoveUserQuotaOverridesByUserQuotaOptions]  = new(RemoveUserQuotaOverridesByUserQuotaRequest)
+	_ optionsProvider[RemoveUserQuotaOverridesByCycleQuotaOptions] = new(RemoveUserQuotaOverridesByCycleQuotaRequest)
+	_ optionsProvider[RemoveAllUserQuotaOverridesQuotaOptions]     = new(RemoveAllUserQuotaOverridesQuotaRequest)
+	_ optionsProvider[AddNotificationThresholdQuotaOptions]        = new(AddNotificationThresholdQuotaRequest)
+	_ optionsProvider[RemoveNotificationThresholdQuotaOptions]     = new(RemoveNotificationThresholdQuotaRequest)
+	_ optionsProvider[GetNotificationThresholdsQuotaOptions]       = new(GetNotificationThresholdsQuotaRequest)
+	_ optionsProvider[AddNotificationIntegrationQuotaOptions]      = new(AddNotificationIntegrationQuotaRequest)
+	_ optionsProvider[RemoveNotificationIntegrationQuotaOptions]   = new(RemoveNotificationIntegrationQuotaRequest)
+	_ optionsProvider[GetNotificationIntegrationsQuotaOptions]     = new(GetNotificationIntegrationsQuotaRequest)
+	_ optionsProvider[SetAdminEmailsQuotaOptions]                  = new(SetAdminEmailsQuotaRequest)
+	_ optionsProvider[AddCustomActionQuotaOptions]                 = new(AddCustomActionQuotaRequest)
+	_ optionsProvider[RemoveCustomActionsQuotaOptions]             = new(RemoveCustomActionsQuotaRequest)
+	_ optionsProvider[GetCustomActionsQuotaOptions]                = new(GetCustomActionsQuotaRequest)
+	_ optionsProvider[SetCycleStartActionQuotaOptions]             = new(SetCycleStartActionQuotaRequest)
+	_ optionsProvider[RemoveCycleStartActionQuotaOptions]          = new(RemoveCycleStartActionQuotaRequest)
+	_ optionsProvider[GetCycleStartActionQuotaOptions]             = new(GetCycleStartActionQuotaRequest)
 )
 
 type CreateQuotaRequest struct {
@@ -232,6 +238,54 @@ type QuotaSetBlockEnforcementEnabledArgsRequest struct {
 }
 
 type GetConfigQuotaRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type SetUserQuotaOverrideQuotaRequest struct {
+	name SchemaObjectIdentifier               // required
+	args QuotaSetUserQuotaOverrideArgsRequest // required
+}
+
+type QuotaSetUserQuotaOverrideArgsRequest struct {
+	Users     []string   // required
+	Cycle     QuotaCycle // required
+	Limit     int        // required
+	ExpiresOn *string
+}
+
+type ListUserQuotaOverridesQuotaRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type RemoveUserQuotaOverrideQuotaRequest struct {
+	name SchemaObjectIdentifier                  // required
+	args QuotaRemoveUserQuotaOverrideArgsRequest // required
+}
+
+type QuotaRemoveUserQuotaOverrideArgsRequest struct {
+	User  string     // required
+	Cycle QuotaCycle // required
+}
+
+type RemoveUserQuotaOverridesByUserQuotaRequest struct {
+	name SchemaObjectIdentifier                         // required
+	args QuotaRemoveUserQuotaOverridesByUserArgsRequest // required
+}
+
+type QuotaRemoveUserQuotaOverridesByUserArgsRequest struct {
+	User string // required
+}
+
+type RemoveUserQuotaOverridesByCycleQuotaRequest struct {
+	name SchemaObjectIdentifier                          // required
+	args QuotaRemoveUserQuotaOverridesByCycleArgsRequest // required
+}
+
+type QuotaRemoveUserQuotaOverridesByCycleArgsRequest struct {
+	Cycle QuotaCycle // required
+}
+
+type RemoveAllUserQuotaOverridesQuotaRequest struct {
 	name SchemaObjectIdentifier // required
 }
 

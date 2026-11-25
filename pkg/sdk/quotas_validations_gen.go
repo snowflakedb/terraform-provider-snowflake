@@ -19,6 +19,12 @@ var (
 	_ validatable = new(UnsetPerUserLimitQuotaOptions)
 	_ validatable = new(SetBlockEnforcementEnabledQuotaOptions)
 	_ validatable = new(GetConfigQuotaOptions)
+	_ validatable = new(SetUserQuotaOverrideQuotaOptions)
+	_ validatable = new(ListUserQuotaOverridesQuotaOptions)
+	_ validatable = new(RemoveUserQuotaOverrideQuotaOptions)
+	_ validatable = new(RemoveUserQuotaOverridesByUserQuotaOptions)
+	_ validatable = new(RemoveUserQuotaOverridesByCycleQuotaOptions)
+	_ validatable = new(RemoveAllUserQuotaOverridesQuotaOptions)
 	_ validatable = new(AddNotificationThresholdQuotaOptions)
 	_ validatable = new(RemoveNotificationThresholdQuotaOptions)
 	_ validatable = new(GetNotificationThresholdsQuotaOptions)
@@ -270,6 +276,72 @@ func (opts *GetConfigQuotaOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("GetConfigQuotaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *SetUserQuotaOverrideQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("SetUserQuotaOverrideQuotaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *ListUserQuotaOverridesQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("ListUserQuotaOverridesQuotaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *RemoveUserQuotaOverrideQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("RemoveUserQuotaOverrideQuotaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *RemoveUserQuotaOverridesByUserQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("RemoveUserQuotaOverridesByUserQuotaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *RemoveUserQuotaOverridesByCycleQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("RemoveUserQuotaOverridesByCycleQuotaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *RemoveAllUserQuotaOverridesQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("RemoveAllUserQuotaOverridesQuotaOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

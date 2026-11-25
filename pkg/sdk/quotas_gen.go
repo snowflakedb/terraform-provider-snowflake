@@ -26,6 +26,12 @@ type Quotas interface {
 	UnsetPerUserLimit(ctx context.Context, request *UnsetPerUserLimitQuotaRequest) (*string, error)
 	SetBlockEnforcementEnabled(ctx context.Context, request *SetBlockEnforcementEnabledQuotaRequest) (*string, error)
 	GetConfig(ctx context.Context, request *GetConfigQuotaRequest) (*QuotaConfig, error)
+	SetUserQuotaOverride(ctx context.Context, request *SetUserQuotaOverrideQuotaRequest) (*string, error)
+	ListUserQuotaOverrides(ctx context.Context, request *ListUserQuotaOverridesQuotaRequest) ([]QuotaUserQuotaOverride, error)
+	RemoveUserQuotaOverride(ctx context.Context, request *RemoveUserQuotaOverrideQuotaRequest) (*string, error)
+	RemoveUserQuotaOverridesByUser(ctx context.Context, request *RemoveUserQuotaOverridesByUserQuotaRequest) (*string, error)
+	RemoveUserQuotaOverridesByCycle(ctx context.Context, request *RemoveUserQuotaOverridesByCycleQuotaRequest) (*string, error)
+	RemoveAllUserQuotaOverrides(ctx context.Context, request *RemoveAllUserQuotaOverridesQuotaRequest) (*string, error)
 	AddNotificationThreshold(ctx context.Context, request *AddNotificationThresholdQuotaRequest) (*string, error)
 	RemoveNotificationThreshold(ctx context.Context, request *RemoveNotificationThresholdQuotaRequest) (*string, error)
 	GetNotificationThresholds(ctx context.Context, request *GetNotificationThresholdsQuotaRequest) ([]QuotaNotificationThreshold, error)
@@ -351,6 +357,88 @@ type QuotaConfig struct {
 }
 
 type quotaGetConfigArgs struct{}
+
+// SetUserQuotaOverrideQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#limit-overrides.
+type SetUserQuotaOverrideQuotaOptions struct {
+	call bool                          `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier        `ddl:"identifier,instance_method" sql:"SET_USER_QUOTA_OVERRIDE"`
+	args QuotaSetUserQuotaOverrideArgs `ddl:"list,must_parentheses"`
+}
+
+type QuotaSetUserQuotaOverrideArgs struct {
+	Users     []string   `ddl:"list,must_brackets,single_quotes"`
+	Cycle     QuotaCycle `ddl:"keyword,single_quotes"`
+	Limit     int        `ddl:"parameter,no_equals"`
+	ExpiresOn *string    `ddl:"keyword,single_quotes"`
+}
+
+// ListUserQuotaOverridesQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#limit-overrides.
+type ListUserQuotaOverridesQuotaOptions struct {
+	call bool                            `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier          `ddl:"identifier,instance_method" sql:"LIST_USER_QUOTA_OVERRIDES"`
+	args quotaListUserQuotaOverridesArgs `ddl:"list,must_parentheses"`
+}
+
+type quotaUserQuotaOverrideRow struct {
+	UserId        int            `db:"USER_ID"`
+	UserName      sql.NullString `db:"USER_NAME"`
+	Cycle         string         `db:"CYCLE"`
+	OverrideValue int            `db:"OVERRIDE_VALUE"`
+	ExpiryDate    sql.NullTime   `db:"EXPIRY_DATE"`
+}
+
+type QuotaUserQuotaOverride struct {
+	UserId        int
+	UserName      *string
+	Cycle         QuotaCycle
+	OverrideValue int
+	ExpiryDate    *time.Time
+}
+
+type quotaListUserQuotaOverridesArgs struct{}
+
+// RemoveUserQuotaOverrideQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#limit-overrides.
+type RemoveUserQuotaOverrideQuotaOptions struct {
+	call bool                             `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier           `ddl:"identifier,instance_method" sql:"REMOVE_USER_QUOTA_OVERRIDE"`
+	args QuotaRemoveUserQuotaOverrideArgs `ddl:"list,must_parentheses"`
+}
+
+type QuotaRemoveUserQuotaOverrideArgs struct {
+	User  string     `ddl:"keyword,single_quotes"`
+	Cycle QuotaCycle `ddl:"keyword,single_quotes"`
+}
+
+// RemoveUserQuotaOverridesByUserQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#limit-overrides.
+type RemoveUserQuotaOverridesByUserQuotaOptions struct {
+	call bool                                    `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier                  `ddl:"identifier,instance_method" sql:"REMOVE_USER_QUOTA_OVERRIDES_BY_USER"`
+	args QuotaRemoveUserQuotaOverridesByUserArgs `ddl:"list,must_parentheses"`
+}
+
+type QuotaRemoveUserQuotaOverridesByUserArgs struct {
+	User string `ddl:"keyword,single_quotes"`
+}
+
+// RemoveUserQuotaOverridesByCycleQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#limit-overrides.
+type RemoveUserQuotaOverridesByCycleQuotaOptions struct {
+	call bool                                     `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier                   `ddl:"identifier,instance_method" sql:"REMOVE_USER_QUOTA_OVERRIDES_BY_CYCLE"`
+	args QuotaRemoveUserQuotaOverridesByCycleArgs `ddl:"list,must_parentheses"`
+}
+
+type QuotaRemoveUserQuotaOverridesByCycleArgs struct {
+	Cycle QuotaCycle `ddl:"keyword,single_quotes"`
+}
+
+// RemoveAllUserQuotaOverridesQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#limit-overrides.
+type RemoveAllUserQuotaOverridesQuotaOptions struct {
+	call bool                                 `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier               `ddl:"identifier,instance_method" sql:"REMOVE_ALL_USER_QUOTA_OVERRIDES"`
+	args quotaRemoveAllUserQuotaOverridesArgs `ddl:"list,must_parentheses"`
+}
+
+type quotaRemoveAllUserQuotaOverridesArgs struct{}
 
 // AddNotificationThresholdQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#notifications.
 type AddNotificationThresholdQuotaOptions struct {

@@ -117,6 +117,25 @@ var quotaSetPerUserLimitArgs = g.NewQueryStruct("SetPerUserLimitArgs").
 var quotaUnsetPerUserLimitArgs = g.NewQueryStruct("UnsetPerUserLimitArgs").
 	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required())
 
+// SET_USER_QUOTA_OVERRIDE sets the limit of the given users for one cycle, replacing their override for that cycle. The users are
+// resolved case-insensitively, and the call fails for all of them if one doesn't exist. ExpiresOn is a date (YYYY-MM-DD) later
+// than the current one; the override expires at 00:00 UTC on it, and without it, the override doesn't expire.
+var quotaSetUserQuotaOverrideArgs = g.NewQueryStruct("SetUserQuotaOverrideArgs").
+	List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()).
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required()).
+	PredefinedQueryStructField("Limit", "int", g.ParameterOptions().NoEquals().Required()).
+	OptionalText("ExpiresOn", g.KeywordOptions().SingleQuotes())
+
+var quotaRemoveUserQuotaOverrideArgs = g.NewQueryStruct("RemoveUserQuotaOverrideArgs").
+	Text("User", g.KeywordOptions().SingleQuotes().Required()).
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required())
+
+var quotaRemoveUserQuotaOverridesByUserArgs = g.NewQueryStruct("RemoveUserQuotaOverridesByUserArgs").
+	Text("User", g.KeywordOptions().SingleQuotes().Required())
+
+var quotaRemoveUserQuotaOverridesByCycleArgs = g.NewQueryStruct("RemoveUserQuotaOverridesByCycleArgs").
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required())
+
 // The one-argument form also disables the per-user block notifications, so NotifyUsers should always be passed.
 var quotaSetBlockEnforcementEnabledArgs = g.NewQueryStruct("SetBlockEnforcementEnabledArgs").
 	PredefinedQueryStructField("Enabled", "bool", g.ParameterOptions().NoEquals().Required()).
@@ -181,6 +200,15 @@ var quotaConfigResult = g.StructPair("quotaConfigRow", "QuotaConfig").
 	Field("ADMIN_EMAILS", "sql.NullString", "[]string", g.WithCustomParser("ParseQuotaAdminEmails")).
 	OptionalText("ADMIN_LAST_SENT_AT").
 	OptionalText("REFRESH_TIER")
+
+// LIST_USER_QUOTA_OVERRIDES returns USER_NAME as NULL, so the users are identified by USER_ID. EXPIRY_DATE is NULL for an override
+// that doesn't expire.
+var quotaUserQuotaOverrideResult = g.StructPair("quotaUserQuotaOverrideRow", "QuotaUserQuotaOverride").
+	Number("USER_ID").
+	OptionalText("USER_NAME").
+	Enum("CYCLE", QuotaCycleEnumDef).
+	Number("OVERRIDE_VALUE").
+	OptionalTime("EXPIRY_DATE")
 
 var quotaNotificationThresholdResult = g.StructPair("quotaNotificationThresholdRow", "QuotaNotificationThreshold").
 	Number("THRESHOLD").
@@ -330,6 +358,37 @@ var quotasDef = g.NewInterface(
 	nil,
 	quotaConfigResult,
 	g.InstanceMethodKindSingleValue,
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"SET_USER_QUOTA_OVERRIDE",
+	quotaSetUserQuotaOverrideArgs,
+	"string",
+).InstanceMethodOperation(
+	quotaDocs("limit-overrides"),
+	"LIST_USER_QUOTA_OVERRIDES",
+	nil,
+	quotaUserQuotaOverrideResult,
+	g.InstanceMethodKindSlice,
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_USER_QUOTA_OVERRIDE",
+	quotaRemoveUserQuotaOverrideArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_USER_QUOTA_OVERRIDES_BY_USER",
+	quotaRemoveUserQuotaOverridesByUserArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_USER_QUOTA_OVERRIDES_BY_CYCLE",
+	quotaRemoveUserQuotaOverridesByCycleArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_ALL_USER_QUOTA_OVERRIDES",
+	nil,
+	"string",
 ).InstanceMethodOperationScalar(
 	quotaDocs("notifications"),
 	"ADD_NOTIFICATION_THRESHOLD",

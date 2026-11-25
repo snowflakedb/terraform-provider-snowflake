@@ -72,6 +72,18 @@ const (
 	case_Quotas_sql_SetBlockEnforcementEnabled_basic                                        testCaseName = "sql_SetBlockEnforcementEnabled_basic"
 	case_Quotas_validation_GetConfig_name_ValidIdentifier                                   testCaseName = "validation_GetConfig_name_ValidIdentifier"
 	case_Quotas_sql_GetConfig_basic                                                         testCaseName = "sql_GetConfig_basic"
+	case_Quotas_validation_SetUserQuotaOverride_name_ValidIdentifier                        testCaseName = "validation_SetUserQuotaOverride_name_ValidIdentifier"
+	case_Quotas_sql_SetUserQuotaOverride_basic                                              testCaseName = "sql_SetUserQuotaOverride_basic"
+	case_Quotas_validation_ListUserQuotaOverrides_name_ValidIdentifier                      testCaseName = "validation_ListUserQuotaOverrides_name_ValidIdentifier"
+	case_Quotas_sql_ListUserQuotaOverrides_basic                                            testCaseName = "sql_ListUserQuotaOverrides_basic"
+	case_Quotas_validation_RemoveUserQuotaOverride_name_ValidIdentifier                     testCaseName = "validation_RemoveUserQuotaOverride_name_ValidIdentifier"
+	case_Quotas_sql_RemoveUserQuotaOverride_basic                                           testCaseName = "sql_RemoveUserQuotaOverride_basic"
+	case_Quotas_validation_RemoveUserQuotaOverridesByUser_name_ValidIdentifier              testCaseName = "validation_RemoveUserQuotaOverridesByUser_name_ValidIdentifier"
+	case_Quotas_sql_RemoveUserQuotaOverridesByUser_basic                                    testCaseName = "sql_RemoveUserQuotaOverridesByUser_basic"
+	case_Quotas_validation_RemoveUserQuotaOverridesByCycle_name_ValidIdentifier             testCaseName = "validation_RemoveUserQuotaOverridesByCycle_name_ValidIdentifier"
+	case_Quotas_sql_RemoveUserQuotaOverridesByCycle_basic                                   testCaseName = "sql_RemoveUserQuotaOverridesByCycle_basic"
+	case_Quotas_validation_RemoveAllUserQuotaOverrides_name_ValidIdentifier                 testCaseName = "validation_RemoveAllUserQuotaOverrides_name_ValidIdentifier"
+	case_Quotas_sql_RemoveAllUserQuotaOverrides_basic                                       testCaseName = "sql_RemoveAllUserQuotaOverrides_basic"
 	case_Quotas_validation_AddNotificationThreshold_name_ValidIdentifier                    testCaseName = "validation_AddNotificationThreshold_name_ValidIdentifier"
 	case_Quotas_sql_AddNotificationThreshold_basic                                          testCaseName = "sql_AddNotificationThreshold_basic"
 	case_Quotas_validation_RemoveNotificationThreshold_name_ValidIdentifier                 testCaseName = "validation_RemoveNotificationThreshold_name_ValidIdentifier"
@@ -105,33 +117,39 @@ const (
 )
 
 type QuotasTestsContext struct {
-	Create                        *sdkTestCtx[*CreateQuotaOptions]
-	Alter                         *sdkTestCtx[*AlterQuotaOptions]
-	Drop                          *sdkTestCtx[*DropQuotaOptions]
-	Show                          *sdkTestCtx[*ShowQuotaOptions]
-	AddSharedResource             *sdkTestCtx[*AddSharedResourceQuotaOptions]
-	RemoveSharedResource          *sdkTestCtx[*RemoveSharedResourceQuotaOptions]
-	SetUserTags                   *sdkTestCtx[*SetUserTagsQuotaOptions]
-	ExcludeUsers                  *sdkTestCtx[*ExcludeUsersQuotaOptions]
-	IncludeUsers                  *sdkTestCtx[*IncludeUsersQuotaOptions]
-	GetQuotaScope                 *sdkTestCtx[*GetQuotaScopeQuotaOptions]
-	SetPerUserLimit               *sdkTestCtx[*SetPerUserLimitQuotaOptions]
-	UnsetPerUserLimit             *sdkTestCtx[*UnsetPerUserLimitQuotaOptions]
-	SetBlockEnforcementEnabled    *sdkTestCtx[*SetBlockEnforcementEnabledQuotaOptions]
-	GetConfig                     *sdkTestCtx[*GetConfigQuotaOptions]
-	AddNotificationThreshold      *sdkTestCtx[*AddNotificationThresholdQuotaOptions]
-	RemoveNotificationThreshold   *sdkTestCtx[*RemoveNotificationThresholdQuotaOptions]
-	GetNotificationThresholds     *sdkTestCtx[*GetNotificationThresholdsQuotaOptions]
-	AddNotificationIntegration    *sdkTestCtx[*AddNotificationIntegrationQuotaOptions]
-	RemoveNotificationIntegration *sdkTestCtx[*RemoveNotificationIntegrationQuotaOptions]
-	GetNotificationIntegrations   *sdkTestCtx[*GetNotificationIntegrationsQuotaOptions]
-	SetAdminEmails                *sdkTestCtx[*SetAdminEmailsQuotaOptions]
-	AddCustomAction               *sdkTestCtx[*AddCustomActionQuotaOptions]
-	RemoveCustomActions           *sdkTestCtx[*RemoveCustomActionsQuotaOptions]
-	GetCustomActions              *sdkTestCtx[*GetCustomActionsQuotaOptions]
-	SetCycleStartAction           *sdkTestCtx[*SetCycleStartActionQuotaOptions]
-	RemoveCycleStartAction        *sdkTestCtx[*RemoveCycleStartActionQuotaOptions]
-	GetCycleStartAction           *sdkTestCtx[*GetCycleStartActionQuotaOptions]
+	Create                          *sdkTestCtx[*CreateQuotaOptions]
+	Alter                           *sdkTestCtx[*AlterQuotaOptions]
+	Drop                            *sdkTestCtx[*DropQuotaOptions]
+	Show                            *sdkTestCtx[*ShowQuotaOptions]
+	AddSharedResource               *sdkTestCtx[*AddSharedResourceQuotaOptions]
+	RemoveSharedResource            *sdkTestCtx[*RemoveSharedResourceQuotaOptions]
+	SetUserTags                     *sdkTestCtx[*SetUserTagsQuotaOptions]
+	ExcludeUsers                    *sdkTestCtx[*ExcludeUsersQuotaOptions]
+	IncludeUsers                    *sdkTestCtx[*IncludeUsersQuotaOptions]
+	GetQuotaScope                   *sdkTestCtx[*GetQuotaScopeQuotaOptions]
+	SetPerUserLimit                 *sdkTestCtx[*SetPerUserLimitQuotaOptions]
+	UnsetPerUserLimit               *sdkTestCtx[*UnsetPerUserLimitQuotaOptions]
+	SetBlockEnforcementEnabled      *sdkTestCtx[*SetBlockEnforcementEnabledQuotaOptions]
+	GetConfig                       *sdkTestCtx[*GetConfigQuotaOptions]
+	SetUserQuotaOverride            *sdkTestCtx[*SetUserQuotaOverrideQuotaOptions]
+	ListUserQuotaOverrides          *sdkTestCtx[*ListUserQuotaOverridesQuotaOptions]
+	RemoveUserQuotaOverride         *sdkTestCtx[*RemoveUserQuotaOverrideQuotaOptions]
+	RemoveUserQuotaOverridesByUser  *sdkTestCtx[*RemoveUserQuotaOverridesByUserQuotaOptions]
+	RemoveUserQuotaOverridesByCycle *sdkTestCtx[*RemoveUserQuotaOverridesByCycleQuotaOptions]
+	RemoveAllUserQuotaOverrides     *sdkTestCtx[*RemoveAllUserQuotaOverridesQuotaOptions]
+	AddNotificationThreshold        *sdkTestCtx[*AddNotificationThresholdQuotaOptions]
+	RemoveNotificationThreshold     *sdkTestCtx[*RemoveNotificationThresholdQuotaOptions]
+	GetNotificationThresholds       *sdkTestCtx[*GetNotificationThresholdsQuotaOptions]
+	AddNotificationIntegration      *sdkTestCtx[*AddNotificationIntegrationQuotaOptions]
+	RemoveNotificationIntegration   *sdkTestCtx[*RemoveNotificationIntegrationQuotaOptions]
+	GetNotificationIntegrations     *sdkTestCtx[*GetNotificationIntegrationsQuotaOptions]
+	SetAdminEmails                  *sdkTestCtx[*SetAdminEmailsQuotaOptions]
+	AddCustomAction                 *sdkTestCtx[*AddCustomActionQuotaOptions]
+	RemoveCustomActions             *sdkTestCtx[*RemoveCustomActionsQuotaOptions]
+	GetCustomActions                *sdkTestCtx[*GetCustomActionsQuotaOptions]
+	SetCycleStartAction             *sdkTestCtx[*SetCycleStartActionQuotaOptions]
+	RemoveCycleStartAction          *sdkTestCtx[*RemoveCycleStartActionQuotaOptions]
+	GetCycleStartAction             *sdkTestCtx[*GetCycleStartActionQuotaOptions]
 }
 
 var quotasTests = QuotasTestsContext{
@@ -650,6 +668,144 @@ var quotasTests = QuotasTestsContext{
 				NoModifyNeeded: true,
 			},
 		),
+	SetUserQuotaOverride: newSdkTestCtx[*SetUserQuotaOverrideQuotaOptions](
+		"Quotas", "SetUserQuotaOverride",
+	).
+		withDefaultOpts(func() *SetUserQuotaOverrideQuotaOptions {
+			return &SetUserQuotaOverrideQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*SetUserQuotaOverrideQuotaOptions]{
+				Name:        case_Quotas_validation_SetUserQuotaOverride_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetUserQuotaOverrideQuotaOptions", "name"),
+				DefaultModify: func(opts *SetUserQuotaOverrideQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetUserQuotaOverrideQuotaOptions]{
+				Name:           case_Quotas_sql_SetUserQuotaOverride_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	ListUserQuotaOverrides: newSdkTestCtx[*ListUserQuotaOverridesQuotaOptions](
+		"Quotas", "ListUserQuotaOverrides",
+	).
+		withDefaultOpts(func() *ListUserQuotaOverridesQuotaOptions {
+			return &ListUserQuotaOverridesQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*ListUserQuotaOverridesQuotaOptions]{
+				Name:        case_Quotas_validation_ListUserQuotaOverrides_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("ListUserQuotaOverridesQuotaOptions", "name"),
+				DefaultModify: func(opts *ListUserQuotaOverridesQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*ListUserQuotaOverridesQuotaOptions]{
+				Name:           case_Quotas_sql_ListUserQuotaOverrides_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	RemoveUserQuotaOverride: newSdkTestCtx[*RemoveUserQuotaOverrideQuotaOptions](
+		"Quotas", "RemoveUserQuotaOverride",
+	).
+		withDefaultOpts(func() *RemoveUserQuotaOverrideQuotaOptions {
+			return &RemoveUserQuotaOverrideQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RemoveUserQuotaOverrideQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveUserQuotaOverride_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveUserQuotaOverrideQuotaOptions", "name"),
+				DefaultModify: func(opts *RemoveUserQuotaOverrideQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RemoveUserQuotaOverrideQuotaOptions]{
+				Name:           case_Quotas_sql_RemoveUserQuotaOverride_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	RemoveUserQuotaOverridesByUser: newSdkTestCtx[*RemoveUserQuotaOverridesByUserQuotaOptions](
+		"Quotas", "RemoveUserQuotaOverridesByUser",
+	).
+		withDefaultOpts(func() *RemoveUserQuotaOverridesByUserQuotaOptions {
+			return &RemoveUserQuotaOverridesByUserQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RemoveUserQuotaOverridesByUserQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveUserQuotaOverridesByUser_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveUserQuotaOverridesByUserQuotaOptions", "name"),
+				DefaultModify: func(opts *RemoveUserQuotaOverridesByUserQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RemoveUserQuotaOverridesByUserQuotaOptions]{
+				Name:           case_Quotas_sql_RemoveUserQuotaOverridesByUser_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	RemoveUserQuotaOverridesByCycle: newSdkTestCtx[*RemoveUserQuotaOverridesByCycleQuotaOptions](
+		"Quotas", "RemoveUserQuotaOverridesByCycle",
+	).
+		withDefaultOpts(func() *RemoveUserQuotaOverridesByCycleQuotaOptions {
+			return &RemoveUserQuotaOverridesByCycleQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RemoveUserQuotaOverridesByCycleQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveUserQuotaOverridesByCycle_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveUserQuotaOverridesByCycleQuotaOptions", "name"),
+				DefaultModify: func(opts *RemoveUserQuotaOverridesByCycleQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RemoveUserQuotaOverridesByCycleQuotaOptions]{
+				Name:           case_Quotas_sql_RemoveUserQuotaOverridesByCycle_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	RemoveAllUserQuotaOverrides: newSdkTestCtx[*RemoveAllUserQuotaOverridesQuotaOptions](
+		"Quotas", "RemoveAllUserQuotaOverrides",
+	).
+		withDefaultOpts(func() *RemoveAllUserQuotaOverridesQuotaOptions {
+			return &RemoveAllUserQuotaOverridesQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RemoveAllUserQuotaOverridesQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveAllUserQuotaOverrides_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveAllUserQuotaOverridesQuotaOptions", "name"),
+				DefaultModify: func(opts *RemoveAllUserQuotaOverridesQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RemoveAllUserQuotaOverridesQuotaOptions]{
+				Name:           case_Quotas_sql_RemoveAllUserQuotaOverrides_basic,
+				NoModifyNeeded: true,
+			},
+		),
 	AddNotificationThreshold: newSdkTestCtx[*AddNotificationThresholdQuotaOptions](
 		"Quotas", "AddNotificationThreshold",
 	).
@@ -1047,6 +1203,36 @@ func TestQuotas_SetBlockEnforcementEnabled(t *testing.T) {
 func TestQuotas_GetConfig(t *testing.T) {
 	quotasTests.GetConfig.RunValidationCases(t)
 	quotasTests.GetConfig.RunSqlCases(t)
+}
+
+func TestQuotas_SetUserQuotaOverride(t *testing.T) {
+	quotasTests.SetUserQuotaOverride.RunValidationCases(t)
+	quotasTests.SetUserQuotaOverride.RunSqlCases(t)
+}
+
+func TestQuotas_ListUserQuotaOverrides(t *testing.T) {
+	quotasTests.ListUserQuotaOverrides.RunValidationCases(t)
+	quotasTests.ListUserQuotaOverrides.RunSqlCases(t)
+}
+
+func TestQuotas_RemoveUserQuotaOverride(t *testing.T) {
+	quotasTests.RemoveUserQuotaOverride.RunValidationCases(t)
+	quotasTests.RemoveUserQuotaOverride.RunSqlCases(t)
+}
+
+func TestQuotas_RemoveUserQuotaOverridesByUser(t *testing.T) {
+	quotasTests.RemoveUserQuotaOverridesByUser.RunValidationCases(t)
+	quotasTests.RemoveUserQuotaOverridesByUser.RunSqlCases(t)
+}
+
+func TestQuotas_RemoveUserQuotaOverridesByCycle(t *testing.T) {
+	quotasTests.RemoveUserQuotaOverridesByCycle.RunValidationCases(t)
+	quotasTests.RemoveUserQuotaOverridesByCycle.RunSqlCases(t)
+}
+
+func TestQuotas_RemoveAllUserQuotaOverrides(t *testing.T) {
+	quotasTests.RemoveAllUserQuotaOverrides.RunValidationCases(t)
+	quotasTests.RemoveAllUserQuotaOverrides.RunSqlCases(t)
 }
 
 func TestQuotas_AddNotificationThreshold(t *testing.T) {

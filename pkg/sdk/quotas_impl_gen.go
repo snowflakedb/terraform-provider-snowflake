@@ -13,6 +13,7 @@ var (
 	_ Quotas                                       = (*quotas)(nil)
 	_ convertibleRow[Quota]                        = new(quotaDBRow)
 	_ convertibleRow[QuotaConfig]                  = new(quotaConfigRow)
+	_ convertibleRow[QuotaUserQuotaOverride]       = new(quotaUserQuotaOverrideRow)
 	_ convertibleRow[QuotaNotificationThreshold]   = new(quotaNotificationThresholdRow)
 	_ convertibleRow[QuotaNotificationIntegration] = new(quotaNotificationIntegrationRow)
 	_ convertibleRow[QuotaCustomAction]            = new(quotaCustomActionRow)
@@ -109,6 +110,35 @@ func (v *quotas) GetConfig(ctx context.Context, request *GetConfigQuotaRequest) 
 		return nil, err
 	}
 	return conversionErrorWrapped(result.convert())
+}
+
+func (v *quotas) SetUserQuotaOverride(ctx context.Context, request *SetUserQuotaOverrideQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *quotas) ListUserQuotaOverrides(ctx context.Context, request *ListUserQuotaOverridesQuotaRequest) ([]QuotaUserQuotaOverride, error) {
+	opts := request.toOpts()
+	dbRows, err := validateAndQuery[quotaUserQuotaOverrideRow](v.client, ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	return convertRows[quotaUserQuotaOverrideRow, QuotaUserQuotaOverride](dbRows)
+}
+
+func (v *quotas) RemoveUserQuotaOverride(ctx context.Context, request *RemoveUserQuotaOverrideQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *quotas) RemoveUserQuotaOverridesByUser(ctx context.Context, request *RemoveUserQuotaOverridesByUserQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *quotas) RemoveUserQuotaOverridesByCycle(ctx context.Context, request *RemoveUserQuotaOverridesByCycleQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *quotas) RemoveAllUserQuotaOverrides(ctx context.Context, request *RemoveAllUserQuotaOverridesQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
 }
 
 func (v *quotas) AddNotificationThreshold(ctx context.Context, request *AddNotificationThresholdQuotaRequest) (*string, error) {
@@ -449,6 +479,75 @@ func (r quotaConfigRow) convert() (*QuotaConfig, error) {
 	mapNullString(&result.AdminLastSentAt, r.AdminLastSentAt)
 	mapNullString(&result.RefreshTier, r.RefreshTier)
 	return result, nil
+}
+
+func (r *SetUserQuotaOverrideQuotaRequest) toOpts() *SetUserQuotaOverrideQuotaOptions {
+	opts := &SetUserQuotaOverrideQuotaOptions{
+		name: r.name,
+	}
+	opts.args = QuotaSetUserQuotaOverrideArgs{
+		Users:     r.args.Users,
+		Cycle:     r.args.Cycle,
+		Limit:     r.args.Limit,
+		ExpiresOn: r.args.ExpiresOn,
+	}
+	return opts
+}
+
+func (r *ListUserQuotaOverridesQuotaRequest) toOpts() *ListUserQuotaOverridesQuotaOptions {
+	opts := &ListUserQuotaOverridesQuotaOptions{
+		name: r.name,
+	}
+	return opts
+}
+
+func (r quotaUserQuotaOverrideRow) convert() (*QuotaUserQuotaOverride, error) {
+	result := &QuotaUserQuotaOverride{
+		UserId:        r.UserId,
+		OverrideValue: r.OverrideValue,
+	}
+	mapNullString(&result.UserName, r.UserName)
+	mapStringWithMapping(&result.Cycle, r.Cycle, ToQuotaCycle)
+	mapNullTime(&result.ExpiryDate, r.ExpiryDate)
+	return result, nil
+}
+
+func (r *RemoveUserQuotaOverrideQuotaRequest) toOpts() *RemoveUserQuotaOverrideQuotaOptions {
+	opts := &RemoveUserQuotaOverrideQuotaOptions{
+		name: r.name,
+	}
+	opts.args = QuotaRemoveUserQuotaOverrideArgs{
+		User:  r.args.User,
+		Cycle: r.args.Cycle,
+	}
+	return opts
+}
+
+func (r *RemoveUserQuotaOverridesByUserQuotaRequest) toOpts() *RemoveUserQuotaOverridesByUserQuotaOptions {
+	opts := &RemoveUserQuotaOverridesByUserQuotaOptions{
+		name: r.name,
+	}
+	opts.args = QuotaRemoveUserQuotaOverridesByUserArgs{
+		User: r.args.User,
+	}
+	return opts
+}
+
+func (r *RemoveUserQuotaOverridesByCycleQuotaRequest) toOpts() *RemoveUserQuotaOverridesByCycleQuotaOptions {
+	opts := &RemoveUserQuotaOverridesByCycleQuotaOptions{
+		name: r.name,
+	}
+	opts.args = QuotaRemoveUserQuotaOverridesByCycleArgs{
+		Cycle: r.args.Cycle,
+	}
+	return opts
+}
+
+func (r *RemoveAllUserQuotaOverridesQuotaRequest) toOpts() *RemoveAllUserQuotaOverridesQuotaOptions {
+	opts := &RemoveAllUserQuotaOverridesQuotaOptions{
+		name: r.name,
+	}
+	return opts
 }
 
 func (r *AddNotificationThresholdQuotaRequest) toOpts() *AddNotificationThresholdQuotaOptions {

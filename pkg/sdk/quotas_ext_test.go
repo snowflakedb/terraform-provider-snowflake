@@ -479,6 +479,65 @@ func init() {
 			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), ['arg1'])", id.FullyQualifiedName(), singleQuotedIdentifier(procedureId),
 		)
 
+	quotasTests.SetUserQuotaOverride.
+		withDefaultOpts(func() *SetUserQuotaOverrideQuotaOptions {
+			return &SetUserQuotaOverrideQuotaOptions{
+				name: id,
+				args: QuotaSetUserQuotaOverrideArgs{Users: []string{"ALICE", "BOB"}, Cycle: QuotaCycleMonthly, Limit: 2500},
+			}
+		}).
+		withExpectedSqlf(
+			case_Quotas_sql_SetUserQuotaOverride_basic,
+			"CALL %s!SET_USER_QUOTA_OVERRIDE (['ALICE', 'BOB'], 'MONTHLY', 2500)", id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_SetUserQuotaOverride_expiresOn",
+			func(opts *SetUserQuotaOverrideQuotaOptions) {
+				opts.args.Cycle = QuotaCycleDaily
+				opts.args.ExpiresOn = new("2027-12-01")
+			},
+			"CALL %s!SET_USER_QUOTA_OVERRIDE (['ALICE', 'BOB'], 'DAILY', 2500, '2027-12-01')", id.FullyQualifiedName(),
+		)
+
+	quotasTests.ListUserQuotaOverrides.
+		withExpectedSqlf(
+			case_Quotas_sql_ListUserQuotaOverrides_basic,
+			"CALL %s!LIST_USER_QUOTA_OVERRIDES ()", id.FullyQualifiedName(),
+		)
+
+	quotasTests.RemoveUserQuotaOverride.
+		withDefaultOpts(func() *RemoveUserQuotaOverrideQuotaOptions {
+			return &RemoveUserQuotaOverrideQuotaOptions{name: id, args: QuotaRemoveUserQuotaOverrideArgs{User: "ALICE", Cycle: QuotaCycleWeekly}}
+		}).
+		withExpectedSqlf(
+			case_Quotas_sql_RemoveUserQuotaOverride_basic,
+			"CALL %s!REMOVE_USER_QUOTA_OVERRIDE ('ALICE', 'WEEKLY')", id.FullyQualifiedName(),
+		)
+
+	quotasTests.RemoveUserQuotaOverridesByUser.
+		withDefaultOpts(func() *RemoveUserQuotaOverridesByUserQuotaOptions {
+			return &RemoveUserQuotaOverridesByUserQuotaOptions{name: id, args: QuotaRemoveUserQuotaOverridesByUserArgs{User: "ALICE"}}
+		}).
+		withExpectedSqlf(
+			case_Quotas_sql_RemoveUserQuotaOverridesByUser_basic,
+			"CALL %s!REMOVE_USER_QUOTA_OVERRIDES_BY_USER ('ALICE')", id.FullyQualifiedName(),
+		)
+
+	quotasTests.RemoveUserQuotaOverridesByCycle.
+		withDefaultOpts(func() *RemoveUserQuotaOverridesByCycleQuotaOptions {
+			return &RemoveUserQuotaOverridesByCycleQuotaOptions{name: id, args: QuotaRemoveUserQuotaOverridesByCycleArgs{Cycle: QuotaCycleDaily}}
+		}).
+		withExpectedSqlf(
+			case_Quotas_sql_RemoveUserQuotaOverridesByCycle_basic,
+			"CALL %s!REMOVE_USER_QUOTA_OVERRIDES_BY_CYCLE ('DAILY')", id.FullyQualifiedName(),
+		)
+
+	quotasTests.RemoveAllUserQuotaOverrides.
+		withExpectedSqlf(
+			case_Quotas_sql_RemoveAllUserQuotaOverrides_basic,
+			"CALL %s!REMOVE_ALL_USER_QUOTA_OVERRIDES ()", id.FullyQualifiedName(),
+		)
+
 	quotasTests.RemoveCycleStartAction.
 		withExpectedSqlf(
 			case_Quotas_sql_RemoveCycleStartAction_basic,

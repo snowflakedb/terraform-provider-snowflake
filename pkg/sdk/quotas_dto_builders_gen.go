@@ -492,6 +492,105 @@ func NewGetConfigQuotaRequest(
 	return &s
 }
 
+func NewSetUserQuotaOverrideQuotaRequest(
+	name SchemaObjectIdentifier,
+	args QuotaSetUserQuotaOverrideArgsRequest,
+) *SetUserQuotaOverrideQuotaRequest {
+	s := SetUserQuotaOverrideQuotaRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewQuotaSetUserQuotaOverrideArgsRequest(
+	users []string,
+	cycle QuotaCycle,
+	limit int,
+) *QuotaSetUserQuotaOverrideArgsRequest {
+	s := QuotaSetUserQuotaOverrideArgsRequest{}
+	s.Users = users
+	s.Cycle = cycle
+	s.Limit = limit
+	return &s
+}
+
+func (s *QuotaSetUserQuotaOverrideArgsRequest) WithExpiresOn(expiresOn string) *QuotaSetUserQuotaOverrideArgsRequest {
+	s.ExpiresOn = &expiresOn
+	return s
+}
+
+func NewListUserQuotaOverridesQuotaRequest(
+	name SchemaObjectIdentifier,
+) *ListUserQuotaOverridesQuotaRequest {
+	s := ListUserQuotaOverridesQuotaRequest{}
+	s.name = name
+	return &s
+}
+
+func NewRemoveUserQuotaOverrideQuotaRequest(
+	name SchemaObjectIdentifier,
+	args QuotaRemoveUserQuotaOverrideArgsRequest,
+) *RemoveUserQuotaOverrideQuotaRequest {
+	s := RemoveUserQuotaOverrideQuotaRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewQuotaRemoveUserQuotaOverrideArgsRequest(
+	user string,
+	cycle QuotaCycle,
+) *QuotaRemoveUserQuotaOverrideArgsRequest {
+	s := QuotaRemoveUserQuotaOverrideArgsRequest{}
+	s.User = user
+	s.Cycle = cycle
+	return &s
+}
+
+func NewRemoveUserQuotaOverridesByUserQuotaRequest(
+	name SchemaObjectIdentifier,
+	args QuotaRemoveUserQuotaOverridesByUserArgsRequest,
+) *RemoveUserQuotaOverridesByUserQuotaRequest {
+	s := RemoveUserQuotaOverridesByUserQuotaRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewQuotaRemoveUserQuotaOverridesByUserArgsRequest(
+	user string,
+) *QuotaRemoveUserQuotaOverridesByUserArgsRequest {
+	s := QuotaRemoveUserQuotaOverridesByUserArgsRequest{}
+	s.User = user
+	return &s
+}
+
+func NewRemoveUserQuotaOverridesByCycleQuotaRequest(
+	name SchemaObjectIdentifier,
+	args QuotaRemoveUserQuotaOverridesByCycleArgsRequest,
+) *RemoveUserQuotaOverridesByCycleQuotaRequest {
+	s := RemoveUserQuotaOverridesByCycleQuotaRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewQuotaRemoveUserQuotaOverridesByCycleArgsRequest(
+	cycle QuotaCycle,
+) *QuotaRemoveUserQuotaOverridesByCycleArgsRequest {
+	s := QuotaRemoveUserQuotaOverridesByCycleArgsRequest{}
+	s.Cycle = cycle
+	return &s
+}
+
+func NewRemoveAllUserQuotaOverridesQuotaRequest(
+	name SchemaObjectIdentifier,
+) *RemoveAllUserQuotaOverridesQuotaRequest {
+	s := RemoveAllUserQuotaOverridesQuotaRequest{}
+	s.name = name
+	return &s
+}
+
 func NewAddNotificationThresholdQuotaRequest(
 	name SchemaObjectIdentifier,
 	args QuotaAddNotificationThresholdArgsRequest,
