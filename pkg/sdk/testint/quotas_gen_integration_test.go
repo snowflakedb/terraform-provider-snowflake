@@ -457,6 +457,108 @@ func TestInt_Quotas(t *testing.T) {
 	})
 
 	// SET_USER_TAGS([], 'ALL_USERS') resets the scope: the quota applies to all users, and the excluded tags and user lists are cleared
+	t.Run("set, add, and remove the user scope", func(t *testing.T) {
+		id := createQuota(t)
+		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tagCleanup)
+		role, roleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(roleCleanup)
+		otherRole, otherRoleCleanup := testClientHelper().Role.CreateRole(t)
+		t.Cleanup(otherRoleCleanup)
+		user, userCleanup := testClientHelper().User.CreateUser(t)
+		t.Cleanup(userCleanup)
+		otherUser, otherUserCleanup := testClientHelper().User.CreateUser(t)
+		t.Cleanup(otherUserCleanup)
+		userTags := func(values ...string) sdk.QuotaUserScopeUserTagsRequest {
+			return *sdk.NewQuotaUserScopeUserTagsRequest(collections.Map(values, func(value string) sdk.QuotaUserScopeTagRequest {
+				return *sdk.NewQuotaUserScopeTagRequest(tag.ID(), value)
+			}))
+		}
+		roles := func(roles ...*sdk.Role) sdk.QuotaUserScopeRolesRequest {
+			return *sdk.NewQuotaUserScopeRolesRequest(collections.Map(roles, func(role *sdk.Role) string { return role.ID().Name() }))
+		}
+		scopeUserNames := func(users []sdk.QuotaUserScopeUser) []string {
+			return collections.Map(users, func(user sdk.QuotaUserScopeUser) string { return user.Name })
+		}
+		describeScope := func() sdk.QuotaUserScopeDetails {
+			t.Helper()
+			raw, err := client.Quotas.GetQuotaScopeV2(ctx, sdk.NewGetQuotaScopeV2QuotaRequest(id))
+			require.NoError(t, err)
+			scope, err := sdk.ParseQuotaScopeV2(*raw)
+			require.NoError(t, err)
+			return scope.Users
+		}
+
+		// SET_QUOTA_USER_SCOPE returns the resulting scope
+		raw, err := client.Quotas.SetQuotaUserScope(ctx, sdk.NewSetQuotaUserScopeQuotaRequest(id, *sdk.NewQuotaSetQuotaUserScopeArgsRequest(
+			*sdk.NewQuotaSetUserScopeRequest().
+				WithAppliesTo(*sdk.NewQuotaUserScopeAppliesToRequest(sdk.QuotaUserScopeTypeGroupOfUsers).
+					WithOperator(*sdk.NewQuotaUserScopeOperatorValueRequest(sdk.QuotaUserScopeOperatorUnion)).
+					WithUserTags(userTags("finance")).
+					WithRoles(roles(role))).
+				WithExcludedBy(*sdk.NewQuotaUserScopeTagsAndRolesRequest().WithRoles(roles(otherRole))).
+				WithUsernames(*sdk.NewQuotaUserScopeUsernamesRequest().WithIncluded(*sdk.NewQuotaUserScopeIncludedUsersRequest([]string{user.ID().Name()}))),
+		)))
+		require.NoError(t, err)
+		returned, err := sdk.ParseQuotaUserScope(*raw)
+		require.NoError(t, err)
+		scope := describeScope()
+		assert.Equal(t, scope, *returned)
+		assert.Equal(t, sdk.QuotaUserScopeTypeGroupOfUsers, scope.AppliesTo.Type)
+		assert.Equal(t, sdk.QuotaUserScopeOperatorUnion, scope.AppliesTo.Operator)
+		require.Len(t, scope.AppliesTo.UserTags, 1)
+		assert.Equal(t, tag.ID(), scope.AppliesTo.UserTags[0].TagId())
+		assert.Equal(t, []string{"finance"}, scope.AppliesTo.UserTags[0].TagValues)
+		assert.Equal(t, []string{role.ID().Name()}, scope.AppliesTo.Roles)
+		assert.Equal(t, []string{otherRole.ID().Name()}, scope.ExcludedBy.Roles)
+		assert.Equal(t, []string{user.ID().Name()}, scopeUserNames(scope.Usernames.Included))
+
+		// ADD_QUOTA_USER_SCOPE adds to the lists it's given
+		_, err = client.Quotas.AddQuotaUserScope(ctx, sdk.NewAddQuotaUserScopeQuotaRequest(id, *sdk.NewQuotaAddQuotaUserScopeArgsRequest(
+			*sdk.NewQuotaUserScopeChangeRequest().
+				WithAppliesTo(*sdk.NewQuotaUserScopeTagsAndRolesRequest().WithUserTags(userTags("eu"))).
+				WithUsernames(*sdk.NewQuotaUserScopeUsernamesRequest().WithExcluded(*sdk.NewQuotaUserScopeExcludedUsersRequest([]string{otherUser.ID().Name()}))),
+		)))
+		require.NoError(t, err)
+		scope = describeScope()
+		assert.ElementsMatch(t, []string{"finance", "eu"}, tagValues(scope.AppliesTo.UserTags))
+		assert.Equal(t, []string{role.ID().Name()}, scope.AppliesTo.Roles)
+		assert.Equal(t, []string{otherUser.ID().Name()}, scopeUserNames(scope.Usernames.Excluded))
+
+		// REMOVE_QUOTA_USER_SCOPE removes from the lists it's given
+		_, err = client.Quotas.RemoveQuotaUserScope(ctx, sdk.NewRemoveQuotaUserScopeQuotaRequest(id, *sdk.NewQuotaRemoveQuotaUserScopeArgsRequest(
+			*sdk.NewQuotaUserScopeChangeRequest().
+				WithAppliesTo(*sdk.NewQuotaUserScopeTagsAndRolesRequest().WithUserTags(userTags("finance"))).
+				WithExcludedBy(*sdk.NewQuotaUserScopeTagsAndRolesRequest().WithRoles(roles(otherRole))),
+		)))
+		require.NoError(t, err)
+		scope = describeScope()
+		assert.Equal(t, []string{"eu"}, tagValues(scope.AppliesTo.UserTags))
+		assert.Empty(t, scope.ExcludedBy.Roles)
+
+		// with SET_QUOTA_USER_SCOPE, an empty list clears it, and the lists that aren't passed stay
+		_, err = client.Quotas.SetQuotaUserScope(ctx, sdk.NewSetQuotaUserScopeQuotaRequest(id, *sdk.NewQuotaSetQuotaUserScopeArgsRequest(
+			*sdk.NewQuotaSetUserScopeRequest().
+				WithUsernames(*sdk.NewQuotaUserScopeUsernamesRequest().WithIncluded(*sdk.NewQuotaUserScopeIncludedUsersRequest([]string{}))),
+		)))
+		require.NoError(t, err)
+		scope = describeScope()
+		assert.Empty(t, scope.Usernames.Included)
+		assert.Equal(t, []string{otherUser.ID().Name()}, scopeUserNames(scope.Usernames.Excluded))
+		assert.Equal(t, []string{role.ID().Name()}, scope.AppliesTo.Roles)
+
+		// ALL_USERS clears the tags and roles that select users
+		_, err = client.Quotas.SetQuotaUserScope(ctx, sdk.NewSetQuotaUserScopeQuotaRequest(id, *sdk.NewQuotaSetQuotaUserScopeArgsRequest(
+			*sdk.NewQuotaSetUserScopeRequest().WithAppliesTo(*sdk.NewQuotaUserScopeAppliesToRequest(sdk.QuotaUserScopeTypeAllUsers)),
+		)))
+		require.NoError(t, err)
+		scope = describeScope()
+		assert.Equal(t, sdk.QuotaUserScopeTypeAllUsers, scope.AppliesTo.Type)
+		assert.Empty(t, scope.AppliesTo.UserTags)
+		assert.Empty(t, scope.AppliesTo.Roles)
+		assert.Equal(t, []string{otherUser.ID().Name()}, scopeUserNames(scope.Usernames.Excluded))
+	})
+
 	t.Run("set user tags: all users", func(t *testing.T) {
 		id := createQuota(t)
 		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
