@@ -105,6 +105,60 @@ func (t QuotaScopeTag) TagId() SchemaObjectIdentifier {
 	return NewSchemaObjectIdentifier(t.TagDatabase, t.TagSchema, t.TagName)
 }
 
+// QuotaScopeV2 is the JSON returned by GET_QUOTA_SCOPE_V2. Unlike GET_QUOTA_SCOPE, it returns the roles, and the domains and
+// their instances by their current names.
+type QuotaScopeV2 struct {
+	Users           QuotaUserScopeDetails      `json:"users"`
+	SharedResources []QuotaScopeSharedResource `json:"shared_resources"`
+}
+
+// QuotaUserScopeDetails is the user scope returned by GET_QUOTA_SCOPE_V2, and by SET_QUOTA_USER_SCOPE, ADD_QUOTA_USER_SCOPE, and
+// REMOVE_QUOTA_USER_SCOPE, which return the resulting scope.
+type QuotaUserScopeDetails struct {
+	AppliesTo  QuotaUserScopeAppliesToDetails  `json:"applies_to"`
+	ExcludedBy QuotaUserScopeExcludedByDetails `json:"excluded_by"`
+	Usernames  QuotaUserScopeUsernamesDetails  `json:"usernames"`
+}
+
+// QuotaUserScopeAppliesToDetails has no operator, tags, or roles when the quota applies to all users.
+type QuotaUserScopeAppliesToDetails struct {
+	Type     QuotaUserScopeType     `json:"type"`
+	Operator QuotaUserScopeOperator `json:"operator"`
+	UserTags []QuotaScopeTag        `json:"user_tags"`
+	Roles    []string               `json:"roles"`
+}
+
+type QuotaUserScopeExcludedByDetails struct {
+	UserTags []QuotaScopeTag `json:"user_tags"`
+	Roles    []string        `json:"roles"`
+}
+
+type QuotaUserScopeUsernamesDetails struct {
+	Included []QuotaUserScopeUser `json:"included"`
+	Excluded []QuotaUserScopeUser `json:"excluded"`
+}
+
+type QuotaUserScopeUser struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+func ParseQuotaScopeV2(value string) (*QuotaScopeV2, error) {
+	scope := new(QuotaScopeV2)
+	if err := json.Unmarshal([]byte(value), scope); err != nil {
+		return nil, fmt.Errorf("failed to parse quota scope %q: %w", value, err)
+	}
+	return scope, nil
+}
+
+func ParseQuotaUserScope(value string) (*QuotaUserScopeDetails, error) {
+	scope := new(QuotaUserScopeDetails)
+	if err := json.Unmarshal([]byte(value), scope); err != nil {
+		return nil, fmt.Errorf("failed to parse quota user scope %q: %w", value, err)
+	}
+	return scope, nil
+}
+
 func (c QuotaConfig) PerUserLimitFor(cycle QuotaCycle) (*int, error) {
 	switch cycle {
 	case QuotaCycleMonthly:

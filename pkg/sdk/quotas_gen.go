@@ -22,6 +22,10 @@ type Quotas interface {
 	ExcludeUsers(ctx context.Context, request *ExcludeUsersQuotaRequest) (*string, error)
 	IncludeUsers(ctx context.Context, request *IncludeUsersQuotaRequest) (*string, error)
 	GetQuotaScope(ctx context.Context, request *GetQuotaScopeQuotaRequest) (*string, error)
+	SetQuotaUserScope(ctx context.Context, request *SetQuotaUserScopeQuotaRequest) (*string, error)
+	AddQuotaUserScope(ctx context.Context, request *AddQuotaUserScopeQuotaRequest) (*string, error)
+	RemoveQuotaUserScope(ctx context.Context, request *RemoveQuotaUserScopeQuotaRequest) (*string, error)
+	GetQuotaScopeV2(ctx context.Context, request *GetQuotaScopeV2QuotaRequest) (*string, error)
 	SetPerUserLimit(ctx context.Context, request *SetPerUserLimitQuotaRequest) (*string, error)
 	UnsetPerUserLimit(ctx context.Context, request *UnsetPerUserLimitQuotaRequest) (*string, error)
 	SetBlockEnforcementEnabled(ctx context.Context, request *SetBlockEnforcementEnabledQuotaRequest) (*string, error)
@@ -289,6 +293,108 @@ type GetQuotaScopeQuotaOptions struct {
 }
 
 type quotaGetQuotaScopeArgs struct{}
+
+// SetQuotaUserScopeQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#user-scope.
+type SetQuotaUserScopeQuotaOptions struct {
+	call bool                       `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier     `ddl:"identifier,instance_method" sql:"SET_QUOTA_USER_SCOPE"`
+	args QuotaSetQuotaUserScopeArgs `ddl:"list,must_parentheses"`
+}
+
+type QuotaSetQuotaUserScopeArgs struct {
+	Scope QuotaSetUserScope `ddl:"list,must_parentheses" sql:"OBJECT_CONSTRUCT"`
+}
+
+type QuotaSetUserScope struct {
+	AppliesTo  *QuotaUserScopeAppliesTo    `ddl:"list,must_parentheses" sql:"'applies_to', OBJECT_CONSTRUCT"`
+	ExcludedBy *QuotaUserScopeTagsAndRoles `ddl:"list,must_parentheses" sql:"'excluded_by', OBJECT_CONSTRUCT"`
+	Usernames  *QuotaUserScopeUsernames    `ddl:"list,must_parentheses" sql:"'usernames', OBJECT_CONSTRUCT"`
+}
+
+type QuotaUserScopeAppliesTo struct {
+	typeKey   bool                         `ddl:"static" sql:"'type'"`
+	ScopeType QuotaUserScopeType           `ddl:"keyword,single_quotes"`
+	Operator  *QuotaUserScopeOperatorValue `ddl:"list"`
+	UserTags  *QuotaUserScopeUserTags      `ddl:"list"`
+	Roles     *QuotaUserScopeRoles         `ddl:"list"`
+}
+
+type QuotaUserScopeOperatorValue struct {
+	key      bool                   `ddl:"static" sql:"'operator'"`
+	Operator QuotaUserScopeOperator `ddl:"keyword,single_quotes"`
+}
+
+type QuotaUserScopeTagsAndRoles struct {
+	UserTags *QuotaUserScopeUserTags `ddl:"list"`
+	Roles    *QuotaUserScopeRoles    `ddl:"list"`
+}
+
+type QuotaUserScopeUserTags struct {
+	key  bool                `ddl:"static" sql:"'user_tags'"`
+	Tags []QuotaUserScopeTag `ddl:"list,must_brackets,array_elements"`
+}
+
+type QuotaUserScopeTag struct {
+	Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"TAG,SESSION,APPLYBUDGET"`
+	Value string                 `ddl:"keyword,single_quotes"`
+}
+
+type QuotaUserScopeRoles struct {
+	key   bool     `ddl:"static" sql:"'roles'"`
+	Roles []string `ddl:"list,must_brackets,single_quotes"`
+}
+
+type QuotaUserScopeUsernames struct {
+	Included *QuotaUserScopeIncludedUsers `ddl:"list"`
+	Excluded *QuotaUserScopeExcludedUsers `ddl:"list"`
+}
+
+type QuotaUserScopeIncludedUsers struct {
+	key   bool     `ddl:"static" sql:"'included'"`
+	Users []string `ddl:"list,must_brackets,single_quotes"`
+}
+
+type QuotaUserScopeExcludedUsers struct {
+	key   bool     `ddl:"static" sql:"'excluded'"`
+	Users []string `ddl:"list,must_brackets,single_quotes"`
+}
+
+// AddQuotaUserScopeQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#user-scope.
+type AddQuotaUserScopeQuotaOptions struct {
+	call bool                       `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier     `ddl:"identifier,instance_method" sql:"ADD_QUOTA_USER_SCOPE"`
+	args QuotaAddQuotaUserScopeArgs `ddl:"list,must_parentheses"`
+}
+
+type QuotaAddQuotaUserScopeArgs struct {
+	Scope QuotaUserScopeChange `ddl:"list,must_parentheses" sql:"OBJECT_CONSTRUCT"`
+}
+
+type QuotaUserScopeChange struct {
+	AppliesTo  *QuotaUserScopeTagsAndRoles `ddl:"list,must_parentheses" sql:"'applies_to', OBJECT_CONSTRUCT"`
+	ExcludedBy *QuotaUserScopeTagsAndRoles `ddl:"list,must_parentheses" sql:"'excluded_by', OBJECT_CONSTRUCT"`
+	Usernames  *QuotaUserScopeUsernames    `ddl:"list,must_parentheses" sql:"'usernames', OBJECT_CONSTRUCT"`
+}
+
+// RemoveQuotaUserScopeQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#user-scope.
+type RemoveQuotaUserScopeQuotaOptions struct {
+	call bool                          `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier        `ddl:"identifier,instance_method" sql:"REMOVE_QUOTA_USER_SCOPE"`
+	args QuotaRemoveQuotaUserScopeArgs `ddl:"list,must_parentheses"`
+}
+
+type QuotaRemoveQuotaUserScopeArgs struct {
+	Scope QuotaUserScopeChange `ddl:"list,must_parentheses" sql:"OBJECT_CONSTRUCT"`
+}
+
+// GetQuotaScopeV2QuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#user-scope.
+type GetQuotaScopeV2QuotaOptions struct {
+	call bool                     `ddl:"static" sql:"CALL"`
+	name SchemaObjectIdentifier   `ddl:"identifier,instance_method" sql:"GET_QUOTA_SCOPE_V2"`
+	args quotaGetQuotaScopeV2Args `ddl:"list,must_parentheses"`
+}
+
+type quotaGetQuotaScopeV2Args struct{}
 
 // SetPerUserLimitQuotaOptions is based on https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas-reference#spending-limits.
 type SetPerUserLimitQuotaOptions struct {

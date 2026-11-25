@@ -420,6 +420,211 @@ func NewGetQuotaScopeQuotaRequest(
 	return &s
 }
 
+func NewSetQuotaUserScopeQuotaRequest(
+	name SchemaObjectIdentifier,
+	args QuotaSetQuotaUserScopeArgsRequest,
+) *SetQuotaUserScopeQuotaRequest {
+	s := SetQuotaUserScopeQuotaRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewQuotaSetQuotaUserScopeArgsRequest(
+	scope QuotaSetUserScopeRequest,
+) *QuotaSetQuotaUserScopeArgsRequest {
+	s := QuotaSetQuotaUserScopeArgsRequest{}
+	s.Scope = scope
+	return &s
+}
+
+func NewQuotaSetUserScopeRequest() *QuotaSetUserScopeRequest {
+	s := QuotaSetUserScopeRequest{}
+	return &s
+}
+
+func (s *QuotaSetUserScopeRequest) WithAppliesTo(appliesTo QuotaUserScopeAppliesToRequest) *QuotaSetUserScopeRequest {
+	s.AppliesTo = &appliesTo
+	return s
+}
+
+func (s *QuotaSetUserScopeRequest) WithExcludedBy(excludedBy QuotaUserScopeTagsAndRolesRequest) *QuotaSetUserScopeRequest {
+	s.ExcludedBy = &excludedBy
+	return s
+}
+
+func (s *QuotaSetUserScopeRequest) WithUsernames(usernames QuotaUserScopeUsernamesRequest) *QuotaSetUserScopeRequest {
+	s.Usernames = &usernames
+	return s
+}
+
+func NewQuotaUserScopeAppliesToRequest(
+	scopeType QuotaUserScopeType,
+) *QuotaUserScopeAppliesToRequest {
+	s := QuotaUserScopeAppliesToRequest{}
+	s.ScopeType = scopeType
+	return &s
+}
+
+func (s *QuotaUserScopeAppliesToRequest) WithOperator(operator QuotaUserScopeOperatorValueRequest) *QuotaUserScopeAppliesToRequest {
+	s.Operator = &operator
+	return s
+}
+
+func (s *QuotaUserScopeAppliesToRequest) WithUserTags(userTags QuotaUserScopeUserTagsRequest) *QuotaUserScopeAppliesToRequest {
+	s.UserTags = &userTags
+	return s
+}
+
+func (s *QuotaUserScopeAppliesToRequest) WithRoles(roles QuotaUserScopeRolesRequest) *QuotaUserScopeAppliesToRequest {
+	s.Roles = &roles
+	return s
+}
+
+func NewQuotaUserScopeOperatorValueRequest(
+	operator QuotaUserScopeOperator,
+) *QuotaUserScopeOperatorValueRequest {
+	s := QuotaUserScopeOperatorValueRequest{}
+	s.Operator = operator
+	return &s
+}
+
+func NewQuotaUserScopeTagsAndRolesRequest() *QuotaUserScopeTagsAndRolesRequest {
+	s := QuotaUserScopeTagsAndRolesRequest{}
+	return &s
+}
+
+func (s *QuotaUserScopeTagsAndRolesRequest) WithUserTags(userTags QuotaUserScopeUserTagsRequest) *QuotaUserScopeTagsAndRolesRequest {
+	s.UserTags = &userTags
+	return s
+}
+
+func (s *QuotaUserScopeTagsAndRolesRequest) WithRoles(roles QuotaUserScopeRolesRequest) *QuotaUserScopeTagsAndRolesRequest {
+	s.Roles = &roles
+	return s
+}
+
+func NewQuotaUserScopeUserTagsRequest(
+	tags []QuotaUserScopeTagRequest,
+) *QuotaUserScopeUserTagsRequest {
+	s := QuotaUserScopeUserTagsRequest{}
+	s.Tags = tags
+	return &s
+}
+
+func NewQuotaUserScopeTagRequest(
+	tag SchemaObjectIdentifier,
+	value string,
+) *QuotaUserScopeTagRequest {
+	s := QuotaUserScopeTagRequest{}
+	s.Tag = tag
+	s.Value = value
+	return &s
+}
+
+func NewQuotaUserScopeRolesRequest(
+	roles []string,
+) *QuotaUserScopeRolesRequest {
+	s := QuotaUserScopeRolesRequest{}
+	s.Roles = roles
+	return &s
+}
+
+func NewQuotaUserScopeUsernamesRequest() *QuotaUserScopeUsernamesRequest {
+	s := QuotaUserScopeUsernamesRequest{}
+	return &s
+}
+
+func (s *QuotaUserScopeUsernamesRequest) WithIncluded(included QuotaUserScopeIncludedUsersRequest) *QuotaUserScopeUsernamesRequest {
+	s.Included = &included
+	return s
+}
+
+func (s *QuotaUserScopeUsernamesRequest) WithExcluded(excluded QuotaUserScopeExcludedUsersRequest) *QuotaUserScopeUsernamesRequest {
+	s.Excluded = &excluded
+	return s
+}
+
+func NewQuotaUserScopeIncludedUsersRequest(
+	users []string,
+) *QuotaUserScopeIncludedUsersRequest {
+	s := QuotaUserScopeIncludedUsersRequest{}
+	s.Users = users
+	return &s
+}
+
+func NewQuotaUserScopeExcludedUsersRequest(
+	users []string,
+) *QuotaUserScopeExcludedUsersRequest {
+	s := QuotaUserScopeExcludedUsersRequest{}
+	s.Users = users
+	return &s
+}
+
+func NewAddQuotaUserScopeQuotaRequest(
+	name SchemaObjectIdentifier,
+	args QuotaAddQuotaUserScopeArgsRequest,
+) *AddQuotaUserScopeQuotaRequest {
+	s := AddQuotaUserScopeQuotaRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewQuotaAddQuotaUserScopeArgsRequest(
+	scope QuotaUserScopeChangeRequest,
+) *QuotaAddQuotaUserScopeArgsRequest {
+	s := QuotaAddQuotaUserScopeArgsRequest{}
+	s.Scope = scope
+	return &s
+}
+
+func NewQuotaUserScopeChangeRequest() *QuotaUserScopeChangeRequest {
+	s := QuotaUserScopeChangeRequest{}
+	return &s
+}
+
+func (s *QuotaUserScopeChangeRequest) WithAppliesTo(appliesTo QuotaUserScopeTagsAndRolesRequest) *QuotaUserScopeChangeRequest {
+	s.AppliesTo = &appliesTo
+	return s
+}
+
+func (s *QuotaUserScopeChangeRequest) WithExcludedBy(excludedBy QuotaUserScopeTagsAndRolesRequest) *QuotaUserScopeChangeRequest {
+	s.ExcludedBy = &excludedBy
+	return s
+}
+
+func (s *QuotaUserScopeChangeRequest) WithUsernames(usernames QuotaUserScopeUsernamesRequest) *QuotaUserScopeChangeRequest {
+	s.Usernames = &usernames
+	return s
+}
+
+func NewRemoveQuotaUserScopeQuotaRequest(
+	name SchemaObjectIdentifier,
+	args QuotaRemoveQuotaUserScopeArgsRequest,
+) *RemoveQuotaUserScopeQuotaRequest {
+	s := RemoveQuotaUserScopeQuotaRequest{}
+	s.name = name
+	s.args = args
+	return &s
+}
+
+func NewQuotaRemoveQuotaUserScopeArgsRequest(
+	scope QuotaUserScopeChangeRequest,
+) *QuotaRemoveQuotaUserScopeArgsRequest {
+	s := QuotaRemoveQuotaUserScopeArgsRequest{}
+	s.Scope = scope
+	return &s
+}
+
+func NewGetQuotaScopeV2QuotaRequest(
+	name SchemaObjectIdentifier,
+) *GetQuotaScopeV2QuotaRequest {
+	s := GetQuotaScopeV2QuotaRequest{}
+	s.name = name
+	return &s
+}
+
 func NewSetPerUserLimitQuotaRequest(
 	name SchemaObjectIdentifier,
 	args QuotaSetPerUserLimitArgsRequest,

@@ -38,6 +38,16 @@ var QuotaUserTagsOperatorEnumDef = g.NewEnum(
 	"UNION", "INTERSECTION", "ALL_USERS",
 )
 
+var QuotaUserScopeTypeEnumDef = g.NewEnum(
+	"QuotaUserScopeType", "QuotaUserScopeTypes",
+	"ALL_USERS", "GROUP_OF_USERS",
+)
+
+var QuotaUserScopeOperatorEnumDef = g.NewEnum(
+	"QuotaUserScopeOperator", "QuotaUserScopeOperators",
+	"UNION", "INTERSECTION",
+)
+
 // A domain followed by one of its instances, given by name.
 func quotaSharedResourceNameArgs(name string, domain string) *g.QueryStruct {
 	return g.NewQueryStruct(name).
@@ -108,6 +118,94 @@ var quotaExcludeUsersArgs = g.NewQueryStruct("ExcludeUsersArgs").
 // INCLUDE_USERS calls accumulate; an empty array clears the list. User names are resolved case-insensitively.
 var quotaIncludeUsersArgs = g.NewQueryStruct("IncludeUsersArgs").
 	List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes())
+
+// SET_QUOTA_USER_SCOPE, ADD_QUOTA_USER_SCOPE, and REMOVE_QUOTA_USER_SCOPE take an object built with OBJECT_CONSTRUCT, whose lists
+// replace, are added to, or are removed from the current ones. A list that isn't passed is left unchanged, so each one is a
+// '<key>', [...] pair that is omitted when not set; with SET_QUOTA_USER_SCOPE, an empty list clears it. ADD_QUOTA_USER_SCOPE and
+// REMOVE_QUOTA_USER_SCOPE reject empty lists, and the type and operator.
+//
+// The structs used in more than one place are built by functions: the first use generates them, and the others are shared.
+func quotaUserScopeUserTags() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeUserTags").
+		SQLWithCustomFieldName("key", "'user_tags'").
+		ListQueryStructField("Tags", quotaTagValue("QuotaUserScopeTag"), g.ListOptions().Required().MustBrackets().ArrayElements()).
+		WithSharedToOpts()
+}
+
+func quotaUserScopeNames(name string, key string, field string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		SQLWithCustomFieldName("key", "'"+key+"'").
+		List(field, "string", g.ListOptions().Required().MustBrackets().SingleQuotes()).
+		WithSharedToOpts()
+}
+
+func quotaUserScopeRoles() *g.QueryStruct {
+	return quotaUserScopeNames("QuotaUserScopeRoles", "roles", "Roles")
+}
+
+// The tags and roles that exclude users, and with ADD_QUOTA_USER_SCOPE and REMOVE_QUOTA_USER_SCOPE, the ones that select them.
+func quotaUserScopeTagsAndRoles() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeTagsAndRoles").
+		OptionalQueryStructField("UserTags", quotaUserScopeUserTags(), g.ListOptions()).
+		OptionalQueryStructField("Roles", quotaUserScopeRoles(), g.ListOptions()).
+		WithValidation(g.AtLeastOneValueSet, "UserTags", "Roles").
+		WithSharedToOpts()
+}
+
+func quotaUserScopeUsernames() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeUsernames").
+		OptionalQueryStructField("Included", quotaUserScopeNames("QuotaUserScopeIncludedUsers", "included", "Users"), g.ListOptions()).
+		OptionalQueryStructField("Excluded", quotaUserScopeNames("QuotaUserScopeExcludedUsers", "excluded", "Users"), g.ListOptions()).
+		WithValidation(g.AtLeastOneValueSet, "Included", "Excluded").
+		WithSharedToOpts()
+}
+
+// quotaUserScopeObject renders a field as '<key>', OBJECT_CONSTRUCT(...).
+func quotaUserScopeObject(key string) *g.ListTransformer {
+	return g.ListOptions().MustParentheses().SQL("'" + key + "', OBJECT_CONSTRUCT")
+}
+
+// The type is required; setting ALL_USERS clears the roles that select users, and from GROUP_OF_USERS, the tags too.
+var quotaSetQuotaUserScopeArgs = g.NewQueryStruct("SetQuotaUserScopeArgs").
+	QueryStructField(
+		"Scope",
+		g.NewQueryStruct("QuotaSetUserScope").
+			OptionalQueryStructField(
+				"AppliesTo",
+				g.NewQueryStruct("QuotaUserScopeAppliesTo").
+					SQLWithCustomFieldName("typeKey", "'type'").
+					Enum("ScopeType", QuotaUserScopeTypeEnumDef, g.KeywordOptions().SingleQuotes().Required()).
+					OptionalQueryStructField(
+						"Operator",
+						g.NewQueryStruct("QuotaUserScopeOperatorValue").
+							SQLWithCustomFieldName("key", "'operator'").
+							Enum("Operator", QuotaUserScopeOperatorEnumDef, g.KeywordOptions().SingleQuotes().Required()),
+						g.ListOptions(),
+					).
+					OptionalSharedQueryStructField("UserTags", quotaUserScopeUserTags(), g.ListOptions()).
+					OptionalSharedQueryStructField("Roles", quotaUserScopeRoles(), g.ListOptions()),
+				quotaUserScopeObject("applies_to"),
+			).
+			OptionalQueryStructField("ExcludedBy", quotaUserScopeTagsAndRoles(), quotaUserScopeObject("excluded_by")).
+			OptionalQueryStructField("Usernames", quotaUserScopeUsernames(), quotaUserScopeObject("usernames")).
+			WithValidation(g.AtLeastOneValueSet, "AppliesTo", "ExcludedBy", "Usernames"),
+		g.ListOptions().MustParentheses().SQL("OBJECT_CONSTRUCT").Required(),
+	)
+
+func quotaUserScopeChange() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeChange").
+		OptionalSharedQueryStructField("AppliesTo", quotaUserScopeTagsAndRoles(), quotaUserScopeObject("applies_to")).
+		OptionalSharedQueryStructField("ExcludedBy", quotaUserScopeTagsAndRoles(), quotaUserScopeObject("excluded_by")).
+		OptionalSharedQueryStructField("Usernames", quotaUserScopeUsernames(), quotaUserScopeObject("usernames")).
+		WithValidation(g.AtLeastOneValueSet, "AppliesTo", "ExcludedBy", "Usernames").
+		WithSharedToOpts()
+}
+
+var quotaAddQuotaUserScopeArgs = g.NewQueryStruct("AddQuotaUserScopeArgs").
+	QueryStructField("Scope", quotaUserScopeChange(), g.ListOptions().MustParentheses().SQL("OBJECT_CONSTRUCT").Required())
+
+var quotaRemoveQuotaUserScopeArgs = g.NewQueryStruct("RemoveQuotaUserScopeArgs").
+	SharedQueryStructField("Scope", quotaUserScopeChange(), g.ListOptions().MustParentheses().SQL("OBJECT_CONSTRUCT").Required())
 
 // The limit must be a positive integer no greater than 1000000000.
 var quotaSetPerUserLimitArgs = g.NewQueryStruct("SetPerUserLimitArgs").
@@ -338,6 +436,26 @@ var quotasDef = g.NewInterface(
 	nil,
 	"string",
 ).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"SET_QUOTA_USER_SCOPE",
+	quotaSetQuotaUserScopeArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"ADD_QUOTA_USER_SCOPE",
+	quotaAddQuotaUserScopeArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"REMOVE_QUOTA_USER_SCOPE",
+	quotaRemoveQuotaUserScopeArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"GET_QUOTA_SCOPE_V2",
+	nil,
+	"string",
+).InstanceMethodOperationScalar(
 	quotaDocs("spending-limits"),
 	"SET_PER_USER_LIMIT",
 	quotaSetPerUserLimitArgs,
@@ -460,4 +578,4 @@ var quotasDef = g.NewInterface(
 	g.InstanceMethodKindSingleValue,
 ).
 	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "*QuotaDetails", "error").
-	WithEnums(QuotaSharedResourceDomainEnumDef, QuotaCycleEnumDef, QuotaSpendStrategyEnumDef, QuotaUserTagsOperatorEnumDef)
+	WithEnums(QuotaSharedResourceDomainEnumDef, QuotaCycleEnumDef, QuotaSpendStrategyEnumDef, QuotaUserTagsOperatorEnumDef, QuotaUserScopeTypeEnumDef, QuotaUserScopeOperatorEnumDef)

@@ -15,6 +15,10 @@ var (
 	_ validatable = new(ExcludeUsersQuotaOptions)
 	_ validatable = new(IncludeUsersQuotaOptions)
 	_ validatable = new(GetQuotaScopeQuotaOptions)
+	_ validatable = new(SetQuotaUserScopeQuotaOptions)
+	_ validatable = new(AddQuotaUserScopeQuotaOptions)
+	_ validatable = new(RemoveQuotaUserScopeQuotaOptions)
+	_ validatable = new(GetQuotaScopeV2QuotaOptions)
 	_ validatable = new(SetPerUserLimitQuotaOptions)
 	_ validatable = new(UnsetPerUserLimitQuotaOptions)
 	_ validatable = new(SetBlockEnforcementEnabledQuotaOptions)
@@ -232,6 +236,167 @@ func (opts *GetQuotaScopeQuotaOptions) validate() error {
 	var errs []error
 	if !ValidObjectIdentifier(opts.name) {
 		errs = append(errs, errInvalidIdentifier("GetQuotaScopeQuotaOptions", "name"))
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *SetQuotaUserScopeQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("SetQuotaUserScopeQuotaOptions", "name"))
+	}
+	if valueSet(opts.args) {
+		if valueSet(opts.args.Scope) {
+			if !anyValueSet(opts.args.Scope.AppliesTo, opts.args.Scope.ExcludedBy, opts.args.Scope.Usernames) {
+				errs = append(errs, errAtLeastOneOf("SetQuotaUserScopeQuotaOptions.args.Scope", "AppliesTo", "ExcludedBy", "Usernames"))
+			}
+			if valueSet(opts.args.Scope.AppliesTo) {
+				if valueSet(opts.args.Scope.AppliesTo.UserTags) {
+					if valueSet(opts.args.Scope.AppliesTo.UserTags.Tags) {
+						for tagIdx, tag := range opts.args.Scope.AppliesTo.UserTags.Tags {
+							if !ValidObjectIdentifier(tag.Tag) {
+								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetQuotaUserScopeQuotaOptions.args.Scope.AppliesTo.UserTags.Tags[%d]", tagIdx), "Tag"))
+							}
+						}
+					}
+				}
+			}
+			if valueSet(opts.args.Scope.ExcludedBy) {
+				if !anyValueSet(opts.args.Scope.ExcludedBy.UserTags, opts.args.Scope.ExcludedBy.Roles) {
+					errs = append(errs, errAtLeastOneOf("SetQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy", "UserTags", "Roles"))
+				}
+				if valueSet(opts.args.Scope.ExcludedBy.UserTags) {
+					if valueSet(opts.args.Scope.ExcludedBy.UserTags.Tags) {
+						for tagIdx, tag := range opts.args.Scope.ExcludedBy.UserTags.Tags {
+							if !ValidObjectIdentifier(tag.Tag) {
+								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy.UserTags.Tags[%d]", tagIdx), "Tag"))
+							}
+						}
+					}
+				}
+			}
+			if valueSet(opts.args.Scope.Usernames) {
+				if !anyValueSet(opts.args.Scope.Usernames.Included, opts.args.Scope.Usernames.Excluded) {
+					errs = append(errs, errAtLeastOneOf("SetQuotaUserScopeQuotaOptions.args.Scope.Usernames", "Included", "Excluded"))
+				}
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *AddQuotaUserScopeQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("AddQuotaUserScopeQuotaOptions", "name"))
+	}
+	if valueSet(opts.args) {
+		if valueSet(opts.args.Scope) {
+			if !anyValueSet(opts.args.Scope.AppliesTo, opts.args.Scope.ExcludedBy, opts.args.Scope.Usernames) {
+				errs = append(errs, errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope", "AppliesTo", "ExcludedBy", "Usernames"))
+			}
+			if valueSet(opts.args.Scope.AppliesTo) {
+				if !anyValueSet(opts.args.Scope.AppliesTo.UserTags, opts.args.Scope.AppliesTo.Roles) {
+					errs = append(errs, errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope.AppliesTo", "UserTags", "Roles"))
+				}
+				if valueSet(opts.args.Scope.AppliesTo.UserTags) {
+					if valueSet(opts.args.Scope.AppliesTo.UserTags.Tags) {
+						for tagIdx, tag := range opts.args.Scope.AppliesTo.UserTags.Tags {
+							if !ValidObjectIdentifier(tag.Tag) {
+								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AddQuotaUserScopeQuotaOptions.args.Scope.AppliesTo.UserTags.Tags[%d]", tagIdx), "Tag"))
+							}
+						}
+					}
+				}
+			}
+			if valueSet(opts.args.Scope.ExcludedBy) {
+				if !anyValueSet(opts.args.Scope.ExcludedBy.UserTags, opts.args.Scope.ExcludedBy.Roles) {
+					errs = append(errs, errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy", "UserTags", "Roles"))
+				}
+				if valueSet(opts.args.Scope.ExcludedBy.UserTags) {
+					if valueSet(opts.args.Scope.ExcludedBy.UserTags.Tags) {
+						for tagIdx, tag := range opts.args.Scope.ExcludedBy.UserTags.Tags {
+							if !ValidObjectIdentifier(tag.Tag) {
+								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AddQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy.UserTags.Tags[%d]", tagIdx), "Tag"))
+							}
+						}
+					}
+				}
+			}
+			if valueSet(opts.args.Scope.Usernames) {
+				if !anyValueSet(opts.args.Scope.Usernames.Included, opts.args.Scope.Usernames.Excluded) {
+					errs = append(errs, errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope.Usernames", "Included", "Excluded"))
+				}
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *RemoveQuotaUserScopeQuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("RemoveQuotaUserScopeQuotaOptions", "name"))
+	}
+	if valueSet(opts.args) {
+		if valueSet(opts.args.Scope) {
+			if !anyValueSet(opts.args.Scope.AppliesTo, opts.args.Scope.ExcludedBy, opts.args.Scope.Usernames) {
+				errs = append(errs, errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope", "AppliesTo", "ExcludedBy", "Usernames"))
+			}
+			if valueSet(opts.args.Scope.AppliesTo) {
+				if !anyValueSet(opts.args.Scope.AppliesTo.UserTags, opts.args.Scope.AppliesTo.Roles) {
+					errs = append(errs, errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope.AppliesTo", "UserTags", "Roles"))
+				}
+				if valueSet(opts.args.Scope.AppliesTo.UserTags) {
+					if valueSet(opts.args.Scope.AppliesTo.UserTags.Tags) {
+						for tagIdx, tag := range opts.args.Scope.AppliesTo.UserTags.Tags {
+							if !ValidObjectIdentifier(tag.Tag) {
+								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("RemoveQuotaUserScopeQuotaOptions.args.Scope.AppliesTo.UserTags.Tags[%d]", tagIdx), "Tag"))
+							}
+						}
+					}
+				}
+			}
+			if valueSet(opts.args.Scope.ExcludedBy) {
+				if !anyValueSet(opts.args.Scope.ExcludedBy.UserTags, opts.args.Scope.ExcludedBy.Roles) {
+					errs = append(errs, errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy", "UserTags", "Roles"))
+				}
+				if valueSet(opts.args.Scope.ExcludedBy.UserTags) {
+					if valueSet(opts.args.Scope.ExcludedBy.UserTags.Tags) {
+						for tagIdx, tag := range opts.args.Scope.ExcludedBy.UserTags.Tags {
+							if !ValidObjectIdentifier(tag.Tag) {
+								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("RemoveQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy.UserTags.Tags[%d]", tagIdx), "Tag"))
+							}
+						}
+					}
+				}
+			}
+			if valueSet(opts.args.Scope.Usernames) {
+				if !anyValueSet(opts.args.Scope.Usernames.Included, opts.args.Scope.Usernames.Excluded) {
+					errs = append(errs, errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope.Usernames", "Included", "Excluded"))
+				}
+			}
+		}
+	}
+	return JoinErrors(errs...)
+}
+
+func (opts *GetQuotaScopeV2QuotaOptions) validate() error {
+	if opts == nil {
+		return ErrNilOptions
+	}
+	var errs []error
+	if !ValidObjectIdentifier(opts.name) {
+		errs = append(errs, errInvalidIdentifier("GetQuotaScopeV2QuotaOptions", "name"))
 	}
 	return JoinErrors(errs...)
 }

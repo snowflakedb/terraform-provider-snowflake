@@ -91,6 +91,22 @@ func (v *quotas) GetQuotaScope(ctx context.Context, request *GetQuotaScopeQuotaR
 	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
 }
 
+func (v *quotas) SetQuotaUserScope(ctx context.Context, request *SetQuotaUserScopeQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *quotas) AddQuotaUserScope(ctx context.Context, request *AddQuotaUserScopeQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *quotas) RemoveQuotaUserScope(ctx context.Context, request *RemoveQuotaUserScopeQuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
+func (v *quotas) GetQuotaScopeV2(ctx context.Context, request *GetQuotaScopeV2QuotaRequest) (*string, error) {
+	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
+}
+
 func (v *quotas) SetPerUserLimit(ctx context.Context, request *SetPerUserLimitQuotaRequest) (*string, error) {
 	return validateAndQueryOne[string](v.client, ctx, request.toOpts())
 }
@@ -421,6 +437,62 @@ func (r *GetQuotaScopeQuotaRequest) toOpts() *GetQuotaScopeQuotaOptions {
 	return opts
 }
 
+func (r *SetQuotaUserScopeQuotaRequest) toOpts() *SetQuotaUserScopeQuotaOptions {
+	opts := &SetQuotaUserScopeQuotaOptions{
+		name: r.name,
+	}
+	opts.args = QuotaSetQuotaUserScopeArgs{}
+	opts.args.Scope = QuotaSetUserScope{}
+	if r.args.Scope.AppliesTo != nil {
+		opts.args.Scope.AppliesTo = &QuotaUserScopeAppliesTo{
+			ScopeType: r.args.Scope.AppliesTo.ScopeType,
+		}
+		if r.args.Scope.AppliesTo.Operator != nil {
+			opts.args.Scope.AppliesTo.Operator = &QuotaUserScopeOperatorValue{
+				Operator: r.args.Scope.AppliesTo.Operator.Operator,
+			}
+		}
+		if r.args.Scope.AppliesTo.UserTags != nil {
+			opts.args.Scope.AppliesTo.UserTags = r.args.Scope.AppliesTo.UserTags.toOpts()
+		}
+		if r.args.Scope.AppliesTo.Roles != nil {
+			opts.args.Scope.AppliesTo.Roles = r.args.Scope.AppliesTo.Roles.toOpts()
+		}
+	}
+	if r.args.Scope.ExcludedBy != nil {
+		opts.args.Scope.ExcludedBy = r.args.Scope.ExcludedBy.toOpts()
+	}
+	if r.args.Scope.Usernames != nil {
+		opts.args.Scope.Usernames = r.args.Scope.Usernames.toOpts()
+	}
+	return opts
+}
+
+func (r *AddQuotaUserScopeQuotaRequest) toOpts() *AddQuotaUserScopeQuotaOptions {
+	opts := &AddQuotaUserScopeQuotaOptions{
+		name: r.name,
+	}
+	opts.args = QuotaAddQuotaUserScopeArgs{}
+	opts.args.Scope = *r.args.Scope.toOpts()
+	return opts
+}
+
+func (r *RemoveQuotaUserScopeQuotaRequest) toOpts() *RemoveQuotaUserScopeQuotaOptions {
+	opts := &RemoveQuotaUserScopeQuotaOptions{
+		name: r.name,
+	}
+	opts.args = QuotaRemoveQuotaUserScopeArgs{}
+	opts.args.Scope = *r.args.Scope.toOpts()
+	return opts
+}
+
+func (r *GetQuotaScopeV2QuotaRequest) toOpts() *GetQuotaScopeV2QuotaOptions {
+	opts := &GetQuotaScopeV2QuotaOptions{
+		name: r.name,
+	}
+	return opts
+}
+
 func (r *SetPerUserLimitQuotaRequest) toOpts() *SetPerUserLimitQuotaOptions {
 	opts := &SetPerUserLimitQuotaOptions{
 		name: r.name,
@@ -726,4 +798,76 @@ func (r quotaCycleStartActionRow) convert() (*QuotaCycleStartAction, error) {
 	mapNullTime(&result.AddedTimestamp, r.AddedTimestamp)
 	mapNullTime(&result.LastTriggerAttemptTime, r.LastTriggerAttemptTime)
 	return result, nil
+}
+
+func (r *QuotaUserScopeTagsAndRolesRequest) toOpts() *QuotaUserScopeTagsAndRoles {
+	opts := &QuotaUserScopeTagsAndRoles{}
+	if r.UserTags != nil {
+		opts.UserTags = r.UserTags.toOpts()
+	}
+	if r.Roles != nil {
+		opts.Roles = r.Roles.toOpts()
+	}
+	return opts
+}
+
+func (r *QuotaUserScopeUserTagsRequest) toOpts() *QuotaUserScopeUserTags {
+	opts := &QuotaUserScopeUserTags{}
+	if r.Tags != nil {
+		tags := make([]QuotaUserScopeTag, len(r.Tags))
+		for i, v := range r.Tags {
+			tags[i] = QuotaUserScopeTag{
+				Tag:   v.Tag,
+				Value: v.Value,
+			}
+		}
+		opts.Tags = tags
+	}
+	return opts
+}
+
+func (r *QuotaUserScopeRolesRequest) toOpts() *QuotaUserScopeRoles {
+	opts := &QuotaUserScopeRoles{
+		Roles: r.Roles,
+	}
+	return opts
+}
+
+func (r *QuotaUserScopeUsernamesRequest) toOpts() *QuotaUserScopeUsernames {
+	opts := &QuotaUserScopeUsernames{}
+	if r.Included != nil {
+		opts.Included = r.Included.toOpts()
+	}
+	if r.Excluded != nil {
+		opts.Excluded = r.Excluded.toOpts()
+	}
+	return opts
+}
+
+func (r *QuotaUserScopeIncludedUsersRequest) toOpts() *QuotaUserScopeIncludedUsers {
+	opts := &QuotaUserScopeIncludedUsers{
+		Users: r.Users,
+	}
+	return opts
+}
+
+func (r *QuotaUserScopeExcludedUsersRequest) toOpts() *QuotaUserScopeExcludedUsers {
+	opts := &QuotaUserScopeExcludedUsers{
+		Users: r.Users,
+	}
+	return opts
+}
+
+func (r *QuotaUserScopeChangeRequest) toOpts() *QuotaUserScopeChange {
+	opts := &QuotaUserScopeChange{}
+	if r.AppliesTo != nil {
+		opts.AppliesTo = r.AppliesTo.toOpts()
+	}
+	if r.ExcludedBy != nil {
+		opts.ExcludedBy = r.ExcludedBy.toOpts()
+	}
+	if r.Usernames != nil {
+		opts.Usernames = r.Usernames.toOpts()
+	}
+	return opts
 }

@@ -11,109 +11,136 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[QuotaCycle]{"QuotaCycle", AllQuotaCycles, ToQuotaCycle})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[QuotaSpendStrategy]{"QuotaSpendStrategy", AllQuotaSpendStrategies, ToQuotaSpendStrategy})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[QuotaUserTagsOperator]{"QuotaUserTagsOperator", AllQuotaUserTagsOperators, ToQuotaUserTagsOperator})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[QuotaUserScopeType]{"QuotaUserScopeType", AllQuotaUserScopeTypes, ToQuotaUserScopeType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[QuotaUserScopeOperator]{"QuotaUserScopeOperator", AllQuotaUserScopeOperators, ToQuotaUserScopeOperator})
 }
 
 var quotasTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
 
 const (
-	case_Quotas_validation_Create_name_ValidIdentifier                                      testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Quotas_validation_Create_opts_ConflictingFields                                    testCaseName = "validation_Create_opts_ConflictingFields"
-	case_Quotas_sql_Create_basic                                                            testCaseName = "sql_Create_basic"
-	case_Quotas_sql_Create_all                                                              testCaseName = "sql_Create_all"
-	case_Quotas_validation_Alter_name_ValidIdentifier                                       testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Quotas_validation_Alter_opts_Set_AtLeastOneValueSet                                testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Quotas_validation_Alter_opts_Unset_AtLeastOneValueSet                              testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Quotas_sql_Alter_RenameTo                                                          testCaseName = "sql_Alter_RenameTo"
-	case_Quotas_sql_Alter_Set                                                               testCaseName = "sql_Alter_Set"
-	case_Quotas_sql_Alter_Unset                                                             testCaseName = "sql_Alter_Unset"
-	case_Quotas_validation_Drop_name_ValidIdentifier                                        testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Quotas_sql_Drop_basic                                                              testCaseName = "sql_Drop_basic"
-	case_Quotas_sql_Drop_all                                                                testCaseName = "sql_Drop_all"
-	case_Quotas_sql_Show_basic                                                              testCaseName = "sql_Show_basic"
-	case_Quotas_sql_Show_all                                                                testCaseName = "sql_Show_all"
-	case_Quotas_sql_Show_Like                                                               testCaseName = "sql_Show_Like"
-	case_Quotas_sql_Show_In                                                                 testCaseName = "sql_Show_In"
-	case_Quotas_sql_Show_Limit                                                              testCaseName = "sql_Show_Limit"
-	case_Quotas_validation_AddSharedResource_name_ValidIdentifier                           testCaseName = "validation_AddSharedResource_name_ValidIdentifier"
-	case_Quotas_validation_AddSharedResource_opts_args_ExactlyOneValueSet_NoneSet           testCaseName = "validation_AddSharedResource_opts_args_ExactlyOneValueSet_NoneSet"
-	case_Quotas_validation_AddSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_AddSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet"
-	case_Quotas_validation_AddSharedResource_args_Warehouse_Id_ValidIdentifier              testCaseName = "validation_AddSharedResource_args_Warehouse_Id_ValidIdentifier"
-	case_Quotas_validation_AddSharedResource_args_CortexAgent_Id_ValidIdentifier            testCaseName = "validation_AddSharedResource_args_CortexAgent_Id_ValidIdentifier"
-	case_Quotas_validation_AddSharedResource_args_SnowflakeCowork_Id_ValidIdentifier        testCaseName = "validation_AddSharedResource_args_SnowflakeCowork_Id_ValidIdentifier"
-	case_Quotas_validation_AddSharedResource_args_AiGateway_Id_ValidIdentifier              testCaseName = "validation_AddSharedResource_args_AiGateway_Id_ValidIdentifier"
-	case_Quotas_sql_AddSharedResource_basic                                                 testCaseName = "sql_AddSharedResource_basic"
-	case_Quotas_validation_RemoveSharedResource_name_ValidIdentifier                        testCaseName = "validation_RemoveSharedResource_name_ValidIdentifier"
-	case_Quotas_validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_NoneSet        testCaseName = "validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_NoneSet"
-	case_Quotas_validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet"
-	case_Quotas_validation_RemoveSharedResource_args_Warehouse_Id_ValidIdentifier           testCaseName = "validation_RemoveSharedResource_args_Warehouse_Id_ValidIdentifier"
-	case_Quotas_validation_RemoveSharedResource_args_CortexAgent_Id_ValidIdentifier         testCaseName = "validation_RemoveSharedResource_args_CortexAgent_Id_ValidIdentifier"
-	case_Quotas_validation_RemoveSharedResource_args_SnowflakeCowork_Id_ValidIdentifier     testCaseName = "validation_RemoveSharedResource_args_SnowflakeCowork_Id_ValidIdentifier"
-	case_Quotas_validation_RemoveSharedResource_args_AiGateway_Id_ValidIdentifier           testCaseName = "validation_RemoveSharedResource_args_AiGateway_Id_ValidIdentifier"
-	case_Quotas_sql_RemoveSharedResource_basic                                              testCaseName = "sql_RemoveSharedResource_basic"
-	case_Quotas_validation_SetUserTags_name_ValidIdentifier                                 testCaseName = "validation_SetUserTags_name_ValidIdentifier"
-	case_Quotas_validation_SetUserTags_args_Tags_Tag_ValidIdentifier                        testCaseName = "validation_SetUserTags_args_Tags_Tag_ValidIdentifier"
-	case_Quotas_sql_SetUserTags_basic                                                       testCaseName = "sql_SetUserTags_basic"
-	case_Quotas_validation_ExcludeUsers_name_ValidIdentifier                                testCaseName = "validation_ExcludeUsers_name_ValidIdentifier"
-	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet                testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet"
-	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet"
-	case_Quotas_validation_ExcludeUsers_args_ByTag_Tags_Tag_ValidIdentifier                 testCaseName = "validation_ExcludeUsers_args_ByTag_Tags_Tag_ValidIdentifier"
-	case_Quotas_sql_ExcludeUsers_basic                                                      testCaseName = "sql_ExcludeUsers_basic"
-	case_Quotas_validation_IncludeUsers_name_ValidIdentifier                                testCaseName = "validation_IncludeUsers_name_ValidIdentifier"
-	case_Quotas_sql_IncludeUsers_basic                                                      testCaseName = "sql_IncludeUsers_basic"
-	case_Quotas_validation_GetQuotaScope_name_ValidIdentifier                               testCaseName = "validation_GetQuotaScope_name_ValidIdentifier"
-	case_Quotas_sql_GetQuotaScope_basic                                                     testCaseName = "sql_GetQuotaScope_basic"
-	case_Quotas_validation_SetPerUserLimit_name_ValidIdentifier                             testCaseName = "validation_SetPerUserLimit_name_ValidIdentifier"
-	case_Quotas_sql_SetPerUserLimit_basic                                                   testCaseName = "sql_SetPerUserLimit_basic"
-	case_Quotas_validation_UnsetPerUserLimit_name_ValidIdentifier                           testCaseName = "validation_UnsetPerUserLimit_name_ValidIdentifier"
-	case_Quotas_sql_UnsetPerUserLimit_basic                                                 testCaseName = "sql_UnsetPerUserLimit_basic"
-	case_Quotas_validation_SetBlockEnforcementEnabled_name_ValidIdentifier                  testCaseName = "validation_SetBlockEnforcementEnabled_name_ValidIdentifier"
-	case_Quotas_sql_SetBlockEnforcementEnabled_basic                                        testCaseName = "sql_SetBlockEnforcementEnabled_basic"
-	case_Quotas_validation_GetConfig_name_ValidIdentifier                                   testCaseName = "validation_GetConfig_name_ValidIdentifier"
-	case_Quotas_sql_GetConfig_basic                                                         testCaseName = "sql_GetConfig_basic"
-	case_Quotas_validation_SetUserQuotaOverride_name_ValidIdentifier                        testCaseName = "validation_SetUserQuotaOverride_name_ValidIdentifier"
-	case_Quotas_sql_SetUserQuotaOverride_basic                                              testCaseName = "sql_SetUserQuotaOverride_basic"
-	case_Quotas_validation_ListUserQuotaOverrides_name_ValidIdentifier                      testCaseName = "validation_ListUserQuotaOverrides_name_ValidIdentifier"
-	case_Quotas_sql_ListUserQuotaOverrides_basic                                            testCaseName = "sql_ListUserQuotaOverrides_basic"
-	case_Quotas_validation_RemoveUserQuotaOverride_name_ValidIdentifier                     testCaseName = "validation_RemoveUserQuotaOverride_name_ValidIdentifier"
-	case_Quotas_sql_RemoveUserQuotaOverride_basic                                           testCaseName = "sql_RemoveUserQuotaOverride_basic"
-	case_Quotas_validation_RemoveUserQuotaOverridesByUser_name_ValidIdentifier              testCaseName = "validation_RemoveUserQuotaOverridesByUser_name_ValidIdentifier"
-	case_Quotas_sql_RemoveUserQuotaOverridesByUser_basic                                    testCaseName = "sql_RemoveUserQuotaOverridesByUser_basic"
-	case_Quotas_validation_RemoveUserQuotaOverridesByCycle_name_ValidIdentifier             testCaseName = "validation_RemoveUserQuotaOverridesByCycle_name_ValidIdentifier"
-	case_Quotas_sql_RemoveUserQuotaOverridesByCycle_basic                                   testCaseName = "sql_RemoveUserQuotaOverridesByCycle_basic"
-	case_Quotas_validation_RemoveAllUserQuotaOverrides_name_ValidIdentifier                 testCaseName = "validation_RemoveAllUserQuotaOverrides_name_ValidIdentifier"
-	case_Quotas_sql_RemoveAllUserQuotaOverrides_basic                                       testCaseName = "sql_RemoveAllUserQuotaOverrides_basic"
-	case_Quotas_validation_AddNotificationThreshold_name_ValidIdentifier                    testCaseName = "validation_AddNotificationThreshold_name_ValidIdentifier"
-	case_Quotas_sql_AddNotificationThreshold_basic                                          testCaseName = "sql_AddNotificationThreshold_basic"
-	case_Quotas_validation_RemoveNotificationThreshold_name_ValidIdentifier                 testCaseName = "validation_RemoveNotificationThreshold_name_ValidIdentifier"
-	case_Quotas_sql_RemoveNotificationThreshold_basic                                       testCaseName = "sql_RemoveNotificationThreshold_basic"
-	case_Quotas_validation_GetNotificationThresholds_name_ValidIdentifier                   testCaseName = "validation_GetNotificationThresholds_name_ValidIdentifier"
-	case_Quotas_sql_GetNotificationThresholds_basic                                         testCaseName = "sql_GetNotificationThresholds_basic"
-	case_Quotas_validation_AddNotificationIntegration_name_ValidIdentifier                  testCaseName = "validation_AddNotificationIntegration_name_ValidIdentifier"
-	case_Quotas_validation_AddNotificationIntegration_args_Integration_ValidIdentifier      testCaseName = "validation_AddNotificationIntegration_args_Integration_ValidIdentifier"
-	case_Quotas_sql_AddNotificationIntegration_basic                                        testCaseName = "sql_AddNotificationIntegration_basic"
-	case_Quotas_validation_RemoveNotificationIntegration_name_ValidIdentifier               testCaseName = "validation_RemoveNotificationIntegration_name_ValidIdentifier"
-	case_Quotas_validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier   testCaseName = "validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier"
-	case_Quotas_sql_RemoveNotificationIntegration_basic                                     testCaseName = "sql_RemoveNotificationIntegration_basic"
-	case_Quotas_validation_GetNotificationIntegrations_name_ValidIdentifier                 testCaseName = "validation_GetNotificationIntegrations_name_ValidIdentifier"
-	case_Quotas_sql_GetNotificationIntegrations_basic                                       testCaseName = "sql_GetNotificationIntegrations_basic"
-	case_Quotas_validation_SetAdminEmails_name_ValidIdentifier                              testCaseName = "validation_SetAdminEmails_name_ValidIdentifier"
-	case_Quotas_sql_SetAdminEmails_basic                                                    testCaseName = "sql_SetAdminEmails_basic"
-	case_Quotas_validation_AddCustomAction_name_ValidIdentifier                             testCaseName = "validation_AddCustomAction_name_ValidIdentifier"
-	case_Quotas_validation_AddCustomAction_args_Procedure_ValidIdentifier                   testCaseName = "validation_AddCustomAction_args_Procedure_ValidIdentifier"
-	case_Quotas_sql_AddCustomAction_basic                                                   testCaseName = "sql_AddCustomAction_basic"
-	case_Quotas_validation_RemoveCustomActions_name_ValidIdentifier                         testCaseName = "validation_RemoveCustomActions_name_ValidIdentifier"
-	case_Quotas_sql_RemoveCustomActions_basic                                               testCaseName = "sql_RemoveCustomActions_basic"
-	case_Quotas_validation_GetCustomActions_name_ValidIdentifier                            testCaseName = "validation_GetCustomActions_name_ValidIdentifier"
-	case_Quotas_sql_GetCustomActions_basic                                                  testCaseName = "sql_GetCustomActions_basic"
-	case_Quotas_validation_SetCycleStartAction_name_ValidIdentifier                         testCaseName = "validation_SetCycleStartAction_name_ValidIdentifier"
-	case_Quotas_validation_SetCycleStartAction_args_Procedure_ValidIdentifier               testCaseName = "validation_SetCycleStartAction_args_Procedure_ValidIdentifier"
-	case_Quotas_sql_SetCycleStartAction_basic                                               testCaseName = "sql_SetCycleStartAction_basic"
-	case_Quotas_validation_RemoveCycleStartAction_name_ValidIdentifier                      testCaseName = "validation_RemoveCycleStartAction_name_ValidIdentifier"
-	case_Quotas_sql_RemoveCycleStartAction_basic                                            testCaseName = "sql_RemoveCycleStartAction_basic"
-	case_Quotas_validation_GetCycleStartAction_name_ValidIdentifier                         testCaseName = "validation_GetCycleStartAction_name_ValidIdentifier"
-	case_Quotas_sql_GetCycleStartAction_basic                                               testCaseName = "sql_GetCycleStartAction_basic"
+	case_Quotas_validation_Create_name_ValidIdentifier                                                  testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Quotas_validation_Create_opts_ConflictingFields                                                testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Quotas_sql_Create_basic                                                                        testCaseName = "sql_Create_basic"
+	case_Quotas_sql_Create_all                                                                          testCaseName = "sql_Create_all"
+	case_Quotas_validation_Alter_name_ValidIdentifier                                                   testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                        testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Quotas_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                 testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Quotas_validation_Alter_opts_Set_AtLeastOneValueSet                                            testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Quotas_validation_Alter_opts_Unset_AtLeastOneValueSet                                          testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Quotas_sql_Alter_RenameTo                                                                      testCaseName = "sql_Alter_RenameTo"
+	case_Quotas_sql_Alter_Set                                                                           testCaseName = "sql_Alter_Set"
+	case_Quotas_sql_Alter_Unset                                                                         testCaseName = "sql_Alter_Unset"
+	case_Quotas_validation_Drop_name_ValidIdentifier                                                    testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Quotas_sql_Drop_basic                                                                          testCaseName = "sql_Drop_basic"
+	case_Quotas_sql_Drop_all                                                                            testCaseName = "sql_Drop_all"
+	case_Quotas_sql_Show_basic                                                                          testCaseName = "sql_Show_basic"
+	case_Quotas_sql_Show_all                                                                            testCaseName = "sql_Show_all"
+	case_Quotas_sql_Show_Like                                                                           testCaseName = "sql_Show_Like"
+	case_Quotas_sql_Show_In                                                                             testCaseName = "sql_Show_In"
+	case_Quotas_sql_Show_Limit                                                                          testCaseName = "sql_Show_Limit"
+	case_Quotas_validation_AddSharedResource_name_ValidIdentifier                                       testCaseName = "validation_AddSharedResource_name_ValidIdentifier"
+	case_Quotas_validation_AddSharedResource_opts_args_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_AddSharedResource_opts_args_ExactlyOneValueSet_NoneSet"
+	case_Quotas_validation_AddSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_AddSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet"
+	case_Quotas_validation_AddSharedResource_args_Warehouse_Id_ValidIdentifier                          testCaseName = "validation_AddSharedResource_args_Warehouse_Id_ValidIdentifier"
+	case_Quotas_validation_AddSharedResource_args_CortexAgent_Id_ValidIdentifier                        testCaseName = "validation_AddSharedResource_args_CortexAgent_Id_ValidIdentifier"
+	case_Quotas_validation_AddSharedResource_args_SnowflakeCowork_Id_ValidIdentifier                    testCaseName = "validation_AddSharedResource_args_SnowflakeCowork_Id_ValidIdentifier"
+	case_Quotas_validation_AddSharedResource_args_AiGateway_Id_ValidIdentifier                          testCaseName = "validation_AddSharedResource_args_AiGateway_Id_ValidIdentifier"
+	case_Quotas_sql_AddSharedResource_basic                                                             testCaseName = "sql_AddSharedResource_basic"
+	case_Quotas_validation_RemoveSharedResource_name_ValidIdentifier                                    testCaseName = "validation_RemoveSharedResource_name_ValidIdentifier"
+	case_Quotas_validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_NoneSet"
+	case_Quotas_validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_RemoveSharedResource_opts_args_ExactlyOneValueSet_MoreThanOneSet"
+	case_Quotas_validation_RemoveSharedResource_args_Warehouse_Id_ValidIdentifier                       testCaseName = "validation_RemoveSharedResource_args_Warehouse_Id_ValidIdentifier"
+	case_Quotas_validation_RemoveSharedResource_args_CortexAgent_Id_ValidIdentifier                     testCaseName = "validation_RemoveSharedResource_args_CortexAgent_Id_ValidIdentifier"
+	case_Quotas_validation_RemoveSharedResource_args_SnowflakeCowork_Id_ValidIdentifier                 testCaseName = "validation_RemoveSharedResource_args_SnowflakeCowork_Id_ValidIdentifier"
+	case_Quotas_validation_RemoveSharedResource_args_AiGateway_Id_ValidIdentifier                       testCaseName = "validation_RemoveSharedResource_args_AiGateway_Id_ValidIdentifier"
+	case_Quotas_sql_RemoveSharedResource_basic                                                          testCaseName = "sql_RemoveSharedResource_basic"
+	case_Quotas_validation_SetUserTags_name_ValidIdentifier                                             testCaseName = "validation_SetUserTags_name_ValidIdentifier"
+	case_Quotas_validation_SetUserTags_args_Tags_Tag_ValidIdentifier                                    testCaseName = "validation_SetUserTags_args_Tags_Tag_ValidIdentifier"
+	case_Quotas_sql_SetUserTags_basic                                                                   testCaseName = "sql_SetUserTags_basic"
+	case_Quotas_validation_ExcludeUsers_name_ValidIdentifier                                            testCaseName = "validation_ExcludeUsers_name_ValidIdentifier"
+	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_NoneSet"
+	case_Quotas_validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_ExcludeUsers_opts_args_ExactlyOneValueSet_MoreThanOneSet"
+	case_Quotas_validation_ExcludeUsers_args_ByTag_Tags_Tag_ValidIdentifier                             testCaseName = "validation_ExcludeUsers_args_ByTag_Tags_Tag_ValidIdentifier"
+	case_Quotas_sql_ExcludeUsers_basic                                                                  testCaseName = "sql_ExcludeUsers_basic"
+	case_Quotas_validation_IncludeUsers_name_ValidIdentifier                                            testCaseName = "validation_IncludeUsers_name_ValidIdentifier"
+	case_Quotas_sql_IncludeUsers_basic                                                                  testCaseName = "sql_IncludeUsers_basic"
+	case_Quotas_validation_GetQuotaScope_name_ValidIdentifier                                           testCaseName = "validation_GetQuotaScope_name_ValidIdentifier"
+	case_Quotas_sql_GetQuotaScope_basic                                                                 testCaseName = "sql_GetQuotaScope_basic"
+	case_Quotas_validation_SetQuotaUserScope_name_ValidIdentifier                                       testCaseName = "validation_SetQuotaUserScope_name_ValidIdentifier"
+	case_Quotas_validation_SetQuotaUserScope_opts_args_Scope_AtLeastOneValueSet                         testCaseName = "validation_SetQuotaUserScope_opts_args_Scope_AtLeastOneValueSet"
+	case_Quotas_validation_SetQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier     testCaseName = "validation_SetQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier"
+	case_Quotas_validation_SetQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet              testCaseName = "validation_SetQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet"
+	case_Quotas_validation_SetQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier    testCaseName = "validation_SetQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier"
+	case_Quotas_validation_SetQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet               testCaseName = "validation_SetQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet"
+	case_Quotas_sql_SetQuotaUserScope_basic                                                             testCaseName = "sql_SetQuotaUserScope_basic"
+	case_Quotas_validation_AddQuotaUserScope_name_ValidIdentifier                                       testCaseName = "validation_AddQuotaUserScope_name_ValidIdentifier"
+	case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_AtLeastOneValueSet                         testCaseName = "validation_AddQuotaUserScope_opts_args_Scope_AtLeastOneValueSet"
+	case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_AppliesTo_AtLeastOneValueSet               testCaseName = "validation_AddQuotaUserScope_opts_args_Scope_AppliesTo_AtLeastOneValueSet"
+	case_Quotas_validation_AddQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier     testCaseName = "validation_AddQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier"
+	case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet              testCaseName = "validation_AddQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet"
+	case_Quotas_validation_AddQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier    testCaseName = "validation_AddQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier"
+	case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet               testCaseName = "validation_AddQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet"
+	case_Quotas_sql_AddQuotaUserScope_basic                                                             testCaseName = "sql_AddQuotaUserScope_basic"
+	case_Quotas_validation_RemoveQuotaUserScope_name_ValidIdentifier                                    testCaseName = "validation_RemoveQuotaUserScope_name_ValidIdentifier"
+	case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_AtLeastOneValueSet                      testCaseName = "validation_RemoveQuotaUserScope_opts_args_Scope_AtLeastOneValueSet"
+	case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_AppliesTo_AtLeastOneValueSet            testCaseName = "validation_RemoveQuotaUserScope_opts_args_Scope_AppliesTo_AtLeastOneValueSet"
+	case_Quotas_validation_RemoveQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier  testCaseName = "validation_RemoveQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier"
+	case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet           testCaseName = "validation_RemoveQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet"
+	case_Quotas_validation_RemoveQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier testCaseName = "validation_RemoveQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier"
+	case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet            testCaseName = "validation_RemoveQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet"
+	case_Quotas_sql_RemoveQuotaUserScope_basic                                                          testCaseName = "sql_RemoveQuotaUserScope_basic"
+	case_Quotas_validation_GetQuotaScopeV2_name_ValidIdentifier                                         testCaseName = "validation_GetQuotaScopeV2_name_ValidIdentifier"
+	case_Quotas_sql_GetQuotaScopeV2_basic                                                               testCaseName = "sql_GetQuotaScopeV2_basic"
+	case_Quotas_validation_SetPerUserLimit_name_ValidIdentifier                                         testCaseName = "validation_SetPerUserLimit_name_ValidIdentifier"
+	case_Quotas_sql_SetPerUserLimit_basic                                                               testCaseName = "sql_SetPerUserLimit_basic"
+	case_Quotas_validation_UnsetPerUserLimit_name_ValidIdentifier                                       testCaseName = "validation_UnsetPerUserLimit_name_ValidIdentifier"
+	case_Quotas_sql_UnsetPerUserLimit_basic                                                             testCaseName = "sql_UnsetPerUserLimit_basic"
+	case_Quotas_validation_SetBlockEnforcementEnabled_name_ValidIdentifier                              testCaseName = "validation_SetBlockEnforcementEnabled_name_ValidIdentifier"
+	case_Quotas_sql_SetBlockEnforcementEnabled_basic                                                    testCaseName = "sql_SetBlockEnforcementEnabled_basic"
+	case_Quotas_validation_GetConfig_name_ValidIdentifier                                               testCaseName = "validation_GetConfig_name_ValidIdentifier"
+	case_Quotas_sql_GetConfig_basic                                                                     testCaseName = "sql_GetConfig_basic"
+	case_Quotas_validation_SetUserQuotaOverride_name_ValidIdentifier                                    testCaseName = "validation_SetUserQuotaOverride_name_ValidIdentifier"
+	case_Quotas_sql_SetUserQuotaOverride_basic                                                          testCaseName = "sql_SetUserQuotaOverride_basic"
+	case_Quotas_validation_ListUserQuotaOverrides_name_ValidIdentifier                                  testCaseName = "validation_ListUserQuotaOverrides_name_ValidIdentifier"
+	case_Quotas_sql_ListUserQuotaOverrides_basic                                                        testCaseName = "sql_ListUserQuotaOverrides_basic"
+	case_Quotas_validation_RemoveUserQuotaOverride_name_ValidIdentifier                                 testCaseName = "validation_RemoveUserQuotaOverride_name_ValidIdentifier"
+	case_Quotas_sql_RemoveUserQuotaOverride_basic                                                       testCaseName = "sql_RemoveUserQuotaOverride_basic"
+	case_Quotas_validation_RemoveUserQuotaOverridesByUser_name_ValidIdentifier                          testCaseName = "validation_RemoveUserQuotaOverridesByUser_name_ValidIdentifier"
+	case_Quotas_sql_RemoveUserQuotaOverridesByUser_basic                                                testCaseName = "sql_RemoveUserQuotaOverridesByUser_basic"
+	case_Quotas_validation_RemoveUserQuotaOverridesByCycle_name_ValidIdentifier                         testCaseName = "validation_RemoveUserQuotaOverridesByCycle_name_ValidIdentifier"
+	case_Quotas_sql_RemoveUserQuotaOverridesByCycle_basic                                               testCaseName = "sql_RemoveUserQuotaOverridesByCycle_basic"
+	case_Quotas_validation_RemoveAllUserQuotaOverrides_name_ValidIdentifier                             testCaseName = "validation_RemoveAllUserQuotaOverrides_name_ValidIdentifier"
+	case_Quotas_sql_RemoveAllUserQuotaOverrides_basic                                                   testCaseName = "sql_RemoveAllUserQuotaOverrides_basic"
+	case_Quotas_validation_AddNotificationThreshold_name_ValidIdentifier                                testCaseName = "validation_AddNotificationThreshold_name_ValidIdentifier"
+	case_Quotas_sql_AddNotificationThreshold_basic                                                      testCaseName = "sql_AddNotificationThreshold_basic"
+	case_Quotas_validation_RemoveNotificationThreshold_name_ValidIdentifier                             testCaseName = "validation_RemoveNotificationThreshold_name_ValidIdentifier"
+	case_Quotas_sql_RemoveNotificationThreshold_basic                                                   testCaseName = "sql_RemoveNotificationThreshold_basic"
+	case_Quotas_validation_GetNotificationThresholds_name_ValidIdentifier                               testCaseName = "validation_GetNotificationThresholds_name_ValidIdentifier"
+	case_Quotas_sql_GetNotificationThresholds_basic                                                     testCaseName = "sql_GetNotificationThresholds_basic"
+	case_Quotas_validation_AddNotificationIntegration_name_ValidIdentifier                              testCaseName = "validation_AddNotificationIntegration_name_ValidIdentifier"
+	case_Quotas_validation_AddNotificationIntegration_args_Integration_ValidIdentifier                  testCaseName = "validation_AddNotificationIntegration_args_Integration_ValidIdentifier"
+	case_Quotas_sql_AddNotificationIntegration_basic                                                    testCaseName = "sql_AddNotificationIntegration_basic"
+	case_Quotas_validation_RemoveNotificationIntegration_name_ValidIdentifier                           testCaseName = "validation_RemoveNotificationIntegration_name_ValidIdentifier"
+	case_Quotas_validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier               testCaseName = "validation_RemoveNotificationIntegration_args_Integration_ValidIdentifier"
+	case_Quotas_sql_RemoveNotificationIntegration_basic                                                 testCaseName = "sql_RemoveNotificationIntegration_basic"
+	case_Quotas_validation_GetNotificationIntegrations_name_ValidIdentifier                             testCaseName = "validation_GetNotificationIntegrations_name_ValidIdentifier"
+	case_Quotas_sql_GetNotificationIntegrations_basic                                                   testCaseName = "sql_GetNotificationIntegrations_basic"
+	case_Quotas_validation_SetAdminEmails_name_ValidIdentifier                                          testCaseName = "validation_SetAdminEmails_name_ValidIdentifier"
+	case_Quotas_sql_SetAdminEmails_basic                                                                testCaseName = "sql_SetAdminEmails_basic"
+	case_Quotas_validation_AddCustomAction_name_ValidIdentifier                                         testCaseName = "validation_AddCustomAction_name_ValidIdentifier"
+	case_Quotas_validation_AddCustomAction_args_Procedure_ValidIdentifier                               testCaseName = "validation_AddCustomAction_args_Procedure_ValidIdentifier"
+	case_Quotas_sql_AddCustomAction_basic                                                               testCaseName = "sql_AddCustomAction_basic"
+	case_Quotas_validation_RemoveCustomActions_name_ValidIdentifier                                     testCaseName = "validation_RemoveCustomActions_name_ValidIdentifier"
+	case_Quotas_sql_RemoveCustomActions_basic                                                           testCaseName = "sql_RemoveCustomActions_basic"
+	case_Quotas_validation_GetCustomActions_name_ValidIdentifier                                        testCaseName = "validation_GetCustomActions_name_ValidIdentifier"
+	case_Quotas_sql_GetCustomActions_basic                                                              testCaseName = "sql_GetCustomActions_basic"
+	case_Quotas_validation_SetCycleStartAction_name_ValidIdentifier                                     testCaseName = "validation_SetCycleStartAction_name_ValidIdentifier"
+	case_Quotas_validation_SetCycleStartAction_args_Procedure_ValidIdentifier                           testCaseName = "validation_SetCycleStartAction_args_Procedure_ValidIdentifier"
+	case_Quotas_sql_SetCycleStartAction_basic                                                           testCaseName = "sql_SetCycleStartAction_basic"
+	case_Quotas_validation_RemoveCycleStartAction_name_ValidIdentifier                                  testCaseName = "validation_RemoveCycleStartAction_name_ValidIdentifier"
+	case_Quotas_sql_RemoveCycleStartAction_basic                                                        testCaseName = "sql_RemoveCycleStartAction_basic"
+	case_Quotas_validation_GetCycleStartAction_name_ValidIdentifier                                     testCaseName = "validation_GetCycleStartAction_name_ValidIdentifier"
+	case_Quotas_sql_GetCycleStartAction_basic                                                           testCaseName = "sql_GetCycleStartAction_basic"
 )
 
 type QuotasTestsContext struct {
@@ -127,6 +154,10 @@ type QuotasTestsContext struct {
 	ExcludeUsers                    *sdkTestCtx[*ExcludeUsersQuotaOptions]
 	IncludeUsers                    *sdkTestCtx[*IncludeUsersQuotaOptions]
 	GetQuotaScope                   *sdkTestCtx[*GetQuotaScopeQuotaOptions]
+	SetQuotaUserScope               *sdkTestCtx[*SetQuotaUserScopeQuotaOptions]
+	AddQuotaUserScope               *sdkTestCtx[*AddQuotaUserScopeQuotaOptions]
+	RemoveQuotaUserScope            *sdkTestCtx[*RemoveQuotaUserScopeQuotaOptions]
+	GetQuotaScopeV2                 *sdkTestCtx[*GetQuotaScopeV2QuotaOptions]
 	SetPerUserLimit                 *sdkTestCtx[*SetPerUserLimitQuotaOptions]
 	UnsetPerUserLimit               *sdkTestCtx[*UnsetPerUserLimitQuotaOptions]
 	SetBlockEnforcementEnabled      *sdkTestCtx[*SetBlockEnforcementEnabledQuotaOptions]
@@ -573,6 +604,257 @@ var quotasTests = QuotasTestsContext{
 		withSqlCases(
 			sqlCase[*GetQuotaScopeQuotaOptions]{
 				Name:           case_Quotas_sql_GetQuotaScope_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	SetQuotaUserScope: newSdkTestCtx[*SetQuotaUserScopeQuotaOptions](
+		"Quotas", "SetQuotaUserScope",
+	).
+		withDefaultOpts(func() *SetQuotaUserScopeQuotaOptions {
+			return &SetQuotaUserScopeQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*SetQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_SetQuotaUserScope_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetQuotaUserScopeQuotaOptions", "name"),
+				DefaultModify: func(opts *SetQuotaUserScopeQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*SetQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_SetQuotaUserScope_opts_args_Scope_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("SetQuotaUserScopeQuotaOptions.args.Scope", "AppliesTo", "ExcludedBy", "Usernames"),
+				DefaultModify: func(opts *SetQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = nil
+					opts.args.Scope.ExcludedBy = nil
+					opts.args.Scope.Usernames = nil
+				},
+			},
+			validationCase[*SetQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_SetQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetQuotaUserScopeQuotaOptions.args.Scope.AppliesTo.UserTags.Tags[0]", "Tag"),
+				DefaultModify: func(opts *SetQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = &QuotaUserScopeAppliesTo{}
+					opts.args.Scope.AppliesTo.UserTags = &QuotaUserScopeUserTags{}
+					opts.args.Scope.AppliesTo.UserTags.Tags = []QuotaUserScopeTag{{}}
+					opts.args.Scope.AppliesTo.UserTags.Tags[0].Tag = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*SetQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_SetQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("SetQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy", "UserTags", "Roles"),
+				DefaultModify: func(opts *SetQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.ExcludedBy = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.ExcludedBy.UserTags = nil
+					opts.args.Scope.ExcludedBy.Roles = nil
+				},
+			},
+			validationCase[*SetQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_SetQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy.UserTags.Tags[0]", "Tag"),
+				DefaultModify: func(opts *SetQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.ExcludedBy = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.ExcludedBy.UserTags = &QuotaUserScopeUserTags{}
+					opts.args.Scope.ExcludedBy.UserTags.Tags = []QuotaUserScopeTag{{}}
+					opts.args.Scope.ExcludedBy.UserTags.Tags[0].Tag = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*SetQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_SetQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("SetQuotaUserScopeQuotaOptions.args.Scope.Usernames", "Included", "Excluded"),
+				DefaultModify: func(opts *SetQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.Usernames = &QuotaUserScopeUsernames{}
+					opts.args.Scope.Usernames.Included = nil
+					opts.args.Scope.Usernames.Excluded = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetQuotaUserScopeQuotaOptions]{
+				Name:           case_Quotas_sql_SetQuotaUserScope_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	AddQuotaUserScope: newSdkTestCtx[*AddQuotaUserScopeQuotaOptions](
+		"Quotas", "AddQuotaUserScope",
+	).
+		withDefaultOpts(func() *AddQuotaUserScopeQuotaOptions {
+			return &AddQuotaUserScopeQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_AddQuotaUserScope_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AddQuotaUserScopeQuotaOptions", "name"),
+				DefaultModify: func(opts *AddQuotaUserScopeQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope", "AppliesTo", "ExcludedBy", "Usernames"),
+				DefaultModify: func(opts *AddQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = nil
+					opts.args.Scope.ExcludedBy = nil
+					opts.args.Scope.Usernames = nil
+				},
+			},
+			validationCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_AppliesTo_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope.AppliesTo", "UserTags", "Roles"),
+				DefaultModify: func(opts *AddQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.AppliesTo.UserTags = nil
+					opts.args.Scope.AppliesTo.Roles = nil
+				},
+			},
+			validationCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_AddQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AddQuotaUserScopeQuotaOptions.args.Scope.AppliesTo.UserTags.Tags[0]", "Tag"),
+				DefaultModify: func(opts *AddQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.AppliesTo.UserTags = &QuotaUserScopeUserTags{}
+					opts.args.Scope.AppliesTo.UserTags.Tags = []QuotaUserScopeTag{{}}
+					opts.args.Scope.AppliesTo.UserTags.Tags[0].Tag = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy", "UserTags", "Roles"),
+				DefaultModify: func(opts *AddQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.ExcludedBy = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.ExcludedBy.UserTags = nil
+					opts.args.Scope.ExcludedBy.Roles = nil
+				},
+			},
+			validationCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_AddQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("AddQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy.UserTags.Tags[0]", "Tag"),
+				DefaultModify: func(opts *AddQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.ExcludedBy = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.ExcludedBy.UserTags = &QuotaUserScopeUserTags{}
+					opts.args.Scope.ExcludedBy.UserTags.Tags = []QuotaUserScopeTag{{}}
+					opts.args.Scope.ExcludedBy.UserTags.Tags[0].Tag = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_AddQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("AddQuotaUserScopeQuotaOptions.args.Scope.Usernames", "Included", "Excluded"),
+				DefaultModify: func(opts *AddQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.Usernames = &QuotaUserScopeUsernames{}
+					opts.args.Scope.Usernames.Included = nil
+					opts.args.Scope.Usernames.Excluded = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*AddQuotaUserScopeQuotaOptions]{
+				Name:           case_Quotas_sql_AddQuotaUserScope_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	RemoveQuotaUserScope: newSdkTestCtx[*RemoveQuotaUserScopeQuotaOptions](
+		"Quotas", "RemoveQuotaUserScope",
+	).
+		withDefaultOpts(func() *RemoveQuotaUserScopeQuotaOptions {
+			return &RemoveQuotaUserScopeQuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveQuotaUserScope_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveQuotaUserScopeQuotaOptions", "name"),
+				DefaultModify: func(opts *RemoveQuotaUserScopeQuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope", "AppliesTo", "ExcludedBy", "Usernames"),
+				DefaultModify: func(opts *RemoveQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = nil
+					opts.args.Scope.ExcludedBy = nil
+					opts.args.Scope.Usernames = nil
+				},
+			},
+			validationCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_AppliesTo_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope.AppliesTo", "UserTags", "Roles"),
+				DefaultModify: func(opts *RemoveQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.AppliesTo.UserTags = nil
+					opts.args.Scope.AppliesTo.Roles = nil
+				},
+			},
+			validationCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveQuotaUserScope_args_Scope_AppliesTo_UserTags_Tags_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveQuotaUserScopeQuotaOptions.args.Scope.AppliesTo.UserTags.Tags[0]", "Tag"),
+				DefaultModify: func(opts *RemoveQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.AppliesTo = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.AppliesTo.UserTags = &QuotaUserScopeUserTags{}
+					opts.args.Scope.AppliesTo.UserTags.Tags = []QuotaUserScopeTag{{}}
+					opts.args.Scope.AppliesTo.UserTags.Tags[0].Tag = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_ExcludedBy_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy", "UserTags", "Roles"),
+				DefaultModify: func(opts *RemoveQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.ExcludedBy = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.ExcludedBy.UserTags = nil
+					opts.args.Scope.ExcludedBy.Roles = nil
+				},
+			},
+			validationCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveQuotaUserScope_args_Scope_ExcludedBy_UserTags_Tags_Tag_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("RemoveQuotaUserScopeQuotaOptions.args.Scope.ExcludedBy.UserTags.Tags[0]", "Tag"),
+				DefaultModify: func(opts *RemoveQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.ExcludedBy = &QuotaUserScopeTagsAndRoles{}
+					opts.args.Scope.ExcludedBy.UserTags = &QuotaUserScopeUserTags{}
+					opts.args.Scope.ExcludedBy.UserTags.Tags = []QuotaUserScopeTag{{}}
+					opts.args.Scope.ExcludedBy.UserTags.Tags[0].Tag = emptySchemaObjectIdentifier
+				},
+			},
+			validationCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:        case_Quotas_validation_RemoveQuotaUserScope_opts_args_Scope_Usernames_AtLeastOneValueSet,
+				ExpectedErr: errAtLeastOneOf("RemoveQuotaUserScopeQuotaOptions.args.Scope.Usernames", "Included", "Excluded"),
+				DefaultModify: func(opts *RemoveQuotaUserScopeQuotaOptions) {
+					opts.args.Scope.Usernames = &QuotaUserScopeUsernames{}
+					opts.args.Scope.Usernames.Included = nil
+					opts.args.Scope.Usernames.Excluded = nil
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*RemoveQuotaUserScopeQuotaOptions]{
+				Name:           case_Quotas_sql_RemoveQuotaUserScope_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	GetQuotaScopeV2: newSdkTestCtx[*GetQuotaScopeV2QuotaOptions](
+		"Quotas", "GetQuotaScopeV2",
+	).
+		withDefaultOpts(func() *GetQuotaScopeV2QuotaOptions {
+			return &GetQuotaScopeV2QuotaOptions{
+				name: quotasTestIdSchemaObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*GetQuotaScopeV2QuotaOptions]{
+				Name:        case_Quotas_validation_GetQuotaScopeV2_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("GetQuotaScopeV2QuotaOptions", "name"),
+				DefaultModify: func(opts *GetQuotaScopeV2QuotaOptions) {
+					opts.name = emptySchemaObjectIdentifier
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*GetQuotaScopeV2QuotaOptions]{
+				Name:           case_Quotas_sql_GetQuotaScopeV2_basic,
 				NoModifyNeeded: true,
 			},
 		),
@@ -1183,6 +1465,26 @@ func TestQuotas_IncludeUsers(t *testing.T) {
 func TestQuotas_GetQuotaScope(t *testing.T) {
 	quotasTests.GetQuotaScope.RunValidationCases(t)
 	quotasTests.GetQuotaScope.RunSqlCases(t)
+}
+
+func TestQuotas_SetQuotaUserScope(t *testing.T) {
+	quotasTests.SetQuotaUserScope.RunValidationCases(t)
+	quotasTests.SetQuotaUserScope.RunSqlCases(t)
+}
+
+func TestQuotas_AddQuotaUserScope(t *testing.T) {
+	quotasTests.AddQuotaUserScope.RunValidationCases(t)
+	quotasTests.AddQuotaUserScope.RunSqlCases(t)
+}
+
+func TestQuotas_RemoveQuotaUserScope(t *testing.T) {
+	quotasTests.RemoveQuotaUserScope.RunValidationCases(t)
+	quotasTests.RemoveQuotaUserScope.RunSqlCases(t)
+}
+
+func TestQuotas_GetQuotaScopeV2(t *testing.T) {
+	quotasTests.GetQuotaScopeV2.RunValidationCases(t)
+	quotasTests.GetQuotaScopeV2.RunSqlCases(t)
 }
 
 func TestQuotas_SetPerUserLimit(t *testing.T) {

@@ -126,3 +126,51 @@ func ToQuotaUserTagsOperator(s string) (QuotaUserTagsOperator, error) {
 		return "", fmt.Errorf("invalid quota user tags operator: %s", s)
 	}
 }
+
+type QuotaUserScopeType string
+
+const (
+	QuotaUserScopeTypeAllUsers     QuotaUserScopeType = "ALL_USERS"
+	QuotaUserScopeTypeGroupOfUsers QuotaUserScopeType = "GROUP_OF_USERS"
+)
+
+var AllQuotaUserScopeTypes = []QuotaUserScopeType{
+	QuotaUserScopeTypeAllUsers,
+	QuotaUserScopeTypeGroupOfUsers,
+}
+
+func ToQuotaUserScopeType(s string) (QuotaUserScopeType, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(QuotaUserScopeTypeAllUsers):
+		return QuotaUserScopeTypeAllUsers, nil
+	case string(QuotaUserScopeTypeGroupOfUsers):
+		return QuotaUserScopeTypeGroupOfUsers, nil
+	default:
+		return "", fmt.Errorf("invalid quota user scope type: %s", s)
+	}
+}
+
+type QuotaUserScopeOperator string
+
+const (
+	QuotaUserScopeOperatorUnion        QuotaUserScopeOperator = "UNION"
+	QuotaUserScopeOperatorIntersection QuotaUserScopeOperator = "INTERSECTION"
+)
+
+var AllQuotaUserScopeOperators = []QuotaUserScopeOperator{
+	QuotaUserScopeOperatorUnion,
+	QuotaUserScopeOperatorIntersection,
+}
+
+func ToQuotaUserScopeOperator(s string) (QuotaUserScopeOperator, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(QuotaUserScopeOperatorUnion):
+		return QuotaUserScopeOperatorUnion, nil
+	case string(QuotaUserScopeOperatorIntersection):
+		return QuotaUserScopeOperatorIntersection, nil
+	default:
+		return "", fmt.Errorf("invalid quota user scope operator: %s", s)
+	}
+}

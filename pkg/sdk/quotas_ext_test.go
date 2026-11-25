@@ -479,6 +479,92 @@ func init() {
 			"CALL %s!SET_CYCLE_START_ACTION (SYSTEM$REFERENCE('PROCEDURE', '%s'), ['arg1'])", id.FullyQualifiedName(), singleQuotedIdentifier(procedureId),
 		)
 
+	roles := func(roles ...string) *QuotaUserScopeRoles { return &QuotaUserScopeRoles{Roles: roles} }
+	quotasTests.SetQuotaUserScope.
+		withDefaultOpts(func() *SetQuotaUserScopeQuotaOptions {
+			return &SetQuotaUserScopeQuotaOptions{
+				name: id,
+				args: QuotaSetQuotaUserScopeArgs{Scope: QuotaSetUserScope{AppliesTo: &QuotaUserScopeAppliesTo{ScopeType: QuotaUserScopeTypeAllUsers}}},
+			}
+		}).
+		withExpectedSqlf(
+			case_Quotas_sql_SetQuotaUserScope_basic,
+			"CALL %s!SET_QUOTA_USER_SCOPE (OBJECT_CONSTRUCT ('applies_to', OBJECT_CONSTRUCT ('type', 'ALL_USERS')))", id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_SetQuotaUserScope_all",
+			func(opts *SetQuotaUserScopeQuotaOptions) {
+				opts.args.Scope = QuotaSetUserScope{
+					AppliesTo: &QuotaUserScopeAppliesTo{
+						ScopeType: QuotaUserScopeTypeGroupOfUsers,
+						Operator:  &QuotaUserScopeOperatorValue{Operator: QuotaUserScopeOperatorIntersection},
+						UserTags:  &QuotaUserScopeUserTags{Tags: []QuotaUserScopeTag{{Tag: tagId, Value: "finance"}, {Tag: tagId2, Value: "eu"}}},
+						Roles:     roles("ANALYST", "ENGINEER"),
+					},
+					ExcludedBy: &QuotaUserScopeTagsAndRoles{UserTags: &QuotaUserScopeUserTags{Tags: []QuotaUserScopeTag{{Tag: tagId, Value: "contractor"}}}, Roles: roles("INTERN")},
+					Usernames:  &QuotaUserScopeUsernames{Included: &QuotaUserScopeIncludedUsers{Users: []string{"ALICE"}}, Excluded: &QuotaUserScopeExcludedUsers{Users: []string{"BOB"}}},
+				}
+			},
+			"CALL %s!SET_QUOTA_USER_SCOPE (OBJECT_CONSTRUCT ("+
+				"'applies_to', OBJECT_CONSTRUCT ('type', 'GROUP_OF_USERS', 'operator', 'INTERSECTION', 'user_tags', [[%s, 'finance'], [%s, 'eu']], 'roles', ['ANALYST', 'ENGINEER']), "+
+				"'excluded_by', OBJECT_CONSTRUCT ('user_tags', [[%s, 'contractor']], 'roles', ['INTERN']), "+
+				"'usernames', OBJECT_CONSTRUCT ('included', ['ALICE'], 'excluded', ['BOB'])))",
+			id.FullyQualifiedName(), tagReference(tagId), tagReference(tagId2), tagReference(tagId),
+		).
+		withAdditionalSqlCasef(
+			"sql_SetQuotaUserScope_clearLists",
+			func(opts *SetQuotaUserScopeQuotaOptions) {
+				opts.args.Scope = QuotaSetUserScope{
+					ExcludedBy: &QuotaUserScopeTagsAndRoles{UserTags: &QuotaUserScopeUserTags{}},
+					Usernames:  &QuotaUserScopeUsernames{Included: &QuotaUserScopeIncludedUsers{}},
+				}
+			},
+			"CALL %s!SET_QUOTA_USER_SCOPE (OBJECT_CONSTRUCT ('excluded_by', OBJECT_CONSTRUCT ('user_tags', []), 'usernames', OBJECT_CONSTRUCT ('included', [])))", id.FullyQualifiedName(),
+		)
+
+	quotasTests.AddQuotaUserScope.
+		withDefaultOpts(func() *AddQuotaUserScopeQuotaOptions {
+			return &AddQuotaUserScopeQuotaOptions{
+				name: id,
+				args: QuotaAddQuotaUserScopeArgs{Scope: QuotaUserScopeChange{AppliesTo: &QuotaUserScopeTagsAndRoles{Roles: roles("ANALYST")}}},
+			}
+		}).
+		withExpectedSqlf(
+			case_Quotas_sql_AddQuotaUserScope_basic,
+			"CALL %s!ADD_QUOTA_USER_SCOPE (OBJECT_CONSTRUCT ('applies_to', OBJECT_CONSTRUCT ('roles', ['ANALYST'])))", id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_AddQuotaUserScope_all",
+			func(opts *AddQuotaUserScopeQuotaOptions) {
+				opts.args.Scope.AppliesTo.UserTags = &QuotaUserScopeUserTags{Tags: []QuotaUserScopeTag{{Tag: tagId, Value: "finance"}}}
+				opts.args.Scope.ExcludedBy = &QuotaUserScopeTagsAndRoles{Roles: roles("INTERN")}
+				opts.args.Scope.Usernames = &QuotaUserScopeUsernames{Excluded: &QuotaUserScopeExcludedUsers{Users: []string{"BOB", "CAROL"}}}
+			},
+			"CALL %s!ADD_QUOTA_USER_SCOPE (OBJECT_CONSTRUCT ("+
+				"'applies_to', OBJECT_CONSTRUCT ('user_tags', [[%s, 'finance']], 'roles', ['ANALYST']), "+
+				"'excluded_by', OBJECT_CONSTRUCT ('roles', ['INTERN']), "+
+				"'usernames', OBJECT_CONSTRUCT ('excluded', ['BOB', 'CAROL'])))",
+			id.FullyQualifiedName(), tagReference(tagId),
+		)
+
+	quotasTests.RemoveQuotaUserScope.
+		withDefaultOpts(func() *RemoveQuotaUserScopeQuotaOptions {
+			return &RemoveQuotaUserScopeQuotaOptions{
+				name: id,
+				args: QuotaRemoveQuotaUserScopeArgs{Scope: QuotaUserScopeChange{Usernames: &QuotaUserScopeUsernames{Included: &QuotaUserScopeIncludedUsers{Users: []string{"it's"}}}}},
+			}
+		}).
+		withExpectedSqlf(
+			case_Quotas_sql_RemoveQuotaUserScope_basic,
+			`CALL %s!REMOVE_QUOTA_USER_SCOPE (OBJECT_CONSTRUCT ('usernames', OBJECT_CONSTRUCT ('included', ['it\'s'])))`, id.FullyQualifiedName(),
+		)
+
+	quotasTests.GetQuotaScopeV2.
+		withExpectedSqlf(
+			case_Quotas_sql_GetQuotaScopeV2_basic,
+			"CALL %s!GET_QUOTA_SCOPE_V2 ()", id.FullyQualifiedName(),
+		)
+
 	quotasTests.SetUserQuotaOverride.
 		withDefaultOpts(func() *SetUserQuotaOverrideQuotaOptions {
 			return &SetUserQuotaOverrideQuotaOptions{
@@ -658,6 +744,56 @@ func TestParseQuotaScope(t *testing.T) {
 		_, err := ParseQuotaScope(`not json`)
 		require.ErrorContains(t, err, "failed to parse quota scope")
 	})
+}
+
+func TestParseQuotaScopeV2(t *testing.T) {
+	t.Run("captured output of a group of users", func(t *testing.T) {
+		scope, err := ParseQuotaScopeV2(`{"users":{"applies_to":{"type":"GROUP_OF_USERS","operator":"UNION","user_tags":[{"tagId":77,"tagDatabase":"DB","tagSchema":"PUBLIC","tagName":"T1","tagValues":["a"]}],"roles":["ANALYST"]},"excluded_by":{"user_tags":[],"roles":["INTERN"]},"usernames":{"included":[{"id":742,"name":"ALICE"}],"excluded":[]}},"shared_resources":[{"id":1,"name":"SNOWFLAKE_COCO_CLI","domain":"SNOWFLAKE_COCO"},{"id":-1,"name":"[ALL-AI GATEWAYS]","domain":"AI_GATEWAY"}]}`)
+		require.NoError(t, err)
+
+		appliesTo := scope.Users.AppliesTo
+		assert.Equal(t, QuotaUserScopeTypeGroupOfUsers, appliesTo.Type)
+		assert.Equal(t, QuotaUserScopeOperatorUnion, appliesTo.Operator)
+		require.Len(t, appliesTo.UserTags, 1)
+		assert.Equal(t, NewSchemaObjectIdentifier("DB", "PUBLIC", "T1"), appliesTo.UserTags[0].TagId())
+		assert.Equal(t, []string{"a"}, appliesTo.UserTags[0].TagValues)
+		assert.Equal(t, []string{"ANALYST"}, appliesTo.Roles)
+		assert.Empty(t, scope.Users.ExcludedBy.UserTags)
+		assert.Equal(t, []string{"INTERN"}, scope.Users.ExcludedBy.Roles)
+		assert.Equal(t, []QuotaUserScopeUser{{Id: 742, Name: "ALICE"}}, scope.Users.Usernames.Included)
+		assert.Empty(t, scope.Users.Usernames.Excluded)
+
+		require.Len(t, scope.SharedResources, 2)
+		domain, err := scope.SharedResources[0].NormalizedDomain()
+		require.NoError(t, err)
+		assert.Equal(t, QuotaSharedResourceDomainSnowflakeCoco, domain)
+		assert.Equal(t, "SNOWFLAKE_COCO_CLI", scope.SharedResources[0].Name)
+		assert.True(t, scope.SharedResources[1].IsWholeDomain())
+	})
+
+	t.Run("captured output of all users", func(t *testing.T) {
+		scope, err := ParseQuotaScopeV2(`{"users":{"applies_to":{"type":"ALL_USERS"},"excluded_by":{"user_tags":[],"roles":[]},"usernames":{"included":[],"excluded":[]}},"shared_resources":[]}`)
+		require.NoError(t, err)
+		assert.Equal(t, QuotaUserScopeTypeAllUsers, scope.Users.AppliesTo.Type)
+		assert.Empty(t, scope.Users.AppliesTo.Operator)
+		assert.Empty(t, scope.Users.AppliesTo.Roles)
+	})
+
+	t.Run("invalid json", func(t *testing.T) {
+		_, err := ParseQuotaScopeV2(`not json`)
+		require.ErrorContains(t, err, "failed to parse quota scope")
+	})
+}
+
+func TestParseQuotaUserScope(t *testing.T) {
+	// as returned by SET_QUOTA_USER_SCOPE
+	scope, err := ParseQuotaUserScope(`{"applies_to":{"type":"ALL_USERS"},"excluded_by":{"user_tags":[],"roles":[]},"usernames":{"included":[{"id":742,"name":"ALICE"}],"excluded":[]}}`)
+	require.NoError(t, err)
+	assert.Equal(t, QuotaUserScopeTypeAllUsers, scope.AppliesTo.Type)
+	assert.Equal(t, []QuotaUserScopeUser{{Id: 742, Name: "ALICE"}}, scope.Usernames.Included)
+
+	_, err = ParseQuotaUserScope(`[]`)
+	require.ErrorContains(t, err, "failed to parse quota user scope")
 }
 
 func TestQuotaScopeSharedResource_NormalizedDomain(t *testing.T) {

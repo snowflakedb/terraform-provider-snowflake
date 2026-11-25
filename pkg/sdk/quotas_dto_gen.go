@@ -13,6 +13,10 @@ var (
 	_ optionsProvider[ExcludeUsersQuotaOptions]                    = new(ExcludeUsersQuotaRequest)
 	_ optionsProvider[IncludeUsersQuotaOptions]                    = new(IncludeUsersQuotaRequest)
 	_ optionsProvider[GetQuotaScopeQuotaOptions]                   = new(GetQuotaScopeQuotaRequest)
+	_ optionsProvider[SetQuotaUserScopeQuotaOptions]               = new(SetQuotaUserScopeQuotaRequest)
+	_ optionsProvider[AddQuotaUserScopeQuotaOptions]               = new(AddQuotaUserScopeQuotaRequest)
+	_ optionsProvider[RemoveQuotaUserScopeQuotaOptions]            = new(RemoveQuotaUserScopeQuotaRequest)
+	_ optionsProvider[GetQuotaScopeV2QuotaOptions]                 = new(GetQuotaScopeV2QuotaRequest)
 	_ optionsProvider[SetPerUserLimitQuotaOptions]                 = new(SetPerUserLimitQuotaRequest)
 	_ optionsProvider[UnsetPerUserLimitQuotaOptions]               = new(UnsetPerUserLimitQuotaRequest)
 	_ optionsProvider[SetBlockEnforcementEnabledQuotaOptions]      = new(SetBlockEnforcementEnabledQuotaRequest)
@@ -205,6 +209,91 @@ type QuotaIncludeUsersArgsRequest struct {
 }
 
 type GetQuotaScopeQuotaRequest struct {
+	name SchemaObjectIdentifier // required
+}
+
+type SetQuotaUserScopeQuotaRequest struct {
+	name SchemaObjectIdentifier            // required
+	args QuotaSetQuotaUserScopeArgsRequest // required
+}
+
+type QuotaSetQuotaUserScopeArgsRequest struct {
+	Scope QuotaSetUserScopeRequest // required
+}
+
+type QuotaSetUserScopeRequest struct {
+	AppliesTo  *QuotaUserScopeAppliesToRequest
+	ExcludedBy *QuotaUserScopeTagsAndRolesRequest
+	Usernames  *QuotaUserScopeUsernamesRequest
+}
+
+type QuotaUserScopeAppliesToRequest struct {
+	ScopeType QuotaUserScopeType // required
+	Operator  *QuotaUserScopeOperatorValueRequest
+	UserTags  *QuotaUserScopeUserTagsRequest
+	Roles     *QuotaUserScopeRolesRequest
+}
+
+type QuotaUserScopeOperatorValueRequest struct {
+	Operator QuotaUserScopeOperator // required
+}
+
+type QuotaUserScopeTagsAndRolesRequest struct {
+	UserTags *QuotaUserScopeUserTagsRequest
+	Roles    *QuotaUserScopeRolesRequest
+}
+
+type QuotaUserScopeUserTagsRequest struct {
+	Tags []QuotaUserScopeTagRequest // required
+}
+
+type QuotaUserScopeTagRequest struct {
+	Tag   SchemaObjectIdentifier // required
+	Value string                 // required
+}
+
+type QuotaUserScopeRolesRequest struct {
+	Roles []string // required
+}
+
+type QuotaUserScopeUsernamesRequest struct {
+	Included *QuotaUserScopeIncludedUsersRequest
+	Excluded *QuotaUserScopeExcludedUsersRequest
+}
+
+type QuotaUserScopeIncludedUsersRequest struct {
+	Users []string // required
+}
+
+type QuotaUserScopeExcludedUsersRequest struct {
+	Users []string // required
+}
+
+type AddQuotaUserScopeQuotaRequest struct {
+	name SchemaObjectIdentifier            // required
+	args QuotaAddQuotaUserScopeArgsRequest // required
+}
+
+type QuotaAddQuotaUserScopeArgsRequest struct {
+	Scope QuotaUserScopeChangeRequest // required
+}
+
+type QuotaUserScopeChangeRequest struct {
+	AppliesTo  *QuotaUserScopeTagsAndRolesRequest
+	ExcludedBy *QuotaUserScopeTagsAndRolesRequest
+	Usernames  *QuotaUserScopeUsernamesRequest
+}
+
+type RemoveQuotaUserScopeQuotaRequest struct {
+	name SchemaObjectIdentifier               // required
+	args QuotaRemoveQuotaUserScopeArgsRequest // required
+}
+
+type QuotaRemoveQuotaUserScopeArgsRequest struct {
+	Scope QuotaUserScopeChangeRequest // required
+}
+
+type GetQuotaScopeV2QuotaRequest struct {
 	name SchemaObjectIdentifier // required
 }
 
