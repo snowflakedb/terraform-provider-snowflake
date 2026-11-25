@@ -26,35 +26,17 @@ func ObjectElem(children []Attribute) *Attribute {
 
 // Attribute is the written intent for one object attribute.
 type Attribute struct {
-	Name                  string
-	Type                  AttributeType
-	Required              bool
-	Description           string
-	AdditionalDescription string
-	ForceNew              bool
-	// Min and Max are inclusive bounds. An int bounds its value. A list or set bounds its number of items. Nil means
-	// unset. A required AttrList deduces MinItems 1 when Min is nil, so omit Min on a required list unless setting a
-	// higher bound (Min of 0 or 1 is rejected).
-	Min            *int
-	Max            *int
-	RawDescription bool
+	// --- Identity and type: what the attribute is.
+
+	// Name is the snake_case key of the attribute: the Terraform name, and the SHOW/DESCRIBE column key unless ShowName is set.
+	Name string
+	Type AttributeType
+	// IdentifierType is the SDK identifier type without the sdk prefix, such as AccountObjectIdentifier. Required for AttrIdentifier.
+	IdentifierType string
 	Enum           *Enum
 	// ShowEnum is the SHOW and CREATE/SET enum when it differs from Enum.
 	// Empty uses Enum. Resource schema and model builders keep Enum. DESCRIBE uses DescribeEnum or Enum.
 	ShowEnum *Enum
-	// ShowString makes the SHOW column a string. The resource, CREATE, and SET keep Type.
-	// A string attribute leaves it unset.
-	ShowString bool
-	// DescribeString makes the DESCRIBE column a string. The resource, CREATE, SET, and SHOW keep Type.
-	// A string attribute leaves it unset. It is not combined with DescribeEnum.
-	DescribeString bool
-	// DescribeEnum is the DESCRIBE enum when it differs from Enum.
-	// Empty uses Enum. SHOW and CREATE/SET keep ShowEnum or Enum. The resource schema keeps Enum.
-	// Leave it unset when it is Enum. It is not combined with DescribeString.
-	DescribeEnum *Enum
-	// IncludeAliasedInTheDescription lists aliases in the resource description.
-	// Empty lists canonical values.
-	IncludeAliasedInTheDescription bool
 	// Elem is the element of a list or set: a scalar attribute, or an AttrObject whose Children are the fields of a nested
 	// block. A field of an Elem object may carry its own CREATE clause, which is how SDK query structs are generated.
 	Elem *Attribute
@@ -66,93 +48,141 @@ type Attribute struct {
 	// A nested field may itself be a block. Generated create parses an optional list block; see the README.
 	// Resource alter generation skips a nested attribute and every field under it.
 	Children []Attribute
+	// Deprecated is the schema deprecation message.
+	Deprecated string
+
+	// --- Snowflake constraints: facts about the attribute that Snowflake defines. The Terraform schema reflects them, but they
+	// are not Terraform-specific.
+
+	Required bool
+	ForceNew bool
+	// CreateOnly marks an optional bool that is applied only on create.
+	CreateOnly bool
+	Sensitive  bool
+	// Min and Max are inclusive bounds. An int bounds its value. A list or set bounds its number of items. Nil means
+	// unset. A required AttrList deduces MinItems 1 when Min is nil, so omit Min on a required list unless setting a
+	// higher bound (Min of 0 or 1 is rejected).
+	Min *int
+	Max *int
+	// ServerDefault marks a describe-only field that Snowflake fills in when the configuration omits it.
+	// The generator drift-tracks that field and suppresses a diff against describe_output.
+	// A SHOW column does not need this: every optional scalar SHOW column is drift-tracked.
+	// Leave it unset when the omitted value is empty, as catalog_namespace is.
+	ServerDefault bool
 	// Validations are rules over the Children of an object: a single block, an Elem, or a SqlOnly nested struct. Each names
 	// Children that are fields of the SQL struct, not fixed texts, tags, or Required. See Validation and the README.
-	Validations    []Validation
-	OptionalInShow bool // SHOW/DESCRIBE SDK field is a pointer; drives schema ToSchema nil-guards
-	OptionalInDb   bool // DB row is nullable; live for the SDK paired-struct db and plain kinds
-	StoredAsText   bool // the db column is text, and the plain kind stays the semantic type
+	Validations []Validation
+
+	// --- Snowflake SQL: how the attribute is written in CREATE, SET, and UNSET.
+
+	// CreateSql, SetSql, and UnsetSql are the clause the attribute adds to that statement. Zero leaves it out.
+	CreateSql SqlClause
+	SetSql    SqlClause
+	UnsetSql  SqlClause
+	// SqlOnly keeps the attribute on a SQL sequence and out of schema, resource, model, and assertion generation.
+	// ResourceAttributes drops these. A static CREATE value sets CreateSql to StaticSQL.
+	SqlOnly bool
+	// Tags marks the optional TAG clause of an SDK query struct. It is not an attribute: use the Tags var in a clause
+	// list, never in Attributes.
+	Tags bool
+	// TagForm selects SET TAG or UNSET TAG when Tags is set. Empty emits optional TAG.
+	TagForm TagForm
+	// Parameters marks the spread of the parameter catalog into a CREATE, SET, or UNSET clause list. It is not an
+	// attribute: use the Parameters var in a clause list, never in Attributes.
+	Parameters bool
+
+	// --- Snowflake SHOW and DESCRIBE: how Snowflake reports the attribute back.
+
+	// Readonly marks a SHOW or DESCRIBE column that Snowflake reports and the resource never writes.
+	// A Readonly column is not in Attributes, and every other column must be in Attributes: validation enforces both.
+	Readonly bool
+	// ShowName is the SHOW/DESCRIBE column key when it differs from Name.
+	ShowName string
+	// OptionalInShow makes the SHOW/DESCRIBE SDK field a pointer, nil when Snowflake reports no value.
+	// The generated schema ToSchema then guards against nil. Independent of OptionalInDb.
+	OptionalInShow bool
+	// ShowString makes the SHOW column a string. The resource, CREATE, and SET keep Type.
+	// A string attribute leaves it unset.
+	ShowString bool
+	// DescribeString makes the DESCRIBE column a string. The resource, CREATE, SET, and SHOW keep Type.
+	// A string attribute leaves it unset. It is not combined with DescribeEnum.
+	DescribeString bool
+	// DescribeEnum is the DESCRIBE enum when it differs from Enum.
+	// Empty uses Enum. SHOW and CREATE/SET keep ShowEnum or Enum. The resource schema keeps Enum.
+	// Leave it unset when it is Enum. It is not combined with DescribeString.
+	DescribeEnum *Enum
+	// StoredAsText means the db column is text while the plain kind stays the semantic Type, such as a bool read from Y.
+	StoredAsText bool
 	// BoolTrueValue, with StoredAsText, is the text that converts to true, such as Y, YES, or ON.
 	// Empty uses strconv.ParseBool.
 	BoolTrueValue string
-	// PairedPlainKind overrides the plain kind of a required SHOW or DESCRIBE column.
-	// The database column stays a string. Optional columns use the type mapping.
-	// Go names come from the column name, with characters other than letters, digits, and underscores removed.
-	PairedPlainKind string
-	// PlainOnlyKind is a field on the plain struct only. It is not a database column.
-	PlainOnlyKind string
-	ManualConvert bool // paired-struct convert() skips this column; ext additionalConvert fills it
-	CustomParser  string
-	SkipInSchema  bool // column stays on the SDK struct and assertions, and is omitted from the public schema
-	// SchemaName is the Terraform schema key when it differs from the snake_case of the Go field.
-	// null? is published as is_nullable. Empty keeps that snake_case.
-	// It does not change the Go field, the db tag, or OutputKey.
+
+	// --- Terraform: how the attribute is represented in the resource schema and its outputs.
+
+	Computed bool
+	// NativeBool keeps an optional bool as Terraform TypeBool. Optional bools otherwise use boolean-string.
+	NativeBool   bool
+	DiffSuppress DiffSuppress
+	// SchemaName is the Terraform key of a SHOW/DESCRIBE column when it differs from the snake_case of the Go field,
+	// such as is_nullable for the null? column. It does not change the Go field, the db tag, or OutputKey.
 	SchemaName string
+	// SkipInSchema omits a SHOW/DESCRIBE column from the generated public schema only.
+	// The column stays on the SDK struct and in assertions.
+	SkipInSchema bool
+
+	// --- Docs: the generated description.
+
+	// Description is the Terraform schema description.
+	Description string
+	// AdditionalDescription is appended after the list of allowed values of an enum, or of a collection of enums.
+	// It has no effect on other types.
+	AdditionalDescription string
+	// RawDescription keeps Description as written for an optional bool. Without it, the generator appends the boolean
+	// string suffix: Available options are "true" or "false", and the "default" value means the Snowflake default.
+	RawDescription bool
+	// IncludeAliasedInTheDescription lists enum aliases next to the canonical values in the description.
+	IncludeAliasedInTheDescription bool
+	// RelatedResource is the SSOT object whose Terraform resource is linked from the description.
+	// The generator emits resources.<Name>. Nil means no link.
+	RelatedResource *Object
+
+	// --- Provider SDK mapping: how the SDK stores and converts SHOW and DESCRIBE values.
+
+	// OptionalInDb marks the database row column nullable (sql.NullString and the like).
+	// Used by the SDK paired-struct db and plain kinds. Independent of OptionalInShow.
+	OptionalInDb bool
 	// SdkString marks an optional AttrObject that is one nested block in Terraform and one string in SQL, SHOW, and DESCRIBE,
 	// such as the schedule of a backup policy. The resource, the model, and the resource assertions read the Children as a
 	// block. CREATE, SET, UNSET, the SHOW and DESCRIBE columns, and their schemas and assertions read it as a string, see
 	// SdkType. The generated create (SkipCreate) and update skip it: ext code converts between the block and the string.
 	// Set OptionalInShow or OptionalInDb for the string column.
 	SdkString bool
-	// SqlOnly keeps the attribute on a SQL sequence and out of schema, resource, model, and assertion generation.
-	// ResourceAttributes drops these. A static CREATE value sets CreateSql to StaticSQL.
-	SqlOnly        bool
-	IdentifierType string // identifier Go type without the sdk prefix; required when Type is AttrIdentifier
-	ShowName       string
-	Readonly       bool
-	// CreateMapping overrides the create helper deduced from Type, the schema default, and CreateOnly.
-	// Nil means deduce one. A required attribute with a nil mapping is a create constructor argument.
-	// SkipCreate leaves the attribute out of that deduction and out of constructor arguments.
-	CreateMapping CreateMapping
+	// CustomParser names the SDK function that converts the db value to the plain field, such as a CSV column to a slice.
+	CustomParser string
+	// ManualConvert leaves the column out of the generated paired-struct convert(). The SDK ext additionalConvert fills it.
+	ManualConvert bool
+	// PlainOnlyKind is a field on the plain struct only. It is not a database column.
+	PlainOnlyKind string
+	// PairedPlainKind overrides the plain kind of a required SHOW or DESCRIBE column.
+	// The database column stays a string. Optional columns use the type mapping.
+	// Go names come from the column name, with characters other than letters, digits, and underscores removed.
+	PairedPlainKind string
+
+	// --- Provider generation: how the generated create and update treat the attribute.
+
 	// SkipCreate leaves the attribute out of generated create.
-	// There is no constructor argument, no ApplyCreateOptionals call, and no block parse function.
-	// Ext create code builds the value when CREATE still needs it. The update helper stays.
 	SkipCreate bool
-	// SetAfterCreate applies a SkipCreate attribute with ALTER after the object is created, through
-	// WithAfterCreate(Generated()). A failure is only a warning. Only NativeBool attributes are supported for now: the
-	// generated code calls the ALTER keyword linked to the true value (AlterKeywordFor) when the attribute is true,
-	// because CREATE leaves the object in the false state. Another type needs a new kind of step in the generated
-	// AfterCreate (AfterCreateSteps in pkg/resources/gen).
-	SetAfterCreate bool
-	// SkipUpdate leaves the attribute out of generated ApplySetUnset, and out of the deduction. Use it for an attribute of the
-	// SET or UNSET block that the update changes some other way, such as an object that a BeforeAlter hook adds or removes.
+	// SkipUpdate leaves the attribute out of generated update.
 	SkipUpdate bool
+	// SetAfterCreate applies a SkipCreate attribute with ALTER after the object is created, through
+	// WithAfterCreate(Generated()). A failure is only a warning. Only NativeBool attributes are supported for now.
+	SetAfterCreate bool
+	// CreateMapping overrides the create helper deduced from Type, the schema default, and CreateOnly.
+	// Nil means deduce one.
+	CreateMapping CreateMapping
 	// UpdateMapping overrides the update helper deduced the same way.
-	// Nil means deduce one. ForceNew and CreateOnly attributes are left out of set/unset.
-	// SkipCreate does not leave the attribute out of set/unset.
+	// Nil means deduce one.
 	UpdateMapping UpdateMapping
-	CreateSql     SqlClause // CREATE SQL clause. Zero is absent from that statement.
-	SetSql        SqlClause // SET SQL clause. Zero is absent from that statement.
-	UnsetSql      SqlClause // UNSET SQL clause. Zero is absent from that statement.
-	DiffSuppress  DiffSuppress
-	// Computed marks a computed-only field: the generator emits Computed and neither Optional nor Required.
-	// Drift tracking and output suppression skip it.
-	Computed bool
-	// ServerDefault marks a describe-only field that Snowflake fills in when the configuration omits it.
-	// The generator drift-tracks that field and suppresses a diff against describe_output.
-	// A SHOW column does not need this: every optional scalar SHOW column is drift-tracked.
-	// Leave it unset when the omitted value is empty, as catalog_namespace is.
-	ServerDefault bool
-	// Sensitive marks the Terraform schema field sensitive.
-	Sensitive bool
-	// Deprecated is the schema Deprecated message. Empty means the attribute is not deprecated.
-	// The attribute stays on Attributes, so the schema, model builders, and resource assertions include it.
-	// setStateToValuesFromConfig leaves it out. SkipCreate leaves it out of generated create when the value is not sent.
-	Deprecated string
-	// CreateOnly marks an optional bool that is applied only on create.
-	// The generator emits IgnoreAfterCreation and a create helper, not an update helper.
-	// The Terraform type stays a boolean string unless NativeBool is set.
-	CreateOnly bool
-	// NativeBool keeps an optional bool as Terraform TypeBool.
-	// Optional bools otherwise use boolean-string schema chrome, including create-only ones.
-	NativeBool bool
-	// RelatedResource is the SSOT object whose Terraform resource is linked from the description.
-	// The generator emits resources.<Name>. Nil means no link.
-	RelatedResource *Object
-	Tags            bool // optional TAG clause. Only valid on a CREATE list, not on Attributes.
-	// TagForm selects SET TAG or UNSET TAG when Tags is set. Empty emits optional TAG.
-	TagForm    TagForm
-	Parameters bool // parameter catalog spread. Valid on a CREATE, SET, or UNSET list, not on Attributes.
 }
 
 // TagForm selects the TAG clause a Tags child emits.

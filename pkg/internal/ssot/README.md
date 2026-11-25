@@ -57,6 +57,24 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 
 `Attribute` is one field. Current types are in [attribute.go](attribute.go).
 
+The fields of `Attribute` are grouped by where they come from: Snowflake (its constraints, SQL, and SHOW and DESCRIBE
+output) or the provider (Terraform, the SDK, and code generation). [attribute.go](attribute.go) lists them in the same
+order, under the same headings. The Go struct stays flat, so a literal sets any field directly. The list below describes
+each field.
+
+| Group | Fields |
+|---|---|
+| Identity and type | `Name`, `Type`, `IdentifierType`, `Enum`, `ShowEnum`, `Elem`, `Children`, `Deprecated` |
+| Snowflake constraints | `Required`, `ForceNew`, `CreateOnly`, `Sensitive`, `Min`, `Max`, `ServerDefault`, `Validations` |
+| Snowflake SQL | `CreateSql`, `SetSql`, `UnsetSql`, `SqlOnly`, `Tags`, `TagForm`, `Parameters` |
+| Snowflake SHOW and DESCRIBE | `Readonly`, `ShowName`, `OptionalInShow`, `ShowString`, `DescribeString`, `DescribeEnum`, `StoredAsText`, `BoolTrueValue` |
+| Terraform | `Computed`, `NativeBool`, `DiffSuppress`, `SchemaName`, `SkipInSchema` |
+| Docs | `Description`, `AdditionalDescription`, `RawDescription`, `IncludeAliasedInTheDescription`, `RelatedResource` |
+| Provider SDK mapping | `OptionalInDb`, `SdkString`, `CustomParser`, `ManualConvert`, `PlainOnlyKind`, `PairedPlainKind` |
+| Provider generation | `SkipCreate`, `SkipUpdate`, `SetAfterCreate`, `CreateMapping`, `UpdateMapping` |
+
+Add a new field to the group that matches its purpose, and to this table.
+
 - `Min` / `Max` - inclusive bounds. An int bounds its value. A list or set bounds its number of items (non-negative; a
   list of objects with `Max: new(1)` is rejected — use `AttrObject` instead; a required `AttrList` deduces
   `MinItems: 1` when `Min` is nil and rejects `Min` of 0 or 1). Other types reject them.
@@ -125,6 +143,13 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 - `NativeBool` - an optional bool stays Terraform `TypeBool`. Without the mark, an optional bool is a boolean string.
 - `IncludeAliasedInTheDescription` - the resource description lists enum aliases. Without the mark, the description
   lists canonical values. Warehouse size sets it.
+- `AdditionalDescription` - text appended to the generated description of an enum field or a collection of enums, after
+  the list of values. Authentication policy, compute pool, and warehouse attributes set it.
+- `RawDescription` - an optional bool keeps `Description` as written. Without the mark, a boolean string gets the
+  `booleanStringFieldDescription` suffix ("Available options are ... "default""). Compute pool `initially_suspended` sets it.
+- `RelatedResource` - the SSOT object whose Terraform resource the description links to, emitted as
+  `relatedResourceDescription(<Description>, resources.<Name>)`. It is skipped for a collection element. A warehouse
+  `resource_monitor` sets it.
 - `StoredAsText` - the db column is text, and the plain kind stays the semantic type. For a bool, the paired-struct
   generator calls `BoolFromText` and converts the column with `strconv.ParseBool`. `BoolTrueValue` compares the column
   to that text, such as `Y`, `YES`, or `ON`, and requires `StoredAsText`. A page that says `Y` or `N` can still return
@@ -141,7 +166,7 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   on `Attributes`, so the schema, model builders, and resource assertions include it. `setStateToValuesFromConfig`
   leaves it out. It is not a CREATE or ALTER column unless it is also on those lists. `SkipCreate` leaves it out of
   generated create when the value is not sent.
-- `Computed` - the schema ext turns the field into a computed attribute. The generator still emits Optional.
+- `Computed` - the generator emits the field as computed-only: `Computed` and neither `Optional` nor `Required`.
   Drift tracking and output suppression skip it. Adaptive `warehouse_type` sets it.
 - `ServerDefault` - Snowflake fills a describe-only field when the configuration omits it, and that value is not
   Terraform's empty value. The generator drift-tracks the field and suppresses a diff against `describe_output`.
