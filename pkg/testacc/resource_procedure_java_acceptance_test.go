@@ -36,8 +36,8 @@ func TestAcc_ProcedureJava_InlineBasic(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Procedure.SampleJavaDefinition(t, className, funcName, argName)
@@ -127,7 +127,7 @@ func TestAcc_ProcedureJava_InlineEmptyArgs(t *testing.T) {
 	funcName := "echoVarchar"
 	returnDataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Procedure.SampleJavaDefinitionNoArgs(t, className, funcName)
@@ -164,7 +164,7 @@ func TestAcc_ProcedureJava_InlineBasicDefaultArg(t *testing.T) {
 	dataType := testdatatypes.DataTypeVarchar_100
 	defaultValue := "'hello'"
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Procedure.SampleJavaDefinition(t, className, funcName, argName)
@@ -228,7 +228,7 @@ func TestAcc_ProcedureJava_InlineFull(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Procedure.SampleJavaDefinition(t, className, funcName, argName)
@@ -364,7 +364,7 @@ func TestAcc_ProcedureJava_StagedBasic(t *testing.T) {
 	tmpJavaProcedure := testClient().CreateSampleJavaProcedureAndJarOnStage(t, stage)
 
 	dataType := tmpJavaProcedure.ArgType
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	argName := "x"
 	handler := tmpJavaProcedure.JavaHandler()
@@ -407,7 +407,7 @@ func TestAcc_ProcedureJava_AllParameters(t *testing.T) {
 	funcName := "echoVarchar"
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Procedure.SampleJavaDefinition(t, className, funcName, argName)
@@ -528,7 +528,7 @@ func TestAcc_ProcedureJava_handleExternalLanguageChange(t *testing.T) {
 	tmpJavaProcedure := testClient().CreateSampleJavaProcedureAndJarOnUserStage(t)
 
 	dataType := tmpJavaProcedure.ArgType
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	argName := "x"
 	handler := tmpJavaProcedure.JavaHandler()

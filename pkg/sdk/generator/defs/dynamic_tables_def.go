@@ -135,7 +135,7 @@ var dynamicTablesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-dynamic-table",
 		g.StructPair("dynamicTableDetailsRow", "DynamicTableDetails").
 			Text("name").
-			Field("type", "string", "DataType", g.WithManualConvert()).
+			DataType("type", g.WithRawFallback("DataTypeRaw")).
 			Text("kind").
 			Field("null?", "string", "bool", g.WithBoolTrueValue("Y"), g.WithDbFieldName("IsNull"), g.WithPlainFieldName("IsNull")).
 			OptionalText("default", g.WithRequiredInPlain()).

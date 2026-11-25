@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -86,17 +85,7 @@ func ReadCodeBundleFunc(withExternalChangesMarking bool) tfschema.ReadContextFun
 
 		codeBundle, err := meta.(*provider.Context).Client.CodeBundles.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query code bundle. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Code bundle id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeCodeBundle, id, err)
 		}
 		codeBundleDetails, err := meta.(*provider.Context).Client.CodeBundles.Describe(ctx, id)
 		if err != nil {

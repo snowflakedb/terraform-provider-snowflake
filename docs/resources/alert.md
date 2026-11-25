@@ -81,10 +81,10 @@ resource "snowflake_alert" "on_new_data" {
 
 ### Read-Only
 
-- `describe_output` (List of Object) Outputs the result of `DESCRIBE ALERT` for the given alert. (see [below for nested schema](#nestedatt--describe_output))
+- `describe_output` (List of Object) Holds the output of `DESCRIBE ALERT` for the given alert. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `show_output` (List of Object) Outputs the result of `SHOW ALERTS` for the given alert. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Holds the output of `SHOW ALERTS` for the given alert. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--alert_schedule"></a>
 ### Nested Schema for `alert_schedule`

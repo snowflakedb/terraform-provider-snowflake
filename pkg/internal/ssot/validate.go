@@ -44,30 +44,30 @@ func ValidateObject(obj Object) {
 			sqlOnly[a.Name] = struct{}{}
 		}
 		validateSdkString(obj, a)
-		validateCollectionBounds(obj, a)
+		validateBounds(obj, a)
 		validateNestedAttribute(obj, a)
 		validateAttribute(obj, a)
 		validateSqlClauses(obj, a)
 		validateAttributeOptions(obj.Name, a, false)
 	}
 	validateCreateSpec(obj, attrs)
-	validateExactlyOneOf(obj)
-	validateAtLeastOneOf(obj)
+	validateObjectValidations(obj)
 	switch {
-	case obj.VariantOf != nil:
+	case obj.Variant != nil:
+		if obj.BaseVariant != nil {
+			panic(fmt.Sprintf("object %q: Variant and BaseVariant are both set", obj.Name))
+		}
+		if obj.Variant.Of == nil || obj.Variant.Of.Name == "" {
+			panic(fmt.Sprintf("object %q: Variant.Of needs a base", obj.Name))
+		}
 		if obj.Create.Sql != "" {
-			panic(fmt.Sprintf("object %q: variant CREATE words are VariantEntityCreateName", obj.Name))
+			panic(fmt.Sprintf("object %q: variant CREATE words are Variant.CreateName", obj.Name))
 		}
 	case obj.Create.WithoutOrReplace:
 		panic(fmt.Sprintf("object %q: Create.WithoutOrReplace is for a variant", obj.Name))
-	case obj.VariantEntityCreateName != "":
-		panic(fmt.Sprintf("object %q: VariantEntityCreateName is for a variant", obj.Name))
-	case obj.VariantEntityAlterName != "":
-		panic(fmt.Sprintf("object %q: VariantEntityAlterName is for a variant", obj.Name))
 	}
 	validateSqlSequence(obj, "SET", obj.SetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.SetSql })
 	validateSqlSequence(obj, "UNSET", obj.UnsetAttributes(), attrs, func(attr Attribute) SqlClause { return attr.UnsetSql })
-	validateUnsetConflicts(obj)
 	validateAlterSpec(obj)
 	validateAlterGroups(obj)
 	validateCustomOperations(obj, attrs)
@@ -82,11 +82,10 @@ func ValidateObject(obj Object) {
 		if a.BoolTrueValue != "" && !a.StoredAsText {
 			panic(fmt.Sprintf("object %q: attribute %q sets BoolTrueValue without StoredAsText", obj.Name, a.Name))
 		}
-		validateAttributeRelations(obj, a, obj.Attributes)
 	}
 	nested := nestedAttributeNames(obj)
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, sqlOnly, nested)
-	validateColumnList(obj, "SHOW generic", obj.ShowGeneric.Columns, attrs, sqlOnly, nested)
+	validateColumnList(obj, "SHOW generic", obj.ShowGenericColumns(), attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE", obj.Describe.Columns, attrs, sqlOnly, nested)
 	validateColumnList(obj, "DESCRIBE rows", obj.DescribeRows.Columns, attrs, sqlOnly, nested)
 	validateSchemaKeys(obj, obj.Name, obj.PairedShowColumns())
@@ -104,67 +103,52 @@ func ValidateObject(obj Object) {
 	validateGeneratorSkips(obj, "show-output", "SHOW", g.ShowOutputAssert.Show, obj.PairedShowColumns(), g.ShowOutputAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "show-output", "DESCRIBE", g.ShowOutputAssert.Describe, obj.Describe.Columns, g.ShowOutputAssert.DescribeSkipFields)
 	obj.ShowFromBase()
+	if g.Schema.UsedAsListEntry && len(obj.DescribeRows.Columns) == 0 {
+		panic(fmt.Sprintf("object %q: schema used as a list entry needs DESCRIBE rows", obj.Name))
+	}
 	validateShowReuse(obj, g)
 	validateShowOutputAssertReuse(obj, g)
 	obj.ParameterAssertionNames()
 	validateSchemaStateUpgraders(obj)
 	validateCustomizeDiff(obj)
+	validateResourceParameters(obj)
 	validateSetAfterCreate(obj)
 	validateIdentityNamesCreatedBySnowflake(obj)
 	validateSuspendForAlter(obj)
+	validateDataSource(obj, g)
 }
 
-func validateAttributeRelations(obj Object, a Attribute, siblings []Attribute) {
-	siblingByName := make(map[string]Attribute, len(siblings))
-	for _, sibling := range siblings {
-		siblingByName[sibling.Name] = sibling
-	}
-	for _, other := range a.ConflictsWith {
-		if other.Name == a.Name {
-			panic(fmt.Sprintf("object %q: attribute %q conflicts with itself", obj.Name, a.Name))
+// validateDataSource rejects data source settings that cannot take effect.
+func validateDataSource(obj Object, g Generators) {
+	if len(obj.DataSourceHooks) > 0 {
+		if !g.DataSource.Enabled {
+			panic(fmt.Sprintf("object %q: DataSourceHooks need WithDataSource()", obj.Name))
 		}
-		target, ok := siblingByName[other.Name]
-		if !ok {
-			panic(fmt.Sprintf("object %q: attribute %q conflicts with unknown attribute %q", obj.Name, a.Name, other.Name))
-		}
-		if target.Required {
-			panic(fmt.Sprintf("object %q: attribute %q conflicts with required attribute %q", obj.Name, a.Name, other.Name))
+		if obj.VariantBase() != nil {
+			panic(fmt.Sprintf("object %q: DataSourceHooks belong to the base, a variant is covered by it", obj.Name))
 		}
 	}
-	if len(a.ConflictsWith) > 0 && a.Required {
-		panic(fmt.Sprintf("object %q: ConflictsWith attribute %q is required", obj.Name, a.Name))
-	}
-	for _, other := range a.AtLeastOneOf {
-		target, ok := siblingByName[other.Name]
-		if !ok {
-			panic(fmt.Sprintf("object %q: attribute %q at least one of unknown attribute %q", obj.Name, a.Name, other.Name))
-		}
-		if target.Required {
-			panic(fmt.Sprintf("object %q: attribute %q at least one of required attribute %q", obj.Name, a.Name, other.Name))
-		}
-	}
-	if len(a.AtLeastOneOf) > 0 && a.Required {
-		panic(fmt.Sprintf("object %q: AtLeastOneOf attribute %q is required", obj.Name, a.Name))
-	}
-	fields := a.NestedFields()
-	if len(fields) == 0 {
+	if !g.DataSource.Enabled || obj.VariantBase() != nil {
 		return
 	}
-	if nestedRelations(fields) && !a.IsSingleBlock() {
-		panic(fmt.Sprintf("object %q: attribute %q relations require a single block", obj.Name, a.Name))
-	}
-	for _, child := range fields {
-		validateAttributeRelations(obj, child, fields)
-	}
-}
-
-func nestedRelations(fields []Attribute) bool {
-	for _, field := range fields {
-		if len(field.ConflictsWith) > 0 || len(field.AtLeastOneOf) > 0 || nestedRelations(field.NestedFields()) {
-			return true
+	hooks := obj.EffectiveDataSourceHooks()
+	if method := g.DataSource.DescribeMethod; method != "" {
+		op := obj.customOperation(method)
+		if op == nil {
+			panic(fmt.Sprintf("object %q: DataSourceDescribeMethod %q is not a custom operation", obj.Name, method))
 		}
+		if op.Paired == nil {
+			panic(fmt.Sprintf("object %q: DataSourceDescribeMethod %q needs paired DESCRIBE rows", obj.Name, method))
+		}
+	} else if (hooks.DescribeInSdk.Generate || hooks.DescribeOutputSchema.Generate) && !obj.HasDataSourceDescribe() {
+		panic(fmt.Sprintf("object %q: the generated data source describe needs SdkDescribe() and DESCRIBE columns, or DataSourceDescribeMethod", obj.Name))
 	}
-	return false
+	if hooks.DescribeInSdk.Generate && hooks.DescribeOutputSet.Generate && obj.DataSourceDescribe().Method == "Describe" && len(obj.DescribeRows.Columns) > 0 {
+		panic(fmt.Sprintf("object %q: the generated data source describe of a property-list DESCRIBE needs SdkDescribeDetailsMethod()", obj.Name))
+	}
+	if hooks.ShowParametersInSdk.Generate && !obj.HasDataSourceParameters() {
+		panic(fmt.Sprintf("object %q: the generated data source parameters need SdkShowParameters()", obj.Name))
+	}
 }
 
 func validateAttribute(obj Object, a Attribute) {
@@ -184,6 +168,12 @@ func validateAttribute(obj Object, a Attribute) {
 			}
 			panic(fmt.Sprintf("object %q: enum attribute %q has no Enum", obj.Name, name))
 		}
+	}
+	if a.DescribeString && a.DescribeEnum != nil {
+		panic(fmt.Sprintf("object %q: attribute %q sets DescribeString and DescribeEnum", obj.Name, a.Name))
+	}
+	if a.DescribeEnum != nil && a.Type != AttrEnum {
+		panic(fmt.Sprintf("object %q: attribute %q sets DescribeEnum and is not an enum", obj.Name, a.Name))
 	}
 	if a.Elem != nil {
 		validateAttribute(obj, *a.Elem)
@@ -206,6 +196,23 @@ func validateCustomizeDiff(obj Object) {
 	}
 	if len(obj.AdditionalCustomizeDiffs) > 0 && !hooks.CustomizeDiff.Generate {
 		panic(fmt.Sprintf("object %q: AdditionalCustomizeDiffs require WithCustomizeDiff(Generated())", obj.Name))
+	}
+}
+
+func validateResourceParameters(obj Object) {
+	level := obj.ParameterLevel()
+	seen := make(map[string]struct{}, len(obj.ResourceParameters))
+	for _, p := range obj.ResourceParameters {
+		if p.SqlName == "" {
+			panic(fmt.Sprintf("object %q: ResourceParameters entry has empty SqlName", obj.Name))
+		}
+		if _, dup := seen[p.SqlName]; dup {
+			panic(fmt.Sprintf("object %q: duplicate ResourceParameters entry %q", obj.Name, p.SqlName))
+		}
+		seen[p.SqlName] = struct{}{}
+		if !slices.Contains(p.Levels, level) {
+			panic(fmt.Sprintf("object %q: ResourceParameters entry %q is not in the %s catalog", obj.Name, p.SqlName, level))
+		}
 	}
 }
 
@@ -304,12 +311,12 @@ func validateSuspendForAlter(obj Object) {
 	if suspend.Enabled != nil && !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == suspend.Enabled.Name && a.Type == AttrBool && a.NativeBool }) {
 		panic(fmt.Sprintf("object %q: SuspendForAlter.Enabled %q is not a NativeBool attribute of the object", obj.Name, suspend.Enabled.Name))
 	}
-	if obj.VariantOf != nil {
+	if obj.VariantBase() != nil {
 		if suspend.State != nil || suspend.Started != "" || suspend.Suspended != "" {
-			panic(fmt.Sprintf("object %q: a variant uses SuspendIfStarted of %q, so SuspendForAlter sets only When and Enabled", obj.Name, obj.VariantOf.Name))
+			panic(fmt.Sprintf("object %q: a variant uses SuspendIfStarted of %q, so SuspendForAlter sets only When and Enabled", obj.Name, obj.VariantBase().Name))
 		}
-		if obj.VariantOf.SuspendForAlter == nil || !obj.VariantOf.SdkConfig().SuspendIfStarted {
-			panic(fmt.Sprintf("object %q: SuspendForAlter needs SuspendIfStarted on the base %q", obj.Name, obj.VariantOf.Name))
+		if obj.VariantBase().SuspendForAlter == nil || !obj.VariantBase().SdkConfig().SuspendIfStarted {
+			panic(fmt.Sprintf("object %q: SuspendForAlter needs SuspendIfStarted on the base %q", obj.Name, obj.VariantBase().Name))
 		}
 		return
 	}
@@ -372,8 +379,19 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 			panic(fmt.Sprintf("object %q: attribute %q has duplicate nested attribute %q", obj.Name, attr.Name, child.Name))
 		}
 		seen[child.Name] = struct{}{}
+		if child.TagForm != "" && !child.IsTags() {
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q sets a tag form and is not tags", obj.Name, attr.Name, child.Name))
+		}
+		if child.IsTags() && child.TagForm != "" && child.TagForm != TagFormSet && child.TagForm != TagFormUnset {
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q has tag form %q", obj.Name, attr.Name, child.Name, child.TagForm))
+		}
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
-			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
+			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
+		}
+		if child.SqlOnly {
+			validateSqlClause(obj, child, "CREATE", child.CreateSql)
+		} else {
+			validateExplicitSqlClause(obj, child, "CREATE", child.CreateSql)
 		}
 		validateSqlClauses(obj, child)
 		if statement, ok := sqlClauseStatement(child); ok {
@@ -385,26 +403,27 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 				panic(fmt.Sprintf("object %q: nested attribute %q.%q has a %s clause", obj.Name, attr.Name, child.Name, setOrUnset))
 			}
 		}
-		validateCollectionBounds(obj, child)
+		validateBounds(obj, child)
 		validateNestedAttribute(obj, child)
 	}
 	if attr.IsObjectList() {
 		validateObjectVariants(obj, attr)
-		if attr.Elem != nil && attr.Elem.Type == AttrObject && attr.Elem.ChildrenRule != "" {
+		if attr.Elem != nil && attr.Elem.Type == AttrObject && len(attr.Elem.Validations) > 0 {
 			validateNestedShape(obj, *attr.Elem)
 		}
 	}
 }
 
 // isNestedSqlOnlyClause reports whether a SqlOnly child can be a part of an object clause: a fixed text, a keyword,
-// an identifier, a parameter, or a nested struct. Any of CreateSql, SetSql, and UnsetSql may carry that shape.
+// an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct. Any of CreateSql, SetSql, and
+// UnsetSql may carry that shape.
 func isNestedSqlOnlyClause(child Attribute) bool {
 	for _, clause := range []SqlClause{child.CreateSql, child.SetSql, child.UnsetSql} {
 		if !clause.Present {
 			continue
 		}
 		switch clause.Kind {
-		case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter:
+		case SqlKindStatic, SqlKindKeyword, SqlKindIdentifier, SqlKindParameter, SqlKindPredefined, SqlKindPreexistingStruct:
 			return true
 		case SqlKindObject:
 			if child.Type == AttrObject {
@@ -415,32 +434,23 @@ func isNestedSqlOnlyClause(child Attribute) bool {
 	return false
 }
 
-// validateNestedShape allows two shapes for a nested block: an object, which is a single block, and a list or set whose Elem
-// is an object, which is a repeated block. The fields are the Children of the object. Children is valid only on an object.
-// A single block gets its item bounds from ResourceForm, so it sets none: bounds are valid only on a list or set.
+// validateNestedShape allows two shapes for a nested object: an object, and a list or set whose Elem
+// is an object. The fields are the Children of the object. Children is valid only on an object.
+// A single object sets no Min or Max: bounds are valid only on an int, list, or set.
 func validateNestedShape(obj Object, attr Attribute) {
 	if len(attr.Children) > 0 && attr.Type != AttrObject {
 		panic(fmt.Sprintf("object %q: attribute %q has Children but is not an object; declare the fields of a list or set on an object Elem (ObjectElem)", obj.Name, attr.Name))
 	}
 	if attr.Type == AttrObject {
-		if len(attr.Children) == 0 || (!attr.SqlOnly && len(attr.NestedFields()) == 0) {
+		// A preexisting struct embeds another attribute's struct, so it has no Children.
+		if attr.CreateSql.Kind != SqlKindPreexistingStruct && (len(attr.Children) == 0 || (!attr.SqlOnly && len(attr.NestedFields()) == 0)) {
 			panic(fmt.Sprintf("object %q: attribute %q is an object with no Children", obj.Name, attr.Name))
 		}
 		if attr.Elem != nil {
 			panic(fmt.Sprintf("object %q: attribute %q is an object and has an Elem; the fields of an object are its Children", obj.Name, attr.Name))
 		}
 	}
-	if attr.ChildrenRule != "" {
-		if attr.ChildrenRule != ChildrenAtLeastOne && attr.ChildrenRule != ChildrenExactlyOne {
-			panic(fmt.Sprintf("object %q: attribute %q has unknown ChildrenRule %q", obj.Name, attr.Name, attr.ChildrenRule))
-		}
-		if attr.Type != AttrObject {
-			panic(fmt.Sprintf("object %q: attribute %q sets ChildrenRule but is not an object", obj.Name, attr.Name))
-		}
-		if len(attr.RuleFields()) < 2 {
-			panic(fmt.Sprintf("object %q: attribute %q sets ChildrenRule and needs at least two Children that are fields", obj.Name, attr.Name))
-		}
-	}
+	validateAttributeValidations(obj, attr)
 	if attr.Elem != nil && attr.Elem.Type == AttrObject {
 		if attr.Type != AttrList && attr.Type != AttrSet {
 			panic(fmt.Sprintf("object %q: attribute %q has an object Elem and needs to be a list or set", obj.Name, attr.Name))
@@ -484,10 +494,8 @@ func validateObjectVariants(obj Object, list Attribute) {
 }
 
 // validateVariantField checks one attribute a variant refers to: a child of the element, or a SqlOnly static or nested struct.
+// The variant list places the field. A typed field with no clause uses the type default. A field with no type default writes its clause.
 func validateVariantField(obj Object, list Attribute, variant SqlVariant, field Attribute) {
-	if !field.CreateSql.Present {
-		panic(fmt.Sprintf("object %q: attribute %q variant %q field %q has no CREATE clause", obj.Name, list.Name, variant.Key, field.Name))
-	}
 	if field.SqlOnly {
 		switch field.CreateSql.Kind {
 		case SqlKindStatic:
@@ -496,7 +504,7 @@ func validateVariantField(obj Object, list Attribute, variant SqlVariant, field 
 				panic(fmt.Sprintf("object %q: attribute %q variant %q field %q needs Children", obj.Name, list.Name, variant.Key, field.Name))
 			}
 			for _, child := range field.Children {
-				if !child.CreateSql.Present {
+				if !variantFieldHasClause(child) {
 					panic(fmt.Sprintf("object %q: attribute %q variant %q struct %q field %q has no CREATE clause", obj.Name, list.Name, variant.Key, field.Name, child.Name))
 				}
 			}
@@ -505,20 +513,44 @@ func validateVariantField(obj Object, list Attribute, variant SqlVariant, field 
 		}
 		return
 	}
+	if !variantFieldHasClause(field) {
+		panic(fmt.Sprintf("object %q: attribute %q variant %q field %q has no CREATE clause", obj.Name, list.Name, variant.Key, field.Name))
+	}
 	if !slices.ContainsFunc(list.Elem.Children, func(c Attribute) bool { return c.Name == field.Name }) {
 		panic(fmt.Sprintf("object %q: attribute %q variant %q field %q is not a child of the element", obj.Name, list.Name, variant.Key, field.Name))
 	}
 }
 
-func validateCollectionBounds(obj Object, attr Attribute) {
-	if attr.MinItems == nil && attr.MaxItems == nil {
+// variantFieldHasClause reports that the field can be emitted. A present clause is one. A zero clause is one when the type has a default.
+func variantFieldHasClause(field Attribute) bool {
+	return field.CreateSql.Present || field.hasSqlDefault(ClauseCreate)
+}
+
+func validateBounds(obj Object, attr Attribute) {
+	if attr.Min == nil && attr.Max == nil {
 		return
 	}
-	if attr.Type != AttrList && attr.Type != AttrSet {
-		panic(fmt.Sprintf("object %q: attribute %q item bounds require a list or set", obj.Name, attr.Name))
+	if attr.Type != AttrInt && attr.Type != AttrList && attr.Type != AttrSet {
+		panic(fmt.Sprintf("object %q: attribute %q bounds require an int, list, or set", obj.Name, attr.Name))
 	}
-	if attr.MinItems != nil && attr.MaxItems != nil && *attr.MinItems > *attr.MaxItems {
-		panic(fmt.Sprintf("object %q: attribute %q MinItems %d is greater than MaxItems %d", obj.Name, attr.Name, *attr.MinItems, *attr.MaxItems))
+	if attr.Type == AttrList || attr.Type == AttrSet {
+		if (attr.Min != nil && *attr.Min < 0) || (attr.Max != nil && *attr.Max < 0) {
+			panic(fmt.Sprintf("object %q: attribute %q collection bounds cannot be negative", obj.Name, attr.Name))
+		}
+	}
+	if attr.Type == AttrList && attr.Required && attr.Min != nil {
+		if *attr.Min == 0 {
+			panic(fmt.Sprintf("object %q: attribute %q is a required list and cannot have Min 0", obj.Name, attr.Name))
+		}
+		if *attr.Min == 1 {
+			panic(fmt.Sprintf("object %q: attribute %q is a required list, so Min 1 is deduced automatically; omit Min", obj.Name, attr.Name))
+		}
+	}
+	if attr.Min != nil && attr.Max != nil && *attr.Min > *attr.Max {
+		panic(fmt.Sprintf("object %q: attribute %q Min %d is greater than Max %d", obj.Name, attr.Name, *attr.Min, *attr.Max))
+	}
+	if attr.Type == AttrList && attr.IsObjectList() && attr.Max != nil && *attr.Max == 1 {
+		panic(fmt.Sprintf("object %q: attribute %q is a list of objects with Max 1; use AttrObject instead", obj.Name, attr.Name))
 	}
 }
 
@@ -545,78 +577,98 @@ func sqlClauseStatement(attr Attribute) (string, bool) {
 	}
 }
 
-// validateExactlyOneOf checks the groups: at least two optional top-level attributes each, none in two groups.
-func validateExactlyOneOf(obj Object) {
-	validateAttributeGroups(obj, "ExactlyOneOf", obj.ExactlyOneOf)
-}
-
-// validateAtLeastOneOf checks the groups: at least two optional top-level attributes each, none in two groups.
-func validateAtLeastOneOf(obj Object) {
-	validateAttributeGroups(obj, "AtLeastOneOf", obj.AtLeastOneOf)
-}
-
-func validateAttributeGroups(obj Object, label string, groups [][]*Attribute) {
-	inGroup := make(map[string]struct{})
-	for i, group := range groups {
-		if len(group) < 2 {
-			panic(fmt.Sprintf("object %q: %s group %d needs at least two attributes", obj.Name, label, i))
-		}
-		for _, member := range group {
-			if member == nil {
-				panic(fmt.Sprintf("object %q: %s group %d has a nil attribute", obj.Name, label, i))
-			}
-			if !slices.ContainsFunc(obj.Attributes, func(a Attribute) bool { return a.Name == member.Name && !a.SqlOnly }) {
-				panic(fmt.Sprintf("object %q: %s group %d attribute %q is not an attribute of the object", obj.Name, label, i, member.Name))
-			}
-			if member.Required {
-				panic(fmt.Sprintf("object %q: %s group %d attribute %q is required", obj.Name, label, i, member.Name))
-			}
-			if _, dup := inGroup[member.Name]; dup {
-				panic(fmt.Sprintf("object %q: attribute %q is in more than one %s group, or twice in one", obj.Name, member.Name, label))
-			}
-			inGroup[member.Name] = struct{}{}
+// validateObjectValidations checks Object.Validations: each names at least two optional top-level attributes that are not
+// SqlOnly. See validateValidations for the rules shared with Attribute.Validations.
+func validateObjectValidations(obj Object) {
+	candidates := collections.Filter(obj.Attributes, func(a Attribute) bool { return !a.SqlOnly && !a.Required })
+	for i, v := range obj.Validations {
+		if len(v.Fields) == 0 {
+			panic(fmt.Sprintf("object %q: validation %d names no attributes", obj.Name, i))
 		}
 	}
+	validateValidations(fmt.Sprintf("object %q", obj.Name), "an optional attribute of the object", obj.Validations, candidates)
 }
 
-func validateUnsetConflicts(obj Object) {
-	unsetAttributes := obj.UnsetAttributes()
-	inUnset := make(map[string]struct{}, len(unsetAttributes))
-	for _, attr := range unsetAttributes {
-		if attr != nil {
-			inUnset[attr.Name] = struct{}{}
+// validateAttributeValidations checks Attribute.Validations: the attribute is an object, and each validation names at least
+// two Children that are candidates (ValidationCandidatesFor CREATE). Only a sole validation may leave Fields empty.
+func validateAttributeValidations(obj Object, attr Attribute) {
+	if len(attr.Validations) == 0 {
+		return
+	}
+	owner := fmt.Sprintf("object %q: attribute %q", obj.Name, attr.Name)
+	if attr.Type != AttrObject {
+		panic(fmt.Sprintf("%s sets Validations but is not an object", owner))
+	}
+	candidates := attr.ValidationCandidatesFor(ClauseCreate)
+	for i, v := range attr.Validations {
+		if len(v.Fields) == 0 && len(attr.Validations) > 1 {
+			panic(fmt.Sprintf("%s: validation %d names no Children, which is valid only for its sole validation", owner, i))
+		}
+		if len(v.Fields) == 0 && len(candidates) < 2 {
+			panic(fmt.Sprintf("%s: validation %d needs at least two Children that are fields", owner, i))
 		}
 	}
-	for i, group := range obj.UnsetConflicts {
-		if len(group) < 2 {
-			panic(fmt.Sprintf("object %q: UnsetConflicts group %d needs at least two attributes", obj.Name, i))
+	validateValidations(owner, "a Child that is a field and not Required", attr.Validations, candidates)
+}
+
+// validateValidations checks the rules shared by both levels. A kind is known, and the named fields are candidates, at least
+// two and none twice. A field is in at most one AtLeastOne and one ExactlyOne validation, because the Terraform schema has one
+// list for each. Conflicting validations may share a field, but not a pair of fields.
+func validateValidations(owner, candidate string, validations []Validation, candidates []Attribute) {
+	inKind := make(map[ValidationKind]map[string]struct{})
+	conflictingPairs := make(map[[2]string]struct{})
+	for i, v := range validations {
+		switch v.Kind {
+		case ValidationAtLeastOne, ValidationExactlyOne, ValidationConflicting:
+		default:
+			panic(fmt.Sprintf("%s: validation %d has unknown kind %q", owner, i, v.Kind))
 		}
-		seen := make(map[string]struct{}, len(group))
-		for _, member := range group {
-			if member == nil {
-				panic(fmt.Sprintf("object %q: UnsetConflicts group %d has a nil attribute", obj.Name, i))
+		if len(v.Fields) == 1 {
+			panic(fmt.Sprintf("%s: %s validation %d needs at least two fields", owner, v.Kind, i))
+		}
+		seen := make(map[string]struct{}, len(v.Fields))
+		for _, field := range v.Fields {
+			if !slices.ContainsFunc(candidates, func(a Attribute) bool { return a.Name == field.Name }) {
+				panic(fmt.Sprintf("%s: %s validation %d field %q is not %s", owner, v.Kind, i, field.Name, candidate))
 			}
-			if _, ok := inUnset[member.Name]; !ok {
-				panic(fmt.Sprintf("object %q: UnsetConflicts group %d attribute %q is not in Unset", obj.Name, i, member.Name))
+			if _, dup := seen[field.Name]; dup {
+				panic(fmt.Sprintf("%s: %s validation %d names %q twice", owner, v.Kind, i, field.Name))
 			}
-			if _, dup := seen[member.Name]; dup {
-				panic(fmt.Sprintf("object %q: UnsetConflicts group %d repeats attribute %q", obj.Name, i, member.Name))
+			seen[field.Name] = struct{}{}
+		}
+		if v.Kind == ValidationConflicting {
+			for a := range v.Fields {
+				for b := a + 1; b < len(v.Fields); b++ {
+					pair := [2]string{min(v.Fields[a].Name, v.Fields[b].Name), max(v.Fields[a].Name, v.Fields[b].Name)}
+					if _, dup := conflictingPairs[pair]; dup {
+						panic(fmt.Sprintf("%s: fields %q and %q are in more than one conflicting validation", owner, pair[0], pair[1]))
+					}
+					conflictingPairs[pair] = struct{}{}
+				}
 			}
-			seen[member.Name] = struct{}{}
+			continue
+		}
+		if inKind[v.Kind] == nil {
+			inKind[v.Kind] = make(map[string]struct{})
+		}
+		for _, field := range v.Fields {
+			if _, dup := inKind[v.Kind][field.Name]; dup {
+				panic(fmt.Sprintf("%s: field %q is in more than one %s validation", owner, field.Name, v.Kind))
+			}
+			inKind[v.Kind][field.Name] = struct{}{}
 		}
 	}
 }
 
 // validateAlterGroups checks the groups of the SET and UNSET blocks. A block does not mix attributes and groups.
 // Each attribute is in one group. A named group has an exported Go identifier name that no other group repeats, and a
-// block has at most one main group. A conflicting pair cannot share a group, because one ALTER statement cannot hold
-// both attributes.
+// block has at most one main group.
 func validateAlterGroups(obj Object) {
-	validateAlterBlockGroups(obj, "SET", AlterClauseSet, obj.Alter.SetConflictingFields)
-	validateAlterBlockGroups(obj, "UNSET", AlterClauseUnset, obj.UnsetConflicts)
+	validateAlterBlockGroups(obj, "SET", AlterClauseSet)
+	validateAlterBlockGroups(obj, "UNSET", AlterClauseUnset)
 }
 
-func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind, conflicts [][]*Attribute) {
+func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind) {
 	if clause, _ := obj.alterClause(kind); clause.MixedForms {
 		panic(fmt.Sprintf("object %q: %s mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)", obj.Name, block))
 	}
@@ -655,17 +707,6 @@ func validateAlterBlockGroups(obj Object, block string, kind AlterClauseKind, co
 			}
 			owner[member.Name] = label
 		}
-		for _, pair := range conflicts {
-			inGroup := 0
-			for _, member := range pair {
-				if member != nil && slices.ContainsFunc(group.Attributes, func(attr *Attribute) bool { return attr != nil && attr.Name == member.Name }) {
-					inGroup++
-				}
-			}
-			if inGroup > 1 {
-				panic(fmt.Sprintf("object %q: %s holds attributes that cannot be sent together", obj.Name, label))
-			}
-		}
 	}
 }
 
@@ -678,16 +719,6 @@ func validateCreateSpec(obj Object, attrs map[string]struct{}) {
 }
 
 func validateAlterSpec(obj Object) {
-	for i, pair := range obj.Alter.SetConflictingFields {
-		if len(pair) != 2 {
-			panic(fmt.Sprintf("object %q: SetConflictingFields entry %d needs exactly two attributes", obj.Name, i))
-		}
-		for _, member := range pair {
-			if member == nil || !slices.ContainsFunc(obj.SetAttributes(), func(set *Attribute) bool { return set != nil && set.Name == member.Name }) {
-				panic(fmt.Sprintf("object %q: SetConflictingFields entry %d has an attribute that is not in Set", obj.Name, i))
-			}
-		}
-	}
 	seen := make(map[AlterClauseKind]struct{})
 	seenList := make(map[string]struct{})
 	for _, clause := range obj.Alter.Clauses {
@@ -738,16 +769,25 @@ func validateAlterSpec(obj Object) {
 			}
 			seenList[clause.SQL] = struct{}{}
 		case AlterClauseBlock:
-			if clause.Field == "" || clause.SQL == "" || clause.Block == nil {
-				panic(fmt.Sprintf("object %q: ALTER block needs a field, SQL, and an attribute", obj.Name))
+			if clause.Field == "" || clause.Block == nil {
+				panic(fmt.Sprintf("object %q: ALTER block needs a field and an attribute", obj.Name))
 			}
-			if !clause.Block.IsObjectList() && (clause.Block.Type != AttrObject || len(clause.Block.Children) == 0) {
-				panic(fmt.Sprintf("object %q: ALTER block %q needs a list of objects or an object with Children", obj.Name, clause.SQL))
+			if clause.Block != nil && !clause.Block.IsObjectList() && (clause.Block.Type != AttrObject || len(clause.Block.Children) == 0) {
+				panic(fmt.Sprintf("object %q: ALTER block %q needs a list of objects or an object with Children", obj.Name, clause.Field))
 			}
-			if _, dup := seenList[clause.SQL]; dup {
-				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, clause.SQL))
+			switch clause.BlockJoin {
+			case AlterBlockJoinParameter, AlterBlockJoinKeyword, AlterBlockJoinComma:
+			default:
+				panic(fmt.Sprintf("object %q: ALTER block %q has unknown join %q", obj.Name, clause.Field, clause.BlockJoin))
 			}
-			seenList[clause.SQL] = struct{}{}
+			key := clause.SQL
+			if key == "" {
+				key = clause.Field
+			}
+			if _, dup := seenList[key]; dup {
+				panic(fmt.Sprintf("object %q: duplicate ALTER clause %q", obj.Name, key))
+			}
+			seenList[key] = struct{}{}
 		case AlterClauseRenameTo, AlterClauseSwapWith, AlterClauseSet, AlterClauseUnset, AlterClauseSetTags, AlterClauseUnsetTags:
 			if clause.NotExactlyOne {
 				panic(fmt.Sprintf("object %q: ALTER %s cannot leave exactly-one", obj.Name, clause.Kind))
@@ -833,14 +873,17 @@ func validateCustomOperationClauses(obj Object, spec CustomOperationSpec, attrs 
 				panic(fmt.Sprintf("object %q: custom operation %q attribute is parameters", obj.Name, spec.Kind))
 			}
 			name := clause.Attribute.Name
-			if _, ok := attrs[name]; !ok {
-				panic(fmt.Sprintf("object %q: custom operation %q attribute %q is not in Attributes", obj.Name, spec.Kind, name))
+			if name == "" {
+				panic(fmt.Sprintf("object %q: custom operation %q attribute has empty Name", obj.Name, spec.Kind))
 			}
 			if _, dup := seenAttr[name]; dup {
 				panic(fmt.Sprintf("object %q: custom operation %q has duplicate attribute %q", obj.Name, spec.Kind, name))
 			}
 			seenAttr[name] = struct{}{}
 			validateSqlClause(obj, *clause.Attribute, "CREATE", clause.Attribute.EffectiveSqlClause(ClauseCreate))
+			if _, ok := attrs[name]; !ok {
+				validateNestedAttribute(obj, *clause.Attribute)
+			}
 		case CustomOperationClausePredefined:
 			if clause.Predefined == "" {
 				panic(fmt.Sprintf("object %q: custom operation %q predefined type is empty", obj.Name, spec.Kind))
@@ -960,6 +1003,10 @@ func requirePresentClausesListed(obj Object, statement string, clause func(Attri
 		if !clause(attr).Present {
 			continue
 		}
+		// SkipUpdate attributes are altered outside SET/UNSET (for example ALTER ... SET AGGREGATION POLICY).
+		if attr.SkipUpdate && (statement == "SET" || statement == "UNSET") {
+			continue
+		}
 		if _, ok := seen[attr.Name]; !ok {
 			panic(fmt.Sprintf("object %q: attribute %q %s clause is not in the %s sequence", obj.Name, attr.Name, statement, statement))
 		}
@@ -1002,7 +1049,7 @@ func walkSqlSequence(obj Object, statement string, list []*Attribute, attrs map[
 			validateAttribute(obj, *field)
 			validateSqlClauses(obj, *field)
 			// A CREATE-only object is not an attribute, so its children are checked here.
-			// A PreexistingStruct names a struct the SDK definition supplies and has no Children.
+			// A PreexistingStructOf clause has no Children; the embedded attribute does.
 			if field.EffectiveSqlClause(clauseUse(statement)).Kind == SqlKindObject {
 				validateNestedAttribute(obj, *field)
 			}
@@ -1044,6 +1091,20 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 	if clause.AllowEmpty && (clause.Kind != SqlKindParameter || attr.SdkType() != AttrString) {
 		panic(fmt.Sprintf("object %q: attribute %q %s clause allows an empty value but is not a string parameter", obj.Name, attr.Name, statement))
 	}
+	if clause.TextValue && clause.ValueKeyword {
+		panic(fmt.Sprintf("object %q: attribute %q %s text keyword is not a value keyword", obj.Name, attr.Name, statement))
+	}
+	if clause.SharedToOpts && clause.Kind != SqlKindObject {
+		panic(fmt.Sprintf("object %q: attribute %q %s shared toOpts clause is not an object clause", obj.Name, attr.Name, statement))
+	}
+	if clause.StructName != "" && clause.Kind != SqlKindPreexistingStruct {
+		if clause.Kind != SqlKindObject && !((clause.Kind == SqlKindParameter || clause.Kind == SqlKindKeyword) && attr.IsObjectList()) {
+			panic(fmt.Sprintf("object %q: attribute %q %s struct name is for a nested struct or a list of objects", obj.Name, attr.Name, statement))
+		}
+		if !token.IsIdentifier(clause.StructName) || !token.IsExported(clause.StructName) {
+			panic(fmt.Sprintf("object %q: attribute %q %s struct name %q is not an exported name", obj.Name, attr.Name, statement, clause.StructName))
+		}
+	}
 	switch clause.Kind {
 	case SqlKindParameter:
 		switch attr.SdkType() {
@@ -1063,6 +1124,12 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		}
 	case SqlKindKeyword:
 		// A keyword marks presence. Unset keeps the attribute's value type.
+		if clause.TextValue {
+			if attr.SdkType() != AttrString {
+				panic(fmt.Sprintf("object %q: attribute %q %s text keyword has type %q", obj.Name, attr.Name, statement, attr.Type))
+			}
+			break
+		}
 		if clause.ValueKeyword {
 			enum := clause.Enum
 			if enum == nil {
@@ -1101,8 +1168,38 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		}
 	case SqlKindPreexistingStruct:
 		requireCreateOnlyClause(obj, attr, statement, clause)
-		if clause.StructName == "" {
-			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause has no struct name", obj.Name, attr.Name))
+		if clause.StructAttr == nil {
+			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause has no attribute", obj.Name, attr.Name))
+		}
+		if clause.StructName != "" {
+			panic(fmt.Sprintf("object %q: attribute %q preexisting struct clause names a nested struct, not an attribute", obj.Name, attr.Name))
+		}
+	case SqlKindPredefined:
+		if clause.GoType == "" {
+			panic(fmt.Sprintf("object %q: attribute %q predefined type clause has no Go type", obj.Name, attr.Name))
+		}
+	case SqlKindWrapString:
+		if attr.Type != AttrString {
+			panic(fmt.Sprintf("object %q: attribute %q %s wrapped string is not a string", obj.Name, attr.Name, statement))
+		}
+		if clause.Before.Field == "" && clause.After.Field == "" {
+			panic(fmt.Sprintf("object %q: attribute %q %s wrapped string has no SQL", obj.Name, attr.Name, statement))
+		}
+		seenWrap := map[string]struct{}{genhelpers.SnakeCaseToCamel(attr.Name): {}}
+		for _, part := range []WrapSQL{clause.Before, clause.After} {
+			if part.Field == "" && part.SQL == "" {
+				continue
+			}
+			if part.Field == "" || part.SQL == "" {
+				panic(fmt.Sprintf("object %q: attribute %q %s wrapped string needs a field name and SQL", obj.Name, attr.Name, statement))
+			}
+			if !token.IsIdentifier(part.Field) || token.IsExported(part.Field) {
+				panic(fmt.Sprintf("object %q: attribute %q %s wrapped string field %q is not private", obj.Name, attr.Name, statement, part.Field))
+			}
+			if _, dup := seenWrap[part.Field]; dup {
+				panic(fmt.Sprintf("object %q: attribute %q %s wrapped string field %q is duplicated", obj.Name, attr.Name, statement, part.Field))
+			}
+			seenWrap[part.Field] = struct{}{}
 		}
 	case SqlKindStatic:
 		requireCreateOnlyClause(obj, attr, statement, clause)
@@ -1175,7 +1272,7 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 			panic(fmt.Sprintf("object %q: %s entry %q is SQL-only", obj.Name, kind, a.Name))
 		}
 		// A variant SHOW struct reuses the parent's show attributes, not this object's resource fields.
-		if obj.VariantOf == nil {
+		if obj.VariantBase() == nil {
 			if a.Readonly {
 				if _, w := attrs[a.Name]; w {
 					panic(fmt.Sprintf("object %q: %s Readonly %q duplicates a CREATE/ALTER attribute", obj.Name, kind, a.Name))
@@ -1364,7 +1461,7 @@ func validateDescribeDetails(obj Object) {
 		return
 	}
 	// The rows of a variant are the rows of its base.
-	if !sdk.Describe || (len(obj.DescribeRows.Columns) == 0 && obj.VariantOf == nil) {
+	if !sdk.Describe || (len(obj.DescribeRows.Columns) == 0 && obj.VariantBase() == nil) {
 		panic(fmt.Sprintf("object %q: SdkDescribeDetails needs SdkDescribe and DescribeRows", obj.Name))
 	}
 	validateGeneratorSkips(obj, "sdk-describe-details nested", "DESCRIBE", true, obj.Describe.Columns, sdk.DescribeDetailsNestedFields)
@@ -1393,7 +1490,7 @@ func validateDescribeDetailsParse(obj Object, sdk SdkGenerator) {
 			panic(fmt.Sprintf("object %q: DESCRIBE details prefix mapping %q must be a nested field", obj.Name, m.Attr.Name))
 		case m.Parsed && m.Prefix:
 			panic(fmt.Sprintf("object %q: DESCRIBE details mapping %q cannot be a prefix and parsed", obj.Name, m.Attr.Name))
-		case !m.Prefix && !m.Parsed && (isNested || m.Attr.Type != AttrString || m.Attr.OptionalInShow):
+		case !m.Prefix && !m.Parsed && (isNested || m.Attr.ForDescribe().Type != AttrString || m.Attr.OptionalInShow):
 			panic(fmt.Sprintf("object %q: DESCRIBE details property mapping %q must be a required string column", obj.Name, m.Attr.Name))
 		}
 	}
@@ -1456,6 +1553,17 @@ func validateSdkString(obj Object, attr Attribute) {
 // Reuse is a deliberate choice. The base must generate the artifact, and a variant that needs any show-side override
 // drops the reuse setting and configures SHOW itself.
 func validateShowReuse(obj Object, g Generators) {
+	if obj.Variant != nil {
+		if obj.Variant.SchemaShowFromBase && !g.Schema.Show {
+			panic(fmt.Sprintf("object %q: Variant.SchemaShowFromBase needs SchemaShow", obj.Name))
+		}
+		if obj.Variant.ObjectAssertShowRowFromBase && !g.ObjectAssert.Show {
+			panic(fmt.Sprintf("object %q: Variant.ObjectAssertShowRowFromBase needs ObjectAssertShow", obj.Name))
+		}
+		if obj.Variant.ObjectAssertShowFromBase != "" && !g.ObjectAssert.Show {
+			panic(fmt.Sprintf("object %q: Variant.ObjectAssertShowFromBase needs ObjectAssertShow", obj.Name))
+		}
+	}
 	if obj.ReusesBaseSchemaShow() {
 		base := validateShowReuseBase(obj, "schema SHOW", func(b Generators) bool { return b.Schema.Show })
 		if len(g.Schema.ShowManualFields) > 0 || len(g.Schema.ShowListFields) > 0 {
@@ -1467,13 +1575,19 @@ func validateShowReuse(obj Object, g Generators) {
 		if len(g.ObjectAssert.ShowSkipFields) > 0 || len(g.ObjectAssert.ShowNestedFields) > 0 {
 			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set skip or nested fields", obj.Name, base.Name))
 		}
-		if g.ObjectAssert.ShowProjection != "" {
+		if obj.Variant != nil && obj.Variant.ObjectAssertShowFromBase != "" {
 			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set a show projection", obj.Name, base.Name))
+		}
+		if g.ObjectAssert.NoShowById || g.ObjectAssert.ShowNoIdentifiableObject || g.ObjectAssert.ShowByParentId != nil || g.ObjectAssert.ShowFromObjectIDExpr != "" || g.ObjectAssert.ShowObjectTypeName != "" {
+			panic(fmt.Sprintf("object %q: object assertion SHOW reuses %q and cannot set show constructor options", obj.Name, base.Name))
 		}
 	}
 }
 
 func validateShowOutputAssertReuse(obj Object, g Generators) {
+	if obj.Variant != nil && obj.Variant.ShowOutputShowRowFromBase && !g.ShowOutputAssert.Show {
+		panic(fmt.Sprintf("object %q: Variant.ShowOutputShowRowFromBase needs ShowOutputShow", obj.Name))
+	}
 	if !obj.ReusesBaseShowOutputAssertShow() {
 		return
 	}

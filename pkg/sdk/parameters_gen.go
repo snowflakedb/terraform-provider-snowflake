@@ -7,20 +7,67 @@ import (
 )
 
 type Parameters interface {
-	SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error
-	UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error
-	SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error
-	SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error
-	UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error
-	UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error
-	SetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter, value string) (bool, error)
-	UnsetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter) (bool, error)
+	SetAccountParameterRaw(ctx context.Context, request *SetAccountParameterRawParameterRequest) error
+	UnsetAccountParameterRaw(ctx context.Context, request *UnsetAccountParameterRawParameterRequest) error
+	SetObjectParameterOnObjectRaw(ctx context.Context, request *SetObjectParameterOnObjectRawParameterRequest) error
+	UnsetObjectParameterOnObjectRaw(ctx context.Context, request *UnsetObjectParameterOnObjectRawParameterRequest) error
+	// Catalog write path: the value is parsed and quoted by the parameter catalog.
+	// The methods return false, and send nothing, when the catalog does not handle the parameter.
 	SetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter, value string) (bool, error)
 	UnsetObjectParameterOnAccountViaCatalog(ctx context.Context, parameter ObjectParameter) (bool, error)
+	SetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter, value string) (bool, error)
+	UnsetObjectParameterOnObjectViaCatalog(ctx context.Context, object Object, parameter ObjectParameter) (bool, error)
+	// Legacy write path: the SQL of v2.22.x.
+	SetAccountParameterLegacy(ctx context.Context, parameter AccountParameter, value string) error
+	UnsetAccountParameterLegacy(ctx context.Context, parameter AccountParameter) error
+	SetObjectParameterOnAccountLegacy(ctx context.Context, parameter ObjectParameter, value string) error
+	UnsetObjectParameterOnAccountLegacy(ctx context.Context, parameter ObjectParameter) error
+	// Hybrid write path: the catalog write path when it supports the parameter, otherwise the raw write path
+	// (the value is rendered by the kind, so it is quoted the same way as by the catalog).
+	SetAccountParameterWithGenericFallback(ctx context.Context, parameter string, kind ParameterValueKind, value string) error
+	UnsetAccountParameterWithGenericFallback(ctx context.Context, parameter string) error
+	SetObjectParameterOnObjectWithGenericFallback(ctx context.Context, object Object, parameter ObjectParameter, kind ParameterValueKind, value string) error
+	UnsetObjectParameterOnObjectWithGenericFallback(ctx context.Context, object Object, parameter ObjectParameter) error
 	// https://docs.snowflake.com/en/sql-reference/sql/show-parameters
 	ShowParameters(ctx context.Context, opts *ShowParametersOptions) ([]*Parameter, error)
 	ShowAccountParameter(ctx context.Context, parameter AccountParameter) (*Parameter, error)
 	ShowSessionParameter(ctx context.Context, parameter SessionParameter) (*Parameter, error)
 	ShowUserParameter(ctx context.Context, parameter UserParameter, user AccountObjectIdentifier) (*Parameter, error)
 	ShowObjectParameter(ctx context.Context, parameter ObjectParameter, object Object) (*Parameter, error)
+}
+
+// SetAccountParameterRawParameterOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-account.
+type SetAccountParameterRawParameterOptions struct {
+	alterAccount bool   `ddl:"static" sql:"ALTER ACCOUNT"`
+	set          bool   `ddl:"static" sql:"SET"`
+	Parameter    string `ddl:"keyword,no_quotes"`
+	bool         `ddl:"static" sql:"="`
+	Value        string `ddl:"keyword,no_quotes"`
+}
+
+// UnsetAccountParameterRawParameterOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-account.
+type UnsetAccountParameterRawParameterOptions struct {
+	alterAccount bool   `ddl:"static" sql:"ALTER ACCOUNT"`
+	unset        bool   `ddl:"static" sql:"UNSET"`
+	Parameter    string `ddl:"keyword,no_quotes"`
+}
+
+// SetObjectParameterOnObjectRawParameterOptions is based on https://docs.snowflake.com/en/sql-reference/parameters.
+type SetObjectParameterOnObjectRawParameterOptions struct {
+	alter      bool             `ddl:"static" sql:"ALTER"`
+	ObjectType ObjectType       `ddl:"keyword"`
+	ObjectName ObjectIdentifier `ddl:"identifier"`
+	set        bool             `ddl:"static" sql:"SET"`
+	Parameter  string           `ddl:"keyword,no_quotes"`
+	bool       `ddl:"static" sql:"="`
+	Value      string `ddl:"keyword,no_quotes"`
+}
+
+// UnsetObjectParameterOnObjectRawParameterOptions is based on https://docs.snowflake.com/en/sql-reference/parameters.
+type UnsetObjectParameterOnObjectRawParameterOptions struct {
+	alter      bool             `ddl:"static" sql:"ALTER"`
+	ObjectType ObjectType       `ddl:"keyword"`
+	ObjectName ObjectIdentifier `ddl:"identifier"`
+	unset      bool             `ddl:"static" sql:"UNSET"`
+	Parameter  string           `ddl:"keyword,no_quotes"`
 }

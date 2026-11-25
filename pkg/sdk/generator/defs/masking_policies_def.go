@@ -93,7 +93,7 @@ var maskingPoliciesDef = g.NewInterface(
 		"https://docs.snowflake.com/en/sql-reference/sql/desc-masking-policy",
 		g.StructPair("describeMaskingPolicyDBRow", "MaskingPolicyDetails").
 			Text("name").
-			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("ParseTableColumnSignature")).
+			Field("signature", "string", "[]TableColumnSignature", g.WithCustomParser("parseDescribeSignatureToTableColumnSignatures")).
 			DataType("return_type").
 			Text("body").
 			PlainOnlyField("DatabaseName", "string").

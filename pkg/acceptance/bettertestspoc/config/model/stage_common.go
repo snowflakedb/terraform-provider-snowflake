@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
@@ -122,11 +121,6 @@ func stageFileFormatCsv(opts sdk.FileFormatCsvOptions) tfconfig.Variable {
 		csvMap["encoding"] = tfconfig.StringVariable(string(*opts.Encoding))
 	}
 
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(csvMap) == 0 {
-		csvMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
 	return tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"csv": tfconfig.ListVariable(tfconfig.ObjectVariable(csvMap)),
@@ -203,11 +197,6 @@ func stageFileFormatJson(opts sdk.FileFormatJsonOptions) tfconfig.Variable {
 		jsonMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
 	}
 
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(jsonMap) == 0 {
-		jsonMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
 	return tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"json": tfconfig.ListVariable(tfconfig.ObjectVariable(jsonMap)),
@@ -236,11 +225,6 @@ func stageFileFormatAvro(opts sdk.FileFormatAvroOptions) tfconfig.Variable {
 		avroMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
 	}
 
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(avroMap) == 0 {
-		avroMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
 	return tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"avro": tfconfig.ListVariable(tfconfig.ObjectVariable(avroMap)),
@@ -264,11 +248,6 @@ func stageFileFormatOrc(opts sdk.FileFormatOrcOptions) tfconfig.Variable {
 			nullIfVars[idx] = tfconfig.StringVariable(v.S)
 		}
 		orcMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
-	}
-
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(orcMap) == 0 {
-		orcMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
 	}
 
 	return tfconfig.ListVariable(tfconfig.ObjectVariable(
@@ -308,11 +287,6 @@ func stageFileFormatParquet(opts sdk.FileFormatParquetOptions) tfconfig.Variable
 		parquetMap["null_if"] = tfconfig.ListVariable(nullIfVars...)
 	}
 
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(parquetMap) == 0 {
-		parquetMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
-	}
-
 	return tfconfig.ListVariable(tfconfig.ObjectVariable(
 		map[string]tfconfig.Variable{
 			"parquet": tfconfig.ListVariable(tfconfig.ObjectVariable(parquetMap)),
@@ -344,11 +318,6 @@ func stageFileFormatXml(opts sdk.FileFormatXmlOptions) tfconfig.Variable {
 	}
 	if opts.SkipByteOrderMark != nil {
 		xmlMap["skip_byte_order_mark"] = tfconfig.BoolVariable(*opts.SkipByteOrderMark)
-	}
-
-	// Workaround for empty objects - Terraform requires at least one attribute
-	if len(xmlMap) == 0 {
-		xmlMap["any"] = tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround))
 	}
 
 	return tfconfig.ListVariable(tfconfig.ObjectVariable(

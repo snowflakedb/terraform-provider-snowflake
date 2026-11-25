@@ -158,14 +158,14 @@ type DropSchemaOptions struct {
 
 // ShowSchemaOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-schemas.
 type ShowSchemaOptions struct {
-	show       bool        `ddl:"static" sql:"SHOW"`
-	Terse      *bool       `ddl:"keyword" sql:"TERSE"`
-	schemas    bool        `ddl:"static" sql:"SCHEMAS"`
-	History    *bool       `ddl:"keyword" sql:"HISTORY"`
-	Like       *Like       `ddl:"keyword" sql:"LIKE"`
-	In         *ExtendedIn `ddl:"keyword" sql:"IN"`
-	StartsWith *string     `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
-	Limit      *LimitFrom  `ddl:"keyword" sql:"LIMIT"`
+	show       bool                     `ddl:"static" sql:"SHOW"`
+	Terse      *bool                    `ddl:"keyword" sql:"TERSE"`
+	schemas    bool                     `ddl:"static" sql:"SCHEMAS"`
+	History    *bool                    `ddl:"keyword" sql:"HISTORY"`
+	Like       *Like                    `ddl:"keyword" sql:"LIKE"`
+	In         *ExtendedInWithoutSchema `ddl:"keyword" sql:"IN"`
+	StartsWith *string                  `ddl:"parameter,single_quotes,no_equals" sql:"STARTS WITH"`
+	Limit      *LimitFrom               `ddl:"keyword" sql:"LIMIT"`
 }
 
 type schemasRow struct {

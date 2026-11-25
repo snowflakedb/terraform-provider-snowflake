@@ -238,7 +238,7 @@ func CreateNotificationIntegration(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(fmt.Errorf("error creating notification integration: %w", err))
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return ReadNotificationIntegration(ctx, d, meta)
 }

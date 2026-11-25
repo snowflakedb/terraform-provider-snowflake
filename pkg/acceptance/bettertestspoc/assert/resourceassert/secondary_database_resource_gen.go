@@ -107,6 +107,11 @@ func (s *SecondaryDatabaseResourceAssert) HasMaxDataExtensionTimeInDays(expected
 	return s
 }
 
+func (s *SecondaryDatabaseResourceAssert) HasMetricLevel(expected string) *SecondaryDatabaseResourceAssert {
+	s.StringValueSet("metric_level", expected)
+	return s
+}
+
 func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *SecondaryDatabaseResourceAssert {
 	s.BoolValueSet("quoted_identifiers_ignore_case", expected)
 	return s
@@ -114,6 +119,11 @@ func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expecte
 
 func (s *SecondaryDatabaseResourceAssert) HasReplaceInvalidCharacters(expected bool) *SecondaryDatabaseResourceAssert {
 	s.BoolValueSet("replace_invalid_characters", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasServiceCallerTokenValiditySecs(expected int) *SecondaryDatabaseResourceAssert {
+	s.IntValueSet("service_caller_token_validity_secs", expected)
 	return s
 }
 
@@ -231,6 +241,11 @@ func (s *SecondaryDatabaseResourceAssert) HasMaxDataExtensionTimeInDaysString(ex
 	return s
 }
 
+func (s *SecondaryDatabaseResourceAssert) HasMetricLevelString(expected string) *SecondaryDatabaseResourceAssert {
+	s.ValueSet("metric_level", expected)
+	return s
+}
+
 func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *SecondaryDatabaseResourceAssert {
 	s.ValueSet("quoted_identifiers_ignore_case", expected)
 	return s
@@ -238,6 +253,11 @@ func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(e
 
 func (s *SecondaryDatabaseResourceAssert) HasReplaceInvalidCharactersString(expected string) *SecondaryDatabaseResourceAssert {
 	s.ValueSet("replace_invalid_characters", expected)
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasServiceCallerTokenValiditySecsString(expected string) *SecondaryDatabaseResourceAssert {
+	s.ValueSet("service_caller_token_validity_secs", expected)
 	return s
 }
 
@@ -355,6 +375,11 @@ func (s *SecondaryDatabaseResourceAssert) HasNoMaxDataExtensionTimeInDays() *Sec
 	return s
 }
 
+func (s *SecondaryDatabaseResourceAssert) HasNoMetricLevel() *SecondaryDatabaseResourceAssert {
+	s.ValueNotSet("metric_level")
+	return s
+}
+
 func (s *SecondaryDatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *SecondaryDatabaseResourceAssert {
 	s.ValueNotSet("quoted_identifiers_ignore_case")
 	return s
@@ -362,6 +387,11 @@ func (s *SecondaryDatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *Se
 
 func (s *SecondaryDatabaseResourceAssert) HasNoReplaceInvalidCharacters() *SecondaryDatabaseResourceAssert {
 	s.ValueNotSet("replace_invalid_characters")
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasNoServiceCallerTokenValiditySecs() *SecondaryDatabaseResourceAssert {
+	s.ValueNotSet("service_caller_token_validity_secs")
 	return s
 }
 
@@ -469,6 +499,11 @@ func (s *SecondaryDatabaseResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *
 	return s
 }
 
+func (s *SecondaryDatabaseResourceAssert) HasMetricLevelEmpty() *SecondaryDatabaseResourceAssert {
+	s.ValueSet("metric_level", "")
+	return s
+}
+
 func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *SecondaryDatabaseResourceAssert {
 	s.ValueSet("quoted_identifiers_ignore_case", "")
 	return s
@@ -476,6 +511,11 @@ func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() 
 
 func (s *SecondaryDatabaseResourceAssert) HasReplaceInvalidCharactersEmpty() *SecondaryDatabaseResourceAssert {
 	s.ValueSet("replace_invalid_characters", "")
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasServiceCallerTokenValiditySecsEmpty() *SecondaryDatabaseResourceAssert {
+	s.ValueSet("service_caller_token_validity_secs", "")
 	return s
 }
 
@@ -593,6 +633,11 @@ func (s *SecondaryDatabaseResourceAssert) HasMaxDataExtensionTimeInDaysNotEmpty(
 	return s
 }
 
+func (s *SecondaryDatabaseResourceAssert) HasMetricLevelNotEmpty() *SecondaryDatabaseResourceAssert {
+	s.ValuePresent("metric_level")
+	return s
+}
+
 func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *SecondaryDatabaseResourceAssert {
 	s.ValuePresent("quoted_identifiers_ignore_case")
 	return s
@@ -600,6 +645,11 @@ func (s *SecondaryDatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty
 
 func (s *SecondaryDatabaseResourceAssert) HasReplaceInvalidCharactersNotEmpty() *SecondaryDatabaseResourceAssert {
 	s.ValuePresent("replace_invalid_characters")
+	return s
+}
+
+func (s *SecondaryDatabaseResourceAssert) HasServiceCallerTokenValiditySecsNotEmpty() *SecondaryDatabaseResourceAssert {
+	s.ValuePresent("service_caller_token_validity_secs")
 	return s
 }
 

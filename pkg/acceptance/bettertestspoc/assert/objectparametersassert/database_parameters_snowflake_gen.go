@@ -59,34 +59,41 @@ func (d *DatabaseParametersAssert) HasDefaultParameterValueOnLevel(parameterName
 	return d
 }
 
+func (d *DatabaseParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.DatabaseParameter) *DatabaseParametersAssert {
+	d.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return d
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (d *DatabaseParametersAssert) HasAllDefaults() *DatabaseParametersAssert {
 	return d.
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterCatalog, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDataRetentionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultDdlCollation, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultNotebookComputePoolCpu, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterDefaultNotebookComputePoolGpu, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterExternalVolume, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterMaxDataExtensionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterReplaceInvalidCharacters, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterStorageSerializationPolicy, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterSuspendTaskAfterNumFailures, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterTaskAutoRetryAttempts, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterUserTaskManagedInitialWarehouseSize, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.DatabaseParameterUserTaskTimeoutMs, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterCatalog).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterDataRetentionTimeInDays).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterDefaultDdlCollation).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterDefaultNotebookComputePoolCpu).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterDefaultNotebookComputePoolGpu).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterEnableConsoleOutput).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterExternalVolume).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterLogEventLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterLogLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterMaxDataExtensionTimeInDays).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterMetricLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterReplaceInvalidCharacters).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterServiceCallerTokenValiditySecs).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterStorageSerializationPolicy).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterSuspendTaskAfterNumFailures).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterTaskAutoRetryAttempts).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterTraceLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterUserTaskManagedInitialWarehouseSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds).
+		HasDefaultParameterValueOnDefaultLevel(sdk.DatabaseParameterUserTaskTimeoutMs)
 }
 
 func (d *DatabaseParametersAssert) HasAllDefaultsExplicit() *DatabaseParametersAssert {
@@ -101,8 +108,10 @@ func (d *DatabaseParametersAssert) HasAllDefaultsExplicit() *DatabaseParametersA
 		HasDefaultLogEventLevelValueExplicit().
 		HasDefaultLogLevelValueExplicit().
 		HasDefaultMaxDataExtensionTimeInDaysValueExplicit().
+		HasDefaultMetricLevelValueExplicit().
 		HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
 		HasDefaultReplaceInvalidCharactersValueExplicit().
+		HasDefaultServiceCallerTokenValiditySecsValueExplicit().
 		HasDefaultStorageSerializationPolicyValueExplicit().
 		HasDefaultSuspendTaskAfterNumFailuresValueExplicit().
 		HasDefaultTaskAutoRetryAttemptsValueExplicit().
@@ -166,6 +175,11 @@ func (d *DatabaseParametersAssert) HasMaxDataExtensionTimeInDays(expected int) *
 	return d
 }
 
+func (d *DatabaseParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *DatabaseParametersAssert {
+	d.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.DatabaseParameterMetricLevel, expected))
+	return d
+}
+
 func (d *DatabaseParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase, expected))
 	return d
@@ -173,6 +187,11 @@ func (d *DatabaseParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool)
 
 func (d *DatabaseParametersAssert) HasReplaceInvalidCharacters(expected bool) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterBoolValueSet(sdk.DatabaseParameterReplaceInvalidCharacters, expected))
+	return d
+}
+
+func (d *DatabaseParametersAssert) HasServiceCallerTokenValiditySecs(expected int) *DatabaseParametersAssert {
+	d.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.DatabaseParameterServiceCallerTokenValiditySecs, expected))
 	return d
 }
 
@@ -265,6 +284,11 @@ func (d *DatabaseParametersAssert) HasMaxDataExtensionTimeInDaysLevel(expected s
 	return d
 }
 
+func (d *DatabaseParametersAssert) HasMetricLevelLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
+	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterMetricLevel, expected))
+	return d
+}
+
 func (d *DatabaseParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase, expected))
 	return d
@@ -272,6 +296,11 @@ func (d *DatabaseParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected 
 
 func (d *DatabaseParametersAssert) HasReplaceInvalidCharactersLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
 	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterReplaceInvalidCharacters, expected))
+	return d
+}
+
+func (d *DatabaseParametersAssert) HasServiceCallerTokenValiditySecsLevel(expected sdk.ParameterType) *DatabaseParametersAssert {
+	d.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.DatabaseParameterServiceCallerTokenValiditySecs, expected))
 	return d
 }
 
@@ -354,12 +383,20 @@ func (d *DatabaseParametersAssert) HasDefaultMaxDataExtensionTimeInDaysValue() *
 	return d.HasDefaultParameterValue(sdk.DatabaseParameterMaxDataExtensionTimeInDays)
 }
 
+func (d *DatabaseParametersAssert) HasDefaultMetricLevelValue() *DatabaseParametersAssert {
+	return d.HasDefaultParameterValue(sdk.DatabaseParameterMetricLevel)
+}
+
 func (d *DatabaseParametersAssert) HasDefaultQuotedIdentifiersIgnoreCaseValue() *DatabaseParametersAssert {
 	return d.HasDefaultParameterValue(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase)
 }
 
 func (d *DatabaseParametersAssert) HasDefaultReplaceInvalidCharactersValue() *DatabaseParametersAssert {
 	return d.HasDefaultParameterValue(sdk.DatabaseParameterReplaceInvalidCharacters)
+}
+
+func (d *DatabaseParametersAssert) HasDefaultServiceCallerTokenValiditySecsValue() *DatabaseParametersAssert {
+	return d.HasDefaultParameterValue(sdk.DatabaseParameterServiceCallerTokenValiditySecs)
 }
 
 func (d *DatabaseParametersAssert) HasDefaultStorageSerializationPolicyValue() *DatabaseParametersAssert {
@@ -434,12 +471,20 @@ func (d *DatabaseParametersAssert) HasDefaultMaxDataExtensionTimeInDaysValueExpl
 	return d.HasMaxDataExtensionTimeInDays(14)
 }
 
+func (d *DatabaseParametersAssert) HasDefaultMetricLevelValueExplicit() *DatabaseParametersAssert {
+	return d.HasMetricLevel(sdk.MetricLevelNone)
+}
+
 func (d *DatabaseParametersAssert) HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit() *DatabaseParametersAssert {
 	return d.HasQuotedIdentifiersIgnoreCase(false)
 }
 
 func (d *DatabaseParametersAssert) HasDefaultReplaceInvalidCharactersValueExplicit() *DatabaseParametersAssert {
 	return d.HasReplaceInvalidCharacters(false)
+}
+
+func (d *DatabaseParametersAssert) HasDefaultServiceCallerTokenValiditySecsValueExplicit() *DatabaseParametersAssert {
+	return d.HasServiceCallerTokenValiditySecs(120)
 }
 
 func (d *DatabaseParametersAssert) HasDefaultStorageSerializationPolicyValueExplicit() *DatabaseParametersAssert {

@@ -383,7 +383,7 @@ func CreateDynamicTable(ctx context.Context, d *schema.ResourceData, meta any) d
 	if err := client.DynamicTables.Create(ctx, request); err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return ReadDynamicTable(ctx, d, meta)
 }

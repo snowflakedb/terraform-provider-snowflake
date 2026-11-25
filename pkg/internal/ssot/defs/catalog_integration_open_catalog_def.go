@@ -23,30 +23,31 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 	CreatedOn              ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
-		Name:     "enabled",
-		Type:     ssot.AttrBool,
-		Required: true,
+		Name:          "enabled",
+		UpdateMapping: ssot.BooleanAttributeUpdateSetOnlyBuilder,
+		Type:          ssot.AttrBool,
+		Required:      true,
 		Description: "Specifies whether the catalog integration is available for use for Iceberg tables. " +
 			"`true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. " +
 			"`false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.",
 	},
 	RefreshIntervalSeconds: ssot.Attribute{
-		Name: "refresh_interval_seconds",
-		Type: ssot.AttrInt,
+		Name:          "refresh_interval_seconds",
+		UpdateMapping: ssot.IntAttributeUnsetFallbackUpdateWithZeroDefault(30),
+		Type:          ssot.AttrInt,
 		Description: "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. " +
 			"For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
 		ServerDefault: true,
-		CreateMapping: ssot.IntAttributeCreateBuilder,
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 		DiffSuppress:  ssot.SuppressDescribe,
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
+		UpdateMapping: ssot.StringAttributeUpdateSetOnly,
 		Type:          ssot.AttrString,
 		Description:   "Specifies a comment for the catalog integration.",
 		OptionalInDb:  true,
-		CreateMapping: ssot.StringAttributeCreateBuilder,
 	},
 	CatalogNamespace: ssot.Attribute{
 		Name:        "catalog_namespace",
@@ -93,11 +94,12 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		},
 	},
 	RestAuthentication: ssot.Attribute{
-		Name:        "rest_authentication",
-		Type:        ssot.AttrObject,
-		Required:    true,
-		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
+		Name:          "rest_authentication",
+		UpdateMapping: ssot.CustomUpdate("updateCatalogIntegrationOpenCatalogOauthClientSecret"),
+		Type:          ssot.AttrObject,
+		Required:      true,
+		Description:   "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
+		CreateSql:     ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			catalogIntegrationRestAuthTypeOauth,
 			{
@@ -126,7 +128,6 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 				Type:        ssot.AttrList,
 				Required:    true,
 				ForceNew:    true,
-				MinItems:    new(1),
 				Description: "Specifies one or more scopes for the OAuth token.",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
 				CreateSql:   ssot.ListParameter("StringListItemWrapper"),
@@ -155,9 +156,14 @@ var catalogIntegrationOpenCatalogCatalogSourceStatic = ssot.Attribute{
 }
 
 var CatalogIntegrationOpenCatalog = ssot.Object{
-	Name:                   "CatalogIntegrationOpenCatalog",
-	NamePlural:             "CatalogIntegrations",
-	VariantOf:              &CatalogIntegration,
+	Name:       "CatalogIntegrationOpenCatalog",
+	NamePlural: "CatalogIntegrations",
+	Variant: &ssot.ObjectVariant{
+		Of:                          &CatalogIntegration,
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
@@ -169,7 +175,7 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			ssot.WithSchema(
-				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaShow(),
 				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
 					&CatalogIntegrationOpenCatalogAttrs.RestConfig,
 					&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
@@ -180,7 +186,7 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 				ssot.ModelRequestType(&CatalogIntegrationOpenCatalogAttrs.RestAuthentication, "[]sdk.CatalogIntegrationOpenCatalogRestAuthenticationRequest"),
 			),
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertShow(),
 				ssot.ObjectAssertDescribe(
 					ssot.ObjectAssertDescribeFromBase("DescribeOpenCatalog"),
 					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationOpenCatalogAttrs.RestConfig),
@@ -188,7 +194,7 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 				),
 			),
 			ssot.WithShowOutputAssert(
-				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputShow(),
 				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
 					&CatalogIntegrationOpenCatalogAttrs.RestConfig,
 					&CatalogIntegrationOpenCatalogAttrs.RestAuthentication,
@@ -200,6 +206,8 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),

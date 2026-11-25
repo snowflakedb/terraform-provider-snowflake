@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func TestInt_TagReferences(t *testing.T) {
 
 		tagValue := "production"
 		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
 		}
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
@@ -66,7 +67,7 @@ func TestInt_TagReferences(t *testing.T) {
 		t.Cleanup(tag2Cleanup)
 
 		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
 		}
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
@@ -124,7 +125,7 @@ func TestInt_TagReferences(t *testing.T) {
 		t.Cleanup(tagCleanup)
 
 		columns := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
 		}
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,

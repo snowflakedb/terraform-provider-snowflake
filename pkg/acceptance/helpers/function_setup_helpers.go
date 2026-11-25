@@ -38,7 +38,7 @@ func (c *TestClient) CreateSampleJavaFunctionAndJarInLocation(t *testing.T, stag
 	argName := fmt.Sprintf("arg%s", random.AlphaLowerN(3))
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := c.Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+	id := c.Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 	dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 	returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -89,7 +89,7 @@ func (c *TestClient) CreateSampleJavaProcedureAndJarInLocation(t *testing.T, sta
 	argName := fmt.Sprintf("arg%s", random.AlphaLowerN(3))
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := c.Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+	id := c.Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	argument := sdk.NewProcedureArgumentRequest(argName, dataType)
 	dt := sdk.NewProcedureReturnsResultDataTypeRequest(dataType)
 	returns := sdk.NewProcedureReturnsRequest().WithResultDataType(*dt)
@@ -140,7 +140,7 @@ func (c *TestClient) CreateSamplePythonFunctionAndModuleInLocation(t *testing.T,
 	argName := fmt.Sprintf("arg%s", random.AlphaLowerN(3))
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := c.Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+	id := c.Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 	dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 	returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)

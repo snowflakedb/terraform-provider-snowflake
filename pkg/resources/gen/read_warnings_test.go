@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_AuthenticationPolicyRead_preservesPropertyReadWarnings(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.AuthenticationPolicy}, nil, nil)
 	require.True(t, model.Hooks.HandleExternalChangesInDescribe.Present)
@@ -28,6 +29,7 @@ func Test_AuthenticationPolicyRead_preservesPropertyReadWarnings(t *testing.T) {
 	require.Contains(t, read, "return diags")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ComputePoolRead_doesNotThreadDescribeWarnings(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.False(t, model.Hooks.HandleExternalChangesInDescribe.Present)

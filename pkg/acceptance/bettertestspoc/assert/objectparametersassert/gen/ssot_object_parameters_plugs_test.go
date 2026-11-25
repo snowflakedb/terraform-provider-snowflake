@@ -49,7 +49,7 @@ func Test_objectParametersFromSsot_variantUsesBaseNames(t *testing.T) {
 	obj := ssot.Object{
 		Name:       "WarehouseAdaptive",
 		IdType:     "AccountObjectIdentifier",
-		VariantOf:  &base,
+		Variant:    &ssot.ObjectVariant{Of: &base},
 		Generators: []ssot.GeneratorOption{ssot.WithObjectParametersAssert()},
 	}
 	got := objectParametersFromSsot(obj, true)

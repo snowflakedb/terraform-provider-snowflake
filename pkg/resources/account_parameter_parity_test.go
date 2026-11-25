@@ -160,6 +160,7 @@ var parametersAddedByCatalogMigration = []sdk.AccountParameter{
 	sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule,
 	sdk.AccountParameterServerlessTaskMaxStatementSize,
 	sdk.AccountParameterServerlessTaskMinStatementSize,
+	sdk.AccountParameterServiceCallerTokenValiditySecs,
 }
 
 func TestAccountParameterSupportedParameters_CatalogParity(t *testing.T) {
@@ -171,8 +172,8 @@ func TestAccountParameterSupportedParameters_CatalogParity(t *testing.T) {
 		expected[p] = struct{}{}
 	}
 
-	actual := make(map[sdk.AccountParameter]struct{}, len(accountParameterSupportedParameters))
-	for _, p := range accountParameterSupportedParameters {
+	actual := make(map[sdk.AccountParameter]struct{}, len(sdk.AllAccountParameters))
+	for _, p := range sdk.AllAccountParameters {
 		actual[p] = struct{}{}
 	}
 

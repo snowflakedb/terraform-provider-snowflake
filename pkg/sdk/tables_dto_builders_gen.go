@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 func NewCreateTableRequest(
 	name SchemaObjectIdentifier,
 	columnsAndConstraints CreateTableColumnsAndConstraintsRequest,
@@ -62,8 +64,13 @@ func (s *CreateTableRequest) WithDefaultDdlCollation(defaultDdlCollation StringA
 	return s
 }
 
-func (s *CreateTableRequest) WithCopyGrants(copyGrants bool) *CreateTableRequest {
-	s.CopyGrants = &copyGrants
+func (s *CreateTableRequest) WithErrorLogging(errorLogging bool) *CreateTableRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
+func (s *CreateTableRequest) WithCopy(copy []TableCopyOption) *CreateTableRequest {
+	s.Copy = copy
 	return s
 }
 
@@ -82,13 +89,28 @@ func (s *CreateTableRequest) WithJoinPolicy(joinPolicy TableJoinPolicyRequest) *
 	return s
 }
 
+func (s *CreateTableRequest) WithStorageLifecyclePolicy(storageLifecyclePolicy CreateTableStorageLifecyclePolicyRequest) *CreateTableRequest {
+	s.StorageLifecyclePolicy = &storageLifecyclePolicy
+	return s
+}
+
 func (s *CreateTableRequest) WithTag(tag []TagAssociation) *CreateTableRequest {
 	s.Tag = tag
 	return s
 }
 
+func (s *CreateTableRequest) WithContact(contact []TableContact) *CreateTableRequest {
+	s.Contact = contact
+	return s
+}
+
 func (s *CreateTableRequest) WithComment(comment string) *CreateTableRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *CreateTableRequest) WithRowTimestamp(rowTimestamp bool) *CreateTableRequest {
+	s.RowTimestamp = &rowTimestamp
 	return s
 }
 
@@ -102,14 +124,14 @@ func (s *CreateTableColumnsAndConstraintsRequest) WithColumns(columns []TableCol
 	return s
 }
 
-func (s *CreateTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfLineConstraint []OutOfLineConstraintRequest) *CreateTableColumnsAndConstraintsRequest {
+func (s *CreateTableColumnsAndConstraintsRequest) WithOutOfLineConstraint(outOfLineConstraint []TableOutOfLineConstraintRequest) *CreateTableColumnsAndConstraintsRequest {
 	s.OutOfLineConstraint = outOfLineConstraint
 	return s
 }
 
 func NewTableColumnRequest(
 	name string,
-	columnType DataType,
+	columnType datatypes.DataType,
 ) *TableColumnRequest {
 	s := TableColumnRequest{}
 	s.Name = name
@@ -117,7 +139,12 @@ func NewTableColumnRequest(
 	return &s
 }
 
-func (s *TableColumnRequest) WithInlineConstraint(inlineConstraint ColumnInlineConstraint) *TableColumnRequest {
+func (s *TableColumnRequest) WithVirtual(virtual TableColumnVirtualRequest) *TableColumnRequest {
+	s.Virtual = &virtual
+	return s
+}
+
+func (s *TableColumnRequest) WithInlineConstraint(inlineConstraint TableColumnInlineConstraintRequest) *TableColumnRequest {
 	s.InlineConstraint = &inlineConstraint
 	return s
 }
@@ -142,6 +169,11 @@ func (s *TableColumnRequest) WithMaskingPolicy(maskingPolicy TableColumnMaskingP
 	return s
 }
 
+func (s *TableColumnRequest) WithProjectionPolicy(projectionPolicy TableColumnProjectionPolicyRequest) *TableColumnRequest {
+	s.ProjectionPolicy = &projectionPolicy
+	return s
+}
+
 func (s *TableColumnRequest) WithTag(tag []TagAssociation) *TableColumnRequest {
 	s.Tag = tag
 	return s
@@ -149,6 +181,240 @@ func (s *TableColumnRequest) WithTag(tag []TagAssociation) *TableColumnRequest {
 
 func (s *TableColumnRequest) WithComment(comment string) *TableColumnRequest {
 	s.Comment = &comment
+	return s
+}
+
+func NewTableColumnVirtualRequest(
+	as string,
+) *TableColumnVirtualRequest {
+	s := TableColumnVirtualRequest{}
+	s.As = as
+	return &s
+}
+
+func (s *TableColumnVirtualRequest) WithGeneratedAlways(generatedAlways bool) *TableColumnVirtualRequest {
+	s.GeneratedAlways = &generatedAlways
+	return s
+}
+
+func (s *TableColumnVirtualRequest) WithVirtual(virtual bool) *TableColumnVirtualRequest {
+	s.Virtual = &virtual
+	return s
+}
+
+func NewTableColumnInlineConstraintRequest() *TableColumnInlineConstraintRequest {
+	s := TableColumnInlineConstraintRequest{}
+	return &s
+}
+
+func (s *TableColumnInlineConstraintRequest) WithUniquePK(uniquePK TableColumnInlineUniquePKRequest) *TableColumnInlineConstraintRequest {
+	s.UniquePK = &uniquePK
+	return s
+}
+
+func (s *TableColumnInlineConstraintRequest) WithFK(fK TableColumnInlineFKRequest) *TableColumnInlineConstraintRequest {
+	s.FK = &fK
+	return s
+}
+
+func (s *TableColumnInlineConstraintRequest) WithCH(cH TableColumnInlineCHRequest) *TableColumnInlineConstraintRequest {
+	s.CH = &cH
+	return s
+}
+
+func NewTableColumnInlineUniquePKRequest() *TableColumnInlineUniquePKRequest {
+	s := TableColumnInlineUniquePKRequest{}
+	return &s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithName(name string) *TableColumnInlineUniquePKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithUnique(unique bool) *TableColumnInlineUniquePKRequest {
+	s.Unique = &unique
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithPrimaryKey(primaryKey bool) *TableColumnInlineUniquePKRequest {
+	s.PrimaryKey = &primaryKey
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithEnforced(enforced bool) *TableColumnInlineUniquePKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNotEnforced(notEnforced bool) *TableColumnInlineUniquePKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithDeferrable(deferrable bool) *TableColumnInlineUniquePKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnInlineUniquePKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnInlineUniquePKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnInlineUniquePKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithEnable(enable bool) *TableColumnInlineUniquePKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithDisable(disable bool) *TableColumnInlineUniquePKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithValidate(validate bool) *TableColumnInlineUniquePKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNovalidate(novalidate bool) *TableColumnInlineUniquePKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithRely(rely bool) *TableColumnInlineUniquePKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableColumnInlineUniquePKRequest) WithNorely(norely bool) *TableColumnInlineUniquePKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func NewTableColumnInlineFKRequest(
+	references SchemaObjectIdentifier,
+) *TableColumnInlineFKRequest {
+	s := TableColumnInlineFKRequest{}
+	s.References = references
+	return &s
+}
+
+func (s *TableColumnInlineFKRequest) WithName(name string) *TableColumnInlineFKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithForeignKey(foreignKey bool) *TableColumnInlineFKRequest {
+	s.ForeignKey = &foreignKey
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithRefColumn(refColumn []Column) *TableColumnInlineFKRequest {
+	s.RefColumn = refColumn
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithMatch(match MatchType) *TableColumnInlineFKRequest {
+	s.Match = &match
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithOn(on ForeignKeyOnAction) *TableColumnInlineFKRequest {
+	s.On = &on
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithEnforced(enforced bool) *TableColumnInlineFKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNotEnforced(notEnforced bool) *TableColumnInlineFKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithDeferrable(deferrable bool) *TableColumnInlineFKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnInlineFKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnInlineFKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnInlineFKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithEnable(enable bool) *TableColumnInlineFKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithDisable(disable bool) *TableColumnInlineFKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithValidate(validate bool) *TableColumnInlineFKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNovalidate(novalidate bool) *TableColumnInlineFKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithRely(rely bool) *TableColumnInlineFKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableColumnInlineFKRequest) WithNorely(norely bool) *TableColumnInlineFKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func NewTableColumnInlineCHRequest(
+	expression string,
+) *TableColumnInlineCHRequest {
+	s := TableColumnInlineCHRequest{}
+	s.Expression = expression
+	return &s
+}
+
+func (s *TableColumnInlineCHRequest) WithName(name string) *TableColumnInlineCHRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableColumnInlineCHRequest) WithEnableValidate(enableValidate bool) *TableColumnInlineCHRequest {
+	s.EnableValidate = &enableValidate
+	return s
+}
+
+func (s *TableColumnInlineCHRequest) WithEnableNovalidate(enableNovalidate bool) *TableColumnInlineCHRequest {
+	s.EnableNovalidate = &enableNovalidate
 	return s
 }
 
@@ -187,115 +453,261 @@ func (s *ColumnIdentityRequest) WithNoorder(noorder bool) *ColumnIdentityRequest
 	return s
 }
 
-func NewOutOfLineConstraintRequest(
-	constraintType ColumnConstraintType,
-) *OutOfLineConstraintRequest {
-	s := OutOfLineConstraintRequest{}
-	s.ConstraintType = constraintType
+func NewTableColumnMaskingPolicyRequest(
+	maskingPolicy SchemaObjectIdentifier,
+) *TableColumnMaskingPolicyRequest {
+	s := TableColumnMaskingPolicyRequest{}
+	s.MaskingPolicy = maskingPolicy
 	return &s
 }
 
-func (s *OutOfLineConstraintRequest) WithName(name string) *OutOfLineConstraintRequest {
+func (s *TableColumnMaskingPolicyRequest) WithUsing(using []Column) *TableColumnMaskingPolicyRequest {
+	s.Using = using
+	return s
+}
+
+func NewTableColumnProjectionPolicyRequest(
+	projectionPolicy SchemaObjectIdentifier,
+) *TableColumnProjectionPolicyRequest {
+	s := TableColumnProjectionPolicyRequest{}
+	s.ProjectionPolicy = projectionPolicy
+	return &s
+}
+
+func NewTableOutOfLineConstraintRequest() *TableOutOfLineConstraintRequest {
+	s := TableOutOfLineConstraintRequest{}
+	return &s
+}
+
+func (s *TableOutOfLineConstraintRequest) WithUniquePK(uniquePK TableOutOfLineUniquePKRequest) *TableOutOfLineConstraintRequest {
+	s.UniquePK = &uniquePK
+	return s
+}
+
+func (s *TableOutOfLineConstraintRequest) WithFK(fK TableOutOfLineFKRequest) *TableOutOfLineConstraintRequest {
+	s.FK = &fK
+	return s
+}
+
+func (s *TableOutOfLineConstraintRequest) WithCH(cH TableOutOfLineCHRequest) *TableOutOfLineConstraintRequest {
+	s.CH = &cH
+	return s
+}
+
+func NewTableOutOfLineUniquePKRequest() *TableOutOfLineUniquePKRequest {
+	s := TableOutOfLineUniquePKRequest{}
+	return &s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithName(name string) *TableOutOfLineUniquePKRequest {
 	s.Name = &name
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithColumns(columns []Column) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithUnique(unique bool) *TableOutOfLineUniquePKRequest {
+	s.Unique = &unique
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithPrimaryKey(primaryKey bool) *TableOutOfLineUniquePKRequest {
+	s.PrimaryKey = &primaryKey
+	return s
+}
+
+func (s *TableOutOfLineUniquePKRequest) WithColumns(columns []Column) *TableOutOfLineUniquePKRequest {
 	s.Columns = columns
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithForeignKey(foreignKey OutOfLineForeignKeyRequest) *OutOfLineConstraintRequest {
-	s.ForeignKey = &foreignKey
-	return s
-}
-
-func (s *OutOfLineConstraintRequest) WithEnforced(enforced bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithEnforced(enforced bool) *TableOutOfLineUniquePKRequest {
 	s.Enforced = &enforced
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithNotEnforced(notEnforced bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithNotEnforced(notEnforced bool) *TableOutOfLineUniquePKRequest {
 	s.NotEnforced = &notEnforced
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithDeferrable(deferrable bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithDeferrable(deferrable bool) *TableOutOfLineUniquePKRequest {
 	s.Deferrable = &deferrable
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithNotDeferrable(notDeferrable bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithNotDeferrable(notDeferrable bool) *TableOutOfLineUniquePKRequest {
 	s.NotDeferrable = &notDeferrable
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithInitiallyDeferred(initiallyDeferred bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableOutOfLineUniquePKRequest {
 	s.InitiallyDeferred = &initiallyDeferred
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithInitiallyImmediate(initiallyImmediate bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableOutOfLineUniquePKRequest {
 	s.InitiallyImmediate = &initiallyImmediate
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithEnable(enable bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithEnable(enable bool) *TableOutOfLineUniquePKRequest {
 	s.Enable = &enable
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithDisable(disable bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithDisable(disable bool) *TableOutOfLineUniquePKRequest {
 	s.Disable = &disable
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithValidate(validate bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithValidate(validate bool) *TableOutOfLineUniquePKRequest {
 	s.Validate = &validate
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithNovalidate(novalidate bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithNovalidate(novalidate bool) *TableOutOfLineUniquePKRequest {
 	s.Novalidate = &novalidate
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithRely(rely bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithRely(rely bool) *TableOutOfLineUniquePKRequest {
 	s.Rely = &rely
 	return s
 }
 
-func (s *OutOfLineConstraintRequest) WithNorely(norely bool) *OutOfLineConstraintRequest {
+func (s *TableOutOfLineUniquePKRequest) WithNorely(norely bool) *TableOutOfLineUniquePKRequest {
 	s.Norely = &norely
 	return s
 }
 
-func NewOutOfLineForeignKeyRequest(
-	tableName SchemaObjectIdentifier,
-) *OutOfLineForeignKeyRequest {
-	s := OutOfLineForeignKeyRequest{}
-	s.TableName = tableName
-	return &s
-}
-
-func (s *OutOfLineForeignKeyRequest) WithColumnNames(columnNames []Column) *OutOfLineForeignKeyRequest {
-	s.ColumnNames = columnNames
+func (s *TableOutOfLineUniquePKRequest) WithComment(comment string) *TableOutOfLineUniquePKRequest {
+	s.Comment = &comment
 	return s
 }
 
-func (s *OutOfLineForeignKeyRequest) WithMatch(match MatchType) *OutOfLineForeignKeyRequest {
+func NewTableOutOfLineFKRequest(
+	references SchemaObjectIdentifier,
+) *TableOutOfLineFKRequest {
+	s := TableOutOfLineFKRequest{}
+	s.References = references
+	return &s
+}
+
+func (s *TableOutOfLineFKRequest) WithName(name string) *TableOutOfLineFKRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithColumns(columns []Column) *TableOutOfLineFKRequest {
+	s.Columns = columns
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithRefColumns(refColumns []Column) *TableOutOfLineFKRequest {
+	s.RefColumns = refColumns
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithMatch(match MatchType) *TableOutOfLineFKRequest {
 	s.Match = &match
 	return s
 }
 
-func (s *OutOfLineForeignKeyRequest) WithOn(on ForeignKeyOnAction) *OutOfLineForeignKeyRequest {
+func (s *TableOutOfLineFKRequest) WithOn(on ForeignKeyOnAction) *TableOutOfLineFKRequest {
 	s.On = &on
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithEnforced(enforced bool) *TableOutOfLineFKRequest {
+	s.Enforced = &enforced
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNotEnforced(notEnforced bool) *TableOutOfLineFKRequest {
+	s.NotEnforced = &notEnforced
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithDeferrable(deferrable bool) *TableOutOfLineFKRequest {
+	s.Deferrable = &deferrable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNotDeferrable(notDeferrable bool) *TableOutOfLineFKRequest {
+	s.NotDeferrable = &notDeferrable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableOutOfLineFKRequest {
+	s.InitiallyDeferred = &initiallyDeferred
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableOutOfLineFKRequest {
+	s.InitiallyImmediate = &initiallyImmediate
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithEnable(enable bool) *TableOutOfLineFKRequest {
+	s.Enable = &enable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithDisable(disable bool) *TableOutOfLineFKRequest {
+	s.Disable = &disable
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithValidate(validate bool) *TableOutOfLineFKRequest {
+	s.Validate = &validate
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNovalidate(novalidate bool) *TableOutOfLineFKRequest {
+	s.Novalidate = &novalidate
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithRely(rely bool) *TableOutOfLineFKRequest {
+	s.Rely = &rely
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithNorely(norely bool) *TableOutOfLineFKRequest {
+	s.Norely = &norely
+	return s
+}
+
+func (s *TableOutOfLineFKRequest) WithComment(comment string) *TableOutOfLineFKRequest {
+	s.Comment = &comment
+	return s
+}
+
+func NewTableOutOfLineCHRequest(
+	expression string,
+) *TableOutOfLineCHRequest {
+	s := TableOutOfLineCHRequest{}
+	s.Expression = expression
+	return &s
+}
+
+func (s *TableOutOfLineCHRequest) WithName(name string) *TableOutOfLineCHRequest {
+	s.Name = &name
+	return s
+}
+
+func (s *TableOutOfLineCHRequest) WithEnableValidate(enableValidate bool) *TableOutOfLineCHRequest {
+	s.EnableValidate = &enableValidate
+	return s
+}
+
+func (s *TableOutOfLineCHRequest) WithEnableNovalidate(enableNovalidate bool) *TableOutOfLineCHRequest {
+	s.EnableNovalidate = &enableNovalidate
 	return s
 }
 
 func NewTableRowAccessPolicyRequest(
 	name SchemaObjectIdentifier,
-	on []string,
+	on []Column,
 ) *TableRowAccessPolicyRequest {
 	s := TableRowAccessPolicyRequest{}
 	s.Name = name
@@ -329,136 +741,13 @@ func (s *TableJoinPolicyRequest) WithAllowedJoinKeys(allowedJoinKeys []Column) *
 	return s
 }
 
-func NewCreateAsSelectTableRequest(
-	name SchemaObjectIdentifier,
-	columns []TableAsSelectColumnRequest,
-	query string,
-) *CreateAsSelectTableRequest {
-	s := CreateAsSelectTableRequest{}
-	s.name = name
-	s.Columns = columns
-	s.Query = query
-	return &s
-}
-
-func (s *CreateAsSelectTableRequest) WithOrReplace(orReplace bool) *CreateAsSelectTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateAsSelectTableRequest) WithClusterBy(clusterBy []string) *CreateAsSelectTableRequest {
-	s.ClusterBy = clusterBy
-	return s
-}
-
-func (s *CreateAsSelectTableRequest) WithCopyGrants(copyGrants bool) *CreateAsSelectTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateAsSelectTableRequest {
-	s.RowAccessPolicy = &rowAccessPolicy
-	return s
-}
-
-func NewTableAsSelectColumnRequest(
-	name string,
-) *TableAsSelectColumnRequest {
-	s := TableAsSelectColumnRequest{}
-	s.Name = name
-	return &s
-}
-
-func (s *TableAsSelectColumnRequest) WithColumnType(columnType DataType) *TableAsSelectColumnRequest {
-	s.ColumnType = &columnType
-	return s
-}
-
-func (s *TableAsSelectColumnRequest) WithMaskingPolicy(maskingPolicy SchemaObjectIdentifier) *TableAsSelectColumnRequest {
-	s.MaskingPolicy = &maskingPolicy
-	return s
-}
-
-func NewCreateUsingTemplateTableRequest(
-	name SchemaObjectIdentifier,
-) *CreateUsingTemplateTableRequest {
-	s := CreateUsingTemplateTableRequest{}
-	s.name = name
-	return &s
-}
-
-func (s *CreateUsingTemplateTableRequest) WithOrReplace(orReplace bool) *CreateUsingTemplateTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateUsingTemplateTableRequest) WithCopyGrants(copyGrants bool) *CreateUsingTemplateTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func (s *CreateUsingTemplateTableRequest) WithQuery(query []string) *CreateUsingTemplateTableRequest {
-	s.Query = query
-	return s
-}
-
-func NewCreateLikeTableRequest(
-	name SchemaObjectIdentifier,
-	sourceTable SchemaObjectIdentifier,
-) *CreateLikeTableRequest {
-	s := CreateLikeTableRequest{}
-	s.name = name
-	s.SourceTable = sourceTable
-	return &s
-}
-
-func (s *CreateLikeTableRequest) WithOrReplace(orReplace bool) *CreateLikeTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateLikeTableRequest) WithClusterBy(clusterBy []string) *CreateLikeTableRequest {
-	s.ClusterBy = clusterBy
-	return s
-}
-
-func (s *CreateLikeTableRequest) WithCopyGrants(copyGrants bool) *CreateLikeTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func NewCreateCloneTableRequest(
-	name SchemaObjectIdentifier,
-	sourceTable SchemaObjectIdentifier,
-) *CreateCloneTableRequest {
-	s := CreateCloneTableRequest{}
-	s.name = name
-	s.SourceTable = sourceTable
-	return &s
-}
-
-func (s *CreateCloneTableRequest) WithOrReplace(orReplace bool) *CreateCloneTableRequest {
-	s.OrReplace = &orReplace
-	return s
-}
-
-func (s *CreateCloneTableRequest) WithClonePoint(clonePoint ClonePointRequest) *CreateCloneTableRequest {
-	s.ClonePoint = &clonePoint
-	return s
-}
-
-func (s *CreateCloneTableRequest) WithCopyGrants(copyGrants bool) *CreateCloneTableRequest {
-	s.CopyGrants = &copyGrants
-	return s
-}
-
-func NewClonePointRequest(
-	moment CloneMoment,
-	at TimeTravel,
-) *ClonePointRequest {
-	s := ClonePointRequest{}
-	s.Moment = moment
-	s.At = at
+func NewCreateTableStorageLifecyclePolicyRequest(
+	storageLifecyclePolicy SchemaObjectIdentifier,
+	on []Column,
+) *CreateTableStorageLifecyclePolicyRequest {
+	s := CreateTableStorageLifecyclePolicyRequest{}
+	s.StorageLifecyclePolicy = storageLifecyclePolicy
+	s.On = on
 	return &s
 }
 
@@ -580,6 +869,31 @@ func (s *AlterTableRequest) WithUnsetJoinPolicy(unsetJoinPolicy TableUnsetJoinPo
 	return s
 }
 
+func (s *AlterTableRequest) WithSetDataMetricSchedule(setDataMetricSchedule TableSetDataMetricScheduleRequest) *AlterTableRequest {
+	s.SetDataMetricSchedule = &setDataMetricSchedule
+	return s
+}
+
+func (s *AlterTableRequest) WithUnsetDataMetricSchedule(unsetDataMetricSchedule bool) *AlterTableRequest {
+	s.UnsetDataMetricSchedule = &unsetDataMetricSchedule
+	return s
+}
+
+func (s *AlterTableRequest) WithAddDataMetricFunction(addDataMetricFunction TableAddDataMetricFunctionRequest) *AlterTableRequest {
+	s.AddDataMetricFunction = &addDataMetricFunction
+	return s
+}
+
+func (s *AlterTableRequest) WithDropDataMetricFunction(dropDataMetricFunction TableDropDataMetricFunctionRequest) *AlterTableRequest {
+	s.DropDataMetricFunction = &dropDataMetricFunction
+	return s
+}
+
+func (s *AlterTableRequest) WithModifyDataMetricFunction(modifyDataMetricFunction TableModifyDataMetricFunctionRequest) *AlterTableRequest {
+	s.ModifyDataMetricFunction = &modifyDataMetricFunction
+	return s
+}
+
 func NewTableClusteringActionRequest() *TableClusteringActionRequest {
 	s := TableClusteringActionRequest{}
 	return &s
@@ -640,7 +954,7 @@ func (s *TableColumnActionRequest) WithAdd(add TableColumnAddActionRequest) *Tab
 	return s
 }
 
-func (s *TableColumnActionRequest) WithRename(rename TableColumnRenameActionRequest) *TableColumnActionRequest {
+func (s *TableColumnActionRequest) WithRename(rename TableRenameColumnActionRequest) *TableColumnActionRequest {
 	s.Rename = &rename
 	return s
 }
@@ -660,12 +974,22 @@ func (s *TableColumnActionRequest) WithUnsetMaskingPolicy(unsetMaskingPolicy Tab
 	return s
 }
 
-func (s *TableColumnActionRequest) WithSetTags(setTags TableColumnAlterSetTagsActionRequest) *TableColumnActionRequest {
+func (s *TableColumnActionRequest) WithSetProjectionPolicy(setProjectionPolicy TableSetColumnProjectionPolicyRequest) *TableColumnActionRequest {
+	s.SetProjectionPolicy = &setProjectionPolicy
+	return s
+}
+
+func (s *TableColumnActionRequest) WithUnsetProjectionPolicy(unsetProjectionPolicy TableUnsetColumnProjectionPolicyRequest) *TableColumnActionRequest {
+	s.UnsetProjectionPolicy = &unsetProjectionPolicy
+	return s
+}
+
+func (s *TableColumnActionRequest) WithSetTags(setTags TableSetColumnTagsRequest) *TableColumnActionRequest {
 	s.SetTags = &setTags
 	return s
 }
 
-func (s *TableColumnActionRequest) WithUnsetTags(unsetTags TableColumnAlterUnsetTagsActionRequest) *TableColumnActionRequest {
+func (s *TableColumnActionRequest) WithUnsetTags(unsetTags TableUnsetColumnTagsRequest) *TableColumnActionRequest {
 	s.UnsetTags = &unsetTags
 	return s
 }
@@ -677,7 +1001,7 @@ func (s *TableColumnActionRequest) WithDropColumns(dropColumns TableDropColumnAc
 
 func NewTableColumnAddActionRequest(
 	name string,
-	columnType DataType,
+	columnType datatypes.DataType,
 ) *TableColumnAddActionRequest {
 	s := TableColumnAddActionRequest{}
 	s.Name = name
@@ -687,6 +1011,11 @@ func NewTableColumnAddActionRequest(
 
 func (s *TableColumnAddActionRequest) WithIfNotExists(ifNotExists bool) *TableColumnAddActionRequest {
 	s.IfNotExists = &ifNotExists
+	return s
+}
+
+func (s *TableColumnAddActionRequest) WithVirtual(virtual TableColumnVirtualRequest) *TableColumnAddActionRequest {
+	s.Virtual = &virtual
 	return s
 }
 
@@ -705,13 +1034,18 @@ func (s *TableColumnAddActionRequest) WithNotNull(notNull bool) *TableColumnAddA
 	return s
 }
 
-func (s *TableColumnAddActionRequest) WithInlineConstraint(inlineConstraint TableColumnAddInlineConstraintRequest) *TableColumnAddActionRequest {
+func (s *TableColumnAddActionRequest) WithInlineConstraint(inlineConstraint TableColumnInlineConstraintRequest) *TableColumnAddActionRequest {
 	s.InlineConstraint = &inlineConstraint
 	return s
 }
 
 func (s *TableColumnAddActionRequest) WithMaskingPolicy(maskingPolicy TableColumnMaskingPolicyRequest) *TableColumnAddActionRequest {
 	s.MaskingPolicy = &maskingPolicy
+	return s
+}
+
+func (s *TableColumnAddActionRequest) WithProjectionPolicy(projectionPolicy TableColumnProjectionPolicyRequest) *TableColumnAddActionRequest {
+	s.ProjectionPolicy = &projectionPolicy
 	return s
 }
 
@@ -725,227 +1059,11 @@ func (s *TableColumnAddActionRequest) WithComment(comment string) *TableColumnAd
 	return s
 }
 
-func NewTableColumnAddInlineConstraintRequest() *TableColumnAddInlineConstraintRequest {
-	s := TableColumnAddInlineConstraintRequest{}
-	return &s
-}
-
-func (s *TableColumnAddInlineConstraintRequest) WithUniquePK(uniquePK TableColumnAddInlineUniquePKRequest) *TableColumnAddInlineConstraintRequest {
-	s.UniquePK = &uniquePK
-	return s
-}
-
-func (s *TableColumnAddInlineConstraintRequest) WithFK(fK TableColumnAddInlineFKRequest) *TableColumnAddInlineConstraintRequest {
-	s.FK = &fK
-	return s
-}
-
-func (s *TableColumnAddInlineConstraintRequest) WithCH(cH TableColumnAddInlineCHRequest) *TableColumnAddInlineConstraintRequest {
-	s.CH = &cH
-	return s
-}
-
-func NewTableColumnAddInlineUniquePKRequest() *TableColumnAddInlineUniquePKRequest {
-	s := TableColumnAddInlineUniquePKRequest{}
-	return &s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithName(name string) *TableColumnAddInlineUniquePKRequest {
-	s.Name = &name
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithUnique(unique bool) *TableColumnAddInlineUniquePKRequest {
-	s.Unique = &unique
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithPrimaryKey(primaryKey bool) *TableColumnAddInlineUniquePKRequest {
-	s.PrimaryKey = &primaryKey
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithEnforced(enforced bool) *TableColumnAddInlineUniquePKRequest {
-	s.Enforced = &enforced
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithNotEnforced(notEnforced bool) *TableColumnAddInlineUniquePKRequest {
-	s.NotEnforced = &notEnforced
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithDeferrable(deferrable bool) *TableColumnAddInlineUniquePKRequest {
-	s.Deferrable = &deferrable
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnAddInlineUniquePKRequest {
-	s.NotDeferrable = &notDeferrable
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnAddInlineUniquePKRequest {
-	s.InitiallyDeferred = &initiallyDeferred
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnAddInlineUniquePKRequest {
-	s.InitiallyImmediate = &initiallyImmediate
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithEnable(enable bool) *TableColumnAddInlineUniquePKRequest {
-	s.Enable = &enable
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithDisable(disable bool) *TableColumnAddInlineUniquePKRequest {
-	s.Disable = &disable
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithValidate(validate bool) *TableColumnAddInlineUniquePKRequest {
-	s.Validate = &validate
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithNovalidate(novalidate bool) *TableColumnAddInlineUniquePKRequest {
-	s.Novalidate = &novalidate
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithRely(rely bool) *TableColumnAddInlineUniquePKRequest {
-	s.Rely = &rely
-	return s
-}
-
-func (s *TableColumnAddInlineUniquePKRequest) WithNorely(norely bool) *TableColumnAddInlineUniquePKRequest {
-	s.Norely = &norely
-	return s
-}
-
-func NewTableColumnAddInlineFKRequest(
-	references SchemaObjectIdentifier,
-) *TableColumnAddInlineFKRequest {
-	s := TableColumnAddInlineFKRequest{}
-	s.References = references
-	return &s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithName(name string) *TableColumnAddInlineFKRequest {
-	s.Name = &name
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithForeignKey(foreignKey bool) *TableColumnAddInlineFKRequest {
-	s.ForeignKey = &foreignKey
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithRefColumn(refColumn []Column) *TableColumnAddInlineFKRequest {
-	s.RefColumn = refColumn
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithMatch(match MatchType) *TableColumnAddInlineFKRequest {
-	s.Match = &match
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithOn(on ForeignKeyOnAction) *TableColumnAddInlineFKRequest {
-	s.On = &on
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithEnforced(enforced bool) *TableColumnAddInlineFKRequest {
-	s.Enforced = &enforced
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithNotEnforced(notEnforced bool) *TableColumnAddInlineFKRequest {
-	s.NotEnforced = &notEnforced
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithDeferrable(deferrable bool) *TableColumnAddInlineFKRequest {
-	s.Deferrable = &deferrable
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithNotDeferrable(notDeferrable bool) *TableColumnAddInlineFKRequest {
-	s.NotDeferrable = &notDeferrable
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithInitiallyDeferred(initiallyDeferred bool) *TableColumnAddInlineFKRequest {
-	s.InitiallyDeferred = &initiallyDeferred
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithInitiallyImmediate(initiallyImmediate bool) *TableColumnAddInlineFKRequest {
-	s.InitiallyImmediate = &initiallyImmediate
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithEnable(enable bool) *TableColumnAddInlineFKRequest {
-	s.Enable = &enable
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithDisable(disable bool) *TableColumnAddInlineFKRequest {
-	s.Disable = &disable
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithValidate(validate bool) *TableColumnAddInlineFKRequest {
-	s.Validate = &validate
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithNovalidate(novalidate bool) *TableColumnAddInlineFKRequest {
-	s.Novalidate = &novalidate
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithRely(rely bool) *TableColumnAddInlineFKRequest {
-	s.Rely = &rely
-	return s
-}
-
-func (s *TableColumnAddInlineFKRequest) WithNorely(norely bool) *TableColumnAddInlineFKRequest {
-	s.Norely = &norely
-	return s
-}
-
-func NewTableColumnAddInlineCHRequest(
-	expression string,
-) *TableColumnAddInlineCHRequest {
-	s := TableColumnAddInlineCHRequest{}
-	s.Expression = expression
-	return &s
-}
-
-func (s *TableColumnAddInlineCHRequest) WithName(name string) *TableColumnAddInlineCHRequest {
-	s.Name = &name
-	return s
-}
-
-func (s *TableColumnAddInlineCHRequest) WithEnableValidate(enableValidate bool) *TableColumnAddInlineCHRequest {
-	s.EnableValidate = &enableValidate
-	return s
-}
-
-func (s *TableColumnAddInlineCHRequest) WithEnableNovalidate(enableNovalidate bool) *TableColumnAddInlineCHRequest {
-	s.EnableNovalidate = &enableNovalidate
-	return s
-}
-
-func NewTableColumnRenameActionRequest(
+func NewTableRenameColumnActionRequest(
 	oldName string,
 	newName string,
-) *TableColumnRenameActionRequest {
-	s := TableColumnRenameActionRequest{}
+) *TableRenameColumnActionRequest {
+	s := TableRenameColumnActionRequest{}
 	s.OldName = oldName
 	s.NewName = newName
 	return &s
@@ -974,13 +1092,8 @@ func (s *TableColumnAlterActionRequest) WithNotNullConstraint(notNullConstraint 
 	return s
 }
 
-func (s *TableColumnAlterActionRequest) WithDataType(dataType DataType) *TableColumnAlterActionRequest {
+func (s *TableColumnAlterActionRequest) WithDataType(dataType TableColumnAlterDataTypeRequest) *TableColumnAlterActionRequest {
 	s.DataType = &dataType
-	return s
-}
-
-func (s *TableColumnAlterActionRequest) WithCollate(collate string) *TableColumnAlterActionRequest {
-	s.Collate = &collate
 	return s
 }
 
@@ -1009,24 +1122,101 @@ func (s *TableColumnNotNullConstraintRequest) WithDrop(drop bool) *TableColumnNo
 	return s
 }
 
-func NewTableColumnAlterSetTagsActionRequest(
-	columnName string,
+func NewTableColumnAlterDataTypeRequest(
+	dataType datatypes.DataType,
+) *TableColumnAlterDataTypeRequest {
+	s := TableColumnAlterDataTypeRequest{}
+	s.DataType = dataType
+	return &s
+}
+
+func (s *TableColumnAlterDataTypeRequest) WithCollate(collate string) *TableColumnAlterDataTypeRequest {
+	s.Collate = &collate
+	return s
+}
+
+func NewTableSetColumnMaskingPolicyRequest(
+	name string,
+	maskingPolicy SchemaObjectIdentifier,
+) *TableSetColumnMaskingPolicyRequest {
+	s := TableSetColumnMaskingPolicyRequest{}
+	s.Name = name
+	s.MaskingPolicy = maskingPolicy
+	return &s
+}
+
+func (s *TableSetColumnMaskingPolicyRequest) WithUsing(using []Column) *TableSetColumnMaskingPolicyRequest {
+	s.Using = using
+	return s
+}
+
+func (s *TableSetColumnMaskingPolicyRequest) WithForce(force bool) *TableSetColumnMaskingPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetColumnMaskingPolicyRequest(
+	name string,
+) *TableUnsetColumnMaskingPolicyRequest {
+	s := TableUnsetColumnMaskingPolicyRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewTableSetColumnProjectionPolicyRequest(
+	name string,
+	projectionPolicy SchemaObjectIdentifier,
+) *TableSetColumnProjectionPolicyRequest {
+	s := TableSetColumnProjectionPolicyRequest{}
+	s.Name = name
+	s.ProjectionPolicy = projectionPolicy
+	return &s
+}
+
+func (s *TableSetColumnProjectionPolicyRequest) WithForce(force bool) *TableSetColumnProjectionPolicyRequest {
+	s.Force = &force
+	return s
+}
+
+func NewTableUnsetColumnProjectionPolicyRequest(
+	name string,
+) *TableUnsetColumnProjectionPolicyRequest {
+	s := TableUnsetColumnProjectionPolicyRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewTableSetColumnTagsRequest(
+	name string,
 	setTags []TagAssociation,
-) *TableColumnAlterSetTagsActionRequest {
-	s := TableColumnAlterSetTagsActionRequest{}
-	s.ColumnName = columnName
+) *TableSetColumnTagsRequest {
+	s := TableSetColumnTagsRequest{}
+	s.Name = name
 	s.SetTags = setTags
 	return &s
 }
 
-func NewTableColumnAlterUnsetTagsActionRequest(
-	columnName string,
+func NewTableUnsetColumnTagsRequest(
+	name string,
 	unsetTags []ObjectIdentifier,
-) *TableColumnAlterUnsetTagsActionRequest {
-	s := TableColumnAlterUnsetTagsActionRequest{}
-	s.ColumnName = columnName
+) *TableUnsetColumnTagsRequest {
+	s := TableUnsetColumnTagsRequest{}
+	s.Name = name
 	s.UnsetTags = unsetTags
 	return &s
+}
+
+func NewTableDropColumnActionRequest(
+	columns []Column,
+) *TableDropColumnActionRequest {
+	s := TableDropColumnActionRequest{}
+	s.Columns = columns
+	return &s
+}
+
+func (s *TableDropColumnActionRequest) WithIfExists(ifExists bool) *TableDropColumnActionRequest {
+	s.IfExists = &ifExists
+	return s
 }
 
 func NewTableConstraintActionRequest() *TableConstraintActionRequest {
@@ -1034,7 +1224,7 @@ func NewTableConstraintActionRequest() *TableConstraintActionRequest {
 	return &s
 }
 
-func (s *TableConstraintActionRequest) WithAdd(add OutOfLineConstraintRequest) *TableConstraintActionRequest {
+func (s *TableConstraintActionRequest) WithAdd(add TableOutOfLineConstraintRequest) *TableConstraintActionRequest {
 	s.Add = &add
 	return s
 }
@@ -1174,19 +1364,9 @@ func (s *TableExternalTableActionRequest) WithAdd(add TableExternalTableColumnAd
 	return s
 }
 
-func (s *TableExternalTableActionRequest) WithRename(rename TableExternalTableColumnRenameActionRequest) *TableExternalTableActionRequest {
-	s.Rename = &rename
-	return s
-}
-
-func (s *TableExternalTableActionRequest) WithDrop(drop TableExternalTableColumnDropActionRequest) *TableExternalTableActionRequest {
-	s.Drop = &drop
-	return s
-}
-
 func NewTableExternalTableColumnAddActionRequest(
 	name string,
-	columnType DataType,
+	columnType datatypes.DataType,
 ) *TableExternalTableColumnAddActionRequest {
 	s := TableExternalTableColumnAddActionRequest{}
 	s.Name = name
@@ -1206,29 +1386,6 @@ func (s *TableExternalTableColumnAddActionRequest) WithExpression(expression []s
 
 func (s *TableExternalTableColumnAddActionRequest) WithComment(comment string) *TableExternalTableColumnAddActionRequest {
 	s.Comment = &comment
-	return s
-}
-
-func NewTableExternalTableColumnRenameActionRequest(
-	oldName string,
-	newName string,
-) *TableExternalTableColumnRenameActionRequest {
-	s := TableExternalTableColumnRenameActionRequest{}
-	s.OldName = oldName
-	s.NewName = newName
-	return &s
-}
-
-func NewTableExternalTableColumnDropActionRequest(
-	names []string,
-) *TableExternalTableColumnDropActionRequest {
-	s := TableExternalTableColumnDropActionRequest{}
-	s.Names = names
-	return &s
-}
-
-func (s *TableExternalTableColumnDropActionRequest) WithIfExists(ifExists bool) *TableExternalTableColumnDropActionRequest {
-	s.IfExists = &ifExists
 	return s
 }
 
@@ -1317,6 +1474,16 @@ func NewTableSetRequest() *TableSetRequest {
 	return &s
 }
 
+func (s *TableSetRequest) WithContact(contact []TableContact) *TableSetRequest {
+	s.Contact = contact
+	return s
+}
+
+func (s *TableSetRequest) WithErrorLogging(errorLogging bool) *TableSetRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
 func (s *TableSetRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *TableSetRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
 	return s
@@ -1342,14 +1509,29 @@ func (s *TableSetRequest) WithDefaultDdlCollation(defaultDdlCollation StringAllo
 	return s
 }
 
+func (s *TableSetRequest) WithIcebergDefaultDdlCollation(icebergDefaultDdlCollation StringAllowEmpty) *TableSetRequest {
+	s.IcebergDefaultDdlCollation = &icebergDefaultDdlCollation
+	return s
+}
+
 func (s *TableSetRequest) WithComment(comment string) *TableSetRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *TableSetRequest) WithRowTimestamp(rowTimestamp bool) *TableSetRequest {
+	s.RowTimestamp = &rowTimestamp
 	return s
 }
 
 func NewTableUnsetRequest() *TableUnsetRequest {
 	s := TableUnsetRequest{}
 	return &s
+}
+
+func (s *TableUnsetRequest) WithContact(contact string) *TableUnsetRequest {
+	s.Contact = &contact
+	return s
 }
 
 func (s *TableUnsetRequest) WithDataRetentionTimeInDays(dataRetentionTimeInDays bool) *TableUnsetRequest {
@@ -1372,13 +1554,28 @@ func (s *TableUnsetRequest) WithDefaultDdlCollation(defaultDdlCollation bool) *T
 	return s
 }
 
+func (s *TableUnsetRequest) WithIcebergDefaultDdlCollation(icebergDefaultDdlCollation bool) *TableUnsetRequest {
+	s.IcebergDefaultDdlCollation = &icebergDefaultDdlCollation
+	return s
+}
+
 func (s *TableUnsetRequest) WithEnableSchemaEvolution(enableSchemaEvolution bool) *TableUnsetRequest {
 	s.EnableSchemaEvolution = &enableSchemaEvolution
 	return s
 }
 
+func (s *TableUnsetRequest) WithErrorLogging(errorLogging bool) *TableUnsetRequest {
+	s.ErrorLogging = &errorLogging
+	return s
+}
+
 func (s *TableUnsetRequest) WithComment(comment bool) *TableUnsetRequest {
 	s.Comment = &comment
+	return s
+}
+
+func (s *TableUnsetRequest) WithRowTimestamp(rowTimestamp bool) *TableUnsetRequest {
+	s.RowTimestamp = &rowTimestamp
 	return s
 }
 
@@ -1451,6 +1648,11 @@ func NewTableSetJoinPolicyRequest(
 	return &s
 }
 
+func (s *TableSetJoinPolicyRequest) WithAllowedJoinKeys(allowedJoinKeys []Column) *TableSetJoinPolicyRequest {
+	s.AllowedJoinKeys = allowedJoinKeys
+	return s
+}
+
 func (s *TableSetJoinPolicyRequest) WithForce(force bool) *TableSetJoinPolicyRequest {
 	s.Force = &force
 	return s
@@ -1459,6 +1661,191 @@ func (s *TableSetJoinPolicyRequest) WithForce(force bool) *TableSetJoinPolicyReq
 func NewTableUnsetJoinPolicyRequest() *TableUnsetJoinPolicyRequest {
 	s := TableUnsetJoinPolicyRequest{}
 	return &s
+}
+
+func NewTableSetDataMetricScheduleRequest(
+	dataMetricSchedule string,
+) *TableSetDataMetricScheduleRequest {
+	s := TableSetDataMetricScheduleRequest{}
+	s.DataMetricSchedule = dataMetricSchedule
+	return &s
+}
+
+func NewTableAddDataMetricFunctionRequest(
+	addedFunctions []TableAddedFunctionsRequest,
+) *TableAddDataMetricFunctionRequest {
+	s := TableAddDataMetricFunctionRequest{}
+	s.AddedFunctions = addedFunctions
+	return &s
+}
+
+func NewTableAddedFunctionsRequest(
+	dataMetricFunction SchemaObjectIdentifier,
+	on []Column,
+) *TableAddedFunctionsRequest {
+	s := TableAddedFunctionsRequest{}
+	s.DataMetricFunction = dataMetricFunction
+	s.On = on
+	return &s
+}
+
+func (s *TableAddedFunctionsRequest) WithWithinGroup(withinGroup []Column) *TableAddedFunctionsRequest {
+	s.WithinGroup = withinGroup
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithGroupLimit(groupLimit int) *TableAddedFunctionsRequest {
+	s.GroupLimit = &groupLimit
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithFilter(filter string) *TableAddedFunctionsRequest {
+	s.Filter = &filter
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithExpectations(expectations []TableExpectationsRequest) *TableAddedFunctionsRequest {
+	s.Expectations = expectations
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithExecuteAsRole(executeAsRole AccountObjectIdentifier) *TableAddedFunctionsRequest {
+	s.ExecuteAsRole = &executeAsRole
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithAnomalyDetection(anomalyDetection bool) *TableAddedFunctionsRequest {
+	s.AnomalyDetection = &anomalyDetection
+	return s
+}
+
+func (s *TableAddedFunctionsRequest) WithSensitivity(sensitivity TableDataMetricSensitivity) *TableAddedFunctionsRequest {
+	s.Sensitivity = &sensitivity
+	return s
+}
+
+func NewTableExpectationsRequest(
+	name string,
+	expression string,
+) *TableExpectationsRequest {
+	s := TableExpectationsRequest{}
+	s.Name = name
+	s.Expression = expression
+	return &s
+}
+
+func NewTableDropDataMetricFunctionRequest(
+	droppedFunctions []TableDroppedFunctionsRequest,
+) *TableDropDataMetricFunctionRequest {
+	s := TableDropDataMetricFunctionRequest{}
+	s.DroppedFunctions = droppedFunctions
+	return &s
+}
+
+func NewTableDroppedFunctionsRequest(
+	dataMetricFunction SchemaObjectIdentifier,
+	on []Column,
+) *TableDroppedFunctionsRequest {
+	s := TableDroppedFunctionsRequest{}
+	s.DataMetricFunction = dataMetricFunction
+	s.On = on
+	return &s
+}
+
+func NewTableModifyDataMetricFunctionRequest(
+	modifiedFunctions []TableModifiedFunctionsRequest,
+) *TableModifyDataMetricFunctionRequest {
+	s := TableModifyDataMetricFunctionRequest{}
+	s.ModifiedFunctions = modifiedFunctions
+	return &s
+}
+
+func NewTableModifiedFunctionsRequest(
+	dataMetricFunction SchemaObjectIdentifier,
+	on []Column,
+) *TableModifiedFunctionsRequest {
+	s := TableModifiedFunctionsRequest{}
+	s.DataMetricFunction = dataMetricFunction
+	s.On = on
+	return &s
+}
+
+func (s *TableModifiedFunctionsRequest) WithStatus(status TableDataMetricScheduleStatusOperation) *TableModifiedFunctionsRequest {
+	s.Status = &status
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithAddExpectation(addExpectation []TableAddExpectationRequest) *TableModifiedFunctionsRequest {
+	s.AddExpectation = addExpectation
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithModifyExpectation(modifyExpectation []TableModifyExpectationRequest) *TableModifiedFunctionsRequest {
+	s.ModifyExpectation = modifyExpectation
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithDropExpectation(dropExpectation []TableDropExpectationRequest) *TableModifiedFunctionsRequest {
+	s.DropExpectation = dropExpectation
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithFilter(filter string) *TableModifiedFunctionsRequest {
+	s.Filter = &filter
+	return s
+}
+
+func (s *TableModifiedFunctionsRequest) WithSet(set TableModifyDataMetricFunctionSetRequest) *TableModifiedFunctionsRequest {
+	s.Set = &set
+	return s
+}
+
+func NewTableAddExpectationRequest(
+	name string,
+	expression string,
+) *TableAddExpectationRequest {
+	s := TableAddExpectationRequest{}
+	s.Name = name
+	s.Expression = expression
+	return &s
+}
+
+func NewTableModifyExpectationRequest(
+	name string,
+	expression string,
+) *TableModifyExpectationRequest {
+	s := TableModifyExpectationRequest{}
+	s.Name = name
+	s.Expression = expression
+	return &s
+}
+
+func NewTableDropExpectationRequest(
+	name string,
+) *TableDropExpectationRequest {
+	s := TableDropExpectationRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewTableModifyDataMetricFunctionSetRequest() *TableModifyDataMetricFunctionSetRequest {
+	s := TableModifyDataMetricFunctionSetRequest{}
+	return &s
+}
+
+func (s *TableModifyDataMetricFunctionSetRequest) WithAnomalyDetection(anomalyDetection bool) *TableModifyDataMetricFunctionSetRequest {
+	s.AnomalyDetection = &anomalyDetection
+	return s
+}
+
+func (s *TableModifyDataMetricFunctionSetRequest) WithSensitivity(sensitivity TableDataMetricSensitivity) *TableModifyDataMetricFunctionSetRequest {
+	s.Sensitivity = &sensitivity
+	return s
+}
+
+func (s *TableModifyDataMetricFunctionSetRequest) WithDataQualityNotification(dataQualityNotification bool) *TableModifyDataMetricFunctionSetRequest {
+	s.DataQualityNotification = &dataQualityNotification
+	return s
 }
 
 func NewDropTableRequest(
@@ -1517,6 +1904,139 @@ func (s *ShowTableRequest) WithStartsWith(startsWith string) *ShowTableRequest {
 func (s *ShowTableRequest) WithLimit(limit LimitFrom) *ShowTableRequest {
 	s.Limit = &limit
 	return s
+}
+
+func NewCreateAsSelectTableRequest(
+	name SchemaObjectIdentifier,
+	columns []TableAsSelectColumnRequest,
+	query string,
+) *CreateAsSelectTableRequest {
+	s := CreateAsSelectTableRequest{}
+	s.name = name
+	s.Columns = columns
+	s.Query = query
+	return &s
+}
+
+func (s *CreateAsSelectTableRequest) WithOrReplace(orReplace bool) *CreateAsSelectTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateAsSelectTableRequest) WithClusterBy(clusterBy []string) *CreateAsSelectTableRequest {
+	s.ClusterBy = clusterBy
+	return s
+}
+
+func (s *CreateAsSelectTableRequest) WithCopy(copy []TableCopyOption) *CreateAsSelectTableRequest {
+	s.Copy = copy
+	return s
+}
+
+func (s *CreateAsSelectTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicyRequest) *CreateAsSelectTableRequest {
+	s.RowAccessPolicy = &rowAccessPolicy
+	return s
+}
+
+func NewTableAsSelectColumnRequest(
+	name string,
+) *TableAsSelectColumnRequest {
+	s := TableAsSelectColumnRequest{}
+	s.Name = name
+	return &s
+}
+
+func (s *TableAsSelectColumnRequest) WithColumnType(columnType datatypes.DataType) *TableAsSelectColumnRequest {
+	s.ColumnType = columnType
+	return s
+}
+
+func (s *TableAsSelectColumnRequest) WithMaskingPolicy(maskingPolicy SchemaObjectIdentifier) *TableAsSelectColumnRequest {
+	s.MaskingPolicy = &maskingPolicy
+	return s
+}
+
+func NewCreateUsingTemplateTableRequest(
+	name SchemaObjectIdentifier,
+) *CreateUsingTemplateTableRequest {
+	s := CreateUsingTemplateTableRequest{}
+	s.name = name
+	return &s
+}
+
+func (s *CreateUsingTemplateTableRequest) WithOrReplace(orReplace bool) *CreateUsingTemplateTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateUsingTemplateTableRequest) WithCopy(copy []TableCopyOption) *CreateUsingTemplateTableRequest {
+	s.Copy = copy
+	return s
+}
+
+func (s *CreateUsingTemplateTableRequest) WithQuery(query []string) *CreateUsingTemplateTableRequest {
+	s.Query = query
+	return s
+}
+
+func NewCreateLikeTableRequest(
+	name SchemaObjectIdentifier,
+	sourceTable SchemaObjectIdentifier,
+) *CreateLikeTableRequest {
+	s := CreateLikeTableRequest{}
+	s.name = name
+	s.SourceTable = sourceTable
+	return &s
+}
+
+func (s *CreateLikeTableRequest) WithOrReplace(orReplace bool) *CreateLikeTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateLikeTableRequest) WithClusterBy(clusterBy []string) *CreateLikeTableRequest {
+	s.ClusterBy = clusterBy
+	return s
+}
+
+func (s *CreateLikeTableRequest) WithCopy(copy []TableCopyOption) *CreateLikeTableRequest {
+	s.Copy = copy
+	return s
+}
+
+func NewCreateCloneTableRequest(
+	name SchemaObjectIdentifier,
+	sourceTable SchemaObjectIdentifier,
+) *CreateCloneTableRequest {
+	s := CreateCloneTableRequest{}
+	s.name = name
+	s.SourceTable = sourceTable
+	return &s
+}
+
+func (s *CreateCloneTableRequest) WithOrReplace(orReplace bool) *CreateCloneTableRequest {
+	s.OrReplace = &orReplace
+	return s
+}
+
+func (s *CreateCloneTableRequest) WithClonePoint(clonePoint TableClonePointRequest) *CreateCloneTableRequest {
+	s.ClonePoint = &clonePoint
+	return s
+}
+
+func (s *CreateCloneTableRequest) WithCopy(copy []TableCopyOption) *CreateCloneTableRequest {
+	s.Copy = copy
+	return s
+}
+
+func NewTableClonePointRequest(
+	moment CloneMoment,
+	at TimeTravel,
+) *TableClonePointRequest {
+	s := TableClonePointRequest{}
+	s.Moment = moment
+	s.At = at
+	return &s
 }
 
 func NewDescribeColumnsTableRequest(

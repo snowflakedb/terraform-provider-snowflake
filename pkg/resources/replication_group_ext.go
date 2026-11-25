@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -47,16 +47,17 @@ func replicationGroupNewCreateRequestExt(_ *schema.ResourceData, id sdk.AccountO
 }
 
 func replicationGroupSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, group *sdk.ReplicationGroup) error {
-	allowedAccounts, err := replicationGroupAllowedAccountsWithoutCurrent(ctx, meta, group.AllowedAccounts)
+	allowedAccounts, err := allowedAccountsWithoutCurrent(ctx, meta, group.AllowedAccounts)
 	if err != nil {
 		return err
 	}
 	errs := []error{
-		d.Set("object_types", replicationGroupEnumStrings(group.ObjectTypes)),
-		d.Set("allowed_accounts", accountIdentifierNames(allowedAccounts)),
+		d.Set("object_types", enumStrings(group.ObjectTypes)),
+		d.Set("allowed_accounts", collections.Map(allowedAccounts, sdk.AccountIdentifier.FullyQualifiedName)),
 		d.Set("comment", group.Comment),
 		d.Set("replication_schedule", group.ReplicationSchedule),
-		d.Set("allowed_integration_types", replicationGroupEnumStrings(group.AllowedIntegrationTypes)),
+		d.Set("allowed_integration_types", enumStrings(group.AllowedIntegrationTypes)),
+		setOptionalValueWithMapping(d, "error_integration", group.ErrorIntegration, (*sdk.AccountObjectIdentifier).Name),
 	}
 	return errors.Join(errs...)
 }
@@ -87,47 +88,4 @@ func toReplicationGroupAllowedShares(value any) (sdk.AccountObjectIdentifier, er
 
 func toReplicationGroupAllowedAccounts(value any) (sdk.AccountIdentifier, error) {
 	return sdk.ParseAccountIdentifier(value.(string))
-}
-
-func replicationGroupEnumStrings[T ~string](values []T) []string {
-	out := make([]string, len(values))
-	for i, value := range values {
-		out[i] = string(value)
-	}
-	return out
-}
-
-func replicationGroupCurrentAccount(ctx context.Context, meta any) (sdk.AccountIdentifier, error) {
-	details, err := meta.(*provider.Context).Client.ContextFunctions.CurrentSessionDetails(ctx)
-	if err != nil {
-		return sdk.AccountIdentifier{}, err
-	}
-	return sdk.NewAccountIdentifier(details.OrganizationName, details.AccountName), nil
-}
-
-func replicationGroupAllowedAccountsWithoutCurrent(ctx context.Context, meta any, accounts []sdk.AccountIdentifier) ([]sdk.AccountIdentifier, error) {
-	current, err := replicationGroupCurrentAccount(ctx, meta)
-	if err != nil {
-		return nil, err
-	}
-	return omitCurrentAccount(accounts, current), nil
-}
-
-func omitCurrentAccount(accounts []sdk.AccountIdentifier, current sdk.AccountIdentifier) []sdk.AccountIdentifier {
-	filtered := make([]sdk.AccountIdentifier, 0, len(accounts))
-	for _, account := range accounts {
-		if account.FullyQualifiedName() == current.FullyQualifiedName() {
-			continue
-		}
-		filtered = append(filtered, account)
-	}
-	return filtered
-}
-
-func accountIdentifierNames(values []sdk.AccountIdentifier) []string {
-	out := make([]string, len(values))
-	for i, value := range values {
-		out[i] = value.FullyQualifiedName()
-	}
-	return out
 }

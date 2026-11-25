@@ -91,27 +91,7 @@ var computePoolSchema = collections.MergeMaps(
 		},
 	},
 	computePoolAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW COMPUTE POOLS` for the given compute pool.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowComputePoolSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE COMPUTE POOL` for the given compute pool.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeComputePoolDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeComputePool, schemas.ShowComputePoolSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeComputePool, schemas.DescribeComputePoolDetailsSchema),
 )

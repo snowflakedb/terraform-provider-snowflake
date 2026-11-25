@@ -286,7 +286,7 @@ func ReadIcebergTableFunc(withExternalChangesMarking bool) schema.ReadContextFun
 			if err != nil {
 				return err
 			}
-			policyRefs, err := readRootLevelPolicies(ctx, client, id, sdk.PolicyEntityDomainTable, d)
+			policyRefs, err := readRootLevelPolicies(ctx, client, id, sdk.PolicyEntityDomainTable, d, sdk.PolicyKindRowAccessPolicy, sdk.PolicyKindAggregationPolicy)
 			if err != nil {
 				return err
 			}

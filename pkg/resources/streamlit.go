@@ -331,7 +331,7 @@ func UpdateContextStreamlit(ctx context.Context, d *schema.ResourceData, meta an
 			return client.Streamlits.Alter(ctx, sdk.NewAlterStreamlitRequest(currentId).WithRenameTo(targetId))
 		},
 		client.Streamlits.ShowByID,
-		"streamlit",
+		sdk.ObjectTypeStreamlit,
 	); diags != nil {
 		return diags
 	}

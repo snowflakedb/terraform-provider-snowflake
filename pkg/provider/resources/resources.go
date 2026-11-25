@@ -51,6 +51,7 @@ const (
 	ExternalOauthSecurityIntegration                       resource = "snowflake_external_oauth_integration"
 	ExternalVolume                                         resource = "snowflake_external_volume"
 	FailoverGroup                                          resource = "snowflake_failover_group"
+	FailoverGroupSecondary                                 resource = "snowflake_failover_group_secondary"
 	FileFormat                                             resource = "snowflake_file_format"
 	FileFormatAvro                                         resource = "snowflake_file_format_avro"
 	FileFormatCsv                                          resource = "snowflake_file_format_csv"

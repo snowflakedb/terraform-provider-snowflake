@@ -219,6 +219,7 @@ var allObjectsParameters = []SnowflakeObjectParameters{
 			{ParameterName: string(sdk.AccountParameterSearchPath), ParameterType: "string", DefaultValue: "$current, $public", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterServerlessTaskMaxStatementSize), ParameterType: "sdk.WarehouseSize", DefaultValue: `sdk.WarehouseSize("X2Large")`, DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterServerlessTaskMinStatementSize), ParameterType: "sdk.WarehouseSize", DefaultValue: "sdk.WarehouseSizeXSmall", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
+			{ParameterName: string(sdk.AccountParameterServiceCallerTokenValiditySecs), ParameterType: "int", DefaultValue: "120", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterSimulatedDataSharingConsumer), ParameterType: "string", DefaultValue: "", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterSqlTraceQueryText), ParameterType: "string", DefaultValue: "OFF", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},
 			{ParameterName: string(sdk.AccountParameterStorageSerializationPolicy), ParameterType: "sdk.StorageSerializationPolicy", DefaultValue: "sdk.StorageSerializationPolicyOptimized", DefaultLevel: "sdk.ParameterTypeSnowflakeDefault"},

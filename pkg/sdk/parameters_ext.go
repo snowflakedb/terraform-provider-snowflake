@@ -5,103 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 )
-
-var _ validatable = new(setParameterOnObject)
-
-func (v *parameters) SetAccountParameter(ctx context.Context, parameter AccountParameter, value string) error {
-	parameters := NewAccountParametersRequest()
-	if err := parameters.SetParameterFromRaw(string(parameter), value); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*parameters)))
-}
-
-// TODO(SNOW-1866453): add integration tests
-func (v *parameters) UnsetAccountParameter(ctx context.Context, parameter AccountParameter) error {
-	parameters := NewAccountParametersUnsetRequest()
-	if err := parameters.UnsetParameterFromRaw(string(parameter)); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnset(*NewAccountUnsetRequest().WithParameters(*parameters)))
-}
-
-func (v *parameters) SetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter, value string) error {
-	parameters := NewAccountParametersRequest()
-	if err := parameters.SetParameterFromRaw(string(parameter), value); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithSet(*NewAccountSetRequest().WithParameters(*parameters)))
-}
-
-func (v *parameters) UnsetObjectParameterOnAccount(ctx context.Context, parameter ObjectParameter) error {
-	parameters := NewAccountParametersUnsetRequest()
-	if err := parameters.UnsetParameterFromRaw(string(parameter)); err != nil {
-		return err
-	}
-	return v.client.Accounts.Alter(ctx, NewAlterAccountRequest().WithUnset(*NewAccountUnsetRequest().WithParameters(*parameters)))
-}
-
-type setParameterOnObject struct {
-	alter            bool             `ddl:"static" sql:"ALTER"`
-	objectType       ObjectType       `ddl:"keyword"`
-	objectIdentifier ObjectIdentifier `ddl:"identifier"`
-	set              bool             `ddl:"static" sql:"SET"`
-	parameterKey     ObjectParameter  `ddl:"keyword"`
-	equals           bool             `ddl:"static" sql:"="`
-	parameterValue   string           `ddl:"keyword"`
-}
-
-func (v *setParameterOnObject) validate() error {
-	return nil
-}
-
-func (v *parameters) SetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter, value string) error {
-	opts := &setParameterOnObject{
-		objectType:       object.ObjectType,
-		objectIdentifier: object.Name,
-		parameterKey:     parameter,
-		parameterValue:   value,
-	}
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
-}
-
-type unsetParameterOnObject struct {
-	alter            bool             `ddl:"static" sql:"ALTER"`
-	objectType       ObjectType       `ddl:"keyword"`
-	objectIdentifier ObjectIdentifier `ddl:"identifier"`
-	unset            bool             `ddl:"static" sql:"UNSET"`
-	parameterKey     ObjectParameter  `ddl:"keyword"`
-}
-
-func (v *unsetParameterOnObject) validate() error {
-	return nil
-}
-
-func (v *parameters) UnsetObjectParameterOnObject(ctx context.Context, object Object, parameter ObjectParameter) error {
-	opts := &unsetParameterOnObject{
-		objectType:       object.ObjectType,
-		objectIdentifier: object.Name,
-		parameterKey:     parameter,
-	}
-	if err := opts.validate(); err != nil {
-		return err
-	}
-	sql, err := structToSQL(opts)
-	if err != nil {
-		return err
-	}
-	_, err = v.client.exec(ctx, sql)
-	return err
-}
 
 func catalogParameterResult(err error) (handled bool, alter bool, ret error) {
 	if err == nil {
@@ -444,11 +349,18 @@ type ParametersIn struct {
 	OpenflowDeployment AccountObjectIdentifier             `ddl:"identifier" sql:"OPENFLOW DEPLOYMENT"`
 	Service            SchemaObjectIdentifier              `ddl:"identifier" sql:"SERVICE"`
 	Pipe               SchemaObjectIdentifier              `ddl:"identifier" sql:"PIPE"`
+	// Object is the generic form (IN <object_type> <name>), used for the object types that have no dedicated field above.
+	Object *ParametersInObject `ddl:"keyword"`
+}
+
+type ParametersInObject struct {
+	ObjectType ObjectType       `ddl:"keyword"`
+	Name       ObjectIdentifier `ddl:"identifier"`
 }
 
 func (v *ParametersIn) validate() error {
-	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure, v.OpenflowDeployment, v.Service, v.Pipe) {
-		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment", "Service", "Pipe"))
+	if !anyValueSet(v.Session, v.Account, v.User, v.Warehouse, v.Database, v.Schema, v.Task, v.Table, v.Function, v.Procedure, v.OpenflowDeployment, v.Service, v.Pipe, v.Object) {
+		return errors.Join(errAtLeastOneOf("Session", "Account", "User", "Warehouse", "Database", "Schema", "Task", "Table", "Function", "Procedure", "OpenflowDeployment", "Service", "Pipe", "Object"))
 	}
 	return nil
 }
@@ -523,10 +435,7 @@ func (v *parameters) ShowAccountParameter(ctx context.Context, parameter Account
 	if err != nil {
 		return nil, err
 	}
-	if len(parameters) == 0 {
-		return nil, fmt.Errorf("parameter %s not found", parameter)
-	}
-	return parameters[0], nil
+	return exactParameter(parameters, string(parameter))
 }
 
 func (v *parameters) ShowSessionParameter(ctx context.Context, parameter SessionParameter) (*Parameter, error) {
@@ -542,10 +451,7 @@ func (v *parameters) ShowSessionParameter(ctx context.Context, parameter Session
 	if err != nil {
 		return nil, err
 	}
-	if len(parameters) == 0 {
-		return nil, fmt.Errorf("parameter %s not found", parameter)
-	}
-	return parameters[0], nil
+	return exactParameter(parameters, string(parameter))
 }
 
 func (v *parameters) ShowUserParameter(ctx context.Context, parameter UserParameter, userId AccountObjectIdentifier) (*Parameter, error) {
@@ -561,10 +467,7 @@ func (v *parameters) ShowUserParameter(ctx context.Context, parameter UserParame
 	if err != nil {
 		return nil, err
 	}
-	if len(parameters) == 0 {
-		return nil, fmt.Errorf("parameter %s not found", parameter)
-	}
-	return parameters[0], nil
+	return exactParameter(parameters, string(parameter))
 }
 
 func (v *parameters) ShowObjectParameter(ctx context.Context, parameter ObjectParameter, object Object) (*Parameter, error) {
@@ -597,14 +500,93 @@ func (v *parameters) ShowObjectParameter(ctx context.Context, parameter ObjectPa
 	case ObjectTypePipe:
 		opts.In.Pipe = object.Name.(SchemaObjectIdentifier)
 	default:
-		return nil, fmt.Errorf("unsupported object type %s", object.ObjectType)
+		// Any other object type, so that parameters of the object types that are not known to the provider can be read.
+		if object.Name == nil {
+			return nil, fmt.Errorf("object identifier is required for object type %s", object.ObjectType)
+		}
+		opts.In.Object = &ParametersInObject{ObjectType: object.ObjectType, Name: object.Name}
 	}
 	parameters, err := v.ShowParameters(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	if len(parameters) == 0 {
-		return nil, fmt.Errorf("parameter %s not found", parameter)
+	return exactParameter(parameters, string(parameter))
+}
+
+// exactParameter picks the row of the given name. The LIKE pattern used to show a parameter treats "_" as a wildcard,
+// so the result may contain other parameters (e.g. when the name is not known to the provider).
+func exactParameter(parameters []*Parameter, name string) (*Parameter, error) {
+	for _, p := range parameters {
+		if strings.EqualFold(p.Key, name) {
+			return p, nil
+		}
 	}
-	return parameters[0], nil
+	return nil, fmt.Errorf("parameter %s not found", name)
+}
+
+// setWithGenericFallback sends the value with the catalog write path when the catalog handles the parameter (the kind is not used),
+// and with the raw write path otherwise, with the value rendered by the kind.
+func setWithGenericFallback(parameter string, kind ParameterValueKind, value string, viaCatalog func() (bool, error), raw func(rendered string) error) error {
+	handled, err := viaCatalog()
+	if err != nil {
+		return err
+	}
+	if handled {
+		log.Printf("[WARN] value kind %s is ignored for %s, because the parameter catalog supports the parameter", kind, parameter)
+		return nil
+	}
+	rendered, err := kind.Render(parameter, value)
+	if err != nil {
+		return err
+	}
+	return raw(rendered)
+}
+
+// unsetWithGenericFallback is the unset counterpart of setWithGenericFallback. Unsetting needs no value, so there is no kind.
+func unsetWithGenericFallback(viaCatalog func() (bool, error), raw func() error) error {
+	handled, err := viaCatalog()
+	if err != nil || handled {
+		return err
+	}
+	return raw()
+}
+
+func (v *parameters) SetAccountParameterWithGenericFallback(ctx context.Context, parameter string, kind ParameterValueKind, value string) error {
+	return setWithGenericFallback(parameter, kind, value,
+		func() (bool, error) {
+			return v.SetObjectParameterOnAccountViaCatalog(ctx, ObjectParameter(parameter), value)
+		},
+		func(rendered string) error {
+			return v.SetAccountParameterRaw(ctx, NewSetAccountParameterRawParameterRequest(parameter, rendered))
+		},
+	)
+}
+
+func (v *parameters) UnsetAccountParameterWithGenericFallback(ctx context.Context, parameter string) error {
+	return unsetWithGenericFallback(
+		func() (bool, error) {
+			return v.UnsetObjectParameterOnAccountViaCatalog(ctx, ObjectParameter(parameter))
+		},
+		func() error {
+			return v.UnsetAccountParameterRaw(ctx, NewUnsetAccountParameterRawParameterRequest(parameter))
+		},
+	)
+}
+
+func (v *parameters) SetObjectParameterOnObjectWithGenericFallback(ctx context.Context, object Object, parameter ObjectParameter, kind ParameterValueKind, value string) error {
+	return setWithGenericFallback(string(parameter), kind, value,
+		func() (bool, error) { return v.SetObjectParameterOnObjectViaCatalog(ctx, object, parameter, value) },
+		func(rendered string) error {
+			return v.SetObjectParameterOnObjectRaw(ctx, NewSetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(parameter), rendered))
+		},
+	)
+}
+
+func (v *parameters) UnsetObjectParameterOnObjectWithGenericFallback(ctx context.Context, object Object, parameter ObjectParameter) error {
+	return unsetWithGenericFallback(
+		func() (bool, error) { return v.UnsetObjectParameterOnObjectViaCatalog(ctx, object, parameter) },
+		func() error {
+			return v.UnsetObjectParameterOnObjectRaw(ctx, NewUnsetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(parameter)))
+		},
+	)
 }

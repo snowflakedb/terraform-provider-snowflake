@@ -89,6 +89,6 @@ func ReadMaterializedViews(ctx context.Context, d *schema.ResourceData, meta any
 		}
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(databaseName, schemaName))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(databaseName, schemaName))
 	return diag.FromErr(d.Set("materialized_views", materializedViews))
 }

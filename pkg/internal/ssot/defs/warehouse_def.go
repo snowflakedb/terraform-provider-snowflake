@@ -280,26 +280,16 @@ var WarehouseAttrs = struct {
 	Kind: ssot.Attribute{Name: "kind", Type: ssot.AttrString, Readonly: true},
 }
 
-// ConflictsWith is assigned here. The two attributes reference each other, so setting it inside the
-// WarehouseAttrs literal is an initialization cycle.
+// ShowVariants points back at objects that are declared after Warehouse, so it is set here.
 func init() {
-	WarehouseAttrs.ResourceConstraint.ConflictsWith = []ssot.Attribute{WarehouseAttrs.Generation}
-	WarehouseAttrs.Generation.ConflictsWith = []ssot.Attribute{WarehouseAttrs.ResourceConstraint}
-	for i := range Warehouse.Attributes {
-		switch Warehouse.Attributes[i].Name {
-		case WarehouseAttrs.ResourceConstraint.Name:
-			Warehouse.Attributes[i].ConflictsWith = WarehouseAttrs.ResourceConstraint.ConflictsWith
-		case WarehouseAttrs.Generation.Name:
-			Warehouse.Attributes[i].ConflictsWith = WarehouseAttrs.Generation.ConflictsWith
-		}
-	}
-	Warehouse.ShowVariants = []*ssot.Object{&WarehouseAdaptive, &WarehouseInteractive}
+	Warehouse.BaseVariant.ShowVariants = []*ssot.Object{&WarehouseAdaptive, &WarehouseInteractive}
 }
 
 var Warehouse = ssot.Object{
-	Name:       "Warehouse",
-	NamePlural: "Warehouses",
-	IdType:     "AccountObjectIdentifier",
+	Name:        "Warehouse",
+	NamePlural:  "Warehouses",
+	IdType:      "AccountObjectIdentifier",
+	Validations: []ssot.Validation{ssot.Conflicting(WarehouseAttrs.ResourceConstraint, WarehouseAttrs.Generation)},
 	// ShowParametersDetails lists interactive parameters such as FALLBACK_WAREHOUSE.
 	ShowParametersDetailsAdditionalLevels: []ssot.ParameterLevel{ssot.ParameterLevelWarehouseInteractive},
 	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{
@@ -348,6 +338,8 @@ var Warehouse = ssot.Object{
 				ssot.ObjectAssertDescribe(),
 			),
 		),
+		// TODO [SNOW-4491301]: offer starts_with and limit when Snowflake applies STARTS WITH and LIMIT in SHOW WAREHOUSES; it ignores them today.
+		ssot.WithDataSource(ssot.DataSourceWithoutFilters(ssot.DataSourceFilterStartsWith, ssot.DataSourceFilterLimit)),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkSuspendIfStarted(),
@@ -491,7 +483,6 @@ var Warehouse = ssot.Object{
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),
 	}},
-	ShowPlainName: "WarehouseRegular",
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{
 			&WarehouseAttrs.Name,
@@ -527,45 +518,48 @@ var Warehouse = ssot.Object{
 	},
 	// Union of all SHOW WAREHOUSES columns (AllDetails analog).
 	// Keep omitted: actives / pendings / failed / suspended / uuid (Snowflake: internal use, will be removed).
-	ShowGeneric: ssot.OutputSpec{
-		Columns: []*ssot.Attribute{
-			&WarehouseAttrs.Name,
-			&WarehouseAttrs.State,
-			&WarehouseAttrs.WarehouseType,
-			&WarehouseAttrs.WarehouseSize,
-			&WarehouseAttrs.MinClusterCount,
-			&WarehouseAttrs.MaxClusterCount,
-			&WarehouseAttrs.StartedClusters,
-			&WarehouseAttrs.Running,
-			&WarehouseAttrs.Queued,
-			&WarehouseAttrs.IsDefault,
-			&WarehouseAttrs.IsCurrent,
-			&WarehouseAttrs.AutoSuspend,
-			&WarehouseAttrs.AutoResume,
-			&WarehouseAttrs.Available,
-			&WarehouseAttrs.Provisioning,
-			&WarehouseAttrs.Quiescing,
-			&WarehouseAttrs.Other,
-			&WarehouseAttrs.CreatedOn,
-			&WarehouseAttrs.ResumedOn,
-			&WarehouseAttrs.UpdatedOn,
-			&WarehouseAttrs.Owner,
-			&WarehouseAttrs.Comment,
-			&WarehouseAttrs.EnableQueryAcceleration,
-			&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
-			&WarehouseAttrs.ResourceMonitor,
-			&WarehouseAttrs.Actives,
-			&WarehouseAttrs.Pendings,
-			&WarehouseAttrs.Failed,
-			&WarehouseAttrs.Suspended,
-			&WarehouseAttrs.Uuid,
-			&WarehouseAttrs.ScalingPolicy,
-			&WarehouseAttrs.OwnerRoleType,
-			&WarehouseAttrs.ResourceConstraint,
-			&WarehouseAttrs.Generation,
-			&WarehouseAttrs.MaxQueryPerformanceLevel,
-			&WarehouseAttrs.QueryThroughputMultiplier,
-			&WarehouseAttrs.Tables,
+	BaseVariant: &ssot.BaseVariant{
+		ShowPlainName: "WarehouseRegular",
+		ShowGeneric: ssot.OutputSpec{
+			Columns: []*ssot.Attribute{
+				&WarehouseAttrs.Name,
+				&WarehouseAttrs.State,
+				&WarehouseAttrs.WarehouseType,
+				&WarehouseAttrs.WarehouseSize,
+				&WarehouseAttrs.MinClusterCount,
+				&WarehouseAttrs.MaxClusterCount,
+				&WarehouseAttrs.StartedClusters,
+				&WarehouseAttrs.Running,
+				&WarehouseAttrs.Queued,
+				&WarehouseAttrs.IsDefault,
+				&WarehouseAttrs.IsCurrent,
+				&WarehouseAttrs.AutoSuspend,
+				&WarehouseAttrs.AutoResume,
+				&WarehouseAttrs.Available,
+				&WarehouseAttrs.Provisioning,
+				&WarehouseAttrs.Quiescing,
+				&WarehouseAttrs.Other,
+				&WarehouseAttrs.CreatedOn,
+				&WarehouseAttrs.ResumedOn,
+				&WarehouseAttrs.UpdatedOn,
+				&WarehouseAttrs.Owner,
+				&WarehouseAttrs.Comment,
+				&WarehouseAttrs.EnableQueryAcceleration,
+				&WarehouseAttrs.QueryAccelerationMaxScaleFactor,
+				&WarehouseAttrs.ResourceMonitor,
+				&WarehouseAttrs.Actives,
+				&WarehouseAttrs.Pendings,
+				&WarehouseAttrs.Failed,
+				&WarehouseAttrs.Suspended,
+				&WarehouseAttrs.Uuid,
+				&WarehouseAttrs.ScalingPolicy,
+				&WarehouseAttrs.OwnerRoleType,
+				&WarehouseAttrs.ResourceConstraint,
+				&WarehouseAttrs.Generation,
+				&WarehouseAttrs.MaxQueryPerformanceLevel,
+				&WarehouseAttrs.QueryThroughputMultiplier,
+				&WarehouseAttrs.Tables,
+			},
 		},
 	},
 	Describe: ssot.OutputSpec{

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -24,17 +25,17 @@ func TestInt_ExternalTables(t *testing.T) {
 
 	defaultColumns := func() []sdk.ExternalTableColumnRequest {
 		return []sdk.ExternalTableColumnRequest{
-			*sdk.NewExternalTableColumnRequest("filename", sdk.DataTypeString, *sdk.NewAsExpressionRequest("metadata$filename::string")),
-			*sdk.NewExternalTableColumnRequest("city", sdk.DataTypeString, *sdk.NewAsExpressionRequest("value:city:findname::string")),
-			*sdk.NewExternalTableColumnRequest("time", sdk.DataTypeTimestampLTZ, *sdk.NewAsExpressionRequest("to_timestamp_ltz(value:time::int)")),
-			*sdk.NewExternalTableColumnRequest("weather", sdk.DataTypeVariant, *sdk.NewAsExpressionRequest("value:weather::variant")),
+			*sdk.NewExternalTableColumnRequest("filename", testdatatypes.DataTypeString, *sdk.NewAsExpressionRequest("metadata$filename::string")),
+			*sdk.NewExternalTableColumnRequest("city", testdatatypes.DataTypeString, *sdk.NewAsExpressionRequest("value:city:findname::string")),
+			*sdk.NewExternalTableColumnRequest("time", testdatatypes.DataTypeTimestampLTZ, *sdk.NewAsExpressionRequest("to_timestamp_ltz(value:time::int)")),
+			*sdk.NewExternalTableColumnRequest("weather", testdatatypes.DataTypeVariant, *sdk.NewAsExpressionRequest("value:weather::variant")),
 		}
 	}
 
 	columns := defaultColumns()
 	columnsWithPartition := append(defaultColumns(), []sdk.ExternalTableColumnRequest{
-		*sdk.NewExternalTableColumnRequest("weather_date", sdk.DataTypeDate, *sdk.NewAsExpressionRequest("to_date(to_timestamp(value:time::int))")),
-		*sdk.NewExternalTableColumnRequest("part_date", sdk.DataTypeDate, *sdk.NewAsExpressionRequest("parse_json(metadata$external_table_partition):weather_date::date")),
+		*sdk.NewExternalTableColumnRequest("weather_date", testdatatypes.DataTypeDate, *sdk.NewAsExpressionRequest("to_date(to_timestamp(value:time::int))")),
+		*sdk.NewExternalTableColumnRequest("part_date", testdatatypes.DataTypeDate, *sdk.NewAsExpressionRequest("parse_json(metadata$external_table_partition):weather_date::date")),
 	}...)
 
 	minimalCreateExternalTableReq := func(id sdk.SchemaObjectIdentifier) *sdk.CreateExternalTableRequest {
@@ -341,7 +342,8 @@ func TestInt_ExternalTables(t *testing.T) {
 		assert.Len(t, d, len(req.GetColumns())+1) // +1 because there's underlying Value column
 		assert.Contains(t, d, sdk.ExternalTableColumnDetails{
 			Name:       "VALUE",
-			Type:       "VARIANT",
+			Type:       testdatatypes.DataTypeVariant,
+			TypeRaw:    "VARIANT",
 			Kind:       "COLUMN",
 			IsNullable: true,
 			Default:    nil,

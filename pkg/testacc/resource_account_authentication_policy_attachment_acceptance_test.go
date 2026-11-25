@@ -206,13 +206,13 @@ func TestAcc_AccountAuthenticationPolicyAttachment_migrateFromV2_18_0_ensureSmoo
 		},
 		CheckDestroy: CheckAccountAuthenticationPolicyAttachmentDestroy(t),
 		Steps: []resource.TestStep{
-			// Create with the last released version that still uses the old resource id format (helpers.EncodeSnowflakeID).
+			// Create with the last released version that still uses the old resource id format (helpers.EncodeSnowflakeIDLegacy).
 			{
 				ExternalProviders: ExternalProviderWithExactVersion("2.18.0"),
 				Config:            config.FromModels(t, providerModel, basicModel),
 				Check: assertThat(
 					t,
-					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(policy.ID()))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeIDLegacy(policy.ID()))),
 				),
 			},
 			// Upgrade to the current version that additionally encodes the target scope in the resource id and ensure the

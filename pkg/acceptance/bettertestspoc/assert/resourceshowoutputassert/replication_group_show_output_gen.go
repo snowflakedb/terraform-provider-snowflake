@@ -131,8 +131,13 @@ func (r *ReplicationGroupShowOutputAssert) HasIsListingAutoFulfillmentGroup(expe
 	return r
 }
 
-func (r *ReplicationGroupShowOutputAssert) HasReadOnly(expected bool) *ReplicationGroupShowOutputAssert {
-	r.BoolValueSet("read_only", expected)
+func (r *ReplicationGroupShowOutputAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *ReplicationGroupShowOutputAssert {
+	r.StringValueSet("error_integration", expected.Name())
+	return r
+}
+
+func (r *ReplicationGroupShowOutputAssert) HasIsPrimaryReadOnly(expected bool) *ReplicationGroupShowOutputAssert {
+	r.BoolValueSet("is_primary_read_only", expected)
 	return r
 }
 
@@ -235,7 +240,12 @@ func (r *ReplicationGroupShowOutputAssert) HasNoIsListingAutoFulfillmentGroup() 
 	return r
 }
 
-func (r *ReplicationGroupShowOutputAssert) HasNoReadOnly() *ReplicationGroupShowOutputAssert {
-	r.ValueNotSet("read_only")
+func (r *ReplicationGroupShowOutputAssert) HasNoErrorIntegration() *ReplicationGroupShowOutputAssert {
+	r.ValueNotSet("error_integration")
+	return r
+}
+
+func (r *ReplicationGroupShowOutputAssert) HasNoIsPrimaryReadOnly() *ReplicationGroupShowOutputAssert {
+	r.ValueNotSet("is_primary_read_only")
 	return r
 }

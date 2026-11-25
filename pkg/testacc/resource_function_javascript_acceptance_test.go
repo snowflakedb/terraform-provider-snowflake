@@ -27,8 +27,8 @@ func TestAcc_FunctionJavascript_InlineBasic(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVariant
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Function.SampleJavascriptDefinition(t, argName)
 
@@ -96,7 +96,7 @@ func TestAcc_FunctionJavascript_InlineBasic(t *testing.T) {
 }
 
 func TestAcc_FunctionJavascript_InlineEmptyArgs(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments()
 	definition := testClient().Function.SampleJavascriptDefinitionNoArgs(t)
 	functionModel := model.FunctionJavascriptInline("test", id, definition, datatypes.VariantLegacyDataType)
 
@@ -127,7 +127,7 @@ func TestAcc_FunctionJavascript_InlineFull(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVariant
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	definition := testClient().Function.SampleJavascriptDefinition(t, argName)
 	functionModel := model.FunctionJavascriptInline("test", id, definition, datatypes.VariantLegacyDataType).
 		WithIsSecure(r.BooleanFalse).

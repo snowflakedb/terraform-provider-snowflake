@@ -256,12 +256,13 @@ func (r *DescribeViewRequest) toOpts() *DescribeViewOptions {
 
 func (r viewDetailsRow) convert() (*ViewDetails, error) {
 	result := &ViewDetails{
-		Name:       r.Name,
-		Type:       r.Type,
-		Kind:       r.Kind,
-		IsNullable: r.Null == "Y",
-		IsPrimary:  r.PrimaryKey == "Y",
-		IsUnique:   r.UniqueKey == "Y",
+		Name:        r.Name,
+		Type:        parseDataTypeOrNil(r.Type),
+		DataTypeRaw: r.Type,
+		Kind:        r.Kind,
+		IsNullable:  r.Null == "Y",
+		IsPrimary:   r.PrimaryKey == "Y",
+		IsUnique:    r.UniqueKey == "Y",
 	}
 	mapNullString(&result.Default, r.Default)
 	mapNullStringToBool(&result.Check, r.Check)

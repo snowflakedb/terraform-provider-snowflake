@@ -4,6 +4,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -17,7 +19,7 @@ func init() {
 	tagId := randomSchemaObjectIdentifier()
 	tagId2 := randomSchemaObjectIdentifier()
 	integrationId := randomAccountObjectIdentifier()
-	procedureId := randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR)
+	procedureId := randomSchemaObjectIdentifierWithArguments(datatypes.NewVarcharDataType())
 	quotaUserTag := func(tagId SchemaObjectIdentifier, value string) QuotaUserTag {
 		return QuotaUserTag{Reference: QuotaUserTagReference{Arguments: QuotaUserTagReferenceArguments{Tag: tagId}}, Value: value}
 	}

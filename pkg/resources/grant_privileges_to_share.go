@@ -7,7 +7,6 @@ import (
 	"log"
 	"slices"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -310,15 +309,9 @@ func DeleteGrantPrivilegesToShare(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
-		err = client.Grants.RevokePrivilegeFromShareSafely(ctx, sdk.NewRevokePrivilegeFromShareRequest(id.ShareName).
-			WithPrivileges(getObjectPrivilegesFromSchema(d)).
-			WithOn(*grantOn))
-	} else {
-		err = client.Grants.RevokePrivilegeFromShare(ctx, sdk.NewRevokePrivilegeFromShareRequest(id.ShareName).
-			WithPrivileges(getObjectPrivilegesFromSchema(d)).
-			WithOn(*grantOn))
-	}
+	err = client.Grants.RevokePrivilegeFromShareSafely(ctx, sdk.NewRevokePrivilegeFromShareRequest(id.ShareName).
+		WithPrivileges(getObjectPrivilegesFromSchema(d)).
+		WithOn(*grantOn))
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{

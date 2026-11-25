@@ -3,8 +3,6 @@ package defs
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
 // Describe and select methods stay custom operations. SdkDescribe is one DESCRIBE per object.
-// CREATE AS SELECT, CREATE USING TEMPLATE, CREATE LIKE, and CREATE CLONE stay handwritten,
-// so SdkDefineFromSsot stays off. Follow-up: convert those four and turn the setting on.
 
 func tableDescribeText(name string) *ssot.Attribute {
 	return &ssot.Attribute{Name: name, Type: ssot.AttrString, Readonly: true}
@@ -46,8 +44,9 @@ var tableDescribeOperations = []ssot.CustomOperationSpec{
 			Plain: "TableColumnDetails",
 			Columns: []*ssot.Attribute{
 				tableDescribeText("name"),
-				tableDescribeField("type", "DataType", true, ""),
-				tableDescribeText("kind"),
+				tableDescribeField("type", "datatypes.DataType", true, ""),
+				{Name: "TypeRaw", PlainOnlyKind: "string"},
+				{Name: "kind", Type: ssot.AttrEnum, Enum: TableColumnKind, Readonly: true},
 				{Name: "null?", Type: ssot.AttrBool, StoredAsText: true, BoolTrueValue: "Y", Readonly: true, SchemaName: "is_nullable"},
 				tableDescribeOptionalText("default"),
 				{Name: "primary key", Type: ssot.AttrBool, StoredAsText: true, BoolTrueValue: "Y", Readonly: true, SchemaName: "is_primary"},

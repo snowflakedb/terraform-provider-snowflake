@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
@@ -61,7 +60,7 @@ resource "snowflake_table" "fk_t" {
 	column {
 		name     = "fk_col1"
 		type     = "text"
-		nullable = false
+		not_null = true
 	  }
 }
 
@@ -153,7 +152,7 @@ func checkPrimaryKeyExists(tableId sdk.SchemaObjectIdentifier, constraintName st
 
 		var found bool
 		for _, pk := range keys {
-			if pk.ConstraintName == strings.ToUpper(constraintName) {
+			if pk.ConstraintName == constraintName {
 				found = true
 			}
 		}

@@ -49,13 +49,13 @@ func init() {
 		withDefaultOpts(func() *CreateAlertOptions {
 			return &CreateAlertOptions{
 				name:      id,
-				condition: AlertCondition{Condition: []string{existsCondition}},
+				Condition: AlertCondition{Condition: existsCondition},
 				action:    action,
 			}
 		}).
 		withExpectedSqlf(
 			case_Alerts_sql_Create_basic,
-			`CREATE ALERT %s IF (EXISTS (%s)) THEN %s`,
+			`CREATE ALERT %s IF (EXISTS ( %s )) THEN %s`,
 			id.FullyQualifiedName(), existsCondition, action,
 		).
 		withModifyAndExpectedSqlf(
@@ -66,7 +66,7 @@ func init() {
 				opts.Schedule = &schedule
 				opts.Comment = &comment
 			},
-			`CREATE ALERT IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '%s' COMMENT = '%s' IF (EXISTS (%s)) THEN %s`,
+			`CREATE ALERT IF NOT EXISTS %s WAREHOUSE = %s SCHEDULE = '%s' COMMENT = '%s' IF (EXISTS ( %s )) THEN %s`,
 			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, comment, existsCondition, action,
 		).
 		withAdditionalSqlCasef(
@@ -76,7 +76,7 @@ func init() {
 				opts.Warehouse = &warehouse
 				opts.Schedule = &schedule
 			},
-			`CREATE OR REPLACE ALERT %s WAREHOUSE = %s SCHEDULE = '%s' IF (EXISTS (%s)) THEN %s`,
+			`CREATE OR REPLACE ALERT %s WAREHOUSE = %s SCHEDULE = '%s' IF (EXISTS ( %s )) THEN %s`,
 			id.FullyQualifiedName(), warehouse.FullyQualifiedName(), schedule, existsCondition, action,
 		)
 

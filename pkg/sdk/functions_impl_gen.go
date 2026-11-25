@@ -121,10 +121,9 @@ func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {
 		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = FunctionArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -132,8 +131,7 @@ func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &FunctionReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -142,9 +140,8 @@ func (r *CreateForJavaFunctionRequest) toOpts() *CreateForJavaFunctionOptions {
 			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = FunctionColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -193,10 +190,9 @@ func (r *CreateForJavascriptFunctionRequest) toOpts() *CreateForJavascriptFuncti
 		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = FunctionArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -204,8 +200,7 @@ func (r *CreateForJavascriptFunctionRequest) toOpts() *CreateForJavascriptFuncti
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &FunctionReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -214,9 +209,8 @@ func (r *CreateForJavascriptFunctionRequest) toOpts() *CreateForJavascriptFuncti
 			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = FunctionColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -252,10 +246,9 @@ func (r *CreateForPythonFunctionRequest) toOpts() *CreateForPythonFunctionOption
 		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = FunctionArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -263,8 +256,7 @@ func (r *CreateForPythonFunctionRequest) toOpts() *CreateForPythonFunctionOption
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &FunctionReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -273,9 +265,8 @@ func (r *CreateForPythonFunctionRequest) toOpts() *CreateForPythonFunctionOption
 			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = FunctionColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns
@@ -310,7 +301,6 @@ func (r *CreateForScalaFunctionRequest) toOpts() *CreateForScalaFunctionOptions 
 		IfNotExists:                r.IfNotExists,
 		name:                       r.name,
 		CopyGrants:                 r.CopyGrants,
-		ResultDataTypeOld:          r.ResultDataTypeOld,
 		ResultDataType:             r.ResultDataType,
 		ReturnNullValues:           r.ReturnNullValues,
 		NullInputBehavior:          r.NullInputBehavior,
@@ -331,10 +321,9 @@ func (r *CreateForScalaFunctionRequest) toOpts() *CreateForScalaFunctionOptions 
 		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = FunctionArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -382,10 +371,9 @@ func (r *CreateForSQLFunctionRequest) toOpts() *CreateForSQLFunctionOptions {
 		arguments := make([]FunctionArgument, len(r.Arguments))
 		for i, v := range r.Arguments {
 			arguments[i] = FunctionArgument{
-				ArgName:        v.ArgName,
-				ArgDataTypeOld: v.ArgDataTypeOld,
-				ArgDataType:    v.ArgDataType,
-				DefaultValue:   v.DefaultValue,
+				ArgName:      v.ArgName,
+				ArgDataType:  v.ArgDataType,
+				DefaultValue: v.DefaultValue,
 			}
 		}
 		opts.Arguments = arguments
@@ -393,8 +381,7 @@ func (r *CreateForSQLFunctionRequest) toOpts() *CreateForSQLFunctionOptions {
 	opts.Returns = FunctionReturns{}
 	if r.Returns.ResultDataType != nil {
 		opts.Returns.ResultDataType = &FunctionReturnsResultDataType{
-			ResultDataTypeOld: r.Returns.ResultDataType.ResultDataTypeOld,
-			ResultDataType:    r.Returns.ResultDataType.ResultDataType,
+			ResultDataType: r.Returns.ResultDataType.ResultDataType,
 		}
 	}
 	if r.Returns.Table != nil {
@@ -403,9 +390,8 @@ func (r *CreateForSQLFunctionRequest) toOpts() *CreateForSQLFunctionOptions {
 			columns := make([]FunctionColumn, len(r.Returns.Table.Columns))
 			for i, v := range r.Returns.Table.Columns {
 				columns[i] = FunctionColumn{
-					ColumnName:        v.ColumnName,
-					ColumnDataTypeOld: v.ColumnDataTypeOld,
-					ColumnDataType:    v.ColumnDataType,
+					ColumnName:     v.ColumnName,
+					ColumnDataType: v.ColumnDataType,
 				}
 			}
 			opts.Returns.Table.Columns = columns

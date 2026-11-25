@@ -100,13 +100,13 @@ resource "snowflake_pipe" "streaming_pipe" {
 
 ### Read-Only
 
-- `describe_output` (List of Object) Outputs the result of `DESCRIBE PIPE` for the given pipe. (see [below for nested schema](#nestedatt--describe_output))
+- `describe_output` (List of Object) Holds the output of `DESCRIBE PIPE` for the given pipe. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `notification_channel` (String, Deprecated) Amazon Resource Name of the Amazon SQS queue for the stage named in the DEFINITION column.
 - `owner` (String, Deprecated) Name of the role that owns the pipe.
 - `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN PIPE` for the given pipe. (see [below for nested schema](#nestedatt--parameters))
-- `show_output` (List of Object) Outputs the result of `SHOW PIPES` for the given pipe. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Holds the output of `SHOW PIPES` for the given pipe. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

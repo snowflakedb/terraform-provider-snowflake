@@ -117,7 +117,7 @@ func CreateSequence(ctx context.Context, d *schema.ResourceData, meta any) diag.
 		return diag.FromErr(err)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(database, schema, name))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(database, schema, name))
 
 	return ReadSequence(ctx, d, meta)
 }

@@ -53,7 +53,6 @@ func init() {
 				opts.EnableQueryAcceleration = Bool(true)
 				opts.QueryAccelerationMaxScaleFactor = Int(62)
 				opts.ResourceConstraint = Pointer(WarehouseResourceConstraintMemory1X)
-				opts.Generation = Pointer(WarehouseGenerationStandardGen1)
 				opts.MaxConcurrencyLevel = Int(7)
 				opts.StatementQueuedTimeoutInSeconds = Int(29)
 				opts.StatementTimeoutInSeconds = Int(89)
@@ -62,11 +61,20 @@ func init() {
 					{Name: tagId2, Value: "v2"},
 				}
 			},
-			`CREATE WAREHOUSE IF NOT EXISTS %s WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'MEMORY_1X' GENERATION = '1' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`,
+			`CREATE WAREHOUSE IF NOT EXISTS %s WAREHOUSE_TYPE = 'STANDARD' WAREHOUSE_SIZE = 'X4LARGE' MAX_CLUSTER_COUNT = 8 MIN_CLUSTER_COUNT = 3 SCALING_POLICY = 'ECONOMY' AUTO_SUSPEND = 1000 AUTO_RESUME = true INITIALLY_SUSPENDED = false RESOURCE_MONITOR = %s COMMENT = 'hello' ENABLE_QUERY_ACCELERATION = true QUERY_ACCELERATION_MAX_SCALE_FACTOR = 62 RESOURCE_CONSTRAINT = 'MEMORY_1X' MAX_CONCURRENCY_LEVEL = 7 STATEMENT_QUEUED_TIMEOUT_IN_SECONDS = 29 STATEMENT_TIMEOUT_IN_SECONDS = 89 TAG (%s = 'v1', %s = 'v2')`,
 			id.FullyQualifiedName(), resourceMonitorId.FullyQualifiedName(), tagId1.FullyQualifiedName(), tagId2.FullyQualifiedName(),
 		)
 
 	warehousesTests.Create.
+		withModify(case_Warehouses_validation_Create_opts_ConflictingFields_ResourceConstraint_Generation, func(opts *CreateWarehouseOptions) {
+			opts.ResourceConstraint = Pointer(WarehouseResourceConstraintMemory1X)
+			opts.Generation = Pointer(WarehouseGenerationStandardGen1)
+		}).
+		withAdditionalSqlCasef(
+			"sql_Create_generation",
+			func(opts *CreateWarehouseOptions) { opts.Generation = Pointer(WarehouseGenerationStandardGen1) },
+			`CREATE WAREHOUSE %s GENERATION = '1'`, id.FullyQualifiedName(),
+		).
 		withAdditionalSqlCasef(
 			"sql_Create_onlyMinClusterCount",
 			func(opts *CreateWarehouseOptions) { opts.MinClusterCount = Int(2) },

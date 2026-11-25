@@ -112,10 +112,10 @@ resource "snowflake_catalog_integration_iceberg_rest" "sigv4" {
 ### Read-Only
 
 - `catalog_source` (String) Specifies the type of catalog source. This field is used to detect when the catalog source was changed outside of Terraform and to recreate the resource when that happens.
-- `describe_output` (List of Object) Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration. (see [below for nested schema](#nestedatt--describe_output))
+- `describe_output` (List of Object) Holds the output of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `show_output` (List of Object) Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration iceberg rest. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Holds the output of `SHOW CATALOG INTEGRATIONS` for the given catalog integration. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--rest_config"></a>
 ### Nested Schema for `rest_config`

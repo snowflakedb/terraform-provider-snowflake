@@ -13,6 +13,7 @@ var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
 	"object_types": {
 		Type:     tfschema.TypeList,
 		Required: true,
+		MinItems: 1,
 		Elem: &tfschema.Schema{
 			Type:             tfschema.TypeString,
 			ValidateDiagFunc: sdkValidation(sdk.ToReplicationGroupObjectType),
@@ -85,7 +86,7 @@ var replicationGroupAttributesSchema = map[string]*tfschema.Schema{
 		Type:             tfschema.TypeString,
 		Optional:         true,
 		ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
-		DiffSuppressFunc: suppressIdentifierQuoting,
+		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("error_integration")),
 		Description:      "Notification integration that receives refresh error notifications.",
 	},
 	"comment": {
@@ -110,17 +111,6 @@ var replicationGroupSchema = collections.MergeMaps(
 		},
 	},
 	replicationGroupAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW REPLICATION GROUPS` for the given replication group.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowReplicationGroupSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeReplicationGroup, schemas.ShowReplicationGroupSchema),
 )

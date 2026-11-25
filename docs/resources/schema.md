@@ -94,11 +94,11 @@ resource "snowflake_schema" "schema" {
 
 ### Read-Only
 
-- `describe_output` (List of Object) Outputs the result of `DESCRIBE SCHEMA` for the given schema. In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema. (see [below for nested schema](#nestedatt--describe_output))
+- `describe_output` (List of Object) Holds the output of `DESCRIBE SCHEMA` for the given schema. In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `parameters` (List of Object) Outputs the result of `SHOW PARAMETERS IN SCHEMA` for the given schema. (see [below for nested schema](#nestedatt--parameters))
-- `show_output` (List of Object) Outputs the result of `SHOW SCHEMAS` for the given schema. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Holds the output of `SHOW SCHEMAS` for the given schema. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

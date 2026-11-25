@@ -1,10 +1,23 @@
 package sdk
 
 import (
+	"context"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
+
+func (v *tables) ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error) {
+	return v.client.Parameters.ShowParameters(ctx, &ShowParametersOptions{
+		In: &ParametersIn{
+			Table: id,
+		},
+	})
+}
 
 func (r *CreateTableRequest) GetName() SchemaObjectIdentifier {
 	return r.name
@@ -25,25 +38,13 @@ func (v *Table) GetClusterByKeys() []string {
 	}
 
 	statementWithoutLinear := strings.TrimSuffix(strings.Replace(v.ClusterBy, "LINEAR(", "", 1), ")")
-	return splitOuter(statementWithoutLinear, '(', ')')
+	return collections.Map(splitOuter(statementWithoutLinear, '(', ')', true), strings.TrimSpace)
 }
 
 func (opts *CreateTableOptions) additionalValidations() error {
 	var errs []error
 	if len(opts.ColumnsAndConstraints.Columns) == 0 {
 		errs = append(errs, errNotSet("CreateTableOptions", "Columns"))
-	}
-	for _, column := range opts.ColumnsAndConstraints.Columns {
-		if column.InlineConstraint != nil {
-			if err := column.InlineConstraint.validate(); err != nil {
-				errs = append(errs, err)
-			}
-		}
-	}
-	for _, outOfLineConstraint := range opts.ColumnsAndConstraints.OutOfLineConstraint {
-		if err := outOfLineConstraint.validate(); err != nil {
-			errs = append(errs, err)
-		}
 	}
 	if opts.RowAccessPolicy != nil {
 		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
@@ -53,16 +54,13 @@ func (opts *CreateTableOptions) additionalValidations() error {
 	return JoinErrors(errs...)
 }
 
+// The ADD branch of ALTER TABLE ... ADD COLUMN for external tables is the only ExternalTableAction branch, so it is required.
+// ChildrenRule needs two alternatives, so the SSOT definition cannot express this.
 func (opts *AlterTableOptions) additionalValidations() error {
-	var errs []error
-	if constraintAction := opts.ConstraintAction; valueSet(constraintAction) {
-		if addAction := constraintAction.Add; valueSet(addAction) {
-			if err := addAction.validate(); err != nil {
-				errs = append(errs, err)
-			}
-		}
+	if valueSet(opts.ExternalTableAction) && !valueSet(opts.ExternalTableAction.Add) {
+		return errNotSet("AlterTableOptions.ExternalTableAction", "Add")
 	}
-	return JoinErrors(errs...)
+	return nil
 }
 
 func (opts *ShowTableOptions) additionalValidations() error {
@@ -72,51 +70,68 @@ func (opts *ShowTableOptions) additionalValidations() error {
 	return nil
 }
 
-func (v *OutOfLineConstraint) validate() error {
-	var errs []error
-	switch v.ConstraintType {
-	case ColumnConstraintTypeForeignKey:
-		if !valueSet(v.ForeignKey) {
-			errs = append(errs, errNotSet("OutOfLineConstraint", "ForeignKey"))
-		} else {
-			if err := v.ForeignKey.validate(); err != nil {
-				errs = append(errs, err)
-			}
-		}
-	case ColumnConstraintTypeUnique, ColumnConstraintTypePrimaryKey:
-		if valueSet(v.ForeignKey) {
-			errs = append(errs, errSet("OutOfLineConstraint", "ForeignKey"))
-		}
-	default:
-		errs = append(errs, errInvalidValue("OutOfLineConstraint", "ConstraintType", string(v.ConstraintType)))
-	}
-	return JoinErrors(errs...)
-}
-
-func (v *OutOfLineForeignKey) validate() error {
-	var errs []error
-	if !valueSet(v.TableName) {
-		errs = append(errs, errNotSet("OutOfLineForeignKey", "TableName"))
-	}
-	return JoinErrors(errs...)
-}
-
 // additionalConvert splits COLLATE off the DESCRIBE TABLE type column.
+// Type stays nil when the type cannot be parsed; TypeRaw always holds the type without COLLATE.
 func (r tableColumnDetailsRow) additionalConvert(result *TableColumnDetails) error {
-	type_, collation := r.splitTypeAndCollation()
-	result.Type = type_
+	typeRaw, collation := r.splitTypeAndCollation()
+	result.TypeRaw = typeRaw
 	result.Collation = collation
+	if dataType, err := datatypes.ParseDataType(typeRaw); err == nil {
+		result.Type = dataType
+	}
 	return nil
 }
 
-func (r tableColumnDetailsRow) splitTypeAndCollation() (DataType, *string) {
+func (r tableColumnDetailsRow) splitTypeAndCollation() (string, *string) {
 	collateRegexp := regexp.MustCompile(`COLLATE +'([a-zA-Z0-9_-]*)'`)
 	matches := collateRegexp.FindStringSubmatch(r.Type)
 
 	if len(matches) == 2 {
 		collation := matches[1]
-		type_ := DataType(strings.TrimSpace(collateRegexp.ReplaceAllString(r.Type, "")))
-		return type_, &collation
+		return strings.TrimSpace(collateRegexp.ReplaceAllString(r.Type, "")), &collation
 	}
-	return DataType(r.Type), nil
+	return r.Type, nil
+}
+
+// TableColumnIdentityDetails is an IDENTITY column default as DESCRIBE TABLE returns it, for example
+// IDENTITY START 1 INCREMENT 1 ORDER. Order is nil when the value has no ORDER or NOORDER keyword.
+type TableColumnIdentityDetails struct {
+	Start     int
+	Increment int
+	Order     *bool
+}
+
+// ParseColumnIdentity parses an IDENTITY column default. It returns false for any other default.
+func ParseColumnIdentity(raw string) (*TableColumnIdentityDetails, bool) {
+	fields := strings.Fields(strings.ToUpper(raw))
+	if len(fields) < 5 || fields[0] != "IDENTITY" || fields[1] != "START" || fields[3] != "INCREMENT" {
+		return nil, false
+	}
+	start, err := strconv.Atoi(fields[2])
+	if err != nil {
+		return nil, false
+	}
+	increment, err := strconv.Atoi(fields[4])
+	if err != nil {
+		return nil, false
+	}
+	identity := &TableColumnIdentityDetails{Start: start, Increment: increment}
+	switch {
+	case len(fields) == 5:
+	case len(fields) == 6 && fields[5] == "ORDER":
+		identity.Order = Bool(true)
+	case len(fields) == 6 && fields[5] == "NOORDER":
+		identity.Order = Bool(false)
+	default:
+		return nil, false
+	}
+	return identity, true
+}
+
+// TypeString returns the SQL of the parsed type, falling back to the raw DESCRIBE value when parsing failed.
+func (d TableColumnDetails) TypeString() string {
+	if d.Type != nil {
+		return d.Type.ToSql()
+	}
+	return d.TypeRaw
 }

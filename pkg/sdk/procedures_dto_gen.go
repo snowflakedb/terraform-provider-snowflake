@@ -44,10 +44,9 @@ type CreateForJavaProcedureRequest struct {
 }
 
 type ProcedureArgumentRequest struct {
-	ArgName        string // required
-	ArgDataTypeOld DataType
-	ArgDataType    datatypes.DataType // required
-	DefaultValue   *string
+	ArgName      string             // required
+	ArgDataType  datatypes.DataType // required
+	DefaultValue *string
 }
 
 type ProcedureReturnsRequest struct {
@@ -56,10 +55,9 @@ type ProcedureReturnsRequest struct {
 }
 
 type ProcedureReturnsResultDataTypeRequest struct {
-	ResultDataTypeOld DataType
-	ResultDataType    datatypes.DataType // required
-	Null              *bool
-	NotNull           *bool
+	ResultDataType datatypes.DataType // required
+	Null           *bool
+	NotNull        *bool
 }
 
 type ProcedureReturnsTableRequest struct {
@@ -67,9 +65,8 @@ type ProcedureReturnsTableRequest struct {
 }
 
 type ProcedureColumnRequest struct {
-	ColumnName        string // required
-	ColumnDataTypeOld DataType
-	ColumnDataType    datatypes.DataType // required
+	ColumnName     string             // required
+	ColumnDataType datatypes.DataType // required
 }
 
 type ProcedurePackageRequest struct {
@@ -86,7 +83,6 @@ type CreateForJavaScriptProcedureRequest struct {
 	name                  SchemaObjectIdentifier // required
 	Arguments             []ProcedureArgumentRequest
 	CopyGrants            *bool
-	ResultDataTypeOld     DataType
 	ResultDataType        datatypes.DataType // required
 	NotNull               *bool
 	NullInputBehavior     *NullInputBehavior
@@ -158,8 +154,7 @@ type ProcedureSQLReturnsRequest struct {
 }
 
 type ProcedureSQLReturnsResultDataTypeRequest struct {
-	ResultDataTypeOld DataType
-	ResultDataType    datatypes.DataType // required
+	ResultDataType datatypes.DataType // required
 }
 
 type AlterProcedureRequest struct {
@@ -255,7 +250,6 @@ type CreateAndCallForScalaProcedureRequest struct {
 type CreateAndCallForJavaScriptProcedureRequest struct {
 	Name                AccountObjectIdentifier // required
 	Arguments           []ProcedureArgumentRequest
-	ResultDataTypeOld   DataType
 	ResultDataType      datatypes.DataType // required
 	NotNull             *bool
 	NullInputBehavior   *NullInputBehavior

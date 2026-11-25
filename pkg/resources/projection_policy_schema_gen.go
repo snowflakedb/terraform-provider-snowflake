@@ -5,6 +5,7 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -43,27 +44,7 @@ var projectionPolicySchema = collections.MergeMaps(
 		},
 	},
 	projectionPolicyAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW PROJECTION POLICIES` for the given projection policy.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowProjectionPolicySchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE PROJECTION POLICY` for the given projection policy.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeProjectionPolicyDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeProjectionPolicy, schemas.ShowProjectionPolicySchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeProjectionPolicy, schemas.DescribeProjectionPolicyDetailsSchema),
 )

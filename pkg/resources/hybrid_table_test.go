@@ -21,7 +21,7 @@ func Test_buildHybridAlterColumnTypeAction(t *testing.T) {
 
 		assert.Equal(t, "AGE", req.ColumnName)
 		require.NotNil(t, req.DataType)
-		assert.Equal(t, sdk.DataType("NUMBER(20, 5)"), *req.DataType)
+		assert.Equal(t, "NUMBER(20, 5)", (*req.DataType).ToSql())
 	})
 
 	t.Run("invalid type returns error mentioning column name", func(t *testing.T) {
@@ -53,7 +53,6 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 		col := column{
 			name:     "ID",
 			dataType: "NUMBER(38,0)",
-			nullable: true,
 		}
 
 		spec, err := buildHybridColumnSpec(col)
@@ -71,7 +70,6 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 		col := column{
 			name:     "NAME",
 			dataType: "VARCHAR(200)",
-			nullable: true,
 			_default: &columnDefault{constant: &def},
 			collate:  "en-ci",
 			comment:  "the name",
@@ -104,7 +102,6 @@ func Test_buildHybridColumnSpec(t *testing.T) {
 		col := column{
 			name:     "X",
 			dataType: "VARCHAR(10)",
-			nullable: true,
 			_default: &columnDefault{constant: &c, expression: &e},
 		}
 		_, err := buildHybridColumnSpec(col)

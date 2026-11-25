@@ -3,27 +3,19 @@ package datatypes
 // DateDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-datetime#date
 // It does not have synonyms. It does not have any attributes.
 type DateDataType struct {
-	underlyingType string
+	plainDataType
 }
 
-func (t *DateDataType) ToSql() string {
-	return t.underlyingType
+func NewDateDataType() DataType {
+	return newDateDataType(DateLegacyDataType)
 }
 
-func (t *DateDataType) ToLegacyDataTypeSql() string {
-	return DateLegacyDataType
-}
-
-func (t *DateDataType) Canonical() string {
-	return DateLegacyDataType
-}
-
-func (t *DateDataType) ToSqlWithoutUnknowns() string {
-	return t.ToSql()
+func newDateDataType(underlyingType string) *DateDataType {
+	return &DateDataType{plainDataType{underlyingType, DateLegacyDataType}}
 }
 
 var DateDataTypeSynonyms = []string{DateLegacyDataType}
 
 func parseDateDataTypeRaw(raw sanitizedDataTypeRaw) (*DateDataType, error) {
-	return &DateDataType{raw.matchedByType}, nil
+	return newDateDataType(raw.matchedByType), nil
 }

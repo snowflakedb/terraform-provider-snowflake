@@ -58,6 +58,13 @@ func TestAcc_Schemas_BasicUseCase_DifferentFiltering(t *testing.T) {
 		WithWithParameters(false).
 		WithDependsOn(schemaModel1.ResourceReference(), schemaModel2.ResourceReference(), schemaModel3.ResourceReference(), schemaModel4.ResourceReference())
 
+	schemasModelInAccount := datasourcemodel.Schemas("test5").
+		WithLike(prefix+"%").
+		WithInAccount().
+		WithWithDescribe(false).
+		WithWithParameters(false).
+		WithDependsOn(schemaModel1.ResourceReference(), schemaModel2.ResourceReference(), schemaModel3.ResourceReference(), schemaModel4.ResourceReference())
+
 	schemasModelIn := datasourcemodel.Schemas("test4").
 		WithInDatabase(idFour.DatabaseId()).
 		WithStartsWith(idFour.Name()).
@@ -97,6 +104,12 @@ func TestAcc_Schemas_BasicUseCase_DifferentFiltering(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(schemasModelIn.DatasourceReference(), "schemas.#", "1"),
 					resource.TestCheckResourceAttr(schemasModelIn.DatasourceReference(), "schemas.0.show_output.0.name", idFour.Name()),
+				),
+			},
+			{
+				Config: config.FromModels(t, schemaModel1, schemaModel2, schemaModel3, schemaModel4, schemasModelInAccount),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(schemasModelInAccount.DatasourceReference(), "schemas.#", "2"),
 				),
 			},
 		},
@@ -139,6 +152,22 @@ func TestAcc_Schemas_CompleteUseCase(t *testing.T) {
 		WithWithParameters(false).
 		WithDependsOn(schemaModel.ResourceReference(), viewModel.ResourceReference())
 
+	schemasModelWithoutDescribe := datasourcemodel.Schemas("test").
+		WithLike(id.Name()).
+		WithStartsWith(id.Name()).
+		WithInDatabase(database.ID()).
+		WithLimit(1).
+		WithWithDescribe(false).
+		WithDependsOn(schemaModel.ResourceReference(), viewModel.ResourceReference())
+
+	schemasModelWithoutParameters := datasourcemodel.Schemas("test").
+		WithLike(id.Name()).
+		WithStartsWith(id.Name()).
+		WithInDatabase(database.ID()).
+		WithLimit(1).
+		WithWithParameters(false).
+		WithDependsOn(schemaModel.ResourceReference(), viewModel.ResourceReference())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: activeWarehouseSetOnUserProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -167,6 +196,22 @@ func TestAcc_Schemas_CompleteUseCase(t *testing.T) {
 				),
 			},
 			{
+				Config: config.FromModels(t, schemaModel, viewModel, schemasModelWithoutDescribe),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttr(schemasModelWithoutDescribe.DatasourceReference(), "schemas.0.describe_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(schemasModelWithoutDescribe.DatasourceReference(), "schemas.0.parameters.#", "1")),
+				),
+			},
+			{
+				Config: config.FromModels(t, schemaModel, viewModel, schemasModelWithoutParameters),
+				Check: assertThat(
+					t,
+					assert.Check(resource.TestCheckResourceAttrSet(schemasModelWithoutParameters.DatasourceReference(), "schemas.0.describe_output.#")),
+					assert.Check(resource.TestCheckResourceAttr(schemasModelWithoutParameters.DatasourceReference(), "schemas.0.parameters.#", "0")),
+				),
+			},
+			{
 				Config: config.FromModels(t, schemaModel, viewModel, schemasModel),
 				Check: assertThat(
 					t,
@@ -190,6 +235,40 @@ func TestAcc_Schemas_CompleteUseCase(t *testing.T) {
 						HasNameNotEmpty().
 						HasKind("VIEW"),
 				),
+			},
+		},
+	})
+}
+
+func TestAcc_Schemas_InApplication(t *testing.T) {
+	applicationPackage, cleanup := testClient().ApplicationPackage.CreateApplicationPackage(t)
+	t.Cleanup(cleanup)
+
+	inApplicationPackage := datasourcemodel.Schemas("test").
+		WithWithDescribe(false).
+		WithWithParameters(false).
+		WithInApplicationPackage(applicationPackage.ID())
+	inMissingApplication := datasourcemodel.Schemas("test").
+		WithInApplication(testClient().Ids.RandomAccountObjectIdentifier())
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				Config: config.FromModels(t, inApplicationPackage),
+				Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttrWith(inApplicationPackage.DatasourceReference(), "schemas.#", func(value string) error {
+					if value == "0" {
+						return fmt.Errorf("expected the schemas of the application package, got none")
+					}
+					return nil
+				})),
+			},
+			{
+				Config:      config.FromModels(t, inMissingApplication),
+				ExpectError: regexp.MustCompile("does not exist"),
 			},
 		},
 	})

@@ -3,7 +3,6 @@
 package resourceassert
 
 import (
-	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -45,22 +44,22 @@ func (f *FailoverGroupResourceAssert) HasAllowedAccounts(expected ...string) *Fa
 }
 
 func (f *FailoverGroupResourceAssert) HasAllowedDatabases(expected ...string) *FailoverGroupResourceAssert {
-	f.ListContainsExactlyStringValuesInOrder("allowed_databases", expected...)
+	f.SetContainsExactlyStringValues("allowed_databases", expected...)
 	return f
 }
 
 func (f *FailoverGroupResourceAssert) HasAllowedExternalVolumes(expected ...string) *FailoverGroupResourceAssert {
-	f.ListContainsExactlyStringValuesInOrder("allowed_external_volumes", expected...)
+	f.SetContainsExactlyStringValues("allowed_external_volumes", expected...)
 	return f
 }
 
 func (f *FailoverGroupResourceAssert) HasAllowedIntegrationTypes(expected ...string) *FailoverGroupResourceAssert {
-	f.ListContainsExactlyStringValuesInOrder("allowed_integration_types", expected...)
+	f.SetContainsExactlyStringValues("allowed_integration_types", expected...)
 	return f
 }
 
 func (f *FailoverGroupResourceAssert) HasAllowedShares(expected ...string) *FailoverGroupResourceAssert {
-	f.ListContainsExactlyStringValuesInOrder("allowed_shares", expected...)
+	f.SetContainsExactlyStringValues("allowed_shares", expected...)
 	return f
 }
 
@@ -84,18 +83,18 @@ func (f *FailoverGroupResourceAssert) HasFullyQualifiedName(expected string) *Fa
 	return f
 }
 
-func (f *FailoverGroupResourceAssert) HasIgnoreEditionCheck(expected string) *FailoverGroupResourceAssert {
-	f.StringValueSet("ignore_edition_check", expected)
+func (f *FailoverGroupResourceAssert) HasIgnoreEditionCheck(expected bool) *FailoverGroupResourceAssert {
+	f.BoolValueSet("ignore_edition_check", expected)
 	return f
 }
 
-func (f *FailoverGroupResourceAssert) HasIgnoreEditionCheckBool(expected bool) *FailoverGroupResourceAssert {
-	f.StringValueSet("ignore_edition_check", strconv.FormatBool(expected))
+func (f *FailoverGroupResourceAssert) HasIsPrimary(expected bool) *FailoverGroupResourceAssert {
+	f.BoolValueSet("is_primary", expected)
 	return f
 }
 
 func (f *FailoverGroupResourceAssert) HasObjectTypes(expected ...string) *FailoverGroupResourceAssert {
-	f.ListContainsExactlyStringValuesInOrder("object_types", expected...)
+	f.SetContainsExactlyStringValues("object_types", expected...)
 	return f
 }
 
@@ -148,6 +147,11 @@ func (f *FailoverGroupResourceAssert) HasIgnoreEditionCheckString(expected strin
 	return f
 }
 
+func (f *FailoverGroupResourceAssert) HasIsPrimaryString(expected string) *FailoverGroupResourceAssert {
+	f.ValueSet("is_primary", expected)
+	return f
+}
+
 func (f *FailoverGroupResourceAssert) HasOptimizedRefreshString(expected string) *FailoverGroupResourceAssert {
 	f.ValueSet("optimized_refresh", expected)
 	return f
@@ -194,6 +198,11 @@ func (f *FailoverGroupResourceAssert) HasNoFullyQualifiedName() *FailoverGroupRe
 
 func (f *FailoverGroupResourceAssert) HasNoIgnoreEditionCheck() *FailoverGroupResourceAssert {
 	f.ValueNotSet("ignore_edition_check")
+	return f
+}
+
+func (f *FailoverGroupResourceAssert) HasNoIsPrimary() *FailoverGroupResourceAssert {
+	f.ValueNotSet("is_primary")
 	return f
 }
 
@@ -261,6 +270,11 @@ func (f *FailoverGroupResourceAssert) HasIgnoreEditionCheckEmpty() *FailoverGrou
 	return f
 }
 
+func (f *FailoverGroupResourceAssert) HasIsPrimaryEmpty() *FailoverGroupResourceAssert {
+	f.ValueSet("is_primary", "")
+	return f
+}
+
 func (f *FailoverGroupResourceAssert) HasOptimizedRefreshEmpty() *FailoverGroupResourceAssert {
 	f.ValueSet("optimized_refresh", "")
 	return f
@@ -307,6 +321,11 @@ func (f *FailoverGroupResourceAssert) HasFullyQualifiedNameNotEmpty() *FailoverG
 
 func (f *FailoverGroupResourceAssert) HasIgnoreEditionCheckNotEmpty() *FailoverGroupResourceAssert {
 	f.ValuePresent("ignore_edition_check")
+	return f
+}
+
+func (f *FailoverGroupResourceAssert) HasIsPrimaryNotEmpty() *FailoverGroupResourceAssert {
+	f.ValuePresent("is_primary")
 	return f
 }
 

@@ -304,6 +304,7 @@ Each method accepts zero or more `PairedFieldOption`s (see below).
 - **`WithValueAdjuster(funcName)`** — apply an adjustment function `func(T) T` to the converted value after assignment.
 - **`WithBoolTrueValue(v)`** — override the truthy string for `BoolFromText`/`OptionalBoolFromText` (default `"Y"`).
 - **`WithBoolParsed()`** — use `strconv.ParseBool` instead of a fixed string comparison for bool fields.
+- **`WithRawFallback(rawFieldName)`** — add a plain `string` field holding the raw db value and parse with `parseDataTypeOrNil`, which logs a parse failure at debug level and leaves the parsed field unset instead of failing `convert()`. Only supported with `DataType(col)`, for columns that can return structured types `datatypes.ParseDataType` rejects.
 - **`WithManualConvert()`** — skip this field in the generated `convert()` body; handle it manually in `additionalConvert()` in a `_ext.go` file.
 
 #### PairedStructs modifiers
@@ -368,7 +369,7 @@ This is separate from [property-list DESCRIBE](#property-list-describe). That pa
 
 `ShowByIDProjection(suffix)` emits `ShowByID` plus the suffix and `ShowByIDSafely` plus the suffix. `Mini` emits `ShowByIDMini` and `ShowByIDSafelyMini`. The body calls `ShowByID`, then `As` plus the suffix, and returns `ShowObjectName` plus the suffix. `ShowByIDSafelyMini` passes `ShowByIDMini` to `SafeShowById`. Call it after `Show`, so `ShowByID` and `ShowObjectName` already exist. Generation panics when the suffix or `ShowObjectName` is empty, or when the interface has no `ShowByID`.
 
-From ssot, `DescribeOperationFromObject` emits one projection for `ShowPlainName` and one for each `ShowVariants` entry. The method is `As` plus the plain name with the object name removed. When `ShowByID` is already registered, the same suffix is passed to `ShowByIDProjection`. `Show()` still returns the union row.
+From ssot, `DescribeOperationFromObject` emits one projection for `BaseVariant.ShowPlainName` and one for each `BaseVariant.ShowVariants` entry. The method is `As` plus the plain name with the object name removed. When `ShowByID` is already registered, the same suffix is passed to `ShowByIDProjection`. `Show()` still returns the union row.
 
 See [show_projection_example_def.go](example/defs/show_projection_example_def.go).
 
@@ -414,7 +415,11 @@ OptionalSharedQueryStructField("Secrets", sharedStruct, g.ParameterOptions().SQL
 - In all objects (including the originator), the `toOpts` mapping calls `.toOpts()` instead of inlining the field mapping.
 - Reusing objects skip struct/DTO/constructor generation for the shared field.
 
+`SharedQueryStructField` and `ListSharedQueryStructField` do the same for a required field and for a list. The list mapping calls `.toOpts()` on each element.
+
 See [functions_def.go](defs/functions_def.go) (originator) and [notebooks_def.go](defs/notebooks_def.go) (reuser).
+
+For tables, the originator is the Table SSOT definition in [table_def.go](../internal/ssot/defs/table_def.go). It marks the clauses that produce shared structs (column masking/projection policies, inline and out-of-line constraints, rename/drop column actions, set/unset tags and policies) with `ssot.SharedToOpts()`, so `tables_gen.go` emits the structs and their standalone `toOpts()` methods. [iceberg_tables_def.go](defs/iceberg_tables_def.go) does not emit them. It references them with `OptionalSharedQueryStructField` / `ListSharedQueryStructField`, and its generated `toOpts` calls the Table methods.
 
 ### Instance method arguments
 

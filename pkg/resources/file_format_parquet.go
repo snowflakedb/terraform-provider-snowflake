@@ -197,7 +197,7 @@ func UpdateFileFormatParquet(ctx context.Context, d *schema.ResourceData, meta a
 			return client.FileFormats.AlterParquet(ctx, sdk.NewAlterParquetFileFormatRequest(currentId).WithRenameTo(targetId))
 		},
 		client.FileFormats.ShowByID,
-		"file format",
+		sdk.ObjectTypeFileFormat,
 	); diags != nil {
 		return diags
 	}

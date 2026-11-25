@@ -46,6 +46,10 @@ var (
 	// It is distinct from a parse error, which means the parameter is supported but the value is invalid.
 	ErrParameterNotSupported = NewError("parameter not supported on this object")
 
+	// ErrLegacyParameterNotSupported signals that the given parameter cannot be set or unset through the
+	// legacy account parameter write path (see parameters_legacy_ext.go), but the catalog write path supports it.
+	ErrLegacyParameterNotSupported = NewError("parameter not supported by the legacy account parameter write path")
+
 	// ErrEnumValueNotSupported signals that an enum parser does not recognize a value.
 	// Callers may use it to distinguish enum conversion failures from other parse errors.
 	ErrEnumValueNotSupported = NewError("enum value not supported")
@@ -75,6 +79,10 @@ func errInvalidIdentifier(structName string, identifierField string) error {
 
 func errOneOf(structName string, fieldNames ...string) error {
 	return newError(fmt.Sprintf("%v fields: %v are incompatible and cannot be set at the same time", structName, fieldNames), 2)
+}
+
+func errConflictingGroups(structName string, firstGroup []string, secondGroup []string) error {
+	return newError(fmt.Sprintf("%v fields: %v cannot be set together with %v", structName, firstGroup, secondGroup), 2)
 }
 
 func errNotSet(structName string, fieldNames ...string) error {

@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"fmt"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 )
@@ -9,10 +11,17 @@ import (
 // per variant of the element. See ssot.ListOfObjects and ssot.ObjectParameter.
 func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
 	name := clause.Field
+	prefix := clause.SQL
 	if name == "" {
 		name = sqlToFieldName(clause.SQLText(attr), true)
+		prefix = clause.SQLText(attr)
 	}
-	transformer := parameterOptionsFromClause(clause, required).SQL(clause.SQLText(attr))
+	var transformer FieldTransformer
+	if prefix != "" {
+		transformer = parameterOptionsFromClause(clause, required).SQL(prefix)
+	} else {
+		transformer = listOptionsFromClause(clause, required)
+	}
 	v = v.ListQueryStructField(name, queryStructFromObjectList(v.owner, attr), transformer)
 	if required {
 		v = v.WithValidation(ValidateValueSet, name)
@@ -20,9 +29,30 @@ func (v *QueryStruct) appendObjectList(attr ssot.Attribute, clause ssot.SqlClaus
 	return v
 }
 
+// appendWrapStringClause adds a helper struct: static SQL, the string, then static SQL.
+func (v *QueryStruct) appendWrapStringClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	nested := NewQueryStruct(attr.SqlStructName(v.owner))
+	if clause.Before.Field != "" {
+		nested = nested.SQLWithCustomFieldName(clause.Before.Field, clause.Before.SQL)
+	}
+	nested = nested.Text(clauseGoFieldName(attr, ssot.SqlClause{}), KeywordOptions().NoQuotes().Required())
+	if clause.After.Field != "" {
+		nested = nested.SQLWithCustomFieldName(clause.After.Field, clause.After.SQL)
+	}
+	opts := ListOptions().NoComma()
+	if required {
+		opts = opts.Required()
+	}
+	name := clauseGoFieldName(attr, clause)
+	if required {
+		return v.QueryStructField(name, nested, opts)
+	}
+	return v.OptionalQueryStructField(name, nested, opts)
+}
+
 // appendObjectClause adds a SqlOnly nested struct, such as ENCRYPTION = (...), whose fields are the CREATE Children of attr.
 func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
-	nested := queryStructFromObjectUse(v.owner, attr, ssot.ClauseCreate)
+	nested := queryStructFromObjectSupplied(v.owner, attr, ssot.ClauseCreate, v.suppliedStructs)
 	name := clauseGoFieldName(attr, clause)
 	if clause.AsParameter {
 		opts := ParameterOptions().SQL(clause.SQL)
@@ -31,27 +61,19 @@ func (v *QueryStruct) appendObjectClause(attr ssot.Attribute, clause ssot.SqlCla
 		}
 		return v.OptionalQueryStructField(name, nested, opts)
 	}
-	opts := ListOptions()
-	if clause.NoComma {
-		opts = opts.NoComma()
-	}
-	if clause.Parentheses == ssot.SqlParensYes {
-		opts = opts.Parentheses()
-	}
-	if clause.SQL != "" {
-		opts = opts.SQL(clause.SQL)
-	}
+	opts := structFieldTransformer(clause, required)
 	if required {
-		return v.QueryStructField(name, nested, opts.Required())
+		return v.QueryStructField(name, nested, opts)
 	}
 	return v.OptionalQueryStructField(name, nested, opts)
 }
 
 // QueryStructFromAttribute builds the CREATE query struct of a SqlOnly object attribute. owner is the interface name, and the
-// struct name is that owner plus the attribute name. The SDK definition calls it for one ALTER field and keeps the rest
-// of the operation handwritten. SET and UNSET projections use QueryStructFromAttributeUse.
+// struct name is the StructName of its clause or that owner plus the attribute name.
+// The SDK definition calls it for one ALTER field and keeps the rest of the operation handwritten. SET and UNSET projections
+// use QueryStructFromAttributeUse.
 func QueryStructFromAttribute(owner string, attr ssot.Attribute) *QueryStruct {
-	return QueryStructFromAttributeUse(owner, attr, ssot.ClauseCreate)
+	return queryStructFromObjectUse(owner, attr, ssot.ClauseCreate)
 }
 
 // QueryStructFromAttributeUse builds the query struct of a SqlOnly object attribute for one statement projection.
@@ -76,26 +98,90 @@ func clauseUseStatement(use ssot.ClauseUse) attributeSqlStatement {
 
 // queryStructFromObjectUse builds a fresh query struct for a SqlOnly object attribute: the projection's Children are its fields.
 func queryStructFromObjectUse(owner string, attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
+	return queryStructFromObjectSupplied(owner, attr, use, nil)
+}
+
+// queryStructFromObjectSupplied is queryStructFromObjectUse with nested structs a child PreexistingStructOf clause can reuse.
+func queryStructFromObjectSupplied(owner string, attr ssot.Attribute, use ssot.ClauseUse, supplied map[string]*QueryStruct) *QueryStruct {
 	nested := NewQueryStruct(attr.SqlStructNameFor(owner, use))
 	nested.owner = owner
+	nested.suppliedStructs = supplied
 	statement := clauseUseStatement(use)
 	fields := attr.NestedSqlFieldsFor(use)
 	for i := range fields {
 		child := &fields[i]
+		if child.IsTags() {
+			switch child.TagForm {
+			case "":
+				nested = nested.OptionalTags()
+			case ssot.TagFormSet:
+				nested = nested.SetTags()
+			case ssot.TagFormUnset:
+				nested = nested.UnsetTags()
+			default:
+				panic(fmt.Sprintf("attribute %q: tags child %q has tag form %q", attr.Name, child.Name, child.TagForm))
+			}
+			continue
+		}
 		nested = nested.appendAttributeClause(*child, child.EffectiveSqlClause(use), statement)
 	}
-	if attr.ChildrenRule != "" {
-		names := collections.Map(attr.RuleFieldsFor(use), func(child ssot.Attribute) string {
-			return clauseFieldName(child, statement)
-		})
-		switch attr.ChildrenRule {
-		case ssot.ChildrenAtLeastOne:
-			nested = nested.WithValidation(AtLeastOneValueSet, names...)
-		case ssot.ChildrenExactlyOne:
-			nested = nested.WithValidation(ExactlyOneValueSet, names...)
-		}
+	nested = nested.withChildValidations(attr, use)
+	if sharedToOptsClause(attr, use) {
+		nested = nested.WithSharedToOpts()
 	}
 	return nested
+}
+
+// sharedToOptsClause reports whether the attribute's clause for this statement asks for a standalone toOpts. A missing
+// clause is not shared, so the check reads the clause as written and does not resolve the type default.
+func sharedToOptsClause(attr ssot.Attribute, use ssot.ClauseUse) bool {
+	switch use {
+	case ssot.ClauseCreate:
+		return attr.CreateSql.SharedToOpts
+	case ssot.ClauseSet:
+		return attr.SetSql.SharedToOpts
+	case ssot.ClauseUnset:
+		return attr.UnsetSql.SharedToOpts
+	default:
+		panic("unknown sql clause")
+	}
+}
+
+// withChildValidations adds the Validations of an object attribute over the Children in the struct of one statement, in
+// Children order. A validation with fewer than two of its Children in the statement is left out.
+func (v *QueryStruct) withChildValidations(attr ssot.Attribute, use ssot.ClauseUse) *QueryStruct {
+	statement := clauseUseStatement(use)
+	for _, validation := range attr.Validations {
+		if validation.NotInSdk {
+			continue
+		}
+		names := collections.Map(attr.ValidationFieldsFor(validation, use), func(child ssot.Attribute) string {
+			return clauseFieldName(child, statement)
+		})
+		v = v.withValidationOf(validation.Kind, names)
+	}
+	return v
+}
+
+// withValidationOf adds the SDK validation of one ssot validation kind over the Go fields. Fewer than two fields add
+// nothing. Two conflicting fields are ConflictingFields, and more are MoreThanOneValueSet.
+func (v *QueryStruct) withValidationOf(kind ssot.ValidationKind, names []string) *QueryStruct {
+	if len(names) < 2 {
+		return v
+	}
+	switch kind {
+	case ssot.ValidationAtLeastOne:
+		return v.WithValidation(AtLeastOneValueSet, names...)
+	case ssot.ValidationExactlyOne:
+		return v.WithValidation(ExactlyOneValueSet, names...)
+	case ssot.ValidationConflicting:
+		if len(names) == 2 {
+			return v.WithValidation(ConflictingFields, names...)
+		}
+		return v.WithValidation(MoreThanOneValueSet, names...)
+	default:
+		panic(fmt.Sprintf("unknown validation kind %q", kind))
+	}
 }
 
 // queryStructFromBlockAttribute builds the struct of an ALTER block: one element of a list of objects, or a SqlOnly object.
@@ -158,16 +244,8 @@ func queryStructFromObjectList(owner string, list ssot.Attribute) *QueryStruct {
 	if len(variantFields) > 1 {
 		element = element.WithValidation(ExactlyOneValueSet, variantFields...)
 	}
-	if list.Elem != nil && list.Elem.ChildrenRule != "" {
-		names := collections.Map(list.Elem.RuleFields(), func(child ssot.Attribute) string {
-			return clauseFieldName(child, attributeSqlCreate)
-		})
-		switch list.Elem.ChildrenRule {
-		case ssot.ChildrenAtLeastOne:
-			element = element.WithValidation(AtLeastOneValueSet, names...)
-		case ssot.ChildrenExactlyOne:
-			element = element.WithValidation(ExactlyOneValueSet, names...)
-		}
+	if list.Elem != nil {
+		element = element.withChildValidations(*list.Elem, ssot.ClauseCreate)
 	}
 	if clause.Parentheses != ssot.SqlParensYes {
 		return element

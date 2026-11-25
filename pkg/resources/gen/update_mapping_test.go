@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ComputePoolUpdateMappings_renderApplySetUnset(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.True(t, model.Hooks.ApplySetUnset.Generate)
@@ -69,6 +70,7 @@ func Test_attachUpdateMappings_skipsNested(t *testing.T) {
 	require.Nil(t, dst[0].Children[0].UpdateCall)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_SchemaUpdateMappings_generated(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
 	require.True(t, model.Hooks.ApplySetUnset.Generate)
@@ -92,8 +94,7 @@ func Test_attachUpdateMappings_routesToStatements(t *testing.T) {
 		{Name: "schedule", Type: ssot.AttrString, UpdateMapping: ssot.StringAttributeUpdateBuilder},
 	}
 	obj := ssot.Object{
-		Name:           "Widget",
-		UnsetConflicts: [][]*ssot.Attribute{{&src[0], &src[2]}},
+		Name: "Widget",
 		Alter: ssot.AlterSpec{
 			Clauses: []ssot.AlterClause{
 				ssot.AlterSet(ssot.AlterGroup("Objects", &src[0]), ssot.AlterGroup(ssot.MainAlterGroup, &src[1], &src[2])),
@@ -397,4 +398,52 @@ func Test_WidgetApplySetUnset_customUpdate(t *testing.T) {
 	return &widgetAlterRequests{set: set, unset: unset}, nil
 }
 `, renderTemplate(t, "generatedApplySetUnset", model))
+}
+
+func Test_WidgetApplySetUnset_variantUsesBaseAlter(t *testing.T) {
+	secret := ssot.Attribute{Name: "set_oauth_secret", Type: ssot.AttrObject, SqlOnly: true, Children: []ssot.Attribute{{Name: "secret", Type: ssot.AttrString}}}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	interval := ssot.Attribute{Name: "interval", Type: ssot.AttrInt}
+	base := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Alter: ssot.AlterSpec{
+			Clauses: []ssot.AlterClause{ssot.AlterSet(&secret, &comment, &interval)},
+		},
+	}
+	oauth := ssot.Attribute{
+		Name: "oauth", Type: ssot.AttrObject, ForceNew: true,
+		Children:      []ssot.Attribute{{Name: "secret", Type: ssot.AttrString}},
+		UpdateMapping: ssot.CustomUpdate("updateWidgetOauthSecret"),
+	}
+	variantComment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, UpdateMapping: ssot.StringAttributeUpdateSetOnly}
+	variantInterval := ssot.Attribute{Name: "interval", Type: ssot.AttrInt, UpdateMapping: ssot.IntAttributeUnsetFallbackUpdateWithZeroDefault(30)}
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name:       "WidgetMini",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Variant:    &ssot.ObjectVariant{Of: &base},
+		Attributes: []ssot.Attribute{oauth, variantComment, variantInterval},
+		ResourceHooks: []ssot.ResourceHookOption{
+			ssot.WithApplySetUnset(ssot.Generated()),
+			ssot.WithAlterSetInSdk(ssot.Generated()),
+		},
+	}}, nil, nil)
+	// The requests are the base's: its names, and no UNSET because its ALTER has none, so the custom update gets the SET only.
+	require.Equal(t, `func widgetMiniApplySetUnset(d *tfschema.ResourceData) (*widgetMiniAlterRequests, error) {
+	set := sdk.NewWidgetSetRequest()
+	errs := errors.Join(
+		updateWidgetOauthSecret(d, set),
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "interval", &set.Interval, 30),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &widgetMiniAlterRequests{set: set}, nil
+}
+`, renderTemplate(t, "generatedApplySetUnset", model))
+	require.Contains(t, renderTemplate(t, "generatedAlterRequests", model), "set *sdk.WidgetSetRequest")
+	require.Contains(t, renderTemplate(t, "alterSetInSdk", model), "sdk.NewAlterWidgetRequest(id).WithSet(*setUnset.set)")
 }

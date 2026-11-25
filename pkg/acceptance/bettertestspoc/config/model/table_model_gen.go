@@ -4,6 +4,7 @@ package model
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
@@ -12,18 +13,24 @@ import (
 )
 
 type TableModel struct {
-	Database                tfconfig.Variable `json:"database,omitempty"`
-	Schema                  tfconfig.Variable `json:"schema,omitempty"`
-	Name                    tfconfig.Variable `json:"name,omitempty"`
-	ChangeTracking          tfconfig.Variable `json:"change_tracking,omitempty"`
-	ClusterBy               tfconfig.Variable `json:"cluster_by,omitempty"`
-	Column                  tfconfig.Variable `json:"column,omitempty"`
-	Comment                 tfconfig.Variable `json:"comment,omitempty"`
-	DataRetentionTimeInDays tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
-	FullyQualifiedName      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
-	Owner                   tfconfig.Variable `json:"owner,omitempty"`
-	PrimaryKey              tfconfig.Variable `json:"primary_key,omitempty"`
-	Tag                     tfconfig.Variable `json:"tag,omitempty"`
+	Database                   tfconfig.Variable `json:"database,omitempty"`
+	Schema                     tfconfig.Variable `json:"schema,omitempty"`
+	Name                       tfconfig.Variable `json:"name,omitempty"`
+	AggregationPolicy          tfconfig.Variable `json:"aggregation_policy,omitempty"`
+	ChangeTracking             tfconfig.Variable `json:"change_tracking,omitempty"`
+	ClusterBy                  tfconfig.Variable `json:"cluster_by,omitempty"`
+	Column                     tfconfig.Variable `json:"column,omitempty"`
+	Comment                    tfconfig.Variable `json:"comment,omitempty"`
+	DataRetentionTimeInDays    tfconfig.Variable `json:"data_retention_time_in_days,omitempty"`
+	DefaultDdlCollation        tfconfig.Variable `json:"default_ddl_collation,omitempty"`
+	EnableSchemaEvolution      tfconfig.Variable `json:"enable_schema_evolution,omitempty"`
+	ErrorLogging               tfconfig.Variable `json:"error_logging,omitempty"`
+	IsTransient                tfconfig.Variable `json:"is_transient,omitempty"`
+	JoinPolicy                 tfconfig.Variable `json:"join_policy,omitempty"`
+	MaxDataExtensionTimeInDays tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
+	PrimaryKey                 tfconfig.Variable `json:"primary_key,omitempty"`
+	RowAccessPolicy            tfconfig.Variable `json:"row_access_policy,omitempty"`
+	RowTimestamp               tfconfig.Variable `json:"row_timestamp,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -114,6 +121,8 @@ func (t *TableModel) WithName(name string) *TableModel {
 	return t
 }
 
+// aggregation_policy attribute type is not yet supported, so WithAggregationPolicy can't be generated
+
 func (t *TableModel) WithChangeTracking(changeTracking bool) *TableModel {
 	t.ChangeTracking = tfconfig.BoolVariable(changeTracking)
 	return t
@@ -133,19 +142,61 @@ func (t *TableModel) WithDataRetentionTimeInDays(dataRetentionTimeInDays int) *T
 	return t
 }
 
-func (t *TableModel) WithFullyQualifiedName(fullyQualifiedName string) *TableModel {
-	t.FullyQualifiedName = tfconfig.StringVariable(fullyQualifiedName)
+func (t *TableModel) WithDefaultDdlCollation(defaultDdlCollation string) *TableModel {
+	t.DefaultDdlCollation = tfconfig.StringVariable(defaultDdlCollation)
 	return t
 }
 
-func (t *TableModel) WithOwner(owner string) *TableModel {
-	t.Owner = tfconfig.StringVariable(owner)
+func (t *TableModel) WithEnableSchemaEvolution(enableSchemaEvolution string) *TableModel {
+	t.EnableSchemaEvolution = tfconfig.StringVariable(enableSchemaEvolution)
+	return t
+}
+
+func (t *TableModel) WithEnableSchemaEvolutionBool(enableSchemaEvolution bool) *TableModel {
+	t.EnableSchemaEvolution = tfconfig.StringVariable(strconv.FormatBool(enableSchemaEvolution))
+	return t
+}
+
+func (t *TableModel) WithErrorLogging(errorLogging string) *TableModel {
+	t.ErrorLogging = tfconfig.StringVariable(errorLogging)
+	return t
+}
+
+func (t *TableModel) WithErrorLoggingBool(errorLogging bool) *TableModel {
+	t.ErrorLogging = tfconfig.StringVariable(strconv.FormatBool(errorLogging))
+	return t
+}
+
+func (t *TableModel) WithIsTransient(isTransient string) *TableModel {
+	t.IsTransient = tfconfig.StringVariable(isTransient)
+	return t
+}
+
+func (t *TableModel) WithIsTransientBool(isTransient bool) *TableModel {
+	t.IsTransient = tfconfig.StringVariable(strconv.FormatBool(isTransient))
+	return t
+}
+
+// join_policy attribute type is not yet supported, so WithJoinPolicy can't be generated
+
+func (t *TableModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDays int) *TableModel {
+	t.MaxDataExtensionTimeInDays = tfconfig.IntegerVariable(maxDataExtensionTimeInDays)
 	return t
 }
 
 // primary_key attribute type is not yet supported, so WithPrimaryKey can't be generated
 
-// tag attribute type is not yet supported, so WithTag can't be generated
+// row_access_policy attribute type is not yet supported, so WithRowAccessPolicy can't be generated
+
+func (t *TableModel) WithRowTimestamp(rowTimestamp string) *TableModel {
+	t.RowTimestamp = tfconfig.StringVariable(rowTimestamp)
+	return t
+}
+
+func (t *TableModel) WithRowTimestampBool(rowTimestamp bool) *TableModel {
+	t.RowTimestamp = tfconfig.StringVariable(strconv.FormatBool(rowTimestamp))
+	return t
+}
 
 //////////////////////////////////////////
 // below it's possible to set any value //
@@ -163,6 +214,11 @@ func (t *TableModel) WithSchemaValue(value tfconfig.Variable) *TableModel {
 
 func (t *TableModel) WithNameValue(value tfconfig.Variable) *TableModel {
 	t.Name = value
+	return t
+}
+
+func (t *TableModel) WithAggregationPolicyValue(value tfconfig.Variable) *TableModel {
+	t.AggregationPolicy = value
 	return t
 }
 
@@ -191,13 +247,33 @@ func (t *TableModel) WithDataRetentionTimeInDaysValue(value tfconfig.Variable) *
 	return t
 }
 
-func (t *TableModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *TableModel {
-	t.FullyQualifiedName = value
+func (t *TableModel) WithDefaultDdlCollationValue(value tfconfig.Variable) *TableModel {
+	t.DefaultDdlCollation = value
 	return t
 }
 
-func (t *TableModel) WithOwnerValue(value tfconfig.Variable) *TableModel {
-	t.Owner = value
+func (t *TableModel) WithEnableSchemaEvolutionValue(value tfconfig.Variable) *TableModel {
+	t.EnableSchemaEvolution = value
+	return t
+}
+
+func (t *TableModel) WithErrorLoggingValue(value tfconfig.Variable) *TableModel {
+	t.ErrorLogging = value
+	return t
+}
+
+func (t *TableModel) WithIsTransientValue(value tfconfig.Variable) *TableModel {
+	t.IsTransient = value
+	return t
+}
+
+func (t *TableModel) WithJoinPolicyValue(value tfconfig.Variable) *TableModel {
+	t.JoinPolicy = value
+	return t
+}
+
+func (t *TableModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Variable) *TableModel {
+	t.MaxDataExtensionTimeInDays = value
 	return t
 }
 
@@ -206,7 +282,12 @@ func (t *TableModel) WithPrimaryKeyValue(value tfconfig.Variable) *TableModel {
 	return t
 }
 
-func (t *TableModel) WithTagValue(value tfconfig.Variable) *TableModel {
-	t.Tag = value
+func (t *TableModel) WithRowAccessPolicyValue(value tfconfig.Variable) *TableModel {
+	t.RowAccessPolicy = value
+	return t
+}
+
+func (t *TableModel) WithRowTimestampValue(value tfconfig.Variable) *TableModel {
+	t.RowTimestamp = value
 	return t
 }

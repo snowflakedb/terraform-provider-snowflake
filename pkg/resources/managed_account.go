@@ -132,7 +132,7 @@ func CreateManagedAccount(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(err)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return ReadManagedAccount(ctx, d, meta)
 }

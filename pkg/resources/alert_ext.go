@@ -33,7 +33,7 @@ type alertAlterRequestsExt struct {
 }
 
 func alertNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier) (*sdk.CreateAlertRequest, error) {
-	req := sdk.NewCreateAlertRequest(id, sdk.NewAlertConditionFromString(d.Get("condition").(string)), d.Get("action").(string))
+	req := sdk.NewCreateAlertRequest(id, *sdk.NewAlertConditionRequest(d.Get("condition").(string)), d.Get("action").(string))
 	if schedule := alertScheduleFromConfig(d.Get("alert_schedule")); schedule != nil {
 		req.WithSchedule(*schedule)
 	}

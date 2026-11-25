@@ -6,6 +6,9 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -14,7 +17,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 	client := testClient(t)
 	ctx := context.Background()
 
-	defaultDataTypes := []sdk.DataType{sdk.DataTypeVARCHAR}
+	defaultDataTypes := []datatypes.DataType{testdatatypes.DataTypeVarchar}
 
 	integration, integrationCleanup := testClientHelper().ApiIntegration.Create(t)
 	t.Cleanup(integrationCleanup)
@@ -31,7 +34,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(defaultDataTypes[0])
 		argument := sdk.NewExternalFunctionArgumentRequest("x", defaultDataTypes[0])
 		as := "https://xyz.execute-api.us-west-2.amazonaws.com/production/remote_echo"
-		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), sdk.DataTypeVariant, sdk.Pointer(integration.ID()), as).
+		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), testdatatypes.DataTypeVariant, sdk.Pointer(integration.ID()), as).
 			WithOrReplace(true).
 			WithSecure(true).
 			WithArguments([]sdk.ExternalFunctionArgumentRequest{*argument})
@@ -75,7 +78,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 
 	t.Run("create external function", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(defaultDataTypes...)
-		argument := sdk.NewExternalFunctionArgumentRequest("x", sdk.DataTypeVARCHAR)
+		argument := sdk.NewExternalFunctionArgumentRequest("x", testdatatypes.DataTypeVarchar)
 		headers := []sdk.ExternalFunctionHeaderRequest{
 			{
 				Name:  "measure",
@@ -91,7 +94,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 			},
 		}
 		as := "https://xyz.execute-api.us-west-2.amazonaws.com/production/remote_echo"
-		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), sdk.DataTypeVariant, sdk.Pointer(integration.ID()), as).
+		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), testdatatypes.DataTypeVariant, sdk.Pointer(integration.ID()), as).
 			WithOrReplace(true).
 			WithSecure(true).
 			WithArguments([]sdk.ExternalFunctionArgumentRequest{*argument}).
@@ -110,7 +113,7 @@ func TestInt_ExternalFunctions(t *testing.T) {
 	t.Run("create external function without arguments", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments()
 		as := "https://xyz.execute-api.us-west-2.amazonaws.com/production/remote_echo"
-		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), sdk.DataTypeVariant, sdk.Pointer(integration.ID()), as)
+		request := sdk.NewCreateExternalFunctionRequest(id.SchemaObjectId(), testdatatypes.DataTypeVariant, sdk.Pointer(integration.ID()), as)
 		err := client.ExternalFunctions.Create(ctx, request)
 		require.NoError(t, err)
 		t.Cleanup(cleanupExternalFunctionHandle(id))
@@ -245,8 +248,8 @@ func TestInt_ExternalFunctions(t *testing.T) {
 	})
 
 	t.Run("show external function by id - different name, same arguments", func(t *testing.T) {
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeInt, sdk.DataTypeFloat, sdk.DataTypeVARCHAR)
-		id2 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.DataTypeInt, sdk.DataTypeFloat, sdk.DataTypeVARCHAR)
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeNumber, testdatatypes.DataTypeFloat, testdatatypes.DataTypeVarchar)
+		id2 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeNumber, testdatatypes.DataTypeFloat, testdatatypes.DataTypeVarchar)
 		e := testClientHelper().ExternalFunction.CreateWithIdentifier(t, integration.ID(), id1)
 		testClientHelper().ExternalFunction.CreateWithIdentifier(t, integration.ID(), id2)
 
@@ -257,8 +260,8 @@ func TestInt_ExternalFunctions(t *testing.T) {
 
 	t.Run("show external function by id - same name, different arguments", func(t *testing.T) {
 		name := testClientHelper().Ids.Alpha()
-		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), sdk.DataTypeInt, sdk.DataTypeFloat, sdk.DataTypeVARCHAR)
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), sdk.DataTypeInt, sdk.DataTypeVARCHAR)
+		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), testdatatypes.DataTypeNumber, testdatatypes.DataTypeFloat, testdatatypes.DataTypeVarchar)
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar)
 		e := testClientHelper().ExternalFunction.CreateWithIdentifier(t, integration.ID(), id1)
 		testClientHelper().ExternalFunction.CreateWithIdentifier(t, integration.ID(), id2)
 

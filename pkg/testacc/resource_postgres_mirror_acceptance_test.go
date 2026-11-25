@@ -643,9 +643,7 @@ func TestAcc_PostgresMirror_RefreshIntervalValidations(t *testing.T) {
 		"minutes": tfconfig.IntegerVariable(1),
 		"seconds": tfconfig.IntegerVariable(30),
 	})
-	noUnit := newModel(map[string]tfconfig.Variable{
-		"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-	})
+	noUnit := newModel(map[string]tfconfig.Variable{})
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,

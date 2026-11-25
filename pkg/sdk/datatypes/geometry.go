@@ -3,27 +3,19 @@ package datatypes
 // GeometryDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-geospatial#geometry-data-type
 // It does not have synonyms. It does not have any attributes.
 type GeometryDataType struct {
-	underlyingType string
+	plainDataType
 }
 
-func (t *GeometryDataType) ToSql() string {
-	return t.underlyingType
+func NewGeometryDataType() DataType {
+	return newGeometryDataType(GeometryLegacyDataType)
 }
 
-func (t *GeometryDataType) ToLegacyDataTypeSql() string {
-	return GeometryLegacyDataType
-}
-
-func (t *GeometryDataType) Canonical() string {
-	return GeometryLegacyDataType
-}
-
-func (t *GeometryDataType) ToSqlWithoutUnknowns() string {
-	return t.ToSql()
+func newGeometryDataType(underlyingType string) *GeometryDataType {
+	return &GeometryDataType{plainDataType{underlyingType, GeometryLegacyDataType}}
 }
 
 var GeometryDataTypeSynonyms = []string{GeometryLegacyDataType}
 
 func parseGeometryDataTypeRaw(raw sanitizedDataTypeRaw) (*GeometryDataType, error) {
-	return &GeometryDataType{raw.matchedByType}, nil
+	return newGeometryDataType(raw.matchedByType), nil
 }

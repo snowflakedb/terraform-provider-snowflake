@@ -175,7 +175,7 @@ func CreateStage(ctx context.Context, d *schema.ResourceData, meta any) diag.Dia
 		return diag.Errorf("error creating stage %v, err: %v", name, err)
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(database, schema, name))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(database, schema, name))
 
 	return ReadStage(ctx, d, meta)
 }

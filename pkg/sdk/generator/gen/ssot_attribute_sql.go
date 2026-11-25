@@ -98,8 +98,12 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 		return v.appendStaticClause(attr, clause)
 	case ssot.SqlKindPreexistingStruct:
 		return v.appendPreexistingStructClause(attr, clause, clauseRequired(attr, clause, statement))
+	case ssot.SqlKindPredefined:
+		return v.appendPredefinedClause(attr, clause, clauseRequired(attr, clause, statement))
 	case ssot.SqlKindObject:
 		return v.appendObjectClause(attr, clause, clauseRequired(attr, clause, statement))
+	case ssot.SqlKindWrapString:
+		return v.appendWrapStringClause(attr, clause, clauseRequired(attr, clause, statement))
 	default:
 		panic(fmt.Sprintf("attribute %q: sql kind %q", attr.Name, clause.Kind))
 	}
@@ -112,27 +116,52 @@ func (v *QueryStruct) appendStaticClause(attr ssot.Attribute, clause ssot.SqlCla
 	return v.SQLWithCustomFieldName(clause.Field, clause.SQL)
 }
 
-// appendPreexistingStructClause embeds the supplied query struct that the clause names.
+// appendPreexistingStructClause embeds the struct of the clause, built from the attribute that StructAttr names.
 func (v *QueryStruct) appendPreexistingStructClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
-	nested, ok := v.suppliedStructs[clause.StructName]
-	if !ok {
-		panic(fmt.Sprintf("attribute %q: struct clause names %q, which the SDK definition did not supply", attr.Name, clause.StructName))
+	nested := v.preexistingStruct(attr, clause)
+	transformer := structFieldTransformer(clause, required)
+	name := clauseGoFieldName(attr, clause)
+	switch {
+	case attr.Type == ssot.AttrList:
+		v = v.ListQueryStructField(name, nested, transformer)
+	case required:
+		v = v.QueryStructField(name, nested, transformer)
+	default:
+		v = v.OptionalQueryStructField(name, nested, transformer)
 	}
-	opts := ListOptions()
-	if clause.Parentheses == ssot.SqlParensYes {
-		opts = opts.Parentheses()
+	return v
+}
+
+// preexistingStruct is the query struct of a preexisting clause: built from StructAttr in the statement of StructUse.
+// A helper whose name is that generated struct name is reused. A shared struct is built too: its fields keep the DTO
+// complete, and the statement only calls its toOpts.
+func (v *QueryStruct) preexistingStruct(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
+	if clause.StructAttr == nil {
+		panic(fmt.Sprintf("attribute %q: preexisting struct clause has no attribute", attr.Name))
+	}
+	if supplied, ok := v.suppliedStructs[clause.StructAttr.SqlStructNameFor(v.owner, clause.StructUse)]; ok {
+		return supplied
+	}
+	return queryStructFromObjectSupplied(v.owner, *clause.StructAttr, clause.StructUse, v.suppliedStructs)
+}
+
+// appendPredefinedClause adds a field of a Go type the SDK already has.
+func (v *QueryStruct) appendPredefinedClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.GoType == "" {
+		panic(fmt.Sprintf("attribute %q: predefined type clause has no Go type", attr.Name))
+	}
+	name := clauseGoFieldName(attr, clause)
+	if clause.KeywordShape {
+		return v.PredefinedQueryStructField(name, clause.GoType, keywordShapeOptions(clause, required))
 	}
 	if clause.NoComma {
-		opts = opts.NoComma()
+		return v.PredefinedQueryStructField(name, clause.GoType, listOptionsFromClause(clause, required))
 	}
+	opts := parameterOptionsFromClause(clause, required)
 	if clause.SQL != "" {
 		opts = opts.SQL(clause.SQL)
 	}
-	name := clauseGoFieldName(attr, clause)
-	if required {
-		return v.QueryStructField(name, nested, opts.Required())
-	}
-	return v.OptionalQueryStructField(name, nested, opts)
+	return v.PredefinedQueryStructField(name, clause.GoType, opts)
 }
 
 // clauseGoFieldName is the Go field name of a clause: Field, or the attribute name in camel case.
@@ -236,6 +265,9 @@ func (v *QueryStruct) appendParameterClause(attr ssot.Attribute, clause ssot.Sql
 }
 
 func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	if clause.TextValue {
+		return v.appendTextKeywordClause(attr, clause, required)
+	}
 	if clause.ValueKeyword {
 		return v.appendValueKeywordClause(attr, clause, required)
 	}
@@ -251,6 +283,33 @@ func (v *QueryStruct) appendKeywordClause(attr ssot.Attribute, clause ssot.SqlCl
 		name = clause.Field
 	}
 	return v.OptionalSQLWithCustomFieldName(name, sql)
+}
+
+// appendTextKeywordClause adds a string written as a keyword, such as a double-quoted column name.
+func (v *QueryStruct) appendTextKeywordClause(attr ssot.Attribute, clause ssot.SqlClause, required bool) *QueryStruct {
+	name := clauseGoFieldName(attr, clause)
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	switch clause.Quotes {
+	case "":
+	case ssot.SqlQuotesSingle:
+		opts = opts.SingleQuotes()
+	case ssot.SqlQuotesDouble:
+		opts = opts.DoubleQuotes()
+	case ssot.SqlQuotesNo:
+		opts = opts.NoQuotes()
+	default:
+		panic(fmt.Sprintf("sql clause quotes %q", clause.Quotes))
+	}
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if required {
+		return v.Text(name, opts.Required())
+	}
+	return v.OptionalText(name, opts)
 }
 
 // appendValueKeywordClause adds the value of the attribute written as a bare keyword: an enum, or a list of identifiers.
@@ -375,12 +434,54 @@ func (v *QueryStruct) appendIdentifierClause(attr ssot.Attribute, clause ssot.Sq
 	return v.OptionalIdentifier(name, clause.IdType, opts).WithValidation(ValidIdentifierIfSet, name)
 }
 
+// keywordShapeOptions writes a field as a keyword: Sql is the text before it and Parentheses() wraps it.
+func keywordShapeOptions(clause ssot.SqlClause, required bool) *KeywordTransformer {
+	opts := KeywordOptions()
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if required {
+		opts = opts.Required()
+	}
+	return opts
+}
+
+// structFieldTransformer is the shape of a nested struct field: a keyword with KeywordShape, or a list.
+func structFieldTransformer(clause ssot.SqlClause, required bool) FieldTransformer {
+	if clause.KeywordShape {
+		return keywordShapeOptions(clause, required)
+	}
+	return listOptionsFromClause(clause, required)
+}
+
+func listOptionsFromClause(clause ssot.SqlClause, required bool) *ListTransformer {
+	opts := ListOptions()
+	if clause.Parentheses == ssot.SqlParensYes {
+		opts = opts.Parentheses()
+	}
+	if clause.NoComma {
+		opts = opts.NoComma()
+	}
+	if clause.SQL != "" {
+		opts = opts.SQL(clause.SQL)
+	}
+	if required {
+		opts = opts.Required()
+	}
+	return opts
+}
+
 func parameterOptionsFromClause(clause ssot.SqlClause, required bool) *ParameterTransformer {
 	opts := ParameterOptions()
 	switch clause.Quotes {
 	case "":
 	case ssot.SqlQuotesSingle:
 		opts = opts.SingleQuotes()
+	case ssot.SqlQuotesDouble:
+		opts = opts.DoubleQuotes()
 	case ssot.SqlQuotesNo:
 		opts = opts.NoQuotes()
 	default:
@@ -444,6 +545,10 @@ func clauseFieldName(attr ssot.Attribute, statement attributeSqlStatement) strin
 	clause := attributeClause(attr, statement)
 	if !clause.Present {
 		panic(fmt.Sprintf("attribute %q has no %s clause", attr.Name, statementName(statement)))
+	}
+	if clause.Kind == ssot.SqlKindPreexistingStruct || clause.Kind == ssot.SqlKindObject || clause.Kind == ssot.SqlKindWrapString {
+		// The struct itself is not needed for the name. A preexisting struct is not known here, and a nested one is not built.
+		return clauseGoFieldName(attr, clause)
 	}
 	fields := NewQueryStruct("scratch").appendAttributeClause(attr, clause, statement).fields
 	if len(fields) == 0 {

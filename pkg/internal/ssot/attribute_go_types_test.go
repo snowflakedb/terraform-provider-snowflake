@@ -7,6 +7,37 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_Attribute_ForShow_ForDescribe(t *testing.T) {
+	obj := Object{Name: "Table"}
+	list := Attribute{
+		Name: "cluster_by", Type: AttrList, ShowString: true, OptionalInDb: true,
+		Elem: &Attribute{Type: AttrString},
+	}
+	show := list.ForShow()
+	require.Equal(t, AttrString, show.Type)
+	require.True(t, show.OptionalInDb)
+	require.Nil(t, show.Elem)
+	require.Equal(t, AttrList, list.Type)
+
+	write := NewEnum("MfaEnrollmentOption", "MfaEnrollmentOptions", "OPTIONAL")
+	read := NewEnum("MfaEnrollmentReadOption", "MfaEnrollmentReadOptions", "OPTIONAL", "EXTRA")
+	enrollment := Attribute{Name: "mfa_enrollment", Type: AttrEnum, Enum: write, DescribeEnum: read}
+	described := enrollment.ForDescribe()
+	require.Equal(t, read, described.ColumnEnum())
+	require.Equal(t, write, enrollment.ColumnEnum())
+
+	showEnum := NewEnum("WarehouseType", "WarehouseTypes", "STANDARD", "ADAPTIVE")
+	withShow := Attribute{Name: "warehouse_type", Type: AttrEnum, Enum: write, ShowEnum: showEnum}
+	require.Equal(t, write, withShow.ForDescribe().ColumnEnum())
+	require.Equal(t, showEnum, withShow.ForShow().ColumnEnum())
+
+	state := Attribute{Name: "state", Type: AttrEnum, Enum: write, DescribeString: true}
+	concrete, _ := AttributeGoTypes(obj, state.ForDescribe())
+	require.Equal(t, AttrString, state.ForDescribe().Type)
+	require.Equal(t, "string", concrete)
+	require.Equal(t, AttrEnum, state.Type)
+}
+
 func Test_AttributeGoTypes(t *testing.T) {
 	family := NewEnum("PoolFamily", "PoolFamilies", "SMALL")
 	stateEnum := NewEnum("PoolState", "PoolStates", "IDLE")

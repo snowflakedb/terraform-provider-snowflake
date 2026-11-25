@@ -3,6 +3,7 @@ package assert
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"testing"
 
@@ -34,6 +35,7 @@ const (
 	snowflakeParameterAssertionTypeExpectedValue snowflakeParameterAssertionType = iota
 	snowflakeParameterAssertionTypeDefaultValue
 	snowflakeParameterAssertionTypeDefaultValueOnLevel
+	snowflakeParameterAssertionTypeDefaultValueOnDefaultLevel
 	snowflakeParameterAssertionTypeLevel
 )
 
@@ -92,6 +94,12 @@ func SnowflakeParameterDefaultValueSet[T ~string](parameterName T) SnowflakePara
 
 func SnowflakeParameterDefaultValueOnLevelSet[T ~string](parameterName T, parameterType sdk.ParameterType) SnowflakeParameterAssertion {
 	return SnowflakeParameterAssertion{parameterName: string(parameterName), parameterType: parameterType, assertionType: snowflakeParameterAssertionTypeDefaultValueOnLevel}
+}
+
+// SnowflakeParameterDefaultValueOnDefaultLevelSet checks that the parameter has its default value
+// on either the Snowflake default (empty) level or the SYSTEM level.
+func SnowflakeParameterDefaultValueOnDefaultLevelSet[T ~string](parameterName T) SnowflakeParameterAssertion {
+	return SnowflakeParameterAssertion{parameterName: string(parameterName), assertionType: snowflakeParameterAssertionTypeDefaultValueOnDefaultLevel}
 }
 
 func SnowflakeParameterLevelSet[T ~string](parameterName T, parameterType sdk.ParameterType) SnowflakeParameterAssertion {
@@ -163,6 +171,14 @@ func (s *SnowflakeParametersAssert[_]) runSnowflakeParametersAssertions(t *testi
 				result = append(result, fmt.Errorf(
 					"parameter assertion for %s[%s][%s][%d/%d] failed: expected default value %s on level %s, got %s and level %s",
 					s.objectType, s.id.FullyQualifiedName(), assertion.parameterName, i+1, len(s.assertions), p.Default, assertion.parameterType, p.Value, p.Level,
+				))
+			}
+		case snowflakeParameterAssertionTypeDefaultValueOnDefaultLevel:
+			allowedLevels := []sdk.ParameterType{sdk.ParameterTypeSnowflakeDefault, sdk.ParameterTypeSystem}
+			if p := helpers.FindParameter(t, parameters, assertion.parameterName); p.Default != p.Value || !slices.Contains(allowedLevels, p.Level) {
+				result = append(result, fmt.Errorf(
+					"parameter assertion for %s[%s][%s][%d/%d] failed: expected default value %s on one of levels %q, got %s and level %s",
+					s.objectType, s.id.FullyQualifiedName(), assertion.parameterName, i+1, len(s.assertions), p.Default, allowedLevels, p.Value, p.Level,
 				))
 			}
 		case snowflakeParameterAssertionTypeLevel:
