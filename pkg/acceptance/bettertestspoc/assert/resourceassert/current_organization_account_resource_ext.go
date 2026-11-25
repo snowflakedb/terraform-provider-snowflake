@@ -107,6 +107,7 @@ func (c *CurrentOrganizationAccountResourceAssert) HasAllDefaultParameters() *Cu
 		HasSearchPathString("$current, $public").
 		HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXXLarge)).
 		HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeXSmall)).
+		HasServiceCallerTokenValiditySecs(120).
 		HasSsoLoginPageString("false").
 		HasSqlTraceQueryTextString("OFF").
 		HasStatementQueuedTimeoutInSecondsString("0").

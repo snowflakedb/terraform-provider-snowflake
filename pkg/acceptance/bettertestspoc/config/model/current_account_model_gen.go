@@ -125,6 +125,7 @@ type CurrentAccountModel struct {
 	SearchPath                                               tfconfig.Variable `json:"search_path,omitempty"`
 	ServerlessTaskMaxStatementSize                           tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
 	ServerlessTaskMinStatementSize                           tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
+	ServiceCallerTokenValiditySecs                           tfconfig.Variable `json:"service_caller_token_validity_secs,omitempty"`
 	SessionPolicy                                            tfconfig.Variable `json:"session_policy,omitempty"`
 	SimulatedDataSharingConsumer                             tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
 	SqlTraceQueryText                                        tfconfig.Variable `json:"sql_trace_query_text,omitempty"`
@@ -782,6 +783,11 @@ func (c *CurrentAccountModel) WithServerlessTaskMaxStatementSize(serverlessTaskM
 
 func (c *CurrentAccountModel) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize string) *CurrentAccountModel {
 	c.ServerlessTaskMinStatementSize = tfconfig.StringVariable(serverlessTaskMinStatementSize)
+	return c
+}
+
+func (c *CurrentAccountModel) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *CurrentAccountModel {
+	c.ServiceCallerTokenValiditySecs = tfconfig.IntegerVariable(serviceCallerTokenValiditySecs)
 	return c
 }
 
@@ -1516,6 +1522,11 @@ func (c *CurrentAccountModel) WithServerlessTaskMaxStatementSizeValue(value tfco
 
 func (c *CurrentAccountModel) WithServerlessTaskMinStatementSizeValue(value tfconfig.Variable) *CurrentAccountModel {
 	c.ServerlessTaskMinStatementSize = value
+	return c
+}
+
+func (c *CurrentAccountModel) WithServiceCallerTokenValiditySecsValue(value tfconfig.Variable) *CurrentAccountModel {
+	c.ServiceCallerTokenValiditySecs = value
 	return c
 }
 

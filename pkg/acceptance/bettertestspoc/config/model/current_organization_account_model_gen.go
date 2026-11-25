@@ -124,6 +124,7 @@ type CurrentOrganizationAccountModel struct {
 	SearchPath                                               tfconfig.Variable `json:"search_path,omitempty"`
 	ServerlessTaskMaxStatementSize                           tfconfig.Variable `json:"serverless_task_max_statement_size,omitempty"`
 	ServerlessTaskMinStatementSize                           tfconfig.Variable `json:"serverless_task_min_statement_size,omitempty"`
+	ServiceCallerTokenValiditySecs                           tfconfig.Variable `json:"service_caller_token_validity_secs,omitempty"`
 	SessionPolicy                                            tfconfig.Variable `json:"session_policy,omitempty"`
 	SimulatedDataSharingConsumer                             tfconfig.Variable `json:"simulated_data_sharing_consumer,omitempty"`
 	SqlTraceQueryText                                        tfconfig.Variable `json:"sql_trace_query_text,omitempty"`
@@ -781,6 +782,11 @@ func (c *CurrentOrganizationAccountModel) WithServerlessTaskMaxStatementSize(ser
 
 func (c *CurrentOrganizationAccountModel) WithServerlessTaskMinStatementSize(serverlessTaskMinStatementSize string) *CurrentOrganizationAccountModel {
 	c.ServerlessTaskMinStatementSize = tfconfig.StringVariable(serverlessTaskMinStatementSize)
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *CurrentOrganizationAccountModel {
+	c.ServiceCallerTokenValiditySecs = tfconfig.IntegerVariable(serviceCallerTokenValiditySecs)
 	return c
 }
 
@@ -1510,6 +1516,11 @@ func (c *CurrentOrganizationAccountModel) WithServerlessTaskMaxStatementSizeValu
 
 func (c *CurrentOrganizationAccountModel) WithServerlessTaskMinStatementSizeValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
 	c.ServerlessTaskMinStatementSize = value
+	return c
+}
+
+func (c *CurrentOrganizationAccountModel) WithServiceCallerTokenValiditySecsValue(value tfconfig.Variable) *CurrentOrganizationAccountModel {
+	c.ServiceCallerTokenValiditySecs = value
 	return c
 }
 

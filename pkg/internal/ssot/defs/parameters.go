@@ -846,7 +846,7 @@ var (
 	ServiceCallerTokenValiditySecs = ssot.ParameterDef{
 		SqlName:      "SERVICE_CALLER_TOKEN_VALIDITY_SECS",
 		Kind:         string(ssot.AttrInt),
-		Levels:       []ssot.ParameterLevel{ssot.ParameterLevelAccountExt, ssot.ParameterLevelDatabase, ssot.ParameterLevelService},
+		Levels:       ssot.ObjectLevels(ssot.ParameterLevelDatabase, ssot.ParameterLevelService),
 		Description:  "Controls how long a caller's rights login token is valid for Snowpark Container Services.",
 		DefaultValue: "120",
 		DefaultLevel: parameterTypeSnowflakeDefault,

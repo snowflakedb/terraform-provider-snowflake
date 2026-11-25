@@ -597,6 +597,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMinStatement
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasServiceCallerTokenValiditySecs(expected int) *CurrentOrganizationAccountResourceAssert {
+	c.IntValueSet("service_caller_token_validity_secs", expected)
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasSessionPolicy(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.StringValueSet("session_policy", expected)
 	return c
@@ -1323,6 +1328,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMaxStatement
 
 func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMinStatementSizeString(expected string) *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("serverless_task_min_statement_size", expected)
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasServiceCallerTokenValiditySecsString(expected string) *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("service_caller_token_validity_secs", expected)
 	return c
 }
 
@@ -2055,6 +2065,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasNoServerlessTaskMinStateme
 	return c
 }
 
+func (c *CurrentOrganizationAccountResourceAssert) HasNoServiceCallerTokenValiditySecs() *CurrentOrganizationAccountResourceAssert {
+	c.ValueNotSet("service_caller_token_validity_secs")
+	return c
+}
+
 func (c *CurrentOrganizationAccountResourceAssert) HasNoSessionPolicy() *CurrentOrganizationAccountResourceAssert {
 	c.ValueNotSet("session_policy")
 	return c
@@ -2776,6 +2791,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMaxStatement
 
 func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMinStatementSizeEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValueSet("serverless_task_min_statement_size", "")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasServiceCallerTokenValiditySecsEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValueSet("service_caller_token_validity_secs", "")
 	return c
 }
 
@@ -3505,6 +3525,11 @@ func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMaxStatement
 
 func (c *CurrentOrganizationAccountResourceAssert) HasServerlessTaskMinStatementSizeNotEmpty() *CurrentOrganizationAccountResourceAssert {
 	c.ValuePresent("serverless_task_min_statement_size")
+	return c
+}
+
+func (c *CurrentOrganizationAccountResourceAssert) HasServiceCallerTokenValiditySecsNotEmpty() *CurrentOrganizationAccountResourceAssert {
+	c.ValuePresent("service_caller_token_validity_secs")
 	return c
 }
 

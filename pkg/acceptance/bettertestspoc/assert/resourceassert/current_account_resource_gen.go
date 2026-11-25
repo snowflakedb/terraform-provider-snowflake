@@ -602,6 +602,11 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSize(expecte
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasServiceCallerTokenValiditySecs(expected int) *CurrentAccountResourceAssert {
+	c.IntValueSet("service_caller_token_validity_secs", expected)
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasSessionPolicy(expected string) *CurrentAccountResourceAssert {
 	c.StringValueSet("session_policy", expected)
 	return c
@@ -1333,6 +1338,11 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeString(e
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeString(expected string) *CurrentAccountResourceAssert {
 	c.ValueSet("serverless_task_min_statement_size", expected)
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasServiceCallerTokenValiditySecsString(expected string) *CurrentAccountResourceAssert {
+	c.ValueSet("service_caller_token_validity_secs", expected)
 	return c
 }
 
@@ -2070,6 +2080,11 @@ func (c *CurrentAccountResourceAssert) HasNoServerlessTaskMinStatementSize() *Cu
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasNoServiceCallerTokenValiditySecs() *CurrentAccountResourceAssert {
+	c.ValueNotSet("service_caller_token_validity_secs")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasNoSessionPolicy() *CurrentAccountResourceAssert {
 	c.ValueNotSet("session_policy")
 	return c
@@ -2804,6 +2819,11 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeEmpty() 
 	return c
 }
 
+func (c *CurrentAccountResourceAssert) HasServiceCallerTokenValiditySecsEmpty() *CurrentAccountResourceAssert {
+	c.ValueSet("service_caller_token_validity_secs", "")
+	return c
+}
+
 func (c *CurrentAccountResourceAssert) HasSessionPolicyEmpty() *CurrentAccountResourceAssert {
 	c.ValueSet("session_policy", "")
 	return c
@@ -3535,6 +3555,11 @@ func (c *CurrentAccountResourceAssert) HasServerlessTaskMaxStatementSizeNotEmpty
 
 func (c *CurrentAccountResourceAssert) HasServerlessTaskMinStatementSizeNotEmpty() *CurrentAccountResourceAssert {
 	c.ValuePresent("serverless_task_min_statement_size")
+	return c
+}
+
+func (c *CurrentAccountResourceAssert) HasServiceCallerTokenValiditySecsNotEmpty() *CurrentAccountResourceAssert {
+	c.ValuePresent("service_caller_token_validity_secs")
 	return c
 }
 

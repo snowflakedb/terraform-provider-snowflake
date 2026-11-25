@@ -143,6 +143,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 		WithSearchPath("$current, $public").
 		WithServerlessTaskMaxStatementSize(string(sdk.WarehouseSizeXLarge)).
 		WithServerlessTaskMinStatementSize(string(sdk.WarehouseSizeSmall)).
+		WithServiceCallerTokenValiditySecs(1800).
 		WithSsoLoginPage(true).
 		WithSqlTraceQueryText("OFF").
 		WithStatementQueuedTimeoutInSeconds(1).
@@ -304,6 +305,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasSearchPathString("$current, $public").
 						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+						HasServiceCallerTokenValiditySecsString("1800").
 						HasSsoLoginPageString("true").
 						HasSqlTraceQueryTextString("OFF").
 						HasStatementQueuedTimeoutInSecondsString("1").
@@ -444,6 +446,7 @@ func TestAcc_CurrentAccount_Parameters(t *testing.T) {
 						HasSearchPathString("$current, $public").
 						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+						HasServiceCallerTokenValiditySecsString("1800").
 						HasSsoLoginPageString("true").
 						HasSqlTraceQueryTextString("OFF").
 						HasStatementQueuedTimeoutInSecondsString("1").
@@ -827,6 +830,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 		WithSearchPath("$current, $public").
 		WithServerlessTaskMaxStatementSize(string(sdk.WarehouseSizeXLarge)).
 		WithServerlessTaskMinStatementSize(string(sdk.WarehouseSizeSmall)).
+		WithServiceCallerTokenValiditySecs(1800).
 		WithSsoLoginPage(true).
 		WithSqlTraceQueryText("OFF").
 		WithStatementQueuedTimeoutInSeconds(1).
@@ -975,6 +979,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasSearchPathString("$current, $public").
 						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+						HasServiceCallerTokenValiditySecsString("1800").
 						HasSsoLoginPageString("true").
 						HasSqlTraceQueryTextString("OFF").
 						HasStatementQueuedTimeoutInSecondsString("1").
@@ -1120,6 +1125,7 @@ func TestAcc_CurrentAccount_Complete(t *testing.T) {
 						HasSearchPathString("$current, $public").
 						HasServerlessTaskMaxStatementSizeString(string(sdk.WarehouseSizeXLarge)).
 						HasServerlessTaskMinStatementSizeString(string(sdk.WarehouseSizeSmall)).
+						HasServiceCallerTokenValiditySecsString("1800").
 						HasSsoLoginPageString("true").
 						HasSqlTraceQueryTextString("OFF").
 						HasStatementQueuedTimeoutInSecondsString("1").
