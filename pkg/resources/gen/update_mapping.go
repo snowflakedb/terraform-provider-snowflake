@@ -49,7 +49,7 @@ func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceA
 		setOnly := restricted && !inUnset[name]
 		call, ok := updateCallFor(objectName, src[i], setOnly)
 		if !ok {
-			if restricted && updatable(src[i]) {
+			if restricted && src[i].CanUpdate() {
 				panic(fmt.Sprintf("object %q: attribute %q is in the SET or UNSET block, but no update helper can be deduced for it, so give it an UpdateMapping or SkipUpdate", objectName, name))
 			}
 			continue
@@ -78,12 +78,6 @@ func attributeNames(attributes []*ssot.Attribute) map[string]bool {
 		}
 	}
 	return names
-}
-
-// updatable reports whether the update can change the attribute at all. ForceNew and CreateOnly attributes are create-only,
-// and a Readonly one is not written.
-func updatable(src ssot.Attribute) bool {
-	return src.CanUpdate()
 }
 
 // groupOf is the name of the group that holds the attribute. It is empty for the main group, and for an attribute that no

@@ -521,9 +521,10 @@ func (a Attribute) DeducedUpdateCall(stem string, setOnly bool) (UpdateCall, boo
 	}
 }
 
-// CanUpdate reports whether an update helper can change the attribute. ForceNew and CreateOnly are create-only.
+// CanUpdate reports whether the generated ApplySetUnset writes the attribute: it changes in place, and SkipUpdate does not
+// leave it to other code.
 func (a Attribute) CanUpdate() bool {
-	return !a.SkipUpdate && !a.ForceNew && !a.CreateOnly && !a.Readonly
+	return a.ChangesInPlace() && !a.SkipUpdate
 }
 
 func (a Attribute) isMappedCollection() bool {

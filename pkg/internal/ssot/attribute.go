@@ -225,8 +225,8 @@ func (a *Attribute) OutputKey() string {
 	return a.Name
 }
 
-// ChangesInPlace reports a resource attribute whose change Update applies: it is not ForceNew, Readonly, Computed,
-// CreateOnly, or SqlOnly.
+// ChangesInPlace reports an attribute whose change Terraform applies without recreating the object: it is not ForceNew,
+// Readonly, Computed, CreateOnly, or SqlOnly.
 func (a Attribute) ChangesInPlace() bool {
 	return !a.ForceNew && !a.Readonly && !a.Computed && !a.CreateOnly && !a.SqlOnly
 }
