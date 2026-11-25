@@ -3,7 +3,6 @@
 package testint
 
 import (
-	"fmt"
 	"slices"
 	"strings"
 	"testing"
@@ -1922,16 +1921,14 @@ func TestInt_IcebergTables(t *testing.T) {
 
 	t.Run("describe iceberg table: structured nested data type is parsed", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		// The structured CreateIcebergTableRequest builder has no representation for structured
-		// OBJECT/ARRAY/MAP types, so this table is created via raw SQL. DESCRIBE still parses them.
-		_, err := client.ExecForTests(ctx, fmt.Sprintf(
-			"CREATE OR REPLACE ICEBERG TABLE %s (c1 TEXT, c2 OBJECT(foo TEXT))",
-			id.FullyQualifiedName(),
-		))
+		err := client.IcebergTables.Create(ctx, sdk.NewCreateIcebergTableRequest(id, sdk.IcebergTableColumnsAndConstraintsRequest{
+			Columns: []sdk.IcebergTableColumnRequest{
+				{Name: "C1", ColumnType: testdatatypes.DataTypeVarcharIceberg},
+				{Name: "C2", ColumnType: testdatatypes.DataTypeStructuredObject},
+			},
+		}))
 		require.NoError(t, err)
-		t.Cleanup(func() {
-			require.NoError(t, client.IcebergTables.Drop(ctx, sdk.NewDropIcebergTableRequest(id).WithIfExists(true)))
-		})
+		t.Cleanup(testClientHelper().IcebergTable.DropFunc(t, id))
 
 		details, err := client.IcebergTables.Describe(ctx, id)
 		require.NoError(t, err)
@@ -1945,15 +1942,13 @@ func TestInt_IcebergTables(t *testing.T) {
 		)
 		assert.Equal(t, testdatatypes.DataTypeVarcharIceberg.ToSql(), details[0].TypeString())
 
-		expectedObjectType, err := datatypes.ParseDataType("OBJECT(foo VARCHAR(134217728))")
-		require.NoError(t, err)
 		assertThatObject(
 			t, objectassert.IcebergTableDetailsFromObject(t, &details[1]).
 				HasName("C2").
-				HasType(expectedObjectType).
-				HasDataTypeRaw("OBJECT(foo VARCHAR(134217728))"),
+				HasType(testdatatypes.DataTypeStructuredObject).
+				HasDataTypeRaw(testdatatypes.DataTypeStructuredObject.ToSql()),
 		)
-		assert.Equal(t, "OBJECT(foo VARCHAR(134217728))", details[1].TypeString())
+		assert.Equal(t, testdatatypes.DataTypeStructuredObject.ToSql(), details[1].TypeString())
 	})
 }
 
