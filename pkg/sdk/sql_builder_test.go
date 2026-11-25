@@ -689,6 +689,16 @@ func TestBuilder_systemReferenceInvocation(t *testing.T) {
 		assert.Equal(t, `SYSTEM$REFERENCE('CORTEX AGENT', '\"db\".\"sch\".\"my\"\"agent\"')`, sql)
 	})
 
+	t.Run("system reference: extra arguments", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		s := &struct {
+			name SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"TAG,SESSION,APPLYBUDGET"`
+		}{name: id}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "SYSTEM$REFERENCE('TAG', '"+singleQuotedIdentifier(id)+"', 'SESSION', 'APPLYBUDGET')", sql)
+	})
+
 	t.Run("system reference: empty identifier is omitted", func(t *testing.T) {
 		s := &struct {
 			name *AccountObjectIdentifier `ddl:"identifier,system_reference" sql:"WAREHOUSE"`
@@ -843,6 +853,20 @@ func TestBuilder_arrayLiterals(t *testing.T) {
 		sql, err := structToSQL(s)
 		require.NoError(t, err)
 		assert.Equal(t, "[[SYSTEM$REFERENCE ('TAG', '"+singleQuotedIdentifier(id)+"', 'SESSION', 'APPLYBUDGET'), 'finance']]", sql)
+	})
+
+	t.Run("nested arrays with a system reference", func(t *testing.T) {
+		id := randomSchemaObjectIdentifier()
+		type tagValue struct {
+			Tag   SchemaObjectIdentifier `ddl:"identifier,system_reference" sql:"TAG,SESSION,APPLYBUDGET"`
+			Value string                 `ddl:"keyword,single_quotes"`
+		}
+		s := &struct {
+			tags []tagValue `ddl:"list,must_brackets,array_elements"`
+		}{tags: []tagValue{{Tag: id, Value: "finance"}}}
+		sql, err := structToSQL(s)
+		require.NoError(t, err)
+		assert.Equal(t, "[[SYSTEM$REFERENCE('TAG', '"+singleQuotedIdentifier(id)+"', 'SESSION', 'APPLYBUDGET'), 'finance']]", sql)
 	})
 
 	t.Run("instance method with array and boolean arguments", func(t *testing.T) {
