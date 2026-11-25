@@ -26,7 +26,34 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.24.x ➞ v2.25.0
+
+### *(new feature)* `METRIC_LEVEL` and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on databases and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account
+
+The provider knew `METRIC_LEVEL` only on functions and procedures and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` only on services, although Snowflake also supports them on databases, and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account.
+
+- [`snowflake_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/database), [`snowflake_secondary_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/secondary_database), and [`snowflake_shared_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/shared_database) have new optional `metric_level` and `service_caller_token_validity_secs` fields, and the `parameters` output of these resources and of the [`snowflake_databases`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/databases) data source reports them.
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) and [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) support `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account, and `snowflake_object_parameter` supports both parameters on databases. If you set them with `value_type` before, `value_type` is ignored now (it logs a warning), and you can remove it.
+
+No changes are required in your configuration.
+
 ## v2.23.x ➞ v2.24.0
+
+### *(breaking change)* Table constraint names are case-sensitive
+
+[`snowflake_table_constraint`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table_constraint) now double-quotes `name` when it adds and drops the constraint. Earlier versions sent the name unquoted, so Snowflake stored it in uppercase: `name = "pk_orders"` created a constraint called `PK_ORDERS`. Now it creates `pk_orders`. Names with characters that need quoting, such as spaces or dashes, now work as well.
+
+The deprecated `primary_key.name` field of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) changed the same way. It is set only when `primary_key` changes after the table is created, and it is not read back from Snowflake, so existing primary keys are not affected.
+
+The resource does not read the constraint back from Snowflake, so the upgrade itself plans no changes. The difference shows up when the constraint is dropped, on destroy or replacement. For a constraint created with a lowercase or mixed-case `name`, the provider now drops the quoted name, which does not exist in Snowflake. The provider treats a missing constraint as already dropped, so it removes the resource from the state and leaves the uppercase constraint on the table. The name used for the drop comes from the resource ID, so changing `name` in the configuration does not help.
+
+To migrate a constraint whose `name` is not all uppercase, rename it in Snowflake to the exact configured name, so that the configuration, the state, and Snowflake agree:
+
+```sql
+ALTER TABLE <database>.<schema>.<table> RENAME CONSTRAINT PK_ORDERS TO "pk_orders";
+```
+
+No changes are required for constraints whose `name` is already in uppercase.
 
 ### *(breaking change)* `snowflake_table` reworked
 
@@ -34,7 +61,607 @@ The preview [`snowflake_table`](https://registry.terraform.io/providers/snowflak
 
 #### Table id is the fully qualified name
 
-The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. No configuration changes are required.
+The resource id changes from the pipe-separated format (`<database_name>|<schema_name>|<table_name>`) to the fully qualified name format (`"<database_name>"."<schema_name>"."<table_name>"`). A state upgrader migrates the id on the next `terraform plan` or `terraform apply`. The same upgrader sets the new `is_transient`, `enable_schema_evolution`, `error_logging`, and `row_timestamp` fields (see below) to their unset value in the existing state, so upgrading does not recreate or change the table. No configuration changes are required.
+
+#### New fields
+
+We have added the following fields to the resource:
+
+- `is_transient` creates a [transient table](https://docs.snowflake.com/en/user-guide/tables-temp-transient#transient-tables). Changing it recreates the table.
+- `enable_schema_evolution`, `error_logging`, and `row_timestamp` manage the matching [table properties](https://docs.snowflake.com/en/sql-reference/sql/create-table). Removing a value from the configuration unsets the property.
+- `max_data_extension_time_in_days` and `default_ddl_collation` are object parameters. Omitting them inherits the parent value. An empty `default_ddl_collation` is a real value. `data_retention_time_in_days` became an object parameter too; see below.
+- `row_access_policy` (`policy_name`, `on`) and `aggregation_policy` (`policy_name`, `entity_key`) attach those policies to the table. They follow the same rules as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table).
+- `join_policy` (`policy_name`, `allowed_join_keys`) attaches a join policy. Regular tables support it; Iceberg tables do not.
+
+We have also added these computed fields:
+
+- `show_output` holds the output of [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables).
+- `describe_output` holds the output of [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table) `TYPE = COLUMNS`, including `schema_evolution_record`.
+- `parameters` holds the output of [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters), including Iceberg-only keys that are not resource attributes.
+
+The next plan updates every existing `snowflake_table` to fill these blocks. State is upgraded automatically: `is_transient`, `enable_schema_evolution`, `error_logging`, and `row_timestamp` are set to `default` in the existing state, so the upgrade does not recreate the table. No configuration changes are required unless you want to reference the new outputs.
+
+References: [#1272](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1272), [#2676](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2676), [#4266](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4266).
+
+#### `column.schema_evolution_record` replaced by `describe_output`
+
+The computed `column.schema_evolution_record` field was removed. It duplicated the `SCHEMA EVOLUTION RECORD` column of [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table). Use `describe_output[*].schema_evolution_record` instead. The same key is on [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) `describe_output`.
+
+Before:
+
+```terraform
+output "schema_evolution_record" {
+  value = snowflake_table.example.column[0].schema_evolution_record
+}
+```
+
+After:
+
+```terraform
+output "schema_evolution_record" {
+  value = snowflake_table.example.describe_output[0].schema_evolution_record
+}
+```
+
+State is upgraded automatically. The next refresh drops the removed field from the state and fills `describe_output`. The configuration is unchanged unless you referenced `column.schema_evolution_record`.
+
+#### `owner` replaced by `show_output`
+
+The `owner` field was removed. Use `show_output[0].owner` instead.
+
+Before:
+
+```terraform
+output "owner" {
+  value = snowflake_table.example.owner
+}
+```
+
+After:
+
+```terraform
+output "owner" {
+  value = snowflake_table.example.show_output[0].owner
+}
+```
+
+State is upgraded automatically. The next refresh drops the removed field from the state and fills `show_output`.
+
+The owner cannot be set in `snowflake_table`. To give the table to another role, use [`snowflake_grant_ownership`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_ownership).
+
+Reference: [#4161](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4161).
+
+#### `tag` replaced by `snowflake_tag_association`
+
+The `tag` field was removed, because tags are managed by the dedicated [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) resource. It lets you set tags on any object in the same way and without a dependency cycle between the tag and the table.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  tag {
+    name     = snowflake_tag.example.name
+    database = snowflake_tag.example.database
+    schema   = snowflake_tag.example.schema
+    value    = "value"
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_tag_association" "example" {
+  object_identifiers = [snowflake_table.example.fully_qualified_name]
+  object_type        = "TABLE"
+  tag_id             = snowflake_tag.example.fully_qualified_name
+  tag_value          = "value"
+}
+```
+
+State is upgraded automatically. The next refresh drops the removed field from the state, and the tag stays on the table in Snowflake, so you can adopt it by importing the new `snowflake_tag_association`.
+
+#### `terse` and `history` filters in `snowflake_tables`
+
+We have added two optional filters to the preview [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) data source. They match the `TERSE` and `HISTORY` options of [SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables):
+
+- `terse` returns only the `created_on`, `name`, `kind`, `database_name`, and `schema_name` columns in `show_output`. The other fields of `show_output` are empty.
+- `history` also returns the dropped tables that are still within the Time Travel retention period. A dropped table has `dropped_on` set in `show_output`, and its `describe_output` and `parameters` are empty, because DESCRIBE TABLE and SHOW PARAMETERS cannot read it.
+
+```terraform
+data "snowflake_tables" "example" {
+  like    = "my_table%"
+  terse   = true
+  history = true
+}
+```
+
+Both default to `false`, so the data source runs the same SHOW TABLES as before. No configuration changes are required unless you want to use the new filters.
+
+#### `with_parameters` in `snowflake_tables`
+
+We have added `with_parameters` (default `true`) to the preview [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) data source. When it is true, the data source runs [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters) for every table and stores the result in `tables.*.parameters`. Set it to `false` to skip those queries.
+
+```terraform
+data "snowflake_tables" "example" {
+  like            = "my_table%"
+  with_parameters = false
+}
+```
+
+No configuration changes are required unless you want to turn the extra queries off.
+
+#### `change_tracking` no longer defaults to `false`
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `change_tracking` is still a Terraform boolean. Previously it defaulted to `false` and always sent `CHANGE_TRACKING` on create. The schema Default is gone: omit the field to use Snowflake’s default ([SHOW TABLES](https://docs.snowflake.com/en/sql-reference/sql/show-tables) still reports `false`). Keep `true` or `false` in configuration when you want to set it. The next plan fills `show_output` with the value Snowflake reports.
+
+#### `data_retention_time_in_days` is an object parameter
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `data_retention_time_in_days` is now a native [table parameter](https://docs.snowflake.com/en/sql-reference/parameters). Previously `-1` meant “inherit from the parent.” That sentinel is gone: omit the field to inherit.
+
+```terraform
+# data_retention_time_in_days = -1  # remove this; omit the field to inherit
+```
+
+State is not upgraded automatically. Remove `-1` from the configuration. After upgrade, the next plan stores the effective value and the `parameters` block from [SHOW PARAMETERS IN TABLE](https://docs.snowflake.com/en/sql-reference/sql/show-parameters). Setting the field still sends `DATA_RETENTION_TIME_IN_DAYS` on create and alter.
+
+#### Import requires the table to exist
+
+Import of [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) now looks the table up in Snowflake. Previously the importer only copied the id into state. Import fails if the table is missing. Use the fully qualified name as the import id. This resource is still in preview and will be reworked in the future.
+
+#### Column data types are parsed
+
+`tables.*.describe_output.*.type` in [`snowflake_tables`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/tables) is now parsed and shown in a normalized format, e.g. `NUMBER(38, 0)` instead of `NUMBER(38,0)`. When the provider cannot parse a type, it shows the value returned by DESCRIBE TABLE. `column.*.type` in `snowflake_table` is unchanged.
+
+No configuration changes are required. Update any references that compare `describe_output` types as strings.
+
+#### `column.default` is a single expression
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.default` now has one required field, `expression`, the same as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table). The `constant` and `sequence` fields were removed.
+
+Snowflake keeps one default expression per column, and [DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table) returns it as SQL text. The provider used to guess which of the three fields a value belonged to, and it guessed wrong in some cases: a text default such as `'NUMBER(38,15)'` was read back as an `expression` and planned an update on every run, and a `constant = ""` crashed the provider. The provider now sends `expression` unchanged as `DEFAULT <expression>` and stores the value DESCRIBE TABLE returns. String literals keep their quotes. An empty `expression` (`""`) is an empty string default: the provider sends it as `''`, which is what DESCRIBE TABLE returns for it, so `""` and `"''"` are interchangeable and neither plans a change after the other. A bare `DEFAULT` without an expression is not valid SQL, so the provider never sends one. An `expression` made only of whitespace is rejected. A `<sequence>.NEXTVAL` expression shows no difference when only the quoting of the sequence name differs.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "status"
+    type = "VARCHAR(16)"
+    default {
+      constant = "pending"
+    }
+  }
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+    default {
+      sequence = snowflake_sequence.example.fully_qualified_name
+    }
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "status"
+    type = "VARCHAR(16)"
+    default {
+      expression = "'pending'"
+    }
+  }
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+    default {
+      expression = "${snowflake_sequence.example.fully_qualified_name}.NEXTVAL"
+    }
+  }
+}
+```
+
+State is upgraded automatically. A `constant` on a text column becomes a quoted string literal (`pending` becomes `'pending'`), a `constant` on any other type is kept as it is (`FALSE` stays `FALSE`), a `sequence` becomes `<sequence>.NEXTVAL`, and an `expression` is kept. Update the configuration the same way. If you keep the old fields, the plan fails because they no longer exist.
+
+An empty string default, which `constant = ""` could not express, is now `expression = ""` (or the equivalent `expression = "''"`):
+
+```terraform
+column {
+  name = "notes"
+  type = "VARCHAR(256)"
+  default {
+    expression = ""
+  }
+}
+```
+
+References: [#2406](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2406), [#5167](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5167).
+
+#### `column.masking_policy` is a block
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.masking_policy` is now a block with `policy_name` and `using`, the same as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table). Previously, it was a string, and a name written without quotes, such as `MY_DB.MY_SCHEMA.MY_POLICY`, planned an update on every run because the provider stored the quoted name. The provider now compares `policy_name` regardless of quoting, reads the policy from [POLICY_REFERENCES](https://docs.snowflake.com/en/sql-reference/functions/policy_references), and supports `using` for [conditional masking policies](https://docs.snowflake.com/en/user-guide/security-column-advanced). Like in `snowflake_iceberg_table`, `using` may be omitted when the policy takes only the masked column.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name           = "email"
+    type           = "VARCHAR"
+    masking_policy = "MY_DB.MY_SCHEMA.MY_POLICY"
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "email"
+    type = "VARCHAR"
+    masking_policy {
+      policy_name = "MY_DB.MY_SCHEMA.MY_POLICY"
+      # using     = ["email", "role_column"] # for a conditional masking policy
+    }
+  }
+}
+```
+
+State is upgraded automatically: the policy name moves to `masking_policy.policy_name`, and an empty value removes the block. Update the configuration the same way. Manage a column's masking policy in one place only: if you use [`snowflake_table_column_masking_policy_application`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table_column_masking_policy_application) for a column, keep `ignore_changes = [column[<index>].masking_policy]` on the table.
+
+Reference: [#4679](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4679).
+
+#### `column.projection_policy`
+
+We have added `projection_policy` to [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column`, the same block as in [`snowflake_iceberg_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/iceberg_table). It attaches a [projection policy](https://docs.snowflake.com/en/user-guide/projection-policies) to the column. Unlike in `snowflake_iceberg_table`, changing or removing it does not recreate the table: the provider sends `ALTER COLUMN ... SET PROJECTION POLICY ... FORCE` or `UNSET PROJECTION POLICY`.
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "email"
+    type = "VARCHAR"
+    projection_policy {
+      policy_name = snowflake_projection_policy.example.fully_qualified_name
+    }
+  }
+}
+```
+
+The provider reads the policy from [POLICY_REFERENCES](https://docs.snowflake.com/en/sql-reference/functions/policy_references), so a projection policy set outside of Terraform shows up in the next plan. No configuration changes are required unless you want to use the field.
+
+#### `column.nullable` replaced by `column.not_null`
+
+[`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.nullable` was removed. Use `column.not_null`, which has the opposite meaning and is the same boolean field as in [`snowflake_hybrid_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/hybrid_table). `not_null = true` creates the column with `NOT NULL`. When you omit it, or set it to `false`, the column accepts null values, which is what `nullable = true` (the default) did. Changing `not_null` on an existing column is still applied in place with `ALTER COLUMN ... SET NOT NULL` or `DROP NOT NULL`.
+
+Before:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name     = "id"
+    type     = "NUMBER(38,0)"
+    nullable = false
+  }
+  column {
+    name = "comment"
+    type = "VARCHAR"
+    # nullable = true is the default
+  }
+}
+```
+
+After:
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name     = "id"
+    type     = "NUMBER(38,0)"
+    not_null = true
+  }
+  column {
+    name = "comment"
+    type = "VARCHAR"
+    # not_null = false is the default
+  }
+}
+```
+
+State is upgraded automatically: `nullable` is removed from the existing state, and `not_null` is set to its inverse, so the upgrade does not change the table. Update the configuration the same way: replace `nullable = false` with `not_null = true`, and remove `nullable = true`. If you keep `nullable`, the plan fails because the field no longer exists.
+
+#### `column.identity.order`
+
+We have added `order` to [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column.identity`. It sets `ORDER` (`"true"`) or `NOORDER` (`"false"`) for the identity column, as described in [CREATE TABLE](https://docs.snowflake.com/en/sql-reference/sql/create-table). When it is `"default"` or omitted, Snowflake applies the [NOORDER_SEQUENCE_AS_DEFAULT](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default) parameter, and the value Snowflake reports does not plan a change.
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "id"
+    type = "NUMBER(38,0)"
+    identity {
+      start_num = 1
+      step_num  = 1
+      order     = "true"
+    }
+  }
+}
+```
+
+Snowflake cannot change the order of an existing identity column, so changing `order` later is not applied, the same as `start_num` and `step_num`. No configuration changes are required.
+
+Reference: [#3221](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3221).
+
+#### Virtual columns
+
+We have added `as` to [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) `column`. It makes the column a [virtual column](https://docs.snowflake.com/en/sql-reference/virtual-columns) computed from the expression, sent as `AS (<expression>)`. The expression can use literals, operators, deterministic system-defined functions, and virtual columns defined earlier in the table (see [Virtual columns](https://docs.snowflake.com/en/sql-reference/virtual-columns) for the allowed and prohibited expressions). The column `type` must be compatible with the type of the expression, and a virtual column cannot have `default` or `identity`.
+
+```terraform
+resource "snowflake_table" "example" {
+  # ...
+  column {
+    name = "ID"
+    type = "NUMBER(38,0)"
+  }
+  column {
+    name = "DOUBLE_ID"
+    type = "NUMBER(38,0)"
+    as   = "ID * 2"
+  }
+}
+```
+
+[DESCRIBE TABLE](https://docs.snowflake.com/en/sql-reference/sql/desc-table) reports the expression in a normalized form (`id*2` becomes `ID * 2`), so differences in letter case, whitespace, double quotes, and outer parentheses do not plan a change. Snowflake cannot alter the expression, so changing `as` drops the column and adds it again at the end of the table. Keep virtual columns last in the configuration to avoid a difference in the column order.
+
+Previously, Read skipped virtual columns, so a virtual column created outside of Terraform was not in the state. The provider now reads them. After upgrading, the next plan drops every virtual column that is not in the configuration. Add these columns to the configuration with `as` before you apply.
+
+Reference: [#2418](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2418).
+
+### *(breaking change)* `snowflake_failover_group` reworked
+
+[`snowflake_failover_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/failover_group) is a preview resource and has been reworked to match the new [replication group](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) resources. It manages a [failover group](https://docs.snowflake.com/en/sql-reference/sql/create-failover-group) in the source account only. A replica in a target account is managed by the new preview resource [`snowflake_failover_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/failover_group_secondary).
+
+This resource is still in preview. To use the new resource, add `snowflake_failover_group_secondary_resource` to the `preview_features_enabled` field in the provider configuration.
+
+#### `replication_schedule` is a string
+
+The nested `replication_schedule` block (`interval` or `cron`) is replaced by a string with an interval in minutes or a cron expression with the time zone. The state of existing resources is upgraded automatically.
+
+Before:
+```terraform
+replication_schedule {
+  interval = 10
+}
+
+replication_schedule {
+  cron {
+    expression = "0 0 10-20 * TUE,THU"
+    time_zone  = "UTC"
+  }
+}
+```
+
+After:
+```terraform
+replication_schedule = "10 MINUTE"
+
+replication_schedule = "USING CRON 0 0 10-20 * TUE,THU UTC"
+```
+
+#### The source account is no longer a part of `allowed_accounts`
+
+Snowflake adds the source account to every failover group. `allowed_accounts` now holds only the target accounts, in the form `<organization_name>.<account_name>`, and the resource leaves the source account out of the state. If your configuration lists the source account, remove it, otherwise the plan shows a difference on every run.
+
+#### `from_replica` moved to `snowflake_failover_group_secondary`
+
+The `from_replica` block is removed. A failover group that was created with `from_replica` cannot be upgraded in place: the first plan after upgrading fails with a message that points to the new resource. For each such group, remove it from the state and import it as the new resource, which takes the primary group as `"<organization_name>"."<account_name>"."<failover_group_name>"`:
+
+```shell
+terraform state rm snowflake_failover_group.target_failover_group
+terraform import snowflake_failover_group_secondary.target_failover_group '"<failover_group_name>"'
+```
+
+Before:
+```terraform
+resource "snowflake_failover_group" "target_failover_group" {
+  name = "FG1"
+  from_replica {
+    organization_name   = "..."
+    source_account_name = "..."
+    name                = "FG1"
+  }
+}
+```
+
+After:
+```terraform
+resource "snowflake_failover_group_secondary" "target_failover_group" {
+  name    = "FG1"
+  primary = "\"<organization_name>\".\"<source_account_name>\".\"FG1\""
+}
+```
+
+#### `snowflake_failover_groups` data source reworked
+
+The preview [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source now follows the same rules as [`snowflake_replication_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/replication_groups) and the other data sources: the result of [`SHOW FAILOVER GROUPS`](https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups) is returned in one `show_output` block, and the filter takes the same account identifier.
+
+Filtering changes:
+- `in_account` takes `<organization_name>.<account_name>` instead of an account locator, and is validated.
+
+Output changes:
+- Each element of `failover_groups` now holds `show_output`. The previous flat fields are removed; read them from `failover_groups.*.show_output.0` instead (`region_group`, `snowflake_region`, `created_on`, `account_name`, `type`, `comment`, `is_primary`, `primary`, `object_types`, `allowed_integration_types`, `allowed_accounts`, `organization_name`, `account_locator`, `replication_schedule`, `secondary_state`, `next_scheduled_refresh`, `owner`).
+- `show_output` also has `name`, `error_integration`, `is_listing_auto_fulfillment_group`, `is_optimized_refresh_enabled`, `is_primary_read_only`, and `rpo_assurance`.
+- `object_types`, `allowed_integration_types`, and `allowed_accounts` are sets of strings, not lists.
+- `secondary_state` is the value returned by `SHOW FAILOVER GROUPS`. It is empty, not the text `NULL`, when Snowflake returns no state.
+- The data source id changed from `failover_groups` to the static `failover_groups_read`.
+
+Before:
+```terraform
+data "snowflake_failover_groups" "example" {
+  in_account = "<account_locator>"
+}
+
+output "primary" {
+  value = data.snowflake_failover_groups.example.failover_groups[0].primary
+}
+```
+
+After:
+```terraform
+data "snowflake_failover_groups" "example" {
+  in_account = "<organization_name>.<account_name>"
+}
+
+output "primary" {
+  value = data.snowflake_failover_groups.example.failover_groups[0].show_output[0].primary
+}
+```
+
+A data source keeps no state of its own, so the next refresh reads it in the new shape. Update the `in_account` value and the references to the failover group fields in your configuration.
+
+#### Opt-in experiment: change a read-only group's membership
+
+We have added the `FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH` opt-in experiment (`experimental_features_enabled = ["FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH"]`). Without it, the plan fails when you change `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` or `allowed_integration_types` and keep `read_only = true`, because [Snowflake rejects these changes](https://docs.snowflake.com/en/sql-reference/sql/alter-failover-group) in the read-only mode.
+
+With the experiment, the plan passes. In the same apply, the provider leaves the read-only mode, changes the group, and enters the read-only mode again.
+
+```terraform
+provider "snowflake" {
+  experimental_features_enabled = ["FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH"]
+}
+```
+
+By default (experiment disabled), the plan keeps failing. No changes are required for existing configurations.
+
+#### Other changes
+
+- `object_types` is required. `object_types` and `allowed_integration_types` accept only the values listed in the documentation (case-insensitive), and `allowed_databases`, `allowed_shares`, `allowed_external_volumes`, `allowed_accounts` and `error_integration` are validated as identifiers.
+- `name` can be changed in place (`ALTER FAILOVER GROUP ... RENAME TO`) and no longer recreates the group. It is no longer compared case-insensitively, so a change that only differs in letter case is a rename too.
+- `optimized_refresh` and `rpo_assurance` have no default value anymore. `rpo_assurance` cannot be combined with `replication_schedule` or `optimized_refresh`, as before.
+- `next_scheduled_refresh` in `show_output` of both resources and of the [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source is now read as a date and time and printed in the form `2026-11-13 14:20:00 +0000 UTC`, instead of the text returned by `SHOW FAILOVER GROUPS`. When no replication schedule is set, it is `0001-01-01 00:00:00 +0000 UTC` instead of an empty string. Update any configuration that compares this value as text.
+- `show_output` of both resources has two new computed values, `object_types` and `allowed_integration_types`, as sets of the values returned by [`SHOW FAILOVER GROUPS`](https://docs.snowflake.com/en/sql-reference/sql/show-failover-groups). After you change `object_types` or `allowed_integration_types`, these two values in `show_output` are updated on the next refresh.
+- `allowed_accounts` is written to the state in the fully qualified form `"<organization_name>"."<account_name>"`, as in [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group), and not as `<organization_name>.<account_name>`. The form in the configuration is unchanged and the plan shows no difference. Update any configuration that compares or reuses the value from the state as text.
+- `secondary_state` in the [`snowflake_failover_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/failover_groups) data source is an empty string, and no longer `NULL`, when the group has no replication schedule. Update any configuration that compares it with `NULL`.
+- `is_primary` is a computed attribute on both resources. When Terraform detects that a failover group is no longer primary (`snowflake_failover_group`) or became primary (`snowflake_failover_group_secondary`) outside of Terraform, for example after a failover, it recreates the resource as the primary group or as a replica of `primary`. Moving the object between the two resources is a manual state migration.
+- While `read_only` is `true`, Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types`, so the plan fails when you change one of them and keep `read_only = true`. Set `read_only` to `false` (or remove it) in the same apply to change them, and set it back to `true` afterwards. With the `FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH` opt-in experiment, the provider does this for you.
+- We have added `allowed_external_volumes`, `error_integration`, `comment` and `read_only`, the computed `is_primary`, and the `show_output` block. `read_only` and `error_integration` are read from `SHOW FAILOVER GROUPS` (the columns `is_primary_read_only` and `error_integration`), so changes to them outside Terraform are detected. Snowflake does not return `allowed_external_volumes`, so changes to it outside Terraform are not detected.
+
+After upgrading, run `terraform plan` and apply the configuration changes above.
+
+References: [#2332](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2332), [#3447](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3447), [#1418](https://github.com/snowflakedb/terraform-provider-snowflake/issues/1418), [#2516](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2516).
+
+### *(new feature)* `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` and `OBJECT_PARAMETER_PARSE_ON_SET` enabled by default
+
+The [`ACCOUNT_PARAMETER_CATALOG_WRITE_PATH`](#new-feature-opt-in-experiment-internal-quoting-for-snowflake_account_parameter) and [`OBJECT_PARAMETER_PARSE_ON_SET`](#new-feature-opt-in-experiment-parse-snowflake_object_parameter-values-on-set) experiments are now enabled by default. Opt out by listing the names in [`experimental_features_disabled`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#experimental_features_disabled-1). With the experiments, the provider parses `value` and quotes it based on the parameter type:
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) and [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) with `on_account = true`: string values must not be wrapped in single quotes manually (e.g. `value = "module_a,module_b"` for `PYTHON_PROFILER_MODULES`). Identifier values (`CATALOG`, `EVENT_TABLE`, `NETWORK_POLICY`, and `PYTHON_PROFILER_TARGET_STAGE`) are sent as double-quoted identifiers, so they must match the name stored in Snowflake. The parameters [added in v2.22.0](#new-feature-new-supported-parameters-in-snowflake_account_parameter) (e.g. `DISABLE_UI_DOWNLOAD_BUTTON`) can be set.
+- [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) with `on_account = false`: covered parameters (on Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table) are parsed with the same rules as the typed SDK fields. String values are quoted by the provider, so they are stored as written (e.g. `DEFAULT_DDL_COLLATION = "en_US"` is stored as `en_US` instead of `EN_US`), and a value that does not match the parameter fails in the provider. Other parameters and object types keep sending `value` as a raw SQL token.
+
+They will be promoted (the opt-out removed) in **v2.25.0** or **v2.26.0**. After promotion, listing the names in either list is a no-op until the next major version.
+
+**Recommended action:**
+- `snowflake_account_parameter` and `snowflake_object_parameter` with `on_account = true`: if `value` wraps a string in single quotes, remove them (e.g. change `value = "'module_a,module_b'"` to `value = "module_a,module_b"`). If `value` is an identifier, set it to the name stored in Snowflake (e.g. `value = "MY_NETWORK_POLICY"` for a network policy created without quotes as `my_network_policy`).
+- `snowflake_object_parameter` with `on_account = false`: for the covered parameters, remove the manual quotes from string values (e.g. change `value = "'en-ci-upper'"` to `value = "en-ci-upper"`), and check the values that Snowflake case-folded before (e.g. `value = "en_US"` was stored as `EN_US` and is now stored as `en_US`).
+
+No changes are required if your configuration already follows these rules. To keep the previous behavior instead, opt out:
+
+```terraform
+provider "snowflake" {
+  experimental_features_disabled = ["ACCOUNT_PARAMETER_CATALOG_WRITE_PATH", "OBJECT_PARAMETER_PARSE_ON_SET"]
+}
+```
+
+With the experiments disabled:
+- `snowflake_account_parameter` and `snowflake_object_parameter` with `on_account = true` use the v2.22.x write path. String values of the parameters that are not quoted by the provider (`PYTHON_PROFILER_MODULES` for `snowflake_account_parameter`) must be wrapped in single quotes manually. `CATALOG` and `PYTHON_PROFILER_TARGET_STAGE` are sent as written, and `NETWORK_POLICY` and `EVENT_TABLE` as single-quoted string literals. The parameters added in v2.22.0, and `ENABLE_CONSOLE_OUTPUT`, `EXTERNAL_VOLUME`, `REPLACE_INVALID_CHARACTERS`, and `USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS`, are not supported by this write path, and apply fails with an error saying that the legacy write path does not support the parameter. Value range checks done by v2.22.x in the provider (e.g. `CLIENT_ENCRYPTION_KEY_SIZE` being `128` or `256`) are left to Snowflake.
+- `snowflake_object_parameter` with `on_account = false` sends `value` as a raw SQL token.
+
+Parameters that neither write path supports yet (e.g. `SERVICE_CALLER_TOKEN_VALIDITY_SECS`) fail with an error saying that the parameter is not supported, with or without the experiments.
+
+### *(new feature)* Forward-compatible parameters in `snowflake_account_parameter`
+
+Until now, [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) rejected every parameter that the provider did not support, so a new Snowflake parameter required a provider upgrade.
+
+`key` now accepts any parameter name, and Snowflake validates that the parameter exists. The new optional `value_type` field (`STRING`, `IDENTIFIER`, `INTEGER`, `FLOAT`, or `BOOLEAN`, case-insensitive) tells how to render `value` for a parameter that the provider does not support. The value is rendered the same way as for the parameters that the provider supports (`STRING` is a single-quoted string and is also used for enum values, `IDENTIFIER` is a quoted identifier that may be fully qualified, the others are a number or a boolean):
+
+```terraform
+resource "snowflake_account_parameter" "new_parameter" {
+  key        = "SOME_NEW_PARAMETER"
+  value      = "10"
+  value_type = "INTEGER"
+}
+```
+
+- The supported parameters are listed in the `key` field description, and `value_type` is ignored for them. Setting it for a supported parameter logs a warning, so you can find and remove it. The provider logs are visible with `TF_LOG=WARN`, for example: `[WARN] value kind STRING is ignored for DATA_RETENTION_TIME_IN_DAYS, because the parameter catalog supports the parameter`.
+- A parameter that the provider does not support requires `value_type`. Without it, the resource fails with an error that points to the field.
+- `value_type` also sends enum values that the provider does not recognize yet.
+- The forward-compatible path is behind the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` experiment, which is enabled by default. The value of a parameter that the provider does not support yet follows the rules of that experiment (the provider quotes the value by its type, and you do not add quotes yourself), so it cannot work with the legacy write path. With the experiment disabled, the resource uses only the legacy write path, and a parameter that this path does not support fails with an error that names the experiment.
+- Deleting uses `UNSET` for the parameters that the provider does not support.
+
+When a later provider version starts to support the parameter, the parameter goes through the typed write path, which renders the same SQL for the same type. `value_type` is then ignored (the provider logs a warning), and adding, changing, or removing it does not show a plan difference. You do not have to change the configuration, and you can remove `value_type` whenever you like.
+
+This is true only if `value_type` matches the type of the parameter in Snowflake. Some types are easy to confuse: for example, an identifier (like a network policy name) is also accepted by Snowflake as a `STRING`, but once the provider supports the parameter, it is sent as a quoted, case-sensitive identifier, which may show a plan difference or fail. Check the parameter type in the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/parameters) before choosing `value_type`. If the types differ, change `value_type` before the upgrade, or align `value` with the new type after it.
+
+No changes are required in your configuration.
+
+### *(new feature)* Forward-compatible parameters and object types in `snowflake_object_parameter`
+
+Until now, [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) sent the value untyped for every parameter and object type that the typed write path did not support, and it could not read back the parameters of some object types. A new Snowflake parameter, or a parameter on an object type that the provider does not support yet, required a provider upgrade or manual quoting.
+
+The resource now has an optional `value_type` field (`STRING`, `IDENTIFIER`, `INTEGER`, `FLOAT`, or `BOOLEAN`, case-insensitive), which works the same way as in [`snowflake_account_parameter`](#new-feature-forward-compatible-parameters-in-snowflake_account_parameter):
+
+```terraform
+resource "snowflake_object_parameter" "new_object_type" {
+  key         = "DATA_RETENTION_TIME_IN_DAYS"
+  value       = "2"
+  value_type  = "INTEGER"
+  object_type = "TABLE"
+  object_identifier {
+    database = "DB"
+    schema   = "SCHEMA"
+    name     = "TABLE"
+  }
+}
+```
+
+- The supported parameters are listed per object type (and for `on_account = true`) in the `key` field description, and the supported object types (Database, Schema, Warehouse, User, Task, Service, Hybrid Table, and Iceberg Table) in the `object_type` field description. `value_type` is ignored for the supported parameters. Setting `value_type` for a supported parameter logs a warning, so you can find and remove it. The provider logs are visible with `TF_LOG=WARN`, for example: `[WARN] value kind STRING is ignored for DATA_RETENTION_TIME_IN_DAYS, because the parameter catalog supports the parameter`.
+- `object_type` accepts any object type that Snowflake supports. For a parameter or an object type that the provider does not support (e.g. `TABLE`, `PIPE`, or a function), `value` is rendered with `value_type` when it is set. Without `value_type`, the behavior does not change, and the value is sent as written.
+- The parameters of any object type can be read back now.
+- The forward-compatible path is behind the `OBJECT_PARAMETER_PARSE_ON_SET` experiment, which is enabled by default. The value of a parameter that the provider does not support yet follows the rules of that experiment (the provider quotes the value by its type), so it cannot work without it. With the experiment disabled, the resource uses only the legacy write path, `value_type` is not used, and an account-level parameter that this path does not support fails with an error that names the experiment.
+- Deleting uses `UNSET` for the parameters that the provider does not support.
+
+When a later provider version starts to support the parameter or the object type, the same configuration goes through the typed write path, `value_type` is ignored, and it does not show a plan difference, as long as `value_type` matches the type of the parameter in Snowflake. See the [`snowflake_account_parameter`](#new-feature-forward-compatible-parameters-in-snowflake_account_parameter) entry for the details and for how to choose `value_type`.
+
+No changes are required in your configuration.
+
+### *(new feature)* `VECTOR` arguments in `snowflake_masking_policy` and `snowflake_row_access_policy`
+
+[`snowflake_masking_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/masking_policy) and [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy) now support [`VECTOR`](https://docs.snowflake.com/en/sql-reference/data-types-vector) arguments, for example `VECTOR(FLOAT, 768)`. Previously, the provider created such a policy but failed to read its signature back from Snowflake.
+
+No configuration changes are required.
+
+### *(new feature)* Structured `ARRAY`, `OBJECT`, and `MAP` data types
+
+We have added support for [structured types](https://docs.snowflake.com/en/sql-reference/data-types-structured) in every field that takes a Snowflake data type. Previously, the provider recognized only the semi-structured `ARRAY` and `OBJECT`, so a structured type such as `ARRAY(NUMBER)` failed with an `invalid data type` error. The provider now accepts:
+
+- `ARRAY(<element_type> [ NOT NULL ])`, for example `ARRAY(VARCHAR NOT NULL)`;
+- `OBJECT([ <key> <value_type> [ NOT NULL ] [ , ... ] ])`, for example `OBJECT(city VARCHAR, zip NUMBER NOT NULL)`;
+- `MAP(<key_type>, <value_type> [ NOT NULL ])`, for example `MAP(VARCHAR, NUMBER)`.
+
+The provider compares structured types by their parts, so a type that differs only in the defaults Snowflake fills in, such as `ARRAY(NUMBER)` and `ARRAY(NUMBER(38,0))`, shows no plan difference. Object keys are case-sensitive, and their order is part of the type.
+
+No other configuration changes are required.
+
+Reference: [#4146](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4146).
 
 ### *(new feature)* Hierarchy renames rolled out to more resources
 
@@ -73,9 +700,135 @@ Without the experiment, the behavior of these resources does not change. No conf
 
 Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5361).
 
+### *(new feature)* Backup set resource and data source
+
+We have added a new preview resource, [`snowflake_backup_set`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_set), for managing [backup sets](https://docs.snowflake.com/en/user-guide/backups). Exactly one of `for_table`, `for_dynamic_table`, `for_schema`, or `for_database` is required and cannot be changed after creation. An attached `backup_policy` can be changed to another policy, but it cannot be removed.
+
+We have also added a new preview data source, [`snowflake_backup_sets`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/backup_sets), for listing backup sets. It supports `like`, `in`, `starts_with`, and `limit`. `with_describe` is on by default and runs DESCRIBE for each backup set returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_backup_set_resource` for `snowflake_backup_set`;
+- `snowflake_backup_sets_datasource` for `snowflake_backup_sets`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
 ### *(new feature)* Permissive import mode rolled out to more resources
 
 The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
+
+### *(new feature)* Hierarchy renames rolled out to more resources
+
+The [`HIERARCHY_RENAMES` opt-in experiment](#new-feature-a-new-experiment-for-handling-renames-in-object-hierarchy) now supports more resources. With the experiment enabled, changing `database` or `schema` on these resources no longer recreates the object. The provider detects whether the parent database or schema was renamed, and then only updates the resource id. Otherwise, it moves the object with `ALTER ... RENAME TO`. The linked entry describes every case the provider handles and how to enable the experiment.
+
+Newly supported resources:
+
+- [`snowflake_file_format_avro`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_avro)
+- [`snowflake_file_format_csv`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_csv)
+- [`snowflake_file_format_json`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_json)
+- [`snowflake_file_format_orc`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_orc)
+- [`snowflake_file_format_parquet`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_parquet)
+- [`snowflake_file_format_xml`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/file_format_xml)
+- [`snowflake_openflow_runtime`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_runtime)
+- [`snowflake_password_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/password_policy)
+- [`snowflake_row_access_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/row_access_policy)
+- [`snowflake_semantic_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/semantic_view)
+- [`snowflake_session_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/session_policy)
+- [`snowflake_stage_external_azure`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_azure)
+- [`snowflake_stage_external_gcs`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_gcs)
+- [`snowflake_stage_external_s3`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3)
+- [`snowflake_stage_external_s3_compatible`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_external_s3_compatible)
+- [`snowflake_stage_internal`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/stage_internal)
+- [`snowflake_storage_lifecycle_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/storage_lifecycle_policy)
+- [`snowflake_streamlit`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/streamlit)
+- [`snowflake_tag`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag)
+- [`snowflake_view`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/view)
+
+Without the experiment, the behavior of these resources does not change. No configuration changes are required unless you want to enable the experiment.
+
+### *(new feature)* `use_private_link` on Snowflake-managed Openflow deployments
+
+[`snowflake_openflow_deployment_snowflake_managed`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_deployment_snowflake_managed) now accepts `use_private_link`. Valid values are `"true"` and `"false"`. Leave it unset to keep the Snowflake default (`FALSE`); the provider stores that as `"default"` and omits `USE_PRIVATE_LINK` from `CREATE OPENFLOW DEPLOYMENT`.
+
+`ALTER OPENFLOW DEPLOYMENT ... SET` does not accept `USE_PRIVATE_LINK`, so changing the attribute replaces the deployment. Existing state is upgraded to `use_private_link = "default"`, which does not replace a deployment that was created before this attribute existed.
+
+Reference: [#5361](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5361).
+
+### *(new feature)* Backup set resource and data source
+
+We have added a new preview resource, [`snowflake_backup_set`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/backup_set), for managing [backup sets](https://docs.snowflake.com/en/user-guide/backups). Exactly one of `for_table`, `for_dynamic_table`, `for_schema`, or `for_database` is required and cannot be changed after creation. An attached `backup_policy` can be changed to another policy, but it cannot be removed.
+
+We have also added a new preview data source, [`snowflake_backup_sets`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/backup_sets), for listing backup sets. It supports `like`, `in`, `starts_with`, and `limit`. `with_describe` is on by default and runs DESCRIBE for each backup set returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_backup_set_resource` for `snowflake_backup_set`;
+- `snowflake_backup_sets_datasource` for `snowflake_backup_sets`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
+### *(new feature)* Permissive import mode rolled out to more resources
+
+The [`IMPORT_PERMISSIVE_MODE` opt-in experiment](#new-feature-opt-in-experiment-permissive-import-mode) controls how an import treats the attributes that the configuration omits. We're rolling it out to more resources gradually, and each new resource is added to the list in the linked entry. That entry explains the enforcing and permissive import modes and how to enable the experiment.
+
+### *(improvement)* Experiments enabled by default in v2.22.0 promoted
+
+The following experiments, enabled by default since v2.22.0, are now promoted. Their behavior is now the provider's default and can no longer be turned off:
+
+- `WAREHOUSE_SHOW_IMPROVED_PERFORMANCE`: [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) always read warehouse details with the narrower `SHOW WAREHOUSES LIKE '<identifier>' STARTS WITH '<identifier>' LIMIT 1` query.
+- `GRANTS_STRICT_PRIVILEGE_MANAGEMENT`: the `strict_privilege_management` field of [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) is always available.
+- `GRANTS_IMPORT_VALIDATION`: importing [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) with a fixed set of privileges always validates that these privileges exist in Snowflake with the matching `with_grant_option`.
+- `INHERITED_GRANTS`: the `inherited` block of [`snowflake_grant_privileges_to_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_account_role) and [`snowflake_grant_privileges_to_database_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_privileges_to_database_role) is always available.
+- `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL`: when a parameter is not set in the configuration, changes of its value on the higher levels (e.g., account or database) no longer cause a non-empty plan; only a value set on the object level does.
+- `GRANTS_SAFE_DESTROY`: destroying the grant resources (`snowflake_grant_privileges_to_account_role`, `snowflake_grant_privileges_to_database_role`, `snowflake_grant_privileges_to_share`, `snowflake_grant_account_role`, `snowflake_grant_database_role`, `snowflake_grant_application_role`, and `snowflake_grant_ownership`) succeeds when the underlying object no longer exists.
+- `TAG_ASSOCIATION_SAFE_DESTROY`: destroying [`snowflake_tag_association`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/tag_association) succeeds when the tagged object no longer exists.
+- `GRANT_ACCOUNT_ROLE_SAFE_PUBLIC_ROLE`: [`snowflake_grant_account_role`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/grant_account_role) treats granting the `PUBLIC` role as a no-op instead of failing.
+
+Listing these names in `experimental_features_enabled` or `experimental_features_disabled` now has no effect and produces a warning. Remove them from the provider configuration; the names will be rejected in the next major version.
+
+If you had opted out of any of these experiments, the provider now behaves as if you had not. Review your plans after upgrading, in particular for `GRANTS_STRICT_PRIVILEGE_MANAGEMENT` (the `strict_privilege_management` field defaults to `false`, so nothing changes unless you set it) and `PARAMETERS_IGNORE_VALUE_CHANGES_IF_NOT_ON_OBJECT_LEVEL`.
+
+No configuration changes are required unless you listed these experiments in the provider configuration.
+
+### *(improvement)* `show_output` of replication groups reports the read-only mode in `is_primary_read_only` and `error_integration`
+
+`show_output` of [`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) and [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary), and `show_output` in the [`snowflake_replication_groups`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/replication_groups) data source, no longer have `read_only`, which was always empty. The [documentation of `SHOW REPLICATION GROUPS`](https://docs.snowflake.com/en/sql-reference/sql/show-replication-groups) lists a `read_only` column, but Snowflake returns the read-only mode in `is_primary_read_only` (empty for replication groups and for secondary groups) and also returns `error_integration`, which the documentation does not list. `show_output` now has both columns.
+
+Before:
+
+```terraform
+output "read_only" {
+  value = snowflake_replication_group.example.show_output[0].read_only
+}
+```
+
+After:
+
+```terraform
+output "read_only" {
+  value = snowflake_replication_group.example.show_output[0].is_primary_read_only
+}
+```
+
+[`snowflake_replication_group`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group) `error_integration` is also read from Snowflake now. Previously, the configured value was kept in the state, so a change made outside Terraform was not detected. The next plan shows a difference when the notification integration of the group was changed or removed outside Terraform.
+
+State is upgraded automatically. The next refresh replaces `show_output` and reads `error_integration` from Snowflake. Update any configuration that references `show_output[0].read_only` of a replication group.
+
+### *(improvement)* `primary` in `snowflake_replication_group_secondary` is required at plan time
+
+Previously, [`snowflake_replication_group_secondary`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/replication_group_secondary) marked `primary` as optional in the schema, so a configuration without it passed `terraform validate` and `terraform plan` and failed only on `terraform apply` with "primary is required". The group is created with [`CREATE REPLICATION GROUP ... AS REPLICA OF <primary>`](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group), which always needs the primary group.
+
+The provider now marks `primary` as required, so a missing argument is reported by `terraform validate` and `terraform plan`.
+
+No configuration changes are required.
+
+### *(improvement)* `snowflake_schemas` data source validates the identifiers in `in`
+
+Previously, the `database`, `application`, and `application_package` fields of the `in` block in the [`snowflake_schemas`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/schemas) data source accepted any string, and a value that is not a valid identifier was only rejected when Snowflake ran [`SHOW SCHEMAS`](https://docs.snowflake.com/en/sql-reference/sql/show-schemas).
+
+The provider now checks these values while planning, as the other data sources with an `in` block already do, so an invalid identifier is reported before any request is sent. Valid values behave as before.
+
+No configuration changes are required, unless your configuration passes a value that is not a valid identifier to one of these fields.
 
 ### *(improvement)* `attributes` in `snowflake_cortex_search_service` is updated in place
 
@@ -84,6 +837,30 @@ Changing `attributes` in the [`snowflake_cortex_search_service`](https://registr
 Attribute columns must still be present in `query`. A change that also modifies `query` recreates the service, as before.
 
 No configuration changes are required.
+
+### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails
+
+Snowflake rejects property changes on a started alert, and it requires a warehouse to be suspended while its type changes, or an interactive warehouse while its size changes. [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert), [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) suspend the object for the update. Until now, an update that failed after the suspension could leave the object suspended.
+
+The object is now resumed whenever it was started before the update, also when the update fails, and the values that were not applied stay in the state, so the next plan shows them again. A failed resume is reported together with the original error. The suspension happens once per update, and it is skipped when the object is already suspended.
+
+`snowflake_alert` used to ignore a failed suspension and then fail on the change itself. It now fails the update with the suspension error. No changes are required in your configuration.
+
+### *(bug fix)* `snowflake_share` reads shares linked to a listing with target accounts, to an organization listing, or shared with all accounts
+
+Previously, [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share) failed to read a share attached to a [listing](https://docs.snowflake.com/en/sql-reference/sql/create-listing) whose manifest sets `targets.accounts`, a share attached to an [organization listing](https://docs.snowflake.com/en/sql-reference/sql/create-organization-listing), or a share shared with all accounts. For such a share, `SHOW SHARES` returns `'TARGETED ACCOUNTS'`, `'TARGETED WITHIN ORGANIZATION'`, or `'ALL ACCOUNTS'` in the `to` column instead of the consumer accounts, and the refresh stopped the whole plan with:
+
+```text
+Error: conversion from Snowflake failed with error: unexpected number of parts 1 in identifier 'TARGETED ACCOUNTS', expected 2 in a form of "<organization_name>.<account_name>"
+```
+
+The same error affected the [`snowflake_shares`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/shares) data source.
+
+The provider now skips these entries, like `ALL ACCOUNTS IN DATA EXCHANGE`, so `accounts` and `show_output.0.to` are read as empty for such a share.
+
+No configuration changes are required.
+
+Reference: [#5366](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5366).
 
 ### *(bug fix)* `snowflake_iceberg_table` supports `year`, `month`, `day`, and `hour` in `partition_by`
 
@@ -134,14 +911,6 @@ The trust policy of the IAM role that Snowflake assumes needs the external ID an
 No configuration changes are required. If you added `ignore_changes` for `sigv4_external_id` as a workaround, or adjusted the state manually after import, you can remove the workaround.
 
 ## v2.22.x ➞ v2.23.0
-
-### *(bug fix)* `snowflake_alert`, `snowflake_warehouse`, and `snowflake_warehouse_interactive` resume the object when an update fails
-
-Snowflake rejects property changes on a started alert, and it requires a warehouse to be suspended while its type changes, or an interactive warehouse while its size changes. [`snowflake_alert`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/alert), [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse), and [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive) suspend the object for the update. Until now, an update that failed after the suspension could leave the object suspended.
-
-The object is now resumed whenever it was started before the update, also when the update fails, and the values that were not applied stay in the state, so the next plan shows them again. A failed resume is reported together with the original error. The suspension happens once per update, and it is skipped when the object is already suspended.
-
-`snowflake_alert` used to ignore a failed suspension and then fail on the change itself. It now fails the update with the suspension error. No changes are required in your configuration.
 
 ### *(breaking change)* `snowflake_alert` reworked
 
@@ -618,6 +1387,7 @@ The experiment is currently supported on the following resources:
 - [`snowflake_pipe`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/pipe)
 - [`snowflake_postgres_mirror`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/postgres_mirror) (preview)
 - [`snowflake_share`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/share)
+- [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) (preview)
 - [`snowflake_warehouse`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse)
 - [`snowflake_warehouse_adaptive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_adaptive)
 - [`snowflake_warehouse_interactive`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/warehouse_interactive)
@@ -875,6 +1645,12 @@ The [`snowflake_external_oauth_integration`](https://registry.terraform.io/provi
 
 If a non-`CUSTOM` integration configures `external_oauth_scope_delimiter`, remove the field; the provider now returns an error explaining that it is supported only with `external_oauth_type = "CUSTOM"`. If you used `lifecycle.ignore_changes` for this field as a workaround, you can remove that entry after upgrading. `CUSTOM` integrations require no changes.
 
+### *(breaking change)* `snowflake_network_policy_attachment` sets the account network policy as an identifier
+
+With `set_for_account = true`, the preview [`snowflake_network_policy_attachment`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/network_policy_attachment) resource sets the network policy on the account as a double-quoted identifier (`ALTER ACCOUNT SET NETWORK_POLICY = "<network_policy_name>"`) instead of a single-quoted string literal. This is how the resource already sets the network policy on users. `network_policy_name` is case-sensitive.
+
+**Migration:** set `network_policy_name` to the name stored in Snowflake, as shown by `SHOW NETWORK POLICIES`. For a network policy created without quotes, this is the uppercase name (e.g. `network_policy_name = "MY_NETWORK_POLICY"` for `CREATE NETWORK POLICY my_network_policy ...`). If the network policy is managed by `snowflake_network_policy`, reference its `name` attribute. Attaching the network policy to users is not affected.
+
 ## v2.22.0 ➞ v2.22.1
 
 ### *(chore)* Provider rebuilt with Go 1.26.10 (CVE-2026-111943)
@@ -942,6 +1718,18 @@ We added optional `optimized_refresh` and `rpo_assurance` fields to the preview 
 This resource is in preview. To use it, `snowflake_failover_group_resource` must already be listed in `preview_features_enabled`.
 
 No configuration changes are required for existing configurations unless you want to manage these settings with Terraform. After upgrading, the next plan may report the new attributes as `false`. If Optimized Refresh or RPO Assurance was already enabled outside Terraform, add the matching field to the configuration; otherwise the next apply will unset it.
+
+### *(bug fix)* `snowflake_table` keeps apostrophes in column names
+
+Previously, [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) escaped `'` in `column.name` when it created or added a column. A column configured as `name = "my'id"` was created as `"my\'id"`.
+
+The provider now sends the name as a [double-quoted identifier](https://docs.snowflake.com/en/sql-reference/identifiers-syntax). The same configuration creates `"my'id"` on [CREATE TABLE](https://docs.snowflake.com/en/sql-reference/sql/create-table) and when a column is added.
+
+This resource is still in preview and will be reworked in the future.
+
+No configuration changes are required. A table that was already created with the escaped name keeps that name in Snowflake; replace the table if you need the unescaped name.
+
+Reference: [#2844](https://github.com/snowflakedb/terraform-provider-snowflake/issues/2844).
 
 ### *(bug fix)* Setting `default_ddl_collation = ""` now applies in one step
 
@@ -1095,8 +1883,6 @@ We added the `ACCOUNT_PARAMETER_CATALOG_WRITE_PATH` opt-in experiment (`experime
   ```
 
 By default (experiment disabled), the resource keeps its current behavior — this is a zero behavior change for existing configurations.
-
-This experiment is also the first step toward forward-compatible parameter support: letting newly-added Snowflake parameters be used without waiting for a provider release. For now, it only changes how already-supported parameters are written.
 
 ### *(enhancement)* Loosened integer parameter validation on database and schema resources
 

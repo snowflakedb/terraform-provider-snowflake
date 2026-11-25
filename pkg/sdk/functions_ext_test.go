@@ -27,21 +27,6 @@ func init() {
 				Imports: []FunctionImport{{FunctionImport: "@~/my_lib.jar"}},
 			}
 		}).
-		withModify(case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForJavaFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "arg", ArgDataTypeOld: DataTypeFloat}, {ArgName: "arg"}}
-		}).
-		withModify(case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaFunctionOptions) {
-			opts.Returns.ResultDataType = &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavaFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForJavaFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
-		}).
 		withAdditionalValidationCase(
 			"validation_CreateForJava_targetPath",
 			func(opts *CreateForJavaFunctionOptions) {
@@ -84,31 +69,6 @@ func init() {
 			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("id" NUMBER(36, 2), "name" VARCHAR(100) DEFAULT 'test') RETURNS TABLE ("country_code" VARCHAR(100), "country_name" VARCHAR(100)) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		).
-		// TODO [SNOW-1348103]: remove with old function removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForJava_allOldDataTypes",
-			func(opts *CreateForJavaFunctionOptions) {
-				opts.OrReplace = new(true)
-				opts.Temporary = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "id", ArgDataTypeOld: DataTypeNumber}, {ArgName: "name", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
-				opts.Returns = FunctionReturns{Table: &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "country_code", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "country_name", ColumnDataTypeOld: DataTypeVARCHAR}}}}
-				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.RuntimeVersion = new("2.0")
-				opts.Comment = new("comment")
-				opts.Imports = []FunctionImport{{FunctionImport: "@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar"}}
-				opts.Packages = []FunctionPackage{{FunctionPackage: "com.snowflake:snowpark:1.2.0"}}
-				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
-				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.TargetPath = new("@~/testfunc.jar")
-				opts.FunctionDefinition = new(wrapFunctionDefinition("return id + name;"))
-			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("id" NUMBER, "name" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS TABLE ("country_code" VARCHAR, "country_name" VARCHAR) NOT NULL LANGUAGE JAVA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@~/my_decrement_udf_package_dir/my_decrement_udf_jar.jar') PACKAGES = ('com.snowflake:snowpark:1.2.0') HANDLER = 'TestFunc.echoVarchar' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) TARGET_PATH = '@~/testfunc.jar' AS $$return id + name;$$`,
-			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
-		).
 		withAdditionalSqlCasef(
 			"sql_CreateForJava_orReplace",
 			func(opts *CreateForJavaFunctionOptions) {
@@ -128,21 +88,6 @@ func init() {
 				},
 				FunctionDefinition: wrapFunctionDefinition("return 1;"),
 			}
-		}).
-		withModify(case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavascriptFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat, ArgDataType: dataTypeFloat}}
-		}).
-		withModify(case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForJavascriptFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat}, {ArgName: "d2"}}
-		}).
-		withModify(case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavascriptFunctionOptions) {
-			opts.Returns.ResultDataType = &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForJavascriptFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForJavascriptFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withExpectedSqlf(
 			case_Functions_sql_CreateForJavascript_basic,
@@ -165,25 +110,6 @@ func init() {
 			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("d" FLOAT DEFAULT 1.0) RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
-		// TODO [SNOW-1348103]: remove with old function removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForJavascript_allOldDataTypes",
-			func(opts *CreateForJavascriptFunctionOptions) {
-				opts.OrReplace = new(true)
-				opts.Temporary = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "d", ArgDataTypeOld: DataTypeFloat, DefaultValue: new("1.0")}}
-				opts.CopyGrants = new(true)
-				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeFloat}}
-				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.Comment = new("comment")
-				opts.FunctionDefinition = wrapFunctionDefinition("return 1;")
-			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("d" FLOAT DEFAULT 1.0) COPY GRANTS RETURNS FLOAT NOT NULL LANGUAGE JAVASCRIPT CALLED ON NULL INPUT IMMUTABLE COMMENT = 'comment' AS $$return 1;$$`,
-			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
-		).
 		withAdditionalSqlCasef(
 			"sql_CreateForJavascript_orReplace",
 			func(opts *CreateForJavascriptFunctionOptions) {
@@ -204,21 +130,6 @@ func init() {
 				// additionalValidations() requires Imports to be set when FunctionDefinition is nil.
 				Imports: []FunctionImport{{FunctionImport: "numpy"}},
 			}
-		}).
-		withModify(case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForPythonFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataTypeOld: DataTypeNumber, ArgDataType: dataTypeNumber_36_2}}
-		}).
-		withModify(case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForPythonFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataTypeOld: DataTypeNumber}, {ArgName: "i2"}}
-		}).
-		withModify(case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForPythonFunctionOptions) {
-			opts.Returns.ResultDataType = &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeVariant, ResultDataType: dataTypeVariant}
-		}).
-		withModify(case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForPythonFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForPythonFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withAdditionalValidationCase(
 			"validation_CreateForPython_functionDefinition",
@@ -254,30 +165,6 @@ func init() {
 			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("i" NUMBER(36, 2) DEFAULT 1) RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
 		).
-		// TODO [SNOW-1348103]: remove with old function removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForPython_allOldDataTypes",
-			func(opts *CreateForPythonFunctionOptions) {
-				opts.OrReplace = new(true)
-				opts.Temporary = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "i", ArgDataTypeOld: DataTypeNumber, DefaultValue: new("1")}}
-				opts.CopyGrants = new(true)
-				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeVariant}}
-				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.RuntimeVersion = "3.9"
-				opts.Comment = new("comment")
-				opts.Imports = []FunctionImport{{FunctionImport: "numpy"}, {FunctionImport: "pandas"}}
-				opts.Packages = []FunctionPackage{{FunctionPackage: "numpy"}, {FunctionPackage: "pandas"}}
-				opts.ExternalAccessIntegrations = []AccountObjectIdentifier{NewAccountObjectIdentifier("ext_integration")}
-				opts.Secrets = []SecretReference{{VariableName: "variable1", Name: secretId}, {VariableName: "variable2", Name: secretId2}}
-				opts.FunctionDefinition = new(wrapFunctionDefinition("import numpy as np"))
-			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("i" NUMBER DEFAULT 1) COPY GRANTS RETURNS VARIANT NOT NULL LANGUAGE PYTHON CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '3.9' COMMENT = 'comment' IMPORTS = ('numpy', 'pandas') PACKAGES = ('numpy', 'pandas') HANDLER = 'udf' EXTERNAL_ACCESS_INTEGRATIONS = ("ext_integration") SECRETS = ('variable1' = %s, 'variable2' = %s) AS $$import numpy as np$$`,
-			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(), secretId.FullyQualifiedName(), secretId2.FullyQualifiedName(),
-		).
 		withAdditionalSqlCasef(
 			"sql_CreateForPython_orReplace",
 			func(opts *CreateForPythonFunctionOptions) {
@@ -297,16 +184,6 @@ func init() {
 				// additionalValidations() requires Imports to be set when FunctionDefinition is nil.
 				Imports: []FunctionImport{{FunctionImport: "@udf_libs/echohandler.jar"}},
 			}
-		}).
-		withModify(case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForScalaFunctionOptions) {
-			opts.ResultDataTypeOld = DataTypeFloat
-			opts.ResultDataType = dataTypeFloat
-		}).
-		withModify(case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForScalaFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataTypeOld: DataTypeVARCHAR, ArgDataType: dataTypeVarchar_100}}
-		}).
-		withModify(case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForScalaFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataTypeOld: DataTypeVARCHAR}, {ArgName: "y"}}
 		}).
 		withAdditionalValidationCase(
 			"validation_CreateForScala_targetPath",
@@ -347,28 +224,6 @@ func init() {
 			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("x" VARCHAR(100) DEFAULT 'test') RETURNS VARCHAR(100) NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
-		// TODO [SNOW-1348103]: remove with old function removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForScala_allOldDataTypes",
-			func(opts *CreateForScalaFunctionOptions) {
-				opts.OrReplace = new(true)
-				opts.Temporary = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "x", ArgDataTypeOld: DataTypeVARCHAR, DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
-				opts.ResultDataType = nil // clear new-style data type set by default opts
-				opts.ResultDataTypeOld = DataTypeVARCHAR
-				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
-				opts.NullInputBehavior = new(NullInputBehaviorCalledOnNullInput)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.RuntimeVersion = "2.0"
-				opts.Comment = new("comment")
-				opts.Imports = []FunctionImport{{FunctionImport: "@udf_libs/echohandler.jar"}}
-				opts.FunctionDefinition = new(wrapFunctionDefinition("return x"))
-			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("x" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS VARCHAR NOT NULL LANGUAGE SCALA CALLED ON NULL INPUT IMMUTABLE RUNTIME_VERSION = '2.0' COMMENT = 'comment' IMPORTS = ('@udf_libs/echohandler.jar') HANDLER = 'Echo.echoVarchar' AS $$return x$$`,
-			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
-		).
 		withAdditionalSqlCasef(
 			"sql_CreateForScala_orReplace",
 			func(opts *CreateForScalaFunctionOptions) {
@@ -386,21 +241,6 @@ func init() {
 				Returns:            FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataType: dataTypeFloat}},
 				FunctionDefinition: wrapFunctionDefinition("3.141592654::FLOAT"),
 			}
-		}).
-		withModify(case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForSQLFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", ArgDataType: dataTypeVarchar_100}}
-		}).
-		withModify(case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForSQLFunctionOptions) {
-			opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR"}, {ArgName: "msg2"}}
-		}).
-		withModify(case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForSQLFunctionOptions) {
-			opts.Returns.ResultDataType = &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeFloat, ResultDataType: dataTypeFloat}
-		}).
-		withModify(case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateForSQLFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR, ColumnDataType: dataTypeVarchar_100}}}
-		}).
-		withModify(case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateForSQLFunctionOptions) {
-			opts.Returns.Table = &FunctionReturnsTable{Columns: []FunctionColumn{{ColumnName: "col", ColumnDataTypeOld: DataTypeVARCHAR}, {ColumnName: "col2"}}}
 		}).
 		withExpectedSqlf(
 			case_Functions_sql_CreateForSQL_basic,
@@ -421,24 +261,6 @@ func init() {
 				opts.Comment = new("comment")
 			},
 			`CREATE TEMPORARY SECURE FUNCTION IF NOT EXISTS %s ("message" VARCHAR(100) DEFAULT 'test') RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`,
-			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
-		).
-		// TODO [SNOW-1348103]: remove with old function removal for V1
-		withAdditionalSqlCasef(
-			"sql_CreateForSQL_allOldDataTypes",
-			func(opts *CreateForSQLFunctionOptions) {
-				opts.OrReplace = new(true)
-				opts.Temporary = new(true)
-				opts.Secure = new(true)
-				opts.Arguments = []FunctionArgument{{ArgName: "message", ArgDataTypeOld: "VARCHAR", DefaultValue: new("'test'")}}
-				opts.CopyGrants = new(true)
-				opts.Returns = FunctionReturns{ResultDataType: &FunctionReturnsResultDataType{ResultDataTypeOld: DataTypeFloat}}
-				opts.ReturnNullValues = new(ReturnNullValuesNotNull)
-				opts.ReturnResultsBehavior = new(ReturnResultsBehaviorImmutable)
-				opts.Memoizable = new(true)
-				opts.Comment = new("comment")
-			},
-			`CREATE OR REPLACE TEMPORARY SECURE FUNCTION %s ("message" VARCHAR DEFAULT 'test') COPY GRANTS RETURNS FLOAT NOT NULL IMMUTABLE MEMOIZABLE COMMENT = 'comment' AS $$3.141592654::FLOAT$$`,
 			functionsTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(

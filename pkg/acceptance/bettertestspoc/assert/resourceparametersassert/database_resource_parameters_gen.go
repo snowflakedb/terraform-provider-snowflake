@@ -100,6 +100,11 @@ func (d *DatabaseResourceParametersAssert) HasMaxDataExtensionTimeInDays(expecte
 	return d
 }
 
+func (d *DatabaseResourceParametersAssert) HasMetricLevel(expected sdk.MetricLevel) *DatabaseResourceParametersAssert {
+	d.ParameterValueSet(string(sdk.DatabaseParameterMetricLevel), string(expected))
+	return d
+}
+
 func (d *DatabaseResourceParametersAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *DatabaseResourceParametersAssert {
 	d.ParameterBoolValueSet(string(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase), expected)
 	return d
@@ -107,6 +112,11 @@ func (d *DatabaseResourceParametersAssert) HasQuotedIdentifiersIgnoreCase(expect
 
 func (d *DatabaseResourceParametersAssert) HasReplaceInvalidCharacters(expected bool) *DatabaseResourceParametersAssert {
 	d.ParameterBoolValueSet(string(sdk.DatabaseParameterReplaceInvalidCharacters), expected)
+	return d
+}
+
+func (d *DatabaseResourceParametersAssert) HasServiceCallerTokenValiditySecs(expected int) *DatabaseResourceParametersAssert {
+	d.ParameterIntValueSet(string(sdk.DatabaseParameterServiceCallerTokenValiditySecs), expected)
 	return d
 }
 
@@ -199,6 +209,11 @@ func (d *DatabaseResourceParametersAssert) HasMaxDataExtensionTimeInDaysLevel(ex
 	return d
 }
 
+func (d *DatabaseResourceParametersAssert) HasMetricLevelLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
+	d.ParameterLevelSet(string(sdk.DatabaseParameterMetricLevel), expected)
+	return d
+}
+
 func (d *DatabaseResourceParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
 	d.ParameterLevelSet(string(sdk.DatabaseParameterQuotedIdentifiersIgnoreCase), expected)
 	return d
@@ -206,6 +221,11 @@ func (d *DatabaseResourceParametersAssert) HasQuotedIdentifiersIgnoreCaseLevel(e
 
 func (d *DatabaseResourceParametersAssert) HasReplaceInvalidCharactersLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
 	d.ParameterLevelSet(string(sdk.DatabaseParameterReplaceInvalidCharacters), expected)
+	return d
+}
+
+func (d *DatabaseResourceParametersAssert) HasServiceCallerTokenValiditySecsLevel(expected sdk.ParameterType) *DatabaseResourceParametersAssert {
+	d.ParameterLevelSet(string(sdk.DatabaseParameterServiceCallerTokenValiditySecs), expected)
 	return d
 }
 

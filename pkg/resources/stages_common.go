@@ -77,7 +77,7 @@ func handleStageRename(ctx context.Context, meta any, d *schema.ResourceData, id
 			return client.Stages.Alter(ctx, sdk.NewAlterStageRequest(currentId).WithRenameTo(targetId))
 		},
 		client.Stages.ShowByID,
-		"stage",
+		sdk.ObjectTypeStage,
 	); diags != nil {
 		return diags
 	}

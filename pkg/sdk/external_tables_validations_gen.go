@@ -45,6 +45,11 @@ func (opts *CreateExternalTableOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.RowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
+			errs = append(errs, errInvalidIdentifier("CreateExternalTableOptions.RowAccessPolicy", "Name"))
+		}
+	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
 			if !ValidObjectIdentifier(tag.Name) {
@@ -82,6 +87,11 @@ func (opts *CreateWithManualPartitioningExternalTableOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateWithManualPartitioningExternalTableOptions.FileFormat", "Name", "FileFormatType"))
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
+	}
+	if valueSet(opts.RowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
+			errs = append(errs, errInvalidIdentifier("CreateWithManualPartitioningExternalTableOptions.RowAccessPolicy", "Name"))
+		}
 	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
@@ -121,6 +131,11 @@ func (opts *CreateDeltaLakeExternalTableOptions) validate() error {
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
 	}
+	if valueSet(opts.RowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
+			errs = append(errs, errInvalidIdentifier("CreateDeltaLakeExternalTableOptions.RowAccessPolicy", "Name"))
+		}
+	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
 			if !ValidObjectIdentifier(tag.Name) {
@@ -158,6 +173,11 @@ func (opts *CreateUsingTemplateExternalTableOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateUsingTemplateExternalTableOptions.FileFormat", "Name", "FileFormatType"))
 		}
 		errs = append(errs, opts.FileFormat.additionalValidations())
+	}
+	if valueSet(opts.RowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
+			errs = append(errs, errInvalidIdentifier("CreateUsingTemplateExternalTableOptions.RowAccessPolicy", "Name"))
+		}
 	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {

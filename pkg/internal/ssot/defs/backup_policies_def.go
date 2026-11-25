@@ -2,6 +2,9 @@ package defs
 
 import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 
+// backupPolicyScheduleFields are the interval and the cron expression of a schedule. Exactly one of them is set.
+var backupPolicyScheduleFields = []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "using_cron"}}
+
 // BackupPolicyAttrs holds reusable backup policy fields.
 var BackupPolicyAttrs = struct {
 	WithRetentionLock ssot.Attribute
@@ -36,32 +39,29 @@ var BackupPolicyAttrs = struct {
 		SkipCreate:     true,
 		OptionalInShow: true,
 		OptionalInDb:   true,
-		AtLeastOneOf:   []ssot.Attribute{{Name: "schedule"}, {Name: "expire_after_days"}},
 		Description:    "Specifies how often Snowflake creates a backup. Either an interval of at least 60 minutes (`hours` or `minutes`) or a cron expression (`using_cron`). Exactly one of the sub-fields has to be set.",
 		Children: []ssot.Attribute{
 			{
-				Name:          "hours",
-				Type:          ssot.AttrInt,
-				Min:           new(1),
-				ConflictsWith: []ssot.Attribute{{Name: "minutes"}, {Name: "using_cron"}},
-				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "using_cron"}},
-				Description:   "Specifies an interval (in hours) of wait time inserted between backups. Accepts positive integers. (conflicts with `minutes` and `using_cron`)",
+				Name:        "hours",
+				Type:        ssot.AttrInt,
+				Min:         new(1),
+				Description: "Specifies an interval (in hours) of wait time inserted between backups. Accepts positive integers. (conflicts with `minutes` and `using_cron`)",
 			},
 			{
-				Name:          "minutes",
-				Type:          ssot.AttrInt,
-				Min:           new(60),
-				ConflictsWith: []ssot.Attribute{{Name: "hours"}, {Name: "using_cron"}},
-				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "using_cron"}},
-				Description:   "Specifies an interval (in minutes) of wait time inserted between backups. Accepts integers of at least 60. (conflicts with `hours` and `using_cron`)",
+				Name:        "minutes",
+				Type:        ssot.AttrInt,
+				Min:         new(60),
+				Description: "Specifies an interval (in minutes) of wait time inserted between backups. Accepts integers of at least 60. (conflicts with `hours` and `using_cron`)",
 			},
 			{
-				Name:          "using_cron",
-				Type:          ssot.AttrString,
-				ConflictsWith: []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}},
-				AtLeastOneOf:  []ssot.Attribute{{Name: "hours"}, {Name: "minutes"}, {Name: "using_cron"}},
-				Description:   "Specifies a cron expression and time zone for creating backups. Supports a subset of standard cron utility syntax. (conflicts with `hours` and `minutes`)",
+				Name:        "using_cron",
+				Type:        ssot.AttrString,
+				Description: "Specifies a cron expression and time zone for creating backups. Supports a subset of standard cron utility syntax. (conflicts with `hours` and `minutes`)",
 			},
+		},
+		Validations: []ssot.Validation{
+			ssot.Conflicting(backupPolicyScheduleFields...),
+			ssot.AtLeastOneOf(backupPolicyScheduleFields...),
 		},
 	},
 	// The maximum of 3653 applies only when SCHEDULE is omitted, so Max is unset.
@@ -71,7 +71,6 @@ var BackupPolicyAttrs = struct {
 		Min:            new(1),
 		OptionalInShow: true,
 		OptionalInDb:   true,
-		AtLeastOneOf:   []ssot.Attribute{{Name: "schedule"}, {Name: "expire_after_days"}},
 		Description:    "Specifies the number of days until a backup expires. The minimum is 1. The maximum is 3653 when SCHEDULE is omitted.",
 	},
 	Comment: ssot.Attribute{
@@ -97,10 +96,9 @@ var BackupPolicy = ssot.Object{
 	NamePlural:     "BackupPolicies",
 	IdType:         "SchemaObjectIdentifier",
 	PreviewFeature: true,
-	AtLeastOneOf: [][]*ssot.Attribute{{
-		&BackupPolicyAttrs.Schedule,
-		&BackupPolicyAttrs.ExpireAfterDays,
-	}},
+	Validations: []ssot.Validation{
+		ssot.AtLeastOneOf(BackupPolicyAttrs.Schedule, BackupPolicyAttrs.ExpireAfterDays),
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),
 		ssot.WithSdk(
@@ -120,6 +118,7 @@ var BackupPolicy = ssot.Object{
 	},
 	// The schedule is a block in Terraform and a string in SQL and SHOW, so create, set, unset, and read of it are in ext code.
 	// CREATE and SET need it in the same request as the other fields, and UNSET cannot clear schedule and expiration together.
+	// UNSET SCHEDULE, COMMENT is accepted (the SDK integration test runs it), so comment shares the main group with schedule.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
@@ -153,10 +152,6 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.Comment,
 		},
 	},
-	UnsetConflicts: [][]*ssot.Attribute{{
-		&BackupPolicyAttrs.Schedule,
-		&BackupPolicyAttrs.ExpireAfterDays,
-	}},
 	Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{
 		ssot.AlterRenameTo(),
 		ssot.AlterSet(
@@ -165,11 +160,11 @@ var BackupPolicy = ssot.Object{
 			&BackupPolicyAttrs.ExpireAfterDays,
 		),
 		ssot.AlterUnset(
-			ssot.AlterGroup("Schedule", &BackupPolicyAttrs.Schedule),
 			ssot.AlterGroup(ssot.MainAlterGroup,
+				&BackupPolicyAttrs.Schedule,
 				&BackupPolicyAttrs.Comment,
-				&BackupPolicyAttrs.ExpireAfterDays,
 			),
+			ssot.AlterGroup("ExpireAfterDays", &BackupPolicyAttrs.ExpireAfterDays),
 		),
 		ssot.AlterSetTags(),
 		ssot.AlterUnsetTags(),

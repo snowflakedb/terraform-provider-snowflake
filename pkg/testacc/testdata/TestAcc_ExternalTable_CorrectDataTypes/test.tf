@@ -19,7 +19,7 @@ resource "snowflake_external_table" "test_table" {
   }
   column {
     name = "age"
-    type = "number(2, 2)"
+    type = "number(2, 0)"
     as   = "value:age::number"
   }
   auto_refresh      = false

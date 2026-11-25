@@ -64,7 +64,7 @@ func CreateContextProcedureSql(ctx context.Context, d *schema.ResourceData, meta
 	procedureDefinition := d.Get("procedure_definition").(string)
 
 	argumentDataTypes := collections.Map(argumentRequests, func(r sdk.ProcedureArgumentRequest) datatypes.DataType { return r.ArgDataType })
-	id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(database, sc, name, argumentDataTypes...)
+	id := sdk.NewSchemaObjectIdentifierWithArguments(database, sc, name, argumentDataTypes...)
 	request := sdk.NewCreateForSQLProcedureRequestDefinitionWrapped(id.SchemaObjectId(), *returns, procedureDefinition).
 		WithArguments(argumentRequests)
 

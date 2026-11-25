@@ -9,3 +9,8 @@ func (p *ImageRepositoryShowOutputAssert) HasRepositoryUrlNotEmpty() *ImageRepos
 	p.ValuePresent("repository_url")
 	return p
 }
+
+func (p *ImageRepositoryShowOutputAssert) HasPrivatelinkRepositoryUrlNotEmpty() *ImageRepositoryShowOutputAssert {
+	p.ValuePresent("privatelink_repository_url")
+	return p
+}

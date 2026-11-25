@@ -45,8 +45,10 @@ type DatabaseParametersDetails struct {
 	LogEventLevel                           TypedParameter[LogLevel]
 	LogLevel                                TypedParameter[LogLevel]
 	MaxDataExtensionTimeInDays              TypedParameter[int]
+	MetricLevel                             TypedParameter[MetricLevel]
 	QuotedIdentifiersIgnoreCase             TypedParameter[bool]
 	ReplaceInvalidCharacters                TypedParameter[bool]
+	ServiceCallerTokenValiditySecs          TypedParameter[int]
 	StorageSerializationPolicy              TypedParameter[StorageSerializationPolicy]
 	SuspendTaskAfterNumFailures             TypedParameter[int]
 	TaskAutoRetryAttempts                   TypedParameter[int]
@@ -74,8 +76,10 @@ type CreateDatabaseOptions struct {
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	MaxDataExtensionTimeInDays              *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	MetricLevel                             *MetricLevel                `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	ServiceCallerTokenValiditySecs          *int                        `ddl:"parameter" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter,single_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -115,8 +119,10 @@ type CreateSharedDatabaseOptions struct {
 	ExternalVolume                          *AccountObjectIdentifier    `ddl:"identifier,equals" sql:"EXTERNAL_VOLUME"`
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
+	MetricLevel                             *MetricLevel                `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	ServiceCallerTokenValiditySecs          *int                        `ddl:"parameter" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter,single_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -147,8 +153,10 @@ type CreateSecondaryDatabaseOptions struct {
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	MaxDataExtensionTimeInDays              *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	MetricLevel                             *MetricLevel                `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	ServiceCallerTokenValiditySecs          *int                        `ddl:"parameter" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter,single_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -214,8 +222,10 @@ type DatabaseSet struct {
 	LogEventLevel                           *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                                *LogLevel                   `ddl:"parameter,single_quotes" sql:"LOG_LEVEL"`
 	MaxDataExtensionTimeInDays              *int                        `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	MetricLevel                             *MetricLevel                `ddl:"parameter,single_quotes" sql:"METRIC_LEVEL"`
 	QuotedIdentifiersIgnoreCase             *bool                       `ddl:"parameter" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	ReplaceInvalidCharacters                *bool                       `ddl:"parameter" sql:"REPLACE_INVALID_CHARACTERS"`
+	ServiceCallerTokenValiditySecs          *int                        `ddl:"parameter" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
 	StorageSerializationPolicy              *StorageSerializationPolicy `ddl:"parameter,single_quotes" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *int                        `ddl:"parameter" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *int                        `ddl:"parameter" sql:"TASK_AUTO_RETRY_ATTEMPTS"`
@@ -237,8 +247,10 @@ type DatabaseUnset struct {
 	LogEventLevel                           *bool `ddl:"keyword" sql:"LOG_EVENT_LEVEL"`
 	LogLevel                                *bool `ddl:"keyword" sql:"LOG_LEVEL"`
 	MaxDataExtensionTimeInDays              *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	MetricLevel                             *bool `ddl:"keyword" sql:"METRIC_LEVEL"`
 	QuotedIdentifiersIgnoreCase             *bool `ddl:"keyword" sql:"QUOTED_IDENTIFIERS_IGNORE_CASE"`
 	ReplaceInvalidCharacters                *bool `ddl:"keyword" sql:"REPLACE_INVALID_CHARACTERS"`
+	ServiceCallerTokenValiditySecs          *bool `ddl:"keyword" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
 	StorageSerializationPolicy              *bool `ddl:"keyword" sql:"STORAGE_SERIALIZATION_POLICY"`
 	SuspendTaskAfterNumFailures             *bool `ddl:"keyword" sql:"SUSPEND_TASK_AFTER_NUM_FAILURES"`
 	TaskAutoRetryAttempts                   *bool `ddl:"keyword" sql:"TASK_AUTO_RETRY_ATTEMPTS"`

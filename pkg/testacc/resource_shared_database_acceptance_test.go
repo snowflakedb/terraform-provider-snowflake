@@ -190,7 +190,9 @@ func TestAcc_CreateSharedDatabase_CompleteUseCase(t *testing.T) {
 		WithUserTaskTimeoutMs(1200000).
 		WithUserTaskMinimumTriggerIntervalInSeconds(120).
 		WithQuotedIdentifiersIgnoreCase(true).
-		WithEnableConsoleOutput(true)
+		WithEnableConsoleOutput(true).
+		WithMetricLevel(string(sdk.MetricLevelAll)).
+		WithServiceCallerTokenValiditySecs(1800)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -223,6 +225,8 @@ func TestAcc_CreateSharedDatabase_CompleteUseCase(t *testing.T) {
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "user_task_minimum_trigger_interval_in_seconds", "120"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "quoted_identifiers_ignore_case", "true"),
 					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "enable_console_output", "true"),
+					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "metric_level", string(sdk.MetricLevelAll)),
+					resource.TestCheckResourceAttr(sharedDatabaseModelComplete.ResourceReference(), "service_caller_token_validity_secs", "1800"),
 				),
 			},
 			// Import all values

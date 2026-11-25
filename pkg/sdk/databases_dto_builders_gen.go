@@ -80,6 +80,11 @@ func (s *CreateDatabaseRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionT
 	return s
 }
 
+func (s *CreateDatabaseRequest) WithMetricLevel(metricLevel MetricLevel) *CreateDatabaseRequest {
+	s.MetricLevel = &metricLevel
+	return s
+}
+
 func (s *CreateDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateDatabaseRequest {
 	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
 	return s
@@ -87,6 +92,11 @@ func (s *CreateDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifier
 
 func (s *CreateDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateDatabaseRequest {
 	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateDatabaseRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *CreateDatabaseRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
 	return s
 }
 
@@ -157,10 +167,14 @@ func (s *CreateDatabaseRequest) SetParameterFromRaw(key string, value string) er
 		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	case "METRIC_LEVEL":
+		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
 	case "REPLACE_INVALID_CHARACTERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
 	case "STORAGE_SERIALIZATION_POLICY":
 		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
@@ -273,6 +287,11 @@ func (s *CreateSharedDatabaseRequest) WithLogLevel(logLevel LogLevel) *CreateSha
 	return s
 }
 
+func (s *CreateSharedDatabaseRequest) WithMetricLevel(metricLevel MetricLevel) *CreateSharedDatabaseRequest {
+	s.MetricLevel = &metricLevel
+	return s
+}
+
 func (s *CreateSharedDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSharedDatabaseRequest {
 	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
 	return s
@@ -280,6 +299,11 @@ func (s *CreateSharedDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIden
 
 func (s *CreateSharedDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSharedDatabaseRequest {
 	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateSharedDatabaseRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *CreateSharedDatabaseRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
 	return s
 }
 
@@ -346,10 +370,14 @@ func (s *CreateSharedDatabaseRequest) SetParameterFromRaw(key string, value stri
 		return assignParsedEnumParameter(value, ToLogLevel, &s.LogEventLevel)
 	case "LOG_LEVEL":
 		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
+	case "METRIC_LEVEL":
+		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
 	case "REPLACE_INVALID_CHARACTERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
 	case "STORAGE_SERIALIZATION_POLICY":
 		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
@@ -444,6 +472,11 @@ func (s *CreateSecondaryDatabaseRequest) WithMaxDataExtensionTimeInDays(maxDataE
 	return s
 }
 
+func (s *CreateSecondaryDatabaseRequest) WithMetricLevel(metricLevel MetricLevel) *CreateSecondaryDatabaseRequest {
+	s.MetricLevel = &metricLevel
+	return s
+}
+
 func (s *CreateSecondaryDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *CreateSecondaryDatabaseRequest {
 	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
 	return s
@@ -451,6 +484,11 @@ func (s *CreateSecondaryDatabaseRequest) WithQuotedIdentifiersIgnoreCase(quotedI
 
 func (s *CreateSecondaryDatabaseRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *CreateSecondaryDatabaseRequest {
 	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *CreateSecondaryDatabaseRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *CreateSecondaryDatabaseRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
 	return s
 }
 
@@ -516,10 +554,14 @@ func (s *CreateSecondaryDatabaseRequest) SetParameterFromRaw(key string, value s
 		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	case "METRIC_LEVEL":
+		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
 	case "REPLACE_INVALID_CHARACTERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
 	case "STORAGE_SERIALIZATION_POLICY":
 		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
@@ -720,6 +762,11 @@ func (s *DatabaseSetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTime
 	return s
 }
 
+func (s *DatabaseSetRequest) WithMetricLevel(metricLevel MetricLevel) *DatabaseSetRequest {
+	s.MetricLevel = &metricLevel
+	return s
+}
+
 func (s *DatabaseSetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseSetRequest {
 	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
 	return s
@@ -727,6 +774,11 @@ func (s *DatabaseSetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIg
 
 func (s *DatabaseSetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *DatabaseSetRequest {
 	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *DatabaseSetRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *DatabaseSetRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
 	return s
 }
 
@@ -792,10 +844,14 @@ func (s *DatabaseSetRequest) SetParameterFromRaw(key string, value string) error
 		return assignParsedEnumParameter(value, ToLogLevel, &s.LogLevel)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		return assignParsedParameter(value, strconv.Atoi, &s.MaxDataExtensionTimeInDays)
+	case "METRIC_LEVEL":
+		return assignParsedEnumParameter(value, ToMetricLevel, &s.MetricLevel)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
 		return assignParsedParameter(value, strconv.ParseBool, &s.QuotedIdentifiersIgnoreCase)
 	case "REPLACE_INVALID_CHARACTERS":
 		return assignParsedParameter(value, strconv.ParseBool, &s.ReplaceInvalidCharacters)
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		return assignParsedParameter(value, strconv.Atoi, &s.ServiceCallerTokenValiditySecs)
 	case "STORAGE_SERIALIZATION_POLICY":
 		return assignParsedEnumParameter(value, ToStorageSerializationPolicy, &s.StorageSerializationPolicy)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":
@@ -870,6 +926,11 @@ func (s *DatabaseUnsetRequest) WithMaxDataExtensionTimeInDays(maxDataExtensionTi
 	return s
 }
 
+func (s *DatabaseUnsetRequest) WithMetricLevel(metricLevel bool) *DatabaseUnsetRequest {
+	s.MetricLevel = &metricLevel
+	return s
+}
+
 func (s *DatabaseUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseUnsetRequest {
 	s.QuotedIdentifiersIgnoreCase = &quotedIdentifiersIgnoreCase
 	return s
@@ -877,6 +938,11 @@ func (s *DatabaseUnsetRequest) WithQuotedIdentifiersIgnoreCase(quotedIdentifiers
 
 func (s *DatabaseUnsetRequest) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *DatabaseUnsetRequest {
 	s.ReplaceInvalidCharacters = &replaceInvalidCharacters
+	return s
+}
+
+func (s *DatabaseUnsetRequest) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs bool) *DatabaseUnsetRequest {
+	s.ServiceCallerTokenValiditySecs = &serviceCallerTokenValiditySecs
 	return s
 }
 
@@ -942,10 +1008,14 @@ func (s *DatabaseUnsetRequest) UnsetParameterFromRaw(key string) error {
 		s.LogLevel = Bool(true)
 	case "MAX_DATA_EXTENSION_TIME_IN_DAYS":
 		s.MaxDataExtensionTimeInDays = Bool(true)
+	case "METRIC_LEVEL":
+		s.MetricLevel = Bool(true)
 	case "QUOTED_IDENTIFIERS_IGNORE_CASE":
 		s.QuotedIdentifiersIgnoreCase = Bool(true)
 	case "REPLACE_INVALID_CHARACTERS":
 		s.ReplaceInvalidCharacters = Bool(true)
+	case "SERVICE_CALLER_TOKEN_VALIDITY_SECS":
+		s.ServiceCallerTokenValiditySecs = Bool(true)
 	case "STORAGE_SERIALIZATION_POLICY":
 		s.StorageSerializationPolicy = Bool(true)
 	case "SUSPEND_TASK_AFTER_NUM_FAILURES":

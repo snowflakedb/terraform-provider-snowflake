@@ -7,6 +7,18 @@ Generators consume ssot; they do not all consume `defs.All()` the same way. Reso
 assertions, Snowflake object assertions, object and resource parameters assertions, and SDK paired structs are opt-in per object ([Generators](#generators)). More
 generators will follow. Ultimately, all the generators should default to using ssot and `defs.All()`.
 
+### A generic definition
+
+SSOT describes a Snowflake object. It mirrors neither the SDK nor Terraform. Each generator translates the same
+definition into its own world, so a field is named and shaped by what it means for the object, not by the SDK struct
+or the Terraform schema it ends up in. Keep this in mind when adding a feature:
+
+- Name a field after its meaning. `Max: new(1)` bounds an int by value and a list by item count, and Terraform gets
+  `MaxItems` from it.
+- Prefer one field over one field per generator. Reach for a generator-specific setting only when the generators
+  genuinely disagree, and then declare it in that generator's options, not on `Attribute`.
+- Do not copy SDK or Terraform terms into a new field name when a neutral word says the same.
+
 ### Object
 
 `Object` is the written intent for one Snowflake object:
@@ -16,25 +28,12 @@ generators will follow. Ultimately, all the generators should default to using s
 - `Show` / `Describe` - output columns ([SHOW and DESCRIBE](#show-and-describe))
 - `Generators` - which generators may consume those lists ([Generators](#generators))
 - `ResourceHooks` - resource lifecycle/schema overrides (resource generator)
-- `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`
-- `VariantOf` - base of this role. `Name` starts with the base `Name`, and `NamePlural` matches the base, so they share one SDK interface. The variant also shares the base object's SDK parameter details, SET/UNSET requests, and `ParameterType` names. Parameter catalog membership still comes from the variant's own `Name`
-- `VariantEntityCreateName` - optional SQL object words for a variant CREATE. Empty uses `VariantOf.ObjectType` (`WarehouseAdaptive` emits `WAREHOUSE`). Set it when the words differ, as interactive CREATE does with `INTERACTIVE WAREHOUSE`
-- `VariantEntityAlterName` - optional SQL object words for a variant ALTER. Empty uses the same base default as CREATE
-- `VariantBaseOnly` - the object only is the base of its `VariantOf` variants and is not a Terraform resource itself (catalog integration: each source type is its own resource). The base owns what the variants share, such as the SDK interface. The resource generator skips it
-- `ExactlyOneOf` - groups of optional top-level attributes of which exactly one is set, declared once with pointers to the
-  attributes: `ExactlyOneOf: [][]*ssot.Attribute{{&oauth, &bearer, &sigv4}}`. Validation needs at least two attributes per group,
-  all of them optional attributes of the object, and none in two groups. SDK CREATE adds `ExactlyOneValueSet` over the Go fields
-  of the group to a statement that has all of its attributes in `Create.Clauses`, and panics when it has only some of them.
-  The Go field name is the one the clause gets, so `FieldName` on the clause renames it. The generated schema gets Terraform
-  `ExactlyOneOf` on each attribute of the group, with the names of the whole group.
-- `AtLeastOneOf` - groups of optional top-level attributes of which at least one is set, declared the same way as
-  `ExactlyOneOf`. SDK CREATE adds `AtLeastOneValueSet` over the Go fields of a group that is entirely in `Create.Clauses`.
-  A custom operation that includes every attribute of a group gets the same check. The schema-side `AtLeastOneOf` is not
-  generated from it.
-- `Alter.SetConflictingFields` - pairs of SET attributes that cannot be set together. The SET struct gets `ConflictingFields`
-  for each pair, with the Go field names of the clauses. A pair sits in different groups of the SET block.
-- `UnsetConflicts` - groups of UNSET attributes that cannot be set together. Each group has at least two attributes from
-  the UNSET block. SDK UNSET adds `ConflictingFields` for the group, and its members sit in different groups of the UNSET block.
+- `ResourceParameters` - the subset of the object's parameter catalog that is a resource attribute. Empty uses the full `ParameterLevel()` catalog. A non-empty list is still emitted in catalog order. `ValidateObject` panics when an entry is missing `SqlName`, is duplicated, or is not in that catalog.
+- `SdkCreateRequestObjectName` - SDK CREATE request type-name stem when it differs from `Name`. A variant sets `Variant.RequestObjectName` instead
+- `Variant` - one role of a base object. `Of` is the base. `Name` starts with the base `Name`, and `NamePlural` matches the base, so they share one SDK interface. The variant also shares the base object's SDK parameter details, SET/UNSET requests, and `ParameterType` names. Parameter catalog membership still comes from the variant's own `Name`. `CreateName` and `AlterName` are the SQL object words when they differ from the base type words (`WarehouseAdaptive` emits `WAREHOUSE`; interactive CREATE sets `INTERACTIVE WAREHOUSE`). `RequestObjectName` is the CREATE and ALTER query-struct stem when it differs from `Name`. `SchemaShowFromBase`, `ObjectAssertShowRowFromBase`, and `ShowOutputShowRowFromBase` reuse the base SHOW schema, object assertion, and show-output assertion. `ObjectAssertShowFromBase` is the SHOW fetch method on the base client, such as `ShowByIDAdaptive`. The matching `SchemaShow`, `ObjectAssertShow`, or `ShowOutputShow` stays on
+- `BaseVariant` - settings of an object that is the base of variants. `ShowGeneric` is the temporary union SHOW. `ShowPlainName` is the plain struct when that union uses `Name`. `ShowVariants` are the plain structs emitted with DESCRIBE. `NotResource` says the base is not a Terraform resource itself (catalog integration: each source type is its own resource). The base owns what the variants share, such as the SDK interface. The resource generators skip it
+- `Validations` - rules over optional top-level attributes, such as `ssot.ExactlyOneOf(attrs.Oauth, attrs.Bearer)`. See
+  [Validations](#validations).
 - `Alter.Clauses` SET and UNSET blocks - `ssot.AlterSet(...)` and `ssot.AlterUnset(...)` take the attributes of the block, or
   `ssot.AlterGroup(...)` values when Snowflake needs several ALTER statements. See [ALTER statements](#alter-statements).
 - `AdditionalEnums` - SDK enums that no attribute, column, or clause refers to, such as the accepted values of a field the
@@ -42,16 +41,14 @@ generators will follow. Ultimately, all the generators should default to using s
   `SdkDefineFromSsot()` needs so the hand-written SDK definition has nothing left to list
 - `SchemaStateUpgraders` - ordered upgrade function names ([Resource generator](#resource-generator))
 
-Identity (`Name`, `IdType`, ...) is separate from `Attributes`. `LegacyIdEncoding` keeps the pipe-delimited resource id
-(`db|schema|name`, `helpers.EncodeSnowflakeID`) that older resources store. The generated Create calls it instead of
+Identity (`Name`, `IdType`, ...) is separate from `Attributes`. The generated Create encodes the resource id with
 `helpers.EncodeResourceIdentifier`. The identity schema is the same for every object: `name`, and `database` and `schema`
-when the `IdType` has them, use `blocklistedCharactersFieldDescription` and `suppressIdentifierQuoting`, whatever
-`LegacyIdEncoding` is. `WithParseId(Generated())` emits a named parser used by Import, Read, and Update.
-It calls `sdk.Parse<IdType>` for current ids and `helpers.DecodeSnowflakeIDErrLegacy[<IdType>]` for legacy ids.
+when the `IdType` has them, use `blocklistedCharactersFieldDescription` and `suppressIdentifierQuoting`.
+`WithParseId(Generated())` emits a named parser used by Import, Read, and Update. It calls `sdk.Parse<IdType>`.
 The default `ExtCall` keeps the handwritten parser. `PreviewFeature` marks a preview resource. Generated `Delete`
 wraps `DeleteContext` with `PreviewFeatureDeleteContextWrapper` and `previewfeatures.<Name>Resource`.
 
-`VariantOf` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
+`Variant.Of` keeps SDK parameter naming simple because variants are expected to share their base object's SDK
 parameter types and usually the same parameter set. Different sets can already use a variant-specific catalog level
 derived from `Name`, as interactive warehouses do. If a variant needs a catalog level other than the one derived from
 its `Name`, extend SSOT with an explicit parameter-level override.
@@ -60,6 +57,9 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 
 `Attribute` is one field. Current types are in [attribute.go](attribute.go).
 
+- `Min` / `Max` - inclusive bounds. An int bounds its value. A list or set bounds its number of items (non-negative; a
+  list of objects with `Max: new(1)` is rejected — use `AttrObject` instead; a required `AttrList` deduces
+  `MinItems: 1` when `Min` is nil and rejects `Min` of 0 or 1). Other types reject them.
 - `Readonly` - non-writable output column. Must not sit on `Attributes`. CREATE-only fields are writable and absent from
   `Show` / `Describe` `Columns`.
 - `SqlOnly` - the attribute stays on a SQL sequence and is left out of schema, resource, model, and assertion generation.
@@ -67,18 +67,23 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   field is the unexported Go name and the SQL is the ddl text, such as `WAREHOUSE_TYPE = 'ADAPTIVE'`.
 - `ShowName` - SHOW/DESCRIBE key when it differs from the resource name (`for_application` → `application`).
   `Name` stays the resource attribute and the CREATE field. `OutputKey()` is `ShowName` or `Name`.
+  Leave `ShowName` unset when it equals `Name`.
   `FieldName` on a clause renames the SDK request field. It is not how the output column is named.
 - `SchemaName` - the Terraform schema key when it differs from the snake_case of the Go field (`null?` is published as
-  `is_nullable`). Empty keeps that snake_case. It does not change the Go field, the `db` tag, or `OutputKey()`.
+  `is_nullable`). Empty keeps that snake_case. Leave `SchemaName` unset when it equals that snake_case. It does not change the Go field, the `db` tag, or `OutputKey()`.
+- `ShowEnum` - the SHOW and CREATE/SET enum when it differs from `Enum`. Empty uses `Enum`. Resource schema and model builders keep `Enum`. DESCRIBE uses `DescribeEnum` or `Enum`. Leave `ShowEnum` unset when it is `Enum`.
+- `ShowString` - the SHOW column is a string. The resource, CREATE, and SET keep `Type`. Leave it unset when `Type` is already a string. `OptionalInDb` still belongs to that SHOW column, as on table `cluster_by`.
+- `DescribeString` - the DESCRIBE column is a string. The resource, CREATE, SET, and SHOW keep `Type`. Leave it unset when `Type` is already a string. External volume `allow_writes` and alert `state` use it.
+- `DescribeEnum` - the DESCRIBE enum when it differs from `Enum`. Empty uses `Enum`. SHOW and CREATE/SET keep `ShowEnum` or `Enum`. The resource schema keeps `Enum`. Leave it unset when it is `Enum`. It is not combined with `DescribeString`. Authentication policy `mfa_enrollment` uses it for `MfaEnrollmentReadOption`.
 - `CreateMapping` - overrides the create helper a generated `ApplyCreateOptionals` deduces for the attribute. Leave it
-  nil, including on nested fields, unless the deduced call does not match the SDK request. The helpers are in
+  nil, including on nested fields, unless the deduced call does not match the SDK request. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when an explicit mapping equals that call, including `sdk.To<Enum>` and `to<Object><Field>`. The helpers are in
   `pkg/resources/resource_helpers_create.go`. Without a mapping, an optional field is deduced from its type and the
   schema default: a string, an int, a `NativeBool` (`boolAttributeCreateBuilder`), a boolean-string when the default is `BooleanDefault`, an enum (`attributeMappedValueCreateBuilder` with `sdk.To<Enum>`), or
   `AccountObjectIdentifier` (by its own `IdentifierType`) uses its builder. A list with `Elem` calls `listValueCreate`,
   and a set, of scalars or of objects, calls `setMappedValueCreateBuilder`. Both take a hand-written per-element mapper
   in package resources named `to<Stem><Field>`, where the stem is the object name plus any enclosing block names:
   `toComputePoolBackupInstanceFamilies`, `toAuthenticationPolicyMfaPolicyAllowedMethods`. A required field with no
-  mapping is a constructor argument (string, int, bool, or enum). `SkipCreate` leaves the field out of that deduction and out of constructor arguments. To override, use a `HelperMapping` constant
+  mapping is a constructor argument (string, int, bool, enum, or an identifier other than an account object identifier, which is parsed with `sdk.Parse<IdentifierType>`). `SkipCreate` leaves the field out of that deduction and out of constructor arguments. To override, use a `HelperMapping` constant
   (`StringAttributeCreateBuilder`, ...), `ListValueCreate("<mapperFunc>")`, or
   `AttributeMappedValueCreate("<mapperFunc>")` when the SDK setter takes the whole value. A generated
   `ApplyCreateOptionals` covers only `Attributes`, so a resource field that is not an attribute keeps the
@@ -102,6 +107,8 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   `AttributeMappedValueUpdate("<mapperFunc>")`, which maps the Terraform value to the SDK value and unsets the attribute when it is removed.
   A string that the object cannot unset gets `StringAttributeUpdateSetOnlyNotEmpty`, with the request field of its `SetSql` (`SetBody`). Declare `BooleanStringAttributeUnsetFallbackUpdate(<fallback>)` for a boolean string that is set to the fallback when the value is removed, because the object has no UNSET for it.
   `AttributeMappedValueUpdateSetOnlyAlways("<mapperFunc>")` and `IntAttributeWithSpecialDefaultUnsetFallbackUpdate("<fallback>")` set a value and never unset it.
+  `IntAttributeUnsetFallbackUpdateWithZeroDefault(<fallback>)` sets an int to the fallback when it is removed. `StringAttributeUpdateSetOnly` sets a string that may be empty, with the request field.
+  A `CustomUpdate` fills a SET attribute from a field of a nested block that cannot be updated itself, such as the OAuth client secret. When the ALTER has no UNSET block it gets the SET request only: `function(d, set)`.
   `SetValueUpdate("<mapperFunc>")` maps each element of a set and unsets the attribute when the set is empty, and `SingleBlockAttributeUpdate("<fillFunc>")` fills the request from the fields of a one-element block and unsets it when the block is removed. Both update a nested attribute as one value.
   `CustomUpdate("<function>")` calls `function(d, set, unset)` of package resources with the requests that hold the attribute, for an update that
   decides by other attributes or that sets another field with it, such as `wait_for_completion` with the warehouse size.
@@ -140,11 +147,7 @@ its `Name`, extend SSOT with an explicit parameter-level override.
   Terraform's empty value. The generator drift-tracks the field and suppresses a diff against `describe_output`.
   Optional scalar SHOW columns get the same treatment without this flag. `catalog_namespace` stays unset because
   Snowflake reports an empty namespace.
-- `ConflictsWith` names other attributes on the same level. The generator emits `schema.ConflictsWith` as a path from
-  the resource root: the attribute name at the top, and `parent.0.name` for a child of a single block (an `AttrObject`,
-  or a list of objects with `MaxItems: 1`).
-  A set, or a list without that bound, cannot name these relations. `AtLeastOneOf` uses the same paths and may include
-  this attribute.
+- `Validations` on an `AttrObject` attribute or an object `Elem` - rules over its `Children`. See [Validations](#validations).
 - `Sensitive` marks the schema field sensitive.
 - `SkipInSchema` - the SHOW/DESCRIBE schema generator (`WithSchema`) omits the column from the generated schema map
   and `ToSchema`; the key is dropped entirely (comment left in place). The column still participates in every other
@@ -152,6 +155,44 @@ its `Name`, extend SSOT with an explicit parameter-level override.
 
 Def files keep attributes as vars (`ComputePoolAttrs`) so `Columns` can point at them instead of restating snake_case
 strings.
+
+### Validations
+
+`Validations []ssot.Validation` states which fields may or must be set together. `Object.Validations` covers top-level
+attributes. `Attribute.Validations` covers the `Children` of an `AttrObject` attribute or of an object `Elem`. A parent may
+have several validations, for example `ExactlyOneOf` over the key kinds and `Conflicting` over two flags beside them.
+
+- `ssot.AtLeastOneOf(fields...)` - at least one field is set. SDK: `AtLeastOneValueSet`. Schema: Terraform `AtLeastOneOf`.
+- `ssot.ExactlyOneOf(fields...)` - exactly one field is set. SDK: `ExactlyOneValueSet`. Schema: Terraform `ExactlyOneOf`.
+- `ssot.Conflicting(fields...)` - at most one field is set. SDK: `ConflictingFields` for two fields and
+  `MoreThanOneValueSet` for more. Schema: each field gets the others in Terraform `ConflictsWith`.
+
+`.SchemaOnly()` on a validation leaves it out of the SDK and keeps it in the schema. Use it when the SDK would count a sent
+value as unset, such as `BLOCKED_ROLES_LIST = ()`, an empty list that clears `pat_policy.blocked_roles_list`.
+
+Fields are matched by `Name`, so a definition can name a var (`WarehouseAttrs.Generation`) or a child literal. Generated
+checks list the fields in the parent's order (`Object.Attributes` or `Children`), not in the order of the call.
+
+Validation rules (`ValidateObject` panics otherwise):
+
+- The kind is one of the three above, and a validation names at least two fields, none twice.
+- An object-level field is an optional attribute of the object that is not `SqlOnly`. A child-level field is a `Child` that
+  is a field of the SQL struct (not a fixed text, not tags) and not `Required`.
+- A child-level validation with no fields covers every such `Child`. It must be the parent's only validation, and the
+  parent needs at least two such `Children`. An object-level validation always names its fields.
+- A field is in at most one `AtLeastOneOf` and one `ExactlyOneOf`, because Terraform has one list of each. `Conflicting`
+  validations may share a field, but not a pair of fields.
+- Only an object attribute sets `Validations`.
+
+Generation:
+
+- SDK, object level. CREATE and a custom operation get the check over the Go fields of their clauses, and the Go field name
+  is the one the clause gets, so `FieldName` renames it. `AtLeastOneOf` and `ExactlyOneOf` need all of their fields in the
+  statement or none, and the generator panics on some. `Conflicting` covers the fields the statement has.
+- SDK, child level. Each struct built from the parent gets the check over the fields it has, in `Children` order. A
+  validation with fewer than two of them in the struct is skipped.
+- Schema. A validation is emitted at the top level and under a chain of single objects, as paths from the resource root
+  (`parent.0.child`). It is skipped under a set or a list of objects, and when any field is `SqlOnly`.
 
 ### Lists and nested objects
 
@@ -163,15 +204,26 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   hand-written per-element mapper.
 - **Single object.** An attribute of type `AttrObject` with `Children` is one nested block, and one struct in SDK SQL.
   Terraform sees it as a list of at most one object. The resource attribute rule `single_object_is_list_of_one` makes it a
-  `TypeList` with `MaxItems: 1`, and `MinItems: 1` when it is `Required`. The definition sets no `MinItems`, `MaxItems`, or
+  `TypeList` with `MaxItems: 1`, and `MinItems: 1` when it is `Required`. The definition sets no `Min`, `Max`, or
   `Elem`. Its SQL is its own `CreateSql`, `ObjectParameter(Sql("REST_CONFIG ="), Parentheses())`, and each child has the
-  `CreateSql` it needs. Generated create parses it like a list block with `MaxItems: 1` (`Attribute.IsSingleBlock()`). A single
-  block that is a `SqlOnly` attribute is the same struct and is not a Terraform field. Child `ConflictsWith` and
-  `AtLeastOneOf` use the same `name.0.child` paths as a list of objects with `MaxItems: 1`. A list of exactly one object
-  (`MaxItems: 1`) is still a list: it is a slice in SQL.
-  `ChildrenRule` on the object (`ChildrenAtLeastOne` or `ChildrenExactlyOne`) adds `AtLeastOneValueSet` or `ExactlyOneValueSet` over
-  the `Children` that are fields of its SQL struct, so not the fixed texts, in `Children` order. It does not generate the
-  schema-side `AtLeastOneOf`.
+  `CreateSql` it needs. Generated create parses it with `singleBlockAttributeCreate` (`Attribute.IsSingleBlock()`). A single
+  object that is a `SqlOnly` attribute is the same struct and is not a Terraform field. Schema-side
+  [Validations](#validations) of its children use `name.0.child` paths.
+
+  ```go
+  {
+      Name: "mfa_policy",
+      Type: ssot.AttrObject,
+      Children: []ssot.Attribute{
+          {Name: "enforce_mfa_on_external_authentication", Type: ssot.AttrEnum, Enum: ...},
+          {Name: "allowed_methods", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: ...}},
+      },
+  }
+  ```
+
+  `Validations: []ssot.Validation{ssot.AtLeastOneOf()}` on the object requires one of its fields. Naming the fields
+  narrows a rule for a struct whose other fields sit beside the choice, such as the enforcement flags next to a
+  constraint name and the key kinds.
   A fixed text of its struct, such as `TYPE = OAUTH`, is a `SqlOnly` child with `StaticSQL`, in SQL position. It is not a
   Terraform field: `NestedFields()` skips it and `NestedSqlFields()` has it. Only SDK SQL reads `NestedSqlFields()`.
   The same holds for the `Children` of a list element.
@@ -182,20 +234,21 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   (the driver name before its settings), `IdentifierListKeyword()` writes a list of identifiers with no name, in
   parentheses, and `StringListKeyword(Parentheses(), Sql("CLUSTER BY"))` writes a list of strings as a keyword.
   A `SqlOnly` child can also be a keyword (`BoolKeyword(Sql("('ALL')"), FieldName("All"))` is an optional flag
-  with that text) or an identifier (`IdentifierKeyword`, with `FieldName` when the Go name is not the SQL text).
+  with that text), a string keyword (`TextKeyword`), an identifier (`IdentifierKeyword`, with `FieldName` when the Go name is not the SQL text),
+  or a predefined Go type (`PredefinedType("DataType")`).
   An attribute that a `SqlOnly` nested struct holds counts as listed in the CREATE sequence when the struct
   is: this is how an attribute that is a Terraform field is also the field of a struct that is not (`security_integrations`
-  is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ChildrenExactlyOne` requires one of the two).
-- **Clauses the SDK defines outside the statement.** An object that keeps a handwritten SDK definition has CREATE fields
-  whose structs stay in that definition because other operations and the request types use them.
-  `PreexistingStruct("CreateTableColumnsAndConstraints", Parentheses(), Required())` embeds a query struct by name.
-  The handwritten definition passes that struct to `CreateOperationFromObject` as a helper struct, and the call embeds
-  the struct whose name a clause names instead of emitting it beside the statement. A named struct that is not passed panics.
-  An attribute with this clause is `SqlOnly`. Its `Type` is not read.
+  is the list of `SECURITY_INTEGRATIONS = ('ALL')` or `= (a, b)`, and `ssot.ExactlyOneOf()` requires one of the two).
+- **Clauses that embed another SSOT attribute's struct.** Nested SQL that is defined once and reused (CREATE TABLE columns,
+  ADD COLUMN masking policy, iceberg ALTER) is `PreexistingStructOf(&TableCreateColumnsAndConstraints, Parentheses(), Required())`.
+  The generator builds the nested query struct from that attribute. `PreexistingStructOfUse` selects the SET or UNSET
+  projection of the same attribute. An attribute with this clause is `SqlOnly`. On an `AttrList` attribute the field is a
+  list of that struct; otherwise its `Type` is not read. Handwritten ALTER still calls `QueryStructFromAttribute` (or
+  `QueryStructFromAttributeUse`) so tables and iceberg tables share the generated type.
   A list of strings is `StringListKeyword(Parentheses(), Sql("CLUSTER BY"))`: a keyword field of `[]string`. The attribute
   is a list or set of strings, and it can be a resource attribute (`cluster_by`).
   A struct this definition owns is an `AttrObject` with `Children` and `ObjectParameter()`. The generated struct is named
-  after the object and the attribute (`Table` and `row_access_policy` give `TableRowAccessPolicy`). Other operations refer
+  after the object and the attribute (`Table` and `row_access_policy` give `TableRowAccessPolicy`, `Table` and `clone_point` give `TableClonePoint`). Other operations refer
   to that type. A `SqlOnly` child of it can be an identifier (`IdentifierKeyword`) or a value keyword (`ValueKeyword`: an
   enum, a string, a list of strings, or a list of objects). `QueryStructFromAttribute` builds the CREATE struct for a
   handwritten ALTER field so tables and iceberg tables can share it. `QueryStructFromAttributeUse` builds the SET or UNSET
@@ -205,27 +258,29 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   properties `SET` block. `ObjectParameter` joins nested fields without commas; `Commas()`
   keeps them. `ArrowEquals()` writes `=>`.
 - **List or set of objects.** The list attribute has `Elem` of type `AttrObject`, and the `Children` of that `Elem` are the
-  object fields. Terraform sees a nested block (`MaxItems: 1` makes it a single block). `Attribute.NestedFields()` returns the
+  object fields. Use `AttrObject` instead of `AttrList` with `Max: new(1)` for a single object; validation rejects a list of
+  objects with `Max: new(1)`. `Attribute.NestedFields()` returns the
   fields and `IsObjectList()` tells a list of objects from a list of scalars, so generators ask the attribute for its fields
   and do not read `Children` or `Elem` directly.
 
   ```go
   {
-      Name:     "mfa_policy",
+      Name:     "storage_location",
       Type:     ssot.AttrList,
-      MaxItems: new(1),
+      Required: true,
       Elem: ssot.ObjectElem([]ssot.Attribute{
-          {Name: "enforce_mfa_on_external_authentication", Type: ssot.AttrEnum, Enum: ...},
-          {Name: "allowed_methods", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: ...}},
+          {Name: "storage_location_name", Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier", Required: true},
+          {Name: "storage_base_url", Type: ssot.AttrString, Required: true},
       }),
   }
   ```
 
-  `Required`, `MinItems`, `MaxItems`, `Description`, `ForceNew`, and the other settings of the block stay on the list
+  `Required`, `Min`, `Max`, `Description`, `ForceNew`, and the other settings of the block stay on the list
   attribute. The `Elem` carries the fields and, for SDK SQL, the element clause. `Children` is valid only on an object:
   validation panics when a list or set has `Children`, and an `AttrObject` with no `Children` or with an `Elem`.
 
   - SQL of the list is the list attribute's `CreateSql`: `ListOfObjects(Sql(text), Parentheses())`.
+    `FieldName` with empty SQL writes the list with no prefix, as the column list of CREATE TABLE AS SELECT does.
   - SQL of one element is the `Elem`'s `CreateSql`: `ObjectParameter(...)`. `Parentheses()` puts each element in
     parentheses, through a generated `<Struct>Item` that holds the struct.
   - The struct is named after the object and the list attribute, so `ExternalVolume` and `storage_location` give
@@ -239,13 +294,14 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   - Provider-like alternatives are variants of the element: `WithVariants(Variant("S3", &a, &b, ...), ...)` lists, for each
     one, the attributes it consists of, as pointers, in SQL order. Exactly one variant is set. A child that is in no variant
     is a field of the element itself.
+- **String in Terraform, static SQL around it.** A string attribute whose SQL is fixed text around that string uses `WrapString(SQLBefore(field, sql), SQLAfter(field, sql))`. Each side is one static field, and `field` is unexported. The generated struct is named after the object and the attribute. The CREATE field is the camel-cased attribute name, and the string field inside the struct has that same name, as a keyword with no quotes. The static fields are not on the Request. SHOW and DESCRIBE stay the string. The SQL builder separates fields with spaces, so the punctuation stays in the static text and the statement is the middle field. A keyword only in front of the string, with no text after it, stays `PlainParameter`.
 - **Block in Terraform, string in SQL.** An optional `AttrObject` with `SdkString` is one attribute that two sides read differently. The resource, model, and resource assertions read its `Children` as a nested block. CREATE, SET, UNSET, the SHOW and DESCRIBE columns, and their schemas and assertions read `SdkType()`, which is a string. Set `OptionalInShow` or `OptionalInDb` for the string column, and `SkipCreate`. Generated create, set, unset, and the set-state-from-config list skip a nested block, so ext code converts between the block and the string, while `show_output`, `describe_output`, and the recompute lists still watch it. The backup policy `schedule` and the alert `alert_schedule` use it. `ShowName` names the column and `FieldName` the SQL field when the attribute name differs, as `alert_schedule` reads the `schedule` column.
 - **Object that is not a Terraform attribute.** A `SqlOnly` attribute of type `AttrObject` with `Children` is a nested SQL
   struct (`ENCRYPTION = (...)`, `UPDATE ... CREDENTIALS = (...)`). It is not in the schema, the resource, or the assertions.
   A variant or an ALTER block refers to it by pointer. A fixed text is a `SqlOnly` attribute with `StaticSQL`, and
   `WithCreateSql(&attr, clause)` is a copy of an attribute with another clause for the one place that needs it.
-- **Generated create of a block.** A generated `ApplyCreateOptionals` parses an optional list block with a generated
-  `parse<Stem>` function. `MaxItems: 1` calls `singleBlockAttributeCreate`, and any other list calls
+- **Generated create of a block.** A generated `ApplyCreateOptionals` parses an optional nested block with a generated
+  `parse<Stem>` function. An `AttrObject` (`IsSingleBlock()`) calls `singleBlockAttributeCreate`, and a list of objects calls
   `listBlockAttributeCreate`. The block request is built like the object request, with the same deduction and templates:
   required fields are `sdk.New<Stem>Request` arguments in field order, and other fields use their deduced create helper on
   that request. Fields are read from `prefix+"<name>"`. The stem of a block is the parent stem plus the block name:
@@ -256,8 +312,9 @@ How an attribute models a collection or a nested object. The Terraform side (sch
   attributes, unless the attribute's `UpdateMapping` updates it as one value (`AttributeMappedValueUpdate`), as a block that the SDK takes as a
   string does.
 - **Where each part is used.** CREATE reads the list attribute through `Create.Clauses`. ALTER reuses the same element with
-  `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), or a `SqlOnly` object with
-  `AlterKeywordBlock(field, sql, &object)`. Enums on the children, on their clauses (`EnumOf`), and in variants are emitted
+  `AlterParameterBlock(field, sql, &listAttr)` (`ADD STORAGE_LOCATION`), a `SqlOnly` object with
+  `AlterKeywordBlock(field, sql, &object)`, or `AlterCommaSeparatedBlock(field, &object)` when the nested children
+  are comma-joined (`DROP …, ADD …`). Enums on the children, on their clauses (`EnumOf`), and in variants are emitted
   with the object's enums. See [Generators](#generators) for the clause options.
 
 [external_volume_def.go](defs/external_volume_def.go) is the reference: a list of objects with four provider variants, nested
@@ -270,7 +327,7 @@ order.
 
 `OutputSpec.Columns` is membership and Snowflake order. Presence in `Columns` is the only SHOW/DESCRIBE membership.
 
-Each warehouse variant declares its show in `Show.Columns`. `Warehouse.ShowGeneric` is the temporary union and the one paired SHOW. `ShowPlainName` and `ShowVariants` are plain structs emitted with DESCRIBE. Each one gets a projection on the paired SHOW struct: `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. When `ShowByID` is generated, the same suffix also emits `ShowByIDRegular` and `ShowByIDSafelyRegular`. `Show()` still returns the union row. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
+Each warehouse variant declares its show in `Show.Columns`. `Warehouse.BaseVariant.ShowGeneric` is the temporary union and the one paired SHOW. `ShowPlainName` and `ShowVariants` on that same struct are plain structs emitted with DESCRIBE. Each one gets a projection on the paired SHOW struct: `As` plus the plain name with the object name removed, so `WarehouseRegular` is `AsRegular` and `WarehouseAdaptive` is `AsAdaptive`. When `ShowByID` is generated, the same suffix also emits `ShowByIDRegular` and `ShowByIDSafelyRegular`. `Show()` still returns the union row. Next, each variant's `Show.Columns` becomes a paired SHOW with its dedicated type, and `ShowGeneric` goes away.
 
 ### OptionalInShow vs OptionalInDb
 
@@ -285,6 +342,13 @@ A list or set with `CustomParser`, `OptionalInDb`, and no `OptionalInShow` is a 
 
 ### Generators
 
+Generated code stays short. When a template repeats a block of Go across objects, the block moves to a hand-written
+helper (for example `showByIdErrorDiagnostics`, `handleThreeLevelHierarchyRenameIfEnabledWithEncoding`, or the datasource
+`showOutputListSchema`) and the template emits one call. A choice that several templates make from the same flag, such as
+whether Update moves parents (`HierarchyRenameParents`), is a method on the generator model. Sub-templates are the files of
+`templates/sub_templates`. A file named `show_by_id_in_sdk.tmpl` is the template `showByIdInSdk`, and it needs no
+registration.
+
 `Generators` is per-object enablement, not an implicit `All()` feed. Each generator is one entry. SHOW and DESCRIBE are
 settings of that entry. `WithSchema()`, `WithSdk()`, `WithShowOutputAssert()`, and `WithObjectAssert()` with no settings
 enable nothing.
@@ -292,12 +356,15 @@ enable nothing.
 - `WithResource()` - resource generator (`make generate-resource`).
   See [Resource generator](#resource-generator). An object in `All()` is a resource-generation input when this call is present.
   Zero options still sets `Enabled`. Generation parts stay on the resource generator's per-object settings.
+- `WithDataSource()` - data source generator (`make generate-datasource`).
+  See [Data source generator](#data-source-generator). Zero options still sets `Enabled`.
+  `WithAllGenerators` enables it, so a definition adds `WithDataSource(...)` only for options. `WithoutDataSource()` turns it off.
 - `WithSchema(SchemaShow(), SchemaDescribe())` - SHOW/DESCRIBE schema generator (`make generate-show-output-schemas`).
   See [that README](../../schemas/gen/README.md). `SchemaShow(SchemaShowManualFields(&attrs.Tables))` copies
   `ManualFields` from the old show schema def. The argument is the same `*Attribute` that sits in `Show.Columns`. The
   key stays in the generated schema map, and its mapping line is not generated — `*_ext.go` must implement the
   generated `additionalSchemaMapper[T]` stub instead. `SchemaDescribe(SchemaDescribeManualFields(&attrs.Password))`
-  is the describe-side copy. `SchemaShow(SchemaShowFromBase())` reuses the base's SHOW schema: no `Show<Variant>Schema` or
+  is the describe-side copy. `Variant.SchemaShowFromBase` reuses the base's SHOW schema: no `Show<Variant>Schema` or
   `<Variant>ToSchema` is generated, and the variant resource uses `Show<VariantOf.Name>Schema` and
   `<VariantOf.Name>ToSchema`. See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
 - `WithModel()` - resource config model builders (`make generate-resource-model-builders`).
@@ -332,7 +399,7 @@ enable nothing.
   `ShowOutputShow(ShowOutputShowSkipFields(&attrs.Tables))` copies `SkipFields` from the old show def. The argument is
   the same `*Attribute` that sits in `Show.Columns`. The column stays in `Columns`, and `Has*` is not generated.
   `ShowOutputDescribe(ShowOutputDescribeSkipFields(&attrs.Password))` is the describe-side copy.
-  `ShowOutputShow(ShowOutputShowRowFromBase())` makes a variant whose SHOW row is the base type generate only the
+  `Variant.ShowOutputShowRowFromBase` makes a variant whose SHOW row is the base type generate only the
   constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, which return the base's assertion type. Without it
   the assertion is named after the variant.
   See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
@@ -358,13 +425,13 @@ enable nothing.
   `ObjectAssertDescribe(ObjectAssertDescribeFromBase("DescribeAwsGlue"))` fetches through `testClient.<VariantOf.Name>.<method>`. The details type stays `sdk.<Object>Details`.
   Identified rows provide `ID()` in SDK extensions when it is not generated.
   `ObjectAssertDescribe(WithNoIdentifiableObject())` suppresses the fetch constructor when `Describe` returns a
-  slice and the row has no `ID()`. `ObjectAssertShow(ObjectAssertShowRowFromBase())` reuses the base's SHOW object assertion: no `<Variant>`
+  slice and the row has no `ID()`. `Variant.ObjectAssertShowRowFromBase` reuses the base's SHOW object assertion: no `<Variant>`
   assertion is generated, and tests assert the variant through the base's (`testClient.<VariantOf.Name>.Show`).
   See [Variants that reuse the base SHOW row](#variants-that-reuse-the-base-show-row).
-  `ObjectAssertShow(ObjectAssertShowFromBase("ShowByIDAdaptive"))` fetches through
-  `testClient.<VariantOf.Name>.ShowByIDAdaptive` and keeps `sdk.<Variant>` as the row. `Object.ShowFromBase` resolves that
-  client from `VariantOf`. The object type constant is `sdk.ObjectType<VariantOf.Name>`. These are settings of
-  object-assertion show or describe, not their own generators.
+  `Variant.ObjectAssertShowFromBase` set to `ShowByIDAdaptive` fetches through
+  `testClient.<Variant.Of.Name>.ShowByIDAdaptive` and keeps `sdk.<Variant>` as the row. `Object.ShowFromBase` resolves that
+  client from `Variant.Of`. The object type constant is `sdk.ObjectType<Variant.Of.Name>`. The SHOW generator stays on.
+  These are settings of the variant, and the SHOW generator stays the switch that emits the artifact.
 - `WithObjectParametersAssert()` - Snowflake object parameters assertions (
   `make generate-snowflake-object-parameters-assertions`).
   See [that section](../../acceptance/bettertestspoc/README.md#adding-new-snowflake-object-parameters-assertions).
@@ -398,8 +465,8 @@ enable nothing.
   CREATE from `Name`: `CREATE`, optional `OR REPLACE`, `Create.KeywordsBefore`, the uppercase words, `IF NOT EXISTS`,
   and the name, then `Create.Clauses`. `SdkCreateWithoutOrReplace()` and `SdkCreateWithoutIfNotExists()` leave those
   clauses out. When both clauses are
-  present they are marked conflicting. `AtLeastOneOf` adds `AtLeastOneValueSet` for each group that is entirely in
-  `Create.Clauses`. `SdkCreateAdditionalValidations()` adds that validation call. `SdkShowAdditionalValidations()` marks the SHOW query struct the same way. `SdkAlter()` builds
+  present they are marked conflicting. `Object.Validations` add their checks (see [Validations](#validations)).
+  `SdkCreateAdditionalValidations()` adds that validation call. `SdkShowAdditionalValidations()` marks the SHOW query struct the same way. `SdkAlter()` builds
   ALTER from `Name`: `ALTER`, the uppercase words, `IF EXISTS`, and the name, then [`Alter`](object.go) in list order.
   `SdkAlterWithoutIfExists()` and `SdkAlterWithoutExactlyOneValueSet()` leave those pieces out.
   `SdkAlterSetAdditionalValidations()` marks the `SET` struct. `SdkAlterSetList()` makes that `SET` a list with no
@@ -419,7 +486,7 @@ enable nothing.
   fields first, then the other fields in the struct.
   An identifier parameter gets `ValidIdentifierIfSet` on CREATE and SET. An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`. Comment stays an attribute clause beside that
   entry. Clause shape is `CreateSql`, `SetSql`,
-  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
+  and `UnsetSql` on [Attribute](attribute.go). A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. `AsParameter()` on an object clause writes the nested struct as a parameter field (`NAME = (...)`) instead of a list. Without it, the clause is a list: `Parentheses()` and SQL text put that word before the fields, such as `IF (EXISTS (...))`. `PlainParameter()` is a parameter with no quote tag, for an attribute whose type default adds one (an enum gets `no_quotes`). `Clause` applies
   functional options on top of that default. A zero unset clause is a bool keyword. Leave the attribute out of the UNSET block
   to omit it, or set `UnsetSql` to a parameter clause to unset by setting a value. A list or set whose element is an enum uses
   an item query struct named after that enum, with `ListItem` appended. Its field is `Value`, a required single-quoted
@@ -428,10 +495,17 @@ enable nothing.
   Without it, an empty list is omitted.
   `AlterText(sql)` is an optional single-quoted value with no equals, such as `REMOVE STORAGE_LOCATION 'name'`.
   `StringListKeyword(Parentheses(), NoComma(), Sql("EXISTS"))` is a keyword list of strings in parentheses with no comma, such as `EXISTS ( <condition> )`. Without `NoComma()` the items are joined with commas.
-  `AlterParameterBlock(field, sql, &attr)` and `AlterKeywordBlock(field, sql, &attr)` are optional nested blocks, as a
-  parameter or a keyword clause. `attr` is a list of objects, and the block is one of its elements, with the same struct as in
+  `WrapString(SQLBefore(field, sql), SQLAfter(field, sql))` is a string attribute whose CREATE field is a helper struct: one static field, the string, then one static field. The CREATE field name is the camel-cased attribute name. SHOW and DESCRIBE stay the string. See [Lists and nested objects](#lists-and-nested-objects).
+  `AlterParameterBlock(field, sql, &attr)`, `AlterKeywordBlock(field, sql, &attr)`, and
+  `AlterCommaSeparatedBlock(field, &attr)` are optional nested blocks. `Block` is the nested struct; `BlockJoin` is how
+  its children are joined on the ALTER field: a parameter clause, a keyword (space-join), or comma-separated with no
+  parentheses. `attr` is a list of objects, and the block is one of its elements, with the same struct as in
   CREATE (`ADD STORAGE_LOCATION`), or a SqlOnly object attribute whose `Children` are the fields and whose `CreateSql` are
   the field clauses (`UPDATE`). All three are branches of `ExactlyOneValueSet`.
+  A block whose field equals the `FieldName` of the SqlOnly object's `SetSql` or `UnsetSql` embeds that projection
+  (`NestedSqlFieldsFor`) instead of the CREATE struct, so one attribute serves CREATE and the sibling ALTER actions:
+  `AlterKeywordBlock("SetAggregationPolicy", "", &aggregationPolicy)` is `TableSetAggregationPolicy`. The same `FieldName`
+  names the struct `QueryStructFromAttributeUse` builds.
   A list of objects, its variants, and its nested structs are described on the attributes: see
   [Lists and nested objects](#lists-and-nested-objects). A `Clause(...)` on a child takes `Sql`, `Required`, `FieldName(name)`
   for the Go field name, and `EnumOf(enum)`. An identifier child with a parameter clause is quoted text. `AllowEmpty()` on a
@@ -440,11 +514,11 @@ enable nothing.
   fields as `Children`.
   When `SdkCreate()` or `SdkAlter()` is off, that call stays in the def. A variant does not set `SdkCreate()` or `SdkAlter()`. Calling either on a variant panics. `SdkCreateForVariants()` emits
   each variant CREATE as a method on the base interface. The variant fills `Create` (`Doc`, clauses,
-  `AdditionalValidations`, and `WithoutOrReplace`). Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. A non-variant that sets it panics. The base uses `SdkCreateWithoutOrReplace()` for the same omission. The SQL object words are `VariantEntityCreateName`, or `VariantOf.ObjectType` when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The variant `Name` starts with the base `Name`. The method name is `Create` plus the rest of that name, so `ReplicationGroupSecondary` is `CreateSecondary`. The query
-  struct name is `Create` plus `SdkCreateRequestObjectName`, or `Create` plus `Name` when that stem is empty. Set the stem when the struct should not use the full variant name: `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. `SdkAlterForVariants()` emits each variant ALTER the same way.
-  The variant fills `Alter` (`Doc`, clauses, and `AdditionalValidations`). Variant ALTER includes `IF EXISTS` and exactly one clause. SQL words are `VariantEntityAlterName`, or the same base default.
+  `AdditionalValidations`, and `WithoutOrReplace`). Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. A non-variant that sets it panics. The base uses `SdkCreateWithoutOrReplace()` for the same omission. The SQL object words are `Variant.CreateName`, or the base type words when that override is empty. A fixed value is an `SqlOnly` attribute with `StaticSQL` in that clause list. The variant `Name` starts with the base `Name`. The method name is `Create` plus the rest of that name, so `ReplicationGroupSecondary` is `CreateSecondary`. The query
+  struct name is `Create` plus `Variant.RequestObjectName`, or `Create` plus `Name` when that stem is empty. Set the stem when the struct should not use the full variant name: `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. `SdkAlterForVariants()` emits each variant ALTER the same way.
+  The variant fills `Alter` (`Doc`, clauses, and `AdditionalValidations`). Variant ALTER includes `IF EXISTS` and exactly one clause. SQL words are `Variant.AlterName`, or the same base default.
   The method name is `Alter` plus the rest of the variant name. The query struct name is `Alter` plus
-  `SdkCreateRequestObjectName`. SET and UNSET structs, and an ALTER block, are named from the object that owns the ALTER: the variant `Name` plus `Set`, `Unset`, or the attribute name. A suspend block on `ReplicationGroupSecondary` is `ReplicationGroupSecondarySuspend`.
+  `Variant.RequestObjectName`. SET and UNSET structs, and an ALTER block, are named from the object that owns the ALTER: the variant `Name` plus `Set`, `Unset`, or the attribute name. A suspend block on `ReplicationGroupSecondary` is `ReplicationGroupSecondarySuspend`.
   TODO [next PRs]: the same switch for variant SHOW/DESCRIBE. `SdkCustomOperations()` emits
   [`CustomOperations`](custom_operation.go) from one call, in slice order. Place that call after the dedicated operation
   methods and before custom interface methods. The generated interface lists every operation, then the custom interface
@@ -494,8 +568,7 @@ A subtemplate calls the ext function by default (`ExtCall`). Set that hook to `G
 template. Until the subtemplate body is written, generation panics through `Unimplemented`. Each hook is switched on its
 own, with its `With` option. See [resource_hooks.go](resource_hooks.go). `DropSafelyInSdk` defaults to omitted, which
 keeps `DeleteExt`. Set it to `Generated` to emit `Delete` and point `DeleteContext` at that function. `Delete` calls
-`ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`. An object with `LegacyIdEncoding` uses
-`helpers.DecodeSnowflakeIDErrLegacy` instead. An object with `PreviewFeature` wraps that `DeleteContext` in
+`ResourceDeleteContextFunc` with `sdk.Parse` plus the object `IdType`. An object with `PreviewFeature` wraps that `DeleteContext` in
 `PreviewFeatureDeleteContextWrapper` using `previewfeatures.<Name>Resource`.
 
 `ShowOutputSet`, `DescribeOutputSet`, and `FqnSet` default to `Generated`. They emit the `d.Set` call for `show_output`,
@@ -579,8 +652,9 @@ resources. `ExtCall` keeps the ext `SchemaVersion` and `StateUpgraders` pair. `V
 `TrackingCustomDiffWrapper` around `customdiff.All`. Call order is the hierarchy-rename ForceNew workaround for
 `database` and `schema` when the generated hierarchy rename moves a schema object, then `show_output`, `describe_output`,
 the parameters computed-if, `fully_qualified_name`, then `<prefix>ParametersCustomDiff` when that hook is present.
+`ResourceParameters` filters those generated parameter attributes (schema, field names, create, update, read, custom-diff) to a subset of `ParameterDefsForLevel`. Empty keeps the full catalog. The computed `parameters` output is still the whole SHOW PARAMETERS result.
 `AdditionalCustomizeDiffs` on the object is an ordered list of `schema.CustomizeDiffFunc` names in package resources.
-Those names are appended after the generated calls. The function bodies stay in the ext file. `ValidateObject` panics
+Those names are appended after the generated calls. The function bodies stay in the ext file. `RecreateWhenResourceBoolFieldChangedExternally("is_primary", true)` is an example: a replica promoted outside Terraform recreates the resource. `ValidateObject` panics
 when the list is non-empty without `WithCustomizeDiff(Generated())`, when an entry is empty, or when an entry is not
 a function name. An output call is emitted only when that output's schema
 hook is present and the call has changed keys. Its schema argument is `<prefix>Schema`. The parameters computed-if is
@@ -590,7 +664,8 @@ parameters attributes schema, and its changed keys are `<prefix>ParametersFieldN
 `Name` is a top-level resource or identifier attribute. An object `Elem` marks a nested column or a nested resource
 attribute, and both are left out. For now, the set/list fields have to be excluded
 (`TODO [SNOW-1648997]`): a column or resource attribute whose type is a set or a list is left out, including a set or
-list of scalars. A readonly column that is not a resource attribute is left out: a diff cannot change it, unless its `ShowName` is a
+list of scalars. A change of such an attribute leaves its `show_output` value stale until the next refresh, so a test that
+verifies an import ignores that value (with a `TODO [SNOW-1648997]`). A readonly column that is not a resource attribute is left out: a diff cannot change it, unless its `ShowName` is a
 resource attribute (a DESCRIBE-only column that reads that attribute's property in another type, such as a plain string): the key
 is then that attribute. Otherwise the key is `Name`, the resource attribute `ComputedIfAnyAttributeChanged` watches.
 `fully_qualified_name` is emitted only when at least one identifier attribute is not ForceNew. Its keys are those
@@ -635,14 +710,16 @@ in [resource_attribute_rules.go](../../resources/gen/resource_attribute_rules.go
 and applies to the resource schema only. The schema default is `default`. Create omits the clause for that value. Import writes `true` or `false` from SHOW.
 
 An optional int whose `Min` is 0 or less emits `Default = IntDefault`, because 0 is a real value and cannot mean unset.
-Warehouse `auto_suspend` is that case. A minimum above 0 does not emit that default.
+Warehouse `auto_suspend` is that case. A minimum above 0 does not emit that default. A required `AttrList` emits
+`MinItems: 1` unless a higher `Min` is set.
 
 A top-level set of identifiers emits `NormalizeAndCompareIdentifiersInSet`. A top-level set of enums emits
 `NormalizeAndCompareEnumsInSet`. A list of enums, and a nested set of enums, emit `NormalizeAndCompare` on the
 collection. A resource that must keep a nested set case-sensitive clears that suppressor in the attributes
 modification function. A list or set element is validated: an enum element uses `sdkValidation`, and an identifier
-element uses `IsValidIdentifier` for the element's `IdentifierType`. `ConflictsWith`, `AtLeastOneOf`, `Sensitive`,
-and `Deprecated` are emitted on the schema field. See [Attribute](#attribute).
+element uses `IsValidIdentifier` for the element's `IdentifierType`. `Sensitive` and `Deprecated` are emitted on the
+schema field. See [Attribute](#attribute). [Validations](#validations) emit `ConflictsWith`, `AtLeastOneOf`, and
+`ExactlyOneOf`.
 
 `WithAlterSetInSdk(Generated())` and `WithAlterUnsetInSdk(Generated())` call `Client.<NamePlural>.Alter` with
 `NewAlter<Name>Request(id).WithSet` or `WithUnset`. They compare the corresponding request against
@@ -705,7 +782,9 @@ The two forms cannot be mixed in one call. Attributes passed directly are one ma
 
 A block sends its groups in declaration order and skips a group with no values. Declare a group order that respects what Snowflake requires: a group that must run first goes first.
 
-`Object.SetAttributes()` and `Object.UnsetAttributes()` are the union of the groups in declaration order. The SDK SET and UNSET structs hold all of them, so a caller can still send several attributes in one request. The split is declared, not derived: an `Alter.SetConflictingFields` pair and an `UnsetConflicts` group must not share a group, because one statement cannot hold both. Group when a probe or the public page shows that Snowflake rejects the attributes in one statement, and record that in the definition comment. Validation rejects a block with no attributes, a block that mixes attributes and groups, a group name that is not an exported Go identifier or is repeated, more than one main group, an empty group, an attribute in two groups, and a conflicting pair in one group.
+`Object.SetAttributes()` and `Object.UnsetAttributes()` are the union of the groups in declaration order. The SDK SET and UNSET structs hold all of them. The groups are also the SDK validation: for each pair of groups of a block, in declaration order, the struct gets `ConflictingGroups`, which rejects a value that sets a field of one group together with a field of the other (`errConflictingGroups`). A `Parameters` attribute counts as the fields of its parameters. There is no separate list of conflicting attributes. A group therefore means "never in one statement with another group", which can be stricter than Snowflake: an attribute that conflicts with one attribute of the main group cannot be sent with the rest of it either. Group when a probe or the public page shows that Snowflake rejects the attributes in one statement, and record that in the definition comment. Hand-written update code sends each group in its own request too, or the SDK rejects it. Validation rejects a block with no attributes, a block that mixes attributes and groups, a group name that is not an exported Go identifier or is repeated, more than one main group, an empty group, and an attribute in two groups.
+
+A variant without an ALTER spec of its own (the catalog integration sources) is updated with the ALTER of its base: `Object.AlterOwner()` supplies the groups and the SDK request names (`NewAlterCatalogIntegrationRequest`, `NewCatalogIntegrationSetRequest`). A variant that has an ALTER spec keeps its own.
 
 The requests live in a struct with one field per group, named `set<Name>` or `unset<Name>` (`setBody`, `unsetSchedule`, `setObjectLists`), next to `set` and `unset`. `ApplySetUnset(Generated())` generates the struct (`<prefix>AlterRequests`) in the generated file, creates the requests, and routes each attribute to the request of its group, so adding a group to the definition needs no other edit. An object whose update needs more than the mappings can express, such as a request outside SET and UNSET, a custom request type, or a value that depends on another attribute, keeps `ApplySetUnset` as `ExtCall`. It declares the struct `<prefix>AlterRequestsExt` in the ext file with the fields its ext code needs, and a missing field is a compile error in the generated code. `AlterSetInSdk(Generated())` and `AlterUnsetInSdk(Generated())` send the groups in order, skipping an empty request. Parameters stay in `set` and `unset`.
 
@@ -732,6 +811,79 @@ A SHOW pointer is passed through. No matching fields returns nil.
 Skipping a nested block does not panic. An object that also writes `show_output` in this hook, or that copies
 values from DESCRIBE, keeps `ExtCall`.
 
+#### Data source generator
+
+The data source generator (`make generate-datasource`) writes `pkg/datasources/<plural_snake>_gen.go` for each object that has
+it enabled (`WithAllGenerators`, or `WithDataSource()`). A data source lists one plural, so it takes the base of that plural: a variant is covered by its base,
+and so is a `BaseVariant.NotResource` base. The object needs an SDK SHOW and SHOW columns. `make generate-datasource-check` fails
+on a file that differs from the committed one, and on a file left over from an object that no longer enables it.
+
+The data source follows the object, so a definition lists only the exceptions:
+
+- Filters are the options of the SDK SHOW: `like`, `starts_with`, `limit`, one `in` flavour (`In`, `ExtendedIn` or
+  `InAccount`), `on`, `terse` and `history`. The data source cannot offer a filter that the SDK request does not have. The
+  shared schemas and handlers are in `pkg/datasources/common.go`, and a new filter flavour starts there.
+  `terse` and `history` are left out unless the definition opts in with `WithDataSource(DataSourceWithTerse())` or `DataSourceWithHistory()`. A SHOW without a schema level, such as `SHOW SCHEMAS`, uses `SdkShowOptionalExtendedInWithoutSchema()`, and its data source `in` block has no `schema`. A filter that Snowflake
+  ignores in SHOW is left out with `WithDataSource(DataSourceWithoutFilters(DataSourceFilterStartsWith, …))`.
+  Take the `IN` option and the filters from the SHOW page, not from a similar object: `SHOW SCHEMAS` has no `IN SCHEMA`,
+  and `SHOW PIPES` and `SHOW WAREHOUSES` accept `STARTS WITH` and `LIMIT` but do not apply them. Probe a filter against
+  Snowflake before offering it. When the SDK does not need an ignored filter, leave it out of the SDK `SHOW`. When it does
+  (a ShowByID that uses `STARTS WITH` with `LIMIT 1`), opt out in the data source, and add an integration case that
+  documents the behavior and fails once Snowflake applies it.
+- A SHOW column marked `SkipInSchema` is not in `show_output`, so the data source does not return it. A column of enum
+  values that the schema generator cannot map is kept with `SchemaShowManualFields` and mapped in `pkg/schemas/<name>_ext.go`.
+  Adding a column to the show schema also adds it to `show_output` of the resource, so it needs the resource's
+  `show_output` recompute (see the set and list exclusion in [Resource generator](#resource-generator)) and a migration
+  guide line.
+- `with_describe` and `describe_output` exist when the SDK has DESCRIBE and the object has `Describe.Columns`, or when
+  `WithDataSource(DataSourceDescribeMethod("DescribeColumns"))` selects a custom operation. The call is `DescribeDetails`
+  when the SDK emits it, otherwise `Describe`. A custom-operation describe is `Client.<Plural>.<Kind>(ctx, sdk.New<Kind><Name>Request(id))`.
+  The output type is the paired plain struct of that operation. A generated describe without columns or a describe method
+  panics in `ValidateObject`. `with_describe` names the object from `ObjectType()`. When the data source offers `history`,
+  a generated describe or parameters call skips a SHOW row whose `DroppedOn` is set, because DESCRIBE and SHOW PARAMETERS
+  cannot read a dropped object.
+- `with_parameters` and `parameters` exist when the SDK has `SdkShowParameters()`. The parameters schema and mapper are
+  written by hand in `pkg/schemas`. An object with `ShowParametersDetailsAdditionalLevels` covers the parameters of its
+  variants, so the data source uses the union: `ShowAll<Name>ParametersSchema()` and `All<Name>ParametersToSchema`.
+- A base uses its own show and describe schemas. Columns that belong to a variant are part of them.
+- The descriptions name the object. The show, describe and parameters blocks can end with an additional description,
+  set as `WithDataSource(DataSourceAdditionalShowOutputDescription("…"))`, or the describe and parameters variants. It is
+  for a note that the reader needs about that block, such as a fallback source. It is separate from the resource's
+  `AdditionalDescribeOutputDescription`, which is written for the resource.
+- `PreviewFeature` selects the preview wrapper and the preview mark of the description. The id is the constant
+  `<plural_snake>_read`.
+
+A step of the data source is a hook with the states of a resource hook: `Generated`, `ExtCall` and `Omitted`. They are set
+in `DataSourceHooks` with the `WithDataSource…` options. Setting a hook to `Omitted()` opts out of it:
+`WithDataSourceDescribeInSdk(Omitted())` drops the describe switch, its output schema and its set. Setting it to `ExtCall()`
+calls a function that the object's `*_ext.go` defines. The name is the plural in lower camel case, such as `computePools`, plus the hook name and `Ext`. A
+hook on a variant, or on an object without `WithDataSource()`, panics in `ValidateObject`.
+
+| Hook | Ext function |
+|---|---|
+| `Description`, `ReadWrapper` | `<name>DescriptionExt` (string), `<name>ReadWrapperExt(read)` |
+| `SwitchesSchema`, `FiltersSchema`, `ShowOutputSchema`, `DescribeOutputSchema`, `ParametersOutputSchema`, `AdditionalSchema` | `<name>…SchemaExt`, a `map[string]*schema.Schema` that is merged into the schema |
+| `ApplyFilters`, `ShowInSdk`, `SetId` | `<name>ApplyFiltersExt(d, req)`, `<name>ShowInSdkExt(ctx, client, req, diags)`, `<name>SetIdExt(d)` |
+| `DescribeInSdk`, `DescribeOutputSet` | `<name>DescribeInSdkExt(ctx, client, item, diags)`, `<name>DescribeOutputSetExt(result)` |
+| `ShowParametersInSdk`, `ParametersOutputSet` | `<name>ShowParametersInSdkExt(ctx, client, item, diags)`, `<name>ParametersOutputSetExt(parameters)` |
+| `ItemExtra` | `<name>ItemExtraExt(ctx, d, client, item, diags)`, a map that is merged into each item |
+
+`diags` is a `*diag.Diagnostics` that the read returns. A step that fails without being fatal appends a warning to it and
+returns no error. Reads without such a step have no `diags`.
+
+A hand-written data source of an object that is defined here is replaced by the generated one, not extended. Both files
+declare the same names, so the hand-written file is deleted in the same change that enables the data source. When its
+shape is not the generated one (flat fields instead of `show_output`, another `in_account` format, another id), the
+replacement is a breaking change of a preview data source. Compare every hand-written output field with the generated show
+schema, and write the migration guide entry as a subsection of the entry of the related resource when there is one. The
+tests of the object are moved to the use-case shape. A `SHOW` without `LIKE`, such as `SHOW FAILOVER GROUPS` and
+`SHOW REPLICATION GROUPS`, returns the rows of the whole account, so those tests find the created row by name
+(`groupsInDataSource` in `pkg/testacc`).
+
+The generator does not write the name constant in `pkg/provider/datasources`, the registration, the preview feature
+constants, the docs templates, the examples, the config model, the assertions, or the acceptance tests. They stay steps of
+[Adding a new entity](#adding-a-new-entity).
+
 #### Enabling all generators
 
 `WithAllGenerators(overrides...)` is one `GeneratorOption` that turns on everything an object normally has, then applies
@@ -747,11 +899,12 @@ values from DESCRIBE, keeps `ExtCall`.
 | `WithResourceAssert` | - |
 | `WithObjectParametersAssert` | - |
 | `WithResourceParametersAssert` | - |
+| `WithDataSource` | - |
 
 The SDK (`WithSdk`) is not part of it. Pass `WithSdk(...)` next to it in `Generators`.
 
 An enabled generator that has no input for the object is skipped by its selector (no parameters, no SHOW or DESCRIBE
-columns, a `VariantBaseOnly` object, a variant that reuses the base), so the defaults are safe for a finished object. Do
+columns, a `BaseVariant.NotResource` object, a variant that reuses the base), so the defaults are safe for a finished object. Do
 not use it for an object that is still being migrated: a generator that has input but cannot yet produce valid code for
 it (for example a model with a nested block that needs `ModelRequestType`) fails, and `Table` and `PostgresMirror`
 currently stay on individual settings for that reason.
@@ -772,7 +925,8 @@ Overrides modify the defaults:
   ```
 
 - A `Without*` option turns a generator off, or one side of it, and drops the settings that belong to it, so the
-  validation of skip, manual, list, and reuse settings does not fail on a side that is off. Whole generators:
+  validation of skip, manual, and list settings does not fail on a side that is off. A `Variant` reuse flag stays, and
+  validation fails when that flag is set on a side that is off. Whole generators:
   `WithoutSchema`, `WithoutObjectAssert`, `WithoutShowOutputAssert`, `WithoutModel`, `WithoutResource`,
   `WithoutResourceAssert`, `WithoutObjectParametersAssert`, `WithoutResourceParametersAssert`. One side:
   `WithoutSchemaShow`, `WithoutSchemaDescribe`, `WithoutObjectAssertShow`, `WithoutObjectAssertDescribe`,
@@ -782,15 +936,15 @@ A later override wins over an earlier one, so `WithAllGenerators(WithoutModel(),
 
 #### Variants that reuse the base SHOW row
 
-A variant (`VariantOf` set) whose SHOW row is the base's row, such as the catalog integration variants and
-`ReplicationGroupSecondary`, does not need its own copy of the artifacts that only describe that row. It declares the
-reuse once per generator, and the generators keep separate settings:
+A variant (`Variant` set) whose SHOW row is the base's row, such as the catalog integration variants and
+`ReplicationGroupSecondary`, does not need its own copy of the artifacts that only describe that row. The reuse flags
+sit on `Variant`, and the SHOW side of each generator stays on:
 
 | Setting | The variant reuses | Still generated for the variant |
 |---|---|---|
-| `SchemaShow(SchemaShowFromBase())` | `Show<Base>Schema` and `<Base>ToSchema` | DESCRIBE schema |
-| `ObjectAssertShow(ObjectAssertShowRowFromBase())` | the base's SHOW object assertion | DESCRIBE object assertion |
-| `ShowOutputShow(ShowOutputShowRowFromBase())` | the base's SHOW show output assertion type | the constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, and the DESCRIBE assertion |
+| `Variant.SchemaShowFromBase` | `Show<Base>Schema` and `<Base>ToSchema` | DESCRIBE schema |
+| `Variant.ObjectAssertShowRowFromBase` | the base's SHOW object assertion | DESCRIBE object assertion |
+| `Variant.ShowOutputShowRowFromBase` | the base's SHOW show output assertion type | the constructors `<Variant>ShowOutput` and `Imported<Variant>ShowOutput`, and the DESCRIBE assertion |
 
 Artifacts named after the Terraform resource, such as the resource assertions and the show output constructors, are still
 generated per variant, because tests refer to them by resource. Reuse is a deliberate choice: validation panics when the
@@ -817,7 +971,7 @@ function in the generator's plug (`selectsFor<Generator>`), the same rule for ev
 the generator's input is skipped instead of panicking. `defs.SelectObjects(enabled, selects)` is the shared `All()` loop.
 The selectors are: schema, object assertion, and show output assertion SHOW and DESCRIBE take `Object.HasShowOutput()`
 and `Object.HasDescribeOutput()`. Model builders, resource assertions, and the resource generator take an object that is
-not `VariantBaseOnly` and has `Attributes`. The parameter assertions take an object with catalog entries at its
+not `BaseVariant.NotResource` and has `Attributes`. The parameter assertions take an object with catalog entries at its
 `ParameterLevel()`. The SDK generator has no selector yet.
 
 `SchemaShow`, `SchemaDescribe`, `SdkShow`, `SdkDescribe`, `SdkDrop`, `SdkCreate`, `SdkAlter`, `ShowOutputShow`,
@@ -826,7 +980,7 @@ not `VariantBaseOnly` and has `Attributes`. The parameter assertions take an obj
 `SdkDrop()` with no options still sets `Drop`. `SdkCreate()` with no options still sets `Create`. `SdkAlter()` with no
 options still sets `Alter`. `ShowOutputShow()` with no options sets `Show` and leaves `ShowSkipFields` nil.
 `ShowOutputDescribe()` with no options sets `Describe` and leaves `DescribeSkipFields` nil. `ObjectAssertShow()` with no
-options sets `Show` and leaves `ShowSkipFields` nil and `ShowProjection` empty. `ObjectAssertShowFromBase` sets `ShowProjection` on that same call. The client name is `VariantOf.Name`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
+options sets `Show` and leaves `ShowSkipFields` nil. `Variant.ObjectAssertShowFromBase` is the fetch method on the base client. The client name is `Variant.Of.Name`. `ObjectAssertDescribe()` with no options sets `Describe` and leaves
 `NoIdentifiableObject` false and `DescribeSkipFields` nil. `WithModel()`, `WithResourceAssert()`, and `WithResource()` take a variadic of
 `ModelOption`, `ResourceAssertOption`, and `ResourceOption`. No constructors exist for those option types. Zero options still sets
 `Enabled`. A later setting is another option on that call, not a new `Generators` entry. Consumers read the fields
@@ -856,10 +1010,16 @@ Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 - `KeywordsBefore` holds attributes. `TRANSIENT` is the `is_transient` attribute. An alter keyword that is not an attribute, such as `RESUME` or `STOP ALL`, is an `AlterKeyword` entry on `Alter.Clauses`.
 - A SQL constructor does not take an `Attribute`. Set the clause on the attribute. `ValidateObject` checks it while walking the object.
 - An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`.
+- `TextKeyword` writes a string as a keyword field. `DoubleQuotes` quotes it. `PredefinedType` names a Go type the SDK already has, such as `DataType`. It is valid on CREATE and SET, so SET can reuse a handwritten type such as `[]TableContact`. `NoComma()` with it writes the type as a list of its own fields, such as `TimeTravel`. `KeywordShape` on it writes the field as a keyword instead of a parameter, for a type that prints itself, such as `[]Column` or `*ForeignKeyOnAction`. `KeywordShape` on a `PreexistingStructOf` or `ObjectParameter` writes the nested struct with a keyword tag instead of a list tag. `QueryStructFromAttribute` builds the CREATE struct of an SSOT attribute for handwritten ALTER.
+- A `Tags` child of a SqlOnly object emits optional `TAG`. `ssot.Conflicting` on a SqlOnly object names children that cannot be set together, and the SDK struct gets `ConflictingFields` for a pair, in children order. `StructName` on an `ObjectParameter`, `ListOfObjects`, or object-list `ValueKeyword` clause keeps a nested struct name that other objects already use. Without it the name is the owner plus the attribute name.
+- An object clause with no `Sql` text and no `Parentheses()` writes its fields in place, with no wrapper keyword. A child-level validation already skips `Required` children, since a required field is always set. A clause that only accompanies another one is a child of that clause's object, such as `COLLATE` under `SET DATA TYPE`, so it is not one of the alternatives.
+- `AlterOperationFromObject` takes the preexisting query structs a block or SET names. A helper whose name is the block attribute's `SqlStruct` is that block. `AlterKeywordBlock` may omit the SQL prefix when the nested struct carries the words. A block field named like the `SetSql` or `UnsetSql` `FieldName` of its attribute embeds that projection (`AlterClause.BlockProjection`); any other field embeds the CREATE struct. `AlterCommaSeparatedBlock` comma-joins the nested children with no parentheses. `AlterSuppliedKeywordBlock` names a supplied struct that has no block attribute, such as the SET projection of a shared attribute.
+- A `Tags` child with `TagForm` emits `SET TAG` or `UNSET TAG` instead of optional `TAG`, and belongs only to the SET or UNSET projection it names, so one attribute can carry both forms.
+- `BareValue` writes a parameter as a value rather than a pointer, without the required tag. `RequireValue` adds a value check on a predefined field.
 - The SDK generator calls the existing query-struct builders (`NumberAssignment`, `OptionalSQL`, `ListAssignment`, and the rest). It does not record a Go type on the clause, and it does not build `ddl` tags.
 - `AlterSetQueryStruct` and `AlterUnsetQueryStruct` build the SET and UNSET structs before ALTER itself is generated. UNSET is embedded as a list with no parentheses, so its fields are comma-separated.
 - Clauses Snowflake statements usually accept are on unless the object opts out: `OR REPLACE`, `IF NOT EXISTS`, ALTER `IF EXISTS`, `SET`, `UNSET`, `SET TAG`, `UNSET TAG`, and the exactly-one alter check. DROP `IF EXISTS` is always emitted. `SET` is a keyword. `SdkAlterSetList` opts into `list,no_parentheses`.
-- A custom operation is an entry on [`CustomOperations`](custom_operation.go). `SdkCustomOperations()` emits that slice from one call, in slice order. Clone and undrop are custom operations. Generating CREATE or ALTER does not take them over. Place that call after the dedicated operation methods and before custom interface methods. The generated interface lists every operation, then the custom interface methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects are aligned. `QueryStructName` overrides the query struct name. `CustomStaticField`, `CustomIdentifier`, and `CustomText` are a named static field, a required identifier, and a required single-quoted assignment. Limitation: `CustomIdentifier` is a bare required identifier. It has no SQL text before it, no quoting or `Equals` option, and it cannot be optional, unlike `IdentifierOptions()` in the SDK generator. For `<words> <name>`, such as `SHOW DATABASES IN FAILOVER GROUP <name>` or `DESCRIBE SEARCH OPTIMIZATION ON <name>`, use `CustomStaticSQL` for the words and `CustomName()` for the identifier; the field is then `name` and gets `ValidIdentifier`. TODO [next PRs]: extend `CustomIdentifier` with identifier options if an operation needs a field name other than `name`, quoting, or an optional identifier. `Paired` emits `CustomShowOperationWithPairedStructs` with a slice mapping. Its columns use the SHOW column mapping. `PairedPlainKind` overrides the plain kind of a required field. The database column stays a string. Go names come from the column name. `PlainOnly` is a trailing plain-only field. `PlainOnlyKind` on a column places one in that position. `SdkDescribe` stays one DESCRIBE per object, so several describe or select methods stay custom operations.
+- A custom operation is an entry on [`CustomOperations`](custom_operation.go). `SdkCustomOperations()` emits that slice from one call, in slice order. Clone, undrop, and extra CREATE shapes such as CREATE TABLE AS SELECT are custom operations. Generating CREATE or ALTER does not take them over. Place that call after the dedicated operation methods and before custom interface methods. The generated interface lists every operation, then the custom interface methods, so a custom operation stays with the operations. Reordering in the generated SDK is expected while objects are aligned. `QueryStructName` overrides the query struct name. `CustomAttribute` emits the attribute's CREATE clause. The attribute may be in `Attributes`, in `Create.Clauses`, or only on that custom operation. `CustomStaticField`, `CustomIdentifier`, and `CustomText` are a named static field, a required identifier, and a required single-quoted assignment. Limitation: `CustomIdentifier` is a bare required identifier. It has no SQL text before it, no quoting or `Equals` option, and it cannot be optional, unlike `IdentifierOptions()` in the SDK generator. For `<words> <name>`, such as `SHOW DATABASES IN FAILOVER GROUP <name>` or `DESCRIBE SEARCH OPTIMIZATION ON <name>`, use `CustomStaticSQL` for the words and `CustomName()` for the identifier; the field is then `name` and gets `ValidIdentifier`. TODO [next PRs]: extend `CustomIdentifier` with identifier options if an operation needs a field name other than `name`, quoting, or an optional identifier. `Paired` emits `CustomShowOperationWithPairedStructs` with a slice mapping. Its columns use the SHOW column mapping. `PairedPlainKind` overrides the plain kind of a required field. The database column stays a string. Go names come from the column name. `PlainOnly` is a trailing plain-only field. `PlainOnlyKind` on a column places one in that position. `SdkDescribe` stays one DESCRIBE per object, so several describe or select methods stay custom operations.
 - A custom interface method is an entry on [`CustomInterfaceMethods`](custom_interface_method.go). `SdkCustomInterfaceMethods()` emits that slice from one call, in slice order. The declaration is generated. The body stays in the SDK ext file. `ctx` is always first and is not listed. A nil parameter slice is `id` of `IdType`. A non-nil slice is the parameter list, and an empty parameter `Kind` uses `IdType`. An empty return slice is `error`. An empty doc emits no comment. A method with another parameter list, return list, or comment sets those fields. When the setting is off, the method stays in the SDK def.
 - `ShowParameters` is that same declaration with a fixed name, an empty doc, `id` of `IdType`, and returns `[]*Parameter` and `error`. The body stays in the SDK ext file. `SdkShowParameters()` enables it. The object does not pass the identifier kind.
 - `ShowParametersDetails` fills the details struct from `ParameterDefsForLevel` for `ParameterLevel()`, which is derived from `Name`. The struct name is `Name` plus `ParametersDetails`. The method has an empty doc, takes `id` of the interface identifier kind, and returns a pointer to that struct and `error`. The body is generated and calls `ShowParameters`. `SdkShowParametersDetails()` enables it. When the setting is off, the call stays in the SDK def.
@@ -883,7 +1043,7 @@ Until a piece has moved, do not assume it is already in ssot:
   ShowByID filtering, the ShowByID find predicate, and `DescriptionMappingKind` are part of it. An object with the setting off keeps the handwritten
   call. When `SdkDrop()` is on, that Drop method comes from the option. An object with the setting off keeps the
   handwritten call. When `SdkCreate()` or `SdkAlter()` is on, that Create or Alter method comes from the option. An
-  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
+  object with the setting off keeps the handwritten call. A zero create or set clause uses the attribute type. A zero unset clause is a bool keyword. Leave a clause unset when the explicit value equals that default. An explicit SQL text that is the uppercase attribute name, and a FieldName that is the camel-cased attribute name on a clause whose empty field name is that camel case, are the same kind of restatement. A nested attribute keeps an explicit clause when dropping it would drop the attribute from that statement. A typed variant field leaves the clause unset and uses that default. The variant list places it. A field with no type default, such as static SQL, still writes its clause. [`Test_DefinitionsOmitDefaultAttributeValues`](defs/explicit_defaults_test.go) fails when [`defs.All()`](defs/all.go) restates one of these defaults, or restates `ShowName`, `SchemaName`, `ShowEnum`, `ShowString`, `DescribeString`, `DescribeEnum`, `DescribeDetailsName`, `BaseVariant.ShowPlainName`, `SdkCreateRequestObjectName`, `Variant.CreateName`, or `Variant.AlterName`. An empty `DescribeDetailsName` is `Name` plus `Details`. An empty `ShowPlainName` or `SdkCreateRequestObjectName` is `Name`. An empty variant entity name is the base object's type words. Clause shape is `CreateSql`, `SetSql`, and `UnsetSql`
   ([Attribute](attribute.go)). `Create` is a [`CreateSpec`](object.go). The SET and UNSET groups are the statement order. A
   `Parameters` entry spreads the catalog on that statement. `Alter` is the order of the ALTER blocks after the name.
   When `SdkCustomOperations()` is on, those operations come from `CustomOperations` and are emitted together. When it is
@@ -898,7 +1058,7 @@ Until a piece has moved, do not assume it is already in ssot:
   `SchemaShowManualFields` / `SchemaDescribeManualFields` ([Generators](#generators)), the same shape as the
   show-output and object-assertion `SkipFields` options below. Schema `TypeOverrides` is derived: an `AttrSet` column
   is generated as `TypeSet`, and `SchemaShowListFields` / `SchemaDescribeListFields` keep a listed column as `TypeList`
-  (for a `show_output` that was released as a list). `UsedAsListEntry` has no ssot equivalent yet. Object-assertion
+  (for a `show_output` that was released as a list). `SchemaUsedAsListEntry()` emits the `DescribeRows` property-row schema with no Show or Describe prefix. Object-assertion
   `SkipFields` is `ObjectAssertShowSkipFields` and `ObjectAssertDescribeSkipFields`. Show-output `SkipFields` is
   `ShowOutputShowSkipFields` and `ShowOutputDescribeSkipFields`.
 - `ResourceHooks` do not yet generate the whole lifecycle, the SDK calls, or the mapping. A missing step stays an ext
@@ -918,6 +1078,7 @@ the enum type in a details struct (also in its nested structs).
 
 #### Limitations
 
+- Authentication policy `security_integrations` and `client_policy` are still two attributes each. The writable one is the resource field. The DESCRIBE one is a different shape with its own children, so `ShowString`, `DescribeString`, and `DescribeEnum` do not cover it. `security_integrations` is a set of identifiers in Terraform and a details object with `all` and a list of identifiers. `client_policy` is a set of objects (`client_type`, `minimum_version`) in Terraform and a details list whose element is the handwritten `AuthenticationPolicyClientPolicyDetails`. The DESCRIBE column stands in with a string `Elem`.
 - Paired struct field names have no override, for SHOW or for DESCRIBE. The db field and the plain field are both the
   camel-cased `OutputKey()`, so a column cannot map to a differently named plain field (the handwritten defs use
   `WithPlainFieldName` for that, such as `property_value` to `Value`). An object moved to ssot may end up with slightly
@@ -936,7 +1097,8 @@ the enum type in a details struct (also in its nested structs).
 - A computed-only field is not an attribute field. `Deprecated` is the schema message; see [Attribute](#attribute).
   An explicit schema `Default` is not an attribute field.
   An optional int whose `Min` is 0 or less still emits `Default = IntDefault`. `NativeBool`
-  keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc`.
+  keeps an optional bool as `TypeBool` and does not emit `Default`. `Min` and `Max` emit `ValidateDiagFunc` (on ints)
+  and `MinItems` / `MaxItems` (on collections); a required `AttrList` deduces `MinItems: 1` when `Min` is nil.
   Chrome the generator does not emit stays in the attributes modification function.
 
 #### Why Show and Describe columns are explicit
@@ -990,7 +1152,7 @@ lists are mapped by the first two, and any other type is mapped by `DescribeProp
 
 `SdkDescribeDetailsFromIdentifier()` is a setting of `SdkDescribe` for a columnar DESCRIBE, the one that returns one `<Name>Details` value. It emits `DescribeDetails`: the method calls `Describe` and copies plain-only identifier fields from the id. `SchemaObjectIdentifier` copies `DatabaseName` and `SchemaName`. `DatabaseObjectIdentifier` copies `DatabaseName`. Each copied field is a `SdkDescribePlainOnlyField` of kind `string`, and at least one is present. Every plain-only field is one of those names. When that list covers every plain-only field, `convert` does not call `additionalConvert`. When the details struct has the identifier parts (`DatabaseName`, `SchemaName`, and `Name` for a schema object; `DatabaseName` and `Name` for a database object) as strings, the generator emits `ID()`. The same `ID()` is emitted when those fields are already DESCRIBE columns. Otherwise `ID()` stays in the SDK ext file. A property-list DESCRIBE uses `DescribeRows` and `SdkDescribeDetailsMethod()`. `SdkDescribeDetailsFromIdentifier()` cannot be combined with `DescribeRows` or `SdkDescribeDetails`.
 
-A generator that needs the paired SHOW reads `PairedShowColumns`: `ShowGeneric` when that list is set, otherwise `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
+A generator that needs the paired SHOW reads `PairedShowColumns`: `BaseVariant.ShowGeneric` when that list is set, otherwise `Show.Columns`. A generator that needs DESCRIBE reads `Describe.Columns`. It does not
 derive one from the other, and it does not derive either from `Attributes`.
 
 #### Generators do not depend on each other
@@ -1046,7 +1208,7 @@ repeat for an object that ssot does not emit stays. Do not delete it.
 
 SDK interfaces come from two lists. The old list is the handwritten defs. ssot adds an interface when `SdkDefineFromSsot()`
 is on and `NamePlural` is unique among objects that are not variants in [`defs.All()`](defs/all.go). A variant shares the base interface: the variants of
-`Warehouse`, and the four catalog integration sources of `CatalogIntegration`, which is a `VariantBaseOnly` base. The base supplies the
+`Warehouse`, and the four catalog integration sources of `CatalogIntegration`, which is a `BaseVariant.NotResource` base. The base supplies the
 interface and each variant supplies its own part of it: `SdkCreateForVariants()` and `SdkAlterForVariants()` the methods named from the variant stem,
 `SdkDescribeDetailsForVariants()` the `Describe<Variant>Details` methods and their structs. That option defines the interface from this
 ssot object and its variants. It contains the operation parts whose flags are on. A part whose flag is off is absent. An object that already has a handwritten SDK definition does not set this flag, so the merge does not drop that interface. The SDK
@@ -1067,16 +1229,16 @@ A new Snowflake object is one definition in [defs](defs), registered in [`All()`
 
 Public documentation only. Implement a command, clause, column, or parameter when a public Snowflake page for this object shows it: the SQL reference, or the user guide when no SQL reference page exists. A missing page is not filled from another object, from the parser, or from a live query. Record what was left out, which page was checked, and where the capability was seen. `CREATE OR ALTER` is the exception: never implement it and never list it as left out, because our resources do not use it. Parameters and tags stay off unless that page shows them. When the default SQL reference URL does not exist, override it with `SdkCreateDoc`, `SdkShowDoc`, `SdkDropDoc`, `SdkAlterDoc`, or `SdkDescribeDoc`.
 
-When the public pages give one Snowflake object a dedicated CREATE and a dedicated ALTER for each role, define those roles as variants of one base. Warehouses are the reference. Register each role in [`All()`](defs/all.go). Its `NamePlural` is the base's, so the methods share one SDK interface. Its `Name` starts with the base `Name`. The method names are `Create` and `Alter` plus the rest of that name: `ReplicationGroupSecondary` is `CreateSecondary` and `AlterSecondary`. Set `SdkCreateRequestObjectName` when the query struct should not be `Create` or `Alter` plus the full variant name. `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. The variant fills `Create` and `Alter` and sets no generators. The base keeps the shared interface, SHOW, DROP, and the CREATE and ALTER that belong to the base. Each other role sets `VariantOf` to the base. The base turns on `SdkCreateForVariants()` and `SdkAlterForVariants()` as separate settings, one step each. The step that turns one on also removes those clauses from the base statement, or removes the custom operation that was emitting them, and moves the ext tests with them. Set `VariantEntityCreateName` or `VariantEntityAlterName` when the SQL object words differ from the base object type. Leave them empty when the words are the same and only the clauses differ. A secondary replication group is that case: the primary keeps the normal CREATE and the source-account ALTER, and the secondary keeps `CREATE ... AS REPLICA OF` and the target-account ALTER (`REFRESH`, `SUSPEND`, `RESUME`). SHOW stays on the base when one SHOW returns every role. An ALTER block's query struct is named from the object that owns the ALTER, so the secondary suspend block is `ReplicationGroupSecondarySuspend`. Do not put every clause on one CREATE and one ALTER. Do not add the second CREATE as a custom operation. Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. The base uses `SdkCreateWithoutOrReplace()` for the same omission. `WithVariants` stays the mechanism for alternatives inside one clause.
+When the public pages give one Snowflake object a dedicated CREATE and a dedicated ALTER for each role, define those roles as variants of one base. Warehouses are the reference. Register each role in [`All()`](defs/all.go). Its `NamePlural` is the base's, so the methods share one SDK interface. Its `Name` starts with the base `Name`. The method names are `Create` and `Alter` plus the rest of that name: `ReplicationGroupSecondary` is `CreateSecondary` and `AlterSecondary`. Set `Variant.RequestObjectName` when the query struct should not be `Create` or `Alter` plus the full variant name. `SecondaryReplicationGroup` yields `CreateSecondaryReplicationGroup`. The variant fills `Create` and `Alter` and sets no generators. The base keeps the shared interface, SHOW, DROP, and the CREATE and ALTER that belong to the base. Each other role sets `Variant.Of` to the base. The base turns on `SdkCreateForVariants()` and `SdkAlterForVariants()` as separate settings, one step each. The step that turns one on also removes those clauses from the base statement, or removes the custom operation that was emitting them, and moves the ext tests with them. Set `Variant.CreateName` or `Variant.AlterName` when the SQL object words differ from the base object type. Leave them empty when the words are the same and only the clauses differ. A secondary replication group is that case: the primary keeps the normal CREATE and the source-account ALTER, and the secondary keeps `CREATE ... AS REPLICA OF` and the target-account ALTER (`REFRESH`, `SUSPEND`, `RESUME`). SHOW stays on the base when one SHOW returns every role. An ALTER block's query struct is named from the object that owns the ALTER, so the secondary suspend block is `ReplicationGroupSecondarySuspend`. Do not put every clause on one CREATE and one ALTER. Do not add the second CREATE as a custom operation. Variant CREATE includes `OR REPLACE` and `IF NOT EXISTS`. Set `Create.WithoutOrReplace` when the page has no `OR REPLACE`. The base uses `SdkCreateWithoutOrReplace()` for the same omission. `WithVariants` stays the mechanism for alternatives inside one clause.
 
-When a public page shows a command and no column list, the columns come from an uncommitted integration test. Give it a build tag so `go test ./...` does not run it. The test uses the default Snowflake profile, creates only what that command needs, runs the command, logs column names, database types, and every row, and drops what it created. It is not kept in the repository. After that test has been run, put those columns on the matching `Columns` list in the logged order and enable the generator setting for that command. Record that the list came from the probe. A string column that came back null is optional in SHOW and in the DB row. A time column that is nullable in the driver is `OptionalInDb` only: an optional plain time is not mapped, and the plain field stays `time.Time`. Do not mark `name`, `database_name`, or `schema_name` optional when the SHOW row's `ID()` is built from them.
+When a public page shows a command and no column list, the columns come from an uncommitted integration test. Give it a build tag so `go test ./...` does not run it. The test uses the default Snowflake profile, creates only what that command needs, runs the command, logs column names, database types, and every row, and drops what it created. It is not kept in the repository. After that test has been run, put those columns on the matching `Columns` list in the logged order and enable the generator setting for that command. Record that the list came from the probe. A string column that came back null is optional in SHOW and in the DB row. A time column that is nullable in the driver is `OptionalInDb` only: an optional plain time is not mapped, and the plain field stays `time.Time`. Do not mark `name`, `database_name`, or `schema_name` optional when the SHOW row's `ID()` is built from them. A column list from a page is checked against the live output too. A documented column that the command does not return is always NULL, so it is left out and the gap is recorded. A returned column that the page does not list is added when no documented column carries that value, and the gap is recorded as well. For failover groups the page lists `read_only`, SHOW returns `is_primary_read_only`, and `error_integration` is not documented at all.
 
 When a public page shows ALTER and does not list SET, UNSET, or RENAME, those clauses come from the same kind of uncommitted test. It runs each clause the way other objects spell it, logs the statement and the error or the SHOW row after it, and drops what it created. After that test has been run, add a clause that succeeded and leave out a clause Snowflake rejected. A field that SET and UNSET can change is not ForceNew.
 
 Each step enables one generator flag, or one operation setting inside `WithSdk()`. SHOW and DESCRIBE are separate settings of schema generation, object assertions, and show-output assertions. Regenerate with `--filter-object-names` after reading that generator's `--help`. `make generate-sdk` filters on `NamePlural`. The resource generator, model builders, resource assertions, and parameter assertions filter on `Name`. Snowflake object assertions, show-output assertions, and show-output schemas filter on `sdk.<Name>` for SHOW and `sdk.<Name>Details` for DESCRIBE. Do not edit `*_gen.go`. Extension files hold hook bodies and other custom code. A `-check` target restores uncommitted generated diffs, so run it only after those files are committed.
 
 1. **Definition.** Add `defs/<plural_snake_case>_def.go` and register the object in `All()`. Read an existing handwritten SDK definition first, as the paragraph above describes, including a closely related object's definition when this object has none. Registration runs `ValidateObject`, so the definition is valid with every generator still off. Attributes, [`Create`](object.go) / [`Alter`](object.go) clauses, and `Show` / `Describe` `Columns` may be filled before the generator that reads them is enabled. A `Readonly` SHOW or DESCRIBE column stays off `Attributes`. A writable output column is that same attribute. An explicit SQL clause is listed on that statement. Leave out a clause the current SQL helpers would misspell, and record it. `AlterList` emits a parentheses list with no equals after the SQL text. A list that comes before its keyword uses `Reverse()` on the list parameter. The values print first and the SQL text follows. SET and UNSET attributes go to `ssot.AlterSet(...)` and `ssot.AlterUnset(...)`; enclose them in `ssot.AlterGroup(...)` values only when Snowflake rejects them in one statement, as [ALTER statements](#alter-statements) describes. No `Generators` entry yet. A dedicated CREATE and ALTER per role is another object in `All()`, as the variants paragraph describes. That object sets no generators.
-2. **SDK.** One operation at a time: `SdkCreate()`, `SdkShow()`, `SdkDrop()`, `SdkAlter()` (`make generate-sdk`). `SdkCreateForVariants()` and `SdkAlterForVariants()` are their own settings, one each, after the base CREATE and ALTER. Turning one on also removes the base clauses or the custom operation the variant now emits, and moves that operation's ext tests. A new object also sets `SdkDefineFromSsot()`. An existing handwritten SDK definition does not. It replaces that one operation with the matching `FromObject` call, as the paragraph above describes, and diffs the generated files. Show needs `Columns` first. Enabling show or describe without `Columns` panics. The generator does not add the interface to `Client`; that field and its constructor stay in `pkg/sdk/client.go`. Show emits `ObjectType()` as `ObjectType<Name>`. That constant, its plural, and the singular-to-plural map stay in `pkg/sdk/object_types.go`. `SdkShowOptionalIn` emits `IN` for account, database, and schema, and `SdkShowByIDIn` is the matching ShowByID filter. `SdkShowOptionalInAccount` emits only `IN ACCOUNT <account>`. `SdkShowOptionalExtendedIn` also emits application and application package. An empty ShowByID filter list emits `LIKE`. `SdkShowByIDNoFiltering()` emits ShowByID with no filter and cannot be combined with another filter. `SdkShowByIDPredicate` selects the FindFirst match: name, full id, account name, or name and account locator. Empty keeps the default, which is name, or full id for a schema object with arguments. When the public page omits `IF EXISTS`, probe the clause before leaving it out. `SdkDrop()` still emits `IF EXISTS`. Add an opt-out only after Snowflake rejects the clause. `SdkDropSafelyHook()` is for a pre-drop step the public page shows. Leave it off when the page shows none. `DropSafely` then drops directly. Write the SDK ext for hook bodies and the `*_ext_test.go` companion for the operation just enabled.
+2. **SDK.** One operation at a time: `SdkCreate()`, `SdkShow()`, `SdkDrop()`, `SdkAlter()` (`make generate-sdk`). `SdkCreateForVariants()` and `SdkAlterForVariants()` are their own settings, one each, after the base CREATE and ALTER. Turning one on also removes the base clauses or the custom operation the variant now emits, and moves that operation's ext tests. A new object also sets `SdkDefineFromSsot()`. An existing handwritten SDK definition does not. It replaces that one operation with the matching `FromObject` call, as the paragraph above describes, and diffs the generated files. Show needs `Columns` first. Enabling show or describe without `Columns` panics. The generator does not add the interface to `Client`; that field and its constructor stay in `pkg/sdk/client.go`. Show emits `ObjectType()` as `ObjectType<Name>`. That constant, its plural, and the singular-to-plural map stay in `pkg/sdk/object_types.go`. `SdkShowOptionalIn` emits `IN` for account, database, and schema, and `SdkShowByIDIn` is the matching ShowByID filter. `SdkShowOptionalInAccount` emits only `IN ACCOUNT <account>`. `SdkShowOptionalExtendedIn` also emits application and application package. `SdkShowOptionalExtendedInWithoutSchema` emits account, database, application, and application package, for a SHOW that has no schema level, such as `SHOW SCHEMAS`. It cannot be combined with another IN option, and `SdkShowByIDExtendedInWithoutSchema` is the matching ShowByID filter. An empty ShowByID filter list emits `LIKE`. `SdkShowByIDNoFiltering()` emits ShowByID with no filter and cannot be combined with another filter. `SdkShowByIDPredicate` selects the FindFirst match: name, full id, account name, or name and account locator. Empty keeps the default, which is name, or full id for a schema object with arguments. When the public page omits `IF EXISTS`, probe the clause before leaving it out. `SdkDrop()` still emits `IF EXISTS`. Add an opt-out only after Snowflake rejects the clause. `SdkDropSafelyHook()` is for a pre-drop step the public page shows. Leave it off when the page shows none. `DropSafely` then drops directly. Write the SDK ext for hook bodies and the `*_ext_test.go` companion for the operation just enabled.
 3. **DESCRIBE.** When the published page lists columns, enable `SdkDescribe()` from that list. When the page has the command and no columns, use the uncommitted probe above, then enable `SdkDescribe()` from that output. `SdkDescribeDoc()` points at the page that shows the command. The default result is one value. A property-list result uses `DescribeRows` and `SdkDescribeMapping(SdkDescriptionMappingSlice)`, then `SdkDescribeDetails` and `SdkDescribeDetailsMethod()`. That path does not use `SdkDescribeDetailsFromIdentifier()`. When a columnar DESCRIBE omits `database_name` or `schema_name` and `ID()` needs them, add each with `SdkDescribePlainOnlyField` (`DatabaseName` or `SchemaName`, kind `string`) and turn on `SdkDescribeDetailsFromIdentifier()`. It is not a `Columns` entry. `convert` skips it. The generated `DescribeDetails` copies it from the identifier. `SchemaObjectIdentifier` allows both names. `DatabaseObjectIdentifier` allows `DatabaseName`. When every plain-only field is one of those, `additionalConvert` is not generated. A plain-only field outside that set is filled by `additionalConvert`. When the details struct has the identifier parts, the generator emits `ID()`. Otherwise write `ID()` in the SDK ext file. When the row already has every column `ID()` needs, the generator emits `ID()` from those fields. Do not write that method in the SDK ext file. Do not add plain-only fields for them. The test client `Describe` calls the SDK `Describe`.
 4. **Object assertions.** `WithObjectAssert(ObjectAssertShow())` (`make generate-snowflake-object-assertions`). `ObjectAssertDescribe()` is its own step, and only when describe columns exist. The generated show fetch calls `testClient.<Name>.Show`, which is `ShowByID`. The describe fetch calls `testClient.<Name>.Describe`. Each method has to exist on the test client or the assertion package does not compile. The details value needs `ID()`, from the DESCRIBE step: the row columns when they are present, or the plain-only fields when a column is missing. `WithNoIdentifiableObject()` is for a describe value that still has no `ID()`, such as a property-list row. Creating and dropping the object stays with the integration tests. `WithObjectParametersAssert()` (`make generate-snowflake-object-parameters-assertions`). It is a no-op until the [catalog](defs/parameters.go) has entries for `ParameterLevel()`, so it is on from the start.
 5. **SDK integration tests.** In `pkg/sdk/testint/`, with build tag `non_account_level_tests` unless the test changes account settings. When the public page says the object needs a specific Snowflake edition, remind the user and wait for confirmation before running the test. Use the object assertions from the previous step. Cover each operation the SDK has: create, alter, drop of an existing object, drop of a missing object, `IF EXISTS` on a missing object when the statement has it, `DropSafely` when the SDK has it, each SHOW clause the statement has, `ShowByID` for the same name in two schemas, `ShowByIDSafely`, and describe of an existing object and of a missing one. Leave out a clause the statement does not have. An optional text column that comes back as `""` is asserted as that empty string. `HasNoX` means the pointer is nil. A stage path in a string clause is `stage.Location()`, which quotes the fully qualified name. An unquoted `@db.schema.stage` is folded to uppercase and misses a mixed-case test database or schema.
@@ -1084,8 +1246,8 @@ Each step enables one generator flag, or one operation setting inside `WithSdk()
 7. **Resource.** `WithResource()` (`make generate-resource`) and the hooks that step generates. Generate the describe SDK call, describe output schema, and describe output set when describe columns exist. Omit those hooks when there is no describe. Omit parameter hooks and the parameters generation part when the object has no parameters. Omit set and unset when the statement has no SET or UNSET. When every field is ForceNew, the constructor omits `Update`, so there is no update id to keep used. `WithAfterAlter(ExtCall())` with a body that returns nil is for an `Update` that is still generated and would otherwise leave the parsed id unused. A config field that SHOW does not return stays in the set-state-from-config list so Read keeps the configured value. `IdentityNameForceNew` and `IdentityHierarchyForceNew` are both emitted on the identity schema. `WithHierarchyRename(Generated())` follows those flags, described under Resource generator. `Schema` keeps `WithHierarchyRename(ExtCall())`. `WithIdentitySchema(ExtCall())` is for an identity schema that differs from that. See [Resource generator](#resource-generator). Do not register the resource in this step. An entry in `acceptanceTestsProvider()` is visible to every acceptance test. Do not add a preview feature constant. That waits for provider registration.
 8. **Resource helpers.** One flag per step: `WithModel()` (`make generate-resource-model-builders`), `WithResourceAssert()` (`make generate-resource-assertions`), `WithShowOutputAssert(ShowOutputShow())` (`make generate-resource-show-output-assertions`). `ShowOutputDescribe()` is its own step when describe columns exist. `WithResourceParametersAssert()` (`make generate-resource-parameters-assertions`), on from the start; it is a no-op until the catalog has entries for the object.
 9. **Acceptance test.** One `TestAcc_<Object>_BasicUseCase` in `pkg/testacc/`, with build tag `non_account_level_tests` unless the test changes account settings, plus a helper client. Use the generated model and assertions, including an object assertion. Register the resource in `acceptanceTestsProvider()` in `pkg/testacc/1_setup_provider_test.go` in this step, not earlier. Do not add a preview feature constant or preview wrappers on that provider. Those wrappers call `StringToFeature`, which accepts only `ValidPreviewFeatures`, the same allow-list as `preview_features_enabled`. `AllPreviewFeatures` is what `docs/index.md` writes into that field. Create, read, and update stay tracking wrappers. Generated delete calls `DropSafely` through the tracking wrapper. Register destroy checking in `pkg/testacc/2_check_destroy_test.go` through `ShowByID`. A config field that SHOW does not return is listed in `ImportStateVerifyIgnore`. So is an optional SHOW string that comes back nil: Read leaves it absent when the config omits it, and import writes that nil as `""`. A nested show or describe string that the mapper leaves unset is stored as `""`, so that output assertion expects the empty string. A resource string that `SetConfigFields` copies from a non-nil SHOW pointer is present, including a pointer to `""`. The SDK object assertion still treats a nil value as unset. The test does not enable a preview feature.
-10. **Data source.** `snowflake_<plural>` in `pkg/datasources/<plural>.go`, plus the name constant in `pkg/provider/datasources`. Register it in `acceptanceTestsProvider()` only. Read is `TrackingReadWrapper`. Do not add a `previewfeatures` constant, do not list one in `allPreviewFeatures`, and do not use `PreviewFeatureReadWrapper`. Filters follow the SHOW request: `like`, plain `in` for a schema object, and `starts_with` and `limit` when the statement has them. `with_describe` is included when DESCRIBE exists. The id is the static sentinel `"<plural>_read"`.
-11. **Provider registration, docs, and examples.** Move the resource and the data source from `acceptanceTestsProvider()` into `pkg/provider/provider.go`. Set `PreviewFeature` and regenerate so Delete uses `PreviewFeatureDeleteContextWrapper`. The ext wraps create, read, and update with the matching preview wrappers. Import stays `TrackingImportWrapper`. There is no preview import wrapper. The data source read switches to `PreviewFeatureReadWrapper` in this step. Add `<Name>Resource` and `<Plural>Datasource` to the preview feature constants, `allPreviewFeatures`, and the `StringToFeature` test. Docs templates use subcategory `Preview`. `make generate-docs-additional-files` writes the preview lists from `allPreviewFeatures` and the provider maps. `make generate-issue-labels` adds the resource and data source labels. The current unreleased section of `MIGRATION_GUIDE.md` records the new preview feature.
+10. **Data source.** `WithDataSource()` (`make generate-datasource`) writes `pkg/datasources/<plural_snake>_gen.go`, see [Data source generator](#data-source-generator). Add the name constant to `pkg/provider/datasources`. Register it in `acceptanceTestsProvider()` only. `PreviewFeature` stays unset, so the read is `TrackingReadWrapper`. Do not add a `previewfeatures` constant and do not list one in `allPreviewFeatures`. Hand-written parts go in the object's `*_ext.go` through hooks.
+11. **Provider registration, docs, and examples.** Move the resource and the data source from `acceptanceTestsProvider()` into `pkg/provider/provider.go`. Set `PreviewFeature` and regenerate so Delete uses `PreviewFeatureDeleteContextWrapper`. The ext wraps create, read, and update with the matching preview wrappers. Import stays `TrackingImportWrapper`. There is no preview import wrapper. Setting `PreviewFeature` and regenerating also switches the data source read to `PreviewFeatureReadWrapper` and adds the preview mark to its description. Add `<Name>Resource` and `<Plural>Datasource` to the preview feature constants, `allPreviewFeatures`, and the `StringToFeature` test. Docs templates use subcategory `Preview`. `make generate-docs-additional-files` writes the preview lists from `allPreviewFeatures` and the provider maps. `make generate-issue-labels` adds the resource and data source labels. The current unreleased section of `MIGRATION_GUIDE.md` records the new preview feature.
 
 ### Later
 

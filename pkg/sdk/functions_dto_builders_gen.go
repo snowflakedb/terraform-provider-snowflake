@@ -151,11 +151,6 @@ func NewFunctionArgumentRequest(
 	return &s
 }
 
-func (s *FunctionArgumentRequest) WithArgDataTypeOld(argDataTypeOld DataType) *FunctionArgumentRequest {
-	s.ArgDataTypeOld = argDataTypeOld
-	return s
-}
-
 func (s *FunctionArgumentRequest) WithDefaultValue(defaultValue string) *FunctionArgumentRequest {
 	s.DefaultValue = &defaultValue
 	return s
@@ -184,11 +179,6 @@ func NewFunctionReturnsResultDataTypeRequest(
 	return &s
 }
 
-func (s *FunctionReturnsResultDataTypeRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *FunctionReturnsResultDataTypeRequest {
-	s.ResultDataTypeOld = resultDataTypeOld
-	return s
-}
-
 func NewFunctionReturnsTableRequest() *FunctionReturnsTableRequest {
 	s := FunctionReturnsTableRequest{}
 	return &s
@@ -207,11 +197,6 @@ func NewFunctionColumnRequest(
 	s.ColumnName = columnName
 	s.ColumnDataType = columnDataType
 	return &s
-}
-
-func (s *FunctionColumnRequest) WithColumnDataTypeOld(columnDataTypeOld DataType) *FunctionColumnRequest {
-	s.ColumnDataTypeOld = columnDataTypeOld
-	return s
 }
 
 func NewFunctionImportRequest() *FunctionImportRequest {
@@ -501,11 +486,6 @@ func (s *CreateForScalaFunctionRequest) WithArguments(arguments []FunctionArgume
 
 func (s *CreateForScalaFunctionRequest) WithCopyGrants(copyGrants bool) *CreateForScalaFunctionRequest {
 	s.CopyGrants = &copyGrants
-	return s
-}
-
-func (s *CreateForScalaFunctionRequest) WithResultDataTypeOld(resultDataTypeOld DataType) *CreateForScalaFunctionRequest {
-	s.ResultDataTypeOld = resultDataTypeOld
 	return s
 }
 

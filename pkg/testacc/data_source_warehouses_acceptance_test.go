@@ -80,6 +80,16 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 		WithWithParameters(false).
 		WithDependsOn(warehouseModel.ResourceReference())
 
+	warehousesModelWithoutDescribe := datasourcemodel.Warehouses("test").
+		WithLike(id.Name()).
+		WithWithDescribe(false).
+		WithDependsOn(warehouseModel.ResourceReference())
+
+	warehousesModelWithoutParameters := datasourcemodel.Warehouses("test").
+		WithLike(id.Name()).
+		WithWithParameters(false).
+		WithDependsOn(warehouseModel.ResourceReference())
+
 	warehousesModel := datasourcemodel.Warehouses("test").
 		WithLike(id.Name()).
 		WithDependsOn(warehouseModel.ResourceReference())
@@ -142,6 +152,24 @@ func TestAcc_Warehouses_CompleteUseCase(t *testing.T) {
 
 					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
 					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutOptionals.DatasourceReference(), "warehouses.0.parameters.#", "0")),
+				),
+			},
+			{
+				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutDescribe),
+				Check: assertThat(
+					t,
+					commonShowAssert(t, warehousesModelWithoutDescribe.DatasourceReference()),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutDescribe.DatasourceReference(), "warehouses.0.describe_output.#", "0")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutDescribe.DatasourceReference(), "warehouses.0.parameters.#", "1")),
+				),
+			},
+			{
+				Config: config.FromModels(t, warehouseModel, warehousesModelWithoutParameters),
+				Check: assertThat(
+					t,
+					commonShowAssert(t, warehousesModelWithoutParameters.DatasourceReference()),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutParameters.DatasourceReference(), "warehouses.0.describe_output.#", "1")),
+					assert.Check(resource.TestCheckResourceAttr(warehousesModelWithoutParameters.DatasourceReference(), "warehouses.0.parameters.#", "0")),
 				),
 			},
 			{

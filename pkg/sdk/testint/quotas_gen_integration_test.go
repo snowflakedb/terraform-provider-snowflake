@@ -10,6 +10,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -261,10 +262,10 @@ func TestInt_Quotas(t *testing.T) {
 	t.Run("add and remove shared resources: AI domain", func(t *testing.T) {
 		id := createQuota(t)
 
-		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainCortexCode, ""))
-		cortexCode := sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainCortexCode)
-		require.Len(t, cortexCode, 1)
-		assert.True(t, cortexCode[0].IsWholeDomain())
+		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainSnowflakeCoco, ""))
+		snowflakeCoco := sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainSnowflakeCoco)
+		require.Len(t, snowflakeCoco, 1)
+		assert.True(t, snowflakeCoco[0].IsWholeDomain())
 
 		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainAiFunction, "AI_CLASSIFY"))
 		aiFunctions := sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainAiFunction)
@@ -274,9 +275,9 @@ func TestInt_Quotas(t *testing.T) {
 
 		removeSharedResource(t, id, sdk.QuotaSharedResourceDomainAiFunction, "AI_CLASSIFY")
 		assert.Empty(t, sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainAiFunction))
-		assert.Len(t, sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainCortexCode), 1)
+		assert.Len(t, sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainSnowflakeCoco), 1)
 
-		removeSharedResource(t, id, sdk.QuotaSharedResourceDomainCortexCode, "")
+		removeSharedResource(t, id, sdk.QuotaSharedResourceDomainSnowflakeCoco, "")
 		assert.Empty(t, describe(t, id).Scope.SharedResources)
 	})
 
@@ -318,14 +319,20 @@ func TestInt_Quotas(t *testing.T) {
 
 		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainAiFunction, "AI_CLASSIFY"))
 		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainAiFunction, "AI_COMPLETE"))
-		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainCortexCode, ""))
-		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainSnowflakeIntelligence, ""))
+		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainSnowflakeCoco, "SNOWFLAKE_COCO_CLI"))
+		require.NoError(t, addSharedResource(t, id, sdk.QuotaSharedResourceDomainSnowflakeCowork, ""))
 
 		scope := describe(t, id).Scope
 		require.Len(t, scope.SharedResources, 4)
 		assert.ElementsMatch(t, []string{"AI_CLASSIFY", "AI_COMPLETE"}, collections.Map(sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainAiFunction), func(r sdk.QuotaScopeSharedResource) string { return r.Name }))
-		assert.Len(t, sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainCortexCode), 1)
-		assert.Len(t, sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainSnowflakeIntelligence), 1)
+		// GET_QUOTA_SCOPE returns SNOWFLAKE COCO and its instances by their former names
+		snowflakeCoco := sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainSnowflakeCoco)
+		require.Len(t, snowflakeCoco, 1)
+		assert.Equal(t, "CORTEX_CODE", snowflakeCoco[0].Domain)
+		assert.Equal(t, "CORTEX_CODE_CLI", snowflakeCoco[0].Name)
+		snowflakeCowork := sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainSnowflakeCowork)
+		require.Len(t, snowflakeCowork, 1)
+		assert.Equal(t, "SNOWFLAKE_INTELLIGENCE", snowflakeCowork[0].Domain)
 
 		removeSharedResource(t, id, sdk.QuotaSharedResourceDomainAiFunction, "AI_COMPLETE")
 		assert.Len(t, describe(t, id).Scope.SharedResources, 3)
@@ -357,14 +364,14 @@ func TestInt_Quotas(t *testing.T) {
 		_, warehouseCleanup := testClientHelper().Warehouse.CreateWarehouseWithRequest(t, sdk.NewCreateWarehouseRequest(warehouseId).WithInitiallySuspended(true))
 		t.Cleanup(warehouseCleanup)
 
-		args := sdk.NewQuotaAddSharedResourceArgsRequest(sdk.QuotaSharedResourceDomainWarehouse).WithWarehouse(warehouseId)
+		args := sdk.NewQuotaAddSharedResourceArgsRequest().WithWarehouse(*sdk.NewQuotaAddSharedResourceArgsWarehouseRequest(warehouseId))
 		_, err := client.Quotas.AddSharedResource(ctx, sdk.NewAddSharedResourceQuotaRequest(id, *args))
 		require.NoError(t, err)
 		warehouses := sharedResourcesIn(t, id, sdk.QuotaSharedResourceDomainWarehouse)
 		require.Len(t, warehouses, 1)
 		assert.Equal(t, warehouseId.Name(), warehouses[0].Name)
 
-		removeArgs := sdk.NewQuotaRemoveSharedResourceArgsRequest(sdk.QuotaSharedResourceDomainWarehouse).WithWarehouse(warehouseId)
+		removeArgs := sdk.NewQuotaRemoveSharedResourceArgsRequest().WithWarehouse(*sdk.NewQuotaRemoveSharedResourceArgsWarehouseRequest(warehouseId))
 		_, err = client.Quotas.RemoveSharedResource(ctx, sdk.NewRemoveSharedResourceQuotaRequest(id, *removeArgs))
 		require.NoError(t, err)
 		assert.Empty(t, describe(t, id).Scope.SharedResources)
@@ -424,7 +431,7 @@ func TestInt_Quotas(t *testing.T) {
 		t.Cleanup(tagCleanup)
 		setUserTags := func(operator sdk.QuotaUserTagsOperator, values ...string) {
 			t.Helper()
-			tags := collections.Map(values, func(value string) sdk.QuotaUserTagRequest { return *sdk.NewQuotaUserTagRequestFromTag(tag.ID(), value) })
+			tags := collections.Map(values, func(value string) sdk.QuotaUserTagRequest { return *sdk.NewQuotaUserTagRequest(tag.ID(), value) })
 			_, err := client.Quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(id, *sdk.NewQuotaSetUserTagsArgsRequest(tags, operator)))
 			require.NoError(t, err)
 		}
@@ -443,7 +450,34 @@ func TestInt_Quotas(t *testing.T) {
 		assert.Equal(t, []string{"finance"}, tagValues(scope.SelectionTags()))
 
 		setUserTags(sdk.QuotaUserTagsOperatorUnion)
-		assert.Empty(t, describe(t, id).Scope.SelectionTags())
+		scope = describe(t, id).Scope
+		assert.Equal(t, string(sdk.QuotaUserTagsOperatorUnion), scope.UserTags.Operator)
+		assert.Empty(t, scope.SelectionTags())
+	})
+
+	// SET_USER_TAGS([], 'ALL_USERS') resets the scope: the quota applies to all users, and the excluded tags and user lists are cleared
+	t.Run("set user tags: all users", func(t *testing.T) {
+		id := createQuota(t)
+		tag, tagCleanup := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(tagCleanup)
+		user, userCleanup := testClientHelper().User.CreateUser(t)
+		t.Cleanup(userCleanup)
+		testClientHelper().Quota.IncludeUsers(t, id, user.ID().Name())
+		_, err := client.Quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(id, *sdk.NewQuotaSetUserTagsArgsRequest(
+			[]sdk.QuotaUserTagRequest{*sdk.NewQuotaUserTagRequest(tag.ID(), "finance")}, sdk.QuotaUserTagsOperatorUnion)))
+		require.NoError(t, err)
+		_, err = client.Quotas.ExcludeUsers(ctx, sdk.NewExcludeUsersQuotaRequest(id, *sdk.NewQuotaExcludeUsersArgsRequest().
+			WithByTag(*sdk.NewQuotaExcludeUsersByTagRequest([]sdk.QuotaExcludedUserTagRequest{*sdk.NewQuotaExcludedUserTagRequest(tag.ID(), "contractor")}))))
+		require.NoError(t, err)
+
+		_, err = client.Quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(id, *sdk.NewQuotaSetUserTagsArgsRequest(nil, sdk.QuotaUserTagsOperatorAllUsers)))
+		require.NoError(t, err)
+
+		scope := describe(t, id).Scope
+		assert.Equal(t, string(sdk.QuotaUserTagsOperatorAllUsers), scope.UserTags.Operator)
+		assert.Empty(t, scope.SelectionTags())
+		assert.Empty(t, scope.ExclusionTags())
+		assert.Empty(t, scope.IncludedUsers)
 	})
 
 	t.Run("exclude users by tag", func(t *testing.T) {
@@ -454,12 +488,12 @@ func TestInt_Quotas(t *testing.T) {
 		t.Cleanup(userCleanup)
 		testClientHelper().Quota.IncludeUsers(t, id, user.ID().Name())
 		_, err := client.Quotas.SetUserTags(ctx, sdk.NewSetUserTagsQuotaRequest(id, *sdk.NewQuotaSetUserTagsArgsRequest(
-			[]sdk.QuotaUserTagRequest{*sdk.NewQuotaUserTagRequestFromTag(tag.ID(), "finance")}, sdk.QuotaUserTagsOperatorUnion)))
+			[]sdk.QuotaUserTagRequest{*sdk.NewQuotaUserTagRequest(tag.ID(), "finance")}, sdk.QuotaUserTagsOperatorUnion)))
 		require.NoError(t, err)
 		excludeTags := func(values ...string) {
 			t.Helper()
 			tags := collections.Map(values, func(value string) sdk.QuotaExcludedUserTagRequest {
-				return *sdk.NewQuotaExcludedUserTagRequestFromTag(tag.ID(), value)
+				return *sdk.NewQuotaExcludedUserTagRequest(tag.ID(), value)
 			})
 			_, err := client.Quotas.ExcludeUsers(ctx, sdk.NewExcludeUsersQuotaRequest(id, *sdk.NewQuotaExcludeUsersArgsRequest().
 				WithByTag(*sdk.NewQuotaExcludeUsersByTagRequest(tags))))
@@ -620,10 +654,10 @@ func TestInt_Quotas(t *testing.T) {
 	t.Run("add and remove custom actions", func(t *testing.T) {
 		id := createQuota(t)
 		// the first argument receives the IDs of the users who crossed the threshold; extra arguments fill the remaining ones
-		procedure, procedureCleanup := testClientHelper().Procedure.Create(t, sdk.DataTypeVARCHAR)
+		procedure, procedureCleanup := testClientHelper().Procedure.Create(t, testdatatypes.DataTypeVarchar)
 		t.Cleanup(procedureCleanup)
 		grantProcedureToSnowflakeApplication(t, procedure.ID())
-		procedureWithArgument, procedureWithArgumentCleanup := testClientHelper().Procedure.Create(t, sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+		procedureWithArgument, procedureWithArgumentCleanup := testClientHelper().Procedure.Create(t, testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 		t.Cleanup(procedureWithArgumentCleanup)
 		t.Cleanup(testClientHelper().Grant.GrantUsageOnProcedureToSnowflakeApplication(t, procedureWithArgument.ID()))
 		addAction := func(procedureId sdk.SchemaObjectIdentifierWithArguments, arguments []string, strategy sdk.QuotaSpendStrategy, threshold int) error {

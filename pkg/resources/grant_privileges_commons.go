@@ -5,32 +5,11 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-// inheritedGrantsRequireExperiment returns a CustomizeDiff that fails the plan when an `inherited`
-// block is used in any of the given blocks while the INHERITED_GRANTS experiment is disabled.
-func inheritedGrantsRequireExperiment(blockNames ...string) schema.CustomizeDiffFunc {
-	return func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
-		rawConfig := d.GetRawConfig()
-		if rawConfig.IsNull() || !rawConfig.IsKnown() {
-			return nil
-		}
-		if !rawConfigHasInheritedGrant(rawConfig, blockNames...) {
-			return nil
-		}
-		providerCtx := meta.(*provider.Context)
-		if !providerCtx.Experiments.IsEnabled(experimentalfeatures.InheritedGrants) {
-			return fmt.Errorf("using an `inherited` block requires the %q experiment to be enabled. Remove it from the `experimental_features_disabled` list in the provider configuration", experimentalfeatures.InheritedGrants)
-		}
-		return nil
-	}
-}
 
 // validateInheritedGrantsConfig returns a ValidateRawResourceConfigFunc that rejects `with_grant_option`
 // and `always_apply` when used together with an `inherited` block in any of the given blocks.

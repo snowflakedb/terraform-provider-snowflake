@@ -45,8 +45,10 @@ var ShowProcedureSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// arguments_old is skipped and won't be generated
-	// return_type_old is skipped and won't be generated
+	// arguments is skipped and won't be generated
+	// arguments_raw_list is skipped and won't be generated
+	// return_type is skipped and won't be generated
+	// return_type_raw is skipped and won't be generated
 	"description": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -90,8 +92,10 @@ func ProcedureToSchema(procedure *sdk.Procedure) map[string]any {
 	procedureSchema["min_num_arguments"] = procedure.MinNumArguments
 	procedureSchema["max_num_arguments"] = procedure.MaxNumArguments
 	procedureSchema["arguments_raw"] = procedure.ArgumentsRaw
-	// arguments_old is skipped and won't be generated
-	// return_type_old is skipped and won't be generated
+	// arguments is skipped and won't be generated
+	// arguments_raw_list is skipped and won't be generated
+	// return_type is skipped and won't be generated
+	// return_type_raw is skipped and won't be generated
 	procedureSchema["description"] = procedure.Description
 	procedureSchema["catalog_name"] = procedure.CatalogName
 	procedureSchema["is_table_function"] = procedure.IsTableFunction

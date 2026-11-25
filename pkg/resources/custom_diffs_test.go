@@ -58,6 +58,14 @@ func TestParameterValueComputedIf(t *testing.T) {
 			wantNewComputed: false,
 		},
 		{
+			name:            "config: false - state: true - level: object - value: same",
+			parameterLevel:  sdk.ParameterTypeDatabase,
+			parameterValue:  sdk.LogLevelInfo,
+			rawConfigValue:  cty.MapValEmpty(cty.String),
+			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
+			wantNewComputed: true,
+		},
+		{
 			name:            "config: false - state: true - level: different - value: same",
 			parameterLevel:  sdk.ParameterTypeAccount,
 			parameterValue:  sdk.LogLevelInfo,
@@ -71,7 +79,7 @@ func TestParameterValueComputedIf(t *testing.T) {
 			parameterValue:  sdk.LogLevelDebug,
 			rawConfigValue:  cty.MapValEmpty(cty.String),
 			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
-			wantNewComputed: true,
+			wantNewComputed: false,
 		},
 		{
 			name:            "config: false - state: true - level: same - value: same",
@@ -87,7 +95,7 @@ func TestParameterValueComputedIf(t *testing.T) {
 			parameterValue:  sdk.LogLevelDebug,
 			rawConfigValue:  cty.MapValEmpty(cty.String),
 			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
-			wantNewComputed: true,
+			wantNewComputed: false,
 		},
 	}
 	for _, tt := range tests {
@@ -175,7 +183,7 @@ func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 			wantNewComputed: false,
 		},
 		{
-			name: "enum value differs from state",
+			name: "enum value differs from state, but is not set on the object level",
 			customDiff: resources.StringTypedParameterValueComputedIf("value", sdk.TypedParameter[sdk.LogLevel]{
 				Key:   "VALUE",
 				Value: sdk.LogLevelDebug,
@@ -183,7 +191,7 @@ func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 			}, sdk.ParameterTypeDatabase),
 			valueType:       schema.TypeString,
 			stateValue:      map[string]any{"value": string(sdk.LogLevelInfo)},
-			wantNewComputed: true,
+			wantNewComputed: false,
 		},
 		{
 			name: "identifier uses fully qualified name - matches state",
@@ -197,7 +205,7 @@ func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 			wantNewComputed: false,
 		},
 		{
-			name: "identifier uses fully qualified name - differs from state",
+			name: "identifier uses fully qualified name - differs from state, but is not set on the object level",
 			customDiff: resources.IdentifierTypedParameterValueComputedIf("value", sdk.TypedParameter[sdk.AccountObjectIdentifier]{
 				Key:   "VALUE",
 				Value: sdk.NewAccountObjectIdentifier("external_volume_123"),
@@ -205,7 +213,7 @@ func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 			}, sdk.ParameterTypeDatabase),
 			valueType:       schema.TypeString,
 			stateValue:      map[string]any{"value": `"external_volume"`},
-			wantNewComputed: true,
+			wantNewComputed: false,
 		},
 		{
 			name: "regular string",
@@ -252,7 +260,7 @@ func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 			wantNewComputed: false,
 		},
 		{
-			name: "float differs from state",
+			name: "float differs from state, but is not set on the object level",
 			customDiff: resources.FloatTypedParameterValueComputedIf("value", sdk.TypedParameter[float64]{
 				Key:   "VALUE",
 				Value: 9.9,
@@ -260,7 +268,7 @@ func TestTypedParameterValueComputedIfByValueType(t *testing.T) {
 			}, sdk.ParameterTypeDatabase),
 			valueType:       schema.TypeString,
 			stateValue:      map[string]any{"value": "10.0"},
-			wantNewComputed: true,
+			wantNewComputed: false,
 		},
 		{
 			name: "float whole number matches scaled state",

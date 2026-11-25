@@ -26,30 +26,31 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 	CreatedOn                ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
-		Name:     "enabled",
-		Type:     ssot.AttrBool,
-		Required: true,
+		Name:          "enabled",
+		UpdateMapping: ssot.BooleanAttributeUpdateSetOnlyBuilder,
+		Type:          ssot.AttrBool,
+		Required:      true,
 		Description: "Specifies whether the catalog integration is available for use for Iceberg tables. " +
 			"`true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. " +
 			"`false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.",
 	},
 	RefreshIntervalSeconds: ssot.Attribute{
-		Name: "refresh_interval_seconds",
-		Type: ssot.AttrInt,
+		Name:          "refresh_interval_seconds",
+		UpdateMapping: ssot.IntAttributeUnsetFallbackUpdateWithZeroDefault(30),
+		Type:          ssot.AttrInt,
 		Description: "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. " +
 			"For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
 		ServerDefault: true,
-		CreateMapping: ssot.IntAttributeCreateBuilder,
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 		DiffSuppress:  ssot.SuppressDescribe,
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
+		UpdateMapping: ssot.StringAttributeUpdateSetOnly,
 		Type:          ssot.AttrString,
 		Description:   "Specifies a comment for the catalog integration.",
 		OptionalInDb:  true,
-		CreateMapping: ssot.StringAttributeCreateBuilder,
 	},
 	CatalogNamespace: ssot.Attribute{
 		Name:        "catalog_namespace",
@@ -101,11 +102,13 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		},
 	},
 	OauthRestAuthentication: ssot.Attribute{
-		Name:        "oauth_rest_authentication",
-		Type:        ssot.AttrObject,
-		ForceNew:    true,
-		Description: "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("OAuthRestAuthentication")),
+		Name:           "oauth_rest_authentication",
+		UpdateMapping:  ssot.CustomUpdate("updateCatalogIntegrationIcebergRestOauthClientSecret"),
+		Type:           ssot.AttrObject,
+		OptionalInShow: true,
+		ForceNew:       true,
+		Description:    "Specifies OAuth as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		CreateSql:      ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("OAuthRestAuthentication")),
 		Children: []ssot.Attribute{
 			catalogIntegrationRestAuthTypeOauth,
 			{
@@ -134,7 +137,6 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 				Type:        ssot.AttrList,
 				Required:    true,
 				ForceNew:    true,
-				MinItems:    new(1),
 				Description: "Specifies one or more scopes for the OAuth token.",
 				Elem:        &ssot.Attribute{Type: ssot.AttrString},
 				CreateSql:   ssot.ListParameter("StringListItemWrapper"),
@@ -142,10 +144,12 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		},
 	},
 	BearerRestAuthentication: ssot.Attribute{
-		Name:        "bearer_rest_authentication",
-		Type:        ssot.AttrObject,
-		Description: "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
+		Name:           "bearer_rest_authentication",
+		UpdateMapping:  ssot.CustomUpdate("updateCatalogIntegrationIcebergRestBearerToken"),
+		Type:           ssot.AttrObject,
+		OptionalInShow: true,
+		Description:    "Specifies a bearer token as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		CreateSql:      ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			catalogIntegrationIcebergRestAuthTypeBearer,
 			{
@@ -158,11 +162,12 @@ var CatalogIntegrationIcebergRestAttrs = struct {
 		},
 	},
 	Sigv4RestAuthentication: ssot.Attribute{
-		Name:        "sigv4_rest_authentication",
-		Type:        ssot.AttrObject,
-		ForceNew:    true,
-		Description: "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("SigV4RestAuthentication")),
+		Name:           "sigv4_rest_authentication",
+		Type:           ssot.AttrObject,
+		OptionalInShow: true,
+		ForceNew:       true,
+		Description:    "Specifies Signature Version 4 as the authentication type for Snowflake to use to connect to the Iceberg REST catalog.",
+		CreateSql:      ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("SigV4RestAuthentication")),
 		Children: []ssot.Attribute{
 			catalogIntegrationIcebergRestAuthTypeSigv4,
 			{
@@ -223,9 +228,14 @@ var (
 )
 
 var CatalogIntegrationIcebergRest = ssot.Object{
-	Name:                   "CatalogIntegrationIcebergRest",
-	NamePlural:             "CatalogIntegrations",
-	VariantOf:              &CatalogIntegration,
+	Name:       "CatalogIntegrationIcebergRest",
+	NamePlural: "CatalogIntegrations",
+	Variant: &ssot.ObjectVariant{
+		Of:                          &CatalogIntegration,
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
@@ -237,7 +247,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			ssot.WithSchema(
-				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaShow(),
 				ssot.SchemaDescribe(ssot.SchemaDescribeManualFields(
 					&CatalogIntegrationIcebergRestAttrs.RestConfig,
 					&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
@@ -250,7 +260,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 				"[]sdk.CatalogIntegrationIcebergRestRestConfigRequest",
 			)),
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertShow(),
 				ssot.ObjectAssertDescribe(
 					ssot.ObjectAssertDescribeFromBase("DescribeIcebergRest"),
 					ssot.ObjectAssertDescribeNestedField(&CatalogIntegrationIcebergRestAttrs.RestConfig),
@@ -260,7 +270,7 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 				),
 			),
 			ssot.WithShowOutputAssert(
-				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputShow(),
 				ssot.ShowOutputDescribe(ssot.ShowOutputDescribeSkipFields(
 					&CatalogIntegrationIcebergRestAttrs.RestConfig,
 					&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
@@ -274,6 +284,8 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
@@ -293,11 +305,11 @@ var CatalogIntegrationIcebergRest = ssot.Object{
 		CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
 		CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
 	},
-	ExactlyOneOf: [][]*ssot.Attribute{{
-		&CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
-		&CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
-		&CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
-	}},
+	Validations: []ssot.Validation{ssot.ExactlyOneOf(
+		CatalogIntegrationIcebergRestAttrs.OauthRestAuthentication,
+		CatalogIntegrationIcebergRestAttrs.BearerRestAuthentication,
+		CatalogIntegrationIcebergRestAttrs.Sigv4RestAuthentication,
+	)},
 	Create: ssot.CreateSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/create-catalog-integration-rest",
 		Clauses: []*ssot.Attribute{

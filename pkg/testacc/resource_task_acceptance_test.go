@@ -21,6 +21,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -638,7 +639,7 @@ func TestAcc_Task_ExternalChanges(t *testing.T) {
 }
 
 func TestAcc_Task_CallingProcedure(t *testing.T) {
-	procedure, cleanupProcedure := testClient().Procedure.Create(t, sdk.DataTypeNumber)
+	procedure, cleanupProcedure := testClient().Procedure.Create(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(cleanupProcedure)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()

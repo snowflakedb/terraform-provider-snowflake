@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
@@ -181,9 +182,13 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 		for key, val := range col.(map[string]any) {
 			columnDef[key] = val.(string)
 		}
+		dataType, err := datatypes.ParseDataType(columnDef["type"])
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to parse type of column %v: %w", columnDef["name"], err))
+		}
 		columnRequests[i] = *sdk.NewExternalTableColumnRequest(
 			columnDef["name"],
-			sdk.DataType(columnDef["type"]),
+			dataType,
 			*sdk.NewAsExpressionRequest(columnDef["as"]),
 		)
 	}
@@ -246,7 +251,7 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return ReadExternalTable(ctx, d, meta)
 }

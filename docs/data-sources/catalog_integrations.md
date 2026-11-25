@@ -80,11 +80,11 @@ check "catalog_integration_check" {
 ### Optional
 
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
-- `with_describe` (Boolean) (Default: `true`) Runs DESC CATALOG INTEGRATION for each catalog integration returned by SHOW CATALOG INTEGRATIONS. The output of describe is saved to the description field. By default this value is set to true.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC CATALOG INTEGRATION for each catalog integration returned by SHOW CATALOG INTEGRATIONS. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
 
-- `catalog_integrations` (List of Object) Holds the aggregated output of all catalog integrations details queries. (see [below for nested schema](#nestedatt--catalog_integrations))
+- `catalog_integrations` (List of Object) Holds the aggregated output of all catalog integration details queries. (see [below for nested schema](#nestedatt--catalog_integrations))
 - `id` (String) The ID of this resource.
 
 <a id="nestedatt--catalog_integrations"></a>

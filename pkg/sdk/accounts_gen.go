@@ -143,6 +143,7 @@ type AccountParametersDetails struct {
 	SearchPath                                               TypedParameter[string]
 	ServerlessTaskMaxStatementSize                           TypedParameter[WarehouseSize]
 	ServerlessTaskMinStatementSize                           TypedParameter[WarehouseSize]
+	ServiceCallerTokenValiditySecs                           TypedParameter[int]
 	ShareRestrictions                                        TypedParameter[bool]
 	SimulatedDataSharingConsumer                             TypedParameter[string]
 	SqlTraceQueryText                                        TypedParameter[string]
@@ -338,6 +339,7 @@ type AccountParameters struct {
 	SearchPath                                               *string                           `ddl:"parameter,single_quotes" sql:"SEARCH_PATH"`
 	ServerlessTaskMaxStatementSize                           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	ServerlessTaskMinStatementSize                           *WarehouseSize                    `ddl:"parameter,single_quotes" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	ServiceCallerTokenValiditySecs                           *int                              `ddl:"parameter" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
 	ShareRestrictions                                        *bool                             `ddl:"parameter" sql:"SHARE_RESTRICTIONS"`
 	SimulatedDataSharingConsumer                             *string                           `ddl:"parameter,single_quotes" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
 	SqlTraceQueryText                                        *string                           `ddl:"parameter,single_quotes" sql:"SQL_TRACE_QUERY_TEXT"`
@@ -513,6 +515,7 @@ type AccountParametersUnset struct {
 	SearchPath                                               *bool `ddl:"keyword" sql:"SEARCH_PATH"`
 	ServerlessTaskMaxStatementSize                           *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MAX_STATEMENT_SIZE"`
 	ServerlessTaskMinStatementSize                           *bool `ddl:"keyword" sql:"SERVERLESS_TASK_MIN_STATEMENT_SIZE"`
+	ServiceCallerTokenValiditySecs                           *bool `ddl:"keyword" sql:"SERVICE_CALLER_TOKEN_VALIDITY_SECS"`
 	ShareRestrictions                                        *bool `ddl:"keyword" sql:"SHARE_RESTRICTIONS"`
 	SimulatedDataSharingConsumer                             *bool `ddl:"keyword" sql:"SIMULATED_DATA_SHARING_CONSUMER"`
 	SqlTraceQueryText                                        *bool `ddl:"keyword" sql:"SQL_TRACE_QUERY_TEXT"`

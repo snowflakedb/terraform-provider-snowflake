@@ -3,6 +3,7 @@ package resources
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -229,7 +230,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 					Kind: OnObjectSchemaObjectGrantKind,
 					Object: &sdk.Object{
 						ObjectType: sdk.ObjectTypeFunction,
-						Name:       sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name", sdk.DataTypeFloat),
+						Name:       sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name", testdatatypes.DataTypeFloat),
 					},
 				},
 			},
@@ -246,7 +247,7 @@ func TestParseGrantPrivilegesToAccountRoleId(t *testing.T) {
 					Kind: OnObjectSchemaObjectGrantKind,
 					Object: &sdk.Object{
 						ObjectType: sdk.ObjectTypeFunction,
-						Name:       sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name", []sdk.DataType{}...),
+						Name:       sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name"),
 					},
 				},
 			},

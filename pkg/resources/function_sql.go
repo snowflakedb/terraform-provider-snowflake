@@ -64,7 +64,7 @@ func CreateContextFunctionSql(ctx context.Context, d *schema.ResourceData, meta 
 	functionDefinition := d.Get("function_definition").(string)
 
 	argumentDataTypes := collections.Map(argumentRequests, func(r sdk.FunctionArgumentRequest) datatypes.DataType { return r.ArgDataType })
-	id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(database, sc, name, argumentDataTypes...)
+	id := sdk.NewSchemaObjectIdentifierWithArguments(database, sc, name, argumentDataTypes...)
 	request := sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(id.SchemaObjectId(), *returns, functionDefinition).
 		WithArguments(argumentRequests)
 

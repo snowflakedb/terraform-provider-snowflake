@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_AlterInSdk_computePool(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.True(t, model.Hooks.AlterSetInSdk.Generate)
@@ -119,7 +120,7 @@ func Test_AlterInSdk_hookModes(t *testing.T) {
 func Test_AlterInSdk_statementsAreSentBeforeTheMainOne(t *testing.T) {
 	model := lifecycleModel(withHooks(ssot.WithAlterSetInSdk(ssot.Generated()), ssot.WithAlterUnsetInSdk(ssot.Generated())))
 	model.HasPartialOnUpdate = true
-	model.AlterStatements = AlterStatementsModel{Set: []string{"setBody", "set"}, Unset: []string{"unsetSchedule", "unset"}}
+	model.AlterStatements = AlterStatementsModel{Stem: "Pool", Set: []string{"setBody", "set"}, Unset: []string{"unsetSchedule", "unset"}}
 
 	require.Equal(t, `if !reflect.DeepEqual(*setUnset.setBody, *sdk.NewPoolSetRequest()) {
 		if err := meta.(*provider.Context).Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithSet(*setUnset.setBody)); err != nil {
@@ -155,11 +156,10 @@ func Test_ModelFromInputObject_alterStatements(t *testing.T) {
 	schedule := ssot.Attribute{Name: "schedule", Type: ssot.AttrString}
 	expire := ssot.Attribute{Name: "expire_after_days", Type: ssot.AttrInt}
 	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
-		Name:           "Widget",
-		NamePlural:     "Widgets",
-		IdType:         "AccountObjectIdentifier",
-		Attributes:     []ssot.Attribute{body, comment, schedule, expire},
-		UnsetConflicts: [][]*ssot.Attribute{{&schedule, &expire}},
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Attributes: []ssot.Attribute{body, comment, schedule, expire},
 		Alter: ssot.AlterSpec{
 			Clauses: []ssot.AlterClause{
 				ssot.AlterSet(
@@ -172,10 +172,10 @@ func Test_ModelFromInputObject_alterStatements(t *testing.T) {
 					ssot.AlterGroup(ssot.MainAlterGroup, &expire),
 				),
 			},
-			SetConflictingFields: [][]*ssot.Attribute{{&body, &comment}},
 		},
 	}}, nil, nil)
 	require.Equal(t, AlterStatementsModel{
+		Stem:  "Widget",
 		Set:   []string{"setSchedule", "setBody", "set"},
 		Unset: []string{"unsetSchedule", "unset"},
 		Requests: []AlterStatementRequest{
@@ -184,6 +184,7 @@ func Test_ModelFromInputObject_alterStatements(t *testing.T) {
 	}, model.AlterStatements)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ModelFromInputObject_withoutStatementsSendsTheMainOnes(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.Equal(t, []string{"set"}, model.AlterStatements.Set)

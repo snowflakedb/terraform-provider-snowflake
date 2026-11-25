@@ -6,6 +6,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -69,7 +71,7 @@ func TestInt_SafeDropOnSchemaObjectIdentifier(t *testing.T) {
 }
 
 func TestInt_SafeDropOnSchemaObjectIdentifierWithArguments(t *testing.T) {
-	procedure, procedureCleanup := testClientHelper().Procedure.Create(t, sdk.DataTypeInt)
+	procedure, procedureCleanup := testClientHelper().Procedure.Create(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(procedureCleanup)
 
 	ctx := context.Background()

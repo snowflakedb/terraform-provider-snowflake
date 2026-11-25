@@ -107,6 +107,18 @@ func TestExactlyOneValueSet(t *testing.T) {
 		ok := exactlyOneValueSet(String("foo"), nil, String("bar"))
 		assert.False(t, ok)
 	})
+
+	t.Run("with slices: nil and empty slices are not set", func(t *testing.T) {
+		var nilList []AccountObjectIdentifier
+		emptyList := []AccountObjectIdentifier{}
+		oneElement := []AccountObjectIdentifier{NewAccountObjectIdentifier("foo")}
+		assert.False(t, exactlyOneValueSet(nilList, emptyList))
+		assert.True(t, exactlyOneValueSet(nilList, emptyList, oneElement))
+		assert.False(t, exactlyOneValueSet(oneElement, oneElement))
+		assert.False(t, exactlyOneValueSet(oneElement, emptyList, oneElement))
+		assert.True(t, anyValueSet(nilList, emptyList, oneElement))
+		assert.False(t, anyValueSet(nilList, emptyList))
+	})
 }
 
 func TestEveryValueSet(t *testing.T) {

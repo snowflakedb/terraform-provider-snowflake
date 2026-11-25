@@ -43,7 +43,7 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 // The field chain comes from DescribePairedStructs. The query struct is Describe, SQL,
 // Name, and ValidIdentifier on name.
 // helperStructs are extra structs the describe operation emits.
-// ShowPlainName and ShowVariants are emitted here too. Each one gets a projection on the paired SHOW struct.
+// BaseVariant.ShowPlainName and BaseVariant.ShowVariants are emitted here too. Each one gets a projection on the paired SHOW struct.
 // When ShowByID is already registered, each plain also gets ShowByID and ShowByIDSafely for that suffix.
 // TODO [next PRs]: those plain structs are SHOW structs. Emit them from ShowOperationFromObject. Show() still returns the union row.
 func (i *Interface) DescribeOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
@@ -105,7 +105,7 @@ func describeDetailsVariants(base ssot.Object) []ssot.Object {
 		panic(fmt.Sprintf("object %q: variant DESCRIBE details generation has no variants with SdkDescribeDetails", base.Name))
 	}
 	for _, variant := range variants {
-		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+		if variant.VariantBase() == nil || variant.VariantBase().Name != base.Name {
 			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
 		}
 	}
@@ -157,13 +157,13 @@ func describeParseConfig(obj ssot.Object, cfg ssot.SdkGenerator) DescribeParseCo
 
 func plainShowHelpers(obj ssot.Object) []*Plain {
 	var out []*Plain
-	if obj.ShowPlainName != "" {
+	if obj.ShowPlainName() != "" {
 		if len(obj.Show.Columns) == 0 {
-			panic(fmt.Sprintf("object %q: ShowPlainName %q has no SHOW columns", obj.Name, obj.ShowPlainName))
+			panic(fmt.Sprintf("object %q: BaseVariant.ShowPlainName %q has no SHOW columns", obj.Name, obj.ShowPlainName()))
 		}
-		out = append(out, plainFromColumns(obj, obj.ShowPlainName, obj.Show.Columns))
+		out = append(out, plainFromColumns(obj, obj.ShowPlainName(), obj.Show.Columns))
 	}
-	for _, variant := range obj.ShowVariants {
+	for _, variant := range obj.ShowVariants() {
 		if variant == nil || variant.Name == "" || len(variant.Show.Columns) == 0 {
 			panic(fmt.Sprintf("object %q: show variant needs a name and SHOW columns", obj.Name))
 		}
@@ -218,6 +218,9 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	if cfg.ShowOptionalIn && cfg.ShowOptionalExtendedIn {
 		panic("SHOW cannot set both plain IN and extended IN")
 	}
+	if cfg.ShowOptionalExtendedInWithoutSchema && (cfg.ShowOptionalIn || cfg.ShowOptionalExtendedIn || cfg.ShowOptionalInAccount) {
+		panic("SHOW cannot set extended IN without schema together with another IN")
+	}
 	if cfg.ShowOptionalInAccount && (cfg.ShowOptionalIn || cfg.ShowOptionalExtendedIn) {
 		panic("SHOW cannot set IN ACCOUNT together with plain IN or extended IN")
 	}
@@ -229,6 +232,9 @@ func showQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 	}
 	if cfg.ShowOptionalExtendedIn {
 		q = q.OptionalExtendedIn()
+	}
+	if cfg.ShowOptionalExtendedInWithoutSchema {
+		q = q.OptionalExtendedInWithoutSchema()
 	}
 	if cfg.ShowOptionalOn {
 		q = q.OptionalOn()
@@ -266,6 +272,8 @@ func showByIDFilteringFromObject(obj ssot.Object, cfg ssot.SdkGenerator) []ShowB
 			filtering[i] = ShowByIDInFiltering
 		case ssot.SdkShowByIDExtendedIn:
 			filtering[i] = ShowByIDExtendedInFiltering
+		case ssot.SdkShowByIDExtendedInWithoutSchema:
+			filtering[i] = ShowByIDExtendedInWithoutSchemaFiltering
 		case ssot.SdkShowByIDNone:
 			filtering[i] = ShowByIDNoFiltering
 		default:
@@ -349,11 +357,10 @@ func dropQueryStructFromConfig(cfg ssot.SdkGenerator) *QueryStruct {
 
 // CreateOperationFromObject adds CREATE from obj.SdkConfig.
 // Clauses are Create, optional OR REPLACE, Create.KeywordsBefore, SQL, optional IF NOT EXISTS, Name, then Create.Clauses, then ValidIdentifier.
-// helperStructs are query structs the attribute clauses name, other than an enum list item.
+// helperStructs are extra query structs to emit beside the statement, such as a list-parameter item.
 // A list of enums adds its item query struct here. The struct name is the enum name plus ListItem, and its field is Value.
-// Query structs named by a NestedStruct clause are embedded in the statement, not emitted as helper structs.
 func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...IntoField) *Interface {
-	if obj.VariantOf != nil {
+	if obj.VariantBase() != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
 	}
 	cfg := obj.SdkConfig()
@@ -361,38 +368,7 @@ func (i *Interface) CreateOperationFromObject(obj ssot.Object, helperStructs ...
 		panic(fmt.Sprintf("object %q is not enabled for SDK CREATE generation", obj.Name))
 	}
 	i.checkStructShapes = true
-	supplied, helpers := splitSuppliedStructs(obj, helperStructs)
-	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg, supplied), append(helpers, enumListItemStructs(obj)...)...)
-}
-
-// splitSuppliedStructs separates the helper structs named by a struct clause of CREATE from the rest.
-func splitSuppliedStructs(obj ssot.Object, helperStructs []IntoField) (map[string]*QueryStruct, []IntoField) {
-	named := make(map[string]struct{})
-	for _, list := range [][]*ssot.Attribute{obj.Create.KeywordsBefore, obj.Create.Clauses} {
-		for _, attr := range list {
-			if attr == nil || attr.IsTags() || attr.IsParameters() {
-				continue
-			}
-			if clause := attr.EffectiveSqlClause(ssot.ClauseCreate); clause.Present && clause.Kind == ssot.SqlKindPreexistingStruct {
-				named[clause.StructName] = struct{}{}
-			}
-		}
-	}
-	supplied := make(map[string]*QueryStruct, len(named))
-	helpers := make([]IntoField, 0, len(helperStructs))
-	for _, helper := range helperStructs {
-		if qs, ok := helper.(*QueryStruct); ok {
-			if _, used := named[qs.name]; used {
-				if _, dup := supplied[qs.name]; dup {
-					panic(fmt.Sprintf("object %q: struct %q is supplied twice", obj.Name, qs.name))
-				}
-				supplied[qs.name] = qs
-				continue
-			}
-		}
-		helpers = append(helpers, helper)
-	}
-	return supplied, helpers
+	return i.CreateOperation(cfg.CreateDoc, createQueryStructFromConfig(obj, cfg, nil), append(helperStructs, enumListItemStructs(obj)...)...)
 }
 
 // CreateVariantOperationsFromObject emits each variant CREATE as a custom method.
@@ -407,7 +383,7 @@ func (i *Interface) CreateVariantOperationsFromObject(base ssot.Object) *Interfa
 		panic(fmt.Sprintf("object %q: variant CREATE generation has no variants", base.Name))
 	}
 	for _, variant := range variants {
-		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+		if variant.VariantBase() == nil || variant.VariantBase().Name != base.Name {
 			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
 		}
 		if !variant.HasCreateSpec() {
@@ -446,40 +422,33 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, supplie
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
 	q = q.withIdentifierParameterValidations(createParams)
-	q = q.withExactlyOneOfValidations(obj, obj.Create.Clauses)
-	q = q.withAtLeastOneOfValidations(obj, obj.Create.Clauses)
+	q = q.withObjectValidations(obj, obj.Create.Clauses)
 	if cfg.CreateAdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
 	return q
 }
 
-// withExactlyOneOfValidations adds ExactlyOneValueSet for each ExactlyOneOf group of obj whose attributes are all in clauses.
-// A group that has only some of them in the statement is a mistake in the definition.
-func (v *QueryStruct) withExactlyOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
-	return v.withValueSetGroups(obj, "ExactlyOneOf", obj.ExactlyOneOf, ExactlyOneValueSet, clauses)
-}
-
-// withAtLeastOneOfValidations adds AtLeastOneValueSet for each AtLeastOneOf group of obj whose attributes are all in clauses.
-// A group that has only some of them in the statement is a mistake in the definition.
-func (v *QueryStruct) withAtLeastOneOfValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
-	return v.withValueSetGroups(obj, "AtLeastOneOf", obj.AtLeastOneOf, AtLeastOneValueSet, clauses)
-}
-
-func (v *QueryStruct) withValueSetGroups(obj ssot.Object, label string, groups [][]*ssot.Attribute, kind ValidationType, clauses []*ssot.Attribute) *QueryStruct {
-	for _, group := range groups {
-		present := collections.Filter(group, func(member *ssot.Attribute) bool {
-			return slices.ContainsFunc(clauses, func(clause *ssot.Attribute) bool { return clause != nil && clause.Name == member.Name })
-		})
-		switch len(present) {
-		case 0:
-		case len(group):
-			v = v.WithValidation(kind, collections.Map(group, func(member *ssot.Attribute) string {
-				return clauseFieldName(*member, attributeSqlCreate)
-			})...)
-		default:
-			panic(fmt.Sprintf("object %q: only some attributes of an %s group are in the statement", obj.Name, label))
+// withObjectValidations adds the Validations of obj over the attributes of a CREATE-like statement. An AtLeastOne or
+// ExactlyOne validation that has only some of its attributes in the statement is a mistake in the definition. A
+// Conflicting one covers the attributes in the statement.
+func (v *QueryStruct) withObjectValidations(obj ssot.Object, clauses []*ssot.Attribute) *QueryStruct {
+	for _, validation := range obj.Validations {
+		if validation.NotInSdk {
+			continue
 		}
+		fields := obj.ValidationFields(validation)
+		var names []string
+		for _, member := range fields {
+			i := slices.IndexFunc(clauses, func(clause *ssot.Attribute) bool { return clause != nil && clause.Name == member.Name })
+			if i >= 0 {
+				names = append(names, clauseFieldName(*clauses[i], attributeSqlCreate))
+			}
+		}
+		if len(names) != 0 && len(names) != len(fields) && validation.Kind != ssot.ValidationConflicting {
+			panic(fmt.Sprintf("object %q: only some attributes of a %s validation are in the statement", obj.Name, validation.Kind))
+		}
+		v = v.withValidationOf(validation.Kind, names)
 	}
 	return v
 }
@@ -673,7 +642,7 @@ type SdkInterfaceOverride func(*Interface)
 func SdkInterfacesFromSsot(objects []ssot.Object, overrides map[string]SdkInterfaceOverride) []*Interface {
 	counts := make(map[string]int, len(objects))
 	for _, obj := range objects {
-		if obj.NamePlural == "" || obj.VariantOf != nil {
+		if obj.NamePlural == "" || obj.VariantBase() != nil {
 			continue
 		}
 		counts[obj.NamePlural]++
@@ -721,6 +690,7 @@ func referencedEnums(obj ssot.Object) []*ssot.Enum {
 			return
 		}
 		addEnum(attr.ColumnEnum())
+		addEnum(attr.DescribeEnum)
 		if attr.Elem != nil {
 			addEnum(attr.Elem.ColumnEnum())
 		}
@@ -781,6 +751,7 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 		name = obj.CustomOperationQueryStructName(spec.Kind)
 	}
 	q := NewQueryStruct(name)
+	q.owner = obj.Name
 	sawOrReplace := false
 	sawIfNotExists := false
 	sawName := false
@@ -861,7 +832,13 @@ func customOperationQueryStruct(obj ssot.Object, spec ssot.CustomOperationSpec) 
 	if sawOrReplace && sawIfNotExists {
 		q = q.WithValidation(ConflictingFields, "OrReplace", "IfNotExists")
 	}
-	q = q.withAtLeastOneOfValidations(obj, attributes)
+	q = q.withObjectValidations(obj, attributes)
+	for _, attr := range attributes {
+		clause := attr.EffectiveSqlClause(ssot.ClauseCreate)
+		if clauseRequired(*attr, clause, attributeSqlCreate) && attr.SdkType() == ssot.AttrString {
+			q = q.WithValidation(ValidateValueSet, clauseGoFieldName(*attr, clause))
+		}
+	}
 	if spec.AdditionalValidations {
 		q = q.WithAdditionalValidations()
 	}
@@ -891,10 +868,12 @@ func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, cl
 
 // AlterOperationFromObject adds ALTER from obj.SdkConfig.
 // Clauses are Alter, SQL, optional IF EXISTS, Name, then obj.Alter in order, then ValidIdentifier.
+// helpers are preexisting structs a block or SET names. A helper whose name is a block attribute's
+// SqlStruct is that block. The rest are SET clauses, such as a stage file format.
 // AtLeastOneValueSet on SET and UNSET lists the fields those structs contain.
 // ExactlyOneValueSet follows obj.Alter.
-func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
-	if obj.VariantOf != nil {
+func (i *Interface) AlterOperationFromObject(obj ssot.Object, helpers ...*QueryStruct) *Interface {
+	if obj.VariantBase() != nil {
 		panic(fmt.Sprintf("object %q: a variant cannot enable SDK generation", obj.Name))
 	}
 	cfg := obj.SdkConfig()
@@ -902,7 +881,7 @@ func (i *Interface) AlterOperationFromObject(obj ssot.Object) *Interface {
 		panic(fmt.Sprintf("object %q is not enabled for SDK ALTER generation", obj.Name))
 	}
 	i.checkStructShapes = true
-	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg)).withEnumListItems(obj)
+	return i.AlterOperation(cfg.AlterDoc, alterQueryStructFromConfig(obj, cfg, suppliedQueryStructs(helpers))).withEnumListItems(obj)
 }
 
 // AlterVariantOperationsFromObject emits each variant ALTER as a custom method.
@@ -917,14 +896,14 @@ func (i *Interface) AlterVariantOperationsFromObject(base ssot.Object) *Interfac
 		panic(fmt.Sprintf("object %q: variant ALTER generation has no variants", base.Name))
 	}
 	for _, variant := range variants {
-		if variant.VariantOf == nil || variant.VariantOf.Name != base.Name {
+		if variant.VariantBase() == nil || variant.VariantBase().Name != base.Name {
 			panic(fmt.Sprintf("object %q: %q is not a variant", base.Name, variant.Name))
 		}
 		if !variant.HasAlterSpec() {
 			panic(fmt.Sprintf("object %q: variant ALTER has no spec", variant.Name))
 		}
 		cfg := variant.VariantAlterConfig()
-		q := alterQueryStructFromConfig(variant, cfg)
+		q := alterQueryStructFromConfig(variant, cfg, nil)
 		i = i.CustomOperation(variant.VariantAlterMethod(base.Name), cfg.AlterDoc, q)
 		i = i.withEnumListItems(variant)
 	}
@@ -989,9 +968,10 @@ func enumListItemFields(obj ssot.Object) []*Field {
 	return out
 }
 
-func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, supplied map[string]*QueryStruct) *QueryStruct {
 	q := NewQueryStruct(cfg.AlterQueryStructName).Alter().SQL(cfg.AlterSql)
 	q.owner = obj.Name
+	q.suppliedStructs = supplied
 	if !cfg.AlterWithoutIfExists {
 		q = q.IfExists()
 	}
@@ -1061,10 +1041,28 @@ func alterQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator) *QuerySt
 			}
 			q = q.OptionalAssignmentWithFieldName(clause.SQL, "string", ParameterOptions().NoEquals(), clause.Field)
 		case ssot.AlterClauseBlock:
-			block := queryStructFromBlockAttribute(obj.Name, *clause.Block)
-			var transformer FieldTransformer = ParameterOptions().SQL(clause.SQL)
-			if clause.BlockKeyword {
-				transformer = KeywordOptions().SQL(clause.SQL)
+			block := alterBlockQueryStruct(q, obj, clause)
+			if clause.SharedToOpts {
+				block = block.WithSharedToOpts()
+			}
+			var transformer FieldTransformer
+			switch clause.BlockJoin {
+			case ssot.AlterBlockJoinComma:
+				opts := ListOptions().NoParentheses()
+				if clause.SQL != "" {
+					opts = opts.SQL(clause.SQL)
+				}
+				transformer = opts
+			case ssot.AlterBlockJoinKeyword:
+				opts := KeywordOptions()
+				if clause.SQL != "" {
+					opts = opts.SQL(clause.SQL)
+				}
+				transformer = opts
+			case ssot.AlterBlockJoinParameter:
+				transformer = ParameterOptions().SQL(clause.SQL)
+			default:
+				panic(fmt.Sprintf("object %q: ALTER block %q has unknown join %q", obj.Name, clause.Field, clause.BlockJoin))
 			}
 			q = q.OptionalQueryStructField(clause.Field, block, transformer)
 		default:
@@ -1092,21 +1090,22 @@ func appendAlterSet(q *QueryStruct, obj ssot.Object, cfg ssot.SdkGenerator) *Que
 	if cfg.AlterSetList {
 		setOptions = ListOptions().NoParentheses().SQL("SET")
 	}
-	return q.OptionalQueryStructField("Set", AlterSetQueryStruct(obj, cfg), setOptions)
+	return q.OptionalQueryStructField("Set", newAlterSetQueryStruct(obj, cfg, q.suppliedStructs), setOptions)
 }
 
 // AlterSetQueryStruct builds the SET struct. An object can call it before ALTER itself is generated.
 func AlterSetQueryStruct(obj ssot.Object, cfg ssot.SdkGenerator) *QueryStruct {
+	return newAlterSetQueryStruct(obj, cfg, nil)
+}
+
+func newAlterSetQueryStruct(obj ssot.Object, cfg ssot.SdkGenerator, supplied map[string]*QueryStruct) *QueryStruct {
 	setParams := parametersForStatement(obj, obj.SetAttributes(), "SET")
 	setStruct := NewQueryStruct(obj.Name + "Set")
 	setStruct.owner = obj.Name
+	setStruct.suppliedStructs = supplied
 	setStruct = setStruct.appendSqlSequenceParams(obj.SetAttributes(), attributeSqlSet, setParams)
 	setStruct = setStruct.withIdentifierParameterValidations(setParams)
-	for _, pair := range obj.Alter.SetConflictingFields {
-		setStruct = setStruct.WithValidation(ConflictingFields, collections.Map(pair, func(attr *ssot.Attribute) string {
-			return clauseFieldName(*attr, attributeSqlSet)
-		})...)
-	}
+	setStruct = setStruct.withConflictingAlterGroups(obj.AlterSetGroups(), attributeSqlSet, setParams)
 	setStruct = setStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(setStruct, setParams)...)
 	if cfg.AlterSetAdditionalValidations {
 		setStruct = setStruct.WithAdditionalValidations()
@@ -1126,13 +1125,62 @@ func AlterUnsetQueryStruct(obj ssot.Object) *QueryStruct {
 	unsetStruct.owner = obj.Name
 	unsetStruct = unsetStruct.appendSqlSequenceParams(obj.UnsetAttributes(), attributeSqlUnset, unsetParams)
 	unsetStruct = unsetStruct.WithValidation(AtLeastOneValueSet, atLeastOneFields(unsetStruct, unsetParams)...)
-	for _, group := range obj.UnsetConflicts {
-		names := collections.Map(group, func(member *ssot.Attribute) string {
-			return clauseFieldName(*member, attributeSqlUnset)
-		})
-		unsetStruct = unsetStruct.WithValidation(ConflictingFields, names...)
-	}
+	unsetStruct = unsetStruct.withConflictingAlterGroups(obj.AlterUnsetGroups(), attributeSqlUnset, unsetParams)
 	return unsetStruct
+}
+
+// alterBlockQueryStruct is the struct a block clause embeds. A SET or UNSET projection (BlockProjection) is built from the
+// attribute. For the CREATE struct, a helper whose name is the block attribute's SqlStruct wins. Otherwise the block is built from the attribute.
+func alterBlockQueryStruct(q *QueryStruct, obj ssot.Object, clause ssot.AlterClause) *QueryStruct {
+	if use := clause.BlockProjection(); use != ssot.ClauseCreate {
+		return queryStructFromObjectSupplied(obj.Name, *clause.Block, use, q.suppliedStructs)
+	}
+	name := clause.Block.SqlStructName(obj.Name)
+	if supplied, ok := q.suppliedStructs[name]; ok {
+		delete(q.suppliedStructs, name)
+		return supplied
+	}
+	if clause.Block.IsObjectList() {
+		return queryStructFromObjectList(obj.Name, *clause.Block)
+	}
+	return queryStructFromObjectSupplied(obj.Name, *clause.Block, ssot.ClauseCreate, q.suppliedStructs)
+}
+
+func suppliedQueryStructs(helpers []*QueryStruct) map[string]*QueryStruct {
+	supplied := make(map[string]*QueryStruct, len(helpers))
+	for _, helper := range helpers {
+		if helper == nil || helper.name == "" {
+			panic("alter query struct helper has no name")
+		}
+		if _, dup := supplied[helper.name]; dup {
+			panic(fmt.Sprintf("alter query struct helper %q is supplied twice", helper.name))
+		}
+		supplied[helper.name] = helper
+	}
+	return supplied
+}
+
+// withConflictingAlterGroups adds ConflictingGroups for each pair of groups of a SET or UNSET block, in declaration order.
+// The resource sends each group in its own ALTER, so the SDK rejects a request that sets fields of two groups.
+// A Parameters attribute contributes the field of each parameter.
+func (v *QueryStruct) withConflictingAlterGroups(groups []ssot.AlterGroupSpec, statement attributeSqlStatement, params []ssot.ParameterDef) *QueryStruct {
+	names := collections.Map(groups, func(group ssot.AlterGroupSpec) []string {
+		var fields []string
+		for _, attr := range group.Attributes {
+			if attr.IsParameters() {
+				fields = append(fields, collections.Map(params, func(param ssot.ParameterDef) string { return param.StructFieldName() })...)
+				continue
+			}
+			fields = append(fields, clauseFieldName(*attr, statement))
+		}
+		return fields
+	})
+	for i := range names {
+		for j := i + 1; j < len(names); j++ {
+			v = v.WithConflictingGroups(names[i], names[j])
+		}
+	}
+	return v
 }
 
 func parametersForStatement(obj ssot.Object, list []*ssot.Attribute, statement string) []ssot.ParameterDef {

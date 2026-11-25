@@ -84,8 +84,13 @@ func (r *CreateEventTableRequest) toOpts() *CreateEventTableOptions {
 		DefaultDdlCollation:        r.DefaultDdlCollation,
 		CopyGrants:                 r.CopyGrants,
 		Comment:                    r.Comment,
-		RowAccessPolicy:            r.RowAccessPolicy,
 		Tag:                        r.Tag,
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &EventTableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
+		}
 	}
 	return opts
 }

@@ -31,8 +31,8 @@ func TestAcc_FunctionScala_InlineBasic(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Function.SampleScalaDefinition(t, className, funcName, argName)
@@ -145,7 +145,7 @@ func TestAcc_FunctionScala_InlineFull(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Function.SampleScalaDefinition(t, className, funcName, argName)

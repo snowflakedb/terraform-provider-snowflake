@@ -103,11 +103,11 @@ check "compute_pool_check" {
 - `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
 - `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
-- `with_describe` (Boolean) (Default: `true`) Runs DESC COMPUTE POOL for each compute pool returned by SHOW COMPUTE POOLS. The output of describe is saved to the description field. By default this value is set to true.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC COMPUTE POOL for each compute pool returned by SHOW COMPUTE POOLS. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
 
-- `compute_pools` (List of Object) Holds the aggregated output of all compute pools details queries. (see [below for nested schema](#nestedatt--compute_pools))
+- `compute_pools` (List of Object) Holds the aggregated output of all compute pool details queries. (see [below for nested schema](#nestedatt--compute_pools))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--limit"></a>

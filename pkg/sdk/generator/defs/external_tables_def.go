@@ -86,7 +86,7 @@ func externalTableFileFormat() *g.QueryStruct {
 func externalTableColumn() *g.QueryStruct {
 	return g.NewQueryStruct("ExternalTableColumn").
 		Text("Name", g.KeywordOptions().Required()).
-		PredefinedQueryStructField("DataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().Required()).
+		PredefinedQueryStructField("DataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 		QueryStructField("AsExpression", asExpression(), g.ListOptions().Parentheses().SQL("AS").Required()).
 		OptionalSQL("NOT NULL").
 		PredefinedQueryStructField("InlineConstraint", "*ColumnInlineConstraint", g.KeywordOptions())
@@ -101,10 +101,15 @@ func withExternalTableFileFormats(qs *g.QueryStruct) *g.QueryStruct {
 		OptionalQueryStructField("RawFileFormat", rawFileFormat(), g.ListOptions().Parentheses().SQL("FILE_FORMAT ="))
 }
 
+var externalTableRowAccessPolicy = g.NewQueryStruct("ExternalTableRowAccessPolicy").
+	Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	NamedListWithParens("ON", g.KindOfT[string](), g.KeywordOptions()).
+	WithValidation(g.ValidIdentifier, "Name")
+
 func withExternalTablePolicyAndTags(qs *g.QueryStruct) *g.QueryStruct {
 	return qs.
 		OptionalComment().
-		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
+		OptionalQueryStructField("RowAccessPolicy", externalTableRowAccessPolicy, g.KeywordOptions()).
 		OptionalTags()
 }
 
@@ -158,7 +163,7 @@ var externalTablePairs = g.StructPair("externalTableRow", "ExternalTable").
 
 var externalTableColumnDetailsPairs = g.StructPair("externalTableColumnDetailsRow", "ExternalTableColumnDetails").
 	Text("name").
-	Field("type", "DataType", "DataType").
+	DataType("type", g.WithRawFallback("TypeRaw")).
 	Text("kind").
 	BoolFromText("null?", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).
 	OptionalText("default").

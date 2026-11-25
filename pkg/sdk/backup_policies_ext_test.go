@@ -101,6 +101,15 @@ func init() {
 			},
 			"ALTER BACKUP POLICY %s UNSET SCHEDULE, COMMENT", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
+		withAdditionalSqlCasef(
+			"sql_Alter_UnsetExpireAfterDays",
+			func(opts *AlterBackupPolicyOptions) {
+				opts.Unset = &BackupPolicyUnset{
+					ExpireAfterDays: new(true),
+				}
+			},
+			"ALTER BACKUP POLICY %s UNSET EXPIRE_AFTER_DAYS", backupPoliciesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
+		).
 		withModifyAndExpectedSqlf(
 			case_BackupPolicies_sql_Alter_UnsetTags,
 			func(opts *AlterBackupPolicyOptions) {

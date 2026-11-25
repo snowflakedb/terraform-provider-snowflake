@@ -924,7 +924,7 @@ func TestAcc_Pipe_migrateFromV2_22_1_ensureSmoothUpgradeWithNewResourceId(t *tes
 				ExternalProviders: ExternalProviderWithExactVersion("2.22.1"),
 				Config:            config.FromModels(t, providerModel, pipeModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id)),
+					resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeIDLegacy(id)),
 				),
 			},
 			{

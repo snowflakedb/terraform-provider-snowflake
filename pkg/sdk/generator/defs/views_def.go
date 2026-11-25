@@ -29,7 +29,7 @@ var viewPairs = g.StructPair("viewDBRow", "View").
 // TODO [SNOW-965322]: extract common type for describe
 var viewDetailsPairs = g.StructPair("viewDetailsRow", "ViewDetails").
 	Text("name").
-	Field("type", "DataType", "DataType").
+	DataType("type", g.WithRawFallback("DataTypeRaw")).
 	Text("kind").
 	Field("null?", "string", "bool", g.WithDbFieldName("Null"), g.WithPlainFieldName("IsNullable")).
 	OptionalText("default").

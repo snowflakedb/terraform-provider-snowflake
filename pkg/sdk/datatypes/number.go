@@ -25,6 +25,26 @@ type NumberDataType struct {
 	scaleKnown     bool
 }
 
+func NewNumberDataType() DataType {
+	return &NumberDataType{
+		precision:      DefaultNumberPrecision,
+		scale:          DefaultNumberScale,
+		underlyingType: NumberLegacyDataType,
+		precisionKnown: false,
+		scaleKnown:     false,
+	}
+}
+
+func NewNumberDataTypeWithPrecisionAndScale(precision, scale int) DataType {
+	return &NumberDataType{
+		precision:      precision,
+		scale:          scale,
+		underlyingType: NumberLegacyDataType,
+		precisionKnown: true,
+		scaleKnown:     true,
+	}
+}
+
 func (t *NumberDataType) ToSql() string {
 	if slices.Contains(NumberDataTypeSubTypes, t.underlyingType) {
 		return t.underlyingType

@@ -5,17 +5,22 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
 
-// Per-user quotas are documented only in the user guide; there is no class reference yet, so where the guide is silent the
-// definitions below follow Snowflake's behavior. The guide doesn't cover ALTER, DROP and SHOW, so they link to the whole page.
-const quotasDocs = "https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas"
+// The methods are documented in the per-user quota method reference; where it's silent, the definitions below follow Snowflake's
+// behavior. The reference doesn't cover ALTER, DROP and SHOW, so they link to the overview.
+const (
+	quotasDocs            = "https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas"
+	quotasLegacyScopeDocs = quotasDocs + "-user-scope#legacy-scope-methods"
+)
 
 func quotaDocs(section string) string {
-	return quotasDocs + "#" + section
+	return quotasDocs + "-reference#" + section
 }
 
+// SNOWFLAKE COCO and SNOWFLAKE COWORK were called CORTEX CODE and SNOWFLAKE INTELLIGENCE. Snowflake accepts both names, and
+// GET_QUOTA_SCOPE returns the former ones.
 var QuotaSharedResourceDomainEnumDef = g.NewEnum(
 	"QuotaSharedResourceDomain", "QuotaSharedResourceDomains",
-	"WAREHOUSE", "AI FUNCTION", "CORTEX AGENT", "CORTEX CODE", "SNOWFLAKE INTELLIGENCE", "AI GATEWAY",
+	"WAREHOUSE", "AI FUNCTION", "CORTEX AGENT", "SNOWFLAKE COCO", "SNOWFLAKE COWORK", "AI GATEWAY",
 )
 
 var QuotaCycleEnumDef = g.NewEnum(
@@ -30,46 +35,53 @@ var QuotaSpendStrategyEnumDef = g.NewEnum(
 
 var QuotaUserTagsOperatorEnumDef = g.NewEnum(
 	"QuotaUserTagsOperator", "QuotaUserTagsOperators",
-	"UNION", "INTERSECTION",
+	"UNION", "INTERSECTION", "ALL_USERS",
 )
 
-// AI FUNCTION and CORTEX CODE instances are plain names; the other domains take object references.
-// Without an instance, the whole domain is used.
-func quotaSharedResourceArgs(name string) *g.QueryStruct {
+// A domain followed by one of its instances, given by name.
+func quotaSharedResourceNameArgs(name string, domain string) *g.QueryStruct {
 	return g.NewQueryStruct(name).
-		Enum("Domain", QuotaSharedResourceDomainEnumDef, g.KeywordOptions().SingleQuotes().Required()).
-		OptionalText("InstanceName", g.KeywordOptions().SingleQuotes()).
-		OptionalIdentifier("Warehouse", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SystemReference("WAREHOUSE")).
-		OptionalIdentifier("CortexAgent", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SystemReference("CORTEX AGENT")).
-		OptionalIdentifier("SnowflakeIntelligence", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SystemReference("SNOWFLAKE INTELLIGENCE")).
-		// the AI Gateway reference follows the guide; only its whole domain is tested, as an instance needs the AI Gateway preview
-		OptionalIdentifier("AiGateway", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SystemReference("AI GATEWAY")).
-		WithValidation(g.MoreThanOneValueSet, "InstanceName", "Warehouse", "CortexAgent", "SnowflakeIntelligence", "AiGateway").
-		WithAdditionalValidations()
+		SQLWithCustomFieldName("domain", "'"+domain+"'").
+		Text("Name", g.KeywordOptions().SingleQuotes().Required())
+}
+
+// A domain followed by one of its instances, given by reference.
+func quotaSharedResourceReferenceArgs(name string, domain string, kind string, objectType string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		SQLWithCustomFieldName("domain", "'"+domain+"'").
+		Identifier("Id", kind, g.IdentifierOptions().Required().SystemReference(objectType)).
+		WithValidation(g.ValidIdentifier, "Id")
+}
+
+// ADD_SHARED_RESOURCE and REMOVE_SHARED_RESOURCE take a whole domain, or one of its instances. AI FUNCTION and SNOWFLAKE COCO
+// instances are plain names; the other domains take object references. SYSTEM$REFERENCE doesn't accept SNOWFLAKE COWORK, so its
+// instances are referenced as SNOWFLAKE INTELLIGENCE objects.
+func quotaSharedResourceArgs(name string) *g.QueryStruct {
+	accountObject := g.KindOfT[sdkcommons.AccountObjectIdentifier]()
+	return g.NewQueryStruct(name).
+		OptionalQueryStructField(
+			"WholeDomain",
+			g.NewQueryStruct("Quota"+name+"WholeDomain").Enum("Domain", QuotaSharedResourceDomainEnumDef, g.KeywordOptions().SingleQuotes().Required()),
+			g.ListOptions(),
+		).
+		OptionalQueryStructField("AiFunction", quotaSharedResourceNameArgs("Quota"+name+"AiFunction", "AI FUNCTION"), g.ListOptions()).
+		OptionalQueryStructField("SnowflakeCoco", quotaSharedResourceNameArgs("Quota"+name+"SnowflakeCoco", "SNOWFLAKE COCO"), g.ListOptions()).
+		OptionalQueryStructField("Warehouse", quotaSharedResourceReferenceArgs("Quota"+name+"Warehouse", "WAREHOUSE", accountObject, "WAREHOUSE"), g.ListOptions()).
+		OptionalQueryStructField("CortexAgent", quotaSharedResourceReferenceArgs("Quota"+name+"CortexAgent", "CORTEX AGENT", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), "CORTEX AGENT"), g.ListOptions()).
+		OptionalQueryStructField("SnowflakeCowork", quotaSharedResourceReferenceArgs("Quota"+name+"SnowflakeCowork", "SNOWFLAKE COWORK", accountObject, "SNOWFLAKE INTELLIGENCE"), g.ListOptions()).
+		OptionalQueryStructField("AiGateway", quotaSharedResourceReferenceArgs("Quota"+name+"AiGateway", "AI GATEWAY", accountObject, "AI GATEWAY"), g.ListOptions()).
+		WithValidation(g.ExactlyOneValueSet, "WholeDomain", "AiFunction", "SnowflakeCoco", "Warehouse", "CortexAgent", "SnowflakeCowork", "AiGateway")
 }
 
 func quotaTagValue(name string) *g.QueryStruct {
 	return g.NewQueryStruct(name).
-		QueryStructField(
-			"Reference",
-			g.NewQueryStruct(name+"Reference").
-				SQLWithCustomFieldName("function", "SYSTEM$REFERENCE").
-				QueryStructField(
-					"Arguments",
-					g.NewQueryStruct(name+"ReferenceArguments").
-						SQLWithCustomFieldName("objectType", "'TAG'").
-						Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SingleQuotes().Required()).
-						SQLWithCustomFieldName("scope", "'SESSION'").
-						SQLWithCustomFieldName("privilege", "'APPLYBUDGET'").
-						WithValidation(g.ValidIdentifier, "Tag"),
-					g.ListOptions().MustParentheses().Required(),
-				),
-			g.ListOptions().NoComma().Required(),
-		).
-		Text("Value", g.KeywordOptions().SingleQuotes().Required())
+		Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET")).
+		Text("Value", g.KeywordOptions().SingleQuotes().Required()).
+		WithValidation(g.ValidIdentifier, "Tag")
 }
 
-// SET_USER_TAGS replaces the tags that select the users. The operator is required; the one-argument form is rejected.
+// SET_USER_TAGS replaces the tags that select the users. The operator is required; the one-argument form is rejected. With
+// ALL_USERS and an empty array, the quota applies to all users again, and the excluded tags and both user lists are cleared.
 var quotaSetUserTagsArgs = g.NewQueryStruct("SetUserTagsArgs").
 	ListQueryStructField("Tags", quotaTagValue("QuotaUserTag"), g.ListOptions().Required().MustBrackets().ArrayElements()).
 	Enum("Operator", QuotaUserTagsOperatorEnumDef, g.KeywordOptions().SingleQuotes().Required())
@@ -206,7 +218,7 @@ var quotasDef = g.NewInterface(
 	"Quota",
 	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
 ).CreateOperation(
-	quotaDocs("use-sql-to-create-a-per-user-quota"),
+	quotaDocs("create-a-quota"),
 	g.NewQueryStruct("CreateQuotaOptions").
 		Create().
 		OrReplace().
@@ -278,22 +290,22 @@ var quotasDef = g.NewInterface(
 	quotaSharedResourceArgs("RemoveSharedResourceArgs"),
 	"string",
 ).InstanceMethodOperationScalar(
-	quotaDocs("user-scope"),
+	quotasLegacyScopeDocs,
 	"SET_USER_TAGS",
 	quotaSetUserTagsArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotaDocs("user-scope"),
+	quotasLegacyScopeDocs,
 	"EXCLUDE_USERS",
 	quotaExcludeUsersArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotaDocs("user-scope"),
+	quotasLegacyScopeDocs,
 	"INCLUDE_USERS",
 	quotaIncludeUsersArgs,
 	"string",
 ).InstanceMethodOperationScalar(
-	quotaDocs("user-scope"),
+	quotasLegacyScopeDocs,
 	"GET_QUOTA_SCOPE",
 	nil,
 	"string",

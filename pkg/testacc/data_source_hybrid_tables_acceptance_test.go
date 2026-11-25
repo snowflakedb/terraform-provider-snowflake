@@ -23,7 +23,7 @@ import (
 func TestAcc_HybridTables_CompleteUseCase(t *testing.T) {
 	parentId, parentCleanup := testClient().HybridTable.CreateWithRequest(t, testClient().Ids.RandomSchemaObjectIdentifier(), sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 		Columns: []sdk.HybridTableColumnRequest{
-			*sdk.NewHybridTableColumnRequest("ID", sdk.DataType("INTEGER")).
+			*sdk.NewHybridTableColumnRequest("ID", testdatatypes.DataTypeInteger).
 				WithInlineConstraint(sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}),
 		},
 	})

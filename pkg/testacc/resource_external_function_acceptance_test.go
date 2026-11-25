@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -225,7 +226,7 @@ func TestAcc_ExternalFunction_complete(t *testing.T) {
 }
 
 func TestAcc_ExternalFunction_migrateFromVersion085(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsOld(sdk.DataTypeVARCHAR, sdk.DataTypeVARCHAR)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeVarchar, testdatatypes.DataTypeVarchar)
 	name := id.Name()
 	resourceName := "snowflake_external_function.f"
 	providerConfig := providermodel.V097CompatibleProviderConfig(t)

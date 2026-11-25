@@ -40,7 +40,6 @@ const (
 	case_CatalogIntegrations_validation_Alter_name_ValidIdentifier                                                    testCaseName = "validation_Alter_name_ValidIdentifier"
 	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
 	case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                  testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields                                              testCaseName = "validation_Alter_opts_Set_ConflictingFields"
 	case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet                                             testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
 	case_CatalogIntegrations_validation_Alter_SetTags_ValidIdentifier                                                 testCaseName = "validation_Alter_SetTags_ValidIdentifier"
 	case_CatalogIntegrations_sql_Alter_Set                                                                            testCaseName = "sql_Alter_Set"
@@ -264,15 +263,6 @@ var catalogIntegrationsTests = CatalogIntegrationsTestsContext{
 			validationCase[*AlterCatalogIntegrationOptions]{
 				Name:        case_CatalogIntegrations_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet,
 				ExpectedErr: errExactlyOneOf("AlterCatalogIntegrationOptions", "Set", "SetTags", "UnsetTags"),
-			},
-			validationCase[*AlterCatalogIntegrationOptions]{
-				Name:        case_CatalogIntegrations_validation_Alter_opts_Set_ConflictingFields,
-				ExpectedErr: errOneOf("AlterCatalogIntegrationOptions.Set", "SetOAuthRestAuthentication", "SetBearerRestAuthentication"),
-				DefaultModify: func(opts *AlterCatalogIntegrationOptions) {
-					opts.Set = &CatalogIntegrationSet{}
-					opts.Set.SetOAuthRestAuthentication = &CatalogIntegrationSetOauthRestAuthentication{}
-					opts.Set.SetBearerRestAuthentication = &CatalogIntegrationSetBearerRestAuthentication{}
-				},
 			},
 			validationCase[*AlterCatalogIntegrationOptions]{
 				Name:        case_CatalogIntegrations_validation_Alter_opts_Set_AtLeastOneValueSet,

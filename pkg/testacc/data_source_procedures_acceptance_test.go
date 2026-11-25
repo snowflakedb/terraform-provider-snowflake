@@ -52,8 +52,8 @@ func proceduresConfig(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) strin
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Procedure.SampleJavaDefinition(t, className, funcName, argName)
 
-	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
-	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId, dataType)
+	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId, dataType)
 
 	functionsSetup := config.FromModels(
 		t,

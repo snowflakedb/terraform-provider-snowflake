@@ -23,8 +23,10 @@ type SharedDatabaseModel struct {
 	FullyQualifiedName                      tfconfig.Variable `json:"fully_qualified_name,omitempty"`
 	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
+	MetricLevel                             tfconfig.Variable `json:"metric_level,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
+	ServiceCallerTokenValiditySecs          tfconfig.Variable `json:"service_caller_token_validity_secs,omitempty"`
 	StorageSerializationPolicy              tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
 	SuspendTaskAfterNumFailures             tfconfig.Variable `json:"suspend_task_after_num_failures,omitempty"`
 	TaskAutoRetryAttempts                   tfconfig.Variable `json:"task_auto_retry_attempts,omitempty"`
@@ -159,6 +161,11 @@ func (s *SharedDatabaseModel) WithLogLevel(logLevel string) *SharedDatabaseModel
 	return s
 }
 
+func (s *SharedDatabaseModel) WithMetricLevel(metricLevel string) *SharedDatabaseModel {
+	s.MetricLevel = tfconfig.StringVariable(metricLevel)
+	return s
+}
+
 func (s *SharedDatabaseModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SharedDatabaseModel {
 	s.QuotedIdentifiersIgnoreCase = tfconfig.BoolVariable(quotedIdentifiersIgnoreCase)
 	return s
@@ -166,6 +173,11 @@ func (s *SharedDatabaseModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersI
 
 func (s *SharedDatabaseModel) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *SharedDatabaseModel {
 	s.ReplaceInvalidCharacters = tfconfig.BoolVariable(replaceInvalidCharacters)
+	return s
+}
+
+func (s *SharedDatabaseModel) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *SharedDatabaseModel {
+	s.ServiceCallerTokenValiditySecs = tfconfig.IntegerVariable(serviceCallerTokenValiditySecs)
 	return s
 }
 
@@ -268,6 +280,11 @@ func (s *SharedDatabaseModel) WithLogLevelValue(value tfconfig.Variable) *Shared
 	return s
 }
 
+func (s *SharedDatabaseModel) WithMetricLevelValue(value tfconfig.Variable) *SharedDatabaseModel {
+	s.MetricLevel = value
+	return s
+}
+
 func (s *SharedDatabaseModel) WithQuotedIdentifiersIgnoreCaseValue(value tfconfig.Variable) *SharedDatabaseModel {
 	s.QuotedIdentifiersIgnoreCase = value
 	return s
@@ -275,6 +292,11 @@ func (s *SharedDatabaseModel) WithQuotedIdentifiersIgnoreCaseValue(value tfconfi
 
 func (s *SharedDatabaseModel) WithReplaceInvalidCharactersValue(value tfconfig.Variable) *SharedDatabaseModel {
 	s.ReplaceInvalidCharacters = value
+	return s
+}
+
+func (s *SharedDatabaseModel) WithServiceCallerTokenValiditySecsValue(value tfconfig.Variable) *SharedDatabaseModel {
+	s.ServiceCallerTokenValiditySecs = value
 	return s
 }
 

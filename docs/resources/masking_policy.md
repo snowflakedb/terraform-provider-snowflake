@@ -114,7 +114,7 @@ EOF
 Required:
 
 - `name` (String) The argument name
-- `type` (String) The argument type. VECTOR data types are not yet supported. For more information about data types, check [Snowflake docs](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).
+- `type` (String) The argument type. For more information about data types, check [Snowflake docs](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).
 
 
 <a id="nestedblock--timeouts"></a>

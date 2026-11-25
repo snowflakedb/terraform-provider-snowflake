@@ -78,7 +78,7 @@ func (r grantRow) additionalConvert(result *Grant) error {
 	var err error
 	// TODO(SNOW-1569535): use a mapper from object type to parsing function
 	if ObjectType(r.GrantedOn).IsWithArguments() {
-		name, err = ParseSchemaObjectIdentifierWithArgumentsAndReturnType(r.Name)
+		name, err = ParseSchemaObjectIdentifierWithArguments(r.Name)
 	} else {
 		name, err = ParseObjectIdentifierString(r.Name)
 	}

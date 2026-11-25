@@ -10,20 +10,20 @@ import (
 type QuotaSharedResourceDomain string
 
 const (
-	QuotaSharedResourceDomainWarehouse             QuotaSharedResourceDomain = "WAREHOUSE"
-	QuotaSharedResourceDomainAiFunction            QuotaSharedResourceDomain = "AI FUNCTION"
-	QuotaSharedResourceDomainCortexAgent           QuotaSharedResourceDomain = "CORTEX AGENT"
-	QuotaSharedResourceDomainCortexCode            QuotaSharedResourceDomain = "CORTEX CODE"
-	QuotaSharedResourceDomainSnowflakeIntelligence QuotaSharedResourceDomain = "SNOWFLAKE INTELLIGENCE"
-	QuotaSharedResourceDomainAiGateway             QuotaSharedResourceDomain = "AI GATEWAY"
+	QuotaSharedResourceDomainWarehouse       QuotaSharedResourceDomain = "WAREHOUSE"
+	QuotaSharedResourceDomainAiFunction      QuotaSharedResourceDomain = "AI FUNCTION"
+	QuotaSharedResourceDomainCortexAgent     QuotaSharedResourceDomain = "CORTEX AGENT"
+	QuotaSharedResourceDomainSnowflakeCoco   QuotaSharedResourceDomain = "SNOWFLAKE COCO"
+	QuotaSharedResourceDomainSnowflakeCowork QuotaSharedResourceDomain = "SNOWFLAKE COWORK"
+	QuotaSharedResourceDomainAiGateway       QuotaSharedResourceDomain = "AI GATEWAY"
 )
 
 var AllQuotaSharedResourceDomains = []QuotaSharedResourceDomain{
 	QuotaSharedResourceDomainWarehouse,
 	QuotaSharedResourceDomainAiFunction,
 	QuotaSharedResourceDomainCortexAgent,
-	QuotaSharedResourceDomainCortexCode,
-	QuotaSharedResourceDomainSnowflakeIntelligence,
+	QuotaSharedResourceDomainSnowflakeCoco,
+	QuotaSharedResourceDomainSnowflakeCowork,
 	QuotaSharedResourceDomainAiGateway,
 }
 
@@ -36,10 +36,10 @@ func ToQuotaSharedResourceDomain(s string) (QuotaSharedResourceDomain, error) {
 		return QuotaSharedResourceDomainAiFunction, nil
 	case string(QuotaSharedResourceDomainCortexAgent):
 		return QuotaSharedResourceDomainCortexAgent, nil
-	case string(QuotaSharedResourceDomainCortexCode):
-		return QuotaSharedResourceDomainCortexCode, nil
-	case string(QuotaSharedResourceDomainSnowflakeIntelligence):
-		return QuotaSharedResourceDomainSnowflakeIntelligence, nil
+	case string(QuotaSharedResourceDomainSnowflakeCoco):
+		return QuotaSharedResourceDomainSnowflakeCoco, nil
+	case string(QuotaSharedResourceDomainSnowflakeCowork):
+		return QuotaSharedResourceDomainSnowflakeCowork, nil
 	case string(QuotaSharedResourceDomainAiGateway):
 		return QuotaSharedResourceDomainAiGateway, nil
 	default:
@@ -104,11 +104,13 @@ type QuotaUserTagsOperator string
 const (
 	QuotaUserTagsOperatorUnion        QuotaUserTagsOperator = "UNION"
 	QuotaUserTagsOperatorIntersection QuotaUserTagsOperator = "INTERSECTION"
+	QuotaUserTagsOperatorAllUsers     QuotaUserTagsOperator = "ALL_USERS"
 )
 
 var AllQuotaUserTagsOperators = []QuotaUserTagsOperator{
 	QuotaUserTagsOperatorUnion,
 	QuotaUserTagsOperatorIntersection,
+	QuotaUserTagsOperatorAllUsers,
 }
 
 func ToQuotaUserTagsOperator(s string) (QuotaUserTagsOperator, error) {
@@ -118,6 +120,8 @@ func ToQuotaUserTagsOperator(s string) (QuotaUserTagsOperator, error) {
 		return QuotaUserTagsOperatorUnion, nil
 	case string(QuotaUserTagsOperatorIntersection):
 		return QuotaUserTagsOperatorIntersection, nil
+	case string(QuotaUserTagsOperatorAllUsers):
+		return QuotaUserTagsOperatorAllUsers, nil
 	default:
 		return "", fmt.Errorf("invalid quota user tags operator: %s", s)
 	}

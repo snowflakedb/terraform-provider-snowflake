@@ -143,7 +143,7 @@ func CreateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 		}
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return ReadMaterializedView(ctx, d, meta)
 }
@@ -219,7 +219,7 @@ func UpdateMaterializedView(ctx context.Context, d *schema.ResourceData, meta an
 			return diag.FromErr(fmt.Errorf("error renaming materialized view %v err = %w", d.Id(), err))
 		}
 
-		d.SetId(helpers.EncodeSnowflakeID(newId))
+		d.SetId(helpers.EncodeSnowflakeIDLegacy(newId))
 		id = newId
 	}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/stretchr/testify/require"
 )
 
@@ -65,18 +66,6 @@ func Test_ValidateObject_identifierRequiresType(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_conflictsWithUnknownAttribute(t *testing.T) {
-	require.PanicsWithValue(t, `object "Warehouse": attribute "resource_constraint" conflicts with unknown attribute "generation"`, func() {
-		ValidateObject(Object{
-			Name: "Warehouse",
-			Attributes: []Attribute{{
-				Name:          "resource_constraint",
-				ConflictsWith: []Attribute{{Name: "generation"}},
-			}},
-		})
-	})
-}
-
 func Test_ValidateObject_objectAssertSkipMustBeColumn(t *testing.T) {
 	tables := Attribute{Name: "tables", Type: AttrString, Readonly: true}
 	other := Attribute{Name: "other", Type: AttrString, Readonly: true}
@@ -105,95 +94,6 @@ func Test_ValidateObject_objectAssertSkipMustBeColumn(t *testing.T) {
 				WithObjectAssert(ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&tables))),
 			},
 			Show: OutputSpec{Columns: []*Attribute{&tables}},
-		})
-	})
-}
-
-func Test_ValidateObject_conflictsWithItself(t *testing.T) {
-	require.PanicsWithValue(t, `object "Warehouse": attribute "generation" conflicts with itself`, func() {
-		ValidateObject(Object{
-			Name: "Warehouse",
-			Attributes: []Attribute{{
-				Name:          "generation",
-				ConflictsWith: []Attribute{{Name: "generation"}},
-			}},
-		})
-	})
-}
-
-func Test_ValidateObject_atLeastOneOfAndNestedRelations(t *testing.T) {
-	require.NotPanics(t, func() {
-		ValidateObject(Object{
-			Name: "AuthenticationPolicy",
-			Attributes: []Attribute{{
-				Name:     "mfa_policy",
-				Type:     AttrList,
-				MaxItems: new(1),
-				Elem: ObjectElem([]Attribute{
-					{Name: "enforce_mfa_on_external_authentication", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-				}),
-			}},
-		})
-	})
-	require.NotPanics(t, func() {
-		ValidateObject(Object{
-			Name: "AuthenticationPolicy",
-			Attributes: []Attribute{{
-				Name: "mfa_policy",
-				Type: AttrObject,
-				Children: []Attribute{
-					{Name: "enforce_mfa_on_external_authentication", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "enforce_mfa_on_external_authentication"}, {Name: "allowed_methods"}}},
-				},
-			}},
-		})
-	})
-	require.PanicsWithValue(t, `object "AuthenticationPolicy": attribute "allowed_methods" at least one of unknown attribute "missing"`, func() {
-		ValidateObject(Object{
-			Name: "AuthenticationPolicy",
-			Attributes: []Attribute{{
-				Name:     "mfa_policy",
-				Type:     AttrList,
-				MaxItems: new(1),
-				Elem: ObjectElem([]Attribute{
-					{Name: "allowed_methods", AtLeastOneOf: []Attribute{{Name: "missing"}}},
-				}),
-			}},
-		})
-	})
-	require.PanicsWithValue(t, `object "Widget": attribute "items" relations require a single block`, func() {
-		ValidateObject(Object{
-			Name: "Widget",
-			Attributes: []Attribute{{
-				Name: "items",
-				Type: AttrSet,
-				Elem: ObjectElem([]Attribute{
-					{Name: "left", ConflictsWith: []Attribute{{Name: "right"}}},
-					{Name: "right"},
-				}),
-			}},
-		})
-	})
-	require.PanicsWithValue(t, `object "Widget": ConflictsWith attribute "left" is required`, func() {
-		ValidateObject(Object{
-			Name: "Widget",
-			Attributes: []Attribute{
-				{Name: "left", Required: true, ConflictsWith: []Attribute{{Name: "right"}}},
-				{Name: "right"},
-			},
-		})
-	})
-}
-
-func Test_ValidateObject_conflictsWithKnownAttribute(t *testing.T) {
-	require.NotPanics(t, func() {
-		ValidateObject(Object{
-			Name: "Warehouse",
-			Attributes: []Attribute{
-				{Name: "resource_constraint", ConflictsWith: []Attribute{{Name: "generation"}}},
-				{Name: "generation", ConflictsWith: []Attribute{{Name: "resource_constraint"}}},
-			},
 		})
 	})
 }
@@ -262,6 +162,54 @@ func Test_ValidateObject_additionalCustomizeDiffsEmptyEntry(t *testing.T) {
 			ResourceHooks: []ResourceHookOption{
 				WithCustomizeDiff(Generated()),
 			},
+		})
+	})
+}
+
+func Test_ValidateObject_resourceParametersNotInCatalog(t *testing.T) {
+	require.PanicsWithValue(t, `object "Table": ResourceParameters entry "CATALOG" is not in the TABLE catalog`, func() {
+		ValidateObject(Object{
+			Name: "Table",
+			ResourceParameters: []ParameterDef{{
+				SqlName: "CATALOG",
+				Levels:  []ParameterLevel{ParameterLevelSchema},
+			}},
+		})
+	})
+}
+
+func Test_ValidateObject_resourceParametersDuplicate(t *testing.T) {
+	require.PanicsWithValue(t, `object "Table": duplicate ResourceParameters entry "DATA_RETENTION_TIME_IN_DAYS"`, func() {
+		p := ParameterDef{
+			SqlName: "DATA_RETENTION_TIME_IN_DAYS",
+			Levels:  []ParameterLevel{ParameterLevelTable},
+		}
+		ValidateObject(Object{
+			Name:               "Table",
+			ResourceParameters: []ParameterDef{p, p},
+		})
+	})
+}
+
+func Test_ValidateObject_resourceParametersEmptySqlName(t *testing.T) {
+	require.PanicsWithValue(t, `object "Table": ResourceParameters entry has empty SqlName`, func() {
+		ValidateObject(Object{
+			Name: "Table",
+			ResourceParameters: []ParameterDef{{
+				Levels: []ParameterLevel{ParameterLevelTable},
+			}},
+		})
+	})
+}
+
+func Test_ValidateObject_resourceParametersInCatalog(t *testing.T) {
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name: "Table",
+			ResourceParameters: []ParameterDef{{
+				SqlName: "DATA_RETENTION_TIME_IN_DAYS",
+				Levels:  []ParameterLevel{ParameterLevelTable},
+			}},
 		})
 	})
 }
@@ -501,10 +449,10 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": ALTER text is empty`, func() {
 		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterText("")}}})
 	})
-	require.PanicsWithValue(t, `object "Widget": ALTER block needs a field, SQL, and an attribute`, func() {
+	require.PanicsWithValue(t, `object "Widget": ALTER block needs a field and an attribute`, func() {
 		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", nil)}}})
 	})
-	require.PanicsWithValue(t, `object "Widget": ALTER block "ADD X" needs a list of objects or an object with Children`, func() {
+	require.PanicsWithValue(t, `object "Widget": ALTER block "Add" needs a list of objects or an object with Children`, func() {
 		scalar := Attribute{Name: "x", Type: AttrString}
 		ValidateObject(Object{Name: "Widget", Alter: AlterSpec{Clauses: []AlterClause{AlterParameterBlock("Add", "ADD X", &scalar)}}})
 	})
@@ -516,6 +464,15 @@ func Test_ValidateObject_sqlClause(t *testing.T) {
 				AlterParameterBlock("Add", "ADD X", &block),
 				AlterKeywordBlock("AddAgain", "ADD X", &block),
 			}},
+		})
+	})
+	require.PanicsWithValue(t, `object "Widget": ALTER block "Add" has unknown join "bogus"`, func() {
+		block := Attribute{Name: "x", Type: AttrObject, SqlOnly: true, Children: []Attribute{{Name: "y", Type: AttrString}}}
+		ValidateObject(Object{
+			Name: "Widget",
+			Alter: AlterSpec{Clauses: []AlterClause{{
+				Kind: AlterClauseBlock, Field: "Add", SQL: "ADD X", Block: &block, BlockJoin: "bogus",
+			}}},
 		})
 	})
 	require.PanicsWithValue(t, `object "Widget": ALTER list "ADD TABLES" is an exactly-one branch`, func() {
@@ -660,10 +617,10 @@ func Test_ValidateObject_nestedAttribute(t *testing.T) {
 	})
 
 	for name, attr := range map[string]Attribute{
-		"min": {Name: "min", Type: AttrObject, Children: []Attribute{leaf}, MinItems: new(1)},
-		"max": {Name: "max", Type: AttrObject, Children: []Attribute{leaf}, MaxItems: new(1)},
+		"min": {Name: "min", Type: AttrObject, Children: []Attribute{leaf}, Min: new(1)},
+		"max": {Name: "max", Type: AttrObject, Children: []Attribute{leaf}, Max: new(1)},
 	} {
-		require.PanicsWithValue(t, fmt.Sprintf(`object "Widget": attribute %q item bounds require a list or set`, name), func() {
+		require.PanicsWithValue(t, fmt.Sprintf(`object "Widget": attribute %q bounds require an int, list, or set`, name), func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{attr}})
 		})
 	}
@@ -739,47 +696,128 @@ func Test_ValidateObject_collectionItemBounds(t *testing.T) {
 		Name:     "storage_location",
 		Type:     AttrList,
 		Required: true,
-		MinItems: new(1),
 		Elem: ObjectElem([]Attribute{
 			{Name: "storage_location_name", Type: AttrString, Required: true},
 			{Name: "storage_base_url", Type: AttrString, Required: true},
-			{Name: "allowed_locations", Type: AttrList, MinItems: new(1), Elem: &Attribute{Type: AttrString}},
+			{Name: "allowed_locations", Type: AttrList, Min: new(1), Elem: &Attribute{Type: AttrString}},
 		}),
 	}
 	require.NotPanics(t, func() {
 		ValidateObject(Object{Name: "ExternalVolume", Attributes: []Attribute{locations}})
 	})
 
-	require.PanicsWithValue(t, `object "ExternalVolume": attribute "comment" item bounds require a list or set`, func() {
+	require.NotPanics(t, func() {
 		ValidateObject(Object{
-			Name:       "ExternalVolume",
-			Attributes: []Attribute{{Name: "comment", Type: AttrString, MinItems: new(1)}},
-		})
-	})
-
-	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" MinItems 2 is greater than MaxItems 1`, func() {
-		ValidateObject(Object{
-			Name: "ExternalVolume",
+			Name: "Widget",
 			Attributes: []Attribute{{
-				Name:     "storage_location",
+				Name:     "items",
 				Type:     AttrList,
-				MinItems: new(2),
-				MaxItems: new(1),
+				Required: true,
+				Min:      new(2),
+				Elem:     &Attribute{Type: AttrString},
 			}},
 		})
 	})
 
-	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_base_url" item bounds require a list or set`, func() {
+	require.PanicsWithValue(t, `object "Widget": attribute "items" is a required list and cannot have Min 0`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name:     "items",
+				Type:     AttrList,
+				Required: true,
+				Min:      new(0),
+				Elem:     &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Widget": attribute "items" is a required list, so Min 1 is deduced automatically; omit Min`, func() {
+		ValidateObject(Object{
+			Name: "Widget",
+			Attributes: []Attribute{{
+				Name:     "items",
+				Type:     AttrList,
+				Required: true,
+				Min:      new(1),
+				Elem:     &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "comment" bounds require an int, list, or set`, func() {
+		ValidateObject(Object{
+			Name:       "ExternalVolume",
+			Attributes: []Attribute{{Name: "comment", Type: AttrString, Min: new(1)}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" Min 2 is greater than Max 1`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name: "storage_location",
+				Type: AttrList,
+				Min:  new(2),
+				Max:  new(1),
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_base_url" bounds require an int, list, or set`, func() {
 		ValidateObject(Object{
 			Name: "ExternalVolume",
 			Attributes: []Attribute{{
 				Name: "storage_location",
 				Type: AttrSet,
 				Elem: ObjectElem([]Attribute{{
-					Name:     "storage_base_url",
-					Type:     AttrString,
-					MinItems: new(1),
+					Name: "storage_base_url",
+					Type: AttrString,
+					Min:  new(1),
 				}}),
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" collection bounds cannot be negative`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name: "storage_location",
+				Type: AttrList,
+				Min:  new(-1),
+				Elem: &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "ExternalVolume": attribute "storage_location" collection bounds cannot be negative`, func() {
+		ValidateObject(Object{
+			Name: "ExternalVolume",
+			Attributes: []Attribute{{
+				Name: "storage_location",
+				Type: AttrSet,
+				Max:  new(-1),
+				Elem: &Attribute{Type: AttrString},
+			}},
+		})
+	})
+
+	require.NotPanics(t, func() {
+		ValidateObject(Object{
+			Name:       "Table",
+			Attributes: []Attribute{{Name: "data_retention_time_in_days", Type: AttrInt, Min: new(-1), Max: new(90)}},
+		})
+	})
+
+	require.PanicsWithValue(t, `object "Alert": attribute "cron" is a list of objects with Max 1; use AttrObject instead`, func() {
+		ValidateObject(Object{
+			Name: "Alert",
+			Attributes: []Attribute{{
+				Name: "cron",
+				Type: AttrList,
+				Max:  new(1),
+				Elem: ObjectElem([]Attribute{{Name: "expression", Type: AttrString}}),
 			}},
 		})
 	})
@@ -818,11 +856,19 @@ func Test_ValidateObject_customOperations(t *testing.T) {
 	}
 	require.NotPanics(t, func() { ValidateObject(valid) })
 
-	missing := valid
+	onlyOnCustom := valid
 	other := Attribute{Name: "other", Type: AttrBool, CreateSql: BoolKeyword(Sql("OTHER"))}
-	missing.CustomOperations = []CustomOperationSpec{{
+	onlyOnCustom.CustomOperations = []CustomOperationSpec{{
 		Kind:    "Clone",
 		Clauses: []CustomOperationClause{CustomAttribute(&other)},
+	}}
+	require.NotPanics(t, func() { ValidateObject(onlyOnCustom) })
+
+	missing := valid
+	empty := Attribute{CreateSql: BoolKeyword(Sql("OTHER"))}
+	missing.CustomOperations = []CustomOperationSpec{{
+		Kind:    "Clone",
+		Clauses: []CustomOperationClause{CustomAttribute(&empty)},
 	}}
 	require.Panics(t, func() { ValidateObject(missing) })
 
@@ -932,7 +978,7 @@ func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
 	comment := Attribute{Name: "comment", Type: AttrString}
 	obj := Object{
 		Name:       "WarehouseAdaptive",
-		VariantOf:  &base,
+		Variant:    &ObjectVariant{Of: &base},
 		Attributes: []Attribute{kind, comment},
 		Create:     CreateSpec{Clauses: []*Attribute{&kind, &comment}},
 	}
@@ -942,12 +988,12 @@ func Test_ValidateObject_variantEntityCreateName(t *testing.T) {
 
 	withSql := obj
 	withSql.Create.Sql = "WAREHOUSE"
-	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE words are VariantEntityCreateName`, func() {
+	require.PanicsWithValue(t, `object "WarehouseAdaptive": variant CREATE words are Variant.CreateName`, func() {
 		ValidateObject(withSql)
 	})
 
-	require.PanicsWithValue(t, `object "Widget": VariantEntityCreateName is for a variant`, func() {
-		ValidateObject(Object{Name: "Widget", VariantEntityCreateName: "WIDGET"})
+	require.PanicsWithValue(t, `object "Widget": Variant.Of needs a base`, func() {
+		ValidateObject(Object{Name: "Widget", Variant: &ObjectVariant{CreateName: "WIDGET"}})
 	})
 	require.PanicsWithValue(t, `object "Widget": Create.WithoutOrReplace is for a variant`, func() {
 		ValidateObject(Object{Name: "Widget", Create: CreateSpec{WithoutOrReplace: true}})
@@ -1239,9 +1285,13 @@ func Test_ValidateObject_objectListVariants(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "key_id" is not a child of the element`, func() {
 		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &keyId))), baseUrl))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "key_id" has no CREATE clause`, func() {
-		noClause := Attribute{Name: "key_id", Type: AttrString}
-		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &noClause))), baseUrl))
+	require.NotPanics(t, func() {
+		plain := Attribute{Name: "key_id", Type: AttrString}
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &plain))), plain))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "when" has no CREATE clause`, func() {
+		when := Attribute{Name: "when", Type: AttrTime}
+		ValidateObject(list(ObjectParameter(WithVariants(Variant("First", &when))), when))
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "location" variant "First" field "block" needs Children`, func() {
 		block := Attribute{Name: "block", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter()}
@@ -1270,6 +1320,9 @@ func Test_Attribute_nestedFields(t *testing.T) {
 func Test_Attribute_sqlStructNames(t *testing.T) {
 	attr := Attribute{Name: "storage_location"}
 	require.Equal(t, "ExternalVolumeStorageLocation", attr.SqlStructName("ExternalVolume"))
+	named := Attribute{Name: "column", CreateSql: ObjectParameter(StructName("TableColumnAction"))}
+	require.Equal(t, "TableColumnAction", named.SqlStructName("Table"))
+	require.Equal(t, "TableColumn", Attribute{Name: "column"}.SqlStructName("Table"))
 	require.Equal(t, "GCSStorageLocationParams", attr.SqlVariantStructName("GCS"))
 }
 
@@ -1291,9 +1344,8 @@ func Test_ObjectElem(t *testing.T) {
 func Test_Attribute_IsSingleBlock(t *testing.T) {
 	leaf := Attribute{Name: "leaf", Type: AttrString}
 	require.True(t, Attribute{Type: AttrObject, Children: []Attribute{leaf}}.IsSingleBlock())
-	require.True(t, Attribute{Type: AttrList, MaxItems: new(1), Elem: ObjectElem([]Attribute{leaf})}.IsSingleBlock())
 	require.False(t, Attribute{Type: AttrList, Elem: ObjectElem([]Attribute{leaf})}.IsSingleBlock())
-	require.False(t, Attribute{Type: AttrList, MaxItems: new(1), Elem: &Attribute{Type: AttrString}}.IsSingleBlock())
+	require.False(t, Attribute{Type: AttrList, Max: new(1), Elem: &Attribute{Type: AttrString}}.IsSingleBlock())
 }
 
 func Test_Attribute_nestedSqlFields(t *testing.T) {
@@ -1340,14 +1392,14 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 
 	t.Run("without an object clause", func(t *testing.T) {
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."type_oauth" is SQL-only but not a static clause, a keyword, an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct of an object clause`, func() {
 			ValidateObject(Object{Name: "Widget", Attributes: []Attribute{{Name: "block", Type: AttrObject, Children: []Attribute{typeOauth, uri}}}})
 		})
 	})
 
 	t.Run("sql-only without a clause", func(t *testing.T) {
 		bare := Attribute{Name: "other", SqlOnly: true}
-		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, a parameter, or a nested struct of an object clause`, func() {
+		require.PanicsWithValue(t, `object "Widget": nested attribute "block"."other" is SQL-only but not a static clause, a keyword, an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct of an object clause`, func() {
 			validate(Attribute{Name: "block", Type: AttrObject, CreateSql: ObjectParameter(Sql("BLOCK =")), Children: []Attribute{bare, uri}})
 		})
 	})
@@ -1373,42 +1425,52 @@ func Test_ValidateObject_nestedStaticFields(t *testing.T) {
 	})
 }
 
-func Test_ValidateObject_exactlyOneOf(t *testing.T) {
+func Test_ValidateObject_objectValidations(t *testing.T) {
 	one := Attribute{Name: "one", Type: AttrString}
 	two := Attribute{Name: "two", Type: AttrString}
 	three := Attribute{Name: "three", Type: AttrString}
 	required := Attribute{Name: "required", Type: AttrString, Required: true}
 	static := Attribute{Name: "static", SqlOnly: true, CreateSql: StaticSQL("static", "A = B")}
 	outside := Attribute{Name: "outside", Type: AttrString}
-	newObject := func(groups ...[]*Attribute) Object {
+	newObject := func(validations ...Validation) Object {
 		return Object{
-			Name:         "Widget",
-			Attributes:   []Attribute{one, two, three, required, static},
-			ExactlyOneOf: groups,
-			Create:       CreateSpec{Clauses: []*Attribute{&static}},
+			Name:        "Widget",
+			Attributes:  []Attribute{one, two, three, required, static},
+			Validations: validations,
+			Create:      CreateSpec{Clauses: []*Attribute{&static}},
 		}
 	}
 
-	require.NotPanics(t, func() { ValidateObject(newObject()) }, "no group")
-	require.NotPanics(t, func() { ValidateObject(newObject([]*Attribute{&one, &two})) })
+	require.NotPanics(t, func() { ValidateObject(newObject()) }, "no validation")
+	require.NotPanics(t, func() { ValidateObject(newObject(ExactlyOneOf(one, two), AtLeastOneOf(one, three))) }, "a field in two kinds")
+	require.NotPanics(t, func() { ValidateObject(newObject(Conflicting(one, two), Conflicting(one, three))) }, "conflicting validations sharing a field")
 
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 needs at least two attributes`, func() {
-		ValidateObject(newObject([]*Attribute{&one}))
+	require.PanicsWithValue(t, `object "Widget": validation 0 names no attributes`, func() {
+		ValidateObject(newObject(ExactlyOneOf()))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 has a nil attribute`, func() {
-		ValidateObject(newObject([]*Attribute{&one, nil}))
+	require.PanicsWithValue(t, `object "Widget": exactly_one validation 0 needs at least two fields`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one)))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "outside" is not an attribute of the object`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &outside}))
+	require.PanicsWithValue(t, `object "Widget": validation 0 has unknown kind "some_of"`, func() {
+		ValidateObject(newObject(Validation{Kind: "some_of", Fields: []Attribute{one, two}}))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "static" is not an attribute of the object`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &static}))
+	require.PanicsWithValue(t, `object "Widget": exactly_one validation 0 field "outside" is not an optional attribute of the object`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one, outside)))
 	})
-	require.PanicsWithValue(t, `object "Widget": ExactlyOneOf group 0 attribute "required" is required`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &required}))
+	require.PanicsWithValue(t, `object "Widget": conflicting validation 0 field "static" is not an optional attribute of the object`, func() {
+		ValidateObject(newObject(Conflicting(one, static)))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "one" is in more than one ExactlyOneOf group, or twice in one`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &two}, []*Attribute{&one, &three}))
+	require.PanicsWithValue(t, `object "Widget": at_least_one validation 0 field "required" is not an optional attribute of the object`, func() {
+		ValidateObject(newObject(AtLeastOneOf(one, required)))
+	})
+	require.PanicsWithValue(t, `object "Widget": exactly_one validation 0 names "one" twice`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one, one)))
+	})
+	require.PanicsWithValue(t, `object "Widget": field "one" is in more than one exactly_one validation`, func() {
+		ValidateObject(newObject(ExactlyOneOf(one, two), ExactlyOneOf(one, three)))
+	})
+	require.PanicsWithValue(t, `object "Widget": fields "one" and "two" are in more than one conflicting validation`, func() {
+		ValidateObject(newObject(Conflicting(one, two, three), Conflicting(two, one)))
 	})
 }
 
@@ -1424,29 +1486,6 @@ func Test_ValidateObject_allowEmpty(t *testing.T) {
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "flag" SET clause allows an empty value but is not a string parameter`, func() {
 		validate(Attribute{Name: "flag", Type: AttrString, SetSql: BoolKeyword(AllowEmpty())})
-	})
-}
-
-func Test_ValidateObject_setConflictingFields(t *testing.T) {
-	one := Attribute{Name: "one", Type: AttrString}
-	two := Attribute{Name: "two", Type: AttrString}
-	three := Attribute{Name: "three", Type: AttrString}
-	newObject := func(pairs ...[]*Attribute) Object {
-		return Object{
-			Name:       "Widget",
-			Attributes: []Attribute{one, two, three},
-			Alter:      AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("One", &one), AlterGroup(MainAlterGroup, &two))}, SetConflictingFields: pairs},
-		}
-	}
-	require.NotPanics(t, func() { ValidateObject(newObject([]*Attribute{&one, &two})) })
-	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 needs exactly two attributes`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &two, &three}))
-	})
-	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 has an attribute that is not in Set`, func() {
-		ValidateObject(newObject([]*Attribute{&one, &three}))
-	})
-	require.PanicsWithValue(t, `object "Widget": SetConflictingFields entry 0 has an attribute that is not in Set`, func() {
-		ValidateObject(newObject([]*Attribute{&one, nil}))
 	})
 }
 
@@ -1483,12 +1522,11 @@ func Test_ValidateObject_alterGroups(t *testing.T) {
 	one := Attribute{Name: "one", Type: AttrString}
 	two := Attribute{Name: "two", Type: AttrString}
 	three := Attribute{Name: "three", Type: AttrString}
-	newObject := func(alter AlterSpec, unsetConflicts [][]*Attribute) Object {
+	newObject := func(alter AlterSpec) Object {
 		return Object{
-			Name:           "Widget",
-			Attributes:     []Attribute{one, two, three},
-			UnsetConflicts: unsetConflicts,
-			Alter:          alter,
+			Name:       "Widget",
+			Attributes: []Attribute{one, two, three},
+			Alter:      alter,
 		}
 	}
 
@@ -1496,55 +1534,40 @@ func Test_ValidateObject_alterGroups(t *testing.T) {
 		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{
 			AlterSet(AlterGroup("Lists", &one), AlterGroup(MainAlterGroup, &two)),
 			AlterUnset(AlterGroup("Lists", &one), AlterGroup(MainAlterGroup, &two)),
-		}}, nil))
-	})
-	require.NotPanics(t, func() {
-		ValidateObject(newObject(AlterSpec{
-			Clauses:              []AlterClause{AlterSet(AlterGroup("One", &one), AlterGroup(MainAlterGroup, &two))},
-			SetConflictingFields: [][]*Attribute{{&one, &two}},
-		}, nil))
+		}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET group name "lists" is not an exported Go identifier`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("lists", &one))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("lists", &one))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": UNSET group name "Two Words" is not an exported Go identifier`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Two Words", &one))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Two Words", &one))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET group name "Lists" is repeated`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists", &one), AlterGroup("Lists", &two))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists", &one), AlterGroup("Lists", &two))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(&one, AlterGroup("Lists", &two))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(&one, AlterGroup("Lists", &two))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": UNSET mixes attributes and groups, enclose the attributes in AlterGroup(MainAlterGroup, ...)`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &two), &one)}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &two), &one)}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET has more than one main group`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup, &one), AlterGroup(MainAlterGroup, &two))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup, &one), AlterGroup(MainAlterGroup, &two))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET group "Lists" has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists"))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("Lists"))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": SET has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet()}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet()}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": UNSET has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset()}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset()}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": main SET group has no attributes`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup))}}, nil))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup(MainAlterGroup))}}))
 	})
 	require.PanicsWithValue(t, `object "Widget": duplicate SET field "one"`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("A", &one), AlterGroup("B", &one))}}, nil))
-	})
-	require.PanicsWithValue(t, `object "Widget": main SET group holds attributes that cannot be sent together`, func() {
-		ValidateObject(newObject(AlterSpec{
-			Clauses:              []AlterClause{AlterSet(&one, &two)},
-			SetConflictingFields: [][]*Attribute{{&one, &two}},
-		}, nil))
-	})
-	require.PanicsWithValue(t, `object "Widget": UNSET group "Lists" holds attributes that cannot be sent together`, func() {
-		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterUnset(AlterGroup("Lists", &one, &two))}}, [][]*Attribute{{&one, &two}}))
+		ValidateObject(newObject(AlterSpec{Clauses: []AlterClause{AlterSet(AlterGroup("A", &one), AlterGroup("B", &one))}}))
 	})
 }
 
@@ -1556,7 +1579,7 @@ func Test_ValidateObject_describeDetailsObjectColumnsAndVariants(t *testing.T) {
 	newVariant := func(withDetails bool) Object {
 		obj := Object{
 			Name:       "WidgetMini",
-			VariantOf:  &base,
+			Variant:    &ObjectVariant{Of: &base},
 			Attributes: []Attribute{config},
 			Describe:   OutputSpec{Columns: []*Attribute{&active, &config}},
 		}
@@ -1578,31 +1601,68 @@ func Test_ValidateObject_describeDetailsObjectColumnsAndVariants(t *testing.T) {
 
 	t.Run("an object without a variant needs rows", func(t *testing.T) {
 		obj := newVariant(true)
-		obj.VariantOf = nil
+		obj.Variant = nil
 		require.PanicsWithValue(t, `object "WidgetMini": SdkDescribeDetails needs SdkDescribe and DescribeRows`, func() { ValidateObject(obj) })
+	})
+}
+
+func Test_ValidateObject_wrapString(t *testing.T) {
+	wrap := Attribute{
+		Name: "condition", Type: AttrString, Required: true,
+		CreateSql: WrapString(SQLBefore("ifExists", "IF (EXISTS("), SQLAfter("closeIfExists", "))")),
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{wrap}, Create: CreateSpec{Clauses: []*Attribute{&wrap}}})
+	})
+	require.Panics(t, func() {
+		bad := wrap
+		bad.CreateSql = WrapString()
+		ValidateObject(Object{Name: "Widget", Attributes: []Attribute{bad}, Create: CreateSpec{Clauses: []*Attribute{&bad}}})
 	})
 }
 
 func Test_Attribute_IsOptionalColumn(t *testing.T) {
 	require.True(t, Attribute{Type: AttrString, OptionalInShow: true}.IsOptionalColumn())
 	require.False(t, Attribute{Type: AttrString}.IsOptionalColumn())
-	require.True(t, Attribute{Type: AttrObject}.IsOptionalColumn(), "an object that is not required is a pointer")
+	require.True(t, Attribute{Type: AttrObject, OptionalInShow: true}.IsOptionalColumn())
+	require.False(t, Attribute{Type: AttrObject}.IsOptionalColumn())
 	require.False(t, Attribute{Type: AttrObject, Required: true}.IsOptionalColumn())
 }
 
-func Test_ValidateObject_childrenAtLeastOneValueSet(t *testing.T) {
+func Test_ValidateObject_attributeValidations(t *testing.T) {
 	obj := func(policy Attribute) Object {
 		return Object{Name: "Widget", Attributes: []Attribute{policy}}
 	}
-	children := []Attribute{{Name: "limit", Type: AttrInt}, {Name: "size", Type: AttrInt}}
+	policy := func(children []Attribute, validations ...Validation) Attribute {
+		return Attribute{Name: "policy", Type: AttrObject, Children: children, Validations: validations}
+	}
+	limit, size := Attribute{Name: "limit", Type: AttrInt}, Attribute{Name: "size", Type: AttrInt}
+	on, off := Attribute{Name: "on", Type: AttrBool}, Attribute{Name: "off", Type: AttrBool}
+	children := []Attribute{limit, size, on, off}
+
+	require.NotPanics(t, func() { ValidateObject(obj(policy(children, AtLeastOneOf()))) }, "no fields cover every candidate")
 	require.NotPanics(t, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, Children: children}))
+		ValidateObject(obj(policy(children, ExactlyOneOf(limit, size), Conflicting(on, off))))
+	}, "several validations on exclusive subsets")
+	require.NotPanics(t, func() {
+		ValidateObject(obj(Attribute{Name: "items", Type: AttrSet, Elem: &Attribute{Type: AttrObject, Children: children, Validations: []Validation{ExactlyOneOf(on, off)}}}))
+	}, "an Elem object")
+
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": validation 0 needs at least two Children that are fields`, func() {
+		ValidateObject(obj(policy(children[:1], AtLeastOneOf())))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRule and needs at least two Children that are fields`, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrObject, ChildrenRule: ChildrenAtLeastOne, Children: children[:1]}))
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": validation 1 names no Children, which is valid only for its sole validation`, func() {
+		ValidateObject(obj(policy(children, ExactlyOneOf(on, off), AtLeastOneOf())))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets ChildrenRule but is not an object`, func() {
-		ValidateObject(obj(Attribute{Name: "policy", Type: AttrString, ChildrenRule: ChildrenAtLeastOne}))
+	require.PanicsWithValue(t, `object "Widget": attribute "policy" sets Validations but is not an object`, func() {
+		ValidateObject(obj(Attribute{Name: "policy", Type: AttrString, Validations: []Validation{AtLeastOneOf()}}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": at_least_one validation 0 field "missing" is not a Child that is a field and not Required`, func() {
+		ValidateObject(obj(policy(children, AtLeastOneOf(limit, Attribute{Name: "missing"}))))
+	})
+	required := Attribute{Name: "required", Type: AttrInt, Required: true}
+	require.PanicsWithValue(t, `object "Widget": attribute "policy": conflicting validation 0 field "required" is not a Child that is a field and not Required`, func() {
+		ValidateObject(obj(policy(append(children, required), Conflicting(limit, required))))
 	})
 }
 
@@ -1683,8 +1743,15 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 	require.NotPanics(t, func() {
 		ValidateObject(objectWith(policy))
 	})
+	widgetFormat := Attribute{
+		Name:      "file_format",
+		Type:      AttrObject,
+		SqlOnly:   true,
+		CreateSql: ObjectParameter(),
+		Children:  []Attribute{{Name: "format_name", Type: AttrString, SqlOnly: true}},
+	}
 	require.NotPanics(t, func() {
-		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat", Parentheses(), NoComma())}))
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStructOf(&widgetFormat, Parentheses(), NoComma())}))
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE value keyword needs an enum attribute with an Enum, a string, a list of identifiers, a list of strings, or a list of objects`, func() {
 		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"))}))
@@ -1692,11 +1759,15 @@ func Test_ValidateObject_stringListAndStructClauses(t *testing.T) {
 	require.PanicsWithValue(t, `object "Widget": attribute "cluster_by" CREATE string list keyword has quotes or equals`, func() {
 		ValidateObject(objectWith(Attribute{Name: "cluster_by", Type: AttrList, SqlOnly: true, Elem: &Attribute{Type: AttrString}, CreateSql: StringListKeyword(Parentheses(), Sql("CLUSTER BY"), SingleQuotes())}))
 	})
-	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting struct clause has no struct name`, func() {
-		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("")}))
+	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting struct clause has no attribute`, func() {
+		ValidateObject(objectWith(Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStructOf(nil)}))
 	})
 	require.PanicsWithValue(t, `object "Widget": attribute "format" preexisting_struct clause is CREATE only`, func() {
-		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStruct("WidgetFormat"), SetSql: PreexistingStruct("WidgetFormat")}
+		attr := Attribute{Name: "format", Type: AttrObject, SqlOnly: true, CreateSql: PreexistingStructOf(&widgetFormat), SetSql: PreexistingStructOf(&widgetFormat)}
+		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&attr)}}})
+	})
+	require.NotPanics(t, func() {
+		attr := Attribute{Name: "contact", SqlOnly: true, CreateSql: PredefinedType("[]TableContact", KeywordShape(), Parentheses(), Sql("WITH CONTACT")), SetSql: PredefinedType("[]TableContact", KeywordShape(), Sql("CONTACT"))}
 		ValidateObject(Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&attr)}}})
 	})
 }
@@ -1798,16 +1869,24 @@ func Test_ValidateObject_showReuse(t *testing.T) {
 	baseWithShow := func() *Object {
 		return showReuseBaseObject(WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
 	}
-	variant := func(base *Object, opts ...GeneratorOption) Object {
-		return Object{Name: "Variant", VariantOf: base, Generators: opts}
+	variant := func(base *Object, schemaFromBase, assertFromBase bool, opts ...GeneratorOption) Object {
+		return Object{
+			Name: "Variant",
+			Variant: &ObjectVariant{
+				Of:                          base,
+				SchemaShowFromBase:          schemaFromBase,
+				ObjectAssertShowRowFromBase: assertFromBase,
+			},
+			Generators: opts,
+		}
 	}
 	reuseBoth := []GeneratorOption{
-		WithSchema(SchemaShow(SchemaShowFromBase())),
-		WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase())),
+		WithSchema(SchemaShow()),
+		WithObjectAssert(ObjectAssertShow()),
 	}
 
 	t.Run("valid reuse resolves to the base", func(t *testing.T) {
-		obj := variant(baseWithShow(), reuseBoth...)
+		obj := variant(baseWithShow(), true, true, reuseBoth...)
 		require.NotPanics(t, func() { ValidateObject(obj) })
 		require.True(t, obj.ReusesBaseSchemaShow())
 		require.True(t, obj.ReusesBaseObjectAssertShow())
@@ -1815,86 +1894,102 @@ func Test_ValidateObject_showReuse(t *testing.T) {
 		require.Equal(t, "Base", obj.ObjectAssertShowOwnerName())
 	})
 	t.Run("without reuse the object owns its artifacts", func(t *testing.T) {
-		obj := variant(baseWithShow(), WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
+		obj := variant(baseWithShow(), false, false, WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
 		require.False(t, obj.ReusesBaseSchemaShow())
 		require.False(t, obj.ReusesBaseObjectAssertShow())
 		require.Equal(t, "Variant", obj.SchemaShowOwnerName())
 		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
 	})
 	t.Run("reuse is independent per generator", func(t *testing.T) {
-		obj := variant(baseWithShow(), WithSchema(SchemaShow(SchemaShowFromBase())), WithObjectAssert(ObjectAssertShow()))
+		obj := variant(baseWithShow(), true, false, WithSchema(SchemaShow()), WithObjectAssert(ObjectAssertShow()))
 		require.Equal(t, "Base", obj.SchemaShowOwnerName())
 		require.Equal(t, "Variant", obj.ObjectAssertShowOwnerName())
 	})
-	t.Run("requires VariantOf", func(t *testing.T) {
+	t.Run("requires Variant.Of", func(t *testing.T) {
 		require.Panics(t, func() {
-			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithSchema(SchemaShow(SchemaShowFromBase()))}})
+			ValidateObject(Object{
+				Name:       "Lone",
+				Variant:    &ObjectVariant{SchemaShowFromBase: true},
+				Generators: []GeneratorOption{WithSchema(SchemaShow())},
+			})
 		})
 		require.Panics(t, func() {
-			ValidateObject(Object{Name: "Lone", Generators: []GeneratorOption{WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))}})
+			ValidateObject(Object{
+				Name:       "Lone",
+				Variant:    &ObjectVariant{ObjectAssertShowRowFromBase: true},
+				Generators: []GeneratorOption{WithObjectAssert(ObjectAssertShow())},
+			})
 		})
 	})
 	t.Run("the base must generate the artifact", func(t *testing.T) {
 		require.Panics(t, func() {
-			ValidateObject(variant(showReuseBaseObject(WithObjectAssert(ObjectAssertShow())), WithSchema(SchemaShow(SchemaShowFromBase()))))
+			ValidateObject(variant(showReuseBaseObject(WithObjectAssert(ObjectAssertShow())), true, false, WithSchema(SchemaShow())))
 		})
 		require.Panics(t, func() {
-			ValidateObject(variant(showReuseBaseObject(WithSchema(SchemaShow())), WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase()))))
+			ValidateObject(variant(showReuseBaseObject(WithSchema(SchemaShow())), false, true, WithObjectAssert(ObjectAssertShow())))
 		})
 	})
 	t.Run("a reusing variant cannot override show-side options", func(t *testing.T) {
 		tables := Attribute{Name: "tables"}
-		obj := func(opts ...GeneratorOption) Object {
+		obj := func(schemaFromBase, assertFromBase bool, opts ...GeneratorOption) Object {
 			return Object{
-				Name:       "Variant",
-				VariantOf:  baseWithShow(),
+				Name: "Variant",
+				Variant: &ObjectVariant{
+					Of:                          baseWithShow(),
+					SchemaShowFromBase:          schemaFromBase,
+					ObjectAssertShowRowFromBase: assertFromBase,
+				},
 				Attributes: []Attribute{tables},
 				Show:       OutputSpec{Columns: []*Attribute{&tables}},
 				Generators: opts,
 			}
 		}
 		require.Panics(t, func() {
-			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowManualFields(&tables)))))
+			ValidateObject(obj(true, false, WithSchema(SchemaShow(SchemaShowManualFields(&tables)))))
 		})
 		require.Panics(t, func() {
-			ValidateObject(obj(WithSchema(SchemaShow(SchemaShowFromBase(), SchemaShowListFields(&tables)))))
+			ValidateObject(obj(true, false, WithSchema(SchemaShow(SchemaShowListFields(&tables)))))
 		})
 		require.Panics(t, func() {
-			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowSkipFields(&tables)))))
+			ValidateObject(obj(false, true, WithObjectAssert(ObjectAssertShow(ObjectAssertShowSkipFields(&tables)))))
 		})
 		require.Panics(t, func() {
-			ValidateObject(obj(WithObjectAssert(ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowNestedField(&tables)))))
+			ValidateObject(obj(false, true, WithObjectAssert(ObjectAssertShow(ObjectAssertShowNestedField(&tables)))))
 		})
 	})
 }
 
 func Test_ValidateObject_showOutputAssertReuse(t *testing.T) {
 	base := func(opts ...GeneratorOption) *Object { return &Object{Name: "Base", Generators: opts} }
-	variant := func(b *Object, opts ...ShowOutputShowOption) Object {
-		return Object{Name: "Variant", VariantOf: b, Generators: []GeneratorOption{WithShowOutputAssert(ShowOutputShow(opts...))}}
+	variant := func(b *Object, fromBase bool, opts ...ShowOutputShowOption) Object {
+		return Object{
+			Name:       "Variant",
+			Variant:    &ObjectVariant{Of: b, ShowOutputShowRowFromBase: fromBase},
+			Generators: []GeneratorOption{WithShowOutputAssert(ShowOutputShow(opts...))},
+		}
 	}
 	baseWithShowOutput := func() *Object { return base(WithShowOutputAssert(ShowOutputShow())) }
 
 	t.Run("valid reuse resolves to the base", func(t *testing.T) {
-		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase())
+		obj := variant(baseWithShowOutput(), true)
 		require.NotPanics(t, func() { ValidateObject(obj) })
 		require.True(t, obj.ReusesBaseShowOutputAssertShow())
 		require.Equal(t, "Base", obj.ShowOutputAssertShowOwnerName())
 	})
 	t.Run("without reuse the object owns its assertion", func(t *testing.T) {
-		obj := variant(baseWithShowOutput())
+		obj := variant(baseWithShowOutput(), false)
 		require.False(t, obj.ReusesBaseShowOutputAssertShow())
 		require.Equal(t, "Variant", obj.ShowOutputAssertShowOwnerName())
 	})
 	t.Run("requires VariantOf", func(t *testing.T) {
-		require.Panics(t, func() { ValidateObject(variant(nil, ShowOutputShowRowFromBase())) })
+		require.Panics(t, func() { ValidateObject(variant(nil, true)) })
 	})
 	t.Run("the base must generate the assertion", func(t *testing.T) {
-		require.Panics(t, func() { ValidateObject(variant(base(), ShowOutputShowRowFromBase())) })
+		require.Panics(t, func() { ValidateObject(variant(base(), true)) })
 	})
 	t.Run("cannot set skip fields", func(t *testing.T) {
 		tables := Attribute{Name: "tables"}
-		obj := variant(baseWithShowOutput(), ShowOutputShowRowFromBase(), ShowOutputShowSkipFields(&tables))
+		obj := variant(baseWithShowOutput(), true, ShowOutputShowSkipFields(&tables))
 		obj.Attributes = []Attribute{tables}
 		obj.Show = OutputSpec{Columns: []*Attribute{&tables}}
 		require.Panics(t, func() { ValidateObject(obj) })
@@ -2013,7 +2108,7 @@ func suspendForAlterVariant(change func(*Object)) Object {
 	size := Attribute{Name: "size", Type: AttrInt}
 	obj := Object{
 		Name:            "WidgetSmall",
-		VariantOf:       &base,
+		Variant:         &ObjectVariant{Of: &base},
 		Attributes:      []Attribute{size},
 		SuspendForAlter: &SuspendForAlter{When: []*Attribute{&size}},
 		ResourceHooks:   []ResourceHookOption{WithSuspendForAlter(Generated())},
@@ -2131,9 +2226,9 @@ func Test_ValidateObject_suspendForAlter(t *testing.T) {
 		"variant of a base without the SDK method": {
 			func() Object {
 				return suspendForAlterVariant(func(o *Object) {
-					base := *o.VariantOf
+					base := *o.Variant.Of
 					base.SuspendForAlter = nil
-					o.VariantOf = &base
+					o.Variant.Of = &base
 				})
 			},
 			`object "WidgetSmall": SuspendForAlter needs SuspendIfStarted on the base "Widget"`,
@@ -2167,4 +2262,68 @@ func Test_Object_SuspendForAlterWhen(t *testing.T) {
 	t.Run("nil without the declaration", func(t *testing.T) {
 		require.Nil(t, Object{}.SuspendForAlterWhen())
 	})
+}
+
+func Test_ValidateObject_sqlOnlyValidations(t *testing.T) {
+	order := Attribute{Name: "order", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("ORDER"))}
+	noorder := Attribute{Name: "noorder", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("NOORDER"))}
+	objectWith := func(children []Attribute, validations ...Validation) Object {
+		identity := Attribute{Name: "identity", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(), Children: children, Validations: validations}
+		return Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&identity}}}
+	}
+	require.NotPanics(t, func() { ValidateObject(objectWith([]Attribute{order, noorder}, Conflicting(order, noorder))) })
+	require.PanicsWithValue(t, `object "Widget": attribute "identity": conflicting validation 0 names "noorder" twice`, func() {
+		ValidateObject(objectWith([]Attribute{order, noorder}, Conflicting(noorder, noorder)))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "identity": conflicting validation 0 field "order" is not a Child that is a field and not Required`, func() {
+		ValidateObject(objectWith([]Attribute{noorder}, Conflicting(noorder, order)))
+	})
+}
+
+func Test_ValidateObject_structName(t *testing.T) {
+	child := Attribute{Name: "child", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("CHILD"))}
+	objectWith := func(attr Attribute) Object {
+		return Object{Name: "Widget", Create: CreateSpec{Clauses: []*Attribute{&attr}}}
+	}
+	nested := func(opts ...SqlClauseOption) Attribute {
+		return Attribute{Name: "block", Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(opts...), Children: []Attribute{child}}
+	}
+	require.NotPanics(t, func() { ValidateObject(objectWith(nested(StructName("WidgetBlock")))) })
+	require.NotPanics(t, func() {
+		ValidateObject(objectWith(Attribute{
+			Name:      "alter",
+			Type:      AttrList,
+			SqlOnly:   true,
+			CreateSql: ValueKeyword(Sql("ALTER"), StructName("WidgetAlter")),
+			Elem:      &Attribute{Type: AttrObject, SqlOnly: true, CreateSql: ObjectParameter(), Children: []Attribute{child}},
+		}))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "block" CREATE struct name "widgetBlock" is not an exported name`, func() {
+		ValidateObject(objectWith(nested(StructName("widgetBlock"))))
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "flag" CREATE struct name is for a nested struct or a list of objects`, func() {
+		ValidateObject(objectWith(Attribute{Name: "flag", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("FLAG"), StructName("WidgetFlag"))}))
+	})
+}
+
+func Test_Attribute_ValidationFieldsFor(t *testing.T) {
+	attr := Attribute{
+		Name:        "alter",
+		Type:        AttrObject,
+		SqlOnly:     true,
+		Validations: []Validation{ExactlyOneOf()},
+		CreateSql:   ObjectParameter(),
+		Children: []Attribute{
+			{Name: "column", SqlOnly: true, CreateSql: StaticSQL("column", "COLUMN")},
+			{Name: "name", Type: AttrString, Required: true, SqlOnly: true, CreateSql: TextKeyword(Required())},
+			{Name: "drop_default", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("DROP DEFAULT"))},
+			{Name: "unset_comment", Type: AttrBool, SqlOnly: true, CreateSql: BoolKeyword(Sql("UNSET COMMENT"))},
+		},
+	}
+	names := func(fields []Attribute) []string {
+		return collections.Map(fields, func(a Attribute) string { return a.Name })
+	}
+	require.Equal(t, []string{"drop_default", "unset_comment"}, names(attr.ValidationFieldsFor(attr.Validations[0], ClauseCreate)), "no fields cover every candidate, skipping static and Required children")
+	named := ExactlyOneOf(attr.Children[3], attr.Children[2])
+	require.Equal(t, []string{"drop_default", "unset_comment"}, names(attr.ValidationFieldsFor(named, ClauseCreate)), "named fields follow Children order")
 }

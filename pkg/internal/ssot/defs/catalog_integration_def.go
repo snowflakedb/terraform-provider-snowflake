@@ -66,7 +66,7 @@ var catalogIntegrationSetAttrs = struct {
 		Name:    "set_bearer_rest_authentication",
 		Type:    ssot.AttrObject,
 		SqlOnly: true,
-		SetSql:  ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses(), ssot.FieldName("SetBearerRestAuthentication")),
+		SetSql:  ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			{Name: "bearer_token", Type: ssot.AttrString, Required: true},
 		},
@@ -104,11 +104,14 @@ var catalogIntegrationDescribeRowAttrs = struct {
 	PropertyDefault: ssot.Attribute{Name: "property_default", Type: ssot.AttrString, Readonly: true},
 }
 
-// readonlyColumn is the attribute as a DESCRIBE column of the base: the same field, read only. It is not required, so an
-// object column is optional in the details of the base, which has the fields of every variant.
+// readonlyColumn is the attribute as a DESCRIBE column of the base: the same field, read only. An object column sets
+// OptionalInShow, so it is a pointer in the details of the base, which has the fields of every variant.
 func readonlyColumn(attr ssot.Attribute) ssot.Attribute {
 	attr.Readonly = true
 	attr.Required = false
+	if attr.Type == ssot.AttrObject {
+		attr.OptionalInShow = true
+	}
 	return attr
 }
 
@@ -143,10 +146,10 @@ var catalogIntegrationDescribeColumns = struct {
 // CatalogIntegration is the base of the catalog integration variants. All of them are the same Snowflake object,
 // CATALOG INTEGRATION, and share one SDK interface, which is built from this object.
 var CatalogIntegration = ssot.Object{
-	Name:            "CatalogIntegration",
-	NamePlural:      "CatalogIntegrations",
-	IdType:          "AccountObjectIdentifier",
-	VariantBaseOnly: true,
+	Name:        "CatalogIntegration",
+	NamePlural:  "CatalogIntegrations",
+	IdType:      "AccountObjectIdentifier",
+	BaseVariant: &ssot.BaseVariant{NotResource: true},
 	// The enums of the variants are the SDK enums of the shared interface. The REST authentication type is only in DESCRIBE.
 	AdditionalEnums: []*ssot.Enum{
 		CatalogIntegrationCatalogSourceType,
@@ -230,23 +233,23 @@ var CatalogIntegration = ssot.Object{
 			&catalogIntegrationDescribeRowAttrs.PropertyDefault,
 		},
 	},
+	// The SET has no groups because of a limitation of the groups. OAUTH_CLIENT_SECRET and BEARER_TOKEN cannot be set
+	// together, but each may share a SET with ENABLED, REFRESH_INTERVAL_SECONDS, and COMMENT. That needs two groups that
+	// both hold those three attributes, and an attribute cannot be in two groups at the moment.
+	// The SDK does not reject both secrets, which is safe because no resource can set both: Open Catalog has only OAuth,
+	// and Iceberg REST has ExactlyOneOf on its authentication blocks, with a ForceNew OAuth block, so the update never
+	// switches between OAuth and bearer.
 	Alter: ssot.AlterSpec{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterSet(
-				ssot.AlterGroup("OauthRestAuthentication", &catalogIntegrationSetAttrs.OauthRestAuthentication),
-				ssot.AlterGroup(ssot.MainAlterGroup,
-					&catalogIntegrationSetAttrs.BearerRestAuthentication,
-					&catalogIntegrationSetAttrs.Enabled,
-					&catalogIntegrationSetAttrs.RefreshIntervalSeconds,
-					&catalogIntegrationSetAttrs.Comment,
-				),
+				&catalogIntegrationSetAttrs.OauthRestAuthentication,
+				&catalogIntegrationSetAttrs.BearerRestAuthentication,
+				&catalogIntegrationSetAttrs.Enabled,
+				&catalogIntegrationSetAttrs.RefreshIntervalSeconds,
+				&catalogIntegrationSetAttrs.Comment,
 			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),
 		},
-		SetConflictingFields: [][]*ssot.Attribute{{
-			&catalogIntegrationSetAttrs.OauthRestAuthentication,
-			&catalogIntegrationSetAttrs.BearerRestAuthentication,
-		}},
 	},
 }

@@ -103,6 +103,9 @@ func (opts *AlterReplicationGroupOptions) validate() error {
 		if opts.Set.ErrorIntegration != nil && !ValidObjectIdentifier(opts.Set.ErrorIntegration) {
 			errs = append(errs, errInvalidIdentifier("AlterReplicationGroupOptions.Set", "ErrorIntegration"))
 		}
+		if anyValueSet(opts.Set.ObjectTypes, opts.Set.AllowedDatabases, opts.Set.AllowedExternalVolumes, opts.Set.AllowedShares, opts.Set.AllowedIntegrationTypes) && anyValueSet(opts.Set.Comment, opts.Set.ReplicationSchedule, opts.Set.ErrorIntegration) {
+			errs = append(errs, errConflictingGroups("AlterReplicationGroupOptions.Set", []string{"ObjectTypes", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedIntegrationTypes"}, []string{"Comment", "ReplicationSchedule", "ErrorIntegration"}))
+		}
 		if !anyValueSet(opts.Set.ObjectTypes, opts.Set.AllowedDatabases, opts.Set.AllowedExternalVolumes, opts.Set.AllowedShares, opts.Set.AllowedIntegrationTypes, opts.Set.Comment, opts.Set.ReplicationSchedule, opts.Set.ErrorIntegration) {
 			errs = append(errs, errAtLeastOneOf("AlterReplicationGroupOptions.Set", "ObjectTypes", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedIntegrationTypes", "Comment", "ReplicationSchedule", "ErrorIntegration"))
 		}
@@ -198,6 +201,9 @@ func (opts *AlterReplicationGroupOptions) validate() error {
 		}
 	}
 	if valueSet(opts.Remove) {
+		if !exactlyOneValueSet(opts.Remove.FromAllowedDatabases, opts.Remove.FromAllowedExternalVolumes, opts.Remove.FromAllowedShares, opts.Remove.FromAllowedAccounts) {
+			errs = append(errs, errExactlyOneOf("AlterReplicationGroupOptions.Remove", "FromAllowedDatabases", "FromAllowedExternalVolumes", "FromAllowedShares", "FromAllowedAccounts"))
+		}
 		if valueSet(opts.Remove.FromAllowedDatabases) {
 			for fromAllowedDatabaseIdx, fromAllowedDatabase := range opts.Remove.FromAllowedDatabases {
 				if !ValidObjectIdentifier(fromAllowedDatabase) {

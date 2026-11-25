@@ -1,0 +1,6 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.SetId.Generate -}}
+	d.SetId("{{ .ResultName }}_read")
+{{- else if .Hooks.SetId.Present -}}
+	{{ .Prefix }}SetIdExt(d)
+{{- end -}}

@@ -86,8 +86,8 @@ func (r *CreateAlertRequest) toOpts() *CreateAlertOptions {
 		Comment:     r.Comment,
 		action:      r.action,
 	}
-	opts.condition = AlertCondition{
-		Condition: r.condition.Condition,
+	opts.Condition = AlertCondition{
+		Condition: r.Condition.Condition,
 	}
 	return opts
 }

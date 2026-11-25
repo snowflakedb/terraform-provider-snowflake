@@ -7,6 +7,8 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
+// TODO [SNOW-4490849]: each OBJECT_TYPES value that goes together with an ALLOWED_* list, and SECURITY INTEGRATIONS requiring ROLES,
+// are dependencies between fields that have no validation in the SSoT definition yet.
 func (opts *CreateReplicationGroupOptions) additionalValidations() error {
 	var errs []error
 	errs = append(errs, replicationGroupRequireObjectList(
@@ -49,10 +51,12 @@ func (r *CreateReplicationGroupRequest) GetName() AccountObjectIdentifier {
 	return r.name
 }
 
+// REMOVE is validated by the generated ChildrenRule. ADD and MOVE are not, see the TODOs in the definition.
 func (opts *AlterReplicationGroupOptions) additionalValidations() error {
 	var errs []error
 	if opts.Move != nil {
-		if countSetLists(len(opts.Move.Databases), len(opts.Move.ExternalVolumes), len(opts.Move.Shares)) != 1 {
+		// TODO [SNOW-4490849]: exactly one list, in the definition of MOVE.
+		if !exactlyOneValueSet(opts.Move.Databases, opts.Move.ExternalVolumes, opts.Move.Shares) {
 			errs = append(errs, NewError("MOVE must set exactly one of DATABASES, EXTERNAL VOLUMES, and SHARES"))
 		}
 		if !ValidObjectIdentifier(opts.Move.ToReplicationGroup) {
@@ -60,31 +64,18 @@ func (opts *AlterReplicationGroupOptions) additionalValidations() error {
 		}
 	}
 	if opts.Add != nil {
-		if countSetLists(len(opts.Add.ToAllowedDatabases), len(opts.Add.ToAllowedExternalVolumes), len(opts.Add.ToAllowedShares), len(opts.Add.ToAllowedAccounts)) != 1 {
+		// TODO [SNOW-4490849]: exactly one list, and IGNORE EDITION CHECK only with the accounts, in the definition of ADD.
+		if !exactlyOneValueSet(opts.Add.ToAllowedDatabases, opts.Add.ToAllowedExternalVolumes, opts.Add.ToAllowedShares, opts.Add.ToAllowedAccounts) {
 			errs = append(errs, NewError("ADD must set exactly one allowed list"))
 		}
-		if opts.Add.IgnoreEditionCheck != nil && *opts.Add.IgnoreEditionCheck && len(opts.Add.ToAllowedAccounts) == 0 {
+		if opts.Add.IgnoreEditionCheck != nil && *opts.Add.IgnoreEditionCheck && !valueSet(opts.Add.ToAllowedAccounts) {
 			errs = append(errs, NewError("IGNORE EDITION CHECK requires ADD TO ALLOWED_ACCOUNTS"))
-		}
-	}
-	if opts.Remove != nil {
-		if countSetLists(len(opts.Remove.FromAllowedDatabases), len(opts.Remove.FromAllowedExternalVolumes), len(opts.Remove.FromAllowedShares), len(opts.Remove.FromAllowedAccounts)) != 1 {
-			errs = append(errs, NewError("REMOVE must set exactly one allowed list"))
 		}
 	}
 	return JoinErrors(errs...)
 }
 
-func countSetLists(lengths ...int) int {
-	n := 0
-	for _, length := range lengths {
-		if length > 0 {
-			n++
-		}
-	}
-	return n
-}
-
+// TODO [SNOW-4490849]: the identifier validation of an ExternalObjectIdentifier field (it can hold a nil identifier) is not generated.
 func (opts *CreateSecondaryReplicationGroupOptions) additionalValidations() error {
 	if opts.AsReplicaOf.objectIdentifier == nil || !ValidObjectIdentifier(opts.AsReplicaOf) {
 		return errInvalidIdentifier("CreateSecondaryReplicationGroupOptions", "AsReplicaOf")
@@ -92,6 +83,8 @@ func (opts *CreateSecondaryReplicationGroupOptions) additionalValidations() erro
 	return nil
 }
 
+// TODO [SNOW-4490849]: a value of one field that requires another field (an ALLOWED_* list requires its OBJECT_TYPES value) has no validation
+// in the SSoT definition yet.
 func (opts *ReplicationGroupSet) additionalValidations() error {
 	var errs []error
 	if len(opts.AllowedDatabases) > 0 && !slices.Contains(opts.ObjectTypes, ReplicationGroupObjectTypeDatabases) {
@@ -110,22 +103,7 @@ func (opts *ReplicationGroupSet) additionalValidations() error {
 		!slices.Contains(opts.ObjectTypes, ReplicationGroupObjectTypeRoles) {
 		errs = append(errs, NewError("OBJECT_TYPES must include ROLES when ALLOWED_INTEGRATION_TYPES includes SECURITY INTEGRATIONS"))
 	}
-	if replicationGroupSetHasObjectLists(opts) && replicationGroupSetHasProperties(opts) {
-		errs = append(errs, NewError("SET cannot combine OBJECT_TYPES and allowed lists with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION"))
-	}
 	return JoinErrors(errs...)
-}
-
-func replicationGroupSetHasObjectLists(opts *ReplicationGroupSet) bool {
-	return len(opts.ObjectTypes) > 0 ||
-		len(opts.AllowedDatabases) > 0 ||
-		len(opts.AllowedExternalVolumes) > 0 ||
-		len(opts.AllowedShares) > 0 ||
-		len(opts.AllowedIntegrationTypes) > 0
-}
-
-func replicationGroupSetHasProperties(opts *ReplicationGroupSet) bool {
-	return opts.Comment != nil || opts.ReplicationSchedule != nil || opts.ErrorIntegration != nil
 }
 
 // SHOW tokens that differ from the create-page values. A token that is not listed is left unchanged.

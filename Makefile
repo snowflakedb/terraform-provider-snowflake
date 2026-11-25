@@ -126,7 +126,7 @@ test-unit: ## run unit tests
 	go test -v -cover $$(go list ./... | grep -v -E "$(UNIT_TESTS_EXCLUDE_PATTERN)") $(ADDITIONAL_TEST_FLAGS)
 
 test-acceptance: ## run acceptance tests
-	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=230m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
+	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "^TestAcc_" -v -cover -timeout=270m ./pkg/testacc $(ADDITIONAL_TEST_FLAGS)
 
 test-account-level: ## run integration and acceptance test modifying account
 	TF_ACC=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "^(TestAcc_|TestInt_)" -v -cover -timeout=150m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
@@ -139,6 +139,9 @@ test-integration: ## run SDK integration tests
 
 test-openflow: ## run Openflow acceptance and integration tests
 	TF_ACC=1 TEST_SF_TF_TEST_OPENFLOW=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test --tags=non_account_level_tests -run "Openflow" -v -cover -timeout=300m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
+
+test-postgres-instances: ## run Postgres instance acceptance and integration tests
+	TF_ACC=1 TEST_SF_TF_TEST_POSTGRES_INSTANCES=1 TEST_SF_TF_REQUIRE_TEST_OBJECT_SUFFIX=1 TEST_SF_TF_REQUIRE_GENERATED_RANDOM_VALUE=1 SF_TF_ACC_TEST_ENABLE_ALL_PREVIEW_FEATURES=true go test -p=1 --tags=account_level_tests -run "PostgresInstance" -v -cover -timeout=300m ./pkg/testacc ./pkg/sdk/testint $(ADDITIONAL_TEST_FLAGS)
 
 test-functional: ## run functional tests of the underlying terraform libraries (currently SDKv2)
 	TF_ACC=1 TEST_SF_TF_ENABLE_OBJECT_RENAMING=1 go test -v -cover -timeout=10m ./pkg/testfunctional $(ADDITIONAL_TEST_FLAGS)
@@ -252,6 +255,15 @@ generate-resource-check: generate-resource ## Check that generated resource file
 clean-resource: ## Clean generated resource files
 	rm -f ./pkg/resources/*_gen.go
 
+generate-datasource: ## Generate data sources
+	$(call GO_GENERATE,./pkg/datasources/generate.go)
+
+generate-datasource-check: clean-datasource generate-datasource ## Check that generated data source files are up-to-date
+	$(call GIT_DIFF_CHECK,pkg/datasources/*_gen.go)
+
+clean-datasource: ## Clean generated data source files
+	rm -f ./pkg/datasources/*_gen.go
+
 generate-snowflake-object-assertions: ## Generate snowflake object assertions
 	$(call GO_GENERATE,./pkg/acceptance/bettertestspoc/assert/objectassert/generate.go)
 
@@ -327,9 +339,9 @@ generate-all-config-model-builders-check: clean-all-config-model-builders genera
 	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/datasourcemodel)
 	$(call GIT_DIFF_CHECK,pkg/acceptance/bettertestspoc/config/providermodel)
 
-generate-all: generate-all-config-model-builders generate-sdk generate-sdk-examples generate-snowflake-object-assertions generate-snowflake-object-parameters-assertions generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions generate-show-output-schemas generate-resource ## generate every generator used by pre-push
+generate-all: generate-all-config-model-builders generate-sdk generate-sdk-examples generate-snowflake-object-assertions generate-snowflake-object-parameters-assertions generate-resource-assertions generate-resource-parameters-assertions generate-resource-show-output-assertions generate-show-output-schemas generate-resource generate-datasource ## generate every generator used by pre-push
 
-generate-all-check: generate-all-config-model-builders-check generate-sdk-check generate-sdk-examples-check generate-snowflake-object-assertions-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check generate-show-output-schemas-check generate-resource-check ## check every generator used by pre-push-check
+generate-all-check: generate-all-config-model-builders-check generate-sdk-check generate-sdk-examples-check generate-snowflake-object-assertions-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check generate-show-output-schemas-check generate-resource-check generate-datasource-check ## check every generator used by pre-push-check
 
 clean-all-assertions-and-config-models: clean-snowflake-object-assertions clean-snowflake-object-parameters-assertions clean-resource-assertions clean-resource-parameters-assertions clean-resource-show-output-assertions clean-resource-model-builders clean-provider-model-builders clean-datasource-model-builders ## clean all generated assertions and config models
 
@@ -341,4 +353,4 @@ generate-poc-provider-plugin-framework-model-and-schema: ## Generate model and s
 clean-poc-provider-plugin-framework-model-and-schema: ## Clean generated model and schema for Plugin Framework PoC
 	rm -f ./pkg/testacc/13_plugin_framework_model_and_schema_gen.go
 
-.PHONY: build-local check-compilation terraform-version-check dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep sweep-after-tests sweep-stale terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-all generate-all-check generate-sdk-check generate-sdk-examples-check generate-snowflake-object-assertions-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check generate-show-output-schemas-check generate-resource-check
+.PHONY: build-local check-compilation terraform-version-check dev-setup dev-cleanup docs docs-check fmt fmt-check fumpt help install lint lint-fix mod mod-check pre-push pre-push-check sweep sweep-after-tests sweep-stale terraform-fmt terraform-fmt-check test test-acceptance uninstall-tf generate-all generate-all-check generate-sdk-check generate-sdk-examples-check generate-snowflake-object-assertions-check generate-snowflake-object-parameters-assertions-check generate-resource-assertions-check generate-resource-parameters-assertions-check generate-resource-show-output-assertions-check generate-show-output-schemas-check generate-resource-check generate-datasource-check

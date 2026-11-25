@@ -467,7 +467,7 @@ var databasesTests = DatabasesTestsContext{
 			},
 			validationCase[*AlterDatabaseOptions]{
 				Name:        case_Databases_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterDatabaseOptions.Set", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterDatabaseOptions.Set", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "MetricLevel", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "ServiceCallerTokenValiditySecs", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"),
 				DefaultModify: func(opts *AlterDatabaseOptions) {
 					opts.Set = &DatabaseSet{}
 					opts.Set.Catalog = nil
@@ -480,8 +480,10 @@ var databasesTests = DatabasesTestsContext{
 					opts.Set.LogEventLevel = nil
 					opts.Set.LogLevel = nil
 					opts.Set.MaxDataExtensionTimeInDays = nil
+					opts.Set.MetricLevel = nil
 					opts.Set.QuotedIdentifiersIgnoreCase = nil
 					opts.Set.ReplaceInvalidCharacters = nil
+					opts.Set.ServiceCallerTokenValiditySecs = nil
 					opts.Set.StorageSerializationPolicy = nil
 					opts.Set.SuspendTaskAfterNumFailures = nil
 					opts.Set.TaskAutoRetryAttempts = nil
@@ -494,7 +496,7 @@ var databasesTests = DatabasesTestsContext{
 			},
 			validationCase[*AlterDatabaseOptions]{
 				Name:        case_Databases_validation_Alter_opts_Unset_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterDatabaseOptions.Unset", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterDatabaseOptions.Unset", "Catalog", "DataRetentionTimeInDays", "DefaultDdlCollation", "DefaultNotebookComputePoolCpu", "DefaultNotebookComputePoolGpu", "EnableConsoleOutput", "ExternalVolume", "LogEventLevel", "LogLevel", "MaxDataExtensionTimeInDays", "MetricLevel", "QuotedIdentifiersIgnoreCase", "ReplaceInvalidCharacters", "ServiceCallerTokenValiditySecs", "StorageSerializationPolicy", "SuspendTaskAfterNumFailures", "TaskAutoRetryAttempts", "TraceLevel", "UserTaskManagedInitialWarehouseSize", "UserTaskMinimumTriggerIntervalInSeconds", "UserTaskTimeoutMs", "Comment"),
 				DefaultModify: func(opts *AlterDatabaseOptions) {
 					opts.Unset = &DatabaseUnset{}
 					opts.Unset.Catalog = nil
@@ -507,8 +509,10 @@ var databasesTests = DatabasesTestsContext{
 					opts.Unset.LogEventLevel = nil
 					opts.Unset.LogLevel = nil
 					opts.Unset.MaxDataExtensionTimeInDays = nil
+					opts.Unset.MetricLevel = nil
 					opts.Unset.QuotedIdentifiersIgnoreCase = nil
 					opts.Unset.ReplaceInvalidCharacters = nil
+					opts.Unset.ServiceCallerTokenValiditySecs = nil
 					opts.Unset.StorageSerializationPolicy = nil
 					opts.Unset.SuspendTaskAfterNumFailures = nil
 					opts.Unset.TaskAutoRetryAttempts = nil

@@ -107,6 +107,11 @@ func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *Da
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasMetricLevel(expected string) *DatabaseResourceAssert {
+	d.StringValueSet("metric_level", expected)
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCase(expected bool) *DatabaseResourceAssert {
 	d.BoolValueSet("quoted_identifiers_ignore_case", expected)
 	return d
@@ -118,6 +123,11 @@ func (d *DatabaseResourceAssert) HasReplaceInvalidCharacters(expected bool) *Dat
 }
 
 // typed assert for "replication" (type: List, subtype: Map) is not currently supported
+
+func (d *DatabaseResourceAssert) HasServiceCallerTokenValiditySecs(expected int) *DatabaseResourceAssert {
+	d.IntValueSet("service_caller_token_validity_secs", expected)
+	return d
+}
 
 func (d *DatabaseResourceAssert) HasStorageSerializationPolicy(expected string) *DatabaseResourceAssert {
 	d.StringValueSet("storage_serialization_policy", expected)
@@ -233,6 +243,11 @@ func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDaysString(expected st
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasMetricLevelString(expected string) *DatabaseResourceAssert {
+	d.ValueSet("metric_level", expected)
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected string) *DatabaseResourceAssert {
 	d.ValueSet("quoted_identifiers_ignore_case", expected)
 	return d
@@ -240,6 +255,11 @@ func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseString(expected s
 
 func (d *DatabaseResourceAssert) HasReplaceInvalidCharactersString(expected string) *DatabaseResourceAssert {
 	d.ValueSet("replace_invalid_characters", expected)
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasServiceCallerTokenValiditySecsString(expected string) *DatabaseResourceAssert {
+	d.ValueSet("service_caller_token_validity_secs", expected)
 	return d
 }
 
@@ -357,6 +377,11 @@ func (d *DatabaseResourceAssert) HasNoMaxDataExtensionTimeInDays() *DatabaseReso
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasNoMetricLevel() *DatabaseResourceAssert {
+	d.ValueNotSet("metric_level")
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *DatabaseResourceAssert {
 	d.ValueNotSet("quoted_identifiers_ignore_case")
 	return d
@@ -364,6 +389,11 @@ func (d *DatabaseResourceAssert) HasNoQuotedIdentifiersIgnoreCase() *DatabaseRes
 
 func (d *DatabaseResourceAssert) HasNoReplaceInvalidCharacters() *DatabaseResourceAssert {
 	d.ValueNotSet("replace_invalid_characters")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasNoServiceCallerTokenValiditySecs() *DatabaseResourceAssert {
+	d.ValueNotSet("service_caller_token_validity_secs")
 	return d
 }
 
@@ -476,6 +506,11 @@ func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *DatabaseR
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasMetricLevelEmpty() *DatabaseResourceAssert {
+	d.ValueSet("metric_level", "")
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseEmpty() *DatabaseResourceAssert {
 	d.ValueSet("quoted_identifiers_ignore_case", "")
 	return d
@@ -488,6 +523,11 @@ func (d *DatabaseResourceAssert) HasReplaceInvalidCharactersEmpty() *DatabaseRes
 
 func (d *DatabaseResourceAssert) HasReplicationEmpty() *DatabaseResourceAssert {
 	d.ValueSet("replication.#", "0")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasServiceCallerTokenValiditySecsEmpty() *DatabaseResourceAssert {
+	d.ValueSet("service_caller_token_validity_secs", "")
 	return d
 }
 
@@ -605,6 +645,11 @@ func (d *DatabaseResourceAssert) HasMaxDataExtensionTimeInDaysNotEmpty() *Databa
 	return d
 }
 
+func (d *DatabaseResourceAssert) HasMetricLevelNotEmpty() *DatabaseResourceAssert {
+	d.ValuePresent("metric_level")
+	return d
+}
+
 func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *DatabaseResourceAssert {
 	d.ValuePresent("quoted_identifiers_ignore_case")
 	return d
@@ -612,6 +657,11 @@ func (d *DatabaseResourceAssert) HasQuotedIdentifiersIgnoreCaseNotEmpty() *Datab
 
 func (d *DatabaseResourceAssert) HasReplaceInvalidCharactersNotEmpty() *DatabaseResourceAssert {
 	d.ValuePresent("replace_invalid_characters")
+	return d
+}
+
+func (d *DatabaseResourceAssert) HasServiceCallerTokenValiditySecsNotEmpty() *DatabaseResourceAssert {
+	d.ValuePresent("service_caller_token_validity_secs")
 	return d
 }
 

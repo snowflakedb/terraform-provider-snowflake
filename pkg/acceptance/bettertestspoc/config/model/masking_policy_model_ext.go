@@ -6,20 +6,21 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 func MaskingPolicyDynamicArguments(
 	resourceName string,
 	id sdk.SchemaObjectIdentifier,
 	body string,
-	returnDataType sdk.DataType,
+	returnDataType datatypes.DataType,
 ) *MaskingPolicyModel {
 	m := &MaskingPolicyModel{ResourceModelMeta: config.Meta(resourceName, resources.MaskingPolicy)}
 	m.WithDatabase(id.DatabaseName())
 	m.WithSchema(id.SchemaName())
 	m.WithName(id.Name())
 	m.WithBody(body)
-	m.WithReturnDataType(string(returnDataType))
+	m.WithReturnDataType(returnDataType.ToSqlWithoutUnknowns())
 	return m.WithDynamicBlock(config.NewDynamicBlock("argument", "arguments", []string{"name", "type"}))
 }
 

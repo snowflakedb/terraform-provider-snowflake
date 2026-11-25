@@ -10,8 +10,9 @@ import (
 )
 
 func (r hybridTableDetailsRow) additionalConvert(result *HybridTableDetails) error {
-	type_, collation := r.splitTypeAndCollation()
-	result.Type = type_
+	dataTypeRaw, collation := r.splitTypeAndCollation()
+	result.Type = parseDataTypeOrNil(dataTypeRaw)
+	result.DataTypeRaw = dataTypeRaw
 	result.Collation = collation
 	return nil
 }

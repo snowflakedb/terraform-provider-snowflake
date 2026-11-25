@@ -5,6 +5,7 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -117,27 +118,7 @@ var backupPolicySchema = collections.MergeMaps(
 		},
 	},
 	backupPolicyAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW BACKUP POLICIES` for the given backup policy.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowBackupPolicySchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE BACKUP POLICY` for the given backup policy.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeBackupPolicyDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeBackupPolicy, schemas.ShowBackupPolicySchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeBackupPolicy, schemas.DescribeBackupPolicyDetailsSchema),
 )

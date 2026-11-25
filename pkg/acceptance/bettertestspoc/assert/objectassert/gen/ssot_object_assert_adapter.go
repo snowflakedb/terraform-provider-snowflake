@@ -50,13 +50,17 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 		}
 		fields = append(fields, field)
 	}
-	noIdentifiableObject := false
+	var noIdentifiableObject bool
+	noShowById := false
+	var fromObjectIDExpr string
 	skip := objectAssertSkipNames(obj, g.ObjectAssert.ShowSkipFields)
 	var projection *genhelpers.ShowProjectionDef
 	var describeOverride *genhelpers.DescribeOverrideDef
+	var showByParentId *genhelpers.ShowByParentIdDef
 	objectTypeName := ""
 	if isDescribe {
 		noIdentifiableObject = g.ObjectAssert.NoIdentifiableObject
+		fromObjectIDExpr = g.ObjectAssert.DescribeFromObjectIDExpr
 		skip = objectAssertSkipNames(obj, g.ObjectAssert.DescribeSkipFields)
 		if fetch, ok := obj.DescribeFetch(); ok {
 			describeOverride = &genhelpers.DescribeOverrideDef{
@@ -64,20 +68,38 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 				MethodName: fetch.Method,
 			}
 		}
-	} else if fromBase, ok := obj.ShowFromBase(); ok {
-		projection = &genhelpers.ShowProjectionDef{
-			ClientName: fromBase.ClientName,
-			Method:     fromBase.Method,
+	} else {
+		noShowById = g.ObjectAssert.NoShowById
+		noIdentifiableObject = g.ObjectAssert.ShowNoIdentifiableObject
+		fromObjectIDExpr = g.ObjectAssert.ShowFromObjectIDExpr
+		objectTypeName = g.ObjectAssert.ShowObjectTypeName
+		if parent := g.ObjectAssert.ShowByParentId; parent != nil {
+			showByParentId = &genhelpers.ShowByParentIdDef{
+				ParentIdType:   parent.ParentIdType,
+				ClientName:     parent.ClientName,
+				ShowMethodName: parent.ShowMethodName,
+			}
 		}
-		objectTypeName = fromBase.ClientName
+		if fromBase, ok := obj.ShowFromBase(); ok {
+			projection = &genhelpers.ShowProjectionDef{
+				ClientName: fromBase.ClientName,
+				Method:     fromBase.Method,
+			}
+			if objectTypeName == "" {
+				objectTypeName = fromBase.ClientName
+			}
+		}
 	}
 	return genhelpers.SdkObjectDetails{
 		ObjectTypeName:       objectTypeName,
 		IdType:               "sdk." + obj.IdType,
 		IsDataSourceOutput:   isDescribe,
+		NoShowById:           noShowById,
 		NoIdentifiableObject: noIdentifiableObject,
+		ShowByParentId:       showByParentId,
 		ShowProjection:       projection,
 		DescribeOverride:     describeOverride,
+		FromObjectIDExpr:     fromObjectIDExpr,
 		SkipFields:           skip,
 		NestedAssertFields:   objectAssertNestedNames(obj, nested),
 		StructDetails: genhelpers.StructDetails{
@@ -91,7 +113,11 @@ func objectAssertionDetailsFromSsot(obj ssot.Object, isDescribe bool) genhelpers
 // A SHOW list or set of enums stays []string, as does a columnar DESCRIBE. SdkDescribeDetails stores
 // that list as a slice of the enum. A SHOW plain-only column uses its plain kind, with the sdk prefix.
 func objectAssertColumnField(obj ssot.Object, attr *ssot.Attribute, isDescribe bool) genhelpers.Field {
-	field := ssot.ColumnField(obj, *attr)
+	view := attr.ForShow()
+	if isDescribe {
+		view = attr.ForDescribe()
+	}
+	field := ssot.ColumnField(obj, view)
 	concrete, underlying, ok := objectAssertOverrideType(obj, attr, isDescribe)
 	if !ok {
 		return field

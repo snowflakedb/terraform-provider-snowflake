@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ShowByIdInSdk_computePool(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.True(t, model.Hooks.ShowByIdInSdk.Generate)
@@ -17,17 +18,7 @@ func Test_ShowByIdInSdk_computePool(t *testing.T) {
 	require.Contains(t, got, `computePool, err := meta.(*provider.Context).Client.ComputePools.ShowByID(ctx, id)`)
 	require.Contains(t, got, `computePool, err := meta.(*provider.Context).Client.ComputePools.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query compute pool. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Compute pool id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeComputePool, id, err)
 		}`)
 	require.NotContains(t, got, "computePoolShowByIdInSdkExt")
 	require.NotContains(t, got, "computePoolShowByIdSafelyInSdkExt")
@@ -55,17 +46,7 @@ func Test_ShowByIdSafelyInSdk_hookModes(t *testing.T) {
 		model := lifecycleModel(withHooks(ssot.WithShowByIdSafelyInSdk(ssot.Generated())))
 		require.Equal(t, `pool, err := meta.(*provider.Context).Client.Pools.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query pool. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Pool id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypePool, id, err)
 		}
 `, renderTemplate(t, "showByIdSafelyInSdk", model))
 	})

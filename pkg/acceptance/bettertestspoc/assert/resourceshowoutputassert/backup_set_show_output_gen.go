@@ -32,6 +32,21 @@ func ImportedBackupSetShowOutput(t *testing.T, id string) *BackupSetShowOutputAs
 	return &backupSetAssert
 }
 
+func BackupSetsDatasourceShowOutput(t *testing.T, name string) *BackupSetShowOutputAssert {
+	t.Helper()
+
+	return BackupSetsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func BackupSetsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *BackupSetShowOutputAssert {
+	t.Helper()
+
+	backupSetAssert := BackupSetShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "backup_sets", idx),
+	}
+	return &backupSetAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////

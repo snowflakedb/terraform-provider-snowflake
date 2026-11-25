@@ -59,16 +59,21 @@ func (o *OpenflowDeploymentParametersAssert) HasDefaultParameterValueOnLevel(par
 	return o
 }
 
+func (o *OpenflowDeploymentParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.OpenflowDeploymentParameter) *OpenflowDeploymentParametersAssert {
+	o.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return o
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (o *OpenflowDeploymentParametersAssert) HasAllDefaults() *OpenflowDeploymentParametersAssert {
 	return o.
-		HasDefaultParameterValueOnLevel(sdk.OpenflowDeploymentParameterEventTable, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.OpenflowDeploymentParameterEventTable)
 }
 
 func (o *OpenflowDeploymentParametersAssert) HasAllDefaultsExplicit() *OpenflowDeploymentParametersAssert {

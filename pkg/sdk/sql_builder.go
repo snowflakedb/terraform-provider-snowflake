@@ -430,13 +430,15 @@ func (b sqlBuilder) parseFieldStruct(field reflect.StructField, value reflect.Va
 					}
 					return sqlInstanceMethodClause{object: objectID, method: sqlTag}, nil
 				}
-				// system_reference classifier: render as SYSTEM$REFERENCE('<objectType>', '<fqn>')
+				// system_reference classifier: render as SYSTEM$REFERENCE('<objectType>', '<fqn>'[, '<extraArg>' ...]); the sql tag holds
+				// the object type, followed by the comma-separated extra arguments
 				if hasDdlClassifier(ddlTagParts, systemReferenceClassifier) {
 					objectID, ok := reflectedValue.(ObjectIdentifier)
 					if !ok {
 						return nil, fmt.Errorf("system_reference classifier requires ObjectIdentifier, got %T", reflectedValue)
 					}
-					return sqlSystemReferenceClause{objectType: sqlTag, object: objectID}, nil
+					sqlTagParts := strings.Split(sqlTag, ",")
+					return sqlSystemReferenceClause{objectType: sqlTagParts[0], object: objectID, extraArgs: sqlTagParts[1:]}, nil
 				}
 				return sqlIdentifierClause{
 					key:   sqlTag,
@@ -829,8 +831,13 @@ func (v sqlInstanceMethodClause) String() (string, error) {
 type sqlSystemReferenceClause struct {
 	objectType string
 	object     ObjectIdentifier
+	extraArgs  []string
 }
 
 func (v sqlSystemReferenceClause) String() (string, error) {
-	return fmt.Sprintf("SYSTEM$REFERENCE(%s, %s)", SingleQuotes.Modify(v.objectType), SingleQuotes.Modify(v.object.FullyQualifiedNameEscaped())), nil
+	args := []string{SingleQuotes.Modify(v.objectType), SingleQuotes.Modify(v.object.FullyQualifiedNameEscaped())}
+	for _, arg := range v.extraArgs {
+		args = append(args, SingleQuotes.Modify(arg))
+	}
+	return fmt.Sprintf("SYSTEM$REFERENCE(%s)", strings.Join(args, ", ")), nil
 }

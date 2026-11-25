@@ -151,8 +151,10 @@ Read-Only:
 - `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--log_level))
 - `max_data_extension_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--max_data_extension_time_in_days))
+- `metric_level` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--metric_level))
 - `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--quoted_identifiers_ignore_case))
 - `replace_invalid_characters` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--replace_invalid_characters))
+- `service_caller_token_validity_secs` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--service_caller_token_validity_secs))
 - `storage_serialization_policy` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--storage_serialization_policy))
 - `suspend_task_after_num_failures` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--suspend_task_after_num_failures))
 - `task_auto_retry_attempts` (List of Object) (see [below for nested schema](#nestedobjatt--databases--parameters--task_auto_retry_attempts))
@@ -281,6 +283,18 @@ Read-Only:
 - `value` (String)
 
 
+<a id="nestedobjatt--databases--parameters--metric_level"></a>
+### Nested Schema for `databases.parameters.metric_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
 <a id="nestedobjatt--databases--parameters--quoted_identifiers_ignore_case"></a>
 ### Nested Schema for `databases.parameters.quoted_identifiers_ignore_case`
 
@@ -295,6 +309,18 @@ Read-Only:
 
 <a id="nestedobjatt--databases--parameters--replace_invalid_characters"></a>
 ### Nested Schema for `databases.parameters.replace_invalid_characters`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--databases--parameters--service_caller_token_validity_secs"></a>
+### Nested Schema for `databases.parameters.service_caller_token_validity_secs`
 
 Read-Only:
 

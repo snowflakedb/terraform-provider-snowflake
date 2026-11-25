@@ -7,9 +7,6 @@ import (
 type SchemaGenerator struct {
 	Show     bool
 	Describe bool
-	// ShowFromBase keeps Show<Variant>Schema and <Variant>ToSchema, and maps *sdk.<VariantOf.Name>.
-	// Use it when every variant is one row of the base SHOW type.
-	ShowFromBase bool
 	// ShowManualFields and DescribeManualFields are the same *Attribute pointers that sit in Columns.
 	// The key stays in the generated schema map and ToSchema, but the mapping line is omitted: a
 	// generated additionalSchemaMapper[T] stub is emitted, and *_ext.go must implement it.
@@ -19,6 +16,9 @@ type SchemaGenerator struct {
 	// An AttrSet column is generated as TypeSet. Listed columns stay TypeList, the type the SDK slice maps to.
 	ShowListFields     []*Attribute
 	DescribeListFields []*Attribute
+	// UsedAsListEntry emits the property-row schema from DescribeRows. The schema variable is the plain
+	// DESCRIBE row name with no Show or Describe prefix, such as AuthenticationPolicyPropertySchema.
+	UsedAsListEntry bool
 }
 
 type SdkGenerator struct {
@@ -28,22 +28,23 @@ type SdkGenerator struct {
 	Show     bool
 	Describe bool
 
-	ShowDoc                   string
-	ShowSql                   string
-	ShowTerse                 bool
-	ShowOptionalSql           []string
-	ShowOptionalLike          bool
-	ShowOptionalIn            bool
-	ShowOptionalInAccount     bool
-	ShowOptionalExtendedIn    bool
-	ShowOptionalOn            bool
-	ShowOptionalStartsWith    bool
-	ShowOptionalLimitFrom     bool
-	ShowOptionalLimit         bool
-	ShowByIDFiltering         []SdkShowByIDFilteringKind
-	ShowByIDPredicate         SdkShowByIDPredicateKind
-	ShowQueryStructName       string
-	ShowAdditionalValidations bool
+	ShowDoc                             string
+	ShowSql                             string
+	ShowTerse                           bool
+	ShowOptionalSql                     []string
+	ShowOptionalLike                    bool
+	ShowOptionalIn                      bool
+	ShowOptionalInAccount               bool
+	ShowOptionalExtendedIn              bool
+	ShowOptionalExtendedInWithoutSchema bool
+	ShowOptionalOn                      bool
+	ShowOptionalStartsWith              bool
+	ShowOptionalLimitFrom               bool
+	ShowOptionalLimit                   bool
+	ShowByIDFiltering                   []SdkShowByIDFilteringKind
+	ShowByIDPredicate                   SdkShowByIDPredicateKind
+	ShowQueryStructName                 string
+	ShowAdditionalValidations           bool
 	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
 	ShowResultFilterHook bool
 	// ShowPlainOnlyFields are SHOW columns that only the plain struct has. convert skips them and additionalConvert in the
@@ -139,6 +140,33 @@ type ResourceGenerator struct {
 	Enabled bool
 }
 
+// DataSourceGenerator emits the Terraform data source. Enabled is set by WithDataSource.
+// An object in All without it is not a data-source-generation input.
+type DataSourceGenerator struct {
+	Enabled bool
+	// The additional descriptions end the description of the matching output block of the data source.
+	AdditionalShowOutputDescription       string
+	AdditionalDescribeOutputDescription   string
+	AdditionalParametersOutputDescription string
+	// WithTerse offers the terse filter in the data source. It is left out by default.
+	WithTerse bool
+	// WithHistory offers the history filter in the data source. It is left out by default.
+	WithHistory bool
+	// WithoutFilters are the filters of the SDK SHOW request that the data source does not offer.
+	WithoutFilters []DataSourceFilter
+	// DescribeMethod is the custom-operation Kind the data source DESCRIBE calls, such as DescribeColumns.
+	// Empty uses DescribeDetails when the SDK emits it, otherwise Describe.
+	DescribeMethod string
+}
+
+// DataSourceFilter is a filter that a data source can leave out.
+type DataSourceFilter string
+
+const (
+	DataSourceFilterStartsWith DataSourceFilter = "starts_with"
+	DataSourceFilterLimit      DataSourceFilter = "limit"
+)
+
 type ResourceAssertGenerator struct {
 	Enabled bool
 }
@@ -146,9 +174,6 @@ type ResourceAssertGenerator struct {
 type ShowOutputAssertGenerator struct {
 	Show     bool
 	Describe bool
-	// ShowRowFromBase makes a variant reuse the SHOW show output assertion of its base. The variant keeps its
-	// constructors, which return the base's assertion type, and no assertion type or attribute methods are generated.
-	ShowRowFromBase bool
 	// ShowSkipFields and DescribeSkipFields are the same *Attribute pointers that sit in Columns.
 	// The column stays in Columns. Has* is not generated.
 	ShowSkipFields     []*Attribute
@@ -163,13 +188,6 @@ type ObjectAssertGenerator struct {
 	// The column stays in Columns. Has* is not generated.
 	ShowSkipFields     []*Attribute
 	DescribeSkipFields []*Attribute
-	// ShowProjection is the method on the VariantOf client, such as ShowByIDAdaptive.
-	// The fetch is testClient.<VariantOf.Name>.<ShowProjection>.
-	// The row type stays sdk.<Variant>. The object type constant is sdk.ObjectType<VariantOf.Name>.
-	ShowProjection string
-	// ShowRowFromBase uses sdk.<VariantOf.Name> as the SHOW row and fetches through
-	// testClient.<VariantOf.Name>.Show. The assertion name stays the variant.
-	ShowRowFromBase bool
 	// DescribeMethod replaces testClient.<Object>.Describe. DescribeOnBase uses VariantOf.Name as the client.
 	DescribeMethod string
 	DescribeOnBase bool
@@ -178,6 +196,26 @@ type ObjectAssertGenerator struct {
 	// The column gets the nested assertion adapter (Has<Field>With) instead of a plain Has*.
 	ShowNestedFields     []ObjectAssertNestedField
 	DescribeNestedFields []ObjectAssertNestedField
+
+	// NoShowById suppresses the ShowByID constructor. The object is listed some other way.
+	NoShowById bool
+	// ShowNoIdentifiableObject suppresses the SHOW constructor and New*Assert the way NoIdentifiableObject does for DESCRIBE.
+	ShowNoIdentifiableObject bool
+	// ShowByParentId fetches the object through a parent identifier.
+	ShowByParentId *ObjectAssertParentId
+	// ShowFromObjectIDExpr and DescribeFromObjectIDExpr replace <object>.ID() in FromObject.
+	ShowFromObjectIDExpr     string
+	DescribeFromObjectIDExpr string
+	// ShowObjectTypeName is the object type constant when it is not this object's name.
+	// Empty keeps the name, or the base name when Variant.ObjectAssertShowFromBase is set.
+	ShowObjectTypeName string
+}
+
+// ObjectAssertParentId is the parent fetch of a SHOW object assertion.
+type ObjectAssertParentId struct {
+	ParentIdType   string
+	ClientName     string
+	ShowMethodName string
 }
 
 // ObjectAssertNestedField is a nested-block column. The nested assertion type is derived from the Go type of
@@ -185,7 +223,7 @@ type ObjectAssertGenerator struct {
 // Empty GoType means the default. A list or set is "[]sdk." + object Name + the column name in
 // camel case with one trailing "s" dropped + "Details" (storage_locations on ExternalVolume is
 // []sdk.ExternalVolumeStorageLocationDetails). An object column is sdk.<NestedObjectDetails>, and a
-// pointer when the column is not required.
+// pointer when OptionalInShow is set.
 type ObjectAssertNestedField struct {
 	Attr   *Attribute
 	GoType string
@@ -215,6 +253,7 @@ type Generators struct {
 	Schema                   SchemaGenerator
 	Sdk                      SdkGenerator
 	Resource                 ResourceGenerator
+	DataSource               DataSourceGenerator
 	Model                    ModelGenerator
 	ResourceAssert           ResourceAssertGenerator
 	ShowOutputAssert         ShowOutputAssertGenerator
@@ -238,16 +277,6 @@ func SchemaShow(opts ...SchemaShowOption) SchemaOption {
 			opt(s)
 		}
 	}
-}
-
-// TODO [next PRs]: the three reuse settings (SchemaShowFromBase, ObjectAssertShowRowFromBase, ShowOutputShowRowFromBase) stay separate
-// on purpose for now. They may merge into one declaration of the variant.
-// SchemaShowFromBase makes a variant reuse the SHOW schema of its base: no Show<Variant>Schema or <Variant>ToSchema is
-// generated, and the variant resource uses Show<VariantOf.Name>Schema and <VariantOf.Name>ToSchema.
-// Use it when every variant is one row of the base SHOW type. The base must generate its SHOW schema, and the variant
-// cannot set show schema options (manual or list fields): drop the setting and configure SHOW to override.
-func SchemaShowFromBase() SchemaShowOption {
-	return func(s *SchemaGenerator) { s.ShowFromBase = true }
 }
 
 // SchemaShowManualFields copies ManualFields from the old show schema def.
@@ -282,6 +311,12 @@ func SchemaDescribeManualFields(attrs ...*Attribute) SchemaDescribeOption {
 // Each argument is the *Attribute already listed in Describe.Columns.
 func SchemaDescribeListFields(attrs ...*Attribute) SchemaDescribeOption {
 	return func(s *SchemaGenerator) { s.DescribeListFields = append(s.DescribeListFields, attrs...) }
+}
+
+// SchemaUsedAsListEntry copies UsedAsListEntry from the old show schema def.
+// The schema is the DescribeRows property row, used as a list element. It is not a SHOW or DESCRIBE schema.
+func SchemaUsedAsListEntry() SchemaOption {
+	return func(s *SchemaGenerator) { s.UsedAsListEntry = true }
 }
 
 func WithSchema(opts ...SchemaOption) GeneratorOption {
@@ -608,6 +643,52 @@ func WithResource(opts ...ResourceOption) GeneratorOption {
 	}
 }
 
+type DataSourceOption func(*DataSourceGenerator)
+
+func DataSourceAdditionalShowOutputDescription(text string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.AdditionalShowOutputDescription = text }
+}
+
+func DataSourceAdditionalDescribeOutputDescription(text string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.AdditionalDescribeOutputDescription = text }
+}
+
+func DataSourceAdditionalParametersOutputDescription(text string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.AdditionalParametersOutputDescription = text }
+}
+
+// DataSourceWithTerse offers `terse` in the data source. It is left out by default, because the data sources do not offer it in general.
+func DataSourceWithTerse() DataSourceOption {
+	return func(g *DataSourceGenerator) { g.WithTerse = true }
+}
+
+// DataSourceWithHistory offers `history` in the data source. It is left out by default, because the data sources do not offer it in general.
+func DataSourceWithHistory() DataSourceOption {
+	return func(g *DataSourceGenerator) { g.WithHistory = true }
+}
+
+// DataSourceWithoutFilters leaves filters out of the data source, for example while Snowflake ignores them in SHOW.
+func DataSourceWithoutFilters(filters ...DataSourceFilter) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.WithoutFilters = append(g.WithoutFilters, filters...) }
+}
+
+// DataSourceDescribeMethod selects a custom operation as the data source DESCRIBE, such as DescribeColumns.
+// Kind is CustomOperationSpec.Kind. The call is Client.<Plural>.<Kind>(ctx, sdk.New<Kind><Name>Request(id)).
+func DataSourceDescribeMethod(kind string) DataSourceOption {
+	return func(g *DataSourceGenerator) { g.DescribeMethod = kind }
+}
+
+// WithDataSource enables data source generation for this object.
+// Zero options still sets Enabled. An object without this call is left out of make generate-datasource.
+func WithDataSource(opts ...DataSourceOption) GeneratorOption {
+	return func(g *Generators) {
+		g.DataSource.Enabled = true
+		for _, opt := range opts {
+			opt(&g.DataSource)
+		}
+	}
+}
+
 type ModelOption func(*ModelGenerator)
 
 // ModelRequestType overrides the constructor parameter type for a Required nested-block attribute
@@ -668,16 +749,6 @@ func ShowOutputShow(opts ...ShowOutputShowOption) ShowOutputAssertOption {
 			opt(s)
 		}
 	}
-}
-
-// TODO [next PRs]: see SchemaShowFromBase, the reuse settings may merge into one declaration.
-// ShowOutputShowRowFromBase makes a variant reuse the SHOW show output assertion of its base: only the constructors
-// <Variant>ShowOutput and Imported<Variant>ShowOutput are generated, and they return the base's assertion type, so the
-// variant resource is asserted by resource name while sharing the base's methods (including hand-written ones).
-// Use it when every variant is one row of the base SHOW type. The base must generate its SHOW show output assertion,
-// and the variant cannot set show skip fields: drop the setting and configure SHOW to override.
-func ShowOutputShowRowFromBase() ShowOutputShowOption {
-	return func(s *ShowOutputAssertGenerator) { s.ShowRowFromBase = true }
 }
 
 // ShowOutputShowSkipFields copies SkipFields from the old show output def.
@@ -746,49 +817,78 @@ func ObjectAssertShowSkipFields(attrs ...*Attribute) ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) { a.ShowSkipFields = append(a.ShowSkipFields, attrs...) }
 }
 
-// ObjectAssertShowFromBase fetches through testClient.<VariantOf.Name>.<method>, such as ShowByIDAdaptive.
-// The row type stays sdk.<Variant>. The client name is VariantOf.Name, returned by Object.ShowFromBase.
-func ObjectAssertShowFromBase(projection string) ObjectAssertShowOption {
+// ObjectAssertNoShowById copies NoShowById from the old show object-assertion def.
+func ObjectAssertNoShowById() ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.NoShowById = true }
+}
+
+// ObjectAssertShowNoIdentifiableObject copies NoIdentifiableObject from a SHOW entry of the old object-assertion def.
+// WithNoIdentifiableObject is the DESCRIBE setting.
+func ObjectAssertShowNoIdentifiableObject() ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) { a.ShowNoIdentifiableObject = true }
+}
+
+// ObjectAssertShowByParentId copies ShowByParentId from the old show object-assertion def.
+func ObjectAssertShowByParentId(parentIdType, clientName, showMethodName string) ObjectAssertShowOption {
 	return func(a *ObjectAssertGenerator) {
-		a.ShowProjection = projection
+		if parentIdType == "" || clientName == "" || showMethodName == "" {
+			panic("object assertion show by parent id needs a parent id type, a client name, and a show method")
+		}
+		a.ShowByParentId = &ObjectAssertParentId{
+			ParentIdType:   parentIdType,
+			ClientName:     clientName,
+			ShowMethodName: showMethodName,
+		}
 	}
 }
 
-// TODO [next PRs]: see SchemaShowFromBase, the reuse settings may merge into one declaration.
-// ObjectAssertShowRowFromBase makes a variant reuse the SHOW object assertion of its base: no <Variant> assertion is
-// generated, and tests assert the variant through the base's assertion (testClient.<VariantOf.Name>.Show).
-// Use it when every variant is one row of the base SHOW type. The base must generate its SHOW assertion, and the variant
-// cannot set show assertion options (skip fields, nested fields or a projection): drop the setting and configure SHOW to override.
-func ObjectAssertShowRowFromBase() ObjectAssertShowOption {
-	return func(a *ObjectAssertGenerator) { a.ShowRowFromBase = true }
+// ObjectAssertShowFromObjectIDExpr copies FromObjectIDExpr from a SHOW entry of the old object-assertion def.
+func ObjectAssertShowFromObjectIDExpr(expr string) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		if expr == "" {
+			panic("object assertion show from-object id expression is empty")
+		}
+		a.ShowFromObjectIDExpr = expr
+	}
+}
+
+// ObjectAssertShowObjectTypeName copies ObjectTypeName from the old show object-assertion def.
+func ObjectAssertShowObjectTypeName(name string) ObjectAssertShowOption {
+	return func(a *ObjectAssertGenerator) {
+		if name == "" {
+			panic("object assertion show object type name is empty")
+		}
+		a.ShowObjectTypeName = name
+	}
 }
 
 // ShowFromBase is the SHOW fetch for a variant object assertion.
-// ClientName is VariantOf.Name. Method is the ObjectAssertShowFromBase argument.
+// ClientName is Variant.Of.Name. Method is Variant.ObjectAssertShowFromBase.
 type ShowFromBase struct {
 	ClientName string
 	Method     string
 }
 
-// ShowFromBase returns the resolved SHOW projection. ok is false when ObjectAssertShowFromBase is not set.
+// ShowFromBase returns the resolved SHOW projection. ok is false when Variant.ObjectAssertShowFromBase is empty.
 func (obj Object) ShowFromBase() (ShowFromBase, bool) {
-	g := ObjectGenerators(obj.Generators...).ObjectAssert
-	if g.ShowProjection == "" {
+	if obj.Variant == nil || obj.Variant.ObjectAssertShowFromBase == "" {
 		return ShowFromBase{}, false
 	}
-	if g.ShowRowFromBase {
+	if obj.Variant.ObjectAssertShowRowFromBase {
 		panic(fmt.Sprintf("object %q: object assertion show row from base and show projection are both set", obj.Name))
 	}
-	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
-		panic(fmt.Sprintf("object %q: object assertion show projection %q requires VariantOf", obj.Name, g.ShowProjection))
+	if obj.VariantBase() == nil || obj.VariantBase().Name == "" {
+		panic(fmt.Sprintf("object %q: object assertion show projection %q requires Variant.Of", obj.Name, obj.Variant.ObjectAssertShowFromBase))
 	}
-	return ShowFromBase{ClientName: obj.VariantOf.Name, Method: g.ShowProjection}, true
+	return ShowFromBase{ClientName: obj.VariantBase().Name, Method: obj.Variant.ObjectAssertShowFromBase}, true
 }
 
-// ReusesBaseSchemaShow is true when this variant takes its SHOW schema from the base (SchemaShowFromBase).
+// ReusesBaseSchemaShow is true when this variant takes its SHOW schema from the base (Variant.SchemaShowFromBase).
 func (obj Object) ReusesBaseSchemaShow() bool {
-	g := ObjectGenerators(obj.Generators...).Schema
-	return g.Show && g.ShowFromBase
+	if obj.Variant == nil || !obj.Variant.SchemaShowFromBase {
+		return false
+	}
+	return ObjectGenerators(obj.Generators...).Schema.Show
 }
 
 // SchemaShowOwnerName is the name of the object whose SHOW schema this object uses.
@@ -800,10 +900,12 @@ func (obj Object) SchemaShowOwnerName() string {
 	return obj.Name
 }
 
-// ReusesBaseShowOutputAssertShow is true when this variant takes its SHOW show output assertion from the base (ShowOutputShowRowFromBase).
+// ReusesBaseShowOutputAssertShow is true when this variant takes its SHOW show output assertion from the base (Variant.ShowOutputShowRowFromBase).
 func (obj Object) ReusesBaseShowOutputAssertShow() bool {
-	g := ObjectGenerators(obj.Generators...).ShowOutputAssert
-	return g.Show && g.ShowRowFromBase
+	if obj.Variant == nil || !obj.Variant.ShowOutputShowRowFromBase {
+		return false
+	}
+	return ObjectGenerators(obj.Generators...).ShowOutputAssert.Show
 }
 
 // ShowOutputAssertShowOwnerName is the name of the object whose SHOW show output assertion type this object uses.
@@ -815,10 +917,12 @@ func (obj Object) ShowOutputAssertShowOwnerName() string {
 	return obj.Name
 }
 
-// ReusesBaseObjectAssertShow is true when this variant takes its SHOW object assertion from the base (ObjectAssertShowRowFromBase).
+// ReusesBaseObjectAssertShow is true when this variant takes its SHOW object assertion from the base (Variant.ObjectAssertShowRowFromBase).
 func (obj Object) ReusesBaseObjectAssertShow() bool {
-	g := ObjectGenerators(obj.Generators...).ObjectAssert
-	return g.Show && g.ShowRowFromBase
+	if obj.Variant == nil || !obj.Variant.ObjectAssertShowRowFromBase {
+		return false
+	}
+	return ObjectGenerators(obj.Generators...).ObjectAssert.Show
 }
 
 // ObjectAssertShowOwnerName is the name of the object whose SHOW object assertion this object uses.
@@ -831,10 +935,10 @@ func (obj Object) ObjectAssertShowOwnerName() string {
 }
 
 func showReuseBase(obj Object, label string) *Object {
-	if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+	if obj.VariantBase() == nil || obj.VariantBase().Name == "" {
 		panic(fmt.Sprintf("object %q: %s reuse requires VariantOf", obj.Name, label))
 	}
-	return obj.VariantOf
+	return obj.VariantBase()
 }
 
 // DescribeFetch is the DESCRIBE fetch when it is not testClient.<Object>.Describe.
@@ -853,10 +957,10 @@ func (obj Object) DescribeFetch() (DescribeFetch, bool) {
 	}
 	client := obj.Name
 	if g.DescribeOnBase {
-		if obj.VariantOf == nil || obj.VariantOf.Name == "" {
+		if obj.VariantBase() == nil || obj.VariantBase().Name == "" {
 			panic(fmt.Sprintf("object %q: object assertion describe method %q from base requires VariantOf", obj.Name, g.DescribeMethod))
 		}
-		client = obj.VariantOf.Name
+		client = obj.VariantBase().Name
 	}
 	return DescribeFetch{ClientName: client, Method: g.DescribeMethod}, true
 }
@@ -902,6 +1006,16 @@ func ObjectAssertDescribeNestedField(attr *Attribute, opts ...ObjectAssertNested
 
 func WithNoIdentifiableObject() ObjectAssertDescribeOption {
 	return func(a *ObjectAssertGenerator) { a.NoIdentifiableObject = true }
+}
+
+// ObjectAssertDescribeFromObjectIDExpr copies FromObjectIDExpr from a DESCRIBE entry of the old object-assertion def.
+func ObjectAssertDescribeFromObjectIDExpr(expr string) ObjectAssertDescribeOption {
+	return func(a *ObjectAssertGenerator) {
+		if expr == "" {
+			panic("object assertion describe from-object id expression is empty")
+		}
+		a.DescribeFromObjectIDExpr = expr
+	}
 }
 
 // ObjectAssertDescribeSkipFields copies SkipFields from the old describe object-assertion def.

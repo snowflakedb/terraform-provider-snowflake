@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -40,6 +41,19 @@ func TestAcc_CatalogIntegrations_BasicUseCase_DifferentFiltering(t *testing.T) {
 		WithLike(prefix+"%").
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
+	catalogIntegrationsModelLikePrefixWithDescribe := datasourcemodel.CatalogIntegrations("test").
+		WithLike(prefix+"%").
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+
+	otherCasePrefix := strings.ToUpper(prefix)
+	if otherCasePrefix == prefix {
+		otherCasePrefix = strings.ToLower(prefix)
+	}
+	catalogIntegrationsModelLikeOtherCase := datasourcemodel.CatalogIntegrations("test").
+		WithWithDescribe(false).
+		WithLike(otherCasePrefix+"%").
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
@@ -57,6 +71,33 @@ func TestAcc_CatalogIntegrations_BasicUseCase_DifferentFiltering(t *testing.T) {
 				Config: accconfig.FromModels(t, model1, model2, model3, catalogIntegrationsModelLikePrefix),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(catalogIntegrationsModelLikePrefix.DatasourceReference(), "catalog_integrations.#", "2"),
+					resource.TestCheckResourceAttr(catalogIntegrationsModelLikePrefix.DatasourceReference(), "catalog_integrations.0.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(catalogIntegrationsModelLikePrefix.DatasourceReference(), "catalog_integrations.1.describe_output.#", "0"),
+				),
+			},
+			{
+				// With more than one result, every item holds its own show and describe output.
+				Config: accconfig.FromModels(t, model1, model2, model3, catalogIntegrationsModelLikePrefixWithDescribe),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "id", "catalog_integrations_read"),
+					resource.TestCheckResourceAttr(catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "catalog_integrations.#", "2"),
+					resource.TestCheckResourceAttr(catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "catalog_integrations.0.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "catalog_integrations.0.show_output.0.name",
+						catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "catalog_integrations.0.describe_output.0.id",
+					),
+					resource.TestCheckResourceAttr(catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "catalog_integrations.1.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "catalog_integrations.1.show_output.0.name",
+						catalogIntegrationsModelLikePrefixWithDescribe.DatasourceReference(), "catalog_integrations.1.describe_output.0.id",
+					),
+				),
+			},
+			{
+				// LIKE is case-insensitive.
+				Config: accconfig.FromModels(t, model1, model2, model3, catalogIntegrationsModelLikeOtherCase),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(catalogIntegrationsModelLikeOtherCase.DatasourceReference(), "catalog_integrations.#", "2"),
 				),
 			},
 		},

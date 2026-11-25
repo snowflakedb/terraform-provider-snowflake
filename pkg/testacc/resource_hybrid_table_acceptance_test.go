@@ -360,7 +360,7 @@ func TestAcc_HybridTable_CompleteUseCase(t *testing.T) {
 	parentId := testClient().Ids.RandomSchemaObjectIdentifier()
 	testClient().HybridTable.CreateWithRequest(t, parentId, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 		Columns: []sdk.HybridTableColumnRequest{
-			*sdk.NewHybridTableColumnRequest("ID", sdk.DataType("INTEGER")).
+			*sdk.NewHybridTableColumnRequest("ID", testdatatypes.DataTypeInteger).
 				WithInlineConstraint(sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}),
 		},
 	})
@@ -929,7 +929,7 @@ func TestAcc_HybridTable_ForeignKey(t *testing.T) {
 	parentId := testClient().Ids.RandomSchemaObjectIdentifier()
 	testClient().HybridTable.CreateWithRequest(t, parentId, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 		Columns: []sdk.HybridTableColumnRequest{
-			*sdk.NewHybridTableColumnRequest("ID", sdk.DataType("INTEGER")).
+			*sdk.NewHybridTableColumnRequest("ID", testdatatypes.DataTypeInteger).
 				WithInlineConstraint(sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}),
 		},
 	})
@@ -1276,7 +1276,7 @@ func TestAcc_HybridTable_ExternalColumnChanges(t *testing.T) {
 			{
 				PreConfig: func() {
 					testClient().HybridTable.Alter(t, sdk.NewAlterHybridTableRequest(id).WithAddColumnAction(
-						*sdk.NewHybridTableAddColumnActionRequest("EMAIL", sdk.DataType("VARCHAR")),
+						*sdk.NewHybridTableAddColumnActionRequest("EMAIL", testdatatypes.DataTypeVarchar),
 					))
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -1473,9 +1473,9 @@ func TestAcc_HybridTable_ColumnNotNullForceNew(t *testing.T) {
 					testClient().HybridTable.DropFunc(t, id)()
 					testClient().HybridTable.CreateWithRequest(t, id, sdk.HybridTableColumnsConstraintsAndIndexesRequest{
 						Columns: []sdk.HybridTableColumnRequest{
-							*sdk.NewHybridTableColumnRequest("ID", sdk.DataType(testdatatypes.DataTypeInteger.ToSql())).
+							*sdk.NewHybridTableColumnRequest("ID", testdatatypes.DataTypeInteger).
 								WithInlineConstraint(sdk.ColumnInlineConstraint{Type: sdk.ColumnConstraintTypePrimaryKey}),
-							*sdk.NewHybridTableColumnRequest("NAME", sdk.DataType(testdatatypes.DataTypeVarchar.ToSql())).
+							*sdk.NewHybridTableColumnRequest("NAME", testdatatypes.DataTypeVarchar).
 								WithNotNull(true),
 						},
 					})

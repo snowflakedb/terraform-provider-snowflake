@@ -95,7 +95,7 @@ var (
 		CreateSql: ssot.ObjectParameter(),
 		Children: []ssot.Attribute{
 			ssot.WithCreateSql(&ShareAttrs.Accounts, ssot.PlainParameter(ssot.Required())),
-			{Name: "share_restrictions", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolParameter()},
+			{Name: "share_restrictions", Type: ssot.AttrBool, SqlOnly: true},
 		},
 	}
 	shareRemoveAccounts = ssot.Attribute{
@@ -137,6 +137,11 @@ var Share = ssot.Object{
 	// The accounts are the reason for the ext hooks: they need a temporary database when no database is granted yet,
 	// the update makes the recipients equal to the configured accounts (BeforeAlter; the generated SET and UNSET handle the
 	// comment), and the read merges the recipients that SHOW SHARES does not list (AfterShowById).
+	DataSourceHooks: []ssot.DataSourceHookOption{
+		// The recipients that SHOW SHARES truncates are completed, and a share that cannot be completed or described is a warning.
+		ssot.WithDataSourceShowInSdk(ssot.ExtCall()),
+		ssot.WithDataSourceDescribeInSdk(ssot.ExtCall()),
+	},
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
@@ -172,6 +177,10 @@ var Share = ssot.Object{
 				ssot.ObjectAssertShow(),
 				ssot.ObjectAssertDescribe(ssot.WithNoIdentifiableObject()),
 			),
+		),
+		ssot.WithDataSource(
+			ssot.DataSourceAdditionalShowOutputDescription("SHOW SHARES lists at most three accounts of an outbound share, so for a share with more accounts the full list of `to` is read from `SNOWFLAKE.ACCOUNT_USAGE.SHARES` (it needs `SELECT` on that view and a warehouse in the connection, and the view can be up to 3 hours behind). If that fails, a warning is reported and `to` holds the accounts listed by SHOW SHARES. `to_total` is the number of accounts reported by SHOW SHARES."),
+			ssot.DataSourceAdditionalDescribeOutputDescription("DESCRIBE SHARE returns a row for every object granted to the share, including the system objects that Snowflake adds to the shared database. A share that cannot be described (for example because of missing privileges) is reported with a warning and has an empty output."),
 		),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),

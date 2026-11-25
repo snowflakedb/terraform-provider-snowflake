@@ -47,7 +47,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 				HasOwnerRoleType("ROLE").
 				HasComment("").
 				HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
-				HasPrivatelinkRepositoryUrl(""),
+				HasPrivatelinkRepositoryUrlNotEmpty(),
 		)
 	})
 
@@ -74,7 +74,7 @@ func TestInt_ImageRepositories(t *testing.T) {
 				HasOwnerRoleType("ROLE").
 				HasComment(comment).
 				HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeSse).
-				HasPrivatelinkRepositoryUrl(""),
+				HasPrivatelinkRepositoryUrlNotEmpty(),
 		)
 	})
 

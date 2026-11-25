@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type externalFunctionToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.ExternalFunction] = externalFunctionToSchemaMapper{}
+
 // ShowExternalFunctionSchema represents output of SHOW query for the single ExternalFunction.
-var ShowExternalFunctionSchema = map[string]*schema.Schema{
+var ShowExternalFunctionSchema = mergeSchema(map[string]*schema.Schema{
 	"created_on": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -41,11 +45,10 @@ var ShowExternalFunctionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeInt,
 		Computed: true,
 	},
-	"arguments_raw": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
-	// arguments is skipped and won't be generated
+	// arguments_raw is skipped and won't be generated
+	// arguments: manual addition and mapping is needed
+	// return_type: manual addition and mapping is needed
+	// return_type_raw is skipped and won't be generated
 	"description": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -82,7 +85,7 @@ var ShowExternalFunctionSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-}
+}, externalFunctionToSchemaMapper{}.additionalSchema())
 
 var _ = ShowExternalFunctionSchema
 
@@ -96,8 +99,10 @@ func ExternalFunctionToSchema(externalFunction *sdk.ExternalFunction) map[string
 	externalFunctionSchema["is_ansi"] = externalFunction.IsAnsi
 	externalFunctionSchema["min_num_arguments"] = externalFunction.MinNumArguments
 	externalFunctionSchema["max_num_arguments"] = externalFunction.MaxNumArguments
-	externalFunctionSchema["arguments_raw"] = externalFunction.ArgumentsRaw
-	// arguments is skipped and won't be generated
+	// arguments_raw is skipped and won't be generated
+	// arguments: manual addition and mapping is needed
+	// return_type: manual addition and mapping is needed
+	// return_type_raw is skipped and won't be generated
 	externalFunctionSchema["description"] = externalFunction.Description
 	externalFunctionSchema["catalog_name"] = externalFunction.CatalogName
 	externalFunctionSchema["is_table_function"] = externalFunction.IsTableFunction
@@ -107,6 +112,7 @@ func ExternalFunctionToSchema(externalFunction *sdk.ExternalFunction) map[string
 	externalFunctionSchema["language"] = externalFunction.Language
 	externalFunctionSchema["is_memoizable"] = externalFunction.IsMemoizable
 	externalFunctionSchema["is_data_metric"] = externalFunction.IsDataMetric
+	externalFunctionToSchemaMapper{}.additionalToSchema(externalFunction, externalFunctionSchema)
 	return externalFunctionSchema
 }
 

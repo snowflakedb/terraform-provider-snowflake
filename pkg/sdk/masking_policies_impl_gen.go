@@ -164,7 +164,7 @@ func (r describeMaskingPolicyDBRow) convert() (*MaskingPolicyDetails, error) {
 		Name: r.Name,
 		Body: r.Body,
 	}
-	if v, err := ParseTableColumnSignature(r.Signature); err != nil {
+	if v, err := parseDescribeSignatureToTableColumnSignatures(r.Signature); err != nil {
 		return nil, fmt.Errorf("parsing table column signature: %w", err)
 	} else {
 		result.Signature = v

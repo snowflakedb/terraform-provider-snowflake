@@ -95,16 +95,15 @@ func failoverGroupIdList(idType string, required bool) ssot.SqlClause {
 }
 
 func failoverGroupMoveList(name, sql string) ssot.Attribute {
+	opts := []ssot.SqlClauseOption{ssot.NoParentheses(), ssot.NoEquals()}
+	if sql != "" {
+		opts = append([]ssot.SqlClauseOption{ssot.Sql(sql)}, opts...)
+	}
 	return ssot.Attribute{
-		Name: name,
-		Type: ssot.AttrList,
-		Elem: &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
-		CreateSql: ssot.ListParameter(
-			"AccountObjectIdentifier",
-			ssot.Sql(sql),
-			ssot.NoParentheses(),
-			ssot.NoEquals(),
-		),
+		Name:      name,
+		Type:      ssot.AttrList,
+		Elem:      &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql: ssot.ListParameter("AccountObjectIdentifier", opts...),
 	}
 }
 
@@ -158,24 +157,22 @@ var FailoverGroupAttrs = struct {
 }{
 	ObjectTypes: ssot.Attribute{
 		Name:          "object_types",
-		Type:          ssot.AttrList,
+		Type:          ssot.AttrSet,
 		Required:      true,
 		CreateMapping: ssot.ListValueCreate("toFailoverGroupObjectTypes"),
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toFailoverGroupObjectTypes"),
 		Description:   "Types of objects for which replication and failover from the source account to the target accounts is enabled.",
 		Elem:          &ssot.Attribute{Type: ssot.AttrEnum, Enum: FailoverGroupObjectType},
 		// CSV. NULL or empty when a secondary group lists none. The plain field stays a slice.
 		// SHOW uses PARAMETERS for account parameters. That token is mapped to ACCOUNT PARAMETERS.
-		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
+		// The SHOW schema generator does not map an enum slice, so the schema ext maps the column.
 		OptionalInDb: true,
-		SkipInSchema: true,
 		CustomParser: "ParseCommaSeparatedFailoverGroupObjectTypeArray",
 		CreateSql:    failoverGroupEnumList(FailoverGroupObjectType, true),
 		SetSql:       failoverGroupEnumList(FailoverGroupObjectType, false),
 	},
 	AllowedDatabases: ssot.Attribute{
 		Name:        "allowed_databases",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrSet,
 		Description: "Databases enabled for replication and failover. OBJECT_TYPES must include DATABASES.",
 		Elem:        &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
 		CreateSql:   failoverGroupIdList("AccountObjectIdentifier", false),
@@ -183,7 +180,7 @@ var FailoverGroupAttrs = struct {
 	},
 	AllowedExternalVolumes: ssot.Attribute{
 		Name:        "allowed_external_volumes",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrSet,
 		Description: "External volumes enabled for replication and failover. OBJECT_TYPES must include EXTERNAL VOLUMES.",
 		Elem:        &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
 		CreateSql:   failoverGroupIdList("AccountObjectIdentifier", false),
@@ -191,7 +188,7 @@ var FailoverGroupAttrs = struct {
 	},
 	AllowedShares: ssot.Attribute{
 		Name:        "allowed_shares",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrSet,
 		Description: "Shares enabled for replication and failover. OBJECT_TYPES must include SHARES.",
 		Elem:        &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
 		CreateSql:   failoverGroupIdList("AccountObjectIdentifier", false),
@@ -199,26 +196,24 @@ var FailoverGroupAttrs = struct {
 	},
 	AllowedIntegrationTypes: ssot.Attribute{
 		Name:        "allowed_integration_types",
-		Type:        ssot.AttrList,
+		Type:        ssot.AttrSet,
 		Description: "Integration types enabled for replication and failover. OBJECT_TYPES must include INTEGRATIONS. SECURITY INTEGRATIONS also requires ROLES.",
 		Elem:        &ssot.Attribute{Type: ssot.AttrEnum, Enum: FailoverGroupIntegrationType},
 		// The column is always present. It is empty when no integration types are set.
 		// SHOW prints short tokens such as API and EXTERNAL_ACCESS. Those tokens are mapped to the
 		// create-page values (the handwritten converter replaces underscores and appends " INTEGRATIONS").
-		// The SHOW schema generator does not map an enum slice, so the column stays off the schema.
-		OptionalInDb:  true,
-		SkipInSchema:  true,
-		UpdateMapping: ssot.ListValueUpdateSetOnly("toFailoverGroupAllowedIntegrationTypes"),
-		CustomParser:  "ParseCommaSeparatedFailoverGroupIntegrationTypeArray",
-		CreateSql:     failoverGroupEnumList(FailoverGroupIntegrationType, false),
-		SetSql:        failoverGroupEnumList(FailoverGroupIntegrationType, false),
+		// The SHOW schema generator does not map an enum slice, so the schema ext maps the column.
+		OptionalInDb: true,
+		CustomParser: "ParseCommaSeparatedFailoverGroupIntegrationTypeArray",
+		CreateSql:    failoverGroupEnumList(FailoverGroupIntegrationType, false),
+		SetSql:       failoverGroupEnumList(FailoverGroupIntegrationType, false),
 	},
 	AllowedAccounts: ssot.Attribute{
 		Name:          "allowed_accounts",
 		Type:          ssot.AttrSet,
 		Required:      true,
 		CreateMapping: ssot.ListValueCreate("toFailoverGroupAllowedAccounts"),
-		Description:   "Target accounts, as organization and account name, to which replication and failover is enabled. Snowflake also includes the source account.",
+		Description:   "Target accounts, in the form `<organization_name>.<account_name>`, to which replication and failover is enabled. Snowflake adds the source account to every failover group, so do not list it.",
 		Elem:          &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier"},
 		// The handwritten converter skips a value that is not org.account instead of failing; the parser keeps that.
 		OptionalInDb: true,
@@ -228,6 +223,7 @@ var FailoverGroupAttrs = struct {
 	IgnoreEditionCheck: ssot.Attribute{
 		Name:        "ignore_edition_check",
 		Type:        ssot.AttrBool,
+		NativeBool:  true,
 		CreateOnly:  true,
 		Description: "Allows replicating objects to accounts on lower editions.",
 		CreateSql:   ssot.BoolKeyword(ssot.Sql("IGNORE EDITION CHECK")),
@@ -237,25 +233,27 @@ var FailoverGroupAttrs = struct {
 		Type:           ssot.AttrString,
 		OptionalInShow: true,
 		OptionalInDb:   true,
-		Description:    "Schedule for refreshing secondary failover groups. An interval (`<num> MINUTE`) or `USING CRON <expr> <time_zone>`. NULL when unset.",
+		Description:    "Schedule for refreshing secondary failover groups. An interval (`<num> MINUTE`) or `USING CRON <expr> <time_zone>`. Remove the attribute to unset the schedule.",
 	},
 	OptimizedRefresh: ssot.Attribute{
 		Name:        "optimized_refresh",
 		Type:        ssot.AttrBool,
 		NativeBool:  true,
-		Description: "Specifies whether the failover group uses Optimized Refresh. Set on the primary failover group only. Cannot be set together with rpo_assurance.",
-		CreateSql:   ssot.BoolParameter(),
+		Description: "Specifies whether the failover group uses Optimized Refresh. Set on the primary failover group only. When true, a `replication_schedule` with an interval of 6 hours or less is required (Snowflake recommends `10 MINUTE` or less). Cannot be set together with `rpo_assurance`.",
 	},
 	RpoAssurance: ssot.Attribute{
 		Name:        "rpo_assurance",
 		Type:        ssot.AttrBool,
 		NativeBool:  true,
-		Description: "Specifies whether the failover group uses RPO Assurance. Set on the primary failover group only. Needs no replication schedule, enables Optimized Refresh automatically, and cannot be set together with optimized_refresh. CREATE has no such clause.",
+		Description: "Specifies whether the failover group uses RPO Assurance. Set on the primary failover group only. Needs no replication schedule, enables Optimized Refresh automatically, and cannot be set together with `optimized_refresh`.",
 	},
+	// SHOW returns the integration name on a primary group and NULL on a secondary group. The documentation does not list the column.
 	ErrorIntegration: ssot.Attribute{
 		Name:           "error_integration",
 		Type:           ssot.AttrIdentifier,
 		IdentifierType: "AccountObjectIdentifier",
+		OptionalInShow: true,
+		OptionalInDb:   true,
 		Description:    "Notification integration that receives refresh error notifications.",
 		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 		SetSql:         ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
@@ -265,15 +263,17 @@ var FailoverGroupAttrs = struct {
 		Type:           ssot.AttrString,
 		OptionalInShow: true,
 		OptionalInDb:   true,
-		Description:    "Comment for the failover group. CREATE has no COMMENT clause.",
+		Description:    "Comment for the failover group.",
 	},
+	// The documentation lists the SHOW column as read_only, but SHOW returns is_primary_read_only: TRUE or FALSE on a primary group, NULL on a secondary group.
 	ReadOnly: ssot.Attribute{
 		Name:           "read_only",
+		ShowName:       "is_primary_read_only",
 		Type:           ssot.AttrBool,
 		NativeBool:     true,
 		OptionalInShow: true,
 		OptionalInDb:   true,
-		Description:    "Read-only mode of a primary failover group. SET takes only TRUE (UNSET restores the default). SHOW returns NULL for a secondary failover group.",
+		Description:    "Enables the read-only mode of a primary failover group. Snowflake rejects changes to `object_types`, `allowed_databases`, `allowed_external_volumes`, `allowed_shares` and `allowed_integration_types` in this mode, so set it to false (or remove it) before changing them. With the `FAILOVER_GROUP_READ_ONLY_AUTO_SWITCH` experiment listed in [`experimental_features_enabled`](../#experimental_features_enabled-1) in the provider block, the provider leaves the read-only mode and enters it again around these changes.",
 	},
 	// SHOW primary is org.account.name. It is not the AS REPLICA OF argument.
 	Primary: ssot.Attribute{
@@ -297,7 +297,7 @@ var FailoverGroupAttrs = struct {
 		Type:        ssot.AttrBool,
 		NativeBool:  true,
 		Readonly:    true,
-		Description: "Indicates if the failover group is primary.",
+		Description: "Indicates if the failover group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.",
 	},
 	OrganizationName: ssot.Attribute{Name: "organization_name", Type: ssot.AttrString, Readonly: true},
 	AccountLocator:   ssot.Attribute{Name: "account_locator", Type: ssot.AttrString, Readonly: true},
@@ -310,9 +310,8 @@ var FailoverGroupAttrs = struct {
 		OptionalInDb:   true,
 		Description:    "State of scheduled refresh: started or suspended. NULL when no replication schedule is set.",
 	},
-	// The page calls this a date and time. The handwritten row stores it as text, and the data source exposes that text, so it stays text.
-	// TODO [next PRs]: make it a time when the data source and the resource are reworked.
-	NextScheduledRefresh: ssot.Attribute{Name: "next_scheduled_refresh", Type: ssot.AttrString, Readonly: true, OptionalInDb: true},
+	// The page calls this a date and time. A nullable time is OptionalInDb only, so the plain field stays time.Time (the same as the replication group).
+	NextScheduledRefresh: ssot.Attribute{Name: "next_scheduled_refresh", Type: ssot.AttrTime, Readonly: true, OptionalInDb: true},
 	// Usually owner is not null, but the page says it is NULL when the group is in a different region.
 	Owner: ssot.Attribute{Name: "owner", Type: ssot.AttrString, Readonly: true, OptionalInShow: true, OptionalInDb: true, Description: "Role with OWNERSHIP on the group. NULL when the group is in a different region."},
 	// The handwritten SHOW row does not include this column. The page does.
@@ -324,24 +323,27 @@ var FailoverGroupAttrs = struct {
 // AS REPLICA OF is the secondary CREATE argument. It is not the SHOW column primary.
 // The SHOW column is read-only, so the source attribute has no create clause on the primary CREATE.
 var failoverGroupAsReplicaOf = ssot.Attribute{
+	// TODO [SNOW-1495079]: Add validation when ExternalObjectIdentifier will be available in IsValidIdentifier.
 	Name:           "primary",
 	Type:           ssot.AttrIdentifier,
 	IdentifierType: "ExternalObjectIdentifier",
+	Required:       true,
 	ForceNew:       true,
-	Description:    "Primary failover group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
+	Description:    "Primary failover group to replicate, in the form `<organization_name>.<account_name>.<failover_group_name>`.",
 	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("AsReplicaOf")),
 }
 
-// One MOVE statement sets one of the lists. AdditionalValidations checks that.
+// TODO [SNOW-4490849]: MOVE needs at least one of the three lists. The SDK extension validates it. Move it to an AtLeastOneOf
+// validation that names the three lists, so the always set `to` is not counted.
 var failoverGroupMove = ssot.Attribute{
 	Name:      "move",
 	Type:      ssot.AttrObject,
 	SqlOnly:   true,
 	CreateSql: ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
-		failoverGroupMoveList("databases", "DATABASES"),
+		failoverGroupMoveList("databases", ""),
 		failoverGroupMoveList("external_volumes", "EXTERNAL VOLUMES"),
-		failoverGroupMoveList("shares", "SHARES"),
+		failoverGroupMoveList("shares", ""),
 		{
 			Name:           "to",
 			Type:           ssot.AttrIdentifier,
@@ -351,7 +353,9 @@ var failoverGroupMove = ssot.Attribute{
 	},
 }
 
-// ADD and REMOVE each set one allowed list. IGNORE EDITION CHECK belongs only to ADD accounts.
+// TODO [SNOW-4490849]: ADD needs exactly one of the four lists. Move it to an ExactlyOneOf validation that names the four
+// lists, so ignore_edition_check is not counted. IGNORE EDITION CHECK is allowed only together with allowed_accounts, a
+// dependency between fields that no validation expresses. The SDK extension validates both.
 var failoverGroupAdd = ssot.Attribute{
 	Name:      "add",
 	Type:      ssot.AttrObject,
@@ -371,10 +375,11 @@ var failoverGroupAdd = ssot.Attribute{
 }
 
 var failoverGroupRemove = ssot.Attribute{
-	Name:      "remove",
-	Type:      ssot.AttrObject,
-	SqlOnly:   true,
-	CreateSql: ssot.ObjectParameter(),
+	Name:        "remove",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		failoverGroupReverseIdentifierList("allowed_databases", "FROM ALLOWED_DATABASES", "AccountObjectIdentifier"),
 		failoverGroupReverseIdentifierList("allowed_external_volumes", "FROM ALLOWED_EXTERNAL_VOLUMES", "AccountObjectIdentifier"),
@@ -392,7 +397,7 @@ var failoverGroupSuspend = ssot.Attribute{
 	Children: []ssot.Attribute{{
 		Name:      "immediate",
 		Type:      ssot.AttrBool,
-		CreateSql: ssot.BoolKeyword(ssot.Sql("IMMEDIATE")),
+		CreateSql: ssot.BoolKeyword(),
 	}},
 }
 
@@ -405,17 +410,21 @@ var FailoverGroup = ssot.Object{
 	NamePlural:     "FailoverGroups",
 	IdType:         "AccountObjectIdentifier",
 	PreviewFeature: true,
+	// RPO_ASSURANCE needs the schedule to be unset, and it enables Optimized Refresh itself.
+	Validations: []ssot.Validation{
+		ssot.Conflicting(FailoverGroupAttrs.ReplicationSchedule, FailoverGroupAttrs.RpoAssurance),
+		ssot.Conflicting(FailoverGroupAttrs.OptimizedRefresh, FailoverGroupAttrs.RpoAssurance),
+	},
+	// The description of allowed_external_volumes is extended in the schema extension.
+	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectAssert(ssot.ObjectAssertShow()),
-		ssot.WithSchema(ssot.SchemaShow()),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow()),
-		ssot.WithResourceAssert(),
-		ssot.WithModel(
-			ssot.ModelRequestType(&FailoverGroupAttrs.ObjectTypes, "[]string"),
-			ssot.ModelRequestType(&FailoverGroupAttrs.AllowedAccounts, "[]string"),
+		ssot.WithAllGenerators(
+			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowManualFields(&FailoverGroupAttrs.ObjectTypes, &FailoverGroupAttrs.AllowedIntegrationTypes))),
+			ssot.WithModel(
+				ssot.ModelRequestType(&FailoverGroupAttrs.ObjectTypes, "[]string"),
+				ssot.ModelRequestType(&FailoverGroupAttrs.AllowedAccounts, "[]string"),
+			),
 		),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkShow(
@@ -424,10 +433,12 @@ var FailoverGroup = ssot.Object{
 				ssot.SdkShowByIDPredicate(ssot.SdkShowByIDPredicateNameAndLocator),
 			),
 			// SET carries the page's mixes in one struct; its validations (the allowed lists need the matching OBJECT_TYPES value,
-			// OPTIMIZED_REFRESH and RPO_ASSURANCE conflict) are in the SDK ext. The page's ADD / MOVE / REMOVE rules (exactly one list) are
-			// not validated, like in the handwritten SDK.
-			// TODO [next PRs]: add them as SdkAlterAdditionalValidations.
-			ssot.SdkAlter(ssot.SdkAlterSetAdditionalValidations()),
+			// OPTIMIZED_REFRESH and RPO_ASSURANCE conflict) are in the SDK ext. The page's ADD / REMOVE rules (exactly one list), the MOVE rule
+			// (at least one list; Snowflake accepts several) and IGNORE EDITION CHECK only with ALLOWED_ACCOUNTS are validated in the SDK ext as well.
+			ssot.SdkAlter(
+				ssot.SdkAlterSetAdditionalValidations(),
+				ssot.SdkAlterAdditionalValidations(),
+			),
 			// The secondary CREATE (AS REPLICA OF) is emitted from FailoverGroupSecondary as CreateSecondary.
 			ssot.SdkCreateForVariants(),
 			// The target-account ALTER (REFRESH, PRIMARY, SUSPEND [IMMEDIATE], RESUME) is emitted from FailoverGroupSecondary as AlterSecondary.
@@ -436,12 +447,14 @@ var FailoverGroup = ssot.Object{
 			ssot.SdkCustomInterfaceMethods(),
 			// The page documents IF EXISTS and no pre-drop step. A primary group can be dropped only when no secondary group is linked to it.
 			ssot.SdkDrop(),
-			// The page has IF NOT EXISTS and no OR REPLACE (the same as the replication group page, whose integration tests confirm it).
-			// TODO [next PRs]: confirm both with the failover group integration tests (a second IF NOT EXISTS create leaves the first
-			// group in place; CREATE OR REPLACE is rejected by Snowflake) before treating them as verified.
-			// TODO [next PRs]: add the page's requirements (ALLOWED_* needs the matching OBJECT_TYPES value, SECURITY INTEGRATIONS needs ROLES)
-			// as SdkCreateAdditionalValidations; the handwritten SDK has none for CREATE and Snowflake rejects the mixes itself.
-			ssot.SdkCreate(ssot.SdkCreateWithoutOrReplace()),
+			// The page has IF NOT EXISTS and no OR REPLACE. The failover group integration tests confirm both: a second IF NOT EXISTS
+			// create leaves the first group in place, and Snowflake rejects CREATE OR REPLACE ("Failover group cannot be replaced").
+			// The page's requirements (each OBJECT_TYPES value and its ALLOWED_* list go together, SECURITY INTEGRATIONS needs ROLES)
+			// are validated in the SDK ext.
+			ssot.SdkCreate(
+				ssot.SdkCreateWithoutOrReplace(),
+				ssot.SdkCreateAdditionalValidations(),
+			),
 		),
 	},
 	CustomOperations: []ssot.CustomOperationSpec{
@@ -494,6 +507,48 @@ var FailoverGroup = ssot.Object{
 			Doc:     "ShowShares returns the list of shares in the failover group as identifiers.",
 			Returns: []string{"[]AccountObjectIdentifier", "error"},
 		},
+	},
+	// For now, the set/list fields have to be excluded from the generated recompute of show_output, so a change of object_types or
+	// allowed_integration_types leaves show_output.object_types and show_output.allowed_integration_types stale until the next refresh.
+	// TODO [SNOW-1648997]: address the above comment
+	// Listed in the extension; rejects the membership changes of a group that stays in the read-only mode.
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"failoverGroupMembershipLockedInReadOnlyMode",
+		"failoverGroupRecreateWhenNotPrimary",
+	},
+	// is_primary is a computed attribute, not a resource attribute, so it stays out of CREATE and ALTER.
+	ComputedAttributes: []ssot.Attribute{
+		FailoverGroupAttrs.IsPrimary,
+	},
+	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.ExtCall()),
+		ssot.WithApplyCreateOptionals(ssot.ExtCall()),
+		ssot.WithCreateInSdk(ssot.Generated()),
+		// CREATE has no RPO_ASSURANCE clause, so the extension sets it with ALTER after the group exists.
+		ssot.WithAfterCreate(ssot.ExtCall()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithDescribeInSdk(ssot.Omitted()),
+		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		// The order of the SET and UNSET statements matters to Snowflake (RPO_ASSURANCE, REPLICATION_SCHEDULE, OPTIMIZED_REFRESH),
+		// and OBJECT_TYPES with the allowed lists cannot share a SET with the other properties, so the extension builds the statements
+		// and runs them in order, UNSET included.
+		ssot.WithApplySetUnset(ssot.ExtCall()),
+		ssot.WithAlterSetInSdk(ssot.ExtCall()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
+		// SHOW stores identifier lists as SDK values, and the allowed databases and shares come from separate SHOW commands.
+		ssot.WithSetConfigFields(ssot.ExtCall()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithHierarchyRename(ssot.Generated()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
+		ssot.WithStateUpgraders(ssot.Generated()),
+	},
+	// The hand-written resource kept replication_schedule as a nested block and from_replica in the same resource.
+	SchemaStateUpgraders: []ssot.StateUpgraderFunc{
+		"v2_24_0_FailoverGroupStateUpgrader",
 	},
 	Attributes: []ssot.Attribute{
 		FailoverGroupAttrs.ObjectTypes,
@@ -588,6 +643,7 @@ var FailoverGroup = ssot.Object{
 			&FailoverGroupAttrs.IsListingAutoFulfillmentGroup,
 			&FailoverGroupAttrs.IsOptimizedRefreshEnabled,
 			&FailoverGroupAttrs.RpoAssurance,
+			&FailoverGroupAttrs.ErrorIntegration,
 			&FailoverGroupAttrs.ReadOnly,
 		},
 	},
@@ -595,25 +651,53 @@ var FailoverGroup = ssot.Object{
 
 // FailoverGroupSecondary is the target-account role.
 // The name starts with FailoverGroup so the methods are CreateSecondary and AlterSecondary.
-// SdkCreateRequestObjectName makes the query struct CreateSecondaryFailoverGroup. It cannot be SecondaryReplicationGroup (the
+// Variant.RequestObjectName makes the query struct CreateSecondaryFailoverGroup. It cannot be SecondaryReplicationGroup (the
 // replication group variant emits CreateSecondaryReplicationGroup in the same package); the handwritten operation was named
 // CreateSecondaryReplicationGroup, with FailoverGroup appended to its types.
 // Unlike a replication group, a failover group can be promoted (ALTER ... PRIMARY).
 var FailoverGroupSecondary = ssot.Object{
-	Name:                       "FailoverGroupSecondary",
-	NamePlural:                 "FailoverGroups",
-	IdType:                     "AccountObjectIdentifier",
-	PreviewFeature:             true,
-	IdentityNameForceNew:       true,
-	SdkCreateRequestObjectName: "SecondaryFailoverGroup",
-	VariantOf:                  &FailoverGroup,
+	Name:                 "FailoverGroupSecondary",
+	NamePlural:           "FailoverGroups",
+	IdType:               "AccountObjectIdentifier",
+	PreviewFeature:       true,
+	IdentityNameForceNew: true,
+	Variant: &ssot.ObjectVariant{
+		Of:                          &FailoverGroup,
+		RequestObjectName:           "SecondaryFailoverGroup",
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	Generators: []ssot.GeneratorOption{
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase())),
-		ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase())),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase())),
-		ssot.WithResourceAssert(),
-		ssot.WithObjectParametersAssert(),
-		ssot.WithResourceParametersAssert(),
+		ssot.WithAllGenerators(
+			ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+			ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
+		),
+	},
+	// is_primary is a computed attribute, not a resource attribute, so it stays out of CREATE and ALTER.
+	AdditionalCustomizeDiffs: []ssot.CustomizeDiffFunc{
+		"failoverGroupSecondaryRecreateWhenPrimary",
+	},
+	ComputedAttributes: []ssot.Attribute{
+		FailoverGroupAttrs.IsPrimary,
+	},
+	ResourceHooks: []ssot.ResourceHookOption{
+		ssot.WithParseIdFromConfig(ssot.Generated()),
+		ssot.WithParseId(ssot.Generated()),
+		ssot.WithNewCreateRequest(ssot.Generated()),
+		ssot.WithApplyCreateOptionals(ssot.Generated()),
+		ssot.WithShowByIdInSdk(ssot.Generated()),
+		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
+		ssot.WithDescribeInSdk(ssot.Omitted()),
+		ssot.WithDescribeOutputSchema(ssot.Omitted()),
+		ssot.WithDropSafelyInSdk(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Omitted()),
+		ssot.WithAlterSetInSdk(ssot.Omitted()),
+		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
+		ssot.WithSetConfigFields(ssot.Generated()),
+		ssot.WithHandleExternalChanges(ssot.Omitted()),
+		ssot.WithCustomizeDiff(ssot.Generated()),
 	},
 	Attributes: []ssot.Attribute{
 		failoverGroupAsReplicaOf,

@@ -42,7 +42,7 @@ func (f *Field) ToOptsSourcePath() string {
 // ToOptsSourceRoot returns the source root variable for use in the toOpts template.
 // Returns the slice element variable when a slice ancestor exists, otherwise the request variable.
 func (f *Field) ToOptsSourceRoot() string {
-	if f.hasSliceAncestor() {
+	if f.toOptsSliceAncestor() != nil {
 		return toOptsSliceElemVar
 	}
 	return toOptsSourceRootVar
@@ -51,10 +51,25 @@ func (f *Field) ToOptsSourceRoot() string {
 // ToOptsOptsRef returns the opts assignment target for use in the toOpts template.
 // Returns the indexed slice reference when a slice ancestor exists, otherwise the opts variable.
 func (f *Field) ToOptsOptsRef() string {
-	if f.hasSliceAncestor() {
-		return f.sliceAncestor().ToOptsSliceVar() + "[i]"
+	if anc := f.toOptsSliceAncestor(); anc != nil {
+		return anc.ToOptsSliceVar() + "[i]"
 	}
 	return toOptsOptsVar
+}
+
+// toOptsSliceAncestor returns the nearest slice ancestor that the toOpts mapping of f is built inside, or nil.
+// A struct with GenerateSharedToOpts gets its own standalone method with its own r and opts, so the search stops there:
+// a slice above that struct belongs to the caller's mapping, not to the standalone method.
+func (f *Field) toOptsSliceAncestor() *Field {
+	for p := f.Parent; p != nil; p = p.Parent {
+		if p.GenerateSharedToOpts {
+			return nil
+		}
+		if p.IsSlice() {
+			return p
+		}
+	}
+	return nil
 }
 
 // hasSliceAncestor reports whether any ancestor in the parent chain is a slice field.

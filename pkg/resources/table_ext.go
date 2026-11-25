@@ -4,17 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"strconv"
-	"strings"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/snowflake"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -28,10 +26,10 @@ var (
 	tableReadExt   = PreviewFeatureReadContextWrapper(string(previewfeatures.TableResource), TrackingReadWrapper(resources.Table, ReadTableFunc(true)))
 	tableUpdateExt = PreviewFeatureUpdateContextWrapper(string(previewfeatures.TableResource), TrackingUpdateWrapper(resources.Table, UpdateTable))
 
-	tableDescriptionExt = docs.WithPreviewFeatureMark()
+	tableDescriptionExt = docs.WithPreviewFeatureMark() + "Resource used to manage tables. For more information, check [CREATE TABLE documentation](https://docs.snowflake.com/en/sql-reference/sql/create-table)."
 
 	tableImporterExt = &schema.ResourceImporter{
-		StateContext: schema.ImportStatePassthroughContext,
+		StateContext: TrackingImportWrapper(resources.Table, ImportTable),
 	}
 )
 
@@ -44,11 +42,21 @@ func tableNewCreateRequestExt(d *schema.ResourceData, id sdk.SchemaObjectIdentif
 	if err != nil {
 		return nil, err
 	}
-
 	request := sdk.NewCreateTableRequest(id, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(tableColumnRequests))
-	// tag is not an attribute, so generated ApplyCreateOptionals does not see it.
-	if _, ok := d.GetOk("tag"); ok {
-		request.WithTag(getPropertyTags(d, "tag"))
+	// is_transient is not sent by generated ApplyCreateOptionals: TRANSIENT is the table kind of the CREATE statement.
+	if err := booleanStringAttributeCreateBuilder(d, "is_transient", func(isTransient bool) *sdk.CreateTableRequest {
+		if isTransient {
+			return request.WithKind(sdk.TableKindTransient)
+		}
+		return request
+	}); err != nil {
+		return nil, err
+	}
+
+	if policyId, columns, ok, err := rowAccessPolicyCreateRequest(d); err != nil {
+		return nil, err
+	} else if ok {
+		request.WithRowAccessPolicy(*sdk.NewTableRowAccessPolicyRequest(policyId, columns))
 	}
 	return request, nil
 }
@@ -57,208 +65,344 @@ func toTableClusterBy(value []any) ([]string, error) {
 	return expandStringList(value), nil
 }
 
-func tableSetConfigFieldsExt(_ context.Context, d *schema.ResourceData, _ any, table *sdk.Table) error {
-	// Set the relevant data in the state
-	toSet := map[string]any{
-		"name":            table.Name,
-		"owner":           table.Owner,
-		"database":        table.DatabaseName,
-		"schema":          table.SchemaName,
-		"comment":         table.Comment,
-		"cluster_by":      table.GetClusterByKeys(),
-		"change_tracking": table.ChangeTracking,
+func toTableColumn(value any) (sdk.Column, error) {
+	s, ok := value.(string)
+	if !ok {
+		return sdk.Column{}, fmt.Errorf("expected column name string, got %T", value)
+	}
+	return sdk.Column{Value: s}, nil
+}
+
+func tableSetConfigFieldsExt(ctx context.Context, d *schema.ResourceData, meta any, table *sdk.Table) error {
+	if err := errors.Join(
+		d.Set("comment", table.Comment),
+		d.Set("cluster_by", table.GetClusterByKeys()),
+	); err != nil {
+		return err
 	}
 
-	for key, val := range toSet {
-		if err := d.Set(key, val); err != nil { // lintignore:R001
-			return err
+	id, err := sdk.ParseSchemaObjectIdentifier(d.Id())
+	if err != nil {
+		return err
+	}
+	policyRefs, err := readRootLevelPolicies(ctx, meta.(*provider.Context).Client, id, sdk.PolicyEntityDomainTable, d,
+		sdk.PolicyKindRowAccessPolicy, sdk.PolicyKindAggregationPolicy, sdk.PolicyKindJoinPolicy)
+	if err != nil {
+		return err
+	}
+	columns, err := withColumnPolicies(d.Get("column").([]any), policyRefs)
+	if err != nil {
+		return err
+	}
+	return d.Set("column", columns)
+}
+
+func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, describeErr error, _ bool) error {
+	if describeErr != nil {
+		return describeErr
+	}
+	// Columns are rebuilt from DESCRIBE TABLE on every Read, like in snowflake_iceberg_table. DESCRIBE is the only source
+	// of the columns, so this is how columns added, dropped, or changed outside of Terraform show up in the plan.
+	// Comparing describe_output instead would miss changes it does not hold, such as masking policy USING columns.
+	// Formatting differences are handled by the diff suppressors of the column fields.
+	return errors.Join(
+		d.Set("column", toColumnConfig(tableDescription)),
+		d.Set(DescribeOutputAttributeName, schemas.TableColumnDetailsListToSchema(tableDescription)),
+	)
+}
+
+// tableSetFieldsNotSetByReadExt sets the fields Read does not write from the configuration. Import calls it. In enforcing
+// mode the optional boolean fields get the values Snowflake reports; in permissive mode they get their unset values.
+func tableSetFieldsNotSetByReadExt(d *schema.ResourceData, id sdk.SchemaObjectIdentifier, table *sdk.Table, importPermissiveMode bool) error {
+	return errors.Join(
+		d.Set("name", id.Name()),
+		d.Set("database", id.DatabaseName()),
+		d.Set("schema", id.SchemaName()),
+		importBooleanAttribute(d, "change_tracking", importPermissiveMode, table.ChangeTracking),
+		importBooleanStringAttribute(d, "enable_schema_evolution", importPermissiveMode, table.EnableSchemaEvolution),
+		importBooleanStringAttribute(d, "error_logging", importPermissiveMode, table.ErrorLogging),
+		importBooleanStringAttribute(d, "row_timestamp", importPermissiveMode, table.RowTimestamp),
+		importBooleanStringAttribute(d, "is_transient", importPermissiveMode, table.Kind == string(sdk.TableKindTransient)),
+	)
+}
+
+func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if diags := tableAfterAlterClusterByExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+	if diags := tableAfterAlterColumnsExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+	if diags := tableAfterAlterPrimaryKeyExt(ctx, d, meta, id); diags != nil {
+		return diags
+	}
+	client := meta.(*provider.Context).Client
+	if d.HasChange("row_access_policy") {
+		addReq, dropReq, err := rowAccessPolicyUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		alterReq := sdk.NewAlterTableRequest(id)
+		switch {
+		case addReq != nil && dropReq != nil:
+			alterReq.WithDropAndAddRowAccessPolicy(*sdk.NewTableDropAndAddRowAccessPolicyRequest(
+				*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy),
+				*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On),
+			))
+		case addReq != nil:
+			alterReq.WithAddRowAccessPolicy(*sdk.NewTableAddRowAccessPolicyRequest(addReq.RowAccessPolicy, addReq.On))
+		case dropReq != nil:
+			alterReq.WithDropRowAccessPolicy(*sdk.NewTableDropRowAccessPolicyRequest(dropReq.RowAccessPolicy))
+		}
+		if err := client.Tables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating row access policy on %v: %w", d.Id(), err))
+		}
+	}
+
+	if d.HasChange("aggregation_policy") {
+		setReq, unsetReq, err := aggregationPolicyTableUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		alterReq := sdk.NewAlterTableRequest(id)
+		if setReq != nil {
+			alterReq.WithSetAggregationPolicy(*setReq)
+		} else {
+			alterReq.WithUnsetAggregationPolicy(*unsetReq)
+		}
+		if err := client.Tables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating aggregation policy on %v: %w", d.Id(), err))
+		}
+	}
+
+	if d.HasChange("join_policy") {
+		setReq, unsetReq, err := joinPolicyTableUpdateRequests(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		alterReq := sdk.NewAlterTableRequest(id)
+		if setReq != nil {
+			alterReq.WithSetJoinPolicy(*setReq)
+		} else {
+			alterReq.WithUnsetJoinPolicy(*unsetReq)
+		}
+		if err := client.Tables.Alter(ctx, alterReq); err != nil {
+			return diag.FromErr(fmt.Errorf("error updating join policy on %v: %w", d.Id(), err))
 		}
 	}
 	return nil
 }
 
-func tableSetDescribeOutputExt(d *schema.ResourceData, _ sdk.SchemaObjectIdentifier, tableDescription []sdk.TableColumnDetails, _ error, _ bool) error {
-	return d.Set("column", toColumnConfig(tableDescription))
+func tableAfterAlterClusterByExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("cluster_by") {
+		return nil
+	}
+	client := meta.(*provider.Context).Client
+	cb := expandStringList(d.Get("cluster_by").([]any))
+	if len(cb) != 0 {
+		if err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithClusterBy(cb))); err != nil {
+			return diag.FromErr(fmt.Errorf("error clustering table %v: %w", id.FullyQualifiedName(), err))
+		}
+		return nil
+	}
+	if err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithDropClusteringKey(true))); err != nil {
+		return diag.FromErr(fmt.Errorf("error dropping clustering key on table %v: %w", id.FullyQualifiedName(), err))
+	}
+	return nil
 }
 
-// tableAfterAlterExt runs the ALTER TABLE statements issued after SET/UNSET: clustering, columns, primary key, and tags.
-func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("column") {
+		return nil
+	}
 	client := meta.(*provider.Context).Client
+	t, n := d.GetChange("column")
+	oldColumns, newColumns := getColumns(t), getColumns(n)
+	removed, added, changed := oldColumns.diffs(newColumns)
+	removed, added, changed = withRecreatedVirtualColumns(oldColumns, newColumns, removed, added, changed)
 
-	if d.HasChange("cluster_by") {
-		cb := expandStringList(d.Get("cluster_by").([]any))
-
-		if len(cb) != 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithClusterBy(cb)))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
-		} else {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithClusteringAction(*sdk.NewTableClusteringActionRequest().WithDropClusteringKey(true)))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
+	if len(removed) > 0 {
+		removedColumnNames := make([]string, len(removed))
+		for i, r := range removed {
+			removedColumnNames[i] = r.name
+		}
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithDropColumns(*sdk.NewTableDropColumnActionRequest(toColumns(removedColumnNames)))))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error dropping columns on table %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 
-	if d.HasChange("column") {
-		t, n := d.GetChange("column")
-		removed, added, changed := getColumns(t).diffs(getColumns(n))
-
-		if len(removed) > 0 {
-			removedColumnNames := make([]string, len(removed))
-			for i, r := range removed {
-				removedColumnNames[i] = r.name
-			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithDropColumns(*sdk.NewTableDropColumnActionRequest(toColumns(removedColumnNames)))))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
+	for _, cA := range added {
+		dataType, err := datatypes.ParseDataType(cA.dataType)
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+		}
+		addRequest := sdk.NewTableColumnAddActionRequest(cA.name, dataType)
+		if cA.notNull {
+			addRequest.WithNotNull(true)
 		}
 
-		for _, cA := range added {
-			addRequest := sdk.NewTableColumnAddActionRequest(cA.name, sdk.DataType(cA.dataType))
-			if !cA.nullable {
-				addRequest.WithNotNull(true)
-			}
+		if cA.as != "" {
+			addRequest.WithVirtual(*sdk.NewTableColumnVirtualRequest(virtualColumnExpressionSql(cA.as)))
+		}
 
-			if cA._default != nil {
-				if cA._default._type() != "constant" {
-					return diag.FromErr(fmt.Errorf("failed to add column %v => Only adding a column as a constant is supported by Snowflake", cA.name))
-				}
-				var expression string
-				if sdk.IsStringType(cA.dataType) {
-					expression = snowflake.EscapeSnowflakeString(*cA._default.constant)
-				} else {
-					expression = *cA._default.constant
-				}
-				addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(expression))
-			}
+		if cA._default != nil && cA._default.expression != nil {
+			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(*cA._default.expression))
+		}
 
-			if cA.identity != nil {
-				addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(cA.identity.startNum, cA.identity.stepNum)))
-			}
-
-			if cA.maskingPolicy != "" {
-				addRequest.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.maskingPolicy)))
-			}
-
-			if cA.comment != "" {
-				addRequest.WithComment(cA.comment)
-			}
-
-			if cA.collate != "" && sdk.IsStringType(cA.dataType) {
-				addRequest.WithCollate(cA.collate)
-			}
-
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(*addRequest)))
+		if cA.identity != nil {
+			identityRequest, err := cA.identity.toRequest()
 			if err != nil {
-				return diag.FromErr(fmt.Errorf("error adding column: %w", err))
+				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+			}
+			addRequest.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*identityRequest))
+		}
+
+		if cA.maskingPolicy != nil {
+			maskingPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.maskingPolicy.name)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+			}
+			addRequest.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicyId).WithUsing(toColumns(cA.maskingPolicy.using)))
+		}
+
+		if cA.projectionPolicy != "" {
+			projectionPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.projectionPolicy)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("failed to add column %v: %w", cA.name, err))
+			}
+			addRequest.WithProjectionPolicy(*sdk.NewTableColumnProjectionPolicyRequest(projectionPolicyId))
+		}
+
+		if cA.comment != "" {
+			addRequest.WithComment(cA.comment)
+		}
+
+		if cA.collate != "" && datatypes.IsTextDataType(dataType) {
+			addRequest.WithCollate(cA.collate)
+		}
+
+		err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAdd(*addRequest)))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error adding column %v on table %v: %w", cA.name, id.FullyQualifiedName(), err))
+		}
+	}
+	for _, cA := range changed {
+		if cA.changedDataType || cA.changedCollate {
+			dataType, err := datatypes.ParseDataType(cA.newColumn.dataType)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
+			}
+			dataTypeRequest := sdk.NewTableColumnAlterDataTypeRequest(dataType)
+			if datatypes.IsTextDataType(dataType) && cA.newColumn.collate != "" {
+				dataTypeRequest.WithCollate(cA.newColumn.collate)
+			}
+			columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDataType(*dataTypeRequest)
+			err = client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column type on table %v: %w", id.FullyQualifiedName(), err))
 			}
 		}
-		for _, cA := range changed {
-			if cA.changedDataType || cA.changedCollate {
-				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDataType(sdk.DataType(cA.newColumn.dataType))
-				if sdk.IsStringType(cA.newColumn.dataType) && cA.newColumn.collate != "" {
-					columnAlterActionRequest.WithCollate(cA.newColumn.collate)
-				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
+		if cA.changedNullConstraint {
+			nullabilityRequest := sdk.NewTableColumnNotNullConstraintRequest()
+			if cA.newColumn.notNull {
+				nullabilityRequest.WithSet(true)
+			} else {
+				nullabilityRequest.WithDrop(true)
 			}
-			if cA.changedNullConstraint {
-				nullabilityRequest := sdk.NewTableColumnNotNullConstraintRequest()
-				if !cA.newColumn.nullable {
-					nullabilityRequest.WithSet(true)
-				} else {
-					nullabilityRequest.WithDrop(true)
-				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithNotNullConstraint(*nullabilityRequest)})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithNotNullConstraint(*nullabilityRequest)})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column null constraint on table %v: %w", id.FullyQualifiedName(), err))
 			}
-			if cA.droppedDefault {
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDropDefault(true)})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
+		}
+		if cA.droppedDefault {
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*sdk.NewTableColumnAlterActionRequest(cA.newColumn.name).WithDropDefault(true)})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error dropping column default on table %v: %w", id.FullyQualifiedName(), err))
 			}
-			if cA.changedComment {
-				columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name)
-				if cA.newColumn.comment == "" {
-					columnAlterActionRequest.WithUnsetComment(true)
-				} else {
-					columnAlterActionRequest.WithComment(cA.newColumn.comment)
-				}
+		}
+		if cA.changedComment {
+			columnAlterActionRequest := sdk.NewTableColumnAlterActionRequest(cA.newColumn.name)
+			if cA.newColumn.comment == "" {
+				columnAlterActionRequest.WithUnsetComment(true)
+			} else {
+				columnAlterActionRequest.WithComment(cA.newColumn.comment)
+			}
 
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
-				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
-				}
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithAlter([]sdk.TableColumnAlterActionRequest{*columnAlterActionRequest})))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column comment on table %v: %w", id.FullyQualifiedName(), err))
 			}
-			if cA.changedMaskingPolicy {
-				columnAction := sdk.NewTableColumnActionRequest()
-				if strings.TrimSpace(cA.newColumn.maskingPolicy) == "" {
-					columnAction.WithUnsetMaskingPolicy(*sdk.NewTableUnsetColumnMaskingPolicyRequest(cA.newColumn.name))
-				} else {
-					columnAction.WithSetMaskingPolicy(*sdk.NewTableSetColumnMaskingPolicyRequest(cA.newColumn.name, sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(cA.newColumn.maskingPolicy)).WithForce(true))
-				}
-				err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction))
+		}
+		if cA.changedMaskingPolicy {
+			columnAction := sdk.NewTableColumnActionRequest()
+			if cA.newColumn.maskingPolicy == nil {
+				columnAction.WithUnsetMaskingPolicy(*sdk.NewTableUnsetColumnMaskingPolicyRequest(cA.newColumn.name))
+			} else {
+				maskingPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.newColumn.maskingPolicy.name)
 				if err != nil {
-					return diag.FromErr(fmt.Errorf("error changing property on %v: err %w", d.Id(), err))
+					return diag.FromErr(fmt.Errorf("error altering column masking policy on table %v: %w", id.FullyQualifiedName(), err))
 				}
+				setRequest := sdk.NewTableSetColumnMaskingPolicyRequest(cA.newColumn.name, maskingPolicyId).WithForce(true)
+				if len(cA.newColumn.maskingPolicy.using) > 0 {
+					setRequest.WithUsing(toColumns(cA.newColumn.maskingPolicy.using))
+				}
+				columnAction.WithSetMaskingPolicy(*setRequest)
+			}
+			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction))
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column masking policy on table %v: %w", id.FullyQualifiedName(), err))
+			}
+		}
+		if cA.changedProjectionPolicy {
+			columnAction := sdk.NewTableColumnActionRequest()
+			if cA.newColumn.projectionPolicy == "" {
+				columnAction.WithUnsetProjectionPolicy(*sdk.NewTableUnsetColumnProjectionPolicyRequest(cA.newColumn.name))
+			} else {
+				projectionPolicyId, err := sdk.ParseSchemaObjectIdentifier(cA.newColumn.projectionPolicy)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("error altering column projection policy on table %v: %w", id.FullyQualifiedName(), err))
+				}
+				columnAction.WithSetProjectionPolicy(*sdk.NewTableSetColumnProjectionPolicyRequest(cA.newColumn.name, projectionPolicyId).WithForce(true))
+			}
+			if err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*columnAction)); err != nil {
+				return diag.FromErr(fmt.Errorf("error altering column projection policy on table %v: %w", id.FullyQualifiedName(), err))
 			}
 		}
 	}
+	return nil
+}
 
-	if d.HasChange("primary_key") {
-		o, n := d.GetChange("primary_key")
+func tableAfterAlterPrimaryKeyExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) diag.Diagnostics {
+	if !d.HasChange("primary_key") {
+		return nil
+	}
+	client := meta.(*provider.Context).Client
+	o, n := d.GetChange("primary_key")
+	newKey := getPrimaryKey(n)
+	oldKey := getPrimaryKey(o)
 
-		newKey := getPrimaryKey(n)
-		oldKey := getPrimaryKey(o)
-
-		if len(oldKey.keys) > 0 || len(newKey.keys) == 0 {
-			// drop our pk if there was an old primary key, or pk has been removed
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
-				*sdk.NewTableConstraintActionRequest().
-					WithDrop(*sdk.NewTableConstraintDropActionRequest().WithPrimaryKey(true)),
-			))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
-		}
-
-		if len(newKey.keys) > 0 {
-			constraint := sdk.NewOutOfLineConstraintRequest(sdk.ColumnConstraintTypePrimaryKey).WithColumns(toColumns(newKey.keys))
-			if newKey.name != "" {
-				constraint.WithName(newKey.name)
-			}
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
-				*sdk.NewTableConstraintActionRequest().WithAdd(*constraint),
-			))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error updating table: %w", err))
-			}
+	if len(oldKey.keys) > 0 || len(newKey.keys) == 0 {
+		// drop our pk if there was an old primary key, or pk has been removed
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
+			*sdk.NewTableConstraintActionRequest().
+				WithDrop(*sdk.NewTableConstraintDropActionRequest().WithPrimaryKey(true)),
+		))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error dropping primary key on table %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 
-	if d.HasChange("tag") {
-		unsetTags, setTags := GetTagsDiff(d, "tag")
-
-		if len(unsetTags) > 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnsetTags(unsetTags))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
-			}
+	if len(newKey.keys) > 0 {
+		primaryKey := sdk.NewTableOutOfLineUniquePKRequest().WithPrimaryKey(true).WithColumns(toColumns(newKey.keys))
+		if newKey.name != "" {
+			primaryKey.WithName(newKey.name)
 		}
-
-		if len(setTags) > 0 {
-			err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSetTags(setTags))
-			if err != nil {
-				return diag.FromErr(fmt.Errorf("error setting tags on %v, err = %w", d.Id(), err))
-			}
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithConstraintAction(
+			*sdk.NewTableConstraintActionRequest().WithAdd(*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*primaryKey)),
+		))
+		if err != nil {
+			return diag.FromErr(fmt.Errorf("error adding primary key on table %v: %w", id.FullyQualifiedName(), err))
 		}
 	}
 	return nil
@@ -267,48 +411,6 @@ func tableAfterAlterExt(ctx context.Context, d *schema.ResourceData, meta any, i
 // =============================================================================
 // SDK incision points
 // =============================================================================
-
-func tableShowByIdSafelyInSdkExt(ctx context.Context, d *schema.ResourceData, meta any, id sdk.SchemaObjectIdentifier) (*sdk.Table, diag.Diagnostics) {
-	client := meta.(*provider.Context).Client
-
-	table, err := client.Tables.ShowByIDSafely(ctx, id)
-	if err != nil {
-		if errors.Is(err, sdk.ErrObjectNotFound) {
-			d.SetId("")
-			return nil, diag.Diagnostics{
-				diag.Diagnostic{
-					Severity: diag.Warning,
-					Summary:  "Failed to query table. Marking the resource as removed.",
-					Detail:   fmt.Sprintf("Table id: %s, Err: %s", id.FullyQualifiedName(), err),
-				},
-			}
-		}
-		return nil, diag.FromErr(err)
-	}
-
-	s, err := client.Schemas.ShowByID(ctx, sdk.NewDatabaseObjectIdentifier(id.DatabaseName(), id.SchemaName()))
-	if err != nil {
-		log.Printf("[DEBUG] schema (%s) not found", d.Id())
-		d.SetId("")
-		return nil, diag.Diagnostics{}
-	}
-
-	// "retention_time" may sometimes be empty string instead of an integer.
-	retentionTime := s.RetentionTime
-	if retentionTime == "" {
-		retentionTime = "0"
-	}
-	schemaRetentionTime, err := strconv.ParseInt(retentionTime, 10, 64)
-	if err != nil {
-		return nil, diag.FromErr(err)
-	}
-	if v := d.Get("data_retention_time_in_days"); v.(int) != IntDefault || int64(table.RetentionTime) != schemaRetentionTime {
-		if err := d.Set("data_retention_time_in_days", table.RetentionTime); err != nil {
-			return nil, diag.FromErr(err)
-		}
-	}
-	return table, nil
-}
 
 func tableDescribeInSdkExt(ctx context.Context, meta any, id sdk.SchemaObjectIdentifier) ([]sdk.TableColumnDetails, error) {
 	client := meta.(*provider.Context).Client
@@ -325,36 +427,44 @@ type columnDefault struct {
 	sequence   *string
 }
 
-func (cd *columnDefault) _type() string {
-	if cd.constant != nil {
-		return "constant"
-	}
-
-	if cd.expression != nil {
-		return "expression"
-	}
-
-	if cd.sequence != nil {
-		return "sequence"
-	}
-
-	return "unknown"
-}
-
 type columnIdentity struct {
 	startNum int
 	stepNum  int
+	order    string
+}
+
+func (identity *columnIdentity) toRequest() (*sdk.ColumnIdentityRequest, error) {
+	request := sdk.NewColumnIdentityRequest(identity.startNum, identity.stepNum)
+	if identity.order == "" || identity.order == BooleanDefault {
+		return request, nil
+	}
+	order, err := booleanStringToBool(identity.order)
+	if err != nil {
+		return nil, err
+	}
+	if order {
+		return request.WithOrder(true), nil
+	}
+	return request.WithNoorder(true), nil
 }
 
 type column struct {
 	name          string
 	dataType      string
-	nullable      bool
+	notNull       bool
 	_default      *columnDefault
 	identity      *columnIdentity
 	comment       string
-	maskingPolicy string
-	collate       string
+	maskingPolicy *columnMaskingPolicy
+	// projectionPolicy is the policy name, empty when the column has none.
+	projectionPolicy string
+	collate          string
+	as               string
+}
+
+type columnMaskingPolicy struct {
+	name  string
+	using []string
 }
 
 type columns []column
@@ -362,24 +472,25 @@ type columns []column
 type changedColumns []changedColumn
 
 type changedColumn struct {
-	newColumn             column // our new column
-	changedDataType       bool
-	changedNullConstraint bool
-	droppedDefault        bool
-	changedComment        bool
-	changedMaskingPolicy  bool
-	changedCollate        bool
+	newColumn               column // our new column
+	changedDataType         bool
+	changedNullConstraint   bool
+	droppedDefault          bool
+	changedComment          bool
+	changedMaskingPolicy    bool
+	changedProjectionPolicy bool
+	changedCollate          bool
 }
 
 func (c columns) getChangedColumnProperties(new columns) (changed changedColumns) {
 	changed = make(changedColumns, 0, len(new)*len(c))
 	for _, cO := range c {
 		for _, cN := range new {
-			changeColumn := changedColumn{cN, false, false, false, false, false, false}
+			changeColumn := changedColumn{newColumn: cN}
 			if cO.name == cN.name && cO.dataType != cN.dataType {
 				changeColumn.changedDataType = true
 			}
-			if cO.name == cN.name && cO.nullable != cN.nullable {
+			if cO.name == cN.name && cO.notNull != cN.notNull {
 				changeColumn.changedNullConstraint = true
 			}
 			if cO.name == cN.name && cO._default != nil && cN._default == nil {
@@ -390,8 +501,12 @@ func (c columns) getChangedColumnProperties(new columns) (changed changedColumns
 				changeColumn.changedComment = true
 			}
 
-			if cO.name == cN.name && cO.maskingPolicy != cN.maskingPolicy {
+			if cO.name == cN.name && !cO.maskingPolicy.equal(cN.maskingPolicy) {
 				changeColumn.changedMaskingPolicy = true
+			}
+
+			if cO.name == cN.name && cO.projectionPolicy != cN.projectionPolicy {
+				changeColumn.changedProjectionPolicy = true
 			}
 
 			if cO.name == cN.name && cO.collate != cN.collate {
@@ -408,39 +523,119 @@ func (c columns) diffs(new columns) (removed columns, added columns, changed cha
 	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
 }
 
-func getColumnDefault(def map[string]any) *columnDefault {
-	if c, ok := def["constant"]; ok {
-		if constant, ok := c.(string); ok && len(constant) > 0 {
-			return &columnDefault{
-				constant: &constant,
+// withRecreatedVirtualColumns drops and adds again every column whose virtual expression changed, because Snowflake
+// cannot alter it. The column is added at the end of the table.
+func withRecreatedVirtualColumns(old, new columns, removed, added columns, changed changedColumns) (columns, columns, changedColumns) {
+	recreated := make(map[string]bool)
+	for _, cO := range old {
+		for _, cN := range new {
+			if cO.name == cN.name && !virtualColumnExpressionsEqual(cO.as, cN.as) {
+				recreated[cN.name] = true
+				removed = append(removed, cO)
+				added = append(added, cN)
 			}
 		}
 	}
+	changed = slices.DeleteFunc(changed, func(c changedColumn) bool { return recreated[c.newColumn.name] })
+	return removed, added, changed
+}
 
-	if e, ok := def["expression"]; ok {
-		if expr, ok := e.(string); ok && len(expr) > 0 {
-			return &columnDefault{
-				expression: &expr,
+// columnDefaultEmptyStringLiteral is the SQL literal of an empty string. It is what Snowflake stores and
+// DESCRIBE TABLE returns for a column created with an empty string default (two single quotes).
+const columnDefaultEmptyStringLiteral = "''"
+
+// getColumnDefaultExpression returns the expression of a column default block. The block is optional, but its
+// expression is required, so a block that is present always has a default. An empty expression is sent as the
+// empty string literal, because `DEFAULT` without an expression is not valid SQL.
+//
+// SDKv2 decodes a block whose fields are all zero values (here: `expression = ""`) as a nil element, so the element
+// is not type-asserted directly.
+func getColumnDefaultExpression(defaults []any) (string, bool) {
+	if len(defaults) != 1 {
+		return "", false
+	}
+	def, ok := defaults[0].(map[string]any)
+	if !ok {
+		return columnDefaultEmptyStringLiteral, true
+	}
+	expression, _ := def["expression"].(string)
+	if expression == "" {
+		return columnDefaultEmptyStringLiteral, true
+	}
+	return expression, true
+}
+
+func getColumnMaskingPolicy(maskingPolicies []any) *columnMaskingPolicy {
+	if len(maskingPolicies) != 1 {
+		return nil
+	}
+	maskingPolicy, ok := maskingPolicies[0].(map[string]any)
+	if !ok {
+		return nil
+	}
+	name, _ := maskingPolicy["policy_name"].(string)
+	if name == "" {
+		return nil
+	}
+	var using []string
+	if usingRaw, ok := maskingPolicy["using"].([]any); ok {
+		using = expandStringList(usingRaw)
+	}
+	return &columnMaskingPolicy{name: name, using: using}
+}
+
+// equal compares the policies as they are in the state. Formatting differences (identifier quoting, the column itself as
+// the only USING argument) are handled by the diff suppressors of the masking_policy schema, so they never reach here.
+func (p *columnMaskingPolicy) equal(other *columnMaskingPolicy) bool {
+	if p == nil || other == nil {
+		return p == other
+	}
+	return p.name == other.name && slices.Equal(p.using, other.using)
+}
+
+func getColumnProjectionPolicy(projectionPolicies []any) string {
+	if len(projectionPolicies) != 1 {
+		return ""
+	}
+	projectionPolicy, ok := projectionPolicies[0].(map[string]any)
+	if !ok {
+		return ""
+	}
+	name, _ := projectionPolicy["policy_name"].(string)
+	return name
+}
+
+// withColumnPolicies sets each column's masking_policy and projection_policy from POLICY_REFERENCES, like in
+// snowflake_iceberg_table.
+func withColumnPolicies(columns []any, policyRefs []sdk.PolicyReference) ([]any, error) {
+	var errs []error
+	for _, c := range columns {
+		column, ok := c.(map[string]any)
+		if !ok {
+			continue
+		}
+		name, _ := column["name"].(string)
+		columnPolicies, err := columnPoliciesToState(name, policyRefs)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("column %q: %w", name, err))
+		}
+		for _, key := range []string{"masking_policy", "projection_policy"} {
+			if policy, ok := columnPolicies[key]; ok {
+				column[key] = policy
+			} else {
+				column[key] = []any{}
 			}
 		}
 	}
-
-	if s, ok := def["sequence"]; ok {
-		if seq := s.(string); ok && len(seq) > 0 {
-			return &columnDefault{
-				sequence: &seq,
-			}
-		}
-	}
-
-	return nil
+	return columns, errors.Join(errs...)
 }
 
 func getColumnIdentity(identity map[string]any) *columnIdentity {
 	if len(identity) > 0 {
 		startNum := identity["start_num"].(int)
 		stepNum := identity["step_num"].(int)
-		return &columnIdentity{startNum, stepNum}
+		order, _ := identity["order"].(string)
+		return &columnIdentity{startNum, stepNum, order}
 	}
 
 	return nil
@@ -451,25 +646,28 @@ func getColumn(from any) (to column) {
 	var cd *columnDefault
 	var id *columnIdentity
 
-	_default := c["default"].([]any)
 	identity := c["identity"].([]any)
 
-	if len(_default) == 1 {
-		cd = getColumnDefault(_default[0].(map[string]any))
+	if expression, ok := getColumnDefaultExpression(c["default"].([]any)); ok {
+		cd = &columnDefault{expression: &expression}
 	}
 	if len(identity) == 1 {
-		id = getColumnIdentity(identity[0].(map[string]any))
+		if identityProp, ok := identity[0].(map[string]any); ok {
+			id = getColumnIdentity(identityProp)
+		}
 	}
 
 	return column{
-		name:          c["name"].(string),
-		dataType:      c["type"].(string),
-		nullable:      c["nullable"].(bool),
-		_default:      cd,
-		identity:      id,
-		comment:       c["comment"].(string),
-		collate:       c["collate"].(string),
-		maskingPolicy: c["masking_policy"].(string),
+		name:             c["name"].(string),
+		dataType:         c["type"].(string),
+		notNull:          c["not_null"].(bool),
+		_default:         cd,
+		identity:         id,
+		comment:          c["comment"].(string),
+		collate:          c["collate"].(string),
+		maskingPolicy:    getColumnMaskingPolicy(c["masking_policy"].([]any)),
+		projectionPolicy: getColumnProjectionPolicy(c["projection_policy"].([]any)),
+		as:               c["as"].(string),
 	}
 }
 
@@ -490,54 +688,49 @@ func getTableColumnRequest(from any) (*sdk.TableColumnRequest, error) {
 		return nil, err
 	}
 
-	request := sdk.NewTableColumnRequest(c["name"].(string), sdk.DataType(_type))
+	request := sdk.NewTableColumnRequest(c["name"].(string), dataType)
 
-	_default := c["default"].([]any)
-	var expression string
-	if len(_default) == 1 {
-		if c, ok := _default[0].(map[string]any)["constant"]; ok {
-			if constant, ok := c.(string); ok && len(constant) > 0 {
-				if datatypes.IsTextDataType(dataType) {
-					expression = snowflake.EscapeSnowflakeString(constant)
-				} else {
-					expression = constant
-				}
-			}
-		}
+	if as := c["as"].(string); as != "" {
+		request.WithVirtual(*sdk.NewTableColumnVirtualRequest(virtualColumnExpressionSql(as)))
+	}
 
-		if e, ok := _default[0].(map[string]any)["expression"]; ok {
-			if expr, ok := e.(string); ok && len(expr) > 0 {
-				expression = expr
-			}
-		}
-
-		if s, ok := _default[0].(map[string]any)["sequence"]; ok {
-			if seq, ok2 := s.(string); ok2 && len(seq) > 0 {
-				expression = fmt.Sprintf(`%v.NEXTVAL`, seq)
-			}
-		}
+	if expression, ok := getColumnDefaultExpression(c["default"].([]any)); ok {
 		request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithExpression(expression))
 	}
 
 	identity := c["identity"].([]any)
 	if len(identity) == 1 {
-		identityProp := identity[0].(map[string]any)
-		startNum := identityProp["start_num"].(int)
-		stepNum := identityProp["step_num"].(int)
-		request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*sdk.NewColumnIdentityRequest(startNum, stepNum)))
+		if identityProp, ok := identity[0].(map[string]any); ok && len(identityProp) > 0 {
+			identityRequest, err := getColumnIdentity(identityProp).toRequest()
+			if err != nil {
+				return nil, err
+			}
+			request.WithDefaultValue(*sdk.NewColumnDefaultValueRequest().WithIdentity(*identityRequest))
+		}
 	}
 
-	maskingPolicy := c["masking_policy"].(string)
-	if maskingPolicy != "" {
-		request.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(maskingPolicy)))
+	if maskingPolicy := getColumnMaskingPolicy(c["masking_policy"].([]any)); maskingPolicy != nil {
+		maskingPolicyId, err := sdk.ParseSchemaObjectIdentifier(maskingPolicy.name)
+		if err != nil {
+			return nil, err
+		}
+		request.WithMaskingPolicy(*sdk.NewTableColumnMaskingPolicyRequest(maskingPolicyId).WithUsing(toColumns(maskingPolicy.using)))
 	}
 
-	if datatypes.IsTextDataType(dataType) {
-		request.WithCollate(c["collate"].(string))
+	if projectionPolicy := getColumnProjectionPolicy(c["projection_policy"].([]any)); projectionPolicy != "" {
+		projectionPolicyId, err := sdk.ParseSchemaObjectIdentifier(projectionPolicy)
+		if err != nil {
+			return nil, err
+		}
+		request.WithProjectionPolicy(*sdk.NewTableColumnProjectionPolicyRequest(projectionPolicyId))
+	}
+
+	if collate := c["collate"].(string); datatypes.IsTextDataType(dataType) && (collate != "" || c["as"].(string) == "") {
+		request.WithCollate(collate)
 	}
 
 	return request.
-		WithNotNull(!c["nullable"].(bool)).
+		WithNotNull(c["not_null"].(bool)).
 		WithComment(c["comment"].(string)), nil
 }
 
@@ -571,17 +764,42 @@ func getPrimaryKey(from any) (to primarykey) {
 	return to
 }
 
+// virtualColumnExpressionSql wraps the expression in the parentheses AS requires. The SDK does not add them.
+func virtualColumnExpressionSql(expression string) string {
+	return fmt.Sprintf("(%s)", expression)
+}
+
+// tableVirtualColumnConflicts rejects a virtual column with a default or an identity, which Snowflake does not allow.
+func tableVirtualColumnConflicts(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	var errs []error
+	for _, c := range d.Get("column").([]any) {
+		column, ok := c.(map[string]any)
+		if !ok {
+			continue
+		}
+		if as, _ := column["as"].(string); as == "" {
+			continue
+		}
+		defaults, _ := column["default"].([]any)
+		identity, _ := column["identity"].([]any)
+		if len(defaults) > 0 || len(identity) > 0 {
+			errs = append(errs, fmt.Errorf("column %q: a virtual column (as) cannot have default or identity", column["name"]))
+		}
+	}
+	return errors.Join(errs...)
+}
+
 func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 	flattened := make([]any, 0)
 	for _, td := range descriptions {
-		if td.Kind != "COLUMN" {
+		if td.Kind != sdk.TableColumnKindColumn && td.Kind != sdk.TableColumnKindVirtual {
 			continue
 		}
 
 		flat := map[string]any{}
 		flat["name"] = td.Name
-		flat["type"] = string(td.Type)
-		flat["nullable"] = td.Null
+		flat["type"] = td.TypeRaw
+		flat["not_null"] = !td.Null
 
 		if td.Comment != nil {
 			flat["comment"] = *td.Comment
@@ -591,9 +809,12 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 			flat["collate"] = *td.Collation
 		}
 
-		if td.PolicyName != nil {
-			// TODO [SNOW-867240]: SHOW TABLE returns last part of id without double quotes... we have to quote it again. Move it to SDK.
-			flat["masking_policy"] = sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(*td.PolicyName).FullyQualifiedName()
+		if td.Kind == sdk.TableColumnKindVirtual {
+			if td.Expression != nil {
+				flat["as"] = *td.Expression
+			}
+			flattened = append(flattened, flat)
+			continue
 		}
 
 		identity := toColumnIdentityConfig(td)
@@ -606,10 +827,6 @@ func toColumnConfig(descriptions []sdk.TableColumnDetails) []any {
 			}
 		}
 
-		if td.SchemaEvolutionRecord != nil {
-			flat["schema_evolution_record"] = *td.SchemaEvolutionRecord
-		}
-
 		flattened = append(flattened, flat)
 	}
 	return flattened
@@ -620,51 +837,26 @@ func toColumnDefaultConfig(td sdk.TableColumnDetails) map[string]any {
 		return nil
 	}
 
-	defaultRaw := *td.Default
-	def := map[string]any{}
-	if before, ok := strings.CutSuffix(defaultRaw, ".NEXTVAL"); ok {
-		// TODO [SNOW-867240]: SHOW TABLE returns last part of id without double quotes... we have to quote it again. Move it to SDK.
-		sequenceIdRaw := before
-		def["sequence"] = sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(sequenceIdRaw).FullyQualifiedName()
-		return def
-	}
-
-	if strings.Contains(defaultRaw, "(") && strings.Contains(defaultRaw, ")") {
-		def["expression"] = defaultRaw
-		return def
-	}
-
-	if sdk.IsStringType(string(td.Type)) {
-		def["constant"] = snowflake.UnescapeSnowflakeString(defaultRaw)
-		return def
-	}
-
-	def["constant"] = defaultRaw
-	return def
+	return map[string]any{"expression": *td.Default}
 }
 
+// TODO [SNOW-1031688]: move calling sdk.ParseColumnIdentity to the SDK, so the conversion of DESCRIBE TABLE happens
+// automatically (TableColumnDetails would hold the parsed identity). The show and describe schemas stay as they are for now.
 func toColumnIdentityConfig(td sdk.TableColumnDetails) map[string]any {
-	// if autoincrement is used this is reflected back IDENTITY START 1 INCREMENT 1
 	if td.Default == nil {
 		return nil
 	}
-
-	defaultRaw := *td.Default
-
-	if strings.Contains(defaultRaw, "IDENTITY") {
-		identity := map[string]any{}
-
-		split := strings.Split(defaultRaw, " ")
-		start, err := strconv.Atoi(split[2])
-		if err == nil {
-			identity["start_num"] = start
-		}
-		step, err := strconv.Atoi(split[4])
-		if err == nil {
-			identity["step_num"] = step
-		}
-
-		return identity
+	identity, ok := sdk.ParseColumnIdentity(*td.Default)
+	if !ok {
+		return nil
 	}
-	return nil
+	order := BooleanDefault
+	if identity.Order != nil {
+		order = booleanStringFromBool(*identity.Order)
+	}
+	return map[string]any{
+		"start_num": identity.Start,
+		"step_num":  identity.Increment,
+		"order":     order,
+	}
 }
