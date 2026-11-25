@@ -14,13 +14,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
-// An account can have only one Snowflake Intelligence object, so this can't run in parallel with other tests creating one.
-func TestAcc_Quota_SnowflakeIntelligenceInstance(t *testing.T) {
+// SNOWFLAKE COWORK instances are Snowflake Intelligence objects, and an account can have only one, so this can't run in parallel
+// with other tests creating one.
+func TestAcc_Quota_SnowflakeCoworkInstance(t *testing.T) {
 	intelligenceId, intelligenceCleanup := testClient().SnowflakeIntelligence.Create(t)
 	t.Cleanup(intelligenceCleanup)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
-	sharedResource := model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainSnowflakeIntelligence, Instance: intelligenceId.Name()}
+	sharedResource := model.QuotaSharedResourceModel{Domain: sdk.QuotaSharedResourceDomainSnowflakeCowork, Instance: intelligenceId.Name()}
 	quotaModel := model.QuotaFromId("test", id).WithSharedResources(sharedResource)
 	ref := quotaModel.ResourceReference()
 

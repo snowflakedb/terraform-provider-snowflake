@@ -71,12 +71,41 @@ type AddSharedResourceQuotaRequest struct {
 }
 
 type QuotaAddSharedResourceArgsRequest struct {
-	Domain                QuotaSharedResourceDomain // required
-	InstanceName          *string
-	Warehouse             *AccountObjectIdentifier
-	CortexAgent           *SchemaObjectIdentifier
-	SnowflakeIntelligence *AccountObjectIdentifier
-	AiGateway             *AccountObjectIdentifier
+	WholeDomain     *QuotaAddSharedResourceArgsWholeDomainRequest
+	AiFunction      *QuotaAddSharedResourceArgsAiFunctionRequest
+	SnowflakeCoco   *QuotaAddSharedResourceArgsSnowflakeCocoRequest
+	Warehouse       *QuotaAddSharedResourceArgsWarehouseRequest
+	CortexAgent     *QuotaAddSharedResourceArgsCortexAgentRequest
+	SnowflakeCowork *QuotaAddSharedResourceArgsSnowflakeCoworkRequest
+	AiGateway       *QuotaAddSharedResourceArgsAiGatewayRequest
+}
+
+type QuotaAddSharedResourceArgsWholeDomainRequest struct {
+	Domain QuotaSharedResourceDomain // required
+}
+
+type QuotaAddSharedResourceArgsAiFunctionRequest struct {
+	Name string // required
+}
+
+type QuotaAddSharedResourceArgsSnowflakeCocoRequest struct {
+	Name string // required
+}
+
+type QuotaAddSharedResourceArgsWarehouseRequest struct {
+	Id AccountObjectIdentifier // required
+}
+
+type QuotaAddSharedResourceArgsCortexAgentRequest struct {
+	Id SchemaObjectIdentifier // required
+}
+
+type QuotaAddSharedResourceArgsSnowflakeCoworkRequest struct {
+	Id AccountObjectIdentifier // required
+}
+
+type QuotaAddSharedResourceArgsAiGatewayRequest struct {
+	Id AccountObjectIdentifier // required
 }
 
 type RemoveSharedResourceQuotaRequest struct {
@@ -85,12 +114,41 @@ type RemoveSharedResourceQuotaRequest struct {
 }
 
 type QuotaRemoveSharedResourceArgsRequest struct {
-	Domain                QuotaSharedResourceDomain // required
-	InstanceName          *string
-	Warehouse             *AccountObjectIdentifier
-	CortexAgent           *SchemaObjectIdentifier
-	SnowflakeIntelligence *AccountObjectIdentifier
-	AiGateway             *AccountObjectIdentifier
+	WholeDomain     *QuotaRemoveSharedResourceArgsWholeDomainRequest
+	AiFunction      *QuotaRemoveSharedResourceArgsAiFunctionRequest
+	SnowflakeCoco   *QuotaRemoveSharedResourceArgsSnowflakeCocoRequest
+	Warehouse       *QuotaRemoveSharedResourceArgsWarehouseRequest
+	CortexAgent     *QuotaRemoveSharedResourceArgsCortexAgentRequest
+	SnowflakeCowork *QuotaRemoveSharedResourceArgsSnowflakeCoworkRequest
+	AiGateway       *QuotaRemoveSharedResourceArgsAiGatewayRequest
+}
+
+type QuotaRemoveSharedResourceArgsWholeDomainRequest struct {
+	Domain QuotaSharedResourceDomain // required
+}
+
+type QuotaRemoveSharedResourceArgsAiFunctionRequest struct {
+	Name string // required
+}
+
+type QuotaRemoveSharedResourceArgsSnowflakeCocoRequest struct {
+	Name string // required
+}
+
+type QuotaRemoveSharedResourceArgsWarehouseRequest struct {
+	Id AccountObjectIdentifier // required
+}
+
+type QuotaRemoveSharedResourceArgsCortexAgentRequest struct {
+	Id SchemaObjectIdentifier // required
+}
+
+type QuotaRemoveSharedResourceArgsSnowflakeCoworkRequest struct {
+	Id AccountObjectIdentifier // required
+}
+
+type QuotaRemoveSharedResourceArgsAiGatewayRequest struct {
+	Id AccountObjectIdentifier // required
 }
 
 type SetUserTagsQuotaRequest struct {
@@ -104,16 +162,8 @@ type QuotaSetUserTagsArgsRequest struct {
 }
 
 type QuotaUserTagRequest struct {
-	Reference QuotaUserTagReferenceRequest // required
-	Value     string                       // required
-}
-
-type QuotaUserTagReferenceRequest struct {
-	Arguments QuotaUserTagReferenceArgumentsRequest // required
-}
-
-type QuotaUserTagReferenceArgumentsRequest struct {
-	Tag SchemaObjectIdentifier // required
+	Tag   SchemaObjectIdentifier // required
+	Value string                 // required
 }
 
 type ExcludeUsersQuotaRequest struct {
@@ -131,16 +181,8 @@ type QuotaExcludeUsersByTagRequest struct {
 }
 
 type QuotaExcludedUserTagRequest struct {
-	Reference QuotaExcludedUserTagReferenceRequest // required
-	Value     string                               // required
-}
-
-type QuotaExcludedUserTagReferenceRequest struct {
-	Arguments QuotaExcludedUserTagReferenceArgumentsRequest // required
-}
-
-type QuotaExcludedUserTagReferenceArgumentsRequest struct {
-	Tag SchemaObjectIdentifier // required
+	Tag   SchemaObjectIdentifier // required
+	Value string                 // required
 }
 
 type QuotaExcludeUsersByUserRequest struct {

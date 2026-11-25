@@ -523,7 +523,7 @@ func UpdateSemanticView(ctx context.Context, d *schema.ResourceData, meta any) d
 			return client.SemanticViews.Alter(ctx, sdk.NewAlterSemanticViewRequest(currentId).WithRenameTo(targetId))
 		},
 		client.SemanticViews.ShowByID,
-		"semantic view",
+		sdk.ObjectTypeSemanticView,
 	); diags != nil {
 		return diags
 	}

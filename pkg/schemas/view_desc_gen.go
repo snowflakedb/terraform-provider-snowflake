@@ -17,10 +17,8 @@ var DescribeViewDetailsSchema = mergeSchema(map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"type": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	"kind": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -65,7 +63,8 @@ var _ = DescribeViewDetailsSchema
 func ViewDetailsToSchema(viewDetails *sdk.ViewDetails) map[string]any {
 	viewDetailsSchema := make(map[string]any)
 	viewDetailsSchema["name"] = viewDetails.Name
-	viewDetailsSchema["type"] = string(viewDetails.Type)
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	viewDetailsSchema["kind"] = viewDetails.Kind
 	viewDetailsSchema["is_nullable"] = viewDetails.IsNullable
 	if viewDetails.Default != nil {

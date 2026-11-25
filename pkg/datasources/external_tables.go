@@ -79,6 +79,7 @@ func ReadExternalTables(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	externalTablesObjects := make([]map[string]any, len(externalTables))
+	// TODO(SNOW-1348353): use the generated external table schema instead of this hand-written one while reworking external tables.
 	for i, externalTable := range externalTables {
 		externalTablesObjects[i] = map[string]any{
 			"name":     externalTable.Name,
@@ -88,7 +89,7 @@ func ReadExternalTables(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(schemaId))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(schemaId))
 
 	return diag.FromErr(d.Set("external_tables", externalTablesObjects))
 }

@@ -3,27 +3,19 @@ package datatypes
 // GeographyDataType is based on https://docs.snowflake.com/en/sql-reference/data-types-geospatial#geography-data-type
 // It does not have synonyms. It does not have any attributes.
 type GeographyDataType struct {
-	underlyingType string
+	plainDataType
 }
 
-func (t *GeographyDataType) ToSql() string {
-	return t.underlyingType
+func NewGeographyDataType() DataType {
+	return newGeographyDataType(GeographyLegacyDataType)
 }
 
-func (t *GeographyDataType) ToLegacyDataTypeSql() string {
-	return GeographyLegacyDataType
-}
-
-func (t *GeographyDataType) Canonical() string {
-	return GeographyLegacyDataType
-}
-
-func (t *GeographyDataType) ToSqlWithoutUnknowns() string {
-	return t.ToSql()
+func newGeographyDataType(underlyingType string) *GeographyDataType {
+	return &GeographyDataType{plainDataType{underlyingType, GeographyLegacyDataType}}
 }
 
 var GeographyDataTypeSynonyms = []string{GeographyLegacyDataType}
 
 func parseGeographyDataTypeRaw(raw sanitizedDataTypeRaw) (*GeographyDataType, error) {
-	return &GeographyDataType{raw.matchedByType}, nil
+	return newGeographyDataType(raw.matchedByType), nil
 }

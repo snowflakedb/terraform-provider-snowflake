@@ -14,50 +14,59 @@ func init() {
 var listingsTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 
 const (
-	case_Listings_validation_Create_name_ValidIdentifier                        testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Listings_validation_Create_opts_ExactlyOneValueSet_NoneSet             testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
-	case_Listings_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Listings_validation_Create_As_NoDoubleDollarQuotesIfSet                testCaseName = "validation_Create_As_NoDoubleDollarQuotesIfSet"
-	case_Listings_validation_Create_opts_With_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Create_opts_With_ExactlyOneValueSet_NoneSet"
-	case_Listings_validation_Create_opts_With_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Create_opts_With_ExactlyOneValueSet_MoreThanOneSet"
-	case_Listings_sql_Create_basic                                              testCaseName = "sql_Create_basic"
-	case_Listings_sql_Create_all                                                testCaseName = "sql_Create_all"
-	case_Listings_validation_Alter_name_ValidIdentifier                         testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Listings_validation_Alter_opts_ConflictingFields                       testCaseName = "validation_Alter_opts_ConflictingFields"
-	case_Listings_validation_Alter_opts_ExactlyOneValueSet_NoneSet              testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Listings_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet       testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Listings_validation_Alter_AlterListingAs_As_NoDoubleDollarQuotes       testCaseName = "validation_Alter_AlterListingAs_As_NoDoubleDollarQuotes"
-	case_Listings_sql_Alter_Publish                                             testCaseName = "sql_Alter_Publish"
-	case_Listings_sql_Alter_Unpublish                                           testCaseName = "sql_Alter_Unpublish"
-	case_Listings_sql_Alter_Review                                              testCaseName = "sql_Alter_Review"
-	case_Listings_sql_Alter_AlterListingAs                                      testCaseName = "sql_Alter_AlterListingAs"
-	case_Listings_sql_Alter_AddVersion                                          testCaseName = "sql_Alter_AddVersion"
-	case_Listings_sql_Alter_RenameTo                                            testCaseName = "sql_Alter_RenameTo"
-	case_Listings_sql_Alter_Set                                                 testCaseName = "sql_Alter_Set"
-	case_Listings_sql_Alter_Unset                                               testCaseName = "sql_Alter_Unset"
-	case_Listings_validation_Drop_name_ValidIdentifier                          testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Listings_sql_Drop_basic                                                testCaseName = "sql_Drop_basic"
-	case_Listings_sql_Drop_all                                                  testCaseName = "sql_Drop_all"
-	case_Listings_sql_Show_basic                                                testCaseName = "sql_Show_basic"
-	case_Listings_sql_Show_all                                                  testCaseName = "sql_Show_all"
-	case_Listings_sql_Show_Like                                                 testCaseName = "sql_Show_Like"
-	case_Listings_sql_Show_StartsWith                                           testCaseName = "sql_Show_StartsWith"
-	case_Listings_sql_Show_Limit                                                testCaseName = "sql_Show_Limit"
-	case_Listings_validation_Describe_name_ValidIdentifier                      testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_Listings_sql_Describe_basic                                            testCaseName = "sql_Describe_basic"
-	case_Listings_validation_ShowVersions_name_ValidIdentifier                  testCaseName = "validation_ShowVersions_name_ValidIdentifier"
-	case_Listings_sql_ShowVersions_basic                                        testCaseName = "sql_ShowVersions_basic"
-	case_Listings_sql_ShowVersions_all                                          testCaseName = "sql_ShowVersions_all"
-	case_Listings_sql_ShowVersions_Limit                                        testCaseName = "sql_ShowVersions_Limit"
+	case_Listings_validation_Create_name_ValidIdentifier                                    testCaseName = "validation_Create_name_ValidIdentifier"
+	case_Listings_validation_Create_opts_ExactlyOneValueSet_NoneSet                         testCaseName = "validation_Create_opts_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet                  testCaseName = "validation_Create_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_validation_Create_As_NoDoubleDollarQuotesIfSet                            testCaseName = "validation_Create_As_NoDoubleDollarQuotesIfSet"
+	case_Listings_validation_Create_opts_With_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_Create_opts_With_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_Create_opts_With_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_Create_opts_With_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_sql_Create_basic                                                          testCaseName = "sql_Create_basic"
+	case_Listings_sql_Create_all                                                            testCaseName = "sql_Create_all"
+	case_Listings_validation_CreateOrganization_name_ValidIdentifier                        testCaseName = "validation_CreateOrganization_name_ValidIdentifier"
+	case_Listings_validation_CreateOrganization_opts_ExactlyOneValueSet_NoneSet             testCaseName = "validation_CreateOrganization_opts_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_CreateOrganization_opts_ExactlyOneValueSet_MoreThanOneSet      testCaseName = "validation_CreateOrganization_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_validation_CreateOrganization_As_NoDoubleDollarQuotesIfSet                testCaseName = "validation_CreateOrganization_As_NoDoubleDollarQuotesIfSet"
+	case_Listings_validation_CreateOrganization_opts_With_ExactlyOneValueSet_NoneSet        testCaseName = "validation_CreateOrganization_opts_With_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_CreateOrganization_opts_With_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_CreateOrganization_opts_With_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_sql_CreateOrganization_basic                                              testCaseName = "sql_CreateOrganization_basic"
+	case_Listings_sql_CreateOrganization_all                                                testCaseName = "sql_CreateOrganization_all"
+	case_Listings_validation_Alter_name_ValidIdentifier                                     testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Listings_validation_Alter_opts_ConflictingFields                                   testCaseName = "validation_Alter_opts_ConflictingFields"
+	case_Listings_validation_Alter_opts_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Listings_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Listings_validation_Alter_AlterListingAs_As_NoDoubleDollarQuotes                   testCaseName = "validation_Alter_AlterListingAs_As_NoDoubleDollarQuotes"
+	case_Listings_sql_Alter_Publish                                                         testCaseName = "sql_Alter_Publish"
+	case_Listings_sql_Alter_Unpublish                                                       testCaseName = "sql_Alter_Unpublish"
+	case_Listings_sql_Alter_Review                                                          testCaseName = "sql_Alter_Review"
+	case_Listings_sql_Alter_AlterListingAs                                                  testCaseName = "sql_Alter_AlterListingAs"
+	case_Listings_sql_Alter_AddVersion                                                      testCaseName = "sql_Alter_AddVersion"
+	case_Listings_sql_Alter_RenameTo                                                        testCaseName = "sql_Alter_RenameTo"
+	case_Listings_sql_Alter_Set                                                             testCaseName = "sql_Alter_Set"
+	case_Listings_sql_Alter_Unset                                                           testCaseName = "sql_Alter_Unset"
+	case_Listings_validation_Drop_name_ValidIdentifier                                      testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Listings_sql_Drop_basic                                                            testCaseName = "sql_Drop_basic"
+	case_Listings_sql_Drop_all                                                              testCaseName = "sql_Drop_all"
+	case_Listings_sql_Show_basic                                                            testCaseName = "sql_Show_basic"
+	case_Listings_sql_Show_all                                                              testCaseName = "sql_Show_all"
+	case_Listings_sql_Show_Like                                                             testCaseName = "sql_Show_Like"
+	case_Listings_sql_Show_StartsWith                                                       testCaseName = "sql_Show_StartsWith"
+	case_Listings_sql_Show_Limit                                                            testCaseName = "sql_Show_Limit"
+	case_Listings_validation_Describe_name_ValidIdentifier                                  testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Listings_sql_Describe_basic                                                        testCaseName = "sql_Describe_basic"
+	case_Listings_validation_ShowVersions_name_ValidIdentifier                              testCaseName = "validation_ShowVersions_name_ValidIdentifier"
+	case_Listings_sql_ShowVersions_basic                                                    testCaseName = "sql_ShowVersions_basic"
+	case_Listings_sql_ShowVersions_all                                                      testCaseName = "sql_ShowVersions_all"
+	case_Listings_sql_ShowVersions_Limit                                                    testCaseName = "sql_ShowVersions_Limit"
 )
 
 type ListingsTestsContext struct {
-	Create       *sdkTestCtx[*CreateListingOptions]
-	Alter        *sdkTestCtx[*AlterListingOptions]
-	Drop         *sdkTestCtx[*DropListingOptions]
-	Show         *sdkTestCtx[*ShowListingOptions]
-	Describe     *sdkTestCtx[*DescribeListingOptions]
-	ShowVersions *sdkTestCtx[*ShowVersionsListingOptions]
+	Create             *sdkTestCtx[*CreateListingOptions]
+	CreateOrganization *sdkTestCtx[*CreateOrganizationListingOptions]
+	Alter              *sdkTestCtx[*AlterListingOptions]
+	Drop               *sdkTestCtx[*DropListingOptions]
+	Show               *sdkTestCtx[*ShowListingOptions]
+	Describe           *sdkTestCtx[*DescribeListingOptions]
+	ShowVersions       *sdkTestCtx[*ShowVersionsListingOptions]
 }
 
 var listingsTests = ListingsTestsContext{
@@ -122,6 +131,69 @@ var listingsTests = ListingsTestsContext{
 			},
 			sqlCase[*CreateListingOptions]{
 				Name: case_Listings_sql_Create_all,
+			},
+		),
+	CreateOrganization: newSdkTestCtx[*CreateOrganizationListingOptions](
+		"Listings", "CreateOrganization",
+	).
+		withDefaultOpts(func() *CreateOrganizationListingOptions {
+			return &CreateOrganizationListingOptions{
+				name: listingsTestIdAccountObjectIdentifier,
+			}
+		}).
+		withValidationCases(
+			validationCase[*CreateOrganizationListingOptions]{
+				Name:        case_Listings_validation_CreateOrganization_name_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("CreateOrganizationListingOptions", "name"),
+				DefaultModify: func(opts *CreateOrganizationListingOptions) {
+					opts.name = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*CreateOrganizationListingOptions]{
+				Name:        case_Listings_validation_CreateOrganization_opts_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"),
+				DefaultModify: func(opts *CreateOrganizationListingOptions) {
+					opts.As = nil
+					opts.From = nil
+				},
+			},
+			validationCase[*CreateOrganizationListingOptions]{
+				Name:        case_Listings_validation_CreateOrganization_opts_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOrganizationListingOptions", "As", "From"),
+			},
+			validationCase[*CreateOrganizationListingOptions]{
+				Name:        case_Listings_validation_CreateOrganization_As_NoDoubleDollarQuotesIfSet,
+				ExpectedErr: errDoubleDollarQuotesNotAllowed("CreateOrganizationListingOptions", "As"),
+				DefaultModify: func(opts *CreateOrganizationListingOptions) {
+					opts.As = String("$$")
+				},
+			},
+			validationCase[*CreateOrganizationListingOptions]{
+				Name:        case_Listings_validation_CreateOrganization_opts_With_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"),
+				DefaultModify: func(opts *CreateOrganizationListingOptions) {
+					opts.With = &ListingWith{}
+					opts.With.Share = nil
+					opts.With.ApplicationPackage = nil
+				},
+			},
+			validationCase[*CreateOrganizationListingOptions]{
+				Name:        case_Listings_validation_CreateOrganization_opts_With_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("CreateOrganizationListingOptions.With", "Share", "ApplicationPackage"),
+				DefaultModify: func(opts *CreateOrganizationListingOptions) {
+					opts.With = &ListingWith{}
+					opts.With.Share = new(randomAccountObjectIdentifier())
+					opts.With.ApplicationPackage = new(randomAccountObjectIdentifier())
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*CreateOrganizationListingOptions]{
+				Name:           case_Listings_sql_CreateOrganization_basic,
+				NoModifyNeeded: true,
+			},
+			sqlCase[*CreateOrganizationListingOptions]{
+				Name: case_Listings_sql_CreateOrganization_all,
 			},
 		),
 	Alter: newSdkTestCtx[*AlterListingOptions](
@@ -313,6 +385,11 @@ var listingsTests = ListingsTestsContext{
 func TestListings_Create(t *testing.T) {
 	listingsTests.Create.RunValidationCases(t)
 	listingsTests.Create.RunSqlCases(t)
+}
+
+func TestListings_CreateOrganization(t *testing.T) {
+	listingsTests.CreateOrganization.RunValidationCases(t)
+	listingsTests.CreateOrganization.RunSqlCases(t)
 }
 
 func TestListings_Alter(t *testing.T) {

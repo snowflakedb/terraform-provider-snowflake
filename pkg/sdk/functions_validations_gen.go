@@ -33,8 +33,8 @@ func (opts *CreateForJavaFunctionOptions) validate() error {
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
 		for argumentIdx, argument := range opts.Arguments {
-			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavaFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
+			if !valueSet(argument.ArgDataType) {
+				errs = append(errs, errNotSet(fmt.Sprintf("CreateForJavaFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataType"))
 			}
 		}
 	}
@@ -43,15 +43,15 @@ func (opts *CreateForJavaFunctionOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateForJavaFunctionOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
-			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+			if !valueSet(opts.Returns.ResultDataType.ResultDataType) {
+				errs = append(errs, errNotSet("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
 				for columnIdx, column := range opts.Returns.Table.Columns {
-					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavaFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
+					if !valueSet(column.ColumnDataType) {
+						errs = append(errs, errNotSet(fmt.Sprintf("CreateForJavaFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataType"))
 					}
 				}
 			}
@@ -83,8 +83,8 @@ func (opts *CreateForJavascriptFunctionOptions) validate() error {
 	}
 	if valueSet(opts.Arguments) {
 		for argumentIdx, argument := range opts.Arguments {
-			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavascriptFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
+			if !valueSet(argument.ArgDataType) {
+				errs = append(errs, errNotSet(fmt.Sprintf("CreateForJavascriptFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataType"))
 			}
 		}
 	}
@@ -93,15 +93,15 @@ func (opts *CreateForJavascriptFunctionOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
-			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+			if !valueSet(opts.Returns.ResultDataType.ResultDataType) {
+				errs = append(errs, errNotSet("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
 				for columnIdx, column := range opts.Returns.Table.Columns {
-					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
+					if !valueSet(column.ColumnDataType) {
+						errs = append(errs, errNotSet(fmt.Sprintf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataType"))
 					}
 				}
 			}
@@ -130,8 +130,8 @@ func (opts *CreateForPythonFunctionOptions) validate() error {
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
 		for argumentIdx, argument := range opts.Arguments {
-			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForPythonFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
+			if !valueSet(argument.ArgDataType) {
+				errs = append(errs, errNotSet(fmt.Sprintf("CreateForPythonFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataType"))
 			}
 		}
 	}
@@ -140,15 +140,15 @@ func (opts *CreateForPythonFunctionOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateForPythonFunctionOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
-			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+			if !valueSet(opts.Returns.ResultDataType.ResultDataType) {
+				errs = append(errs, errNotSet("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
 				for columnIdx, column := range opts.Returns.Table.Columns {
-					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForPythonFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
+					if !valueSet(column.ColumnDataType) {
+						errs = append(errs, errNotSet(fmt.Sprintf("CreateForPythonFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataType"))
 					}
 				}
 			}
@@ -178,14 +178,14 @@ func (opts *CreateForScalaFunctionOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateForScalaFunctionOptions", "OrReplace", "IfNotExists"))
 	}
-	if !exactlyOneValueSet(opts.ResultDataTypeOld, opts.ResultDataType) {
-		errs = append(errs, errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"))
+	if !valueSet(opts.ResultDataType) {
+		errs = append(errs, errNotSet("CreateForScalaFunctionOptions", "ResultDataType"))
 	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Arguments) {
 		for argumentIdx, argument := range opts.Arguments {
-			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForScalaFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
+			if !valueSet(argument.ArgDataType) {
+				errs = append(errs, errNotSet(fmt.Sprintf("CreateForScalaFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataType"))
 			}
 		}
 	}
@@ -215,8 +215,8 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 	}
 	if valueSet(opts.Arguments) {
 		for argumentIdx, argument := range opts.Arguments {
-			if !exactlyOneValueSet(argument.ArgDataTypeOld, argument.ArgDataType) {
-				errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForSQLFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataTypeOld", "ArgDataType"))
+			if !valueSet(argument.ArgDataType) {
+				errs = append(errs, errNotSet(fmt.Sprintf("CreateForSQLFunctionOptions.Arguments[%d]", argumentIdx), "ArgDataType"))
 			}
 		}
 	}
@@ -225,15 +225,15 @@ func (opts *CreateForSQLFunctionOptions) validate() error {
 			errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns", "ResultDataType", "Table"))
 		}
 		if valueSet(opts.Returns.ResultDataType) {
-			if !exactlyOneValueSet(opts.Returns.ResultDataType.ResultDataTypeOld, opts.Returns.ResultDataType.ResultDataType) {
-				errs = append(errs, errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"))
+			if !valueSet(opts.Returns.ResultDataType.ResultDataType) {
+				errs = append(errs, errNotSet("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataType"))
 			}
 		}
 		if valueSet(opts.Returns.Table) {
 			if valueSet(opts.Returns.Table.Columns) {
 				for columnIdx, column := range opts.Returns.Table.Columns {
-					if !exactlyOneValueSet(column.ColumnDataTypeOld, column.ColumnDataType) {
-						errs = append(errs, errExactlyOneOf(fmt.Sprintf("CreateForSQLFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataTypeOld", "ColumnDataType"))
+					if !valueSet(column.ColumnDataType) {
+						errs = append(errs, errNotSet(fmt.Sprintf("CreateForSQLFunctionOptions.Returns.Table.Columns[%d]", columnIdx), "ColumnDataType"))
 					}
 				}
 			}

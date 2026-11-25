@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
@@ -99,16 +98,15 @@ func ReadContextProcedures(ctx context.Context, d *schema.ResourceData, meta any
 	}
 	proceduresList := []map[string]any{}
 
+	// TODO(SNOW-1850370): use the generated procedure schema instead of this hand-written one while reworking procedures.
 	for _, procedure := range procedures {
 		procedureMap := map[string]any{}
 		procedureMap["name"] = procedure.Name
 		procedureMap["database"] = procedure.CatalogName
 		procedureMap["schema"] = procedure.SchemaName
 		procedureMap["comment"] = procedure.Description
-		procedureMap["argument_types"] = collections.Map(procedure.ArgumentsOld, func(a sdk.DataType) string {
-			return string(a)
-		})
-		procedureMap["return_type"] = string(procedure.ReturnTypeOld)
+		procedureMap["argument_types"] = procedure.ArgumentsRawList
+		procedureMap["return_type"] = procedure.ReturnTypeRaw
 		proceduresList = append(proceduresList, procedureMap)
 	}
 

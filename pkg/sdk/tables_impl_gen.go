@@ -4,7 +4,9 @@ package sdk
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -25,26 +27,6 @@ type tables struct {
 }
 
 func (v *tables) Create(ctx context.Context, request *CreateTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *tables) CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *tables) CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *tables) CreateLike(ctx context.Context, request *CreateLikeTableRequest) error {
-	opts := request.toOpts()
-	return validateAndExec(v.client, ctx, opts)
-}
-
-func (v *tables) CreateClone(ctx context.Context, request *CreateCloneTableRequest) error {
 	opts := request.toOpts()
 	return validateAndExec(v.client, ctx, opts)
 }
@@ -85,6 +67,26 @@ func (v *tables) ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Tabl
 
 func (v *tables) ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error) {
 	return SafeShowById(v.client, v.ShowByID, ctx, id)
+}
+
+func (v *tables) CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateLike(ctx context.Context, request *CreateLikeTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
+}
+
+func (v *tables) CreateClone(ctx context.Context, request *CreateCloneTableRequest) error {
+	opts := request.toOpts()
+	return validateAndExec(v.client, ctx, opts)
 }
 
 func (v *tables) DescribeColumns(ctx context.Context, request *DescribeColumnsTableRequest) ([]TableColumnDetails, error) {
@@ -145,22 +147,34 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 		MaxDataExtensionTimeInDays: r.MaxDataExtensionTimeInDays,
 		ChangeTracking:             r.ChangeTracking,
 		DefaultDdlCollation:        r.DefaultDdlCollation,
-		CopyGrants:                 r.CopyGrants,
+		ErrorLogging:               r.ErrorLogging,
+		Copy:                       r.Copy,
 		Tag:                        r.Tag,
+		Contact:                    r.Contact,
 		Comment:                    r.Comment,
+		RowTimestamp:               r.RowTimestamp,
 	}
 	opts.ColumnsAndConstraints = CreateTableColumnsAndConstraints{}
 	if r.ColumnsAndConstraints.Columns != nil {
 		columns := make([]TableColumn, len(r.ColumnsAndConstraints.Columns))
 		for i, v := range r.ColumnsAndConstraints.Columns {
 			columns[i] = TableColumn{
-				Name:             v.Name,
-				ColumnType:       v.ColumnType,
-				InlineConstraint: v.InlineConstraint,
-				NotNull:          v.NotNull,
-				Collate:          v.Collate,
-				Tag:              v.Tag,
-				Comment:          v.Comment,
+				Name:       v.Name,
+				ColumnType: v.ColumnType,
+				NotNull:    v.NotNull,
+				Collate:    v.Collate,
+				Tag:        v.Tag,
+				Comment:    v.Comment,
+			}
+			if v.Virtual != nil {
+				columns[i].Virtual = &TableColumnVirtual{
+					GeneratedAlways: v.Virtual.GeneratedAlways,
+					As:              v.Virtual.As,
+					Virtual:         v.Virtual.Virtual,
+				}
+			}
+			if v.InlineConstraint != nil {
+				columns[i].InlineConstraint = v.InlineConstraint.toOpts()
 			}
 			if v.DefaultValue != nil {
 				columns[i].DefaultValue = &ColumnDefaultValue{
@@ -178,37 +192,16 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 			if v.MaskingPolicy != nil {
 				columns[i].MaskingPolicy = v.MaskingPolicy.toOpts()
 			}
+			if v.ProjectionPolicy != nil {
+				columns[i].ProjectionPolicy = v.ProjectionPolicy.toOpts()
+			}
 		}
 		opts.ColumnsAndConstraints.Columns = columns
 	}
 	if r.ColumnsAndConstraints.OutOfLineConstraint != nil {
-		outOfLineConstraint := make([]OutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
+		outOfLineConstraint := make([]TableOutOfLineConstraint, len(r.ColumnsAndConstraints.OutOfLineConstraint))
 		for i, v := range r.ColumnsAndConstraints.OutOfLineConstraint {
-			outOfLineConstraint[i] = OutOfLineConstraint{
-				Name:               v.Name,
-				ConstraintType:     v.ConstraintType,
-				Columns:            v.Columns,
-				Enforced:           v.Enforced,
-				NotEnforced:        v.NotEnforced,
-				Deferrable:         v.Deferrable,
-				NotDeferrable:      v.NotDeferrable,
-				InitiallyDeferred:  v.InitiallyDeferred,
-				InitiallyImmediate: v.InitiallyImmediate,
-				Enable:             v.Enable,
-				Disable:            v.Disable,
-				Validate:           v.Validate,
-				Novalidate:         v.Novalidate,
-				Rely:               v.Rely,
-				Norely:             v.Norely,
-			}
-			if v.ForeignKey != nil {
-				outOfLineConstraint[i].ForeignKey = &OutOfLineForeignKey{
-					TableName:   v.ForeignKey.TableName,
-					ColumnNames: v.ForeignKey.ColumnNames,
-					Match:       v.ForeignKey.Match,
-					On:          v.ForeignKey.On,
-				}
-			}
+			outOfLineConstraint[i] = *v.toOpts()
 		}
 		opts.ColumnsAndConstraints.OutOfLineConstraint = outOfLineConstraint
 	}
@@ -230,64 +223,10 @@ func (r *CreateTableRequest) toOpts() *CreateTableOptions {
 			AllowedJoinKeys: r.JoinPolicy.AllowedJoinKeys,
 		}
 	}
-	return opts
-}
-
-func (r *CreateAsSelectTableRequest) toOpts() *CreateAsSelectTableOptions {
-	opts := &CreateAsSelectTableOptions{
-		OrReplace:       r.OrReplace,
-		name:            r.name,
-		ClusterBy:       r.ClusterBy,
-		CopyGrants:      r.CopyGrants,
-		RowAccessPolicy: r.RowAccessPolicy,
-		Query:           r.Query,
-	}
-	if r.Columns != nil {
-		columns := make([]TableAsSelectColumn, len(r.Columns))
-		for i, v := range r.Columns {
-			columns[i] = TableAsSelectColumn{
-				Name:          v.Name,
-				ColumnType:    v.ColumnType,
-				MaskingPolicy: v.MaskingPolicy,
-			}
-		}
-		opts.Columns = columns
-	}
-	return opts
-}
-
-func (r *CreateUsingTemplateTableRequest) toOpts() *CreateUsingTemplateTableOptions {
-	opts := &CreateUsingTemplateTableOptions{
-		OrReplace:  r.OrReplace,
-		name:       r.name,
-		CopyGrants: r.CopyGrants,
-		Query:      r.Query,
-	}
-	return opts
-}
-
-func (r *CreateLikeTableRequest) toOpts() *CreateLikeTableOptions {
-	opts := &CreateLikeTableOptions{
-		OrReplace:   r.OrReplace,
-		name:        r.name,
-		SourceTable: r.SourceTable,
-		ClusterBy:   r.ClusterBy,
-		CopyGrants:  r.CopyGrants,
-	}
-	return opts
-}
-
-func (r *CreateCloneTableRequest) toOpts() *CreateCloneTableOptions {
-	opts := &CreateCloneTableOptions{
-		OrReplace:   r.OrReplace,
-		name:        r.name,
-		SourceTable: r.SourceTable,
-		CopyGrants:  r.CopyGrants,
-	}
-	if r.ClonePoint != nil {
-		opts.ClonePoint = &ClonePoint{
-			Moment: r.ClonePoint.Moment,
-			At:     r.ClonePoint.At,
+	if r.StorageLifecyclePolicy != nil {
+		opts.StorageLifecyclePolicy = &CreateTableStorageLifecyclePolicy{
+			StorageLifecyclePolicy: r.StorageLifecyclePolicy.StorageLifecyclePolicy,
+			On:                     r.StorageLifecyclePolicy.On,
 		}
 	}
 	return opts
@@ -303,6 +242,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		UnsetTags:                  r.UnsetTags,
 		DropAllRowAccessPolicies:   r.DropAllRowAccessPolicies,
 		DropStorageLifecyclePolicy: r.DropStorageLifecyclePolicy,
+		UnsetDataMetricSchedule:    r.UnsetDataMetricSchedule,
 	}
 	if r.ClusteringAction != nil {
 		opts.ClusteringAction = &TableClusteringAction{
@@ -333,6 +273,13 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				Tag:         r.ColumnAction.Add.Tag,
 				Comment:     r.ColumnAction.Add.Comment,
 			}
+			if r.ColumnAction.Add.Virtual != nil {
+				opts.ColumnAction.Add.Virtual = &TableColumnVirtual{
+					GeneratedAlways: r.ColumnAction.Add.Virtual.GeneratedAlways,
+					As:              r.ColumnAction.Add.Virtual.As,
+					Virtual:         r.ColumnAction.Add.Virtual.Virtual,
+				}
+			}
 			if r.ColumnAction.Add.DefaultValue != nil {
 				opts.ColumnAction.Add.DefaultValue = &ColumnDefaultValue{
 					Expression: r.ColumnAction.Add.DefaultValue.Expression,
@@ -347,66 +294,17 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				}
 			}
 			if r.ColumnAction.Add.InlineConstraint != nil {
-				opts.ColumnAction.Add.InlineConstraint = &TableColumnAddInlineConstraint{}
-				if r.ColumnAction.Add.InlineConstraint.UniquePK != nil {
-					opts.ColumnAction.Add.InlineConstraint.UniquePK = &TableColumnAddInlineUniquePK{
-						Name:               r.ColumnAction.Add.InlineConstraint.UniquePK.Name,
-						Unique:             r.ColumnAction.Add.InlineConstraint.UniquePK.Unique,
-						PrimaryKey:         r.ColumnAction.Add.InlineConstraint.UniquePK.PrimaryKey,
-						Enforced:           r.ColumnAction.Add.InlineConstraint.UniquePK.Enforced,
-						NotEnforced:        r.ColumnAction.Add.InlineConstraint.UniquePK.NotEnforced,
-						Deferrable:         r.ColumnAction.Add.InlineConstraint.UniquePK.Deferrable,
-						NotDeferrable:      r.ColumnAction.Add.InlineConstraint.UniquePK.NotDeferrable,
-						InitiallyDeferred:  r.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyDeferred,
-						InitiallyImmediate: r.ColumnAction.Add.InlineConstraint.UniquePK.InitiallyImmediate,
-						Enable:             r.ColumnAction.Add.InlineConstraint.UniquePK.Enable,
-						Disable:            r.ColumnAction.Add.InlineConstraint.UniquePK.Disable,
-						Validate:           r.ColumnAction.Add.InlineConstraint.UniquePK.Validate,
-						Novalidate:         r.ColumnAction.Add.InlineConstraint.UniquePK.Novalidate,
-						Rely:               r.ColumnAction.Add.InlineConstraint.UniquePK.Rely,
-						Norely:             r.ColumnAction.Add.InlineConstraint.UniquePK.Norely,
-					}
-				}
-				if r.ColumnAction.Add.InlineConstraint.FK != nil {
-					opts.ColumnAction.Add.InlineConstraint.FK = &TableColumnAddInlineFK{
-						Name:               r.ColumnAction.Add.InlineConstraint.FK.Name,
-						ForeignKey:         r.ColumnAction.Add.InlineConstraint.FK.ForeignKey,
-						References:         r.ColumnAction.Add.InlineConstraint.FK.References,
-						RefColumn:          r.ColumnAction.Add.InlineConstraint.FK.RefColumn,
-						Match:              r.ColumnAction.Add.InlineConstraint.FK.Match,
-						On:                 r.ColumnAction.Add.InlineConstraint.FK.On,
-						Enforced:           r.ColumnAction.Add.InlineConstraint.FK.Enforced,
-						NotEnforced:        r.ColumnAction.Add.InlineConstraint.FK.NotEnforced,
-						Deferrable:         r.ColumnAction.Add.InlineConstraint.FK.Deferrable,
-						NotDeferrable:      r.ColumnAction.Add.InlineConstraint.FK.NotDeferrable,
-						InitiallyDeferred:  r.ColumnAction.Add.InlineConstraint.FK.InitiallyDeferred,
-						InitiallyImmediate: r.ColumnAction.Add.InlineConstraint.FK.InitiallyImmediate,
-						Enable:             r.ColumnAction.Add.InlineConstraint.FK.Enable,
-						Disable:            r.ColumnAction.Add.InlineConstraint.FK.Disable,
-						Validate:           r.ColumnAction.Add.InlineConstraint.FK.Validate,
-						Novalidate:         r.ColumnAction.Add.InlineConstraint.FK.Novalidate,
-						Rely:               r.ColumnAction.Add.InlineConstraint.FK.Rely,
-						Norely:             r.ColumnAction.Add.InlineConstraint.FK.Norely,
-					}
-				}
-				if r.ColumnAction.Add.InlineConstraint.CH != nil {
-					opts.ColumnAction.Add.InlineConstraint.CH = &TableColumnAddInlineCH{
-						Name:             r.ColumnAction.Add.InlineConstraint.CH.Name,
-						Expression:       r.ColumnAction.Add.InlineConstraint.CH.Expression,
-						EnableValidate:   r.ColumnAction.Add.InlineConstraint.CH.EnableValidate,
-						EnableNovalidate: r.ColumnAction.Add.InlineConstraint.CH.EnableNovalidate,
-					}
-				}
+				opts.ColumnAction.Add.InlineConstraint = r.ColumnAction.Add.InlineConstraint.toOpts()
 			}
 			if r.ColumnAction.Add.MaskingPolicy != nil {
 				opts.ColumnAction.Add.MaskingPolicy = r.ColumnAction.Add.MaskingPolicy.toOpts()
 			}
+			if r.ColumnAction.Add.ProjectionPolicy != nil {
+				opts.ColumnAction.Add.ProjectionPolicy = r.ColumnAction.Add.ProjectionPolicy.toOpts()
+			}
 		}
 		if r.ColumnAction.Rename != nil {
-			opts.ColumnAction.Rename = &TableColumnRenameAction{
-				OldName: r.ColumnAction.Rename.OldName,
-				NewName: r.ColumnAction.Rename.NewName,
-			}
+			opts.ColumnAction.Rename = r.ColumnAction.Rename.toOpts()
 		}
 		if r.ColumnAction.Alter != nil {
 			alter := make([]TableColumnAlterAction, len(r.ColumnAction.Alter))
@@ -415,8 +313,6 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 					Name:         v.Name,
 					DropDefault:  v.DropDefault,
 					SetDefault:   v.SetDefault,
-					DataType:     v.DataType,
-					Collate:      v.Collate,
 					Comment:      v.Comment,
 					UnsetComment: v.UnsetComment,
 				}
@@ -424,6 +320,12 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 					alter[i].NotNullConstraint = &TableColumnNotNullConstraint{
 						Set:  v.NotNullConstraint.Set,
 						Drop: v.NotNullConstraint.Drop,
+					}
+				}
+				if v.DataType != nil {
+					alter[i].DataType = &TableColumnAlterDataType{
+						DataType: v.DataType.DataType,
+						Collate:  v.DataType.Collate,
 					}
 				}
 			}
@@ -435,17 +337,17 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 		if r.ColumnAction.UnsetMaskingPolicy != nil {
 			opts.ColumnAction.UnsetMaskingPolicy = r.ColumnAction.UnsetMaskingPolicy.toOpts()
 		}
+		if r.ColumnAction.SetProjectionPolicy != nil {
+			opts.ColumnAction.SetProjectionPolicy = r.ColumnAction.SetProjectionPolicy.toOpts()
+		}
+		if r.ColumnAction.UnsetProjectionPolicy != nil {
+			opts.ColumnAction.UnsetProjectionPolicy = r.ColumnAction.UnsetProjectionPolicy.toOpts()
+		}
 		if r.ColumnAction.SetTags != nil {
-			opts.ColumnAction.SetTags = &TableColumnAlterSetTagsAction{
-				ColumnName: r.ColumnAction.SetTags.ColumnName,
-				SetTags:    r.ColumnAction.SetTags.SetTags,
-			}
+			opts.ColumnAction.SetTags = r.ColumnAction.SetTags.toOpts()
 		}
 		if r.ColumnAction.UnsetTags != nil {
-			opts.ColumnAction.UnsetTags = &TableColumnAlterUnsetTagsAction{
-				ColumnName: r.ColumnAction.UnsetTags.ColumnName,
-				UnsetTags:  r.ColumnAction.UnsetTags.UnsetTags,
-			}
+			opts.ColumnAction.UnsetTags = r.ColumnAction.UnsetTags.toOpts()
 		}
 		if r.ColumnAction.DropColumns != nil {
 			opts.ColumnAction.DropColumns = r.ColumnAction.DropColumns.toOpts()
@@ -454,31 +356,7 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 	if r.ConstraintAction != nil {
 		opts.ConstraintAction = &TableConstraintAction{}
 		if r.ConstraintAction.Add != nil {
-			opts.ConstraintAction.Add = &OutOfLineConstraint{
-				Name:               r.ConstraintAction.Add.Name,
-				ConstraintType:     r.ConstraintAction.Add.ConstraintType,
-				Columns:            r.ConstraintAction.Add.Columns,
-				Enforced:           r.ConstraintAction.Add.Enforced,
-				NotEnforced:        r.ConstraintAction.Add.NotEnforced,
-				Deferrable:         r.ConstraintAction.Add.Deferrable,
-				NotDeferrable:      r.ConstraintAction.Add.NotDeferrable,
-				InitiallyDeferred:  r.ConstraintAction.Add.InitiallyDeferred,
-				InitiallyImmediate: r.ConstraintAction.Add.InitiallyImmediate,
-				Enable:             r.ConstraintAction.Add.Enable,
-				Disable:            r.ConstraintAction.Add.Disable,
-				Validate:           r.ConstraintAction.Add.Validate,
-				Novalidate:         r.ConstraintAction.Add.Novalidate,
-				Rely:               r.ConstraintAction.Add.Rely,
-				Norely:             r.ConstraintAction.Add.Norely,
-			}
-			if r.ConstraintAction.Add.ForeignKey != nil {
-				opts.ConstraintAction.Add.ForeignKey = &OutOfLineForeignKey{
-					TableName:   r.ConstraintAction.Add.ForeignKey.TableName,
-					ColumnNames: r.ConstraintAction.Add.ForeignKey.ColumnNames,
-					Match:       r.ConstraintAction.Add.ForeignKey.Match,
-					On:          r.ConstraintAction.Add.ForeignKey.On,
-				}
-			}
+			opts.ConstraintAction.Add = r.ConstraintAction.Add.toOpts()
 		}
 		if r.ConstraintAction.Rename != nil {
 			opts.ConstraintAction.Rename = &TableConstraintRenameAction{
@@ -524,40 +402,36 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 				Comment:     r.ExternalTableAction.Add.Comment,
 			}
 		}
-		if r.ExternalTableAction.Rename != nil {
-			opts.ExternalTableAction.Rename = &TableExternalTableColumnRenameAction{
-				OldName: r.ExternalTableAction.Rename.OldName,
-				NewName: r.ExternalTableAction.Rename.NewName,
-			}
-		}
-		if r.ExternalTableAction.Drop != nil {
-			opts.ExternalTableAction.Drop = &TableExternalTableColumnDropAction{
-				IfExists: r.ExternalTableAction.Drop.IfExists,
-				Names:    r.ExternalTableAction.Drop.Names,
-			}
-		}
 	}
 	if r.SearchOptimizationAction != nil {
 		opts.SearchOptimizationAction = r.SearchOptimizationAction.toOpts()
 	}
 	if r.Set != nil {
 		opts.Set = &TableSet{
+			Contact:                    r.Set.Contact,
+			ErrorLogging:               r.Set.ErrorLogging,
 			EnableSchemaEvolution:      r.Set.EnableSchemaEvolution,
 			DataRetentionTimeInDays:    r.Set.DataRetentionTimeInDays,
 			MaxDataExtensionTimeInDays: r.Set.MaxDataExtensionTimeInDays,
 			ChangeTracking:             r.Set.ChangeTracking,
 			DefaultDdlCollation:        r.Set.DefaultDdlCollation,
+			IcebergDefaultDdlCollation: r.Set.IcebergDefaultDdlCollation,
 			Comment:                    r.Set.Comment,
+			RowTimestamp:               r.Set.RowTimestamp,
 		}
 	}
 	if r.Unset != nil {
 		opts.Unset = &TableUnset{
+			Contact:                    r.Unset.Contact,
 			DataRetentionTimeInDays:    r.Unset.DataRetentionTimeInDays,
 			MaxDataExtensionTimeInDays: r.Unset.MaxDataExtensionTimeInDays,
 			ChangeTracking:             r.Unset.ChangeTracking,
 			DefaultDdlCollation:        r.Unset.DefaultDdlCollation,
+			IcebergDefaultDdlCollation: r.Unset.IcebergDefaultDdlCollation,
 			EnableSchemaEvolution:      r.Unset.EnableSchemaEvolution,
+			ErrorLogging:               r.Unset.ErrorLogging,
 			Comment:                    r.Unset.Comment,
+			RowTimestamp:               r.Unset.RowTimestamp,
 		}
 	}
 	if r.AddRowAccessPolicy != nil {
@@ -586,6 +460,104 @@ func (r *AlterTableRequest) toOpts() *AlterTableOptions {
 	}
 	if r.UnsetJoinPolicy != nil {
 		opts.UnsetJoinPolicy = r.UnsetJoinPolicy.toOpts()
+	}
+	if r.SetDataMetricSchedule != nil {
+		opts.SetDataMetricSchedule = &TableSetDataMetricSchedule{
+			DataMetricSchedule: r.SetDataMetricSchedule.DataMetricSchedule,
+		}
+	}
+	if r.AddDataMetricFunction != nil {
+		opts.AddDataMetricFunction = &TableAddDataMetricFunction{}
+		if r.AddDataMetricFunction.AddedFunctions != nil {
+			addedFunctions := make([]TableAddedFunctions, len(r.AddDataMetricFunction.AddedFunctions))
+			for i, v := range r.AddDataMetricFunction.AddedFunctions {
+				addedFunctions[i] = TableAddedFunctions{
+					DataMetricFunction: v.DataMetricFunction,
+					On:                 v.On,
+					WithinGroup:        v.WithinGroup,
+					GroupLimit:         v.GroupLimit,
+					Filter:             v.Filter,
+					ExecuteAsRole:      v.ExecuteAsRole,
+					AnomalyDetection:   v.AnomalyDetection,
+					Sensitivity:        v.Sensitivity,
+				}
+				if v.Expectations != nil {
+					expectations := make([]TableExpectations, len(v.Expectations))
+					for i, v := range v.Expectations {
+						expectations[i] = TableExpectations{
+							Name:       v.Name,
+							Expression: v.Expression,
+						}
+					}
+					addedFunctions[i].Expectations = expectations
+				}
+			}
+			opts.AddDataMetricFunction.AddedFunctions = addedFunctions
+		}
+	}
+	if r.DropDataMetricFunction != nil {
+		opts.DropDataMetricFunction = &TableDropDataMetricFunction{}
+		if r.DropDataMetricFunction.DroppedFunctions != nil {
+			droppedFunctions := make([]TableDroppedFunctions, len(r.DropDataMetricFunction.DroppedFunctions))
+			for i, v := range r.DropDataMetricFunction.DroppedFunctions {
+				droppedFunctions[i] = TableDroppedFunctions{
+					DataMetricFunction: v.DataMetricFunction,
+					On:                 v.On,
+				}
+			}
+			opts.DropDataMetricFunction.DroppedFunctions = droppedFunctions
+		}
+	}
+	if r.ModifyDataMetricFunction != nil {
+		opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{}
+		if r.ModifyDataMetricFunction.ModifiedFunctions != nil {
+			modifiedFunctions := make([]TableModifiedFunctions, len(r.ModifyDataMetricFunction.ModifiedFunctions))
+			for i, v := range r.ModifyDataMetricFunction.ModifiedFunctions {
+				modifiedFunctions[i] = TableModifiedFunctions{
+					DataMetricFunction: v.DataMetricFunction,
+					On:                 v.On,
+					Status:             v.Status,
+					Filter:             v.Filter,
+				}
+				if v.AddExpectation != nil {
+					addExpectation := make([]TableAddExpectation, len(v.AddExpectation))
+					for i, v := range v.AddExpectation {
+						addExpectation[i] = TableAddExpectation{
+							Name:       v.Name,
+							Expression: v.Expression,
+						}
+					}
+					modifiedFunctions[i].AddExpectation = addExpectation
+				}
+				if v.ModifyExpectation != nil {
+					modifyExpectation := make([]TableModifyExpectation, len(v.ModifyExpectation))
+					for i, v := range v.ModifyExpectation {
+						modifyExpectation[i] = TableModifyExpectation{
+							Name:       v.Name,
+							Expression: v.Expression,
+						}
+					}
+					modifiedFunctions[i].ModifyExpectation = modifyExpectation
+				}
+				if v.DropExpectation != nil {
+					dropExpectation := make([]TableDropExpectation, len(v.DropExpectation))
+					for i, v := range v.DropExpectation {
+						dropExpectation[i] = TableDropExpectation{
+							Name: v.Name,
+						}
+					}
+					modifiedFunctions[i].DropExpectation = dropExpectation
+				}
+				if v.Set != nil {
+					modifiedFunctions[i].Set = &TableModifyDataMetricFunctionSet{
+						AnomalyDetection:        v.Set.AnomalyDetection,
+						Sensitivity:             v.Set.Sensitivity,
+						DataQualityNotification: v.Set.DataQualityNotification,
+					}
+				}
+			}
+			opts.ModifyDataMetricFunction.ModifiedFunctions = modifiedFunctions
+		}
 	}
 	return opts
 }
@@ -647,6 +619,71 @@ func (r tablesRow) convert() (*Table, error) {
 	return result, nil
 }
 
+func (r *CreateAsSelectTableRequest) toOpts() *CreateAsSelectTableOptions {
+	opts := &CreateAsSelectTableOptions{
+		OrReplace: r.OrReplace,
+		name:      r.name,
+		ClusterBy: r.ClusterBy,
+		Copy:      r.Copy,
+		Query:     r.Query,
+	}
+	if r.Columns != nil {
+		columns := make([]TableAsSelectColumn, len(r.Columns))
+		for i, v := range r.Columns {
+			columns[i] = TableAsSelectColumn{
+				Name:          v.Name,
+				ColumnType:    v.ColumnType,
+				MaskingPolicy: v.MaskingPolicy,
+			}
+		}
+		opts.Columns = columns
+	}
+	if r.RowAccessPolicy != nil {
+		opts.RowAccessPolicy = &TableRowAccessPolicy{
+			Name: r.RowAccessPolicy.Name,
+			On:   r.RowAccessPolicy.On,
+		}
+	}
+	return opts
+}
+
+func (r *CreateUsingTemplateTableRequest) toOpts() *CreateUsingTemplateTableOptions {
+	opts := &CreateUsingTemplateTableOptions{
+		OrReplace: r.OrReplace,
+		name:      r.name,
+		Copy:      r.Copy,
+		Query:     r.Query,
+	}
+	return opts
+}
+
+func (r *CreateLikeTableRequest) toOpts() *CreateLikeTableOptions {
+	opts := &CreateLikeTableOptions{
+		OrReplace:   r.OrReplace,
+		name:        r.name,
+		SourceTable: r.SourceTable,
+		ClusterBy:   r.ClusterBy,
+		Copy:        r.Copy,
+	}
+	return opts
+}
+
+func (r *CreateCloneTableRequest) toOpts() *CreateCloneTableOptions {
+	opts := &CreateCloneTableOptions{
+		OrReplace:   r.OrReplace,
+		name:        r.name,
+		SourceTable: r.SourceTable,
+		Copy:        r.Copy,
+	}
+	if r.ClonePoint != nil {
+		opts.ClonePoint = &TableClonePoint{
+			Moment: r.ClonePoint.Moment,
+			At:     r.ClonePoint.At,
+		}
+	}
+	return opts
+}
+
 func (r *DescribeColumnsTableRequest) toOpts() *DescribeColumnsTableOptions {
 	opts := &DescribeColumnsTableOptions{
 		name: r.name,
@@ -657,11 +694,11 @@ func (r *DescribeColumnsTableRequest) toOpts() *DescribeColumnsTableOptions {
 func (r tableColumnDetailsRow) convert() (*TableColumnDetails, error) {
 	result := &TableColumnDetails{
 		Name:       r.Name,
-		Kind:       r.Kind,
 		Null:       r.Null == "Y",
 		PrimaryKey: r.PrimaryKey == "Y",
 		UniqueKey:  r.UniqueKey == "Y",
 	}
+	mapStringWithMapping(&result.Kind, r.Kind, ToTableColumnKind)
 	mapNullString(&result.Default, r.Default)
 	mapNullStringToBool(&result.Check, r.Check)
 	mapNullString(&result.Expression, r.Expression)
@@ -763,6 +800,197 @@ func (r tableCheckConstraintDetailsRow) convert() (*TableCheckConstraintDetails,
 	return result, nil
 }
 
+func (r *TableColumnInlineConstraintRequest) toOpts() *TableColumnInlineConstraint {
+	opts := &TableColumnInlineConstraint{}
+	if r.UniquePK != nil {
+		opts.UniquePK = &TableColumnInlineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+		}
+	}
+	if r.FK != nil {
+		opts.FK = &TableColumnInlineFK{
+			Name:               r.FK.Name,
+			ForeignKey:         r.FK.ForeignKey,
+			References:         r.FK.References,
+			RefColumn:          r.FK.RefColumn,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+		}
+	}
+	if r.CH != nil {
+		opts.CH = &TableColumnInlineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return opts
+}
+
+func (r *TableColumnMaskingPolicyRequest) toOpts() *TableColumnMaskingPolicy {
+	opts := &TableColumnMaskingPolicy{
+		MaskingPolicy: r.MaskingPolicy,
+		Using:         r.Using,
+	}
+	return opts
+}
+
+func (r *TableColumnProjectionPolicyRequest) toOpts() *TableColumnProjectionPolicy {
+	opts := &TableColumnProjectionPolicy{
+		ProjectionPolicy: r.ProjectionPolicy,
+	}
+	return opts
+}
+
+func (r *TableOutOfLineConstraintRequest) toOpts() *TableOutOfLineConstraint {
+	opts := &TableOutOfLineConstraint{}
+	if r.UniquePK != nil {
+		opts.UniquePK = &TableOutOfLineUniquePK{
+			Name:               r.UniquePK.Name,
+			Unique:             r.UniquePK.Unique,
+			PrimaryKey:         r.UniquePK.PrimaryKey,
+			Columns:            r.UniquePK.Columns,
+			Enforced:           r.UniquePK.Enforced,
+			NotEnforced:        r.UniquePK.NotEnforced,
+			Deferrable:         r.UniquePK.Deferrable,
+			NotDeferrable:      r.UniquePK.NotDeferrable,
+			InitiallyDeferred:  r.UniquePK.InitiallyDeferred,
+			InitiallyImmediate: r.UniquePK.InitiallyImmediate,
+			Enable:             r.UniquePK.Enable,
+			Disable:            r.UniquePK.Disable,
+			Validate:           r.UniquePK.Validate,
+			Novalidate:         r.UniquePK.Novalidate,
+			Rely:               r.UniquePK.Rely,
+			Norely:             r.UniquePK.Norely,
+			Comment:            r.UniquePK.Comment,
+		}
+	}
+	if r.FK != nil {
+		opts.FK = &TableOutOfLineFK{
+			Name:               r.FK.Name,
+			Columns:            r.FK.Columns,
+			References:         r.FK.References,
+			RefColumns:         r.FK.RefColumns,
+			Match:              r.FK.Match,
+			On:                 r.FK.On,
+			Enforced:           r.FK.Enforced,
+			NotEnforced:        r.FK.NotEnforced,
+			Deferrable:         r.FK.Deferrable,
+			NotDeferrable:      r.FK.NotDeferrable,
+			InitiallyDeferred:  r.FK.InitiallyDeferred,
+			InitiallyImmediate: r.FK.InitiallyImmediate,
+			Enable:             r.FK.Enable,
+			Disable:            r.FK.Disable,
+			Validate:           r.FK.Validate,
+			Novalidate:         r.FK.Novalidate,
+			Rely:               r.FK.Rely,
+			Norely:             r.FK.Norely,
+			Comment:            r.FK.Comment,
+		}
+	}
+	if r.CH != nil {
+		opts.CH = &TableOutOfLineCH{
+			Name:             r.CH.Name,
+			Expression:       r.CH.Expression,
+			EnableValidate:   r.CH.EnableValidate,
+			EnableNovalidate: r.CH.EnableNovalidate,
+		}
+	}
+	return opts
+}
+
+func (r *TableRenameColumnActionRequest) toOpts() *TableRenameColumnAction {
+	opts := &TableRenameColumnAction{
+		OldName: r.OldName,
+		NewName: r.NewName,
+	}
+	return opts
+}
+
+func (r *TableSetColumnMaskingPolicyRequest) toOpts() *TableSetColumnMaskingPolicy {
+	opts := &TableSetColumnMaskingPolicy{
+		Name:          r.Name,
+		MaskingPolicy: r.MaskingPolicy,
+		Using:         r.Using,
+		Force:         r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetColumnMaskingPolicyRequest) toOpts() *TableUnsetColumnMaskingPolicy {
+	opts := &TableUnsetColumnMaskingPolicy{
+		Name: r.Name,
+	}
+	return opts
+}
+
+func (r *TableSetColumnProjectionPolicyRequest) toOpts() *TableSetColumnProjectionPolicy {
+	opts := &TableSetColumnProjectionPolicy{
+		Name:             r.Name,
+		ProjectionPolicy: r.ProjectionPolicy,
+		Force:            r.Force,
+	}
+	return opts
+}
+
+func (r *TableUnsetColumnProjectionPolicyRequest) toOpts() *TableUnsetColumnProjectionPolicy {
+	opts := &TableUnsetColumnProjectionPolicy{
+		Name: r.Name,
+	}
+	return opts
+}
+
+func (r *TableSetColumnTagsRequest) toOpts() *TableSetColumnTags {
+	opts := &TableSetColumnTags{
+		Name:    r.Name,
+		SetTags: r.SetTags,
+	}
+	return opts
+}
+
+func (r *TableUnsetColumnTagsRequest) toOpts() *TableUnsetColumnTags {
+	opts := &TableUnsetColumnTags{
+		Name:      r.Name,
+		UnsetTags: r.UnsetTags,
+	}
+	return opts
+}
+
+func (r *TableDropColumnActionRequest) toOpts() *TableDropColumnAction {
+	opts := &TableDropColumnAction{
+		IfExists: r.IfExists,
+		Columns:  r.Columns,
+	}
+	return opts
+}
+
 func (r *TableSearchOptimizationActionRequest) toOpts() *TableSearchOptimizationAction {
 	opts := &TableSearchOptimizationAction{}
 	if r.Add != nil {
@@ -849,8 +1077,9 @@ func (r *TableUnsetAggregationPolicyRequest) toOpts() *TableUnsetAggregationPoli
 
 func (r *TableSetJoinPolicyRequest) toOpts() *TableSetJoinPolicy {
 	opts := &TableSetJoinPolicy{
-		JoinPolicy: r.JoinPolicy,
-		Force:      r.Force,
+		JoinPolicy:      r.JoinPolicy,
+		AllowedJoinKeys: r.AllowedJoinKeys,
+		Force:           r.Force,
 	}
 	return opts
 }
@@ -858,4 +1087,33 @@ func (r *TableSetJoinPolicyRequest) toOpts() *TableSetJoinPolicy {
 func (r *TableUnsetJoinPolicyRequest) toOpts() *TableUnsetJoinPolicy {
 	opts := &TableUnsetJoinPolicy{}
 	return opts
+}
+
+func ToTableParametersDetails(params []*Parameter) (*TableParametersDetails, error) {
+	byKey := parametersByKey(params)
+	var d TableParametersDetails
+	if err := errors.Join(
+		byKey["CATALOG"].fillTyped(ParseAccountObjectIdentifier, &d.Catalog),
+		byKey["DATA_RETENTION_TIME_IN_DAYS"].fillTyped(strconv.Atoi, &d.DataRetentionTimeInDays),
+		byKey["DEFAULT_DDL_COLLATION"].fillTyped(identityParse, &d.DefaultDdlCollation),
+		byKey["ENABLE_CONSOLE_OUTPUT"].fillTyped(strconv.ParseBool, &d.EnableConsoleOutput),
+		byKey["EXTERNAL_VOLUME"].fillTyped(ParseAccountObjectIdentifier, &d.ExternalVolume),
+		byKey["LOG_EVENT_LEVEL"].fillTyped(ToLogLevel, &d.LogEventLevel),
+		byKey["LOG_LEVEL"].fillTyped(ToLogLevel, &d.LogLevel),
+		byKey["MAX_DATA_EXTENSION_TIME_IN_DAYS"].fillTyped(strconv.Atoi, &d.MaxDataExtensionTimeInDays),
+		byKey["QUOTED_IDENTIFIERS_IGNORE_CASE"].fillTyped(strconv.ParseBool, &d.QuotedIdentifiersIgnoreCase),
+		byKey["REPLACE_INVALID_CHARACTERS"].fillTyped(strconv.ParseBool, &d.ReplaceInvalidCharacters),
+		byKey["STORAGE_SERIALIZATION_POLICY"].fillTyped(ToStorageSerializationPolicy, &d.StorageSerializationPolicy),
+	); err != nil {
+		return nil, err
+	}
+	return &d, nil
+}
+
+func (v *tables) ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*TableParametersDetails, error) {
+	params, err := v.ShowParameters(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return ToTableParametersDetails(params)
 }

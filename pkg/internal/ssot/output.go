@@ -9,10 +9,10 @@ type OutputSpec struct {
 	Columns []*Attribute
 }
 
-// PairedShowColumns is the paired SHOW. ShowGeneric wins when it is set. Otherwise it is Show.Columns.
+// PairedShowColumns is the paired SHOW. BaseVariant.ShowGeneric wins when it is set. Otherwise it is Show.Columns.
 func (obj Object) PairedShowColumns() []*Attribute {
-	if len(obj.ShowGeneric.Columns) > 0 {
-		return obj.ShowGeneric.Columns
+	if columns := obj.ShowGenericColumns(); len(columns) > 0 {
+		return columns
 	}
 	return obj.Show.Columns
 }

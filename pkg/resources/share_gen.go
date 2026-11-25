@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -98,17 +97,7 @@ func ReadShareFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 		var diags diag.Diagnostics
 		share, err := meta.(*provider.Context).Client.Shares.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query share. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Share id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeShare, id, err)
 		}
 		afterShowByIdDiags := shareAfterShowByIdExt(ctx, d, meta, id, share)
 		if afterShowByIdDiags.HasError() {

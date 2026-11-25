@@ -5,6 +5,55 @@ We usually create new entries in quarterly cycles, so expect an entry in the fir
 We may add more entries when we have some bigger announcements.
 These should be treated as projections and not strict commitments. Keep in mind that the plan can be subject to change.
 
+## (2026-11-23) Roadmap update
+
+Recent efforts concentrated on:
+
+* Adding [replication group](https://docs.snowflake.com/en/sql-reference/sql/create-replication-group), [projection policy](https://docs.snowflake.com/en/sql-reference/sql/create-projection-policy), [backup policy](https://docs.snowflake.com/en/sql-reference/sql/create-backup-policy), Postgres mirror, and code bundle resources and data sources. See the [migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md) for details.
+* Reworking [`snowflake_alert`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#breaking-change-snowflake_alert-reworked) and its [data source](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#breaking-change-snowflake_alerts-data-source-reworked), [`snowflake_share`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#breaking-change-snowflake_share-rework), and aligning [`snowflake_pipe`](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#breaking-change-snowflake_pipe-aligned-with-the-newest-preview-resources) with the newest preview resources. These are breaking changes, so read the linked migration guide entries before upgrading.
+* Promoting the per-type API integration resources and `snowflake_account_authentication_policy_attachment` to stable ([migration guide](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#improvement-multiple-resources-and-data-sources-promoted-to-stable)), and adding [Openflow resources](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-openflow-resources-and-data-sources) and a [hybrid tables data source](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-new-hybrid-tables-data-source).
+* Adding [user-level parameters](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-user-level-parameters-that-snowflake-documents-for-account-user-and-session) for account, user, session, schema, and database objects, plus opt-in experiments for [object parameter parsing](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-opt-in-experiment-parse-snowflake_object_parameter-values-on-set), [write-only attributes](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-opt-in-experiment-write-only-attributes), and [permissive import mode](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/guides/importing_resources#switching-to-permissive-mode).
+* Letting existing warehouses migrate to `snowflake_warehouse_adaptive` in a [single apply](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#new-feature-migrating-an-existing-warehouse-to-snowflake_warehouse_adaptive-in-a-single-apply), and [promoting `snowflake_warehouse_interactive` to stable](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/MIGRATION_GUIDE.md#improvement-snowflake_warehouse_interactive-promoted-to-stable).
+* Generating more resources and data sources from [single source of truth (SSoT) definitions](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/internal/ssot/README.md), which speeds up adding new objects.
+* Moving tables, functions, procedures, and other objects off legacy data types, which unblocks stabilizing functions and procedures.
+
+In the upcoming months, our focus will be on the following topics:
+
+* [Feature gap](#feature-gap)
+* [Reliability and development improvements](#reliability-and-development-improvements)
+* [Stability improvements](#stability-improvements)
+
+If you have any questions, please open an issue or comment on the roadmap discussion. Enterprise customers can also contact their Snowflake account team.
+
+### Feature gap
+
+We continue closing the most impactful feature gaps, guided by user demand. The plan for this quarter:
+
+* Stabilize preview resources and data sources:
+  * [Dynamic tables](https://docs.snowflake.com/en/sql-reference/sql/create-dynamic-table), [failover groups](https://docs.snowflake.com/en/sql-reference/sql/create-failover-group), Cortex search services, and [notification integrations](https://docs.snowflake.com/en/sql-reference/sql/create-notification-integration).
+  * [Functions](https://docs.snowflake.com/en/sql-reference/sql/create-function) and [procedures](https://docs.snowflake.com/en/sql-reference/sql/create-procedure), after the data types cleanup described below.
+* Add new resources and data sources:
+  * [Event tables](https://docs.snowflake.com/en/sql-reference/sql/create-event-table), [interactive tables](https://docs.snowflake.com/en/sql-reference/sql/create-interactive-table), [external agents](https://docs.snowflake.com/en/sql-reference/sql/create-external-agent), and [organization listings](https://docs.snowflake.com/en/sql-reference/sql/create-organization-listing).
+  * Policy resources with attachment support: [aggregation](https://docs.snowflake.com/en/sql-reference/sql/create-aggregation-policy), [data movement](https://docs.snowflake.com/en/sql-reference/sql/create-data-movement-policy), [feature](https://docs.snowflake.com/en/sql-reference/sql/create-feature-policy), [join](https://docs.snowflake.com/en/sql-reference/sql/create-join-policy), [maintenance](https://docs.snowflake.com/en/sql-reference/sql/create-maintenance-policy), [packages](https://docs.snowflake.com/en/sql-reference/sql/create-packages-policy), and [privacy](https://docs.snowflake.com/en/sql-reference/sql/create-privacy-policy) policies.
+* Review how attachment resources work across the provider, including a generic approach where it fits, clearer documentation, and step-by-step ordering guidance.
+
+### Reliability and development improvements
+
+Work in this area makes the provider faster to extend and easier to keep consistent:
+
+* Generative interfaces: research and design how resources should be generated from object definitions, and migrate existing resources to generation from [single source of truth (SSoT) definitions](https://github.com/snowflakedb/terraform-provider-snowflake/blob/main/pkg/internal/ssot/README.md) gradually.
+* Introduce a generative approach to integration and acceptance tests, similar to how most of our unit tests are already generated.
+* Terraform Plugin Framework research: validate migration options and build a production proof of concept with one resource and one data source.
+* Simplify the release process, including the git flow, patching of older versions, and pre-releases.
+
+### Stability improvements
+
+We are focusing on compatibility and long-term stability for these specific items:
+
+* BCR bundle compatibility: make sure the provider behaves correctly when a bundle is enabled manually, including unbundled [behavior changes](https://docs.snowflake.com/en/release-notes/bcr-bundles/un-bundled/unbundled-behavior-changes).
+* Forward-compatible parameter names: keep `snowflake_account_parameter` and `snowflake_object_parameter` working with parameters the provider does not know about yet.
+* Trust Center: decide whether the provider should be listed in the Snowflake Trust Center, e.g. in a case where the account is used with unsupported provider versions.
+
 ## (2026-08-31) Roadmap update
 
 Recent efforts concentrated on:

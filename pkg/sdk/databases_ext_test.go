@@ -52,10 +52,12 @@ func init() {
 				opts.UserTaskMinimumTriggerIntervalInSeconds = new(30)
 				opts.QuotedIdentifiersIgnoreCase = new(true)
 				opts.EnableConsoleOutput = new(true)
+				opts.MetricLevel = new(MetricLevelAll)
+				opts.ServiceCallerTokenValiditySecs = new(1800)
 				opts.Comment = new("comment")
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
-			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s CATALOG = %s DATA_RETENTION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment' TAG (%s = 'v1')`,
+			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s CATALOG = %s DATA_RETENTION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 METRIC_LEVEL = 'ALL' QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true SERVICE_CALLER_TOKEN_VALIDITY_SECS = 1800 STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment' TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), tagId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -146,10 +148,12 @@ func init() {
 				opts.UserTaskMinimumTriggerIntervalInSeconds = new(30)
 				opts.QuotedIdentifiersIgnoreCase = new(true)
 				opts.EnableConsoleOutput = new(true)
+				opts.MetricLevel = new(MetricLevelAll)
+				opts.ServiceCallerTokenValiditySecs = new(1800)
 				opts.Comment = new("comment")
 				opts.Tag = []TagAssociation{{Name: tagId, Value: "v1"}}
 			},
-			`CREATE DATABASE IF NOT EXISTS %s FROM SHARE %s CATALOG = %s DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment' TAG (%s = 'v1')`,
+			`CREATE DATABASE IF NOT EXISTS %s FROM SHARE %s CATALOG = %s DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' METRIC_LEVEL = 'ALL' QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true SERVICE_CALLER_TOKEN_VALIDITY_SECS = 1800 STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment' TAG (%s = 'v1')`,
 			id.FullyQualifiedName(), fromShareId.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(), tagId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -194,9 +198,11 @@ func init() {
 				opts.UserTaskMinimumTriggerIntervalInSeconds = new(30)
 				opts.QuotedIdentifiersIgnoreCase = new(true)
 				opts.EnableConsoleOutput = new(true)
+				opts.MetricLevel = new(MetricLevelAll)
+				opts.ServiceCallerTokenValiditySecs = new(1800)
 				opts.Comment = new("comment")
 			},
-			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s AS REPLICA OF %s CATALOG = %s DATA_RETENTION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment'`,
+			`CREATE TRANSIENT DATABASE IF NOT EXISTS %s AS REPLICA OF %s CATALOG = %s DATA_RETENTION_TIME_IN_DAYS = 1 DEFAULT_DDL_COLLATION = 'en_US' DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S' DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S' ENABLE_CONSOLE_OUTPUT = true EXTERNAL_VOLUME = %s LOG_LEVEL = 'INFO' MAX_DATA_EXTENSION_TIME_IN_DAYS = 1 METRIC_LEVEL = 'ALL' QUOTED_IDENTIFIERS_IGNORE_CASE = true REPLACE_INVALID_CHARACTERS = true SERVICE_CALLER_TOKEN_VALIDITY_SECS = 1800 STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE' SUSPEND_TASK_AFTER_NUM_FAILURES = 10 TASK_AUTO_RETRY_ATTEMPTS = 10 TRACE_LEVEL = 'PROPAGATE' USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE = 'MEDIUM' USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS = 30 USER_TASK_TIMEOUT_MS = 12000 COMMENT = 'comment'`,
 			id.FullyQualifiedName(), primaryDatabaseId.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -276,42 +282,46 @@ func init() {
 			case_Databases_sql_Alter_Set,
 			func(opts *AlterDatabaseOptions) {
 				opts.Set = &DatabaseSet{
-					DataRetentionTimeInDays:       new(1),
-					MaxDataExtensionTimeInDays:    new(1),
-					ExternalVolume:                &externalVolumeId,
-					Catalog:                       &catalogId,
-					ReplaceInvalidCharacters:      new(true),
-					DefaultDdlCollation:           new(StringAllowEmpty{Value: "en_US"}),
-					DefaultNotebookComputePoolCpu: new("CPU_X64_S"),
-					DefaultNotebookComputePoolGpu: new("GPU_NV_S"),
-					StorageSerializationPolicy:    new(StorageSerializationPolicyCompatible),
-					LogLevel:                      new(LogLevelError),
-					TraceLevel:                    new(TraceLevelPropagate),
-					Comment:                       new("comment"),
+					DataRetentionTimeInDays:        new(1),
+					MaxDataExtensionTimeInDays:     new(1),
+					ExternalVolume:                 &externalVolumeId,
+					Catalog:                        &catalogId,
+					ReplaceInvalidCharacters:       new(true),
+					DefaultDdlCollation:            new(StringAllowEmpty{Value: "en_US"}),
+					DefaultNotebookComputePoolCpu:  new("CPU_X64_S"),
+					DefaultNotebookComputePoolGpu:  new("GPU_NV_S"),
+					StorageSerializationPolicy:     new(StorageSerializationPolicyCompatible),
+					LogLevel:                       new(LogLevelError),
+					TraceLevel:                     new(TraceLevelPropagate),
+					MetricLevel:                    new(MetricLevelNone),
+					ServiceCallerTokenValiditySecs: new(1800),
+					Comment:                        new("comment"),
 				}
 			},
-			`ALTER DATABASE %s SET CATALOG = %s, DATA_RETENTION_TIME_IN_DAYS = 1, DEFAULT_DDL_COLLATION = 'en_US', DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S', DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S', EXTERNAL_VOLUME = %s, LOG_LEVEL = 'ERROR', MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, REPLACE_INVALID_CHARACTERS = true, STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE', TRACE_LEVEL = 'PROPAGATE', COMMENT = 'comment'`,
+			`ALTER DATABASE %s SET CATALOG = %s, DATA_RETENTION_TIME_IN_DAYS = 1, DEFAULT_DDL_COLLATION = 'en_US', DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU = 'CPU_X64_S', DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU = 'GPU_NV_S', EXTERNAL_VOLUME = %s, LOG_LEVEL = 'ERROR', MAX_DATA_EXTENSION_TIME_IN_DAYS = 1, METRIC_LEVEL = 'NONE', REPLACE_INVALID_CHARACTERS = true, SERVICE_CALLER_TOKEN_VALIDITY_SECS = 1800, STORAGE_SERIALIZATION_POLICY = 'COMPATIBLE', TRACE_LEVEL = 'PROPAGATE', COMMENT = 'comment'`,
 			id.FullyQualifiedName(), catalogId.FullyQualifiedName(), externalVolumeId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Databases_sql_Alter_Unset,
 			func(opts *AlterDatabaseOptions) {
 				opts.Unset = &DatabaseUnset{
-					DataRetentionTimeInDays:       new(true),
-					MaxDataExtensionTimeInDays:    new(true),
-					ExternalVolume:                new(true),
-					Catalog:                       new(true),
-					ReplaceInvalidCharacters:      new(true),
-					DefaultDdlCollation:           new(true),
-					DefaultNotebookComputePoolCpu: new(true),
-					DefaultNotebookComputePoolGpu: new(true),
-					StorageSerializationPolicy:    new(true),
-					LogLevel:                      new(true),
-					TraceLevel:                    new(true),
-					Comment:                       new(true),
+					DataRetentionTimeInDays:        new(true),
+					MaxDataExtensionTimeInDays:     new(true),
+					ExternalVolume:                 new(true),
+					Catalog:                        new(true),
+					ReplaceInvalidCharacters:       new(true),
+					DefaultDdlCollation:            new(true),
+					DefaultNotebookComputePoolCpu:  new(true),
+					DefaultNotebookComputePoolGpu:  new(true),
+					StorageSerializationPolicy:     new(true),
+					LogLevel:                       new(true),
+					TraceLevel:                     new(true),
+					MetricLevel:                    new(true),
+					ServiceCallerTokenValiditySecs: new(true),
+					Comment:                        new(true),
 				}
 			},
-			`ALTER DATABASE %s UNSET CATALOG, DATA_RETENTION_TIME_IN_DAYS, DEFAULT_DDL_COLLATION, DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU, DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU, EXTERNAL_VOLUME, LOG_LEVEL, MAX_DATA_EXTENSION_TIME_IN_DAYS, REPLACE_INVALID_CHARACTERS, STORAGE_SERIALIZATION_POLICY, TRACE_LEVEL, COMMENT`,
+			`ALTER DATABASE %s UNSET CATALOG, DATA_RETENTION_TIME_IN_DAYS, DEFAULT_DDL_COLLATION, DEFAULT_NOTEBOOK_COMPUTE_POOL_CPU, DEFAULT_NOTEBOOK_COMPUTE_POOL_GPU, EXTERNAL_VOLUME, LOG_LEVEL, MAX_DATA_EXTENSION_TIME_IN_DAYS, METRIC_LEVEL, REPLACE_INVALID_CHARACTERS, SERVICE_CALLER_TOKEN_VALIDITY_SECS, STORAGE_SERIALIZATION_POLICY, TRACE_LEVEL, COMMENT`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

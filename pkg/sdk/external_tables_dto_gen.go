@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 var (
 	_ optionsProvider[CreateExternalTableOptions]                       = new(CreateExternalTableRequest)
 	_ optionsProvider[CreateWithManualPartitioningExternalTableOptions] = new(CreateWithManualPartitioningExternalTableRequest)
@@ -31,13 +33,13 @@ type CreateExternalTableRequest struct {
 	AwsSnsTopic         *string
 	CopyGrants          *bool
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicy
+	RowAccessPolicy     *ExternalTableRowAccessPolicyRequest
 	Tag                 []TagAssociation
 }
 
 type ExternalTableColumnRequest struct {
 	Name             string              // required
-	DataType         DataType            // required
+	DataType         datatypes.DataType  // required
 	AsExpression     AsExpressionRequest // required
 	NotNull          *bool
 	InlineConstraint *ColumnInlineConstraint
@@ -89,6 +91,11 @@ type RawFileFormatRequest struct {
 	Format string // required
 }
 
+type ExternalTableRowAccessPolicyRequest struct {
+	Name SchemaObjectIdentifier // required
+	On   []string
+}
+
 type CreateWithManualPartitioningExternalTableRequest struct {
 	OrReplace           *bool
 	IfNotExists         *bool
@@ -101,7 +108,7 @@ type CreateWithManualPartitioningExternalTableRequest struct {
 	RawFileFormat       *RawFileFormatRequest
 	CopyGrants          *bool
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicy
+	RowAccessPolicy     *ExternalTableRowAccessPolicyRequest
 	Tag                 []TagAssociation
 }
 
@@ -119,7 +126,7 @@ type CreateDeltaLakeExternalTableRequest struct {
 	RawFileFormat       *RawFileFormatRequest
 	CopyGrants          *bool
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicy
+	RowAccessPolicy     *ExternalTableRowAccessPolicyRequest
 	Tag                 []TagAssociation
 }
 
@@ -138,7 +145,7 @@ type CreateUsingTemplateExternalTableRequest struct {
 	RawFileFormat       *RawFileFormatRequest
 	AwsSnsTopic         *string
 	Comment             *string
-	RowAccessPolicy     *TableRowAccessPolicy
+	RowAccessPolicy     *ExternalTableRowAccessPolicyRequest
 	Tag                 []TagAssociation
 }
 

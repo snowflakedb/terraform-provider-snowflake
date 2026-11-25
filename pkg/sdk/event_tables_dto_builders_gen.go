@@ -55,13 +55,26 @@ func (s *CreateEventTableRequest) WithComment(comment string) *CreateEventTableR
 	return s
 }
 
-func (s *CreateEventTableRequest) WithRowAccessPolicy(rowAccessPolicy TableRowAccessPolicy) *CreateEventTableRequest {
+func (s *CreateEventTableRequest) WithRowAccessPolicy(rowAccessPolicy EventTableRowAccessPolicyRequest) *CreateEventTableRequest {
 	s.RowAccessPolicy = &rowAccessPolicy
 	return s
 }
 
 func (s *CreateEventTableRequest) WithTag(tag []TagAssociation) *CreateEventTableRequest {
 	s.Tag = tag
+	return s
+}
+
+func NewEventTableRowAccessPolicyRequest(
+	name SchemaObjectIdentifier,
+) *EventTableRowAccessPolicyRequest {
+	s := EventTableRowAccessPolicyRequest{}
+	s.Name = name
+	return &s
+}
+
+func (s *EventTableRowAccessPolicyRequest) WithOn(on []string) *EventTableRowAccessPolicyRequest {
+	s.On = on
 	return s
 }
 

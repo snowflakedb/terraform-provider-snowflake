@@ -8,117 +8,85 @@ import (
 
 var (
 	functionsTestIdSchemaObjectIdentifier              = randomSchemaObjectIdentifier()
-	functionsTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments(DataTypeVARCHAR, DataTypeNumber)
+	functionsTestIdSchemaObjectIdentifierWithArguments = randomSchemaObjectIdentifierWithArguments(dataTypeVarchar, dataTypeNumber)
 )
 
 const (
-	case_Functions_validation_CreateForJava_name_ValidIdentifier                                                   testCaseName = "validation_CreateForJava_name_ValidIdentifier"
-	case_Functions_validation_CreateForJava_Handler_ValidateValueSet                                               testCaseName = "validation_CreateForJava_Handler_ValidateValueSet"
-	case_Functions_validation_CreateForJava_opts_ConflictingFields                                                 testCaseName = "validation_CreateForJava_opts_ConflictingFields"
-	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                   testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid                          testCaseName = "validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet                                testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                         testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                 testCaseName = "validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet          testCaseName = "validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid       testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid              testCaseName = "validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Functions_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier                             testCaseName = "validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier"
-	case_Functions_sql_CreateForJava_basic                                                                         testCaseName = "sql_CreateForJava_basic"
-	case_Functions_sql_CreateForJava_all                                                                           testCaseName = "sql_CreateForJava_all"
-	case_Functions_validation_CreateForJavascript_FunctionDefinition_ValidateValueSet                              testCaseName = "validation_CreateForJavascript_FunctionDefinition_ValidateValueSet"
-	case_Functions_validation_CreateForJavascript_name_ValidIdentifier                                             testCaseName = "validation_CreateForJavascript_name_ValidIdentifier"
-	case_Functions_validation_CreateForJavascript_opts_ConflictingFields                                           testCaseName = "validation_CreateForJavascript_opts_ConflictingFields"
-	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet                        testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                 testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid             testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_BothInvalid                    testCaseName = "validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet                          testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                   testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet           testCaseName = "validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet            testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet     testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid        testCaseName = "validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Functions_sql_CreateForJavascript_basic                                                                   testCaseName = "sql_CreateForJavascript_basic"
-	case_Functions_sql_CreateForJavascript_all                                                                     testCaseName = "sql_CreateForJavascript_all"
-	case_Functions_validation_CreateForPython_name_ValidIdentifier                                                 testCaseName = "validation_CreateForPython_name_ValidIdentifier"
-	case_Functions_validation_CreateForPython_RuntimeVersion_ValidateValueSet                                      testCaseName = "validation_CreateForPython_RuntimeVersion_ValidateValueSet"
-	case_Functions_validation_CreateForPython_Handler_ValidateValueSet                                             testCaseName = "validation_CreateForPython_Handler_ValidateValueSet"
-	case_Functions_validation_CreateForPython_opts_ConflictingFields                                               testCaseName = "validation_CreateForPython_opts_ConflictingFields"
-	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet                            testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                     testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                 testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid                        testCaseName = "validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet                              testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                       testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet               testCaseName = "validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet        testCaseName = "validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid     testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid            testCaseName = "validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Functions_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier                           testCaseName = "validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier"
-	case_Functions_sql_CreateForPython_basic                                                                       testCaseName = "sql_CreateForPython_basic"
-	case_Functions_sql_CreateForPython_all                                                                         testCaseName = "sql_CreateForPython_all"
-	case_Functions_validation_CreateForScala_name_ValidIdentifier                                                  testCaseName = "validation_CreateForScala_name_ValidIdentifier"
-	case_Functions_validation_CreateForScala_Handler_ValidateValueSet                                              testCaseName = "validation_CreateForScala_Handler_ValidateValueSet"
-	case_Functions_validation_CreateForScala_opts_ConflictingFields                                                testCaseName = "validation_CreateForScala_opts_ConflictingFields"
-	case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_NoneSet                                       testCaseName = "validation_CreateForScala_opts_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_MoreThanOneSet                                testCaseName = "validation_CreateForScala_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet                             testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                      testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                  testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid                         testCaseName = "validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Functions_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier                            testCaseName = "validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier"
-	case_Functions_sql_CreateForScala_basic                                                                        testCaseName = "sql_CreateForScala_basic"
-	case_Functions_sql_CreateForScala_all                                                                          testCaseName = "sql_CreateForScala_all"
-	case_Functions_validation_CreateForSQL_FunctionDefinition_ValidateValueSet                                     testCaseName = "validation_CreateForSQL_FunctionDefinition_ValidateValueSet"
-	case_Functions_validation_CreateForSQL_name_ValidIdentifier                                                    testCaseName = "validation_CreateForSQL_name_ValidIdentifier"
-	case_Functions_validation_CreateForSQL_opts_ConflictingFields                                                  testCaseName = "validation_CreateForSQL_opts_ConflictingFields"
-	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet                               testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet                        testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid                    testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid                           testCaseName = "validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid"
-	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                                 testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                          testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet                  testCaseName = "validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet           testCaseName = "validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet                   testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet            testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid        testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid"
-	case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid               testCaseName = "validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid"
-	case_Functions_sql_CreateForSQL_basic                                                                          testCaseName = "sql_CreateForSQL_basic"
-	case_Functions_sql_CreateForSQL_all                                                                            testCaseName = "sql_CreateForSQL_all"
-	case_Functions_validation_Alter_name_ValidIdentifier                                                           testCaseName = "validation_Alter_name_ValidIdentifier"
-	case_Functions_validation_Alter_RenameTo_ValidIdentifierIfSet                                                  testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
-	case_Functions_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                                testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
-	case_Functions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                                         testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
-	case_Functions_validation_Alter_opts_Set_AtLeastOneValueSet                                                    testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
-	case_Functions_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                                 testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
-	case_Functions_validation_Alter_opts_Unset_AtLeastOneValueSet                                                  testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
-	case_Functions_validation_Alter_SetTags_ValidIdentifier                                                        testCaseName = "validation_Alter_SetTags_ValidIdentifier"
-	case_Functions_sql_Alter_RenameTo                                                                              testCaseName = "sql_Alter_RenameTo"
-	case_Functions_sql_Alter_Set                                                                                   testCaseName = "sql_Alter_Set"
-	case_Functions_sql_Alter_Unset                                                                                 testCaseName = "sql_Alter_Unset"
-	case_Functions_sql_Alter_SetSecure                                                                             testCaseName = "sql_Alter_SetSecure"
-	case_Functions_sql_Alter_UnsetSecure                                                                           testCaseName = "sql_Alter_UnsetSecure"
-	case_Functions_sql_Alter_SetTags                                                                               testCaseName = "sql_Alter_SetTags"
-	case_Functions_sql_Alter_UnsetTags                                                                             testCaseName = "sql_Alter_UnsetTags"
-	case_Functions_validation_Drop_name_ValidIdentifier                                                            testCaseName = "validation_Drop_name_ValidIdentifier"
-	case_Functions_sql_Drop_basic                                                                                  testCaseName = "sql_Drop_basic"
-	case_Functions_sql_Drop_all                                                                                    testCaseName = "sql_Drop_all"
-	case_Functions_sql_Show_basic                                                                                  testCaseName = "sql_Show_basic"
-	case_Functions_sql_Show_all                                                                                    testCaseName = "sql_Show_all"
-	case_Functions_sql_Show_Like                                                                                   testCaseName = "sql_Show_Like"
-	case_Functions_sql_Show_In                                                                                     testCaseName = "sql_Show_In"
-	case_Functions_validation_Describe_name_ValidIdentifier                                                        testCaseName = "validation_Describe_name_ValidIdentifier"
-	case_Functions_sql_Describe_basic                                                                              testCaseName = "sql_Describe_basic"
+	case_Functions_validation_CreateForJava_name_ValidIdentifier                                         testCaseName = "validation_CreateForJava_name_ValidIdentifier"
+	case_Functions_validation_CreateForJava_Handler_ValidateValueSet                                     testCaseName = "validation_CreateForJava_Handler_ValidateValueSet"
+	case_Functions_validation_CreateForJava_opts_ConflictingFields                                       testCaseName = "validation_CreateForJava_opts_ConflictingFields"
+	case_Functions_validation_CreateForJava_Arguments_ArgDataType_ValidateValueSet                       testCaseName = "validation_CreateForJava_Arguments_ArgDataType_ValidateValueSet"
+	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet                      testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet               testCaseName = "validation_CreateForJava_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet       testCaseName = "validation_CreateForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Functions_validation_CreateForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet        testCaseName = "validation_CreateForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Functions_validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier                   testCaseName = "validation_CreateForJava_ExternalAccessIntegrations_ValidIdentifier"
+	case_Functions_sql_CreateForJava_basic                                                               testCaseName = "sql_CreateForJava_basic"
+	case_Functions_sql_CreateForJava_all                                                                 testCaseName = "sql_CreateForJava_all"
+	case_Functions_validation_CreateForJavascript_FunctionDefinition_ValidateValueSet                    testCaseName = "validation_CreateForJavascript_FunctionDefinition_ValidateValueSet"
+	case_Functions_validation_CreateForJavascript_name_ValidIdentifier                                   testCaseName = "validation_CreateForJavascript_name_ValidIdentifier"
+	case_Functions_validation_CreateForJavascript_opts_ConflictingFields                                 testCaseName = "validation_CreateForJavascript_opts_ConflictingFields"
+	case_Functions_validation_CreateForJavascript_Arguments_ArgDataType_ValidateValueSet                 testCaseName = "validation_CreateForJavascript_Arguments_ArgDataType_ValidateValueSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet                testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet         testCaseName = "validation_CreateForJavascript_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForJavascript_Returns_ResultDataType_ResultDataType_ValidateValueSet testCaseName = "validation_CreateForJavascript_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Functions_validation_CreateForJavascript_Returns_Table_Columns_ColumnDataType_ValidateValueSet  testCaseName = "validation_CreateForJavascript_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Functions_sql_CreateForJavascript_basic                                                         testCaseName = "sql_CreateForJavascript_basic"
+	case_Functions_sql_CreateForJavascript_all                                                           testCaseName = "sql_CreateForJavascript_all"
+	case_Functions_validation_CreateForPython_name_ValidIdentifier                                       testCaseName = "validation_CreateForPython_name_ValidIdentifier"
+	case_Functions_validation_CreateForPython_RuntimeVersion_ValidateValueSet                            testCaseName = "validation_CreateForPython_RuntimeVersion_ValidateValueSet"
+	case_Functions_validation_CreateForPython_Handler_ValidateValueSet                                   testCaseName = "validation_CreateForPython_Handler_ValidateValueSet"
+	case_Functions_validation_CreateForPython_opts_ConflictingFields                                     testCaseName = "validation_CreateForPython_opts_ConflictingFields"
+	case_Functions_validation_CreateForPython_Arguments_ArgDataType_ValidateValueSet                     testCaseName = "validation_CreateForPython_Arguments_ArgDataType_ValidateValueSet"
+	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet                    testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet             testCaseName = "validation_CreateForPython_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet     testCaseName = "validation_CreateForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Functions_validation_CreateForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet      testCaseName = "validation_CreateForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Functions_validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier                 testCaseName = "validation_CreateForPython_ExternalAccessIntegrations_ValidIdentifier"
+	case_Functions_sql_CreateForPython_basic                                                             testCaseName = "sql_CreateForPython_basic"
+	case_Functions_sql_CreateForPython_all                                                               testCaseName = "sql_CreateForPython_all"
+	case_Functions_validation_CreateForScala_name_ValidIdentifier                                        testCaseName = "validation_CreateForScala_name_ValidIdentifier"
+	case_Functions_validation_CreateForScala_Handler_ValidateValueSet                                    testCaseName = "validation_CreateForScala_Handler_ValidateValueSet"
+	case_Functions_validation_CreateForScala_opts_ConflictingFields                                      testCaseName = "validation_CreateForScala_opts_ConflictingFields"
+	case_Functions_validation_CreateForScala_ResultDataType_ValidateValueSet                             testCaseName = "validation_CreateForScala_ResultDataType_ValidateValueSet"
+	case_Functions_validation_CreateForScala_Arguments_ArgDataType_ValidateValueSet                      testCaseName = "validation_CreateForScala_Arguments_ArgDataType_ValidateValueSet"
+	case_Functions_validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier                  testCaseName = "validation_CreateForScala_ExternalAccessIntegrations_ValidIdentifier"
+	case_Functions_sql_CreateForScala_basic                                                              testCaseName = "sql_CreateForScala_basic"
+	case_Functions_sql_CreateForScala_all                                                                testCaseName = "sql_CreateForScala_all"
+	case_Functions_validation_CreateForSQL_FunctionDefinition_ValidateValueSet                           testCaseName = "validation_CreateForSQL_FunctionDefinition_ValidateValueSet"
+	case_Functions_validation_CreateForSQL_name_ValidIdentifier                                          testCaseName = "validation_CreateForSQL_name_ValidIdentifier"
+	case_Functions_validation_CreateForSQL_opts_ConflictingFields                                        testCaseName = "validation_CreateForSQL_opts_ConflictingFields"
+	case_Functions_validation_CreateForSQL_Arguments_ArgDataType_ValidateValueSet                        testCaseName = "validation_CreateForSQL_Arguments_ArgDataType_ValidateValueSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet                       testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet                testCaseName = "validation_CreateForSQL_opts_Returns_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_CreateForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet        testCaseName = "validation_CreateForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet"
+	case_Functions_validation_CreateForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet         testCaseName = "validation_CreateForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet"
+	case_Functions_sql_CreateForSQL_basic                                                                testCaseName = "sql_CreateForSQL_basic"
+	case_Functions_sql_CreateForSQL_all                                                                  testCaseName = "sql_CreateForSQL_all"
+	case_Functions_validation_Alter_name_ValidIdentifier                                                 testCaseName = "validation_Alter_name_ValidIdentifier"
+	case_Functions_validation_Alter_RenameTo_ValidIdentifierIfSet                                        testCaseName = "validation_Alter_RenameTo_ValidIdentifierIfSet"
+	case_Functions_validation_Alter_opts_ExactlyOneValueSet_NoneSet                                      testCaseName = "validation_Alter_opts_ExactlyOneValueSet_NoneSet"
+	case_Functions_validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet                               testCaseName = "validation_Alter_opts_ExactlyOneValueSet_MoreThanOneSet"
+	case_Functions_validation_Alter_opts_Set_AtLeastOneValueSet                                          testCaseName = "validation_Alter_opts_Set_AtLeastOneValueSet"
+	case_Functions_validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier                       testCaseName = "validation_Alter_Set_ExternalAccessIntegrations_ValidIdentifier"
+	case_Functions_validation_Alter_opts_Unset_AtLeastOneValueSet                                        testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
+	case_Functions_validation_Alter_SetTags_ValidIdentifier                                              testCaseName = "validation_Alter_SetTags_ValidIdentifier"
+	case_Functions_sql_Alter_RenameTo                                                                    testCaseName = "sql_Alter_RenameTo"
+	case_Functions_sql_Alter_Set                                                                         testCaseName = "sql_Alter_Set"
+	case_Functions_sql_Alter_Unset                                                                       testCaseName = "sql_Alter_Unset"
+	case_Functions_sql_Alter_SetSecure                                                                   testCaseName = "sql_Alter_SetSecure"
+	case_Functions_sql_Alter_UnsetSecure                                                                 testCaseName = "sql_Alter_UnsetSecure"
+	case_Functions_sql_Alter_SetTags                                                                     testCaseName = "sql_Alter_SetTags"
+	case_Functions_sql_Alter_UnsetTags                                                                   testCaseName = "sql_Alter_UnsetTags"
+	case_Functions_validation_Drop_name_ValidIdentifier                                                  testCaseName = "validation_Drop_name_ValidIdentifier"
+	case_Functions_sql_Drop_basic                                                                        testCaseName = "sql_Drop_basic"
+	case_Functions_sql_Drop_all                                                                          testCaseName = "sql_Drop_all"
+	case_Functions_sql_Show_basic                                                                        testCaseName = "sql_Show_basic"
+	case_Functions_sql_Show_all                                                                          testCaseName = "sql_Show_all"
+	case_Functions_sql_Show_Like                                                                         testCaseName = "sql_Show_Like"
+	case_Functions_sql_Show_In                                                                           testCaseName = "sql_Show_In"
+	case_Functions_validation_Describe_name_ValidIdentifier                                              testCaseName = "validation_Describe_name_ValidIdentifier"
+	case_Functions_sql_Describe_basic                                                                    testCaseName = "sql_Describe_basic"
 )
 
 type FunctionsTestsContext struct {
@@ -166,28 +134,11 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Functions_validation_CreateForJava_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaFunctionOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
-				},
-			},
-			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavaFunctionOptions]{
-				Name: case_Functions_validation_CreateForJava_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForJavaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
-					opts.Arguments = []FunctionArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
@@ -207,43 +158,20 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Functions_validation_CreateForJava_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
 					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Functions_validation_CreateForJava_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavaFunctionOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
-				},
-			},
-			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForJavaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForJavaFunctionOptions]{
-				Name: case_Functions_validation_CreateForJava_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForJavaFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForJavaFunctionOptions) {
-					opts.Returns.Table = &FunctionReturnsTable{}
-					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 			validationCase[*CreateForJavaFunctionOptions]{
@@ -295,28 +223,11 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Functions_validation_CreateForJavascript_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavascriptFunctionOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
-				},
-			},
-			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name: case_Functions_validation_CreateForJavascript_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForJavascriptFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
-					opts.Arguments = []FunctionArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
@@ -336,43 +247,20 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Functions_validation_CreateForJavascript_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
 					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Functions_validation_CreateForJavascript_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForJavascriptFunctionOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
-				},
-			},
-			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name:        case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForJavascriptFunctionOptions]{
-				Name: case_Functions_validation_CreateForJavascript_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForJavascriptFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForJavascriptFunctionOptions) {
-					opts.Returns.Table = &FunctionReturnsTable{}
-					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 		).
@@ -424,28 +312,11 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Functions_validation_CreateForPython_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonFunctionOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
-				},
-			},
-			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForPythonFunctionOptions]{
-				Name: case_Functions_validation_CreateForPython_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForPythonFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
-					opts.Arguments = []FunctionArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
@@ -465,43 +336,20 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Functions_validation_CreateForPython_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
 					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Functions_validation_CreateForPython_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForPythonFunctionOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
-				},
-			},
-			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForPythonFunctionOptions]{
-				Name:        case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForPythonFunctionOptions]{
-				Name: case_Functions_validation_CreateForPython_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForPythonFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForPythonFunctionOptions) {
-					opts.Returns.Table = &FunctionReturnsTable{}
-					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 			validationCase[*CreateForPythonFunctionOptions]{
@@ -553,40 +401,18 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForScalaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Functions_validation_CreateForScala_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForScalaFunctionOptions", "ResultDataType"),
 				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
-					opts.ResultDataTypeOld = ""
 					opts.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForScalaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForScala_opts_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForScalaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Functions_validation_CreateForScala_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForScalaFunctionOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
-				},
-			},
-			validationCase[*CreateForScalaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForScalaFunctionOptions]{
-				Name:        case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForScalaFunctionOptions]{
-				Name: case_Functions_validation_CreateForScala_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForScalaFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForScalaFunctionOptions) {
-					opts.Arguments = []FunctionArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForScalaFunctionOptions]{
@@ -638,28 +464,11 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
+				Name:        case_Functions_validation_CreateForSQL_Arguments_ArgDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForSQLFunctionOptions.Arguments[0]", "ArgDataType"),
 				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
 					opts.Arguments = []FunctionArgument{{}}
-				},
-			},
-			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-			},
-			validationCase[*CreateForSQLFunctionOptions]{
-				Name: case_Functions_validation_CreateForSQL_opts_Arguments_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[0]", "ArgDataTypeOld", "ArgDataType"),
-					errExactlyOneOf("CreateForSQLFunctionOptions.Arguments[1]", "ArgDataTypeOld", "ArgDataType"),
-				},
-				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
-					opts.Arguments = []FunctionArgument{{}, {}}
+					opts.Arguments[0].ArgDataType = nil
 				},
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
@@ -679,43 +488,20 @@ var functionsTests = FunctionsTestsContext{
 				},
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
+				Name:        case_Functions_validation_CreateForSQL_Returns_ResultDataType_ResultDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataType"),
 				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
 					opts.Returns.ResultDataType = &FunctionReturnsResultDataType{}
-					opts.Returns.ResultDataType.ResultDataTypeOld = ""
 					opts.Returns.ResultDataType.ResultDataType = nil
 				},
 			},
 			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Returns_ResultDataType_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.ResultDataType", "ResultDataTypeOld", "ResultDataType"),
-			},
-			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_NoneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
+				Name:        case_Functions_validation_CreateForSQL_Returns_Table_Columns_ColumnDataType_ValidateValueSet,
+				ExpectedErr: errNotSet("CreateForSQLFunctionOptions.Returns.Table.Columns[0]", "ColumnDataType"),
 				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
 					opts.Returns.Table = &FunctionReturnsTable{}
 					opts.Returns.Table.Columns = []FunctionColumn{{}}
-				},
-			},
-			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_MoreThanOneSet,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForSQLFunctionOptions]{
-				Name:        case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_OneValidOneInvalid,
-				ExpectedErr: errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-			},
-			validationCase[*CreateForSQLFunctionOptions]{
-				Name: case_Functions_validation_CreateForSQL_opts_Returns_Table_Columns_ExactlyOneValueSet_BothInvalid,
-				ExpectedErrs: []error{
-					errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[0]", "ColumnDataTypeOld", "ColumnDataType"),
-					errExactlyOneOf("CreateForSQLFunctionOptions.Returns.Table.Columns[1]", "ColumnDataTypeOld", "ColumnDataType"),
-				},
-				DefaultModify: func(opts *CreateForSQLFunctionOptions) {
-					opts.Returns.Table = &FunctionReturnsTable{}
-					opts.Returns.Table.Columns = []FunctionColumn{{}, {}}
+					opts.Returns.Table.Columns[0].ColumnDataType = nil
 				},
 			},
 		).

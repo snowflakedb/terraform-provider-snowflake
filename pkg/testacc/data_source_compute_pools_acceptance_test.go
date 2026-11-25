@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -155,6 +156,20 @@ func TestAcc_ComputePools_BasicUseCase_DifferentFiltering(t *testing.T) {
 	computePoolsWithLimitModel := datasourcemodel.ComputePools("test").
 		WithRowsAndFrom(1, prefix).
 		WithDependsOn(cpModel1.ResourceReference(), cpModel2.ResourceReference(), cpModel3.ResourceReference())
+	computePoolsWithLowerCaseLikeModel := datasourcemodel.ComputePools("test").
+		WithLike(strings.ToLower(prefix)+"%").
+		WithDependsOn(cpModel1.ResourceReference(), cpModel2.ResourceReference(), cpModel3.ResourceReference())
+	computePoolsWithRowsOnlyLimitModel := datasourcemodel.ComputePools("test").
+		WithLike(prefix+"%").
+		WithLimit(1).
+		WithDependsOn(cpModel1.ResourceReference(), cpModel2.ResourceReference(), cpModel3.ResourceReference())
+	computePoolsWithDescribeModel := datasourcemodel.ComputePools("test").
+		WithStartsWith(prefix).
+		WithDependsOn(cpModel1.ResourceReference(), cpModel2.ResourceReference(), cpModel3.ResourceReference())
+	computePoolsWithoutDescribeModel := datasourcemodel.ComputePools("test").
+		WithStartsWith(prefix).
+		WithWithDescribe(false).
+		WithDependsOn(cpModel1.ResourceReference(), cpModel2.ResourceReference(), cpModel3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -179,6 +194,50 @@ func TestAcc_ComputePools_BasicUseCase_DifferentFiltering(t *testing.T) {
 				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithLimitModel),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(computePoolsWithLimitModel.DatasourceReference(), "compute_pools.#", "1"),
+				),
+			},
+			{
+				// LIKE is case-insensitive and supports wildcards.
+				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithLowerCaseLikeModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(computePoolsWithLowerCaseLikeModel.DatasourceReference(), "compute_pools.#", "2"),
+				),
+			},
+			{
+				// The limit without from.
+				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithRowsOnlyLimitModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(computePoolsWithRowsOnlyLimitModel.DatasourceReference(), "compute_pools.#", "1"),
+				),
+			},
+			{
+				// With more than one result, every item holds its own show and describe output.
+				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithDescribeModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(computePoolsWithDescribeModel.DatasourceReference(), "id", "compute_pools_read"),
+					resource.TestCheckResourceAttr(computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.#", "2"),
+					resource.TestCheckResourceAttr(computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.0.show_output.#", "1"),
+					resource.TestCheckResourceAttr(computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.0.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.0.show_output.0.name",
+						computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.0.describe_output.0.name",
+					),
+					resource.TestCheckResourceAttr(computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.1.show_output.#", "1"),
+					resource.TestCheckResourceAttr(computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.1.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.1.show_output.0.name",
+						computePoolsWithDescribeModel.DatasourceReference(), "compute_pools.1.describe_output.0.name",
+					),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, cpModel1, cpModel2, cpModel3, computePoolsWithoutDescribeModel),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(computePoolsWithoutDescribeModel.DatasourceReference(), "compute_pools.#", "2"),
+					resource.TestCheckResourceAttr(computePoolsWithoutDescribeModel.DatasourceReference(), "compute_pools.0.show_output.#", "1"),
+					resource.TestCheckResourceAttr(computePoolsWithoutDescribeModel.DatasourceReference(), "compute_pools.0.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(computePoolsWithoutDescribeModel.DatasourceReference(), "compute_pools.1.show_output.#", "1"),
+					resource.TestCheckResourceAttr(computePoolsWithoutDescribeModel.DatasourceReference(), "compute_pools.1.describe_output.#", "0"),
 				),
 			},
 		},

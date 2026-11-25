@@ -11,10 +11,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
@@ -24,9 +27,6 @@ import (
 )
 
 func TestAcc_ExternalTable_basic(t *testing.T) {
-	// TODO [SNOW-1348353]: unskip
-	t.Skipf("Skip because error %s; will be fixed in SNOW-1348353", "Error: 000606 (57P03): No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.")
-
 	awsBucketURL, awsKeyId, awsSecretKey := getExternalTableTestEnvsOrSkipTest(t)
 
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
@@ -99,7 +99,7 @@ func TestAcc_ExternalTable_basic(t *testing.T) {
 			{
 				ConfigDirectory: ConfigurationSameAsStepN(2),
 				ConfigVariables: configVariables,
-				Check: externalTableContainsData(id, func(rows []map[string]*any) bool {
+				Check: externalTableContainsData(t, id, func(rows []map[string]*any) bool {
 					expectedNames := []string{"one", "two", "three"}
 					names := make([]string, 3)
 					for i, row := range rows {
@@ -174,12 +174,12 @@ func TestAcc_ExternalTable_CorrectDataTypes(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "column.0.type", "varchar(200)"),
 					resource.TestCheckResourceAttr(resourceName, "column.0.as", "value:name::string"),
 					resource.TestCheckResourceAttr(resourceName, "column.1.name", "age"),
-					resource.TestCheckResourceAttr(resourceName, "column.1.type", "number(2, 2)"),
+					resource.TestCheckResourceAttr(resourceName, "column.1.type", "number(2, 0)"),
 					resource.TestCheckResourceAttr(resourceName, "column.1.as", "value:age::number"),
-					expectTableToHaveColumnDataTypes(id, []sdk.DataType{
-						sdk.DataTypeVariant,
-						"VARCHAR(200)",
-						"NUMBER(2,2)",
+					expectTableToHaveColumnDataTypes(id, []datatypes.DataType{
+						testdatatypes.DataTypeVariant,
+						testdatatypes.DataTypeVarchar_200,
+						testdatatypes.DataTypeNumber_2_0,
 					}),
 				),
 			},
@@ -322,14 +322,10 @@ func getExternalTableTestEnvsOrSkipTest(t *testing.T) (string, string, string) {
 	return awsBucketURL, awsKeyId, awsSecretKey
 }
 
-func externalTableContainsData(id sdk.SchemaObjectIdentifier, contains func(rows []map[string]*any) bool) func(state *terraform.State) error {
+func externalTableContainsData(t *testing.T, id sdk.SchemaObjectIdentifier, contains func(rows []map[string]*any) bool) func(state *terraform.State) error {
+	t.Helper()
 	return func(state *terraform.State) error {
-		client := TestAccProvider.Meta().(*provider.Context).Client
-		ctx := context.Background()
-		rows, err := client.QueryUnsafe(ctx, fmt.Sprintf("select * from %s", id.FullyQualifiedName()))
-		if err != nil {
-			return err
-		}
+		rows := testClient().ExternalTable.SelectAll(t, id)
 		log.Printf("[DEBUG] Number of retrieved rows for %s: %d", id.FullyQualifiedName(), len(rows))
 
 		if !contains(rows) {
@@ -340,7 +336,7 @@ func externalTableContainsData(id sdk.SchemaObjectIdentifier, contains func(rows
 	}
 }
 
-func expectTableToHaveColumnDataTypes(id sdk.SchemaObjectIdentifier, expectedDataTypes []sdk.DataType) func(s *terraform.State) error {
+func expectTableToHaveColumnDataTypes(id sdk.SchemaObjectIdentifier, expectedDataTypes []datatypes.DataType) func(s *terraform.State) error {
 	return func(s *terraform.State) error {
 		client := TestAccProvider.Meta().(*provider.Context).Client
 		ctx := context.Background()
@@ -349,20 +345,14 @@ func expectTableToHaveColumnDataTypes(id sdk.SchemaObjectIdentifier, expectedDat
 			return err
 		}
 
-		actualTableDataTypes := make([]sdk.DataType, len(columnsDesc))
-		for i, desc := range columnsDesc {
-			actualTableDataTypes[i] = desc.Type
-		}
+		expectedTableDataTypes := collections.Map(expectedDataTypes, datatypes.DataType.ToSql)
+		actualTableDataTypes := collections.Map(columnsDesc, sdk.ExternalTableColumnDetails.TypeString)
 
-		slices.SortFunc(expectedDataTypes, func(a, b sdk.DataType) int {
-			return strings.Compare(string(a), string(b))
-		})
-		slices.SortFunc(actualTableDataTypes, func(a, b sdk.DataType) int {
-			return strings.Compare(string(a), string(b))
-		})
+		slices.Sort(expectedTableDataTypes)
+		slices.Sort(actualTableDataTypes)
 
-		if !slices.Equal(expectedDataTypes, actualTableDataTypes) {
-			return fmt.Errorf("expected table %s to have columns with data types: %v, got: %v", id.FullyQualifiedName(), expectedDataTypes, actualTableDataTypes)
+		if !slices.Equal(expectedTableDataTypes, actualTableDataTypes) {
+			return fmt.Errorf("expected table %s to have columns with data types: %v, got: %v", id.FullyQualifiedName(), expectedTableDataTypes, actualTableDataTypes)
 		}
 
 		return nil

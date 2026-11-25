@@ -508,9 +508,7 @@ func TestAcc_BackupPolicy_ScheduleSchemaValidation(t *testing.T) {
 		"minutes":    tfconfig.IntegerVariable(90),
 		"using_cron": tfconfig.StringVariable("0 0 * * * UTC"),
 	}))
-	emptyBlock := newModel().WithScheduleValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-		"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-	}))
+	emptyBlock := newModel().WithScheduleValue(tfconfig.ObjectVariable(map[string]tfconfig.Variable{}))
 	neither := model.BackupPolicy("t", id.DatabaseName(), id.SchemaName(), id.Name()).WithComment("no schedule and no expiration")
 	zeroHours := newModel().WithScheduleHours(0)
 	tooFewMinutes := newModel().WithScheduleMinutes(59)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
@@ -95,20 +94,19 @@ func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	entities := []map[string]any{}
+	// TODO(SNOW-1850370): use the generated function schema instead of this hand-written one while reworking functions.
 	for _, item := range functions {
 		m := map[string]any{}
 		m["name"] = item.Name
 		m["database"] = databaseName
 		m["schema"] = schemaName
 		m["comment"] = item.Description
-		m["argument_types"] = collections.Map(item.ArgumentsOld, func(a sdk.DataType) string {
-			return string(a)
-		})
-		m["return_type"] = string(item.ReturnTypeOld)
+		m["argument_types"] = item.ArgumentsRawList
+		m["return_type"] = item.ReturnTypeRaw
 
 		entities = append(entities, m)
 	}
-	d.SetId(helpers.EncodeSnowflakeID(databaseName, schemaName))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(databaseName, schemaName))
 	if err := d.Set("functions", entities); err != nil {
 		return diag.FromErr(err)
 	}

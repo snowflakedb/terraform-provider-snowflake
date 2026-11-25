@@ -252,7 +252,7 @@ func UpdateSessionPolicy(ctx context.Context, d *schema.ResourceData, meta any) 
 			return client.SessionPolicies.Alter(ctx, sdk.NewAlterSessionPolicyRequest(currentId).WithRenameTo(targetId))
 		},
 		client.SessionPolicies.ShowByID,
-		"session policy",
+		sdk.ObjectTypeSessionPolicy,
 	); diags != nil {
 		return diags
 	}

@@ -26,9 +26,11 @@ type DatabaseModel struct {
 	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
+	MetricLevel                             tfconfig.Variable `json:"metric_level,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
 	Replication                             tfconfig.Variable `json:"replication,omitempty"`
+	ServiceCallerTokenValiditySecs          tfconfig.Variable `json:"service_caller_token_validity_secs,omitempty"`
 	StorageSerializationPolicy              tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
 	SuspendTaskAfterNumFailures             tfconfig.Variable `json:"suspend_task_after_num_failures,omitempty"`
 	TaskAutoRetryAttempts                   tfconfig.Variable `json:"task_auto_retry_attempts,omitempty"`
@@ -174,6 +176,11 @@ func (d *DatabaseModel) WithMaxDataExtensionTimeInDays(maxDataExtensionTimeInDay
 	return d
 }
 
+func (d *DatabaseModel) WithMetricLevel(metricLevel string) *DatabaseModel {
+	d.MetricLevel = tfconfig.StringVariable(metricLevel)
+	return d
+}
+
 func (d *DatabaseModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *DatabaseModel {
 	d.QuotedIdentifiersIgnoreCase = tfconfig.BoolVariable(quotedIdentifiersIgnoreCase)
 	return d
@@ -185,6 +192,11 @@ func (d *DatabaseModel) WithReplaceInvalidCharacters(replaceInvalidCharacters bo
 }
 
 // replication attribute type is not yet supported, so WithReplication can't be generated
+
+func (d *DatabaseModel) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *DatabaseModel {
+	d.ServiceCallerTokenValiditySecs = tfconfig.IntegerVariable(serviceCallerTokenValiditySecs)
+	return d
+}
 
 func (d *DatabaseModel) WithStorageSerializationPolicy(storageSerializationPolicy string) *DatabaseModel {
 	d.StorageSerializationPolicy = tfconfig.StringVariable(storageSerializationPolicy)
@@ -300,6 +312,11 @@ func (d *DatabaseModel) WithMaxDataExtensionTimeInDaysValue(value tfconfig.Varia
 	return d
 }
 
+func (d *DatabaseModel) WithMetricLevelValue(value tfconfig.Variable) *DatabaseModel {
+	d.MetricLevel = value
+	return d
+}
+
 func (d *DatabaseModel) WithQuotedIdentifiersIgnoreCaseValue(value tfconfig.Variable) *DatabaseModel {
 	d.QuotedIdentifiersIgnoreCase = value
 	return d
@@ -312,6 +329,11 @@ func (d *DatabaseModel) WithReplaceInvalidCharactersValue(value tfconfig.Variabl
 
 func (d *DatabaseModel) WithReplicationValue(value tfconfig.Variable) *DatabaseModel {
 	d.Replication = value
+	return d
+}
+
+func (d *DatabaseModel) WithServiceCallerTokenValiditySecsValue(value tfconfig.Variable) *DatabaseModel {
+	d.ServiceCallerTokenValiditySecs = value
 	return d
 }
 

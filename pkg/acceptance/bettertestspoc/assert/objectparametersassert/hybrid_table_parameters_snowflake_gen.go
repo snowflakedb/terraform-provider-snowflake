@@ -59,17 +59,22 @@ func (h *HybridTableParametersAssert) HasDefaultParameterValueOnLevel(parameterN
 	return h
 }
 
+func (h *HybridTableParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.ObjectParameter) *HybridTableParametersAssert {
+	h.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return h
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (h *HybridTableParametersAssert) HasAllDefaults() *HybridTableParametersAssert {
 	return h.
-		HasDefaultParameterValueOnLevel(sdk.ObjectParameterDataRetentionTimeInDays, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.ObjectParameterMaxDataExtensionTimeInDays, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.ObjectParameterDataRetentionTimeInDays).
+		HasDefaultParameterValueOnDefaultLevel(sdk.ObjectParameterMaxDataExtensionTimeInDays)
 }
 
 func (h *HybridTableParametersAssert) HasAllDefaultsExplicit() *HybridTableParametersAssert {

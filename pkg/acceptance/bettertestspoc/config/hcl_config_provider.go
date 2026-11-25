@@ -75,7 +75,7 @@ func unquoteBlockType(s string) (string, error) {
 // Conversion to HCL using hcl v1 uses `=` sign for objects and lists of objects.
 // Check experiments subpackage for details.
 func fixBlockArguments(s string) (string, error) {
-	argumentRegex := regexp.MustCompile(`( +)"(\w+)"( +)= ({\n)`)
+	argumentRegex := regexp.MustCompile(`( +)"(\w+)"( +)= ({\n|{}\n)`)
 	return argumentRegex.ReplaceAllString(s, `$1$2$3$4`), nil
 }
 

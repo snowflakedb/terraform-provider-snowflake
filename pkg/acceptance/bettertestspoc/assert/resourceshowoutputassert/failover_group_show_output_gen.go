@@ -32,6 +32,21 @@ func ImportedFailoverGroupShowOutput(t *testing.T, id string) *FailoverGroupShow
 	return &failoverGroupAssert
 }
 
+func FailoverGroupsDatasourceShowOutput(t *testing.T, name string) *FailoverGroupShowOutputAssert {
+	t.Helper()
+
+	return FailoverGroupsDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func FailoverGroupsDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *FailoverGroupShowOutputAssert {
+	t.Helper()
+
+	failoverGroupAssert := FailoverGroupShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "failover_groups", idx),
+	}
+	return &failoverGroupAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
@@ -101,8 +116,8 @@ func (f *FailoverGroupShowOutputAssert) HasSecondaryState(expected sdk.FailoverG
 	return f
 }
 
-func (f *FailoverGroupShowOutputAssert) HasNextScheduledRefresh(expected string) *FailoverGroupShowOutputAssert {
-	f.StringValueSet("next_scheduled_refresh", expected)
+func (f *FailoverGroupShowOutputAssert) HasNextScheduledRefresh(expected time.Time) *FailoverGroupShowOutputAssert {
+	f.StringValueSet("next_scheduled_refresh", expected.String())
 	return f
 }
 
@@ -126,8 +141,13 @@ func (f *FailoverGroupShowOutputAssert) HasRpoAssurance(expected bool) *Failover
 	return f
 }
 
-func (f *FailoverGroupShowOutputAssert) HasReadOnly(expected bool) *FailoverGroupShowOutputAssert {
-	f.BoolValueSet("read_only", expected)
+func (f *FailoverGroupShowOutputAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *FailoverGroupShowOutputAssert {
+	f.StringValueSet("error_integration", expected.Name())
+	return f
+}
+
+func (f *FailoverGroupShowOutputAssert) HasIsPrimaryReadOnly(expected bool) *FailoverGroupShowOutputAssert {
+	f.BoolValueSet("is_primary_read_only", expected)
 	return f
 }
 
@@ -240,7 +260,12 @@ func (f *FailoverGroupShowOutputAssert) HasNoRpoAssurance() *FailoverGroupShowOu
 	return f
 }
 
-func (f *FailoverGroupShowOutputAssert) HasNoReadOnly() *FailoverGroupShowOutputAssert {
-	f.ValueNotSet("read_only")
+func (f *FailoverGroupShowOutputAssert) HasNoErrorIntegration() *FailoverGroupShowOutputAssert {
+	f.ValueNotSet("error_integration")
+	return f
+}
+
+func (f *FailoverGroupShowOutputAssert) HasNoIsPrimaryReadOnly() *FailoverGroupShowOutputAssert {
+	f.ValueNotSet("is_primary_read_only")
 	return f
 }

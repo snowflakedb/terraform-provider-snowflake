@@ -311,7 +311,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_ProcedureWithArguments_ToAccou
 
 	databaseId := database.ID()
 	schemaId := testClient().Ids.RandomDatabaseObjectIdentifierInDatabase(databaseId)
-	procedureId := testClient().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(testClient().Ids.Alpha(), schemaId, sdk.DataTypeFloat)
+	procedureId := testClient().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(testClient().Ids.Alpha(), schemaId, testdatatypes.DataTypeFloat)
 	accountRoleId := testClient().Ids.RandomAccountObjectIdentifier()
 
 	accountRoleModel := model.AccountRole("test", accountRoleId.Name())

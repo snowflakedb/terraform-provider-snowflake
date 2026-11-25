@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_DescribeInSdk_computePool(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.True(t, model.Hooks.DescribeInSdk.Generate)

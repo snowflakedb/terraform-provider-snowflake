@@ -560,7 +560,7 @@ func ReadView(withExternalChangesMarking bool) schema.ReadContextFunc {
 		}); err != nil {
 			return diag.FromErr(err)
 		}
-		policyRefs, err := readRootLevelPolicies(ctx, client, id, sdk.PolicyEntityDomainView, d)
+		policyRefs, err := readRootLevelPolicies(ctx, client, id, sdk.PolicyEntityDomainView, d, sdk.PolicyKindRowAccessPolicy, sdk.PolicyKindAggregationPolicy)
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("getting policy references for view: %w", err))
 		}
@@ -721,7 +721,7 @@ func UpdateView(ctx context.Context, d *schema.ResourceData, meta any) diag.Diag
 			return client.Views.Alter(ctx, sdk.NewAlterViewRequest(currentId).WithRenameTo(targetId))
 		},
 		client.Views.ShowByID,
-		"view",
+		sdk.ObjectTypeView,
 	); diags != nil {
 		return diags
 	}

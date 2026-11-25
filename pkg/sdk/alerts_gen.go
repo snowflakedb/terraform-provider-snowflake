@@ -31,12 +31,14 @@ type CreateAlertOptions struct {
 	Warehouse   *AccountObjectIdentifier `ddl:"identifier,equals" sql:"WAREHOUSE"`
 	Schedule    *string                  `ddl:"parameter,single_quotes" sql:"SCHEDULE"`
 	Comment     *string                  `ddl:"parameter,single_quotes" sql:"COMMENT"`
-	condition   AlertCondition           `ddl:"list,parentheses,no_comma" sql:"IF"`
+	Condition   AlertCondition           `ddl:"list,no_comma"`
 	action      string                   `ddl:"parameter,no_equals" sql:"THEN"`
 }
 
 type AlertCondition struct {
-	Condition []string `ddl:"keyword,parentheses,no_comma" sql:"EXISTS"`
+	ifExists      bool   `ddl:"static" sql:"IF (EXISTS ("`
+	Condition     string `ddl:"keyword,no_quotes"`
+	closeIfExists bool   `ddl:"static" sql:"))"`
 }
 
 // AlterAlertOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-alert.

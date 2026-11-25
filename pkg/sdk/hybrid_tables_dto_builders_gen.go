@@ -5,6 +5,8 @@ package sdk
 import (
 	"strconv"
 	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 func NewCreateHybridTableRequest(
@@ -75,7 +77,7 @@ func (s *HybridTableColumnsConstraintsAndIndexesRequest) WithOutOfLineIndex(outO
 
 func NewHybridTableColumnRequest(
 	name string,
-	dataType DataType,
+	dataType datatypes.DataType,
 ) *HybridTableColumnRequest {
 	s := HybridTableColumnRequest{}
 	s.Name = name
@@ -229,7 +231,7 @@ func (s *AlterHybridTableRequest) WithUnset(unset HybridTableUnsetPropertiesRequ
 
 func NewHybridTableAddColumnActionRequest(
 	name string,
-	dataType DataType,
+	dataType datatypes.DataType,
 ) *HybridTableAddColumnActionRequest {
 	s := HybridTableAddColumnActionRequest{}
 	s.Name = name
@@ -340,7 +342,7 @@ func (s *HybridTableAlterColumnActionRequest) WithSetDefault(setDefault Sequence
 	return s
 }
 
-func (s *HybridTableAlterColumnActionRequest) WithDataType(dataType DataType) *HybridTableAlterColumnActionRequest {
+func (s *HybridTableAlterColumnActionRequest) WithDataType(dataType datatypes.DataType) *HybridTableAlterColumnActionRequest {
 	s.DataType = &dataType
 	return s
 }

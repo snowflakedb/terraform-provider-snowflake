@@ -8,16 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_omitCurrentAccount(t *testing.T) {
-	t.Parallel()
-
-	current := sdk.NewAccountIdentifier("ORG", "SOURCE")
-	target := sdk.NewAccountIdentifier("ORG", "TARGET")
-
-	require.Equal(t, []sdk.AccountIdentifier{target}, omitCurrentAccount([]sdk.AccountIdentifier{current, target}, current))
-	require.Empty(t, omitCurrentAccount([]sdk.AccountIdentifier{current}, current))
-}
-
 func Test_replicationGroupApplySetUnset_sendsEachStatementInItsOwnRequest(t *testing.T) {
 	d := schema.TestResourceDataRaw(t, replicationGroupSchema, map[string]any{
 		"object_types":         []any{"DATABASES"},

@@ -117,9 +117,7 @@ func (t *TaskModel) WithScheduleHours(hours int) *TaskModel {
 
 func (t *TaskModel) WithEmptySchedule() *TaskModel {
 	return t.WithScheduleValue(
-		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-		}),
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 	)
 }
 
@@ -160,9 +158,7 @@ func (t *TaskModel) WithTargetCompletionIntervalHours(hours int) *TaskModel {
 
 func (t *TaskModel) WithEmptyTargetCompletionInterval() *TaskModel {
 	return t.WithTargetCompletionIntervalValue(
-		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-		}),
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 	)
 }
 

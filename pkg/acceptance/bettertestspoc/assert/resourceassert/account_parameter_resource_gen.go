@@ -42,6 +42,11 @@ func (a *AccountParameterResourceAssert) HasValue(expected string) *AccountParam
 	return a
 }
 
+func (a *AccountParameterResourceAssert) HasValueType(expected string) *AccountParameterResourceAssert {
+	a.StringValueSet("value_type", expected)
+	return a
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -53,6 +58,11 @@ func (a *AccountParameterResourceAssert) HasKeyString(expected string) *AccountP
 
 func (a *AccountParameterResourceAssert) HasValueString(expected string) *AccountParameterResourceAssert {
 	a.ValueSet("value", expected)
+	return a
+}
+
+func (a *AccountParameterResourceAssert) HasValueTypeString(expected string) *AccountParameterResourceAssert {
+	a.ValueSet("value_type", expected)
 	return a
 }
 
@@ -70,9 +80,19 @@ func (a *AccountParameterResourceAssert) HasNoValue() *AccountParameterResourceA
 	return a
 }
 
+func (a *AccountParameterResourceAssert) HasNoValueType() *AccountParameterResourceAssert {
+	a.ValueNotSet("value_type")
+	return a
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (a *AccountParameterResourceAssert) HasValueTypeEmpty() *AccountParameterResourceAssert {
+	a.ValueSet("value_type", "")
+	return a
+}
 
 ///////////////////////////////
 // Attribute presence checks //
@@ -85,5 +105,10 @@ func (a *AccountParameterResourceAssert) HasKeyNotEmpty() *AccountParameterResou
 
 func (a *AccountParameterResourceAssert) HasValueNotEmpty() *AccountParameterResourceAssert {
 	a.ValuePresent("value")
+	return a
+}
+
+func (a *AccountParameterResourceAssert) HasValueTypeNotEmpty() *AccountParameterResourceAssert {
+	a.ValuePresent("value_type")
 	return a
 }

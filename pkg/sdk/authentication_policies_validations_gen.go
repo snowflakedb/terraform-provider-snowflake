@@ -40,11 +40,6 @@ func (opts *CreateAuthenticationPolicyOptions) validate() error {
 			}
 		}
 	}
-	if valueSet(opts.WorkloadIdentityPolicy) {
-		if !anyValueSet(opts.WorkloadIdentityPolicy.AllowedProviders, opts.WorkloadIdentityPolicy.AllowedAwsAccounts, opts.WorkloadIdentityPolicy.AllowedAzureIssuers, opts.WorkloadIdentityPolicy.AllowedOidcIssuers) {
-			errs = append(errs, errAtLeastOneOf("CreateAuthenticationPolicyOptions.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
-		}
-	}
 	return JoinErrors(errs...)
 }
 
@@ -81,11 +76,6 @@ func (opts *AlterAuthenticationPolicyOptions) validate() error {
 						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("AlterAuthenticationPolicyOptions.Set.SecurityIntegrations.SecurityIntegrations[%d]", securityIntegrationIdx), "SecurityIntegrations"))
 					}
 				}
-			}
-		}
-		if valueSet(opts.Set.WorkloadIdentityPolicy) {
-			if !anyValueSet(opts.Set.WorkloadIdentityPolicy.AllowedProviders, opts.Set.WorkloadIdentityPolicy.AllowedAwsAccounts, opts.Set.WorkloadIdentityPolicy.AllowedAzureIssuers, opts.Set.WorkloadIdentityPolicy.AllowedOidcIssuers) {
-				errs = append(errs, errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"))
 			}
 		}
 	}

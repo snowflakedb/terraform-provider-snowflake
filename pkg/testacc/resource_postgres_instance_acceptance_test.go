@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceshowoutputassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -24,6 +25,8 @@ import (
 )
 
 func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.TestPostgresInstances)
+
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 	comment := random.Comment()
 	externalComment := random.Comment()
@@ -246,6 +249,8 @@ func TestAcc_PostgresInstance_BasicUseCase(t *testing.T) {
 }
 
 func TestAcc_PostgresInstance_Validations(t *testing.T) {
+	_ = testenvs.GetOrSkipTest(t, testenvs.TestPostgresInstances)
+
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
 	modelInvalidStorageSizeGb := model.PostgresInstance("test", id.Name(), "POSTGRES", "STANDARD_M", 18, 0)

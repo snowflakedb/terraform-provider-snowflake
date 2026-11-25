@@ -30,8 +30,8 @@ func TestAcc_FunctionPython_InlineBasic(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeNumber_36_2
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)
 
@@ -139,7 +139,7 @@ func TestAcc_FunctionPython_InlineFull(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeNumber_36_2
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)
 
 	functionModel := model.FunctionPythonBasicInline("test", id, testvars.PythonRuntime, dataType, funcName, definition).
@@ -254,7 +254,7 @@ func TestAcc_FunctionPython_DecfloatUnsupported(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeDecfloat
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Function.PythonIdentityDefinition(t, funcName, argName)
 
@@ -294,7 +294,7 @@ func TestAcc_FunctionPython_Bcr2325ArtifactRepositoryPackages(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schema.ID(), dataType)
 	definition := testClient().Function.SamplePythonDefinition(t, funcName, argName)
 
 	functionModel := model.FunctionPythonBasicInline("w", id, testvars.PythonRuntime, dataType, funcName, definition).

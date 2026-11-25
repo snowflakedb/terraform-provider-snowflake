@@ -8,7 +8,7 @@ import (
 
 var externalFunctionArgument = g.NewQueryStruct("ExternalFunctionArgument").
 	Text("ArgName", g.KeywordOptions().NoQuotes().Required()).
-	PredefinedQueryStructField("ArgDataType", g.KindOfT[sdkcommons.DataType](), g.KeywordOptions().NoQuotes().Required())
+	PredefinedQueryStructField("ArgDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required())
 
 var externalFunctionHeader = g.NewQueryStruct("ExternalFunctionHeader").
 	Text("Name", g.KeywordOptions().SingleQuotes().Required()).
@@ -54,8 +54,10 @@ var externalFunctionPairs = g.StructPair("externalFunctionRow", "ExternalFunctio
 	BoolFromText("is_ansi").
 	Number("min_num_arguments").
 	Number("max_num_arguments").
-	Text("arguments", g.WithPlainFieldName("ArgumentsRaw")).
-	PlainOnlyField("Arguments", "[]DataType").
+	Field("arguments", "string", "[]string", g.WithPlainFieldName("ArgumentsRaw"), g.WithManualConvert()).
+	PlainOnlyField("Arguments", "[]datatypes.DataType").
+	PlainOnlyField("ReturnType", "datatypes.DataType").
+	PlainOnlyField("ReturnTypeRaw", "string").
 	Text("description").
 	Field("catalog_name", "sql.NullString", "string", g.WithManualConvert()).
 	BoolFromText("is_table_function").
@@ -88,7 +90,7 @@ var externalFunctionsDef = g.NewInterface(
 			externalFunctionArgument,
 			g.ListOptions().MustParentheses(),
 		).
-		PredefinedQueryStructField("ResultDataType", g.KindOfT[sdkcommons.DataType](), g.ParameterOptions().NoEquals().SQL("RETURNS").Required()).
+		PredefinedQueryStructField("ResultDataType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().SQL("RETURNS").Required()).
 		WithField(g.OptionalEnumLegacy[sdkcommons.ReturnNullValues]("ReturnNullValues", g.KeywordOptions())).
 		WithField(g.OptionalEnumLegacy[sdkcommons.NullInputBehavior]("NullInputBehavior", g.KeywordOptions())).
 		WithField(g.OptionalEnumLegacy[sdkcommons.ReturnResultsBehavior]("ReturnResultsBehavior", g.KeywordOptions())).

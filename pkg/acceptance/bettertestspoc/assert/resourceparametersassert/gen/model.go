@@ -30,6 +30,7 @@ var dataSourceParametersMapping = map[string]string{
 	"Database":             "Databases",
 	"HybridTable":          "HybridTables",
 	"Pipe":                 "Pipes",
+	"Table":                "Tables",
 	"Schema":               "Schemas",
 	"Task":                 "Tasks",
 	"User":                 "Users",

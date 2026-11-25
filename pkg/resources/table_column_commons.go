@@ -38,10 +38,8 @@ func columnSchema() *schema.Schema {
 					ForceNew:         true,
 					Default:          BooleanDefault,
 					ValidateDiagFunc: validateBooleanString,
-					DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
-						return (oldValue == BooleanTrue || oldValue == BooleanFalse) && (newValue == BooleanDefault)
-					},
-					Description: "Whether to restrict the column to NOT NULL values.",
+					DiffSuppressFunc: SuppressBooleanStringDefaultAgainstKnownValue,
+					Description:      "Whether to restrict the column to NOT NULL values.",
 				},
 				"default": {
 					Type:        schema.TypeList,

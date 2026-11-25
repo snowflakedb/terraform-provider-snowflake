@@ -389,7 +389,7 @@ func TestAcc_NetworkRule_migrateFromVersion_2_13_0(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("2.13.0"),
 				Config:            accconfig.FromModels(t, providerModel, modelBasic),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "id", helpers.EncodeSnowflakeID(id)),
+					resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "id", helpers.EncodeSnowflakeIDLegacy(id)),
 					resource.TestCheckResourceAttr(modelBasic.ResourceReference(), "fully_qualified_name", id.FullyQualifiedName()),
 				),
 			},

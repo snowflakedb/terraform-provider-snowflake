@@ -72,7 +72,7 @@ func CreateContextProcedureScala(ctx context.Context, d *schema.ResourceData, me
 	packages = append(packages, *sdk.NewProcedurePackageRequest(fmt.Sprintf(`%s%s`, sdk.JavaSnowparkPackageString, d.Get("snowpark_package").(string))))
 
 	argumentDataTypes := collections.Map(argumentRequests, func(r sdk.ProcedureArgumentRequest) datatypes.DataType { return r.ArgDataType })
-	id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(database, sc, name, argumentDataTypes...)
+	id := sdk.NewSchemaObjectIdentifierWithArguments(database, sc, name, argumentDataTypes...)
 	request := sdk.NewCreateForScalaProcedureRequest(id.SchemaObjectId(), *returns, runtimeVersion, packages, handler).
 		WithArguments(argumentRequests)
 

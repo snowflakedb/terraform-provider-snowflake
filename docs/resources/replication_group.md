@@ -97,7 +97,7 @@ resource "snowflake_replication_group" "complete" {
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
 - `is_primary` (Boolean) Indicates if the replication group is primary. When Terraform detects that the primary status changed outside of Terraform, the resource is recreated.
-- `show_output` (List of Object) Outputs the result of `SHOW REPLICATION GROUPS` for the given replication group. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Holds the output of `SHOW REPLICATION GROUPS` for the given replication group. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
@@ -120,14 +120,15 @@ Read-Only:
 - `allowed_accounts` (Set of String)
 - `comment` (String)
 - `created_on` (String)
+- `error_integration` (String)
 - `is_listing_auto_fulfillment_group` (Boolean)
 - `is_primary` (Boolean)
+- `is_primary_read_only` (Boolean)
 - `name` (String)
 - `next_scheduled_refresh` (String)
 - `organization_name` (String)
 - `owner` (String)
 - `primary` (String)
-- `read_only` (Boolean)
 - `region_group` (String)
 - `replication_schedule` (String)
 - `secondary_state` (String)

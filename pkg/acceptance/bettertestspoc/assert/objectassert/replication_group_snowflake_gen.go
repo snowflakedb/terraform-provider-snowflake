@@ -427,25 +427,50 @@ func (r *ReplicationGroupAssert) HasIsListingAutoFulfillmentGroup(expected bool)
 	return r
 }
 
-func (r *ReplicationGroupAssert) HasReadOnly(expected bool) *ReplicationGroupAssert {
+func (r *ReplicationGroupAssert) HasErrorIntegration(expected sdk.AccountObjectIdentifier) *ReplicationGroupAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ReplicationGroup) error {
 		t.Helper()
-		if o.ReadOnly == nil {
-			return fmt.Errorf("expected read only to have value; got: nil")
+		if o.ErrorIntegration == nil {
+			return fmt.Errorf("expected error integration to have value; got: nil")
 		}
-		if *o.ReadOnly != expected {
-			return fmt.Errorf("expected read only: %v; got: %v", expected, *o.ReadOnly)
+		if (*o.ErrorIntegration).FullyQualifiedName() != expected.FullyQualifiedName() {
+			return fmt.Errorf("expected error integration: %v; got: %v", expected.FullyQualifiedName(), (*o.ErrorIntegration).FullyQualifiedName())
 		}
 		return nil
 	})
 	return r
 }
 
-func (r *ReplicationGroupAssert) HasNoReadOnly() *ReplicationGroupAssert {
+func (r *ReplicationGroupAssert) HasNoErrorIntegration() *ReplicationGroupAssert {
 	r.AddAssertion(func(t *testing.T, o *sdk.ReplicationGroup) error {
 		t.Helper()
-		if o.ReadOnly != nil {
-			return fmt.Errorf("expected read only to be nil; got: %v", *o.ReadOnly)
+		if o.ErrorIntegration != nil {
+			return fmt.Errorf("expected error integration to be nil; got: %v", *o.ErrorIntegration)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *ReplicationGroupAssert) HasIsPrimaryReadOnly(expected bool) *ReplicationGroupAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ReplicationGroup) error {
+		t.Helper()
+		if o.IsPrimaryReadOnly == nil {
+			return fmt.Errorf("expected is primary read only to have value; got: nil")
+		}
+		if *o.IsPrimaryReadOnly != expected {
+			return fmt.Errorf("expected is primary read only: %v; got: %v", expected, *o.IsPrimaryReadOnly)
+		}
+		return nil
+	})
+	return r
+}
+
+func (r *ReplicationGroupAssert) HasNoIsPrimaryReadOnly() *ReplicationGroupAssert {
+	r.AddAssertion(func(t *testing.T, o *sdk.ReplicationGroup) error {
+		t.Helper()
+		if o.IsPrimaryReadOnly != nil {
+			return fmt.Errorf("expected is primary read only to be nil; got: %v", *o.IsPrimaryReadOnly)
 		}
 		return nil
 	})

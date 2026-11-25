@@ -93,8 +93,8 @@ func TestAcc_OpenflowDeploymentSnowflakeManaged_BasicUseCase(t *testing.T) {
 		resourceassert.OpenflowDeploymentSnowflakeManagedResource(t, ref).
 			HasNameString(id.Name()).
 			HasTypeString(string(sdk.OpenflowDeploymentTypeSnowflake)).
-			HasDisplayNameString("").
-			HasCommentString("").
+			HasNoDisplayName().
+			HasNoComment().
 			HasUsePrivateLinkString(r.BooleanDefault).
 			HasEventTableString(accountEventTable).
 			HasFullyQualifiedNameString(id.FullyQualifiedName()),

@@ -11,6 +11,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random/integrationtests"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testprofiles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -31,9 +32,9 @@ var (
 	NonExistingSchemaObjectIdentifier                                              = sdk.NewSchemaObjectIdentifier(TestDatabaseName, TestSchemaName, "does_not_exist")
 	NonExistingSchemaObjectIdentifierWithNonExistingSchema                         = sdk.NewSchemaObjectIdentifier(TestDatabaseName, "does_not_exist", "does_not_exist")
 	NonExistingSchemaObjectIdentifierWithNonExistingDatabaseAndSchema              = sdk.NewSchemaObjectIdentifier("does_not_exist", "does_not_exist", "does_not_exist")
-	NonExistingSchemaObjectIdentifierWithArguments                                 = sdk.NewSchemaObjectIdentifierWithArguments(TestDatabaseName, TestSchemaName, "does_not_exist", sdk.DataTypeInt)
-	NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingSchema            = sdk.NewSchemaObjectIdentifierWithArguments(TestDatabaseName, "does_not_exist", "does_not_exist", sdk.DataTypeInt)
-	NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingDatabaseAndSchema = sdk.NewSchemaObjectIdentifierWithArguments("does_not_exist", "does_not_exist", "does_not_exist", sdk.DataTypeInt)
+	NonExistingSchemaObjectIdentifierWithArguments                                 = sdk.NewSchemaObjectIdentifierWithArguments(TestDatabaseName, TestSchemaName, "does_not_exist", testdatatypes.DataTypeInteger)
+	NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingSchema            = sdk.NewSchemaObjectIdentifierWithArguments(TestDatabaseName, "does_not_exist", "does_not_exist", testdatatypes.DataTypeInteger)
+	NonExistingSchemaObjectIdentifierWithArgumentsWithNonExistingDatabaseAndSchema = sdk.NewSchemaObjectIdentifierWithArguments("does_not_exist", "does_not_exist", "does_not_exist", testdatatypes.DataTypeInteger)
 )
 
 var itc integrationTestContext

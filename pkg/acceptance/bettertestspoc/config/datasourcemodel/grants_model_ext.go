@@ -5,7 +5,6 @@ import (
 
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
@@ -92,9 +91,7 @@ func GrantsOnEmpty(
 ) *GrantsModel {
 	return Grants(datasourceName).
 		WithGrantsOnValue(
-			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-			}),
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 		)
 }
 
@@ -176,9 +173,7 @@ func GrantsToInvalidEmpty(
 ) *GrantsModel {
 	return Grants(datasourceName).
 		WithGrantsToValue(
-			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-			}),
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 		)
 }
 
@@ -188,9 +183,7 @@ func GrantsToInvalidShareNameMissing(
 	return Grants(datasourceName).
 		WithGrantsToValue(
 			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"share": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"share": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			}),
 		)
 }
@@ -270,9 +263,7 @@ func GrantsOfInvalidEmpty(
 ) *GrantsModel {
 	return Grants(datasourceName).
 		WithGrantsOfValue(
-			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-			}),
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 		)
 }
 
@@ -327,9 +318,7 @@ func GrantsFutureInInvalidEmpty(
 ) *GrantsModel {
 	return Grants(datasourceName).
 		WithFutureGrantsInValue(
-			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-			}),
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 		)
 }
 
@@ -373,9 +362,7 @@ func GrantsFutureToInvalidEmpty(
 ) *GrantsModel {
 	return Grants(datasourceName).
 		WithFutureGrantsToValue(
-			tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-			}),
+			tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 		)
 }
 

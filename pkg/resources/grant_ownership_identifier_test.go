@@ -3,6 +3,7 @@ package resources
 import (
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/assert"
@@ -168,7 +169,7 @@ func TestParseGrantOwnershipId(t *testing.T) {
 				Kind:                         OnObjectGrantOwnershipKind,
 				Data: &OnObjectGrantOwnershipData{
 					ObjectType: sdk.ObjectTypeFunction,
-					ObjectName: sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name", sdk.DataTypeFloat),
+					ObjectName: sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name", testdatatypes.DataTypeFloat),
 				},
 			},
 		},
@@ -182,7 +183,7 @@ func TestParseGrantOwnershipId(t *testing.T) {
 				Kind:                         OnObjectGrantOwnershipKind,
 				Data: &OnObjectGrantOwnershipData{
 					ObjectType: sdk.ObjectTypeFunction,
-					ObjectName: sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name", []sdk.DataType{}...),
+					ObjectName: sdk.NewSchemaObjectIdentifierWithArguments("database-name", "schema-name", "function-name"),
 				},
 			},
 		},

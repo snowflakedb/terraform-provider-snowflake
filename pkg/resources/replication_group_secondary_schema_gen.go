@@ -5,15 +5,16 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var replicationGroupSecondaryAttributesSchema = map[string]*tfschema.Schema{
 	"primary": {
 		Type:             tfschema.TypeString,
-		Optional:         true,
+		Required:         true,
 		ForceNew:         true,
-		DiffSuppressFunc: SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("primary")),
+		DiffSuppressFunc: suppressIdentifierQuoting,
 		Description:      "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
 	},
 	"is_primary": {
@@ -34,17 +35,6 @@ var replicationGroupSecondarySchema = collections.MergeMaps(
 		},
 	},
 	replicationGroupSecondaryAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW REPLICATION GROUPS` for the given replication group secondary.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowReplicationGroupSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeReplicationGroup, schemas.ShowReplicationGroupSchema),
 )

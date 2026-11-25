@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -86,17 +85,7 @@ func ReadBackupPolicyFunc(withExternalChangesMarking bool) tfschema.ReadContextF
 
 		backupPolicy, err := meta.(*provider.Context).Client.BackupPolicies.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query backup policy. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Backup policy id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeBackupPolicy, id, err)
 		}
 		backupPolicyDetails, err := meta.(*provider.Context).Client.BackupPolicies.Describe(ctx, id)
 		if err != nil {
@@ -128,25 +117,17 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 		return diag.FromErr(err)
 	}
 
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, &id,
-			rename,
-			client.BackupPolicies.ShowByID,
-			func(renamed sdk.SchemaObjectIdentifier) string {
-				return helpers.EncodeResourceIdentifier(renamed)
-			},
-			"backup policy",
-		); diags != nil {
-			return diags
-		}
+	client := meta.(*provider.Context).Client
+	if diags := handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.BackupPolicies.ShowByID,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		sdk.ObjectTypeBackupPolicy,
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {
@@ -166,13 +147,13 @@ func UpdateBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any)
 			return diag.FromErr(err)
 		}
 	}
-	if !reflect.DeepEqual(*setUnset.unsetSchedule, *sdk.NewBackupPolicyUnsetRequest()) {
-		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithUnset(*setUnset.unsetSchedule)); err != nil {
+	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewBackupPolicyUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithUnset(*setUnset.unset)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
-	if !reflect.DeepEqual(*setUnset.unset, *sdk.NewBackupPolicyUnsetRequest()) {
-		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithUnset(*setUnset.unset)); err != nil {
+	if !reflect.DeepEqual(*setUnset.unsetExpireAfterDays, *sdk.NewBackupPolicyUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.BackupPolicies.Alter(ctx, sdk.NewAlterBackupPolicyRequest(id).WithUnset(*setUnset.unsetExpireAfterDays)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -205,22 +186,22 @@ func backupPolicyApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.Cre
 
 // backupPolicyAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
 type backupPolicyAlterRequests struct {
-	set           *sdk.BackupPolicySetRequest
-	unsetSchedule *sdk.BackupPolicyUnsetRequest
-	unset         *sdk.BackupPolicyUnsetRequest
+	set                  *sdk.BackupPolicySetRequest
+	unset                *sdk.BackupPolicyUnsetRequest
+	unsetExpireAfterDays *sdk.BackupPolicyUnsetRequest
 }
 
 func backupPolicyApplySetUnset(d *tfschema.ResourceData) (*backupPolicyAlterRequests, error) {
-	set, unsetSchedule, unset := sdk.NewBackupPolicySetRequest(), sdk.NewBackupPolicyUnsetRequest(), sdk.NewBackupPolicyUnsetRequest()
+	set, unset, unsetExpireAfterDays := sdk.NewBackupPolicySetRequest(), sdk.NewBackupPolicyUnsetRequest(), sdk.NewBackupPolicyUnsetRequest()
 	errs := errors.Join(
-		attributeMappedValueUpdate(d, "schedule", &set.Schedule, &unsetSchedule.Schedule, toBackupPolicySchedule),
-		intAttributeUpdateBuilder(d, "expire_after_days", set.WithExpireAfterDays, unset.WithExpireAfterDays),
+		attributeMappedValueUpdate(d, "schedule", &set.Schedule, &unset.Schedule, toBackupPolicySchedule),
+		intAttributeUpdateBuilder(d, "expire_after_days", set.WithExpireAfterDays, unsetExpireAfterDays.WithExpireAfterDays),
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
 	)
 	if errs != nil {
 		return nil, errs
 	}
-	return &backupPolicyAlterRequests{set: set, unsetSchedule: unsetSchedule, unset: unset}, nil
+	return &backupPolicyAlterRequests{set: set, unset: unset, unsetExpireAfterDays: unsetExpireAfterDays}, nil
 }
 
 func DeleteBackupPolicy(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

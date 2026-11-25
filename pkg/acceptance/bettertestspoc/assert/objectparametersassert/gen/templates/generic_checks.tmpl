@@ -32,3 +32,8 @@ func ({{ $assertVar }} *{{ $assertName }}) HasDefaultParameterValueOnLevel(param
     {{ $assertVar }}.AddAssertion(assert.SnowflakeParameterDefaultValueOnLevelSet(parameterName, parameterType))
     return {{ $assertVar }}
 }
+
+func ({{ $assertVar }} *{{ $assertName }}) HasDefaultParameterValueOnDefaultLevel(parameterName {{ $sdkParameterName }}) *{{ $assertName }} {
+    {{ $assertVar }}.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+    return {{ $assertVar }}
+}

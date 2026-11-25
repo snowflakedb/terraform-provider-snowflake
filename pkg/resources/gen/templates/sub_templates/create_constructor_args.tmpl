@@ -5,6 +5,11 @@
 	if err != nil {
 		return {{ $.ErrZero }}, err
 	}
+{{- else if .Parser }}
+	{{ .Var }}, err := {{ .Parser }}({{ .Get }})
+	if err != nil {
+		return {{ $.ErrZero }}, err
+	}
 {{- else }}
 	{{ .Var }} := {{ .Get }}
 {{- end }}

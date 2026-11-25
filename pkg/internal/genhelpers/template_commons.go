@@ -2,6 +2,8 @@ package genhelpers
 
 import (
 	"fmt"
+	"io/fs"
+	"path"
 	"reflect"
 	"runtime"
 	"strings"
@@ -113,4 +115,30 @@ func getFunctionName(f any) string {
 	fullFuncName := runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 	parts := strings.Split(fullFuncName, ".")
 	return parts[len(parts)-1]
+}
+
+// ParseSubTemplates adds every .tmpl file of dir in fsys to root. A file is named after its snake_case name in
+// lowerCamelCase: parse_id.tmpl is the template "parseId", which a parent template calls with {{ template "parseId" . }}.
+// It panics when a file cannot be read or parsed.
+func ParseSubTemplates(root *template.Template, fsys fs.FS, dir string) {
+	entries, err := fs.ReadDir(fsys, dir)
+	if err != nil {
+		panic(fmt.Sprintf("read sub templates of %s: %v", dir, err))
+	}
+	for _, entry := range entries {
+		file := entry.Name()
+		if entry.IsDir() || path.Ext(file) != ".tmpl" {
+			continue
+		}
+		content, err := fs.ReadFile(fsys, path.Join(dir, file))
+		if err != nil {
+			panic(fmt.Sprintf("read sub template %s: %v", file, err))
+		}
+		template.Must(root.New(SubTemplateName(file)).Parse(string(content)))
+	}
+}
+
+// SubTemplateName is the name of the sub template in the file: its snake_case name in lowerCamelCase, without the extension.
+func SubTemplateName(file string) string {
+	return FirstLetterLowercase(SnakeCaseToCamel(strings.TrimSuffix(file, path.Ext(file))))
 }

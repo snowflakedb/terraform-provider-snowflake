@@ -18,6 +18,11 @@ var eventTableUnset = g.NewQueryStruct("EventTableUnset").
 	OptionalSQL("CHANGE_TRACKING").
 	OptionalSQL("COMMENT")
 
+var eventTableRowAccessPolicy = g.NewQueryStruct("EventTableRowAccessPolicy").
+	Identifier("Name", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
+	NamedListWithParens("ON", g.KindOfT[string](), g.KeywordOptions()).
+	WithValidation(g.ValidIdentifier, "Name")
+
 var eventTableAddRowAccessPolicy = g.NewQueryStruct("EventTableAddRowAccessPolicy").
 	SQL("ADD").
 	Identifier("RowAccessPolicy", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().SQL("ROW ACCESS POLICY").Required()).
@@ -74,7 +79,7 @@ var eventTablesDef = g.NewInterface(
 		OptionalAssignment("DEFAULT_DDL_COLLATION", g.KindOfT[sdkcommons.StringAllowEmpty](), g.ParameterOptions()).
 		OptionalSQL("COPY GRANTS").
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-		PredefinedQueryStructField("RowAccessPolicy", "*TableRowAccessPolicy", g.KeywordOptions()).
+		OptionalQueryStructField("RowAccessPolicy", eventTableRowAccessPolicy, g.KeywordOptions()).
 		OptionalTags().
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),

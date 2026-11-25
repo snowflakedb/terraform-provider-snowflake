@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -219,12 +218,8 @@ func DeleteGrantDatabaseRole(ctx context.Context, d *schema.ResourceData, meta a
 	}
 	objectType := parts[1]
 	granteeName := parts[2]
-	revokeFunc := client.DatabaseRoles.Revoke
-	revokeFromShareFunc := client.DatabaseRoles.RevokeFromShare
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy) {
-		revokeFunc = client.DatabaseRoles.RevokeSafely
-		revokeFromShareFunc = client.DatabaseRoles.RevokeFromShareSafely
-	}
+	revokeFunc := client.DatabaseRoles.RevokeSafely
+	revokeFromShareFunc := client.DatabaseRoles.RevokeFromShareSafely
 	switch objectType {
 	case "ROLE":
 		accountRoleId, err := sdk.ParseAccountObjectIdentifier(granteeName)

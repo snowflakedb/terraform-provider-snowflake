@@ -33,8 +33,10 @@ type CreateDatabaseRequest struct {
 	LogEventLevel                           *LogLevel
 	LogLevel                                *LogLevel
 	MaxDataExtensionTimeInDays              *int
+	MetricLevel                             *MetricLevel
 	QuotedIdentifiersIgnoreCase             *bool
 	ReplaceInvalidCharacters                *bool
+	ServiceCallerTokenValiditySecs          *int
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
@@ -68,8 +70,10 @@ type CreateSharedDatabaseRequest struct {
 	ExternalVolume                          *AccountObjectIdentifier
 	LogEventLevel                           *LogLevel
 	LogLevel                                *LogLevel
+	MetricLevel                             *MetricLevel
 	QuotedIdentifiersIgnoreCase             *bool
 	ReplaceInvalidCharacters                *bool
+	ServiceCallerTokenValiditySecs          *int
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
@@ -97,8 +101,10 @@ type CreateSecondaryDatabaseRequest struct {
 	LogEventLevel                           *LogLevel
 	LogLevel                                *LogLevel
 	MaxDataExtensionTimeInDays              *int
+	MetricLevel                             *MetricLevel
 	QuotedIdentifiersIgnoreCase             *bool
 	ReplaceInvalidCharacters                *bool
+	ServiceCallerTokenValiditySecs          *int
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
@@ -155,8 +161,10 @@ type DatabaseSetRequest struct {
 	LogEventLevel                           *LogLevel
 	LogLevel                                *LogLevel
 	MaxDataExtensionTimeInDays              *int
+	MetricLevel                             *MetricLevel
 	QuotedIdentifiersIgnoreCase             *bool
 	ReplaceInvalidCharacters                *bool
+	ServiceCallerTokenValiditySecs          *int
 	StorageSerializationPolicy              *StorageSerializationPolicy
 	SuspendTaskAfterNumFailures             *int
 	TaskAutoRetryAttempts                   *int
@@ -178,8 +186,10 @@ type DatabaseUnsetRequest struct {
 	LogEventLevel                           *bool
 	LogLevel                                *bool
 	MaxDataExtensionTimeInDays              *bool
+	MetricLevel                             *bool
 	QuotedIdentifiersIgnoreCase             *bool
 	ReplaceInvalidCharacters                *bool
+	ServiceCallerTokenValiditySecs          *bool
 	StorageSerializationPolicy              *bool
 	SuspendTaskAfterNumFailures             *bool
 	TaskAutoRetryAttempts                   *bool

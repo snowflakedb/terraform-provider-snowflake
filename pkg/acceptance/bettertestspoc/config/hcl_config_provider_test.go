@@ -153,6 +153,34 @@ EOT
 		require.Equal(t, expectedResult, result)
 	})
 
+	t.Run("empty object as an empty block", func(t *testing.T) {
+		resourceJson := `{
+            "resource": {
+                "snowflake_share": {
+                    "test": {
+						"name": "abc",
+						"empty_object": {},
+						"nested": {
+							"empty_list_item": [{}]
+						}
+                    }
+                }
+            }
+        }`
+		expectedResult := `resource "snowflake_share" "test" {
+  name = "abc"
+  empty_object {}
+  nested {
+    empty_list_item {}
+  }
+}
+`
+
+		result, err := config.DefaultHclConfigProvider.HclFromJson([]byte(resourceJson))
+		require.NoError(t, err)
+		assert.Equal(t, expectedResult, result)
+	})
+
 	t.Run("unquote value using placeholder", func(t *testing.T) {
 		resourceJson := fmt.Sprintf(`{
             "resource": {

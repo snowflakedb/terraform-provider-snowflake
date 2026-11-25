@@ -7,11 +7,6 @@ import (
 	"strings"
 )
 
-// TODO [SNOW-1843440]: generalize definitions for different types; generalize the ParseDataType function
-// TODO [SNOW-1843440]: generalize implementation in types (i.e. the internal struct implementing ToLegacyDataTypeSql and containing the underlyingType)
-// TODO [SNOW-1843440]: consider known/unknown to use Snowflake defaults and allow better handling in terraform resources
-// TODO [SNOW-1843440]: replace old DataTypes
-
 // DataType is the common interface that represents all Snowflake datatypes documented in https://docs.snowflake.com/en/sql-reference/intro-summary-data-types.
 type DataType interface {
 	// ToSql formats data type explicitly specifying all arguments and using the given type (e.g. CHAR(29) for CHAR(29)).
@@ -30,66 +25,54 @@ type sanitizedDataTypeRaw struct {
 }
 
 // ParseDataType is the entry point to get the implementation of the DataType from input raw string.
-// TODO [SNOW-1843440]: order currently matters (e.g. HasPrefix(TIME) can match also TIMESTAMP*, HasPrefix(DEC) can match also DECFLOAT*, make the checks more precise and order-independent)
 func ParseDataType(raw string) (DataType, error) {
 	dataTypeRaw := strings.TrimSpace(strings.ToUpper(raw))
+	namePart, _, hasArgs := strings.Cut(dataTypeRaw, "(")
+	name := strings.TrimSpace(namePart)
+	r := sanitizedDataTypeRaw{dataTypeRaw, name}
 
-	if idx := slices.IndexFunc(DecfloatDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseDecfloatDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, DecfloatDataTypeSynonyms[idx]})
+	switch {
+	case slices.Contains(DecfloatDataTypeSynonyms, name):
+		return parseDecfloatDataTypeRaw(r)
+	case slices.Contains(AllNumberDataTypes, name):
+		return parseNumberDataTypeRaw(r)
+	case slices.Contains(FloatDataTypeSynonyms, name) && !hasArgs:
+		return parseFloatDataTypeRaw(r)
+	case slices.Contains(AllTextDataTypes, name):
+		return parseTextDataTypeRaw(r)
+	case slices.Contains(BinaryDataTypeSynonyms, name):
+		return parseBinaryDataTypeRaw(r)
+	case slices.Contains(BooleanDataTypeSynonyms, name) && !hasArgs:
+		return parseBooleanDataTypeRaw(r)
+	case slices.Contains(DateDataTypeSynonyms, name) && !hasArgs:
+		return parseDateDataTypeRaw(r)
+	case slices.Contains(TimestampLtzDataTypeSynonyms, name):
+		return parseTimestampLtzDataTypeRaw(r)
+	case slices.Contains(TimestampNtzDataTypeSynonyms, name):
+		return parseTimestampNtzDataTypeRaw(r)
+	case slices.Contains(TimestampTzDataTypeSynonyms, name):
+		return parseTimestampTzDataTypeRaw(r)
+	case slices.Contains(TimeDataTypeSynonyms, name):
+		return parseTimeDataTypeRaw(r)
+	case slices.Contains(VariantDataTypeSynonyms, name) && !hasArgs:
+		return parseVariantDataTypeRaw(r)
+	case slices.Contains(ObjectDataTypeSynonyms, name):
+		return parseObjectDataTypeRaw(sanitizedDataTypeRaw{strings.TrimSpace(raw), name})
+	case slices.Contains(ArrayDataTypeSynonyms, name):
+		return parseArrayDataTypeRaw(sanitizedDataTypeRaw{strings.TrimSpace(raw), name})
+	case slices.Contains(MapDataTypeSynonyms, name):
+		return parseMapDataTypeRaw(sanitizedDataTypeRaw{strings.TrimSpace(raw), name})
+	case slices.Contains(GeographyDataTypeSynonyms, name) && !hasArgs:
+		return parseGeographyDataTypeRaw(r)
+	case slices.Contains(GeometryDataTypeSynonyms, name) && !hasArgs:
+		return parseGeometryDataTypeRaw(r)
+	case slices.Contains(VectorDataTypeSynonyms, name):
+		return parseVectorDataTypeRaw(r)
+	case slices.Contains(TableDataTypeSynonyms, name):
+		return parseTableDataTypeRaw(sanitizedDataTypeRaw{strings.TrimSpace(raw), name})
+	default:
+		return nil, fmt.Errorf("invalid data type: %s", raw)
 	}
-	if idx := slices.IndexFunc(AllNumberDataTypes, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseNumberDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, AllNumberDataTypes[idx]})
-	}
-	if slices.Contains(FloatDataTypeSynonyms, dataTypeRaw) {
-		return parseFloatDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if idx := slices.IndexFunc(AllTextDataTypes, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseTextDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, AllTextDataTypes[idx]})
-	}
-	if idx := slices.IndexFunc(BinaryDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseBinaryDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, BinaryDataTypeSynonyms[idx]})
-	}
-	if slices.Contains(BooleanDataTypeSynonyms, dataTypeRaw) {
-		return parseBooleanDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if slices.Contains(DateDataTypeSynonyms, dataTypeRaw) {
-		return parseDateDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if idx := slices.IndexFunc(TimestampLtzDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseTimestampLtzDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, TimestampLtzDataTypeSynonyms[idx]})
-	}
-	if idx := slices.IndexFunc(TimestampNtzDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseTimestampNtzDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, TimestampNtzDataTypeSynonyms[idx]})
-	}
-	if idx := slices.IndexFunc(TimestampTzDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseTimestampTzDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, TimestampTzDataTypeSynonyms[idx]})
-	}
-	if idx := slices.IndexFunc(TimeDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseTimeDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, TimeDataTypeSynonyms[idx]})
-	}
-	if slices.Contains(VariantDataTypeSynonyms, dataTypeRaw) {
-		return parseVariantDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if slices.Contains(ObjectDataTypeSynonyms, dataTypeRaw) {
-		return parseObjectDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if slices.Contains(ArrayDataTypeSynonyms, dataTypeRaw) {
-		return parseArrayDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if slices.Contains(GeographyDataTypeSynonyms, dataTypeRaw) {
-		return parseGeographyDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if slices.Contains(GeometryDataTypeSynonyms, dataTypeRaw) {
-		return parseGeometryDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, dataTypeRaw})
-	}
-	if idx := slices.IndexFunc(VectorDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseVectorDataTypeRaw(sanitizedDataTypeRaw{dataTypeRaw, VectorDataTypeSynonyms[idx]})
-	}
-	if idx := slices.IndexFunc(TableDataTypeSynonyms, func(s string) bool { return strings.HasPrefix(dataTypeRaw, s) }); idx >= 0 {
-		return parseTableDataTypeRaw(sanitizedDataTypeRaw{strings.TrimSpace(raw), TableDataTypeSynonyms[idx]})
-	}
-
-	return nil, fmt.Errorf("invalid data type: %s", raw)
 }
 
 // AreTheSame compares any two data types.
@@ -107,41 +90,23 @@ func AreTheSame(a DataType, b DataType) bool {
 	if reflect.TypeOf(a) != reflect.TypeOf(b) {
 		return false
 	}
+	if _, ok := a.(plain); ok {
+		return true
+	}
+	if v, ok := a.(sized); ok {
+		return areSizedDataTypesTheSame(v.asSized(), b.(sized).asSized())
+	}
 	switch v := a.(type) {
 	case *ArrayDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
-	case *BinaryDataType:
-		return castSuccessfully(v, b, areBinaryDataTypesTheSame)
-	case *BooleanDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
-	case *DateDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
-	case *DecfloatDataType:
-		return castSuccessfully(v, b, areDecfloatDataTypesTheSame)
-	case *FloatDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
-	case *GeographyDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
-	case *GeometryDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
+		return castSuccessfully(v, b, areArrayDataTypesTheSame)
+	case *MapDataType:
+		return castSuccessfully(v, b, areMapDataTypesTheSame)
 	case *NumberDataType:
 		return castSuccessfully(v, b, areNumberDataTypesTheSame)
 	case *ObjectDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
+		return castSuccessfully(v, b, areObjectDataTypesTheSame)
 	case *TableDataType:
 		return castSuccessfully(v, b, areTableDataTypesTheSame)
-	case *TextDataType:
-		return castSuccessfully(v, b, areTextDataTypesTheSame)
-	case *TimeDataType:
-		return castSuccessfully(v, b, areTimeDataTypesTheSame)
-	case *TimestampLtzDataType:
-		return castSuccessfully(v, b, areTimestampLtzDataTypesTheSame)
-	case *TimestampNtzDataType:
-		return castSuccessfully(v, b, areTimestampNtzDataTypesTheSame)
-	case *TimestampTzDataType:
-		return castSuccessfully(v, b, areTimestampTzDataTypesTheSame)
-	case *VariantDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreTheSame)
 	case *VectorDataType:
 		return castSuccessfully(v, b, areVectorDataTypesTheSame)
 	}
@@ -158,10 +123,6 @@ func castSuccessfully[T any](a T, b DataType, invoke func(a T, b T) bool) bool {
 		return invoke(a, dCasted)
 	}
 	return false
-}
-
-func noArgsDataTypesAreTheSame[T DataType](_ T, _ T) bool {
-	return true
 }
 
 // AreDefinitelyDifferent compares any two data types.
@@ -187,47 +148,25 @@ func AreDefinitelyDifferent(a DataType, b DataType) bool {
 	if reflect.TypeOf(a) != reflect.TypeOf(b) {
 		return true
 	}
+	if _, ok := a.(plain); ok {
+		return false
+	}
+	if v, ok := a.(sized); ok {
+		return areSizedDataTypesDefinitelyDifferent(v.asSized(), b.(sized).asSized())
+	}
 	switch v := a.(type) {
 	case *ArrayDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
-	case *BinaryDataType:
-		return castSuccessfully(v, b, areBinaryDataTypesDefinitelyDifferent)
-	case *BooleanDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
-	case *DateDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
-	case *DecfloatDataType:
-		return castSuccessfully(v, b, areDecfloatDataTypesDefinitelyDifferent)
-	case *FloatDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
-	case *GeographyDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
-	case *GeometryDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
+		return castSuccessfully(v, b, areArrayDataTypesDefinitelyDifferent)
+	case *MapDataType:
+		return castSuccessfully(v, b, areMapDataTypesDefinitelyDifferent)
 	case *NumberDataType:
 		return castSuccessfully(v, b, areNumberDataTypesDefinitelyDifferent)
 	case *ObjectDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
+		return castSuccessfully(v, b, areObjectDataTypesDefinitelyDifferent)
 	case *TableDataType:
 		return castSuccessfully(v, b, areTableDataTypesDefinitelyDifferent)
-	case *TextDataType:
-		return castSuccessfully(v, b, areTextDataTypesDefinitelyDifferent)
-	case *TimeDataType:
-		return castSuccessfully(v, b, areTimeDataTypesDefinitelyDifferent)
-	case *TimestampLtzDataType:
-		return castSuccessfully(v, b, areTimestampLtzDataTypesDefinitelyDifferent)
-	case *TimestampNtzDataType:
-		return castSuccessfully(v, b, areTimestampNtzDataTypesDefinitelyDifferent)
-	case *TimestampTzDataType:
-		return castSuccessfully(v, b, areTimestampTzDataTypesDefinitelyDifferent)
-	case *VariantDataType:
-		return castSuccessfully(v, b, noArgsDataTypesAreDefinitelyDifferent)
 	case *VectorDataType:
 		return castSuccessfully(v, b, areVectorDataTypesDefinitelyDifferent)
 	}
-	return false
-}
-
-func noArgsDataTypesAreDefinitelyDifferent[T DataType](_ T, _ T) bool {
 	return false
 }

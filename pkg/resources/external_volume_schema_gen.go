@@ -117,27 +117,7 @@ var externalVolumeSchema = collections.MergeMaps(
 		},
 	},
 	externalVolumeAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW EXTERNAL VOLUMES` for the given external volume.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowExternalVolumeSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE EXTERNAL VOLUME` for the given external volume. Because of Terraform limitations, the changes on storage_location field do not mark this field as computed.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeExternalVolumeDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeExternalVolume, schemas.ShowExternalVolumeSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeExternalVolume, schemas.DescribeExternalVolumeDetailsSchema, "Because of Terraform limitations, the changes on storage_location field do not mark this field as computed."),
 )

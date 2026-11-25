@@ -48,49 +48,57 @@ func (s QuotaScope) ExclusionTags() []QuotaScopeTag {
 	return s.UserTags.Tags
 }
 
-// Numeric values are kept as json.Number, which accepts both JSON numbers and numeric strings.
 type QuotaScopeUser struct {
-	UserId   json.Number `json:"user_id"`
-	UserName string      `json:"user_name"`
+	UserId   int    `json:"user_id"`
+	UserName string `json:"user_name"`
 }
 
 type QuotaScopeSharedResource struct {
-	Domain string      `json:"domain"`
-	Id     json.Number `json:"id"`
-	Name   string      `json:"name"`
+	Domain string `json:"domain"`
+	Id     int    `json:"id"`
+	Name   string `json:"name"`
 	// GET_QUOTA_SCOPE returns a Cortex agent's name only; DescribeDetails resolves the agent when exactly one in the account
 	// has that name.
 	CortexAgentId *SchemaObjectIdentifier `json:"-"`
 }
 
 func (r QuotaScopeSharedResource) IsWholeDomain() bool {
-	id, err := r.Id.Int64()
-	return err == nil && id == -1
+	return r.Id == -1
 }
 
-// NormalizedDomain replaces the underscores that GET_QUOTA_SCOPE returns in domains (e.g. CORTEX_AGENT) with spaces.
+// GET_QUOTA_SCOPE returns these domains by their former names.
+var quotaSharedResourceDomainFormerNames = map[string]QuotaSharedResourceDomain{
+	"CORTEX CODE":            QuotaSharedResourceDomainSnowflakeCoco,
+	"SNOWFLAKE INTELLIGENCE": QuotaSharedResourceDomainSnowflakeCowork,
+}
+
+// NormalizedDomain returns the domain of a shared resource returned by GET_QUOTA_SCOPE, which separates words with underscores
+// (e.g. CORTEX_AGENT) and uses the former names of SNOWFLAKE COCO and SNOWFLAKE COWORK.
 func (r QuotaScopeSharedResource) NormalizedDomain() (QuotaSharedResourceDomain, error) {
-	return ToQuotaSharedResourceDomain(strings.ReplaceAll(r.Domain, "_", " "))
+	domain := strings.ToUpper(strings.ReplaceAll(r.Domain, "_", " "))
+	if renamed, ok := quotaSharedResourceDomainFormerNames[domain]; ok {
+		return renamed, nil
+	}
+	return ToQuotaSharedResourceDomain(domain)
 }
-
-// QuotaScopeUserTagsOperatorAllUsers is the operator of a quota whose users are not selected by tags.
-const QuotaScopeUserTagsOperatorAllUsers = "ALL_USERS"
 
 type QuotaScopeUserTags struct {
 	Operator string          `json:"operator"`
 	Tags     []QuotaScopeTag `json:"tags"`
 }
 
+// AreExclusions reports whether the tags are excluded ones, which Snowflake returned with the ALL_USERS operator before it added
+// excluded_user_tags.
 func (t QuotaScopeUserTags) AreExclusions() bool {
-	return strings.EqualFold(t.Operator, QuotaScopeUserTagsOperatorAllUsers)
+	return strings.EqualFold(t.Operator, string(QuotaUserTagsOperatorAllUsers))
 }
 
 type QuotaScopeTag struct {
-	TagId_      json.Number `json:"tagId"`
-	TagDatabase string      `json:"tagDatabase"`
-	TagSchema   string      `json:"tagSchema"`
-	TagName     string      `json:"tagName"`
-	TagValues   []string    `json:"tagValues"`
+	Id          int      `json:"tagId"`
+	TagDatabase string   `json:"tagDatabase"`
+	TagSchema   string   `json:"tagSchema"`
+	TagName     string   `json:"tagName"`
+	TagValues   []string `json:"tagValues"`
 }
 
 func (t QuotaScopeTag) TagId() SchemaObjectIdentifier {
@@ -203,6 +211,10 @@ func (v *quotas) DescribeDetails(ctx context.Context, id SchemaObjectIdentifier)
 	return details, nil
 }
 
+// resolveCortexAgents works around GET_QUOTA_SCOPE returning only the name of a Cortex agent, without its database and schema:
+// it sets CortexAgentId when exactly one agent in the account has that name, and leaves it nil otherwise. Without it, a quota
+// can't tell which agent it monitors, so it can't be compared with configuration or imported. It can be removed once Snowflake
+// returns the agent's fully qualified name.
 func (v *quotas) resolveCortexAgents(ctx context.Context, resources []QuotaScopeSharedResource) error {
 	for i := range resources {
 		resource := &resources[i]
@@ -224,45 +236,6 @@ func (v *quotas) resolveCortexAgents(ctx context.Context, resources []QuotaScope
 	return nil
 }
 
-var quotaDomainsWithPlainInstances = []QuotaSharedResourceDomain{
-	QuotaSharedResourceDomainAiFunction,
-	QuotaSharedResourceDomainCortexCode,
-}
-
-func validateQuotaSharedResourceInstance(domain QuotaSharedResourceDomain, instanceName *string, warehouse *AccountObjectIdentifier, cortexAgent *SchemaObjectIdentifier, snowflakeIntelligence *AccountObjectIdentifier, aiGateway *AccountObjectIdentifier) error {
-	var errs []error
-	if _, err := ToQuotaSharedResourceDomain(string(domain)); err != nil {
-		errs = append(errs, err)
-	}
-	if instanceName != nil && !slices.Contains(quotaDomainsWithPlainInstances, domain) {
-		errs = append(errs, fmt.Errorf("InstanceName can only be set for the %s domains, got %s", strings.Join(AsStringList(quotaDomainsWithPlainInstances), ", "), domain))
-	}
-	referenceFields := []struct {
-		name   string
-		isSet  bool
-		domain QuotaSharedResourceDomain
-	}{
-		{"Warehouse", warehouse != nil, QuotaSharedResourceDomainWarehouse},
-		{"CortexAgent", cortexAgent != nil, QuotaSharedResourceDomainCortexAgent},
-		{"SnowflakeIntelligence", snowflakeIntelligence != nil, QuotaSharedResourceDomainSnowflakeIntelligence},
-		{"AiGateway", aiGateway != nil, QuotaSharedResourceDomainAiGateway},
-	}
-	for _, field := range referenceFields {
-		if field.isSet && field.domain != domain {
-			errs = append(errs, fmt.Errorf("%s can only be set for the %s domain, got %s", field.name, field.domain, domain))
-		}
-	}
-	return errors.Join(errs...)
-}
-
-func (v *QuotaAddSharedResourceArgs) additionalValidations() error {
-	return validateQuotaSharedResourceInstance(v.Domain, v.InstanceName, v.Warehouse, v.CortexAgent, v.SnowflakeIntelligence, v.AiGateway)
-}
-
-func (v *QuotaRemoveSharedResourceArgs) additionalValidations() error {
-	return validateQuotaSharedResourceInstance(v.Domain, v.InstanceName, v.Warehouse, v.CortexAgent, v.SnowflakeIntelligence, v.AiGateway)
-}
-
 func (v *QuotaRemoveCustomActionsArgs) additionalValidations() error {
 	// the arguments are positional, so the procedure can only be passed together with the threshold
 	if v.ProcedureFqn != nil && v.Threshold == nil {
@@ -271,81 +244,80 @@ func (v *QuotaRemoveCustomActionsArgs) additionalValidations() error {
 	return nil
 }
 
+// quotaSharedResourceInstance is an instance of a domain that takes object references.
 type quotaSharedResourceInstance struct {
-	name                  *string
-	warehouse             *AccountObjectIdentifier
-	cortexAgent           *SchemaObjectIdentifier
-	snowflakeIntelligence *AccountObjectIdentifier
-	aiGateway             *AccountObjectIdentifier
+	accountObjectId AccountObjectIdentifier
+	schemaObjectId  SchemaObjectIdentifier
 }
 
 func parseQuotaSharedResourceInstance(domain QuotaSharedResourceDomain, instance string) (quotaSharedResourceInstance, error) {
 	var result quotaSharedResourceInstance
+	var err error
+	switch domain {
+	case QuotaSharedResourceDomainAiFunction, QuotaSharedResourceDomainSnowflakeCoco:
+	case QuotaSharedResourceDomainCortexAgent:
+		result.schemaObjectId, err = ParseSchemaObjectIdentifier(instance)
+	case QuotaSharedResourceDomainWarehouse, QuotaSharedResourceDomainSnowflakeCowork, QuotaSharedResourceDomainAiGateway:
+		result.accountObjectId, err = ParseAccountObjectIdentifier(instance)
+	default:
+		err = fmt.Errorf("unsupported quota shared resource domain: %s", domain)
+	}
+	return result, err
+}
+
+// NewQuotaAddSharedResourceArgsRequestFromInstance returns the arguments for the whole domain when the instance is empty, and for
+// the instance otherwise: a name for AI FUNCTION and SNOWFLAKE COCO, and an object identifier for the other domains.
+func NewQuotaAddSharedResourceArgsRequestFromInstance(domain QuotaSharedResourceDomain, instance string) (*QuotaAddSharedResourceArgsRequest, error) {
+	request := NewQuotaAddSharedResourceArgsRequest()
 	if instance == "" {
-		return result, nil
+		return request.WithWholeDomain(*NewQuotaAddSharedResourceArgsWholeDomainRequest(domain)), nil
+	}
+	parsed, err := parseQuotaSharedResourceInstance(domain, instance)
+	if err != nil {
+		return nil, err
 	}
 	switch domain {
-	case QuotaSharedResourceDomainAiFunction, QuotaSharedResourceDomainCortexCode:
-		result.name = &instance
+	case QuotaSharedResourceDomainAiFunction:
+		request.WithAiFunction(*NewQuotaAddSharedResourceArgsAiFunctionRequest(instance))
+	case QuotaSharedResourceDomainSnowflakeCoco:
+		request.WithSnowflakeCoco(*NewQuotaAddSharedResourceArgsSnowflakeCocoRequest(instance))
+	case QuotaSharedResourceDomainWarehouse:
+		request.WithWarehouse(*NewQuotaAddSharedResourceArgsWarehouseRequest(parsed.accountObjectId))
 	case QuotaSharedResourceDomainCortexAgent:
-		id, err := ParseSchemaObjectIdentifier(instance)
-		if err != nil {
-			return result, err
-		}
-		result.cortexAgent = &id
-	case QuotaSharedResourceDomainWarehouse, QuotaSharedResourceDomainSnowflakeIntelligence, QuotaSharedResourceDomainAiGateway:
-		id, err := ParseAccountObjectIdentifier(instance)
-		if err != nil {
-			return result, err
-		}
-		switch domain {
-		case QuotaSharedResourceDomainWarehouse:
-			result.warehouse = &id
-		case QuotaSharedResourceDomainSnowflakeIntelligence:
-			result.snowflakeIntelligence = &id
-		default:
-			result.aiGateway = &id
-		}
-	default:
-		return result, fmt.Errorf("unsupported quota shared resource domain: %s", domain)
+		request.WithCortexAgent(*NewQuotaAddSharedResourceArgsCortexAgentRequest(parsed.schemaObjectId))
+	case QuotaSharedResourceDomainSnowflakeCowork:
+		request.WithSnowflakeCowork(*NewQuotaAddSharedResourceArgsSnowflakeCoworkRequest(parsed.accountObjectId))
+	case QuotaSharedResourceDomainAiGateway:
+		request.WithAiGateway(*NewQuotaAddSharedResourceArgsAiGatewayRequest(parsed.accountObjectId))
 	}
-	return result, nil
-}
-
-func NewQuotaAddSharedResourceArgsRequestFromInstance(domain QuotaSharedResourceDomain, instance string) (*QuotaAddSharedResourceArgsRequest, error) {
-	parsed, err := parseQuotaSharedResourceInstance(domain, instance)
-	if err != nil {
-		return nil, err
-	}
-	request := NewQuotaAddSharedResourceArgsRequest(domain)
-	request.InstanceName = parsed.name
-	request.Warehouse = parsed.warehouse
-	request.CortexAgent = parsed.cortexAgent
-	request.SnowflakeIntelligence = parsed.snowflakeIntelligence
-	request.AiGateway = parsed.aiGateway
 	return request, nil
 }
 
+// NewQuotaRemoveSharedResourceArgsRequestFromInstance is NewQuotaAddSharedResourceArgsRequestFromInstance for REMOVE_SHARED_RESOURCE.
 func NewQuotaRemoveSharedResourceArgsRequestFromInstance(domain QuotaSharedResourceDomain, instance string) (*QuotaRemoveSharedResourceArgsRequest, error) {
+	request := NewQuotaRemoveSharedResourceArgsRequest()
+	if instance == "" {
+		return request.WithWholeDomain(*NewQuotaRemoveSharedResourceArgsWholeDomainRequest(domain)), nil
+	}
 	parsed, err := parseQuotaSharedResourceInstance(domain, instance)
 	if err != nil {
 		return nil, err
 	}
-	request := NewQuotaRemoveSharedResourceArgsRequest(domain)
-	request.InstanceName = parsed.name
-	request.Warehouse = parsed.warehouse
-	request.CortexAgent = parsed.cortexAgent
-	request.SnowflakeIntelligence = parsed.snowflakeIntelligence
-	request.AiGateway = parsed.aiGateway
+	switch domain {
+	case QuotaSharedResourceDomainAiFunction:
+		request.WithAiFunction(*NewQuotaRemoveSharedResourceArgsAiFunctionRequest(instance))
+	case QuotaSharedResourceDomainSnowflakeCoco:
+		request.WithSnowflakeCoco(*NewQuotaRemoveSharedResourceArgsSnowflakeCocoRequest(instance))
+	case QuotaSharedResourceDomainWarehouse:
+		request.WithWarehouse(*NewQuotaRemoveSharedResourceArgsWarehouseRequest(parsed.accountObjectId))
+	case QuotaSharedResourceDomainCortexAgent:
+		request.WithCortexAgent(*NewQuotaRemoveSharedResourceArgsCortexAgentRequest(parsed.schemaObjectId))
+	case QuotaSharedResourceDomainSnowflakeCowork:
+		request.WithSnowflakeCowork(*NewQuotaRemoveSharedResourceArgsSnowflakeCoworkRequest(parsed.accountObjectId))
+	case QuotaSharedResourceDomainAiGateway:
+		request.WithAiGateway(*NewQuotaRemoveSharedResourceArgsAiGatewayRequest(parsed.accountObjectId))
+	}
 	return request, nil
-}
-
-func NewQuotaUserTagRequestFromTag(tag SchemaObjectIdentifier, value string) *QuotaUserTagRequest {
-	return NewQuotaUserTagRequest(*NewQuotaUserTagReferenceRequest(*NewQuotaUserTagReferenceArgumentsRequest(tag)), value)
-}
-
-func NewQuotaExcludedUserTagRequestFromTag(tag SchemaObjectIdentifier, value string) *QuotaExcludedUserTagRequest {
-	return NewQuotaExcludedUserTagRequest(*NewQuotaExcludedUserTagReferenceRequest(*NewQuotaExcludedUserTagReferenceArgumentsRequest(tag)), value)
 }
 
 func NewQuotaSetAdminEmailsArgsRequestFromEmails(emails ...string) *QuotaSetAdminEmailsArgsRequest {

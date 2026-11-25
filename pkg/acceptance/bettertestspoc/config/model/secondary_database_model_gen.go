@@ -26,8 +26,10 @@ type SecondaryDatabaseModel struct {
 	LogEventLevel                           tfconfig.Variable `json:"log_event_level,omitempty"`
 	LogLevel                                tfconfig.Variable `json:"log_level,omitempty"`
 	MaxDataExtensionTimeInDays              tfconfig.Variable `json:"max_data_extension_time_in_days,omitempty"`
+	MetricLevel                             tfconfig.Variable `json:"metric_level,omitempty"`
 	QuotedIdentifiersIgnoreCase             tfconfig.Variable `json:"quoted_identifiers_ignore_case,omitempty"`
 	ReplaceInvalidCharacters                tfconfig.Variable `json:"replace_invalid_characters,omitempty"`
+	ServiceCallerTokenValiditySecs          tfconfig.Variable `json:"service_caller_token_validity_secs,omitempty"`
 	StorageSerializationPolicy              tfconfig.Variable `json:"storage_serialization_policy,omitempty"`
 	SuspendTaskAfterNumFailures             tfconfig.Variable `json:"suspend_task_after_num_failures,omitempty"`
 	TaskAutoRetryAttempts                   tfconfig.Variable `json:"task_auto_retry_attempts,omitempty"`
@@ -177,6 +179,11 @@ func (s *SecondaryDatabaseModel) WithMaxDataExtensionTimeInDays(maxDataExtension
 	return s
 }
 
+func (s *SecondaryDatabaseModel) WithMetricLevel(metricLevel string) *SecondaryDatabaseModel {
+	s.MetricLevel = tfconfig.StringVariable(metricLevel)
+	return s
+}
+
 func (s *SecondaryDatabaseModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifiersIgnoreCase bool) *SecondaryDatabaseModel {
 	s.QuotedIdentifiersIgnoreCase = tfconfig.BoolVariable(quotedIdentifiersIgnoreCase)
 	return s
@@ -184,6 +191,11 @@ func (s *SecondaryDatabaseModel) WithQuotedIdentifiersIgnoreCase(quotedIdentifie
 
 func (s *SecondaryDatabaseModel) WithReplaceInvalidCharacters(replaceInvalidCharacters bool) *SecondaryDatabaseModel {
 	s.ReplaceInvalidCharacters = tfconfig.BoolVariable(replaceInvalidCharacters)
+	return s
+}
+
+func (s *SecondaryDatabaseModel) WithServiceCallerTokenValiditySecs(serviceCallerTokenValiditySecs int) *SecondaryDatabaseModel {
+	s.ServiceCallerTokenValiditySecs = tfconfig.IntegerVariable(serviceCallerTokenValiditySecs)
 	return s
 }
 
@@ -301,6 +313,11 @@ func (s *SecondaryDatabaseModel) WithMaxDataExtensionTimeInDaysValue(value tfcon
 	return s
 }
 
+func (s *SecondaryDatabaseModel) WithMetricLevelValue(value tfconfig.Variable) *SecondaryDatabaseModel {
+	s.MetricLevel = value
+	return s
+}
+
 func (s *SecondaryDatabaseModel) WithQuotedIdentifiersIgnoreCaseValue(value tfconfig.Variable) *SecondaryDatabaseModel {
 	s.QuotedIdentifiersIgnoreCase = value
 	return s
@@ -308,6 +325,11 @@ func (s *SecondaryDatabaseModel) WithQuotedIdentifiersIgnoreCaseValue(value tfco
 
 func (s *SecondaryDatabaseModel) WithReplaceInvalidCharactersValue(value tfconfig.Variable) *SecondaryDatabaseModel {
 	s.ReplaceInvalidCharacters = value
+	return s
+}
+
+func (s *SecondaryDatabaseModel) WithServiceCallerTokenValiditySecsValue(value tfconfig.Variable) *SecondaryDatabaseModel {
+	s.ServiceCallerTokenValiditySecs = value
 	return s
 }
 

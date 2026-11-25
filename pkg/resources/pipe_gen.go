@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -97,17 +96,7 @@ func ReadPipeFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 
 		pipe, err := meta.(*provider.Context).Client.Pipes.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query pipe. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Pipe id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypePipe, id, err)
 		}
 		pipeDetails, err := meta.(*provider.Context).Client.Pipes.Describe(ctx, id)
 		if err != nil {

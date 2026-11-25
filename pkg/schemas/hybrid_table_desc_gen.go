@@ -7,16 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type hybridTableDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.HybridTableDetails] = hybridTableDetailsToSchemaMapper{}
+
 // DescribeHybridTableDetailsSchema represents output of DESCRIBE query for the single HybridTableDetails.
-var DescribeHybridTableDetailsSchema = map[string]*schema.Schema{
+var DescribeHybridTableDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"type": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	"collation": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -65,14 +67,15 @@ var DescribeHybridTableDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, hybridTableDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeHybridTableDetailsSchema
 
 func HybridTableDetailsToSchema(hybridTableDetails *sdk.HybridTableDetails) map[string]any {
 	hybridTableDetailsSchema := make(map[string]any)
 	hybridTableDetailsSchema["name"] = hybridTableDetails.Name
-	hybridTableDetailsSchema["type"] = hybridTableDetails.Type
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	if hybridTableDetails.Collation != nil {
 		hybridTableDetailsSchema["collation"] = (*hybridTableDetails.Collation)
 	}
@@ -87,6 +90,7 @@ func HybridTableDetailsToSchema(hybridTableDetails *sdk.HybridTableDetails) map[
 	hybridTableDetailsSchema["policy_name"] = hybridTableDetails.PolicyName
 	hybridTableDetailsSchema["privacy_domain"] = hybridTableDetails.PrivacyDomain
 	hybridTableDetailsSchema["schema_evolution_record"] = hybridTableDetails.SchemaEvolutionRecord
+	hybridTableDetailsToSchemaMapper{}.additionalToSchema(hybridTableDetails, hybridTableDetailsSchema)
 	return hybridTableDetailsSchema
 }
 

@@ -30,6 +30,9 @@ func (opts *CreateWarehouseOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateWarehouseOptions", "OrReplace", "IfNotExists"))
 	}
+	if everyValueSet(opts.ResourceConstraint, opts.Generation) {
+		errs = append(errs, errOneOf("CreateWarehouseOptions", "ResourceConstraint", "Generation"))
+	}
 	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {

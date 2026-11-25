@@ -49,27 +49,7 @@ var catalogIntegrationObjectStorageSchema = collections.MergeMaps(
 		},
 	},
 	catalogIntegrationObjectStorageAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration object storage.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowCatalogIntegrationSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeCatalogIntegrationObjectStorageDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.ShowCatalogIntegrationSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.DescribeCatalogIntegrationObjectStorageDetailsSchema),
 )

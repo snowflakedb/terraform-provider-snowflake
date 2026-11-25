@@ -100,10 +100,29 @@ func (opts *AddSharedResourceQuotaOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("AddSharedResourceQuotaOptions", "name"))
 	}
 	if valueSet(opts.args) {
-		if moreThanOneValueSet(opts.args.InstanceName, opts.args.Warehouse, opts.args.CortexAgent, opts.args.SnowflakeIntelligence, opts.args.AiGateway) {
-			errs = append(errs, errMoreThanOneOf("AddSharedResourceQuotaOptions.args", "InstanceName", "Warehouse", "CortexAgent", "SnowflakeIntelligence", "AiGateway"))
+		if !exactlyOneValueSet(opts.args.WholeDomain, opts.args.AiFunction, opts.args.SnowflakeCoco, opts.args.Warehouse, opts.args.CortexAgent, opts.args.SnowflakeCowork, opts.args.AiGateway) {
+			errs = append(errs, errExactlyOneOf("AddSharedResourceQuotaOptions.args", "WholeDomain", "AiFunction", "SnowflakeCoco", "Warehouse", "CortexAgent", "SnowflakeCowork", "AiGateway"))
 		}
-		errs = append(errs, opts.args.additionalValidations())
+		if valueSet(opts.args.Warehouse) {
+			if !ValidObjectIdentifier(opts.args.Warehouse.Id) {
+				errs = append(errs, errInvalidIdentifier("AddSharedResourceQuotaOptions.args.Warehouse", "Id"))
+			}
+		}
+		if valueSet(opts.args.CortexAgent) {
+			if !ValidObjectIdentifier(opts.args.CortexAgent.Id) {
+				errs = append(errs, errInvalidIdentifier("AddSharedResourceQuotaOptions.args.CortexAgent", "Id"))
+			}
+		}
+		if valueSet(opts.args.SnowflakeCowork) {
+			if !ValidObjectIdentifier(opts.args.SnowflakeCowork.Id) {
+				errs = append(errs, errInvalidIdentifier("AddSharedResourceQuotaOptions.args.SnowflakeCowork", "Id"))
+			}
+		}
+		if valueSet(opts.args.AiGateway) {
+			if !ValidObjectIdentifier(opts.args.AiGateway.Id) {
+				errs = append(errs, errInvalidIdentifier("AddSharedResourceQuotaOptions.args.AiGateway", "Id"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -117,10 +136,29 @@ func (opts *RemoveSharedResourceQuotaOptions) validate() error {
 		errs = append(errs, errInvalidIdentifier("RemoveSharedResourceQuotaOptions", "name"))
 	}
 	if valueSet(opts.args) {
-		if moreThanOneValueSet(opts.args.InstanceName, opts.args.Warehouse, opts.args.CortexAgent, opts.args.SnowflakeIntelligence, opts.args.AiGateway) {
-			errs = append(errs, errMoreThanOneOf("RemoveSharedResourceQuotaOptions.args", "InstanceName", "Warehouse", "CortexAgent", "SnowflakeIntelligence", "AiGateway"))
+		if !exactlyOneValueSet(opts.args.WholeDomain, opts.args.AiFunction, opts.args.SnowflakeCoco, opts.args.Warehouse, opts.args.CortexAgent, opts.args.SnowflakeCowork, opts.args.AiGateway) {
+			errs = append(errs, errExactlyOneOf("RemoveSharedResourceQuotaOptions.args", "WholeDomain", "AiFunction", "SnowflakeCoco", "Warehouse", "CortexAgent", "SnowflakeCowork", "AiGateway"))
 		}
-		errs = append(errs, opts.args.additionalValidations())
+		if valueSet(opts.args.Warehouse) {
+			if !ValidObjectIdentifier(opts.args.Warehouse.Id) {
+				errs = append(errs, errInvalidIdentifier("RemoveSharedResourceQuotaOptions.args.Warehouse", "Id"))
+			}
+		}
+		if valueSet(opts.args.CortexAgent) {
+			if !ValidObjectIdentifier(opts.args.CortexAgent.Id) {
+				errs = append(errs, errInvalidIdentifier("RemoveSharedResourceQuotaOptions.args.CortexAgent", "Id"))
+			}
+		}
+		if valueSet(opts.args.SnowflakeCowork) {
+			if !ValidObjectIdentifier(opts.args.SnowflakeCowork.Id) {
+				errs = append(errs, errInvalidIdentifier("RemoveSharedResourceQuotaOptions.args.SnowflakeCowork", "Id"))
+			}
+		}
+		if valueSet(opts.args.AiGateway) {
+			if !ValidObjectIdentifier(opts.args.AiGateway.Id) {
+				errs = append(errs, errInvalidIdentifier("RemoveSharedResourceQuotaOptions.args.AiGateway", "Id"))
+			}
+		}
 	}
 	return JoinErrors(errs...)
 }
@@ -136,12 +174,8 @@ func (opts *SetUserTagsQuotaOptions) validate() error {
 	if valueSet(opts.args) {
 		if valueSet(opts.args.Tags) {
 			for tagIdx, tag := range opts.args.Tags {
-				if valueSet(tag.Reference) {
-					if valueSet(tag.Reference.Arguments) {
-						if !ValidObjectIdentifier(tag.Reference.Arguments.Tag) {
-							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetUserTagsQuotaOptions.args.Tags[%d].Reference.Arguments", tagIdx), "Tag"))
-						}
-					}
+				if !ValidObjectIdentifier(tag.Tag) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetUserTagsQuotaOptions.args.Tags[%d]", tagIdx), "Tag"))
 				}
 			}
 		}
@@ -164,12 +198,8 @@ func (opts *ExcludeUsersQuotaOptions) validate() error {
 		if valueSet(opts.args.ByTag) {
 			if valueSet(opts.args.ByTag.Tags) {
 				for tagIdx, tag := range opts.args.ByTag.Tags {
-					if valueSet(tag.Reference) {
-						if valueSet(tag.Reference.Arguments) {
-							if !ValidObjectIdentifier(tag.Reference.Arguments.Tag) {
-								errs = append(errs, errInvalidIdentifier(fmt.Sprintf("ExcludeUsersQuotaOptions.args.ByTag.Tags[%d].Reference.Arguments", tagIdx), "Tag"))
-							}
-						}
+					if !ValidObjectIdentifier(tag.Tag) {
+						errs = append(errs, errInvalidIdentifier(fmt.Sprintf("ExcludeUsersQuotaOptions.args.ByTag.Tags[%d]", tagIdx), "Tag"))
 					}
 				}
 			}

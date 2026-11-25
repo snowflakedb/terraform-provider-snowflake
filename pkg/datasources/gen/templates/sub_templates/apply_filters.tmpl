@@ -1,0 +1,52 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.ApplyFilters.Generate -}}
+{{- if .Filters.Like }}
+	handleLike(d, &req.Like)
+{{- end }}
+{{- if .Filters.StartsWith }}
+	handleStartsWith(d, &req.StartsWith)
+{{- end }}
+{{- if .Filters.Limit }}
+	handleLimitFrom(d, &req.Limit)
+{{- end }}
+{{- if eq .Filters.In "In" }}
+	if err := handleIn(d, &req.In); err != nil {
+		return diag.FromErr(err)
+	}
+{{- else if eq .Filters.In "ExtendedIn" }}
+	if err := handleExtendedIn(d, &req.In); err != nil {
+		return diag.FromErr(err)
+	}
+{{- else if eq .Filters.In "ExtendedInWithoutSchema" }}
+	if err := handleExtendedInWithoutSchema(d, &req.In); err != nil {
+		return diag.FromErr(err)
+	}
+{{- else if eq .Filters.In "InAccount" }}
+	if v, ok := d.GetOk("in_account"); ok {
+		account, err := helpers.DecodeSnowflakeAccountIdentifier(v.(string))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		req.WithInAccount(account)
+	}
+{{- end }}
+{{- if .Filters.On }}
+	if err := handleOn(d, &req.On); err != nil {
+		return diag.FromErr(err)
+	}
+{{- end }}
+{{- if .Filters.Terse }}
+	if d.Get("terse").(bool) {
+		req.WithTerse(true)
+	}
+{{- end }}
+{{- if .Filters.History }}
+	if d.Get("history").(bool) {
+		req.WithHistory(true)
+	}
+{{- end }}
+{{ else if .Hooks.ApplyFilters.Present -}}
+	if err := {{ .Prefix }}ApplyFiltersExt(d, req); err != nil {
+		return diag.FromErr(err)
+	}
+{{ end -}}

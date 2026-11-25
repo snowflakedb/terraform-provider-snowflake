@@ -12,6 +12,14 @@ func (s *CreateExternalTableRequest) GetColumns() []ExternalTableColumnRequest {
 	return s.Columns
 }
 
+// TypeString returns the SQL of the parsed type, falling back to the raw DESCRIBE value when parsing failed.
+func (d ExternalTableColumnDetails) TypeString() string {
+	if d.Type != nil {
+		return d.Type.ToSql()
+	}
+	return d.TypeRaw
+}
+
 func (opts *ExternalTableFileFormat) additionalValidations() error {
 	if opts.FileFormatType == nil || opts.Options == nil {
 		return nil

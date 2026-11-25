@@ -22,7 +22,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -93,6 +92,7 @@ func TestInt_FailoverGroups(t *testing.T) {
 			HasNoAllowedIntegrationTypes().
 			HasNoReplicationSchedule().
 			HasNoSecondaryState().
+			HasNextScheduledRefresh(time.Time{}).
 			HasIsListingAutoFulfillmentGroup(false).
 			HasIsOptimizedRefreshEnabled(false).
 			HasRpoAssurance(false).
@@ -166,6 +166,7 @@ func TestInt_FailoverGroups(t *testing.T) {
 			HasIsPrimary(true).
 			HasNoComment().
 			HasReplicationSchedule("10 MINUTE").
+			HasErrorIntegration(errorIntegration.ID()).
 			HasNoSecondaryState().
 			HasIsOptimizedRefreshEnabled(true).
 			HasRpoAssurance(false).
@@ -223,6 +224,17 @@ func TestInt_FailoverGroups(t *testing.T) {
 			[]sdk.AccountIdentifier{secondaryAccountID},
 		))
 		require.ErrorContains(t, err, "already exists")
+	})
+
+	t.Run("create: or replace is not supported", func(t *testing.T) {
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		t.Cleanup(testClientHelper().FailoverGroup.DropFunc(t, id))
+
+		_, err := client.ExecForTests(ctx, fmt.Sprintf(
+			"CREATE OR REPLACE FAILOVER GROUP %s OBJECT_TYPES = ROLES ALLOWED_ACCOUNTS = %s",
+			id.FullyQualifiedName(), secondaryAccountID.FullyQualifiedName(),
+		))
+		require.ErrorContains(t, err, "cannot be replaced")
 	})
 
 	t.Run("create secondary: basic", func(t *testing.T) {
@@ -373,7 +385,8 @@ func TestInt_FailoverGroups(t *testing.T) {
 		))
 		assertThatObject(t, objectassert.FailoverGroup(t, id).
 			HasComment(comment).
-			HasReplicationSchedule("USING CRON 0 0 10-20 * TUE,THU UTC"),
+			HasReplicationSchedule("USING CRON 0 0 10-20 * TUE,THU UTC").
+			HasErrorIntegration(errorIntegration.ID()),
 		)
 
 		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
@@ -384,24 +397,9 @@ func TestInt_FailoverGroups(t *testing.T) {
 		))
 		assertThatObject(t, objectassert.FailoverGroup(t, id).
 			HasNoComment().
-			HasNoReplicationSchedule(),
+			HasNoReplicationSchedule().
+			HasNoErrorIntegration(),
 		)
-	})
-
-	t.Run("alter: set and unset tags", func(t *testing.T) {
-		tag, cleanupTag := testClientHelper().Tag.CreateTag(t)
-		t.Cleanup(cleanupTag)
-		id := createPrimary(t)
-
-		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
-			WithSetTags([]sdk.TagAssociation{{Name: tag.ID(), Value: "v2"}}),
-		))
-		assertTagSet(t, tag.ID(), id, sdk.ObjectTypeFailoverGroup, "v2")
-
-		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
-			WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}),
-		))
-		assertTagUnset(t, tag.ID(), id, sdk.ObjectTypeFailoverGroup)
 	})
 
 	// OPTIMIZED_REFRESH needs a schedule and conflicts with RPO_ASSURANCE, which needs the schedule to be unset.
@@ -541,18 +539,292 @@ func TestInt_FailoverGroups(t *testing.T) {
 		require.Empty(t, sourceShares)
 	})
 
-	// Snowflake accepts SET and UNSET READ_ONLY on a failover group, but SHOW keeps read_only null.
+	// SHOW prints the read-only mode of a primary failover group in is_primary_read_only (the documentation calls the column read_only).
+	// The read-only tests use only the object types limited with an allowed_* list (createPrimary has DATABASES). The read-only mode of a group
+	// with ROLES or WAREHOUSES blocks creating them in the whole account, and the tests running in parallel fail, e.g.:
+	//   500051 (2F003): Cannot create role because roles are part of a read-only replication or failover group in this account.
+	//   500053 (2F003): Cannot CREATE WAREHOUSE because WAREHOUSE is part of a read-only replication or failover group in this account.
+	// SECURITY INTEGRATIONS cannot be used there either, because Snowflake requires ROLES to replicate them, e.g.:
+	//   500052 (55000): ALLOWED_INTEGRATION_TYPES contains SECURITY INTEGRATIONS but OBJECT_TYPES does not include ROLES. ROLES is required for replicating SECURITY INTEGRATIONS.
 	t.Run("alter: read only", func(t *testing.T) {
 		id := createPrimary(t)
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasIsPrimaryReadOnly(false))
 
 		err := client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
 			WithSet(*sdk.NewFailoverGroupSetRequest().WithReadOnly(true)))
 		require.NoError(t, err)
-		assertThatObject(t, objectassert.FailoverGroup(t, id).HasNoReadOnly())
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasIsPrimaryReadOnly(true))
 
 		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
 			WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))))
-		assertThatObject(t, objectassert.FailoverGroup(t, id).HasNoReadOnly())
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasIsPrimaryReadOnly(false))
+	})
+
+	// The comment and the read-only mode are set and unset in single statements.
+	t.Run("alter: comment and read only in one statement", func(t *testing.T) {
+		id := createPrimary(t)
+		comment := random.Comment()
+		t.Cleanup(func() {
+			_ = client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true)))
+		})
+
+		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithComment(comment).WithReadOnly(true))))
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasComment(comment).HasIsPrimaryReadOnly(true))
+		// SET READ_ONLY on a group that is already read-only fails.
+		err := client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithReadOnly(true)))
+		require.ErrorContains(t, err, "read-only mode")
+
+		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithComment(true).WithReadOnly(true))))
+		assertThatObject(t, objectassert.FailoverGroup(t, id).HasNoComment().HasIsPrimaryReadOnly(false))
+		err = client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true)))
+		require.ErrorContains(t, err, "is not in read-only mode")
+	})
+
+	// Snowflake rejects the membership changes (the allowed databases, shares and external volumes, OBJECT_TYPES, and ALLOWED_INTEGRATION_TYPES)
+	// while a primary failover group is in the read-only mode (500161). Properties (comment, schedule, optimized refresh, error integration),
+	// tags, the rename, ADD / REMOVE of allowed accounts, and MOVE to another group are accepted.
+	// SET READ_ONLY on a read-only group (500158) and UNSET READ_ONLY on a group that is not read-only (500159) are errors, so neither is idempotent.
+	// Each case runs on its own and, when it is accepted, is reverted.
+	t.Run("alter: statements in the read-only mode", func(t *testing.T) {
+		databaseA, cleanupDatabaseA := testClientHelper().Database.CreateDatabase(t)
+		t.Cleanup(cleanupDatabaseA)
+		databaseB, cleanupDatabaseB := testClientHelper().Database.CreateDatabase(t)
+		t.Cleanup(cleanupDatabaseB)
+		shareA, cleanupShareA := testClientHelper().Share.Create(t)
+		t.Cleanup(cleanupShareA)
+		shareB, cleanupShareB := testClientHelper().Share.Create(t)
+		t.Cleanup(cleanupShareB)
+		volumeA, cleanupVolumeA := testClientHelper().ExternalVolume.Create(t)
+		t.Cleanup(cleanupVolumeA)
+		volumeB, cleanupVolumeB := testClientHelper().ExternalVolume.Create(t)
+		t.Cleanup(cleanupVolumeB)
+		errorIntegration, cleanupErrorIntegration := testClientHelper().NotificationIntegration.Create(t)
+		t.Cleanup(cleanupErrorIntegration)
+		tag, cleanupTag := testClientHelper().Tag.CreateTag(t)
+		t.Cleanup(cleanupTag)
+
+		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		newId := testClientHelper().Ids.RandomAccountObjectIdentifier()
+		objectTypes := []sdk.FailoverGroupObjectType{
+			sdk.FailoverGroupObjectTypeDatabases,
+			sdk.FailoverGroupObjectTypeShares,
+			sdk.FailoverGroupObjectTypeExternalVolumes,
+			sdk.FailoverGroupObjectTypeIntegrations,
+		}
+		create(t, sdk.NewCreateFailoverGroupRequest(id, objectTypes, []sdk.AccountIdentifier{secondaryAccountID}).
+			WithAllowedDatabases([]sdk.AccountObjectIdentifier{databaseA.ID()}).
+			WithAllowedShares([]sdk.AccountObjectIdentifier{shareA.ID()}).
+			WithAllowedExternalVolumes([]sdk.AccountObjectIdentifier{volumeA}).
+			WithAllowedIntegrationTypes([]sdk.FailoverGroupIntegrationType{sdk.FailoverGroupIntegrationTypeApiIntegrations}).
+			WithReplicationSchedule("10 MINUTE").
+			WithErrorIntegration(errorIntegration.ID()))
+		// The group is dropped only when it is not read-only.
+		t.Cleanup(func() {
+			_ = client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).WithUnset(*sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true)))
+		})
+		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithComment("initial"))))
+		require.NoError(t, client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(id).
+			WithSet(*sdk.NewFailoverGroupSetRequest().WithReadOnly(true))))
+
+		alter := func(request *sdk.AlterFailoverGroupRequest) error {
+			return client.FailoverGroups.Alter(ctx, request)
+		}
+		set := func(request *sdk.FailoverGroupSetRequest) error {
+			return alter(sdk.NewAlterFailoverGroupRequest(id).WithSet(*request))
+		}
+		unset := func(request *sdk.FailoverGroupUnsetRequest) error {
+			return alter(sdk.NewAlterFailoverGroupRequest(id).WithUnset(*request))
+		}
+		add := func(request *sdk.FailoverGroupAddRequest) error {
+			return alter(sdk.NewAlterFailoverGroupRequest(id).WithAdd(*request))
+		}
+		remove := func(request *sdk.FailoverGroupRemoveRequest) error {
+			return alter(sdk.NewAlterFailoverGroupRequest(id).WithRemove(*request))
+		}
+		ids := func(values ...sdk.AccountObjectIdentifier) []sdk.AccountObjectIdentifier { return values }
+		accounts := func(values ...sdk.AccountIdentifier) []sdk.AccountIdentifier { return values }
+		moveTarget := createPrimary(t)
+
+		cases := []struct {
+			name    string
+			blocked bool
+			run     func() error
+			revert  func() error
+		}{
+			{
+				name:    "add allowed database",
+				blocked: true,
+				run:     func() error { return add(sdk.NewFailoverGroupAddRequest().WithAllowedDatabases(ids(databaseB.ID()))) },
+				revert: func() error {
+					return remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedDatabases(ids(databaseB.ID())))
+				},
+			},
+			{
+				name:    "remove allowed database",
+				blocked: true,
+				run: func() error {
+					return remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedDatabases(ids(databaseA.ID())))
+				},
+				revert: func() error { return add(sdk.NewFailoverGroupAddRequest().WithAllowedDatabases(ids(databaseA.ID()))) },
+			},
+			{
+				name:    "add allowed share",
+				blocked: true,
+				run:     func() error { return add(sdk.NewFailoverGroupAddRequest().WithAllowedShares(ids(shareB.ID()))) },
+				revert:  func() error { return remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedShares(ids(shareB.ID()))) },
+			},
+			{
+				name:    "remove allowed share",
+				blocked: true,
+				run:     func() error { return remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedShares(ids(shareA.ID()))) },
+				revert:  func() error { return add(sdk.NewFailoverGroupAddRequest().WithAllowedShares(ids(shareA.ID()))) },
+			},
+			{
+				name:    "add allowed external volume",
+				blocked: true,
+				run:     func() error { return add(sdk.NewFailoverGroupAddRequest().WithAllowedExternalVolumes(ids(volumeB))) },
+				revert: func() error {
+					return remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedExternalVolumes(ids(volumeB)))
+				},
+			},
+			{
+				name:    "remove allowed external volume",
+				blocked: true,
+				run: func() error {
+					return remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedExternalVolumes(ids(volumeA)))
+				},
+				revert: func() error { return add(sdk.NewFailoverGroupAddRequest().WithAllowedExternalVolumes(ids(volumeA))) },
+			},
+			{
+				name: "remove and add allowed account",
+				run: func() error {
+					if err := remove(sdk.NewFailoverGroupRemoveRequest().WithAllowedAccounts(accounts(secondaryAccountID))); err != nil {
+						return err
+					}
+					assertThatObject(t, objectassert.FailoverGroup(t, id).HasAllowedAccounts(sourceAccountID))
+					return nil
+				},
+				revert: func() error {
+					return add(sdk.NewFailoverGroupAddRequest().WithAllowedAccounts(accounts(secondaryAccountID)).WithIgnoreEditionCheck(true))
+				},
+			},
+			{
+				name: "move databases to another group",
+				run: func() error {
+					if err := alter(sdk.NewAlterFailoverGroupRequest(id).WithMove(*sdk.NewFailoverGroupMoveRequest(moveTarget).WithDatabases(ids(databaseA.ID())))); err != nil {
+						return err
+					}
+					moved, err := client.FailoverGroups.ShowDatabases(ctx, moveTarget)
+					require.NoError(t, err)
+					require.Contains(t, moved, databaseA.ID())
+					return nil
+				},
+				revert: func() error {
+					return client.FailoverGroups.Alter(ctx, sdk.NewAlterFailoverGroupRequest(moveTarget).
+						WithMove(*sdk.NewFailoverGroupMoveRequest(id).WithDatabases(ids(databaseA.ID()))))
+				},
+			},
+			{
+				name:    "set object types",
+				blocked: true,
+				run:     func() error { return set(sdk.NewFailoverGroupSetRequest().WithObjectTypes(objectTypes[:3])) },
+				revert: func() error {
+					return set(sdk.NewFailoverGroupSetRequest().WithObjectTypes(objectTypes))
+				},
+			},
+			{
+				name:    "set allowed integration types",
+				blocked: true,
+				run: func() error {
+					return set(sdk.NewFailoverGroupSetRequest().WithObjectTypes(objectTypes).
+						WithAllowedIntegrationTypes([]sdk.FailoverGroupIntegrationType{sdk.FailoverGroupIntegrationTypeNotificationIntegrations}))
+				},
+				revert: func() error {
+					return set(sdk.NewFailoverGroupSetRequest().WithObjectTypes(objectTypes).
+						WithAllowedIntegrationTypes([]sdk.FailoverGroupIntegrationType{sdk.FailoverGroupIntegrationTypeApiIntegrations}))
+				},
+			},
+			{
+				name:   "set comment",
+				run:    func() error { return set(sdk.NewFailoverGroupSetRequest().WithComment("changed")) },
+				revert: func() error { return set(sdk.NewFailoverGroupSetRequest().WithComment("initial")) },
+			},
+			{
+				name:   "unset comment",
+				run:    func() error { return unset(sdk.NewFailoverGroupUnsetRequest().WithComment(true)) },
+				revert: func() error { return set(sdk.NewFailoverGroupSetRequest().WithComment("initial")) },
+			},
+			{
+				name:   "set replication schedule",
+				run:    func() error { return set(sdk.NewFailoverGroupSetRequest().WithReplicationSchedule("20 MINUTE")) },
+				revert: func() error { return set(sdk.NewFailoverGroupSetRequest().WithReplicationSchedule("10 MINUTE")) },
+			},
+			{
+				name:   "set optimized refresh",
+				run:    func() error { return set(sdk.NewFailoverGroupSetRequest().WithOptimizedRefresh(true)) },
+				revert: func() error { return unset(sdk.NewFailoverGroupUnsetRequest().WithOptimizedRefresh(true)) },
+			},
+			{
+				name:   "unset replication schedule",
+				run:    func() error { return unset(sdk.NewFailoverGroupUnsetRequest().WithReplicationSchedule(true)) },
+				revert: func() error { return set(sdk.NewFailoverGroupSetRequest().WithReplicationSchedule("10 MINUTE")) },
+			},
+			{
+				name:   "unset error integration",
+				run:    func() error { return unset(sdk.NewFailoverGroupUnsetRequest().WithErrorIntegration(true)) },
+				revert: func() error { return set(sdk.NewFailoverGroupSetRequest().WithErrorIntegration(errorIntegration.ID())) },
+			},
+			{
+				name:   "set error integration",
+				run:    func() error { return set(sdk.NewFailoverGroupSetRequest().WithErrorIntegration(errorIntegration.ID())) },
+				revert: func() error { return nil },
+			},
+			{
+				name: "set tag",
+				run: func() error {
+					return alter(sdk.NewAlterFailoverGroupRequest(id).WithSetTags([]sdk.TagAssociation{{Name: tag.ID(), Value: "v1"}}))
+				},
+				revert: func() error {
+					return alter(sdk.NewAlterFailoverGroupRequest(id).WithUnsetTags([]sdk.ObjectIdentifier{tag.ID()}))
+				},
+			},
+			{
+				name:   "rename",
+				run:    func() error { return alter(sdk.NewAlterFailoverGroupRequest(id).WithRenameTo(newId)) },
+				revert: func() error { return alter(sdk.NewAlterFailoverGroupRequest(newId).WithRenameTo(id)) },
+			},
+			{
+				name:    "set read only again",
+				blocked: true,
+				run:     func() error { return set(sdk.NewFailoverGroupSetRequest().WithReadOnly(true)) },
+				revert:  func() error { return nil },
+			},
+		}
+
+		for _, tc := range cases {
+			t.Run(tc.name, func(t *testing.T) {
+				err := tc.run()
+				t.Logf("%s: err=%v", tc.name, err)
+				if tc.blocked {
+					require.ErrorContains(t, err, "read-only mode")
+					return
+				}
+				require.NoError(t, err)
+				require.NoError(t, tc.revert())
+			})
+		}
+
+		// Leaving the read-only mode is always possible.
+		require.NoError(t, unset(sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true)))
+		t.Run("unset read only when it is not set", func(t *testing.T) {
+			err := unset(sdk.NewFailoverGroupUnsetRequest().WithReadOnly(true))
+			require.ErrorContains(t, err, "is not in read-only mode")
+		})
 	})
 
 	// The secondary state is set only when the primary has a replication schedule.
@@ -580,18 +852,13 @@ func TestInt_FailoverGroups(t *testing.T) {
 		require.NoError(t, secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
 			WithResume(true)))
 		assertThatObjectSecondary(t, objectassert.FailoverGroup(t, secondaryID).
-			HasSecondaryState(sdk.FailoverGroupSecondaryStateStarted))
+			HasSecondaryState(sdk.FailoverGroupSecondaryStateStarted).
+			HasNextScheduledRefreshNotEmpty())
 
-		// TODO [SNOW-1348343]: use INFORMATION_SCHEMA.REPLICATION_GROUP_REFRESH_PROGRESS (END_TIME = NULL) to know when no refresh is going on.
-		// A refresh can already be running (003101: Only one refresh statement can execute at a time). Retry until this one is accepted.
-		assert.Eventually(t, func() bool {
-			err := secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
-				WithRefresh(true))
-			if err != nil {
-				t.Logf("Retrying: %v", err)
-			}
-			return err == nil
-		}, 2*time.Minute, time.Second)
+		// A refresh can already be running (003101: Only one refresh statement can execute at a time).
+		secondaryTestClientHelper().FailoverGroup.WaitForNoRefreshInProgress(t, secondaryID)
+		require.NoError(t, secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
+			WithRefresh(true)))
 	})
 
 	t.Run("alter secondary: promote to primary", func(t *testing.T) {
@@ -602,15 +869,10 @@ func TestInt_FailoverGroups(t *testing.T) {
 			testClientHelper().FailoverGroup.Drop(t, primaryID)
 		})
 
-		// A refresh in progress blocks the promotion (003122). Retry until it is accepted.
-		assert.Eventually(t, func() bool {
-			err := secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
-				WithPrimary(true))
-			if err != nil {
-				t.Logf("Retrying: %v", err)
-			}
-			return err == nil
-		}, 2*time.Minute, time.Second)
+		// A refresh in progress blocks the promotion (003122).
+		secondaryTestClientHelper().FailoverGroup.WaitForNoRefreshInProgress(t, secondaryID)
+		require.NoError(t, secondaryClient.FailoverGroups.AlterSecondary(secondaryCtx, sdk.NewAlterSecondaryFailoverGroupRequest(secondaryID).
+			WithPrimary(true)))
 
 		assertThatObjectSecondary(t, objectassert.FailoverGroup(t, secondaryID).
 			HasIsPrimary(true).

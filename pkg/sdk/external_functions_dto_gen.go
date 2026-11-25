@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 var (
 	_ optionsProvider[CreateExternalFunctionOptions]   = new(CreateExternalFunctionRequest)
 	_ optionsProvider[AlterExternalFunctionOptions]    = new(AlterExternalFunctionRequest)
@@ -14,7 +16,7 @@ type CreateExternalFunctionRequest struct {
 	Secure                *bool
 	name                  SchemaObjectIdentifier // required
 	Arguments             []ExternalFunctionArgumentRequest
-	ResultDataType        DataType // required
+	ResultDataType        datatypes.DataType // required
 	ReturnNullValues      *ReturnNullValues
 	NullInputBehavior     *NullInputBehavior
 	ReturnResultsBehavior *ReturnResultsBehavior
@@ -30,8 +32,8 @@ type CreateExternalFunctionRequest struct {
 }
 
 type ExternalFunctionArgumentRequest struct {
-	ArgName     string   // required
-	ArgDataType DataType // required
+	ArgName     string             // required
+	ArgDataType datatypes.DataType // required
 }
 
 type ExternalFunctionHeaderRequest struct {

@@ -218,7 +218,7 @@ func CreateAPIIntegration(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.FromErr(fmt.Errorf("error creating api integration: %w", err))
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return ReadAPIIntegration(ctx, d, meta)
 }

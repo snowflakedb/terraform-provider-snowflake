@@ -5,6 +5,7 @@ package resources
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -48,28 +49,8 @@ var schemaSchema = collections.MergeMaps(
 	},
 	schemaAttributesSchema,
 	schemaParametersAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW SCHEMAS` for the given schema.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowSchemaSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE SCHEMA` for the given schema. In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeSchemaDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeSchema, schemas.ShowSchemaSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeSchema, schemas.DescribeSchemaDetailsSchema, "In order to handle this output, one must grant sufficient privileges, e.g. [grant_ownership](./grant_ownership) on all objects in the schema."),
 	schemaParametersOutputSchema,
 )

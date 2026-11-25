@@ -318,7 +318,7 @@ func UpdatePasswordPolicy(ctx context.Context, d *schema.ResourceData, meta any)
 			return client.PasswordPolicies.Alter(ctx, sdk.NewAlterPasswordPolicyRequest(currentId).WithRenameTo(targetId))
 		},
 		client.PasswordPolicies.ShowByID,
-		"password policy",
+		sdk.ObjectTypePasswordPolicy,
 	); diags != nil {
 		return diags
 	}

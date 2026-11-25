@@ -3,7 +3,6 @@ package model
 import (
 	"strconv"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
@@ -79,9 +78,7 @@ func (e *ExternalGcsStageModel) WithEncryptionGcsSseKms(kmsKeyId string) *Extern
 
 func (e *ExternalGcsStageModel) WithEncryptionGcsSseKmsNoKey() *ExternalGcsStageModel {
 	encryptionMap := map[string]tfconfig.Variable{
-		"gcs_sse_kms": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-		})),
+		"gcs_sse_kms": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 	}
 	return e.WithEncryptionValue(tfconfig.ListVariable(tfconfig.ObjectVariable(encryptionMap)))
 }
@@ -90,9 +87,7 @@ func (e *ExternalGcsStageModel) WithEncryptionNone() *ExternalGcsStageModel {
 	return e.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
-				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -105,9 +100,7 @@ func (e *ExternalGcsStageModel) WithEncryptionBothTypes() *ExternalGcsStageModel
 				"gcs_sse_kms": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 					"kms_key_id": tfconfig.StringVariable("foo"),
 				})),
-				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -116,9 +109,7 @@ func (e *ExternalGcsStageModel) WithEncryptionBothTypes() *ExternalGcsStageModel
 func (e *ExternalGcsStageModel) WithEncryptionNoneTypeSpecified() *ExternalGcsStageModel {
 	return e.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
-			map[string]tfconfig.Variable{
-				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-			},
+			map[string]tfconfig.Variable{},
 		)),
 	)
 }

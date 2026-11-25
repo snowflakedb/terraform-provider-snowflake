@@ -39,7 +39,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		},
 		{
 			Name: "B",
-			Type: testdatatypes.DataTypeVarchar,
+			Type: testdatatypes.DataTypeVectorFloat_768,
 		},
 	}
 
@@ -90,7 +90,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.name", "A")),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.name", "B")),
-		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+		assert.Check(resource.TestCheckResourceAttr(basic.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DataTypeVectorFloat_768.ToSql())),
 	}
 
 	assertComplete := []assert.TestCheckFuncProvider{
@@ -132,7 +132,7 @@ func TestAcc_RowAccessPolicy_BasicUseCase(t *testing.T) {
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.name", "A")),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.0.type", testdatatypes.DefaultVarcharAsString)),
 		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.name", "B")),
-		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DefaultVarcharAsString)),
+		assert.Check(resource.TestCheckResourceAttr(complete.ResourceReference(), "describe_output.0.signature.1.type", testdatatypes.DataTypeVectorFloat_768.ToSql())),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -521,8 +521,8 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 						HasSchemaString(id.SchemaName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "row_access_expression", body)),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.A", string(sdk.DataTypeVARCHAR))),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.B", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.A", "VARCHAR")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.B", "VARCHAR")),
 				),
 			},
 			{
@@ -545,9 +545,9 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_LowercaseArgName(t *testi
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasBodyString(body),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.name", "b")),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.type", "VARCHAR")),
 				),
 			},
 		},
@@ -592,8 +592,8 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 						HasSchemaString(id.SchemaName()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "row_access_expression", body)),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.A", string(sdk.DataTypeVARCHAR))),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.B", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.A", "VARCHAR")),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "signature.B", "VARCHAR")),
 				),
 			},
 			{
@@ -613,9 +613,9 @@ func TestAcc_RowAccessPolicy_migrateFromVersion_0_95_0_UppercaseArgName(t *testi
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
 						HasBodyString(body),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.name", "A")),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.0.type", "VARCHAR")),
 					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.name", "B")),
-					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.type", string(sdk.DataTypeVARCHAR))),
+					assert.Check(resource.TestCheckResourceAttr(policyModel.ResourceReference(), "argument.1.type", "VARCHAR")),
 				),
 			},
 		},

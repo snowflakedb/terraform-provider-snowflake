@@ -120,11 +120,6 @@ func (r *ReplicationGroupSecondaryResourceAssert) HasIsPrimaryEmpty() *Replicati
 	return r
 }
 
-func (r *ReplicationGroupSecondaryResourceAssert) HasPrimaryEmpty() *ReplicationGroupSecondaryResourceAssert {
-	r.ValueSet("primary", "")
-	return r
-}
-
 ///////////////////////////////
 // Attribute presence checks //
 ///////////////////////////////

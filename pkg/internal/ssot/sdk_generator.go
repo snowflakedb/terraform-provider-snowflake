@@ -22,10 +22,11 @@ const (
 type SdkShowByIDFilteringKind string
 
 const (
-	SdkShowByIDLike       SdkShowByIDFilteringKind = "like"
-	SdkShowByIDIn         SdkShowByIDFilteringKind = "in"
-	SdkShowByIDExtendedIn SdkShowByIDFilteringKind = "extended_in"
-	SdkShowByIDNone       SdkShowByIDFilteringKind = "none"
+	SdkShowByIDLike                    SdkShowByIDFilteringKind = "like"
+	SdkShowByIDIn                      SdkShowByIDFilteringKind = "in"
+	SdkShowByIDExtendedIn              SdkShowByIDFilteringKind = "extended_in"
+	SdkShowByIDExtendedInWithoutSchema SdkShowByIDFilteringKind = "extended_in_without_schema"
+	SdkShowByIDNone                    SdkShowByIDFilteringKind = "none"
 )
 
 // SdkShowByIDPredicateKind selects the ShowByID row match.
@@ -85,6 +86,12 @@ func SdkShowOptionalInAccount() SdkShowOption {
 // SdkShowOptionalExtendedIn emits IN for account, database, schema, application, and application package.
 func SdkShowOptionalExtendedIn() SdkShowOption {
 	return func(s *SdkGenerator) { s.ShowOptionalExtendedIn = true }
+}
+
+// SdkShowOptionalExtendedInWithoutSchema emits IN for account, database, application, and application package. It is for a
+// SHOW that has no schema level, such as SHOW SCHEMAS.
+func SdkShowOptionalExtendedInWithoutSchema() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowOptionalExtendedInWithoutSchema = true }
 }
 
 // SdkShowOptionalOn adds the optional ON clause, after IN and before STARTS WITH.
@@ -369,20 +376,16 @@ func (obj Object) VariantAlterMethod(baseName string) string {
 
 // VariantAlterConfig is the ALTER config for emitting this variant as a custom method.
 // It does not read WithSdk. Doc and AdditionalValidations come from Alter.
-// SQL words are VariantEntityAlterName, or VariantOf.ObjectType when that override is empty.
-// The query struct name is Alter plus SdkCreateRequestObjectName, or Alter plus Name.
+// SQL words are Variant.AlterName, or the base object type when that override is empty.
+// The query struct name is Alter plus Variant.RequestObjectName, or Alter plus Name.
 func (obj Object) VariantAlterConfig() SdkGenerator {
 	if !obj.HasAlterSpec() {
 		panic(fmt.Sprintf("object %q: variant ALTER has no spec", obj.Name))
 	}
-	stem := obj.SdkCreateRequestObjectName
-	if stem == "" {
-		stem = obj.Name
-	}
 	return SdkGenerator{
 		AlterDoc:                      obj.Alter.Doc,
-		AlterSql:                      obj.variantEntityName(obj.VariantEntityAlterName),
-		AlterQueryStructName:          "Alter" + stem,
+		AlterSql:                      obj.variantEntityName(obj.variantAlterName()),
+		AlterQueryStructName:          "Alter" + obj.requestStem(),
 		AlterAdditionalValidations:    obj.Alter.AdditionalValidations,
 		AlterSetAdditionalValidations: obj.Alter.SetAdditionalValidations,
 	}
@@ -390,35 +393,54 @@ func (obj Object) VariantAlterConfig() SdkGenerator {
 
 // VariantCreateConfig is the CREATE config for emitting this variant as a custom method.
 // It does not read WithSdk. Doc, AdditionalValidations, and WithoutOrReplace come from Create.
-// SQL words are VariantEntityCreateName, or VariantOf.ObjectType when that override is empty.
-// The query struct name is Create plus SdkCreateRequestObjectName, or Create plus Name.
+// SQL words are Variant.CreateName, or Variant.Of.ObjectType when that override is empty.
+// The query struct name is Create plus Variant.RequestObjectName, or Create plus Name.
 func (obj Object) VariantCreateConfig() SdkGenerator {
 	if !obj.HasCreateSpec() {
 		panic(fmt.Sprintf("object %q: variant CREATE has no spec", obj.Name))
 	}
-	stem := obj.SdkCreateRequestObjectName
-	if stem == "" {
-		stem = obj.Name
-	}
 	return SdkGenerator{
 		CreateDoc:                   obj.Create.Doc,
-		CreateSql:                   obj.variantEntityName(obj.VariantEntityCreateName),
-		CreateQueryStructName:       "Create" + stem,
+		CreateSql:                   obj.variantEntityName(obj.variantCreateName()),
+		CreateQueryStructName:       "Create" + obj.requestStem(),
 		CreateAdditionalValidations: obj.Create.AdditionalValidations,
 		CreateWithoutOrReplace:      obj.Create.WithoutOrReplace,
 	}
 }
 
+// requestStem is the name the SDK request and query structs are built from: RequestObjectName, or Name.
+func (obj Object) requestStem() string {
+	if name := obj.RequestObjectName(); name != "" {
+		return name
+	}
+	return obj.Name
+}
+
 // variantEntityName is the SQL object words for a variant statement.
 // An override wins. Empty uses the base object's type words.
+func (obj Object) variantCreateName() string {
+	if obj.Variant == nil {
+		return ""
+	}
+	return obj.Variant.CreateName
+}
+
+func (obj Object) variantAlterName() string {
+	if obj.Variant == nil {
+		return ""
+	}
+	return obj.Variant.AlterName
+}
+
 func (obj Object) variantEntityName(override string) string {
 	if override != "" {
 		return override
 	}
-	if obj.VariantOf == nil {
-		panic(fmt.Sprintf("object %q: variant entity name needs VariantOf", obj.Name))
+	base := obj.VariantBase()
+	if base == nil {
+		panic(fmt.Sprintf("object %q: variant entity name needs Variant.Of", obj.Name))
 	}
-	return obj.VariantOf.ObjectType()
+	return base.ObjectType()
 }
 
 func (obj Object) nameForAlter() string {

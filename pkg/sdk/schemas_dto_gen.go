@@ -114,7 +114,7 @@ type ShowSchemaRequest struct {
 	Terse      *bool
 	History    *bool
 	Like       *Like
-	In         *ExtendedIn
+	In         *ExtendedInWithoutSchema
 	StartsWith *string
 	Limit      *LimitFrom
 }

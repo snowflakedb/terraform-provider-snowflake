@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -126,6 +127,27 @@ func TestAcc_BackupPolicies_Filtering(t *testing.T) {
 		WithInDatabase(id1.DatabaseId()).
 		WithLimit(1).
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	otherCasePrefix := strings.ToUpper(prefix)
+	if otherCasePrefix == prefix {
+		otherCasePrefix = strings.ToLower(prefix)
+	}
+	likeOtherCase := datasourcemodel.BackupPolicies("test").
+		WithLike(otherCasePrefix+"%").
+		WithInDatabase(id1.DatabaseId()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	inAccount := datasourcemodel.BackupPolicies("test").
+		WithLike(prefix+"%").
+		WithInAccount().
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	withLimitFrom := datasourcemodel.BackupPolicies("test").
+		WithInDatabase(id1.DatabaseId()).
+		WithRowsAndFrom(2, prefix).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	likePrefixWithoutDescribe := datasourcemodel.BackupPolicies("test").
+		WithLike(prefix+"%").
+		WithInDatabase(id1.DatabaseId()).
+		WithWithDescribe(false).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -139,7 +161,48 @@ func TestAcc_BackupPolicies_Filtering(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, model1, model2, model3, likePrefix),
-				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "backup_policies.#", "3")),
+				// With more than one result, every item holds its own show and describe output.
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "id", "backup_policies_read"),
+					resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "backup_policies.#", "3"),
+					resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "backup_policies.0.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						likePrefix.DatasourceReference(), "backup_policies.0.show_output.0.name",
+						likePrefix.DatasourceReference(), "backup_policies.0.describe_output.0.name",
+					),
+					resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "backup_policies.1.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						likePrefix.DatasourceReference(), "backup_policies.1.show_output.0.name",
+						likePrefix.DatasourceReference(), "backup_policies.1.describe_output.0.name",
+					),
+					resource.TestCheckResourceAttr(likePrefix.DatasourceReference(), "backup_policies.2.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						likePrefix.DatasourceReference(), "backup_policies.2.show_output.0.name",
+						likePrefix.DatasourceReference(), "backup_policies.2.describe_output.0.name",
+					),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, likePrefixWithoutDescribe),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(likePrefixWithoutDescribe.DatasourceReference(), "backup_policies.#", "3"),
+					resource.TestCheckResourceAttr(likePrefixWithoutDescribe.DatasourceReference(), "backup_policies.0.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(likePrefixWithoutDescribe.DatasourceReference(), "backup_policies.1.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(likePrefixWithoutDescribe.DatasourceReference(), "backup_policies.2.describe_output.#", "0"),
+				),
+			},
+			{
+				// LIKE is case-insensitive.
+				Config: accconfig.FromModels(t, model1, model2, model3, likeOtherCase),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(likeOtherCase.DatasourceReference(), "backup_policies.#", "3")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, inAccount),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(inAccount.DatasourceReference(), "backup_policies.#", "3")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, withLimitFrom),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(withLimitFrom.DatasourceReference(), "backup_policies.#", "2")),
 			},
 			{
 				Config: accconfig.FromModels(t, model1, model2, model3, inSchema),

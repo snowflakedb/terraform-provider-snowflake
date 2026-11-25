@@ -75,7 +75,7 @@ func TestAcc_ImageRepository_BasicUseCase(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment("").
 						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
-						HasPrivatelinkRepositoryUrl(""),
+						HasPrivatelinkRepositoryUrlNotEmpty(),
 				),
 			},
 			// import - without optionals
@@ -107,7 +107,7 @@ func TestAcc_ImageRepository_BasicUseCase(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(comment).
 						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
-						HasPrivatelinkRepositoryUrl(""),
+						HasPrivatelinkRepositoryUrlNotEmpty(),
 				),
 			},
 			// import - complete
@@ -139,7 +139,7 @@ func TestAcc_ImageRepository_BasicUseCase(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(changedComment).
 						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
-						HasPrivatelinkRepositoryUrl(""),
+						HasPrivatelinkRepositoryUrlNotEmpty(),
 				),
 			},
 			// change externally
@@ -177,7 +177,7 @@ func TestAcc_ImageRepository_BasicUseCase(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(changedComment).
 						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
-						HasPrivatelinkRepositoryUrl(""),
+						HasPrivatelinkRepositoryUrlNotEmpty(),
 				),
 			},
 			// unset
@@ -202,7 +202,7 @@ func TestAcc_ImageRepository_BasicUseCase(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment("").
 						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeFull).
-						HasPrivatelinkRepositoryUrl(""),
+						HasPrivatelinkRepositoryUrlNotEmpty(),
 				),
 			},
 			// change encryption externally (force new)
@@ -329,7 +329,7 @@ func TestAcc_ImageRepository_CompleteUseCase(t *testing.T) {
 						HasOwnerRoleType("ROLE").
 						HasComment(comment).
 						HasEncryption(sdk.ImageRepositoryEncryptionTypeSnowflakeSse).
-						HasPrivatelinkRepositoryUrl(""),
+						HasPrivatelinkRepositoryUrlNotEmpty(),
 				),
 			},
 			{

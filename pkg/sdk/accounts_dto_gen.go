@@ -165,6 +165,7 @@ type AccountParametersRequest struct {
 	SearchPath                                               *string
 	ServerlessTaskMaxStatementSize                           *WarehouseSize
 	ServerlessTaskMinStatementSize                           *WarehouseSize
+	ServiceCallerTokenValiditySecs                           *int
 	ShareRestrictions                                        *bool
 	SimulatedDataSharingConsumer                             *string
 	SqlTraceQueryText                                        *string
@@ -339,6 +340,7 @@ type AccountParametersUnsetRequest struct {
 	SearchPath                                               *bool
 	ServerlessTaskMaxStatementSize                           *bool
 	ServerlessTaskMinStatementSize                           *bool
+	ServiceCallerTokenValiditySecs                           *bool
 	ShareRestrictions                                        *bool
 	SimulatedDataSharingConsumer                             *bool
 	SqlTraceQueryText                                        *bool

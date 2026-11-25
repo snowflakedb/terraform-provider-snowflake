@@ -90,10 +90,32 @@ output "limit_output" {
 data "snowflake_tables" "only_show" {
   # with_describe is turned on by default and it calls DESCRIBE TABLE for every table found and attaches its output to tables.*.describe_output field
   with_describe = false
+  # with_parameters is turned on by default and it calls SHOW PARAMETERS FOR TABLE for every table found and attaches its output to tables.*.parameters field
+  with_parameters = false
 }
 
 output "only_show_output" {
   value = data.snowflake_tables.only_show.tables
+}
+
+# Filtering (terse)
+data "snowflake_tables" "terse" {
+  terse = true
+  like  = "table-name"
+}
+
+output "terse_output" {
+  value = data.snowflake_tables.terse.tables
+}
+
+# Filtering (history)
+data "snowflake_tables" "history" {
+  history = true
+  like    = "table-name"
+}
+
+output "history_output" {
+  value = data.snowflake_tables.history.tables
 }
 
 # Ensure the number of tables is equal to at least one element (with the use of postcondition)

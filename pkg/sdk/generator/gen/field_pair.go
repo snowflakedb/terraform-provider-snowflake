@@ -20,6 +20,8 @@ type FieldPair struct {
 	// BoolTrueValue compares the db text to this value. Empty and Y use the Y helpers.
 	BoolTrueValue string
 	BoolParsed    bool
+	// RawFallback is the plain field name that keeps the raw db value; parse errors are logged instead of returned.
+	RawFallback string
 
 	manualConvert bool
 }
@@ -39,6 +41,7 @@ const (
 	AssignmentKindStringToIdentifier                 AssignmentKind = "StringToIdentifier"
 	AssignmentKindStringToIdentifierArray            AssignmentKind = "StringToIdentifierArray"
 	AssignmentKindCustom                             AssignmentKind = "Custom"
+	AssignmentKindCustomWithRawFallback              AssignmentKind = "CustomWithRawFallback"
 	AssignmentKindNullableCustom                     AssignmentKind = "NullableCustom"
 	AssignmentKindNullableToNullable                 AssignmentKind = "NullableToNullable"
 	AssignmentKindNullableToRequired                 AssignmentKind = "NullableToRequired"
@@ -97,6 +100,10 @@ func (fp FieldPair) AssignmentKindStringToIdentifierArray() bool {
 
 func (fp FieldPair) AssignmentKindCustom() bool {
 	return fp.AssignmentKind() == AssignmentKindCustom
+}
+
+func (fp FieldPair) AssignmentKindCustomWithRawFallback() bool {
+	return fp.AssignmentKind() == AssignmentKindCustomWithRawFallback
 }
 
 func (fp FieldPair) AssignmentKindNullableCustom() bool {
@@ -165,9 +172,14 @@ func (fp FieldPair) AssignmentKind() AssignmentKind {
 	}
 
 	if fp.CustomParser != "" {
-		if fp.DbKind == "sql.NullString" {
+		switch {
+		case fp.RawFallback != "" && fp.DbKind == "string" && fp.PlainKind == "datatypes.DataType":
+			return AssignmentKindCustomWithRawFallback
+		case fp.RawFallback != "":
+			return AssignmentKindUnsupported
+		case fp.DbKind == "sql.NullString":
 			return AssignmentKindNullableCustom
-		} else {
+		default:
 			return AssignmentKindCustom
 		}
 	}

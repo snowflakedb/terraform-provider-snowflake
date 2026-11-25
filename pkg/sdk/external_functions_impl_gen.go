@@ -177,7 +177,6 @@ func (r externalFunctionRow) convert() (*ExternalFunction, error) {
 		IsAnsi:             r.IsAnsi == "Y",
 		MinNumArguments:    r.MinNumArguments,
 		MaxNumArguments:    r.MaxNumArguments,
-		ArgumentsRaw:       r.Arguments,
 		Description:        r.Description,
 		IsTableFunction:    r.IsTableFunction == "Y",
 		ValidForClustering: r.ValidForClustering == "Y",
