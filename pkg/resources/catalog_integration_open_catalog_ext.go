@@ -38,13 +38,6 @@ var catalogIntegrationOpenCatalogImporterExt = &schema.ResourceImporter{
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
 
-// No config fields were passed to setStateToValuesFromConfig.
-// setOauthRestAuthentication and set are the SET statements, sent in that order. Catalog integration ALTER has no UNSET request type.
-type catalogIntegrationOpenCatalogAlterRequestsExt struct {
-	setOauthRestAuthentication *sdk.CatalogIntegrationSetRequest
-	set                        *sdk.CatalogIntegrationSetRequest
-}
-
 func catalogIntegrationOpenCatalogNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateOpenCatalogCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
 
@@ -87,20 +80,6 @@ func catalogIntegrationOpenCatalogSetConfigFieldsExt(_ context.Context, d *schem
 		d.Set("catalog_namespace", details.CatalogNamespace),
 		// not reading rest_config and rest_authentication on purpose (set on import)
 	)
-}
-
-func catalogIntegrationOpenCatalogApplySetUnsetExt(d *schema.ResourceData) (*catalogIntegrationOpenCatalogAlterRequestsExt, error) {
-	setOauthRestAuthentication, set := sdk.NewCatalogIntegrationSetRequest(), sdk.NewCatalogIntegrationSetRequest()
-
-	if errs := errors.Join(
-		attributeMappedValueUpdateSetOnlyAlways(d, "rest_authentication.0.oauth_client_secret", &setOauthRestAuthentication.SetOAuthRestAuthentication, func(secret string) (sdk.CatalogIntegrationSetOauthRestAuthenticationRequest, error) {
-			return *sdk.NewCatalogIntegrationSetOauthRestAuthenticationRequest(secret), nil
-		}),
-		handleCatalogIntegrationCommonPropsUpdate(d, set),
-	); errs != nil {
-		return nil, errs
-	}
-	return &catalogIntegrationOpenCatalogAlterRequestsExt{setOauthRestAuthentication: setOauthRestAuthentication, set: set}, nil
 }
 
 func catalogIntegrationOpenCatalogSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationOpenCatalogDetails, importPermissiveMode bool) error {
@@ -161,13 +140,6 @@ func catalogIntegrationOpenCatalogDescribeInSdkExt(ctx context.Context, meta any
 		return nil, fmt.Errorf("could not describe Open Catalog catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 	}
 	return details, nil
-}
-
-func catalogIntegrationOpenCatalogAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationOpenCatalogAlterRequestsExt) error {
-	if err := alterCatalogIntegrationSets(ctx, meta.(*provider.Context).Client, id, reqs.setOauthRestAuthentication, reqs.set); err != nil {
-		return fmt.Errorf("error updating Open Catalog catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
-	}
-	return nil
 }
 
 // =============================================================================

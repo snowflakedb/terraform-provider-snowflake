@@ -23,16 +23,18 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 	CreatedOn              ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
-		Name:     "enabled",
-		Type:     ssot.AttrBool,
-		Required: true,
+		Name:          "enabled",
+		UpdateMapping: ssot.BooleanAttributeUpdateSetOnlyBuilder,
+		Type:          ssot.AttrBool,
+		Required:      true,
 		Description: "Specifies whether the catalog integration is available for use for Iceberg tables. " +
 			"`true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. " +
 			"`false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.",
 	},
 	RefreshIntervalSeconds: ssot.Attribute{
-		Name: "refresh_interval_seconds",
-		Type: ssot.AttrInt,
+		Name:          "refresh_interval_seconds",
+		UpdateMapping: ssot.IntAttributeUnsetFallbackUpdateWithZeroDefault(30),
+		Type:          ssot.AttrInt,
 		Description: "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. " +
 			"For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
@@ -41,10 +43,11 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		DiffSuppress:  ssot.SuppressDescribe,
 	},
 	Comment: ssot.Attribute{
-		Name:         "comment",
-		Type:         ssot.AttrString,
-		Description:  "Specifies a comment for the catalog integration.",
-		OptionalInDb: true,
+		Name:          "comment",
+		UpdateMapping: ssot.StringAttributeUpdateSetOnly,
+		Type:          ssot.AttrString,
+		Description:   "Specifies a comment for the catalog integration.",
+		OptionalInDb:  true,
 	},
 	CatalogNamespace: ssot.Attribute{
 		Name:        "catalog_namespace",
@@ -91,11 +94,12 @@ var CatalogIntegrationOpenCatalogAttrs = struct {
 		},
 	},
 	RestAuthentication: ssot.Attribute{
-		Name:        "rest_authentication",
-		Type:        ssot.AttrObject,
-		Required:    true,
-		Description: "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
-		CreateSql:   ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
+		Name:          "rest_authentication",
+		UpdateMapping: ssot.CustomUpdate("updateCatalogIntegrationOpenCatalogOauthClientSecret"),
+		Type:          ssot.AttrObject,
+		Required:      true,
+		Description:   "Specifies authentication details that Snowflake uses to connect to Open Catalog.",
+		CreateSql:     ssot.ObjectParameter(ssot.Sql("REST_AUTHENTICATION ="), ssot.Parentheses()),
 		Children: []ssot.Attribute{
 			catalogIntegrationRestAuthTypeOauth,
 			{
@@ -202,6 +206,8 @@ var CatalogIntegrationOpenCatalog = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),

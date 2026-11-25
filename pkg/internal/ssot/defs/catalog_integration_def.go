@@ -233,17 +233,20 @@ var CatalogIntegration = ssot.Object{
 			&catalogIntegrationDescribeRowAttrs.PropertyDefault,
 		},
 	},
-	// SET OAUTH_CLIENT_SECRET cannot share a SET with BEARER_TOKEN, so the OAuth secret is its own SET statement.
+	// The SET has no groups because of a limitation of the groups. OAUTH_CLIENT_SECRET and BEARER_TOKEN cannot be set
+	// together, but each may share a SET with ENABLED, REFRESH_INTERVAL_SECONDS, and COMMENT. That needs two groups that
+	// both hold those three attributes, and an attribute cannot be in two groups at the moment.
+	// The SDK does not reject both secrets, which is safe because no resource can set both: Open Catalog has only OAuth,
+	// and Iceberg REST has ExactlyOneOf on its authentication blocks, with a ForceNew OAuth block, so the update never
+	// switches between OAuth and bearer.
 	Alter: ssot.AlterSpec{
 		Clauses: []ssot.AlterClause{
 			ssot.AlterSet(
-				ssot.AlterGroup("OauthRestAuthentication", &catalogIntegrationSetAttrs.OauthRestAuthentication),
-				ssot.AlterGroup(ssot.MainAlterGroup,
-					&catalogIntegrationSetAttrs.BearerRestAuthentication,
-					&catalogIntegrationSetAttrs.Enabled,
-					&catalogIntegrationSetAttrs.RefreshIntervalSeconds,
-					&catalogIntegrationSetAttrs.Comment,
-				),
+				&catalogIntegrationSetAttrs.OauthRestAuthentication,
+				&catalogIntegrationSetAttrs.BearerRestAuthentication,
+				&catalogIntegrationSetAttrs.Enabled,
+				&catalogIntegrationSetAttrs.RefreshIntervalSeconds,
+				&catalogIntegrationSetAttrs.Comment,
 			),
 			ssot.AlterSetTags(),
 			ssot.AlterUnsetTags(),

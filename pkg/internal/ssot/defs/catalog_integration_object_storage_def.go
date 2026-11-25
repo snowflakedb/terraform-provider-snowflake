@@ -17,13 +17,15 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 	CatalogSource          ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
-		Name:        "enabled",
-		Type:        ssot.AttrBool,
-		Required:    true,
-		Description: "Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.",
+		Name:          "enabled",
+		UpdateMapping: ssot.BooleanAttributeUpdateSetOnlyBuilder,
+		Type:          ssot.AttrBool,
+		Required:      true,
+		Description:   "Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.",
 	},
 	RefreshIntervalSeconds: ssot.Attribute{
 		Name:          "refresh_interval_seconds",
+		UpdateMapping: ssot.IntAttributeUnsetFallbackUpdateWithZeroDefault(30),
 		Type:          ssot.AttrInt,
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
@@ -31,10 +33,11 @@ var CatalogIntegrationObjectStorageAttrs = struct {
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
 	Comment: ssot.Attribute{
-		Name:         "comment",
-		Type:         ssot.AttrString,
-		Description:  "Specifies a comment for the catalog integration.",
-		OptionalInDb: true,
+		Name:          "comment",
+		UpdateMapping: ssot.StringAttributeUpdateSetOnly,
+		Type:          ssot.AttrString,
+		Description:   "Specifies a comment for the catalog integration.",
+		OptionalInDb:  true,
 	},
 	TableFormat: ssot.Attribute{
 		Name:        "table_format",
@@ -102,6 +105,8 @@ var CatalogIntegrationObjectStorage = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
