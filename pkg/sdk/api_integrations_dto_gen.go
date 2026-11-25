@@ -72,7 +72,7 @@ type OAuth2GitUserAuthenticationRequest struct {
 	OauthClientSecret          string // required
 	OauthAccessTokenValidity   *int
 	OauthRefreshTokenValidity  *int
-	OauthAllowedScopes         []ApiIntegrationOauthAllowedScopeItem
+	OauthAllowedScopes         []StringListItemWrapper
 	OauthUsername              *string
 }
 

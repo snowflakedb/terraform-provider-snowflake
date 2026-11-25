@@ -66,10 +66,10 @@ var apiIntegrationGitRepositoryOauth2Schema = func() map[string]*schema.Schema {
 			Type:        schema.TypeList,
 			Optional:    true,
 			ForceNew:    true,
-			Description: "Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration. " + enumValuesDescription(sdk.AllApiIntegrationOauthAllowedScopes),
+			Description: "Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration.",
 			Elem: &schema.Schema{
-				Type:             schema.TypeString,
-				ValidateDiagFunc: sdkValidation(sdk.ToApiIntegrationOauthAllowedScope),
+				Type:         schema.TypeString,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 		},
 		"oauth_username": {
@@ -154,15 +154,8 @@ func CreateApiIntegrationGitRepositoryOauth2(ctx context.Context, d *schema.Reso
 	)
 
 	if scopesRaw, ok := d.GetOk("oauth_allowed_scopes"); ok {
-		scopes, err := collections.MapErr(scopesRaw.([]any), func(scope any) (sdk.ApiIntegrationOauthAllowedScope, error) {
-			return sdk.ToApiIntegrationOauthAllowedScope(scope.(string))
-		})
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		authReq.WithOauthAllowedScopes(collections.Map(scopes, func(scope sdk.ApiIntegrationOauthAllowedScope) sdk.ApiIntegrationOauthAllowedScopeItem {
-			return sdk.ApiIntegrationOauthAllowedScopeItem{Scope: scope}
+		authReq.WithOauthAllowedScopes(collections.Map(expandStringList(scopesRaw.([]any)), func(scope string) sdk.StringListItemWrapper {
+			return sdk.StringListItemWrapper{Value: scope}
 		}))
 	}
 	if err = errors.Join(

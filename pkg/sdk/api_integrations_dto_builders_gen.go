@@ -194,7 +194,7 @@ func (s *OAuth2GitUserAuthenticationRequest) WithOauthRefreshTokenValidity(oauth
 	return s
 }
 
-func (s *OAuth2GitUserAuthenticationRequest) WithOauthAllowedScopes(oauthAllowedScopes []ApiIntegrationOauthAllowedScopeItem) *OAuth2GitUserAuthenticationRequest {
+func (s *OAuth2GitUserAuthenticationRequest) WithOauthAllowedScopes(oauthAllowedScopes []StringListItemWrapper) *OAuth2GitUserAuthenticationRequest {
 	s.OauthAllowedScopes = oauthAllowedScopes
 	return s
 }

@@ -181,9 +181,9 @@ func init() {
 						OauthClientSecret:          oauthClientSecret,
 						OauthAccessTokenValidity:   new(3600),
 						OauthRefreshTokenValidity:  new(86400),
-						OauthAllowedScopes: []ApiIntegrationOauthAllowedScopeItem{
-							{Scope: ApiIntegrationOauthAllowedScopeReadApi},
-							{Scope: ApiIntegrationOauthAllowedScopeReadRepository},
+						OauthAllowedScopes: []StringListItemWrapper{
+							{Value: "read_api"},
+							{Value: "https://app.vssps.visualstudio.com/vso.code_write"},
 						},
 						OauthUsername: new("user@example.com"),
 					},
@@ -204,7 +204,7 @@ func init() {
 					"OAUTH_CLIENT_SECRET = '%s'",
 					"OAUTH_ACCESS_TOKEN_VALIDITY = 3600",
 					"OAUTH_REFRESH_TOKEN_VALIDITY = 86400",
-					"OAUTH_ALLOWED_SCOPES = ('read_api', 'read_repository')",
+					"OAUTH_ALLOWED_SCOPES = ('read_api', 'https://app.vssps.visualstudio.com/vso.code_write')",
 					"OAUTH_USERNAME = 'user@example.com'",
 				}, " ") + ")",
 				"API_ALLOWED_PREFIXES = ('%s')",

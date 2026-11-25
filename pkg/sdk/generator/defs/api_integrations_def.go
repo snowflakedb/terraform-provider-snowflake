@@ -24,12 +24,6 @@ var (
 		"CLIENT_SECRET_BASIC",
 		"CLIENT_SECRET_POST",
 	)
-	ApiIntegrationOauthAllowedScopeEnum = g.NewEnum(
-		"ApiIntegrationOauthAllowedScope", "ApiIntegrationOauthAllowedScopes",
-		"read_api",
-		"read_repository",
-		"write_repository",
-	)
 	ApiIntegrationAzureApiProviderTypeEnum = g.NewEnum(
 		"ApiIntegrationAzureApiProviderType", "ApiIntegrationAzureApiProviderTypes",
 		"azure_api_management",
@@ -217,9 +211,6 @@ var apiIntegrationAllowedAuthSecretsDef = g.NewQueryStruct("ApiIntegrationAllowe
 	WithValidation(g.ExactlyOneValueSet, "AllSecrets", "NoSecrets", "AllowedList").
 	WithValidation(g.ValidIdentifier, "AllowedList")
 
-var apiIntegrationOauthAllowedScopeItemDef = g.NewQueryStruct("ApiIntegrationOauthAllowedScopeItem").
-	Enum("Scope", ApiIntegrationOauthAllowedScopeEnum, g.KeywordOptions().SingleQuotes().Required())
-
 var apiIntegrationOauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthentication").
 	SQLWithCustomFieldName("authType", "TYPE = OAUTH2").
 	TextAssignment("OAUTH_AUTHORIZATION_ENDPOINT", g.ParameterOptions().SingleQuotes().Required()).
@@ -228,7 +219,7 @@ var apiIntegrationOauth2GitAuthDef = g.NewQueryStruct("OAuth2GitUserAuthenticati
 	TextAssignment("OAUTH_CLIENT_SECRET", g.ParameterOptions().SingleQuotes().Required()).
 	OptionalNumberAssignment("OAUTH_ACCESS_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes()).
 	OptionalNumberAssignment("OAUTH_REFRESH_TOKEN_VALIDITY", g.ParameterOptions().NoQuotes()).
-	ListAssignment("OAUTH_ALLOWED_SCOPES", "ApiIntegrationOauthAllowedScopeItem", g.ParameterOptions().Parentheses()).
+	ListAssignment("OAUTH_ALLOWED_SCOPES", "StringListItemWrapper", g.ParameterOptions().Parentheses()).
 	OptionalTextAssignment("OAUTH_USERNAME", g.ParameterOptions().SingleQuotes())
 
 var apiIntegrationOauth2McpAuthDef = g.NewQueryStruct("OAuth2McpUserAuthentication").
@@ -258,7 +249,6 @@ var apiIntegrationsDef = g.NewInterface(
 		ApiIntegrationAllowedAuthenticationSecretsValueEnum,
 		ApiIntegrationAwsApiProviderTypeEnum,
 		ApiIntegrationOauthClientAuthMethodEnum,
-		ApiIntegrationOauthAllowedScopeEnum,
 		ApiIntegrationAzureApiProviderTypeEnum,
 		ApiIntegrationGoogleApiProviderTypeEnum,
 		ApiIntegrationGitApiProviderTypeEnum,
@@ -389,7 +379,6 @@ var apiIntegrationsDef = g.NewInterface(
 			),
 		apiIntegrationEndpointPrefixDef,
 		apiIntegrationAllowedAuthSecretsDef,
-		apiIntegrationOauthAllowedScopeItemDef,
 		apiIntegrationOauth2GitAuthDef,
 		apiIntegrationOauth2McpAuthDef,
 		apiIntegrationDynamicClientMcpAuthDef,

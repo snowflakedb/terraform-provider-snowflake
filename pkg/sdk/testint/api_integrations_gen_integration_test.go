@@ -447,7 +447,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 		auth := sdk.NewOAuth2GitUserAuthenticationRequest(oauthAuthorizationEndpoint, oauthTokenEndpoint, oauthClientId, oauthClientSecret).
 			WithOauthAccessTokenValidity(3600).
 			WithOauthRefreshTokenValidity(86400).
-			WithOauthAllowedScopes([]sdk.ApiIntegrationOauthAllowedScopeItem{{Scope: sdk.ApiIntegrationOauthAllowedScopeReadApi}, {Scope: sdk.ApiIntegrationOauthAllowedScopeWriteRepository}}).
+			WithOauthAllowedScopes([]sdk.StringListItemWrapper{{Value: "read_api"}, {Value: "write_repository"}, {Value: "offline_access"}}).
 			WithOauthUsername("user@example.com")
 
 		err := client.ApiIntegrations.Create(
@@ -477,7 +477,7 @@ func TestInt_ApiIntegrations(t *testing.T) {
 				HasOauthAuthorizationEndpoint(oauthAuthorizationEndpoint).
 				HasOauthAccessTokenValidity(3600).
 				HasOauthRefreshTokenValidity(86400).
-				HasOauthAllowedScopesEnum(sdk.ApiIntegrationOauthAllowedScopeReadApi, sdk.ApiIntegrationOauthAllowedScopeWriteRepository).
+				HasOauthAllowedScopes("read_api", "write_repository", "offline_access").
 				HasOauthUsername("user@example.com").
 				HasAllowedAuthenticationSecrets("[]"),
 		)

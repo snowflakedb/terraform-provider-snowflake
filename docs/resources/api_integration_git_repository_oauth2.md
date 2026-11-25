@@ -64,7 +64,7 @@ resource "snowflake_api_integration_git_repository_oauth2" "complete" {
 - `api_blocked_prefixes` (List of String) Lists the endpoints and resources in the HTTPS proxy service that are not allowed to be called from Snowflake.
 - `comment` (String) Specifies a comment for the integration.
 - `oauth_access_token_validity` (Number) Specifies the validity period (in seconds) for the OAuth 2.0 access token.
-- `oauth_allowed_scopes` (List of String) Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration. Valid values are (case-insensitive): `read_api` | `read_repository` | `write_repository`.
+- `oauth_allowed_scopes` (List of String) Specifies a list of scopes to use when making a request from the OAuth by a role with USAGE on the integration.
 - `oauth_refresh_token_validity` (Number) Specifies the validity period (in seconds) for the OAuth 2.0 refresh token.
 - `oauth_username` (String) Specifies the username to authenticate with the Git repository using OAuth 2.0.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))

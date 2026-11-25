@@ -16,14 +16,6 @@ func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasUserAuthTypeEnum(expected sd
 	return a.HasUserAuthType(string(expected))
 }
 
-func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasOauthAllowedScopesEnum(expected ...sdk.ApiIntegrationOauthAllowedScope) *ApiIntegrationGitHttpsApiDetailsAssert {
-	strs := make([]string, len(expected))
-	for i, s := range expected {
-		strs[i] = string(s)
-	}
-	return a.HasOauthAllowedScopes(strs...)
-}
-
 func (a *ApiIntegrationGitHttpsApiDetailsAssert) HasNoUserAuthType() *ApiIntegrationGitHttpsApiDetailsAssert {
 	a.AddAssertion(func(t *testing.T, o *sdk.ApiIntegrationGitHttpsApiDetails) error {
 		t.Helper()

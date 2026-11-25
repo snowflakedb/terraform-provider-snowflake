@@ -63,20 +63,16 @@ type ApiIntegrationAllowedAuthenticationSecrets struct {
 	AllowedList []SchemaObjectIdentifier `ddl:"list,parentheses"`
 }
 
-type ApiIntegrationOauthAllowedScopeItem struct {
-	Scope ApiIntegrationOauthAllowedScope `ddl:"keyword,single_quotes"`
-}
-
 type OAuth2GitUserAuthentication struct {
-	authType                   bool                                  `ddl:"static" sql:"TYPE = OAUTH2"`
-	OauthAuthorizationEndpoint string                                `ddl:"parameter,single_quotes" sql:"OAUTH_AUTHORIZATION_ENDPOINT"`
-	OauthTokenEndpoint         string                                `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_ENDPOINT"`
-	OauthClientId              string                                `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
-	OauthClientSecret          string                                `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
-	OauthAccessTokenValidity   *int                                  `ddl:"parameter,no_quotes" sql:"OAUTH_ACCESS_TOKEN_VALIDITY"`
-	OauthRefreshTokenValidity  *int                                  `ddl:"parameter,no_quotes" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
-	OauthAllowedScopes         []ApiIntegrationOauthAllowedScopeItem `ddl:"parameter,parentheses" sql:"OAUTH_ALLOWED_SCOPES"`
-	OauthUsername              *string                               `ddl:"parameter,single_quotes" sql:"OAUTH_USERNAME"`
+	authType                   bool                    `ddl:"static" sql:"TYPE = OAUTH2"`
+	OauthAuthorizationEndpoint string                  `ddl:"parameter,single_quotes" sql:"OAUTH_AUTHORIZATION_ENDPOINT"`
+	OauthTokenEndpoint         string                  `ddl:"parameter,single_quotes" sql:"OAUTH_TOKEN_ENDPOINT"`
+	OauthClientId              string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_ID"`
+	OauthClientSecret          string                  `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_SECRET"`
+	OauthAccessTokenValidity   *int                    `ddl:"parameter,no_quotes" sql:"OAUTH_ACCESS_TOKEN_VALIDITY"`
+	OauthRefreshTokenValidity  *int                    `ddl:"parameter,no_quotes" sql:"OAUTH_REFRESH_TOKEN_VALIDITY"`
+	OauthAllowedScopes         []StringListItemWrapper `ddl:"parameter,parentheses" sql:"OAUTH_ALLOWED_SCOPES"`
+	OauthUsername              *string                 `ddl:"parameter,single_quotes" sql:"OAUTH_USERNAME"`
 }
 
 type OAuth2McpUserAuthentication struct {

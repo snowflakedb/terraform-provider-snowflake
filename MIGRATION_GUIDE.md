@@ -38,6 +38,20 @@ The provider knew `METRIC_LEVEL` only on functions and procedures and `SERVICE_C
 
 No changes are required in your configuration.
 
+### *(bug fix)* `snowflake_api_integration_git_repository_oauth2` accepts provider-specific OAuth scopes
+
+Previously, [`snowflake_api_integration_git_repository_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_oauth2) rejected `oauth_allowed_scopes` values other than `read_api`, `read_repository`, and `write_repository`. `terraform plan` failed with:
+
+```text
+invalid api integration oauth allowed scope: ...
+```
+
+The provider now accepts any non-empty scope string, including Azure DevOps resource-qualified scopes, GitHub scopes such as `repo` and `read:user`, and `offline_access`. Existing GitLab scopes keep working.
+
+No configuration changes are required. Configurations that previously failed validation can now be applied.
+
+Reference: [#5382](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5382).
+
 ## v2.23.x ➞ v2.24.0
 
 ### *(breaking change)* Table constraint names are case-sensitive

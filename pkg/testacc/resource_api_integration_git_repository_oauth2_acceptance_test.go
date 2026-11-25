@@ -234,6 +234,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_BasicUseCase(t *testing.T) {
 
 func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
+	azureDevOpsScope := "https://app.vssps.visualstudio.com/vso.code_write"
 
 	comment := random.Comment()
 
@@ -242,7 +243,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 		WithComment(comment).
 		WithOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 		WithOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-		WithOauthAllowedScopes([]string{string(sdk.ApiIntegrationOauthAllowedScopeReadApi)}).
+		WithOauthAllowedScopes([]string{"read_api", azureDevOpsScope}).
 		WithOauthUsername(gitOauth2Username)
 
 	allAttributesUpdated := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{gitAllowedPrefix}, true, gitOauth2UpdatedAuthorizationEndpoint, gitOauth2ClientId, gitOauth2ClientSecret, gitOauth2UpdatedTokenEndpoint).
@@ -250,7 +251,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 		WithComment(comment).
 		WithOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 		WithOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-		WithOauthAllowedScopes([]string{string(sdk.ApiIntegrationOauthAllowedScopeReadApi)}).
+		WithOauthAllowedScopes([]string{"read_api", azureDevOpsScope}).
 		WithOauthUsername(gitOauth2Username)
 
 	ref := allAttributes.ResourceReference()
@@ -268,7 +269,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasCommentString(comment).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
+			HasOauthAllowedScopes("read_api", azureDevOpsScope).
 			HasOauthUsername(gitOauth2Username),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -282,7 +283,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasOauthAuthorizationEndpoint(gitOauth2AuthorizationEndpoint).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
+			HasOauthAllowedScopes("read_api", azureDevOpsScope).
 			HasOauthUsername(gitOauth2Username).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
@@ -295,7 +296,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasOauthAuthorizationEndpoint(gitOauth2AuthorizationEndpoint).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopesEnum(sdk.ApiIntegrationOauthAllowedScopeReadApi).
+			HasOauthAllowedScopes("read_api", azureDevOpsScope).
 			HasOauthUsername(gitOauth2Username).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
@@ -315,7 +316,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasCommentString(comment).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
+			HasOauthAllowedScopes("read_api", azureDevOpsScope).
 			HasOauthUsername(gitOauth2Username),
 		resourceshowoutputassert.ApiIntegrationShowOutput(t, ref).
 			HasName(id.Name()).
@@ -329,7 +330,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasOauthAuthorizationEndpoint(gitOauth2UpdatedAuthorizationEndpoint).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopes(string(sdk.ApiIntegrationOauthAllowedScopeReadApi)).
+			HasOauthAllowedScopes("read_api", azureDevOpsScope).
 			HasOauthUsername(gitOauth2Username).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
@@ -342,7 +343,7 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_CompleteUseCase(t *testing.T) {
 			HasOauthAuthorizationEndpoint(gitOauth2UpdatedAuthorizationEndpoint).
 			HasOauthAccessTokenValidity(gitOauth2AccessTokenValidity).
 			HasOauthRefreshTokenValidity(gitOauth2RefreshTokenValidity).
-			HasOauthAllowedScopesEnum(sdk.ApiIntegrationOauthAllowedScopeReadApi).
+			HasOauthAllowedScopes("read_api", azureDevOpsScope).
 			HasOauthUsername(gitOauth2Username).
 			HasAllowedPrefixes(gitAllowedPrefix).
 			HasBlockedPrefixes(gitBlockedPrefix).
@@ -502,9 +503,9 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_Import(t *testing.T) {
 func TestAcc_ApiIntegrationGitRepositoryOauth2_Validations(t *testing.T) {
 	id := testClient().Ids.RandomAccountObjectIdentifier()
 
-	invalidScope := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{gitAllowedPrefix}, true,
+	emptyScope := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{gitAllowedPrefix}, true,
 		gitOauth2AuthorizationEndpoint, gitOauth2ClientId, gitOauth2ClientSecret, gitOauth2TokenEndpoint).
-		WithOauthAllowedScopes([]string{"INVALID_SCOPE"})
+		WithOauthAllowedScopes([]string{""})
 
 	invalidAccessTokenValidity := model.ApiIntegrationGitRepositoryOauth2("t", id.Name(), []string{gitAllowedPrefix}, true,
 		gitOauth2AuthorizationEndpoint, gitOauth2ClientId, gitOauth2ClientSecret, gitOauth2TokenEndpoint).
@@ -534,9 +535,9 @@ func TestAcc_ApiIntegrationGitRepositoryOauth2_Validations(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config:      config.FromModels(t, invalidScope),
+				Config:      config.FromModels(t, emptyScope),
 				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("invalid api integration oauth allowed scope"),
+				ExpectError: regexp.MustCompile(`expected "oauth_allowed_scopes.0" to not be an empty string`),
 			},
 			{
 				Config:      config.FromModels(t, invalidAccessTokenValidity),

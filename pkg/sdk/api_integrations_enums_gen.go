@@ -87,34 +87,6 @@ func ToApiIntegrationOauthClientAuthMethod(s string) (ApiIntegrationOauthClientA
 	}
 }
 
-type ApiIntegrationOauthAllowedScope string
-
-const (
-	ApiIntegrationOauthAllowedScopeReadApi         ApiIntegrationOauthAllowedScope = "read_api"
-	ApiIntegrationOauthAllowedScopeReadRepository  ApiIntegrationOauthAllowedScope = "read_repository"
-	ApiIntegrationOauthAllowedScopeWriteRepository ApiIntegrationOauthAllowedScope = "write_repository"
-)
-
-var AllApiIntegrationOauthAllowedScopes = []ApiIntegrationOauthAllowedScope{
-	ApiIntegrationOauthAllowedScopeReadApi,
-	ApiIntegrationOauthAllowedScopeReadRepository,
-	ApiIntegrationOauthAllowedScopeWriteRepository,
-}
-
-func ToApiIntegrationOauthAllowedScope(s string) (ApiIntegrationOauthAllowedScope, error) {
-	s = strings.ToLower(s)
-	switch s {
-	case string(ApiIntegrationOauthAllowedScopeReadApi):
-		return ApiIntegrationOauthAllowedScopeReadApi, nil
-	case string(ApiIntegrationOauthAllowedScopeReadRepository):
-		return ApiIntegrationOauthAllowedScopeReadRepository, nil
-	case string(ApiIntegrationOauthAllowedScopeWriteRepository):
-		return ApiIntegrationOauthAllowedScopeWriteRepository, nil
-	default:
-		return "", fmt.Errorf("invalid api integration oauth allowed scope: %s", s)
-	}
-}
-
 type ApiIntegrationAzureApiProviderType string
 
 const (
