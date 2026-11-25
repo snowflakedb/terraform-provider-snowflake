@@ -76,20 +76,13 @@ type Attribute struct {
 	// --- Snowflake SQL: how the attribute is written in CREATE, SET, and UNSET.
 
 	// CreateSql, SetSql, and UnsetSql are the clause the attribute adds to that statement. Zero leaves it out.
+	// The Tags and Parameters entries of a clause list are not attributes: their clause is TagsClause or ParametersClause.
 	CreateSql SqlClause
 	SetSql    SqlClause
 	UnsetSql  SqlClause
 	// SqlOnly keeps the attribute on a SQL sequence and out of schema, resource, model, and assertion generation.
 	// ResourceAttributes drops these. A static CREATE value sets CreateSql to StaticSQL.
 	SqlOnly bool
-	// Tags marks the optional TAG clause of an SDK query struct. It is not an attribute: use the Tags var in a clause
-	// list, never in Attributes.
-	Tags bool
-	// TagForm selects SET TAG or UNSET TAG when Tags is set. Empty emits optional TAG.
-	TagForm TagForm
-	// Parameters marks the spread of the parameter catalog into a CREATE, SET, or UNSET clause list. It is not an
-	// attribute: use the Parameters var in a clause list, never in Attributes.
-	Parameters bool
 
 	// --- Snowflake SHOW and DESCRIBE: how Snowflake reports the attribute back.
 
@@ -185,21 +178,11 @@ type Attribute struct {
 	UpdateMapping UpdateMapping
 }
 
-// TagForm selects the TAG clause a Tags child emits.
-type TagForm string
-
-const (
-	// TagFormSet emits SET TAG.
-	TagFormSet TagForm = "set"
-	// TagFormUnset emits UNSET TAG.
-	TagFormUnset TagForm = "unset"
-)
-
 // Tags is the optional TAG clause. Put it on a CREATE list. It is not an Attributes entry.
-var Tags = &Attribute{Name: "tags", Tags: true}
+var Tags = &Attribute{Name: "tags", CreateSql: TagsClause()}
 
 // Parameters is the parameter catalog spread. Put it on a CREATE, SET, or UNSET list. It is not an Attributes entry.
-var Parameters = &Attribute{Name: "parameters", Parameters: true}
+var Parameters = &Attribute{Name: "parameters", CreateSql: ParametersClause(), SetSql: ParametersClause(), UnsetSql: ParametersClause()}
 
 // SdkType is the type the SDK holds the attribute as: a string for an SdkString object, the Type otherwise.
 // SQL clauses, SHOW and DESCRIBE columns, and the code generated from them read it. The resource reads Type.
@@ -210,12 +193,31 @@ func (a Attribute) SdkType() AttributeType {
 	return a.Type
 }
 
+// IsTags reports a tags marker: an entry whose clause is the TAG, SET TAG, or UNSET TAG clause, not an attribute.
 func (a *Attribute) IsTags() bool {
-	return a != nil && a.Tags
+	return a.hasClauseKind(SqlKindTags)
 }
 
+// IsParameters reports a parameters marker: an entry that spreads the parameter catalog, not an attribute.
 func (a *Attribute) IsParameters() bool {
-	return a != nil && a.Parameters
+	return a.hasClauseKind(SqlKindParameters)
+}
+
+// ClauseMarkerName is tags or parameters for a marker entry, and empty for an attribute.
+func (a *Attribute) ClauseMarkerName() string {
+	switch {
+	case a.IsTags():
+		return "tags"
+	case a.IsParameters():
+		return "parameters"
+	default:
+		return ""
+	}
+}
+
+// hasClauseKind reports a CREATE, SET, or UNSET clause of the kind.
+func (a *Attribute) hasClauseKind(kind SqlKind) bool {
+	return a != nil && (a.CreateSql.Kind == kind || a.SetSql.Kind == kind || a.UnsetSql.Kind == kind)
 }
 
 func (a *Attribute) OutputKey() string {

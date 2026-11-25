@@ -451,8 +451,8 @@ var TableAlterColumnTags = ssot.Attribute{
 	Children: []ssot.Attribute{
 		{Name: "alter_column", SqlOnly: true, SetSql: tableAlterColumn, UnsetSql: tableAlterColumn},
 		{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, SetSql: tableAlterColumnName, UnsetSql: tableAlterColumnName},
-		{Name: "set_tags", Tags: true, TagForm: ssot.TagFormSet},
-		{Name: "unset_tags", Tags: true, TagForm: ssot.TagFormUnset},
+		{Name: "set_tags", SetSql: ssot.TagsClause()},
+		{Name: "unset_tags", UnsetSql: ssot.TagsClause()},
 	},
 }
 
@@ -503,7 +503,7 @@ var TableColumn = ssot.Attribute{
 				{Name: "inline_constraint", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&TableColumnInlineConstraint, ssot.NoComma())},
 				{Name: "masking_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&TableColumnMaskingPolicy, ssot.NoComma())},
 				{Name: "projection_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&TableColumnProjectionPolicy, ssot.NoComma())},
-				{Name: "tags", Tags: true},
+				{Name: "tags", CreateSql: ssot.TagsClause()},
 				{Name: "comment", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.NoEquals())},
 			},
 		},
@@ -688,7 +688,7 @@ var TableCreateColumn = ssot.Attribute{
 		ssot.WithCreateSql(&TableColumnDefaultValue, ssot.ObjectParameter(ssot.StructName("ColumnDefaultValue"), ssot.KeywordShape())),
 		{Name: "masking_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&TableColumnMaskingPolicy, ssot.KeywordShape())},
 		{Name: "projection_policy", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&TableColumnProjectionPolicy, ssot.KeywordShape())},
-		{Name: "tags", Tags: true},
+		{Name: "tags", CreateSql: ssot.TagsClause()},
 		{Name: "comment", Type: ssot.AttrString, SqlOnly: true, CreateSql: ssot.StringParameter(ssot.Sql("COMMENT"), ssot.NoEquals())},
 	},
 }

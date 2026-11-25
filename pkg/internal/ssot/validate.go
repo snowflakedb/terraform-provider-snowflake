@@ -20,11 +20,8 @@ func ValidateObject(obj Object) {
 	sqlOnly := make(map[string]struct{})
 	seen := make(map[string]struct{})
 	for _, a := range obj.Attributes {
-		if a.IsTags() {
-			panic(fmt.Sprintf("object %q: tags is not an attribute", obj.Name))
-		}
-		if a.IsParameters() {
-			panic(fmt.Sprintf("object %q: parameters is not an attribute", obj.Name))
+		if marker := a.ClauseMarkerName(); marker != "" {
+			panic(fmt.Sprintf("object %q: %s is not an attribute", obj.Name, marker))
 		}
 		if a.Name == "" {
 			panic(fmt.Sprintf("object %q: attribute has empty Name", obj.Name))
@@ -379,12 +376,6 @@ func validateNestedAttribute(obj Object, attr Attribute) {
 			panic(fmt.Sprintf("object %q: attribute %q has duplicate nested attribute %q", obj.Name, attr.Name, child.Name))
 		}
 		seen[child.Name] = struct{}{}
-		if child.TagForm != "" && !child.IsTags() {
-			panic(fmt.Sprintf("object %q: nested attribute %q.%q sets a tag form and is not tags", obj.Name, attr.Name, child.Name))
-		}
-		if child.IsTags() && child.TagForm != "" && child.TagForm != TagFormSet && child.TagForm != TagFormUnset {
-			panic(fmt.Sprintf("object %q: nested attribute %q.%q has tag form %q", obj.Name, attr.Name, child.Name, child.TagForm))
-		}
 		if child.SqlOnly && (!sqlFields || !isNestedSqlOnlyClause(child)) {
 			panic(fmt.Sprintf("object %q: nested attribute %q.%q is SQL-only but not a static clause, a keyword, an identifier, a parameter, a predefined type, a preexisting struct, or a nested struct of an object clause", obj.Name, attr.Name, child.Name))
 		}
@@ -866,11 +857,8 @@ func validateCustomOperationClauses(obj Object, spec CustomOperationSpec, attrs 
 			if clause.Attribute == nil {
 				panic(fmt.Sprintf("object %q: custom operation %q attribute is empty", obj.Name, spec.Kind))
 			}
-			if clause.Attribute.IsTags() {
-				panic(fmt.Sprintf("object %q: custom operation %q attribute is tags", obj.Name, spec.Kind))
-			}
-			if clause.Attribute.IsParameters() {
-				panic(fmt.Sprintf("object %q: custom operation %q attribute is parameters", obj.Name, spec.Kind))
+			if marker := clause.Attribute.ClauseMarkerName(); marker != "" {
+				panic(fmt.Sprintf("object %q: custom operation %q attribute is %s", obj.Name, spec.Kind, marker))
 			}
 			name := clause.Attribute.Name
 			if name == "" {
@@ -1212,6 +1200,11 @@ func validateSqlClause(obj Object, attr Attribute, statement string, clause SqlC
 		if !token.IsIdentifier(clause.Field) || token.IsExported(clause.Field) {
 			panic(fmt.Sprintf("object %q: attribute %q static field %q is not private", obj.Name, attr.Name, clause.Field))
 		}
+	case SqlKindTags:
+		// A tags clause carries no data. The statement that holds it picks TAG, SET TAG, or UNSET TAG.
+	case SqlKindParameters:
+		// A list entry never reaches here, so this is a nested field: the catalog spread belongs in a clause list.
+		panic(fmt.Sprintf("object %q: attribute %q %s parameters clause is a clause list entry, not a nested field", obj.Name, attr.Name, statement))
 	default:
 		panic(fmt.Sprintf("object %q: attribute %q %s has sql kind %q", obj.Name, attr.Name, statement, clause.Kind))
 	}
@@ -1259,11 +1252,8 @@ func validateColumnList(obj Object, kind string, list []*Attribute, attrs map[st
 		if a == nil {
 			panic(fmt.Sprintf("object %q: nil %s entry", obj.Name, kind))
 		}
-		if a.IsTags() {
-			panic(fmt.Sprintf("object %q: tags is not a %s column", obj.Name, kind))
-		}
-		if a.IsParameters() {
-			panic(fmt.Sprintf("object %q: parameters is not a %s column", obj.Name, kind))
+		if marker := a.ClauseMarkerName(); marker != "" {
+			panic(fmt.Sprintf("object %q: %s is not a %s column", obj.Name, marker, kind))
 		}
 		if a.Name == "" {
 			panic(fmt.Sprintf("object %q: %s entry has empty Name", obj.Name, kind))

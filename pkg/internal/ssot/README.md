@@ -66,7 +66,7 @@ each field.
 |---|---|
 | Identity and type | `Name`, `Type`, `IdentifierType`, `Enum`, `ShowEnum`, `Elem`, `Children`, `Deprecated` |
 | Snowflake constraints | `Required`, `ForceNew`, `CreateOnly`, `Sensitive`, `Min`, `Max`, `ServerDefault`, `Validations` |
-| Snowflake SQL | `CreateSql`, `SetSql`, `UnsetSql`, `SqlOnly`, `Tags`, `TagForm`, `Parameters` |
+| Snowflake SQL | `CreateSql`, `SetSql`, `UnsetSql`, `SqlOnly` |
 | Snowflake SHOW and DESCRIBE | `Readonly`, `ShowName`, `OptionalInShow`, `ShowString`, `DescribeString`, `DescribeEnum`, `StoredAsText`, `BoolTrueValue` |
 | Terraform | `Computed`, `NativeBool`, `DiffSuppress`, `SchemaName`, `SkipInSchema` |
 | Docs | `Description`, `AdditionalDescription`, `RawDescription`, `IncludeAliasedInTheDescription`, `RelatedResource` |
@@ -503,7 +503,7 @@ enable nothing.
   check, such as `MODIFY CONDITION EXISTS`. `AlterPlainText(field, sql)` is an optional unquoted value with no equals, such as
   `MODIFY ACTION`. `SdkAlterAdditionalValidations()` marks the ALTER query struct. `RenameTo` and `SwapWith` use the
   object's `IdType` and get `ValidIdentifierIfSet`. The attributes of the SET and UNSET blocks are passed to `AlterSet` and `AlterUnset`, directly or in groups. [`Tags`](attribute.go) is the
-  optional `TAG` clause and belongs on `Create.Clauses`, not on `KeywordsBefore`. [`Parameters`](attribute.go) spreads
+  optional `TAG` clause (a [`TagsClause`](sql_clause.go) entry) and belongs on `Create.Clauses`, not on `KeywordsBefore`. [`Parameters`](attribute.go) (a `ParametersClause` entry) spreads
   the parameter catalog for `ParameterLevel()`. `ShowParametersDetailsAdditionalLevels` adds parameters from more levels
   onto `ShowParametersDetails`. ALTER SET and UNSET stay `ParameterLevel()`. The union is emitted in catalog order, and a name already present is kept once. CREATE does not
   take those levels.
@@ -1036,10 +1036,10 @@ Rules for CREATE and ALTER. The calls are in [Generators](#generators).
 - A SQL constructor does not take an `Attribute`. Set the clause on the attribute. `ValidateObject` checks it while walking the object.
 - An identifier keyword gets `ValidIdentifier` when required and `ValidIdentifierIfSet` when optional. A required list parameter gets `ValidateValueSet`. A required list of identifiers gets `AtLeastOneValueSet` and `ValidIdentifier`.
 - `TextKeyword` writes a string as a keyword field. `DoubleQuotes` quotes it. `PredefinedType` names a Go type the SDK already has, such as `DataType`. It is valid on CREATE and SET, so SET can reuse a handwritten type such as `[]TableContact`. `NoComma()` with it writes the type as a list of its own fields, such as `TimeTravel`. `KeywordShape` on it writes the field as a keyword instead of a parameter, for a type that prints itself, such as `[]Column` or `*ForeignKeyOnAction`. `KeywordShape` on a `PreexistingStructOf` or `ObjectParameter` writes the nested struct with a keyword tag instead of a list tag. `QueryStructFromAttribute` builds the CREATE struct of an SSOT attribute for handwritten ALTER.
-- A `Tags` child of a SqlOnly object emits optional `TAG`. `ssot.Conflicting` on a SqlOnly object names children that cannot be set together, and the SDK struct gets `ConflictingFields` for a pair, in children order. `StructName` on an `ObjectParameter`, `ListOfObjects`, or object-list `ValueKeyword` clause keeps a nested struct name that other objects already use. Without it the name is the owner plus the attribute name.
+- A child with a `TagsClause()` as its `CreateSql` emits optional `TAG`. `ssot.Conflicting` on a SqlOnly object names children that cannot be set together, and the SDK struct gets `ConflictingFields` for a pair, in children order. `StructName` on an `ObjectParameter`, `ListOfObjects`, or object-list `ValueKeyword` clause keeps a nested struct name that other objects already use. Without it the name is the owner plus the attribute name.
 - An object clause with no `Sql` text and no `Parentheses()` writes its fields in place, with no wrapper keyword. A child-level validation already skips `Required` children, since a required field is always set. A clause that only accompanies another one is a child of that clause's object, such as `COLLATE` under `SET DATA TYPE`, so it is not one of the alternatives.
 - `AlterOperationFromObject` takes the preexisting query structs a block or SET names. A helper whose name is the block attribute's `SqlStruct` is that block. `AlterKeywordBlock` may omit the SQL prefix when the nested struct carries the words. A block field named like the `SetSql` or `UnsetSql` `FieldName` of its attribute embeds that projection (`AlterClause.BlockProjection`); any other field embeds the CREATE struct. `AlterCommaSeparatedBlock` comma-joins the nested children with no parentheses. `AlterSuppliedKeywordBlock` names a supplied struct that has no block attribute, such as the SET projection of a shared attribute.
-- A `Tags` child with `TagForm` emits `SET TAG` or `UNSET TAG` instead of optional `TAG`, and belongs only to the SET or UNSET projection it names, so one attribute can carry both forms.
+- A child whose `SetSql` is `TagsClause()` emits `SET TAG`, and one whose `UnsetSql` is `TagsClause()` emits `UNSET TAG`. Each belongs only to the projection that holds its clause.
 - `BareValue` writes a parameter as a value rather than a pointer, without the required tag. `RequireValue` adds a value check on a predefined field.
 - The SDK generator calls the existing query-struct builders (`NumberAssignment`, `OptionalSQL`, `ListAssignment`, and the rest). It does not record a Go type on the clause, and it does not build `ddl` tags.
 - `AlterSetQueryStruct` and `AlterUnsetQueryStruct` build the SET and UNSET structs before ALTER itself is generated. UNSET is embedded as a list with no parentheses, so its fields are comma-separated.

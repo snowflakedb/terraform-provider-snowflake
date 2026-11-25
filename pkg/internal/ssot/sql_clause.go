@@ -25,6 +25,10 @@ const (
 	SqlKindPredefined SqlKind = "predefined"
 	// SqlKindWrapString is a helper struct around a string: static SQL, the string, then static SQL. See WrapString.
 	SqlKindWrapString SqlKind = "wrap_string"
+	// SqlKindTags is the TAG clause of a statement: TAG on CREATE, SET TAG on SET, UNSET TAG on UNSET. See TagsClause.
+	SqlKindTags SqlKind = "tags"
+	// SqlKindParameters is the parameter catalog spread into a statement. See ParametersClause.
+	SqlKindParameters SqlKind = "parameters"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -204,6 +208,17 @@ func ListParameter(itemStruct string, opts ...SqlClauseOption) SqlClause {
 		c.Parentheses = SqlParensYes
 		c.ItemStruct = itemStruct
 	}, opts)
+}
+
+// TagsClause is the tags clause: optional TAG in CREATE, SET TAG in SET, and UNSET TAG in UNSET.
+// The statement that holds it picks the form.
+func TagsClause() SqlClause {
+	return newClause(SqlKindTags, nil, nil)
+}
+
+// ParametersClause is the parameter catalog spread. The statement that holds it picks the SET or UNSET form.
+func ParametersClause() SqlClause {
+	return newClause(SqlKindParameters, nil, nil)
 }
 
 // StaticSQL is a private static field of a SQL struct.
@@ -600,10 +615,6 @@ func (a Attribute) NestedSqlFieldsFor(use ClauseUse) []Attribute {
 }
 
 func (a Attribute) inSqlProjection(use ClauseUse) bool {
-	if a.IsTags() && a.TagForm != "" {
-		// A SET TAG or UNSET TAG child belongs to the statement it names.
-		return (use == ClauseSet && a.TagForm == TagFormSet) || (use == ClauseUnset && a.TagForm == TagFormUnset)
-	}
 	create, set, unset := a.CreateSql.Present, a.SetSql.Present, a.UnsetSql.Present
 	none := !create && !set && !unset
 	switch use {

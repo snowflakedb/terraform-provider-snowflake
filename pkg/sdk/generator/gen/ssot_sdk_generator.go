@@ -404,11 +404,8 @@ func createQueryStructFromConfig(obj ssot.Object, cfg ssot.SdkGenerator, supplie
 		q = q.OrReplace()
 	}
 	for _, field := range obj.Create.KeywordsBefore {
-		if field != nil && field.IsTags() {
-			panic("KeywordsBefore list contains tags")
-		}
-		if field != nil && field.IsParameters() {
-			panic("KeywordsBefore list contains parameters")
+		if marker := field.ClauseMarkerName(); marker != "" {
+			panic("KeywordsBefore list contains " + marker)
 		}
 	}
 	createParams := parametersForStatement(obj, obj.Create.Clauses, "CREATE")
@@ -849,11 +846,8 @@ func customOperationAttribute(obj ssot.Object, spec ssot.CustomOperationSpec, cl
 	if clause.Attribute == nil {
 		panic(fmt.Sprintf("object %q: custom operation %q attribute is empty", obj.Name, spec.Kind))
 	}
-	if clause.Attribute.IsTags() {
-		panic(fmt.Sprintf("object %q: custom operation %q attribute is tags", obj.Name, spec.Kind))
-	}
-	if clause.Attribute.IsParameters() {
-		panic(fmt.Sprintf("object %q: custom operation %q attribute is parameters", obj.Name, spec.Kind))
+	if marker := clause.Attribute.ClauseMarkerName(); marker != "" {
+		panic(fmt.Sprintf("object %q: custom operation %q attribute is %s", obj.Name, spec.Kind, marker))
 	}
 	name := clause.Attribute.Name
 	if name == "" {

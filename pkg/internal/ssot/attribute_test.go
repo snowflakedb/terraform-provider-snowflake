@@ -46,3 +46,43 @@ func Test_Attribute_CanUpdate(t *testing.T) {
 		})
 	}
 }
+
+func Test_Attribute_ClauseMarkerName(t *testing.T) {
+	require.Equal(t, "tags", Tags.ClauseMarkerName())
+	require.Equal(t, "parameters", Parameters.ClauseMarkerName())
+	require.Empty(t, (&Attribute{Name: "comment", CreateSql: StringParameter()}).ClauseMarkerName())
+	require.Empty(t, (*Attribute)(nil).ClauseMarkerName())
+}
+
+func Test_Attribute_NestedTagsClauseFollowsItsStatement(t *testing.T) {
+	block := Attribute{
+		Name: "alter_tags",
+		Type: AttrObject,
+		Children: []Attribute{
+			{Name: "tags", CreateSql: TagsClause()},
+			{Name: "set_tags", SetSql: TagsClause()},
+			{Name: "unset_tags", UnsetSql: TagsClause()},
+		},
+	}
+	names := func(use ClauseUse) []string {
+		fields := block.NestedSqlFieldsFor(use)
+		out := make([]string, 0, len(fields))
+		for _, child := range fields {
+			out = append(out, child.Name)
+		}
+		return out
+	}
+	require.Equal(t, []string{"tags"}, names(ClauseCreate))
+	require.Equal(t, []string{"set_tags"}, names(ClauseSet))
+	require.Equal(t, []string{"unset_tags"}, names(ClauseUnset))
+}
+
+func Test_validateSqlClause_parametersClauseIsNotANestedField(t *testing.T) {
+	obj := Object{Name: "Widget"}
+	require.NotPanics(t, func() {
+		validateSqlClause(obj, Attribute{Name: "tags"}, "CREATE", TagsClause())
+	})
+	require.PanicsWithValue(t, `object "Widget": attribute "parameters" CREATE parameters clause is a clause list entry, not a nested field`, func() {
+		validateSqlClause(obj, Attribute{Name: "parameters"}, "CREATE", ParametersClause())
+	})
+}
