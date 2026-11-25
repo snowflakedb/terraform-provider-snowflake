@@ -1,0 +1,581 @@
+package defs
+
+import (
+	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
+)
+
+// The methods are documented in the per-user quota method reference; where it's silent, the definitions below follow Snowflake's
+// behavior. The reference doesn't cover ALTER, DROP and SHOW, so they link to the overview.
+const (
+	quotasDocs            = "https://docs.snowflake.com/en/user-guide/budgets/per-user-quotas"
+	quotasLegacyScopeDocs = quotasDocs + "-user-scope#legacy-scope-methods"
+)
+
+func quotaDocs(section string) string {
+	return quotasDocs + "-reference#" + section
+}
+
+// SNOWFLAKE COCO and SNOWFLAKE COWORK were called CORTEX CODE and SNOWFLAKE INTELLIGENCE. Snowflake accepts both names, and
+// GET_QUOTA_SCOPE returns the former ones.
+var QuotaSharedResourceDomainEnumDef = g.NewEnum(
+	"QuotaSharedResourceDomain", "QuotaSharedResourceDomains",
+	"WAREHOUSE", "AI FUNCTION", "CORTEX AGENT", "SNOWFLAKE COCO", "SNOWFLAKE COWORK", "AI GATEWAY",
+)
+
+var QuotaCycleEnumDef = g.NewEnum(
+	"QuotaCycle", "QuotaCycles",
+	"MONTHLY", "WEEKLY", "DAILY",
+)
+
+var QuotaSpendStrategyEnumDef = g.NewEnum(
+	"QuotaSpendStrategy", "QuotaSpendStrategies",
+	"ACTUAL", "PROJECTED",
+)
+
+var QuotaUserTagsOperatorEnumDef = g.NewEnum(
+	"QuotaUserTagsOperator", "QuotaUserTagsOperators",
+	"UNION", "INTERSECTION", "ALL_USERS",
+)
+
+var QuotaUserScopeTypeEnumDef = g.NewEnum(
+	"QuotaUserScopeType", "QuotaUserScopeTypes",
+	"ALL_USERS", "GROUP_OF_USERS",
+)
+
+var QuotaUserScopeOperatorEnumDef = g.NewEnum(
+	"QuotaUserScopeOperator", "QuotaUserScopeOperators",
+	"UNION", "INTERSECTION",
+)
+
+// A domain followed by one of its instances, given by name.
+func quotaSharedResourceNameArgs(name string, domain string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		SQLWithCustomFieldName("domain", "'"+domain+"'").
+		Text("Name", g.KeywordOptions().SingleQuotes().Required())
+}
+
+// A domain followed by one of its instances, given by reference.
+func quotaSharedResourceReferenceArgs(name string, domain string, kind string, objectType string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		SQLWithCustomFieldName("domain", "'"+domain+"'").
+		Identifier("Id", kind, g.IdentifierOptions().Required().SystemReference(objectType)).
+		WithValidation(g.ValidIdentifier, "Id")
+}
+
+// ADD_SHARED_RESOURCE and REMOVE_SHARED_RESOURCE take a whole domain, or one of its instances. AI FUNCTION and SNOWFLAKE COCO
+// instances are plain names; the other domains take object references. SYSTEM$REFERENCE doesn't accept SNOWFLAKE COWORK, so its
+// instances are referenced as SNOWFLAKE INTELLIGENCE objects.
+func quotaSharedResourceArgs(name string) *g.QueryStruct {
+	accountObject := g.KindOfT[sdkcommons.AccountObjectIdentifier]()
+	return g.NewQueryStruct(name).
+		OptionalQueryStructField(
+			"WholeDomain",
+			g.NewQueryStruct("Quota"+name+"WholeDomain").Enum("Domain", QuotaSharedResourceDomainEnumDef, g.KeywordOptions().SingleQuotes().Required()),
+			g.ListOptions(),
+		).
+		OptionalQueryStructField("AiFunction", quotaSharedResourceNameArgs("Quota"+name+"AiFunction", "AI FUNCTION"), g.ListOptions()).
+		OptionalQueryStructField("SnowflakeCoco", quotaSharedResourceNameArgs("Quota"+name+"SnowflakeCoco", "SNOWFLAKE COCO"), g.ListOptions()).
+		OptionalQueryStructField("Warehouse", quotaSharedResourceReferenceArgs("Quota"+name+"Warehouse", "WAREHOUSE", accountObject, "WAREHOUSE"), g.ListOptions()).
+		OptionalQueryStructField("CortexAgent", quotaSharedResourceReferenceArgs("Quota"+name+"CortexAgent", "CORTEX AGENT", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), "CORTEX AGENT"), g.ListOptions()).
+		OptionalQueryStructField("SnowflakeCowork", quotaSharedResourceReferenceArgs("Quota"+name+"SnowflakeCowork", "SNOWFLAKE COWORK", accountObject, "SNOWFLAKE INTELLIGENCE"), g.ListOptions()).
+		OptionalQueryStructField("AiGateway", quotaSharedResourceReferenceArgs("Quota"+name+"AiGateway", "AI GATEWAY", accountObject, "AI GATEWAY"), g.ListOptions()).
+		WithValidation(g.ExactlyOneValueSet, "WholeDomain", "AiFunction", "SnowflakeCoco", "Warehouse", "CortexAgent", "SnowflakeCowork", "AiGateway")
+}
+
+func quotaTagValue(name string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET")).
+		Text("Value", g.KeywordOptions().SingleQuotes().Required()).
+		WithValidation(g.ValidIdentifier, "Tag")
+}
+
+// SET_USER_TAGS replaces the tags that select the users. The operator is required; the one-argument form is rejected. With
+// ALL_USERS and an empty array, the quota applies to all users again, and the excluded tags and both user lists are cleared.
+var quotaSetUserTagsArgs = g.NewQueryStruct("SetUserTagsArgs").
+	ListQueryStructField("Tags", quotaTagValue("QuotaUserTag"), g.ListOptions().Required().MustBrackets().ArrayElements()).
+	Enum("Operator", QuotaUserTagsOperatorEnumDef, g.KeywordOptions().SingleQuotes().Required())
+
+// The 'USER' form accumulates like INCLUDE_USERS, and an empty array clears the list. The 'TAG' form replaces the excluded
+// tags, and an empty array clears them.
+var quotaExcludeUsersArgs = g.NewQueryStruct("ExcludeUsersArgs").
+	OptionalQueryStructField(
+		"ByTag",
+		g.NewQueryStruct("QuotaExcludeUsersByTag").
+			SQLWithCustomFieldName("kind", "'TAG'").
+			ListQueryStructField("Tags", quotaTagValue("QuotaExcludedUserTag"), g.ListOptions().Required().MustBrackets().ArrayElements()),
+		g.ListOptions(),
+	).
+	OptionalQueryStructField(
+		"ByUser",
+		g.NewQueryStruct("QuotaExcludeUsersByUser").
+			SQLWithCustomFieldName("kind", "'USER'").
+			List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()),
+		g.ListOptions(),
+	).
+	WithValidation(g.ExactlyOneValueSet, "ByTag", "ByUser")
+
+// INCLUDE_USERS calls accumulate; an empty array clears the list. User names are resolved case-insensitively.
+var quotaIncludeUsersArgs = g.NewQueryStruct("IncludeUsersArgs").
+	List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes())
+
+// SET_QUOTA_USER_SCOPE, ADD_QUOTA_USER_SCOPE, and REMOVE_QUOTA_USER_SCOPE take an object built with OBJECT_CONSTRUCT, whose lists
+// replace, are added to, or are removed from the current ones. A list that isn't passed is left unchanged, so each one is a
+// '<key>', [...] pair that is omitted when not set; with SET_QUOTA_USER_SCOPE, an empty list clears it. ADD_QUOTA_USER_SCOPE and
+// REMOVE_QUOTA_USER_SCOPE reject empty lists, and the type and operator.
+//
+// The structs used in more than one place are built by functions: the first use generates them, and the others are shared.
+func quotaUserScopeUserTags() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeUserTags").
+		SQLWithCustomFieldName("key", "'user_tags'").
+		ListQueryStructField("Tags", quotaTagValue("QuotaUserScopeTag"), g.ListOptions().Required().MustBrackets().ArrayElements()).
+		WithSharedToOpts()
+}
+
+func quotaUserScopeNames(name string, key string, field string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		SQLWithCustomFieldName("key", "'"+key+"'").
+		List(field, "string", g.ListOptions().Required().MustBrackets().SingleQuotes()).
+		WithSharedToOpts()
+}
+
+func quotaUserScopeRoles() *g.QueryStruct {
+	return quotaUserScopeNames("QuotaUserScopeRoles", "roles", "Roles")
+}
+
+// The tags and roles that exclude users, and with ADD_QUOTA_USER_SCOPE and REMOVE_QUOTA_USER_SCOPE, the ones that select them.
+func quotaUserScopeTagsAndRoles() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeTagsAndRoles").
+		OptionalQueryStructField("UserTags", quotaUserScopeUserTags(), g.ListOptions()).
+		OptionalQueryStructField("Roles", quotaUserScopeRoles(), g.ListOptions()).
+		WithValidation(g.AtLeastOneValueSet, "UserTags", "Roles").
+		WithSharedToOpts()
+}
+
+func quotaUserScopeUsernames() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeUsernames").
+		OptionalQueryStructField("Included", quotaUserScopeNames("QuotaUserScopeIncludedUsers", "included", "Users"), g.ListOptions()).
+		OptionalQueryStructField("Excluded", quotaUserScopeNames("QuotaUserScopeExcludedUsers", "excluded", "Users"), g.ListOptions()).
+		WithValidation(g.AtLeastOneValueSet, "Included", "Excluded").
+		WithSharedToOpts()
+}
+
+// quotaUserScopeObject renders a field as '<key>', OBJECT_CONSTRUCT(...).
+func quotaUserScopeObject(key string) *g.ListTransformer {
+	return g.ListOptions().MustParentheses().SQL("'" + key + "', OBJECT_CONSTRUCT")
+}
+
+// The type is required; setting ALL_USERS clears the roles that select users, and from GROUP_OF_USERS, the tags too.
+var quotaSetQuotaUserScopeArgs = g.NewQueryStruct("SetQuotaUserScopeArgs").
+	QueryStructField(
+		"Scope",
+		g.NewQueryStruct("QuotaSetUserScope").
+			OptionalQueryStructField(
+				"AppliesTo",
+				g.NewQueryStruct("QuotaUserScopeAppliesTo").
+					SQLWithCustomFieldName("typeKey", "'type'").
+					Enum("ScopeType", QuotaUserScopeTypeEnumDef, g.KeywordOptions().SingleQuotes().Required()).
+					OptionalQueryStructField(
+						"Operator",
+						g.NewQueryStruct("QuotaUserScopeOperatorValue").
+							SQLWithCustomFieldName("key", "'operator'").
+							Enum("Operator", QuotaUserScopeOperatorEnumDef, g.KeywordOptions().SingleQuotes().Required()),
+						g.ListOptions(),
+					).
+					OptionalSharedQueryStructField("UserTags", quotaUserScopeUserTags(), g.ListOptions()).
+					OptionalSharedQueryStructField("Roles", quotaUserScopeRoles(), g.ListOptions()),
+				quotaUserScopeObject("applies_to"),
+			).
+			OptionalQueryStructField("ExcludedBy", quotaUserScopeTagsAndRoles(), quotaUserScopeObject("excluded_by")).
+			OptionalQueryStructField("Usernames", quotaUserScopeUsernames(), quotaUserScopeObject("usernames")).
+			WithValidation(g.AtLeastOneValueSet, "AppliesTo", "ExcludedBy", "Usernames"),
+		g.ListOptions().MustParentheses().SQL("OBJECT_CONSTRUCT").Required(),
+	)
+
+func quotaUserScopeChange() *g.QueryStruct {
+	return g.NewQueryStruct("QuotaUserScopeChange").
+		OptionalSharedQueryStructField("AppliesTo", quotaUserScopeTagsAndRoles(), quotaUserScopeObject("applies_to")).
+		OptionalSharedQueryStructField("ExcludedBy", quotaUserScopeTagsAndRoles(), quotaUserScopeObject("excluded_by")).
+		OptionalSharedQueryStructField("Usernames", quotaUserScopeUsernames(), quotaUserScopeObject("usernames")).
+		WithValidation(g.AtLeastOneValueSet, "AppliesTo", "ExcludedBy", "Usernames").
+		WithSharedToOpts()
+}
+
+var quotaAddQuotaUserScopeArgs = g.NewQueryStruct("AddQuotaUserScopeArgs").
+	QueryStructField("Scope", quotaUserScopeChange(), g.ListOptions().MustParentheses().SQL("OBJECT_CONSTRUCT").Required())
+
+var quotaRemoveQuotaUserScopeArgs = g.NewQueryStruct("RemoveQuotaUserScopeArgs").
+	SharedQueryStructField("Scope", quotaUserScopeChange(), g.ListOptions().MustParentheses().SQL("OBJECT_CONSTRUCT").Required())
+
+// The limit must be a positive integer no greater than 1000000000.
+var quotaSetPerUserLimitArgs = g.NewQueryStruct("SetPerUserLimitArgs").
+	PredefinedQueryStructField("Limit", "int", g.ParameterOptions().NoEquals().Required()).
+	OptionalEnum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes())
+
+var quotaUnsetPerUserLimitArgs = g.NewQueryStruct("UnsetPerUserLimitArgs").
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required())
+
+// SET_USER_QUOTA_OVERRIDE sets the limit of the given users for one cycle, replacing their override for that cycle. The users are
+// resolved case-insensitively, and the call fails for all of them if one doesn't exist. ExpiresOn is a date (YYYY-MM-DD) later
+// than the current one; the override expires at 00:00 UTC on it, and without it, the override doesn't expire.
+var quotaSetUserQuotaOverrideArgs = g.NewQueryStruct("SetUserQuotaOverrideArgs").
+	List("Users", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()).
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required()).
+	PredefinedQueryStructField("Limit", "int", g.ParameterOptions().NoEquals().Required()).
+	OptionalText("ExpiresOn", g.KeywordOptions().SingleQuotes())
+
+var quotaRemoveUserQuotaOverrideArgs = g.NewQueryStruct("RemoveUserQuotaOverrideArgs").
+	Text("User", g.KeywordOptions().SingleQuotes().Required()).
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required())
+
+var quotaRemoveUserQuotaOverridesByUserArgs = g.NewQueryStruct("RemoveUserQuotaOverridesByUserArgs").
+	Text("User", g.KeywordOptions().SingleQuotes().Required())
+
+var quotaRemoveUserQuotaOverridesByCycleArgs = g.NewQueryStruct("RemoveUserQuotaOverridesByCycleArgs").
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required())
+
+// The one-argument form also disables the per-user block notifications, so NotifyUsers should always be passed.
+var quotaSetBlockEnforcementEnabledArgs = g.NewQueryStruct("SetBlockEnforcementEnabledArgs").
+	PredefinedQueryStructField("Enabled", "bool", g.ParameterOptions().NoEquals().Required()).
+	PredefinedQueryStructField("NotifyUsers", "*bool", g.ParameterOptions().NoEquals())
+
+// The threshold must be greater than 0 and no greater than 1000; all four arguments are required.
+var quotaAddNotificationThresholdArgs = g.NewQueryStruct("AddNotificationThresholdArgs").
+	PredefinedQueryStructField("Threshold", "int", g.ParameterOptions().NoEquals().Required()).
+	Enum("SpendStrategy", QuotaSpendStrategyEnumDef, g.KeywordOptions().SingleQuotes().Required()).
+	PredefinedQueryStructField("NotifyUser", "bool", g.ParameterOptions().NoEquals().Required()).
+	Enum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes().Required())
+
+// Thresholds are identified by (threshold, spend strategy, cycle); without the cycle, the monthly threshold is removed.
+var quotaRemoveNotificationThresholdArgs = g.NewQueryStruct("RemoveNotificationThresholdArgs").
+	PredefinedQueryStructField("Threshold", "int", g.ParameterOptions().NoEquals().Required()).
+	Enum("SpendStrategy", QuotaSpendStrategyEnumDef, g.KeywordOptions().SingleQuotes().Required()).
+	OptionalEnum("Cycle", QuotaCycleEnumDef, g.KeywordOptions().SingleQuotes())
+
+// Only webhook and queue integrations are accepted (email recipients are set with SET_ADMIN_EMAILS), and USAGE on the integration
+// must be granted to the SNOWFLAKE application; otherwise ADD_NOTIFICATION_INTEGRATION fails with INVALID_INTEGRATION.
+func quotaNotificationIntegrationArgs(name string) *g.QueryStruct {
+	return g.NewQueryStruct(name).
+		Identifier("Integration", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SingleQuotes().Required()).
+		WithValidation(g.ValidIdentifier, "Integration")
+}
+
+// SET_ADMIN_EMAILS takes a single string with comma-separated emails, which must be verified emails of users in the account;
+// an empty string clears them.
+var quotaSetAdminEmailsArgs = g.NewQueryStruct("SetAdminEmailsArgs").
+	Text("Emails", g.KeywordOptions().SingleQuotes().Required())
+
+// The arguments are passed after the IDs of the users who crossed the threshold, so their number must match the procedure's
+// remaining parameters.
+var quotaAddCustomActionArgs = g.NewQueryStruct("AddCustomActionArgs").
+	Identifier("Procedure", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](), g.IdentifierOptions().Required().SystemReference("PROCEDURE")).
+	List("Arguments", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()).
+	Enum("SpendStrategy", QuotaSpendStrategyEnumDef, g.KeywordOptions().SingleQuotes().Required()).
+	PredefinedQueryStructField("Threshold", "int", g.ParameterOptions().NoEquals().Required()).
+	WithValidation(g.ValidIdentifier, "Procedure")
+
+// The arguments are positional, and removing by procedure removes the actions of both spend strategies. The procedure is passed
+// as the unquoted PROCEDURE_FQN returned by GET_CUSTOM_ACTIONS.
+var quotaRemoveCustomActionsArgs = g.NewQueryStruct("RemoveCustomActionsArgs").
+	OptionalNumber("Threshold", g.KeywordOptions()).
+	OptionalText("ProcedureFqn", g.KeywordOptions().SingleQuotes()).
+	WithAdditionalValidations()
+
+var quotaSetCycleStartActionArgs = g.NewQueryStruct("SetCycleStartActionArgs").
+	Identifier("Procedure", g.KindOfT[sdkcommons.SchemaObjectIdentifierWithArguments](), g.IdentifierOptions().Required().SystemReference("PROCEDURE")).
+	List("Arguments", "string", g.ListOptions().Required().MustBrackets().SingleQuotes()).
+	WithValidation(g.ValidIdentifier, "Procedure")
+
+// GET_CONFIG returns one row; numbers and booleans ("0"/"1") are returned as strings.
+var quotaConfigResult = g.StructPair("quotaConfigRow", "QuotaConfig").
+	// uppercase column names used on purpose, here and in the results below
+	OptionalText("QUOTA_ID").
+	OptionalNumber("PER_USER_LIMIT").
+	OptionalNumber("PER_USER_LIMIT_WEEKLY").
+	OptionalNumber("PER_USER_LIMIT_DAILY").
+	Bool("BLOCK_ENFORCEMENT_ENABLED").
+	Bool("PER_USER_BLOCK_NOTIFICATIONS_ENABLED").
+	Field("ADMIN_EMAILS", "sql.NullString", "[]string", g.WithCustomParser("ParseQuotaAdminEmails")).
+	OptionalText("ADMIN_LAST_SENT_AT").
+	OptionalText("REFRESH_TIER")
+
+// LIST_USER_QUOTA_OVERRIDES returns USER_NAME as NULL, so the users are identified by USER_ID. EXPIRY_DATE is NULL for an override
+// that doesn't expire.
+var quotaUserQuotaOverrideResult = g.StructPair("quotaUserQuotaOverrideRow", "QuotaUserQuotaOverride").
+	Number("USER_ID").
+	OptionalText("USER_NAME").
+	Enum("CYCLE", QuotaCycleEnumDef).
+	Number("OVERRIDE_VALUE").
+	OptionalTime("EXPIRY_DATE")
+
+var quotaNotificationThresholdResult = g.StructPair("quotaNotificationThresholdRow", "QuotaNotificationThreshold").
+	Number("THRESHOLD").
+	Enum("SPEND_STRATEGY", QuotaSpendStrategyEnumDef).
+	Bool("NOTIFY_USER").
+	Enum("CYCLE", QuotaCycleEnumDef).
+	Time("ADDED_TIMESTAMP")
+
+// LAST_NOTIFICATION_TIME is NULL until a notification is sent; it's read as text, so it scans whatever its type is.
+var quotaNotificationIntegrationResult = g.StructPair("quotaNotificationIntegrationRow", "QuotaNotificationIntegration").
+	Text("INTEGRATION_NAME").
+	OptionalText("LAST_NOTIFICATION_TIME").
+	Time("ADDED_TIMESTAMP")
+
+// PROCEDURE_FQN is returned unquoted (e.g. DB.SCH.PROC(VARCHAR)), and PROCEDURE_ARGS is a JSON array.
+var quotaCustomActionResult = g.StructPair("quotaCustomActionRow", "QuotaCustomAction").
+	Text("ACTION_ID").
+	Text("PROCEDURE_FQN").
+	Field("PROCEDURE_ARGS", "string", "[]string", g.WithCustomParser("ParseQuotaProcedureArguments")).
+	Enum("SPEND_STRATEGY", QuotaSpendStrategyEnumDef).
+	Number("THRESHOLD").
+	OptionalTime("LAST_TRIGGER_ATTEMPT_TIME").
+	Time("ADDED_TIMESTAMP")
+
+// GET_CYCLE_START_ACTION returns no rows when no action is set; the columns are nullable so that a row of NULLs scans too.
+var quotaCycleStartActionResult = g.StructPair("quotaCycleStartActionRow", "QuotaCycleStartAction").
+	OptionalText("ACTION_ID").
+	OptionalText("PROCEDURE_FQN").
+	Field("PROCEDURE_ARGS", "sql.NullString", "[]string", g.WithCustomParser("ParseQuotaProcedureArguments")).
+	OptionalTime("ADDED_TIMESTAMP").
+	OptionalTime("LAST_TRIGGER_ATTEMPT_TIME")
+
+var quotasDef = g.NewInterface(
+	"Quotas",
+	"Quota",
+	g.KindOfT[sdkcommons.SchemaObjectIdentifier](),
+).CreateOperation(
+	quotaDocs("create-a-quota"),
+	g.NewQueryStruct("CreateQuotaOptions").
+		Create().
+		OrReplace().
+		SQLWithCustomFieldName("snowflakeCoreQuota", "SNOWFLAKE.CORE.QUOTA").
+		IfNotExists().
+		Name().
+		SQLWithCustomFieldName("parens", "()").
+		OptionalComment().
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ConflictingFields, "OrReplace", "IfNotExists"),
+).AlterOperation(
+	quotasDocs,
+	g.NewQueryStruct("AlterQuotaOptions").
+		Alter().
+		SQLWithCustomFieldName("snowflakeCoreQuota", "SNOWFLAKE.CORE.QUOTA").
+		Name().
+		RenameTo().
+		OptionalQueryStructField(
+			"Set",
+			g.NewQueryStruct("QuotaSet").
+				OptionalComment().
+				WithValidation(g.AtLeastOneValueSet, "Comment"),
+			g.KeywordOptions().SQL("SET"),
+		).
+		OptionalQueryStructField(
+			"Unset",
+			g.NewQueryStruct("QuotaUnset").
+				OptionalSQL("COMMENT").
+				WithValidation(g.AtLeastOneValueSet, "Comment"),
+			g.ListOptions().NoParentheses().SQL("UNSET"),
+		).
+		WithValidation(g.ValidIdentifier, "name").
+		WithValidation(g.ExactlyOneValueSet, "RenameTo", "Set", "Unset"),
+).DropOperation(
+	quotasDocs,
+	g.NewQueryStruct("DropQuotaOptions").
+		Drop().
+		SQLWithCustomFieldName("snowflakeCoreQuota", "SNOWFLAKE.CORE.QUOTA").
+		IfExists().
+		Name().
+		WithValidation(g.ValidIdentifier, "name"),
+).ShowOperationWithPairedStructs(
+	quotasDocs,
+	g.StructPair("quotaDBRow", "Quota").
+		Time("created_on").
+		Text("name").
+		Text("database_name").
+		Text("schema_name").
+		OptionalText("current_version").
+		OptionalText("comment").
+		Text("owner").
+		OptionalText("owner_role_type"),
+	g.NewQueryStruct("ShowQuotas").
+		Show().
+		SQLWithCustomFieldName("snowflakeCoreQuota", "SNOWFLAKE.CORE.QUOTA").
+		OptionalLike().
+		OptionalIn().
+		OptionalLimit(),
+	g.ShowByIDLikeFiltering,
+	g.ShowByIDInFiltering,
+).InstanceMethodOperationScalar(
+	quotaDocs("monitored-domains"),
+	"ADD_SHARED_RESOURCE",
+	quotaSharedResourceArgs("AddSharedResourceArgs"),
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("monitored-domains"),
+	"REMOVE_SHARED_RESOURCE",
+	quotaSharedResourceArgs("RemoveSharedResourceArgs"),
+	"string",
+).InstanceMethodOperationScalar(
+	quotasLegacyScopeDocs,
+	"SET_USER_TAGS",
+	quotaSetUserTagsArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotasLegacyScopeDocs,
+	"EXCLUDE_USERS",
+	quotaExcludeUsersArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotasLegacyScopeDocs,
+	"INCLUDE_USERS",
+	quotaIncludeUsersArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotasLegacyScopeDocs,
+	"GET_QUOTA_SCOPE",
+	nil,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"SET_QUOTA_USER_SCOPE",
+	quotaSetQuotaUserScopeArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"ADD_QUOTA_USER_SCOPE",
+	quotaAddQuotaUserScopeArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"REMOVE_QUOTA_USER_SCOPE",
+	quotaRemoveQuotaUserScopeArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("user-scope"),
+	"GET_QUOTA_SCOPE_V2",
+	nil,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("spending-limits"),
+	"SET_PER_USER_LIMIT",
+	quotaSetPerUserLimitArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("spending-limits"),
+	"UNSET_PER_USER_LIMIT",
+	quotaUnsetPerUserLimitArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("enforcement"),
+	"SET_BLOCK_ENFORCEMENT_ENABLED",
+	quotaSetBlockEnforcementEnabledArgs,
+	"string",
+).InstanceMethodOperation(
+	quotaDocs("spending-limits"),
+	"GET_CONFIG",
+	nil,
+	quotaConfigResult,
+	g.InstanceMethodKindSingleValue,
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"SET_USER_QUOTA_OVERRIDE",
+	quotaSetUserQuotaOverrideArgs,
+	"string",
+).InstanceMethodOperation(
+	quotaDocs("limit-overrides"),
+	"LIST_USER_QUOTA_OVERRIDES",
+	nil,
+	quotaUserQuotaOverrideResult,
+	g.InstanceMethodKindSlice,
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_USER_QUOTA_OVERRIDE",
+	quotaRemoveUserQuotaOverrideArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_USER_QUOTA_OVERRIDES_BY_USER",
+	quotaRemoveUserQuotaOverridesByUserArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_USER_QUOTA_OVERRIDES_BY_CYCLE",
+	quotaRemoveUserQuotaOverridesByCycleArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("limit-overrides"),
+	"REMOVE_ALL_USER_QUOTA_OVERRIDES",
+	nil,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("notifications"),
+	"ADD_NOTIFICATION_THRESHOLD",
+	quotaAddNotificationThresholdArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("notifications"),
+	"REMOVE_NOTIFICATION_THRESHOLD",
+	quotaRemoveNotificationThresholdArgs,
+	"string",
+).InstanceMethodOperation(
+	quotaDocs("notifications"),
+	"GET_NOTIFICATION_THRESHOLDS",
+	nil,
+	quotaNotificationThresholdResult,
+	g.InstanceMethodKindSlice,
+).InstanceMethodOperationScalar(
+	quotaDocs("notifications"),
+	"ADD_NOTIFICATION_INTEGRATION",
+	quotaNotificationIntegrationArgs("AddNotificationIntegrationArgs"),
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("notifications"),
+	"REMOVE_NOTIFICATION_INTEGRATION",
+	quotaNotificationIntegrationArgs("RemoveNotificationIntegrationArgs"),
+	"string",
+).InstanceMethodOperation(
+	quotaDocs("notifications"),
+	"GET_NOTIFICATION_INTEGRATIONS",
+	nil,
+	quotaNotificationIntegrationResult,
+	g.InstanceMethodKindSlice,
+).InstanceMethodOperationScalar(
+	quotaDocs("notifications"),
+	"SET_ADMIN_EMAILS",
+	quotaSetAdminEmailsArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("custom-actions"),
+	"ADD_CUSTOM_ACTION",
+	quotaAddCustomActionArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("custom-actions"),
+	"REMOVE_CUSTOM_ACTIONS",
+	quotaRemoveCustomActionsArgs,
+	"string",
+).InstanceMethodOperation(
+	quotaDocs("custom-actions"),
+	"GET_CUSTOM_ACTIONS",
+	nil,
+	quotaCustomActionResult,
+	g.InstanceMethodKindSlice,
+).InstanceMethodOperationScalar(
+	quotaDocs("cycle-start-action"),
+	"SET_CYCLE_START_ACTION",
+	quotaSetCycleStartActionArgs,
+	"string",
+).InstanceMethodOperationScalar(
+	quotaDocs("cycle-start-action"),
+	"REMOVE_CYCLE_START_ACTION",
+	nil,
+	"string",
+).InstanceMethodOperation(
+	quotaDocs("cycle-start-action"),
+	"GET_CYCLE_START_ACTION",
+	nil,
+	quotaCycleStartActionResult,
+	g.InstanceMethodKindSingleValue,
+).
+	WithCustomInterfaceMethod("DescribeDetails", "", []*g.MethodParameter{g.NewMethodParameter("id", g.KindOfT[sdkcommons.SchemaObjectIdentifier]())}, "*QuotaDetails", "error").
+	WithEnums(QuotaSharedResourceDomainEnumDef, QuotaCycleEnumDef, QuotaSpendStrategyEnumDef, QuotaUserTagsOperatorEnumDef, QuotaUserScopeTypeEnumDef, QuotaUserScopeOperatorEnumDef)

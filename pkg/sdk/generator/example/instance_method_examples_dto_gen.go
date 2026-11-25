@@ -33,14 +33,6 @@ type InstanceMethodExampleSetScopeArgsRequest struct {
 }
 
 type ExampleTagValueRequest struct {
-	Reference ExampleTagReferenceRequest // required
-	Value     string                     // required
-}
-
-type ExampleTagReferenceRequest struct {
-	Arguments ExampleTagReferenceArgumentsRequest // required
-}
-
-type ExampleTagReferenceArgumentsRequest struct {
-	Tag SchemaObjectIdentifier // required
+	Tag   SchemaObjectIdentifier // required
+	Value string                 // required
 }

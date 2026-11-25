@@ -437,11 +437,12 @@ ListQueryStructField("Tags", tagValue, g.ListOptions().Required().MustBrackets()
 
 // true / false
 PredefinedQueryStructField("Enabled", "bool", g.ParameterOptions().NoEquals().Required())
+
+// SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET') - the arguments after the object type are the reference scope and privileges
+Identifier("Tag", g.KindOfT[sdkcommons.SchemaObjectIdentifier](), g.IdentifierOptions().Required().SystemReference("TAG", "SESSION", "APPLYBUDGET"))
 ```
 
 Arguments are positional: an optional argument that is not set is omitted, so only trailing arguments can be optional.
-A reference with more than an object type and a name, like a tag's `SYSTEM$REFERENCE('TAG', '<fqn>', 'SESSION', 'APPLYBUDGET')`,
-is built as a function call with these options, as in the example and [system_functions_def.go](defs/system_functions_def.go).
 
 ### Potential Improvements
 
