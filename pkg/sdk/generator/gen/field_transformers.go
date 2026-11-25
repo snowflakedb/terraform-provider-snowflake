@@ -1,6 +1,9 @@
 package gen
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
 type FieldTransformer interface {
 	Transform(f *Field) *Field
@@ -321,8 +324,10 @@ func (v *IdentifierTransformer) Equals() *IdentifierTransformer {
 	return v
 }
 
-func (v *IdentifierTransformer) SystemReference(objectType string) *IdentifierTransformer {
-	v.systemReference = objectType
+// SystemReference renders the identifier as SYSTEM$REFERENCE('<objectType>', '<fqn>'[, '<extraArg>' ...]). The extra arguments are
+// the reference scope and privileges, e.g. SystemReference("TAG", "SESSION", "APPLYBUDGET").
+func (v *IdentifierTransformer) SystemReference(objectType string, extraArgs ...string) *IdentifierTransformer {
+	v.systemReference = strings.Join(append([]string{objectType}, extraArgs...), ",")
 	return v
 }
 
