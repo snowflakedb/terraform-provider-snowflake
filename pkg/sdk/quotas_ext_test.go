@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
@@ -14,17 +15,14 @@ func init() {
 	id := quotasTestIdSchemaObjectIdentifier
 	warehouseId := randomAccountObjectIdentifier()
 	cortexAgentId := randomSchemaObjectIdentifier()
-	snowflakeIntelligenceId := randomAccountObjectIdentifier()
+	snowflakeCoworkId := randomAccountObjectIdentifier()
 	aiGatewayId := randomAccountObjectIdentifier()
 	tagId := randomSchemaObjectIdentifier()
 	tagId2 := randomSchemaObjectIdentifier()
 	integrationId := randomAccountObjectIdentifier()
 	procedureId := randomSchemaObjectIdentifierWithArguments(datatypes.NewVarcharDataType())
-	quotaUserTag := func(tagId SchemaObjectIdentifier, value string) QuotaUserTag {
-		return QuotaUserTag{Reference: QuotaUserTagReference{Arguments: QuotaUserTagReferenceArguments{Tag: tagId}}, Value: value}
-	}
 	tagReference := func(tagId SchemaObjectIdentifier) string {
-		return "SYSTEM$REFERENCE ('TAG', '" + singleQuotedIdentifier(tagId) + "', 'SESSION', 'APPLYBUDGET')"
+		return "SYSTEM$REFERENCE('TAG', '" + singleQuotedIdentifier(tagId) + "', 'SESSION', 'APPLYBUDGET')"
 	}
 
 	quotasTests.Create.
@@ -106,7 +104,7 @@ func init() {
 		withDefaultOpts(func() *AddSharedResourceQuotaOptions {
 			return &AddSharedResourceQuotaOptions{
 				name: id,
-				args: QuotaAddSharedResourceArgs{Domain: QuotaSharedResourceDomainAiFunction},
+				args: QuotaAddSharedResourceArgs{WholeDomain: &QuotaAddSharedResourceArgsWholeDomain{Domain: QuotaSharedResourceDomainAiFunction}},
 			}
 		}).
 		withExpectedSqlf(
@@ -114,74 +112,60 @@ func init() {
 			"CALL %s!ADD_SHARED_RESOURCE ('AI FUNCTION')", id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
+			"sql_AddSharedResource_wholeSnowflakeCowork",
+			func(opts *AddSharedResourceQuotaOptions) {
+				opts.args.WholeDomain.Domain = QuotaSharedResourceDomainSnowflakeCowork
+			},
+			"CALL %s!ADD_SHARED_RESOURCE ('SNOWFLAKE COWORK')", id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
 			"sql_AddSharedResource_aiFunction",
-			func(opts *AddSharedResourceQuotaOptions) { opts.args.InstanceName = new("AI_CLASSIFY") },
+			func(opts *AddSharedResourceQuotaOptions) {
+				opts.args = QuotaAddSharedResourceArgs{AiFunction: &QuotaAddSharedResourceArgsAiFunction{Name: "AI_CLASSIFY"}}
+			},
 			"CALL %s!ADD_SHARED_RESOURCE ('AI FUNCTION', 'AI_CLASSIFY')", id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
-			"sql_AddSharedResource_cortexCode",
+			"sql_AddSharedResource_snowflakeCoco",
 			func(opts *AddSharedResourceQuotaOptions) {
-				opts.args.Domain = QuotaSharedResourceDomainCortexCode
-				opts.args.InstanceName = new("CORTEX_CODE_CLI")
+				opts.args = QuotaAddSharedResourceArgs{SnowflakeCoco: &QuotaAddSharedResourceArgsSnowflakeCoco{Name: "SNOWFLAKE_COCO_CLI"}}
 			},
-			"CALL %s!ADD_SHARED_RESOURCE ('CORTEX CODE', 'CORTEX_CODE_CLI')", id.FullyQualifiedName(),
+			"CALL %s!ADD_SHARED_RESOURCE ('SNOWFLAKE COCO', 'SNOWFLAKE_COCO_CLI')", id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_AddSharedResource_warehouse",
 			func(opts *AddSharedResourceQuotaOptions) {
-				opts.args.Domain = QuotaSharedResourceDomainWarehouse
-				opts.args.Warehouse = &warehouseId
+				opts.args = QuotaAddSharedResourceArgs{Warehouse: &QuotaAddSharedResourceArgsWarehouse{Id: warehouseId}}
 			},
 			"CALL %s!ADD_SHARED_RESOURCE ('WAREHOUSE', SYSTEM$REFERENCE('WAREHOUSE', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(warehouseId),
 		).
 		withAdditionalSqlCasef(
 			"sql_AddSharedResource_cortexAgent",
 			func(opts *AddSharedResourceQuotaOptions) {
-				opts.args.Domain = QuotaSharedResourceDomainCortexAgent
-				opts.args.CortexAgent = &cortexAgentId
+				opts.args = QuotaAddSharedResourceArgs{CortexAgent: &QuotaAddSharedResourceArgsCortexAgent{Id: cortexAgentId}}
 			},
 			"CALL %s!ADD_SHARED_RESOURCE ('CORTEX AGENT', SYSTEM$REFERENCE('CORTEX AGENT', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(cortexAgentId),
 		).
 		withAdditionalSqlCasef(
-			"sql_AddSharedResource_snowflakeIntelligence",
+			"sql_AddSharedResource_snowflakeCowork",
 			func(opts *AddSharedResourceQuotaOptions) {
-				opts.args.Domain = QuotaSharedResourceDomainSnowflakeIntelligence
-				opts.args.SnowflakeIntelligence = &snowflakeIntelligenceId
+				opts.args = QuotaAddSharedResourceArgs{SnowflakeCowork: &QuotaAddSharedResourceArgsSnowflakeCowork{Id: snowflakeCoworkId}}
 			},
-			"CALL %s!ADD_SHARED_RESOURCE ('SNOWFLAKE INTELLIGENCE', SYSTEM$REFERENCE('SNOWFLAKE INTELLIGENCE', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(snowflakeIntelligenceId),
+			"CALL %s!ADD_SHARED_RESOURCE ('SNOWFLAKE COWORK', SYSTEM$REFERENCE('SNOWFLAKE INTELLIGENCE', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(snowflakeCoworkId),
 		).
 		withAdditionalSqlCasef(
 			"sql_AddSharedResource_aiGateway",
 			func(opts *AddSharedResourceQuotaOptions) {
-				opts.args.Domain = QuotaSharedResourceDomainAiGateway
-				opts.args.AiGateway = &aiGatewayId
+				opts.args = QuotaAddSharedResourceArgs{AiGateway: &QuotaAddSharedResourceArgsAiGateway{Id: aiGatewayId}}
 			},
 			"CALL %s!ADD_SHARED_RESOURCE ('AI GATEWAY', SYSTEM$REFERENCE('AI GATEWAY', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(aiGatewayId),
-		).
-		withAdditionalValidationCase(
-			"validation_AddSharedResource_instanceNameForReferenceDomain",
-			func(opts *AddSharedResourceQuotaOptions) {
-				opts.args.Domain = QuotaSharedResourceDomainWarehouse
-				opts.args.InstanceName = new("SNOWADHOC")
-			},
-			errors.New("InstanceName can only be set for the AI FUNCTION, CORTEX CODE domains, got WAREHOUSE"),
-		).
-		withAdditionalValidationCase(
-			"validation_AddSharedResource_domainNotSet",
-			func(opts *AddSharedResourceQuotaOptions) { opts.args.Domain = "" },
-			errors.New("invalid quota shared resource domain"),
-		).
-		withAdditionalValidationCase(
-			"validation_AddSharedResource_referenceForOtherDomain",
-			func(opts *AddSharedResourceQuotaOptions) { opts.args.Warehouse = &warehouseId },
-			errors.New("Warehouse can only be set for the WAREHOUSE domain, got AI FUNCTION"),
 		)
 
 	quotasTests.RemoveSharedResource.
 		withDefaultOpts(func() *RemoveSharedResourceQuotaOptions {
 			return &RemoveSharedResourceQuotaOptions{
 				name: id,
-				args: QuotaRemoveSharedResourceArgs{Domain: QuotaSharedResourceDomainCortexAgent},
+				args: QuotaRemoveSharedResourceArgs{WholeDomain: &QuotaRemoveSharedResourceArgsWholeDomain{Domain: QuotaSharedResourceDomainCortexAgent}},
 			}
 		}).
 		withExpectedSqlf(
@@ -190,28 +174,17 @@ func init() {
 		).
 		withAdditionalSqlCasef(
 			"sql_RemoveSharedResource_instance",
-			func(opts *RemoveSharedResourceQuotaOptions) { opts.args.CortexAgent = &cortexAgentId },
-			"CALL %s!REMOVE_SHARED_RESOURCE ('CORTEX AGENT', SYSTEM$REFERENCE('CORTEX AGENT', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(cortexAgentId),
-		).
-		withAdditionalSqlCasef(
-			"sql_RemoveSharedResource_warehouse",
 			func(opts *RemoveSharedResourceQuotaOptions) {
-				opts.args.Domain = QuotaSharedResourceDomainWarehouse
-				opts.args.Warehouse = &warehouseId
+				opts.args = QuotaRemoveSharedResourceArgs{CortexAgent: &QuotaRemoveSharedResourceArgsCortexAgent{Id: cortexAgentId}}
 			},
-			"CALL %s!REMOVE_SHARED_RESOURCE ('WAREHOUSE', SYSTEM$REFERENCE('WAREHOUSE', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(warehouseId),
-		).
-		withAdditionalValidationCase(
-			"validation_RemoveSharedResource_referenceForOtherDomain",
-			func(opts *RemoveSharedResourceQuotaOptions) { opts.args.AiGateway = &aiGatewayId },
-			errors.New("AiGateway can only be set for the AI GATEWAY domain, got CORTEX AGENT"),
+			"CALL %s!REMOVE_SHARED_RESOURCE ('CORTEX AGENT', SYSTEM$REFERENCE('CORTEX AGENT', '%s'))", id.FullyQualifiedName(), singleQuotedIdentifier(cortexAgentId),
 		)
 
 	quotasTests.SetUserTags.
 		withDefaultOpts(func() *SetUserTagsQuotaOptions {
 			return &SetUserTagsQuotaOptions{
 				name: id,
-				args: QuotaSetUserTagsArgs{Tags: []QuotaUserTag{quotaUserTag(tagId, "finance")}, Operator: QuotaUserTagsOperatorUnion},
+				args: QuotaSetUserTagsArgs{Tags: []QuotaUserTag{{Tag: tagId, Value: "finance"}}, Operator: QuotaUserTagsOperatorUnion},
 			}
 		}).
 		withExpectedSqlf(
@@ -221,15 +194,18 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_SetUserTags_all",
 			func(opts *SetUserTagsQuotaOptions) {
-				opts.args.Tags = append(opts.args.Tags, quotaUserTag(tagId2, "analytics"))
+				opts.args.Tags = append(opts.args.Tags, QuotaUserTag{Tag: tagId2, Value: "analytics"})
 				opts.args.Operator = QuotaUserTagsOperatorIntersection
 			},
 			"CALL %s!SET_USER_TAGS ([[%s, 'finance'], [%s, 'analytics']], 'INTERSECTION')", id.FullyQualifiedName(), tagReference(tagId), tagReference(tagId2),
 		).
 		withAdditionalSqlCasef(
-			"sql_SetUserTags_empty",
-			func(opts *SetUserTagsQuotaOptions) { opts.args.Tags = []QuotaUserTag{} },
-			"CALL %s!SET_USER_TAGS ([], 'UNION')", id.FullyQualifiedName(),
+			"sql_SetUserTags_allUsers",
+			func(opts *SetUserTagsQuotaOptions) {
+				opts.args.Tags = []QuotaUserTag{}
+				opts.args.Operator = QuotaUserTagsOperatorAllUsers
+			},
+			"CALL %s!SET_USER_TAGS ([], 'ALL_USERS')", id.FullyQualifiedName(),
 		)
 
 	quotasTests.ExcludeUsers.
@@ -252,7 +228,7 @@ func init() {
 			"sql_ExcludeUsers_byTag",
 			func(opts *ExcludeUsersQuotaOptions) {
 				opts.args.ByUser = nil
-				opts.args.ByTag = &QuotaExcludeUsersByTag{Tags: []QuotaExcludedUserTag{{Reference: QuotaExcludedUserTagReference{Arguments: QuotaExcludedUserTagReferenceArguments{Tag: tagId}}, Value: "high"}}}
+				opts.args.ByTag = &QuotaExcludeUsersByTag{Tags: []QuotaExcludedUserTag{{Tag: tagId, Value: "high"}}}
 			},
 			"CALL %s!EXCLUDE_USERS ('TAG', [[%s, 'high']])", id.FullyQualifiedName(), tagReference(tagId),
 		).
@@ -565,8 +541,8 @@ func TestParseQuotaScope(t *testing.T) {
 }`)
 		require.NoError(t, err)
 
-		assert.Equal(t, []QuotaScopeUser{{UserId: "22", UserName: "BOB"}}, scope.ExcludedUsers)
-		assert.Equal(t, []QuotaScopeUser{{UserId: "41", UserName: "ALICE"}, {UserId: "42", UserName: "carol"}}, scope.IncludedUsers)
+		assert.Equal(t, []QuotaScopeUser{{UserId: 22, UserName: "BOB"}}, scope.ExcludedUsers)
+		assert.Equal(t, []QuotaScopeUser{{UserId: 41, UserName: "ALICE"}, {UserId: 42, UserName: "carol"}}, scope.IncludedUsers)
 
 		require.Len(t, scope.SharedResources, 2)
 		assert.True(t, scope.SharedResources[0].IsWholeDomain())
@@ -575,8 +551,12 @@ func TestParseQuotaScope(t *testing.T) {
 		assert.Equal(t, QuotaSharedResourceDomainAiFunction, domain)
 		assert.False(t, scope.SharedResources[1].IsWholeDomain())
 		assert.Equal(t, "CORTEX_CODE_CLI", scope.SharedResources[1].Name)
+		domain, err = scope.SharedResources[1].NormalizedDomain()
+		require.NoError(t, err)
+		assert.Equal(t, QuotaSharedResourceDomainSnowflakeCoco, domain)
 
 		require.Len(t, scope.SelectionTags(), 1)
+		assert.Equal(t, 11, scope.SelectionTags()[0].Id)
 		assert.Equal(t, NewSchemaObjectIdentifier("DB", "S1", "COST_CENTER"), scope.SelectionTags()[0].TagId())
 		assert.Equal(t, []string{"Analytics", "finance"}, scope.SelectionTags()[0].TagValues)
 		assert.Empty(t, scope.ExclusionTags())
@@ -618,6 +598,31 @@ func TestParseQuotaScope(t *testing.T) {
 	t.Run("invalid json", func(t *testing.T) {
 		_, err := ParseQuotaScope(`not json`)
 		require.ErrorContains(t, err, "failed to parse quota scope")
+	})
+}
+
+func TestQuotaScopeSharedResource_NormalizedDomain(t *testing.T) {
+	testCases := map[string]QuotaSharedResourceDomain{
+		"WAREHOUSE":              QuotaSharedResourceDomainWarehouse,
+		"AI_FUNCTION":            QuotaSharedResourceDomainAiFunction,
+		"CORTEX_AGENT":           QuotaSharedResourceDomainCortexAgent,
+		"SNOWFLAKE_COCO":         QuotaSharedResourceDomainSnowflakeCoco,
+		"CORTEX_CODE":            QuotaSharedResourceDomainSnowflakeCoco,
+		"SNOWFLAKE_COWORK":       QuotaSharedResourceDomainSnowflakeCowork,
+		"SNOWFLAKE_INTELLIGENCE": QuotaSharedResourceDomainSnowflakeCowork,
+		"AI_GATEWAY":             QuotaSharedResourceDomainAiGateway,
+	}
+	for input, expected := range testCases {
+		t.Run(input, func(t *testing.T) {
+			domain, err := QuotaScopeSharedResource{Domain: input}.NormalizedDomain()
+			require.NoError(t, err)
+			assert.Equal(t, expected, domain)
+		})
+	}
+
+	t.Run("unknown domain", func(t *testing.T) {
+		_, err := QuotaScopeSharedResource{Domain: "UNKNOWN"}.NormalizedDomain()
+		require.Error(t, err)
 	})
 }
 
@@ -682,29 +687,35 @@ func TestParseQuotaProcedureArguments(t *testing.T) {
 }
 
 func TestNewQuotaSharedResourceArgsRequestFromInstance(t *testing.T) {
+	id := randomSchemaObjectIdentifier()
 	testCases := []struct {
-		domain   QuotaSharedResourceDomain
-		instance string
-		expected QuotaAddSharedResourceArgsRequest
+		domain       QuotaSharedResourceDomain
+		instance     string
+		expectedArgs string
 	}{
-		{domain: QuotaSharedResourceDomainAiFunction, instance: "", expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainAiFunction}},
-		{domain: QuotaSharedResourceDomainAiFunction, instance: "AI_CLASSIFY", expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainAiFunction, InstanceName: new("AI_CLASSIFY")}},
-		{domain: QuotaSharedResourceDomainCortexCode, instance: "CORTEX_CODE_CLI", expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainCortexCode, InstanceName: new("CORTEX_CODE_CLI")}},
-		{domain: QuotaSharedResourceDomainWarehouse, instance: "SNOWADHOC", expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainWarehouse, Warehouse: new(NewAccountObjectIdentifier("SNOWADHOC"))}},
-		{domain: QuotaSharedResourceDomainWarehouse, instance: `"snow adhoc"`, expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainWarehouse, Warehouse: new(NewAccountObjectIdentifier("snow adhoc"))}},
-		{domain: QuotaSharedResourceDomainCortexAgent, instance: `"DB"."SCH"."AGENT"`, expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainCortexAgent, CortexAgent: new(NewSchemaObjectIdentifier("DB", "SCH", "AGENT"))}},
-		{domain: QuotaSharedResourceDomainSnowflakeIntelligence, instance: "MY_SI", expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainSnowflakeIntelligence, SnowflakeIntelligence: new(NewAccountObjectIdentifier("MY_SI"))}},
-		{domain: QuotaSharedResourceDomainAiGateway, instance: "SNOWFLAKE", expected: QuotaAddSharedResourceArgsRequest{Domain: QuotaSharedResourceDomainAiGateway, AiGateway: new(NewAccountObjectIdentifier("SNOWFLAKE"))}},
+		{domain: QuotaSharedResourceDomainAiFunction, instance: "", expectedArgs: "'AI FUNCTION'"},
+		{domain: QuotaSharedResourceDomainWarehouse, instance: "", expectedArgs: "'WAREHOUSE'"},
+		{domain: QuotaSharedResourceDomainAiFunction, instance: "AI_CLASSIFY", expectedArgs: "'AI FUNCTION', 'AI_CLASSIFY'"},
+		{domain: QuotaSharedResourceDomainSnowflakeCoco, instance: "SNOWFLAKE_COCO_CLI", expectedArgs: "'SNOWFLAKE COCO', 'SNOWFLAKE_COCO_CLI'"},
+		{domain: QuotaSharedResourceDomainWarehouse, instance: "SNOWADHOC", expectedArgs: `'WAREHOUSE', SYSTEM$REFERENCE('WAREHOUSE', '\"SNOWADHOC\"')`},
+		{domain: QuotaSharedResourceDomainWarehouse, instance: `"snow adhoc"`, expectedArgs: `'WAREHOUSE', SYSTEM$REFERENCE('WAREHOUSE', '\"snow adhoc\"')`},
+		{domain: QuotaSharedResourceDomainCortexAgent, instance: `"DB"."SCH"."AGENT"`, expectedArgs: `'CORTEX AGENT', SYSTEM$REFERENCE('CORTEX AGENT', '\"DB\".\"SCH\".\"AGENT\"')`},
+		{domain: QuotaSharedResourceDomainSnowflakeCowork, instance: "MY_SI", expectedArgs: `'SNOWFLAKE COWORK', SYSTEM$REFERENCE('SNOWFLAKE INTELLIGENCE', '\"MY_SI\"')`},
+		{domain: QuotaSharedResourceDomainAiGateway, instance: "SNOWFLAKE", expectedArgs: `'AI GATEWAY', SYSTEM$REFERENCE('AI GATEWAY', '\"SNOWFLAKE\"')`},
 	}
 	for _, tc := range testCases {
 		t.Run(string(tc.domain)+"/"+tc.instance, func(t *testing.T) {
 			addRequest, err := NewQuotaAddSharedResourceArgsRequestFromInstance(tc.domain, tc.instance)
 			require.NoError(t, err)
-			assert.Equal(t, tc.expected, *addRequest)
+			sql, err := structToSQL(NewAddSharedResourceQuotaRequest(id, *addRequest).toOpts())
+			require.NoError(t, err)
+			assert.Equal(t, fmt.Sprintf("CALL %s!ADD_SHARED_RESOURCE (%s)", id.FullyQualifiedName(), tc.expectedArgs), sql)
 
 			removeRequest, err := NewQuotaRemoveSharedResourceArgsRequestFromInstance(tc.domain, tc.instance)
 			require.NoError(t, err)
-			assert.Equal(t, QuotaRemoveSharedResourceArgsRequest(tc.expected), *removeRequest)
+			sql, err = structToSQL(NewRemoveSharedResourceQuotaRequest(id, *removeRequest).toOpts())
+			require.NoError(t, err)
+			assert.Equal(t, fmt.Sprintf("CALL %s!REMOVE_SHARED_RESOURCE (%s)", id.FullyQualifiedName(), tc.expectedArgs), sql)
 		})
 	}
 

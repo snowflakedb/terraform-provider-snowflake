@@ -246,13 +246,41 @@ func (r *AddSharedResourceQuotaRequest) toOpts() *AddSharedResourceQuotaOptions 
 	opts := &AddSharedResourceQuotaOptions{
 		name: r.name,
 	}
-	opts.args = QuotaAddSharedResourceArgs{
-		Domain:                r.args.Domain,
-		InstanceName:          r.args.InstanceName,
-		Warehouse:             r.args.Warehouse,
-		CortexAgent:           r.args.CortexAgent,
-		SnowflakeIntelligence: r.args.SnowflakeIntelligence,
-		AiGateway:             r.args.AiGateway,
+	opts.args = QuotaAddSharedResourceArgs{}
+	if r.args.WholeDomain != nil {
+		opts.args.WholeDomain = &QuotaAddSharedResourceArgsWholeDomain{
+			Domain: r.args.WholeDomain.Domain,
+		}
+	}
+	if r.args.AiFunction != nil {
+		opts.args.AiFunction = &QuotaAddSharedResourceArgsAiFunction{
+			Name: r.args.AiFunction.Name,
+		}
+	}
+	if r.args.SnowflakeCoco != nil {
+		opts.args.SnowflakeCoco = &QuotaAddSharedResourceArgsSnowflakeCoco{
+			Name: r.args.SnowflakeCoco.Name,
+		}
+	}
+	if r.args.Warehouse != nil {
+		opts.args.Warehouse = &QuotaAddSharedResourceArgsWarehouse{
+			Id: r.args.Warehouse.Id,
+		}
+	}
+	if r.args.CortexAgent != nil {
+		opts.args.CortexAgent = &QuotaAddSharedResourceArgsCortexAgent{
+			Id: r.args.CortexAgent.Id,
+		}
+	}
+	if r.args.SnowflakeCowork != nil {
+		opts.args.SnowflakeCowork = &QuotaAddSharedResourceArgsSnowflakeCowork{
+			Id: r.args.SnowflakeCowork.Id,
+		}
+	}
+	if r.args.AiGateway != nil {
+		opts.args.AiGateway = &QuotaAddSharedResourceArgsAiGateway{
+			Id: r.args.AiGateway.Id,
+		}
 	}
 	return opts
 }
@@ -261,13 +289,41 @@ func (r *RemoveSharedResourceQuotaRequest) toOpts() *RemoveSharedResourceQuotaOp
 	opts := &RemoveSharedResourceQuotaOptions{
 		name: r.name,
 	}
-	opts.args = QuotaRemoveSharedResourceArgs{
-		Domain:                r.args.Domain,
-		InstanceName:          r.args.InstanceName,
-		Warehouse:             r.args.Warehouse,
-		CortexAgent:           r.args.CortexAgent,
-		SnowflakeIntelligence: r.args.SnowflakeIntelligence,
-		AiGateway:             r.args.AiGateway,
+	opts.args = QuotaRemoveSharedResourceArgs{}
+	if r.args.WholeDomain != nil {
+		opts.args.WholeDomain = &QuotaRemoveSharedResourceArgsWholeDomain{
+			Domain: r.args.WholeDomain.Domain,
+		}
+	}
+	if r.args.AiFunction != nil {
+		opts.args.AiFunction = &QuotaRemoveSharedResourceArgsAiFunction{
+			Name: r.args.AiFunction.Name,
+		}
+	}
+	if r.args.SnowflakeCoco != nil {
+		opts.args.SnowflakeCoco = &QuotaRemoveSharedResourceArgsSnowflakeCoco{
+			Name: r.args.SnowflakeCoco.Name,
+		}
+	}
+	if r.args.Warehouse != nil {
+		opts.args.Warehouse = &QuotaRemoveSharedResourceArgsWarehouse{
+			Id: r.args.Warehouse.Id,
+		}
+	}
+	if r.args.CortexAgent != nil {
+		opts.args.CortexAgent = &QuotaRemoveSharedResourceArgsCortexAgent{
+			Id: r.args.CortexAgent.Id,
+		}
+	}
+	if r.args.SnowflakeCowork != nil {
+		opts.args.SnowflakeCowork = &QuotaRemoveSharedResourceArgsSnowflakeCowork{
+			Id: r.args.SnowflakeCowork.Id,
+		}
+	}
+	if r.args.AiGateway != nil {
+		opts.args.AiGateway = &QuotaRemoveSharedResourceArgsAiGateway{
+			Id: r.args.AiGateway.Id,
+		}
 	}
 	return opts
 }
@@ -283,11 +339,8 @@ func (r *SetUserTagsQuotaRequest) toOpts() *SetUserTagsQuotaOptions {
 		tags := make([]QuotaUserTag, len(r.args.Tags))
 		for i, v := range r.args.Tags {
 			tags[i] = QuotaUserTag{
+				Tag:   v.Tag,
 				Value: v.Value,
-			}
-			tags[i].Reference = QuotaUserTagReference{}
-			tags[i].Reference.Arguments = QuotaUserTagReferenceArguments{
-				Tag: v.Reference.Arguments.Tag,
 			}
 		}
 		opts.args.Tags = tags
@@ -306,11 +359,8 @@ func (r *ExcludeUsersQuotaRequest) toOpts() *ExcludeUsersQuotaOptions {
 			tags := make([]QuotaExcludedUserTag, len(r.args.ByTag.Tags))
 			for i, v := range r.args.ByTag.Tags {
 				tags[i] = QuotaExcludedUserTag{
+					Tag:   v.Tag,
 					Value: v.Value,
-				}
-				tags[i].Reference = QuotaExcludedUserTagReference{}
-				tags[i].Reference.Arguments = QuotaExcludedUserTagReferenceArguments{
-					Tag: v.Reference.Arguments.Tag,
 				}
 			}
 			opts.args.ByTag.Tags = tags
