@@ -251,7 +251,7 @@ func CreateExternalTable(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return ReadExternalTable(ctx, d, meta)
 }

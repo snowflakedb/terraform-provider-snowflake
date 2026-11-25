@@ -89,7 +89,7 @@ func ReadExternalTables(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 	}
 
-	d.SetId(helpers.EncodeSnowflakeID(schemaId))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(schemaId))
 
 	return diag.FromErr(d.Set("external_tables", externalTablesObjects))
 }

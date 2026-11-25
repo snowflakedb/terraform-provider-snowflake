@@ -943,7 +943,7 @@ func TestAcc_Alert_migrateFromVersion_2_22_1(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("2.22.1"),
 				Config:            config.FromModels(t, providerModel, alertModel),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id)),
+					resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeIDLegacy(id)),
 				),
 			},
 			// Upgrade - the state upgrader rewrites the id

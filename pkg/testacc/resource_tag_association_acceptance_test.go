@@ -54,7 +54,7 @@ func TestAcc_TagAssociation_BasicUseCase(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tag1Model, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeDatabase))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeDatabase))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", testClient().Ids.DatabaseId().FullyQualifiedName()),
@@ -69,7 +69,7 @@ func TestAcc_TagAssociation_BasicUseCase(t *testing.T) {
 				},
 				Config: accconfig.FromModels(t, tag1Model, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeDatabase))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeDatabase))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", testClient().Ids.DatabaseId().FullyQualifiedName()),
@@ -89,7 +89,7 @@ func TestAcc_TagAssociation_BasicUseCase(t *testing.T) {
 				},
 				Config: accconfig.FromModels(t, tag1Model, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeDatabase))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeDatabase))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", testClient().Ids.DatabaseId().FullyQualifiedName()),
@@ -106,7 +106,7 @@ func TestAcc_TagAssociation_BasicUseCase(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModelDifferentValue.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue2, string(sdk.ObjectTypeDatabase))),
+					resource.TestCheckResourceAttr(tagAssociationModelDifferentValue.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue2, string(sdk.ObjectTypeDatabase))),
 					resource.TestCheckResourceAttr(tagAssociationModelDifferentValue.ResourceReference(), "object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(tagAssociationModelDifferentValue.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModelDifferentValue.ResourceReference(), "object_identifiers.*", testClient().Ids.DatabaseId().FullyQualifiedName()),
@@ -123,7 +123,7 @@ func TestAcc_TagAssociation_BasicUseCase(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "id", helpers.EncodeSnowflakeID(tag2Id.FullyQualifiedName(), tagValue2, string(sdk.ObjectTypeDatabase))),
+					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tag2Id.FullyQualifiedName(), tagValue2, string(sdk.ObjectTypeDatabase))),
 					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModelTag2.ResourceReference(), "object_identifiers.*", testClient().Ids.DatabaseId().FullyQualifiedName()),
@@ -144,7 +144,7 @@ func TestAcc_TagAssociation_BasicUseCase(t *testing.T) {
 			{
 				RefreshState: true,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "id", helpers.EncodeSnowflakeID(tag2Id.FullyQualifiedName(), tagValue2, string(sdk.ObjectTypeDatabase))),
+					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tag2Id.FullyQualifiedName(), tagValue2, string(sdk.ObjectTypeDatabase))),
 					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "object_type", string(sdk.ObjectTypeDatabase)),
 					resource.TestCheckResourceAttr(tagAssociationModelTag2.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModelTag2.ResourceReference(), "object_identifiers.*", testClient().Ids.DatabaseId().FullyQualifiedName()),
@@ -290,7 +290,7 @@ func TestAcc_TagAssociation_CompleteUseCase_Schema(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tagModel, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeSchema)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", schemaId.FullyQualifiedName()),
@@ -324,7 +324,7 @@ func TestAcc_TagAssociation_lowercaseObjectType(t *testing.T) {
 				Config: accconfig.FromModels(t, tagAssociationModel),
 				Check: assertThat(
 					t, resourceassert.TagAssociationResource(t, tagAssociationModel.ResourceReference()).
-						HasIdString(helpers.EncodeSnowflakeID(tag.ID().FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))).
+						HasIdString(helpers.EncodeResourceIdentifier(tag.ID().FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))).
 						HasObjectTypeString(string(sdk.ObjectTypeSchema)).
 						HasTagIdString(tag.ID().FullyQualifiedName()).
 						HasObjectIdentifiersLength(1).
@@ -362,7 +362,7 @@ func TestAcc_TagAssociation_CompleteUseCase_Column(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", columnId.FullyQualifiedName()),
@@ -398,7 +398,7 @@ func TestAcc_TagAssociation_CompleteUseCase_IcebergTableColumn(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeIcebergTableColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeIcebergTableColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeIcebergTableColumn)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", columnId.FullyQualifiedName()),
@@ -443,7 +443,7 @@ func TestAcc_TagAssociation_Agent(t *testing.T) {
 				ProtoV6ProviderFactories: tagsProviderFactory,
 				Config:                   accconfig.FromModels(t, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeAgent))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeAgent))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeAgent)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", agentId.FullyQualifiedName()),
@@ -708,7 +708,7 @@ func testAccTagAssociationIssue1926(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tagModel, tableModel1, tagAssociationModel1),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
 					resource.TestCheckResourceAttr(tagAssociationModel1.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel1.ResourceReference(), "object_identifiers.*", columnId1.FullyQualifiedName()),
@@ -719,7 +719,7 @@ func testAccTagAssociationIssue1926(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tagModel, tableModel2, tagAssociationModel2),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
 					resource.TestCheckResourceAttr(tagAssociationModel2.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel2.ResourceReference(), "object_identifiers.*", columnId2.FullyQualifiedName()),
@@ -730,7 +730,7 @@ func testAccTagAssociationIssue1926(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tagModel, tableModel3, tagAssociationModel3),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
+					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), "TAG_VALUE", string(sdk.ObjectTypeColumn))),
 					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "object_type", string(sdk.ObjectTypeColumn)),
 					resource.TestCheckResourceAttr(tagAssociationModel3.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel3.ResourceReference(), "object_identifiers.*", columnId3.FullyQualifiedName()),
@@ -762,7 +762,7 @@ func TestAcc_TagAssociation_migrateFromVersion_0_98_0(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("0.98.0"),
 				Config:            tagAssociationV098(tagId, tagValue, schemaId),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.DatabaseName(), tagId.SchemaName(), tagId.Name())),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeIDLegacy(tagId.DatabaseName(), tagId.SchemaName(), tagId.Name())),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeSchema)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifier.#", "1"),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifier.0.name", schemaId.Name()),
@@ -785,7 +785,7 @@ func TestAcc_TagAssociation_migrateFromVersion_0_98_0(t *testing.T) {
 					},
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeSchema))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_type", string(sdk.ObjectTypeSchema)),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "object_identifiers.#", "1"),
 					resource.TestCheckTypeSetElemAttr(tagAssociationModel.ResourceReference(), "object_identifiers.*", schemaId.FullyQualifiedName()),
@@ -840,7 +840,7 @@ func TestAcc_TagAssociation_issue_3622(t *testing.T) {
 			{
 				Config: accconfig.FromModels(t, tagModel, tagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeTable))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, string(sdk.ObjectTypeTable))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", tagValue),
 				),
 			},
@@ -850,7 +850,7 @@ func TestAcc_TagAssociation_issue_3622(t *testing.T) {
 				// The new version handles the SchemaObjectIdentifier correctly, so the panic is not triggered.
 				Config: accconfig.FromModels(t, tagModel, newTagAssociationModel),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), newTagValue, string(sdk.ObjectTypeTable))),
+					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "id", helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), newTagValue, string(sdk.ObjectTypeTable))),
 					resource.TestCheckResourceAttr(tagAssociationModel.ResourceReference(), "tag_value", newTagValue),
 				),
 			},

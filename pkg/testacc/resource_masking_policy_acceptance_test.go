@@ -572,7 +572,7 @@ func TestAcc_MaskingPolicy_migrateFromVersion_0_95_0(t *testing.T) {
 						HasSchemaString(id.SchemaName()).
 						HasCommentString(comment).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()),
-					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeID(id))),
+					assert.Check(resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeIDLegacy(id))),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "masking_expression", body)),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.#", "1")),
 					assert.Check(resource.TestCheckResourceAttr(resourceName, "signature.0.column.#", "2")),

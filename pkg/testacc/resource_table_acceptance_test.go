@@ -2042,7 +2042,7 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 				Config:             accconfig.FromModels(t, providerModel, tableModelV2_23_0),
 				Check: assertThat(
 					t,
-					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeID(id))),
+					assert.Check(resource.TestCheckResourceAttr(ref, "id", helpers.EncodeSnowflakeIDLegacy(id))),
 				),
 			},
 			// Upgrade - the state upgraders rewrite the id and the column fields, and Read now reports the virtual column
@@ -2170,7 +2170,7 @@ func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 				ExternalProviders: ExternalProviderWithExactVersion("0.94.1"),
 				Config:            providerConfig + tableConfig(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeID(tableId)),
+					resource.TestCheckResourceAttr(resourceName, "id", helpers.EncodeSnowflakeIDLegacy(tableId)),
 					resource.TestCheckResourceAttr(resourceName, "name", tableId.Name()),
 					resource.TestCheckResourceAttr(resourceName, "qualified_name", tableId.FullyQualifiedName()),
 				),
@@ -2449,7 +2449,7 @@ func TestAcc_Table_SchemaRemovedExternally(t *testing.T) {
 				},
 				Config: tableConfig(tableId),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr("snowflake_table.test_table", "id", helpers.EncodeSnowflakeID(tableId)),
+					resource.TestCheckResourceAttr("snowflake_table.test_table", "id", helpers.EncodeSnowflakeIDLegacy(tableId)),
 				),
 			},
 			{

@@ -106,7 +106,7 @@ func ReadContextFunctions(ctx context.Context, d *schema.ResourceData, meta any)
 
 		entities = append(entities, m)
 	}
-	d.SetId(helpers.EncodeSnowflakeID(databaseName, schemaName))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(databaseName, schemaName))
 	if err := d.Set("functions", entities); err != nil {
 		return diag.FromErr(err)
 	}

@@ -99,7 +99,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 	var snowflakeResourceID string
 	if parentRoleName, ok := d.GetOk("parent_role_name"); ok && parentRoleName.(string) != "" {
 		parentRoleIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(parentRoleName.(string))
-		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleIdentifier.FullyQualifiedName())
+		snowflakeResourceID = helpers.EncodeResourceIdentifier(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeRole.String(), parentRoleIdentifier.FullyQualifiedName())
 		if !safePublicRole {
 			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithRole(parentRoleIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
@@ -108,7 +108,7 @@ func CreateGrantAccountRole(ctx context.Context, d *schema.ResourceData, meta an
 		}
 	} else if userName, ok := d.GetOk("user_name"); ok && userName.(string) != "" {
 		userIdentifier := sdk.NewAccountObjectIdentifierFromFullyQualifiedName(userName.(string))
-		snowflakeResourceID = helpers.EncodeSnowflakeID(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), userIdentifier.FullyQualifiedName())
+		snowflakeResourceID = helpers.EncodeResourceIdentifier(roleIdentifier.FullyQualifiedName(), sdk.ObjectTypeUser.String(), userIdentifier.FullyQualifiedName())
 		if !safePublicRole {
 			req := sdk.NewGrantRoleRequest(roleIdentifier, *sdk.NewGrantRoleToRequest().WithUser(userIdentifier))
 			if err := client.Roles.Grant(ctx, req); err != nil {
