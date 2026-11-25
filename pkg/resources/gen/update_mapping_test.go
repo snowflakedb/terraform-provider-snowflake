@@ -399,3 +399,51 @@ func Test_WidgetApplySetUnset_customUpdate(t *testing.T) {
 }
 `, renderTemplate(t, "generatedApplySetUnset", model))
 }
+
+func Test_WidgetApplySetUnset_variantUsesBaseAlter(t *testing.T) {
+	secret := ssot.Attribute{Name: "set_oauth_secret", Type: ssot.AttrObject, SqlOnly: true, Children: []ssot.Attribute{{Name: "secret", Type: ssot.AttrString}}}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	interval := ssot.Attribute{Name: "interval", Type: ssot.AttrInt}
+	base := ssot.Object{
+		Name:       "Widget",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Alter: ssot.AlterSpec{
+			Clauses: []ssot.AlterClause{ssot.AlterSet(&secret, &comment, &interval)},
+		},
+	}
+	oauth := ssot.Attribute{
+		Name: "oauth", Type: ssot.AttrObject, ForceNew: true,
+		Children:      []ssot.Attribute{{Name: "secret", Type: ssot.AttrString}},
+		UpdateMapping: ssot.CustomUpdate("updateWidgetOauthSecret"),
+	}
+	variantComment := ssot.Attribute{Name: "comment", Type: ssot.AttrString, UpdateMapping: ssot.StringAttributeUpdateSetOnly}
+	variantInterval := ssot.Attribute{Name: "interval", Type: ssot.AttrInt, UpdateMapping: ssot.IntAttributeUnsetFallbackUpdateWithZeroDefault(30)}
+	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
+		Name:       "WidgetMini",
+		NamePlural: "Widgets",
+		IdType:     "AccountObjectIdentifier",
+		Variant:    &ssot.ObjectVariant{Of: &base},
+		Attributes: []ssot.Attribute{oauth, variantComment, variantInterval},
+		ResourceHooks: []ssot.ResourceHookOption{
+			ssot.WithApplySetUnset(ssot.Generated()),
+			ssot.WithAlterSetInSdk(ssot.Generated()),
+		},
+	}}, nil, nil)
+	// The requests are the base's: its names, and no UNSET because its ALTER has none, so the custom update gets the SET only.
+	require.Equal(t, `func widgetMiniApplySetUnset(d *tfschema.ResourceData) (*widgetMiniAlterRequests, error) {
+	set := sdk.NewWidgetSetRequest()
+	errs := errors.Join(
+		updateWidgetOauthSecret(d, set),
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "interval", &set.Interval, 30),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &widgetMiniAlterRequests{set: set}, nil
+}
+`, renderTemplate(t, "generatedApplySetUnset", model))
+	require.Contains(t, renderTemplate(t, "generatedAlterRequests", model), "set *sdk.WidgetSetRequest")
+	require.Contains(t, renderTemplate(t, "alterSetInSdk", model), "sdk.NewAlterWidgetRequest(id).WithSet(*setUnset.set)")
+}

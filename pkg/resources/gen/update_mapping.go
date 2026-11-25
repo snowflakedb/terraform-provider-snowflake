@@ -20,6 +20,8 @@ type UpdateCall struct {
 
 func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceAttribute) {
 	objectName := obj.Name
+	// A variant without an ALTER spec is updated with the ALTER of its base.
+	obj = obj.AlterOwner()
 	setGroups, unsetGroups := obj.AlterSetGroups(), obj.AlterUnsetGroups()
 	inSet, inUnset := attributeNames(obj.SetAttributes()), attributeNames(obj.UnsetAttributes())
 	// An object whose ALTER spec has a SET or UNSET block updates the attributes of those blocks, and no others. An object
@@ -35,7 +37,9 @@ func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceA
 			continue
 		}
 		name := src[i].Name
-		if restricted && !inSet[name] && !inUnset[name] {
+		// A custom update decides itself, so it can fill a SET attribute from a field of a nested block.
+		_, custom := src[i].UpdateMapping.(ssot.CustomUpdateMapping)
+		if restricted && !custom && !inSet[name] && !inUnset[name] {
 			if src[i].UpdateMapping != nil {
 				panic(fmt.Sprintf("object %q: attribute %q has an UpdateMapping, but it is in neither the SET nor the UNSET block", objectName, name))
 			}
@@ -49,6 +53,10 @@ func attachUpdateMappings(obj ssot.Object, src []ssot.Attribute, dst []ResourceA
 				panic(fmt.Sprintf("object %q: attribute %q is in the SET or UNSET block, but no update helper can be deduced for it, so give it an UpdateMapping or SkipUpdate", objectName, name))
 			}
 			continue
+		}
+		// An object whose ALTER has no UNSET block passes the SET request only to a custom update.
+		if call.Requests && obj.HasAlterSpec() && !obj.HasAlterUnsetBlock() {
+			call.Unset = false
 		}
 		if call.Set && obj.HasAlterSpec() && !obj.HasAlterSetBlock() {
 			panic(fmt.Sprintf("object %q: attribute %q is updated with SET, but the ALTER spec has no SET block", objectName, src[i].Name))

@@ -99,6 +99,9 @@ type BeforeCreateAdoptExisting struct {
 // Set and Unset are in send order: the statements of the SSOT definition first, the main set and unset last.
 // Requests is Set, then Unset, with the SDK request kind of each field.
 type AlterStatementsModel struct {
+	// Stem is the SDK request stem of the ALTER, SET and UNSET requests. A variant without an ALTER spec of its own uses
+	// the name of its base (ssot.Object.AlterOwner).
+	Stem     string
 	Set      []string
 	Unset    []string
 	Requests []AlterStatementRequest
@@ -111,6 +114,7 @@ type AlterStatementRequest struct {
 }
 
 func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
+	obj = obj.AlterOwner()
 	// A group is a field in declaration order. The main group is the bare set (unset). A block without one sends an empty
 	// main request last, which carries the parameters.
 	fields := func(main string, groups []ssot.AlterGroupSpec, hasBlock bool) []string {
@@ -125,6 +129,7 @@ func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
 		return names
 	}
 	model := AlterStatementsModel{
+		Stem:  obj.Name,
 		Set:   fields("set", obj.AlterSetGroups(), obj.HasAlterSetBlock()),
 		Unset: fields("unset", obj.AlterUnsetGroups(), obj.HasAlterUnsetBlock()),
 	}

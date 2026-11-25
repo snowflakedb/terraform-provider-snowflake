@@ -113,3 +113,19 @@ func Test_DeducedUpdateCall(t *testing.T) {
 		require.Equal(t, "intAttributeWithSpecialDefaultUpdateBuilder", got.Helper)
 	})
 }
+
+func Test_IntAttributeUnsetFallbackUpdateWithZeroDefault(t *testing.T) {
+	call := IntAttributeUnsetFallbackUpdateWithZeroDefault(30).UpdateCall("Widget", Attribute{Name: "interval"})
+	require.Equal(t, UpdateCall{Helper: "intAttributeUnsetFallbackUpdateWithZeroDefault", Set: true, Fields: true, Mapper: "30"}, call)
+}
+
+func Test_Object_AlterOwner(t *testing.T) {
+	comment := Attribute{Name: "comment", Type: AttrString}
+	base := Object{Name: "Base", Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&comment)}}}
+	require.Equal(t, "Base", Object{Name: "Variant", Variant: &ObjectVariant{Of: &base}}.AlterOwner().Name)
+	// A variant with an ALTER of its own, a base without one, and an object that is no variant own their ALTER.
+	own := Object{Name: "Variant", Variant: &ObjectVariant{Of: &base}, Alter: AlterSpec{Clauses: []AlterClause{AlterSet(&comment)}}}
+	require.Equal(t, "Variant", own.AlterOwner().Name)
+	require.Equal(t, "Variant", Object{Name: "Variant", Variant: &ObjectVariant{Of: &Object{Name: "Base"}}}.AlterOwner().Name)
+	require.Equal(t, "Base", base.AlterOwner().Name)
+}

@@ -200,6 +200,16 @@ func (obj Object) ParameterLevelsFor(string) []ParameterLevel {
 	return []ParameterLevel{obj.ParameterLevel()}
 }
 
+// AlterOwner is the object whose ALTER spec this object's update sends. A variant without an ALTER spec of its own
+// (a catalog integration source type) is altered with the ALTER of its base, so the base owns the SET and UNSET groups and
+// the SDK request names. Any other object owns its own ALTER.
+func (obj Object) AlterOwner() Object {
+	if base := obj.VariantBase(); !obj.HasAlterSpec() && base != nil && base.HasAlterSpec() {
+		return *base
+	}
+	return obj
+}
+
 // AlterClauseKind is one entry in an ALTER statement after the name.
 type AlterClauseKind string
 

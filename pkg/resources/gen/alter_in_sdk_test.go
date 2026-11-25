@@ -120,7 +120,7 @@ func Test_AlterInSdk_hookModes(t *testing.T) {
 func Test_AlterInSdk_statementsAreSentBeforeTheMainOne(t *testing.T) {
 	model := lifecycleModel(withHooks(ssot.WithAlterSetInSdk(ssot.Generated()), ssot.WithAlterUnsetInSdk(ssot.Generated())))
 	model.HasPartialOnUpdate = true
-	model.AlterStatements = AlterStatementsModel{Set: []string{"setBody", "set"}, Unset: []string{"unsetSchedule", "unset"}}
+	model.AlterStatements = AlterStatementsModel{Stem: "Pool", Set: []string{"setBody", "set"}, Unset: []string{"unsetSchedule", "unset"}}
 
 	require.Equal(t, `if !reflect.DeepEqual(*setUnset.setBody, *sdk.NewPoolSetRequest()) {
 		if err := meta.(*provider.Context).Client.Pools.Alter(ctx, sdk.NewAlterPoolRequest(id).WithSet(*setUnset.setBody)); err != nil {
@@ -175,6 +175,7 @@ func Test_ModelFromInputObject_alterStatements(t *testing.T) {
 		},
 	}}, nil, nil)
 	require.Equal(t, AlterStatementsModel{
+		Stem:  "Widget",
 		Set:   []string{"setSchedule", "setBody", "set"},
 		Unset: []string{"unsetSchedule", "unset"},
 		Requests: []AlterStatementRequest{

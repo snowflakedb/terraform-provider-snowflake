@@ -223,6 +223,8 @@ func (m SetOnlyFieldsMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
 
 const (
 	BooleanStringAttributeUpdateSetOnly SetOnlyFieldsMapping = "booleanStringAttributeUpdateSetOnly"
+	// StringAttributeUpdateSetOnly sets an empty string too (StringAllowEmpty).
+	StringAttributeUpdateSetOnly SetOnlyFieldsMapping = "stringAttributeUpdateSetOnly"
 )
 
 // AttributeMappedValueUpdateMapping is attributeMappedValueUpdate with the name of the function that turns the Terraform
@@ -324,6 +326,25 @@ func AttributeMappedValueUpdateSetOnlyAlways(mapper string) AttributeMappedValue
 	return AttributeMappedValueUpdateSetOnlyAlwaysMapping{Mapper: mapper}
 }
 
+// IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping is intAttributeUnsetFallbackUpdateWithZeroDefault. An int that is
+// removed from the configuration is set to Fallback, because the object has no UNSET for it.
+type IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping struct {
+	Fallback int
+}
+
+func (m IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: "intAttributeUnsetFallbackUpdateWithZeroDefault",
+		Set:    true,
+		Fields: true,
+		Mapper: strconv.Itoa(m.Fallback),
+	}
+}
+
+func IntAttributeUnsetFallbackUpdateWithZeroDefault(fallback int) IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping {
+	return IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping{Fallback: fallback}
+}
+
 // IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping is intAttributeWithSpecialDefaultUnsetFallbackUpdate. A value
 // that is removed from the configuration is set to Fallback, because the UNSET of the attribute does not work.
 // Fallback is a Go expression, such as a number or a constant.
@@ -349,7 +370,8 @@ func IntAttributeWithSpecialDefaultUnsetFallbackUpdate(fallback string) IntAttri
 
 // CustomUpdateMapping calls a function of package resources with the data and the SET and UNSET requests that hold the
 // attribute: function(d, set, unset). It is for an update that decides by other attributes, such as one that only
-// applies to some warehouse types. The function does the whole update of the attribute.
+// applies to some warehouse types, or that fills a SET attribute from a field of a nested block. The function does the
+// whole update of the attribute. An object whose ALTER has no UNSET block passes the SET request only: function(d, set).
 type CustomUpdateMapping struct {
 	Function string
 }
@@ -365,6 +387,8 @@ func (m CustomUpdateMapping) UpdateCall(objectName string, attr Attribute) Updat
 		Requests: true,
 	}
 }
+
+func (CustomUpdateMapping) updatesWholeValue() {}
 
 func CustomUpdate(function string) CustomUpdateMapping {
 	return CustomUpdateMapping{Function: function}
