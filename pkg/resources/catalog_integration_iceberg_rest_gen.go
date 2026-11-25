@@ -5,6 +5,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -133,12 +134,14 @@ func UpdateCatalogIntegrationIcebergRest(ctx context.Context, d *tfschema.Resour
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := catalogIntegrationIcebergRestApplySetUnsetExt(d)
+	setUnset, err := catalogIntegrationIcebergRestApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationIcebergRestAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewCatalogIntegrationSetRequest()) {
+		if err := meta.(*provider.Context).Client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadCatalogIntegrationIcebergRestFunc(false)(ctx, d, meta)
 }
@@ -149,6 +152,26 @@ func catalogIntegrationIcebergRestParseIdFromConfig(d *tfschema.ResourceData) (s
 
 func catalogIntegrationIcebergRestParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+// catalogIntegrationIcebergRestAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type catalogIntegrationIcebergRestAlterRequests struct {
+	set *sdk.CatalogIntegrationSetRequest
+}
+
+func catalogIntegrationIcebergRestApplySetUnset(d *tfschema.ResourceData) (*catalogIntegrationIcebergRestAlterRequests, error) {
+	set := sdk.NewCatalogIntegrationSetRequest()
+	errs := errors.Join(
+		booleanAttributeUpdateSetOnlyBuilder(d, "enabled", set.WithEnabled),
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds, 30),
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+		updateCatalogIntegrationIcebergRestOauthClientSecret(d, set),
+		updateCatalogIntegrationIcebergRestBearerToken(d, set),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &catalogIntegrationIcebergRestAlterRequests{set: set}, nil
 }
 
 func catalogIntegrationIcebergRestHandleExternalChangesInDescribe(d *tfschema.ResourceData, details *sdk.CatalogIntegrationIcebergRestDetails, withExternalChangesMarking bool) diag.Diagnostics {

@@ -29,9 +29,9 @@ func TestAcc_MaskingPolicies_BasicUseCase_DifferentFiltering(t *testing.T) {
 	maskingPolicyId3 := testClient().Ids.RandomSchemaObjectIdentifier()
 	body := "case when current_role() in ('ANALYST') then 'true' else 'false' end"
 
-	maskingPolicyModel1 := model.MaskingPolicyDynamicArguments("test_1", maskingPolicyId1, body, sdk.DataTypeVARCHAR)
-	maskingPolicyModel2 := model.MaskingPolicyDynamicArguments("test_2", maskingPolicyId2, body, sdk.DataTypeVARCHAR)
-	maskingPolicyModel3 := model.MaskingPolicyDynamicArguments("test_3", maskingPolicyId3, body, sdk.DataTypeVARCHAR)
+	maskingPolicyModel1 := model.MaskingPolicyDynamicArguments("test_1", maskingPolicyId1, body, testdatatypes.DataTypeVarchar)
+	maskingPolicyModel2 := model.MaskingPolicyDynamicArguments("test_2", maskingPolicyId2, body, testdatatypes.DataTypeVarchar)
+	maskingPolicyModel3 := model.MaskingPolicyDynamicArguments("test_3", maskingPolicyId3, body, testdatatypes.DataTypeVarchar)
 	variableModel := accconfig.SetMapStringVariable("arguments")
 
 	commonVariables := config.Variables{

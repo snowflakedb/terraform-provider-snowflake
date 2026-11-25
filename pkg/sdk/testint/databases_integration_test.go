@@ -100,6 +100,8 @@ func TestInt_DatabasesCreate(t *testing.T) {
 				WithUserTaskMinimumTriggerIntervalInSeconds(30).
 				WithQuotedIdentifiersIgnoreCase(true).
 				WithEnableConsoleOutput(true).
+				WithMetricLevel(sdk.MetricLevelAll).
+				WithServiceCallerTokenValiditySecs(1800).
 				WithComment(comment).
 				WithTag([]sdk.TagAssociation{
 					{
@@ -146,6 +148,8 @@ func TestInt_DatabasesCreate(t *testing.T) {
 		assertParameterEquals(t, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, "30")
 		assertParameterEquals(t, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 		assertParameterEquals(t, sdk.AccountParameterEnableConsoleOutput, "true")
+		assertParameterEquals(t, sdk.AccountParameterMetricLevel, string(sdk.MetricLevelAll))
+		assertParameterEquals(t, sdk.AccountParameterServiceCallerTokenValiditySecs, "1800")
 
 		tag1Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagTest.ID(), database.ID(), sdk.ObjectTypeDatabase)))
 		require.NoError(t, err)
@@ -216,6 +220,8 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 			WithUserTaskMinimumTriggerIntervalInSeconds(30).
 			WithQuotedIdentifiersIgnoreCase(true).
 			WithEnableConsoleOutput(true).
+			WithMetricLevel(sdk.MetricLevelAll).
+			WithServiceCallerTokenValiditySecs(1800).
 			WithComment(comment).
 			WithTag([]sdk.TagAssociation{
 				{
@@ -259,6 +265,8 @@ func TestInt_DatabasesCreateShared(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, "30")
 	assertParameterEquals(t, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 	assertParameterEquals(t, sdk.AccountParameterEnableConsoleOutput, "true")
+	assertParameterEquals(t, sdk.AccountParameterMetricLevel, string(sdk.MetricLevelAll))
+	assertParameterEquals(t, sdk.AccountParameterServiceCallerTokenValiditySecs, "1800")
 
 	tag1Value, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(testTag.ID(), database.ID(), sdk.ObjectTypeDatabase)))
 	require.NoError(t, err)
@@ -301,6 +309,8 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 			WithUserTaskMinimumTriggerIntervalInSeconds(30).
 			WithQuotedIdentifiersIgnoreCase(true).
 			WithEnableConsoleOutput(true).
+			WithMetricLevel(sdk.MetricLevelAll).
+			WithServiceCallerTokenValiditySecs(1800).
 			WithComment(comment),
 	)
 	require.NoError(t, err)
@@ -341,6 +351,8 @@ func TestInt_DatabasesCreateSecondary(t *testing.T) {
 	assertParameterEquals(t, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, "30")
 	assertParameterEquals(t, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 	assertParameterEquals(t, sdk.AccountParameterEnableConsoleOutput, "true")
+	assertParameterEquals(t, sdk.AccountParameterMetricLevel, string(sdk.MetricLevelAll))
+	assertParameterEquals(t, sdk.AccountParameterServiceCallerTokenValiditySecs, "1800")
 }
 
 func TestInt_DatabasesCreateFromListing(t *testing.T) {
@@ -486,7 +498,9 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					WithUserTaskTimeoutMs(12_000).
 					WithUserTaskMinimumTriggerIntervalInSeconds(30).
 					WithQuotedIdentifiersIgnoreCase(true).
-					WithEnableConsoleOutput(true),
+					WithEnableConsoleOutput(true).
+					WithMetricLevel(sdk.MetricLevelAll).
+					WithServiceCallerTokenValiditySecs(1800),
 			))
 			require.NoError(t, err)
 
@@ -511,6 +525,8 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterUserTaskMinimumTriggerIntervalInSeconds, "30")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterQuotedIdentifiersIgnoreCase, "true")
 			assertDatabaseParameterEquals(t, params, sdk.AccountParameterEnableConsoleOutput, "true")
+			assertDatabaseParameterEquals(t, params, sdk.AccountParameterMetricLevel, string(sdk.MetricLevelAll))
+			assertDatabaseParameterEquals(t, params, sdk.AccountParameterServiceCallerTokenValiditySecs, "1800")
 
 			err = client.Databases.Alter(ctx, sdk.NewAlterDatabaseRequest(databaseTest.ID()).WithUnset(
 				*sdk.NewDatabaseUnsetRequest().
@@ -532,7 +548,9 @@ func TestInt_DatabasesAlter(t *testing.T) {
 					WithUserTaskTimeoutMs(true).
 					WithUserTaskMinimumTriggerIntervalInSeconds(true).
 					WithQuotedIdentifiersIgnoreCase(true).
-					WithEnableConsoleOutput(true),
+					WithEnableConsoleOutput(true).
+					WithMetricLevel(true).
+					WithServiceCallerTokenValiditySecs(true),
 			))
 			require.NoError(t, err)
 
@@ -557,6 +575,8 @@ func TestInt_DatabasesAlter(t *testing.T) {
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterUserTaskMinimumTriggerIntervalInSeconds)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterQuotedIdentifiersIgnoreCase)
 			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterEnableConsoleOutput)
+			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterMetricLevel)
+			assertDatabaseParameterEqualsToDefaultValue(t, params, sdk.ObjectParameterServiceCallerTokenValiditySecs)
 		})
 
 		t.Run(fmt.Sprintf("Database: %s - setting and unsetting comment", testCase.DatabaseType), func(t *testing.T) {

@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testenvs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/snowflakeroles"
@@ -1147,11 +1148,11 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 			setTags: func(id sdk.TableColumnIdentifier, tags []sdk.TagAssociation) error {
 				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(*sdk.NewTableColumnActionRequest().
-					WithSetTags(*sdk.NewTableColumnAlterSetTagsActionRequest(id.Name(), tags))))
+					WithSetTags(*sdk.NewTableSetColumnTagsRequest(id.Name(), tags))))
 			},
 			unsetTags: func(id sdk.TableColumnIdentifier, tags []sdk.ObjectIdentifier) error {
 				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id.SchemaObjectId()).WithColumnAction(*sdk.NewTableColumnActionRequest().
-					WithUnsetTags(*sdk.NewTableColumnAlterUnsetTagsActionRequest(id.Name(), tags))))
+					WithUnsetTags(*sdk.NewTableUnsetColumnTagsRequest(id.Name(), tags))))
 			},
 		},
 		{
@@ -1224,7 +1225,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 			objectType: sdk.ObjectTypeFunction,
 			setupObject: func() sdk.SchemaObjectIdentifierWithArguments {
 				// cleanup is set up in the Create function
-				function := testClientHelper().Function.Create(t, sdk.DataTypeInt)
+				function := testClientHelper().Function.Create(t, testdatatypes.DataTypeNumber)
 				return function.ID()
 			},
 			setTags: func(id sdk.SchemaObjectIdentifierWithArguments, tags []sdk.TagAssociation) error {
@@ -1241,7 +1242,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 				integration, integrationCleanup := testClientHelper().ApiIntegration.Create(t)
 				t.Cleanup(integrationCleanup)
 				// cleanup is set up in the Create function
-				function := testClientHelper().ExternalFunction.Create(t, integration.ID(), sdk.DataTypeInt)
+				function := testClientHelper().ExternalFunction.Create(t, integration.ID(), testdatatypes.DataTypeNumber)
 				return function.ID()
 			},
 			setTags: func(id sdk.SchemaObjectIdentifierWithArguments, tags []sdk.TagAssociation) error {
@@ -1256,7 +1257,7 @@ func TestInt_TagsAssociations(t *testing.T) {
 			objectType: sdk.ObjectTypeProcedure,
 			setupObject: func() sdk.SchemaObjectIdentifierWithArguments {
 				// cleanup is set up in the Create procedure
-				procedure, cleanupProcedure := testClientHelper().Procedure.Create(t, sdk.DataTypeInt)
+				procedure, cleanupProcedure := testClientHelper().Procedure.Create(t, testdatatypes.DataTypeNumber)
 				t.Cleanup(cleanupProcedure)
 				return procedure.ID()
 			},
@@ -1341,7 +1342,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
 			sdk.NewCreateTableRequest(
-				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber)})).
+				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber)})).
 				WithTag([]sdk.TagAssociation{
 					{Name: tag.ID(), Value: "v1"},
 				}),
@@ -1373,7 +1374,7 @@ func TestInt_TagsPropagation(t *testing.T) {
 		table, tableCleanup := testClientHelper().Table.CreateWithRequest(
 			t,
 			sdk.NewCreateTableRequest(
-				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", sdk.DataTypeNumber)})).WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "will_be_removed"}}),
+				testClientHelper().Ids.RandomSchemaObjectIdentifier(), *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns([]sdk.TableColumnRequest{*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber)})).WithTag([]sdk.TagAssociation{{Name: tag.ID(), Value: "will_be_removed"}}),
 		)
 		t.Cleanup(tableCleanup)
 

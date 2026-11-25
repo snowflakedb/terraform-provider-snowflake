@@ -93,16 +93,15 @@ func replicationGroupIdList(idType string, required bool) ssot.SqlClause {
 }
 
 func replicationGroupMoveList(name, sql string) ssot.Attribute {
+	opts := []ssot.SqlClauseOption{ssot.NoParentheses(), ssot.NoEquals()}
+	if sql != "" {
+		opts = append([]ssot.SqlClauseOption{ssot.Sql(sql)}, opts...)
+	}
 	return ssot.Attribute{
-		Name: name,
-		Type: ssot.AttrList,
-		Elem: &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
-		CreateSql: ssot.ListParameter(
-			"AccountObjectIdentifier",
-			ssot.Sql(sql),
-			ssot.NoParentheses(),
-			ssot.NoEquals(),
-		),
+		Name:      name,
+		Type:      ssot.AttrList,
+		Elem:      &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql: ssot.ListParameter("AccountObjectIdentifier", opts...),
 	}
 }
 
@@ -217,10 +216,13 @@ var ReplicationGroupAttrs = struct {
 		OptionalInDb:   true,
 		Description:    "Schedule for refreshing secondary replication groups. An interval (`<num> MINUTE`) or `USING CRON <expr> <time_zone>`. NULL when unset.",
 	},
+	// SHOW returns the integration name on a primary group and NULL on a secondary group. The documentation does not list the column.
 	ErrorIntegration: ssot.Attribute{
 		Name:           "error_integration",
 		Type:           ssot.AttrIdentifier,
 		IdentifierType: "AccountObjectIdentifier",
+		OptionalInShow: true,
+		OptionalInDb:   true,
 		Description:    "Notification integration that receives refresh error notifications.",
 		CreateSql:      ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
 		SetSql:         ssot.IdentifierKeyword("AccountObjectIdentifier", ssot.Equals()),
@@ -275,8 +277,10 @@ var ReplicationGroupAttrs = struct {
 	// Failover's handwritten SHOW row does not include these two columns. The replication group page does.
 	// TRUE/FALSE is a bool, matching is_primary on the same SHOW command.
 	IsListingAutoFulfillmentGroup: ssot.Attribute{Name: "is_listing_auto_fulfillment_group", Type: ssot.AttrBool, Readonly: true, Description: "TRUE when the group is used for Cross-Cloud Auto-Fulfillment."},
+	// The documentation lists the SHOW column as read_only, but SHOW returns is_primary_read_only.
 	ReadOnly: ssot.Attribute{
 		Name:           "read_only",
+		ShowName:       "is_primary_read_only",
 		Type:           ssot.AttrBool,
 		Readonly:       true,
 		OptionalInShow: true,
@@ -289,9 +293,11 @@ var ReplicationGroupAttrs = struct {
 // The SHOW column is read-only. A create clause on an Attributes entry has to be in that statement's sequence,
 // so the source attribute has no create clause and the primary CREATE does not gain AS REPLICA OF.
 var replicationGroupAsReplicaOf = ssot.Attribute{
+	// TODO [SNOW-1495079]: Add validation when ExternalObjectIdentifier will be available in IsValidIdentifier.
 	Name:           "primary",
 	Type:           ssot.AttrIdentifier,
 	IdentifierType: "ExternalObjectIdentifier",
+	Required:       true,
 	ForceNew:       true,
 	Description:    "Primary replication group to replicate, as org.account.name. This is the AS REPLICA OF identifier.",
 	CreateSql:      ssot.IdentifierKeyword("ExternalObjectIdentifier", ssot.Sql("AS REPLICA OF"), ssot.Required(), ssot.FieldName("AsReplicaOf")),
@@ -312,16 +318,17 @@ func replicationGroupReverseIdentifierList(name, sql, idType string) ssot.Attrib
 	}
 }
 
-// One MOVE statement sets one of the three lists. AdditionalValidations checks that.
+// TODO [SNOW-4490849]: MOVE needs exactly one of the three lists. The SDK extension validates it. Move it to an ExactlyOneOf
+// validation that names the three lists, so the always set `to` is not counted.
 var replicationGroupMove = ssot.Attribute{
 	Name:      "move",
 	Type:      ssot.AttrObject,
 	SqlOnly:   true,
 	CreateSql: ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
-		replicationGroupMoveList("databases", "DATABASES"),
+		replicationGroupMoveList("databases", ""),
 		replicationGroupMoveList("external_volumes", "EXTERNAL VOLUMES"),
-		replicationGroupMoveList("shares", "SHARES"),
+		replicationGroupMoveList("shares", ""),
 		{
 			Name:           "to",
 			Type:           ssot.AttrIdentifier,
@@ -331,7 +338,9 @@ var replicationGroupMove = ssot.Attribute{
 	},
 }
 
-// ADD and REMOVE each set one allowed list. IGNORE EDITION CHECK belongs only to ADD accounts.
+// TODO [SNOW-4490849]: ADD needs exactly one of the four lists. Move it to an ExactlyOneOf validation that names the four
+// lists, so ignore_edition_check is not counted. IGNORE EDITION CHECK is allowed only together with allowed_accounts, a
+// dependency between fields that no validation expresses. The SDK extension validates both.
 var replicationGroupAdd = ssot.Attribute{
 	Name:      "add",
 	Type:      ssot.AttrObject,
@@ -351,10 +360,11 @@ var replicationGroupAdd = ssot.Attribute{
 }
 
 var replicationGroupRemove = ssot.Attribute{
-	Name:      "remove",
-	Type:      ssot.AttrObject,
-	SqlOnly:   true,
-	CreateSql: ssot.ObjectParameter(),
+	Name:        "remove",
+	Type:        ssot.AttrObject,
+	SqlOnly:     true,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	CreateSql:   ssot.ObjectParameter(),
 	Children: []ssot.Attribute{
 		replicationGroupReverseIdentifierList("allowed_databases", "FROM ALLOWED_DATABASES", "AccountObjectIdentifier"),
 		replicationGroupReverseIdentifierList("allowed_external_volumes", "FROM ALLOWED_EXTERNAL_VOLUMES", "AccountObjectIdentifier"),
@@ -372,7 +382,7 @@ var replicationGroupSuspend = ssot.Attribute{
 	Children: []ssot.Attribute{{
 		Name:      "immediate",
 		Type:      ssot.AttrBool,
-		CreateSql: ssot.BoolKeyword(ssot.Sql("IMMEDIATE")),
+		CreateSql: ssot.BoolKeyword(),
 	}},
 }
 
@@ -380,6 +390,7 @@ var replicationGroupSuspend = ssot.Attribute{
 // SDK create, show, drop, and alter are on. CREATE has no OR REPLACE.
 // DROP documents IF EXISTS, so SdkDrop keeps it. The page shows no pre-drop step.
 // SHOW stays here: SHOW REPLICATION GROUPS returns both roles.
+// DESCRIBE REPLICATION GROUP is not a published command, so the object has no DESCRIBE.
 // ReplicationGroupSecondary holds the target-account CREATE and ALTER.
 // SdkCreateForVariants emits CreateSecondary. SdkAlterForVariants emits AlterSecondary.
 var ReplicationGroup = ssot.Object{
@@ -476,13 +487,12 @@ var ReplicationGroup = ssot.Object{
 	},
 	// OBJECT_TYPES and the allowed-object lists are their own SET statement (the ObjectLists group), because
 	// Snowflake rejects a SET that mixes them with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION.
-	// The SDK SET struct still holds all of them, so ReplicationGroupSet.additionalValidations rejects a mixed SET.
+	// The SDK SET struct still holds all of them, and the groups make its validation reject a mixed SET.
 	// The page allows several of these in one UNSET, separated by commas.
 	// Failover's handwritten UNSET allows exactly one field.
 	Alter: ssot.AlterSpec{
 		Doc: "https://docs.snowflake.com/en/sql-reference/sql/alter-replication-group",
 		// SET: allowed lists require the matching OBJECT_TYPES value.
-		// OBJECT_TYPES and the allowed lists cannot share a SET with COMMENT, REPLICATION_SCHEDULE, or ERROR_INTEGRATION.
 		SetAdditionalValidations: true,
 		// MOVE sets exactly one of databases, external volumes, and shares, and To is a valid identifier.
 		AdditionalValidations: true,
@@ -534,6 +544,7 @@ var ReplicationGroup = ssot.Object{
 			&ReplicationGroupAttrs.NextScheduledRefresh,
 			&ReplicationGroupAttrs.Owner,
 			&ReplicationGroupAttrs.IsListingAutoFulfillmentGroup,
+			&ReplicationGroupAttrs.ErrorIntegration,
 			&ReplicationGroupAttrs.ReadOnly,
 		},
 	},
@@ -541,28 +552,33 @@ var ReplicationGroup = ssot.Object{
 
 // ReplicationGroupSecondary is the target-account role.
 // The name starts with ReplicationGroup so the methods are CreateSecondary and AlterSecondary.
-// SdkCreateRequestObjectName keeps the query struct CreateSecondaryReplicationGroup.
+// Variant.RequestObjectName keeps the query struct CreateSecondaryReplicationGroup.
 // CreateSecondary and AlterSecondary are emitted from this object.
 var ReplicationGroupSecondary = ssot.Object{
-	Name:                       "ReplicationGroupSecondary",
-	NamePlural:                 "ReplicationGroups",
-	IdType:                     "AccountObjectIdentifier",
-	PreviewFeature:             true,
-	IdentityNameForceNew:       true,
-	SdkCreateRequestObjectName: "SecondaryReplicationGroup",
-	VariantOf:                  &ReplicationGroup,
+	Name:                 "ReplicationGroupSecondary",
+	NamePlural:           "ReplicationGroups",
+	IdType:               "AccountObjectIdentifier",
+	PreviewFeature:       true,
+	IdentityNameForceNew: true,
+	Variant: &ssot.ObjectVariant{
+		Of:                          &ReplicationGroup,
+		RequestObjectName:           "SecondaryReplicationGroup",
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
-			ssot.WithShowOutputAssert(ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()), ssot.ShowOutputDescribe()),
-			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowFromBase()), ssot.SchemaDescribe()),
-			ssot.WithObjectAssert(ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()), ssot.ObjectAssertDescribe()),
+			ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
+			ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
+			ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
 		),
 	},
 	// SHOW is the base row. The schema is ShowReplicationGroupSchema. Create and alter use the variant methods.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
-		ssot.WithNewCreateRequest(ssot.ExtCall()),
+		ssot.WithNewCreateRequest(ssot.Generated()),
 		ssot.WithApplyCreateOptionals(ssot.Generated()),
 		ssot.WithShowByIdInSdk(ssot.Generated()),
 		ssot.WithShowByIdSafelyInSdk(ssot.Generated()),
@@ -572,7 +588,7 @@ var ReplicationGroupSecondary = ssot.Object{
 		ssot.WithApplySetUnset(ssot.Omitted()),
 		ssot.WithAlterSetInSdk(ssot.Omitted()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
-		ssot.WithSetConfigFields(ssot.Omitted()),
+		ssot.WithSetConfigFields(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),
 		ssot.WithCustomizeDiff(ssot.Generated()),
 	},

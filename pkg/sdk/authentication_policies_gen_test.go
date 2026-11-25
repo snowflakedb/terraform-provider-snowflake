@@ -11,6 +11,7 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AuthenticationMethodsOption]{"AuthenticationMethodsOption", AllAuthenticationMethodsOptions, ToAuthenticationMethodsOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsOption]{"MfaAuthenticationMethodsOption", AllMfaAuthenticationMethodsOptions, ToMfaAuthenticationMethodsOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentOption]{"MfaEnrollmentOption", AllMfaEnrollmentOptions, ToMfaEnrollmentOption})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentReadOption]{"MfaEnrollmentReadOption", AllMfaEnrollmentReadOptions, ToMfaEnrollmentReadOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientTypesOption]{"ClientTypesOption", AllClientTypesOptions, ToClientTypesOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ClientPolicyDriverType]{"ClientPolicyDriverType", AllClientPolicyDriverTypes, ToClientPolicyDriverType})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[EnforceMfaOnExternalAuthenticationOption]{"EnforceMfaOnExternalAuthenticationOption", AllEnforceMfaOnExternalAuthenticationOptions, ToEnforceMfaOnExternalAuthenticationOption})
@@ -18,7 +19,6 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[NetworkPolicyEvaluationOption]{"NetworkPolicyEvaluationOption", AllNetworkPolicyEvaluationOptions, ToNetworkPolicyEvaluationOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AllowedProviderOption]{"AllowedProviderOption", AllAllowedProviderOptions, ToAllowedProviderOption})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaAuthenticationMethodsReadOption]{"MfaAuthenticationMethodsReadOption", AllMfaAuthenticationMethodsReadOptions, ToMfaAuthenticationMethodsReadOption})
-	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[MfaEnrollmentReadOption]{"MfaEnrollmentReadOption", AllMfaEnrollmentReadOptions, ToMfaEnrollmentReadOption})
 }
 
 var authenticationPoliciesTestIdSchemaObjectIdentifier = randomSchemaObjectIdentifier()
@@ -30,7 +30,6 @@ const (
 	case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_NoneSet"
 	case_AuthenticationPolicies_validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet    testCaseName = "validation_Create_opts_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet"
 	case_AuthenticationPolicies_validation_Create_SecurityIntegrations_SecurityIntegrations_ValidIdentifier      testCaseName = "validation_Create_SecurityIntegrations_SecurityIntegrations_ValidIdentifier"
-	case_AuthenticationPolicies_validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet                 testCaseName = "validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_sql_Create_basic                                                                 testCaseName = "sql_Create_basic"
 	case_AuthenticationPolicies_sql_Create_all                                                                   testCaseName = "sql_Create_all"
 	case_AuthenticationPolicies_validation_Alter_name_ValidIdentifier                                            testCaseName = "validation_Alter_name_ValidIdentifier"
@@ -42,7 +41,6 @@ const (
 	case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_NoneSet        testCaseName = "validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_NoneSet"
 	case_AuthenticationPolicies_validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet testCaseName = "validation_Alter_opts_Set_SecurityIntegrations_ExactlyOneValueSet_MoreThanOneSet"
 	case_AuthenticationPolicies_validation_Alter_Set_SecurityIntegrations_SecurityIntegrations_ValidIdentifier   testCaseName = "validation_Alter_Set_SecurityIntegrations_SecurityIntegrations_ValidIdentifier"
-	case_AuthenticationPolicies_validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet              testCaseName = "validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet"
 	case_AuthenticationPolicies_validation_Alter_opts_Unset_AtLeastOneValueSet                                   testCaseName = "validation_Alter_opts_Unset_AtLeastOneValueSet"
 	case_AuthenticationPolicies_sql_Alter_Set                                                                    testCaseName = "sql_Alter_Set"
 	case_AuthenticationPolicies_sql_Alter_Unset                                                                  testCaseName = "sql_Alter_Unset"
@@ -122,17 +120,6 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
 					opts.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{}
 					opts.SecurityIntegrations.SecurityIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
-				},
-			},
-			validationCase[*CreateAuthenticationPolicyOptions]{
-				Name:        case_AuthenticationPolicies_validation_Create_opts_WorkloadIdentityPolicy_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("CreateAuthenticationPolicyOptions.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"),
-				DefaultModify: func(opts *CreateAuthenticationPolicyOptions) {
-					opts.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{}
-					opts.WorkloadIdentityPolicy.AllowedProviders = nil
-					opts.WorkloadIdentityPolicy.AllowedAwsAccounts = nil
-					opts.WorkloadIdentityPolicy.AllowedAzureIssuers = nil
-					opts.WorkloadIdentityPolicy.AllowedOidcIssuers = nil
 				},
 			},
 		).
@@ -232,18 +219,6 @@ var authenticationPoliciesTests = AuthenticationPoliciesTestsContext{
 					opts.Set = &AuthenticationPolicySet{}
 					opts.Set.SecurityIntegrations = &AuthenticationPolicySecurityIntegrationsOption{}
 					opts.Set.SecurityIntegrations.SecurityIntegrations = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
-				},
-			},
-			validationCase[*AlterAuthenticationPolicyOptions]{
-				Name:        case_AuthenticationPolicies_validation_Alter_opts_Set_WorkloadIdentityPolicy_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterAuthenticationPolicyOptions.Set.WorkloadIdentityPolicy", "AllowedProviders", "AllowedAwsAccounts", "AllowedAzureIssuers", "AllowedOidcIssuers"),
-				DefaultModify: func(opts *AlterAuthenticationPolicyOptions) {
-					opts.Set = &AuthenticationPolicySet{}
-					opts.Set.WorkloadIdentityPolicy = &AuthenticationPolicyWorkloadIdentityPolicy{}
-					opts.Set.WorkloadIdentityPolicy.AllowedProviders = nil
-					opts.Set.WorkloadIdentityPolicy.AllowedAwsAccounts = nil
-					opts.Set.WorkloadIdentityPolicy.AllowedAzureIssuers = nil
-					opts.Set.WorkloadIdentityPolicy.AllowedOidcIssuers = nil
 				},
 			},
 			validationCase[*AlterAuthenticationPolicyOptions]{

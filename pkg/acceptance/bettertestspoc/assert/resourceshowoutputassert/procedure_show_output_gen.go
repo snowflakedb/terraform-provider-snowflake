@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 )
 
 type ProcedureShowOutputAssert struct {
@@ -80,8 +79,8 @@ func (p *ProcedureShowOutputAssert) HasArgumentsRaw(expected string) *ProcedureS
 	return p
 }
 
-func (p *ProcedureShowOutputAssert) HasReturnTypeOld(expected sdk.DataType) *ProcedureShowOutputAssert {
-	p.StringValueSet("return_type_old", string(expected))
+func (p *ProcedureShowOutputAssert) HasReturnTypeRaw(expected string) *ProcedureShowOutputAssert {
+	p.StringValueSet("return_type_raw", expected)
 	return p
 }
 
@@ -169,13 +168,23 @@ func (p *ProcedureShowOutputAssert) HasNoArgumentsRaw() *ProcedureShowOutputAsse
 	return p
 }
 
-func (p *ProcedureShowOutputAssert) HasNoArgumentsOld() *ProcedureShowOutputAssert {
-	p.ValueSet("arguments_old.#", "0")
+func (p *ProcedureShowOutputAssert) HasNoArguments() *ProcedureShowOutputAssert {
+	p.ValueSet("arguments.#", "0")
 	return p
 }
 
-func (p *ProcedureShowOutputAssert) HasNoReturnTypeOld() *ProcedureShowOutputAssert {
-	p.ValueNotSet("return_type_old")
+func (p *ProcedureShowOutputAssert) HasNoArgumentsRawList() *ProcedureShowOutputAssert {
+	p.ValueSet("arguments_raw_list.#", "0")
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoReturnType() *ProcedureShowOutputAssert {
+	p.ValueNotSet("return_type")
+	return p
+}
+
+func (p *ProcedureShowOutputAssert) HasNoReturnTypeRaw() *ProcedureShowOutputAssert {
+	p.ValueNotSet("return_type_raw")
 	return p
 }
 

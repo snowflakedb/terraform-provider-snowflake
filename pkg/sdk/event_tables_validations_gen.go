@@ -23,6 +23,11 @@ func (opts *CreateEventTableOptions) validate() error {
 	if everyValueSet(opts.OrReplace, opts.IfNotExists) {
 		errs = append(errs, errOneOf("CreateEventTableOptions", "OrReplace", "IfNotExists"))
 	}
+	if valueSet(opts.RowAccessPolicy) {
+		if !ValidObjectIdentifier(opts.RowAccessPolicy.Name) {
+			errs = append(errs, errInvalidIdentifier("CreateEventTableOptions.RowAccessPolicy", "Name"))
+		}
+	}
 	if valueSet(opts.Tag) {
 		for tagIdx, tag := range opts.Tag {
 			if !ValidObjectIdentifier(tag.Name) {

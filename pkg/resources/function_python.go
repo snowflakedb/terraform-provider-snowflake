@@ -65,7 +65,7 @@ func CreateContextFunctionPython(ctx context.Context, d *schema.ResourceData, me
 	runtimeVersion := d.Get("runtime_version").(string)
 
 	argumentDataTypes := collections.Map(argumentRequests, func(r sdk.FunctionArgumentRequest) datatypes.DataType { return r.ArgDataType })
-	id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(database, sc, name, argumentDataTypes...)
+	id := sdk.NewSchemaObjectIdentifierWithArguments(database, sc, name, argumentDataTypes...)
 	request := sdk.NewCreateForPythonFunctionRequest(id.SchemaObjectId(), *returns, runtimeVersion, handler).
 		WithArguments(argumentRequests)
 

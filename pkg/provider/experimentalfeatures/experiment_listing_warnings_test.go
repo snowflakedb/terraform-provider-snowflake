@@ -103,8 +103,8 @@ func Test_experimentListingWarnings(t *testing.T) {
 
 func Test_ExperimentListingWarnings_Public(t *testing.T) {
 	optIn := string(HierarchyRenames)
-	defaultOn := string(InheritedGrants)
-	warehouse := string(WarehouseShowImprovedPerformance)
+	defaultOn := string(UserEnableDefaultWorkloadIdentity)
+	parametersParseOnSet := string(ObjectParameterParseOnSet)
 
 	t.Run("no warnings for empty lists", func(t *testing.T) {
 		require.Empty(t, ExperimentListingWarnings(nil, nil))
@@ -114,11 +114,11 @@ func Test_ExperimentListingWarnings_Public(t *testing.T) {
 		require.Empty(t, ExperimentListingWarnings([]string{optIn}, nil))
 	})
 
-	t.Run("default-on warehouse listed in enabled is redundant", func(t *testing.T) {
-		got := ExperimentListingWarnings([]string{warehouse}, nil)
+	t.Run("second default-on listed in enabled is redundant", func(t *testing.T) {
+		got := ExperimentListingWarnings([]string{parametersParseOnSet}, nil)
 		require.Len(t, got, 1)
 		require.Equal(t, "Experiment already enabled by default.", got[0].Summary)
-		require.Contains(t, got[0].Detail, warehouse)
+		require.Contains(t, got[0].Detail, parametersParseOnSet)
 	})
 
 	t.Run("default-on listed in enabled is redundant", func(t *testing.T) {

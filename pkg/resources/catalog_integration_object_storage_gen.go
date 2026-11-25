@@ -5,6 +5,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -122,12 +123,14 @@ func UpdateCatalogIntegrationObjectStorage(ctx context.Context, d *tfschema.Reso
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := catalogIntegrationObjectStorageApplySetUnsetExt(d)
+	setUnset, err := catalogIntegrationObjectStorageApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationObjectStorageAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewCatalogIntegrationSetRequest()) {
+		if err := meta.(*provider.Context).Client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadCatalogIntegrationObjectStorageFunc(false)(ctx, d, meta)
 }
@@ -138,6 +141,24 @@ func catalogIntegrationObjectStorageParseIdFromConfig(d *tfschema.ResourceData) 
 
 func catalogIntegrationObjectStorageParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+// catalogIntegrationObjectStorageAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type catalogIntegrationObjectStorageAlterRequests struct {
+	set *sdk.CatalogIntegrationSetRequest
+}
+
+func catalogIntegrationObjectStorageApplySetUnset(d *tfschema.ResourceData) (*catalogIntegrationObjectStorageAlterRequests, error) {
+	set := sdk.NewCatalogIntegrationSetRequest()
+	errs := errors.Join(
+		booleanAttributeUpdateSetOnlyBuilder(d, "enabled", set.WithEnabled),
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds, 30),
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &catalogIntegrationObjectStorageAlterRequests{set: set}, nil
 }
 
 func catalogIntegrationObjectStorageHandleExternalChangesInDescribe(d *tfschema.ResourceData, details *sdk.CatalogIntegrationObjectStorageDetails, withExternalChangesMarking bool) diag.Diagnostics {

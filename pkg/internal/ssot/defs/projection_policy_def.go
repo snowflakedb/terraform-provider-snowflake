@@ -79,7 +79,7 @@ var ProjectionPolicy = ssot.Object{
 			),
 		),
 	},
-	// body is SET BODY -> and cannot share a SET with comment, so the update sends it in its own SET (SetConflictingFields).
+	// body is SET BODY -> and cannot share a SET with comment, so the update sends it in its own SET (the Body group).
 	// The request field is SetBody, so the update mapping names it.
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
@@ -124,10 +124,6 @@ var ProjectionPolicy = ssot.Object{
 			),
 			ssot.AlterUnset(&ProjectionPolicyAttrs.Comment),
 		},
-		SetConflictingFields: [][]*ssot.Attribute{{
-			&ProjectionPolicyAttrs.Body,
-			&ProjectionPolicyAttrs.Comment,
-		}},
 	},
 	Show: ssot.OutputSpec{
 		Columns: []*ssot.Attribute{

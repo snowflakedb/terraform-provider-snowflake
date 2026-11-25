@@ -90,6 +90,44 @@ func TestInt_Warehouses(t *testing.T) {
 		require.Equal(t, precreatedWarehouseId.Name(), warehouses[0].Name)
 	})
 
+	// Snowflake accepts STARTS WITH and LIMIT in SHOW WAREHOUSES, but applies them only together as STARTS WITH with LIMIT 1
+	// and a matching prefix (see the case above). On their own, or with another limit, they are ignored.
+	// Each case below fails once Snowflake applies the clause, which is the signal to assert real filtering instead.
+	// TODO [SNOW-4491301]: assert real filtering when Snowflake applies STARTS WITH and LIMIT in SHOW WAREHOUSES.
+	t.Run("show: with starts with alone is accepted but not applied", func(t *testing.T) {
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithStartsWith("ZZ_NO_WAREHOUSE_STARTS_WITH_THIS"))
+		require.NoError(t, err)
+		assert.NotEmpty(t, warehouses, "STARTS WITH alone is currently ignored by SHOW WAREHOUSES; if this now filters, "+
+			"the server gap is fixed and this case should assert real filtering instead")
+	})
+
+	t.Run("show: with limit alone is accepted but not applied", func(t *testing.T) {
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
+		require.NoError(t, err)
+		assert.Greater(t, len(warehouses), 1, "LIMIT 1 alone is currently ignored by SHOW WAREHOUSES; if this now limits, "+
+			"the server gap is fixed and this case should assert real limiting instead")
+	})
+
+	t.Run("show: with starts with and a limit above one is accepted but not applied", func(t *testing.T) {
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithStartsWith(precreatedWarehouseId.Name()).
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(2)}))
+		require.NoError(t, err)
+		assert.Greater(t, len(warehouses), 1, "STARTS WITH with LIMIT 2 is currently ignored by SHOW WAREHOUSES; if this now "+
+			"filters, the server gap is fixed and this case should assert real filtering instead")
+	})
+
+	t.Run("show: with starts with matching nothing and a limit of one is not applied", func(t *testing.T) {
+		warehouses, err := client.Warehouses.Show(ctx, sdk.NewShowWarehouseRequest().
+			WithStartsWith("ZZ_NO_WAREHOUSE_STARTS_WITH_THIS").
+			WithLimit(sdk.LimitFrom{Rows: sdk.Int(1)}))
+		require.NoError(t, err)
+		assert.Greater(t, len(warehouses), 1, "STARTS WITH matching nothing with LIMIT 1 currently returns every warehouse; "+
+			"if this now returns none, the server gap is fixed and this case should assert real filtering instead")
+	})
+
 	t.Run("create: with resource constraint", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomAccountObjectIdentifier()
 		err := client.Warehouses.Create(ctx, sdk.NewCreateWarehouseRequest(id).
@@ -1238,7 +1276,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasSize(sdk.WarehouseSizeXSmall).
 				HasMaxClusterCount(1).
 				HasMinClusterCount(1).
-				HasAutoSuspend(86400).
+				HasAutoSuspend(3600).
 				HasAutoResume(true).
 				HasTables(),
 		)
@@ -1290,7 +1328,7 @@ func TestInt_Warehouses_Interactive(t *testing.T) {
 				HasSize(sdk.WarehouseSizeXSmall).
 				HasMaxClusterCount(1).
 				HasMinClusterCount(1).
-				HasAutoSuspend(86400).
+				HasAutoSuspend(3600).
 				HasAutoResume(true).
 				HasTables(table1.ID(), table2.ID()),
 		)

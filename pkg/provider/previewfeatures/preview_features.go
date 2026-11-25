@@ -31,6 +31,8 @@ const (
 	AuthenticationPoliciesDatasource               feature = "snowflake_authentication_policies_datasource"
 	BackupPoliciesDatasource                       feature = "snowflake_backup_policies_datasource"
 	BackupPolicyResource                           feature = "snowflake_backup_policy_resource"
+	BackupSetResource                              feature = "snowflake_backup_set_resource"
+	BackupSetsDatasource                           feature = "snowflake_backup_sets_datasource"
 	CodeBundleResource                             feature = "snowflake_code_bundle_resource"
 	CodeBundlesDatasource                          feature = "snowflake_code_bundles_datasource"
 	CatalogIntegrationAwsGlueResource              feature = "snowflake_catalog_integration_aws_glue_resource"
@@ -65,6 +67,7 @@ const (
 	ExternalVolumeResource                         feature = "snowflake_external_volume_resource"
 	ExternalVolumesDatasource                      feature = "snowflake_external_volumes_datasource"
 	FailoverGroupResource                          feature = "snowflake_failover_group_resource"
+	FailoverGroupSecondaryResource                 feature = "snowflake_failover_group_secondary_resource"
 	FailoverGroupsDatasource                       feature = "snowflake_failover_groups_datasource"
 	FileFormatResource                             feature = "snowflake_file_format_resource"
 	FileFormatAvroResource                         feature = "snowflake_file_format_avro_resource"
@@ -183,6 +186,8 @@ var allPreviewFeatures = []feature{
 	ApiIntegrationResource,
 	BackupPoliciesDatasource,
 	BackupPolicyResource,
+	BackupSetResource,
+	BackupSetsDatasource,
 	CodeBundleResource,
 	CodeBundlesDatasource,
 	CortexSearchServiceResource,
@@ -199,6 +204,7 @@ var allPreviewFeatures = []feature{
 	ExternalTableResource,
 	ExternalTablesDatasource,
 	FailoverGroupResource,
+	FailoverGroupSecondaryResource,
 	FailoverGroupsDatasource,
 	FileFormatResource,
 	FunctionJavaResource,

@@ -8,8 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type failoverGroupToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.FailoverGroup] = failoverGroupToSchemaMapper{}
+
 // ShowFailoverGroupSchema represents output of SHOW query for the single FailoverGroup.
-var ShowFailoverGroupSchema = map[string]*schema.Schema{
+var ShowFailoverGroupSchema = mergeSchema(map[string]*schema.Schema{
 	"region_group": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -46,8 +50,8 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	// object_types is skipped and won't be generated
-	// allowed_integration_types is skipped and won't be generated
+	// object_types: manual addition and mapping is needed
+	// allowed_integration_types: manual addition and mapping is needed
 	"allowed_accounts": {
 		Type:     schema.TypeSet,
 		Elem:     &schema.Schema{Type: schema.TypeString},
@@ -89,11 +93,15 @@ var ShowFailoverGroupSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	"read_only": {
+	"error_integration": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"is_primary_read_only": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-}
+}, failoverGroupToSchemaMapper{}.additionalSchema())
 
 var _ = ShowFailoverGroupSchema
 
@@ -110,8 +118,8 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	}
 	failoverGroupSchema["is_primary"] = failoverGroup.IsPrimary
 	failoverGroupSchema["primary"] = failoverGroup.Primary.FullyQualifiedName()
-	// object_types is skipped and won't be generated
-	// allowed_integration_types is skipped and won't be generated
+	// object_types: manual addition and mapping is needed
+	// allowed_integration_types: manual addition and mapping is needed
 	failoverGroupSchema["allowed_accounts"] = collections.Map(failoverGroup.AllowedAccounts, sdk.AccountIdentifier.Name)
 	failoverGroupSchema["organization_name"] = failoverGroup.OrganizationName
 	failoverGroupSchema["account_locator"] = failoverGroup.AccountLocator
@@ -121,16 +129,20 @@ func FailoverGroupToSchema(failoverGroup *sdk.FailoverGroup) map[string]any {
 	if failoverGroup.SecondaryState != nil {
 		failoverGroupSchema["secondary_state"] = string((*failoverGroup.SecondaryState))
 	}
-	failoverGroupSchema["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh
+	failoverGroupSchema["next_scheduled_refresh"] = failoverGroup.NextScheduledRefresh.String()
 	if failoverGroup.Owner != nil {
 		failoverGroupSchema["owner"] = (*failoverGroup.Owner)
 	}
 	failoverGroupSchema["is_listing_auto_fulfillment_group"] = failoverGroup.IsListingAutoFulfillmentGroup
 	failoverGroupSchema["is_optimized_refresh_enabled"] = failoverGroup.IsOptimizedRefreshEnabled
 	failoverGroupSchema["rpo_assurance"] = failoverGroup.RpoAssurance
-	if failoverGroup.ReadOnly != nil {
-		failoverGroupSchema["read_only"] = (*failoverGroup.ReadOnly)
+	if failoverGroup.ErrorIntegration != nil {
+		failoverGroupSchema["error_integration"] = (*failoverGroup.ErrorIntegration).Name()
 	}
+	if failoverGroup.IsPrimaryReadOnly != nil {
+		failoverGroupSchema["is_primary_read_only"] = (*failoverGroup.IsPrimaryReadOnly)
+	}
+	failoverGroupToSchemaMapper{}.additionalToSchema(failoverGroup, failoverGroupSchema)
 	return failoverGroupSchema
 }
 

@@ -28,7 +28,7 @@ func (c *AlertClient) CreateAlert(t *testing.T) (*sdk.Alert, func()) {
 	t.Helper()
 	return c.CreateAlertWithRequest(t, sdk.NewCreateAlertRequest(
 		c.ids.RandomSchemaObjectIdentifier(),
-		sdk.NewAlertConditionFromString("SELECT 1"),
+		*sdk.NewAlertConditionRequest("SELECT 1"),
 		"SELECT 1",
 	).
 		WithWarehouse(c.ids.WarehouseId()).

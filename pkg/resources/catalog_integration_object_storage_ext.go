@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -38,11 +37,6 @@ var (
 // =============================================================================
 // Request / mapping / Read-Update-Import helpers
 // =============================================================================
-
-// SET only. Catalog integration ALTER has no UNSET request (SNOW-3243983).
-type catalogIntegrationObjectStorageAlterRequestsExt struct {
-	set *sdk.CatalogIntegrationSetRequest
-}
 
 func catalogIntegrationObjectStorageNewCreateRequestExt(d *schema.ResourceData, id sdk.AccountObjectIdentifier) (*sdk.CreateObjectStorageCatalogIntegrationRequest, error) {
 	enabled := d.Get("enabled").(bool)
@@ -78,14 +72,6 @@ func catalogIntegrationObjectStorageSetConfigFieldsExt(_ context.Context, d *sch
 		d.Set("enabled", catalogIntegration.Enabled),
 		d.Set("comment", catalogIntegration.Comment),
 	)
-}
-
-func catalogIntegrationObjectStorageApplySetUnsetExt(d *schema.ResourceData) (*catalogIntegrationObjectStorageAlterRequestsExt, error) {
-	set := sdk.NewCatalogIntegrationSetRequest()
-	if errs := handleCatalogIntegrationCommonPropsUpdate(d, set); errs != nil {
-		return nil, errs
-	}
-	return &catalogIntegrationObjectStorageAlterRequestsExt{set: set}, nil
 }
 
 func catalogIntegrationObjectStorageSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationObjectStorageDetails, importPermissiveMode bool) error {
@@ -143,15 +129,4 @@ func catalogIntegrationObjectStorageDescribeInSdkExt(ctx context.Context, meta a
 		return nil, fmt.Errorf("could not describe object storage catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
 	}
 	return details, nil
-}
-
-func catalogIntegrationObjectStorageAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationObjectStorageAlterRequestsExt) error {
-	if !reflect.DeepEqual(*reqs.set, *sdk.NewCatalogIntegrationSetRequest()) {
-		client := meta.(*provider.Context).Client
-		req := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*reqs.set)
-		if err := client.CatalogIntegrations.Alter(ctx, req); err != nil {
-			return fmt.Errorf("error updating catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
-		}
-	}
-	return nil
 }

@@ -59,8 +59,8 @@ func (opts *AlterBackupPolicyOptions) validate() error {
 		if !anyValueSet(opts.Unset.Schedule, opts.Unset.Comment, opts.Unset.ExpireAfterDays) {
 			errs = append(errs, errAtLeastOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "Comment", "ExpireAfterDays"))
 		}
-		if everyValueSet(opts.Unset.Schedule, opts.Unset.ExpireAfterDays) {
-			errs = append(errs, errOneOf("AlterBackupPolicyOptions.Unset", "Schedule", "ExpireAfterDays"))
+		if anyValueSet(opts.Unset.Schedule, opts.Unset.Comment) && anyValueSet(opts.Unset.ExpireAfterDays) {
+			errs = append(errs, errConflictingGroups("AlterBackupPolicyOptions.Unset", []string{"Schedule", "Comment"}, []string{"ExpireAfterDays"}))
 		}
 	}
 	if valueSet(opts.SetTags) {

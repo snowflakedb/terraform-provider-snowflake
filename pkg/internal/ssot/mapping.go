@@ -223,6 +223,8 @@ func (m SetOnlyFieldsMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
 
 const (
 	BooleanStringAttributeUpdateSetOnly SetOnlyFieldsMapping = "booleanStringAttributeUpdateSetOnly"
+	// StringAttributeUpdateSetOnly sets an empty string too (StringAllowEmpty).
+	StringAttributeUpdateSetOnly SetOnlyFieldsMapping = "stringAttributeUpdateSetOnly"
 )
 
 // AttributeMappedValueUpdateMapping is attributeMappedValueUpdate with the name of the function that turns the Terraform
@@ -324,6 +326,25 @@ func AttributeMappedValueUpdateSetOnlyAlways(mapper string) AttributeMappedValue
 	return AttributeMappedValueUpdateSetOnlyAlwaysMapping{Mapper: mapper}
 }
 
+// IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping is intAttributeUnsetFallbackUpdateWithZeroDefault. An int that is
+// removed from the configuration is set to Fallback, because the object has no UNSET for it.
+type IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping struct {
+	Fallback int
+}
+
+func (m IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping) UpdateCall(_ string, _ Attribute) UpdateCall {
+	return UpdateCall{
+		Helper: "intAttributeUnsetFallbackUpdateWithZeroDefault",
+		Set:    true,
+		Fields: true,
+		Mapper: strconv.Itoa(m.Fallback),
+	}
+}
+
+func IntAttributeUnsetFallbackUpdateWithZeroDefault(fallback int) IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping {
+	return IntAttributeUnsetFallbackUpdateWithZeroDefaultMapping{Fallback: fallback}
+}
+
 // IntAttributeWithSpecialDefaultUnsetFallbackUpdateMapping is intAttributeWithSpecialDefaultUnsetFallbackUpdate. A value
 // that is removed from the configuration is set to Fallback, because the UNSET of the attribute does not work.
 // Fallback is a Go expression, such as a number or a constant.
@@ -349,7 +370,8 @@ func IntAttributeWithSpecialDefaultUnsetFallbackUpdate(fallback string) IntAttri
 
 // CustomUpdateMapping calls a function of package resources with the data and the SET and UNSET requests that hold the
 // attribute: function(d, set, unset). It is for an update that decides by other attributes, such as one that only
-// applies to some warehouse types. The function does the whole update of the attribute.
+// applies to some warehouse types, or that fills a SET attribute from a field of a nested block. The function does the
+// whole update of the attribute. An object whose ALTER has no UNSET block passes the SET request only: function(d, set).
 type CustomUpdateMapping struct {
 	Function string
 }
@@ -365,6 +387,8 @@ func (m CustomUpdateMapping) UpdateCall(objectName string, attr Attribute) Updat
 		Requests: true,
 	}
 }
+
+func (CustomUpdateMapping) updatesWholeValue() {}
 
 func CustomUpdate(function string) CustomUpdateMapping {
 	return CustomUpdateMapping{Function: function}
@@ -419,4 +443,96 @@ func (SingleBlockAttributeUpdateMapping) updatesWholeValue() {}
 
 func SingleBlockAttributeUpdate(fill string) SingleBlockAttributeUpdateMapping {
 	return SingleBlockAttributeUpdateMapping{Fill: fill}
+}
+
+// CollectionMapperName is the hand-written per-element mapper for a list or set.
+// stem is the request stem, so backup_instance_families on ComputePool is toComputePoolBackupInstanceFamilies,
+// and allowed_methods in the AuthenticationPolicy mfa_policy block is toAuthenticationPolicyMfaPolicyAllowedMethods.
+func CollectionMapperName(stem string, attr Attribute) string {
+	return "to" + stem + genhelpers.SnakeCaseToCamel(attr.Name)
+}
+
+// DeducedCreateCall is the create helper omission produces.
+// A required or read-only attribute has none: a required field is a constructor argument.
+// An optional bool that is not NativeBool uses the boolean-string helper. An optional int whose Min is set and at most 0
+// uses the int-default helper. An enum uses sdk.To plus Enum.Name. A list or set uses CollectionMapperName.
+func (a Attribute) DeducedCreateCall(stem string) (CreateCall, bool) {
+	if a.Required || a.Readonly {
+		return CreateCall{}, false
+	}
+	switch {
+	case a.Type == AttrBool && a.NativeBool:
+		return BoolAttributeCreateBuilder.CreateCall(stem, a), true
+	case a.Type == AttrBool && !a.NativeBool:
+		return BooleanStringAttributeCreateBuilder.CreateCall(stem, a), true
+	case a.Type == AttrInt && a.Min != nil && *a.Min <= 0:
+		return IntAttributeWithSpecialDefaultCreateBuilder.CreateCall(stem, a), true
+	case a.Type == AttrInt:
+		return IntAttributeCreateBuilder.CreateCall(stem, a), true
+	case a.Type == AttrString:
+		return StringAttributeCreateBuilder.CreateCall(stem, a), true
+	case a.Type == AttrEnum && a.Enum != nil && a.Enum.Name != "":
+		return fieldMapperCall("attributeMappedValueCreateBuilder", a, "sdk.To"+a.Enum.Name), true
+	case a.Type == AttrIdentifier && a.IdentifierType == "AccountObjectIdentifier":
+		return AccountObjectIdentifierAttributeCreateBuilder.CreateCall(stem, a), true
+	case a.Type == AttrList && a.Elem != nil && !a.IsObjectList():
+		return ListValueCreate(CollectionMapperName(stem, a)).CreateCall(stem, a), true
+	case a.Type == AttrSet:
+		return fieldMapperCall("setMappedValueCreateBuilder", a, CollectionMapperName(stem, a)), true
+	default:
+		return CreateCall{}, false
+	}
+}
+
+// DeducedUpdateCall is the update helper omission produces.
+// setOnly is true when the attribute is in the SET block and not in the UNSET block.
+// An enum uses sdk.To plus Enum.Name. A list of enums or account object identifiers uses CollectionMapperName.
+func (a Attribute) DeducedUpdateCall(stem string, setOnly bool) (UpdateCall, bool) {
+	if !a.CanUpdate() {
+		return UpdateCall{}, false
+	}
+	switch {
+	case a.Type == AttrInt && (a.Required || setOnly):
+		return IntAttributeUpdateSetOnlyBuilder.UpdateCall(stem, a), true
+	case a.Type == AttrInt && a.Min != nil && *a.Min <= 0:
+		return IntAttributeWithSpecialDefaultUpdateBuilder.UpdateCall(stem, a), true
+	case a.Type == AttrInt:
+		return IntAttributeUpdateBuilder.UpdateCall(stem, a), true
+	case a.Type == AttrBool && a.NativeBool:
+		return BooleanAttributeUpdateSetOnlyBuilder.UpdateCall(stem, a), true
+	case a.Type == AttrBool && !a.NativeBool && setOnly:
+		return BooleanStringAttributeUpdateSetOnly.UpdateCall(stem, a), true
+	case a.Type == AttrBool && !a.NativeBool:
+		return BooleanStringAttributeUpdateBuilder.UpdateCall(stem, a), true
+	case a.Type == AttrString && setOnly:
+		return StringAttributeUpdateSetOnlyNotEmpty(a.SetSql.Field).UpdateCall(stem, a), true
+	case a.Type == AttrString:
+		return StringAttributeUpdateBuilder.UpdateCall(stem, a), true
+	case a.Type == AttrEnum && a.Enum != nil && a.Enum.Name != "" && !setOnly:
+		return AttributeMappedValueUpdate("sdk.To"+a.Enum.Name).UpdateCall(stem, a), true
+	case a.Type == AttrIdentifier && a.IdentifierType == "AccountObjectIdentifier" && !setOnly:
+		return AccountObjectIdentifierAttributeUpdate.UpdateCall(stem, a), true
+	case a.Type == AttrList && setOnly && a.isMappedCollection():
+		return ListValueUpdateSetOnly(CollectionMapperName(stem, a)).UpdateCall(stem, a), true
+	case a.Type == AttrList && a.isMappedCollection():
+		return ListValueUpdate(CollectionMapperName(stem, a)).UpdateCall(stem, a), true
+	default:
+		return UpdateCall{}, false
+	}
+}
+
+// CanUpdate reports whether an update helper can change the attribute. ForceNew and CreateOnly are create-only.
+func (a Attribute) CanUpdate() bool {
+	return !a.SkipUpdate && !a.ForceNew && !a.CreateOnly && !a.Readonly
+}
+
+func (a Attribute) isMappedCollection() bool {
+	return a.IsEnumCollection() || (a.Elem != nil && a.Elem.Type == AttrIdentifier && a.Elem.IdentifierType == "AccountObjectIdentifier")
+}
+
+func fieldMapperCall(helper string, attr Attribute, mapper string) CreateCall {
+	return CreateCall{
+		Helper: helper,
+		Target: fmt.Sprintf("request.With%s, %s", genhelpers.SnakeCaseToCamel(attr.Name), mapper),
+	}
 }

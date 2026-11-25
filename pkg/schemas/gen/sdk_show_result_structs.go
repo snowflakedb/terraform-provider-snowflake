@@ -56,13 +56,13 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.DynamicTable{}},
 	{ObjectStruct: sdk.EventTable{}},
 	{ObjectStruct: sdk.ExternalAccessIntegration{}},
-	// SkipFields `arguments`: unused TypeInvalid (`[]sdk.DataType`). Un-skip with native DataType slices.
-	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments"}},
+	// ManualFields `arguments` and `return_type`: public mapping is ArgumentsStrings() and ReturnTypeString() (raw SHOW fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.ExternalFunction{}, SkipFields: []string{"arguments_raw", "return_type_raw"}, ManualFields: []string{"arguments", "return_type"}},
 	{ObjectStruct: sdk.ExternalTable{}},
 	{ObjectStruct: sdk.FileFormat{}},
 	// SkipFields `options`: unused TypeInvalid (nested `FileFormatTypeOptionsLegacy`). Un-skip with native nested structs.
 	{ObjectStruct: sdk.FileFormatLegacy{}, SkipFields: []string{"options"}},
-	{ObjectStruct: sdk.Function{}, SkipFields: []string{"arguments_old", "return_type_old"}},
+	{ObjectStruct: sdk.Function{}, SkipFields: []string{"arguments", "arguments_raw_list", "return_type", "return_type_raw"}},
 	{ObjectStruct: sdk.GitRepository{}},
 	{ObjectStruct: sdk.Grant{}, SkipFields: []string{"grant_on", "grant_to"}},
 	{ObjectStruct: sdk.HybridTable{}},
@@ -90,7 +90,7 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.PolicyReference{}},
 	{ObjectStruct: sdk.PostgresInstance{}, ManualFields: []string{"is_highly_available"}},
 	{ObjectStruct: sdk.PostgresMirror{}},
-	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments_old", "return_type_old"}},
+	{ObjectStruct: sdk.Procedure{}, SkipFields: []string{"arguments", "arguments_raw_list", "return_type", "return_type_raw"}},
 	{ObjectStruct: sdk.ReplicationAccount{}},
 	{ObjectStruct: sdk.ReplicationDatabase{}},
 	{ObjectStruct: sdk.Region{}},
@@ -108,7 +108,6 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.StorageLifecyclePolicy{}},
 	{ObjectStruct: sdk.Streamlit{}},
 	{ObjectStruct: sdk.Stream{}},
-	{ObjectStruct: sdk.Table{}},
 	{ObjectStruct: sdk.Tag{}, TypeOverrides: map[string]schema.ValueType{"allowed_values": schema.TypeSet}},
 	{ObjectStruct: sdk.Task{}, ManualFields: []string{"task_relations", "target_completion_interval"}, TypeOverrides: map[string]schema.ValueType{"predecessors": schema.TypeSet}},
 	{ObjectStruct: sdk.User{}},
@@ -163,7 +162,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.CortexSearchServiceDetails{}, IsDescribe: true},
 	// Public describe_output Elem is the row (created_on / name / kind). DatabaseDetails is a Rows wrapper; list helper in ext.
 	{ObjectStruct: sdk.DatabaseDetailsRow{}, IsDescribe: true},
-	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true},
+	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.DynamicTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
 	{ObjectStruct: sdk.EventTableDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}},
 	{ObjectStruct: sdk.ExternalAccessIntegrationDetails{}, IsDescribe: true, ManualFields: []string{"allowed_network_rules", "allowed_api_authentication_integrations", "allowed_authentication_secrets"}},
@@ -191,14 +191,16 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 		"id", "normalized_imports", "normalized_target_path",
 		"normalized_arguments", "normalized_external_access_integrations", "normalized_secrets", "normalized_packages",
 	}},
-	{ObjectStruct: sdk.HybridTableDetails{}, IsDescribe: true},
+	// ManualFields `type`: public mapping is the raw DESC value (DataTypeRaw), not ToSql().
+	{ObjectStruct: sdk.HybridTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
 	{ObjectStruct: sdk.IcebergTableDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	{ObjectStruct: sdk.ListingDetails{}, IsDescribe: true},
 	// ManualFields `signature` stays ext (slice of structs)
 	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
 	{ObjectStruct: sdk.MaskingPolicyDetails{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"signature"}},
-	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true},
+	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.MaterializedViewDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type"}},
 	{ObjectStruct: sdk.McpServerDetails{}, IsDescribe: true},
 	// TypeString of each property .Value (today’s public describe_output).
 	{ObjectStruct: sdk.NetworkPolicyDetails{}, IsDescribe: true},
@@ -313,11 +315,13 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	// database_name and schema_name are copied from the identifier by DescribeDetails. DESCRIBE does not return them.
 	{ObjectStruct: sdk.StreamlitDetail{}, IsDescribe: true, SkipFields: []string{"database_name", "schema_name"}, ManualFields: []string{"root_location", "user_packages", "import_urls", "external_access_integrations"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
-	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
+	// ManualFields `type`: public mapping is TypeString() (raw DESC fallback when parse fails), not ToSql().
+	{ObjectStruct: sdk.TableColumnDetails{}, IsDescribe: true, SkipFields: []string{"type_raw"}, ManualFields: []string{"check", "type"}},
 	// Keep omitted: password (secret).
 	{ObjectStruct: sdk.UserDetails{}, IsDescribe: true, SkipFields: []string{"password"}},
 	// ManualFields `check`: SDK is *bool; public describe_output is TypeString.
-	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, ManualFields: []string{"check"}},
+	// ManualFields `type`: public mapping is the raw DESC value (DataTypeRaw), not ToSql().
+	{ObjectStruct: sdk.ViewDetails{}, IsDescribe: true, SkipFields: []string{"data_type_raw"}, ManualFields: []string{"type", "check"}},
 }
 
 func GetShowResultSchemaDetails() []ShowResultSchemaDetails {

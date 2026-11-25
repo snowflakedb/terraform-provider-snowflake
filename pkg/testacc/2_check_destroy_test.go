@@ -102,7 +102,6 @@ func decodeSnowflakeId(rs *terraform.ResourceState, resource resources.Resource)
 		resources.DynamicTable,
 		resources.EmailNotificationIntegration,
 		resources.ExternalTable,
-		resources.FailoverGroup,
 		resources.FileFormat,
 		resources.ManagedAccount,
 		resources.MaterializedView,
@@ -290,6 +289,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 		return runShowById(ctx, id, client.ExternalVolumes.ShowByID)
 	},
 	resources.FailoverGroup: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.FailoverGroups.ShowByID)
+	},
+	resources.FailoverGroupSecondary: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.FailoverGroups.ShowByID)
 	},
 	resources.FileFormat: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {

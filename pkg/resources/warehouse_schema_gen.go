@@ -130,9 +130,7 @@ var warehouseSchema = collections.MergeMaps(
 	},
 	warehouseAttributesSchema,
 	warehouseParametersAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
 	warehouseShowOutputSchemaExt,
 	warehouseParametersOutputSchema,
 )

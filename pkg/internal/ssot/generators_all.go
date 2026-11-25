@@ -3,7 +3,7 @@ package ssot
 // WithAllGenerators enables every generator except the SDK, then applies overrides in order.
 //
 // Enabled: SHOW and DESCRIBE of the schema, object assertion, and show output assertion generators, the resource, the
-// config model builders, the resource assertions, and the object and resource parameter assertions.
+// config model builders, the resource assertions, the object and resource parameter assertions, and the data source.
 // The SDK (WithSdk) is not part of it: pass WithSdk next to it in Generators.
 //
 // An enabled generator that has no input for the object is skipped by its selector, so enabling all of them is safe for an
@@ -26,6 +26,7 @@ func WithAllGenerators(overrides ...GeneratorOption) GeneratorOption {
 		g.ResourceAssert.Enabled = true
 		g.ObjectParametersAssert.Enabled = true
 		g.ResourceParametersAssert.Enabled = true
+		g.DataSource.Enabled = true
 		for _, override := range overrides {
 			override(g)
 		}
@@ -41,7 +42,6 @@ func WithoutSchema() GeneratorOption {
 func WithoutSchemaShow() GeneratorOption {
 	return func(g *Generators) {
 		g.Schema.Show = false
-		g.Schema.ShowFromBase = false
 		g.Schema.ShowManualFields = nil
 		g.Schema.ShowListFields = nil
 	}
@@ -66,9 +66,12 @@ func WithoutObjectAssertShow() GeneratorOption {
 	return func(g *Generators) {
 		g.ObjectAssert.Show = false
 		g.ObjectAssert.ShowSkipFields = nil
-		g.ObjectAssert.ShowProjection = ""
-		g.ObjectAssert.ShowRowFromBase = false
 		g.ObjectAssert.ShowNestedFields = nil
+		g.ObjectAssert.NoShowById = false
+		g.ObjectAssert.ShowNoIdentifiableObject = false
+		g.ObjectAssert.ShowByParentId = nil
+		g.ObjectAssert.ShowFromObjectIDExpr = ""
+		g.ObjectAssert.ShowObjectTypeName = ""
 	}
 }
 
@@ -81,6 +84,7 @@ func WithoutObjectAssertDescribe() GeneratorOption {
 		g.ObjectAssert.DescribeMethod = ""
 		g.ObjectAssert.DescribeOnBase = false
 		g.ObjectAssert.DescribeNestedFields = nil
+		g.ObjectAssert.DescribeFromObjectIDExpr = ""
 	}
 }
 
@@ -93,7 +97,6 @@ func WithoutShowOutputAssert() GeneratorOption {
 func WithoutShowOutputAssertShow() GeneratorOption {
 	return func(g *Generators) {
 		g.ShowOutputAssert.Show = false
-		g.ShowOutputAssert.ShowRowFromBase = false
 		g.ShowOutputAssert.ShowSkipFields = nil
 	}
 }
@@ -114,6 +117,11 @@ func WithoutModel() GeneratorOption {
 // WithoutResource turns off the resource generator.
 func WithoutResource() GeneratorOption {
 	return func(g *Generators) { g.Resource = ResourceGenerator{} }
+}
+
+// WithoutDataSource turns off the data source generator.
+func WithoutDataSource() GeneratorOption {
+	return func(g *Generators) { g.DataSource = DataSourceGenerator{} }
 }
 
 // WithoutResourceAssert turns off the resource assertion generator.

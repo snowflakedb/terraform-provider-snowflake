@@ -10,7 +10,6 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
@@ -184,11 +183,10 @@ func ReadContextTagAssociation(ctx context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 	var correctObjectIds []string
 	for _, oid := range ids {
 		objectTagValue, err := client.SystemFunctions.GetTag(ctx, sdk.NewGetTagRequest(*sdk.NewGetTagArgumentsRequest(tagId, oid, objectType)))
-		if safeDestroy && errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
+		if errors.Is(err, sdk.ErrObjectNotExistOrAuthorized) {
 			continue
 		}
 		if err != nil {
@@ -267,9 +265,8 @@ func UpdateContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 			}
 		}
 
-		safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 		for _, id := range removedIds {
-			if err := unsetTagAssociation(ctx, client, objectType, id, tagId, safeDestroy); err != nil {
+			if err := unsetTagAssociation(ctx, client, objectType, id, tagId); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -300,9 +297,8 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	safeDestroy := providerCtx.Experiments.IsEnabled(experimentalfeatures.TagAssociationSafeDestroy)
 	for _, id := range ids {
-		if err := unsetTagAssociation(ctx, client, objectType, id, tagId, safeDestroy); err != nil {
+		if err := unsetTagAssociation(ctx, client, objectType, id, tagId); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -311,21 +307,15 @@ func DeleteContextTagAssociation(ctx context.Context, d *schema.ResourceData, me
 }
 
 // For COLUMN, skipColumnIfDoesNotExist runs before Unset/UnsetSafely; see that helper.
-func unsetTagAssociation(ctx context.Context, client *sdk.Client, objectType sdk.ObjectType, id sdk.ObjectIdentifier, tagId sdk.SchemaObjectIdentifier, safeDestroy bool) error {
+func unsetTagAssociation(ctx context.Context, client *sdk.Client, objectType sdk.ObjectType, id sdk.ObjectIdentifier, tagId sdk.SchemaObjectIdentifier) error {
 	if objectType == sdk.ObjectTypeColumn {
 		skip, err := skipColumnIfDoesNotExist(ctx, client, id)
 		if err == nil && skip {
 			return nil
 		}
-		if err != nil && !safeDestroy {
-			return err
-		}
 	}
 	request := sdk.NewUnsetTagRequest(objectType, id).WithUnsetTags([]sdk.ObjectIdentifier{tagId}).WithIfExists(true)
-	if safeDestroy {
-		return client.Tags.UnsetSafely(ctx, request)
-	}
-	return client.Tags.Unset(ctx, request)
+	return client.Tags.UnsetSafely(ctx, request)
 }
 
 // skipColumnIfDoesNotExist is needed because ALTER COLUMN lacks IF EXISTS.
@@ -333,12 +323,10 @@ func unsetTagAssociation(ctx context.Context, client *sdk.Client, objectType sdk
 // invalid identifier, which is indistinguishable from a quoting bug, so we
 // DESCRIBE the table instead of swallowing that error.
 //
-// Keep this check in front of UnsetSafely for COLUMN while TAG_ASSOCIATION_SAFE_DESTROY
-// can still be opted out (opt-out still calls Unset). When the experiment is
-// promoted, fold this into tags.UnsetSafely (not generic SafeUnsetTag) and delete
-// this helper; also add a TestInt_SafeUnsetTagFromColumn case for "column missing,
+// Keep this check in front of UnsetSafely for COLUMN until it is folded into
+// tags.UnsetSafely (not generic SafeUnsetTag), after which this helper can be deleted; also add a TestInt_SafeUnsetTagFromColumn case for "column missing,
 // table still there" (the current non-existing column case uses a fully missing path).
-// TODO [SNOW-4225193]: apply with the experiment removal
+// TODO [SNOW-4225193]: apply now that TAG_ASSOCIATION_SAFE_DESTROY is promoted
 func skipColumnIfDoesNotExist(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) (bool, error) {
 	columnId, ok := id.(sdk.TableColumnIdentifier)
 	if !ok {

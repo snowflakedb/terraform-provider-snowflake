@@ -109,9 +109,11 @@ resource "snowflake_database" "primary" {
 - `log_event_level` (String) Specifies the severity level of log events (rows with record type EVENT) that should be ingested and made available in the active event table. Log events at the specified level (and at more severe levels) are ingested. Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. For more information, check [LOG_EVENT_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-event-level).
 - `log_level` (String) Specifies the severity level of messages that should be ingested and made available in the active event table. Messages at the specified level (and at more severe levels) are ingested. Valid values are (case-insensitive): `TRACE` | `DEBUG` | `INFO` | `WARN` | `ERROR` | `FATAL` | `OFF`. For more information, check [LOG_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#log-level).
 - `max_data_extension_time_in_days` (Number) Object parameter that specifies the maximum number of days for which Snowflake can extend the data retention period for tables in the database to prevent streams on the tables from becoming stale. For more information, check [MAX_DATA_EXTENSION_TIME_IN_DAYS docs](https://docs.snowflake.com/en/sql-reference/parameters#max-data-extension-time-in-days).
+- `metric_level` (String) Controls how metrics data is ingested into the event table. For more information about metric levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels). Valid values are (case-insensitive): `ALL` | `NONE`. For more information, check [METRIC_LEVEL docs](https://docs.snowflake.com/en/sql-reference/parameters#metric-level).
 - `quoted_identifiers_ignore_case` (Boolean) If true, the case of quoted identifiers is ignored. For more information, check [QUOTED_IDENTIFIERS_IGNORE_CASE docs](https://docs.snowflake.com/en/sql-reference/parameters#quoted-identifiers-ignore-case).
 - `replace_invalid_characters` (Boolean) Specifies whether to replace invalid UTF-8 characters with the Unicode replacement character in query results for an Iceberg table. You can only set this parameter for tables that use an external Iceberg catalog. For more information, check [REPLACE_INVALID_CHARACTERS docs](https://docs.snowflake.com/en/sql-reference/parameters#replace-invalid-characters).
 - `replication` (Block List, Max: 1) Configures replication for a given database. When specified, this database will be promoted to serve as a primary database for replication. A primary database can be replicated in one or more accounts, allowing users in those accounts to query objects in each secondary (i.e. replica) database. (see [below for nested schema](#nestedblock--replication))
+- `service_caller_token_validity_secs` (Number) Controls how long a caller's rights login token is valid for Snowpark Container Services. For more information, check [SERVICE_CALLER_TOKEN_VALIDITY_SECS docs](https://docs.snowflake.com/en/sql-reference/parameters#service-caller-token-validity-secs).
 - `storage_serialization_policy` (String) The storage serialization policy for Iceberg tables that use Snowflake as the catalog. COMPATIBLE: Snowflake performs encoding and compression of data files that ensures interoperability with third-party compute engines. OPTIMIZED: Snowflake performs encoding and compression of data files that ensures the best table performance within Snowflake. Valid values are (case-insensitive): `COMPATIBLE` | `OPTIMIZED`. For more information, check [STORAGE_SERIALIZATION_POLICY docs](https://docs.snowflake.com/en/sql-reference/parameters#storage-serialization-policy).
 - `suspend_task_after_num_failures` (Number) How many times a task must fail in a row before it is automatically suspended. 0 disables auto-suspending. For more information, check [SUSPEND_TASK_AFTER_NUM_FAILURES docs](https://docs.snowflake.com/en/sql-reference/parameters#suspend-task-after-num-failures).
 - `task_auto_retry_attempts` (Number) Maximum automatic retries allowed for a user task. For more information, check [TASK_AUTO_RETRY_ATTEMPTS docs](https://docs.snowflake.com/en/sql-reference/parameters#task-auto-retry-attempts).
@@ -177,8 +179,10 @@ Read-Only:
 - `log_event_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_event_level))
 - `log_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--log_level))
 - `max_data_extension_time_in_days` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--max_data_extension_time_in_days))
+- `metric_level` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--metric_level))
 - `quoted_identifiers_ignore_case` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--quoted_identifiers_ignore_case))
 - `replace_invalid_characters` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--replace_invalid_characters))
+- `service_caller_token_validity_secs` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--service_caller_token_validity_secs))
 - `storage_serialization_policy` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--storage_serialization_policy))
 - `suspend_task_after_num_failures` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--suspend_task_after_num_failures))
 - `task_auto_retry_attempts` (List of Object) (see [below for nested schema](#nestedobjatt--parameters--task_auto_retry_attempts))
@@ -307,6 +311,18 @@ Read-Only:
 - `value` (String)
 
 
+<a id="nestedobjatt--parameters--metric_level"></a>
+### Nested Schema for `parameters.metric_level`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
 <a id="nestedobjatt--parameters--quoted_identifiers_ignore_case"></a>
 ### Nested Schema for `parameters.quoted_identifiers_ignore_case`
 
@@ -321,6 +337,18 @@ Read-Only:
 
 <a id="nestedobjatt--parameters--replace_invalid_characters"></a>
 ### Nested Schema for `parameters.replace_invalid_characters`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--parameters--service_caller_token_validity_secs"></a>
+### Nested Schema for `parameters.service_caller_token_validity_secs`
 
 Read-Only:
 

@@ -1,14 +1,9 @@
 package resources
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"reflect"
 	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -70,36 +65,27 @@ func catalogIntegrationCommonSchema(describeSchema map[string]*schema.Schema) ma
 	}
 }
 
-func handleCatalogIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) error {
-	client := meta.(*provider.Context).Client
-	id, err := sdk.ParseAccountObjectIdentifier(d.Id())
-	if err != nil {
-		return err
-	}
-
-	set := sdk.NewCatalogIntegrationSetRequest()
-
-	if errs := handleCatalogIntegrationCommonPropsUpdate(d, set); errs != nil {
-		return errs
-	}
-
-	if !reflect.DeepEqual(*set, *sdk.NewCatalogIntegrationSetRequest()) {
-		req := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*set)
-		if err := client.CatalogIntegrations.Alter(ctx, req); err != nil {
-			return fmt.Errorf("error updating catalog integration (%s), err = %w", d.Id(), err)
-		}
-	}
-	return nil
+func toCatalogIntegrationSetOauthRestAuthentication(secret string) (sdk.CatalogIntegrationSetOauthRestAuthenticationRequest, error) {
+	return *sdk.NewCatalogIntegrationSetOauthRestAuthenticationRequest(secret), nil
 }
 
-func handleCatalogIntegrationCommonPropsUpdate(d *schema.ResourceData, set *sdk.CatalogIntegrationSetRequest) error {
-	errs := errors.Join(
-		booleanAttributeUpdateSetOnly(d, "enabled", &set.Enabled),
-		// TODO [SNOW-3243983]: UNSET not implemented
-		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds, 30),
-		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
-	)
-	return errs
+func toCatalogIntegrationSetBearerRestAuthentication(token string) (sdk.CatalogIntegrationSetBearerRestAuthenticationRequest, error) {
+	return *sdk.NewCatalogIntegrationSetBearerRestAuthenticationRequest(token), nil
+}
+
+// updateCatalogIntegrationIcebergRestOauthClientSecret sets the OAuth client secret, which is a SET attribute of its own in the SDK.
+func updateCatalogIntegrationIcebergRestOauthClientSecret(d *schema.ResourceData, set *sdk.CatalogIntegrationSetRequest) error {
+	return attributeMappedValueUpdateSetOnlyAlways(d, "oauth_rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, toCatalogIntegrationSetOauthRestAuthentication)
+}
+
+// updateCatalogIntegrationIcebergRestBearerToken sets the bearer token, which is a SET attribute of its own in the SDK.
+func updateCatalogIntegrationIcebergRestBearerToken(d *schema.ResourceData, set *sdk.CatalogIntegrationSetRequest) error {
+	return attributeMappedValueUpdateSetOnlyAlways(d, "bearer_rest_authentication.0.bearer_token", &set.SetBearerRestAuthentication, toCatalogIntegrationSetBearerRestAuthentication)
+}
+
+// updateCatalogIntegrationOpenCatalogOauthClientSecret sets the OAuth client secret, which is a SET attribute of its own in the SDK.
+func updateCatalogIntegrationOpenCatalogOauthClientSecret(d *schema.ResourceData, set *sdk.CatalogIntegrationSetRequest) error {
+	return attributeMappedValueUpdateSetOnlyAlways(d, "rest_authentication.0.oauth_client_secret", &set.SetOAuthRestAuthentication, toCatalogIntegrationSetOauthRestAuthentication)
 }
 
 func deleteCatalogIntegrationFunc() schema.DeleteContextFunc {

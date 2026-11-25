@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
@@ -50,7 +49,7 @@ func (opts *CreateForScalaFunctionOptions) additionalValidations() error {
 }
 
 func (v *Function) ID() SchemaObjectIdentifierWithArguments {
-	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, v.ArgumentsOld...)
+	return NewSchemaObjectIdentifierWithArguments(v.CatalogName, v.SchemaName, v.Name, v.Arguments...)
 }
 
 // FunctionDetails contains aggregated describe results for the given function.
@@ -271,16 +270,14 @@ func NewCreateForJavascriptFunctionRequestDefinitionWrapped(
 func (r functionRow) additionalConvert(result *Function) error {
 	result.SchemaName = strings.Trim(r.SchemaName, `"`)
 	result.CatalogName = strings.Trim(r.CatalogName, `"`)
-	arguments := strings.TrimLeft(r.Arguments, r.Name)
-	returnIndex := strings.Index(arguments, ") RETURN ")
-	result.ReturnTypeOld = DataType(arguments[returnIndex+len(") RETURN "):])
-	parsedArguments, err := ParseFunctionAndProcedureArguments(arguments[:returnIndex+1])
+	showArguments, err := parseFunctionOrProcedureShowArguments(r.Name, r.Arguments)
 	if err != nil {
 		return fmt.Errorf("failed to parse function arguments: %w", err)
 	}
-	result.ArgumentsOld = collections.Map(parsedArguments, func(a ParsedArgument) DataType {
-		return DataType(a.ArgType)
-	})
+	result.Arguments = showArguments.Arguments
+	result.ArgumentsRawList = showArguments.ArgumentsRaw
+	result.ReturnType = showArguments.ReturnType
+	result.ReturnTypeRaw = showArguments.ReturnTypeRaw
 	return nil
 }
 

@@ -41,12 +41,65 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Create_externalVolumes_tag_errorIntegration",
 			func(opts *CreateFailoverGroupOptions) {
+				opts.ObjectTypes = []FailoverGroupObjectType{FailoverGroupObjectTypeRoles, FailoverGroupObjectTypeExternalVolumes}
 				opts.AllowedExternalVolumes = []AccountObjectIdentifier{NewAccountObjectIdentifier("volume1")}
 				opts.Tag = []TagAssociation{{Name: NewSchemaObjectIdentifier("db", "sc", "tag1"), Value: "v1"}}
 				opts.ErrorIntegration = new(NewAccountObjectIdentifier("notification_integration"))
 			},
-			`CREATE FAILOVER GROUP IF NOT EXISTS %s OBJECT_TYPES = ROLES ALLOWED_EXTERNAL_VOLUMES = "volume1" ALLOWED_ACCOUNTS = "MY_ORG"."MY_ACCOUNT" TAG ("db"."sc"."tag1" = 'v1') ERROR_INTEGRATION = "notification_integration"`,
+			`CREATE FAILOVER GROUP IF NOT EXISTS %s OBJECT_TYPES = ROLES, EXTERNAL VOLUMES ALLOWED_EXTERNAL_VOLUMES = "volume1" ALLOWED_ACCOUNTS = "MY_ORG"."MY_ACCOUNT" TAG ("db"."sc"."tag1" = 'v1') ERROR_INTEGRATION = "notification_integration"`,
 			id.FullyQualifiedName(),
+		)
+
+	failoverGroupsTests.Create.
+		withAdditionalValidationCase(
+			"validation_Create_databasesWithoutList",
+			func(opts *CreateFailoverGroupOptions) {
+				opts.ObjectTypes = []FailoverGroupObjectType{FailoverGroupObjectTypeDatabases}
+			},
+			errors.New("ALLOWED_DATABASES must be set when OBJECT_TYPES includes DATABASES"),
+		).
+		withAdditionalValidationCase(
+			"validation_Create_databaseListWithoutObjectType",
+			func(opts *CreateFailoverGroupOptions) {
+				opts.AllowedDatabases = []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")}
+			},
+			errors.New("OBJECT_TYPES must include DATABASES when ALLOWED_DATABASES is set"),
+		).
+		withAdditionalValidationCase(
+			"validation_Create_externalVolumesWithoutList",
+			func(opts *CreateFailoverGroupOptions) {
+				opts.ObjectTypes = []FailoverGroupObjectType{FailoverGroupObjectTypeExternalVolumes}
+			},
+			errors.New("ALLOWED_EXTERNAL_VOLUMES must be set when OBJECT_TYPES includes EXTERNAL VOLUMES"),
+		).
+		withAdditionalValidationCase(
+			"validation_Create_sharesListWithoutObjectType",
+			func(opts *CreateFailoverGroupOptions) {
+				opts.AllowedShares = []AccountObjectIdentifier{NewAccountObjectIdentifier("share1")}
+			},
+			errors.New("OBJECT_TYPES must include SHARES when ALLOWED_SHARES is set"),
+		).
+		withAdditionalValidationCase(
+			"validation_Create_integrationsWithoutTypes",
+			func(opts *CreateFailoverGroupOptions) {
+				opts.ObjectTypes = []FailoverGroupObjectType{FailoverGroupObjectTypeIntegrations}
+			},
+			errors.New("ALLOWED_INTEGRATION_TYPES must be set when OBJECT_TYPES includes INTEGRATIONS"),
+		).
+		withAdditionalValidationCase(
+			"validation_Create_integrationTypesWithoutObjectType",
+			func(opts *CreateFailoverGroupOptions) {
+				opts.AllowedIntegrationTypes = []FailoverGroupIntegrationType{FailoverGroupIntegrationTypeApiIntegrations}
+			},
+			errors.New("OBJECT_TYPES must include INTEGRATIONS when ALLOWED_INTEGRATION_TYPES is set"),
+		).
+		withAdditionalValidationCase(
+			"validation_Create_securityIntegrationsWithoutRoles",
+			func(opts *CreateFailoverGroupOptions) {
+				opts.ObjectTypes = []FailoverGroupObjectType{FailoverGroupObjectTypeIntegrations}
+				opts.AllowedIntegrationTypes = []FailoverGroupIntegrationType{FailoverGroupIntegrationTypeSecurityIntegrations}
+			},
+			errors.New("OBJECT_TYPES must include ROLES when ALLOWED_INTEGRATION_TYPES includes SECURITY INTEGRATIONS"),
 		)
 
 	failoverGroupsTests.CreateSecondary.
@@ -79,6 +132,66 @@ func init() {
 				}
 			},
 			errors.New("INTEGRATIONS must be set in OBJECT_TYPES when setting allowed integration types"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Add_noList",
+			func(opts *AlterFailoverGroupOptions) { opts.Add = &FailoverGroupAdd{} },
+			errors.New("ADD must set exactly one allowed list"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Add_emptyList",
+			func(opts *AlterFailoverGroupOptions) {
+				opts.Add = &FailoverGroupAdd{AllowedDatabases: []AccountObjectIdentifier{}}
+			},
+			errors.New("ADD must set exactly one allowed list"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Remove_emptyList",
+			func(opts *AlterFailoverGroupOptions) {
+				opts.Remove = &FailoverGroupRemove{AllowedShares: []AccountObjectIdentifier{}}
+			},
+			errExactlyOneOf("AlterFailoverGroupOptions.Remove", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedAccounts"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Add_twoLists",
+			func(opts *AlterFailoverGroupOptions) {
+				opts.Add = &FailoverGroupAdd{
+					AllowedDatabases: []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")},
+					AllowedShares:    []AccountObjectIdentifier{NewAccountObjectIdentifier("share1")},
+				}
+			},
+			errors.New("ADD must set exactly one allowed list"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Add_ignoreEditionCheckWithoutAccounts",
+			func(opts *AlterFailoverGroupOptions) {
+				opts.Add = &FailoverGroupAdd{
+					AllowedDatabases:   []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")},
+					IgnoreEditionCheck: Bool(true),
+				}
+			},
+			errors.New("IGNORE EDITION CHECK requires ADD TO ALLOWED_ACCOUNTS"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Move_emptyLists",
+			func(opts *AlterFailoverGroupOptions) {
+				opts.Move = &FailoverGroupMove{Databases: []AccountObjectIdentifier{}, Shares: []AccountObjectIdentifier{}, To: moveTarget}
+			},
+			errors.New("MOVE must set at least one of DATABASES, EXTERNAL VOLUMES, and SHARES"),
+		).
+		withAdditionalValidationCase(
+			"validation_Alter_Move_noList",
+			func(opts *AlterFailoverGroupOptions) { opts.Move = &FailoverGroupMove{To: moveTarget} },
+			errors.New("MOVE must set at least one of DATABASES, EXTERNAL VOLUMES, and SHARES"),
+		).
+		withModify(
+			case_FailoverGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet,
+			func(opts *AlterFailoverGroupOptions) {
+				opts.Remove = &FailoverGroupRemove{
+					AllowedDatabases: []AccountObjectIdentifier{NewAccountObjectIdentifier("db1")},
+					AllowedAccounts:  []AccountIdentifier{allowedAccount},
+				}
+			},
 		).
 		withModifyAndExpectedSqlf(
 			case_FailoverGroups_sql_Alter_RenameTo,

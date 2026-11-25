@@ -24,3 +24,13 @@ func (f *FailoverGroupShowOutputAssert) HasAllowedAccounts(expected ...string) *
 	f.SetContainsExactlyStringValues("allowed_accounts", expected...)
 	return f
 }
+
+func (f *FailoverGroupShowOutputAssert) HasObjectTypes(expected ...string) *FailoverGroupShowOutputAssert {
+	f.SetContainsExactlyStringValues("object_types", expected...)
+	return f
+}
+
+func (f *FailoverGroupShowOutputAssert) HasAllowedIntegrationTypes(expected ...string) *FailoverGroupShowOutputAssert {
+	f.SetContainsExactlyStringValues("allowed_integration_types", expected...)
+	return f
+}

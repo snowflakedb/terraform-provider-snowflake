@@ -10,6 +10,9 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "Y",
         {{- else if .AssignmentKindStringToBoolValue }}
             {{ .PlainFieldName }}: r.{{ .DbFieldName }} == "{{ .BoolTrueValue }}",
+        {{- else if .AssignmentKindCustomWithRawFallback }}
+            {{ .PlainFieldName }}: parseDataTypeOrNil(r.{{ .DbFieldName }}),
+            {{ .RawFallback }}: r.{{ .DbFieldName }},
         {{- else if .AssignmentKindManual }}
         {{- end }}
     {{- end }}
@@ -34,6 +37,7 @@ func (r {{ .From.Name }}) {{ .MappingFuncName }}() (*{{ .To.KindNoPtr }}, error)
             } else {
             	result.{{ .PlainFieldName }} = v
             }
+        {{- else if .AssignmentKindCustomWithRawFallback }}
         {{- else if .AssignmentKindNullableCustom }}
             if r.{{ .DbFieldName }}.Valid {
                 if v, err := {{ .CustomParser }}(r.{{ .DbFieldName }}.String); err != nil {

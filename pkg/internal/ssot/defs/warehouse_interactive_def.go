@@ -108,21 +108,23 @@ var WarehouseInteractiveAttrs = struct {
 }
 
 var WarehouseInteractive = ssot.Object{
-	Name:                       "WarehouseInteractive",
-	NamePlural:                 "Warehouses",
-	IdType:                     "AccountObjectIdentifier",
-	SdkCreateRequestObjectName: "InteractiveWarehouse",
-	VariantOf:                  &Warehouse,
+	Name:       "WarehouseInteractive",
+	NamePlural: "Warehouses",
+	IdType:     "AccountObjectIdentifier",
+	Variant: &ssot.ObjectVariant{
+		Of:                       &Warehouse,
+		CreateName:               "INTERACTIVE WAREHOUSE",
+		RequestObjectName:        "InteractiveWarehouse",
+		ObjectAssertShowFromBase: "ShowByIDInteractive",
+	},
 	// A started interactive warehouse is suspended while its size changes, through SuspendIfStarted of the base warehouse.
-	SuspendForAlter:         &ssot.SuspendForAlter{When: []*ssot.Attribute{&WarehouseInteractiveAttrs.WarehouseSize}},
-	VariantEntityCreateName: "INTERACTIVE WAREHOUSE",
-	AttributesModification:  true,
+	SuspendForAlter:        &ssot.SuspendForAlter{When: []*ssot.Attribute{&WarehouseInteractiveAttrs.WarehouseSize}},
+	AttributesModification: true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			// show_output.tables was released as a list. A set would break indexing, so SHOW stays TypeList.
 			ssot.WithSchema(ssot.SchemaShow(ssot.SchemaShowListFields(&WarehouseInteractiveAttrs.Tables)), ssot.SchemaDescribe()),
 			ssot.WithObjectAssert(ssot.ObjectAssertShow(
-				ssot.ObjectAssertShowFromBase("ShowByIDInteractive"),
 				ssot.ObjectAssertShowSkipFields(&WarehouseInteractiveAttrs.Tables),
 			), ssot.ObjectAssertDescribe()),
 		),

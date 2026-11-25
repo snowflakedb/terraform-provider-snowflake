@@ -523,7 +523,7 @@ func TestAcc_GrantPrivilegesToDatabaseRole_BasicUseCase_OnSchemaObject_OnFunctio
 	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
 	t.Cleanup(databaseRoleCleanup)
 
-	function := testClient().Function.CreateSecure(t, sdk.DataTypeFloat)
+	function := testClient().Function.CreateSecure(t, testdatatypes.DataTypeFloat)
 
 	grantModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
 		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeUsage).
@@ -919,41 +919,6 @@ func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation(t *testing.T) {
 				Config:      accconfig.FromModels(t, invalidSchemaObjectTypeModel),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile("invalid plural object type: INVALID; TYPE contains disallowed characters"),
-			},
-		},
-	})
-}
-
-func TestAcc_GrantPrivilegesToDatabaseRole_Inherited_Validation_MissingExperimentFlag(t *testing.T) {
-	databaseRole, databaseRoleCleanup := testClient().DatabaseRole.CreateDatabaseRole(t)
-	t.Cleanup(databaseRoleCleanup)
-
-	databaseId := testClient().Ids.DatabaseId()
-	providerModel := providermodel.SnowflakeProvider().
-		WithAllEnabledByDefaultExperimentsDisabled()
-	onSchemaObjectModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
-		WithSchemaObjectPrivileges(sdk.SchemaObjectPrivilegeSelect).
-		WithOnInheritedSchemaObjectsInDatabase(sdk.PluralObjectTypeTables, databaseId)
-	onSchemaModel := model.GrantPrivilegesToDatabaseRole("test", databaseRole.ID().FullyQualifiedName()).
-		WithSchemaPrivileges(sdk.SchemaPrivilegeUsage).
-		WithOnInheritedSchemasInDatabase(databaseId)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
-		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
-			tfversion.RequireAbove(tfversion.Version1_5_0),
-		},
-		CheckDestroy: CheckDatabaseRolePrivilegesRevoked(t),
-		Steps: []resource.TestStep{
-			{
-				Config:      accconfig.FromModels(t, providerModel, onSchemaObjectModel),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled. Remove it from the `experimental_features_disabled` list"),
-			},
-			{
-				Config:      accconfig.FromModels(t, providerModel, onSchemaModel),
-				PlanOnly:    true,
-				ExpectError: regexp.MustCompile("using an `inherited` block requires the .*INHERITED_GRANTS.* experiment to be enabled. Remove it from the `experimental_features_disabled` list"),
 			},
 		},
 	})

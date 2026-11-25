@@ -75,12 +75,11 @@ var (
 
 var authenticationPolicyMfaPolicyChildren = []ssot.Attribute{
 	{
-		Name:         "enforce_mfa_on_external_authentication",
-		Type:         ssot.AttrEnum,
-		Description:  "Determines whether multi-factor authentication (MFA) is enforced on external authentication.",
-		Enum:         EnforceMfaOnExternalAuthenticationOption,
-		CreateSql:    ssot.PlainParameter(),
-		AtLeastOneOf: authenticationPolicyMfaAtLeastOneOf,
+		Name:        "enforce_mfa_on_external_authentication",
+		Type:        ssot.AttrEnum,
+		Description: "Determines whether multi-factor authentication (MFA) is enforced on external authentication.",
+		Enum:        EnforceMfaOnExternalAuthenticationOption,
+		CreateSql:   ssot.PlainParameter(),
 	},
 	{
 		Name:        "allowed_methods",
@@ -90,53 +89,46 @@ var authenticationPolicyMfaPolicyChildren = []ssot.Attribute{
 			Type: ssot.AttrEnum,
 			Enum: MfaPolicyAllowedMethodsOption,
 		},
-		AtLeastOneOf: authenticationPolicyMfaAtLeastOneOf,
 	},
 }
 
 var authenticationPolicyPatPolicyChildren = []ssot.Attribute{
 	{
-		Name:         "default_expiry_in_days",
-		Type:         ssot.AttrInt,
-		CreateSql:    ssot.IntParameter(ssot.NoQuotes()),
-		Description:  "Specifies the default expiration time (in days) for a programmatic access token.",
-		Min:          new(1),
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "default_expiry_in_days",
+		Type:        ssot.AttrInt,
+		CreateSql:   ssot.IntParameter(ssot.NoQuotes()),
+		Description: "Specifies the default expiration time (in days) for a programmatic access token.",
+		Min:         new(1),
 	},
 	{
-		Name:         "max_expiry_in_days",
-		Type:         ssot.AttrInt,
-		CreateSql:    ssot.IntParameter(ssot.NoQuotes()),
-		Description:  "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
-		Min:          new(1),
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "max_expiry_in_days",
+		Type:        ssot.AttrInt,
+		CreateSql:   ssot.IntParameter(ssot.NoQuotes()),
+		Description: "Specifies the maximum number of days that can be set for the expiration time for a programmatic access token.",
+		Min:         new(1),
 	},
 	{
-		Name:         "require_role_restriction_for_service_users",
-		Type:         ssot.AttrBool,
-		Description:  "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role.",
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "require_role_restriction_for_service_users",
+		Type:        ssot.AttrBool,
+		Description: "If true, when you generate a programmatic access token for a service user, you must restrict the use of that token to a specific role.",
 	},
 	{
-		Name:         "require_role_restriction_for_person_users",
-		Type:         ssot.AttrBool,
-		Description:  "If true, when you generate a programmatic access token for a person user, you must restrict the use of that token to a specific role.",
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "require_role_restriction_for_person_users",
+		Type:        ssot.AttrBool,
+		Description: "If true, when you generate a programmatic access token for a person user, you must restrict the use of that token to a specific role.",
 	},
 	{
-		Name:         "blocked_roles_list",
-		Type:         ssot.AttrSet,
-		Description:  "Specifies the roles that cannot be used as the role restriction for a programmatic access token.",
-		Elem:         &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
-		CreateSql:    ssot.ListParameter("StringListItemWrapper", ssot.MustParentheses()),
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "blocked_roles_list",
+		Type:        ssot.AttrSet,
+		Description: "Specifies the roles that cannot be used as the role restriction for a programmatic access token.",
+		Elem:        &ssot.Attribute{Type: ssot.AttrIdentifier, IdentifierType: "AccountObjectIdentifier"},
+		CreateSql:   ssot.ListParameter("StringListItemWrapper", ssot.MustParentheses()),
 	},
 	{
-		Name:         "network_policy_evaluation",
-		Type:         ssot.AttrEnum,
-		Description:  "Specifies the network policy evaluation for the PAT.",
-		Enum:         NetworkPolicyEvaluationOption,
-		AtLeastOneOf: authenticationPolicyPatAtLeastOneOf,
+		Name:        "network_policy_evaluation",
+		Type:        ssot.AttrEnum,
+		Description: "Specifies the network policy evaluation for the PAT.",
+		Enum:        NetworkPolicyEvaluationOption,
 	},
 }
 
@@ -222,7 +214,7 @@ var authenticationPolicySecurityIntegrationsOption = ssot.Attribute{
 		{Name: "security_integrations_all", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("('ALL')"), ssot.FieldName("All"))},
 		authenticationPolicySecurityIntegrations,
 	},
-	ChildrenRule: ssot.ChildrenExactlyOne,
+	Validations: []ssot.Validation{ssot.ExactlyOneOf()},
 }
 
 // AuthenticationPolicyAttrs holds reusable Authentication Policy fields so SHOW and DESCRIBE
@@ -236,47 +228,28 @@ var authenticationPolicySecurityIntegrationsOption = ssot.Attribute{
 // security integrations option is mapped as a whole, because the SDK takes one option request.
 // The nested blocks are omitted from DESCRIBE Columns. A writable column must be in
 // Attributes, and the raw DESCRIBE property strings are not a separate attribute.
-var authenticationPolicyMfaAtLeastOneOf = []ssot.Attribute{
-	{Name: "enforce_mfa_on_external_authentication"},
-	{Name: "allowed_methods"},
-}
-
-var authenticationPolicyPatAtLeastOneOf = []ssot.Attribute{
-	{Name: "default_expiry_in_days"},
-	{Name: "max_expiry_in_days"},
-	{Name: "require_role_restriction_for_service_users"},
-	{Name: "require_role_restriction_for_person_users"},
-	{Name: "blocked_roles_list"},
-	{Name: "network_policy_evaluation"},
-}
-
 var AuthenticationPolicyAttrs = struct {
-	AuthenticationMethods    ssot.Attribute
-	MfaAuthenticationMethods ssot.Attribute
-	MfaEnrollment            ssot.Attribute
-	ClientTypes              ssot.Attribute
-	ClientPolicy             ssot.Attribute
-	MfaPolicy                ssot.Attribute
-	PatPolicy                ssot.Attribute
-	WorkloadIdentityPolicy   ssot.Attribute
-	SecurityIntegrations     ssot.Attribute
-	Comment                  ssot.Attribute
-	CreatedOn                ssot.Attribute
-	Name                     ssot.Attribute
-	DatabaseName             ssot.Attribute
-	SchemaName               ssot.Attribute
-	Kind                     ssot.Attribute
-	Owner                    ssot.Attribute
-	OwnerRoleType            ssot.Attribute
-	Options                  ssot.Attribute
-	TargetScopes             ssot.Attribute
-	// DESCRIBE-only columns: a read enum, and the values DESCRIBE returns as nested structs. They share the Children of the attributes.
-	DescribeMfaEnrollment          ssot.Attribute
-	DescribeSecurityIntegrations   ssot.Attribute
-	DescribeClientPolicy           ssot.Attribute
-	DescribeMfaPolicy              ssot.Attribute
-	DescribePatPolicy              ssot.Attribute
-	DescribeWorkloadIdentityPolicy ssot.Attribute
+	AuthenticationMethods        ssot.Attribute
+	MfaAuthenticationMethods     ssot.Attribute
+	MfaEnrollment                ssot.Attribute
+	ClientTypes                  ssot.Attribute
+	ClientPolicy                 ssot.Attribute
+	MfaPolicy                    ssot.Attribute
+	PatPolicy                    ssot.Attribute
+	WorkloadIdentityPolicy       ssot.Attribute
+	SecurityIntegrations         ssot.Attribute
+	Comment                      ssot.Attribute
+	CreatedOn                    ssot.Attribute
+	Name                         ssot.Attribute
+	DatabaseName                 ssot.Attribute
+	SchemaName                   ssot.Attribute
+	Kind                         ssot.Attribute
+	Owner                        ssot.Attribute
+	OwnerRoleType                ssot.Attribute
+	Options                      ssot.Attribute
+	TargetScopes                 ssot.Attribute
+	DescribeSecurityIntegrations ssot.Attribute
+	DescribeClientPolicy         ssot.Attribute
 	// The DESCRIBE rows are a property list, which the SDK parses into the details that Describe.Columns models.
 	Property            ssot.Attribute
 	PropertyValue       ssot.Attribute
@@ -315,6 +288,7 @@ var AuthenticationPolicyAttrs = struct {
 			"Note that when you set this value to OPTIONAL, and your account setup forces users to enroll in MFA, then Snowflake may set quietly this value to `REQUIRED_PASSWORD_ONLY`, which may cause permadiff. " +
 			"In this case, you may want to adjust this field value.",
 		Enum:         MfaEnrollmentOption,
+		DescribeEnum: MfaEnrollmentReadOption,
 		DiffSuppress: ssot.SuppressDescribe,
 		CreateSql:    ssot.PlainParameter(),
 		SetSql:       ssot.PlainParameter(),
@@ -336,7 +310,6 @@ var AuthenticationPolicyAttrs = struct {
 		UpdateMapping: ssot.SetValueUpdate("toAuthenticationPolicyClientPolicy"),
 		Type:          ssot.AttrSet,
 		Description:   "Allows to set policies per-client type. Only valid when `client_types` is empty, contains ALL, or contains DRIVERS.",
-		CreateSql:     ssot.ListOfObjects(ssot.Sql("CLIENT_POLICY"), ssot.Parentheses()),
 		Elem: &ssot.Attribute{
 			Type:      ssot.AttrObject,
 			CreateSql: ssot.ObjectParameter(),
@@ -360,7 +333,7 @@ var AuthenticationPolicyAttrs = struct {
 		Type:          ssot.AttrObject,
 		CreateSql:     authenticationPolicyMfaPolicyClause,
 		SetSql:        authenticationPolicyMfaPolicyClause,
-		ChildrenRule:  ssot.ChildrenAtLeastOne,
+		Validations:   []ssot.Validation{ssot.AtLeastOneOf()},
 		Description:   "Specifies the multi-factor authentication (MFA) methods that users can use as a second factor of authentication.",
 		Children:      authenticationPolicyMfaPolicyChildren,
 	},
@@ -370,8 +343,10 @@ var AuthenticationPolicyAttrs = struct {
 		Type:          ssot.AttrObject,
 		CreateSql:     authenticationPolicyPatPolicyClause,
 		SetSql:        authenticationPolicyPatPolicyClause,
-		Description:   "Specifies the policy for programmatic access tokens.",
-		Children:      authenticationPolicyPatPolicyChildren,
+		// The update sends BLOCKED_ROLES_LIST = () to clear the list, which the SDK would count as unset.
+		Validations: []ssot.Validation{ssot.AtLeastOneOf().SchemaOnly()},
+		Description: "Specifies the policy for programmatic access tokens.",
+		Children:    authenticationPolicyPatPolicyChildren,
 	},
 	WorkloadIdentityPolicy: ssot.Attribute{
 		Name:          "workload_identity_policy",
@@ -379,7 +354,6 @@ var AuthenticationPolicyAttrs = struct {
 		Type:          ssot.AttrObject,
 		CreateSql:     authenticationPolicyWorkloadIdentityPolicyClause,
 		SetSql:        authenticationPolicyWorkloadIdentityPolicyClause,
-		ChildrenRule:  ssot.ChildrenAtLeastOne,
 		Description:   "Specifies the policy for workload identity federation.",
 		Children:      authenticationPolicyWorkloadIdentityPolicyChildren,
 	},
@@ -389,15 +363,14 @@ var AuthenticationPolicyAttrs = struct {
 		Type:        ssot.AttrString,
 		Description: "Specifies a comment for the authentication policy.",
 	},
-	CreatedOn:             ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, OptionalInDb: true, Readonly: true},
-	Name:                  ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
-	DatabaseName:          ssot.Attribute{Name: "database_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
-	SchemaName:            ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
-	Kind:                  ssot.Attribute{Name: "kind", Type: ssot.AttrString, Readonly: true},
-	Owner:                 ssot.Attribute{Name: "owner", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
-	OwnerRoleType:         ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
-	Options:               ssot.Attribute{Name: "options", Type: ssot.AttrString, Readonly: true},
-	DescribeMfaEnrollment: ssot.Attribute{Name: "describe_mfa_enrollment", ShowName: "mfa_enrollment", Type: ssot.AttrEnum, Enum: MfaEnrollmentReadOption, Readonly: true},
+	CreatedOn:     ssot.Attribute{Name: "created_on", Type: ssot.AttrTime, OptionalInDb: true, Readonly: true},
+	Name:          ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	DatabaseName:  ssot.Attribute{Name: "database_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
+	SchemaName:    ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, OptionalInDb: true, ManualConvert: true, Readonly: true},
+	Kind:          ssot.Attribute{Name: "kind", Type: ssot.AttrString, Readonly: true},
+	Owner:         ssot.Attribute{Name: "owner", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	OwnerRoleType: ssot.Attribute{Name: "owner_role_type", Type: ssot.AttrString, OptionalInDb: true, Readonly: true},
+	Options:       ssot.Attribute{Name: "options", Type: ssot.AttrString, Readonly: true},
 	DescribeSecurityIntegrations: ssot.Attribute{
 		Name: "describe_security_integrations", ShowName: "security_integrations", Type: ssot.AttrObject, Required: true, Readonly: true,
 		Children: []ssot.Attribute{
@@ -406,14 +379,11 @@ var AuthenticationPolicyAttrs = struct {
 		},
 	},
 	// The elements are the hand-written AuthenticationPolicyClientPolicyDetails, see SdkDescribeDetailsNestedField.
-	DescribeClientPolicy:           ssot.Attribute{Name: "describe_client_policy", ShowName: "client_policy", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}},
-	DescribeMfaPolicy:              ssot.Attribute{Name: "describe_mfa_policy", ShowName: "mfa_policy", Type: ssot.AttrObject, Required: true, Readonly: true, Children: authenticationPolicyMfaPolicyChildren},
-	DescribePatPolicy:              ssot.Attribute{Name: "describe_pat_policy", ShowName: "pat_policy", Type: ssot.AttrObject, Required: true, Readonly: true, Children: authenticationPolicyPatPolicyChildren},
-	DescribeWorkloadIdentityPolicy: ssot.Attribute{Name: "describe_workload_identity_policy", ShowName: "workload_identity_policy", Type: ssot.AttrObject, Required: true, Readonly: true, Children: authenticationPolicyWorkloadIdentityPolicyChildren},
-	Property:                       ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true},
-	PropertyValue:                  ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true},
-	PropertyDefault:                ssot.Attribute{Name: "default", Type: ssot.AttrString, Readonly: true},
-	PropertyDescription:            ssot.Attribute{Name: "description", Type: ssot.AttrString, Readonly: true},
+	DescribeClientPolicy: ssot.Attribute{Name: "describe_client_policy", ShowName: "client_policy", Type: ssot.AttrList, Readonly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}},
+	Property:             ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true},
+	PropertyValue:        ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true},
+	PropertyDefault:      ssot.Attribute{Name: "default", Type: ssot.AttrString, Readonly: true},
+	PropertyDescription:  ssot.Attribute{Name: "description", Type: ssot.AttrString, Readonly: true},
 	TargetScopes: ssot.Attribute{
 		Name:     "target_scopes",
 		Type:     ssot.AttrList,
@@ -444,9 +414,9 @@ var AuthenticationPolicy = ssot.Object{
 					&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
 					&AuthenticationPolicyAttrs.Comment,
 					&AuthenticationPolicyAttrs.DescribeClientPolicy,
-					&AuthenticationPolicyAttrs.DescribeMfaPolicy,
-					&AuthenticationPolicyAttrs.DescribePatPolicy,
-					&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
+					&AuthenticationPolicyAttrs.MfaPolicy,
+					&AuthenticationPolicyAttrs.PatPolicy,
+					&AuthenticationPolicyAttrs.WorkloadIdentityPolicy,
 				)),
 			),
 			// Parameter assertions omitted. The catalog has no AUTHENTICATION_POLICY entries.
@@ -456,9 +426,9 @@ var AuthenticationPolicy = ssot.Object{
 					ssot.ObjectAssertDescribeMethod("DescribeDetails"),
 					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations),
 					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeClientPolicy),
-					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeMfaPolicy),
-					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribePatPolicy),
-					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.MfaPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.PatPolicy),
+					ssot.ObjectAssertDescribeNestedField(&AuthenticationPolicyAttrs.WorkloadIdentityPolicy),
 				),
 			),
 		),
@@ -469,6 +439,7 @@ var AuthenticationPolicy = ssot.Object{
 				ssot.SdkShowOptionalExtendedIn(),
 				ssot.SdkShowOptionalOn(),
 				ssot.SdkShowOptionalStartsWith(),
+				// TODO(SNOW-4466363): SHOW AUTHENTICATION POLICIES applies LIMIT before LIKE and STARTS WITH; revisit when Snowflake changes the order.
 				ssot.SdkShowOptionalLimit(),
 				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDLike, ssot.SdkShowByIDExtendedIn),
 				ssot.SdkShowResultFilterHook(),
@@ -485,14 +456,14 @@ var AuthenticationPolicy = ssot.Object{
 						ssot.DescribeProperty(&AuthenticationPolicyAttrs.Name, "NAME"),
 						ssot.DescribeProperty(&AuthenticationPolicyAttrs.Owner, "OWNER"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.AuthenticationMethods, "AUTHENTICATION_METHODS"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeMfaEnrollment, "MFA_ENROLLMENT"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.MfaEnrollment, "MFA_ENROLLMENT"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.ClientTypes, "CLIENT_TYPES"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeSecurityIntegrations, "SECURITY_INTEGRATIONS"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.Comment, "COMMENT"),
 						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeClientPolicy, "CLIENT_POLICY"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeMfaPolicy, "MFA_POLICY"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribePatPolicy, "PAT_POLICY"),
-						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy, "WORKLOAD_IDENTITY_POLICY"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.MfaPolicy, "MFA_POLICY"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.PatPolicy, "PAT_POLICY"),
+						ssot.DescribePropertyParsed(&AuthenticationPolicyAttrs.WorkloadIdentityPolicy, "WORKLOAD_IDENTITY_POLICY"),
 					),
 				),
 			),
@@ -523,7 +494,8 @@ var AuthenticationPolicy = ssot.Object{
 		"v2_9_0_AuthenticationPolicyStateUpgrader",
 	},
 	// DESCRIBE returns the READ variants. mfa_authentication_methods uses MfaAuthenticationMethodsOption on the attribute.
-	AdditionalEnums: []*ssot.Enum{MfaAuthenticationMethodsReadOption, MfaEnrollmentReadOption},
+	// mfa_authentication_methods keeps the write enum. DESCRIBE can return OIDC, which is only on the read enum.
+	AdditionalEnums: []*ssot.Enum{MfaAuthenticationMethodsReadOption},
 	Attributes: []ssot.Attribute{
 		AuthenticationPolicyAttrs.AuthenticationMethods,
 		AuthenticationPolicyAttrs.MfaAuthenticationMethods,
@@ -604,14 +576,14 @@ var AuthenticationPolicy = ssot.Object{
 			&AuthenticationPolicyAttrs.Name,
 			&AuthenticationPolicyAttrs.Owner,
 			&AuthenticationPolicyAttrs.AuthenticationMethods,
-			&AuthenticationPolicyAttrs.DescribeMfaEnrollment,
+			&AuthenticationPolicyAttrs.MfaEnrollment,
 			&AuthenticationPolicyAttrs.ClientTypes,
 			&AuthenticationPolicyAttrs.DescribeSecurityIntegrations,
 			&AuthenticationPolicyAttrs.Comment,
 			&AuthenticationPolicyAttrs.DescribeClientPolicy,
-			&AuthenticationPolicyAttrs.DescribeMfaPolicy,
-			&AuthenticationPolicyAttrs.DescribePatPolicy,
-			&AuthenticationPolicyAttrs.DescribeWorkloadIdentityPolicy,
+			&AuthenticationPolicyAttrs.MfaPolicy,
+			&AuthenticationPolicyAttrs.PatPolicy,
+			&AuthenticationPolicyAttrs.WorkloadIdentityPolicy,
 		},
 	},
 }

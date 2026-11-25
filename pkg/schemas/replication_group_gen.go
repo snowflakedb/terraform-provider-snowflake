@@ -81,7 +81,11 @@ var ShowReplicationGroupSchema = map[string]*schema.Schema{
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
-	"read_only": {
+	"error_integration": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
+	"is_primary_read_only": {
 		Type:     schema.TypeBool,
 		Computed: true,
 	},
@@ -118,8 +122,11 @@ func ReplicationGroupToSchema(replicationGroup *sdk.ReplicationGroup) map[string
 		replicationGroupSchema["owner"] = (*replicationGroup.Owner)
 	}
 	replicationGroupSchema["is_listing_auto_fulfillment_group"] = replicationGroup.IsListingAutoFulfillmentGroup
-	if replicationGroup.ReadOnly != nil {
-		replicationGroupSchema["read_only"] = (*replicationGroup.ReadOnly)
+	if replicationGroup.ErrorIntegration != nil {
+		replicationGroupSchema["error_integration"] = (*replicationGroup.ErrorIntegration).Name()
+	}
+	if replicationGroup.IsPrimaryReadOnly != nil {
+		replicationGroupSchema["is_primary_read_only"] = (*replicationGroup.IsPrimaryReadOnly)
 	}
 	return replicationGroupSchema
 }

@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type HybridTables interface {
@@ -55,7 +57,7 @@ type HybridTableColumnsConstraintsAndIndexes struct {
 
 type HybridTableColumn struct {
 	Name             string                  `ddl:"keyword,double_quotes"`
-	DataType         DataType                `ddl:"keyword"`
+	DataType         datatypes.DataType      `ddl:"parameter,no_quotes,no_equals"`
 	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
 	NotNull          *bool                   `ddl:"keyword" sql:"NOT NULL"`
 	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
@@ -107,7 +109,7 @@ type HybridTableAddColumnAction struct {
 	column           bool                    `ddl:"static" sql:"COLUMN"`
 	IfNotExists      *bool                   `ddl:"keyword" sql:"IF NOT EXISTS"`
 	Name             string                  `ddl:"keyword,double_quotes"`
-	DataType         DataType                `ddl:"keyword"`
+	DataType         datatypes.DataType      `ddl:"parameter,no_quotes,no_equals"`
 	Collate          *string                 `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
 	DefaultValue     *ColumnDefaultValue     `ddl:"keyword"`
 	InlineConstraint *ColumnInlineConstraint `ddl:"keyword"`
@@ -136,14 +138,14 @@ type HybridTableConstraintActionDrop struct {
 }
 
 type HybridTableAlterColumnAction struct {
-	alter        bool          `ddl:"static" sql:"ALTER"`
-	column       bool          `ddl:"static" sql:"COLUMN"`
-	ColumnName   string        `ddl:"keyword,double_quotes"`
-	DropDefault  *bool         `ddl:"keyword" sql:"DROP DEFAULT"`
-	SetDefault   *SequenceName `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
-	DataType     *DataType     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
-	Comment      *string       `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-	UnsetComment *bool         `ddl:"keyword" sql:"UNSET COMMENT"`
+	alter        bool                `ddl:"static" sql:"ALTER"`
+	column       bool                `ddl:"static" sql:"COLUMN"`
+	ColumnName   string              `ddl:"keyword,double_quotes"`
+	DropDefault  *bool               `ddl:"keyword" sql:"DROP DEFAULT"`
+	SetDefault   *SequenceName       `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
+	DataType     *datatypes.DataType `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
+	Comment      *string             `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	UnsetComment *bool               `ddl:"keyword" sql:"UNSET COMMENT"`
 }
 
 type HybridTableDropColumnAction struct {
@@ -266,7 +268,8 @@ type hybridTableDetailsRow struct {
 
 type HybridTableDetails struct {
 	Name                  string
-	Type                  string
+	Type                  datatypes.DataType
+	DataTypeRaw           string
 	Collation             *string
 	Kind                  string
 	IsNullable            bool

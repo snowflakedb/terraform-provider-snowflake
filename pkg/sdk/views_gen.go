@@ -5,6 +5,8 @@ package sdk
 import (
 	"context"
 	"database/sql"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type Views interface {
@@ -281,7 +283,7 @@ type DescribeViewOptions struct {
 
 type viewDetailsRow struct {
 	Name          string         `db:"name"`
-	Type          DataType       `db:"type"`
+	Type          string         `db:"type"`
 	Kind          string         `db:"kind"`
 	Null          string         `db:"null?"`
 	Default       sql.NullString `db:"default"`
@@ -296,7 +298,8 @@ type viewDetailsRow struct {
 
 type ViewDetails struct {
 	Name          string
-	Type          DataType
+	Type          datatypes.DataType
+	DataTypeRaw   string
 	Kind          string
 	IsNullable    bool
 	Default       *string

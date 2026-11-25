@@ -65,7 +65,7 @@ func CreateContextProcedureJavascript(ctx context.Context, d *schema.ResourceDat
 	procedureDefinition := d.Get("procedure_definition").(string)
 
 	argumentDataTypes := collections.Map(argumentRequests, func(r sdk.ProcedureArgumentRequest) datatypes.DataType { return r.ArgDataType })
-	id := sdk.NewSchemaObjectIdentifierWithArgumentsNormalized(database, sc, name, argumentDataTypes...)
+	id := sdk.NewSchemaObjectIdentifierWithArguments(database, sc, name, argumentDataTypes...)
 	request := sdk.NewCreateForJavaScriptProcedureRequestDefinitionWrapped(id.SchemaObjectId(), returnDataType, procedureDefinition).
 		WithArguments(argumentRequests)
 

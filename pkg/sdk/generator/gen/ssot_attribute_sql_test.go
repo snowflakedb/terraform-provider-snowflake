@@ -260,3 +260,42 @@ func Test_appendSqlSequence_listWithoutSqlPrefix(t *testing.T) {
 		WithValidation(ValidIdentifier, "AllowedDatabases")
 	require.Equal(t, want.fields, got.fields)
 }
+
+func Test_appendSqlSequence_textKeywordAndPredefinedType(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString, Required: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes())}
+	columnType := ssot.Attribute{Name: "column_type", CreateSql: ssot.PredefinedType("*DataType", ssot.NoEquals())}
+	at := ssot.Attribute{Name: "at", CreateSql: ssot.PredefinedType("TimeTravel", ssot.Parentheses(), ssot.NoComma(), ssot.Required())}
+	got := NewQueryStruct("clauses").appendSqlSequence([]*ssot.Attribute{&name, &columnType, &at}, attributeSqlCreate)
+	want := NewQueryStruct("clauses").
+		Text("Name", KeywordOptions().DoubleQuotes().Required()).
+		PredefinedQueryStructField("ColumnType", "*DataType", ParameterOptions().NoEquals()).
+		PredefinedQueryStructField("At", "TimeTravel", ListOptions().Parentheses().NoComma().Required())
+	require.Equal(t, want.fields, got.fields)
+}
+
+func Test_appendSqlSequence_objectListWithoutSqlPrefix(t *testing.T) {
+	columns := ssot.Attribute{
+		Name:      "as_select_column",
+		Type:      ssot.AttrList,
+		Required:  true,
+		CreateSql: ssot.ListOfObjects(ssot.Parentheses(), ssot.Required(), ssot.FieldName("Columns")),
+		Elem: &ssot.Attribute{
+			Type:      ssot.AttrObject,
+			CreateSql: ssot.ObjectParameter(),
+			Children: []ssot.Attribute{
+				{Name: "name", Type: ssot.AttrString, Required: true, CreateSql: ssot.TextKeyword(ssot.DoubleQuotes())},
+			},
+		},
+	}
+	got := NewQueryStruct("CreateTableAsSelect")
+	got.owner = "Table"
+	got = got.appendSqlSequence([]*ssot.Attribute{&columns}, attributeSqlCreate)
+	want := NewQueryStruct("CreateTableAsSelect").
+		ListQueryStructField(
+			"Columns",
+			NewQueryStruct("TableAsSelectColumn").Text("Name", KeywordOptions().DoubleQuotes().Required()),
+			ListOptions().Parentheses().Required(),
+		).
+		WithValidation(ValidateValueSet, "Columns")
+	require.Equal(t, want.fields, got.fields)
+}

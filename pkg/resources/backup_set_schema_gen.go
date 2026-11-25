@@ -102,27 +102,7 @@ var backupSetSchema = collections.MergeMaps(
 		},
 	},
 	backupSetAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW BACKUP SETS` for the given backup set.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowBackupSetSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE BACKUP SET` for the given backup set.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeBackupSetDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeBackupSet, schemas.ShowBackupSetSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeBackupSet, schemas.DescribeBackupSetDetailsSchema),
 )

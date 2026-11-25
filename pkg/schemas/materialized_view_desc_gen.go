@@ -7,16 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+type materializedViewDetailsToSchemaMapper struct{}
+
+var _ additionalSchemaMapper[sdk.MaterializedViewDetails] = materializedViewDetailsToSchemaMapper{}
+
 // DescribeMaterializedViewDetailsSchema represents output of DESCRIBE query for the single MaterializedViewDetails.
-var DescribeMaterializedViewDetailsSchema = map[string]*schema.Schema{
+var DescribeMaterializedViewDetailsSchema = mergeSchema(map[string]*schema.Schema{
 	"name": {
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"type": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	"kind": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -49,14 +51,15 @@ var DescribeMaterializedViewDetailsSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-}
+}, materializedViewDetailsToSchemaMapper{}.additionalSchema())
 
 var _ = DescribeMaterializedViewDetailsSchema
 
 func MaterializedViewDetailsToSchema(materializedViewDetails *sdk.MaterializedViewDetails) map[string]any {
 	materializedViewDetailsSchema := make(map[string]any)
 	materializedViewDetailsSchema["name"] = materializedViewDetails.Name
-	materializedViewDetailsSchema["type"] = string(materializedViewDetails.Type)
+	// type: manual addition and mapping is needed
+	// data_type_raw is skipped and won't be generated
 	materializedViewDetailsSchema["kind"] = materializedViewDetails.Kind
 	materializedViewDetailsSchema["is_nullable"] = materializedViewDetails.IsNullable
 	if materializedViewDetails.Default != nil {
@@ -73,6 +76,7 @@ func MaterializedViewDetailsToSchema(materializedViewDetails *sdk.MaterializedVi
 	if materializedViewDetails.Comment != nil {
 		materializedViewDetailsSchema["comment"] = (*materializedViewDetails.Comment)
 	}
+	materializedViewDetailsToSchemaMapper{}.additionalToSchema(materializedViewDetails, materializedViewDetailsSchema)
 	return materializedViewDetailsSchema
 }
 

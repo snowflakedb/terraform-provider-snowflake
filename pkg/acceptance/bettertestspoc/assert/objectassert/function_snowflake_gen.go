@@ -11,6 +11,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type FunctionAssert struct {
@@ -176,35 +177,79 @@ func (f *FunctionAssert) HasArgumentsRawNotEmpty() *FunctionAssert {
 	return f
 }
 
-func (f *FunctionAssert) HasArgumentsOld(expected ...sdk.DataType) *FunctionAssert {
+func (f *FunctionAssert) HasArguments(expected ...datatypes.DataType) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
-		mapped := collections.Map(o.ArgumentsOld, func(item sdk.DataType) any { return item })
-		mappedExpected := collections.Map(expected, func(item sdk.DataType) any { return item })
+		if !slices.EqualFunc(o.Arguments, expected, datatypes.AreTheSame) {
+			return fmt.Errorf("expected arguments: %v; got: %v", expected, o.Arguments)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FunctionAssert) HasNoArguments() *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if len(o.Arguments) > 0 {
+			return fmt.Errorf("expected arguments to be empty; got: %v", o.Arguments)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FunctionAssert) HasArgumentsRawList(expected ...string) *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		mapped := collections.Map(o.ArgumentsRawList, func(item string) any { return item })
+		mappedExpected := collections.Map(expected, func(item string) any { return item })
 		if !slices.Equal(mapped, mappedExpected) {
-			return fmt.Errorf("expected arguments old: %v; got: %v", expected, o.ArgumentsOld)
+			return fmt.Errorf("expected arguments raw list: %v; got: %v", expected, o.ArgumentsRawList)
 		}
 		return nil
 	})
 	return f
 }
 
-func (f *FunctionAssert) HasNoArgumentsOld() *FunctionAssert {
+func (f *FunctionAssert) HasNoArgumentsRawList() *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
-		if len(o.ArgumentsOld) > 0 {
-			return fmt.Errorf("expected arguments old to be empty; got: %v", o.ArgumentsOld)
+		if len(o.ArgumentsRawList) > 0 {
+			return fmt.Errorf("expected arguments raw list to be empty; got: %v", o.ArgumentsRawList)
 		}
 		return nil
 	})
 	return f
 }
 
-func (f *FunctionAssert) HasReturnTypeOld(expected sdk.DataType) *FunctionAssert {
+func (f *FunctionAssert) HasReturnType(expected datatypes.DataType) *FunctionAssert {
 	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
 		t.Helper()
-		if o.ReturnTypeOld != expected {
-			return fmt.Errorf("expected return type old: %v; got: %v", expected, o.ReturnTypeOld)
+		if !datatypes.AreTheSame(o.ReturnType, expected) {
+			return fmt.Errorf("expected return type: %v; got: %v", expected.ToSql(), o.ReturnType.ToSql())
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FunctionAssert) HasReturnTypeRaw(expected string) *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if o.ReturnTypeRaw != expected {
+			return fmt.Errorf("expected return type raw: %v; got: %v", expected, o.ReturnTypeRaw)
+		}
+		return nil
+	})
+	return f
+}
+
+func (f *FunctionAssert) HasReturnTypeRawNotEmpty() *FunctionAssert {
+	f.AddAssertion(func(t *testing.T, o *sdk.Function) error {
+		t.Helper()
+		if o.ReturnTypeRaw == "" {
+			return fmt.Errorf("expected return type raw to be non-empty")
 		}
 		return nil
 	})

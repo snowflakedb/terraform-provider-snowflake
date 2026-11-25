@@ -111,37 +111,100 @@ func NewAddSharedResourceQuotaRequest(
 	return &s
 }
 
-func NewQuotaAddSharedResourceArgsRequest(
-	domain QuotaSharedResourceDomain,
-) *QuotaAddSharedResourceArgsRequest {
+func NewQuotaAddSharedResourceArgsRequest() *QuotaAddSharedResourceArgsRequest {
 	s := QuotaAddSharedResourceArgsRequest{}
-	s.Domain = domain
 	return &s
 }
 
-func (s *QuotaAddSharedResourceArgsRequest) WithInstanceName(instanceName string) *QuotaAddSharedResourceArgsRequest {
-	s.InstanceName = &instanceName
+func (s *QuotaAddSharedResourceArgsRequest) WithWholeDomain(wholeDomain QuotaAddSharedResourceArgsWholeDomainRequest) *QuotaAddSharedResourceArgsRequest {
+	s.WholeDomain = &wholeDomain
 	return s
 }
 
-func (s *QuotaAddSharedResourceArgsRequest) WithWarehouse(warehouse AccountObjectIdentifier) *QuotaAddSharedResourceArgsRequest {
+func (s *QuotaAddSharedResourceArgsRequest) WithAiFunction(aiFunction QuotaAddSharedResourceArgsAiFunctionRequest) *QuotaAddSharedResourceArgsRequest {
+	s.AiFunction = &aiFunction
+	return s
+}
+
+func (s *QuotaAddSharedResourceArgsRequest) WithSnowflakeCoco(snowflakeCoco QuotaAddSharedResourceArgsSnowflakeCocoRequest) *QuotaAddSharedResourceArgsRequest {
+	s.SnowflakeCoco = &snowflakeCoco
+	return s
+}
+
+func (s *QuotaAddSharedResourceArgsRequest) WithWarehouse(warehouse QuotaAddSharedResourceArgsWarehouseRequest) *QuotaAddSharedResourceArgsRequest {
 	s.Warehouse = &warehouse
 	return s
 }
 
-func (s *QuotaAddSharedResourceArgsRequest) WithCortexAgent(cortexAgent SchemaObjectIdentifier) *QuotaAddSharedResourceArgsRequest {
+func (s *QuotaAddSharedResourceArgsRequest) WithCortexAgent(cortexAgent QuotaAddSharedResourceArgsCortexAgentRequest) *QuotaAddSharedResourceArgsRequest {
 	s.CortexAgent = &cortexAgent
 	return s
 }
 
-func (s *QuotaAddSharedResourceArgsRequest) WithSnowflakeIntelligence(snowflakeIntelligence AccountObjectIdentifier) *QuotaAddSharedResourceArgsRequest {
-	s.SnowflakeIntelligence = &snowflakeIntelligence
+func (s *QuotaAddSharedResourceArgsRequest) WithSnowflakeCowork(snowflakeCowork QuotaAddSharedResourceArgsSnowflakeCoworkRequest) *QuotaAddSharedResourceArgsRequest {
+	s.SnowflakeCowork = &snowflakeCowork
 	return s
 }
 
-func (s *QuotaAddSharedResourceArgsRequest) WithAiGateway(aiGateway AccountObjectIdentifier) *QuotaAddSharedResourceArgsRequest {
+func (s *QuotaAddSharedResourceArgsRequest) WithAiGateway(aiGateway QuotaAddSharedResourceArgsAiGatewayRequest) *QuotaAddSharedResourceArgsRequest {
 	s.AiGateway = &aiGateway
 	return s
+}
+
+func NewQuotaAddSharedResourceArgsWholeDomainRequest(
+	domain QuotaSharedResourceDomain,
+) *QuotaAddSharedResourceArgsWholeDomainRequest {
+	s := QuotaAddSharedResourceArgsWholeDomainRequest{}
+	s.Domain = domain
+	return &s
+}
+
+func NewQuotaAddSharedResourceArgsAiFunctionRequest(
+	name string,
+) *QuotaAddSharedResourceArgsAiFunctionRequest {
+	s := QuotaAddSharedResourceArgsAiFunctionRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewQuotaAddSharedResourceArgsSnowflakeCocoRequest(
+	name string,
+) *QuotaAddSharedResourceArgsSnowflakeCocoRequest {
+	s := QuotaAddSharedResourceArgsSnowflakeCocoRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewQuotaAddSharedResourceArgsWarehouseRequest(
+	id AccountObjectIdentifier,
+) *QuotaAddSharedResourceArgsWarehouseRequest {
+	s := QuotaAddSharedResourceArgsWarehouseRequest{}
+	s.Id = id
+	return &s
+}
+
+func NewQuotaAddSharedResourceArgsCortexAgentRequest(
+	id SchemaObjectIdentifier,
+) *QuotaAddSharedResourceArgsCortexAgentRequest {
+	s := QuotaAddSharedResourceArgsCortexAgentRequest{}
+	s.Id = id
+	return &s
+}
+
+func NewQuotaAddSharedResourceArgsSnowflakeCoworkRequest(
+	id AccountObjectIdentifier,
+) *QuotaAddSharedResourceArgsSnowflakeCoworkRequest {
+	s := QuotaAddSharedResourceArgsSnowflakeCoworkRequest{}
+	s.Id = id
+	return &s
+}
+
+func NewQuotaAddSharedResourceArgsAiGatewayRequest(
+	id AccountObjectIdentifier,
+) *QuotaAddSharedResourceArgsAiGatewayRequest {
+	s := QuotaAddSharedResourceArgsAiGatewayRequest{}
+	s.Id = id
+	return &s
 }
 
 func NewRemoveSharedResourceQuotaRequest(
@@ -154,37 +217,100 @@ func NewRemoveSharedResourceQuotaRequest(
 	return &s
 }
 
-func NewQuotaRemoveSharedResourceArgsRequest(
-	domain QuotaSharedResourceDomain,
-) *QuotaRemoveSharedResourceArgsRequest {
+func NewQuotaRemoveSharedResourceArgsRequest() *QuotaRemoveSharedResourceArgsRequest {
 	s := QuotaRemoveSharedResourceArgsRequest{}
-	s.Domain = domain
 	return &s
 }
 
-func (s *QuotaRemoveSharedResourceArgsRequest) WithInstanceName(instanceName string) *QuotaRemoveSharedResourceArgsRequest {
-	s.InstanceName = &instanceName
+func (s *QuotaRemoveSharedResourceArgsRequest) WithWholeDomain(wholeDomain QuotaRemoveSharedResourceArgsWholeDomainRequest) *QuotaRemoveSharedResourceArgsRequest {
+	s.WholeDomain = &wholeDomain
 	return s
 }
 
-func (s *QuotaRemoveSharedResourceArgsRequest) WithWarehouse(warehouse AccountObjectIdentifier) *QuotaRemoveSharedResourceArgsRequest {
+func (s *QuotaRemoveSharedResourceArgsRequest) WithAiFunction(aiFunction QuotaRemoveSharedResourceArgsAiFunctionRequest) *QuotaRemoveSharedResourceArgsRequest {
+	s.AiFunction = &aiFunction
+	return s
+}
+
+func (s *QuotaRemoveSharedResourceArgsRequest) WithSnowflakeCoco(snowflakeCoco QuotaRemoveSharedResourceArgsSnowflakeCocoRequest) *QuotaRemoveSharedResourceArgsRequest {
+	s.SnowflakeCoco = &snowflakeCoco
+	return s
+}
+
+func (s *QuotaRemoveSharedResourceArgsRequest) WithWarehouse(warehouse QuotaRemoveSharedResourceArgsWarehouseRequest) *QuotaRemoveSharedResourceArgsRequest {
 	s.Warehouse = &warehouse
 	return s
 }
 
-func (s *QuotaRemoveSharedResourceArgsRequest) WithCortexAgent(cortexAgent SchemaObjectIdentifier) *QuotaRemoveSharedResourceArgsRequest {
+func (s *QuotaRemoveSharedResourceArgsRequest) WithCortexAgent(cortexAgent QuotaRemoveSharedResourceArgsCortexAgentRequest) *QuotaRemoveSharedResourceArgsRequest {
 	s.CortexAgent = &cortexAgent
 	return s
 }
 
-func (s *QuotaRemoveSharedResourceArgsRequest) WithSnowflakeIntelligence(snowflakeIntelligence AccountObjectIdentifier) *QuotaRemoveSharedResourceArgsRequest {
-	s.SnowflakeIntelligence = &snowflakeIntelligence
+func (s *QuotaRemoveSharedResourceArgsRequest) WithSnowflakeCowork(snowflakeCowork QuotaRemoveSharedResourceArgsSnowflakeCoworkRequest) *QuotaRemoveSharedResourceArgsRequest {
+	s.SnowflakeCowork = &snowflakeCowork
 	return s
 }
 
-func (s *QuotaRemoveSharedResourceArgsRequest) WithAiGateway(aiGateway AccountObjectIdentifier) *QuotaRemoveSharedResourceArgsRequest {
+func (s *QuotaRemoveSharedResourceArgsRequest) WithAiGateway(aiGateway QuotaRemoveSharedResourceArgsAiGatewayRequest) *QuotaRemoveSharedResourceArgsRequest {
 	s.AiGateway = &aiGateway
 	return s
+}
+
+func NewQuotaRemoveSharedResourceArgsWholeDomainRequest(
+	domain QuotaSharedResourceDomain,
+) *QuotaRemoveSharedResourceArgsWholeDomainRequest {
+	s := QuotaRemoveSharedResourceArgsWholeDomainRequest{}
+	s.Domain = domain
+	return &s
+}
+
+func NewQuotaRemoveSharedResourceArgsAiFunctionRequest(
+	name string,
+) *QuotaRemoveSharedResourceArgsAiFunctionRequest {
+	s := QuotaRemoveSharedResourceArgsAiFunctionRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewQuotaRemoveSharedResourceArgsSnowflakeCocoRequest(
+	name string,
+) *QuotaRemoveSharedResourceArgsSnowflakeCocoRequest {
+	s := QuotaRemoveSharedResourceArgsSnowflakeCocoRequest{}
+	s.Name = name
+	return &s
+}
+
+func NewQuotaRemoveSharedResourceArgsWarehouseRequest(
+	id AccountObjectIdentifier,
+) *QuotaRemoveSharedResourceArgsWarehouseRequest {
+	s := QuotaRemoveSharedResourceArgsWarehouseRequest{}
+	s.Id = id
+	return &s
+}
+
+func NewQuotaRemoveSharedResourceArgsCortexAgentRequest(
+	id SchemaObjectIdentifier,
+) *QuotaRemoveSharedResourceArgsCortexAgentRequest {
+	s := QuotaRemoveSharedResourceArgsCortexAgentRequest{}
+	s.Id = id
+	return &s
+}
+
+func NewQuotaRemoveSharedResourceArgsSnowflakeCoworkRequest(
+	id AccountObjectIdentifier,
+) *QuotaRemoveSharedResourceArgsSnowflakeCoworkRequest {
+	s := QuotaRemoveSharedResourceArgsSnowflakeCoworkRequest{}
+	s.Id = id
+	return &s
+}
+
+func NewQuotaRemoveSharedResourceArgsAiGatewayRequest(
+	id AccountObjectIdentifier,
+) *QuotaRemoveSharedResourceArgsAiGatewayRequest {
+	s := QuotaRemoveSharedResourceArgsAiGatewayRequest{}
+	s.Id = id
+	return &s
 }
 
 func NewSetUserTagsQuotaRequest(
@@ -208,28 +334,12 @@ func NewQuotaSetUserTagsArgsRequest(
 }
 
 func NewQuotaUserTagRequest(
-	reference QuotaUserTagReferenceRequest,
+	tag SchemaObjectIdentifier,
 	value string,
 ) *QuotaUserTagRequest {
 	s := QuotaUserTagRequest{}
-	s.Reference = reference
-	s.Value = value
-	return &s
-}
-
-func NewQuotaUserTagReferenceRequest(
-	arguments QuotaUserTagReferenceArgumentsRequest,
-) *QuotaUserTagReferenceRequest {
-	s := QuotaUserTagReferenceRequest{}
-	s.Arguments = arguments
-	return &s
-}
-
-func NewQuotaUserTagReferenceArgumentsRequest(
-	tag SchemaObjectIdentifier,
-) *QuotaUserTagReferenceArgumentsRequest {
-	s := QuotaUserTagReferenceArgumentsRequest{}
 	s.Tag = tag
+	s.Value = value
 	return &s
 }
 
@@ -267,28 +377,12 @@ func NewQuotaExcludeUsersByTagRequest(
 }
 
 func NewQuotaExcludedUserTagRequest(
-	reference QuotaExcludedUserTagReferenceRequest,
+	tag SchemaObjectIdentifier,
 	value string,
 ) *QuotaExcludedUserTagRequest {
 	s := QuotaExcludedUserTagRequest{}
-	s.Reference = reference
-	s.Value = value
-	return &s
-}
-
-func NewQuotaExcludedUserTagReferenceRequest(
-	arguments QuotaExcludedUserTagReferenceArgumentsRequest,
-) *QuotaExcludedUserTagReferenceRequest {
-	s := QuotaExcludedUserTagReferenceRequest{}
-	s.Arguments = arguments
-	return &s
-}
-
-func NewQuotaExcludedUserTagReferenceArgumentsRequest(
-	tag SchemaObjectIdentifier,
-) *QuotaExcludedUserTagReferenceArgumentsRequest {
-	s := QuotaExcludedUserTagReferenceArgumentsRequest{}
 	s.Tag = tag
+	s.Value = value
 	return &s
 }
 

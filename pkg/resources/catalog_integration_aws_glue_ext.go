@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -56,11 +55,6 @@ func catalogIntegrationAwsGlueApplyCreateOptionalsExt(d *schema.ResourceData, re
 	)
 }
 
-// SET only. Catalog integration ALTER has no UNSET request (SNOW-3243983).
-type catalogIntegrationAwsGlueAlterRequestsExt struct {
-	set *sdk.CatalogIntegrationSetRequest
-}
-
 func catalogIntegrationAwsGlueHandleExternalChangesInDescribeExt(_ context.Context, d *schema.ResourceData, _ any, details *sdk.CatalogIntegrationAwsGlueDetails, _ bool) diag.Diagnostics {
 	// refresh_interval_seconds and glue_region are generated external changes, not copied here.
 	if err := errors.Join(
@@ -80,14 +74,6 @@ func catalogIntegrationAwsGlueSetConfigFieldsExt(_ context.Context, d *schema.Re
 		d.Set("enabled", catalogIntegration.Enabled),
 		d.Set("comment", catalogIntegration.Comment),
 	)
-}
-
-func catalogIntegrationAwsGlueApplySetUnsetExt(d *schema.ResourceData) (*catalogIntegrationAwsGlueAlterRequestsExt, error) {
-	set := sdk.NewCatalogIntegrationSetRequest()
-	if errs := handleCatalogIntegrationCommonPropsUpdate(d, set); errs != nil {
-		return nil, errs
-	}
-	return &catalogIntegrationAwsGlueAlterRequestsExt{set: set}, nil
 }
 
 func catalogIntegrationAwsGlueSetFieldsNotSetByReadExt(d *schema.ResourceData, _ sdk.AccountObjectIdentifier, details *sdk.CatalogIntegrationAwsGlueDetails, importPermissiveMode bool) error {
@@ -148,16 +134,4 @@ func catalogIntegrationAwsGlueShowByIdInSdkExt(ctx context.Context, meta any, id
 		return nil, fmt.Errorf("invalid catalog source type, expected %s, got %s", sdk.CatalogIntegrationCatalogSourceTypeGlue, details.CatalogSource)
 	}
 	return details, nil
-}
-
-func catalogIntegrationAwsGlueAlterSetInSdkExt(ctx context.Context, _ *schema.ResourceData, meta any, id sdk.AccountObjectIdentifier, reqs *catalogIntegrationAwsGlueAlterRequestsExt) error {
-	if reflect.DeepEqual(*reqs.set, *sdk.NewCatalogIntegrationSetRequest()) {
-		return nil
-	}
-	client := meta.(*provider.Context).Client
-	req := sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*reqs.set)
-	if err := client.CatalogIntegrations.Alter(ctx, req); err != nil {
-		return fmt.Errorf("error updating catalog integration (%s), err = %w", helpers.EncodeResourceIdentifier(id), err)
-	}
-	return nil
 }

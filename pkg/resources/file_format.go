@@ -818,7 +818,7 @@ func UpdateFileFormat(ctx context.Context, d *schema.ResourceData, meta any) dia
 			return diag.FromErr(fmt.Errorf("error renaming file format: %w", err))
 		}
 
-		d.SetId(helpers.EncodeSnowflakeID(newId))
+		d.SetId(helpers.EncodeSnowflakeIDLegacy(newId))
 		id = newId
 	}
 

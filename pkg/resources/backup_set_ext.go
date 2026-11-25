@@ -6,7 +6,9 @@ import (
 	"fmt"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,10 +17,10 @@ import (
 )
 
 var (
-	backupSetCreateExt      = TrackingCreateWrapper(resources.BackupSet, CreateBackupSet)
-	backupSetReadExt        = TrackingReadWrapper(resources.BackupSet, readBackupSet)
-	backupSetUpdateExt      = TrackingUpdateWrapper(resources.BackupSet, UpdateBackupSet)
-	backupSetDescriptionExt = "Resource used to manage backup sets. For more information, check [backup set documentation](https://docs.snowflake.com/en/user-guide/backups)."
+	backupSetCreateExt      = PreviewFeatureCreateContextWrapper(string(previewfeatures.BackupSetResource), TrackingCreateWrapper(resources.BackupSet, CreateBackupSet))
+	backupSetReadExt        = PreviewFeatureReadContextWrapper(string(previewfeatures.BackupSetResource), TrackingReadWrapper(resources.BackupSet, readBackupSet))
+	backupSetUpdateExt      = PreviewFeatureUpdateContextWrapper(string(previewfeatures.BackupSetResource), TrackingUpdateWrapper(resources.BackupSet, UpdateBackupSet))
+	backupSetDescriptionExt = docs.WithPreviewFeatureMark() + "Resource used to manage backup sets. For more information, check [backup set documentation](https://docs.snowflake.com/en/user-guide/backups)."
 	backupSetImporterExt    = &schema.ResourceImporter{
 		StateContext: TrackingImportWrapper(resources.BackupSet, importBackupSet),
 	}

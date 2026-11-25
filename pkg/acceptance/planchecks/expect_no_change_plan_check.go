@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -17,7 +18,6 @@ type expectNoChangePlanCheck struct {
 	attribute       string
 }
 
-// TODO [SNOW-1473409]: test
 func (e expectNoChangePlanCheck) CheckPlan(_ context.Context, req plancheck.CheckPlanRequest, resp *plancheck.CheckPlanResponse) {
 	var result []error
 
@@ -60,8 +60,9 @@ func (e expectNoChangePlanCheck) CheckPlan(_ context.Context, req plancheck.Chec
 			}
 		}
 
-		if valueBefore != valueAfter {
-			result = append(result, fmt.Errorf("expect no change: attribute %s before=%s, after=%s", e.attribute, valueBefore, valueAfter))
+		// Sets, lists, and blocks are slices and maps in the plan, which cannot be compared with !=.
+		if !reflect.DeepEqual(valueBefore, valueAfter) {
+			result = append(result, fmt.Errorf("expect no change: attribute %s before=%v, after=%v", e.attribute, valueBefore, valueAfter))
 		}
 	}
 

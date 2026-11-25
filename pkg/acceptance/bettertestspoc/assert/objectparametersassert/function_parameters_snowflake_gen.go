@@ -59,20 +59,25 @@ func (f *FunctionParametersAssert) HasDefaultParameterValueOnLevel(parameterName
 	return f
 }
 
+func (f *FunctionParametersAssert) HasDefaultParameterValueOnDefaultLevel(parameterName sdk.FunctionParameter) *FunctionParametersAssert {
+	f.AddAssertion(assert.SnowflakeParameterDefaultValueOnDefaultLevelSet(parameterName))
+	return f
+}
+
 ///////////////////////////////
 // Aggregated generic checks //
 ///////////////////////////////
 
 // HasAllDefaults checks if all the parameters:
 // - have a default value by comparing current value of the sdk.Parameter with its default
-// - have an expected level
+// - have an expected level (Snowflake default parameters accept both the empty and SYSTEM level)
 func (f *FunctionParametersAssert) HasAllDefaults() *FunctionParametersAssert {
 	return f.
-		HasDefaultParameterValueOnLevel(sdk.FunctionParameterEnableConsoleOutput, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.FunctionParameterLogEventLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.FunctionParameterLogLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.FunctionParameterMetricLevel, sdk.ParameterTypeSnowflakeDefault).
-		HasDefaultParameterValueOnLevel(sdk.FunctionParameterTraceLevel, sdk.ParameterTypeSnowflakeDefault)
+		HasDefaultParameterValueOnDefaultLevel(sdk.FunctionParameterEnableConsoleOutput).
+		HasDefaultParameterValueOnDefaultLevel(sdk.FunctionParameterLogEventLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.FunctionParameterLogLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.FunctionParameterMetricLevel).
+		HasDefaultParameterValueOnDefaultLevel(sdk.FunctionParameterTraceLevel)
 }
 
 func (f *FunctionParametersAssert) HasAllDefaultsExplicit() *FunctionParametersAssert {

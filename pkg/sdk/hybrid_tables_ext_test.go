@@ -22,7 +22,7 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "ID",
-							DataType: DataTypeNumber,
+							DataType: dataTypeNumber,
 							InlineConstraint: &ColumnInlineConstraint{
 								Name: new("pk_id"),
 								Type: ColumnConstraintTypePrimaryKey,
@@ -30,14 +30,14 @@ func init() {
 						},
 						{
 							Name:     "NAME",
-							DataType: DataTypeVARCHAR,
+							DataType: dataTypeVarchar,
 							NotNull:  new(true),
 							Collate:  new("en-ci"),
 							Comment:  new("the name"),
 						},
 						{
 							Name:     "REF_ID",
-							DataType: DataTypeNumber,
+							DataType: dataTypeNumber,
 							InlineConstraint: &ColumnInlineConstraint{
 								Type: ColumnConstraintTypeForeignKey,
 								ForeignKey: &InlineForeignKey{
@@ -63,7 +63,7 @@ func init() {
 				}
 				opts.Comment = new("test comment")
 			},
-			`CREATE HYBRID TABLE IF NOT EXISTS %s ("ID" NUMBER CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`,
+			`CREATE HYBRID TABLE IF NOT EXISTS %s ("ID" NUMBER(38, 0) CONSTRAINT pk_id PRIMARY KEY, "NAME" VARCHAR(16777216) NOT NULL COLLATE 'en-ci' COMMENT 'the name', "REF_ID" NUMBER(38, 0) FOREIGN KEY REFERENCES other_table (ID), UNIQUE ("NAME"), INDEX "idx_name" ("NAME") INCLUDE ("ID")) COMMENT = 'test comment'`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -73,14 +73,14 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "ID",
-							DataType: DataTypeNumber,
+							DataType: dataTypeNumber,
 							InlineConstraint: &ColumnInlineConstraint{
 								Type: ColumnConstraintTypePrimaryKey,
 							},
 						},
 						{
 							Name:     "NAME",
-							DataType: DataTypeVARCHAR,
+							DataType: dataTypeVarchar,
 							NotNull:  new(true),
 							Comment:  new("the name"),
 						},
@@ -99,7 +99,7 @@ func init() {
 					},
 				}
 			},
-			`CREATE HYBRID TABLE %s ("ID" NUMBER PRIMARY KEY, "NAME" VARCHAR NOT NULL COMMENT 'the name', UNIQUE ("NAME"), INDEX "idx_name" ("NAME"))`,
+			`CREATE HYBRID TABLE %s ("ID" NUMBER(38, 0) PRIMARY KEY, "NAME" VARCHAR(16777216) NOT NULL COMMENT 'the name', UNIQUE ("NAME"), INDEX "idx_name" ("NAME"))`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -109,20 +109,20 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "id",
-							DataType: DataType("NUMBER(38,0)"),
+							DataType: dataTypeNumber_38_0,
 							InlineConstraint: &ColumnInlineConstraint{
 								Type: ColumnConstraintTypePrimaryKey,
 							},
 						},
 						{
 							Name:     "name",
-							DataType: DataType("VARCHAR(100)"),
+							DataType: dataTypeVarchar_100,
 							NotNull:  new(true),
 						},
 					},
 				}
 			},
-			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "name" VARCHAR(100) NOT NULL)`,
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38, 0) PRIMARY KEY, "name" VARCHAR(100) NOT NULL)`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -132,14 +132,14 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "id",
-							DataType: DataType("NUMBER(38,0)"),
+							DataType: dataTypeNumber_38_0,
 							InlineConstraint: &ColumnInlineConstraint{
 								Type: ColumnConstraintTypePrimaryKey,
 							},
 						},
 						{
 							Name:     "email",
-							DataType: DataType("VARCHAR(200)"),
+							DataType: dataTypeVarchar_200,
 						},
 					},
 					OutOfLineConstraint: []HybridTableOutOfLineConstraint{
@@ -158,7 +158,7 @@ func init() {
 				}
 				opts.Comment = new("test table")
 			},
-			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "email" VARCHAR(200), UNIQUE ("email"), INDEX "idx_email" ("email") INCLUDE ("id")) COMMENT = 'test table'`,
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38, 0) PRIMARY KEY, "email" VARCHAR(200), UNIQUE ("email"), INDEX "idx_email" ("email") INCLUDE ("id")) COMMENT = 'test table'`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -168,14 +168,14 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "id",
-							DataType: DataType("NUMBER(38,0)"),
+							DataType: dataTypeNumber_38_0,
 							InlineConstraint: &ColumnInlineConstraint{
 								Type: ColumnConstraintTypePrimaryKey,
 							},
 						},
 						{
 							Name:     "parent_id",
-							DataType: DataType("NUMBER(38,0)"),
+							DataType: dataTypeNumber_38_0,
 						},
 					},
 					OutOfLineConstraint: []HybridTableOutOfLineConstraint{
@@ -191,7 +191,7 @@ func init() {
 					},
 				}
 			},
-			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "parent_id" NUMBER(38,0), CONSTRAINT "fk_parent" FOREIGN KEY ("parent_id") REFERENCES %s ("id"))`,
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38, 0) PRIMARY KEY, "parent_id" NUMBER(38, 0), CONSTRAINT "fk_parent" FOREIGN KEY ("parent_id") REFERENCES %s ("id"))`,
 			id.FullyQualifiedName(), hybridTablesTestIdSchemaObjectIdentifier.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -201,7 +201,7 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "id",
-							DataType: DataType("NUMBER(38,0)"),
+							DataType: dataTypeNumber_38_0,
 							InlineConstraint: &ColumnInlineConstraint{
 								Name: new("pk_id"),
 								Type: ColumnConstraintTypePrimaryKey,
@@ -210,7 +210,7 @@ func init() {
 					},
 				}
 			},
-			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) CONSTRAINT pk_id PRIMARY KEY)`,
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38, 0) CONSTRAINT pk_id PRIMARY KEY)`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -220,14 +220,14 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "id",
-							DataType: DataType("NUMBER(38,0)"),
+							DataType: dataTypeNumber_38_0,
 							InlineConstraint: &ColumnInlineConstraint{
 								Type: ColumnConstraintTypePrimaryKey,
 							},
 						},
 						{
 							Name:     "name",
-							DataType: DataType("VARCHAR(100)"),
+							DataType: dataTypeVarchar_100,
 							NotNull:  new(true),
 							Collate:  new("en-ci"),
 							Comment:  new("name column"),
@@ -235,7 +235,7 @@ func init() {
 					},
 				}
 			},
-			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY, "name" VARCHAR(100) NOT NULL COLLATE 'en-ci' COMMENT 'name column')`,
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38, 0) PRIMARY KEY, "name" VARCHAR(100) NOT NULL COLLATE 'en-ci' COMMENT 'name column')`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -245,7 +245,7 @@ func init() {
 					Columns: []HybridTableColumn{
 						{
 							Name:     "id",
-							DataType: DataType("NUMBER(38,0)"),
+							DataType: dataTypeNumber_38_0,
 							InlineConstraint: &ColumnInlineConstraint{
 								Type: ColumnConstraintTypePrimaryKey,
 							},
@@ -256,7 +256,7 @@ func init() {
 				opts.MaxDataExtensionTimeInDays = new(14)
 				opts.Comment = new("with retention")
 			},
-			`CREATE HYBRID TABLE %s ("id" NUMBER(38,0) PRIMARY KEY) DATA_RETENTION_TIME_IN_DAYS = 7 MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 COMMENT = 'with retention'`,
+			`CREATE HYBRID TABLE %s ("id" NUMBER(38, 0) PRIMARY KEY) DATA_RETENTION_TIME_IN_DAYS = 7 MAX_DATA_EXTENSION_TIME_IN_DAYS = 14 COMMENT = 'with retention'`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -266,7 +266,7 @@ func init() {
 		)
 
 	newID := randomSchemaObjectIdentifierInSchema(id.SchemaId())
-	alterDataType := DataType("VARCHAR(200)")
+	alterDataType := dataTypeVarchar_200
 
 	hybridTablesTests.Alter.
 		withModify(
@@ -314,10 +314,10 @@ func init() {
 			func(opts *AlterHybridTableOptions) {
 				opts.AddColumnAction = &HybridTableAddColumnAction{
 					Name:     "NEW_COLUMN",
-					DataType: DataTypeVARCHAR,
+					DataType: dataTypeVarchar,
 				}
 			},
-			`ALTER TABLE %s ADD COLUMN "NEW_COLUMN" VARCHAR`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD COLUMN "NEW_COLUMN" VARCHAR(16777216)`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_AddColumnAction_allOptions",
@@ -326,7 +326,7 @@ func init() {
 				opts.AddColumnAction = &HybridTableAddColumnAction{
 					IfNotExists: new(true),
 					Name:        "NEW_COLUMN",
-					DataType:    DataTypeVARCHAR,
+					DataType:    dataTypeVarchar,
 					Collate:     new("utf8"),
 					InlineConstraint: &ColumnInlineConstraint{
 						Name: new("uq_new"),
@@ -335,7 +335,7 @@ func init() {
 					Comment: new("new column comment"),
 				}
 			},
-			`ALTER TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS "NEW_COLUMN" VARCHAR COLLATE 'utf8' CONSTRAINT uq_new UNIQUE COMMENT 'new column comment'`,
+			`ALTER TABLE IF EXISTS %s ADD COLUMN IF NOT EXISTS "NEW_COLUMN" VARCHAR(16777216) COLLATE 'utf8' CONSTRAINT uq_new UNIQUE COMMENT 'new column comment'`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(

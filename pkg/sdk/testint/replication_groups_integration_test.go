@@ -67,7 +67,7 @@ func TestInt_ReplicationGroups(t *testing.T) {
 			HasNoAllowedIntegrationTypes().
 			HasNoReplicationSchedule().
 			HasNoSecondaryState().
-			HasNoReadOnly().
+			HasNoIsPrimaryReadOnly().
 			HasIsListingAutoFulfillmentGroup(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasAccountNameNotEmpty().
@@ -444,7 +444,7 @@ func assertBasicSecondaryReplicationGroup(t *testing.T, secondaryID, primaryID s
 		HasNoAllowedAccounts().
 		HasNoReplicationSchedule().
 		HasNoSecondaryState().
-		HasNoReadOnly().
+		HasNoIsPrimaryReadOnly().
 		HasIsListingAutoFulfillmentGroup(false).
 		HasOwner(snowflakeroles.Accountadmin.Name()).
 		HasAccountNameNotEmpty().

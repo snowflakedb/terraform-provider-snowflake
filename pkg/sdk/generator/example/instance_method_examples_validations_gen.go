@@ -48,12 +48,8 @@ func (opts *SetScopeInstanceMethodExampleOptions) validate() error {
 	if valueSet(opts.args) {
 		if valueSet(opts.args.Tags) {
 			for tagIdx, tag := range opts.args.Tags {
-				if valueSet(tag.Reference) {
-					if valueSet(tag.Reference.Arguments) {
-						if !ValidObjectIdentifier(tag.Reference.Arguments.Tag) {
-							errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetScopeInstanceMethodExampleOptions.args.Tags[%d].Reference.Arguments", tagIdx), "Tag"))
-						}
-					}
+				if !ValidObjectIdentifier(tag.Tag) {
+					errs = append(errs, errInvalidIdentifier(fmt.Sprintf("SetScopeInstanceMethodExampleOptions.args.Tags[%d]", tagIdx), "Tag"))
 				}
 			}
 		}

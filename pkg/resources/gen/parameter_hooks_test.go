@@ -2,6 +2,7 @@ package gen
 
 import (
 	"bytes"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -9,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_schemaTemplateMatchesHandWrittenMappings(t *testing.T) {
 	model := ResourceModel{
 		Name:       "Schema",
@@ -40,6 +42,38 @@ func TestParameterHooks_schemaTemplateMatchesHandWrittenMappings(t *testing.T) {
 	require.NotContains(t, got, "ssotdefs.")
 }
 
+func TestParameterHooks_resourceParametersAllowlist(t *testing.T) {
+	model := ResourceModel{
+		Name:       "Table",
+		NamePlural: "Tables",
+		ResourceParameters: []ssot.ParameterDef{
+			ssotdefs.DefaultDdlCollation,
+			ssotdefs.DataRetentionTimeInDays,
+			ssotdefs.MaxDataExtensionTimeInDays,
+		},
+		Hooks: ssot.DefaultResourceExtHooks(
+			ssot.WithParametersAttributesSchema(ssot.Generated()),
+			ssot.WithApplyParametersCreate(ssot.Generated()),
+			ssot.WithParametersCustomDiff(ssot.Generated()),
+			ssot.WithParseId(ssot.Generated()),
+		),
+	}
+	var rendered bytes.Buffer
+	require.NoError(t, ParametersTemplate.Execute(&rendered, model))
+	got := rendered.String()
+
+	require.Contains(t, got, `"data_retention_time_in_days": parameterSchemaFromDefinition(`)
+	require.Contains(t, got, `"default_ddl_collation": parameterSchemaFromDefinition(`)
+	require.Contains(t, got, `"max_data_extension_time_in_days": parameterSchemaFromDefinition(`)
+	require.Contains(t, got, `handleParameterCreate(d, "data_retention_time_in_days", &req.DataRetentionTimeInDays),`)
+	require.Contains(t, got, `handleParameterCreateWithMapping(d, "default_ddl_collation", &req.DefaultDdlCollation, stringToStringAllowEmpty),`)
+	require.NotContains(t, got, `"catalog"`)
+	require.NotContains(t, got, "Catalog")
+	require.NotContains(t, got, "external_volume")
+	require.Less(t, strings.Index(got, `"data_retention_time_in_days"`), strings.Index(got, `"default_ddl_collation"`))
+	require.Less(t, strings.Index(got, `"default_ddl_collation"`), strings.Index(got, `"max_data_extension_time_in_days"`))
+}
+
 func TestParameterHooks_customDiffUsesConfiguredParseId(t *testing.T) {
 	model := ResourceModel{
 		Name:       "Schema",
@@ -56,6 +90,7 @@ func TestParameterHooks_customDiffUsesConfiguredParseId(t *testing.T) {
 	require.NotContains(t, rendered.String(), "schemaParseIdExt(d.Id())")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_variantUsesBaseSdkNames(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: ssotdefs.WarehouseAdaptive}, nil, nil)
 
@@ -80,6 +115,7 @@ func TestParameterHooks_variantUsesBaseSdkNames(t *testing.T) {
 	require.Contains(t, lifecycleRendered.String(), "sdk.ToWarehouseParametersDetails(rawWarehouseAdaptiveParameters)")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_nonVariantUsesOwnSdkNames(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: ssotdefs.Warehouse}, nil, nil)
 	var rendered bytes.Buffer
@@ -92,12 +128,13 @@ func TestParameterHooks_nonVariantUsesOwnSdkNames(t *testing.T) {
 	require.Contains(t, parameters, "*sdk.WarehouseUnsetRequest")
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func TestParameterHooks_variantRetainsOwnCatalog(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: ssot.Object{
 		Name:       "WarehouseInteractive",
 		NamePlural: "Warehouses",
 		IdType:     "AccountObjectIdentifier",
-		VariantOf:  &ssotdefs.Warehouse,
+		Variant:    &ssot.ObjectVariant{Of: &ssotdefs.Warehouse},
 		ResourceHooks: []ssot.ResourceHookOption{
 			ssot.WithParametersAttributesSchema(ssot.Generated()),
 			ssot.WithApplyParametersChanges(ssot.Generated()),

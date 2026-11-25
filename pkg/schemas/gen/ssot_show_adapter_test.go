@@ -54,18 +54,18 @@ func Test_selectsForSchemaShow(t *testing.T) {
 		Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
 		Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow())},
 	}
-	variant := func(opts ...ssot.SchemaShowOption) ssot.Object {
+	variant := func(fromBase bool) ssot.Object {
 		return ssot.Object{
 			Name:       "WidgetGlue",
-			VariantOf:  &base,
+			Variant:    &ssot.ObjectVariant{Of: &base, SchemaShowFromBase: fromBase},
 			Show:       ssot.OutputSpec{Columns: []*ssot.Attribute{&comment}},
-			Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow(opts...))},
+			Generators: []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaShow())},
 		}
 	}
 
 	require.True(t, selectsForSchemaShow(base))
-	require.True(t, selectsForSchemaShow(variant()))
-	require.False(t, selectsForSchemaShow(variant(ssot.SchemaShowFromBase())), "a variant reusing the base schema is not generated")
+	require.True(t, selectsForSchemaShow(variant(false)))
+	require.False(t, selectsForSchemaShow(variant(true)), "a variant reusing the base schema is not generated")
 	require.False(t, selectsForSchemaShow(ssot.Object{Name: "Empty"}), "no SHOW columns")
 }
 
@@ -111,4 +111,24 @@ func Test_showResultSchemaDetailsFromSsot_overridesSetColumnsToTypeSet(t *testin
 
 	got := showResultSchemaDetailsFromSsot(obj, false)
 	require.Equal(t, map[string]schema.ValueType{"allowed_accounts": schema.TypeSet}, got.TypeOverrides)
+}
+
+func Test_propertyRowSchemaDetailsFromSsot_usedAsListEntry(t *testing.T) {
+	property := ssot.Attribute{Name: "property", Type: ssot.AttrString, Readonly: true}
+	value := ssot.Attribute{Name: "value", Type: ssot.AttrString, Readonly: true}
+	obj := ssot.Object{
+		Name:         "AuthenticationPolicy",
+		DescribeRows: ssot.OutputSpec{Columns: []*ssot.Attribute{&property, &value}},
+		Generators:   []ssot.GeneratorOption{ssot.WithSchema(ssot.SchemaUsedAsListEntry())},
+	}
+
+	got := propertyRowSchemaDetailsFromSsot(obj)
+	require.True(t, got.UsedAsListEntry)
+	require.False(t, got.IsDescribe)
+	require.Equal(t, "sdk.AuthenticationPolicyProperty", got.Name)
+	require.Equal(t, []genhelpers.Field{
+		ssot.ColumnField(obj, property),
+		ssot.ColumnField(obj, value),
+	}, got.Fields)
+	require.Panics(t, func() { propertyRowSchemaDetailsFromSsot(ssot.Object{Name: "Widget"}) })
 }

@@ -228,7 +228,7 @@ func UpdateFileFormatCsv(ctx context.Context, d *schema.ResourceData, meta any) 
 			return client.FileFormats.AlterCsv(ctx, sdk.NewAlterCsvFileFormatRequest(currentId).WithRenameTo(targetId))
 		},
 		client.FileFormats.ShowByID,
-		"file format",
+		sdk.ObjectTypeFileFormat,
 	); diags != nil {
 		return diags
 	}

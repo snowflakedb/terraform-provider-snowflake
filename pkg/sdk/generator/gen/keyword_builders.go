@@ -120,6 +120,10 @@ func (v *QueryStruct) OptionalExtendedIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*ExtendedIn", KeywordOptions().SQL("IN"))
 }
 
+func (v *QueryStruct) OptionalExtendedInWithoutSchema() *QueryStruct {
+	return v.PredefinedQueryStructField("In", "*ExtendedInWithoutSchema", KeywordOptions().SQL("IN"))
+}
+
 func (v *QueryStruct) OptionalServiceIn() *QueryStruct {
 	return v.PredefinedQueryStructField("In", "*ServiceIn", KeywordOptions().SQL("IN"))
 }

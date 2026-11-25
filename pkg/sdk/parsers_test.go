@@ -391,3 +391,202 @@ func TestParseCommaSeparatedAccountIdentifierArray_Invalid(t *testing.T) {
 		})
 	}
 }
+
+func TestParseDescribeSignature(t *testing.T) {
+	testCases := []struct {
+		Name      string
+		Signature string
+		Result    []NormalizedArgument
+	}{
+		{
+			Name:      "no arguments",
+			Signature: "()",
+			Result:    []NormalizedArgument{},
+		},
+		{
+			Name:      "empty string",
+			Signature: "",
+			Result:    []NormalizedArgument{},
+		},
+		{
+			Name:      "single argument",
+			Signature: "(A VARCHAR)",
+			Result:    []NormalizedArgument{{"A", dataTypeVarchar}},
+		},
+		{
+			Name:      "without wrapping parentheses",
+			Signature: "A VARCHAR, my col NUMBER, V VECTOR(FLOAT, 10)",
+			Result: []NormalizedArgument{
+				{"A", dataTypeVarchar},
+				{"my col", dataTypeNumber},
+				{"V", dataTypeVectorFloat_10},
+			},
+		},
+		{
+			Name:      "multiple arguments",
+			Signature: "(A VARCHAR, B BOOLEAN)",
+			Result:    []NormalizedArgument{{"A", dataTypeVarchar}, {"B", dataTypeBoolean}},
+		},
+		{
+			Name:      "name with spaces",
+			Signature: "(my col VARCHAR)",
+			Result:    []NormalizedArgument{{"my col", dataTypeVarchar}},
+		},
+		{
+			Name:      "empty name",
+			Signature: "( VARCHAR)",
+			Result:    []NormalizedArgument{{"", dataTypeVarchar}},
+		},
+		{
+			Name:      "empty name - not the first argument",
+			Signature: "(A VARCHAR,  BOOLEAN)",
+			Result:    []NormalizedArgument{{"A", dataTypeVarchar}, {"", dataTypeBoolean}},
+		},
+		{
+			Name:      "whitespace-only names",
+			Signature: "(  VARCHAR,    BOOLEAN)",
+			Result:    []NormalizedArgument{{" ", dataTypeVarchar}, {"  ", dataTypeBoolean}},
+		},
+		{
+			Name:      "name with a leading space",
+			Signature: "( a VARCHAR,  b BOOLEAN)",
+			Result:    []NormalizedArgument{{" a", dataTypeVarchar}, {" b", dataTypeBoolean}},
+		},
+		{
+			Name:      "name with a trailing space",
+			Signature: "(a  VARCHAR, b  BOOLEAN)",
+			Result:    []NormalizedArgument{{"a ", dataTypeVarchar}, {"b ", dataTypeBoolean}},
+		},
+		{
+			Name:      "name with lowercase letters",
+			Signature: "(lower NUMBER)",
+			Result:    []NormalizedArgument{{"lower", dataTypeNumber}},
+		},
+		{
+			Name:      "name with a double quote",
+			Signature: `(x"y VARCHAR, B BOOLEAN)`,
+			Result:    []NormalizedArgument{{`x"y`, dataTypeVarchar}, {"B", dataTypeBoolean}},
+		},
+		{
+			Name:      "name DEFAULT",
+			Signature: "(DEFAULT NUMBER)",
+			Result:    []NormalizedArgument{{"DEFAULT", dataTypeNumber}},
+		},
+		{
+			Name:      "vector",
+			Signature: "(V VECTOR(FLOAT, 10))",
+			Result:    []NormalizedArgument{{"V", dataTypeVectorFloat_10}},
+		},
+		{
+			Name:      "vector with a name with spaces",
+			Signature: "(my vec VECTOR(FLOAT, 10), A VARCHAR)",
+			Result:    []NormalizedArgument{{"my vec", dataTypeVectorFloat_10}, {"A", dataTypeVarchar}},
+		},
+		{
+			Name:      "structured types",
+			Signature: "(O OBJECT(a VARCHAR, b NUMBER NOT NULL), R ARRAY(NUMBER), M MAP(VARCHAR, NUMBER))",
+			Result: []NormalizedArgument{
+				{"O", dataTypeObjectStructured},
+				{"R", dataTypeArrayNumber},
+				{"M", dataTypeMapVarcharNumber},
+			},
+		},
+		{
+			Name:      "structured types with names with spaces",
+			Signature: "(my obj OBJECT(a VARCHAR, b NUMBER NOT NULL), my arr ARRAY(NUMBER), my map MAP(VARCHAR, NUMBER))",
+			Result: []NormalizedArgument{
+				{"my obj", dataTypeObjectStructured},
+				{"my arr", dataTypeArrayNumber},
+				{"my map", dataTypeMapVarcharNumber},
+			},
+		},
+		{
+			Name:      "function signature returned by Snowflake",
+			Signature: `(my col VARCHAR, lower NUMBER, DEFAULT NUMBER, x"y VARCHAR, V VECTOR(INT, 10), D VARCHAR)`,
+			Result: []NormalizedArgument{
+				{"my col", dataTypeVarchar},
+				{"lower", dataTypeNumber},
+				{"DEFAULT", dataTypeNumber},
+				{`x"y`, dataTypeVarchar},
+				{"V", dataTypeVectorInt_10},
+				{"D", dataTypeVarchar},
+			},
+		},
+		{
+			Name:      "policy signature returned by Snowflake",
+			Signature: `(my col VARCHAR, lower NUMBER, PLAIN VARCHAR, DEFAULT NUMBER, x"y VARCHAR, V VECTOR(FLOAT, 10))`,
+			Result: []NormalizedArgument{
+				{"my col", dataTypeVarchar},
+				{"lower", dataTypeNumber},
+				{"PLAIN", dataTypeVarchar},
+				{"DEFAULT", dataTypeNumber},
+				{`x"y`, dataTypeVarchar},
+				{"V", dataTypeVectorFloat_10},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			result, err := ParseDescribeSignature(tc.Signature)
+			require.NoError(t, err)
+			require.Equal(t, tc.Result, result)
+		})
+	}
+}
+
+func TestParseDescribeSignature_Invalid(t *testing.T) {
+	testCases := []struct {
+		Name      string
+		Signature string
+		Error     string
+	}{
+		{
+			Name:      "missing argument name",
+			Signature: "(VARCHAR)",
+			Error:     "expected argument name and type, got VARCHAR",
+		},
+		{
+			Name:      "missing argument name - one of many",
+			Signature: "(A VARCHAR, BOOLEAN)",
+			Error:     "expected argument name and type, got BOOLEAN",
+		},
+		{
+			Name:      "empty argument",
+			Signature: "(A VARCHAR, )",
+			Error:     "empty argument",
+		},
+		{
+			Name:      "empty argument - in the middle",
+			Signature: "(A VARCHAR, , B BOOLEAN)",
+			Error:     "empty argument",
+		},
+		{
+			Name:      "invalid data type",
+			Signature: "(A INVALID_TYPE)",
+			Error:     "invalid data type",
+		},
+		{
+			Name:      "missing data type",
+			Signature: "(A )",
+			Error:     "invalid data type",
+		},
+		{
+			Name:      "unsupported name with a comma",
+			Signature: "(a,b VARCHAR)",
+			Error:     "expected argument name and type, got a",
+		},
+		{
+			Name:      "unsupported name with a parenthesis",
+			Signature: "(p(x VARCHAR)",
+			Error:     "expected argument name and type, got p(x VARCHAR",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			_, err := ParseDescribeSignature(tc.Signature)
+			require.ErrorContains(t, err, tc.Error)
+		})
+	}
+}

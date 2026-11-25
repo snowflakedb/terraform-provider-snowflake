@@ -3,6 +3,7 @@
 package resourceassert
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -47,6 +48,8 @@ func (t *TableResourceAssert) HasName(expected string) *TableResourceAssert {
 	return t
 }
 
+// typed assert for "aggregation_policy" (type: List) is not currently supported
+
 func (t *TableResourceAssert) HasChangeTracking(expected bool) *TableResourceAssert {
 	t.BoolValueSet("change_tracking", expected)
 	return t
@@ -57,7 +60,7 @@ func (t *TableResourceAssert) HasClusterBy(expected ...string) *TableResourceAss
 	return t
 }
 
-// typed assert for "column" (type: List, subtype: Map) is not currently supported
+// typed assert for "column" (type: List) is not currently supported
 
 func (t *TableResourceAssert) HasComment(expected string) *TableResourceAssert {
 	t.StringValueSet("comment", expected)
@@ -69,19 +72,66 @@ func (t *TableResourceAssert) HasDataRetentionTimeInDays(expected int) *TableRes
 	return t
 }
 
+func (t *TableResourceAssert) HasDefaultDdlCollation(expected string) *TableResourceAssert {
+	t.StringValueSet("default_ddl_collation", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasEnableSchemaEvolution(expected string) *TableResourceAssert {
+	t.StringValueSet("enable_schema_evolution", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasEnableSchemaEvolutionBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("enable_schema_evolution", strconv.FormatBool(expected))
+	return t
+}
+
+func (t *TableResourceAssert) HasErrorLogging(expected string) *TableResourceAssert {
+	t.StringValueSet("error_logging", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasErrorLoggingBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("error_logging", strconv.FormatBool(expected))
+	return t
+}
+
 func (t *TableResourceAssert) HasFullyQualifiedName(expected string) *TableResourceAssert {
 	t.StringValueSet("fully_qualified_name", expected)
 	return t
 }
 
-func (t *TableResourceAssert) HasOwner(expected string) *TableResourceAssert {
-	t.StringValueSet("owner", expected)
+func (t *TableResourceAssert) HasIsTransient(expected string) *TableResourceAssert {
+	t.StringValueSet("is_transient", expected)
 	return t
 }
 
-// typed assert for "primary_key" (type: List, subtype: Map) is not currently supported
+func (t *TableResourceAssert) HasIsTransientBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("is_transient", strconv.FormatBool(expected))
+	return t
+}
 
-// typed assert for "tag" (type: List, subtype: Map) is not currently supported
+// typed assert for "join_policy" (type: List) is not currently supported
+
+func (t *TableResourceAssert) HasMaxDataExtensionTimeInDays(expected int) *TableResourceAssert {
+	t.IntValueSet("max_data_extension_time_in_days", expected)
+	return t
+}
+
+// typed assert for "primary_key" (type: List) is not currently supported
+
+// typed assert for "row_access_policy" (type: List) is not currently supported
+
+func (t *TableResourceAssert) HasRowTimestamp(expected string) *TableResourceAssert {
+	t.StringValueSet("row_timestamp", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasRowTimestampBool(expected bool) *TableResourceAssert {
+	t.StringValueSet("row_timestamp", strconv.FormatBool(expected))
+	return t
+}
 
 ///////////////////////////////////
 // Attribute value string checks //
@@ -117,13 +167,38 @@ func (t *TableResourceAssert) HasDataRetentionTimeInDaysString(expected string) 
 	return t
 }
 
+func (t *TableResourceAssert) HasDefaultDdlCollationString(expected string) *TableResourceAssert {
+	t.ValueSet("default_ddl_collation", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasEnableSchemaEvolutionString(expected string) *TableResourceAssert {
+	t.ValueSet("enable_schema_evolution", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasErrorLoggingString(expected string) *TableResourceAssert {
+	t.ValueSet("error_logging", expected)
+	return t
+}
+
 func (t *TableResourceAssert) HasFullyQualifiedNameString(expected string) *TableResourceAssert {
 	t.ValueSet("fully_qualified_name", expected)
 	return t
 }
 
-func (t *TableResourceAssert) HasOwnerString(expected string) *TableResourceAssert {
-	t.ValueSet("owner", expected)
+func (t *TableResourceAssert) HasIsTransientString(expected string) *TableResourceAssert {
+	t.ValueSet("is_transient", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasMaxDataExtensionTimeInDaysString(expected string) *TableResourceAssert {
+	t.ValueSet("max_data_extension_time_in_days", expected)
+	return t
+}
+
+func (t *TableResourceAssert) HasRowTimestampString(expected string) *TableResourceAssert {
+	t.ValueSet("row_timestamp", expected)
 	return t
 }
 
@@ -161,19 +236,49 @@ func (t *TableResourceAssert) HasNoDataRetentionTimeInDays() *TableResourceAsser
 	return t
 }
 
+func (t *TableResourceAssert) HasNoDefaultDdlCollation() *TableResourceAssert {
+	t.ValueNotSet("default_ddl_collation")
+	return t
+}
+
+func (t *TableResourceAssert) HasNoEnableSchemaEvolution() *TableResourceAssert {
+	t.ValueNotSet("enable_schema_evolution")
+	return t
+}
+
+func (t *TableResourceAssert) HasNoErrorLogging() *TableResourceAssert {
+	t.ValueNotSet("error_logging")
+	return t
+}
+
 func (t *TableResourceAssert) HasNoFullyQualifiedName() *TableResourceAssert {
 	t.ValueNotSet("fully_qualified_name")
 	return t
 }
 
-func (t *TableResourceAssert) HasNoOwner() *TableResourceAssert {
-	t.ValueNotSet("owner")
+func (t *TableResourceAssert) HasNoIsTransient() *TableResourceAssert {
+	t.ValueNotSet("is_transient")
+	return t
+}
+
+func (t *TableResourceAssert) HasNoMaxDataExtensionTimeInDays() *TableResourceAssert {
+	t.ValueNotSet("max_data_extension_time_in_days")
+	return t
+}
+
+func (t *TableResourceAssert) HasNoRowTimestamp() *TableResourceAssert {
+	t.ValueNotSet("row_timestamp")
 	return t
 }
 
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
+
+func (t *TableResourceAssert) HasAggregationPolicyEmpty() *TableResourceAssert {
+	t.ValueSet("aggregation_policy.#", "0")
+	return t
+}
 
 func (t *TableResourceAssert) HasChangeTrackingEmpty() *TableResourceAssert {
 	t.ValueSet("change_tracking", "")
@@ -195,13 +300,38 @@ func (t *TableResourceAssert) HasDataRetentionTimeInDaysEmpty() *TableResourceAs
 	return t
 }
 
+func (t *TableResourceAssert) HasDefaultDdlCollationEmpty() *TableResourceAssert {
+	t.ValueSet("default_ddl_collation", "")
+	return t
+}
+
+func (t *TableResourceAssert) HasEnableSchemaEvolutionEmpty() *TableResourceAssert {
+	t.ValueSet("enable_schema_evolution", "")
+	return t
+}
+
+func (t *TableResourceAssert) HasErrorLoggingEmpty() *TableResourceAssert {
+	t.ValueSet("error_logging", "")
+	return t
+}
+
 func (t *TableResourceAssert) HasFullyQualifiedNameEmpty() *TableResourceAssert {
 	t.ValueSet("fully_qualified_name", "")
 	return t
 }
 
-func (t *TableResourceAssert) HasOwnerEmpty() *TableResourceAssert {
-	t.ValueSet("owner", "")
+func (t *TableResourceAssert) HasIsTransientEmpty() *TableResourceAssert {
+	t.ValueSet("is_transient", "")
+	return t
+}
+
+func (t *TableResourceAssert) HasJoinPolicyEmpty() *TableResourceAssert {
+	t.ValueSet("join_policy.#", "0")
+	return t
+}
+
+func (t *TableResourceAssert) HasMaxDataExtensionTimeInDaysEmpty() *TableResourceAssert {
+	t.ValueSet("max_data_extension_time_in_days", "")
 	return t
 }
 
@@ -210,8 +340,13 @@ func (t *TableResourceAssert) HasPrimaryKeyEmpty() *TableResourceAssert {
 	return t
 }
 
-func (t *TableResourceAssert) HasTagEmpty() *TableResourceAssert {
-	t.ValueSet("tag.#", "0")
+func (t *TableResourceAssert) HasRowAccessPolicyEmpty() *TableResourceAssert {
+	t.ValueSet("row_access_policy.#", "0")
+	return t
+}
+
+func (t *TableResourceAssert) HasRowTimestampEmpty() *TableResourceAssert {
+	t.ValueSet("row_timestamp", "")
 	return t
 }
 
@@ -249,12 +384,37 @@ func (t *TableResourceAssert) HasDataRetentionTimeInDaysNotEmpty() *TableResourc
 	return t
 }
 
+func (t *TableResourceAssert) HasDefaultDdlCollationNotEmpty() *TableResourceAssert {
+	t.ValuePresent("default_ddl_collation")
+	return t
+}
+
+func (t *TableResourceAssert) HasEnableSchemaEvolutionNotEmpty() *TableResourceAssert {
+	t.ValuePresent("enable_schema_evolution")
+	return t
+}
+
+func (t *TableResourceAssert) HasErrorLoggingNotEmpty() *TableResourceAssert {
+	t.ValuePresent("error_logging")
+	return t
+}
+
 func (t *TableResourceAssert) HasFullyQualifiedNameNotEmpty() *TableResourceAssert {
 	t.ValuePresent("fully_qualified_name")
 	return t
 }
 
-func (t *TableResourceAssert) HasOwnerNotEmpty() *TableResourceAssert {
-	t.ValuePresent("owner")
+func (t *TableResourceAssert) HasIsTransientNotEmpty() *TableResourceAssert {
+	t.ValuePresent("is_transient")
+	return t
+}
+
+func (t *TableResourceAssert) HasMaxDataExtensionTimeInDaysNotEmpty() *TableResourceAssert {
+	t.ValuePresent("max_data_extension_time_in_days")
+	return t
+}
+
+func (t *TableResourceAssert) HasRowTimestampNotEmpty() *TableResourceAssert {
+	t.ValuePresent("row_timestamp")
 	return t
 }

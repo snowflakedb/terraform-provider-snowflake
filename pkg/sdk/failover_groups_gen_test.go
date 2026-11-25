@@ -49,6 +49,8 @@ const (
 	case_FailoverGroups_validation_Alter_Move_Databases_ValidIdentifier                  testCaseName = "validation_Alter_Move_Databases_ValidIdentifier"
 	case_FailoverGroups_validation_Alter_Move_ExternalVolumes_ValidIdentifier            testCaseName = "validation_Alter_Move_ExternalVolumes_ValidIdentifier"
 	case_FailoverGroups_validation_Alter_Move_Shares_ValidIdentifier                     testCaseName = "validation_Alter_Move_Shares_ValidIdentifier"
+	case_FailoverGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet          testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet"
+	case_FailoverGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet   testCaseName = "validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet"
 	case_FailoverGroups_validation_Alter_Remove_AllowedDatabases_ValidIdentifier         testCaseName = "validation_Alter_Remove_AllowedDatabases_ValidIdentifier"
 	case_FailoverGroups_validation_Alter_Remove_AllowedExternalVolumes_ValidIdentifier   testCaseName = "validation_Alter_Remove_AllowedExternalVolumes_ValidIdentifier"
 	case_FailoverGroups_validation_Alter_Remove_AllowedShares_ValidIdentifier            testCaseName = "validation_Alter_Remove_AllowedShares_ValidIdentifier"
@@ -387,6 +389,21 @@ var failoverGroupsTests = FailoverGroupsTestsContext{
 					opts.Move = &FailoverGroupMove{}
 					opts.Move.Shares = []AccountObjectIdentifier{emptyAccountObjectIdentifier}
 				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_NoneSet,
+				ExpectedErr: errExactlyOneOf("AlterFailoverGroupOptions.Remove", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedAccounts"),
+				DefaultModify: func(opts *AlterFailoverGroupOptions) {
+					opts.Remove = &FailoverGroupRemove{}
+					opts.Remove.AllowedDatabases = nil
+					opts.Remove.AllowedExternalVolumes = nil
+					opts.Remove.AllowedShares = nil
+					opts.Remove.AllowedAccounts = nil
+				},
+			},
+			validationCase[*AlterFailoverGroupOptions]{
+				Name:        case_FailoverGroups_validation_Alter_opts_Remove_ExactlyOneValueSet_MoreThanOneSet,
+				ExpectedErr: errExactlyOneOf("AlterFailoverGroupOptions.Remove", "AllowedDatabases", "AllowedExternalVolumes", "AllowedShares", "AllowedAccounts"),
 			},
 			validationCase[*AlterFailoverGroupOptions]{
 				Name:        case_FailoverGroups_validation_Alter_Remove_AllowedDatabases_ValidIdentifier,

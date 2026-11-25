@@ -5,6 +5,7 @@ package resources
 import (
 	"context"
 	"errors"
+	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -124,12 +125,14 @@ func UpdateCatalogIntegrationAwsGlue(ctx context.Context, d *tfschema.ResourceDa
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	setUnset, err := catalogIntegrationAwsGlueApplySetUnsetExt(d)
+	setUnset, err := catalogIntegrationAwsGlueApplySetUnset(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if err := catalogIntegrationAwsGlueAlterSetInSdkExt(ctx, d, meta, id, setUnset); err != nil {
-		return diag.FromErr(err)
+	if !reflect.DeepEqual(*setUnset.set, *sdk.NewCatalogIntegrationSetRequest()) {
+		if err := meta.(*provider.Context).Client.CatalogIntegrations.Alter(ctx, sdk.NewAlterCatalogIntegrationRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return ReadCatalogIntegrationAwsGlueFunc(false)(ctx, d, meta)
 }
@@ -140,6 +143,24 @@ func catalogIntegrationAwsGlueParseIdFromConfig(d *tfschema.ResourceData) (sdk.A
 
 func catalogIntegrationAwsGlueParseId(id string) (sdk.AccountObjectIdentifier, error) {
 	return sdk.ParseAccountObjectIdentifier(id)
+}
+
+// catalogIntegrationAwsGlueAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
+type catalogIntegrationAwsGlueAlterRequests struct {
+	set *sdk.CatalogIntegrationSetRequest
+}
+
+func catalogIntegrationAwsGlueApplySetUnset(d *tfschema.ResourceData) (*catalogIntegrationAwsGlueAlterRequests, error) {
+	set := sdk.NewCatalogIntegrationSetRequest()
+	errs := errors.Join(
+		booleanAttributeUpdateSetOnlyBuilder(d, "enabled", set.WithEnabled),
+		intAttributeUnsetFallbackUpdateWithZeroDefault(d, "refresh_interval_seconds", &set.RefreshIntervalSeconds, 30),
+		stringAttributeUpdateSetOnly(d, "comment", &set.Comment),
+	)
+	if errs != nil {
+		return nil, errs
+	}
+	return &catalogIntegrationAwsGlueAlterRequests{set: set}, nil
 }
 
 func catalogIntegrationAwsGlueHandleExternalChangesInDescribe(d *tfschema.ResourceData, details *sdk.CatalogIntegrationAwsGlueDetails, withExternalChangesMarking bool) diag.Diagnostics {

@@ -1,16 +1,13 @@
 package datasourcemodel
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
 
 func (b *BackupPoliciesModel) WithEmptyIn() *BackupPoliciesModel {
 	return b.WithInValue(
-		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-		}),
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 	)
 }
 
@@ -34,6 +31,23 @@ func (b *BackupPoliciesModel) WithLimit(rows int) *BackupPoliciesModel {
 	return b.WithLimitValue(
 		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 			"rows": tfconfig.IntegerVariable(rows),
+		}),
+	)
+}
+
+func (b *BackupPoliciesModel) WithInAccount() *BackupPoliciesModel {
+	return b.WithInValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"account": tfconfig.BoolVariable(true),
+		}),
+	)
+}
+
+func (b *BackupPoliciesModel) WithRowsAndFrom(rows int, from string) *BackupPoliciesModel {
+	return b.WithLimitValue(
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
+			"rows": tfconfig.IntegerVariable(rows),
+			"from": tfconfig.StringVariable(from),
 		}),
 	)
 }

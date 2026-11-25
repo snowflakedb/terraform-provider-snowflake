@@ -9,6 +9,10 @@ import (
 
 func (viewDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"type": {
+			Type:     schema.TypeString,
+			Computed: true,
+		},
 		"check": {
 			Type:     schema.TypeString,
 			Computed: true,
@@ -17,6 +21,7 @@ func (viewDetailsToSchemaMapper) additionalSchema() map[string]*schema.Schema {
 }
 
 func (viewDetailsToSchemaMapper) additionalToSchema(src *sdk.ViewDetails, dst map[string]any) {
+	dst["type"] = src.DataTypeRaw
 	if src.Check != nil {
 		dst["check"] = strconv.FormatBool(*src.Check)
 	}

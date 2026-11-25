@@ -158,23 +158,28 @@ func (i *Interface) NameLowerCased() string {
 
 // SharedToOptsFields returns all nested struct fields marked with GenerateSharedToOpts
 // across all operations. Used by the impl template to emit standalone toOpts() methods.
+// A struct used in several places of the interface yields one field, because it has one toOpts method.
 func (i *Interface) SharedToOptsFields() []*Field {
 	var result []*Field
+	seen := make(map[string]struct{})
 	for _, op := range i.Operations {
 		if op.OptsField == nil {
 			continue
 		}
-		collectSharedToOpts(op.OptsField, &result)
+		collectSharedToOpts(op.OptsField, &result, seen)
 	}
 	return result
 }
 
-func collectSharedToOpts(f *Field, result *[]*Field) {
+func collectSharedToOpts(f *Field, result *[]*Field, seen map[string]struct{}) {
 	if f.GenerateSharedToOpts && !f.IsShared {
-		*result = append(*result, f)
+		if _, ok := seen[f.DtoDecl()]; !ok {
+			seen[f.DtoDecl()] = struct{}{}
+			*result = append(*result, f)
+		}
 	}
 	for idx := range f.Fields {
-		collectSharedToOpts(&f.Fields[idx], result)
+		collectSharedToOpts(&f.Fields[idx], result, seen)
 	}
 }
 

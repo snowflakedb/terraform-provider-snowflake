@@ -10,6 +10,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/datasourcemodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
@@ -95,7 +96,7 @@ func TestAcc_Grants_On_CompleteUseCase_SchemaObject(t *testing.T) {
 }
 
 func TestAcc_Grants_On_CompleteUseCase_SchemaObjectWithArguments(t *testing.T) {
-	function := testClient().Function.Create(t, sdk.DataTypeVARCHAR)
+	function := testClient().Function.Create(t, testdatatypes.DataTypeVarchar)
 	grantsModel := datasourcemodel.GrantsOnSchemaObjectWithArguments("test", function.ID(), sdk.ObjectTypeFunction)
 
 	resource.Test(t, resource.TestCase{

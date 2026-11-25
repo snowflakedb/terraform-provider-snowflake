@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -21,7 +22,6 @@ type ResourceModel struct {
 	AdditionalDescribeOutputDescription string
 	DescribeDetailsName                 string
 	IdType                              string
-	LegacyIdEncoding                    bool
 	PreviewFeature                      bool
 	IdentityNameForceNew                bool
 	IdentityHierarchyForceNew           bool
@@ -41,6 +41,7 @@ type ResourceModel struct {
 	Hooks                    ssot.ResourceHooks
 	SchemaStateUpgraders     []ssot.StateUpgraderFunc
 	AdditionalCustomizeDiffs []ssot.CustomizeDiffFunc
+	ResourceParameters       []ssot.ParameterDef
 	BeforeCreateSteps        BeforeCreateSteps
 	// SuspendForAlter is the data of WithSuspendForAlter(Generated()). See SuspendForAlterModel.
 	SuspendForAlter  *SuspendForAlterModel
@@ -98,6 +99,9 @@ type BeforeCreateAdoptExisting struct {
 // Set and Unset are in send order: the statements of the SSOT definition first, the main set and unset last.
 // Requests is Set, then Unset, with the SDK request kind of each field.
 type AlterStatementsModel struct {
+	// Stem is the SDK request stem of the ALTER, SET and UNSET requests. A variant without an ALTER spec of its own uses
+	// the name of its base (ssot.Object.AlterOwner).
+	Stem     string
 	Set      []string
 	Unset    []string
 	Requests []AlterStatementRequest
@@ -110,6 +114,7 @@ type AlterStatementRequest struct {
 }
 
 func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
+	obj = obj.AlterOwner()
 	// A group is a field in declaration order. The main group is the bare set (unset). A block without one sends an empty
 	// main request last, which carries the parameters.
 	fields := func(main string, groups []ssot.AlterGroupSpec, hasBlock bool) []string {
@@ -124,6 +129,7 @@ func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
 		return names
 	}
 	model := AlterStatementsModel{
+		Stem:  obj.Name,
 		Set:   fields("set", obj.AlterSetGroups(), obj.HasAlterSetBlock()),
 		Unset: fields("unset", obj.AlterUnsetGroups(), obj.HasAlterUnsetBlock()),
 	}
@@ -138,7 +144,10 @@ func newAlterStatementsModel(obj ssot.Object) AlterStatementsModel {
 
 // ParameterHooks returns the catalog parameters for this object's parameter level, in catalog order.
 func (m ResourceModel) ParameterHooks() []ParameterHookModel {
-	parameters := ssotdefs.ParameterDefsForLevel(ssot.Object{Name: m.Name}.ParameterLevel())
+	parameters := ssot.FilterResourceParameters(
+		ssotdefs.ParameterDefsForLevel(ssot.Object{Name: m.Name}.ParameterLevel()),
+		m.ResourceParameters,
+	)
 	hooks := make([]ParameterHookModel, 0, len(parameters))
 	for _, parameter := range parameters {
 		hooks = append(hooks, newParameterHookModel(parameter))
@@ -158,6 +167,16 @@ func (m ResourceModel) AlterRequestsType() string {
 		return m.Prefix() + "AlterRequests"
 	}
 	return m.Prefix() + "AlterRequestsExt"
+}
+
+// ReadCollectsDiags reports whether the generated Read gathers diagnostics from hooks (diags) and returns them at the end.
+func (m ResourceModel) ReadCollectsDiags() bool {
+	return m.ExternalChangesInDescribe() || m.Hooks.AfterShowById.Present
+}
+
+// ExternalChangesInDescribe reports whether Read compares the DESCRIBE output with the config to detect external changes.
+func (m ResourceModel) ExternalChangesInDescribe() bool {
+	return m.Hooks.HandleExternalChangesInDescribe.Present && m.Hooks.DescribeInSdk.Present
 }
 
 // HierarchyRenameParents reports whether the generated Update moves a schema object to another database or schema.
@@ -197,6 +216,13 @@ func (m ResourceModel) EffectiveSdkParametersObjectName() string {
 // A variant uses its own name, so WarehouseAdaptive is WarehouseAdaptiveSetRequest.
 func (m ResourceModel) EffectiveSdkAlterObjectName() string {
 	return m.Name
+}
+
+func (m ResourceModel) AdditionalDescribeOutputArg() string {
+	if m.AdditionalDescribeOutputDescription == "" {
+		return ""
+	}
+	return ", " + strconv.Quote(m.AdditionalDescribeOutputDescription)
 }
 
 func (m ResourceModel) ParseIdFunc() string {
@@ -252,7 +278,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	hooks := ssot.DefaultResourceExtHooks(input.ResourceHooks...)
 	resourceAttributes := input.ResourceAttributes()
 	attributes := applyResourceAttributeRules(input.IdType, resourceAttributes)
-	applyExactlyOneOf(input.ExactlyOneOf, attributes)
+	applyValidations(input.Validations, input.ValidationFields, "", attributes)
 	if hooks.NewCreateRequest.Generate || hooks.ApplyCreateOptionals.Generate {
 		attachCreateMappings(input.Name, resourceAttributes, attributes)
 	}
@@ -268,15 +294,14 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		AdditionalDescribeOutputDescription: input.AdditionalDescribeOutputDescription,
 		DescribeDetailsName:                 input.DescribeDetailsName,
 		IdType:                              input.IdType,
-		LegacyIdEncoding:                    input.LegacyIdEncoding,
 		PreviewFeature:                      input.PreviewFeature,
 		IdentityNameForceNew:                input.IdentityNameForceNew,
 		IdentityHierarchyForceNew:           input.IdentityHierarchyForceNew,
 		AdditionalIdentityNameDescription:   input.AdditionalIdentityNameDescription,
 		ShowColumns:                         input.Show.Columns,
 		DescribeColumns:                     input.Describe.Columns,
-		SdkCreateRequestObjectName:          input.SdkCreateRequestObjectName,
-		VariantOf:                           input.VariantOf,
+		SdkCreateRequestObjectName:          input.RequestObjectName(),
+		VariantOf:                           input.VariantBase(),
 		Attributes:                          attributes,
 		ShowSchemaOwner:                     input.SchemaShowOwnerName(),
 		AttributesModification:              input.AttributesModification,
@@ -284,6 +309,7 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 		Hooks:                               hooks,
 		SchemaStateUpgraders:                input.SchemaStateUpgraders,
 		AdditionalCustomizeDiffs:            input.AdditionalCustomizeDiffs,
+		ResourceParameters:                  input.ResourceParameters,
 		BeforeCreateSteps:                   beforeCreateSteps(input.Object),
 		SuspendForAlter:                     suspendForAlterModel(input.Object),
 		AfterCreateSteps:                    afterCreateSteps(input.Object, resourceAttributes),

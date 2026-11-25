@@ -2,6 +2,8 @@ package helpers
 
 import (
 	"context"
+	"fmt"
+	"slices"
 	"testing"
 	"time"
 
@@ -106,6 +108,32 @@ func (c *FailoverGroupClient) WaitForPrimaryToBeVisible(t *testing.T, primary sd
 		t.Logf("Primary failover group %s is not visible yet, retrying", primary.FullyQualifiedName())
 		return false
 	}, time.Minute, 5*time.Second)
+}
+
+var refreshTerminalPhases = []string{"COMPLETED", "FAILED", "CANCELED"}
+
+// WaitForNoRefreshInProgress polls the refresh progress of the group on this account until its last refresh has no phase in progress.
+// The progress lists the phases of the last refresh: the phase in progress has no END_TIME, and neither has the closing COMPLETED, FAILED, or CANCELED row.
+// The first phase appears about a second after a refresh starts, so a refresh that has just started is not visible yet.
+func (c *FailoverGroupClient) WaitForNoRefreshInProgress(t *testing.T, id sdk.AccountObjectIdentifier) {
+	t.Helper()
+	ctx := context.Background()
+	query := fmt.Sprintf(`SELECT PHASE_NAME, END_TIME FROM TABLE(SNOWFLAKE.INFORMATION_SCHEMA.REPLICATION_GROUP_REFRESH_PROGRESS('%s'))`, id.Name())
+	require.Eventually(t, func() bool {
+		phases, err := c.context.client.QueryUnsafe(ctx, query)
+		if err != nil {
+			t.Logf("Error reading the refresh progress of %s, retrying: %v", id.FullyQualifiedName(), err)
+			return false
+		}
+		for _, phase := range phases {
+			name, endTime := phase["PHASE_NAME"], phase["END_TIME"]
+			if name != nil && !slices.Contains(refreshTerminalPhases, fmt.Sprint(*name)) && (endTime == nil || *endTime == nil) {
+				t.Logf("Refresh of %s is in progress (%v), waiting", id.FullyQualifiedName(), *name)
+				return false
+			}
+		}
+		return true
+	}, 2*time.Minute, time.Second)
 }
 
 func (c *FailoverGroupClient) Drop(t *testing.T, id sdk.AccountObjectIdentifier) {

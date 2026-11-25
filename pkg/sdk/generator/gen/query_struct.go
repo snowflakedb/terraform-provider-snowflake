@@ -15,8 +15,8 @@ type QueryStruct struct {
 	unsetParameters []ParameterField
 	// owner is the ssot object name that the statement struct belongs to. It prefixes the names of nested structs.
 	owner string
-	// suppliedStructs are the nested query structs that SDK-definition code passes to a FromObject call,
-	// by struct name. A struct clause of an ssot attribute embeds one of them.
+	// suppliedStructs are nested query structs that SDK-definition code passes to a FromObject call, by struct name.
+	// An ALTER block or a PreexistingStructOf clause whose generated name matches reuses one of them.
 	suppliedStructs map[string]*QueryStruct
 }
 
@@ -40,6 +40,12 @@ func (v *QueryStruct) IntoField() *Field {
 
 func (v *QueryStruct) WithValidation(validationType ValidationType, fieldNames ...string) *QueryStruct {
 	v.validations = append(v.validations, NewValidation(validationType, fieldNames...))
+	return v
+}
+
+// WithConflictingGroups rejects a value that sets a field of first together with a field of second.
+func (v *QueryStruct) WithConflictingGroups(first, second []string) *QueryStruct {
+	v.validations = append(v.validations, NewConflictingGroupsValidation(first, second))
 	return v
 }
 
@@ -75,6 +81,12 @@ func (v *QueryStruct) OptionalSharedQueryStructField(name string, queryStruct *Q
 
 func (v *QueryStruct) SharedQueryStructField(name string, queryStruct *QueryStruct, transformer FieldTransformer) *QueryStruct {
 	v.QueryStructField(name, queryStruct, transformer)
+	v.fields[len(v.fields)-1].IsShared = true
+	return v
+}
+
+func (v *QueryStruct) ListSharedQueryStructField(name string, queryStruct *QueryStruct, transformer FieldTransformer) *QueryStruct {
+	v.ListQueryStructField(name, queryStruct, transformer)
 	v.fields[len(v.fields)-1].IsShared = true
 	return v
 }

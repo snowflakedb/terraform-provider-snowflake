@@ -603,7 +603,7 @@ func (s *ShowSchemaRequest) WithLike(like Like) *ShowSchemaRequest {
 	return s
 }
 
-func (s *ShowSchemaRequest) WithIn(in ExtendedIn) *ShowSchemaRequest {
+func (s *ShowSchemaRequest) WithIn(in ExtendedInWithoutSchema) *ShowSchemaRequest {
 	s.In = &in
 	return s
 }

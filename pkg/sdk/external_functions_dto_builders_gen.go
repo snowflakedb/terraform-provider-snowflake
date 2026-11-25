@@ -2,9 +2,11 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 func NewCreateExternalFunctionRequest(
 	name SchemaObjectIdentifier,
-	resultDataType DataType,
+	resultDataType datatypes.DataType,
 	apiIntegration *AccountObjectIdentifier,
 	as string,
 ) *CreateExternalFunctionRequest {
@@ -83,7 +85,7 @@ func (s *CreateExternalFunctionRequest) WithResponseTranslator(responseTranslato
 
 func NewExternalFunctionArgumentRequest(
 	argName string,
-	argDataType DataType,
+	argDataType datatypes.DataType,
 ) *ExternalFunctionArgumentRequest {
 	s := ExternalFunctionArgumentRequest{}
 	s.ArgName = argName

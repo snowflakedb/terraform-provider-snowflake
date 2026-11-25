@@ -22,6 +22,17 @@ type TableDataTypeColumn struct {
 	dataType DataType
 }
 
+func NewTableDataType(columnTypes ...DataType) DataType {
+	columns := make([]TableDataTypeColumn, len(columnTypes))
+	for i, columnType := range columnTypes {
+		columns[i] = TableDataTypeColumn{dataType: columnType}
+	}
+	return &TableDataType{
+		columns:        columns,
+		underlyingType: TableLegacyDataType,
+	}
+}
+
 var TableDataTypeSynonyms = []string{"TABLE"}
 
 func (c *TableDataTypeColumn) ColumnName() string {

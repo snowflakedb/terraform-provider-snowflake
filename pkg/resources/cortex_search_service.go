@@ -298,7 +298,7 @@ func CreateCortexSearchService(ctx context.Context, d *schema.ResourceData, meta
 	if err := client.CortexSearchServices.Create(ctx, request); err != nil {
 		diags = append(diags, diag.FromErr(err)...)
 	}
-	d.SetId(helpers.EncodeSnowflakeID(id))
+	d.SetId(helpers.EncodeSnowflakeIDLegacy(id))
 
 	return append(diags, GetReadCortexSearchServiceFunc(false)(ctx, d, meta)...)
 }
