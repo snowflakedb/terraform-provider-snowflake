@@ -1,7 +1,6 @@
 package datasourcemodel
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
@@ -17,17 +16,13 @@ func (a *AuthenticationPoliciesModel) WithRowsAndFrom(rows int, from string) *Au
 
 func (a *AuthenticationPoliciesModel) WithEmptyIn() *AuthenticationPoliciesModel {
 	return a.WithInValue(
-		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-		}),
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 	)
 }
 
 func (a *AuthenticationPoliciesModel) WithEmptyOn() *AuthenticationPoliciesModel {
 	return a.WithOnValue(
-		tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-			"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-		}),
+		tfconfig.ObjectVariable(map[string]tfconfig.Variable{}),
 	)
 }
 

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
@@ -33,9 +32,7 @@ func (i *InternalStageModel) WithEncryptionSnowflakeFull() *InternalStageModel {
 	return i.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
-				"snowflake_full": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"snowflake_full": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -45,9 +42,7 @@ func (i *InternalStageModel) WithEncryptionSnowflakeSse() *InternalStageModel {
 	return i.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
-				"snowflake_sse": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"snowflake_sse": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -57,12 +52,8 @@ func (i *InternalStageModel) WithEncryptionBothTypes() *InternalStageModel {
 	return i.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
-				"snowflake_full": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
-				"snowflake_sse": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"snowflake_full": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
+				"snowflake_sse":  tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)

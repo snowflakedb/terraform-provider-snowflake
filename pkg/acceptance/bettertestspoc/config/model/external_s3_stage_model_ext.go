@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfconfig "github.com/hashicorp/terraform-plugin-testing/config"
 )
@@ -72,9 +71,7 @@ func (e *ExternalS3StageModel) WithEncryptionAwsSseS3() *ExternalS3StageModel {
 	return e.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
-				"aws_sse_s3": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"aws_sse_s3": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -96,9 +93,7 @@ func (e *ExternalS3StageModel) WithEncryptionAwsSseKmsEmpty() *ExternalS3StageMo
 	return e.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
-				"aws_sse_kms": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"aws_sse_kms": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -108,9 +103,7 @@ func (e *ExternalS3StageModel) WithEncryptionNone() *ExternalS3StageModel {
 	return e.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
 			map[string]tfconfig.Variable{
-				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -123,9 +116,7 @@ func (e *ExternalS3StageModel) WithEncryptionBothTypes() *ExternalS3StageModel {
 				"aws_cse": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
 					"master_key": tfconfig.StringVariable("foo"),
 				})),
-				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{
-					"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-				})),
+				"none": tfconfig.ListVariable(tfconfig.ObjectVariable(map[string]tfconfig.Variable{})),
 			},
 		)),
 	)
@@ -134,9 +125,7 @@ func (e *ExternalS3StageModel) WithEncryptionBothTypes() *ExternalS3StageModel {
 func (e *ExternalS3StageModel) WithEncryptionNoneTypeSpecified() *ExternalS3StageModel {
 	return e.WithEncryptionValue(
 		tfconfig.ListVariable(tfconfig.ObjectVariable(
-			map[string]tfconfig.Variable{
-				"any": tfconfig.StringVariable(string(config.SnowflakeProviderConfigSingleAttributeWorkaround)),
-			},
+			map[string]tfconfig.Variable{},
 		)),
 	)
 }
