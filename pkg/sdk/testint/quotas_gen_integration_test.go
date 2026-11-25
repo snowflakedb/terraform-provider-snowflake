@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers"
@@ -515,6 +516,84 @@ func TestInt_Quotas(t *testing.T) {
 		scope = describe(t, id).Scope
 		assert.Empty(t, scope.ExclusionTags())
 		assert.Equal(t, []string{"finance"}, tagValues(scope.SelectionTags()))
+	})
+
+	t.Run("set and remove user limit overrides", func(t *testing.T) {
+		id := createQuota(t)
+		user, userCleanup := testClientHelper().User.CreateUser(t)
+		t.Cleanup(userCleanup)
+		otherUser, otherUserCleanup := testClientHelper().User.CreateUser(t)
+		t.Cleanup(otherUserCleanup)
+		setOverride := func(cycle sdk.QuotaCycle, limit int, expiresOn string, users ...string) {
+			t.Helper()
+			args := sdk.NewQuotaSetUserQuotaOverrideArgsRequest(users, cycle, limit)
+			if expiresOn != "" {
+				args.WithExpiresOn(expiresOn)
+			}
+			_, err := client.Quotas.SetUserQuotaOverride(ctx, sdk.NewSetUserQuotaOverrideQuotaRequest(id, *args))
+			require.NoError(t, err)
+		}
+		listOverrides := func() []sdk.QuotaUserQuotaOverride {
+			t.Helper()
+			overrides, err := client.Quotas.ListUserQuotaOverrides(ctx, sdk.NewListUserQuotaOverridesQuotaRequest(id))
+			require.NoError(t, err)
+			return overrides
+		}
+		overrideFor := func(userId int, cycle sdk.QuotaCycle) *sdk.QuotaUserQuotaOverride {
+			t.Helper()
+			for _, override := range listOverrides() {
+				if override.UserId == userId && override.Cycle == cycle {
+					return &override
+				}
+			}
+			return nil
+		}
+
+		expiresOn := time.Now().UTC().AddDate(1, 0, 0).Format(time.DateOnly)
+		setOverride(sdk.QuotaCycleMonthly, 2500, expiresOn, user.ID().Name(), otherUser.ID().Name())
+		// names are resolved case-insensitively
+		setOverride(sdk.QuotaCycleDaily, 300, "", strings.ToLower(user.ID().Name()))
+		overrides := listOverrides()
+		require.Len(t, overrides, 3)
+		// LIST_USER_QUOTA_OVERRIDES returns USER_NAME as NULL, so the user is found by its only daily override
+		var userId int
+		for _, override := range overrides {
+			if override.Cycle == sdk.QuotaCycleDaily {
+				userId = override.UserId
+			}
+		}
+		daily := overrideFor(userId, sdk.QuotaCycleDaily)
+		require.NotNil(t, daily)
+		assert.Equal(t, 300, daily.OverrideValue)
+		assert.Nil(t, daily.ExpiryDate)
+		monthly := overrideFor(userId, sdk.QuotaCycleMonthly)
+		require.NotNil(t, monthly)
+		assert.Equal(t, 2500, monthly.OverrideValue)
+		require.NotNil(t, monthly.ExpiryDate)
+		assert.Equal(t, expiresOn, monthly.ExpiryDate.UTC().Format(time.DateOnly))
+
+		// an override for the same user and cycle is replaced
+		setOverride(sdk.QuotaCycleDaily, 400, "", user.ID().Name())
+		assert.Len(t, listOverrides(), 3)
+		assert.Equal(t, 400, overrideFor(userId, sdk.QuotaCycleDaily).OverrideValue)
+
+		_, err := client.Quotas.RemoveUserQuotaOverride(ctx, sdk.NewRemoveUserQuotaOverrideQuotaRequest(id, *sdk.NewQuotaRemoveUserQuotaOverrideArgsRequest(user.ID().Name(), sdk.QuotaCycleDaily)))
+		require.NoError(t, err)
+		assert.Nil(t, overrideFor(userId, sdk.QuotaCycleDaily))
+		assert.Len(t, listOverrides(), 2)
+
+		_, err = client.Quotas.RemoveUserQuotaOverridesByUser(ctx, sdk.NewRemoveUserQuotaOverridesByUserQuotaRequest(id, *sdk.NewQuotaRemoveUserQuotaOverridesByUserArgsRequest(otherUser.ID().Name())))
+		require.NoError(t, err)
+		assert.Len(t, listOverrides(), 1)
+
+		_, err = client.Quotas.RemoveUserQuotaOverridesByCycle(ctx, sdk.NewRemoveUserQuotaOverridesByCycleQuotaRequest(id, *sdk.NewQuotaRemoveUserQuotaOverridesByCycleArgsRequest(sdk.QuotaCycleMonthly)))
+		require.NoError(t, err)
+		assert.Empty(t, listOverrides())
+
+		setOverride(sdk.QuotaCycleWeekly, 500, "", user.ID().Name(), otherUser.ID().Name())
+		_, err = client.Quotas.RemoveAllUserQuotaOverrides(ctx, sdk.NewRemoveAllUserQuotaOverridesQuotaRequest(id))
+		require.NoError(t, err)
+		assert.Empty(t, listOverrides())
 	})
 
 	t.Run("set and unset per-user limits", func(t *testing.T) {
