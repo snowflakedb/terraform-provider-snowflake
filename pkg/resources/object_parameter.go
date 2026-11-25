@@ -6,6 +6,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
@@ -41,10 +43,13 @@ var objectParameterSchema = map[string]*schema.Schema{
 		Description: "If true, the object parameter will be set on the account level.",
 	},
 	"object_type": {
-		Type:             schema.TypeString,
-		Optional:         true,
-		ForceNew:         true,
-		Description:      fmt.Sprintf("Type of object to which the parameter applies. Valid values are those in [object types](https://docs.snowflake.com/en/sql-reference/parameters.html#object-types). If no value is provided, then the resource will default to setting the object parameter at account level. The provider supports the parameters of the following object types: %s (see `key`). Other object types are sent as is, with the value rendered by `value_type`.", possibleValuesListed(sdk.AsStringList(objectParameterSupportedObjectTypes))),
+		Type:     schema.TypeString,
+		Optional: true,
+		ForceNew: true,
+		Description: fmt.Sprintf("Type of object to which the parameter applies. Valid values are those in [object types](https://docs.snowflake.com/en/sql-reference/parameters.html#object-types). If no value is provided, then the resource will default to setting the object parameter at account level. The provider supports the parameters of the following object types: %s (see `key`). Other object types are sent as is, with the value rendered by `value_type`.", possibleValuesListed(collections.Map(objectParameterSupportedParameters, func(supported objectParameterSupport,
+		) string {
+			return string(supported.objectType)
+		}))),
 		DiffSuppressFunc: ignoreCaseSuppressFunc,
 		RequiredWith:     []string{"object_identifier"},
 	},
@@ -367,35 +372,41 @@ func unsetParameterOnObject(ctx context.Context, client *sdk.Client, parseOnSet 
 	return client.Parameters.UnsetObjectParameterOnObjectRaw(ctx, sdk.NewUnsetObjectParameterOnObjectRawParameterRequest(o.ObjectType, o.Name, string(parameter)))
 }
 
+type objectParameterSupport struct {
+	objectType sdk.ObjectType
+	parameters []string
+}
+
+// objectParameterSupportedParameters lists the object types that the catalog write path supports, with their parameters.
 // Functions and procedures have catalog writers, but this resource does not capture argument types, so they are not listed.
-var objectParameterSupportedObjectTypes = []sdk.ObjectType{
-	sdk.ObjectTypeDatabase,
-	sdk.ObjectTypeSchema,
-	sdk.ObjectTypeWarehouse,
-	sdk.ObjectTypeUser,
-	sdk.ObjectTypeTask,
-	sdk.ObjectTypeService,
-	sdk.ObjectTypeHybridTable,
-	sdk.ObjectTypeIcebergTable,
+var objectParameterSupportedParameters = []objectParameterSupport{
+	{sdk.ObjectTypeDatabase, sdk.AsStringList(sdk.AllDatabaseParameters)},
+	{sdk.ObjectTypeSchema, sdk.AsStringList(sdk.AllSchemaParameters)},
+	{sdk.ObjectTypeWarehouse, sdk.AsStringList(sdk.AllWarehouseParameters)},
+	{sdk.ObjectTypeUser, sdk.AsStringList(sdk.AllUserParameters)},
+	{sdk.ObjectTypeTask, sdk.AsStringList(sdk.AllTaskParameters)},
+	{sdk.ObjectTypeService, sdk.AsStringList(sdk.AllServiceParameters)},
+	{sdk.ObjectTypeHybridTable, sdk.AsStringList(sdk.AllHybridTableParameters)},
+	{sdk.ObjectTypeIcebergTable, sdk.AsStringList(sdk.AllIcebergTableParameters)},
 }
 
 func objectParameterSupportedParametersDescription() string {
-	scopes := make([]string, 0, 1+len(objectParameterSupportedObjectTypes))
-	scopes = append(scopes, fmt.Sprintf("on the account level (`on_account = true`): %s", possibleValuesListed(sdk.AsStringList(accountParameterSupportedParameters))))
-	for _, objectType := range objectParameterSupportedObjectTypes {
-		scopes = append(scopes, fmt.Sprintf("`%s`: %s", objectType, possibleValuesListed(sdk.AsStringList(sdk.SupportedObjectParameters(objectType)))))
+	scopes := make([]string, 0, 1+len(objectParameterSupportedParameters))
+	scopes = append(scopes, fmt.Sprintf("on the account level (`on_account = true`): %s", possibleValuesListed(sdk.AsStringList(sdk.AllAccountParameters))))
+	for _, supported := range objectParameterSupportedParameters {
+		scopes = append(scopes, fmt.Sprintf("`%s`: %s", supported.objectType, possibleValuesListed(supported.parameters)))
 	}
 	return strings.Join(scopes, "; ")
 }
 
-// TODO(next prs): The generated per-object-type parameter lists also contain names that the catalog writers do not support, so sdk.SupportedObjectParameters is used here and above.
-// Once the catalog levels are fixed, both uses switch to a map from the object type to its generated All*Parameters list.
 // suppressValueTypeForSupportedObjectParameter hides value_type diffs once the provider supports the parameter.
 func suppressValueTypeForSupportedObjectParameter(_, _, _ string, d *schema.ResourceData) bool {
 	key := strings.ToUpper(d.Get("key").(string))
 	if d.Get("on_account").(bool) {
-		return slices.Contains(accountParameterSupportedParameters, sdk.AccountParameter(key))
+		return slices.Contains(sdk.AllAccountParameters, sdk.AccountParameter(key))
 	}
 	objectType := sdk.ObjectType(strings.ToUpper(d.Get("object_type").(string)))
-	return slices.Contains(objectParameterSupportedObjectTypes, objectType) && slices.Contains(sdk.SupportedObjectParameters(objectType), sdk.ObjectParameter(key))
+	return slices.ContainsFunc(objectParameterSupportedParameters, func(supported objectParameterSupport) bool {
+		return supported.objectType == objectType && slices.Contains(supported.parameters, key)
+	})
 }

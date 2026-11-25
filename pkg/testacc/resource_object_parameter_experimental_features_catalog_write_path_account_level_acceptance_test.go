@@ -194,14 +194,14 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath_NewAccountParameters(
 	})
 }
 
-// SERVICE_CALLER_TOKEN_VALIDITY_SECS is a service parameter in the catalog, not an account one, so on the account level
-// it can be set only through the generic write path.
+// The parameter catalog does not support DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT, so on the account level it can be set only
+// through the generic write path.
 func TestAcc_ObjectParameter_GenericWritePath_OnAccount(t *testing.T) {
-	param := sdk.AccountParameter("SERVICE_CALLER_TOKEN_VALIDITY_SECS")
+	param := sdk.AccountParameter("DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT")
 	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
 
-	parameterModel := model.ObjectParameter("generic", string(param), "120").WithOnAccount(true).WithValueType("INTEGER")
-	changedModel := model.ObjectParameter("generic", string(param), "240").WithOnAccount(true).WithValueType("INTEGER")
+	parameterModel := model.ObjectParameter("generic", string(param), "2400").WithOnAccount(true).WithValueType("INTEGER")
+	changedModel := model.ObjectParameter("generic", string(param), "2300").WithOnAccount(true).WithValueType("INTEGER")
 	providerModel := providermodel.SnowflakeProvider().
 		WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
 		WithExperimentalFeaturesEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete)
@@ -235,7 +235,7 @@ func TestAcc_ObjectParameter_GenericWritePath_OnAccount(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.ObjectParameterResource(t, parameterModel.ResourceReference()).
 						HasKeyString(string(param)).
-						HasValueString("120"),
+						HasValueString("2400"),
 				),
 			},
 			{
@@ -243,7 +243,7 @@ func TestAcc_ObjectParameter_GenericWritePath_OnAccount(t *testing.T) {
 				Config:                   accconfig.FromModels(t, providerModel, changedModel),
 				Check: assertThat(t,
 					resourceassert.ObjectParameterResource(t, changedModel.ResourceReference()).
-						HasValueString("240"),
+						HasValueString("2300"),
 				),
 			},
 		},

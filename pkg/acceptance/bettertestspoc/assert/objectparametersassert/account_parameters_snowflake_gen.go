@@ -196,6 +196,7 @@ func (a *AccountParametersAssert) HasAllDefaults() *AccountParametersAssert {
 		HasDefaultParameterValueOnDefaultLevel(sdk.AccountParameterSearchPath).
 		HasDefaultParameterValueOnDefaultLevel(sdk.AccountParameterServerlessTaskMaxStatementSize).
 		HasDefaultParameterValueOnDefaultLevel(sdk.AccountParameterServerlessTaskMinStatementSize).
+		HasDefaultParameterValueOnDefaultLevel(sdk.AccountParameterServiceCallerTokenValiditySecs).
 		HasDefaultParameterValueOnDefaultLevel(sdk.AccountParameterSimulatedDataSharingConsumer).
 		HasDefaultParameterValueOnDefaultLevel(sdk.AccountParameterSqlTraceQueryText).
 		HasDefaultParameterValueOnDefaultLevel(sdk.AccountParameterStorageSerializationPolicy).
@@ -338,6 +339,7 @@ func (a *AccountParametersAssert) HasAllDefaultsExplicit() *AccountParametersAss
 		HasDefaultSearchPathValueExplicit().
 		HasDefaultServerlessTaskMaxStatementSizeValueExplicit().
 		HasDefaultServerlessTaskMinStatementSizeValueExplicit().
+		HasDefaultServiceCallerTokenValiditySecsValueExplicit().
 		HasDefaultSimulatedDataSharingConsumerValueExplicit().
 		HasDefaultSqlTraceQueryTextValueExplicit().
 		HasDefaultStorageSerializationPolicyValueExplicit().
@@ -963,6 +965,11 @@ func (a *AccountParametersAssert) HasServerlessTaskMaxStatementSize(expected sdk
 
 func (a *AccountParametersAssert) HasServerlessTaskMinStatementSize(expected sdk.WarehouseSize) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterStringUnderlyingValueSet(sdk.AccountParameterServerlessTaskMinStatementSize, expected))
+	return a
+}
+
+func (a *AccountParametersAssert) HasServiceCallerTokenValiditySecs(expected int) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterIntValueSet(sdk.AccountParameterServiceCallerTokenValiditySecs, expected))
 	return a
 }
 
@@ -1660,6 +1667,11 @@ func (a *AccountParametersAssert) HasServerlessTaskMinStatementSizeLevel(expecte
 	return a
 }
 
+func (a *AccountParametersAssert) HasServiceCallerTokenValiditySecsLevel(expected sdk.ParameterType) *AccountParametersAssert {
+	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterServiceCallerTokenValiditySecs, expected))
+	return a
+}
+
 func (a *AccountParametersAssert) HasSimulatedDataSharingConsumerLevel(expected sdk.ParameterType) *AccountParametersAssert {
 	a.AddAssertion(assert.SnowflakeParameterLevelSet(sdk.AccountParameterSimulatedDataSharingConsumer, expected))
 	return a
@@ -2233,6 +2245,10 @@ func (a *AccountParametersAssert) HasDefaultServerlessTaskMinStatementSizeValue(
 	return a.HasDefaultParameterValue(sdk.AccountParameterServerlessTaskMinStatementSize)
 }
 
+func (a *AccountParametersAssert) HasDefaultServiceCallerTokenValiditySecsValue() *AccountParametersAssert {
+	return a.HasDefaultParameterValue(sdk.AccountParameterServiceCallerTokenValiditySecs)
+}
+
 func (a *AccountParametersAssert) HasDefaultSimulatedDataSharingConsumerValue() *AccountParametersAssert {
 	return a.HasDefaultParameterValue(sdk.AccountParameterSimulatedDataSharingConsumer)
 }
@@ -2787,6 +2803,10 @@ func (a *AccountParametersAssert) HasDefaultServerlessTaskMaxStatementSizeValueE
 
 func (a *AccountParametersAssert) HasDefaultServerlessTaskMinStatementSizeValueExplicit() *AccountParametersAssert {
 	return a.HasServerlessTaskMinStatementSize(sdk.WarehouseSizeXSmall)
+}
+
+func (a *AccountParametersAssert) HasDefaultServiceCallerTokenValiditySecsValueExplicit() *AccountParametersAssert {
+	return a.HasServiceCallerTokenValiditySecs(120)
 }
 
 func (a *AccountParametersAssert) HasDefaultSimulatedDataSharingConsumerValueExplicit() *AccountParametersAssert {

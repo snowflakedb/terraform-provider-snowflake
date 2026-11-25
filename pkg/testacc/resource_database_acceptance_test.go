@@ -75,7 +75,9 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasDefaultUserTaskTimeoutMsValueExplicit().
 			HasDefaultUserTaskMinimumTriggerIntervalInSecondsValueExplicit().
 			HasDefaultQuotedIdentifiersIgnoreCaseValueExplicit().
-			HasDefaultEnableConsoleOutputValueExplicit(),
+			HasDefaultEnableConsoleOutputValueExplicit().
+			HasDefaultMetricLevelValueExplicit().
+			HasDefaultServiceCallerTokenValiditySecsValueExplicit(),
 		resourceassert.DatabaseResource(t, basic.ResourceReference()).
 			HasNameString(id.Name()).
 			HasIsTransientString("false").
@@ -106,7 +108,9 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 		WithUserTaskTimeoutMs(3600001).
 		WithUserTaskMinimumTriggerIntervalInSeconds(31).
 		WithQuotedIdentifiersIgnoreCase(false).
-		WithEnableConsoleOutput(true)
+		WithEnableConsoleOutput(true).
+		WithMetricLevel(string(sdk.MetricLevelAll)).
+		WithServiceCallerTokenValiditySecs(1800)
 
 	assertComplete := []assert.TestCheckFuncProvider{
 		objectassert.Database(t, newId).
@@ -138,7 +142,9 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasUserTaskTimeoutMs(3600001).
 			HasUserTaskMinimumTriggerIntervalInSeconds(31).
 			HasQuotedIdentifiersIgnoreCase(false).
-			HasEnableConsoleOutput(true),
+			HasEnableConsoleOutput(true).
+			HasMetricLevel(sdk.MetricLevelAll).
+			HasServiceCallerTokenValiditySecs(1800),
 		resourceassert.DatabaseResource(t, complete.ResourceReference()).
 			HasNameString(newId.Name()).
 			HasIsTransientString("false").
@@ -162,7 +168,9 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 			HasUserTaskTimeoutMsString("3600001").
 			HasUserTaskMinimumTriggerIntervalInSecondsString("31").
 			HasQuotedIdentifiersIgnoreCaseString("false").
-			HasEnableConsoleOutputString("true"),
+			HasEnableConsoleOutputString("true").
+			HasMetricLevelString(string(sdk.MetricLevelAll)).
+			HasServiceCallerTokenValiditySecsString("1800"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -242,6 +250,8 @@ func TestAcc_Database_BasicUseCase(t *testing.T) {
 							WithUserTaskTimeoutMs(3600001).
 							WithUserTaskMinimumTriggerIntervalInSeconds(31).
 							WithEnableConsoleOutput(true).
+							WithMetricLevel(sdk.MetricLevelAll).
+							WithServiceCallerTokenValiditySecs(1800).
 							WithComment(random.Comment()),
 					))
 				},
@@ -312,7 +322,9 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 		WithUserTaskTimeoutMs(3600001).
 		WithUserTaskMinimumTriggerIntervalInSeconds(31).
 		WithQuotedIdentifiersIgnoreCase(false).
-		WithEnableConsoleOutput(true)
+		WithEnableConsoleOutput(true).
+		WithMetricLevel(string(sdk.MetricLevelAll)).
+		WithServiceCallerTokenValiditySecs(1800)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -355,7 +367,9 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 						HasUserTaskTimeoutMs(3600001).
 						HasUserTaskMinimumTriggerIntervalInSeconds(31).
 						HasQuotedIdentifiersIgnoreCase(false).
-						HasEnableConsoleOutput(true),
+						HasEnableConsoleOutput(true).
+						HasMetricLevel(sdk.MetricLevelAll).
+						HasServiceCallerTokenValiditySecs(1800),
 					resourceassert.DatabaseResource(t, complete.ResourceReference()).
 						HasNameString(id.Name()).
 						HasFullyQualifiedNameString(id.FullyQualifiedName()).
@@ -381,7 +395,9 @@ func TestAcc_Database_CompleteUseCase(t *testing.T) {
 						HasUserTaskTimeoutMsString("3600001").
 						HasUserTaskMinimumTriggerIntervalInSecondsString("31").
 						HasQuotedIdentifiersIgnoreCaseString("false").
-						HasEnableConsoleOutputString("true"),
+						HasEnableConsoleOutputString("true").
+						HasMetricLevelString(string(sdk.MetricLevelAll)).
+						HasServiceCallerTokenValiditySecsString("1800"),
 				),
 			},
 			// Import - with all optionals
@@ -638,6 +654,8 @@ func TestAcc_Database_ComputedValues(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_database.test", "user_task_minimum_trigger_interval_in_seconds", "120"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "quoted_identifiers_ignore_case", "true"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "enable_console_output", "true"),
+					resource.TestCheckResourceAttr("snowflake_database.test", "metric_level", string(sdk.MetricLevelAll)),
+					resource.TestCheckResourceAttr("snowflake_database.test", "service_caller_token_validity_secs", "1800"),
 				),
 			},
 			{
@@ -758,6 +776,8 @@ func TestAcc_Database_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("snowflake_database.test", "user_task_minimum_trigger_interval_in_seconds", "120"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "quoted_identifiers_ignore_case", "true"),
 					resource.TestCheckResourceAttr("snowflake_database.test", "enable_console_output", "true"),
+					resource.TestCheckResourceAttr("snowflake_database.test", "metric_level", string(sdk.MetricLevelAll)),
+					resource.TestCheckResourceAttr("snowflake_database.test", "service_caller_token_validity_secs", "1800"),
 				),
 			},
 			{

@@ -16,13 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// TODO(next prs): sdk.AllAccountParameters also contains SERVICE_CALLER_TOKEN_VALIDITY_SECS, which the catalog writer does not support yet, so the SDK is asked instead.
-// Once the catalog levels are fixed, this variable is replaced by sdk.AllAccountParameters.
-var accountParameterSupportedParameters = sdk.SupportedAccountParameters()
-
 // suppressValueTypeForSupportedAccountParameter hides value_type diffs once the provider supports the parameter.
 func suppressValueTypeForSupportedAccountParameter(_, _, _ string, d *schema.ResourceData) bool {
-	return slices.Contains(accountParameterSupportedParameters, sdk.AccountParameter(strings.ToUpper(d.Get("key").(string))))
+	return slices.Contains(sdk.AllAccountParameters, sdk.AccountParameter(strings.ToUpper(d.Get("key").(string))))
 }
 
 var accountParameterSchema = map[string]*schema.Schema{
@@ -31,7 +27,7 @@ var accountParameterSchema = map[string]*schema.Schema{
 		Required:         true,
 		ForceNew:         true,
 		DiffSuppressFunc: ignoreCaseSuppressFunc,
-		Description:      fmt.Sprintf("Name of account parameter (case-insensitive). The provider supports the following parameters, and it parses and quotes their values itself: %s. Any other account parameter is sent to Snowflake as is, and requires `value_type`. Deprecated parameters are not supported in the provider.", possibleValuesListed(sdk.AsStringList(accountParameterSupportedParameters))),
+		Description:      fmt.Sprintf("Name of account parameter (case-insensitive). The provider supports the following parameters, and it parses and quotes their values itself: %s. Any other account parameter is sent to Snowflake as is, and requires `value_type`. Deprecated parameters are not supported in the provider.", possibleValuesListed(sdk.AsStringList(sdk.AllAccountParameters))),
 	},
 	"value_type": parameterValueTypeSchema("the `key` field description", experimentalfeatures.AccountParameterCatalogWritePath, suppressValueTypeForSupportedAccountParameter),
 	"value": {

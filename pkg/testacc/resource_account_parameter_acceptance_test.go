@@ -141,15 +141,15 @@ func TestAcc_AccountParameter_Issue3025(t *testing.T) {
 	})
 }
 
-// The parameter catalog supports SERVICE_CALLER_TOKEN_VALIDITY_SECS only on services, so on the account level it can be set only through the generic write path.
+// The parameter catalog does not support DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT, so it can be set only through the generic write path.
 func TestAcc_AccountParameter_GenericWritePath_UnknownParameter(t *testing.T) {
-	param := sdk.AccountParameter("SERVICE_CALLER_TOKEN_VALIDITY_SECS")
+	param := sdk.AccountParameter("DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT")
 	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
 
-	withoutType := model.AccountParameter("unknown", string(param), "120")
-	withType := model.AccountParameter("unknown", string(param), "120").WithValueType("integer")
-	withTypeInOtherCase := model.AccountParameter("unknown", string(param), "120").WithValueType("INTEGER")
-	changedValue := model.AccountParameter("unknown", string(param), "240").WithValueType("INTEGER")
+	withoutType := model.AccountParameter("unknown", string(param), "2400")
+	withType := model.AccountParameter("unknown", string(param), "2400").WithValueType("integer")
+	withTypeInOtherCase := model.AccountParameter("unknown", string(param), "2400").WithValueType("INTEGER")
+	changedValue := model.AccountParameter("unknown", string(param), "2300").WithValueType("INTEGER")
 	invalidValue := model.AccountParameter("unknown", string(param), "abc").WithValueType("INTEGER")
 	experimentsDisabledProviderModel := providermodel.SnowflakeProvider().
 		WithAllEnabledByDefaultExperimentsDisabled()
@@ -186,7 +186,7 @@ func TestAcc_AccountParameter_GenericWritePath_UnknownParameter(t *testing.T) {
 				Check: assertThat(t,
 					resourceassert.AccountParameterResource(t, withType.ResourceReference()).
 						HasKeyString(string(param)).
-						HasValueString("120").
+						HasValueString("2400").
 						HasValueTypeString("integer"),
 				),
 			},
@@ -203,7 +203,7 @@ func TestAcc_AccountParameter_GenericWritePath_UnknownParameter(t *testing.T) {
 				Config:                   config.FromModels(t, changedValue),
 				Check: assertThat(t,
 					resourceassert.AccountParameterResource(t, changedValue.ResourceReference()).
-						HasValueString("240"),
+						HasValueString("2300"),
 				),
 			},
 		},

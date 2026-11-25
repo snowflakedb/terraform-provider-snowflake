@@ -3,9 +3,6 @@ package resources
 import (
 	"testing"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/require"
 )
@@ -163,6 +160,7 @@ var parametersAddedByCatalogMigration = []sdk.AccountParameter{
 	sdk.AccountParameterListingAutoFulfillmentReplicationRefreshSchedule,
 	sdk.AccountParameterServerlessTaskMaxStatementSize,
 	sdk.AccountParameterServerlessTaskMinStatementSize,
+	sdk.AccountParameterServiceCallerTokenValiditySecs,
 }
 
 func TestAccountParameterSupportedParameters_CatalogParity(t *testing.T) {
@@ -174,31 +172,10 @@ func TestAccountParameterSupportedParameters_CatalogParity(t *testing.T) {
 		expected[p] = struct{}{}
 	}
 
-	actual := make(map[sdk.AccountParameter]struct{}, len(accountParameterSupportedParameters))
-	for _, p := range accountParameterSupportedParameters {
+	actual := make(map[sdk.AccountParameter]struct{}, len(sdk.AllAccountParameters))
+	for _, p := range sdk.AllAccountParameters {
 		actual[p] = struct{}{}
 	}
 
 	require.Equal(t, expected, actual)
-}
-
-// The parameters that the SDK reports as supported by the catalog write path are the ones that the catalog defines for the level.
-func TestObjectParameterSupportedParameters_CatalogParity(t *testing.T) {
-	levels := map[sdk.ObjectType]ssot.ParameterLevel{
-		sdk.ObjectTypeDatabase:     ssot.ParameterLevelDatabase,
-		sdk.ObjectTypeSchema:       ssot.ParameterLevelSchema,
-		sdk.ObjectTypeWarehouse:    ssot.ParameterLevelWarehouse,
-		sdk.ObjectTypeUser:         ssot.ParameterLevelUser,
-		sdk.ObjectTypeTask:         ssot.ParameterLevelTask,
-		sdk.ObjectTypeService:      ssot.ParameterLevelService,
-		sdk.ObjectTypeHybridTable:  ssot.ParameterLevelHybridTable,
-		sdk.ObjectTypeIcebergTable: ssot.ParameterLevelIcebergTable,
-	}
-	require.Len(t, levels, len(objectParameterSupportedObjectTypes))
-
-	name := func(p ssot.ParameterDef) string { return p.SqlName }
-	require.ElementsMatch(t, collections.Map(defs.ParameterDefsForLevel(ssot.ParameterLevelAccountExt), name), sdk.AsStringList(accountParameterSupportedParameters))
-	for objectType, level := range levels {
-		require.ElementsMatch(t, collections.Map(defs.ParameterDefsForLevel(level), name), sdk.AsStringList(sdk.SupportedObjectParameters(objectType)), objectType)
-	}
 }

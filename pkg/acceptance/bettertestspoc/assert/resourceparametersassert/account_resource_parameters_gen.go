@@ -655,6 +655,11 @@ func (a *AccountResourceParametersAssert) HasServerlessTaskMinStatementSize(expe
 	return a
 }
 
+func (a *AccountResourceParametersAssert) HasServiceCallerTokenValiditySecs(expected int) *AccountResourceParametersAssert {
+	a.ParameterIntValueSet(string(sdk.AccountParameterServiceCallerTokenValiditySecs), expected)
+	return a
+}
+
 func (a *AccountResourceParametersAssert) HasSimulatedDataSharingConsumer(expected string) *AccountResourceParametersAssert {
 	a.ParameterValueSet(string(sdk.AccountParameterSimulatedDataSharingConsumer), expected)
 	return a
@@ -1346,6 +1351,11 @@ func (a *AccountResourceParametersAssert) HasServerlessTaskMaxStatementSizeLevel
 
 func (a *AccountResourceParametersAssert) HasServerlessTaskMinStatementSizeLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
 	a.ParameterLevelSet(string(sdk.AccountParameterServerlessTaskMinStatementSize), expected)
+	return a
+}
+
+func (a *AccountResourceParametersAssert) HasServiceCallerTokenValiditySecsLevel(expected sdk.ParameterType) *AccountResourceParametersAssert {
+	a.ParameterLevelSet(string(sdk.AccountParameterServiceCallerTokenValiditySecs), expected)
 	return a
 }
 

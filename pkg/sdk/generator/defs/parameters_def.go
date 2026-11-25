@@ -11,10 +11,7 @@ const parametersDoc = "https://docs.snowflake.com/en/sql-reference/sql/show-para
 
 func parameterEnums() []*g.Enum {
 	return []*g.Enum{
-		g.NewEnum("AccountParameter", "AccountParameters", withAdditionalParameterNames(
-			parameterNamesForLevels(parameterdefs.ParameterLevelAccountExt),
-			ssotdefs.ServiceCallerTokenValiditySecs,
-		)...),
+		g.NewEnum("AccountParameter", "AccountParameters", parameterNamesForLevels(parameterdefs.ParameterLevelAccountExt)...),
 		g.NewEnum("SessionParameter", "SessionParameters", parameterNamesForLevels(parameterdefs.ParameterLevelSession)...),
 		g.NewEnum("ObjectParameter", "ObjectParameters", parameterNamesForLevels(
 			parameterdefs.ParameterLevelAccountExt,
@@ -45,11 +42,7 @@ func parameterEnums() []*g.Enum {
 			parameterdefs.ParameterLevelWarehouseAdaptive,
 			parameterdefs.ParameterLevelWarehouseInteractive,
 		)...),
-		g.NewEnum("DatabaseParameter", "DatabaseParameters", withAdditionalParameterNames(
-			parameterNamesForLevels(parameterdefs.ParameterLevelDatabase),
-			ssotdefs.MetricLevel,
-			ssotdefs.ServiceCallerTokenValiditySecs,
-		)...),
+		g.NewEnum("DatabaseParameter", "DatabaseParameters", parameterNamesForLevels(parameterdefs.ParameterLevelDatabase)...),
 		g.NewEnum("SchemaParameter", "SchemaParameters", parameterNamesForLevels(parameterdefs.ParameterLevelSchema)...),
 		g.NewEnum("FunctionParameter", "FunctionParameters", parameterNamesForLevels(parameterdefs.ParameterLevelFunction)...),
 		g.NewEnum("ProcedureParameter", "ProcedureParameters", parameterNamesForLevels(parameterdefs.ParameterLevelProcedure)...),

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"slices"
 	"strings"
 )
 
@@ -590,40 +589,4 @@ func (v *parameters) UnsetObjectParameterOnObjectWithGenericFallback(ctx context
 			return v.UnsetObjectParameterOnObjectRaw(ctx, NewUnsetObjectParameterOnObjectRawParameterRequest(object.ObjectType, object.Name, string(parameter)))
 		},
 	)
-}
-
-// TODO(next prs): The generated All*Parameters lists also contain names that the catalog writers do not support (extras added in #552), so objectParameterCatalogSupport,
-// SupportedAccountParameters, and SupportedObjectParameters ask the writers instead. Once the catalog levels are fixed and the extras are removed, the lists match the writers and replace this code.
-// objectParameterCatalogSupport asks the catalog writer of every object type that has one whether it supports a parameter.
-// ErrParameterNotSupported is returned for an unknown parameter before the value is parsed, so an empty value is enough.
-var objectParameterCatalogSupport = map[ObjectType]func(parameter string) error{
-	ObjectTypeDatabase:     func(p string) error { return NewDatabaseSetRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeSchema:       func(p string) error { return NewSchemaSetRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeWarehouse:    func(p string) error { return NewWarehouseSetRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeUser:         func(p string) error { return NewUserSetRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeTask:         func(p string) error { return NewTaskSetRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeService:      func(p string) error { return NewServiceSetRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeHybridTable:  func(p string) error { return NewHybridTableSetPropertiesRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeIcebergTable: func(p string) error { return NewIcebergTableSetPropertiesRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeFunction:     func(p string) error { return NewFunctionSetRequest().SetParameterFromRaw(p, "") },
-	ObjectTypeProcedure:    func(p string) error { return NewProcedureSetRequest().SetParameterFromRaw(p, "") },
-}
-
-// SupportedAccountParameters returns the account parameters that the catalog write path supports.
-func SupportedAccountParameters() []AccountParameter {
-	return slices.DeleteFunc(slices.Clone(AllAccountParameters), func(parameter AccountParameter) bool {
-		return errors.Is(NewAccountParametersRequest().SetParameterFromRaw(string(parameter), ""), ErrParameterNotSupported)
-	})
-}
-
-// SupportedObjectParameters returns the parameters that the catalog write path supports on the given object type.
-// It returns nothing for an object type that the catalog write path does not support.
-func SupportedObjectParameters(objectType ObjectType) []ObjectParameter {
-	supports, ok := objectParameterCatalogSupport[objectType]
-	if !ok {
-		return nil
-	}
-	return slices.DeleteFunc(slices.Clone(AllObjectParameters), func(parameter ObjectParameter) bool {
-		return errors.Is(supports(string(parameter)), ErrParameterNotSupported)
-	})
 }

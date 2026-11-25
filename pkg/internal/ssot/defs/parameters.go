@@ -649,7 +649,7 @@ var (
 	MetricLevel = ssot.ParameterDef{
 		SqlName:      "METRIC_LEVEL",
 		Kind:         "MetricLevel",
-		Levels:       ssot.ObjectLevels(ssot.ParameterLevelFunction, ssot.ParameterLevelProcedure),
+		Levels:       ssot.ObjectLevels(ssot.ParameterLevelDatabase, ssot.ParameterLevelFunction, ssot.ParameterLevelProcedure),
 		Description:  "Controls how metrics data is ingested into the event table. For more information about metric levels, see [Setting levels for logging, metrics, and tracing](https://docs.snowflake.com/en/developer-guide/logging-tracing/telemetry-levels).",
 		DefaultValue: "sdk.MetricLevelNone",
 		DefaultLevel: parameterTypeSnowflakeDefault,
@@ -846,7 +846,7 @@ var (
 	ServiceCallerTokenValiditySecs = ssot.ParameterDef{
 		SqlName:      "SERVICE_CALLER_TOKEN_VALIDITY_SECS",
 		Kind:         string(ssot.AttrInt),
-		Levels:       []ssot.ParameterLevel{ssot.ParameterLevelService},
+		Levels:       []ssot.ParameterLevel{ssot.ParameterLevelAccountExt, ssot.ParameterLevelDatabase, ssot.ParameterLevelService},
 		Description:  "Controls how long a caller's rights login token is valid for Snowpark Container Services.",
 		DefaultValue: "120",
 		DefaultLevel: parameterTypeSnowflakeDefault,

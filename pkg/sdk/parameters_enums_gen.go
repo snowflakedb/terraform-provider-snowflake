@@ -122,6 +122,7 @@ const (
 	AccountParameterSearchPath                                               AccountParameter = "SEARCH_PATH"
 	AccountParameterServerlessTaskMaxStatementSize                           AccountParameter = "SERVERLESS_TASK_MAX_STATEMENT_SIZE"
 	AccountParameterServerlessTaskMinStatementSize                           AccountParameter = "SERVERLESS_TASK_MIN_STATEMENT_SIZE"
+	AccountParameterServiceCallerTokenValiditySecs                           AccountParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 	AccountParameterShareRestrictions                                        AccountParameter = "SHARE_RESTRICTIONS"
 	AccountParameterSimulatedDataSharingConsumer                             AccountParameter = "SIMULATED_DATA_SHARING_CONSUMER"
 	AccountParameterSqlTraceQueryText                                        AccountParameter = "SQL_TRACE_QUERY_TEXT"
@@ -154,7 +155,6 @@ const (
 	AccountParameterUserTaskTimeoutMs                                        AccountParameter = "USER_TASK_TIMEOUT_MS"
 	AccountParameterWeekOfYearPolicy                                         AccountParameter = "WEEK_OF_YEAR_POLICY"
 	AccountParameterWeekStart                                                AccountParameter = "WEEK_START"
-	AccountParameterServiceCallerTokenValiditySecs                           AccountParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 )
 
 var AllAccountParameters = []AccountParameter{
@@ -270,6 +270,7 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterSearchPath,
 	AccountParameterServerlessTaskMaxStatementSize,
 	AccountParameterServerlessTaskMinStatementSize,
+	AccountParameterServiceCallerTokenValiditySecs,
 	AccountParameterShareRestrictions,
 	AccountParameterSimulatedDataSharingConsumer,
 	AccountParameterSqlTraceQueryText,
@@ -302,7 +303,6 @@ var AllAccountParameters = []AccountParameter{
 	AccountParameterUserTaskTimeoutMs,
 	AccountParameterWeekOfYearPolicy,
 	AccountParameterWeekStart,
-	AccountParameterServiceCallerTokenValiditySecs,
 }
 
 func ToAccountParameter(s string) (AccountParameter, error) {
@@ -532,6 +532,8 @@ func ToAccountParameter(s string) (AccountParameter, error) {
 		return AccountParameterServerlessTaskMaxStatementSize, nil
 	case string(AccountParameterServerlessTaskMinStatementSize):
 		return AccountParameterServerlessTaskMinStatementSize, nil
+	case string(AccountParameterServiceCallerTokenValiditySecs):
+		return AccountParameterServiceCallerTokenValiditySecs, nil
 	case string(AccountParameterShareRestrictions):
 		return AccountParameterShareRestrictions, nil
 	case string(AccountParameterSimulatedDataSharingConsumer):
@@ -596,8 +598,6 @@ func ToAccountParameter(s string) (AccountParameter, error) {
 		return AccountParameterWeekOfYearPolicy, nil
 	case string(AccountParameterWeekStart):
 		return AccountParameterWeekStart, nil
-	case string(AccountParameterServiceCallerTokenValiditySecs):
-		return AccountParameterServiceCallerTokenValiditySecs, nil
 	default:
 		return "", fmt.Errorf("invalid account parameter: %s", s)
 	}
@@ -2088,8 +2088,10 @@ const (
 	DatabaseParameterLogEventLevel                           DatabaseParameter = "LOG_EVENT_LEVEL"
 	DatabaseParameterLogLevel                                DatabaseParameter = "LOG_LEVEL"
 	DatabaseParameterMaxDataExtensionTimeInDays              DatabaseParameter = "MAX_DATA_EXTENSION_TIME_IN_DAYS"
+	DatabaseParameterMetricLevel                             DatabaseParameter = "METRIC_LEVEL"
 	DatabaseParameterQuotedIdentifiersIgnoreCase             DatabaseParameter = "QUOTED_IDENTIFIERS_IGNORE_CASE"
 	DatabaseParameterReplaceInvalidCharacters                DatabaseParameter = "REPLACE_INVALID_CHARACTERS"
+	DatabaseParameterServiceCallerTokenValiditySecs          DatabaseParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 	DatabaseParameterStorageSerializationPolicy              DatabaseParameter = "STORAGE_SERIALIZATION_POLICY"
 	DatabaseParameterSuspendTaskAfterNumFailures             DatabaseParameter = "SUSPEND_TASK_AFTER_NUM_FAILURES"
 	DatabaseParameterTaskAutoRetryAttempts                   DatabaseParameter = "TASK_AUTO_RETRY_ATTEMPTS"
@@ -2097,8 +2099,6 @@ const (
 	DatabaseParameterUserTaskManagedInitialWarehouseSize     DatabaseParameter = "USER_TASK_MANAGED_INITIAL_WAREHOUSE_SIZE"
 	DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds DatabaseParameter = "USER_TASK_MINIMUM_TRIGGER_INTERVAL_IN_SECONDS"
 	DatabaseParameterUserTaskTimeoutMs                       DatabaseParameter = "USER_TASK_TIMEOUT_MS"
-	DatabaseParameterMetricLevel                             DatabaseParameter = "METRIC_LEVEL"
-	DatabaseParameterServiceCallerTokenValiditySecs          DatabaseParameter = "SERVICE_CALLER_TOKEN_VALIDITY_SECS"
 )
 
 var AllDatabaseParameters = []DatabaseParameter{
@@ -2112,8 +2112,10 @@ var AllDatabaseParameters = []DatabaseParameter{
 	DatabaseParameterLogEventLevel,
 	DatabaseParameterLogLevel,
 	DatabaseParameterMaxDataExtensionTimeInDays,
+	DatabaseParameterMetricLevel,
 	DatabaseParameterQuotedIdentifiersIgnoreCase,
 	DatabaseParameterReplaceInvalidCharacters,
+	DatabaseParameterServiceCallerTokenValiditySecs,
 	DatabaseParameterStorageSerializationPolicy,
 	DatabaseParameterSuspendTaskAfterNumFailures,
 	DatabaseParameterTaskAutoRetryAttempts,
@@ -2121,8 +2123,6 @@ var AllDatabaseParameters = []DatabaseParameter{
 	DatabaseParameterUserTaskManagedInitialWarehouseSize,
 	DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds,
 	DatabaseParameterUserTaskTimeoutMs,
-	DatabaseParameterMetricLevel,
-	DatabaseParameterServiceCallerTokenValiditySecs,
 }
 
 func ToDatabaseParameter(s string) (DatabaseParameter, error) {
@@ -2148,10 +2148,14 @@ func ToDatabaseParameter(s string) (DatabaseParameter, error) {
 		return DatabaseParameterLogLevel, nil
 	case string(DatabaseParameterMaxDataExtensionTimeInDays):
 		return DatabaseParameterMaxDataExtensionTimeInDays, nil
+	case string(DatabaseParameterMetricLevel):
+		return DatabaseParameterMetricLevel, nil
 	case string(DatabaseParameterQuotedIdentifiersIgnoreCase):
 		return DatabaseParameterQuotedIdentifiersIgnoreCase, nil
 	case string(DatabaseParameterReplaceInvalidCharacters):
 		return DatabaseParameterReplaceInvalidCharacters, nil
+	case string(DatabaseParameterServiceCallerTokenValiditySecs):
+		return DatabaseParameterServiceCallerTokenValiditySecs, nil
 	case string(DatabaseParameterStorageSerializationPolicy):
 		return DatabaseParameterStorageSerializationPolicy, nil
 	case string(DatabaseParameterSuspendTaskAfterNumFailures):
@@ -2166,10 +2170,6 @@ func ToDatabaseParameter(s string) (DatabaseParameter, error) {
 		return DatabaseParameterUserTaskMinimumTriggerIntervalInSeconds, nil
 	case string(DatabaseParameterUserTaskTimeoutMs):
 		return DatabaseParameterUserTaskTimeoutMs, nil
-	case string(DatabaseParameterMetricLevel):
-		return DatabaseParameterMetricLevel, nil
-	case string(DatabaseParameterServiceCallerTokenValiditySecs):
-		return DatabaseParameterServiceCallerTokenValiditySecs, nil
 	default:
 		return "", fmt.Errorf("invalid database parameter: %s", s)
 	}

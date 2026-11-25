@@ -456,7 +456,7 @@ func TestParameterOnAccountLegacy_NotSupported(t *testing.T) {
 	})
 
 	t.Run("not supported by any write path", func(t *testing.T) {
-		err := p.SetAccountParameterLegacy(ctx, AccountParameterServiceCallerTokenValiditySecs, "60")
+		err := p.SetAccountParameterLegacy(ctx, AccountParameter("SOME_FUTURE_PARAMETER"), "60")
 		require.ErrorIs(t, err, ErrParameterNotSupported)
 		require.NotErrorIs(t, err, ErrLegacyParameterNotSupported)
 

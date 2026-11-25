@@ -26,6 +26,17 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 > [!TIP]
 > If you're still using the `Snowflake-Labs/snowflake` source, see [Upgrading from Snowflake-Labs Provider](./SNOWFLAKEDB_MIGRATION.md) to upgrade to the snowflakedb namespace.
 
+## v2.24.x ➞ v2.25.0
+
+### *(new feature)* `METRIC_LEVEL` and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on databases and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account
+
+The provider knew `METRIC_LEVEL` only on functions and procedures and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` only on services, although Snowflake also supports them on databases, and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account.
+
+- [`snowflake_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/database), [`snowflake_secondary_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/secondary_database), and [`snowflake_shared_database`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/shared_database) have new optional `metric_level` and `service_caller_token_validity_secs` fields, and the `parameters` output of these resources and of the [`snowflake_databases`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/databases) data source reports them.
+- [`snowflake_account_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/account_parameter) and [`snowflake_object_parameter`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/object_parameter) support `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account, and `snowflake_object_parameter` supports both parameters on databases. If you set them with `value_type` before, `value_type` is ignored now (it logs a warning), and you can remove it.
+
+No changes are required in your configuration.
+
 ## v2.23.x ➞ v2.24.0
 
 ### *(breaking change)* Table constraint names are case-sensitive
