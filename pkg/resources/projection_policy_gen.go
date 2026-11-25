@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -86,17 +85,7 @@ func ReadProjectionPolicyFunc(withExternalChangesMarking bool) tfschema.ReadCont
 
 		projectionPolicy, err := meta.(*provider.Context).Client.ProjectionPolicies.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query projection policy. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Projection policy id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeProjectionPolicy, id, err)
 		}
 		projectionPolicyDetails, err := meta.(*provider.Context).Client.ProjectionPolicies.Describe(ctx, id)
 		if err != nil {
@@ -123,25 +112,17 @@ func UpdateProjectionPolicy(ctx context.Context, d *tfschema.ResourceData, meta 
 		return diag.FromErr(err)
 	}
 
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, &id,
-			rename,
-			client.ProjectionPolicies.ShowByID,
-			func(renamed sdk.SchemaObjectIdentifier) string {
-				return helpers.EncodeResourceIdentifier(renamed)
-			},
-			"projection policy",
-		); diags != nil {
-			return diags
-		}
+	client := meta.(*provider.Context).Client
+	if diags := handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.ProjectionPolicies.Alter(ctx, sdk.NewAlterProjectionPolicyRequest(currentId).WithRenameTo(targetId))
+		},
+		client.ProjectionPolicies.ShowByID,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		sdk.ObjectTypeProjectionPolicy,
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {

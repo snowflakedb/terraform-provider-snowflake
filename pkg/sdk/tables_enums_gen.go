@@ -7,34 +7,6 @@ import (
 	"strings"
 )
 
-type TableConstraintType string
-
-const (
-	TableConstraintTypePrimaryKey TableConstraintType = "PRIMARY KEY"
-	TableConstraintTypeUnique     TableConstraintType = "UNIQUE"
-	TableConstraintTypeForeignKey TableConstraintType = "FOREIGN KEY"
-)
-
-var AllTableConstraintTypes = []TableConstraintType{
-	TableConstraintTypePrimaryKey,
-	TableConstraintTypeUnique,
-	TableConstraintTypeForeignKey,
-}
-
-func ToTableConstraintType(s string) (TableConstraintType, error) {
-	s = strings.ToUpper(s)
-	switch s {
-	case string(TableConstraintTypePrimaryKey):
-		return TableConstraintTypePrimaryKey, nil
-	case string(TableConstraintTypeUnique):
-		return TableConstraintTypeUnique, nil
-	case string(TableConstraintTypeForeignKey):
-		return TableConstraintTypeForeignKey, nil
-	default:
-		return "", fmt.Errorf("invalid table constraint type: %s", s)
-	}
-}
-
 type TableScope string
 
 const (
@@ -87,27 +59,83 @@ func ToTableKind(s string) (TableKind, error) {
 	}
 }
 
-type CloneMoment string
+type TableCopyOption string
 
 const (
-	CloneMomentAt     CloneMoment = "AT"
-	CloneMomentBefore CloneMoment = "BEFORE"
+	TableCopyOptionComments TableCopyOption = "COMMENTS"
+	TableCopyOptionTags     TableCopyOption = "TAGS"
+	TableCopyOptionGrants   TableCopyOption = "GRANTS"
 )
 
-var AllCloneMoments = []CloneMoment{
-	CloneMomentAt,
-	CloneMomentBefore,
+var AllTableCopyOptions = []TableCopyOption{
+	TableCopyOptionComments,
+	TableCopyOptionTags,
+	TableCopyOptionGrants,
 }
 
-func ToCloneMoment(s string) (CloneMoment, error) {
+func ToTableCopyOption(s string) (TableCopyOption, error) {
 	s = strings.ToUpper(s)
 	switch s {
-	case string(CloneMomentAt):
-		return CloneMomentAt, nil
-	case string(CloneMomentBefore):
-		return CloneMomentBefore, nil
+	case string(TableCopyOptionComments):
+		return TableCopyOptionComments, nil
+	case string(TableCopyOptionTags):
+		return TableCopyOptionTags, nil
+	case string(TableCopyOptionGrants):
+		return TableCopyOptionGrants, nil
 	default:
-		return "", fmt.Errorf("invalid clone moment: %s", s)
+		return "", fmt.Errorf("invalid table copy option: %s", s)
+	}
+}
+
+type TableConstraintType string
+
+const (
+	TableConstraintTypePrimaryKey TableConstraintType = "PRIMARY KEY"
+	TableConstraintTypeUnique     TableConstraintType = "UNIQUE"
+	TableConstraintTypeForeignKey TableConstraintType = "FOREIGN KEY"
+)
+
+var AllTableConstraintTypes = []TableConstraintType{
+	TableConstraintTypePrimaryKey,
+	TableConstraintTypeUnique,
+	TableConstraintTypeForeignKey,
+}
+
+func ToTableConstraintType(s string) (TableConstraintType, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableConstraintTypePrimaryKey):
+		return TableConstraintTypePrimaryKey, nil
+	case string(TableConstraintTypeUnique):
+		return TableConstraintTypeUnique, nil
+	case string(TableConstraintTypeForeignKey):
+		return TableConstraintTypeForeignKey, nil
+	default:
+		return "", fmt.Errorf("invalid table constraint type: %s", s)
+	}
+}
+
+type TableColumnKind string
+
+const (
+	TableColumnKindColumn  TableColumnKind = "COLUMN"
+	TableColumnKindVirtual TableColumnKind = "VIRTUAL"
+)
+
+var AllTableColumnKinds = []TableColumnKind{
+	TableColumnKindColumn,
+	TableColumnKindVirtual,
+}
+
+func ToTableColumnKind(s string) (TableColumnKind, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableColumnKindColumn):
+		return TableColumnKindColumn, nil
+	case string(TableColumnKindVirtual):
+		return TableColumnKindVirtual, nil
+	default:
+		return "", fmt.Errorf("invalid table column kind: %s", s)
 	}
 }
 
@@ -188,5 +216,81 @@ func ToTableSearchMethod(s string) (TableSearchMethod, error) {
 		return TableSearchMethodFullText, nil
 	default:
 		return "", fmt.Errorf("invalid table search method: %s", s)
+	}
+}
+
+type TableDataMetricScheduleStatusOperation string
+
+const (
+	TableDataMetricScheduleStatusOperationResume  TableDataMetricScheduleStatusOperation = "RESUME"
+	TableDataMetricScheduleStatusOperationSuspend TableDataMetricScheduleStatusOperation = "SUSPEND"
+)
+
+var AllTableDataMetricScheduleStatusOperations = []TableDataMetricScheduleStatusOperation{
+	TableDataMetricScheduleStatusOperationResume,
+	TableDataMetricScheduleStatusOperationSuspend,
+}
+
+func ToTableDataMetricScheduleStatusOperation(s string) (TableDataMetricScheduleStatusOperation, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableDataMetricScheduleStatusOperationResume):
+		return TableDataMetricScheduleStatusOperationResume, nil
+	case string(TableDataMetricScheduleStatusOperationSuspend):
+		return TableDataMetricScheduleStatusOperationSuspend, nil
+	default:
+		return "", fmt.Errorf("invalid table data metric schedule status operation: %s", s)
+	}
+}
+
+type TableDataMetricSensitivity string
+
+const (
+	TableDataMetricSensitivityLow    TableDataMetricSensitivity = "LOW"
+	TableDataMetricSensitivityMedium TableDataMetricSensitivity = "MEDIUM"
+	TableDataMetricSensitivityHigh   TableDataMetricSensitivity = "HIGH"
+)
+
+var AllTableDataMetricSensitivities = []TableDataMetricSensitivity{
+	TableDataMetricSensitivityLow,
+	TableDataMetricSensitivityMedium,
+	TableDataMetricSensitivityHigh,
+}
+
+func ToTableDataMetricSensitivity(s string) (TableDataMetricSensitivity, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(TableDataMetricSensitivityLow):
+		return TableDataMetricSensitivityLow, nil
+	case string(TableDataMetricSensitivityMedium):
+		return TableDataMetricSensitivityMedium, nil
+	case string(TableDataMetricSensitivityHigh):
+		return TableDataMetricSensitivityHigh, nil
+	default:
+		return "", fmt.Errorf("invalid table data metric sensitivity: %s", s)
+	}
+}
+
+type CloneMoment string
+
+const (
+	CloneMomentAt     CloneMoment = "AT"
+	CloneMomentBefore CloneMoment = "BEFORE"
+)
+
+var AllCloneMoments = []CloneMoment{
+	CloneMomentAt,
+	CloneMomentBefore,
+}
+
+func ToCloneMoment(s string) (CloneMoment, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(CloneMomentAt):
+		return CloneMomentAt, nil
+	case string(CloneMomentBefore):
+		return CloneMomentBefore, nil
+	default:
+		return "", fmt.Errorf("invalid clone moment: %s", s)
 	}
 }

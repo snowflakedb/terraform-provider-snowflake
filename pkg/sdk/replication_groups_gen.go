@@ -160,7 +160,8 @@ type replicationGroupsRow struct {
 	NextScheduledRefresh          sql.NullTime   `db:"next_scheduled_refresh"`
 	Owner                         sql.NullString `db:"owner"`
 	IsListingAutoFulfillmentGroup bool           `db:"is_listing_auto_fulfillment_group"`
-	ReadOnly                      sql.NullBool   `db:"read_only"`
+	ErrorIntegration              sql.NullString `db:"error_integration"`
+	IsPrimaryReadOnly             sql.NullBool   `db:"is_primary_read_only"`
 }
 
 type ReplicationGroup struct {
@@ -183,7 +184,8 @@ type ReplicationGroup struct {
 	NextScheduledRefresh          time.Time
 	Owner                         *string
 	IsListingAutoFulfillmentGroup bool
-	ReadOnly                      *bool
+	ErrorIntegration              *AccountObjectIdentifier
+	IsPrimaryReadOnly             *bool
 }
 
 func (v *ReplicationGroup) ID() AccountObjectIdentifier {

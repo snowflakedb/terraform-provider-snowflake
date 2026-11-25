@@ -4,6 +4,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
+// importBooleanAttribute handles a native bool attribute without a Default. Permissive mode writes nothing, so the
+// attribute stays unset, like after a create that omits it.
+func importBooleanAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue bool) error {
+	if importPermissiveMode {
+		return nil
+	}
+	return d.Set(key, snowflakeValue)
+}
+
 func importBooleanStringAttribute(d *schema.ResourceData, key string, importPermissiveMode bool, snowflakeValue bool) error {
 	if importPermissiveMode {
 		return d.Set(key, BooleanDefault)

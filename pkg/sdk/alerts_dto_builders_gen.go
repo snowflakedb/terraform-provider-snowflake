@@ -9,7 +9,7 @@ func NewCreateAlertRequest(
 ) *CreateAlertRequest {
 	s := CreateAlertRequest{}
 	s.name = name
-	s.condition = condition
+	s.Condition = condition
 	s.action = action
 	return &s
 }
@@ -39,14 +39,12 @@ func (s *CreateAlertRequest) WithComment(comment string) *CreateAlertRequest {
 	return s
 }
 
-func NewAlertConditionRequest() *AlertConditionRequest {
+func NewAlertConditionRequest(
+	condition string,
+) *AlertConditionRequest {
 	s := AlertConditionRequest{}
-	return &s
-}
-
-func (s *AlertConditionRequest) WithCondition(condition []string) *AlertConditionRequest {
 	s.Condition = condition
-	return s
+	return &s
 }
 
 func NewAlterAlertRequest(

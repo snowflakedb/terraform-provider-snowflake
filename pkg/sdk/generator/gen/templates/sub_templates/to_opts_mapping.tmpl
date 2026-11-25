@@ -11,7 +11,15 @@
     {{- if .ShouldBeInDto }}
         {{- if .HasAnyFields }}
             {{- if or .IsShared .GenerateSharedToOpts }}
-                {{- if .IsPointer }}
+                {{- if .IsSlice }}
+                if {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} != nil {
+                {{ .ToOptsSliceVar }} := make({{ .Kind }}, len({{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}))
+                for i, {{ toOptsSliceElemVar }} := range {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} {
+                    {{ .ToOptsSliceVar }}[i] = *{{ toOptsSliceElemVar }}.toOpts()
+                }
+                {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ .ToOptsSliceVar }}
+                }
+                {{- else if .IsPointer }}
                 if {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }} != nil {
                 {{ .ToOptsOptsRef }}{{ .ToOptsSourcePath }} = {{ .ToOptsSourceRoot }}{{ .ToOptsSourcePath }}.toOpts()
                 }

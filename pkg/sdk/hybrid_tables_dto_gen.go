@@ -2,6 +2,8 @@
 
 package sdk
 
+import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
+
 var (
 	_ optionsProvider[CreateHybridTableOptions]           = new(CreateHybridTableRequest)
 	_ optionsProvider[AlterHybridTableOptions]            = new(AlterHybridTableRequest)
@@ -33,8 +35,8 @@ type HybridTableColumnsConstraintsAndIndexesRequest struct {
 }
 
 type HybridTableColumnRequest struct {
-	Name             string   // required
-	DataType         DataType // required
+	Name             string             // required
+	DataType         datatypes.DataType // required
 	InlineConstraint *ColumnInlineConstraint
 	NotNull          *bool
 	DefaultValue     *ColumnDefaultValue
@@ -78,8 +80,8 @@ type AlterHybridTableRequest struct {
 
 type HybridTableAddColumnActionRequest struct {
 	IfNotExists      *bool
-	Name             string   // required
-	DataType         DataType // required
+	Name             string             // required
+	DataType         datatypes.DataType // required
 	Collate          *string
 	DefaultValue     *ColumnDefaultValue
 	InlineConstraint *ColumnInlineConstraint
@@ -109,7 +111,7 @@ type HybridTableAlterColumnActionRequest struct {
 	ColumnName   string // required
 	DropDefault  *bool
 	SetDefault   *SequenceName
-	DataType     *DataType
+	DataType     *datatypes.DataType
 	Comment      *string
 	UnsetComment *bool
 }

@@ -1,8 +1,8 @@
 {{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources/gen.ResourceModel*/ -}}
 {{- if .Hooks.AlterUnsetInSdk.Generate -}}
 {{- range .AlterStatements.Unset -}}
-	if !reflect.DeepEqual(*setUnset.{{ . }}, *sdk.New{{ $.Name }}UnsetRequest()) {
-		if err := meta.(*provider.Context).Client.{{ $.NamePlural }}.Alter(ctx, sdk.NewAlter{{ $.Name }}Request(id).WithUnset(*setUnset.{{ . }})); err != nil {
+	if !reflect.DeepEqual(*setUnset.{{ . }}, *sdk.New{{ $.AlterStatements.Stem }}UnsetRequest()) {
+		if err := meta.(*provider.Context).Client.{{ $.NamePlural }}.Alter(ctx, sdk.NewAlter{{ $.AlterStatements.Stem }}Request(id).WithUnset(*setUnset.{{ . }})); err != nil {
 {{- if $.HasPartialOnUpdate }}
 			d.Partial(true)
 {{- end }}

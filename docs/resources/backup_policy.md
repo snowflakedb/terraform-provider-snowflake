@@ -76,10 +76,10 @@ resource "snowflake_backup_policy" "cron" {
 
 ### Read-Only
 
-- `describe_output` (List of Object) Outputs the result of `DESCRIBE BACKUP POLICY` for the given backup policy. (see [below for nested schema](#nestedatt--describe_output))
+- `describe_output` (List of Object) Holds the output of `DESCRIBE BACKUP POLICY` for the given backup policy. (see [below for nested schema](#nestedatt--describe_output))
 - `fully_qualified_name` (String) Fully qualified name of the resource. For more information, see [object name resolution](https://docs.snowflake.com/en/sql-reference/name-resolution).
 - `id` (String) The ID of this resource.
-- `show_output` (List of Object) Outputs the result of `SHOW BACKUP POLICIES` for the given backup policy. (see [below for nested schema](#nestedatt--show_output))
+- `show_output` (List of Object) Holds the output of `SHOW BACKUP POLICIES` for the given backup policy. (see [below for nested schema](#nestedatt--show_output))
 
 <a id="nestedblock--schedule"></a>
 ### Nested Schema for `schedule`

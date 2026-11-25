@@ -34,7 +34,7 @@ func ssotModelBuilderModels() []ResourceConfigBuilderModel {
 
 // selectsForModel is the one filter of the config model builder generator: the object is a resource and has attributes.
 func selectsForModel(obj ssot.Object) bool {
-	return !obj.VariantBaseOnly && len(obj.Attributes) > 0
+	return !obj.IsVariantBaseOnly() && len(obj.Attributes) > 0
 }
 
 func WithPreamble(model ResourceConfigBuilderModel, preamble *genhelpers.PreambleModel, _ *log.Logger) ResourceConfigBuilderModel {

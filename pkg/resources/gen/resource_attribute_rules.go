@@ -26,16 +26,19 @@ const (
 	RuleSetOfIdentifiersNormalizes             = "set_of_identifiers_normalizes"
 	RuleConfiguredDiffSuppress                 = "configured_diff_suppress"
 	RuleSingleObjectIsListOfOne                = "single_object_is_list_of_one"
+	RuleRequiredListHasMinOne                  = "required_list_has_min_one"
 )
 
 // resourceAttributeRuleContext distinguishes a top-level attribute from a collection
 // elem (list or set) and from a field inside a nested block, so rules that only apply
 // to fields (enum DiffSuppress, descriptions, top-level set normalization) can skip the others.
 // RelationPrefix is the Terraform path of this attribute's parent, without a trailing dot.
-// Empty at the resource root. A list with MaxItems 1 uses parent.0.
+// Empty at the resource root. An AttrObject uses parent.0.
+// InListBlock marks a field under an element of a list or set of objects, which a schema path cannot name.
 type resourceAttributeRuleContext struct {
 	AsCollectionElem bool
 	InBlock          bool
+	InListBlock      bool
 	IdType           string
 	RelationPrefix   string
 }
@@ -216,9 +219,20 @@ var resourceAttributeRules = []resourceAttributeRule{
 		Then: func(in ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
 			out.TfType = SchemaTypeList
 			out.MaxItems = new(1)
+			// SDKv2 ignores MinItems on Optional attributes (core_schema.go resets it to 0), so only Required sets MinItems: 1.
 			if in.Required {
 				out.MinItems = new(1)
 			}
+		},
+	},
+	{
+		Name:        RuleRequiredListHasMinOne,
+		Description: "Required lists require at least one item unless a higher Min is set.",
+		When: func(in ssot.Attribute, ctx resourceAttributeRuleContext) bool {
+			return in.Type == ssot.AttrList && in.Required && in.Min == nil && !ctx.AsCollectionElem
+		},
+		Then: func(_ ssot.Attribute, _ resourceAttributeRuleContext, out *ResourceAttribute) {
+			out.MinItems = new(1)
 		},
 	},
 	{
@@ -301,8 +315,8 @@ func relationPaths(prefix string, attrs []ssot.Attribute) []string {
 	})
 }
 
-// listBlockRelationPrefix is the Terraform path of children of a single block: an object, or a list of objects
-// with MaxItems 1. Other blocks cannot name child relations, so their children keep an empty prefix.
+// listBlockRelationPrefix is the Terraform path of children of a single object (AttrObject).
+// List and set blocks cannot name child relations, so their children keep an empty prefix.
 func listBlockRelationPrefix(parent ssot.Attribute, ctx resourceAttributeRuleContext) string {
 	if !parent.IsSingleBlock() {
 		return ""
@@ -380,10 +394,16 @@ func resolveResourceAttribute(in ssot.Attribute, ctx resourceAttributeRuleContex
 		nestedCtx.IdType = ""
 		nestedCtx.InBlock = true
 		nestedCtx.AsCollectionElem = false
+		nestedCtx.InListBlock = ctx.InListBlock || !in.IsSingleBlock()
 		nestedCtx.RelationPrefix = listBlockRelationPrefix(in, ctx)
 		out.Children = collections.Map(fields, func(child ssot.Attribute) ResourceAttribute {
 			return resolveResourceAttribute(child, nestedCtx)
 		})
+		if !nestedCtx.InListBlock {
+			applyValidations(in.Validations, func(v ssot.Validation) []ssot.Attribute {
+				return in.ValidationFieldsFor(v, ssot.ClauseCreate)
+			}, nestedCtx.RelationPrefix, out.Children)
+		}
 	}
 	return out
 }
@@ -400,10 +420,10 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 		out.Computed = in.Computed
 		out.ForceNew = in.ForceNew
 		out.Sensitive = in.Sensitive
-		out.MinItems = in.MinItems
-		out.MaxItems = in.MaxItems
-		out.ConflictsWith = relationPaths(ctx.RelationPrefix, in.ConflictsWith)
-		out.AtLeastOneOf = relationPaths(ctx.RelationPrefix, in.AtLeastOneOf)
+		if in.Type == ssot.AttrList || in.Type == ssot.AttrSet {
+			out.MinItems = in.Min
+			out.MaxItems = in.Max
+		}
 	}
 	if in.Description != "" {
 		out.DescriptionExpr = strconv.Quote(in.Description)
@@ -411,13 +431,15 @@ func resourceAttributeBaseline(in ssot.Attribute, ctx resourceAttributeRuleConte
 	if in.Deprecated != "" {
 		out.DeprecatedExpr = strconv.Quote(in.Deprecated)
 	}
-	switch {
-	case in.Min != nil && in.Max != nil:
-		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntBetween(%d, %d))", *in.Min, *in.Max)
-	case in.Min != nil:
-		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtLeast(%d))", *in.Min)
-	case in.Max != nil:
-		out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtMost(%d))", *in.Max)
+	if in.Type == ssot.AttrInt {
+		switch {
+		case in.Min != nil && in.Max != nil:
+			out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntBetween(%d, %d))", *in.Min, *in.Max)
+		case in.Min != nil:
+			out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtLeast(%d))", *in.Min)
+		case in.Max != nil:
+			out.ValidateDiagExpr = fmt.Sprintf("validation.ToDiagFunc(validation.IntAtMost(%d))", *in.Max)
+		}
 	}
 	if in.Type == ssot.AttrEnum && in.Enum != nil {
 		out.EnumName = in.Enum.Name
@@ -440,17 +462,32 @@ func tfTypeFor(t ssot.AttributeType) SchemaValueType {
 	}
 }
 
-// applyExactlyOneOf sets ExactlyOneOf on the attributes of each group: the names of the whole group, itself included.
-// The attributes are the top-level ones of the object, in the order of the groups' own attributes.
-func applyExactlyOneOf(groups [][]*ssot.Attribute, attributes []ResourceAttribute) {
-	for _, group := range groups {
-		names := collections.Map(group, func(attr *ssot.Attribute) string { return attr.Name })
-		for _, name := range names {
-			i := slices.IndexFunc(attributes, func(attr ResourceAttribute) bool { return attr.Name == name })
-			if i < 0 {
-				panic(fmt.Sprintf("ExactlyOneOf attribute %q is not a resource attribute", name))
+// applyValidations sets the schema relations of each validation on the attributes of its fields, as paths from the
+// resource root under prefix. AtLeastOne and ExactlyOne give each field the whole list, itself included. Conflicting gives
+// each field the others. A validation that names a SqlOnly field has no schema form, and only the SDK checks it.
+// fieldsOf returns the fields of a validation in the order of the parent's fields.
+func applyValidations(validations []ssot.Validation, fieldsOf func(ssot.Validation) []ssot.Attribute, prefix string, attributes []ResourceAttribute) {
+	for _, validation := range validations {
+		fields := fieldsOf(validation)
+		if slices.ContainsFunc(fields, func(field ssot.Attribute) bool { return field.SqlOnly }) {
+			continue
+		}
+		paths := relationPaths(prefix, fields)
+		for i, field := range fields {
+			j := slices.IndexFunc(attributes, func(attr ResourceAttribute) bool { return attr.Name == field.Name })
+			if j < 0 {
+				panic(fmt.Sprintf("%s validation field %q is not a resource attribute", validation.Kind, field.Name))
 			}
-			attributes[i].ExactlyOneOf = names
+			switch validation.Kind {
+			case ssot.ValidationAtLeastOne:
+				attributes[j].AtLeastOneOf = paths
+			case ssot.ValidationExactlyOne:
+				attributes[j].ExactlyOneOf = paths
+			case ssot.ValidationConflicting:
+				attributes[j].ConflictsWith = append(attributes[j].ConflictsWith, slices.Delete(slices.Clone(paths), i, i+1)...)
+			default:
+				panic(fmt.Sprintf("unknown validation kind %q", validation.Kind))
+			}
 		}
 	}
 }

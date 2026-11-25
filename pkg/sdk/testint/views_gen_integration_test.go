@@ -74,17 +74,18 @@ func TestInt_Views(t *testing.T) {
 	assertViewDetailsRow := func(t *testing.T, viewDetails *sdk.ViewDetails) {
 		t.Helper()
 		assert.Equal(t, sdk.ViewDetails{
-			Name:       "ID",
-			Type:       "NUMBER(38,0)",
-			Kind:       "COLUMN",
-			IsNullable: true,
-			Default:    nil,
-			IsPrimary:  false,
-			IsUnique:   false,
-			Check:      nil,
-			Expression: nil,
-			Comment:    nil,
-			PolicyName: nil,
+			Name:        "ID",
+			Type:        testdatatypes.DataTypeNumber_38_0,
+			DataTypeRaw: "NUMBER(38,0)",
+			Kind:        "COLUMN",
+			IsNullable:  true,
+			Default:     nil,
+			IsPrimary:   false,
+			IsUnique:    false,
+			Check:       nil,
+			Expression:  nil,
+			Comment:     nil,
+			PolicyName:  nil,
 		}, *viewDetails)
 	}
 

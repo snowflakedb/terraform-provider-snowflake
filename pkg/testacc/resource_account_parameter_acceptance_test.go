@@ -3,14 +3,17 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/resourceassert"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/model"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config/providermodel"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
 
@@ -133,6 +136,120 @@ func TestAcc_AccountParameter_Issue3025(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{},
+			},
+		},
+	})
+}
+
+// The parameter catalog does not support DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT, so it can be set only through the generic write path.
+func TestAcc_AccountParameter_GenericWritePath_UnknownParameter(t *testing.T) {
+	param := sdk.AccountParameter("DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT")
+	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
+
+	withoutType := model.AccountParameter("unknown", string(param), "2400")
+	withType := model.AccountParameter("unknown", string(param), "2400").WithValueType("integer")
+	withTypeInOtherCase := model.AccountParameter("unknown", string(param), "2400").WithValueType("INTEGER")
+	changedValue := model.AccountParameter("unknown", string(param), "2300").WithValueType("INTEGER")
+	invalidValue := model.AccountParameter("unknown", string(param), "abc").WithValueType("INTEGER")
+	experimentsDisabledProviderModel := providermodel.SnowflakeProvider().
+		WithAllEnabledByDefaultExperimentsDisabled()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountParameterUnset(t, param),
+		Steps: []resource.TestStep{
+			// The generic path needs the experiment.
+			{
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   config.FromModels(t, experimentsDisabledProviderModel, withType),
+				ExpectError:              regexp.MustCompile("remove ACCOUNT_PARAMETER_CATALOG_WRITE_PATH from `experimental_features_disabled`"),
+			},
+			// Without value_type, the provider cannot type the value.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withoutType),
+				ExpectError:              regexp.MustCompile("set the `value_type` field"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, invalidValue),
+				ExpectError:              regexp.MustCompile("integer value expected"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withType),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: assertThat(t,
+					resourceassert.AccountParameterResource(t, withType.ResourceReference()).
+						HasKeyString(string(param)).
+						HasValueString("2400").
+						HasValueTypeString("integer"),
+				),
+			},
+			// value_type is case-insensitive, so changing only its case shows no difference.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withTypeInOtherCase),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, changedValue),
+				Check: assertThat(t,
+					resourceassert.AccountParameterResource(t, changedValue.ResourceReference()).
+						HasValueString("2300"),
+				),
+			},
+		},
+	})
+}
+
+// When a provider version starts to support a parameter, value_type stops being used, and the configuration does not have
+// to change: with or without value_type, nothing is planned. INITIAL_REPLICATION_SIZE_LIMIT_IN_TB is in the catalog.
+func TestAcc_AccountParameter_GenericWritePath_ValueTypeIsIgnoredForSupportedParameter(t *testing.T) {
+	param := sdk.AccountParameterInitialReplicationSizeLimitInTb
+	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
+
+	withType := model.AccountParameter("supported", string(param), "3.0").WithValueType("STRING")
+	withOtherType := model.AccountParameter("supported", string(param), "3.0").WithValueType("INTEGER")
+	withoutType := model.AccountParameter("supported", string(param), "3.0")
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckAccountParameterUnset(t, param),
+		Steps: []resource.TestStep{
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withType),
+				Check: assertThat(t,
+					resourceassert.AccountParameterResource(t, withType.ResourceReference()).
+						HasValueString("3.0"),
+				),
+			},
+			// value_type is ignored for a supported parameter, so changing it to another type shows no difference.
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withOtherType),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   config.FromModels(t, withoutType),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply:             []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
 			},
 		},
 	})

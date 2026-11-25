@@ -23,26 +23,27 @@ var CatalogIntegrationAwsGlueAttrs = struct {
 	GlueAwsExternalId      ssot.Attribute
 }{
 	Enabled: ssot.Attribute{
-		Name:        "enabled",
-		Type:        ssot.AttrBool,
-		Required:    true,
-		Description: "Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.",
+		Name:          "enabled",
+		UpdateMapping: ssot.BooleanAttributeUpdateSetOnlyBuilder,
+		Type:          ssot.AttrBool,
+		Required:      true,
+		Description:   "Specifies whether the catalog integration is available for use for Iceberg tables. `true` allows users to create new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration function normally. `false` prevents users from creating new Iceberg tables that reference this integration. Existing Iceberg tables that reference this integration cannot access the catalog in the table definition.",
 	},
 	RefreshIntervalSeconds: ssot.Attribute{
 		Name:          "refresh_interval_seconds",
+		UpdateMapping: ssot.IntAttributeUnsetFallbackUpdateWithZeroDefault(30),
 		Type:          ssot.AttrInt,
 		Description:   "Specifies the number of seconds to wait between attempts to poll the external Iceberg catalog for metadata updates for automated refresh. For Delta-based tables, specifies the number of seconds to wait between attempts to poll your external cloud storage for new metadata.",
 		Min:           new(1),
 		ServerDefault: true,
-		CreateMapping: ssot.IntAttributeCreateBuilder,
 		CreateSql:     ssot.IntParameter(ssot.NoQuotes()),
 	},
 	Comment: ssot.Attribute{
 		Name:          "comment",
+		UpdateMapping: ssot.StringAttributeUpdateSetOnly,
 		Type:          ssot.AttrString,
 		Description:   "Specifies a comment for the catalog integration.",
 		OptionalInDb:  true,
-		CreateMapping: ssot.StringAttributeCreateBuilder,
 	},
 	// GlueAwsRoleArn and GlueCatalogId are required arguments of NewAwsGlueParamsRequest, not of
 	// NewCreateCatalogIntegrationRequest. They have no CreateMapping: HelperMapping would emit
@@ -99,9 +100,14 @@ var catalogIntegrationAwsGlueCatalogSourceStatic = ssot.Attribute{
 }
 
 var CatalogIntegrationAwsGlue = ssot.Object{
-	Name:                   "CatalogIntegrationAwsGlue",
-	NamePlural:             "CatalogIntegrations",
-	VariantOf:              &CatalogIntegration,
+	Name:       "CatalogIntegrationAwsGlue",
+	NamePlural: "CatalogIntegrations",
+	Variant: &ssot.ObjectVariant{
+		Of:                          &CatalogIntegration,
+		SchemaShowFromBase:          true,
+		ObjectAssertShowRowFromBase: true,
+		ShowOutputShowRowFromBase:   true,
+	},
 	DescribeFailRead:       true,
 	IdType:                 "AccountObjectIdentifier",
 	IdentityNameForceNew:   true,
@@ -113,15 +119,15 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(
 			ssot.WithSchema(
-				ssot.SchemaShow(ssot.SchemaShowFromBase()),
+				ssot.SchemaShow(),
 				ssot.SchemaDescribe(),
 			),
 			ssot.WithObjectAssert(
-				ssot.ObjectAssertShow(ssot.ObjectAssertShowRowFromBase()),
+				ssot.ObjectAssertShow(),
 				ssot.ObjectAssertDescribe(ssot.ObjectAssertDescribeFromBase("DescribeAwsGlue")),
 			),
 			ssot.WithShowOutputAssert(
-				ssot.ShowOutputShow(ssot.ShowOutputShowRowFromBase()),
+				ssot.ShowOutputShow(),
 				ssot.ShowOutputDescribe(),
 			),
 		),
@@ -131,6 +137,8 @@ var CatalogIntegrationAwsGlue = ssot.Object{
 	ResourceHooks: []ssot.ResourceHookOption{
 		ssot.WithParseIdFromConfig(ssot.Generated()),
 		ssot.WithParseId(ssot.Generated()),
+		ssot.WithApplySetUnset(ssot.Generated()),
+		ssot.WithAlterSetInSdk(ssot.Generated()),
 		ssot.WithAlterUnsetInSdk(ssot.Omitted()),
 		ssot.WithHandleExternalChangesInDescribe(ssot.Generated()),
 		ssot.WithHandleExternalChanges(ssot.Omitted()),

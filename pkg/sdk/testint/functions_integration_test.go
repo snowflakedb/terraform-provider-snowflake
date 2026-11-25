@@ -75,7 +75,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -103,8 +103,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -157,7 +159,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -207,8 +209,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -259,7 +263,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Java - staged minimal", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -289,8 +293,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -341,7 +347,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Java - staged full", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -383,8 +389,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -441,7 +449,7 @@ func TestInt_Functions(t *testing.T) {
 		tmpJavaFunctionDifferentStage := testClientHelper().CreateSampleJavaFunctionAndJarOnStage(t, stage)
 
 		dataType := tmpJavaFunctionDifferentStage.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -480,7 +488,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType).WithDefaultValue(`'abc'`)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
@@ -511,7 +519,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Javascript - inline minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "d"
 		definition := testClientHelper().Function.SampleJavascriptDefinition(t, argName)
@@ -539,8 +547,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -589,7 +599,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Javascript - inline full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "d"
 		definition := testClientHelper().Function.SampleJavascriptDefinition(t, argName)
@@ -622,8 +632,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -672,7 +684,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - inline minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeNumber_36_2
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		funcName := "dump"
@@ -701,8 +713,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeNumber).
+				HasArgumentsRawList("NUMBER").
+				HasReturnType(testdatatypes.DataTypeNumber).
+				HasReturnTypeRaw("NUMBER").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -751,7 +765,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - inline full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeNumber_36_2
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		funcName := "dump"
@@ -793,8 +807,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeNumber).
+				HasArgumentsRawList("NUMBER").
+				HasReturnType(testdatatypes.DataTypeNumber).
+				HasReturnTypeRaw("NUMBER").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -846,7 +862,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - staged minimal", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeVarchar_100
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -873,8 +889,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -925,7 +943,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Python - staged full", func(t *testing.T) {
 		dataType := testdatatypes.DataTypeVarchar_100
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "i"
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -964,8 +982,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1021,7 +1041,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleScalaDefinition(t, className, funcName, argName)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1047,8 +1067,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -1101,7 +1123,7 @@ func TestInt_Functions(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeVarchar_100
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleScalaDefinition(t, className, funcName, argName)
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1148,8 +1170,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1201,7 +1225,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Scala - staged minimal", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1229,8 +1253,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -1281,7 +1307,7 @@ func TestInt_Functions(t *testing.T) {
 
 	t.Run("create function for Scala - staged full", func(t *testing.T) {
 		dataType := tmpJavaFunction.ArgType
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		argName := "x"
 		argument := sdk.NewFunctionArgumentRequest(argName, dataType)
@@ -1320,8 +1346,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeVarchar).
+				HasArgumentsRawList("VARCHAR").
+				HasReturnType(testdatatypes.DataTypeVarchar).
+				HasReturnTypeRaw("VARCHAR").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1374,7 +1402,7 @@ func TestInt_Functions(t *testing.T) {
 	t.Run("create function for SQL - inline minimal", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleSqlDefinition(t)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -1400,8 +1428,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -1452,7 +1482,7 @@ func TestInt_Functions(t *testing.T) {
 	t.Run("create function for SQL - default argument value", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleSqlDefinition(t)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -1482,7 +1512,7 @@ func TestInt_Functions(t *testing.T) {
 	t.Run("create function for SQL - inline full", func(t *testing.T) {
 		argName := "x"
 		dataType := testdatatypes.DataTypeFloat
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 		definition := testClientHelper().Function.SampleSqlDefinition(t)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(dataType)
@@ -1514,8 +1544,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(1).
 				HasMaxNumArguments(1).
-				HasArgumentsOld(sdk.LegacyDataTypeFrom(dataType)).
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments(testdatatypes.DataTypeFloat).
+				HasArgumentsRawList("FLOAT").
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s(%[2]s) RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription("comment").
 				HasCatalogName(id.DatabaseName()).
@@ -1590,8 +1622,10 @@ func TestInt_Functions(t *testing.T) {
 				HasIsAnsi(false).
 				HasMinNumArguments(0).
 				HasMaxNumArguments(0).
-				HasArgumentsOld().
-				HasReturnTypeOld(sdk.LegacyDataTypeFrom(dataType)).
+				HasArguments().
+				HasArgumentsRawList().
+				HasReturnType(testdatatypes.DataTypeFloat).
+				HasReturnTypeRaw("FLOAT").
 				HasArgumentsRaw(fmt.Sprintf(`%[1]s() RETURN %[2]s`, function.ID().Name(), dataType.ToLegacyDataTypeSql())).
 				HasDescription(sdk.DefaultFunctionComment).
 				HasCatalogName(id.DatabaseName()).
@@ -1987,8 +2021,8 @@ func TestInt_Functions(t *testing.T) {
 		t.Cleanup(schemaCleanup)
 
 		dataType := testdatatypes.DataTypeFloat
-		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(sdk.LegacyDataTypeFrom(dataType))
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(id1.Name(), schema.ID(), sdk.LegacyDataTypeFrom(dataType))
+		id1 := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(id1.Name(), schema.ID(), dataType)
 
 		_, fCleanup1 := testClientHelper().Function.CreateSqlWithIdentifierAndArgument(t, id1.SchemaObjectId(), dataType)
 		t.Cleanup(fCleanup1)
@@ -2014,8 +2048,8 @@ func TestInt_Functions(t *testing.T) {
 		dataType := testdatatypes.DataTypeFloat
 		name := testClientHelper().Ids.Alpha()
 
-		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), sdk.LegacyDataTypeFrom(dataType))
-		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), sdk.DataTypeInt, sdk.DataTypeVARCHAR)
+		id1 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), dataType)
+		id2 := testClientHelper().Ids.NewSchemaObjectIdentifierWithArgumentsInSchema(name, testClientHelper().Ids.SchemaId(), testdatatypes.DataTypeNumber, testdatatypes.DataTypeVarchar)
 
 		e := testClientHelper().Function.CreateWithIdentifier(t, id1)
 		testClientHelper().Function.CreateWithIdentifier(t, id2)
@@ -2023,90 +2057,6 @@ func TestInt_Functions(t *testing.T) {
 		es, err := client.Functions.ShowByID(ctx, id1)
 		require.NoError(t, err)
 		require.Equal(t, *e, *es)
-	})
-
-	// TODO [SNOW-1348103]: remove with old function removal for V1
-	t.Run("function returns non-detailed data types of arguments - old data types", func(t *testing.T) {
-		// This test proves that every detailed data types (e.g. VARCHAR(20) and NUMBER(10, 0)) are generalized
-		// on Snowflake side (to e.g. VARCHAR and NUMBER) and that sdk.ToDataType mapping function maps detailed types
-		// correctly to their generalized counterparts (same as in Snowflake).
-
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		args := []sdk.FunctionArgumentRequest{
-			*sdk.NewFunctionArgumentRequest("A", nil).WithArgDataTypeOld("NUMBER(2, 0)"),
-			*sdk.NewFunctionArgumentRequest("B", nil).WithArgDataTypeOld("DECIMAL"),
-			*sdk.NewFunctionArgumentRequest("C", nil).WithArgDataTypeOld("INTEGER"),
-			*sdk.NewFunctionArgumentRequest("D", nil).WithArgDataTypeOld(sdk.DataTypeFloat),
-			*sdk.NewFunctionArgumentRequest("E", nil).WithArgDataTypeOld("DOUBLE"),
-			*sdk.NewFunctionArgumentRequest("F", nil).WithArgDataTypeOld("VARCHAR(20)"),
-			*sdk.NewFunctionArgumentRequest("G", nil).WithArgDataTypeOld("CHAR"),
-			*sdk.NewFunctionArgumentRequest("H", nil).WithArgDataTypeOld(sdk.DataTypeString),
-			*sdk.NewFunctionArgumentRequest("I", nil).WithArgDataTypeOld("TEXT"),
-			*sdk.NewFunctionArgumentRequest("J", nil).WithArgDataTypeOld(sdk.DataTypeBinary),
-			*sdk.NewFunctionArgumentRequest("K", nil).WithArgDataTypeOld("VARBINARY"),
-			*sdk.NewFunctionArgumentRequest("L", nil).WithArgDataTypeOld(sdk.DataTypeBoolean),
-			*sdk.NewFunctionArgumentRequest("M", nil).WithArgDataTypeOld(sdk.DataTypeDate),
-			*sdk.NewFunctionArgumentRequest("N", nil).WithArgDataTypeOld("DATETIME"),
-			*sdk.NewFunctionArgumentRequest("O", nil).WithArgDataTypeOld(sdk.DataTypeTime),
-			*sdk.NewFunctionArgumentRequest("R", nil).WithArgDataTypeOld(sdk.DataTypeTimestampLTZ),
-			*sdk.NewFunctionArgumentRequest("S", nil).WithArgDataTypeOld(sdk.DataTypeTimestampNTZ),
-			*sdk.NewFunctionArgumentRequest("T", nil).WithArgDataTypeOld(sdk.DataTypeTimestampTZ),
-			*sdk.NewFunctionArgumentRequest("U", nil).WithArgDataTypeOld(sdk.DataTypeVariant),
-			*sdk.NewFunctionArgumentRequest("V", nil).WithArgDataTypeOld(sdk.DataTypeObject),
-			*sdk.NewFunctionArgumentRequest("W", nil).WithArgDataTypeOld(sdk.DataTypeArray),
-			*sdk.NewFunctionArgumentRequest("X", nil).WithArgDataTypeOld(sdk.DataTypeGeography),
-			*sdk.NewFunctionArgumentRequest("Y", nil).WithArgDataTypeOld(sdk.DataTypeGeometry),
-			*sdk.NewFunctionArgumentRequest("Z", nil).WithArgDataTypeOld("VECTOR(INT, 16)"),
-		}
-		err := client.Functions.CreateForPython(
-			ctx, sdk.NewCreateForPythonFunctionRequest(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(sdk.DataTypeVariant)),
-				testvars.PythonRuntime,
-				"add",
-			).
-				WithArguments(args).
-				WithFunctionDefinitionWrapped("def add(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, R, S, T, U, V, W, X, Y, Z): A + A"),
-		)
-		require.NoError(t, err)
-
-		dataTypes := make([]sdk.DataType, len(args))
-		for i, arg := range args {
-			dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
-			require.NoError(t, err)
-			dataTypes[i] = sdk.LegacyDataTypeFrom(dataType)
-		}
-		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataTypes...)
-
-		function, err := client.Functions.ShowByID(ctx, idWithArguments)
-		require.NoError(t, err)
-		require.Equal(t, dataTypes, function.ArgumentsOld)
-	})
-
-	// This test follows the same reasoning as the above `function returns non-detailed data types of arguments - old data types` above.
-	// It is separated as DECFLOAT type is supported only in SQL function type and python type is used above.
-	t.Run("function returns non-detailed data types of arguments - old data types, DECFLOAT", func(t *testing.T) {
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		arg := *sdk.NewFunctionArgumentRequest("P", nil).WithArgDataTypeOld(datatypes.DecfloatLegacyDataType)
-		definition := "3.141592654::DECFLOAT"
-		err := client.Functions.CreateForSQL(
-			ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(datatypes.DecfloatLegacyDataType)),
-				definition,
-			).
-				WithArguments([]sdk.FunctionArgumentRequest{arg}),
-		)
-		require.NoError(t, err)
-
-		dataType, err := datatypes.ParseDataType(string(arg.ArgDataTypeOld))
-		require.NoError(t, err)
-		dataTypes := []sdk.DataType{sdk.LegacyDataTypeFrom(dataType)}
-		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataTypes...)
-
-		function, err := client.Functions.ShowByID(ctx, idWithArguments)
-		require.NoError(t, err)
-		require.Equal(t, dataTypes, function.ArgumentsOld)
 	})
 
 	// This test shows behavior of detailed types (e.g. VARCHAR(20) and NUMBER(10, 0)) on Snowflake side for functions.
@@ -2124,6 +2074,7 @@ func TestInt_Functions(t *testing.T) {
 	}{
 		{"NUMBER(36, 5)", "NUMBER"},
 		{"NUMBER(36)", "NUMBER"},
+		{"NUMBER(2, 0)", "NUMBER"},
 		{"NUMBER", "NUMBER"},
 		{"DECIMAL", "NUMBER"},
 		{"INTEGER", "NUMBER"},
@@ -2135,6 +2086,7 @@ func TestInt_Functions(t *testing.T) {
 		{fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), "VARCHAR"},
 		{"CHAR", "VARCHAR"},
 		{"CHAR(10)", "VARCHAR"},
+		{"STRING", "VARCHAR"},
 		{"TEXT", "VARCHAR"},
 		{"BINARY", "BINARY"},
 		{"BINARY(1000)", "BINARY"},
@@ -2176,13 +2128,18 @@ func TestInt_Functions(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			oldDataType := sdk.LegacyDataTypeFrom(dataType)
-			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), oldDataType)
+			dataTypeWithoutAttrs := dataType.ToLegacyDataTypeSql()
+			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), dataType)
 
 			function, err := client.Functions.ShowByID(ctx, idWithArguments)
 			require.NoError(t, err)
-			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, function.ArgumentsOld)
-			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), tc.expectedShowValue), function.ArgumentsRaw)
+			expectedShowDataType, err := datatypes.ParseDataType(tc.expectedShowValue)
+			require.NoError(t, err)
+			assertThatObject(t, objectassert.FunctionFromObject(t, function).
+				HasArguments(expectedShowDataType).
+				HasArgumentsRawList(tc.expectedShowValue).
+				HasArgumentsRaw(fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), tc.expectedShowValue)),
+			)
 
 			details, err := client.Functions.Describe(ctx, idWithArguments)
 			require.NoError(t, err)
@@ -2190,163 +2147,8 @@ func TestInt_Functions(t *testing.T) {
 			for _, detail := range details {
 				pairs[detail.Property] = *detail.Value
 			}
-			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, oldDataType), pairs["signature"])
+			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, dataTypeWithoutAttrs), pairs["signature"])
 			assert.Equal(t, dataType.Canonical(), pairs["returns"])
-		})
-	}
-
-	// This test differs from the previous one in the Snowflake interaction. In the previous one we use our hardcoded defaults, in this one, we pass explicit data types to Snowflake.
-	for _, tc := range []struct {
-		input                           string
-		expectedShowValue               string
-		expectedDescribeReturnsOverride string
-	}{
-		{input: "NUMBER", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(38)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(38,0)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36)", expectedShowValue: "NUMBER"},
-		{input: "NUMBER(36,2)", expectedShowValue: "NUMBER"},
-		{input: "DECIMAL", expectedShowValue: "NUMBER"},
-		{input: "VARCHAR", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.DefaultVarcharLength), expectedShowValue: "VARCHAR"},
-		{input: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength), expectedShowValue: "VARCHAR"},
-		{input: "TEXT", expectedShowValue: "VARCHAR", expectedDescribeReturnsOverride: "VARCHAR"},
-		{input: "CHAR", expectedShowValue: "VARCHAR"},
-		{input: "BINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.DefaultBinarySize), expectedShowValue: "BINARY"},
-		{input: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize), expectedShowValue: "BINARY"},
-		{input: "VARBINARY", expectedShowValue: "BINARY", expectedDescribeReturnsOverride: "BINARY"},
-	} {
-		tc := tc
-		// TODO [SNOW-2681221]: verify with SQL function type
-		t.Run(fmt.Sprintf("function returns after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
-			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			argName := "A"
-			funcName := "identity"
-			dataType, err := datatypes.ParseDataType(tc.input)
-			require.NoError(t, err)
-
-			// we fall back to the direct data type specification on purpose
-			explicitDataType := sdk.DataType(tc.input)
-
-			args := []sdk.FunctionArgumentRequest{
-				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-			}
-
-			err = client.Functions.CreateForPython(
-				ctx, sdk.NewCreateForPythonFunctionRequest(
-					id,
-					*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-					testvars.PythonRuntime,
-					funcName,
-				).
-					WithArguments(args).
-					WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
-			)
-			require.NoError(t, err)
-
-			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
-
-			function, err := client.Functions.ShowByID(ctx, idWithArguments)
-			require.NoError(t, err)
-			assert.Equal(t, []sdk.DataType{sdk.DataType(tc.expectedShowValue)}, function.ArgumentsOld)
-			assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), tc.expectedShowValue), function.ArgumentsRaw)
-
-			details, err := client.Functions.Describe(ctx, idWithArguments)
-			require.NoError(t, err)
-			pairs := make(map[string]string)
-			for _, detail := range details {
-				pairs[detail.Property] = *detail.Value
-			}
-			assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
-			if tc.expectedDescribeReturnsOverride != "" {
-				assert.Equal(t, tc.expectedDescribeReturnsOverride, pairs["returns"])
-			} else {
-				assert.Equal(t, dataType.Canonical(), pairs["returns"])
-			}
-		})
-	}
-
-	// DECFLOAT has separate test as it can be used only in SQL function and the above test uses python (changing the type to SQL yields different results).
-	t.Run("function returns after 2025_03 Bundle for explicit types: DECFLOAT", func(t *testing.T) {
-		input := "DECFLOAT(38)"
-		expectedShowValue := "DECFLOAT"
-
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-		argName := "A"
-		dataType, err := datatypes.ParseDataType(input)
-		require.NoError(t, err)
-
-		// we fall back to the direct data type specification on purpose
-		explicitDataType := sdk.DataType(input)
-
-		args := []sdk.FunctionArgumentRequest{
-			*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-		}
-
-		err = client.Functions.CreateForSQL(
-			ctx, sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(
-				id,
-				*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(dataType)),
-				testClientHelper().Function.SampleSqlDefinitionWithArgument(t, argName),
-			).
-				WithArguments(args),
-		)
-		require.NoError(t, err)
-
-		idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), sdk.LegacyDataTypeFrom(dataType))
-
-		function, err := client.Functions.ShowByID(ctx, idWithArguments)
-		require.NoError(t, err)
-		assert.Equal(t, []sdk.DataType{sdk.DataType(expectedShowValue)}, function.ArgumentsOld)
-		assert.Equal(t, fmt.Sprintf("%[1]s(%[2]s) RETURN %[2]s", id.Name(), expectedShowValue), function.ArgumentsRaw)
-
-		details, err := client.Functions.Describe(ctx, idWithArguments)
-		require.NoError(t, err)
-		pairs := make(map[string]string)
-		for _, detail := range details {
-			pairs[detail.Property] = *detail.Value
-		}
-		assert.Equal(t, fmt.Sprintf("(%s %s)", argName, sdk.LegacyDataTypeFrom(dataType)), pairs["signature"])
-		assert.Equal(t, dataType.Canonical(), pairs["returns"])
-	})
-
-	for _, tc := range []struct {
-		input        string
-		expectedSize string
-	}{
-		{input: "VARCHAR", expectedSize: fmt.Sprintf("VARCHAR(%d)", datatypes.MaxVarcharLength)},
-		{input: "BINARY", expectedSize: fmt.Sprintf("BINARY(%d)", datatypes.MaxBinarySize)},
-	} {
-		tc := tc
-		t.Run(fmt.Sprintf("function default data types after 2025_03 Bundle for explicit types: %s", tc.input), func(t *testing.T) {
-			id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
-			argName := "A"
-			funcName := "identity"
-
-			// we fall back to the direct data type specification on purpose
-			explicitDataType := sdk.DataType(tc.input)
-
-			args := []sdk.FunctionArgumentRequest{
-				*sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(explicitDataType),
-			}
-
-			err := client.Functions.CreateForPython(
-				ctx, sdk.NewCreateForPythonFunctionRequest(
-					id,
-					*sdk.NewFunctionReturnsRequest().WithResultDataType(*sdk.NewFunctionReturnsResultDataTypeRequest(nil).WithResultDataTypeOld(explicitDataType)),
-					testvars.PythonRuntime,
-					funcName,
-				).
-					WithArguments(args).
-					WithFunctionDefinitionWrapped(testClientHelper().Function.PythonIdentityDefinition(t, funcName, argName)),
-			)
-			require.NoError(t, err)
-
-			idWithArguments := sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), explicitDataType)
-			returnDataTypeFromInformationSchema := testClientHelper().InformationSchema.GetFunctionDataType(t, idWithArguments)
-
-			require.Equal(t, tc.expectedSize, returnDataTypeFromInformationSchema)
 		})
 	}
 
@@ -2356,13 +2158,13 @@ func TestInt_Functions(t *testing.T) {
 		returnDataType, err := datatypes.ParseDataType(fmt.Sprintf("TABLE(PRICE %s, THIRD %s)", datatypes.FloatLegacyDataType, datatypes.VarcharLegacyDataType))
 		require.NoError(t, err)
 
-		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(datatypes.VarcharLegacyDataType)
+		id := testClientHelper().Ids.RandomSchemaObjectIdentifierWithArguments(testdatatypes.DataTypeVarchar)
 
 		definition := `
 SELECT 2.2::float, 'abc');` // the ending parenthesis has to be there (otherwise SQL compilation error is thrown)
 		dt := sdk.NewFunctionReturnsResultDataTypeRequest(returnDataType)
 		returns := sdk.NewFunctionReturnsRequest().WithResultDataType(*dt)
-		argument := sdk.NewFunctionArgumentRequest(argName, nil).WithArgDataTypeOld(datatypes.VarcharLegacyDataType)
+		argument := sdk.NewFunctionArgumentRequest(argName, testdatatypes.DataTypeVarchar)
 		request := sdk.NewCreateForSQLFunctionRequestDefinitionWrapped(id.SchemaObjectId(), *returns, definition).
 			WithArguments([]sdk.FunctionArgumentRequest{*argument})
 

@@ -12,67 +12,155 @@ import (
 
 type Tables interface {
 	Create(ctx context.Context, request *CreateTableRequest) error
-	CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error
-	CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error
-	CreateLike(ctx context.Context, request *CreateLikeTableRequest) error
-	CreateClone(ctx context.Context, request *CreateCloneTableRequest) error
 	Alter(ctx context.Context, request *AlterTableRequest) error
 	Drop(ctx context.Context, request *DropTableRequest) error
 	DropSafely(ctx context.Context, id SchemaObjectIdentifier) error
 	Show(ctx context.Context, request *ShowTableRequest) ([]Table, error)
 	ShowByID(ctx context.Context, id SchemaObjectIdentifier) (*Table, error)
 	ShowByIDSafely(ctx context.Context, id SchemaObjectIdentifier) (*Table, error)
+	CreateAsSelect(ctx context.Context, request *CreateAsSelectTableRequest) error
+	CreateUsingTemplate(ctx context.Context, request *CreateUsingTemplateTableRequest) error
+	CreateLike(ctx context.Context, request *CreateLikeTableRequest) error
+	CreateClone(ctx context.Context, request *CreateCloneTableRequest) error
 	DescribeColumns(ctx context.Context, request *DescribeColumnsTableRequest) ([]TableColumnDetails, error)
 	DescribeStage(ctx context.Context, request *DescribeStageTableRequest) ([]TableStageDetails, error)
 	DescribeSearchOptimization(ctx context.Context, request *DescribeSearchOptimizationTableRequest) ([]TableSearchOptimizationDetails, error)
 	SelectTableConstraints(ctx context.Context, request *SelectTableConstraintsTableRequest) ([]TableConstraintDetails, error)
 	SelectCheckConstraints(ctx context.Context, request *SelectCheckConstraintsTableRequest) ([]TableCheckConstraintDetails, error)
+	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
+	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*TableParametersDetails, error)
+}
+
+// TableParametersDetails holds the object's parameters with values parsed into their Go types.
+type TableParametersDetails struct {
+	Catalog                     TypedParameter[AccountObjectIdentifier]
+	DataRetentionTimeInDays     TypedParameter[int]
+	DefaultDdlCollation         TypedParameter[string]
+	EnableConsoleOutput         TypedParameter[bool]
+	ExternalVolume              TypedParameter[AccountObjectIdentifier]
+	LogEventLevel               TypedParameter[LogLevel]
+	LogLevel                    TypedParameter[LogLevel]
+	MaxDataExtensionTimeInDays  TypedParameter[int]
+	QuotedIdentifiersIgnoreCase TypedParameter[bool]
+	ReplaceInvalidCharacters    TypedParameter[bool]
+	StorageSerializationPolicy  TypedParameter[StorageSerializationPolicy]
 }
 
 // CreateTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
 type CreateTableOptions struct {
-	create                     bool                             `ddl:"static" sql:"CREATE"`
-	OrReplace                  *bool                            `ddl:"keyword" sql:"OR REPLACE"`
-	Scope                      *TableScope                      `ddl:"keyword"`
-	Kind                       *TableKind                       `ddl:"keyword"`
-	table                      bool                             `ddl:"static" sql:"TABLE"`
-	IfNotExists                *bool                            `ddl:"keyword" sql:"IF NOT EXISTS"`
-	name                       SchemaObjectIdentifier           `ddl:"identifier"`
-	ColumnsAndConstraints      CreateTableColumnsAndConstraints `ddl:"list,parentheses"`
-	ClusterBy                  []string                         `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	EnableSchemaEvolution      *bool                            `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	DataRetentionTimeInDays    *int                             `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *int                             `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool                            `ddl:"parameter" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *StringAllowEmpty                `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
-	CopyGrants                 *bool                            `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy            *TableRowAccessPolicy            `ddl:"list,no_comma"`
-	AggregationPolicy          *TableAggregationPolicy          `ddl:"list,no_comma"`
-	JoinPolicy                 *TableJoinPolicy                 `ddl:"list,no_comma"`
-	Tag                        []TagAssociation                 `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment                    *string                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	create                     bool                               `ddl:"static" sql:"CREATE"`
+	OrReplace                  *bool                              `ddl:"keyword" sql:"OR REPLACE"`
+	Scope                      *TableScope                        `ddl:"keyword"`
+	Kind                       *TableKind                         `ddl:"keyword"`
+	table                      bool                               `ddl:"static" sql:"TABLE"`
+	IfNotExists                *bool                              `ddl:"keyword" sql:"IF NOT EXISTS"`
+	name                       SchemaObjectIdentifier             `ddl:"identifier"`
+	ColumnsAndConstraints      CreateTableColumnsAndConstraints   `ddl:"list,parentheses"`
+	ClusterBy                  []string                           `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	EnableSchemaEvolution      *bool                              `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	DataRetentionTimeInDays    *int                               `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *int                               `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool                              `ddl:"parameter" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *StringAllowEmpty                  `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
+	ErrorLogging               *bool                              `ddl:"parameter" sql:"ERROR_LOGGING"`
+	Copy                       []TableCopyOption                  `ddl:"parameter,no_quotes,parentheses" sql:"COPY"`
+	RowAccessPolicy            *TableRowAccessPolicy              `ddl:"list,no_comma"`
+	AggregationPolicy          *TableAggregationPolicy            `ddl:"list,no_comma"`
+	JoinPolicy                 *TableJoinPolicy                   `ddl:"list,no_comma"`
+	StorageLifecyclePolicy     *CreateTableStorageLifecyclePolicy `ddl:"list,no_comma"`
+	Tag                        []TagAssociation                   `ddl:"keyword,parentheses" sql:"TAG"`
+	Contact                    []TableContact                     `ddl:"keyword,parentheses" sql:"WITH CONTACT"`
+	Comment                    *string                            `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	RowTimestamp               *bool                              `ddl:"parameter" sql:"ROW_TIMESTAMP"`
+}
+
+type TableCopyOptionListItem struct {
+	Value TableCopyOption `ddl:"keyword,single_quotes"`
 }
 
 type CreateTableColumnsAndConstraints struct {
-	Columns             []TableColumn         `ddl:"keyword"`
-	OutOfLineConstraint []OutOfLineConstraint `ddl:"list,no_parentheses"`
+	Columns             []TableColumn              `ddl:"keyword"`
+	OutOfLineConstraint []TableOutOfLineConstraint `ddl:"keyword"`
 }
 
 type TableColumn struct {
-	Name             string                    `ddl:"keyword,double_quotes"`
-	ColumnType       DataType                  `ddl:"keyword"`
-	InlineConstraint *ColumnInlineConstraint   `ddl:"keyword"`
-	NotNull          *bool                     `ddl:"keyword" sql:"NOT NULL"`
-	Collate          *string                   `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
-	DefaultValue     *ColumnDefaultValue       `ddl:"keyword"`
-	MaskingPolicy    *TableColumnMaskingPolicy `ddl:"keyword"`
-	Tag              []TagAssociation          `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment          *string                   `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	Name             string                       `ddl:"keyword,double_quotes"`
+	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
+	Virtual          *TableColumnVirtual          `ddl:"keyword"`
+	InlineConstraint *TableColumnInlineConstraint `ddl:"keyword"`
+	NotNull          *bool                        `ddl:"keyword" sql:"NOT NULL"`
+	Collate          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	DefaultValue     *ColumnDefaultValue          `ddl:"keyword"`
+	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"keyword"`
+	ProjectionPolicy *TableColumnProjectionPolicy `ddl:"keyword"`
+	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type TableColumnVirtual struct {
+	GeneratedAlways *bool  `ddl:"keyword" sql:"GENERATED ALWAYS"`
+	As              string `ddl:"parameter,no_quotes,must_parentheses,no_equals" sql:"AS"`
+	Virtual         *bool  `ddl:"keyword" sql:"VIRTUAL"`
+}
+
+type TableColumnInlineConstraint struct {
+	UniquePK *TableColumnInlineUniquePK `ddl:"list,no_comma"`
+	FK       *TableColumnInlineFK       `ddl:"list,no_comma"`
+	CH       *TableColumnInlineCH       `ddl:"list,no_comma"`
+}
+
+type TableColumnInlineUniquePK struct {
+	Name               *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	Unique             *bool   `ddl:"keyword" sql:"UNIQUE"`
+	PrimaryKey         *bool   `ddl:"keyword" sql:"PRIMARY KEY"`
+	Enforced           *bool   `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool   `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool   `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool   `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool   `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool   `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool   `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool   `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool   `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool   `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool   `ddl:"keyword" sql:"RELY"`
+	Norely             *bool   `ddl:"keyword" sql:"NORELY"`
+}
+
+type TableColumnInlineFK struct {
+	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
+	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
+	RefColumn          []Column               `ddl:"keyword,parentheses"`
+	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
+	On                 *ForeignKeyOnAction    `ddl:"keyword"`
+	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
+	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
+}
+
+type TableColumnInlineCH struct {
+	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	check            bool    `ddl:"static" sql:"CHECK"`
+	openParen        bool    `ddl:"static" sql:"("`
+	Expression       string  `ddl:"keyword,no_quotes"`
+	closeParen       bool    `ddl:"static" sql:")"`
+	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
+	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
 }
 
 type ColumnDefaultValue struct {
 	Expression *string         `ddl:"parameter,no_equals" sql:"DEFAULT"`
-	Identity   *ColumnIdentity `ddl:"keyword" sql:"IDENTITY"`
+	Identity   *ColumnIdentity `ddl:"list,no_comma" sql:"IDENTITY"`
 }
 
 type ColumnIdentity struct {
@@ -82,36 +170,77 @@ type ColumnIdentity struct {
 	Noorder   *bool `ddl:"keyword" sql:"NOORDER"`
 }
 
-type OutOfLineConstraint struct {
-	Name               *string              `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
-	ConstraintType     ColumnConstraintType `ddl:"keyword"`
-	Columns            []Column             `ddl:"keyword,parentheses"`
-	ForeignKey         *OutOfLineForeignKey `ddl:"keyword"`
-	Enforced           *bool                `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool                `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool                `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool                `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool                `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool                `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool                `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool                `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool                `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool                `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool                `ddl:"keyword" sql:"RELY"`
-	Norely             *bool                `ddl:"keyword" sql:"NORELY"`
+type TableColumnMaskingPolicy struct {
+	MaskingPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
+	Using         []Column               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
 }
 
-type OutOfLineForeignKey struct {
-	references  bool                   `ddl:"static" sql:"REFERENCES"`
-	TableName   SchemaObjectIdentifier `ddl:"identifier"`
-	ColumnNames []Column               `ddl:"parameter,parentheses,no_equals"`
-	Match       *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
-	On          *ForeignKeyOnAction    `ddl:"keyword"`
+type TableColumnProjectionPolicy struct {
+	ProjectionPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"PROJECTION POLICY"`
+}
+
+type TableOutOfLineConstraint struct {
+	UniquePK *TableOutOfLineUniquePK `ddl:"list,no_comma"`
+	FK       *TableOutOfLineFK       `ddl:"list,no_comma"`
+	CH       *TableOutOfLineCH       `ddl:"list,no_comma"`
+}
+
+type TableOutOfLineUniquePK struct {
+	Name               *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	Unique             *bool    `ddl:"keyword" sql:"UNIQUE"`
+	PrimaryKey         *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
+	Columns            []Column `ddl:"keyword,parentheses"`
+	Enforced           *bool    `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool    `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool    `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool    `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool    `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool    `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool    `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool    `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool    `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool    `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool    `ddl:"keyword" sql:"RELY"`
+	Norely             *bool    `ddl:"keyword" sql:"NORELY"`
+	Comment            *string  `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type TableOutOfLineFK struct {
+	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	foreignKey         bool                   `ddl:"static" sql:"FOREIGN KEY"`
+	Columns            []Column               `ddl:"keyword,parentheses"`
+	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
+	RefColumns         []Column               `ddl:"keyword,parentheses"`
+	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
+	On                 *ForeignKeyOnAction    `ddl:"keyword"`
+	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
+	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
+	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
+	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
+	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
+	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
+	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
+	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
+	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
+	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
+	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
+	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
+	Comment            *string                `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+}
+
+type TableOutOfLineCH struct {
+	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
+	check            bool    `ddl:"static" sql:"CHECK"`
+	openParen        bool    `ddl:"static" sql:"("`
+	Expression       string  `ddl:"keyword,no_quotes"`
+	closeParen       bool    `ddl:"static" sql:")"`
+	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
+	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
 }
 
 type TableRowAccessPolicy struct {
 	Name SchemaObjectIdentifier `ddl:"identifier" sql:"ROW ACCESS POLICY"`
-	On   []string               `ddl:"keyword,parentheses" sql:"ON"`
+	On   []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
 type TableAggregationPolicy struct {
@@ -124,60 +253,9 @@ type TableJoinPolicy struct {
 	AllowedJoinKeys []Column               `ddl:"parameter,parentheses,no_equals" sql:"ALLOWED JOIN KEYS"`
 }
 
-// CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
-type CreateAsSelectTableOptions struct {
-	create          bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table           bool                   `ddl:"static" sql:"TABLE"`
-	name            SchemaObjectIdentifier `ddl:"identifier"`
-	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
-	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	CopyGrants      *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-	RowAccessPolicy *TableRowAccessPolicy  `ddl:"keyword"`
-	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
-}
-
-type TableAsSelectColumn struct {
-	Name          string                  `ddl:"keyword"`
-	ColumnType    *DataType               `ddl:"keyword"`
-	MaskingPolicy *SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
-}
-
-// CreateUsingTemplateTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template.
-type CreateUsingTemplateTableOptions struct {
-	create     bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace  *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table      bool                   `ddl:"static" sql:"TABLE"`
-	name       SchemaObjectIdentifier `ddl:"identifier"`
-	CopyGrants *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-	Query      []string               `ddl:"parameter,parentheses,no_equals" sql:"USING TEMPLATE"`
-}
-
-// CreateLikeTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-like.
-type CreateLikeTableOptions struct {
-	create      bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table       bool                   `ddl:"static" sql:"TABLE"`
-	name        SchemaObjectIdentifier `ddl:"identifier"`
-	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"LIKE"`
-	ClusterBy   []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
-	CopyGrants  *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-}
-
-// CreateCloneTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-clone.
-type CreateCloneTableOptions struct {
-	create      bool                   `ddl:"static" sql:"CREATE"`
-	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
-	table       bool                   `ddl:"static" sql:"TABLE"`
-	name        SchemaObjectIdentifier `ddl:"identifier"`
-	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"CLONE"`
-	ClonePoint  *ClonePoint            `ddl:"keyword"`
-	CopyGrants  *bool                  `ddl:"keyword" sql:"COPY GRANTS"`
-}
-
-type ClonePoint struct {
-	Moment CloneMoment `ddl:"parameter,no_equals"`
-	At     TimeTravel  `ddl:"list,parentheses,no_comma"`
+type CreateTableStorageLifecyclePolicy struct {
+	StorageLifecyclePolicy SchemaObjectIdentifier `ddl:"identifier" sql:"STORAGE LIFECYCLE POLICY"`
+	On                     []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
 }
 
 // AlterTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-table.
@@ -207,6 +285,11 @@ type AlterTableOptions struct {
 	UnsetAggregationPolicy     *TableUnsetAggregationPolicy    `ddl:"keyword"`
 	SetJoinPolicy              *TableSetJoinPolicy             `ddl:"keyword"`
 	UnsetJoinPolicy            *TableUnsetJoinPolicy           `ddl:"keyword"`
+	SetDataMetricSchedule      *TableSetDataMetricSchedule     `ddl:"keyword"`
+	UnsetDataMetricSchedule    *bool                           `ddl:"keyword" sql:"UNSET DATA_METRIC_SCHEDULE"`
+	AddDataMetricFunction      *TableAddDataMetricFunction     `ddl:"keyword"`
+	DropDataMetricFunction     *TableDropDataMetricFunction    `ddl:"keyword"`
+	ModifyDataMetricFunction   *TableModifyDataMetricFunction  `ddl:"keyword"`
 }
 
 type TableClusteringAction struct {
@@ -227,88 +310,38 @@ type TableReclusterChangeState struct {
 }
 
 type TableColumnAction struct {
-	Add                *TableColumnAddAction            `ddl:"keyword" sql:"ADD"`
-	Rename             *TableColumnRenameAction         `ddl:"keyword"`
-	Alter              []TableColumnAlterAction         `ddl:"keyword" sql:"ALTER"`
-	SetMaskingPolicy   *TableSetColumnMaskingPolicy     `ddl:"keyword"`
-	UnsetMaskingPolicy *TableUnsetColumnMaskingPolicy   `ddl:"keyword"`
-	SetTags            *TableColumnAlterSetTagsAction   `ddl:"keyword"`
-	UnsetTags          *TableColumnAlterUnsetTagsAction `ddl:"keyword"`
-	DropColumns        *TableDropColumnAction           `ddl:"keyword"`
+	Add                   *TableColumnAddAction             `ddl:"list,no_comma" sql:"ADD"`
+	Rename                *TableRenameColumnAction          `ddl:"list,no_comma"`
+	Alter                 []TableColumnAlterAction          `ddl:"keyword" sql:"ALTER"`
+	SetMaskingPolicy      *TableSetColumnMaskingPolicy      `ddl:"list,no_comma"`
+	UnsetMaskingPolicy    *TableUnsetColumnMaskingPolicy    `ddl:"list,no_comma"`
+	SetProjectionPolicy   *TableSetColumnProjectionPolicy   `ddl:"list,no_comma"`
+	UnsetProjectionPolicy *TableUnsetColumnProjectionPolicy `ddl:"list,no_comma"`
+	SetTags               *TableSetColumnTags               `ddl:"list,no_comma"`
+	UnsetTags             *TableUnsetColumnTags             `ddl:"list,no_comma"`
+	DropColumns           *TableDropColumnAction            `ddl:"list,no_comma"`
 }
 
 type TableColumnAddAction struct {
-	column           bool                            `ddl:"static" sql:"COLUMN"`
-	IfNotExists      *bool                           `ddl:"keyword" sql:"IF NOT EXISTS"`
-	Name             string                          `ddl:"keyword,double_quotes"`
-	ColumnType       DataType                        `ddl:"keyword"`
-	Collate          *string                         `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
-	DefaultValue     *ColumnDefaultValue             `ddl:"keyword"`
-	NotNull          *bool                           `ddl:"keyword" sql:"NOT NULL"`
-	InlineConstraint *TableColumnAddInlineConstraint `ddl:"keyword"`
-	MaskingPolicy    *TableColumnMaskingPolicy       `ddl:"keyword"`
-	Tag              []TagAssociation                `ddl:"keyword,parentheses" sql:"TAG"`
-	Comment          *string                         `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
+	column           bool                         `ddl:"static" sql:"COLUMN"`
+	IfNotExists      *bool                        `ddl:"keyword" sql:"IF NOT EXISTS"`
+	Name             string                       `ddl:"keyword,double_quotes"`
+	ColumnType       datatypes.DataType           `ddl:"parameter,no_quotes,no_equals"`
+	Virtual          *TableColumnVirtual          `ddl:"list,no_comma"`
+	Collate          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	DefaultValue     *ColumnDefaultValue          `ddl:"list,no_comma"`
+	NotNull          *bool                        `ddl:"keyword" sql:"NOT NULL"`
+	InlineConstraint *TableColumnInlineConstraint `ddl:"list,no_comma"`
+	MaskingPolicy    *TableColumnMaskingPolicy    `ddl:"list,no_comma"`
+	ProjectionPolicy *TableColumnProjectionPolicy `ddl:"list,no_comma"`
+	Tag              []TagAssociation             `ddl:"keyword,parentheses" sql:"TAG"`
+	Comment          *string                      `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
-type TableColumnAddInlineConstraint struct {
-	UniquePK *TableColumnAddInlineUniquePK `ddl:"keyword"`
-	FK       *TableColumnAddInlineFK       `ddl:"keyword"`
-	CH       *TableColumnAddInlineCH       `ddl:"keyword"`
-}
-
-type TableColumnAddInlineUniquePK struct {
-	Name               *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	Unique             *bool   `ddl:"keyword" sql:"UNIQUE"`
-	PrimaryKey         *bool   `ddl:"keyword" sql:"PRIMARY KEY"`
-	Enforced           *bool   `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool   `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool   `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool   `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool   `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool   `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool   `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool   `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool   `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool   `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool   `ddl:"keyword" sql:"RELY"`
-	Norely             *bool   `ddl:"keyword" sql:"NORELY"`
-}
-
-type TableColumnAddInlineFK struct {
-	Name               *string                `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	ForeignKey         *bool                  `ddl:"keyword" sql:"FOREIGN KEY"`
-	References         SchemaObjectIdentifier `ddl:"identifier" sql:"REFERENCES"`
-	RefColumn          []Column               `ddl:"keyword,parentheses"`
-	Match              *MatchType             `ddl:"parameter,no_equals" sql:"MATCH"`
-	On                 *ForeignKeyOnAction    `ddl:"keyword"`
-	Enforced           *bool                  `ddl:"keyword" sql:"ENFORCED"`
-	NotEnforced        *bool                  `ddl:"keyword" sql:"NOT ENFORCED"`
-	Deferrable         *bool                  `ddl:"keyword" sql:"DEFERRABLE"`
-	NotDeferrable      *bool                  `ddl:"keyword" sql:"NOT DEFERRABLE"`
-	InitiallyDeferred  *bool                  `ddl:"keyword" sql:"INITIALLY DEFERRED"`
-	InitiallyImmediate *bool                  `ddl:"keyword" sql:"INITIALLY IMMEDIATE"`
-	Enable             *bool                  `ddl:"keyword" sql:"ENABLE"`
-	Disable            *bool                  `ddl:"keyword" sql:"DISABLE"`
-	Validate           *bool                  `ddl:"keyword" sql:"VALIDATE"`
-	Novalidate         *bool                  `ddl:"keyword" sql:"NOVALIDATE"`
-	Rely               *bool                  `ddl:"keyword" sql:"RELY"`
-	Norely             *bool                  `ddl:"keyword" sql:"NORELY"`
-}
-
-type TableColumnAddInlineCH struct {
-	Name             *string `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
-	check            bool    `ddl:"static" sql:"CHECK"`
-	openParen        bool    `ddl:"static" sql:"("`
-	Expression       string  `ddl:"keyword,no_quotes"`
-	closeParen       bool    `ddl:"static" sql:")"`
-	EnableValidate   *bool   `ddl:"keyword" sql:"ENABLE VALIDATE"`
-	EnableNovalidate *bool   `ddl:"keyword" sql:"ENABLE NOVALIDATE"`
-}
-
-type TableColumnRenameAction struct {
-	OldName string `ddl:"parameter,no_equals" sql:"RENAME COLUMN"`
-	NewName string `ddl:"parameter,no_equals" sql:"TO"`
+type TableRenameColumnAction struct {
+	renameColumn bool   `ddl:"static" sql:"RENAME COLUMN"`
+	OldName      string `ddl:"keyword,double_quotes"`
+	NewName      string `ddl:"parameter,double_quotes,no_equals" sql:"TO"`
 }
 
 type TableColumnAlterAction struct {
@@ -316,9 +349,8 @@ type TableColumnAlterAction struct {
 	Name              string                        `ddl:"keyword,double_quotes"`
 	DropDefault       *bool                         `ddl:"keyword" sql:"DROP DEFAULT"`
 	SetDefault        *SequenceName                 `ddl:"parameter,no_equals" sql:"SET DEFAULT"`
-	NotNullConstraint *TableColumnNotNullConstraint `ddl:"-"`
-	DataType          *DataType                     `ddl:"parameter,no_equals" sql:"SET DATA TYPE"`
-	Collate           *string                       `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+	NotNullConstraint *TableColumnNotNullConstraint `ddl:"list,no_comma"`
+	DataType          *TableColumnAlterDataType     `ddl:"list,no_comma" sql:"SET DATA TYPE"`
 	Comment           *string                       `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 	UnsetComment      *bool                         `ddl:"keyword" sql:"UNSET COMMENT"`
 }
@@ -328,36 +360,78 @@ type TableColumnNotNullConstraint struct {
 	Drop *bool `ddl:"keyword" sql:"DROP NOT NULL"`
 }
 
-type TableColumnAlterSetTagsAction struct {
+type TableColumnAlterDataType struct {
+	DataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
+	Collate  *string            `ddl:"parameter,single_quotes,no_equals" sql:"COLLATE"`
+}
+
+type TableSetColumnMaskingPolicy struct {
+	alterColumn   bool                   `ddl:"static" sql:"ALTER COLUMN"`
+	Name          string                 `ddl:"keyword,double_quotes"`
+	set           bool                   `ddl:"static" sql:"SET"`
+	MaskingPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
+	Using         []Column               `ddl:"parameter,parentheses,no_equals" sql:"USING"`
+	Force         *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetColumnMaskingPolicy struct {
+	alterColumn   bool   `ddl:"static" sql:"ALTER COLUMN"`
+	Name          string `ddl:"keyword,double_quotes"`
+	unset         bool   `ddl:"static" sql:"UNSET"`
+	maskingPolicy bool   `ddl:"static" sql:"MASKING POLICY"`
+}
+
+type TableSetColumnProjectionPolicy struct {
+	alterColumn      bool                   `ddl:"static" sql:"ALTER COLUMN"`
+	Name             string                 `ddl:"keyword,double_quotes"`
+	set              bool                   `ddl:"static" sql:"SET"`
+	ProjectionPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"PROJECTION POLICY"`
+	Force            *bool                  `ddl:"keyword" sql:"FORCE"`
+}
+
+type TableUnsetColumnProjectionPolicy struct {
+	alterColumn      bool   `ddl:"static" sql:"ALTER COLUMN"`
+	Name             string `ddl:"keyword,double_quotes"`
+	unset            bool   `ddl:"static" sql:"UNSET"`
+	projectionPolicy bool   `ddl:"static" sql:"PROJECTION POLICY"`
+}
+
+type TableSetColumnTags struct {
 	alterColumn bool             `ddl:"static" sql:"ALTER COLUMN"`
-	ColumnName  string           `ddl:"keyword"`
+	Name        string           `ddl:"keyword,double_quotes"`
 	SetTags     []TagAssociation `ddl:"keyword" sql:"SET TAG"`
 }
 
-type TableColumnAlterUnsetTagsAction struct {
+type TableUnsetColumnTags struct {
 	alterColumn bool               `ddl:"static" sql:"ALTER COLUMN"`
-	ColumnName  string             `ddl:"keyword"`
+	Name        string             `ddl:"keyword,double_quotes"`
 	UnsetTags   []ObjectIdentifier `ddl:"keyword" sql:"UNSET TAG"`
 }
 
+type TableDropColumnAction struct {
+	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
+	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
+	Columns    []Column `ddl:"parameter,no_equals"`
+}
+
 type TableConstraintAction struct {
-	Add    *OutOfLineConstraint         `ddl:"keyword" sql:"ADD"`
-	Rename *TableConstraintRenameAction `ddl:"keyword" sql:"RENAME CONSTRAINT"`
-	Alter  *TableConstraintAlterAction  `ddl:"keyword" sql:"ALTER"`
-	Drop   *TableConstraintDropAction   `ddl:"keyword" sql:"DROP"`
+	Add    *TableOutOfLineConstraint    `ddl:"list,no_comma" sql:"ADD"`
+	Rename *TableConstraintRenameAction `ddl:"list,no_comma" sql:"RENAME CONSTRAINT"`
+	Alter  *TableConstraintAlterAction  `ddl:"list,no_comma" sql:"ALTER"`
+	Drop   *TableConstraintDropAction   `ddl:"list,no_comma" sql:"DROP"`
 }
 
 type TableConstraintRenameAction struct {
-	OldName string `ddl:"keyword"`
-	NewName string `ddl:"parameter,no_equals" sql:"TO"`
+	OldName string `ddl:"keyword,double_quotes"`
+	NewName string `ddl:"parameter,double_quotes,no_equals" sql:"TO"`
 }
 
 type TableConstraintAlterAction struct {
-	ConstraintName *string  `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
-	Columns        []string `ddl:"keyword,parentheses"`
+	Columns        []string `ddl:"parameter,parentheses,no_equals"`
 	Enforced       *bool    `ddl:"keyword" sql:"ENFORCED"`
 	NotEnforced    *bool    `ddl:"keyword" sql:"NOT ENFORCED"`
 	Validate       *bool    `ddl:"keyword" sql:"VALIDATE"`
@@ -367,39 +441,26 @@ type TableConstraintAlterAction struct {
 }
 
 type TableConstraintDropAction struct {
-	ConstraintName *string  `ddl:"parameter,no_equals" sql:"CONSTRAINT"`
+	ConstraintName *string  `ddl:"parameter,double_quotes,no_equals" sql:"CONSTRAINT"`
 	PrimaryKey     *bool    `ddl:"keyword" sql:"PRIMARY KEY"`
 	Unique         *bool    `ddl:"keyword" sql:"UNIQUE"`
 	ForeignKey     *bool    `ddl:"keyword" sql:"FOREIGN KEY"`
-	Columns        []string `ddl:"keyword,parentheses"`
+	Columns        []string `ddl:"parameter,parentheses,no_equals"`
 	Cascade        *bool    `ddl:"keyword" sql:"CASCADE"`
 	Restrict       *bool    `ddl:"keyword" sql:"RESTRICT"`
 }
 
 type TableExternalTableAction struct {
-	Add    *TableExternalTableColumnAddAction    `ddl:"keyword"`
-	Rename *TableExternalTableColumnRenameAction `ddl:"keyword"`
-	Drop   *TableExternalTableColumnDropAction   `ddl:"keyword"`
+	Add *TableExternalTableColumnAddAction `ddl:"list,no_comma"`
 }
 
 type TableExternalTableColumnAddAction struct {
-	addColumn   bool     `ddl:"static" sql:"ADD COLUMN"`
-	IfNotExists *bool    `ddl:"keyword" sql:"IF NOT EXISTS"`
-	Name        string   `ddl:"keyword"`
-	ColumnType  DataType `ddl:"keyword"`
-	Expression  []string `ddl:"parameter,parentheses,no_equals" sql:"AS"`
-	Comment     *string  `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
-}
-
-type TableExternalTableColumnRenameAction struct {
-	OldName string `ddl:"parameter,no_equals" sql:"RENAME COLUMN"`
-	NewName string `ddl:"parameter,no_equals" sql:"TO"`
-}
-
-type TableExternalTableColumnDropAction struct {
-	dropColumn bool     `ddl:"static" sql:"DROP COLUMN"`
-	IfExists   *bool    `ddl:"keyword" sql:"IF EXISTS"`
-	Names      []string `ddl:"keyword"`
+	addColumn   bool               `ddl:"static" sql:"ADD COLUMN"`
+	IfNotExists *bool              `ddl:"keyword" sql:"IF NOT EXISTS"`
+	Name        string             `ddl:"keyword"`
+	ColumnType  datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
+	Expression  []string           `ddl:"parameter,parentheses,no_equals" sql:"AS"`
+	Comment     *string            `ddl:"parameter,single_quotes,no_equals" sql:"COMMENT"`
 }
 
 type TableSearchOptimizationAction struct {
@@ -434,21 +495,29 @@ type TableDropSearchOptimizationOn struct {
 }
 
 type TableSet struct {
+	Contact                    []TableContact    `ddl:"keyword" sql:"CONTACT"`
+	ErrorLogging               *bool             `ddl:"parameter" sql:"ERROR_LOGGING"`
 	EnableSchemaEvolution      *bool             `ddl:"parameter" sql:"ENABLE_SCHEMA_EVOLUTION"`
 	DataRetentionTimeInDays    *int              `ddl:"parameter" sql:"DATA_RETENTION_TIME_IN_DAYS"`
 	MaxDataExtensionTimeInDays *int              `ddl:"parameter" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
 	ChangeTracking             *bool             `ddl:"parameter" sql:"CHANGE_TRACKING"`
 	DefaultDdlCollation        *StringAllowEmpty `ddl:"parameter" sql:"DEFAULT_DDL_COLLATION"`
+	IcebergDefaultDdlCollation *StringAllowEmpty `ddl:"parameter" sql:"ICEBERG_DEFAULT_DDL_COLLATION"`
 	Comment                    *string           `ddl:"parameter,single_quotes" sql:"COMMENT"`
+	RowTimestamp               *bool             `ddl:"parameter" sql:"ROW_TIMESTAMP"`
 }
 
 type TableUnset struct {
-	DataRetentionTimeInDays    *bool `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
-	MaxDataExtensionTimeInDays *bool `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
-	ChangeTracking             *bool `ddl:"keyword" sql:"CHANGE_TRACKING"`
-	DefaultDdlCollation        *bool `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
-	EnableSchemaEvolution      *bool `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
-	Comment                    *bool `ddl:"keyword" sql:"COMMENT"`
+	Contact                    *string `ddl:"parameter,no_equals" sql:"CONTACT"`
+	DataRetentionTimeInDays    *bool   `ddl:"keyword" sql:"DATA_RETENTION_TIME_IN_DAYS"`
+	MaxDataExtensionTimeInDays *bool   `ddl:"keyword" sql:"MAX_DATA_EXTENSION_TIME_IN_DAYS"`
+	ChangeTracking             *bool   `ddl:"keyword" sql:"CHANGE_TRACKING"`
+	DefaultDdlCollation        *bool   `ddl:"keyword" sql:"DEFAULT_DDL_COLLATION"`
+	IcebergDefaultDdlCollation *bool   `ddl:"keyword" sql:"ICEBERG_DEFAULT_DDL_COLLATION"`
+	EnableSchemaEvolution      *bool   `ddl:"keyword" sql:"ENABLE_SCHEMA_EVOLUTION"`
+	ErrorLogging               *bool   `ddl:"keyword" sql:"ERROR_LOGGING"`
+	Comment                    *bool   `ddl:"keyword" sql:"COMMENT"`
+	RowTimestamp               *bool   `ddl:"keyword" sql:"ROW_TIMESTAMP"`
 }
 
 type TableAddRowAccessPolicy struct {
@@ -484,13 +553,87 @@ type TableUnsetAggregationPolicy struct {
 }
 
 type TableSetJoinPolicy struct {
-	set        bool                   `ddl:"static" sql:"SET"`
-	JoinPolicy SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
-	Force      *bool                  `ddl:"keyword" sql:"FORCE"`
+	set             bool                   `ddl:"static" sql:"SET"`
+	JoinPolicy      SchemaObjectIdentifier `ddl:"identifier" sql:"JOIN POLICY"`
+	AllowedJoinKeys []Column               `ddl:"parameter,parentheses,no_equals" sql:"ALLOWED JOIN KEYS"`
+	Force           *bool                  `ddl:"keyword" sql:"FORCE"`
 }
 
 type TableUnsetJoinPolicy struct {
 	unsetJoinPolicy bool `ddl:"static" sql:"UNSET JOIN POLICY"`
+}
+
+type TableSetDataMetricSchedule struct {
+	set                bool   `ddl:"static" sql:"SET"`
+	DataMetricSchedule string `ddl:"parameter,single_quotes" sql:"DATA_METRIC_SCHEDULE"`
+}
+
+type TableAddDataMetricFunction struct {
+	add            bool                  `ddl:"static" sql:"ADD"`
+	AddedFunctions []TableAddedFunctions `ddl:"keyword" sql:"DATA METRIC FUNCTION"`
+}
+
+type TableAddedFunctions struct {
+	DataMetricFunction SchemaObjectIdentifier      `ddl:"identifier" sql:" "`
+	On                 []Column                    `ddl:"parameter,parentheses,no_equals" sql:"ON"`
+	WithinGroup        []Column                    `ddl:"parameter,parentheses,no_equals" sql:"WITHIN GROUP"`
+	GroupLimit         *int                        `ddl:"parameter,no_equals" sql:"GROUP LIMIT"`
+	Filter             *string                     `ddl:"parameter,no_quotes,must_parentheses,no_equals" sql:"FILTER"`
+	Expectations       []TableExpectations         `ddl:"keyword" sql:"EXPECTATION"`
+	ExecuteAsRole      *AccountObjectIdentifier    `ddl:"identifier" sql:"EXECUTE AS ROLE"`
+	AnomalyDetection   *bool                       `ddl:"parameter" sql:"ANOMALY_DETECTION"`
+	Sensitivity        *TableDataMetricSensitivity `ddl:"parameter,single_quotes" sql:"SENSITIVITY"`
+}
+
+type TableExpectations struct {
+	Name       string `ddl:"keyword,double_quotes"`
+	Expression string `ddl:"parameter,no_quotes,must_parentheses,no_equals"`
+}
+
+type TableDropDataMetricFunction struct {
+	drop             bool                    `ddl:"static" sql:"DROP"`
+	DroppedFunctions []TableDroppedFunctions `ddl:"keyword" sql:"DATA METRIC FUNCTION"`
+}
+
+type TableDroppedFunctions struct {
+	DataMetricFunction SchemaObjectIdentifier `ddl:"identifier" sql:" "`
+	On                 []Column               `ddl:"parameter,parentheses,no_equals" sql:"ON"`
+}
+
+type TableModifyDataMetricFunction struct {
+	modify            bool                     `ddl:"static" sql:"MODIFY"`
+	ModifiedFunctions []TableModifiedFunctions `ddl:"keyword" sql:"DATA METRIC FUNCTION"`
+}
+
+type TableModifiedFunctions struct {
+	DataMetricFunction SchemaObjectIdentifier                  `ddl:"identifier" sql:" "`
+	On                 []Column                                `ddl:"parameter,parentheses,no_equals" sql:"ON"`
+	Status             *TableDataMetricScheduleStatusOperation `ddl:"keyword"`
+	AddExpectation     []TableAddExpectation                   `ddl:"keyword" sql:"ADD EXPECTATION"`
+	ModifyExpectation  []TableModifyExpectation                `ddl:"keyword" sql:"MODIFY EXPECTATION"`
+	DropExpectation    []TableDropExpectation                  `ddl:"keyword" sql:"DROP EXPECTATION"`
+	Filter             *string                                 `ddl:"parameter,no_quotes,must_parentheses,no_equals" sql:"FILTER"`
+	Set                *TableModifyDataMetricFunctionSet       `ddl:"list,no_comma" sql:"SET"`
+}
+
+type TableAddExpectation struct {
+	Name       string `ddl:"keyword,double_quotes"`
+	Expression string `ddl:"parameter,no_quotes,must_parentheses,no_equals"`
+}
+
+type TableModifyExpectation struct {
+	Name       string `ddl:"keyword,double_quotes"`
+	Expression string `ddl:"parameter,no_quotes,must_parentheses,no_equals"`
+}
+
+type TableDropExpectation struct {
+	Name string `ddl:"keyword,double_quotes"`
+}
+
+type TableModifyDataMetricFunctionSet struct {
+	AnomalyDetection        *bool                       `ddl:"parameter" sql:"ANOMALY_DETECTION"`
+	Sensitivity             *TableDataMetricSensitivity `ddl:"parameter,single_quotes" sql:"SENSITIVITY"`
+	DataQualityNotification *bool                       `ddl:"parameter" sql:"DATA_QUALITY_NOTIFICATION"`
 }
 
 // DropTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/drop-table.
@@ -587,6 +730,62 @@ func (v *Table) ObjectType() ObjectType {
 	return ObjectTypeTable
 }
 
+// CreateAsSelectTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table.
+type CreateAsSelectTableOptions struct {
+	create          bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace       *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table           bool                   `ddl:"static" sql:"TABLE"`
+	name            SchemaObjectIdentifier `ddl:"identifier"`
+	Columns         []TableAsSelectColumn  `ddl:"list,parentheses"`
+	ClusterBy       []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	Copy            []TableCopyOption      `ddl:"parameter,no_quotes,parentheses" sql:"COPY"`
+	RowAccessPolicy *TableRowAccessPolicy  `ddl:"list,no_comma"`
+	Query           string                 `ddl:"parameter,no_equals" sql:"AS"`
+}
+
+type TableAsSelectColumn struct {
+	Name          string                  `ddl:"keyword,double_quotes"`
+	ColumnType    datatypes.DataType      `ddl:"parameter,no_quotes,no_equals"`
+	MaskingPolicy *SchemaObjectIdentifier `ddl:"identifier" sql:"MASKING POLICY"`
+}
+
+// CreateUsingTemplateTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-using-template.
+type CreateUsingTemplateTableOptions struct {
+	create    bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table     bool                   `ddl:"static" sql:"TABLE"`
+	name      SchemaObjectIdentifier `ddl:"identifier"`
+	Copy      []TableCopyOption      `ddl:"parameter,no_quotes,parentheses" sql:"COPY"`
+	Query     []string               `ddl:"parameter,parentheses,no_equals" sql:"USING TEMPLATE"`
+}
+
+// CreateLikeTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-table#create-table-like.
+type CreateLikeTableOptions struct {
+	create      bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table       bool                   `ddl:"static" sql:"TABLE"`
+	name        SchemaObjectIdentifier `ddl:"identifier"`
+	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"LIKE"`
+	ClusterBy   []string               `ddl:"keyword,parentheses" sql:"CLUSTER BY"`
+	Copy        []TableCopyOption      `ddl:"parameter,no_quotes,parentheses" sql:"COPY"`
+}
+
+// CreateCloneTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/create-clone.
+type CreateCloneTableOptions struct {
+	create      bool                   `ddl:"static" sql:"CREATE"`
+	OrReplace   *bool                  `ddl:"keyword" sql:"OR REPLACE"`
+	table       bool                   `ddl:"static" sql:"TABLE"`
+	name        SchemaObjectIdentifier `ddl:"identifier"`
+	SourceTable SchemaObjectIdentifier `ddl:"identifier" sql:"CLONE"`
+	ClonePoint  *TableClonePoint       `ddl:"list,no_comma"`
+	Copy        []TableCopyOption      `ddl:"parameter,no_quotes,parentheses" sql:"COPY"`
+}
+
+type TableClonePoint struct {
+	Moment CloneMoment `ddl:"keyword"`
+	At     TimeTravel  `ddl:"list,parentheses,no_comma"`
+}
+
 // DescribeColumnsTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/desc-table.
 type DescribeColumnsTableOptions struct {
 	describe    bool                   `ddl:"static" sql:"DESCRIBE"`
@@ -612,8 +811,9 @@ type tableColumnDetailsRow struct {
 
 type TableColumnDetails struct {
 	Name                  string
-	Type                  DataType
-	Kind                  string
+	Type                  datatypes.DataType
+	TypeRaw               string
+	Kind                  TableColumnKind
 	Null                  bool
 	Default               *string
 	PrimaryKey            bool

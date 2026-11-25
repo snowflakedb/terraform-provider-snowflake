@@ -6,6 +6,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -21,6 +22,9 @@ func init() {
 	aggregationPolicyId := randomSchemaObjectIdentifier()
 	joinPolicyId := randomSchemaObjectIdentifier()
 	storageLifecyclePolicyId := randomSchemaObjectIdentifier()
+	contactId := randomSchemaObjectIdentifier()
+	dataMetricFunctionId := randomSchemaObjectIdentifier()
+	executeAsRole := randomAccountObjectIdentifier()
 	columnTagId1 := randomSchemaObjectIdentifier()
 	columnTagId2 := randomSchemaObjectIdentifierInSchema(columnTagId1.SchemaId())
 	tableTagId1 := randomSchemaObjectIdentifierInSchema(columnTagId1.SchemaId())
@@ -39,6 +43,18 @@ func init() {
 				},
 			}
 		}).
+		withModify(case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_MoreThanOneSet, func(opts *CreateTableOptions) {
+			opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{{
+				UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "COLUMN_1"}}},
+				FK:       &TableOutOfLineFK{References: fkRefId, Columns: []Column{{Value: "COLUMN_1"}}},
+			}}
+		}).
+		withModify(case_Tables_validation_Create_opts_ColumnsAndConstraints_OutOfLineConstraint_ExactlyOneValueSet_OneValidOneInvalid, func(opts *CreateTableOptions) {
+			opts.ColumnsAndConstraints.OutOfLineConstraint = []TableOutOfLineConstraint{
+				{UniquePK: &TableOutOfLineUniquePK{Unique: new(true), Columns: []Column{{Value: "COLUMN_1"}}}},
+				{},
+			}
+		}).
 		withAdditionalValidationCase(
 			"validation_Create_noColumns",
 			func(opts *CreateTableOptions) { opts.ColumnsAndConstraints.Columns = nil },
@@ -47,177 +63,13 @@ func init() {
 		withAdditionalValidationCase(
 			"validation_Create_RowAccessPolicy_invalidIdentifier",
 			func(opts *CreateTableOptions) {
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: emptySchemaObjectIdentifier, On: []string{"COLUMN_1"}}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: emptySchemaObjectIdentifier, On: []Column{{Value: "COLUMN_1"}}}
 			},
 			errInvalidIdentifier("CreateTableOptions.RowAccessPolicy", "Name"),
 		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_emptyType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Name: new("INLINE_CONSTRAINT")},
-				}}
-			},
-			errInvalidValue("ColumnInlineConstraint", "Type", ""),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_invalidType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: "not existing type"},
-				}}
-			},
-			errInvalidValue("ColumnInlineConstraint", "Type", "not existing type"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_foreignKeyNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeForeignKey},
-				}}
-			},
-			errNotSet("ColumnInlineConstraint", "ForeignKey"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_foreignKeyTableNameNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeForeignKey, ForeignKey: &InlineForeignKey{}},
-				}}
-			},
-			errNotSet("InlineForeignKey", "TableName"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_foreignKeySet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, ForeignKey: &InlineForeignKey{TableName: "t"}},
-				}}
-			},
-			errSet("ColumnInlineConstraint", "ForeignKey"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Enforced_NotEnforced",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Enforced: new(true), NotEnforced: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Enforced", "NotEnforced"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Deferrable_NotDeferrable",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Deferrable: new(true), NotDeferrable: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Deferrable", "NotDeferrable"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_InitiallyDeferred_InitiallyImmediate",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, InitiallyDeferred: new(true), InitiallyImmediate: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "InitiallyDeferred", "InitiallyImmediate"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Enable_Disable",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Enable: new(true), Disable: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Enable", "Disable"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Validate_Novalidate",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Validate: new(true), NoValidate: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Validate", "Novalidate"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_inlineConstraint_Rely_Norely",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.Columns = []TableColumn{{
-					Name:             "FIRST_COLUMN",
-					ColumnType:       DataTypeVARCHAR,
-					InlineConstraint: &ColumnInlineConstraint{Type: ColumnConstraintTypeUnique, Rely: new(true), NoRely: new(true)},
-				}}
-			},
-			errMoreThanOneOf("ColumnInlineConstraint", "Rely", "Norely"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_emptyType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{Name: new("OUT_OF_LINE_CONSTRAINT"), Columns: []Column{{Value: "COLUMN_1"}}}}
-			},
-			errInvalidValue("OutOfLineConstraint", "ConstraintType", ""),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_invalidType",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: "not existing type", Columns: []Column{{Value: "COLUMN_1"}}}}
-			},
-			errInvalidValue("OutOfLineConstraint", "ConstraintType", "not existing type"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_foreignKeyNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{ConstraintType: ColumnConstraintTypeForeignKey, Columns: []Column{{Value: "COLUMN_1"}}}}
-			},
-			errNotSet("OutOfLineConstraint", "ForeignKey"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_foreignKeyTableNameNotSet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{
-					ConstraintType: ColumnConstraintTypeForeignKey,
-					Columns:        []Column{{Value: "COLUMN_1"}},
-					ForeignKey:     &OutOfLineForeignKey{},
-				}}
-			},
-			errNotSet("OutOfLineForeignKey", "TableName"),
-		).
-		withAdditionalValidationCase(
-			"validation_Create_outOfLineConstraint_foreignKeySet",
-			func(opts *CreateTableOptions) {
-				opts.ColumnsAndConstraints.OutOfLineConstraint = []OutOfLineConstraint{{
-					ConstraintType: ColumnConstraintTypeUnique,
-					Columns:        []Column{{Value: "COLUMN_1"}},
-					ForeignKey:     &OutOfLineForeignKey{TableName: fkRefId},
-				}}
-			},
-			errSet("OutOfLineConstraint", "ForeignKey"),
-		).
 		withExpectedSqlf(
 			case_Tables_sql_Create_basic,
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR)`, id.FullyQualifiedName(),
+			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216))`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Create_all,
@@ -226,7 +78,7 @@ func init() {
 				opts.ColumnsAndConstraints = CreateTableColumnsAndConstraints{
 					Columns: []TableColumn{{
 						Name:       "FIRST_COLUMN",
-						ColumnType: DataTypeVARCHAR,
+						ColumnType: dataTypeVarchar,
 						Collate:    new("de"),
 						Comment:    &columnComment,
 						DefaultValue: &ColumnDefaultValue{
@@ -241,32 +93,39 @@ func init() {
 							{Name: columnTagId1, Value: "v1"},
 							{Name: columnTagId2, Value: "v2"},
 						},
-						InlineConstraint: &ColumnInlineConstraint{Name: new("INLINE_CONSTRAINT"), Type: ColumnConstraintTypePrimaryKey},
+						InlineConstraint: &TableColumnInlineConstraint{UniquePK: &TableColumnInlineUniquePK{Name: new("Inline_Constraint"), PrimaryKey: new(true)}},
+					}, {
+						Name:       "DOUBLE_ID",
+						ColumnType: dataTypeNumber,
+						Virtual:    &TableColumnVirtual{GeneratedAlways: new(true), As: "(1 + 1)", Virtual: new(true)},
 					}},
-					OutOfLineConstraint: []OutOfLineConstraint{
-						{
-							Name:           new("OUT_OF_LINE_CONSTRAINT"),
-							ConstraintType: ColumnConstraintTypeForeignKey,
-							Columns:        []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
-							ForeignKey: &OutOfLineForeignKey{
-								TableName:   fkRefId,
-								ColumnNames: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
-								Match:       new(MatchTypeFull),
-								On: &ForeignKeyOnAction{
-									OnUpdate: new(ForeignKeySetNullAction),
-									OnDelete: new(ForeignKeyRestrictAction),
-								},
+					OutOfLineConstraint: []TableOutOfLineConstraint{
+						{FK: &TableOutOfLineFK{
+							Name:       new("Out_Of_Line_Constraint"),
+							Columns:    []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
+							References: fkRefId,
+							RefColumns: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
+							Match:      new(MatchTypeFull),
+							On: &ForeignKeyOnAction{
+								OnUpdate: new(ForeignKeySetNullAction),
+								OnDelete: new(ForeignKeyRestrictAction),
 							},
-						},
-						{
-							ConstraintType:    ColumnConstraintTypeUnique,
+						}},
+						{UniquePK: &TableOutOfLineUniquePK{
+							Unique:            new(true),
 							Columns:           []Column{{Value: "COLUMN_1"}},
 							Enforced:          new(true),
 							Deferrable:        new(true),
 							InitiallyDeferred: new(true),
 							Enable:            new(true),
 							Rely:              new(true),
-						},
+							Comment:           new("unique comment"),
+						}},
+						{CH: &TableOutOfLineCH{
+							Name:             new("check_Positive"),
+							Expression:       "COLUMN_1 > 0",
+							EnableNovalidate: new(true),
+						}},
 					},
 				}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
@@ -275,16 +134,24 @@ func init() {
 				opts.MaxDataExtensionTimeInDays = new(100)
 				opts.ChangeTracking = new(true)
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: "en"})
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.ErrorLogging = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}}}
 				opts.AggregationPolicy = &TableAggregationPolicy{AggregationPolicy: aggregationPolicyId, EntityKey: []Column{{Value: "COLUMN_1"}}}
 				opts.JoinPolicy = &TableJoinPolicy{JoinPolicy: joinPolicyId, AllowedJoinKeys: []Column{{Value: "COLUMN_1"}}}
+				opts.StorageLifecyclePolicy = &CreateTableStorageLifecyclePolicy{
+					StorageLifecyclePolicy: storageLifecyclePolicyId,
+					On:                     []Column{{Value: "FIRST_COLUMN"}},
+				}
 				opts.Tag = []TagAssociation{
 					{Name: tableTagId1, Value: "v1"},
 					{Name: tableTagId2, Value: "v2"},
 				}
+				opts.Contact = []TableContact{{Purpose: "SUPPORT", Contact: contactId}}
 				opts.Comment = &tableComment
+				opts.RowTimestamp = new(true)
 			},
-			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR CONSTRAINT INLINE_CONSTRAINT PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") TAG (%s = 'v1', %s = 'v2') COMMENT = '%s'`,
+			`CREATE TABLE IF NOT EXISTS %s ("FIRST_COLUMN" VARCHAR(16777216) CONSTRAINT "Inline_Constraint" PRIMARY KEY NOT NULL COLLATE 'de' IDENTITY START 10 INCREMENT 1 ORDER MASKING POLICY %s USING ("FOO", "BAR") TAG (%s = 'v1', %s = 'v2') COMMENT '%s', "DOUBLE_ID" NUMBER(38, 0) GENERATED ALWAYS AS (1 + 1) VIRTUAL, CONSTRAINT "Out_Of_Line_Constraint" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT, UNIQUE ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE RELY COMMENT 'unique comment', CONSTRAINT "check_Positive" CHECK ( COLUMN_1 > 0 ) ENABLE NOVALIDATE) CLUSTER BY (COLUMN_1, COLUMN_2) ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 10 MAX_DATA_EXTENSION_TIME_IN_DAYS = 100 CHANGE_TRACKING = true DEFAULT_DDL_COLLATION = 'en' ERROR_LOGGING = true COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON ("COLUMN_1", "COLUMN_2") AGGREGATION POLICY %s ENTITY KEY ("COLUMN_1") JOIN POLICY %s ALLOWED JOIN KEYS ("COLUMN_1") STORAGE LIFECYCLE POLICY %s ON ("FIRST_COLUMN") TAG (%s = 'v1', %s = 'v2') WITH CONTACT (SUPPORT = %s) COMMENT = '%s' ROW_TIMESTAMP = true`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			columnTagId1.FullyQualifiedName(),
@@ -294,8 +161,10 @@ func init() {
 			rowAccessPolicyId.FullyQualifiedName(),
 			aggregationPolicyId.FullyQualifiedName(),
 			joinPolicyId.FullyQualifiedName(),
+			storageLifecyclePolicyId.FullyQualifiedName(),
 			tableTagId1.FullyQualifiedName(),
 			tableTagId2.FullyQualifiedName(),
+			contactId.FullyQualifiedName(),
 			tableComment,
 		).
 		withAdditionalSqlCasef(
@@ -303,16 +172,37 @@ func init() {
 			func(opts *CreateTableOptions) {
 				opts.DefaultDdlCollation = new(StringAllowEmpty{Value: ""})
 			},
-			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR) DEFAULT_DDL_COLLATION = ''`,
+			`CREATE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216)) DEFAULT_DDL_COLLATION = ''`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Create_orReplace",
 			func(opts *CreateTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionGrants}
 			},
-			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR) COPY GRANTS`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216)) COPY = (GRANTS)`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Create_lowercaseColumnNamesOnConstraints",
+			func(opts *CreateTableOptions) {
+				opts.ColumnsAndConstraints = CreateTableColumnsAndConstraints{
+					Columns: []TableColumn{{
+						Name:             "id",
+						ColumnType:       dataTypeNumber,
+						InlineConstraint: &TableColumnInlineConstraint{UniquePK: &TableColumnInlineUniquePK{Name: new("pk_id"), PrimaryKey: new(true)}},
+					}},
+					OutOfLineConstraint: []TableOutOfLineConstraint{
+						{UniquePK: &TableOutOfLineUniquePK{
+							Name:    new("uq_code"),
+							Unique:  new(true),
+							Columns: []Column{{Value: "code"}},
+						}},
+					},
+				}
+			},
+			`CREATE TABLE %s ("id" NUMBER(38, 0) CONSTRAINT "pk_id" PRIMARY KEY, CONSTRAINT "uq_code" UNIQUE ("code"))`,
 			id.FullyQualifiedName(),
 		)
 
@@ -326,23 +216,23 @@ func init() {
 		}).
 		withExpectedSqlf(
 			case_Tables_sql_CreateAsSelect_basic,
-			`CREATE TABLE %s (a) AS SELECT 1`, id.FullyQualifiedName(),
+			`CREATE TABLE %s ("a") AS SELECT 1`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_CreateAsSelect_all,
 			func(opts *CreateAsSelectTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
 				opts.Columns = []TableAsSelectColumn{{
 					Name:          "FIRST_COLUMN",
-					ColumnType:    new(DataTypeVARCHAR),
+					ColumnType:    dataTypeVarchar,
 					MaskingPolicy: &maskingPolicyId,
 				}}
 				opts.ClusterBy = []string{"COLUMN_1", "COLUMN_2"}
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"COLUMN_1", "COLUMN_2"}}
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
+				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}}}
 				opts.Query = "SELECT * FROM ANOTHER_TABLE"
 			},
-			`CREATE OR REPLACE TABLE %s (FIRST_COLUMN VARCHAR MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY GRANTS ROW ACCESS POLICY %s ON (COLUMN_1, COLUMN_2) AS SELECT * FROM ANOTHER_TABLE`,
+			`CREATE OR REPLACE TABLE %s ("FIRST_COLUMN" VARCHAR(16777216) MASKING POLICY %s) CLUSTER BY (COLUMN_1, COLUMN_2) COPY = (COMMENTS, TAGS, GRANTS) ROW ACCESS POLICY %s ON ("COLUMN_1", "COLUMN_2") AS SELECT * FROM ANOTHER_TABLE`,
 			id.FullyQualifiedName(),
 			maskingPolicyId.FullyQualifiedName(),
 			rowAccessPolicyId.FullyQualifiedName(),
@@ -363,9 +253,9 @@ func init() {
 			case_Tables_sql_CreateUsingTemplate_all,
 			func(opts *CreateUsingTemplateTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
 			},
-			`CREATE OR REPLACE TABLE %s COPY GRANTS USING TEMPLATE (sample_data)`,
+			`CREATE OR REPLACE TABLE %s COPY = (COMMENTS, TAGS, GRANTS) USING TEMPLATE (sample_data)`,
 			id.FullyQualifiedName(),
 		)
 
@@ -384,10 +274,10 @@ func init() {
 			case_Tables_sql_CreateLike_all,
 			func(opts *CreateLikeTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
 				opts.ClusterBy = []string{"date", "id"}
 			},
-			`CREATE OR REPLACE TABLE %s LIKE %s CLUSTER BY (date, id) COPY GRANTS`,
+			`CREATE OR REPLACE TABLE %s LIKE %s CLUSTER BY (date, id) COPY = (COMMENTS, TAGS, GRANTS)`,
 			id.FullyQualifiedName(), sourceTable.FullyQualifiedName(),
 		)
 
@@ -406,17 +296,29 @@ func init() {
 			case_Tables_sql_CreateClone_all,
 			func(opts *CreateCloneTableOptions) {
 				opts.OrReplace = new(true)
-				opts.CopyGrants = new(true)
-				opts.ClonePoint = &ClonePoint{
+				opts.Copy = []TableCopyOption{TableCopyOptionComments, TableCopyOptionTags, TableCopyOptionGrants}
+				opts.ClonePoint = &TableClonePoint{
 					Moment: CloneMomentAt,
 					At:     TimeTravel{Offset: new(0)},
 				}
 			},
-			`CREATE OR REPLACE TABLE %s CLONE %s AT (OFFSET => 0) COPY GRANTS`,
+			`CREATE OR REPLACE TABLE %s CLONE %s AT (OFFSET => 0) COPY = (COMMENTS, TAGS, GRANTS)`,
 			id.FullyQualifiedName(), sourceTable.FullyQualifiedName(),
 		)
 
 	tablesTests.Alter.
+		withModify(case_Tables_validation_Alter_opts_Set_ConflictingGroups_Contact_ErrorLogging, func(opts *AlterTableOptions) {
+			opts.Set = &TableSet{
+				Contact:      []TableContact{{Purpose: "SUPPORT", Contact: contactId}},
+				ErrorLogging: new(true),
+			}
+		}).
+		withModify(case_Tables_validation_Alter_opts_Set_ConflictingGroups_Contact_EnableSchemaEvolution_DataRetentionTimeInDays_MaxDataExtensionTimeInDays_ChangeTracking_DefaultDdlCollation_IcebergDefaultDdlCollation_Comment_RowTimestamp, func(opts *AlterTableOptions) {
+			opts.Set = &TableSet{
+				Contact:               []TableContact{{Purpose: "SUPPORT", Contact: contactId}},
+				EnableSchemaEvolution: new(true),
+			}
+		}).
 		withModify(case_Tables_validation_Alter_opts_ClusteringAction_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
 			opts.ClusteringAction = &TableClusteringAction{ClusterBy: []string{"a"}, DropClusteringKey: new(true)}
 		}).
@@ -441,6 +343,31 @@ func init() {
 				{DropDefault: new(true)},
 				{},
 			}}
+		}).
+		withModify(case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_MoreThanOneSet, func(opts *AlterTableOptions) {
+			opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+				ModifiedFunctions: []TableModifiedFunctions{{
+					DataMetricFunction: dataMetricFunctionId,
+					On:                 []Column{{Value: "ID"}},
+					Status:             new(TableDataMetricScheduleStatusOperationSuspend),
+					Filter:             new("ID > 0"),
+				}},
+			}
+		}).
+		withModify(case_Tables_validation_Alter_opts_ModifyDataMetricFunction_ModifiedFunctions_ExactlyOneValueSet_OneValidOneInvalid, func(opts *AlterTableOptions) {
+			opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+				ModifiedFunctions: []TableModifiedFunctions{
+					{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						Status:             new(TableDataMetricScheduleStatusOperationSuspend),
+					},
+					{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+					},
+				},
+			}
 		}).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_RenameTo,
@@ -486,14 +413,26 @@ func init() {
 				opts.ColumnAction = &TableColumnAction{Add: &TableColumnAddAction{
 					IfNotExists: new(true),
 					Name:        "NEXT_COLUMN",
-					ColumnType:  DataTypeVARCHAR,
+					ColumnType:  dataTypeVarchar,
 					Collate:     new("utf8"),
 					DefaultValue: &ColumnDefaultValue{
 						Identity: &ColumnIdentity{Start: 10, Increment: 1},
 					},
 				}}
 			},
-			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS "NEXT_COLUMN" VARCHAR COLLATE 'utf8' IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS "NEXT_COLUMN" VARCHAR(16777216) COLLATE 'utf8' IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addVirtualColumn",
+			func(opts *AlterTableOptions) {
+				opts.ColumnAction = &TableColumnAction{Add: &TableColumnAddAction{
+					Name:       "DOUBLE_ID",
+					ColumnType: dataTypeNumber,
+					Virtual:    &TableColumnVirtual{GeneratedAlways: new(true), As: "(ID * 2)", Virtual: new(true)},
+				}}
+			},
+			`ALTER TABLE %s ADD COLUMN "DOUBLE_ID" NUMBER(38, 0) GENERATED ALWAYS AS (ID * 2) VIRTUAL`,
+			id.FullyQualifiedName(),
 		).
 		// https://github.com/snowflakedb/terraform-provider-snowflake/issues/4730
 		// Adding a column with a non-identity default used to panic in TableColumnActionRequest.toOpts.
@@ -502,7 +441,7 @@ func init() {
 			func(opts *AlterTableOptions) {
 				*opts = *NewAlterTableRequest(id).WithColumnAction(
 					*NewTableColumnActionRequest().WithAdd(
-						*NewTableColumnAddActionRequest("NEW_BOOLEAN_COLUMN", DataTypeBoolean).
+						*NewTableColumnAddActionRequest("NEW_BOOLEAN_COLUMN", dataTypeBoolean).
 							WithDefaultValue(*NewColumnDefaultValueRequest().WithExpression("FALSE")),
 					),
 				).toOpts()
@@ -514,30 +453,30 @@ func init() {
 			func(opts *AlterTableOptions) {
 				*opts = *NewAlterTableRequest(id).WithColumnAction(
 					*NewTableColumnActionRequest().WithAdd(
-						*NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).
+						*NewTableColumnAddActionRequest("NEXT_COLUMN", dataTypeVarchar).
 							WithDefaultValue(*NewColumnDefaultValueRequest().WithIdentity(*NewColumnIdentityRequest(10, 1))),
 					),
 				).toOpts()
 			},
-			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR(16777216) IDENTITY START 10 INCREMENT 1`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_addColumn_notNull",
 			func(opts *AlterTableOptions) {
 				*opts = *NewAlterTableRequest(id).WithColumnAction(
 					*NewTableColumnActionRequest().WithAdd(
-						*NewTableColumnAddActionRequest("NEXT_COLUMN", DataTypeVARCHAR).WithNotNull(true),
+						*NewTableColumnAddActionRequest("NEXT_COLUMN", dataTypeVarchar).WithNotNull(true),
 					),
 				).toOpts()
 			},
-			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR NOT NULL`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ADD COLUMN "NEXT_COLUMN" VARCHAR(16777216) NOT NULL`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_renameColumn",
 			func(opts *AlterTableOptions) {
-				opts.ColumnAction = &TableColumnAction{Rename: &TableColumnRenameAction{OldName: "OLD_NAME", NewName: "NEW_NAME"}}
+				opts.ColumnAction = &TableColumnAction{Rename: &TableRenameColumnAction{OldName: "OLD_NAME", NewName: "NEW_NAME"}}
 			},
-			`ALTER TABLE %s RENAME COLUMN OLD_NAME TO NEW_NAME`, id.FullyQualifiedName(),
+			`ALTER TABLE %s RENAME COLUMN "OLD_NAME" TO "NEW_NAME"`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_alterColumn",
@@ -549,11 +488,11 @@ func init() {
 					{Name: "COLUMN_2", DropDefault: new(true)},
 					{Name: "COLUMN_2", SetDefault: new(SequenceName("SEQUENCE_2"))},
 					{Name: "COLUMN_2", Comment: new("comment")},
-					{Name: "COLUMN_2", DataType: new(DataTypeVARCHAR), Collate: new("utf8")},
+					{Name: "COLUMN_2", DataType: &TableColumnAlterDataType{DataType: dataTypeVarchar, Collate: new("utf8")}},
 					{Name: "COLUMN_2", NotNullConstraint: &TableColumnNotNullConstraint{Drop: new(true)}},
 				}}
 			},
-			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" DROP DEFAULT, COLUMN "COLUMN_1" SET DEFAULT SEQUENCE_1.NEXTVAL, COLUMN "COLUMN_1" UNSET COMMENT, COLUMN "COLUMN_2" DROP DEFAULT, COLUMN "COLUMN_2" SET DEFAULT SEQUENCE_2.NEXTVAL, COLUMN "COLUMN_2" COMMENT 'comment', COLUMN "COLUMN_2" SET DATA TYPE VARCHAR COLLATE 'utf8', COLUMN "COLUMN_2" DROP NOT NULL`,
+			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" DROP DEFAULT, COLUMN "COLUMN_1" SET DEFAULT SEQUENCE_1.NEXTVAL, COLUMN "COLUMN_1" UNSET COMMENT, COLUMN "COLUMN_2" DROP DEFAULT, COLUMN "COLUMN_2" SET DEFAULT SEQUENCE_2.NEXTVAL, COLUMN "COLUMN_2" COMMENT 'comment', COLUMN "COLUMN_2" SET DATA TYPE VARCHAR(16777216) COLLATE 'utf8', COLUMN "COLUMN_2" DROP NOT NULL`,
 			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -579,26 +518,26 @@ func init() {
 		withAdditionalSqlCasef(
 			"sql_Alter_setTagsOnColumn",
 			func(opts *AlterTableOptions) {
-				opts.ColumnAction = &TableColumnAction{SetTags: &TableColumnAlterSetTagsAction{
-					ColumnName: "COLUMN_1",
+				opts.ColumnAction = &TableColumnAction{SetTags: &TableSetColumnTags{
+					Name: "COLUMN_1",
 					SetTags: []TagAssociation{
 						{Name: columnTagId1, Value: "v1"},
 						{Name: columnTagId2, Value: "v2"},
 					},
 				}}
 			},
-			`ALTER TABLE %s ALTER COLUMN COLUMN_1 SET TAG %s = 'v1', %s = 'v2'`,
+			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" SET TAG %s = 'v1', %s = 'v2'`,
 			id.FullyQualifiedName(), columnTagId1.FullyQualifiedName(), columnTagId2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_unsetTagsOnColumn",
 			func(opts *AlterTableOptions) {
-				opts.ColumnAction = &TableColumnAction{UnsetTags: &TableColumnAlterUnsetTagsAction{
-					ColumnName: "COLUMN_1",
-					UnsetTags:  []ObjectIdentifier{columnTagId1, columnTagId2},
+				opts.ColumnAction = &TableColumnAction{UnsetTags: &TableUnsetColumnTags{
+					Name:      "COLUMN_1",
+					UnsetTags: []ObjectIdentifier{columnTagId1, columnTagId2},
 				}}
 			},
-			`ALTER TABLE %s ALTER COLUMN COLUMN_1 UNSET TAG %s, %s`,
+			`ALTER TABLE %s ALTER COLUMN "COLUMN_1" UNSET TAG %s, %s`,
 			id.FullyQualifiedName(), columnTagId1.FullyQualifiedName(), columnTagId2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -611,30 +550,81 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_ConstraintAction,
 			func(opts *AlterTableOptions) {
-				opts.ConstraintAction = &TableConstraintAction{Add: &OutOfLineConstraint{
-					Name:           new("OUT_OF_LINE_CONSTRAINT"),
-					ConstraintType: ColumnConstraintTypeForeignKey,
-					Columns:        []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
-					ForeignKey: &OutOfLineForeignKey{
-						TableName:   fkRefId,
-						ColumnNames: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
-						Match:       new(MatchTypeFull),
-						On: &ForeignKeyOnAction{
-							OnUpdate: new(ForeignKeySetNullAction),
-							OnDelete: new(ForeignKeyRestrictAction),
-						},
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{FK: &TableOutOfLineFK{
+					Name:       new("OUT_OF_LINE_CONSTRAINT"),
+					Columns:    []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
+					References: fkRefId,
+					RefColumns: []Column{{Value: "COLUMN_3"}, {Value: "COLUMN_4"}},
+					Match:      new(MatchTypeFull),
+					On: &ForeignKeyOnAction{
+						OnUpdate: new(ForeignKeySetNullAction),
+						OnDelete: new(ForeignKeyRestrictAction),
 					},
-				}}
+				}}}
 			},
-			`ALTER TABLE %s ADD CONSTRAINT OUT_OF_LINE_CONSTRAINT FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT`,
+			`ALTER TABLE %s ADD CONSTRAINT "OUT_OF_LINE_CONSTRAINT" FOREIGN KEY ("COLUMN_1", "COLUMN_2") REFERENCES %s ("COLUMN_3", "COLUMN_4") MATCH FULL ON UPDATE SET NULL ON DELETE RESTRICT`,
 			id.FullyQualifiedName(), fkRefId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addPrimaryKeyConstraint",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{UniquePK: &TableOutOfLineUniquePK{
+					Name:              new("pk_Constraint"),
+					PrimaryKey:        new(true),
+					Columns:           []Column{{Value: "COLUMN_1"}},
+					Enforced:          new(true),
+					Deferrable:        new(true),
+					InitiallyDeferred: new(true),
+					Enable:            new(true),
+					Validate:          new(true),
+					Rely:              new(true),
+					Comment:           new("pk comment"),
+				}}}
+			},
+			`ALTER TABLE %s ADD CONSTRAINT "pk_Constraint" PRIMARY KEY ("COLUMN_1") ENFORCED DEFERRABLE INITIALLY DEFERRED ENABLE VALIDATE RELY COMMENT 'pk comment'`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addPrimaryKeyConstraintLowercaseColumns",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{UniquePK: &TableOutOfLineUniquePK{
+					Name:       new("pk_id"),
+					PrimaryKey: new(true),
+					Columns:    []Column{{Value: "id"}},
+				}}}
+			},
+			`ALTER TABLE %s ADD CONSTRAINT "pk_id" PRIMARY KEY ("id")`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addUniqueConstraint",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{UniquePK: &TableOutOfLineUniquePK{
+					Unique:  new(true),
+					Columns: []Column{{Value: "COLUMN_1"}, {Value: "COLUMN_2"}},
+				}}}
+			},
+			`ALTER TABLE %s ADD UNIQUE ("COLUMN_1", "COLUMN_2")`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_addCheckConstraint",
+			func(opts *AlterTableOptions) {
+				opts.ConstraintAction = &TableConstraintAction{Add: &TableOutOfLineConstraint{CH: &TableOutOfLineCH{
+					Name:           new("check_positive"),
+					Expression:     "COLUMN_1 > 0",
+					EnableValidate: new(true),
+				}}}
+			},
+			`ALTER TABLE %s ADD CONSTRAINT "check_positive" CHECK ( COLUMN_1 > 0 ) ENABLE VALIDATE`,
+			id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_renameConstraint",
 			func(opts *AlterTableOptions) {
 				opts.ConstraintAction = &TableConstraintAction{Rename: &TableConstraintRenameAction{OldName: "OLD_NAME_CONSTRAINT", NewName: "NEW_NAME_CONSTRAINT"}}
 			},
-			`ALTER TABLE %s RENAME CONSTRAINT OLD_NAME_CONSTRAINT TO NEW_NAME_CONSTRAINT`, id.FullyQualifiedName(),
+			`ALTER TABLE %s RENAME CONSTRAINT "OLD_NAME_CONSTRAINT" TO "NEW_NAME_CONSTRAINT"`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_alterConstraint",
@@ -647,7 +637,7 @@ func init() {
 					Rely:           new(true),
 				}}
 			},
-			`ALTER TABLE %s ALTER CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) NOT ENFORCED VALIDATE RELY`, id.FullyQualifiedName(),
+			`ALTER TABLE %s ALTER CONSTRAINT "OUT_OF_LINE_CONSTRAINT" (COLUMN_3, COLUMN_4) NOT ENFORCED VALIDATE RELY`, id.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_dropConstraint",
@@ -658,7 +648,7 @@ func init() {
 					Cascade:        new(true),
 				}}
 			},
-			`ALTER TABLE %s DROP CONSTRAINT OUT_OF_LINE_CONSTRAINT (COLUMN_3, COLUMN_4) CASCADE`, id.FullyQualifiedName(),
+			`ALTER TABLE %s DROP CONSTRAINT "OUT_OF_LINE_CONSTRAINT" (COLUMN_3, COLUMN_4) CASCADE`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_ExternalTableAction,
@@ -666,25 +656,11 @@ func init() {
 				opts.ExternalTableAction = &TableExternalTableAction{Add: &TableExternalTableColumnAddAction{
 					IfNotExists: new(true),
 					Name:        "COLUMN_1",
-					ColumnType:  DataTypeBoolean,
+					ColumnType:  dataTypeBoolean,
 					Expression:  []string{"SELECT 1"},
 				}}
 			},
 			`ALTER TABLE %s ADD COLUMN IF NOT EXISTS COLUMN_1 BOOLEAN AS (SELECT 1)`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_renameExternalTableColumn",
-			func(opts *AlterTableOptions) {
-				opts.ExternalTableAction = &TableExternalTableAction{Rename: &TableExternalTableColumnRenameAction{OldName: "OLD_NAME_COLUMN", NewName: "NEW_NAME_COLUMN"}}
-			},
-			`ALTER TABLE %s RENAME COLUMN OLD_NAME_COLUMN TO NEW_NAME_COLUMN`, id.FullyQualifiedName(),
-		).
-		withAdditionalSqlCasef(
-			"sql_Alter_dropExternalTableColumn",
-			func(opts *AlterTableOptions) {
-				opts.ExternalTableAction = &TableExternalTableAction{Drop: &TableExternalTableColumnDropAction{IfExists: new(true), Names: []string{"COLUMN_3", "COLUMN_4"}}}
-			},
-			`ALTER TABLE %s DROP COLUMN IF EXISTS COLUMN_3, COLUMN_4`, id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_SearchOptimizationAction,
@@ -721,11 +697,29 @@ func init() {
 					MaxDataExtensionTimeInDays: new(90),
 					ChangeTracking:             new(false),
 					DefaultDdlCollation:        new(StringAllowEmpty{Value: "us"}),
+					IcebergDefaultDdlCollation: new(StringAllowEmpty{Value: "en-ci"}),
 					Comment:                    &tableComment,
+					RowTimestamp:               new(true),
 				}
 			},
-			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' COMMENT = '%s'`,
+			`ALTER TABLE %s SET ENABLE_SCHEMA_EVOLUTION = true DATA_RETENTION_TIME_IN_DAYS = 30 MAX_DATA_EXTENSION_TIME_IN_DAYS = 90 CHANGE_TRACKING = false DEFAULT_DDL_COLLATION = 'us' ICEBERG_DEFAULT_DDL_COLLATION = 'en-ci' COMMENT = '%s' ROW_TIMESTAMP = true`,
 			id.FullyQualifiedName(), tableComment,
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_SetErrorLogging",
+			func(opts *AlterTableOptions) {
+				opts.Set = &TableSet{ErrorLogging: new(true)}
+			},
+			`ALTER TABLE %s SET ERROR_LOGGING = true`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_SetContact",
+			func(opts *AlterTableOptions) {
+				opts.Set = &TableSet{Contact: []TableContact{{Purpose: "SUPPORT", Contact: contactId}}}
+			},
+			`ALTER TABLE %s SET CONTACT SUPPORT = %s`,
+			id.FullyQualifiedName(), contactId.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
 			"sql_Alter_Set_emptyDefaultDdlCollation",
@@ -762,11 +756,22 @@ func init() {
 					MaxDataExtensionTimeInDays: new(true),
 					ChangeTracking:             new(true),
 					DefaultDdlCollation:        new(true),
+					IcebergDefaultDdlCollation: new(true),
 					EnableSchemaEvolution:      new(true),
+					ErrorLogging:               new(true),
 					Comment:                    new(true),
+					RowTimestamp:               new(true),
 				}
 			},
-			`ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION, COMMENT`,
+			`ALTER TABLE %s UNSET DATA_RETENTION_TIME_IN_DAYS, MAX_DATA_EXTENSION_TIME_IN_DAYS, CHANGE_TRACKING, DEFAULT_DDL_COLLATION, ICEBERG_DEFAULT_DDL_COLLATION, ENABLE_SCHEMA_EVOLUTION, ERROR_LOGGING, COMMENT, ROW_TIMESTAMP`,
+			id.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_UnsetContact",
+			func(opts *AlterTableOptions) {
+				opts.Unset = &TableUnset{Contact: new("SUPPORT")}
+			},
+			`ALTER TABLE %s UNSET CONTACT SUPPORT`,
 			id.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
@@ -848,15 +853,106 @@ func init() {
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_SetJoinPolicy,
 			func(opts *AlterTableOptions) {
-				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, Force: new(true)}
+				opts.SetJoinPolicy = &TableSetJoinPolicy{JoinPolicy: joinPolicyId, AllowedJoinKeys: []Column{{Value: "FIRST_COLUMN"}}, Force: new(true)}
 			},
-			`ALTER TABLE %s SET JOIN POLICY %s FORCE`,
+			`ALTER TABLE %s SET JOIN POLICY %s ALLOWED JOIN KEYS ("FIRST_COLUMN") FORCE`,
 			id.FullyQualifiedName(), joinPolicyId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_Tables_sql_Alter_UnsetJoinPolicy,
 			func(opts *AlterTableOptions) { opts.UnsetJoinPolicy = &TableUnsetJoinPolicy{} },
 			`ALTER TABLE %s UNSET JOIN POLICY`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_SetDataMetricSchedule,
+			func(opts *AlterTableOptions) {
+				opts.SetDataMetricSchedule = &TableSetDataMetricSchedule{DataMetricSchedule: "TRIGGER_ON_CHANGES"}
+			},
+			`ALTER TABLE %s SET DATA_METRIC_SCHEDULE = 'TRIGGER_ON_CHANGES'`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_UnsetDataMetricSchedule,
+			func(opts *AlterTableOptions) { opts.UnsetDataMetricSchedule = new(true) },
+			`ALTER TABLE %s UNSET DATA_METRIC_SCHEDULE`, id.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_AddDataMetricFunction,
+			func(opts *AlterTableOptions) {
+				opts.AddDataMetricFunction = &TableAddDataMetricFunction{
+					AddedFunctions: []TableAddedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						WithinGroup:        []Column{{Value: "REGION"}},
+						GroupLimit:         new(10),
+						Filter:             new("(ID > 0)"),
+						Expectations:       []TableExpectations{{Name: "nonzero", Expression: "(COUNT(*) > 0)"}},
+						ExecuteAsRole:      &executeAsRole,
+						AnomalyDetection:   new(true),
+						Sensitivity:        new(TableDataMetricSensitivityHigh),
+					}},
+				}
+			},
+			`ALTER TABLE %s ADD DATA METRIC FUNCTION %s ON ("ID") WITHIN GROUP ("REGION") GROUP LIMIT 10 FILTER (ID > 0) EXPECTATION "nonzero" (COUNT(*) > 0) EXECUTE AS ROLE %s ANOMALY_DETECTION = true SENSITIVITY = 'HIGH'`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(), executeAsRole.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_DropDataMetricFunction,
+			func(opts *AlterTableOptions) {
+				opts.DropDataMetricFunction = &TableDropDataMetricFunction{
+					DroppedFunctions: []TableDroppedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+					}},
+				}
+			},
+			`ALTER TABLE %s DROP DATA METRIC FUNCTION %s ON ("ID")`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_Tables_sql_Alter_ModifyDataMetricFunction,
+			func(opts *AlterTableOptions) {
+				opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+					ModifiedFunctions: []TableModifiedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						Status:             new(TableDataMetricScheduleStatusOperationSuspend),
+					}},
+				}
+			},
+			`ALTER TABLE %s MODIFY DATA METRIC FUNCTION %s ON ("ID") SUSPEND`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_modifyDataMetricFunction_addExpectation",
+			func(opts *AlterTableOptions) {
+				opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+					ModifiedFunctions: []TableModifiedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						AddExpectation:     []TableAddExpectation{{Name: "nonzero", Expression: "(COUNT(*) > 0)"}},
+					}},
+				}
+			},
+			`ALTER TABLE %s MODIFY DATA METRIC FUNCTION %s ON ("ID") ADD EXPECTATION "nonzero" (COUNT(*) > 0)`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
+		).
+		withAdditionalSqlCasef(
+			"sql_Alter_modifyDataMetricFunction_set",
+			func(opts *AlterTableOptions) {
+				opts.ModifyDataMetricFunction = &TableModifyDataMetricFunction{
+					ModifiedFunctions: []TableModifiedFunctions{{
+						DataMetricFunction: dataMetricFunctionId,
+						On:                 []Column{{Value: "ID"}},
+						Set: &TableModifyDataMetricFunctionSet{
+							AnomalyDetection:        new(true),
+							Sensitivity:             new(TableDataMetricSensitivityMedium),
+							DataQualityNotification: new(true),
+						},
+					}},
+				}
+			},
+			`ALTER TABLE %s MODIFY DATA METRIC FUNCTION %s ON ("ID") SET ANOMALY_DETECTION = true SENSITIVITY = 'MEDIUM' DATA_QUALITY_NOTIFICATION = true`,
+			id.FullyQualifiedName(), dataMetricFunctionId.FullyQualifiedName(),
 		)
 
 	tablesTests.Drop.
@@ -914,6 +1010,8 @@ func init() {
 			ErrPatternRequiredForLikeKeyword,
 		)
 
+	// TODO [SNOW-4532966]: add CreateFromBackupSet unit tests once the CREATE TABLE ... FROM BACKUP SET variant is added back to the SSOT definition.
+
 	tablesTests.DescribeColumns.
 		withExpectedSqlf(
 			case_Tables_sql_DescribeColumns_basic,
@@ -962,39 +1060,61 @@ func init() {
 }
 
 func tableTestColumn() TableColumn {
-	return TableColumn{Name: "FIRST_COLUMN", ColumnType: DataTypeVARCHAR}
+	return TableColumn{Name: "FIRST_COLUMN", ColumnType: dataTypeVarchar}
 }
 
 func TestTableColumnDetailsRow_SplitTypeAndCollation(t *testing.T) {
 	t.Run("with utf8", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'utf8'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "utf8", *actualCollation)
 	})
 	t.Run("with locale", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'en_US'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "en_US", *actualCollation)
 	})
 	t.Run("with multiple specifiers", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'fr_CA-ai-pi-trim'"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "fr_CA-ai-pi-trim", *actualCollation)
 	})
 	t.Run("with empty collation", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE ''"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("VARCHAR(10)"), actualType)
+		assert.Equal(t, "VARCHAR(10)", actualType)
 		assert.Equal(t, "", *actualCollation)
 	})
 	t.Run("without collation", func(t *testing.T) {
 		row := tableColumnDetailsRow{Type: "NUMBER(38, 0)"}
 		actualType, actualCollation := row.splitTypeAndCollation()
-		assert.Equal(t, DataType("NUMBER(38, 0)"), actualType)
+		assert.Equal(t, "NUMBER(38, 0)", actualType)
 		assert.Nil(t, actualCollation)
+	})
+}
+
+func TestTableColumnDetailsRow_AdditionalConvert(t *testing.T) {
+	t.Run("parsed type with collation", func(t *testing.T) {
+		details := &TableColumnDetails{}
+		require.NoError(t, tableColumnDetailsRow{Type: "VARCHAR(10) COLLATE 'utf8'"}.additionalConvert(details))
+
+		require.NotNil(t, details.Type)
+		assert.Equal(t, "VARCHAR(10)", details.Type.ToSql())
+		assert.Equal(t, "VARCHAR(10)", details.TypeRaw)
+		assert.Equal(t, "utf8", *details.Collation)
+		assert.Equal(t, "VARCHAR(10)", details.TypeString())
+	})
+	t.Run("unparsable type falls back to raw", func(t *testing.T) {
+		details := &TableColumnDetails{}
+		require.NoError(t, tableColumnDetailsRow{Type: "UNKNOWN_TYPE(1)"}.additionalConvert(details))
+
+		assert.Nil(t, details.Type)
+		assert.Equal(t, "UNKNOWN_TYPE(1)", details.TypeRaw)
+		assert.Nil(t, details.Collation)
+		assert.Equal(t, "UNKNOWN_TYPE(1)", details.TypeString())
 	})
 }
 
@@ -1020,6 +1140,31 @@ func TestTable_GetClusterByKeys(t *testing.T) {
 	t.Run("with nested functions", func(t *testing.T) {
 		assert.Equal(t, []string{"some_func(some_param, some_other_param, other_func(some_param, some_other_param))", "other_param"}, (&Table{ClusterBy: "LINEAR(some_func(some_param, some_other_param, other_func(some_param, some_other_param)),other_param)"}).GetClusterByKeys())
 	})
+}
+
+func TestParseColumnIdentity(t *testing.T) {
+	testCases := []struct {
+		raw      string
+		expected *TableColumnIdentityDetails
+	}{
+		{raw: "IDENTITY START 1 INCREMENT 1", expected: &TableColumnIdentityDetails{Start: 1, Increment: 1}},
+		{raw: "IDENTITY START 2 INCREMENT 4 ORDER", expected: &TableColumnIdentityDetails{Start: 2, Increment: 4, Order: Bool(true)}},
+		{raw: "IDENTITY START -10 INCREMENT -5 NOORDER", expected: &TableColumnIdentityDetails{Start: -10, Increment: -5, Order: Bool(false)}},
+		{raw: "  identity start 1   increment 3 noorder ", expected: &TableColumnIdentityDetails{Start: 1, Increment: 3, Order: Bool(false)}},
+		{raw: "IDENTITY START 1 INCREMENT 1 SOMETHING"},
+		{raw: "IDENTITY START x INCREMENT 1"},
+		{raw: "IDENTITY START 1 INCREMENT"},
+		{raw: "DB.SCH.SEQ.NEXTVAL"},
+		{raw: "'IDENTITY START 1 INCREMENT 1'"},
+		{raw: ""},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.raw, func(t *testing.T) {
+			identity, ok := ParseColumnIdentity(tc.raw)
+			assert.Equal(t, tc.expected != nil, ok)
+			assert.Equal(t, tc.expected, identity)
+		})
+	}
 }
 
 func Test_Table_convertIsDynamic(t *testing.T) {

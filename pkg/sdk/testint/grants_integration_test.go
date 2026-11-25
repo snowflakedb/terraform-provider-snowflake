@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert/objectparametersassert"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
@@ -996,8 +997,8 @@ func TestInt_GrantOwnership(t *testing.T) {
 		table1ID := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		alias1 := sdk.NewLogicalTableAliasRequest("table1")
 		columns1 := []sdk.TableColumnRequest{
-			*sdk.NewTableColumnRequest("FIRST_A", sdk.DataTypeNumber),
-			*sdk.NewTableColumnRequest("FIRST_B", sdk.DataTypeNumber),
+			*sdk.NewTableColumnRequest("FIRST_A", testdatatypes.DataTypeNumber),
+			*sdk.NewTableColumnRequest("FIRST_B", testdatatypes.DataTypeNumber),
 		}
 		table1, table1Cleanup := testClientHelper().Table.CreateWithRequest(t, sdk.NewCreateTableRequest(table1ID, *sdk.NewCreateTableColumnsAndConstraintsRequest().WithColumns(columns1)))
 		t.Cleanup(table1Cleanup)

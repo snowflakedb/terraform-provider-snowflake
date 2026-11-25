@@ -3,6 +3,8 @@
 package testacc
 
 import (
+	"fmt"
+	"regexp"
 	"testing"
 
 	accconfig "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/config"
@@ -18,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/hashicorp/terraform-plugin-testing/tfversion"
 )
@@ -89,9 +92,11 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
 				Config: accconfig.FromModels(t,
-					providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)),
+					providermodel.SnowflakeProvider().
+						WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+						WithAllEnabledByDefaultExperimentsDisabled(),
 					accountModel, databaseModel, schemaModel),
 				ExpectNonEmptyPlan: true,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
@@ -114,11 +119,9 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: objectParameterParseOnSetProviderFactory,
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
 				Config: accconfig.FromModels(t,
-					providermodel.SnowflakeProvider().
-						WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
-						WithExperimentalFeaturesEnabled(experimentalfeatures.ObjectParameterParseOnSet),
+					providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)),
 					accountModel,
 					databaseModel,
 					schemaModel,
@@ -150,6 +153,97 @@ func TestAcc_Experimental_ObjectParameter_CatalogWritePath(t *testing.T) {
 					objectparametersassert.AccountParameters(t, testClient().Context.CurrentAccountId(t)).HasDefaultDdlCollation("en_US"),
 					objectparametersassert.DatabaseParameters(t, database.ID()).HasDefaultDdlCollation("en_US"),
 					objectparametersassert.SchemaParameters(t, schema.ID()).HasDefaultDdlCollation("en_US"),
+				),
+			},
+		},
+	})
+}
+
+func TestAcc_Experimental_ObjectParameter_CatalogWritePath_NewAccountParameters(t *testing.T) {
+	param := sdk.AccountParameterDisableUiDownloadButton
+	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
+
+	accountModel := model.ObjectParameter("account_scope", string(param), "true").
+		WithOnAccount(true)
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		Steps: []resource.TestStep{
+			{
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config: accconfig.FromModels(t,
+					providermodel.SnowflakeProvider().
+						WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+						WithAllEnabledByDefaultExperimentsDisabled(),
+					accountModel),
+				ExpectError: regexp.MustCompile(`parameter not supported by the legacy account parameter write path: DISABLE_UI_DOWNLOAD_BUTTON`),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config: accconfig.FromModels(t,
+					providermodel.SnowflakeProvider().WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)),
+					accountModel),
+				Check: assertThat(
+					t,
+					resourceassert.ObjectParameterResource(t, accountModel.ResourceReference()).HasValueString("true"),
+				),
+			},
+		},
+	})
+}
+
+// The parameter catalog does not support DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT, so on the account level it can be set only
+// through the generic write path.
+func TestAcc_ObjectParameter_GenericWritePath_OnAccount(t *testing.T) {
+	param := sdk.AccountParameter("DEFAULT_MAX_PER_USER_CONCURRENT_STATEMENT_LIMIT")
+	t.Cleanup(func() { testClient().Parameter.UnsetAccountParameter(t, param) })
+
+	parameterModel := model.ObjectParameter("generic", string(param), "2400").WithOnAccount(true).WithValueType("INTEGER")
+	changedModel := model.ObjectParameter("generic", string(param), "2300").WithOnAccount(true).WithValueType("INTEGER")
+	providerModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+		WithExperimentalFeaturesEnabled(experimentalfeatures.ObjectParameterUnsetOnDelete)
+	experimentsDisabledProviderModel := providermodel.SnowflakeProvider().
+		WithPreviewFeaturesEnabled(string(previewfeatures.ObjectParameterResource)).
+		WithAllEnabledByDefaultExperimentsDisabled()
+
+	resource.Test(t, resource.TestCase{
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: func(_ *terraform.State) error {
+			if level := testClient().Parameter.ShowAccountParameter(t, param).Level; level != sdk.ParameterTypeSnowflakeDefault {
+				return fmt.Errorf("expected parameter level empty, got %v", level)
+			}
+			return nil
+		},
+		Steps: []resource.TestStep{
+			// The generic path needs the experiment.
+			{
+				ProtoV6ProviderFactories: enabledByDefaultExperimentsDisabledProviderFactory,
+				Config:                   accconfig.FromModels(t, experimentsDisabledProviderModel, parameterModel),
+				ExpectError:              regexp.MustCompile("remove OBJECT_PARAMETER_PARSE_ON_SET from `experimental_features_disabled`"),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, providerModel, parameterModel),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
+				},
+				Check: assertThat(t,
+					resourceassert.ObjectParameterResource(t, parameterModel.ResourceReference()).
+						HasKeyString(string(param)).
+						HasValueString("2400"),
+				),
+			},
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				Config:                   accconfig.FromModels(t, providerModel, changedModel),
+				Check: assertThat(t,
+					resourceassert.ObjectParameterResource(t, changedModel.ResourceReference()).
+						HasValueString("2300"),
 				),
 			},
 		},

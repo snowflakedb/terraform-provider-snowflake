@@ -139,6 +139,7 @@ func Test_applyResourceAttributeRules_identifierSuppressesQuoting(t *testing.T) 
 	require.Equal(t, "suppressIdentifierQuoting", got.DiffSuppressExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_enumField(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:                  "instance_family",
@@ -158,6 +159,7 @@ func Test_applyResourceAttributeRules_enumField(t *testing.T) {
 	require.Equal(t, `"Identifies the type of machine. " + enumValuesDescription(sdk.AllComputePoolInstanceFamilies) + " Not all instance families are supported."`, got.DescriptionExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_listOfEnum(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "backup_instance_families",
@@ -183,6 +185,7 @@ func Test_applyResourceAttributeRules_listOfEnum(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "allowed_values",
@@ -208,6 +211,7 @@ func Test_applyResourceAttributeRules_setOfEnum(t *testing.T) {
 	require.Empty(t, got.Elem.DescriptionExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_deprecatedSetIgnoresChanges(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "mfa_authentication_methods",
@@ -262,6 +266,7 @@ func Test_isCollection(t *testing.T) {
 	require.False(t, ssot.Attribute{Type: ssot.AttrEnum}.IsEnumCollection())
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_sdkEnumSymbols(t *testing.T) {
 	ctx := resourceAttributeRuleContext{}
 	attr := ssot.Attribute{Name: "instance_family", Type: ssot.AttrEnum, Enum: defs.ComputePoolInstanceFamily}
@@ -369,13 +374,11 @@ func Test_applyResourceAttributeRules_identifierValidationRelatedResourceAndShow
 		Description:     "Specifies the name of a resource monitor that is explicitly assigned to the warehouse.",
 		RelatedResource: &ssot.Object{Name: "ResourceMonitor"},
 		DiffSuppress:    ssot.SuppressShow,
-		ConflictsWith:   []ssot.Attribute{{Name: "generation"}},
 	}, resourceAttributeRuleContext{IdType: "AccountObjectIdentifier"})
 
 	require.Equal(t, "IsValidIdentifier[sdk.AccountObjectIdentifier]()", got.ValidateDiagExpr)
 	require.Equal(t, `SuppressIfAny(suppressIdentifierQuoting, IgnoreChangeToCurrentSnowflakeValueInShow("resource_monitor"))`, got.DiffSuppressExpr)
 	require.Equal(t, `relatedResourceDescription("Specifies the name of a resource monitor that is explicitly assigned to the warehouse.", resources.ResourceMonitor)`, got.DescriptionExpr)
-	require.Equal(t, []string{"generation"}, got.ConflictsWith)
 }
 
 func Test_applyResourceAttributeRules_identifierTypeOverridesObjectIdType(t *testing.T) {
@@ -454,6 +457,7 @@ func Test_applyResourceAttributeRules_comment(t *testing.T) {
 	require.Empty(t, got.DiffSuppressExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_nestedBlocksRecurse(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "outer",
@@ -530,6 +534,7 @@ func gotSourceNested() ssot.Attribute {
 	}
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_nestedBlock(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
 		Name:        "client_policy",
@@ -585,13 +590,12 @@ func Test_applyResourceAttributeRules_listOfBlocksAllowsMultipleItems(t *testing
 		Name:        "storage_location",
 		Type:        ssot.AttrList,
 		Required:    true,
-		MinItems:    new(1),
 		Description: "List of named cloud storage locations.",
 		Elem: ssot.ObjectElem([]ssot.Attribute{
 			{Name: "storage_location_name", Type: ssot.AttrString, Required: true, Description: "Name of the storage location."},
 			{Name: "storage_base_url", Type: ssot.AttrString, Required: true, Description: "Specifies the base URL."},
 			{Name: "storage_aws_role_arn", Type: ssot.AttrString, Description: "Specifies the role ARN."},
-			{Name: "allowed_locations", Type: ssot.AttrList, MinItems: new(1), Description: "Extra locations.", Elem: &ssot.Attribute{Type: ssot.AttrString}},
+			{Name: "allowed_locations", Type: ssot.AttrList, Min: new(1), Description: "Extra locations.", Elem: &ssot.Attribute{Type: ssot.AttrString}},
 		}),
 	}
 	got := resolveResourceAttribute(attr, resourceAttributeRuleContext{})
@@ -663,12 +667,12 @@ func Test_applyResourceAttributeRules_accountAndExternalIdentifiers(t *testing.T
 	require.Empty(t, primary.ValidateDiagExpr)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
-		Name:     "mfa_policy",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "mfa_policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name:        "allowed_methods",
 			Type:        ssot.AttrSet,
 			Description: "Specifies the allowed methods.",
@@ -676,7 +680,7 @@ func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testin
 				Type: ssot.AttrEnum,
 				Enum: defs.MfaPolicyAllowedMethodsOption,
 			},
-		}}),
+		}},
 	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, "NormalizeAndCompare(sdk.ToMfaPolicyAllowedMethodsOption)", got.Children[0].DiffSuppressExpr)
@@ -684,40 +688,70 @@ func Test_applyResourceAttributeRules_nestedSetOfEnumsStaysElementWise(t *testin
 
 func Test_applyResourceAttributeRules_nestedRelationsAndSensitive(t *testing.T) {
 	got := resolveResourceAttribute(ssot.Attribute{
-		Name:     "alert_schedule",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{
+		Name: "alert_schedule",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{
 			{
-				Name:          "cron",
-				Type:          ssot.AttrList,
-				MaxItems:      new(1),
-				ConflictsWith: []ssot.Attribute{{Name: "interval"}},
+				Name:     "cron",
+				Type:     ssot.AttrObject,
+				Children: []ssot.Attribute{{Name: "expression", Type: ssot.AttrString}},
 			},
-			{
-				Name:          "interval",
-				Type:          ssot.AttrInt,
-				ConflictsWith: []ssot.Attribute{{Name: "cron"}},
-				AtLeastOneOf:  []ssot.Attribute{{Name: "interval"}, {Name: "cron"}},
-			},
-		}),
+			{Name: "interval", Type: ssot.AttrInt},
+			{Name: "on_change", Type: ssot.AttrBool},
+			{Name: "on_drop", Type: ssot.AttrBool},
+		},
+		Validations: []ssot.Validation{
+			ssot.Conflicting(ssot.Attribute{Name: "interval"}, ssot.Attribute{Name: "cron"}),
+			ssot.AtLeastOneOf(ssot.Attribute{Name: "interval"}, ssot.Attribute{Name: "cron"}),
+			ssot.ExactlyOneOf(ssot.Attribute{Name: "on_change"}, ssot.Attribute{Name: "on_drop"}),
+		},
 	}, resourceAttributeRuleContext{})
 
 	require.Equal(t, []string{"alert_schedule.0.interval"}, got.Children[0].ConflictsWith)
 	require.Equal(t, []string{"alert_schedule.0.cron"}, got.Children[1].ConflictsWith)
-	require.Equal(t, []string{"alert_schedule.0.interval", "alert_schedule.0.cron"}, got.Children[1].AtLeastOneOf)
+	require.Equal(t, []string{"alert_schedule.0.cron", "alert_schedule.0.interval"}, got.Children[0].AtLeastOneOf)
+	require.Equal(t, []string{"alert_schedule.0.cron", "alert_schedule.0.interval"}, got.Children[1].AtLeastOneOf)
+	require.Nil(t, got.Children[2].AtLeastOneOf)
+	require.Equal(t, []string{"alert_schedule.0.on_change", "alert_schedule.0.on_drop"}, got.Children[2].ExactlyOneOf)
+	require.Equal(t, []string{"alert_schedule.0.on_change", "alert_schedule.0.on_drop"}, got.Children[3].ExactlyOneOf)
 
 	object := resolveResourceAttribute(ssot.Attribute{
 		Name: "policy",
 		Type: ssot.AttrObject,
 		Children: []ssot.Attribute{
-			{Name: "left", Type: ssot.AttrString, AtLeastOneOf: []ssot.Attribute{{Name: "left"}, {Name: "right"}}},
-			{Name: "right", Type: ssot.AttrString, AtLeastOneOf: []ssot.Attribute{{Name: "left"}, {Name: "right"}}},
+			{Name: "left", Type: ssot.AttrString},
+			{Name: "right", Type: ssot.AttrString},
 		},
+		Validations: []ssot.Validation{ssot.AtLeastOneOf()},
 	}, resourceAttributeRuleContext{})
 	require.Equal(t, []string{"policy.0.left", "policy.0.right"}, object.Children[0].AtLeastOneOf)
 	require.Equal(t, SchemaTypeList, object.TfType)
 	require.Equal(t, new(1), object.MaxItems)
+
+	sqlOnly := resolveResourceAttribute(ssot.Attribute{
+		Name: "names_option",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{
+			{Name: "names_all", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword()},
+			{Name: "names", Type: ssot.AttrString},
+		},
+		Validations: []ssot.Validation{ssot.ExactlyOneOf()},
+	}, resourceAttributeRuleContext{})
+	require.Nil(t, sqlOnly.Children[0].ExactlyOneOf, "a validation that names a SqlOnly field has no schema form")
+
+	list := resolveResourceAttribute(ssot.Attribute{
+		Name: "entries",
+		Type: ssot.AttrList,
+		Elem: ssot.ObjectElem([]ssot.Attribute{
+			{
+				Name:        "entry",
+				Type:        ssot.AttrObject,
+				Children:    []ssot.Attribute{{Name: "left", Type: ssot.AttrString}, {Name: "right", Type: ssot.AttrString}},
+				Validations: []ssot.Validation{ssot.AtLeastOneOf()},
+			},
+		}),
+	}, resourceAttributeRuleContext{})
+	require.Nil(t, list.Children[0].Children[0].AtLeastOneOf, "a schema path cannot name a field under a list element")
 
 	secret := resolveResourceAttribute(ssot.Attribute{
 		Name:      "storage_aws_secret_key",
@@ -730,13 +764,16 @@ func Test_applyResourceAttributeRules_nestedRelationsAndSensitive(t *testing.T) 
 		Name: "Widget",
 		Attributes: []ssot.Attribute{
 			{
-				Name:     "alert_schedule",
-				Type:     ssot.AttrList,
-				MaxItems: new(1),
-				Elem: ssot.ObjectElem([]ssot.Attribute{
-					{Name: "cron", Type: ssot.AttrString, ConflictsWith: []ssot.Attribute{{Name: "interval"}}},
-					{Name: "interval", Type: ssot.AttrInt, AtLeastOneOf: []ssot.Attribute{{Name: "cron"}, {Name: "interval"}}},
-				}),
+				Name: "alert_schedule",
+				Type: ssot.AttrObject,
+				Children: []ssot.Attribute{
+					{Name: "cron", Type: ssot.AttrString},
+					{Name: "interval", Type: ssot.AttrInt},
+				},
+				Validations: []ssot.Validation{
+					ssot.Conflicting(ssot.Attribute{Name: "cron"}, ssot.Attribute{Name: "interval"}),
+					ssot.AtLeastOneOf(ssot.Attribute{Name: "cron"}, ssot.Attribute{Name: "interval"}),
+				},
 			},
 			{Name: "storage_aws_secret_key", Type: ssot.AttrString, Sensitive: true},
 		},
@@ -791,29 +828,92 @@ func Test_applyResourceAttributeRules_singleObjectIsListOfOne(t *testing.T) {
 		require.Equal(t, new(1), got.MinItems)
 		require.Equal(t, new(1), got.MaxItems)
 	})
-
-	t.Run("equals the list declaration", func(t *testing.T) {
-		object := resolveResourceAttribute(ssot.Attribute{Name: "block", Type: ssot.AttrObject, Required: true, ForceNew: true, Children: []ssot.Attribute{leaf}}, resourceAttributeRuleContext{})
-		list := resolveResourceAttribute(ssot.Attribute{
-			Name: "block", Type: ssot.AttrList, Required: true, ForceNew: true, MinItems: new(1), MaxItems: new(1),
-			Elem: ssot.ObjectElem([]ssot.Attribute{leaf}),
-		}, resourceAttributeRuleContext{})
-		require.Equal(t, list, object)
-	})
 }
 
-func Test_applyExactlyOneOf(t *testing.T) {
+func Test_applyValidations(t *testing.T) {
 	one := ssot.Attribute{Name: "one"}
 	two := ssot.Attribute{Name: "two"}
 	three := ssot.Attribute{Name: "three"}
+	other := ssot.Attribute{Name: "other"}
+	obj := ssot.Object{Attributes: []ssot.Attribute{one, two, three, other}}
 	attributes := []ResourceAttribute{{Name: "one"}, {Name: "two"}, {Name: "three"}, {Name: "other"}}
 
-	applyExactlyOneOf([][]*ssot.Attribute{{&one, &three}}, attributes)
+	applyValidations([]ssot.Validation{
+		ssot.ExactlyOneOf(three, one),
+		ssot.Conflicting(two, other),
+		ssot.Conflicting(two, three),
+	}, obj.ValidationFields, "", attributes)
 
-	require.Equal(t, []string{"one", "three"}, attributes[0].ExactlyOneOf)
+	require.Equal(t, []string{"one", "three"}, attributes[0].ExactlyOneOf, "the fields follow the order of the parent's fields")
 	require.Nil(t, attributes[1].ExactlyOneOf)
 	require.Equal(t, []string{"one", "three"}, attributes[2].ExactlyOneOf)
-	require.Nil(t, attributes[3].ExactlyOneOf)
+	require.Equal(t, []string{"other", "three"}, attributes[1].ConflictsWith, "conflicting validations add up")
+	require.Equal(t, []string{"two"}, attributes[2].ConflictsWith)
+	require.Equal(t, []string{"two"}, attributes[3].ConflictsWith)
 
-	require.Panics(t, func() { applyExactlyOneOf([][]*ssot.Attribute{{&one, &two, {Name: "missing"}}}, attributes) })
+	missing := ssot.Object{Attributes: []ssot.Attribute{one, two, {Name: "missing"}}}
+	require.Panics(t, func() {
+		applyValidations([]ssot.Validation{ssot.ExactlyOneOf(one, two, ssot.Attribute{Name: "missing"})}, missing.ValidationFields, "", attributes)
+	})
+}
+
+func Test_applyResourceAttributeRules_boundsFollowTheAttributeType(t *testing.T) {
+	list := resolveResourceAttribute(ssot.Attribute{
+		Name: "items", Type: ssot.AttrList, Min: new(1), Max: new(3), Elem: &ssot.Attribute{Type: ssot.AttrString},
+	}, resourceAttributeRuleContext{})
+	require.Equal(t, 1, *list.MinItems)
+	require.Equal(t, 3, *list.MaxItems)
+	require.Empty(t, list.ValidateDiagExpr)
+
+	number := resolveResourceAttribute(ssot.Attribute{Name: "count", Type: ssot.AttrInt, Min: new(1), Max: new(3)}, resourceAttributeRuleContext{})
+	require.Equal(t, "validation.ToDiagFunc(validation.IntBetween(1, 3))", number.ValidateDiagExpr)
+	require.Nil(t, number.MinItems)
+	require.Nil(t, number.MaxItems)
+}
+
+func Test_applyResourceAttributeRules_requiredListHasMinOne(t *testing.T) {
+	t.Run("required list deduces min 1", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{
+			Name:     "scopes",
+			Type:     ssot.AttrList,
+			Required: true,
+			ForceNew: true,
+			Elem:     &ssot.Attribute{Type: ssot.AttrString},
+		}, resourceAttributeRuleContext{})
+		require.Equal(t, SchemaTypeList, got.TfType)
+		require.True(t, got.Required)
+		require.True(t, got.ForceNew)
+		require.Equal(t, new(1), got.MinItems)
+		require.Nil(t, got.MaxItems)
+	})
+
+	t.Run("required list keeps higher explicit min", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{
+			Name:     "scopes",
+			Type:     ssot.AttrList,
+			Required: true,
+			Min:      new(2),
+			Elem:     &ssot.Attribute{Type: ssot.AttrString},
+		}, resourceAttributeRuleContext{})
+		require.Equal(t, new(2), got.MinItems)
+	})
+
+	t.Run("optional list does not deduce min 1", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{
+			Name: "scopes",
+			Type: ssot.AttrList,
+			Elem: &ssot.Attribute{Type: ssot.AttrString},
+		}, resourceAttributeRuleContext{})
+		require.Nil(t, got.MinItems)
+	})
+
+	t.Run("required set does not deduce min 1", func(t *testing.T) {
+		got := resolveResourceAttribute(ssot.Attribute{
+			Name:     "scopes",
+			Type:     ssot.AttrSet,
+			Required: true,
+			Elem:     &ssot.Attribute{Type: ssot.AttrString},
+		}, resourceAttributeRuleContext{})
+		require.Nil(t, got.MinItems)
+	})
 }

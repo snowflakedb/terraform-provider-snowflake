@@ -51,8 +51,8 @@ func functionsConfig(t *testing.T, schemaId sdk.DatabaseObjectIdentifier) string
 	handler := fmt.Sprintf("%s.%s", className, funcName)
 	definition := testClient().Function.SampleJavaDefinition(t, className, funcName, argName)
 
-	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
-	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schemaId, dataType)
+	id1 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId, dataType)
+	id2 := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schemaId, dataType)
 
 	functionsSetup := config.FromModels(
 		t,

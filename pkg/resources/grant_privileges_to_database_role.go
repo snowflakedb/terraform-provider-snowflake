@@ -9,7 +9,6 @@ import (
 	"strings"
 	"uuid"
 
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -17,7 +16,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -151,7 +149,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:             schema.TypeString,
 					Optional:         true,
 					ForceNew:         true,
-					Description:      joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
+					Description:      joinWithSpace("Configures an inherited privilege to be granted on all current and future schemas in a database. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details."),
 					ValidateDiagFunc: IsValidIdentifier[sdk.AccountObjectIdentifier](),
 					DiffSuppressFunc: suppressIdentifierQuoting,
 					ExactlyOneOf: []string{
@@ -250,7 +248,7 @@ var grantPrivilegesToDatabaseRoleSchema = map[string]*schema.Schema{
 					Type:        schema.TypeList,
 					Optional:    true,
 					ForceNew:    true,
-					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details.", experimentalFeatureEnabledByDefaultDescription(experimentalfeatures.InheritedGrants)),
+					Description: joinWithSpace("Configures an inherited privilege to be granted on all current and future objects of a given type in a database or a schema. See [Inherited grants](https://docs.snowflake.com/en/user-guide/inherited-grants-using) for more details."),
 					MaxItems:    1,
 					Elem: &schema.Resource{
 						Schema: getGrantPrivilegesOnDatabaseRoleBulkOperationSchema("inherited"),
@@ -316,9 +314,6 @@ func GrantPrivilegesToDatabaseRole() *schema.Resource {
 			StateContext: TrackingImportWrapper(resources.GrantPrivilegesToDatabaseRole, ImportGrantPrivilegesToDatabaseRole),
 		},
 		Timeouts: defaultTimeouts,
-		CustomizeDiff: TrackingCustomDiffWrapper(resources.GrantPrivilegesToDatabaseRole, customdiff.All(
-			inheritedGrantsRequireExperiment("on_schema", "on_schema_object"),
-		)),
 		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
 			validateInheritedGrantsConfig("on_schema", "on_schema_object"),
 		},
@@ -690,8 +685,7 @@ func DeleteGrantPrivilegesToDatabaseRole(ctx context.Context, d *schema.Resource
 	// Snowflake reports), and an empty list makes the revoke fail validation before any SQL is sent, which
 	// leaves the resource impossible to destroy or replace. Update already derives them from the id.
 	privileges := getDatabaseRolePrivilegesFromId(id)
-	safely := providerCtx.Experiments.IsEnabled(experimentalfeatures.GrantsSafeDestroy)
-	err = revokeDatabaseRolePrivileges(ctx, client, d, id, privileges, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(id.DatabaseRoleName), safely)
+	err = revokeDatabaseRolePrivileges(ctx, client, d, id, privileges, sdk.NewRevokePrivilegesFromDatabaseRoleRequest(id.DatabaseRoleName), true)
 	if err != nil {
 		return diag.Diagnostics{
 			diag.Diagnostic{

@@ -2,6 +2,7 @@ package resources
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -15,8 +16,15 @@ func v0941ResourceIdentifierWithArguments(ctx context.Context, rawState map[stri
 		return rawState, nil
 	}
 
-	id := sdk.NewSchemaObjectIdentifierFromFullyQualifiedName(rawState["id"].(string))
-	rawState["id"] = sdk.NewSchemaObjectIdentifierWithArguments(id.DatabaseName(), id.SchemaName(), id.Name(), id.Arguments()...).FullyQualifiedName()
+	oldId := rawState["id"].(string)
+	if !strings.HasSuffix(oldId, ")") {
+		oldId += "()"
+	}
+	id, err := sdk.ParseSchemaObjectIdentifierWithArguments(oldId)
+	if err != nil {
+		return nil, err
+	}
+	rawState["id"] = id.FullyQualifiedName()
 
 	return rawState, nil
 }

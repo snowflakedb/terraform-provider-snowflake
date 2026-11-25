@@ -1,0 +1,12 @@
+{{- /*gotype: github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/datasources/gen.DataSourceModel*/ -}}
+{{- if .Hooks.ReadWrapper.Generate -}}
+{{- if .PreviewFeature -}}
+PreviewFeatureReadWrapper(string(previewfeatures.{{ .NamePlural }}Datasource), TrackingReadWrapper(datasources.{{ .NamePlural }}, Read{{ .NamePlural }}))
+{{- else -}}
+TrackingReadWrapper(datasources.{{ .NamePlural }}, Read{{ .NamePlural }})
+{{- end -}}
+{{- else if .Hooks.ReadWrapper.Present -}}
+{{ .Prefix }}ReadWrapperExt(Read{{ .NamePlural }})
+{{- else -}}
+Read{{ .NamePlural }}
+{{- end -}}

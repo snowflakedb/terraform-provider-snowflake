@@ -3,7 +3,9 @@
 package testacc
 
 import (
+	"fmt"
 	"regexp"
+	"strconv"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -106,6 +108,13 @@ func TestAcc_CodeBundles_Filtering(t *testing.T) {
 	inDatabase := datasourcemodel.CodeBundles("test").
 		WithInDatabase(id1.DatabaseId()).
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	inDatabaseWithoutDescribe := datasourcemodel.CodeBundles("test").
+		WithInDatabase(id1.DatabaseId()).
+		WithWithDescribe(false).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	inAccount := datasourcemodel.CodeBundles("test").
+		WithInAccount().
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -123,7 +132,51 @@ func TestAcc_CodeBundles_Filtering(t *testing.T) {
 			},
 			{
 				Config: accconfig.FromModels(t, model1, model2, model3, inDatabase),
-				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "code_bundles.#", "3")),
+				// With more than one result, every item holds its own show and describe output.
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "id", "code_bundles_read"),
+					resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "code_bundles.#", "3"),
+					resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "code_bundles.0.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						inDatabase.DatasourceReference(), "code_bundles.0.show_output.0.name",
+						inDatabase.DatasourceReference(), "code_bundles.0.describe_output.0.name",
+					),
+					resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "code_bundles.1.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						inDatabase.DatasourceReference(), "code_bundles.1.show_output.0.name",
+						inDatabase.DatasourceReference(), "code_bundles.1.describe_output.0.name",
+					),
+					resource.TestCheckResourceAttr(inDatabase.DatasourceReference(), "code_bundles.2.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						inDatabase.DatasourceReference(), "code_bundles.2.show_output.0.name",
+						inDatabase.DatasourceReference(), "code_bundles.2.describe_output.0.name",
+					),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, inDatabaseWithoutDescribe),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(inDatabaseWithoutDescribe.DatasourceReference(), "code_bundles.#", "3"),
+					resource.TestCheckResourceAttr(inDatabaseWithoutDescribe.DatasourceReference(), "code_bundles.0.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(inDatabaseWithoutDescribe.DatasourceReference(), "code_bundles.1.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(inDatabaseWithoutDescribe.DatasourceReference(), "code_bundles.2.describe_output.#", "0"),
+				),
+			},
+			{
+				// The whole account may hold more code bundles than this test creates.
+				Config: accconfig.FromModels(t, model1, model2, model3, inAccount),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrWith(inAccount.DatasourceReference(), "code_bundles.#", func(value string) error {
+						count, err := strconv.Atoi(value)
+						if err != nil {
+							return err
+						}
+						if count < 3 {
+							return fmt.Errorf("expected at least 3 code bundles in the account, got %d", count)
+						}
+						return nil
+					}),
+				),
 			},
 		},
 	})

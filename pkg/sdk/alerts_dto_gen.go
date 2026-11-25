@@ -17,12 +17,12 @@ type CreateAlertRequest struct {
 	Warehouse   *AccountObjectIdentifier
 	Schedule    *string
 	Comment     *string
-	condition   AlertConditionRequest // required
+	Condition   AlertConditionRequest // required
 	action      string                // required
 }
 
 type AlertConditionRequest struct {
-	Condition []string
+	Condition string // required
 }
 
 type AlterAlertRequest struct {

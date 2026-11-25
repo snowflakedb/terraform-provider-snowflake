@@ -54,8 +54,8 @@ func TestAcc_ReplicationGroupSecondary_BasicUseCase(t *testing.T) {
 	primaryOfB := sdk.NewExternalObjectIdentifier(sourceAccount, primaryB)
 	testClient().ReplicationGroup.WaitForPrimaryToBeVisible(t, primaryOfA)
 	testClient().ReplicationGroup.WaitForPrimaryToBeVisible(t, primaryOfB)
-	basic := model.ReplicationGroupSecondary("t", replicaID.Name()).WithPrimary(primaryOfA.FullyQualifiedName())
-	otherPrimary := model.ReplicationGroupSecondary("t", replicaID.Name()).WithPrimary(primaryOfB.FullyQualifiedName())
+	basic := model.ReplicationGroupSecondary("t", replicaID.Name(), primaryOfA.FullyQualifiedName())
+	otherPrimary := model.ReplicationGroupSecondary("t", replicaID.Name(), primaryOfB.FullyQualifiedName())
 	ref := basic.ResourceReference()
 
 	assertA := replicationGroupSecondaryAssertions(t, ref, replicaID, primaryOfA, targetAccount)
@@ -138,7 +138,7 @@ func TestAcc_ReplicationGroupSecondary_RecreateWhenExternallyPrimary(t *testing.
 
 	primaryOf := sdk.NewExternalObjectIdentifier(sourceAccount, primaryID)
 	testClient().ReplicationGroup.WaitForPrimaryToBeVisible(t, primaryOf)
-	replica := model.ReplicationGroupSecondary("t", replicaID.Name()).WithPrimary(primaryOf.FullyQualifiedName())
+	replica := model.ReplicationGroupSecondary("t", replicaID.Name(), primaryOf.FullyQualifiedName())
 	ref := replica.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
@@ -219,7 +219,7 @@ func replicationGroupSecondaryAssertions(
 			HasNoAllowedAccounts().
 			HasNoReplicationSchedule().
 			HasNoSecondaryState().
-			HasNoReadOnly().
+			HasNoIsPrimaryReadOnly().
 			HasIsListingAutoFulfillmentGroup(false).
 			HasOwner(snowflakeroles.Accountadmin.Name()).
 			HasAccountName(targetAccount.AccountName()).

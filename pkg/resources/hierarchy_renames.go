@@ -68,7 +68,28 @@ func handleThreeLevelHierarchyRenameIfEnabled[OR any](
 	id *sdk.SchemaObjectIdentifier,
 	objectRenameFn func(currentId, targetId sdk.SchemaObjectIdentifier) error,
 	objectShowByIDFn func(context.Context, sdk.SchemaObjectIdentifier) (OR, error),
-	leafLevelName string,
+	objectType sdk.ObjectType,
+) diag.Diagnostics {
+	return handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, id,
+		objectRenameFn,
+		objectShowByIDFn,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		objectType,
+	)
+}
+
+// handleThreeLevelHierarchyRenameIfEnabledWithEncoding is handleThreeLevelHierarchyRenameIfEnabled for an object
+// that stores its resource id in another format than helpers.EncodeResourceIdentifier.
+func handleThreeLevelHierarchyRenameIfEnabledWithEncoding[OR any](
+	ctx context.Context,
+	d *schema.ResourceData,
+	meta any,
+	id *sdk.SchemaObjectIdentifier,
+	objectRenameFn func(currentId, targetId sdk.SchemaObjectIdentifier) error,
+	objectShowByIDFn func(context.Context, sdk.SchemaObjectIdentifier) (OR, error),
+	encodeIdFn func(...sdk.SchemaObjectIdentifier) string,
+	objectType sdk.ObjectType,
 ) diag.Diagnostics {
 	providerCtx := meta.(*provider.Context)
 	if !providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) || (!d.HasChange("database") && !d.HasChange("schema")) {
@@ -80,8 +101,8 @@ func handleThreeLevelHierarchyRenameIfEnabled[OR any](
 			return func() error { return objectRenameFn(currentId, targetId) }
 		},
 		objectShowByIDFn,
-		func(id sdk.SchemaObjectIdentifier) string { return helpers.EncodeResourceIdentifier(id) },
-		leafLevelName,
+		encodeIdFn,
+		objectType,
 	)
 }
 
@@ -95,8 +116,8 @@ func handleThreeLevelHierarchyRename[OR any](
 	id *sdk.SchemaObjectIdentifier,
 	objectRenameFn func(sdk.SchemaObjectIdentifier, sdk.SchemaObjectIdentifier) func() error,
 	objectShowByIDFn func(context.Context, sdk.SchemaObjectIdentifier) (OR, error),
-	encodeIdFn func(sdk.SchemaObjectIdentifier) string,
-	leafLevelName string,
+	encodeIdFn func(...sdk.SchemaObjectIdentifier) string,
+	objectType sdk.ObjectType,
 ) diag.Diagnostics {
 	oldDatabaseNameRaw, newDatabaseNameRaw := d.GetChange("database")
 	oldDatabaseName, newDatabaseName := oldDatabaseNameRaw.(string), newDatabaseNameRaw.(string)
@@ -106,6 +127,7 @@ func handleThreeLevelHierarchyRename[OR any](
 
 	databaseChanged := d.HasChange("database")
 	schemaChanged := d.HasChange("schema")
+	leafLevelName := strings.ToLower(string(objectType))
 
 	oldDatabaseId := sdk.NewAccountObjectIdentifier(oldDatabaseName)
 	newDatabaseId := sdk.NewAccountObjectIdentifier(newDatabaseName)
@@ -140,7 +162,7 @@ func handleThreeLevelHierarchyRename[OR any](
 		}
 
 	default:
-		if diags := handleBothParentsChangeRename(ctx, d, client, newDatabaseId, oldDatabaseId, oldSchemaName, newSchemaName, objectName, renameObj, moveObj, leafLevelName); diags != nil {
+		if diags := handleBothParentsChangeRename(ctx, d, client, newDatabaseId, oldDatabaseId, oldSchemaName, newSchemaName, objectName, renameObj, moveObj, objectType); diags != nil {
 			return diags
 		}
 	}
@@ -220,8 +242,9 @@ func handleBothParentsChangeRename(
 	objectName string,
 	renameFn func(string),
 	moveFn func(sdk.SchemaObjectIdentifier, string) diag.Diagnostics,
-	leafLevelName string,
+	objectType sdk.ObjectType,
 ) diag.Diagnostics {
+	leafLevelName := strings.ToLower(string(objectType))
 	oldDatabaseName := oldDatabaseId.Name()
 	newDatabaseName := newDatabaseId.Name()
 

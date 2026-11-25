@@ -4,6 +4,7 @@ package testacc
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/bettertestspoc/assert"
@@ -158,6 +159,40 @@ func TestAcc_AuthenticationPolicies_BasicUseCase_DifferentFiltering(t *testing.T
 	authenticationPoliciesModelOnAccount := datasourcemodel.AuthenticationPolicies("test").
 		WithOnAccount().
 		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	authenticationPoliciesModelLikePrefixWithoutDescribe := datasourcemodel.AuthenticationPolicies("test").
+		WithLike(prefix+"%").
+		WithInDatabase(id1.DatabaseId()).
+		WithWithDescribe(false).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	authenticationPoliciesModelStartsWith := datasourcemodel.AuthenticationPolicies("test").
+		WithStartsWith(prefix).
+		WithInDatabase(id1.DatabaseId()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	// TODO(SNOW-4466363): add like and starts_with combined with limit when Snowflake applies LIMIT after them; the limit is checked with in only.
+	authenticationPoliciesModelLimit := datasourcemodel.AuthenticationPolicies("test").
+		WithInDatabase(id1.DatabaseId()).
+		WithLimit(1).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	authenticationPoliciesModelLimitFrom := datasourcemodel.AuthenticationPolicies("test").
+		WithInDatabase(id1.DatabaseId()).
+		WithRowsAndFrom(2, prefix).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	authenticationPoliciesModelInSchema := datasourcemodel.AuthenticationPolicies("test").
+		WithLike(prefix+"%").
+		WithInSchema(id1.SchemaId()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	authenticationPoliciesModelInAccount := datasourcemodel.AuthenticationPolicies("test").
+		WithLike(prefix+"%").
+		WithInAccount().
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
+	otherCasePrefix := strings.ToUpper(prefix)
+	if otherCasePrefix == prefix {
+		otherCasePrefix = strings.ToLower(prefix)
+	}
+	authenticationPoliciesModelLikeOtherCase := datasourcemodel.AuthenticationPolicies("test").
+		WithLike(otherCasePrefix+"%").
+		WithInDatabase(id1.DatabaseId()).
+		WithDependsOn(model1.ResourceReference(), model2.ResourceReference(), model3.ResourceReference())
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -173,8 +208,20 @@ func TestAcc_AuthenticationPolicies_BasicUseCase_DifferentFiltering(t *testing.T
 			},
 			{
 				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelLikePrefix),
+				// With more than one result, every item holds its own show and describe output.
 				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(authenticationPoliciesModelLikePrefix.DatasourceReference(), "id", "authentication_policies_read"),
 					resource.TestCheckResourceAttr(authenticationPoliciesModelLikePrefix.DatasourceReference(), "authentication_policies.#", "2"),
+					resource.TestCheckResourceAttr(authenticationPoliciesModelLikePrefix.DatasourceReference(), "authentication_policies.0.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						authenticationPoliciesModelLikePrefix.DatasourceReference(), "authentication_policies.0.show_output.0.name",
+						authenticationPoliciesModelLikePrefix.DatasourceReference(), "authentication_policies.0.describe_output.0.name",
+					),
+					resource.TestCheckResourceAttr(authenticationPoliciesModelLikePrefix.DatasourceReference(), "authentication_policies.1.describe_output.#", "1"),
+					resource.TestCheckResourceAttrPair(
+						authenticationPoliciesModelLikePrefix.DatasourceReference(), "authentication_policies.1.show_output.0.name",
+						authenticationPoliciesModelLikePrefix.DatasourceReference(), "authentication_policies.1.describe_output.0.name",
+					),
 				),
 			},
 			{
@@ -188,6 +235,39 @@ func TestAcc_AuthenticationPolicies_BasicUseCase_DifferentFiltering(t *testing.T
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(authenticationPoliciesModelOnAccount.DatasourceReference(), "authentication_policies.#", "1"),
 				),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelLikePrefixWithoutDescribe),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(authenticationPoliciesModelLikePrefixWithoutDescribe.DatasourceReference(), "authentication_policies.#", "2"),
+					resource.TestCheckResourceAttr(authenticationPoliciesModelLikePrefixWithoutDescribe.DatasourceReference(), "authentication_policies.0.describe_output.#", "0"),
+					resource.TestCheckResourceAttr(authenticationPoliciesModelLikePrefixWithoutDescribe.DatasourceReference(), "authentication_policies.1.describe_output.#", "0"),
+				),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelStartsWith),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(authenticationPoliciesModelStartsWith.DatasourceReference(), "authentication_policies.#", "2")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelLimit),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(authenticationPoliciesModelLimit.DatasourceReference(), "authentication_policies.#", "1")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelLimitFrom),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(authenticationPoliciesModelLimitFrom.DatasourceReference(), "authentication_policies.#", "2")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelInSchema),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(authenticationPoliciesModelInSchema.DatasourceReference(), "authentication_policies.#", "2")),
+			},
+			{
+				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelInAccount),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(authenticationPoliciesModelInAccount.DatasourceReference(), "authentication_policies.#", "2")),
+			},
+			{
+				// LIKE is case-insensitive.
+				Config: accconfig.FromModels(t, model1, model2, model3, authenticationPoliciesModelLikeOtherCase),
+				Check:  resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr(authenticationPoliciesModelLikeOtherCase.DatasourceReference(), "authentication_policies.#", "2")),
 			},
 		},
 	})

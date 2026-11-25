@@ -21,8 +21,13 @@ type CreateEventTableRequest struct {
 	DefaultDdlCollation        *StringAllowEmpty
 	CopyGrants                 *bool
 	Comment                    *string
-	RowAccessPolicy            *TableRowAccessPolicy
+	RowAccessPolicy            *EventTableRowAccessPolicyRequest
 	Tag                        []TagAssociation
+}
+
+type EventTableRowAccessPolicyRequest struct {
+	Name SchemaObjectIdentifier // required
+	On   []string
 }
 
 type ShowEventTableRequest struct {

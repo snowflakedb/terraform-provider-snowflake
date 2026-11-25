@@ -12,6 +12,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,7 +33,7 @@ func Table() *tfschema.Resource {
 
 		CustomizeDiff: tableCustomizeDiff,
 		Timeouts:      defaultTimeouts,
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 		// setting type to cty.EmptyObject is a bit hacky here but following https://developer.hashicorp.com/terraform/plugin/framework/migrating/resources/state-upgrade#sdkv2-1 would require lots of repetitive code; this should work with cty.EmptyObject
 		StateUpgraders: []tfschema.StateUpgrader{
 			{
@@ -40,8 +41,31 @@ func Table() *tfschema.Resource {
 				Type:    cty.EmptyObject,
 				Upgrade: migratePipeSeparatedObjectIdentifierResourceIdToFullyQualifiedName,
 			},
+			{
+				Version: 1,
+				Type:    cty.EmptyObject,
+				Upgrade: migrateTableToV2_24_0,
+			},
 		},
 	}
+}
+
+func ImportTable(ctx context.Context, d *tfschema.ResourceData, meta any) ([]*tfschema.ResourceData, error) {
+	id, err := tableParseId(d.Id())
+	if err != nil {
+		return nil, err
+	}
+
+	table, err := meta.(*provider.Context).Client.Tables.ShowByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
+	if err := tableSetFieldsNotSetByReadExt(d, id, table, importPermissiveMode); err != nil {
+		return nil, err
+	}
+	return []*tfschema.ResourceData{d}, nil
 }
 
 func CreateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {
@@ -59,6 +83,10 @@ func CreateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
+	if diags := tableApplyParametersCreate(d, req); diags != nil {
+		return diags
+	}
+
 	if err := meta.(*provider.Context).Client.Tables.Create(ctx, req); err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,17 +102,41 @@ func ReadTableFunc(withExternalChangesMarking bool) tfschema.ReadContextFunc {
 			return diag.FromErr(err)
 		}
 
-		table, diags := tableShowByIdSafelyInSdkExt(ctx, d, meta, id)
-		if diags != nil {
-			return diags
+		table, err := meta.(*provider.Context).Client.Tables.ShowByIDSafely(ctx, id)
+		if err != nil {
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeTable, id, err)
 		}
 		tableDetails, err := tableDescribeInSdkExt(ctx, meta, id)
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		rawTableParameters, err := meta.(*provider.Context).Client.Tables.ShowParameters(ctx, id)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		tableParameters, err := sdk.ToTableParametersDetails(rawTableParameters)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if diags := tableSetParametersFields(d, tableParameters); diags != nil {
+			return diags
+		}
+		if err = tableHandleExternalChanges(d, table, withExternalChangesMarking); err != nil {
+			return diag.FromErr(err)
+		}
 
+		if err = setStateToValuesFromConfig(d, tableSchema, []string{
+			"is_transient",
+			"enable_schema_evolution",
+			"error_logging",
+			"row_timestamp",
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 		errs := errors.Join(
+			d.Set(ShowOutputAttributeName, []map[string]any{schemas.TableToSchema(table)}),
 			tableSetDescribeOutputExt(d, id, tableDetails, nil, withExternalChangesMarking),
+			d.Set(ParametersAttributeName, []map[string]any{schemas.TableParametersToSchema(rawTableParameters, meta.(*provider.Context))}),
 			d.Set(FullyQualifiedNameAttributeName, id.FullyQualifiedName()),
 			tableSetConfigFieldsExt(ctx, d, meta, table),
 		)
@@ -101,25 +153,17 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 		return diag.FromErr(err)
 	}
 
-	providerCtx := meta.(*provider.Context)
-	client := providerCtx.Client
-	if providerCtx.Experiments.IsEnabled(experimentalfeatures.HierarchyRenames) && (d.HasChange("database") || d.HasChange("schema")) {
-		rename := func(currentId, targetId sdk.SchemaObjectIdentifier) func() error {
-			return func() error {
-				return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithRenameTo(targetId))
-			}
-		}
-		if diags := handleThreeLevelHierarchyRename(
-			ctx, d, client, &id,
-			rename,
-			client.Tables.ShowByID,
-			func(renamed sdk.SchemaObjectIdentifier) string {
-				return helpers.EncodeResourceIdentifier(renamed)
-			},
-			"table",
-		); diags != nil {
-			return diags
-		}
+	client := meta.(*provider.Context).Client
+	if diags := handleThreeLevelHierarchyRenameIfEnabledWithEncoding(
+		ctx, d, meta, &id,
+		func(currentId, targetId sdk.SchemaObjectIdentifier) error {
+			return client.Tables.Alter(ctx, sdk.NewAlterTableRequest(currentId).WithRenameTo(targetId))
+		},
+		client.Tables.ShowByID,
+		helpers.EncodeResourceIdentifier[sdk.SchemaObjectIdentifier],
+		sdk.ObjectTypeTable,
+	); diags != nil {
+		return diags
 	}
 
 	if d.HasChange("name") {
@@ -134,8 +178,26 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	if diags := tableApplyParametersChanges(d, setUnset.set, setUnset.unset); diags != nil {
+		return diags
+	}
+	if !reflect.DeepEqual(*setUnset.setContact, *sdk.NewTableSetRequest()) {
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*setUnset.setContact)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.setErrorLogging, *sdk.NewTableSetRequest()) {
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*setUnset.setErrorLogging)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	if !reflect.DeepEqual(*setUnset.set, *sdk.NewTableSetRequest()) {
 		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithSet(*setUnset.set)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if !reflect.DeepEqual(*setUnset.unsetContact, *sdk.NewTableUnsetRequest()) {
+		if err := meta.(*provider.Context).Client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithUnset(*setUnset.unsetContact)); err != nil {
 			return diag.FromErr(err)
 		}
 	}
@@ -151,7 +213,11 @@ func UpdateTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.D
 var tableCustomizeDiff = TrackingCustomDiffWrapper(resources.Table, customdiff.All(
 	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
 	TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
+	ComputedIfAnyAttributeChanged(tableSchema, ShowOutputAttributeName, "name", "comment", "change_tracking", "enable_schema_evolution", "row_timestamp", "error_logging"),
+	ComputedIfAnyAttributeChanged(tableParametersAttributesSchema, ParametersAttributeName, tableParametersFieldNames...),
 	ComputedIfAnyAttributeChanged(tableSchema, FullyQualifiedNameAttributeName, "database", "schema", "name"),
+	tableParametersCustomDiff,
+	tableVirtualColumnConflicts,
 ))
 
 func tableParseIdFromConfig(d *tfschema.ResourceData) (sdk.SchemaObjectIdentifier, error) {
@@ -166,28 +232,73 @@ func tableApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateTabl
 	return errors.Join(
 		attributeMappedValueCreateBuilder(d, "cluster_by", request.WithClusterBy, toTableClusterBy),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
-		intAttributeWithSpecialDefaultCreateBuilder(d, "data_retention_time_in_days", request.WithDataRetentionTimeInDays),
 		boolAttributeCreateBuilder(d, "change_tracking", request.WithChangeTracking),
+		booleanStringAttributeCreateBuilder(d, "enable_schema_evolution", request.WithEnableSchemaEvolution),
+		booleanStringAttributeCreateBuilder(d, "error_logging", request.WithErrorLogging),
+		booleanStringAttributeCreateBuilder(d, "row_timestamp", request.WithRowTimestamp),
+		singleBlockAttributeCreate(d, "aggregation_policy", request.WithAggregationPolicy, parseTableAggregationPolicy),
+		singleBlockAttributeCreate(d, "join_policy", request.WithJoinPolicy, parseTableJoinPolicy),
 	)
+}
+
+func parseTableAggregationPolicy(d *tfschema.ResourceData, prefix string) (sdk.TableAggregationPolicyRequest, error) {
+	policyName, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix + "policy_name").(string))
+	if err != nil {
+		return sdk.TableAggregationPolicyRequest{}, err
+	}
+	request := sdk.NewTableAggregationPolicyRequest(policyName)
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"entity_key", request.WithEntityKey, toTableColumn),
+	)
+	return *request, errs
+}
+
+func parseTableJoinPolicy(d *tfschema.ResourceData, prefix string) (sdk.TableJoinPolicyRequest, error) {
+	policyName, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix + "policy_name").(string))
+	if err != nil {
+		return sdk.TableJoinPolicyRequest{}, err
+	}
+	request := sdk.NewTableJoinPolicyRequest(policyName)
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"allowed_join_keys", request.WithAllowedJoinKeys, toTableColumn),
+	)
+	return *request, errs
 }
 
 // tableAlterRequests holds the SET and UNSET requests of the generated update, one per group of the ALTER spec.
 type tableAlterRequests struct {
-	set   *sdk.TableSetRequest
-	unset *sdk.TableUnsetRequest
+	setContact      *sdk.TableSetRequest
+	setErrorLogging *sdk.TableSetRequest
+	set             *sdk.TableSetRequest
+	unsetContact    *sdk.TableUnsetRequest
+	unset           *sdk.TableUnsetRequest
 }
 
 func tableApplySetUnset(d *tfschema.ResourceData) (*tableAlterRequests, error) {
-	set, unset := sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest()
+	setContact, setErrorLogging, set, unsetContact, unset := sdk.NewTableSetRequest(), sdk.NewTableSetRequest(), sdk.NewTableSetRequest(), sdk.NewTableUnsetRequest(), sdk.NewTableUnsetRequest()
 	errs := errors.Join(
 		stringAttributeUpdateBuilder(d, "comment", set.WithComment, unset.WithComment),
-		intAttributeWithSpecialDefaultUpdateBuilder(d, "data_retention_time_in_days", set.WithDataRetentionTimeInDays, unset.WithDataRetentionTimeInDays),
 		booleanAttributeUpdateSetOnlyBuilder(d, "change_tracking", set.WithChangeTracking),
+		booleanStringAttributeUpdateBuilder(d, "enable_schema_evolution", set.WithEnableSchemaEvolution, unset.WithEnableSchemaEvolution),
+		booleanStringAttributeUpdateBuilder(d, "error_logging", setErrorLogging.WithErrorLogging, unset.WithErrorLogging),
+		booleanStringAttributeUpdateBuilder(d, "row_timestamp", set.WithRowTimestamp, unset.WithRowTimestamp),
 	)
 	if errs != nil {
 		return nil, errs
 	}
-	return &tableAlterRequests{set: set, unset: unset}, nil
+	return &tableAlterRequests{setContact: setContact, setErrorLogging: setErrorLogging, set: set, unsetContact: unsetContact, unset: unset}, nil
+}
+
+func tableHandleExternalChanges(d *tfschema.ResourceData, table *sdk.Table, withExternalChangesMarking bool) error {
+	if !withExternalChangesMarking {
+		return nil
+	}
+	return handleExternalChangesToObjectInShow(d,
+		outputMapping{"change_tracking", "change_tracking", table.ChangeTracking, table.ChangeTracking, nil},
+		outputMapping{"enable_schema_evolution", "enable_schema_evolution", table.EnableSchemaEvolution, booleanStringFromBool(table.EnableSchemaEvolution), nil},
+		outputMapping{"row_timestamp", "row_timestamp", table.RowTimestamp, booleanStringFromBool(table.RowTimestamp), nil},
+		outputMapping{"error_logging", "error_logging", table.ErrorLogging, booleanStringFromBool(table.ErrorLogging), nil},
+	)
 }
 
 func DeleteTable(ctx context.Context, d *tfschema.ResourceData, meta any) diag.Diagnostics {

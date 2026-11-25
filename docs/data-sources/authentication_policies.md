@@ -155,11 +155,11 @@ check "authentication_policy_check" {
 - `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
 - `on` (Block List, Max: 1) Lists the policies that are effective on the specified object. (see [below for nested schema](#nestedblock--on))
 - `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
-- `with_describe` (Boolean) (Default: `true`) Runs DESC AUTHENTICATION POLICY for each service returned by SHOW AUTHENTICATION POLICIES. The output of describe is saved to the description field. By default this value is set to true.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC AUTHENTICATION POLICY for each authentication policy returned by SHOW AUTHENTICATION POLICIES. The output of describe is saved to the describe_output field. By default this value is set to true.
 
 ### Read-Only
 
-- `authentication_policies` (List of Object) Holds the aggregated output of all authentication policies details queries. (see [below for nested schema](#nestedatt--authentication_policies))
+- `authentication_policies` (List of Object) Holds the aggregated output of all authentication policy details queries. (see [below for nested schema](#nestedatt--authentication_policies))
 - `id` (String) The ID of this resource.
 
 <a id="nestedblock--in"></a>

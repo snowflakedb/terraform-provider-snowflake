@@ -193,27 +193,7 @@ var catalogIntegrationIcebergRestSchema = collections.MergeMaps(
 		},
 	},
 	catalogIntegrationIcebergRestAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW CATALOG INTEGRATIONS` for the given catalog integration iceberg rest.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowCatalogIntegrationSchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE CATALOG INTEGRATION` for the given catalog integration.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeCatalogIntegrationIcebergRestDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.ShowCatalogIntegrationSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeCatalogIntegration, schemas.DescribeCatalogIntegrationIcebergRestDetailsSchema),
 )

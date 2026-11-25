@@ -82,6 +82,7 @@ func ReadContextExternalFunctions(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	externalFunctionsList := []map[string]any{}
+	// TODO(SNOW-1348352): use the generated external function schema instead of this hand-written one while reworking external functions.
 	for _, externalFunction := range externalFunctions {
 		externalFunctionMap := map[string]any{}
 		externalFunctionMap["name"] = externalFunction.Name

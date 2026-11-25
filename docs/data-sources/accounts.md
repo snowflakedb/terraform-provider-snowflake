@@ -211,6 +211,7 @@ Read-Only:
 - `search_path` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--search_path))
 - `serverless_task_max_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--serverless_task_max_statement_size))
 - `serverless_task_min_statement_size` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--serverless_task_min_statement_size))
+- `service_caller_token_validity_secs` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--service_caller_token_validity_secs))
 - `share_restrictions` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--share_restrictions))
 - `simulated_data_sharing_consumer` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--simulated_data_sharing_consumer))
 - `sql_trace_query_text` (List of Object) (see [below for nested schema](#nestedobjatt--accounts--parameters--sql_trace_query_text))
@@ -1578,6 +1579,18 @@ Read-Only:
 
 <a id="nestedobjatt--accounts--parameters--serverless_task_min_statement_size"></a>
 ### Nested Schema for `accounts.parameters.serverless_task_min_statement_size`
+
+Read-Only:
+
+- `default` (String)
+- `description` (String)
+- `key` (String)
+- `level` (String)
+- `value` (String)
+
+
+<a id="nestedobjatt--accounts--parameters--service_caller_token_validity_secs"></a>
+### Nested Schema for `accounts.parameters.service_caller_token_validity_secs`
 
 Read-Only:
 

@@ -26,8 +26,8 @@ func TestAcc_ProcedureJavascript_InlineBasic(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SampleJavascriptDefinition(t, argName)
 
@@ -112,7 +112,7 @@ func TestAcc_ProcedureJavascript_InlineFull(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeVarchar_100
 
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Procedure.SampleJavascriptDefinition(t, argName)
 

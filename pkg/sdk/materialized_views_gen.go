@@ -6,6 +6,8 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type MaterializedViews interface {
@@ -175,7 +177,7 @@ type DescribeMaterializedViewOptions struct {
 
 type materializedViewDetailsRow struct {
 	Name       string         `db:"name"`
-	Type       DataType       `db:"type"`
+	Type       string         `db:"type"`
 	Kind       string         `db:"kind"`
 	Null       string         `db:"null?"`
 	Default    sql.NullString `db:"default"`
@@ -187,14 +189,15 @@ type materializedViewDetailsRow struct {
 }
 
 type MaterializedViewDetails struct {
-	Name       string
-	Type       DataType
-	Kind       string
-	IsNullable bool
-	Default    *string
-	IsPrimary  bool
-	IsUnique   bool
-	Check      *bool
-	Expression *string
-	Comment    *string
+	Name        string
+	Type        datatypes.DataType
+	DataTypeRaw string
+	Kind        string
+	IsNullable  bool
+	Default     *string
+	IsPrimary   bool
+	IsUnique    bool
+	Check       *bool
+	Expression  *string
+	Comment     *string
 }

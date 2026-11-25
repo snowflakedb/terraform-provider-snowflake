@@ -6,6 +6,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/testdatatypes"
+
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	"github.com/stretchr/testify/assert"
 )
@@ -97,7 +99,7 @@ func TestInt_SafeShowByIdOnSchemaObjectIdentifierWithArguments(t *testing.T) {
 		return testClientHelper().Procedure.Show(t, id)
 	}
 
-	procedure, cleanupProcedure := testClientHelper().Procedure.Create(t, sdk.DataTypeInt)
+	procedure, cleanupProcedure := testClientHelper().Procedure.Create(t, testdatatypes.DataTypeNumber)
 	t.Cleanup(cleanupProcedure)
 
 	value, err := sdk.SafeShowById(testClient(t), procedureShowById, testContext(t), procedure.ID())

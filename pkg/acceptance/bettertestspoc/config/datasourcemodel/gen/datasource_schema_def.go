@@ -47,6 +47,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.BackupPolicies().Schema,
 	},
 	{
+		name:   "BackupSets",
+		schema: datasources.BackupSets().Schema,
+	},
+	{
 		name:   "CatalogIntegrations",
 		schema: datasources.CatalogIntegrations().Schema,
 	},
@@ -137,6 +141,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "PasswordPolicies",
 		schema: datasources.PasswordPolicies().Schema,
+	},
+	{
+		name:   "FailoverGroups",
+		schema: datasources.FailoverGroups().Schema,
 	},
 	{
 		name:   "NetworkRules",
@@ -237,6 +245,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 	{
 		name:   "Streams",
 		schema: datasources.Streams().Schema,
+	},
+	{
+		name:   "Tables",
+		schema: datasources.Tables().Schema,
 	},
 	{
 		name:   "Tags",

@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -86,17 +85,7 @@ func ReadReplicationGroupFunc(withExternalChangesMarking bool) tfschema.ReadCont
 
 		replicationGroup, err := meta.(*provider.Context).Client.ReplicationGroups.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query replication group. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Replication group id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeReplicationGroup, id, err)
 		}
 
 		if err = setStateToValuesFromConfig(d, replicationGroupSchema, []string{
@@ -155,7 +144,7 @@ func UpdateReplicationGroup(ctx context.Context, d *tfschema.ResourceData, meta 
 }
 
 var replicationGroupCustomizeDiff = TrackingCustomDiffWrapper(resources.ReplicationGroup, customdiff.All(
-	ComputedIfAnyAttributeChanged(replicationGroupSchema, ShowOutputAttributeName, "name", "comment", "replication_schedule"),
+	ComputedIfAnyAttributeChanged(replicationGroupSchema, ShowOutputAttributeName, "name", "comment", "replication_schedule", "error_integration"),
 	ComputedIfAnyAttributeChanged(replicationGroupSchema, FullyQualifiedNameAttributeName, "name"),
 	replicationGroupRecreateWhenNotPrimary,
 ))

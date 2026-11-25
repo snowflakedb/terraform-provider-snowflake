@@ -57,9 +57,7 @@ var warehouseAdaptiveSchema = collections.MergeMaps(
 	},
 	warehouseAdaptiveAttributesSchema,
 	warehouseAdaptiveParametersAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
 	warehouseAdaptiveShowOutputSchemaExt,
 	warehouseAdaptiveParametersOutputSchema,
 )

@@ -255,9 +255,10 @@ func (r failoverGroupsRow) convert() (*FailoverGroup, error) {
 	}
 	mapNullString(&result.ReplicationSchedule, r.ReplicationSchedule)
 	mapNullStringWithMapping(&result.SecondaryState, r.SecondaryState, ToFailoverGroupSecondaryState)
-	mapNullStringToNonNullableField(&result.NextScheduledRefresh, r.NextScheduledRefresh)
+	mapNullTimeToNonNullableField(&result.NextScheduledRefresh, r.NextScheduledRefresh)
 	mapNullString(&result.Owner, r.Owner)
-	mapNullBool(&result.ReadOnly, r.ReadOnly)
+	mapNullStringWithMapping(&result.ErrorIntegration, r.ErrorIntegration, ParseAccountObjectIdentifier)
+	mapNullBool(&result.IsPrimaryReadOnly, r.IsPrimaryReadOnly)
 	return result, nil
 }
 

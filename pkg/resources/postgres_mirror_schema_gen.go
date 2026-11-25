@@ -133,8 +133,6 @@ var postgresMirrorAttributesSchema = postgresMirrorAttributesModificationExt(map
 var postgresMirrorSchema = collections.MergeMaps(
 	postgresMirrorIdentitySchemaExt,
 	postgresMirrorAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
 	postgresMirrorDescribeOutputSchemaExt,
 )

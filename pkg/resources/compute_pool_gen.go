@@ -5,7 +5,6 @@ package resources
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -84,17 +83,7 @@ func ReadComputePoolFunc(withExternalChangesMarking bool) tfschema.ReadContextFu
 
 		computePool, err := meta.(*provider.Context).Client.ComputePools.ShowByIDSafely(ctx, id)
 		if err != nil {
-			if errors.Is(err, sdk.ErrObjectNotFound) {
-				d.SetId("")
-				return diag.Diagnostics{
-					diag.Diagnostic{
-						Severity: diag.Warning,
-						Summary:  "Failed to query compute pool. Marking the resource as removed.",
-						Detail:   fmt.Sprintf("Compute pool id: %s, Err: %s", id.FullyQualifiedName(), err),
-					},
-				}
-			}
-			return diag.FromErr(err)
+			return showByIdErrorDiagnostics(d, sdk.ObjectTypeComputePool, id, err)
 		}
 		computePoolDetails, err := meta.(*provider.Context).Client.ComputePools.Describe(ctx, id)
 		if err != nil {

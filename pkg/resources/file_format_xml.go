@@ -204,7 +204,7 @@ func UpdateFileFormatXml(ctx context.Context, d *schema.ResourceData, meta any) 
 			return client.FileFormats.AlterXml(ctx, sdk.NewAlterXmlFileFormatRequest(currentId).WithRenameTo(targetId))
 		},
 		client.FileFormats.ShowByID,
-		"file format",
+		sdk.ObjectTypeFileFormat,
 	); diags != nil {
 		return diags
 	}

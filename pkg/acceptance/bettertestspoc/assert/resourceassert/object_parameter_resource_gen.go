@@ -54,6 +54,11 @@ func (o *ObjectParameterResourceAssert) HasValue(expected string) *ObjectParamet
 	return o
 }
 
+func (o *ObjectParameterResourceAssert) HasValueType(expected string) *ObjectParameterResourceAssert {
+	o.StringValueSet("value_type", expected)
+	return o
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -75,6 +80,11 @@ func (o *ObjectParameterResourceAssert) HasOnAccountString(expected string) *Obj
 
 func (o *ObjectParameterResourceAssert) HasValueString(expected string) *ObjectParameterResourceAssert {
 	o.ValueSet("value", expected)
+	return o
+}
+
+func (o *ObjectParameterResourceAssert) HasValueTypeString(expected string) *ObjectParameterResourceAssert {
+	o.ValueSet("value_type", expected)
 	return o
 }
 
@@ -102,6 +112,11 @@ func (o *ObjectParameterResourceAssert) HasNoValue() *ObjectParameterResourceAss
 	return o
 }
 
+func (o *ObjectParameterResourceAssert) HasNoValueType() *ObjectParameterResourceAssert {
+	o.ValueNotSet("value_type")
+	return o
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -118,6 +133,11 @@ func (o *ObjectParameterResourceAssert) HasObjectTypeEmpty() *ObjectParameterRes
 
 func (o *ObjectParameterResourceAssert) HasOnAccountEmpty() *ObjectParameterResourceAssert {
 	o.ValueSet("on_account", "")
+	return o
+}
+
+func (o *ObjectParameterResourceAssert) HasValueTypeEmpty() *ObjectParameterResourceAssert {
+	o.ValueSet("value_type", "")
 	return o
 }
 
@@ -142,5 +162,10 @@ func (o *ObjectParameterResourceAssert) HasOnAccountNotEmpty() *ObjectParameterR
 
 func (o *ObjectParameterResourceAssert) HasValueNotEmpty() *ObjectParameterResourceAssert {
 	o.ValuePresent("value")
+	return o
+}
+
+func (o *ObjectParameterResourceAssert) HasValueTypeNotEmpty() *ObjectParameterResourceAssert {
+	o.ValuePresent("value_type")
 	return o
 }

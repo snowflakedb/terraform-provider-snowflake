@@ -1,7 +1,5 @@
 package sdk
 
-import "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
-
 func (opts *DynamicTableSet) additionalValidations() error {
 	if opts.Warehouse != nil && !ValidObjectIdentifier(*opts.Warehouse) {
 		return errInvalidIdentifier("DynamicTableSet", "Warehouse")
@@ -33,8 +31,10 @@ func (opts *ShowDynamicTableOptions) additionalValidations() error {
 	return JoinErrors(errs...)
 }
 
-func (r dynamicTableDetailsRow) additionalConvert(result *DynamicTableDetails) error {
-	typ, _ := datatypes.ParseDataType(r.Type)
-	result.Type = LegacyDataTypeFrom(typ)
-	return nil
+// TypeString returns the parsed column type when available, otherwise the raw DESC output.
+func (d DynamicTableDetails) TypeString() string {
+	if d.Type != nil {
+		return d.Type.ToSql()
+	}
+	return d.DataTypeRaw
 }

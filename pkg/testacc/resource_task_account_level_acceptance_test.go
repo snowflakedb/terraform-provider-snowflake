@@ -4,7 +4,6 @@ package testacc
 
 import (
 	"fmt"
-	"regexp"
 	"testing"
 
 	r "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -74,14 +73,12 @@ func TestAcc_Task_ProveSessionParameterBehavior(t *testing.T) {
 	})
 }
 
-func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
+func TestAcc_Task_ProveNoDriftOnInheritedParameterChange(t *testing.T) {
 	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifier()
 	statement := "SELECT 1"
 
 	taskModel := model.TaskWithId("test", id, false, statement)
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary)
-	providerModelWithFeatureDisabled := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
-		WithAllEnabledByDefaultExperimentsDisabled()
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: providerFactoryWithoutCache(),
@@ -90,7 +87,7 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: config.FromModels(t, providerModelWithFeatureDisabled, taskModel),
+				Config: config.FromModels(t, providerModel, taskModel),
 				Check: assertThat(
 					t,
 					resourceassert.TaskResource(t, taskModel.ResourceReference()).
@@ -98,28 +95,6 @@ func TestAcc_Task_ProveCurrentDriftBehavior(t *testing.T) {
 						HasStatementTimeoutInSecondsString("172800"),
 				),
 			},
-			{
-				PreConfig: func() {
-					revertParameter := secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43200")
-					t.Cleanup(revertParameter)
-				},
-				Config: config.FromModels(t, providerModelWithFeatureDisabled, taskModel),
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction(taskModel.ResourceReference(), plancheck.ResourceActionNoop),
-					},
-				},
-				Check: assertThat(
-					t,
-					resourceassert.TaskResource(t, taskModel.ResourceReference()).
-						HasNameString(id.Name()).
-						HasStatementTimeoutInSecondsString("43200"),
-					// modifying the account-level parameter one more time as assertion, as this is the moment in-between apply and refresh
-					invokeactionassert.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43201", secondaryTestClient()),
-				),
-				ExpectError: regexp.MustCompile(`(?s)After applying this test step, the non-refresh plan was not empty.*~ update in-place.*# snowflake_task.test will be updated in-place.*~ statement_timeout_in_seconds\s+=\s+43200 -> \(known after apply\)`),
-			},
-			// one more time but with the experimental feature enabled (default)
 			{
 				PreConfig: func() {
 					revertParameter := secondaryTestClient().Parameter.UpdateAccountParameterTemporarily(t, sdk.AccountParameterStatementTimeoutInSeconds, "43200")

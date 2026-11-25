@@ -73,10 +73,10 @@ var Schema = ssot.Object{
 				ssot.SdkShowTerse(),
 				ssot.SdkShowOptionalSql("HISTORY"),
 				ssot.SdkShowOptionalLike(),
-				ssot.SdkShowOptionalExtendedIn(),
+				ssot.SdkShowOptionalExtendedInWithoutSchema(),
 				ssot.SdkShowOptionalStartsWith(),
 				ssot.SdkShowOptionalLimit(),
-				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedIn, ssot.SdkShowByIDLike),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedInWithoutSchema, ssot.SdkShowByIDLike),
 			),
 			ssot.SdkDescribe(
 				ssot.SdkDescribeMapping(ssot.SdkDescriptionMappingSlice),

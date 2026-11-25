@@ -5,6 +5,8 @@ package sdk
 import (
 	"context"
 	"database/sql"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/datatypes"
 )
 
 type ExternalFunctions interface {
@@ -24,7 +26,7 @@ type CreateExternalFunctionOptions struct {
 	externalFunction      bool                            `ddl:"static" sql:"EXTERNAL FUNCTION"`
 	name                  SchemaObjectIdentifier          `ddl:"identifier"`
 	Arguments             []ExternalFunctionArgument      `ddl:"list,must_parentheses"`
-	ResultDataType        DataType                        `ddl:"parameter,no_equals" sql:"RETURNS"`
+	ResultDataType        datatypes.DataType              `ddl:"parameter,no_quotes,no_equals" sql:"RETURNS"`
 	ReturnNullValues      *ReturnNullValues               `ddl:"keyword"`
 	NullInputBehavior     *NullInputBehavior              `ddl:"keyword"`
 	ReturnResultsBehavior *ReturnResultsBehavior          `ddl:"keyword"`
@@ -40,8 +42,8 @@ type CreateExternalFunctionOptions struct {
 }
 
 type ExternalFunctionArgument struct {
-	ArgName     string   `ddl:"keyword,no_quotes"`
-	ArgDataType DataType `ddl:"keyword,no_quotes"`
+	ArgName     string             `ddl:"keyword,no_quotes"`
+	ArgDataType datatypes.DataType `ddl:"parameter,no_quotes,no_equals"`
 }
 
 type ExternalFunctionHeader struct {
@@ -122,8 +124,10 @@ type ExternalFunction struct {
 	IsAnsi             bool
 	MinNumArguments    int
 	MaxNumArguments    int
-	ArgumentsRaw       string
-	Arguments          []DataType
+	ArgumentsRaw       []string
+	Arguments          []datatypes.DataType
+	ReturnType         datatypes.DataType
+	ReturnTypeRaw      string
 	Description        string
 	CatalogName        string
 	IsTableFunction    bool

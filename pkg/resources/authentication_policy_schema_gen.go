@@ -288,27 +288,7 @@ var authenticationPolicySchema = collections.MergeMaps(
 		},
 	},
 	authenticationPolicyAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
-	map[string]*tfschema.Schema{
-		ShowOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `SHOW AUTHENTICATION POLICIES` for the given authentication policy.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.ShowAuthenticationPolicySchema,
-			},
-		},
-	},
-	map[string]*tfschema.Schema{
-		DescribeOutputAttributeName: {
-			Type:        tfschema.TypeList,
-			Computed:    true,
-			Description: "Outputs the result of `DESCRIBE AUTHENTICATION POLICY` for the given authentication policy.",
-			Elem: &tfschema.Resource{
-				Schema: schemas.DescribeAuthenticationPolicyDetailsSchema,
-			},
-		},
-	},
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeAuthenticationPolicy, schemas.ShowAuthenticationPolicySchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeAuthenticationPolicy, schemas.DescribeAuthenticationPolicyDetailsSchema),
 )

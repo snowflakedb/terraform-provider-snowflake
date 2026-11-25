@@ -27,17 +27,21 @@ type ReplicationGroupSecondaryModel struct {
 func ReplicationGroupSecondary(
 	resourceName string,
 	name string,
+	primary string,
 ) *ReplicationGroupSecondaryModel {
 	r := &ReplicationGroupSecondaryModel{ResourceModelMeta: config.Meta(resourceName, resources.ReplicationGroupSecondary)}
 	r.WithName(name)
+	r.WithPrimary(primary)
 	return r
 }
 
 func ReplicationGroupSecondaryWithDefaultMeta(
 	name string,
+	primary string,
 ) *ReplicationGroupSecondaryModel {
 	r := &ReplicationGroupSecondaryModel{ResourceModelMeta: config.DefaultMeta(resources.ReplicationGroupSecondary)}
 	r.WithName(name)
+	r.WithPrimary(primary)
 	return r
 }
 

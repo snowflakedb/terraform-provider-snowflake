@@ -149,6 +149,7 @@ func setAndUnsetAccountParametersTest(
 				WithSearchPath("$current, $public").
 				WithServerlessTaskMaxStatementSize(sdk.WarehouseSize("6X-LARGE")).
 				WithServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+				WithServiceCallerTokenValiditySecs(1800).
 				WithSsoLoginPage(true).
 				WithSqlTraceQueryText("OFF").
 				WithStatementQueuedTimeoutInSeconds(1).
@@ -272,6 +273,7 @@ func setAndUnsetAccountParametersTest(
 			HasSearchPath("$current, $public").
 			HasServerlessTaskMaxStatementSize("6X-LARGE").
 			HasServerlessTaskMinStatementSize(sdk.WarehouseSizeSmall).
+			HasServiceCallerTokenValiditySecs(1800).
 			HasSsoLoginPage(true).
 			HasStatementQueuedTimeoutInSeconds(1).
 			HasStatementTimeoutInSeconds(1).

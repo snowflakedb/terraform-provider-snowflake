@@ -4,9 +4,10 @@ package resources
 
 import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
 	tfschema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.Schema{
@@ -27,40 +28,28 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 				"name": {
 					Type:        tfschema.TypeString,
 					Required:    true,
-					Description: "Column name",
+					Description: "Column name. The provider always double-quotes it, so the name is case-sensitive: `id` and `ID` are different columns. Use uppercase to get the same column as an unquoted identifier in SQL.",
 				},
 				"type": {
 					Type:        tfschema.TypeString,
 					Required:    true,
 					Description: "Column type, e.g. VARIANT. For a full list of column types, see [Summary of Data Types](https://docs.snowflake.com/en/sql-reference/intro-summary-data-types).",
 				},
-				"nullable": {
+				"not_null": {
 					Type:        tfschema.TypeBool,
 					Optional:    true,
-					Description: "Whether this column can contain null values. **Note**: Depending on your Snowflake version, the default value will not suffice if this column is used in a primary key constraint.",
+					Description: "Whether to restrict the column to NOT NULL values. When it is not set or `false`, the column allows null values, and an external change of the NOT NULL constraint is planned as a change. **Note**: A column used in a primary key constraint is NOT NULL in Snowflake, so set it to `true` for such a column.",
 				},
 				"default": {
 					Type:     tfschema.TypeList,
 					Optional: true,
-					MinItems: 1,
 					MaxItems: 1,
 					Elem: &tfschema.Resource{
 						Schema: map[string]*tfschema.Schema{
-							"constant": {
-								Type:        tfschema.TypeString,
-								Optional:    true,
-								Description: "The default constant value for the column",
-							},
 							"expression": {
 								Type:        tfschema.TypeString,
-								Optional:    true,
-								Description: "The default expression value for the column",
-							},
-							"sequence": {
-								Type:             tfschema.TypeString,
-								Optional:         true,
-								DiffSuppressFunc: suppressIdentifierQuoting,
-								Description:      "The default sequence to use for the column",
+								Required:    true,
+								Description: "The default value as a SQL expression, sent unchanged as `DEFAULT <expression>`. Quote string literals, for example `'pending'`. An empty string (`\"\"`) is an empty string default: it is sent as `''`, and Snowflake returns it as `''`, so `\"\"` and `\"''\"` show no difference. Use `<sequence>.NEXTVAL` for a sequence, for example `\"${snowflake_sequence.example.fully_qualified_name}.NEXTVAL\"`.",
 							},
 						},
 					},
@@ -69,7 +58,6 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 				"identity": {
 					Type:     tfschema.TypeList,
 					Optional: true,
-					MinItems: 1,
 					MaxItems: 1,
 					Elem: &tfschema.Resource{
 						Schema: map[string]*tfschema.Schema{
@@ -83,24 +71,71 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 								Optional:    true,
 								Description: "Step size to increment by.",
 							},
+							"order": {
+								Type:             tfschema.TypeString,
+								Optional:         true,
+								ValidateDiagFunc: validateBooleanString,
+								Description:      booleanStringFieldDescription("Specifies whether the identity values are generated in increasing order (`ORDER`) or with no order guarantee (`NOORDER`). When not set, Snowflake applies the [NOORDER_SEQUENCE_AS_DEFAULT](https://docs.snowflake.com/en/sql-reference/parameters#noorder-sequence-as-default) parameter. Changing it on an existing column is not applied, the same as `start_num` and `step_num`."),
+								Default:          BooleanDefault,
+							},
 						},
 					},
 					Description: "Defines the identity start/step values for a column. **Note** Identity/default are mutually exclusive.",
+				},
+				"masking_policy": {
+					Type:     tfschema.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &tfschema.Resource{
+						Schema: map[string]*tfschema.Schema{
+							"policy_name": {
+								Type:             tfschema.TypeString,
+								Required:         true,
+								DiffSuppressFunc: suppressIdentifierQuoting,
+								Description:      relatedResourceDescription("Masking policy name.", resources.MaskingPolicy),
+							},
+							"using": {
+								Type:     tfschema.TypeList,
+								Optional: true,
+								Elem: &tfschema.Schema{
+									Type: tfschema.TypeString,
+								},
+								Description: "Specifies the arguments to pass into the conditional masking policy SQL expression, in order. The first column in the list specifies the column for the policy conditions to mask or tokenize the data and must match the column to which the masking policy is set. The additional columns specify the columns to evaluate to determine whether to mask or tokenize the data in each row of the query result when a query is made on the first column. If the USING clause is omitted, Snowflake treats the conditional masking policy as a normal masking policy.",
+							},
+						},
+					},
+					Description: relatedResourceDescription("Specifies the masking policy to set on a column.", resources.MaskingPolicy),
+				},
+				"projection_policy": {
+					Type:     tfschema.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &tfschema.Resource{
+						Schema: map[string]*tfschema.Schema{
+							"policy_name": {
+								Type:             tfschema.TypeString,
+								Required:         true,
+								DiffSuppressFunc: suppressIdentifierQuoting,
+								Description:      "Projection policy name.",
+							},
+						},
+					},
+					Description: "Specifies the projection policy to set on a column.",
 				},
 				"comment": {
 					Type:        tfschema.TypeString,
 					Optional:    true,
 					Description: "Column comment",
 				},
-				"masking_policy": {
-					Type:        tfschema.TypeString,
-					Optional:    true,
-					Description: "Masking policy to apply on column. It has to be a fully qualified name.",
-				},
 				"collate": {
 					Type:        tfschema.TypeString,
 					Optional:    true,
 					Description: "Column collation, e.g. utf8",
+				},
+				"as": {
+					Type:        tfschema.TypeString,
+					Optional:    true,
+					Description: "Makes the column a [virtual column](https://docs.snowflake.com/en/sql-reference/virtual-columns) computed from this SQL expression, sent as `AS (<expression>)`. The expression can use literals, operators, deterministic system-defined functions, and virtual columns defined earlier in the table. The column `type` must be compatible with the type of the expression. A virtual column cannot have `default` or `identity`. Differences in letter case, whitespace, double quotes, and outer parentheses do not plan a change, because Snowflake reports the expression in a normalized form. Changing the expression drops the column and adds it again at the end of the table.",
 				},
 			},
 		},
@@ -125,6 +160,7 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 				"keys": {
 					Type:     tfschema.TypeList,
 					Required: true,
+					MinItems: 1,
 					Elem: &tfschema.Schema{
 						Type: tfschema.TypeString,
 					},
@@ -134,17 +170,115 @@ var tableAttributesSchema = tableAttributesModificationExt(map[string]*tfschema.
 		},
 		Description: "Definitions of primary key constraint to create on table",
 	},
-	"data_retention_time_in_days": {
-		Type:             tfschema.TypeInt,
-		Optional:         true,
-		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(-1, 90)),
-		Description:      "Specifies the retention period for the table so that Time Travel actions (SELECT, CLONE, UNDROP) can be performed on historical data in the table. If you wish to inherit the parent schema setting then pass in the schema attribute to this argument or do not fill this parameter at all; the default value for this field is -1, which is a fallback to use Snowflake default - in this case the schema value",
-		Default:          IntDefault,
-	},
 	"change_tracking": {
-		Type:        tfschema.TypeBool,
-		Optional:    true,
-		Description: "Specifies whether to enable change tracking on the table. Default false.",
+		Type:             tfschema.TypeBool,
+		Optional:         true,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("change_tracking"),
+		Description:      "Specifies whether to enable change tracking on the table. Default false.",
+	},
+	"is_transient": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ForceNew:         true,
+		ValidateDiagFunc: validateBooleanString,
+		Description:      booleanStringFieldDescription("Specifies a transient table. Transient tables participate in time travel to a limited degree, but they do not have a Fail-safe period, so they do not incur additional storage costs once they leave Time Travel. Changing this value recreates the table. Temporary and volatile tables are not supported by the resource."),
+		Default:          BooleanDefault,
+	},
+	"enable_schema_evolution": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("enable_schema_evolution"),
+		Description:      booleanStringFieldDescription("Specifies whether to enable automatic table schema changes from data loaded into the table from source files, including semi-structured files. For more information, see [Table schema evolution](https://docs.snowflake.com/en/user-guide/data-load-schema-evolution)."),
+		Default:          BooleanDefault,
+	},
+	"error_logging": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("error_logging"),
+		Description:      booleanStringFieldDescription("Specifies whether to turn on DML error logging for the table. If the `ERROR_LOGGING` session parameter is set to `TRUE`, DML error logging is not turned on, regardless of whether it is turned on for specific tables."),
+		Default:          BooleanDefault,
+	},
+	"row_timestamp": {
+		Type:             tfschema.TypeString,
+		Optional:         true,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("row_timestamp"),
+		Description:      booleanStringFieldDescription("Specifies whether to enable row timestamps on the table. You must use a role with the OWNERSHIP privilege on the table. **Note:** setting it to `false` permanently deletes all stored `METADATA$ROW_LAST_COMMIT_TIME` values."),
+		Default:          BooleanDefault,
+	},
+	"row_access_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"policy_name": {
+					Type:             tfschema.TypeString,
+					Required:         true,
+					DiffSuppressFunc: suppressIdentifierQuoting,
+					Description:      relatedResourceDescription("Row access policy name.", resources.RowAccessPolicy),
+				},
+				"on": {
+					Type:     tfschema.TypeSet,
+					Required: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Defines which columns are affected by the policy.",
+				},
+			},
+		},
+		Description: "Specifies the row access policy to set on a table.",
+	},
+	"aggregation_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"policy_name": {
+					Type:             tfschema.TypeString,
+					Required:         true,
+					DiffSuppressFunc: suppressIdentifierQuoting,
+					Description:      "Aggregation policy name.",
+				},
+				"entity_key": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Defines which columns uniquely identify an entity within the table.",
+				},
+			},
+		},
+		Description: "Specifies the aggregation policy to set on a table.",
+	},
+	"join_policy": {
+		Type:     tfschema.TypeList,
+		Optional: true,
+		MaxItems: 1,
+		Elem: &tfschema.Resource{
+			Schema: map[string]*tfschema.Schema{
+				"policy_name": {
+					Type:             tfschema.TypeString,
+					Required:         true,
+					DiffSuppressFunc: suppressIdentifierQuoting,
+					Description:      "Join policy name.",
+				},
+				"allowed_join_keys": {
+					Type:     tfschema.TypeSet,
+					Optional: true,
+					Elem: &tfschema.Schema{
+						Type: tfschema.TypeString,
+					},
+					Description: "Defines which columns can be used as join keys on the table.",
+				},
+			},
+		},
+		Description: "Specifies the join policy to set on a table.",
 	},
 })
 
@@ -170,7 +304,9 @@ var tableSchema = collections.MergeMaps(
 		},
 	},
 	tableAttributesSchema,
-	map[string]*tfschema.Schema{
-		FullyQualifiedNameAttributeName: schemas.FullyQualifiedNameSchema,
-	},
+	tableParametersAttributesSchema,
+	schemas.FullyQualifiedNameOutputSchema(),
+	schemas.ShowOutputListSchema(sdk.ObjectTypeTable, schemas.ShowTableSchema),
+	schemas.DescribeOutputListSchema(sdk.ObjectTypeTable, schemas.DescribeTableColumnDetailsSchema, "The statement is DESCRIBE TABLE ... TYPE = COLUMNS."),
+	tableParametersOutputSchema,
 )

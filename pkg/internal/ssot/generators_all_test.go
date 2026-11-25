@@ -16,6 +16,7 @@ func Test_WithAllGenerators_equalsEnablingEveryGeneratorByHand(t *testing.T) {
 		WithResource(),
 		WithModel(),
 		WithResourceAssert(),
+		WithDataSource(),
 	)
 	require.Equal(t, byHand, ObjectGenerators(WithAllGenerators()))
 }
@@ -73,6 +74,7 @@ func Test_Without_wholeGeneratorIsZero(t *testing.T) {
 		WithoutResourceAssert(),
 		WithoutObjectParametersAssert(),
 		WithoutResourceParametersAssert(),
+		WithoutDataSource(),
 	))
 	require.Equal(t, Generators{}, g)
 }
@@ -84,7 +86,7 @@ func Test_Without_oneSideDropsItsSettingsAndKeepsTheOtherSide(t *testing.T) {
 	t.Run("schema", func(t *testing.T) {
 		g := ObjectGenerators(
 			WithSchema(
-				SchemaShow(SchemaShowFromBase(), SchemaShowManualFields(&a), SchemaShowListFields(&a)),
+				SchemaShow(SchemaShowManualFields(&a), SchemaShowListFields(&a)),
 				SchemaDescribe(SchemaDescribeManualFields(&a), SchemaDescribeListFields(&a)),
 			),
 			WithoutSchemaShow(),
@@ -104,7 +106,7 @@ func Test_Without_oneSideDropsItsSettingsAndKeepsTheOtherSide(t *testing.T) {
 	t.Run("object assertion", func(t *testing.T) {
 		g := ObjectGenerators(
 			WithObjectAssert(
-				ObjectAssertShow(ObjectAssertShowSkipFields(&a), ObjectAssertShowFromBase("ShowByIDAdaptive"), ObjectAssertShowNestedField(&a, nested...)),
+				ObjectAssertShow(ObjectAssertShowSkipFields(&a), ObjectAssertShowNestedField(&a, nested...)),
 				ObjectAssertDescribe(ObjectAssertDescribeSkipFields(&a), ObjectAssertDescribeMethod("DescribeDetails"), WithNoIdentifiableObject()),
 			),
 			WithoutObjectAssertShow(),
@@ -118,17 +120,17 @@ func Test_Without_oneSideDropsItsSettingsAndKeepsTheOtherSide(t *testing.T) {
 
 		g = ObjectGenerators(
 			WithObjectAssert(
-				ObjectAssertShow(ObjectAssertShowRowFromBase(), ObjectAssertShowSkipFields(&a)),
+				ObjectAssertShow(ObjectAssertShowSkipFields(&a)),
 				ObjectAssertDescribe(ObjectAssertDescribeFromBase("DescribeAwsGlue"), ObjectAssertDescribeSkipFields(&a), WithNoIdentifiableObject(), ObjectAssertDescribeNestedField(&a)),
 			),
 			WithoutObjectAssertDescribe(),
 		)
-		require.Equal(t, ObjectAssertGenerator{Show: true, ShowRowFromBase: true, ShowSkipFields: []*Attribute{&a}}, g.ObjectAssert)
+		require.Equal(t, ObjectAssertGenerator{Show: true, ShowSkipFields: []*Attribute{&a}}, g.ObjectAssert)
 	})
 	t.Run("show output assertion", func(t *testing.T) {
 		g := ObjectGenerators(
 			WithShowOutputAssert(
-				ShowOutputShow(ShowOutputShowRowFromBase(), ShowOutputShowSkipFields(&a)),
+				ShowOutputShow(ShowOutputShowSkipFields(&a)),
 				ShowOutputDescribe(ShowOutputDescribeSkipFields(&a)),
 			),
 			WithoutShowOutputAssertShow(),

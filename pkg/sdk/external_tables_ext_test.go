@@ -58,13 +58,13 @@ func init() {
 				opts.AwsSnsTopic = new("aws_sns_topic")
 				opts.CopyGrants = new(true)
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},
 				}
 			},
-			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true PATTERN = '.*' FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) AWS_SNS_TOPIC = 'aws_sns_topic' COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
+			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column VARCHAR(16777216) AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true PATTERN = '.*' FILE_FORMAT = (TYPE = CSV COMPRESSION = GZIP) AWS_SNS_TOPIC = 'aws_sns_topic' COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
 			id.FullyQualifiedName(), location, rowAccessPolicyId.FullyQualifiedName(), tag1.FullyQualifiedName(), tag2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -114,13 +114,13 @@ func init() {
 				opts.PartitionBy = []string{"column"}
 				opts.CopyGrants = new(true)
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},
 				}
 			},
-			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON) COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
+			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column VARCHAR(16777216) AS (value::column::varchar) NOT NULL CONSTRAINT my_constraint UNIQUE) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s PARTITION_TYPE = USER_SPECIFIED FILE_FORMAT = (TYPE = JSON) COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
 			id.FullyQualifiedName(), location, rowAccessPolicyId.FullyQualifiedName(), tag1.FullyQualifiedName(), tag2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -167,7 +167,7 @@ func init() {
 				opts.IfNotExists = new(true)
 				opts.Columns = []ExternalTableColumn{{
 					Name:         "column",
-					DataType:     "varchar",
+					DataType:     dataTypeVarchar,
 					AsExpression: AsExpression{Expression: "value::column::varchar"},
 				}}
 				opts.CloudProviderParams = &CloudProviderParams{MicrosoftAzureIntegration: new("123")}
@@ -177,13 +177,13 @@ func init() {
 				opts.FileFormat = &ExternalTableFileFormat{Name: new("JSON")}
 				opts.CopyGrants = new(true)
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},
 				}
 			},
-			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column varchar AS (value::column::varchar)) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true FILE_FORMAT = (FORMAT_NAME = 'JSON') TABLE_FORMAT = DELTA COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
+			`CREATE EXTERNAL TABLE IF NOT EXISTS %s (column VARCHAR(16777216) AS (value::column::varchar)) INTEGRATION = '123' PARTITION BY (column) LOCATION = %s REFRESH_ON_CREATE = true AUTO_REFRESH = true FILE_FORMAT = (FORMAT_NAME = 'JSON') TABLE_FORMAT = DELTA COPY GRANTS COMMENT = 'some_comment' ROW ACCESS POLICY %s ON (value1, value2) TAG (%s = 'value1', %s = 'value2')`,
 			id.FullyQualifiedName(), location, rowAccessPolicyId.FullyQualifiedName(), tag1.FullyQualifiedName(), tag2.FullyQualifiedName(),
 		).
 		withAdditionalSqlCasef(
@@ -238,7 +238,7 @@ func init() {
 				opts.FileFormat = &ExternalTableFileFormat{Name: new("JSON")}
 				opts.AwsSnsTopic = new("aws_sns_topic")
 				opts.Comment = new("some_comment")
-				opts.RowAccessPolicy = &TableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
+				opts.RowAccessPolicy = &ExternalTableRowAccessPolicy{Name: rowAccessPolicyId, On: []string{"value1", "value2"}}
 				opts.Tag = []TagAssociation{
 					{Name: tag1, Value: "value1"},
 					{Name: tag2, Value: "value2"},
@@ -438,7 +438,7 @@ func init() {
 func externalTableTestColumn() ExternalTableColumn {
 	return ExternalTableColumn{
 		Name:         "column",
-		DataType:     "varchar",
+		DataType:     dataTypeVarchar,
 		AsExpression: AsExpression{Expression: "value::column::varchar"},
 		NotNull:      new(true),
 		InlineConstraint: &ColumnInlineConstraint{

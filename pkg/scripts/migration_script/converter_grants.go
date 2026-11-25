@@ -32,7 +32,7 @@ func (row GrantCsvRow) convert() (*sdk.Grant, error) {
 	var err error
 	// TODO(SNOW-1569535): use a mapper from object type to parsing function
 	if sdk.ObjectType(row.GrantedOn).IsWithArguments() {
-		name, err = sdk.ParseSchemaObjectIdentifierWithArgumentsAndReturnType(row.Name)
+		name, err = sdk.ParseSchemaObjectIdentifierWithArguments(row.Name)
 	} else {
 		name, err = sdk.ParseObjectIdentifierString(row.Name)
 	}

@@ -19,8 +19,12 @@ const (
 	// SqlKindObject is a nested struct: the fields are the Children of the attribute, or the Children of the Elem object
 	// of a list. See ObjectParameter.
 	SqlKindObject SqlKind = "object"
-	// SqlKindPreexistingStruct is a struct that already exists in the SDK definition. See PreexistingStruct.
+	// SqlKindPreexistingStruct is a nested query struct built from another SSOT attribute. See PreexistingStructOf.
 	SqlKindPreexistingStruct SqlKind = "preexisting_struct"
+	// SqlKindPredefined is a Go type the SDK already has, such as datatypes.DataType. See PredefinedType.
+	SqlKindPredefined SqlKind = "predefined"
+	// SqlKindWrapString is a helper struct around a string: static SQL, the string, then static SQL. See WrapString.
+	SqlKindWrapString SqlKind = "wrap_string"
 )
 
 // SqlQuotes is the quote ddl tag. Zero means no quote tag.
@@ -28,6 +32,7 @@ type SqlQuotes string
 
 const (
 	SqlQuotesSingle SqlQuotes = "single_quotes"
+	SqlQuotesDouble SqlQuotes = "double_quotes"
 	SqlQuotesNo     SqlQuotes = "no_quotes"
 )
 
@@ -91,17 +96,42 @@ type SqlClause struct {
 	// AsParameter writes an object clause as a parameter field (ddl "parameter", the SQL text is the parameter name) instead
 	// of a list. AsParameter sets it.
 	AsParameter bool
+	// TextValue writes a string as a keyword field, such as a double-quoted column name. TextKeyword sets it.
+	TextValue bool
+	// GoType is the Go type of a predefined field, such as DataType or []Column. PredefinedType sets it.
+	GoType string
+	// KeywordShape writes a predefined type as a keyword field instead of a parameter, for a Go type that prints itself,
+	// such as []Column or *ForeignKeyOnAction. On a preexisting struct or a nested object it writes a keyword field
+	// instead of a list. KeywordShape sets it.
+	KeywordShape bool
+	// SharedToOpts makes the struct this clause builds generate a standalone toOpts method, so another SDK interface can
+	// call it. SharedToOpts sets it on the attribute whose struct it is.
+	SharedToOpts bool
 	// ValueKeyword makes a keyword clause carry the value of the attribute instead of marking presence: the enum is written
 	// as a bare keyword. EnumKeyword sets it.
 	ValueKeyword bool
 	// Variants are the provider-like variants of an object: each is a struct of the attributes it refers to, and the
 	// object has one optional field per variant, exactly one of which is set. WithVariants sets it.
 	Variants []SqlVariant
-	// StructName is the name of the preexisting struct that the SDK definition supplies. PreexistingStruct sets it.
+	// StructName is the name of the nested struct or list-of-objects struct generated for this clause. StructName sets it.
 	StructName string
+	// StructAttr is the attribute whose struct the clause embeds. The generator builds that struct from the attribute.
+	// PreexistingStructOf sets it.
+	StructAttr *Attribute
+	// StructUse selects the statement of StructAttr: CREATE, SET, or UNSET. PreexistingStructOfUse sets it.
+	StructUse ClauseUse
 	// NoComma separates the elements of a nested struct without commas. NoComma sets it. ObjectParameter defaults to true;
 	// Commas() sets it false so EQUALITY (c1, c2, ANALYZER => '...') keeps commas.
 	NoComma bool
+	// Before and After are the static SQL around a wrapped string. SQLBefore and SQLAfter set them.
+	Before WrapSQL
+	After  WrapSQL
+}
+
+// WrapSQL is one static field of a wrapped string. Field is the unexported Go name. SQL is the ddl text.
+type WrapSQL struct {
+	Field string
+	SQL   string
 }
 
 // SqlVariant is one variant of an object, such as a storage provider. Fields are references to attributes, in SQL order.
@@ -229,14 +259,37 @@ func IdentifierKeyword(idType string, opts ...SqlClauseOption) SqlClause {
 	}, opts)
 }
 
-// PreexistingStruct is a field of the query struct structName, which the SDK definition passes to CreateOperationFromObject.
-// The struct and its fields stay in that definition, and the generated statement embeds it.
+// TextKeyword writes the string as a keyword field. DoubleQuotes quotes it, Sql is the text before it, and Required makes
+// it mandatory. The Go field name is FieldName, or the attribute name in camel case.
+func TextKeyword(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindKeyword, func(c *SqlClause) {
+		c.TextValue = true
+	}, opts)
+}
+
+// PredefinedType is a field of Go type goType, which the SDK already has, such as datatypes.DataType or []Column.
+// It is a parameter. NoEquals with no Sql prints the value. Sql is the text before it, and Required makes it
+// mandatory. The Go field name is FieldName, or the attribute name in camel case.
+func PredefinedType(goType string, opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindPredefined, func(c *SqlClause) {
+		c.GoType = goType
+	}, opts)
+}
+
+// PreexistingStructOf embeds the query struct the generator builds from attr's CREATE statement.
 // Parentheses() wraps the struct, NoComma() leaves the commas out, Sql is the text before it,
-// and Required makes the field a value rather than a pointer. The Go field name is FieldName,
-// or the attribute name in camel case.
-func PreexistingStruct(structName string, opts ...SqlClauseOption) SqlClause {
+// Required makes the field a value rather than a pointer. On an AttrList attribute the field is a list of that struct.
+// The Go field name is FieldName, or the attribute name in camel case.
+// Use PreexistingStructOfUse for the SET or UNSET struct.
+func PreexistingStructOf(attr *Attribute, opts ...SqlClauseOption) SqlClause {
+	return PreexistingStructOfUse(attr, ClauseCreate, opts...)
+}
+
+// PreexistingStructOfUse is PreexistingStructOf for the SET or UNSET struct of attr, such as the masking policy of a column.
+func PreexistingStructOfUse(attr *Attribute, use ClauseUse, opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindPreexistingStruct, func(c *SqlClause) {
-		c.StructName = structName
+		c.StructAttr = attr
+		c.StructUse = use
 	}, opts)
 }
 
@@ -344,6 +397,13 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if over.Field != "" {
 		base.Field = over.Field
 	}
+	if over.StructName != "" {
+		base.StructName = over.StructName
+	}
+	if over.StructAttr != nil {
+		base.StructAttr = over.StructAttr
+		base.StructUse = over.StructUse
+	}
 	if over.Enum != nil {
 		base.Enum = over.Enum
 	}
@@ -352,6 +412,18 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	}
 	if over.AsParameter {
 		base.AsParameter = true
+	}
+	if over.TextValue {
+		base.TextValue = true
+	}
+	if over.GoType != "" {
+		base.GoType = over.GoType
+	}
+	if over.KeywordShape {
+		base.KeywordShape = true
+	}
+	if over.SharedToOpts {
+		base.SharedToOpts = true
 	}
 	if over.ValueKeyword {
 		base.ValueKeyword = true
@@ -365,7 +437,29 @@ func overlaySqlClause(base, over SqlClause) SqlClause {
 	if len(over.Variants) > 0 {
 		base.Variants = over.Variants
 	}
+	if over.Before.Field != "" {
+		base.Before = over.Before
+	}
+	if over.After.Field != "" {
+		base.After = over.After
+	}
 	return base
+}
+
+// WrapString is a helper struct for a string attribute. SQLBefore, then the string, then SQLAfter.
+// The CREATE field name is the attribute name. SHOW and DESCRIBE stay the plain string.
+func WrapString(opts ...SqlClauseOption) SqlClause {
+	return newClause(SqlKindWrapString, nil, opts)
+}
+
+// SQLBefore sets the static SQL before the wrapped string. field is the unexported Go name. sql is the ddl text.
+func SQLBefore(field, sql string) SqlClauseOption {
+	return func(c *SqlClause) { c.Before = WrapSQL{Field: field, SQL: sql} }
+}
+
+// SQLAfter sets the static SQL after the wrapped string. field is the unexported Go name. sql is the ddl text.
+func SQLAfter(field, sql string) SqlClauseOption {
+	return func(c *SqlClause) { c.After = WrapSQL{Field: field, SQL: sql} }
 }
 
 // ObjectParameter is a nested struct clause. On the Elem object of a list it is the shape of each element: Parentheses()
@@ -376,6 +470,20 @@ func ObjectParameter(opts ...SqlClauseOption) SqlClause {
 	return newClause(SqlKindObject, func(c *SqlClause) {
 		c.NoComma = true
 	}, opts)
+}
+
+// KeywordShape writes a predefined type as a keyword field, not a parameter. Sql is the text before it and Parentheses()
+// wraps it. Use it for a Go type that prints itself, such as []Column or *ForeignKeyOnAction. On PreexistingStructOf and
+// ObjectParameter it writes the struct as a keyword field instead of a list, as a column embeds its constraint.
+func KeywordShape() SqlClauseOption {
+	return func(c *SqlClause) { c.KeywordShape = true }
+}
+
+// SharedToOpts marks the struct that the clause's attribute builds as shared. The struct gets a standalone toOpts
+// method, and another SDK interface that references the struct calls it. Put it on the attribute's own CREATE, SET, or
+// UNSET clause, so every object that embeds the struct gets the same method.
+func SharedToOpts() SqlClauseOption {
+	return func(c *SqlClause) { c.SharedToOpts = true }
 }
 
 // ListOfObjects is a parameter clause for a list or set whose Elem is an object. Sql is the text before the list and
@@ -406,6 +514,13 @@ func FieldName(name string) SqlClauseOption {
 	return func(c *SqlClause) { c.Field = name }
 }
 
+// StructName sets the Go struct name of a nested struct or of the element of a list of objects. Use it when the struct
+// already exists and other definitions refer to it, such as ColumnDefaultValue, or when the owner plus the attribute
+// name is taken by another struct. Without it the name is the owner plus the attribute name.
+func StructName(name string) SqlClauseOption {
+	return func(c *SqlClause) { c.StructName = name }
+}
+
 // WithCreateSql is a copy of the attribute with another CREATE clause, for the place that needs the same attribute with a
 // different shape, such as an enum of another provider. Name, type, and description are not restated.
 func WithCreateSql(attr *Attribute, clause SqlClause) Attribute {
@@ -415,8 +530,12 @@ func WithCreateSql(attr *Attribute, clause SqlClause) Attribute {
 }
 
 // SqlStructName is the Go struct name of a list of objects or of a nested struct: the object and the attribute,
-// ExternalVolume and storage_location give ExternalVolumeStorageLocation.
+// ExternalVolume and storage_location give ExternalVolumeStorageLocation. The StructName option of the CREATE clause keeps
+// a name that already exists.
 func (a Attribute) SqlStructName(owner string) string {
+	if a.CreateSql.Kind != SqlKindPreexistingStruct && a.CreateSql.StructName != "" {
+		return a.CreateSql.StructName
+	}
 	return owner + genhelpers.SnakeCaseToCamel(a.Name)
 }
 
@@ -481,6 +600,10 @@ func (a Attribute) NestedSqlFieldsFor(use ClauseUse) []Attribute {
 }
 
 func (a Attribute) inSqlProjection(use ClauseUse) bool {
+	if a.IsTags() && a.TagForm != "" {
+		// A SET TAG or UNSET TAG child belongs to the statement it names.
+		return (use == ClauseSet && a.TagForm == TagFormSet) || (use == ClauseUnset && a.TagForm == TagFormUnset)
+	}
 	create, set, unset := a.CreateSql.Present, a.SetSql.Present, a.UnsetSql.Present
 	none := !create && !set && !unset
 	switch use {
@@ -495,21 +618,30 @@ func (a Attribute) inSqlProjection(use ClauseUse) bool {
 	}
 }
 
-// RuleFields are the Children that ChildrenRule is applied to: the CREATE fields of the SQL struct that are not a fixed
-// text, in Children order. A child with no explicit clause uses the type default.
-func (a Attribute) RuleFields() []Attribute {
-	return a.RuleFieldsFor(ClauseCreate)
-}
-
-// RuleFieldsFor is RuleFields for one statement projection.
-func (a Attribute) RuleFieldsFor(use ClauseUse) []Attribute {
+// ValidationCandidatesFor are the Children that a Validation of the object can name in one statement projection: the
+// fields of the SQL struct that are not a fixed text, not tags, and not Required, in Children order. A CREATE child with
+// no explicit clause uses the type default.
+func (a Attribute) ValidationCandidatesFor(use ClauseUse) []Attribute {
 	return collections.Filter(a.NestedSqlFieldsFor(use), func(child Attribute) bool {
+		if child.Required {
+			return false
+		}
 		clause := child.rawSqlClause(use)
 		if use == ClauseCreate && !clause.Present {
 			return true
 		}
-		return clause.Kind != SqlKindStatic
+		return clause.Kind != SqlKindStatic && !child.IsTags()
 	})
+}
+
+// ValidationFieldsFor are the Children of one Validation of the object in one statement projection, in Children order.
+// A Validation with no Fields covers every candidate.
+func (a Attribute) ValidationFieldsFor(v Validation, use ClauseUse) []Attribute {
+	candidates := a.ValidationCandidatesFor(use)
+	if len(v.Fields) == 0 {
+		return candidates
+	}
+	return collections.Filter(candidates, func(child Attribute) bool { return v.Names(child.Name) })
 }
 
 // IsObjectList reports whether the attribute is a list or set whose elements are objects.
@@ -517,9 +649,9 @@ func (a Attribute) IsObjectList() bool {
 	return (a.Type == AttrList || a.Type == AttrSet) && a.Elem != nil && a.Elem.Type == AttrObject
 }
 
-// IsSingleBlock reports whether the attribute is one nested block: an object, or a list with MaxItems 1.
+// IsSingleBlock reports whether the attribute is one nested object.
 func (a Attribute) IsSingleBlock() bool {
-	return a.Type == AttrObject || (a.IsObjectList() && a.MaxItems != nil && *a.MaxItems == 1)
+	return a.Type == AttrObject
 }
 
 // AllowEmpty makes a string parameter take an empty string: the SDK field is StringAllowEmpty, not string.
@@ -543,6 +675,10 @@ func Sql(text string) SqlClauseOption {
 
 func NoQuotes() SqlClauseOption {
 	return func(c *SqlClause) { c.Quotes = SqlQuotesNo }
+}
+
+func DoubleQuotes() SqlClauseOption {
+	return func(c *SqlClause) { c.Quotes = SqlQuotesDouble }
 }
 
 func SingleQuotes() SqlClauseOption {

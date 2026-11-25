@@ -2,6 +2,10 @@
 
 package sdk
 
+import (
+	"testing"
+)
+
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[AccountParameter]{"AccountParameter", AllAccountParameters, ToAccountParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[SessionParameter]{"SessionParameter", AllSessionParameters, ToSessionParameter})
@@ -15,6 +19,7 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ProcedureParameter]{"ProcedureParameter", AllProcedureParameters, ToProcedureParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ServiceParameter]{"ServiceParameter", AllServiceParameters, ToServiceParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[PipeParameter]{"PipeParameter", AllPipeParameters, ToPipeParameter})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TableParameter]{"TableParameter", AllTableParameters, ToTableParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[IcebergTableParameter]{"IcebergTableParameter", AllIcebergTableParameters, ToIcebergTableParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[HybridTableParameter]{"HybridTableParameter", AllHybridTableParameters, ToHybridTableParameter})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OpenflowDeploymentParameter]{"OpenflowDeploymentParameter", AllOpenflowDeploymentParameters, ToOpenflowDeploymentParameter})
@@ -28,9 +33,179 @@ func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TimestampTypeMapping]{"TimestampTypeMapping", AllTimestampTypeMappings, ToTimestampTypeMapping})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[TransactionDefaultIsolationLevel]{"TransactionDefaultIsolationLevel", AllTransactionDefaultIsolationLevels, ToTransactionDefaultIsolationLevel})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[UnsupportedDDLAction]{"UnsupportedDDLAction", AllUnsupportedDDLActions, ToUnsupportedDDLAction})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ParameterValueKind]{"ParameterValueKind", AllParameterValueKinds, ToParameterValueKind})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[ParameterType]{"ParameterType", AllParameterTypes, ToParameterType})
 }
 
-type ParametersTestsContext struct{}
+const (
+	case_Parameters_validation_SetAccountParameterRaw_Parameter_ValidateValueSet           testCaseName = "validation_SetAccountParameterRaw_Parameter_ValidateValueSet"
+	case_Parameters_validation_SetAccountParameterRaw_Value_ValidateValueSet               testCaseName = "validation_SetAccountParameterRaw_Value_ValidateValueSet"
+	case_Parameters_sql_SetAccountParameterRaw_basic                                       testCaseName = "sql_SetAccountParameterRaw_basic"
+	case_Parameters_validation_UnsetAccountParameterRaw_Parameter_ValidateValueSet         testCaseName = "validation_UnsetAccountParameterRaw_Parameter_ValidateValueSet"
+	case_Parameters_sql_UnsetAccountParameterRaw_basic                                     testCaseName = "sql_UnsetAccountParameterRaw_basic"
+	case_Parameters_validation_SetObjectParameterOnObjectRaw_ObjectType_ValidateValueSet   testCaseName = "validation_SetObjectParameterOnObjectRaw_ObjectType_ValidateValueSet"
+	case_Parameters_validation_SetObjectParameterOnObjectRaw_ObjectName_ValidIdentifier    testCaseName = "validation_SetObjectParameterOnObjectRaw_ObjectName_ValidIdentifier"
+	case_Parameters_validation_SetObjectParameterOnObjectRaw_Parameter_ValidateValueSet    testCaseName = "validation_SetObjectParameterOnObjectRaw_Parameter_ValidateValueSet"
+	case_Parameters_validation_SetObjectParameterOnObjectRaw_Value_ValidateValueSet        testCaseName = "validation_SetObjectParameterOnObjectRaw_Value_ValidateValueSet"
+	case_Parameters_sql_SetObjectParameterOnObjectRaw_basic                                testCaseName = "sql_SetObjectParameterOnObjectRaw_basic"
+	case_Parameters_validation_UnsetObjectParameterOnObjectRaw_ObjectType_ValidateValueSet testCaseName = "validation_UnsetObjectParameterOnObjectRaw_ObjectType_ValidateValueSet"
+	case_Parameters_validation_UnsetObjectParameterOnObjectRaw_ObjectName_ValidIdentifier  testCaseName = "validation_UnsetObjectParameterOnObjectRaw_ObjectName_ValidIdentifier"
+	case_Parameters_validation_UnsetObjectParameterOnObjectRaw_Parameter_ValidateValueSet  testCaseName = "validation_UnsetObjectParameterOnObjectRaw_Parameter_ValidateValueSet"
+	case_Parameters_sql_UnsetObjectParameterOnObjectRaw_basic                              testCaseName = "sql_UnsetObjectParameterOnObjectRaw_basic"
+)
 
-var parametersTests = ParametersTestsContext{}
+type ParametersTestsContext struct {
+	SetAccountParameterRaw          *sdkTestCtx[*SetAccountParameterRawParameterOptions]
+	UnsetAccountParameterRaw        *sdkTestCtx[*UnsetAccountParameterRawParameterOptions]
+	SetObjectParameterOnObjectRaw   *sdkTestCtx[*SetObjectParameterOnObjectRawParameterOptions]
+	UnsetObjectParameterOnObjectRaw *sdkTestCtx[*UnsetObjectParameterOnObjectRawParameterOptions]
+}
+
+var parametersTests = ParametersTestsContext{
+	SetAccountParameterRaw: newSdkTestCtx[*SetAccountParameterRawParameterOptions](
+		"Parameters", "SetAccountParameterRaw",
+	).
+		withDefaultOpts(func() *SetAccountParameterRawParameterOptions {
+			return &SetAccountParameterRawParameterOptions{}
+		}).
+		withValidationCases(
+			validationCase[*SetAccountParameterRawParameterOptions]{
+				Name:        case_Parameters_validation_SetAccountParameterRaw_Parameter_ValidateValueSet,
+				ExpectedErr: errNotSet("SetAccountParameterRawParameterOptions", "Parameter"),
+				DefaultModify: func(opts *SetAccountParameterRawParameterOptions) {
+					opts.Parameter = ""
+				},
+			},
+			validationCase[*SetAccountParameterRawParameterOptions]{
+				Name:        case_Parameters_validation_SetAccountParameterRaw_Value_ValidateValueSet,
+				ExpectedErr: errNotSet("SetAccountParameterRawParameterOptions", "Value"),
+				DefaultModify: func(opts *SetAccountParameterRawParameterOptions) {
+					opts.Value = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetAccountParameterRawParameterOptions]{
+				Name:           case_Parameters_sql_SetAccountParameterRaw_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	UnsetAccountParameterRaw: newSdkTestCtx[*UnsetAccountParameterRawParameterOptions](
+		"Parameters", "UnsetAccountParameterRaw",
+	).
+		withDefaultOpts(func() *UnsetAccountParameterRawParameterOptions {
+			return &UnsetAccountParameterRawParameterOptions{}
+		}).
+		withValidationCases(
+			validationCase[*UnsetAccountParameterRawParameterOptions]{
+				Name:        case_Parameters_validation_UnsetAccountParameterRaw_Parameter_ValidateValueSet,
+				ExpectedErr: errNotSet("UnsetAccountParameterRawParameterOptions", "Parameter"),
+				DefaultModify: func(opts *UnsetAccountParameterRawParameterOptions) {
+					opts.Parameter = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*UnsetAccountParameterRawParameterOptions]{
+				Name:           case_Parameters_sql_UnsetAccountParameterRaw_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	SetObjectParameterOnObjectRaw: newSdkTestCtx[*SetObjectParameterOnObjectRawParameterOptions](
+		"Parameters", "SetObjectParameterOnObjectRaw",
+	).
+		withDefaultOpts(func() *SetObjectParameterOnObjectRawParameterOptions {
+			return &SetObjectParameterOnObjectRawParameterOptions{}
+		}).
+		withValidationCases(
+			validationCase[*SetObjectParameterOnObjectRawParameterOptions]{
+				Name:        case_Parameters_validation_SetObjectParameterOnObjectRaw_ObjectType_ValidateValueSet,
+				ExpectedErr: errNotSet("SetObjectParameterOnObjectRawParameterOptions", "ObjectType"),
+				DefaultModify: func(opts *SetObjectParameterOnObjectRawParameterOptions) {
+					opts.ObjectType = ""
+				},
+			},
+			validationCase[*SetObjectParameterOnObjectRawParameterOptions]{
+				Name:        case_Parameters_validation_SetObjectParameterOnObjectRaw_ObjectName_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("SetObjectParameterOnObjectRawParameterOptions", "ObjectName"),
+				DefaultModify: func(opts *SetObjectParameterOnObjectRawParameterOptions) {
+					opts.ObjectName = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*SetObjectParameterOnObjectRawParameterOptions]{
+				Name:        case_Parameters_validation_SetObjectParameterOnObjectRaw_Parameter_ValidateValueSet,
+				ExpectedErr: errNotSet("SetObjectParameterOnObjectRawParameterOptions", "Parameter"),
+				DefaultModify: func(opts *SetObjectParameterOnObjectRawParameterOptions) {
+					opts.Parameter = ""
+				},
+			},
+			validationCase[*SetObjectParameterOnObjectRawParameterOptions]{
+				Name:        case_Parameters_validation_SetObjectParameterOnObjectRaw_Value_ValidateValueSet,
+				ExpectedErr: errNotSet("SetObjectParameterOnObjectRawParameterOptions", "Value"),
+				DefaultModify: func(opts *SetObjectParameterOnObjectRawParameterOptions) {
+					opts.Value = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*SetObjectParameterOnObjectRawParameterOptions]{
+				Name:           case_Parameters_sql_SetObjectParameterOnObjectRaw_basic,
+				NoModifyNeeded: true,
+			},
+		),
+	UnsetObjectParameterOnObjectRaw: newSdkTestCtx[*UnsetObjectParameterOnObjectRawParameterOptions](
+		"Parameters", "UnsetObjectParameterOnObjectRaw",
+	).
+		withDefaultOpts(func() *UnsetObjectParameterOnObjectRawParameterOptions {
+			return &UnsetObjectParameterOnObjectRawParameterOptions{}
+		}).
+		withValidationCases(
+			validationCase[*UnsetObjectParameterOnObjectRawParameterOptions]{
+				Name:        case_Parameters_validation_UnsetObjectParameterOnObjectRaw_ObjectType_ValidateValueSet,
+				ExpectedErr: errNotSet("UnsetObjectParameterOnObjectRawParameterOptions", "ObjectType"),
+				DefaultModify: func(opts *UnsetObjectParameterOnObjectRawParameterOptions) {
+					opts.ObjectType = ""
+				},
+			},
+			validationCase[*UnsetObjectParameterOnObjectRawParameterOptions]{
+				Name:        case_Parameters_validation_UnsetObjectParameterOnObjectRaw_ObjectName_ValidIdentifier,
+				ExpectedErr: errInvalidIdentifier("UnsetObjectParameterOnObjectRawParameterOptions", "ObjectName"),
+				DefaultModify: func(opts *UnsetObjectParameterOnObjectRawParameterOptions) {
+					opts.ObjectName = emptyAccountObjectIdentifier
+				},
+			},
+			validationCase[*UnsetObjectParameterOnObjectRawParameterOptions]{
+				Name:        case_Parameters_validation_UnsetObjectParameterOnObjectRaw_Parameter_ValidateValueSet,
+				ExpectedErr: errNotSet("UnsetObjectParameterOnObjectRawParameterOptions", "Parameter"),
+				DefaultModify: func(opts *UnsetObjectParameterOnObjectRawParameterOptions) {
+					opts.Parameter = ""
+				},
+			},
+		).
+		withSqlCases(
+			sqlCase[*UnsetObjectParameterOnObjectRawParameterOptions]{
+				Name:           case_Parameters_sql_UnsetObjectParameterOnObjectRaw_basic,
+				NoModifyNeeded: true,
+			},
+		),
+}
+
+func TestParameters_SetAccountParameterRaw(t *testing.T) {
+	parametersTests.SetAccountParameterRaw.RunValidationCases(t)
+	parametersTests.SetAccountParameterRaw.RunSqlCases(t)
+}
+
+func TestParameters_UnsetAccountParameterRaw(t *testing.T) {
+	parametersTests.UnsetAccountParameterRaw.RunValidationCases(t)
+	parametersTests.UnsetAccountParameterRaw.RunSqlCases(t)
+}
+
+func TestParameters_SetObjectParameterOnObjectRaw(t *testing.T) {
+	parametersTests.SetObjectParameterOnObjectRaw.RunValidationCases(t)
+	parametersTests.SetObjectParameterOnObjectRaw.RunSqlCases(t)
+}
+
+func TestParameters_UnsetObjectParameterOnObjectRaw(t *testing.T) {
+	parametersTests.UnsetObjectParameterOnObjectRaw.RunValidationCases(t)
+	parametersTests.UnsetObjectParameterOnObjectRaw.RunSqlCases(t)
+}

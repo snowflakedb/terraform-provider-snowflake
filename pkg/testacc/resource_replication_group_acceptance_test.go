@@ -11,6 +11,7 @@
 package testacc
 
 import (
+	"regexp"
 	"testing"
 
 	tfresources "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
@@ -82,7 +83,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 		WithAllowedIntegrationTypes(replicationGroupEnumStrings(integrationTypes)).
 		WithComment(comment).
 		WithReplicationSchedule(schedule).
-		WithErrorIntegration(errorIntegration.ID().FullyQualifiedName())
+		WithErrorIntegration(errorIntegration.ID().Name())
 	objectLists := model.ReplicationGroup("t", id.Name(), configAccounts, replicationGroupEnumStrings(objectTypes)).
 		WithAllowedDatabases([]string{database.ID().FullyQualifiedName(), database2.ID().FullyQualifiedName()}).
 		WithAllowedExternalVolumes([]string{externalVolume.FullyQualifiedName()}).
@@ -108,13 +109,12 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 		integrationTypes: integrationTypes,
 		comment:          comment,
 		schedule:         schedule,
-		errorIntegration: errorIntegration.ID().FullyQualifiedName(),
+		errorIntegration: errorIntegration.ID().Name(),
 	}
 	objectListsState := allState
 	objectListsState.comment = ""
 	objectListsState.schedule = ""
 	objectListsState.errorIntegration = ""
-	objectListsState.errorIntegrationCleared = true
 
 	assertBasic := replicationGroupAssertions(t, ref, id, configAccounts, sourceAccount, basicState)
 	assertAll := replicationGroupAssertions(t, ref, id, configAccounts, sourceAccount, allState)
@@ -144,7 +144,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 				ResourceName:      ref,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// SHOW does not return the allowed-object lists or error_integration.
+				// SHOW does not return the allowed-object lists.
 				// ignore_edition_check is a create-only default.
 				ImportStateVerifyIgnore: replicationGroupImportIgnores(),
 				ImportStateCheck:        replicationGroupImportChecks(t, id, configAccounts, basicState),
@@ -155,7 +155,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, nil, sdk.String(comment)),
 						planchecks.ExpectChange(ref, "replication_schedule", tfjson.ActionUpdate, nil, sdk.String(schedule)),
-						planchecks.ExpectChange(ref, "error_integration", tfjson.ActionUpdate, nil, sdk.String(errorIntegration.ID().FullyQualifiedName())),
+						planchecks.ExpectChange(ref, "error_integration", tfjson.ActionUpdate, nil, sdk.String(errorIntegration.ID().Name())),
 						planchecks.ExpectNoChangeOnField(ref, "name"),
 					},
 				},
@@ -176,7 +176,7 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(comment), nil),
 						planchecks.ExpectChange(ref, "replication_schedule", tfjson.ActionUpdate, sdk.String(schedule), nil),
-						planchecks.ExpectChange(ref, "error_integration", tfjson.ActionUpdate, sdk.String(errorIntegration.ID().FullyQualifiedName()), nil),
+						planchecks.ExpectChange(ref, "error_integration", tfjson.ActionUpdate, sdk.String(errorIntegration.ID().Name()), nil),
 					},
 				},
 				Config: config.FromModels(t, objectLists),
@@ -214,6 +214,26 @@ func TestAcc_ReplicationGroup_BasicUseCase(t *testing.T) {
 				},
 				Config: config.FromModels(t, renamed),
 				Check:  assertThat(t, assertRenamed...),
+			},
+		},
+	})
+}
+
+// The configuration is validated at plan time, before anything is created in Snowflake.
+func TestAcc_ReplicationGroup_Validations(t *testing.T) {
+	emptyObjectTypes := model.ReplicationGroup("t", "name", []string{"MYORG.MYACCOUNT"}, []string{})
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ReplicationGroup),
+		Steps: []resource.TestStep{
+			{
+				Config:      config.FromModels(t, emptyObjectTypes),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`Not enough list items`),
 			},
 		},
 	})
@@ -284,15 +304,87 @@ func TestAcc_ReplicationGroup_RecreateWhenExternallyNotPrimary(t *testing.T) {
 }
 
 type replicationGroupExpected struct {
-	databases               []sdk.AccountObjectIdentifier
-	externalVolumes         []sdk.AccountObjectIdentifier
-	shares                  []sdk.AccountObjectIdentifier
-	objectTypes             []sdk.ReplicationGroupObjectType
-	integrationTypes        []sdk.ReplicationGroupIntegrationType
-	comment                 string
-	schedule                string
-	errorIntegration        string
-	errorIntegrationCleared bool
+	databases        []sdk.AccountObjectIdentifier
+	externalVolumes  []sdk.AccountObjectIdentifier
+	shares           []sdk.AccountObjectIdentifier
+	objectTypes      []sdk.ReplicationGroupObjectType
+	integrationTypes []sdk.ReplicationGroupIntegrationType
+	comment          string
+	schedule         string
+	errorIntegration string
+}
+
+// The error integration is read from SHOW, so changing it or unsetting it outside of Terraform is drift that the next apply restores.
+func TestAcc_ReplicationGroup_ErrorIntegration_ExternalChanges(t *testing.T) {
+	id := testClient().Ids.RandomAccountObjectIdentifier()
+	allowedAccount := secondaryTestClient().Account.GetAccountIdentifier(t)
+	database, cleanupDatabase := testClient().Database.CreateDatabase(t)
+	t.Cleanup(cleanupDatabase)
+	errorIntegration, cleanupErrorIntegration := testClient().NotificationIntegration.Create(t)
+	t.Cleanup(cleanupErrorIntegration)
+	otherIntegration, cleanupOtherIntegration := testClient().NotificationIntegration.Create(t)
+	t.Cleanup(cleanupOtherIntegration)
+
+	configured := model.ReplicationGroup("t", id.Name(), []string{allowedAccount.FullyQualifiedName()}, []string{string(sdk.ReplicationGroupObjectTypeDatabases)}).
+		WithAllowedDatabases([]string{database.ID().Name()}).
+		WithErrorIntegration(errorIntegration.ID().Name())
+	ref := configured.ResourceReference()
+
+	restored := []assert.TestCheckFuncProvider{
+		resourceassert.ReplicationGroupResource(t, ref).
+			HasNameString(id.Name()).
+			HasErrorIntegrationString(errorIntegration.ID().Name()),
+		objectassert.ReplicationGroup(t, id).
+			HasName(id.Name()).
+			HasErrorIntegration(errorIntegration.ID()),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
+			tfversion.RequireAbove(tfversion.Version1_5_0),
+		},
+		CheckDestroy: CheckDestroy(t, resources.ReplicationGroup),
+		Steps: []resource.TestStep{
+			// 1. Create with the error integration
+			{
+				Config: config.FromModels(t, configured),
+				Check:  assertThat(t, restored...),
+			},
+			// 2. The integration is changed outside of Terraform
+			{
+				PreConfig: func() {
+					testClient().ReplicationGroup.Alter(t, sdk.NewAlterReplicationGroupRequest(id).
+						WithSet(*sdk.NewReplicationGroupSetRequest().WithErrorIntegration(otherIntegration.ID())))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(ref, "error_integration", sdk.String(errorIntegration.ID().Name()), sdk.String(otherIntegration.ID().Name())),
+						planchecks.ExpectChange(ref, "error_integration", tfjson.ActionUpdate, sdk.String(otherIntegration.ID().Name()), sdk.String(errorIntegration.ID().Name())),
+					},
+				},
+				Config: config.FromModels(t, configured),
+				Check:  assertThat(t, restored...),
+			},
+			// 3. The integration is unset outside of Terraform
+			{
+				PreConfig: func() {
+					testClient().ReplicationGroup.Alter(t, sdk.NewAlterReplicationGroupRequest(id).
+						WithUnset(*sdk.NewReplicationGroupUnsetRequest().WithErrorIntegration(true)))
+				},
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+						planchecks.ExpectDrift(ref, "error_integration", sdk.String(errorIntegration.ID().Name()), sdk.String("")),
+						planchecks.ExpectChange(ref, "error_integration", tfjson.ActionUpdate, sdk.String(""), sdk.String(errorIntegration.ID().Name())),
+					},
+				},
+				Config: config.FromModels(t, configured),
+				Check:  assertThat(t, restored...),
+			},
+		},
+	})
 }
 
 func replicationGroupAssertions(
@@ -332,7 +424,7 @@ func replicationGroupAssertions(
 		HasPrimary(primary).
 		HasObjectTypes(expected.objectTypes...).
 		HasNoSecondaryState().
-		HasNoReadOnly().
+		HasNoIsPrimaryReadOnly().
 		HasIsListingAutoFulfillmentGroup(false).
 		HasOwner(snowflakeroles.Accountadmin.Name()).
 		HasAccountName(sourceAccount.AccountName()).
@@ -370,11 +462,7 @@ func replicationGroupAssertions(
 		objectCheck = objectCheck.HasReplicationSchedule(expected.schedule)
 	}
 	if expected.errorIntegration == "" {
-		if expected.errorIntegrationCleared {
-			resourceCheck = resourceCheck.HasErrorIntegrationEmpty()
-		} else {
-			resourceCheck = resourceCheck.HasNoErrorIntegration()
-		}
+		resourceCheck = resourceCheck.HasErrorIntegrationEmpty()
 	} else {
 		resourceCheck = resourceCheck.HasErrorIntegrationString(expected.errorIntegration)
 	}
@@ -421,7 +509,6 @@ func replicationGroupImportIgnores() []string {
 		"allowed_external_volumes",
 		"allowed_shares",
 		"ignore_edition_check",
-		"error_integration",
 	}
 }
 

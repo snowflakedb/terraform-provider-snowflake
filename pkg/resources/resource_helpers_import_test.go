@@ -10,6 +10,10 @@ import (
 
 func importTestSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
+		"boolean": {
+			Type:     schema.TypeBool,
+			Optional: true,
+		},
 		"boolean_string": {
 			Type:     schema.TypeString,
 			Optional: true,
@@ -46,6 +50,28 @@ func importTestSchema() map[string]*schema.Schema {
 				},
 			},
 		},
+	}
+}
+
+func Test_importBooleanAttribute(t *testing.T) {
+	tests := []struct {
+		name                 string
+		importPermissiveMode bool
+		snowflakeValue       bool
+		expected             *string
+	}{
+		{name: "enforcing, true", snowflakeValue: true, expected: new("true")},
+		{name: "enforcing, false", snowflakeValue: false, expected: new("false")},
+		{name: "permissive, true", importPermissiveMode: true, snowflakeValue: true, expected: nil},
+		{name: "permissive, false", importPermissiveMode: true, snowflakeValue: false, expected: nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := importedStateValue(t, "boolean", func(d *schema.ResourceData) error {
+				return importBooleanAttribute(d, "boolean", tt.importPermissiveMode, tt.snowflakeValue)
+			})
+			assert.Equal(t, tt.expected, got)
+		})
 	}
 }
 

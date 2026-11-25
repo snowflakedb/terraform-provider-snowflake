@@ -14,6 +14,7 @@ const (
 	ShowByIDApplicationNameFiltering
 	ShowByIDServiceInFiltering
 	ShowByIDTableInFiltering
+	ShowByIDExtendedInWithoutSchemaFiltering
 
 	// ShowByIDNoFiltering causes the auto-generated ShowByID to use no filtering when passed as the sole filtering argument to ShowOperation
 	ShowByIDNoFiltering ShowByIDFilteringKind = 100
@@ -80,6 +81,10 @@ func newShowByIDExtendedInFiltering(identifierKind idPrefix) ShowByIDFiltering {
 	return newShowByIDFiltering("In", "ExtendedIn", fmt.Sprintf("%[1]v: id.%[1]vId()", identifierKind))
 }
 
+func newShowByIDExtendedInWithoutSchemaFiltering(identifierKind idPrefix) ShowByIDFiltering {
+	return newShowByIDFiltering("In", "ExtendedInWithoutSchema", fmt.Sprintf("%[1]v: id.%[1]vId()", identifierKind))
+}
+
 func newShowByIDServiceInFiltering(identifierKind idPrefix) ShowByIDFiltering {
 	return newShowByIDFiltering("In", "ServiceIn", fmt.Sprintf("%[1]v: id.%[1]vId()", identifierKind))
 }
@@ -113,6 +118,8 @@ func (s *Operation) withFiltering(filtering ...ShowByIDFilteringKind) *Operation
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDExtendedInFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDExtendedInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
+		case ShowByIDExtendedInWithoutSchemaFiltering:
+			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDExtendedInWithoutSchemaFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDServiceInFiltering:
 			s.ShowByIDFiltering = append(s.ShowByIDFiltering, newShowByIDServiceInFiltering(s.ObjectInterface.ObjectIdentifierPrefix()))
 		case ShowByIDTableInFiltering:

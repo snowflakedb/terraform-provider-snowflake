@@ -3,14 +3,74 @@ package defs
 import (
 	"slices"
 
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/parameterdefs"
 )
 
 var icebergTableParameters = ParameterDefsForLevel(parameterdefs.ParameterLevelIcebergTable)
+
+// Structs that Table emits and iceberg tables reference. Table defines them in SSOT with SharedToOpts, so Table generates
+// their standalone toOpts. The fields below reference them with the Shared helpers, and the iceberg statements call that toOpts.
+var (
+	tableColumnMaskingPolicy         = g.QueryStructFromAttribute("Table", ssotdefs.TableColumnMaskingPolicy)
+	tableColumnProjectionPolicy      = g.QueryStructFromAttribute("Table", ssotdefs.TableColumnProjectionPolicy)
+	tableDropColumnAction            = g.QueryStructFromAttribute("Table", ssotdefs.TableDropColumnAction)
+	tableRenameColumnAction          = g.QueryStructFromAttribute("Table", ssotdefs.TableRenameColumnAction)
+	tableSetColumnMaskingPolicy      = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseSet)
+	tableUnsetColumnMaskingPolicy    = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseUnset)
+	tableSetColumnProjectionPolicy   = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnProjectionPolicy, ssot.ClauseSet)
+	tableUnsetColumnProjectionPolicy = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnProjectionPolicy, ssot.ClauseUnset)
+	tableSetColumnTags               = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseSet)
+	tableUnsetColumnTags             = g.QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseUnset)
+)
+
+// tableOutOfLineConstraint is the out-of-line constraint struct that Table emits. CREATE and ALTER ADD reference it.
+func tableOutOfLineConstraint() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableOutOfLineConstraint)
+}
+
+// tableColumnInlineConstraint is the inline constraint struct that Table emits. Iceberg CREATE and ADD COLUMN reference it.
+func tableColumnInlineConstraint() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableColumnInlineConstraint)
+}
+
+// The Table ALTER blocks below are emitted by Table, so iceberg tables reference them with OptionalSharedQueryStructField.
+func tableSearchOptimizationAction() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableSearchOptimizationAction)
+}
+
+func tableAddRowAccessPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableAddRowAccessPolicy)
+}
+
+func tableDropRowAccessPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableDropRowAccessPolicy)
+}
+
+func tableDropAndAddRowAccessPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttribute("Table", ssotdefs.TableDropAndAddRowAccessPolicy)
+}
+
+func tableSetAggregationPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableAggregationPolicy, ssot.ClauseSet)
+}
+
+func tableUnsetAggregationPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableAggregationPolicy, ssot.ClauseUnset)
+}
+
+func tableSetJoinPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableJoinPolicy, ssot.ClauseSet)
+}
+
+func tableUnsetJoinPolicy() *g.QueryStruct {
+	return g.QueryStructFromAttributeUse("Table", ssotdefs.TableJoinPolicy, ssot.ClauseUnset)
+}
 
 var icebergTableParameterFieldNames = collections.Map(icebergTableParameters, g.ParameterSqlToFieldName)
 
@@ -50,15 +110,15 @@ var icebergTableColumn = g.NewQueryStruct("IcebergTableColumn").
 	PredefinedQueryStructField("ColumnType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
 	OptionalSQL("NOT NULL").
-	OptionalQueryStructField("InlineConstraint", tableColumnInlineConstraint(), g.KeywordOptions()).
+	OptionalSharedQueryStructField("InlineConstraint", tableColumnInlineConstraint(), g.KeywordOptions()).
 	OptionalSharedQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
-	OptionalQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).
+	OptionalSharedQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).
 	OptionalTags().
 	OptionalTextAssignment("COMMENT", g.ParameterOptions().NoEquals().SingleQuotes())
 
 var icebergTableColumnsAndConstraints = g.NewQueryStruct("IcebergTableColumnsAndConstraints").
 	ListQueryStructField("Columns", icebergTableColumn, g.KeywordOptions().Required()).
-	ListQueryStructField("OutOfLineConstraint", tableOutOfLineConstraint(), g.KeywordOptions())
+	ListSharedQueryStructField("OutOfLineConstraint", tableOutOfLineConstraint(), g.KeywordOptions())
 
 var icebergTablePartitionBucketArgs = g.NewQueryStruct("IcebergTablePartitionBucketArgs").
 	Number("NumBuckets", g.KeywordOptions().Required()).
@@ -126,10 +186,10 @@ var icebergTableAddColumnAction = g.NewQueryStruct("IcebergTableAddColumnAction"
 	OptionalSQL("IF NOT EXISTS").
 	Text("Name", g.KeywordOptions().Required().DoubleQuotes()).
 	PredefinedQueryStructField("ColumnType", "datatypes.DataType", g.ParameterOptions().NoQuotes().NoEquals().Required()).
-	OptionalQueryStructField("InlineConstraint", tableColumnInlineConstraint(), g.KeywordOptions()).
+	OptionalSharedQueryStructField("InlineConstraint", tableColumnInlineConstraint(), g.KeywordOptions()).
 	PredefinedQueryStructField("DefaultValue", g.KindOfTPointer[sdkcommons.ColumnDefaultValue](), g.KeywordOptions()).
-	OptionalQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
-	OptionalQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).
+	OptionalSharedQueryStructField("MaskingPolicy", tableColumnMaskingPolicy, g.KeywordOptions()).
+	OptionalSharedQueryStructField("ProjectionPolicy", tableColumnProjectionPolicy, g.KeywordOptions()).
 	OptionalTags()
 
 var icebergTableAlterColumnAction = g.NewQueryStruct("IcebergTableAlterColumnAction").
@@ -149,7 +209,7 @@ var icebergTableClusteringAction = g.NewQueryStruct("IcebergTableClusteringActio
 	OptionalQueryStructField(
 		"ChangeReclusterState",
 		g.NewQueryStruct("IcebergTableReclusterChangeState").
-			OptionalEnum("State", ReclusterStateEnumDef, g.KeywordOptions()).
+			OptionalEnum("State", ssotdefs.ReclusterState, g.KeywordOptions()).
 			SQL("RECLUSTER"),
 		g.KeywordOptions(),
 	).
@@ -301,12 +361,12 @@ var icebergTablesDef = g.NewInterface(
 			icebergTableAddColumnAction,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"DropColumnAction",
 			tableDropColumnAction,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"RenameColumnAction",
 			tableRenameColumnAction,
 			g.KeywordOptions(),
@@ -316,32 +376,32 @@ var icebergTablesDef = g.NewInterface(
 			icebergTableAlterColumnAction,
 			g.KeywordOptions().SQL("ALTER"),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"SetMaskingPolicyOnColumn",
 			tableSetColumnMaskingPolicy,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"UnsetMaskingPolicyOnColumn",
 			tableUnsetColumnMaskingPolicy,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"SetProjectionPolicyOnColumn",
 			tableSetColumnProjectionPolicy,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"UnsetProjectionPolicyOnColumn",
 			tableUnsetColumnProjectionPolicy,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"SetTagsOnColumn",
 			tableSetColumnTags,
 			g.KeywordOptions(),
 		).
-		OptionalQueryStructField(
+		OptionalSharedQueryStructField(
 			"UnsetTagsOnColumn",
 			tableUnsetColumnTags,
 			g.KeywordOptions(),
@@ -430,8 +490,7 @@ var icebergTablesDef = g.NewInterface(
 	"https://docs.snowflake.com/en/sql-reference/sql/desc-iceberg-table",
 	g.StructPair("icebergTableDetailsRow", "IcebergTableDetails").
 		Text("name").
-		DataType("type", g.WithManualConvert()).
-		PlainOnlyField("DataTypeRaw", "string").
+		DataType("type", g.WithRawFallback("DataTypeRaw")).
 		OptionalText("source iceberg type").
 		Text("kind").
 		Field("null?", "string", "bool", g.WithPlainFieldName("IsNullable"), g.WithDbFieldName("Null")).

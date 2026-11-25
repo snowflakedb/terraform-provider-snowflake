@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ComputePoolCreateMappings_renderCreateFuncs(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ComputePool}, nil, nil)
 	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
@@ -70,8 +71,17 @@ func Test_constructorArg(t *testing.T) {
 	require.True(t, ok)
 	require.Equal(t, &CreateConstructorArg{Var: "postgresInstance", Get: `d.Get("postgres_instance").(string)`}, got)
 
-	_, ok = arg(block, ssot.Attribute{Name: "schema_object", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true})
-	require.False(t, ok)
+	got, ok = arg(block, ssot.Attribute{Name: "schema_object", Type: ssot.AttrIdentifier, IdentifierType: "SchemaObjectIdentifier", Required: true})
+	require.True(t, ok)
+	require.Equal(t, &CreateConstructorArg{Var: "schemaObject", Get: `d.Get(prefix+"schema_object").(string)`, Parser: "sdk.ParseSchemaObjectIdentifier"}, got)
+
+	got, ok = arg(object, ssot.Attribute{Name: "primary", Type: ssot.AttrIdentifier, IdentifierType: "ExternalObjectIdentifier", Required: true})
+	require.True(t, ok)
+	require.Equal(t, &CreateConstructorArg{Var: "primary", Get: `d.Get("primary").(string)`, Parser: "sdk.ParseExternalObjectIdentifier"}, got)
+
+	got, ok = arg(object, ssot.Attribute{Name: "target_account", Type: ssot.AttrIdentifier, IdentifierType: "AccountIdentifier", Required: true})
+	require.True(t, ok)
+	require.Equal(t, &CreateConstructorArg{Var: "targetAccount", Get: `d.Get("target_account").(string)`, Parser: "sdk.ParseAccountIdentifier"}, got)
 
 	got, ok = arg(block, ssot.Attribute{Name: "instance_family", Type: ssot.AttrEnum, Required: true, Enum: family})
 	require.True(t, ok)
@@ -90,10 +100,7 @@ func Test_constructorArg(t *testing.T) {
 	})
 }
 
-func Test_collectionMapperName(t *testing.T) {
-	require.Equal(t, "toComputePoolBackupInstanceFamilies", collectionMapperName("ComputePool", defs.ComputePoolAttrs.BackupInstanceFamilies))
-}
-
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_AuthenticationPolicySecurityIntegrationsCreateMapping(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.AuthenticationPolicy}, nil, nil)
 	var got *CreateOptionalCall
@@ -109,6 +116,7 @@ func Test_AuthenticationPolicySecurityIntegrationsCreateMapping(t *testing.T) {
 	}, got)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_ExternalVolumeCreateMappings_renderCreateFuncs(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.ExternalVolumeObject}, nil, nil)
 	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
@@ -129,6 +137,7 @@ func Test_ExternalVolumeCreateMappings_renderCreateFuncs(t *testing.T) {
 `, renderTemplate(t, "generatedApplyCreateOptionals", model))
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_SchemaCreateMappings_stayExt(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Schema}, nil, nil)
 	require.True(t, model.Hooks.ParseIdFromConfig.Generate)
@@ -229,14 +238,13 @@ func Test_attachCreateMappings_collectionsUseElementMappers(t *testing.T) {
 			Required: true,
 		}}),
 	}, {
-		Name:     "policy",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name: "issuers",
 			Type: ssot.AttrSet,
 			Elem: &ssot.Attribute{Type: ssot.AttrString},
-		}}),
+		}},
 	}})
 
 	require.Equal(t, `func widgetApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateWidgetRequest) error {
@@ -261,10 +269,9 @@ func Test_attachCreateMappings_nestedListBlocks(t *testing.T) {
 	mode := ssot.NewEnum("WidgetMode", "WidgetModes", "ON")
 	level := ssot.NewEnum("WidgetLevel", "WidgetLevels", "LOW")
 	model := createOptionalsModel("Widget", []ssot.Attribute{{
-		Name:     "policy",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name:     "mode",
 			Type:     ssot.AttrEnum,
 			Required: true,
@@ -289,17 +296,16 @@ func Test_attachCreateMappings_nestedListBlocks(t *testing.T) {
 			Type:           ssot.AttrIdentifier,
 			IdentifierType: "AccountObjectIdentifier",
 		}, {
-			Name:     "limit",
-			Type:     ssot.AttrList,
-			MaxItems: new(1),
-			Elem: ssot.ObjectElem([]ssot.Attribute{{
+			Name: "limit",
+			Type: ssot.AttrObject,
+			Children: []ssot.Attribute{{
 				Name: "count",
 				Type: ssot.AttrInt,
 			}, {
 				Name: "enabled",
 				Type: ssot.AttrBool,
-			}}),
-		}}),
+			}},
+		}},
 	}, {
 		Name: "storage_location",
 		Type: ssot.AttrList,
@@ -460,9 +466,9 @@ func Test_attachCreateMappings_fourLevelBlocksWithDeepSet(t *testing.T) {
 
 func Test_attachCreateMappings_fourLevelBlocksWithUnmappedLeafStayHandwritten(t *testing.T) {
 	model := createOptionalsModel("Widget", []ssot.Attribute{fourLevelBlock(func(d *ssot.Attribute) {
-		d.Elem.Children[1].Type = ssot.AttrIdentifier
-		d.Elem.Children[1].IdentifierType = "SchemaObjectIdentifier"
+		d.Elem.Children[1].Type = ssot.AttrList
 		d.Elem.Children[1].Required = true
+		d.Elem.Children[1].Elem = &ssot.Attribute{Type: ssot.AttrString}
 	})})
 
 	require.Empty(t, model.CreateBlockFuncs())
@@ -479,17 +485,15 @@ func Test_attachCreateMappings_fourLevelBlocksWithUnmappedLeafStayHandwritten(t 
 // fourLevelBlock is a -> b -> c -> d, alternating single and multi-item lists. adjustDeepest changes d.
 func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 	block := ssot.Attribute{
-		Name:     "a",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "a",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name: "b",
 			Type: ssot.AttrList,
 			Elem: ssot.ObjectElem([]ssot.Attribute{{
-				Name:     "c",
-				Type:     ssot.AttrList,
-				MaxItems: new(1),
-				Elem: ssot.ObjectElem([]ssot.Attribute{{
+				Name: "c",
+				Type: ssot.AttrObject,
+				Children: []ssot.Attribute{{
 					Name: "d",
 					Type: ssot.AttrList,
 					Elem: ssot.ObjectElem([]ssot.Attribute{{
@@ -500,12 +504,12 @@ func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 						Name: "note",
 						Type: ssot.AttrString,
 					}}),
-				}}),
+				}},
 			}}),
-		}}),
+		}},
 	}
 	if adjustDeepest != nil {
-		adjustDeepest(&block.Elem.Children[0].Elem.Children[0].Elem.Children[0])
+		adjustDeepest(&block.Children[0].Elem.Children[0].Children[0])
 	}
 	return block
 }
@@ -513,14 +517,13 @@ func fourLevelBlock(adjustDeepest func(d *ssot.Attribute)) ssot.Attribute {
 func Test_attachCreateMappings_skipCreateStaysHandwritten(t *testing.T) {
 	src := []ssot.Attribute{{
 		Name:       "schedule",
-		Type:       ssot.AttrList,
-		MaxItems:   new(1),
+		Type:       ssot.AttrObject,
 		SkipCreate: true,
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Children: []ssot.Attribute{{
 			Name:     "expression",
 			Type:     ssot.AttrString,
 			Required: true,
-		}}),
+		}},
 	}, {
 		Name: "comment",
 		Type: ssot.AttrString,
@@ -534,6 +537,7 @@ func Test_attachCreateMappings_skipCreateStaysHandwritten(t *testing.T) {
 	require.Equal(t, "stringAttributeCreateBuilder", model.Attributes[1].CreateOptionalCall.Helper)
 }
 
+// TODO [next PRs]: Production definitions should not be used in tests; replace them with fake objects or remove the test.
 func Test_AlertCreateMappings_skipsNestedParsers(t *testing.T) {
 	model := ModelFromInputObject(ResourceObject{Object: defs.Alert}, nil, nil)
 
@@ -549,13 +553,12 @@ func Test_AlertCreateMappings_skipsNestedParsers(t *testing.T) {
 
 func Test_ApplyCreateOptionals_rendersBlockParseFuncs(t *testing.T) {
 	model := createOptionalsModel("Widget", []ssot.Attribute{{
-		Name:     "policy",
-		Type:     ssot.AttrList,
-		MaxItems: new(1),
-		Elem: ssot.ObjectElem([]ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
 			Name: "comment",
 			Type: ssot.AttrString,
-		}}),
+		}},
 	}})
 	var b strings.Builder
 	require.NoError(t, LifecycleTemplate.Execute(&b, model))
@@ -579,6 +582,45 @@ func Test_attachCreateMappings_skipCreateLeavesScalarOut(t *testing.T) {
 	require.Nil(t, model.Attributes[0].CreateOptionalCall)
 	require.Nil(t, model.Attributes[0].CreateConstructorArg)
 	require.Equal(t, "stringAttributeCreateBuilder", model.Attributes[1].CreateOptionalCall.Helper)
+}
+
+func Test_attachCreateMappings_nestedSchemaObjectIdentifierConstructor(t *testing.T) {
+	model := createOptionalsModel("Widget", []ssot.Attribute{{
+		Name: "policy",
+		Type: ssot.AttrObject,
+		Children: []ssot.Attribute{{
+			Name:           "policy_name",
+			Type:           ssot.AttrIdentifier,
+			IdentifierType: "SchemaObjectIdentifier",
+			Required:       true,
+		}, {
+			Name:          "entity_key",
+			Type:          ssot.AttrSet,
+			Elem:          &ssot.Attribute{Type: ssot.AttrString},
+			CreateMapping: ssot.SetMappedValueCreate("toTableColumn"),
+		}},
+	}})
+
+	require.Equal(t, `func widgetApplyCreateOptionals(d *tfschema.ResourceData, request *sdk.CreateWidgetRequest) error {
+	return errors.Join(
+		singleBlockAttributeCreate(d, "policy", request.WithPolicy, parseWidgetPolicy),
+	)
+}
+`, renderTemplate(t, "generatedApplyCreateOptionals", model))
+	blocks := model.CreateBlockFuncs()
+	require.Len(t, blocks, 1)
+	require.Equal(t, `func parseWidgetPolicy(d *tfschema.ResourceData, prefix string) (sdk.WidgetPolicyRequest, error) {
+	policyName, err := sdk.ParseSchemaObjectIdentifier(d.Get(prefix+"policy_name").(string))
+	if err != nil {
+		return sdk.WidgetPolicyRequest{}, err
+	}
+	request := sdk.NewWidgetPolicyRequest(policyName)
+	errs := errors.Join(
+		setMappedValueCreateBuilder(d, prefix+"entity_key", request.WithEntityKey, toTableColumn),
+	)
+	return *request, errs
+}
+`, renderTemplate(t, "generatedCreateRequest", blocks[0]))
 }
 
 func Test_attachCreateMappings_nativeBool(t *testing.T) {

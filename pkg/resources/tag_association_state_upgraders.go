@@ -18,7 +18,7 @@ func v0_98_0_TagAssociationStateUpgrader(ctx context.Context, rawState map[strin
 	tagValue := rawState["tag_value"].(string)
 	objectType := rawState["object_type"].(string)
 
-	rawState["id"] = helpers.EncodeSnowflakeID(tagId.FullyQualifiedName(), tagValue, objectType)
+	rawState["id"] = helpers.EncodeResourceIdentifier(tagId.FullyQualifiedName(), tagValue, objectType)
 
 	objectIdentifiersOld := rawState["object_identifier"].([]any)
 	objectIdentifiers := make([]string, 0, len(objectIdentifiersOld))

@@ -76,7 +76,11 @@
     func ({{ $assertVar }} *{{ $assertName }}) Has{{ .Name }}(expected {{ if .IsOriginalTypeSlice }}...{{ end }}{{ $itemType }}) *{{ $assertName }} {
         {{ $assertVar }}.AddAssertion(func(t *testing.T, o *{{ $sdkType }}) error {
             t.Helper()
-            {{ if .IsOriginalTypeSlice -}}
+            {{ if and .IsOriginalTypeSlice .IsDataTypeCompare -}}
+            if !slices.EqualFunc(o.{{ .Name }}, expected, {{ .ComparisonFunc }}) {
+                return fmt.Errorf("expected {{ CamelToWords .Name }}: %v; got: %v", expected, o.{{ .Name }})
+            }
+            {{ else if .IsOriginalTypeSlice -}}
             mapped := collections.Map(o.{{ .Name }}, func(item {{ $itemType }}) any { return {{ RunMapper .Mapper "item" }} })
             mappedExpected := collections.Map(expected, func(item {{ $itemType }}) any { return {{ RunMapper .ExpectedValueMapper "item" }} })
             if !slices.Equal(mapped, mappedExpected) {

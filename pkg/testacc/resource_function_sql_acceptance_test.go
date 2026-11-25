@@ -29,8 +29,8 @@ import (
 func TestAcc_FunctionSql_InlineBasic(t *testing.T) {
 	argName := "abc"
 	dataType := testdatatypes.DataTypeFloat
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Function.SampleSqlDefinitionWithArgument(t, argName)
 
@@ -116,8 +116,8 @@ func TestAcc_FunctionSql_InlineFull(t *testing.T) {
 	comment := random.Comment()
 	otherComment := random.Comment()
 	dataType := testdatatypes.DataTypeFloat
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
-	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
+	idWithChangedNameButTheSameDataType := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Function.SampleSqlDefinitionWithArgument(t, argName)
 
@@ -192,7 +192,7 @@ func TestAcc_FunctionSql_InlineFull(t *testing.T) {
 func TestAcc_FunctionSql_Decfloat(t *testing.T) {
 	argName := "abc"
 	dataType := testdatatypes.DataTypeDecfloat
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes(dataType)
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments(dataType)
 
 	definition := testClient().Function.SampleSqlDefinitionWithArgument(t, argName)
 
@@ -264,7 +264,7 @@ func TestAcc_FunctionSql_Decfloat(t *testing.T) {
 // In v2.15.0 applying a function with TABLE(col NUMBER(x,y), ...) return_type fails at plan
 // time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
 func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 	definition := "SELECT 1::NUMBER(38,0), 'error'::VARCHAR"
 	returnType := "TABLE(O_ERR_CODE NUMBER(38,0), O_ERR_SEVERITY VARCHAR)"
@@ -305,7 +305,7 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumns(t *testing.T) {
 // time because the comma inside NUMBER(x,y) is incorrectly treated as a column separator.
 // This test uses non-default precision/scale to verify state preserves config values.
 func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 	definition := "SELECT 1::NUMBER(24,2), 'error'::VARCHAR"
 	returnType := "TABLE(O_ERR_CODE NUMBER(24,2), O_ERR_SEVERITY VARCHAR)"
@@ -346,7 +346,7 @@ func TestAcc_FunctionSql_tableReturnTypeWithParametrizedColumnsNonDefaults(t *te
 // When a function with TABLE return type using non-parametrized column types was created in
 // v2.15.0, the current version must not produce spurious plan drift after migration.
 func TestAcc_FunctionSql_tableReturnTypeDefaultParamsNoDriftAfterMigration(t *testing.T) {
-	id := testClient().Ids.RandomSchemaObjectIdentifierWithArgumentsNewDataTypes()
+	id := testClient().Ids.RandomSchemaObjectIdentifierWithArguments()
 
 	definition := "SELECT 1::NUMBER, 'error'::VARCHAR"
 	returnType := "TABLE(O_ERR_CODE NUMBER, O_ERR_SEVERITY VARCHAR)"

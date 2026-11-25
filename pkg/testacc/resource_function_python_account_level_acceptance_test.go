@@ -30,7 +30,7 @@ func TestAcc_Function_gh3823_bcr2025_03_proof(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeNumber_36_2
 
-	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
+	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schema.ID(), dataType)
 	definition := secondaryTestClient().Function.SamplePythonDefinition(t, funcName, argName)
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).
@@ -93,7 +93,7 @@ func TestAcc_Function_gh3823_bcr2025_03_fix(t *testing.T) {
 	argName := "x"
 	dataType := testdatatypes.DataTypeNumber_36_2
 
-	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchemaNewDataTypes(schema.ID(), dataType)
+	id := secondaryTestClient().Ids.RandomSchemaObjectIdentifierWithArgumentsInSchema(schema.ID(), dataType)
 	definition := secondaryTestClient().Function.SamplePythonDefinition(t, funcName, argName)
 
 	providerModel := providermodel.SnowflakeProvider().WithProfile(testprofiles.Secondary).

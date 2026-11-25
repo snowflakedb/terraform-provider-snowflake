@@ -174,19 +174,18 @@ func (r *DescribeDynamicTableRequest) toOpts() *DescribeDynamicTableOptions {
 
 func (r dynamicTableDetailsRow) convert() (*DynamicTableDetails, error) {
 	result := &DynamicTableDetails{
-		Name:       r.Name,
-		Kind:       r.Kind,
-		IsNull:     r.IsNull == "Y",
-		PrimaryKey: r.PrimaryKey,
-		UniqueKey:  r.UniqueKey,
+		Name:        r.Name,
+		Type:        parseDataTypeOrNil(r.Type),
+		DataTypeRaw: r.Type,
+		Kind:        r.Kind,
+		IsNull:      r.IsNull == "Y",
+		PrimaryKey:  r.PrimaryKey,
+		UniqueKey:   r.UniqueKey,
 	}
 	mapNullStringToNonNullableField(&result.Default, r.Default)
 	mapNullStringToNonNullableField(&result.Check, r.Check)
 	mapNullStringToNonNullableField(&result.Expression, r.Expression)
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	mapNullStringToNonNullableField(&result.PolicyName, r.PolicyName)
-	if err := r.additionalConvert(result); err != nil {
-		return nil, err
-	}
 	return result, nil
 }

@@ -169,6 +169,30 @@ func Test_appendSqlSequence_singleObject(t *testing.T) {
 	require.Equal(t, want.fields, got.fields)
 }
 
+func Test_appendSqlSequence_wrappedString(t *testing.T) {
+	condition := ssot.Attribute{
+		Name:     "condition",
+		Type:     ssot.AttrString,
+		Required: true,
+		CreateSql: ssot.WrapString(
+			ssot.SQLBefore("ifExists", "IF (EXISTS("),
+			ssot.SQLAfter("closeIfExists", "))"),
+		),
+	}
+	got := NewQueryStruct("CreateAlert")
+	got.owner = "Alert"
+	got = got.appendSqlSequence([]*ssot.Attribute{&condition}, attributeSqlCreate)
+	want := NewQueryStruct("CreateAlert").QueryStructField(
+		"Condition",
+		NewQueryStruct("AlertCondition").
+			SQLWithCustomFieldName("ifExists", "IF (EXISTS(").
+			Text("Condition", KeywordOptions().NoQuotes().Required()).
+			SQLWithCustomFieldName("closeIfExists", "))"),
+		ListOptions().NoComma().Required(),
+	)
+	require.Equal(t, want.fields, got.fields)
+}
+
 func Test_appendSqlSequence_singleObjectWithStaticField(t *testing.T) {
 	typeOauth := ssot.Attribute{Name: "type_oauth", SqlOnly: true, CreateSql: ssot.StaticSQL("restAuthType", "TYPE = OAUTH")}
 	secret := ssot.Attribute{Name: "client_secret", Type: ssot.AttrString, Required: true}
@@ -206,20 +230,21 @@ func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
 		Children:  []ssot.Attribute{token},
 	}
 	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
-	newObject := func(group []*ssot.Attribute, clauses ...*ssot.Attribute) ssot.Object {
+	newObject := func(validation ssot.Validation, clauses ...*ssot.Attribute) ssot.Object {
 		return ssot.Object{
-			Name:         "Widget",
-			NamePlural:   "Widgets",
-			IdType:       "AccountObjectIdentifier",
-			Attributes:   []ssot.Attribute{oauth, bearer, comment},
-			ExactlyOneOf: [][]*ssot.Attribute{group},
-			Create:       ssot.CreateSpec{Clauses: clauses},
-			Generators:   []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
+			Name:        "Widget",
+			NamePlural:  "Widgets",
+			IdType:      "AccountObjectIdentifier",
+			Attributes:  []ssot.Attribute{oauth, bearer, comment},
+			Validations: []ssot.Validation{validation},
+			Create:      ssot.CreateSpec{Clauses: clauses},
+			Generators:  []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkCreate())},
 		}
 	}
+	exactlyOne := ssot.ExactlyOneOf(oauth, bearer)
 
 	t.Run("all members in the statement", func(t *testing.T) {
-		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &oauth, &bearer, &comment)
+		obj := newObject(exactlyOne, &oauth, &bearer, &comment)
 		ssot.ValidateObject(obj)
 		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 		want := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperation(
@@ -252,7 +277,7 @@ func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
 	})
 
 	t.Run("no member in the statement", func(t *testing.T) {
-		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &comment)
+		obj := newObject(exactlyOne, &comment)
 		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 		for _, validation := range got.Operations[0].OptsField.Validations {
 			require.NotEqual(t, ExactlyOneValueSet, validation.Type)
@@ -260,10 +285,21 @@ func Test_createQueryStruct_exactlyOneOf(t *testing.T) {
 	})
 
 	t.Run("some members in the statement", func(t *testing.T) {
-		obj := newObject([]*ssot.Attribute{&oauth, &bearer}, &oauth, &comment)
+		obj := newObject(exactlyOne, &oauth, &comment)
 		require.Panics(t, func() {
 			NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
 		})
+	})
+
+	t.Run("conflicting covers the members in the statement", func(t *testing.T) {
+		obj := newObject(ssot.Conflicting(oauth, bearer, comment), &oauth, &bearer, &comment)
+		ssot.ValidateObject(obj)
+		got := NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		require.Contains(t, got.Operations[0].OptsField.Validations, &Validation{Type: MoreThanOneValueSet, FieldNames: []string{"OAuthAuthentication", "BearerAuthentication", "Comment"}})
+
+		obj = newObject(ssot.Conflicting(oauth, bearer, comment), &oauth, &comment)
+		got = NewInterface("Widgets", "Widget", "AccountObjectIdentifier").CreateOperationFromObject(obj)
+		require.Contains(t, got.Operations[0].OptsField.Validations, &Validation{Type: ConflictingFields, FieldNames: []string{"OAuthAuthentication", "Comment"}})
 	})
 }
 
@@ -294,7 +330,6 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 				ssot.AlterGroup("Oauth", &setOauth),
 				ssot.AlterGroup(ssot.MainAlterGroup, &setBearer, &comment),
 			)},
-			SetConflictingFields: [][]*ssot.Attribute{{&setOauth, &setBearer}},
 		},
 		Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkAlter())},
 	}
@@ -315,7 +350,7 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 					OptionalQueryStructField("SetOAuth", NewQueryStruct("WidgetSetOauth").TextAssignment("CLIENT_SECRET", ParameterOptions().SingleQuotes().Required()), auth).
 					OptionalQueryStructField("SetBearer", NewQueryStruct("WidgetSetBearer").TextAssignment("BEARER_TOKEN", ParameterOptions().SingleQuotes().Required()), auth).
 					OptionalAssignment("COMMENT", "StringAllowEmpty", ParameterOptions()).
-					WithValidation(ConflictingFields, "SetOAuth", "SetBearer").
+					WithConflictingGroups([]string{"SetOAuth"}, []string{"SetBearer", "Comment"}).
 					WithValidation(AtLeastOneValueSet, "SetOAuth", "SetBearer", "Comment"),
 				KeywordOptions().SQL("SET"),
 			).
@@ -328,10 +363,10 @@ func Test_alterQueryStruct_setBlocksAllowEmptyAndConflicts(t *testing.T) {
 func Test_CreateOperationFromObject_singleBlockWithEnumSetsAndAtLeastOne(t *testing.T) {
 	family := ssot.NewEnum("WidgetFamily", "WidgetFamilies", "SMALL")
 	policy := ssot.Attribute{
-		Name:         "policy",
-		Type:         ssot.AttrObject,
-		CreateSql:    ssot.ObjectParameter(ssot.Sql("POLICY ="), ssot.Parentheses()),
-		ChildrenRule: ssot.ChildrenAtLeastOne,
+		Name:        "policy",
+		Type:        ssot.AttrObject,
+		CreateSql:   ssot.ObjectParameter(ssot.Sql("POLICY ="), ssot.Parentheses()),
+		Validations: []ssot.Validation{ssot.AtLeastOneOf()},
 		Children: []ssot.Attribute{
 			{Name: "limit", Type: ssot.AttrInt},
 			{Name: "families", Type: ssot.AttrSet, Elem: &ssot.Attribute{Type: ssot.AttrEnum, Enum: family}},
@@ -434,7 +469,7 @@ func Test_CreateOperationFromObject_exactlyOneKeywordAndIdentifierList(t *testin
 			{Name: "names_all", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("('ALL')"), ssot.FieldName("All"))},
 			names,
 		},
-		ChildrenRule: ssot.ChildrenExactlyOne,
+		Validations: []ssot.Validation{ssot.ExactlyOneOf()},
 	}
 	obj := ssot.Object{
 		Name:       "Widget",
@@ -534,9 +569,27 @@ func Test_CreateOperationFromObject_objectAsParameter(t *testing.T) {
 func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T) {
 	scope := ssot.NewEnum("WidgetScope", "WidgetScopes", "GLOBAL", "LOCAL")
 	scopeAttr := ssot.Attribute{Name: "scope", Type: ssot.AttrEnum, Enum: scope, SqlOnly: true, CreateSql: ssot.EnumKeyword()}
-	columns := ssot.Attribute{Name: "columns_and_constraints", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("CreateWidgetColumns", ssot.Parentheses(), ssot.Required())}
+	widgetColumns := ssot.Attribute{
+		Name:      "create_columns",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.StructName("CreateWidgetColumns")),
+		Children: []ssot.Attribute{
+			{Name: "name", Type: ssot.AttrString, Required: true, SqlOnly: true, CreateSql: ssot.TextKeyword(ssot.Required())},
+		},
+	}
+	columns := ssot.Attribute{Name: "columns_and_constraints", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&widgetColumns, ssot.Parentheses(), ssot.Required())}
 	clusterBy := ssot.Attribute{Name: "cluster_by", Type: ssot.AttrList, SqlOnly: true, Elem: &ssot.Attribute{Type: ssot.AttrString}, CreateSql: ssot.StringListKeyword(ssot.Parentheses(), ssot.Sql("CLUSTER BY"))}
-	format := ssot.Attribute{Name: "stage_file_format", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStruct("WidgetFileFormat", ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT ="))}
+	widgetFormat := ssot.Attribute{
+		Name:      "file_format",
+		Type:      ssot.AttrObject,
+		SqlOnly:   true,
+		CreateSql: ssot.ObjectParameter(ssot.StructName("WidgetFileFormat")),
+		Children: []ssot.Attribute{
+			{Name: "format_name", Type: ssot.AttrString, SqlOnly: true},
+		},
+	}
+	format := ssot.Attribute{Name: "stage_file_format", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.PreexistingStructOf(&widgetFormat, ssot.Parentheses(), ssot.NoComma(), ssot.Sql("STAGE_FILE_FORMAT ="))}
 	policy := ssot.Attribute{
 		Name:      "row_access_policy",
 		Type:      ssot.AttrObject,
@@ -581,7 +634,7 @@ func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T
 	}
 	unrelated := NewQueryStruct("WidgetUnrelated").Text("Name", KeywordOptions())
 
-	got := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newColumns(), newFormat(), unrelated)
+	got := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, unrelated)
 
 	want := NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperation(
 		"https://docs.snowflake.com/en/sql-reference/sql/create-widget",
@@ -605,12 +658,6 @@ func Test_CreateOperationFromObject_stringListAndPreexistingStructs(t *testing.T
 		unrelated,
 	)
 	requireSameOperations(t, want, got)
-
-	t.Run("a named struct that is not supplied panics", func(t *testing.T) {
-		require.PanicsWithValue(t, `attribute "columns_and_constraints": struct clause names "CreateWidgetColumns", which the SDK definition did not supply`, func() {
-			NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").CreateOperationFromObject(obj, newFormat())
-		})
-	})
 }
 
 func Test_queryStructFromObject_tableClusteringAction(t *testing.T) {
@@ -673,7 +720,7 @@ func Test_queryStructFromObject_tableSearchOptimizationAction(t *testing.T) {
 }
 
 func Test_queryStructFromObject_tableAggregationPolicy(t *testing.T) {
-	attr := ssotdefs.TableCreateAttrs.AggregationPolicy
+	attr := ssotdefs.TableAttrs.AggregationPolicy
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
@@ -686,7 +733,7 @@ func Test_queryStructFromObject_tableAggregationPolicy(t *testing.T) {
 }
 
 func Test_queryStructFromObject_tableJoinPolicy(t *testing.T) {
-	attr := ssotdefs.TableCreateAttrs.JoinPolicy
+	attr := ssotdefs.TableAttrs.JoinPolicy
 	require.NotPanics(t, func() {
 		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
 	})
@@ -734,6 +781,7 @@ func Test_queryStructFromObject_tableSetJoinPolicy(t *testing.T) {
 		SQL("SET").
 		Identifier("JoinPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("JOIN POLICY").Required()).
 		WithValidation(ValidIdentifier, "JoinPolicy").
+		ListAssignment("ALLOWED JOIN KEYS", "Column", ParameterOptions().NoEquals().Parentheses()).
 		OptionalSQL("FORCE")
 	require.Equal(t, want.IntoField(), got.IntoField())
 }
@@ -753,24 +801,36 @@ func Test_alterSetQueryStruct_table(t *testing.T) {
 	require.NotPanics(t, func() { ssot.ValidateObject(ssotdefs.Table) })
 	got := AlterSetQueryStruct(ssotdefs.Table, ssot.SdkGenerator{})
 	want := NewQueryStruct("TableSet").
+		PredefinedQueryStructField("Contact", "[]TableContact", KeywordOptions().SQL("CONTACT")).
+		OptionalBooleanAssignment("ERROR_LOGGING", ParameterOptions()).
 		OptionalBooleanAssignment("ENABLE_SCHEMA_EVOLUTION", ParameterOptions()).
 		OptionalNumberAssignment("DATA_RETENTION_TIME_IN_DAYS", ParameterOptions()).
 		OptionalNumberAssignment("MAX_DATA_EXTENSION_TIME_IN_DAYS", ParameterOptions()).
 		OptionalBooleanAssignment("CHANGE_TRACKING", ParameterOptions()).
 		OptionalAssignment("DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
+		OptionalAssignment("ICEBERG_DEFAULT_DDL_COLLATION", "StringAllowEmpty", ParameterOptions()).
 		OptionalComment().
-		WithValidation(AtLeastOneValueSet, "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "Comment")
+		OptionalBooleanAssignment("ROW_TIMESTAMP", ParameterOptions()).
+		WithConflictingGroups([]string{"Contact"}, []string{"ErrorLogging"}).
+		WithConflictingGroups([]string{"Contact"}, []string{"EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp"}).
+		WithConflictingGroups([]string{"ErrorLogging"}, []string{"EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp"}).
+		WithValidation(AtLeastOneValueSet, "Contact", "ErrorLogging", "EnableSchemaEvolution", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "Comment", "RowTimestamp")
 	require.Equal(t, want.IntoField(), got.IntoField())
 
 	unset := AlterUnsetQueryStruct(ssotdefs.Table)
 	wantUnset := NewQueryStruct("TableUnset").
+		OptionalAssignment("CONTACT", "string", ParameterOptions().NoEquals()).
 		OptionalSQL("DATA_RETENTION_TIME_IN_DAYS").
 		OptionalSQL("MAX_DATA_EXTENSION_TIME_IN_DAYS").
 		OptionalSQL("CHANGE_TRACKING").
 		OptionalSQL("DEFAULT_DDL_COLLATION").
+		OptionalSQL("ICEBERG_DEFAULT_DDL_COLLATION").
 		OptionalSQL("ENABLE_SCHEMA_EVOLUTION").
+		OptionalSQL("ERROR_LOGGING").
 		OptionalSQL("COMMENT").
-		WithValidation(AtLeastOneValueSet, "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "EnableSchemaEvolution", "Comment")
+		OptionalSQL("ROW_TIMESTAMP").
+		WithValidation(AtLeastOneValueSet, "Contact", "DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp").
+		WithConflictingGroups([]string{"Contact"}, []string{"DataRetentionTimeInDays", "MaxDataExtensionTimeInDays", "ChangeTracking", "DefaultDdlCollation", "IcebergDefaultDdlCollation", "EnableSchemaEvolution", "ErrorLogging", "Comment", "RowTimestamp"})
 	require.Equal(t, wantUnset.IntoField(), unset.IntoField())
 }
 
@@ -816,5 +876,277 @@ func Test_queryStructFromObject_tableRowAccessPolicy(t *testing.T) {
 	want := NewQueryStruct("TableDropAndAddRowAccessPolicy").
 		QueryStructField("Drop", drop, ListOptions().NoComma().Required()).
 		QueryStructField("Add", add, ListOptions().NoComma().Required())
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableColumn(t *testing.T) {
+	attr := ssotdefs.TableColumn
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+
+	// Table emits the structs the column statements embed, and each one carries its standalone toOpts.
+	virtual := QueryStructFromAttribute("Table", ssotdefs.TableColumnVirtual)
+	inlineConstraint := QueryStructFromAttribute("Table", ssotdefs.TableColumnInlineConstraint)
+	maskingPolicy := QueryStructFromAttribute("Table", ssotdefs.TableColumnMaskingPolicy)
+	projectionPolicy := QueryStructFromAttribute("Table", ssotdefs.TableColumnProjectionPolicy)
+	renameColumn := QueryStructFromAttribute("Table", ssotdefs.TableRenameColumnAction)
+	setMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseSet)
+	unsetMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseUnset)
+	setProjection := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnProjectionPolicy, ssot.ClauseSet)
+	unsetProjection := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnProjectionPolicy, ssot.ClauseUnset)
+	setTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseSet)
+	unsetTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseUnset)
+	dropColumns := QueryStructFromAttribute("Table", ssotdefs.TableDropColumnAction)
+
+	add := NewQueryStruct("TableColumnAddAction").
+		SQL("COLUMN").
+		IfNotExists().
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		PredefinedQueryStructField("ColumnType", "datatypes.DataType", ParameterOptions().NoQuotes().NoEquals().Required()).
+		OptionalQueryStructField("Virtual", virtual, ListOptions().NoComma()).
+		OptionalTextAssignment("COLLATE", ParameterOptions().NoEquals().SingleQuotes()).
+		OptionalQueryStructField("DefaultValue",
+			NewQueryStruct("ColumnDefaultValue").
+				OptionalAssignmentWithFieldName("DEFAULT", "*string", ParameterOptions().NoEquals(), "Expression").
+				OptionalQueryStructField("Identity",
+					NewQueryStruct("ColumnIdentity").
+						NumberAssignment("START", ParameterOptions().NoQuotes().NoEquals().Required()).
+						NumberAssignment("INCREMENT", ParameterOptions().NoQuotes().NoEquals().Required()).
+						OptionalSQL("ORDER").
+						OptionalSQL("NOORDER").
+						WithValidation(ConflictingFields, "Order", "Noorder"),
+					ListOptions().NoComma().SQL("IDENTITY")).
+				WithValidation(ExactlyOneValueSet, "Expression", "Identity"),
+			ListOptions().NoComma()).
+		OptionalSQL("NOT NULL").
+		OptionalQueryStructField("InlineConstraint", inlineConstraint, ListOptions().NoComma()).
+		OptionalQueryStructField("MaskingPolicy", maskingPolicy, ListOptions().NoComma()).
+		OptionalQueryStructField("ProjectionPolicy", projectionPolicy, ListOptions().NoComma()).
+		OptionalTags().
+		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes())
+	alter := NewQueryStruct("TableColumnAlterAction").
+		SQL("COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		OptionalSQL("DROP DEFAULT").
+		PredefinedQueryStructField("SetDefault", "*SequenceName", ParameterOptions().NoEquals().SQL("SET DEFAULT")).
+		OptionalQueryStructField("NotNullConstraint",
+			NewQueryStruct("TableColumnNotNullConstraint").
+				OptionalSQLWithCustomFieldName("Set", "SET NOT NULL").
+				OptionalSQLWithCustomFieldName("Drop", "DROP NOT NULL"),
+			ListOptions().NoComma()).
+		OptionalQueryStructField("DataType",
+			NewQueryStruct("TableColumnAlterDataType").
+				PredefinedQueryStructField("DataType", "datatypes.DataType", ParameterOptions().NoQuotes().NoEquals().Required()).
+				OptionalTextAssignment("COLLATE", ParameterOptions().NoEquals().SingleQuotes()),
+			ListOptions().NoComma().SQL("SET DATA TYPE")).
+		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes()).
+		OptionalSQL("UNSET COMMENT").
+		// The name is Required, so it is not one of the exactly-one actions.
+		WithValidation(ExactlyOneValueSet, "DropDefault", "SetDefault", "NotNullConstraint", "DataType", "Comment", "UnsetComment")
+	want := NewQueryStruct("TableColumnAction").
+		OptionalQueryStructField("Add", add, ListOptions().NoComma().SQL("ADD")).
+		OptionalQueryStructField("Rename", renameColumn, ListOptions().NoComma()).
+		ListQueryStructField("Alter", alter, KeywordOptions().SQL("ALTER")).
+		OptionalQueryStructField("SetMaskingPolicy", setMasking, ListOptions().NoComma()).
+		OptionalQueryStructField("UnsetMaskingPolicy", unsetMasking, ListOptions().NoComma()).
+		OptionalQueryStructField("SetProjectionPolicy", setProjection, ListOptions().NoComma()).
+		OptionalQueryStructField("UnsetProjectionPolicy", unsetProjection, ListOptions().NoComma()).
+		OptionalQueryStructField("SetTags", setTags, ListOptions().NoComma()).
+		OptionalQueryStructField("UnsetTags", unsetTags, ListOptions().NoComma()).
+		OptionalQueryStructField("DropColumns", dropColumns, ListOptions().NoComma()).
+		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "SetMaskingPolicy", "UnsetMaskingPolicy", "SetProjectionPolicy", "UnsetProjectionPolicy", "SetTags", "UnsetTags", "DropColumns")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_childValidations(t *testing.T) {
+	order := ssot.Attribute{Name: "order", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("ORDER"))}
+	noorder := ssot.Attribute{Name: "noorder", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOORDER"))}
+	cycle := ssot.Attribute{Name: "cycle", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("CYCLE"))}
+	nocycle := ssot.Attribute{Name: "nocycle", Type: ssot.AttrBool, SqlOnly: true, CreateSql: ssot.BoolKeyword(ssot.Sql("NOCYCLE"))}
+	identity := func(validations ...ssot.Validation) ssot.Attribute {
+		return ssot.Attribute{
+			Name: "identity", Type: ssot.AttrObject, SqlOnly: true, CreateSql: ssot.ObjectParameter(),
+			Children:    []ssot.Attribute{noorder, order, cycle, nocycle},
+			Validations: validations,
+		}
+	}
+	fields := func(q *QueryStruct) *QueryStruct {
+		return q.OptionalSQL("NOORDER").OptionalSQL("ORDER").OptionalSQL("CYCLE").OptionalSQL("NOCYCLE")
+	}
+
+	t.Run("fields follow the Children order", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.Conflicting(order, noorder)))
+		want := fields(NewQueryStruct("WidgetIdentity")).WithValidation(ConflictingFields, "Noorder", "Order")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("several validations on exclusive subsets, in declaration order", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.ExactlyOneOf(cycle, nocycle), ssot.AtLeastOneOf(order, noorder)))
+		want := fields(NewQueryStruct("WidgetIdentity")).
+			WithValidation(ExactlyOneValueSet, "Cycle", "Nocycle").
+			WithValidation(AtLeastOneValueSet, "Noorder", "Order")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("more than two conflicting fields", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.Conflicting(order, noorder, cycle)))
+		want := fields(NewQueryStruct("WidgetIdentity")).WithValidation(MoreThanOneValueSet, "Noorder", "Order", "Cycle")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("no fields cover every candidate", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.ExactlyOneOf()))
+		want := fields(NewQueryStruct("WidgetIdentity")).WithValidation(ExactlyOneValueSet, "Noorder", "Order", "Cycle", "Nocycle")
+		require.Equal(t, want.IntoField(), got.IntoField())
+	})
+
+	t.Run("schema only adds no SDK validation", func(t *testing.T) {
+		got := QueryStructFromAttribute("Widget", identity(ssot.AtLeastOneOf().SchemaOnly()))
+		require.Equal(t, fields(NewQueryStruct("WidgetIdentity")).IntoField(), got.IntoField())
+	})
+}
+
+func Test_queryStructFromObject_tableColumnActionStructs(t *testing.T) {
+	for _, attr := range []ssot.Attribute{
+		ssotdefs.TableRenameColumnAction,
+		ssotdefs.TableDropColumnAction,
+	} {
+		require.NotPanics(t, func() {
+			ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+		})
+	}
+	// The set and unset column actions have no CREATE clause. They are SET and UNSET projections of one attribute.
+	for _, attr := range []ssot.Attribute{
+		ssotdefs.TableAlterColumnMaskingPolicy,
+		ssotdefs.TableAlterColumnTags,
+	} {
+		require.NotPanics(t, func() {
+			ssot.ValidateObject(ssot.Object{Name: "Table", Alter: ssot.AlterSpec{Clauses: []ssot.AlterClause{ssot.AlterSet(&attr), ssot.AlterUnset(&attr)}}})
+		})
+	}
+	rename := QueryStructFromAttribute("Table", ssotdefs.TableRenameColumnAction)
+	require.Equal(t, NewQueryStruct("TableRenameColumnAction").
+		SQL("RENAME COLUMN").
+		Text("OldName", KeywordOptions().Required().DoubleQuotes()).
+		AssignmentWithFieldName("TO", "string", ParameterOptions().NoEquals().DoubleQuotes().Required(), "NewName").
+		WithSharedToOpts().IntoField(), rename.IntoField())
+	setMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseSet)
+	require.Equal(t, NewQueryStruct("TableSetColumnMaskingPolicy").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		SQL("SET").
+		Identifier("MaskingPolicy", "SchemaObjectIdentifier", IdentifierOptions().SQL("MASKING POLICY").Required()).
+		ListAssignment("USING", "Column", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("FORCE").
+		WithValidation(ValidIdentifier, "MaskingPolicy").
+		WithSharedToOpts().IntoField(), setMasking.IntoField())
+	unsetMasking := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnMaskingPolicy, ssot.ClauseUnset)
+	require.Equal(t, NewQueryStruct("TableUnsetColumnMaskingPolicy").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		SQL("UNSET").
+		SQL("MASKING POLICY").
+		WithSharedToOpts().IntoField(), unsetMasking.IntoField())
+	setTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseSet)
+	require.Equal(t, NewQueryStruct("TableSetColumnTags").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		SetTags().
+		WithSharedToOpts().IntoField(), setTags.IntoField())
+	unsetTags := QueryStructFromAttributeUse("Table", ssotdefs.TableAlterColumnTags, ssot.ClauseUnset)
+	require.Equal(t, NewQueryStruct("TableUnsetColumnTags").
+		SQL("ALTER COLUMN").
+		Text("Name", KeywordOptions().Required().DoubleQuotes()).
+		UnsetTags().
+		WithSharedToOpts().IntoField(), unsetTags.IntoField())
+	drop := QueryStructFromAttribute("Table", ssotdefs.TableDropColumnAction)
+	require.Equal(t, NewQueryStruct("TableDropColumnAction").
+		SQL("DROP COLUMN").
+		OptionalSQL("IF EXISTS").
+		PredefinedQueryStructField("Columns", "[]Column", ParameterOptions().NoEquals().Required()).
+		WithSharedToOpts().IntoField(), drop.IntoField())
+}
+
+func Test_queryStructFromObject_tableConstraints(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		wrapper ssot.Attribute
+		kinds   []ssot.Attribute
+	}{
+		{"out of line", ssotdefs.TableOutOfLineConstraint, []ssot.Attribute{ssotdefs.TableOutOfLineUniquePK, ssotdefs.TableOutOfLineFK, ssotdefs.TableOutOfLineCH}},
+		{"inline", ssotdefs.TableColumnInlineConstraint, []ssot.Attribute{ssotdefs.TableColumnInlineUniquePK, ssotdefs.TableColumnInlineFK, ssotdefs.TableColumnInlineCH}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			require.NotPanics(t, func() {
+				ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&tc.wrapper}}})
+			})
+			got := QueryStructFromAttribute("Table", tc.wrapper)
+			want := NewQueryStruct(tc.wrapper.CreateSql.StructName).WithSharedToOpts()
+			for _, kind := range tc.kinds {
+				want = want.OptionalQueryStructField(kind.CreateSql.Field, QueryStructFromAttribute("Table", kind), ListOptions().NoComma())
+			}
+			want = want.WithValidation(ExactlyOneValueSet, "UniquePK", "FK", "CH")
+			require.Equal(t, want.IntoField(), got.IntoField())
+		})
+	}
+}
+
+func Test_queryStructFromObject_tableConstraintAction(t *testing.T) {
+	attr := ssotdefs.TableConstraintAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	rename := NewQueryStruct("TableConstraintRenameAction").
+		Text("OldName", KeywordOptions().DoubleQuotes().Required()).
+		AssignmentWithFieldName("TO", "string", ParameterOptions().DoubleQuotes().NoEquals().Required(), "NewName")
+	alter := NewQueryStruct("TableConstraintAlterAction").
+		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().DoubleQuotes().NoEquals(), "ConstraintName").
+		OptionalSQL("PRIMARY KEY").
+		OptionalSQL("UNIQUE").
+		OptionalSQL("FOREIGN KEY").
+		PredefinedQueryStructField("Columns", "[]string", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("ENFORCED").
+		OptionalSQL("NOT ENFORCED").
+		OptionalSQL("VALIDATE").
+		OptionalSQL("NOVALIDATE").
+		OptionalSQL("RELY").
+		OptionalSQL("NORELY").
+		WithValidation(ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
+	drop := NewQueryStruct("TableConstraintDropAction").
+		OptionalAssignmentWithFieldName("CONSTRAINT", "*string", ParameterOptions().DoubleQuotes().NoEquals(), "ConstraintName").
+		OptionalSQL("PRIMARY KEY").
+		OptionalSQL("UNIQUE").
+		OptionalSQL("FOREIGN KEY").
+		PredefinedQueryStructField("Columns", "[]string", ParameterOptions().NoEquals().Parentheses()).
+		OptionalSQL("CASCADE").
+		OptionalSQL("RESTRICT").
+		WithValidation(ExactlyOneValueSet, "ConstraintName", "PrimaryKey", "Unique", "ForeignKey")
+	want := NewQueryStruct("TableConstraintAction").
+		OptionalQueryStructField("Add", QueryStructFromAttribute("Table", ssotdefs.TableOutOfLineConstraint), ListOptions().NoComma().SQL("ADD")).
+		OptionalQueryStructField("Rename", rename, ListOptions().NoComma().SQL("RENAME CONSTRAINT")).
+		OptionalQueryStructField("Alter", alter, ListOptions().NoComma().SQL("ALTER")).
+		OptionalQueryStructField("Drop", drop, ListOptions().NoComma().SQL("DROP")).
+		WithValidation(ExactlyOneValueSet, "Add", "Rename", "Alter", "Drop")
+	require.Equal(t, want.IntoField(), got.IntoField())
+}
+
+func Test_queryStructFromObject_tableExternalTableAction(t *testing.T) {
+	attr := ssotdefs.TableExternalTableAction
+	require.NotPanics(t, func() {
+		ssot.ValidateObject(ssot.Object{Name: "Table", Create: ssot.CreateSpec{Clauses: []*ssot.Attribute{&attr}}})
+	})
+	got := QueryStructFromAttribute("Table", attr)
+	add := NewQueryStruct("TableExternalTableColumnAddAction").
+		SQL("ADD COLUMN").
+		IfNotExists().
+		Text("Name", KeywordOptions().Required()).
+		PredefinedQueryStructField("ColumnType", "datatypes.DataType", ParameterOptions().NoQuotes().NoEquals().Required()).
+		ListAssignmentWithFieldName("AS", "string", ParameterOptions().NoEquals().Parentheses(), "Expression").
+		OptionalTextAssignment("COMMENT", ParameterOptions().NoEquals().SingleQuotes())
+	want := NewQueryStruct("TableExternalTableAction").
+		OptionalQueryStructField("Add", add, ListOptions().NoComma())
 	require.Equal(t, want.IntoField(), got.IntoField())
 }

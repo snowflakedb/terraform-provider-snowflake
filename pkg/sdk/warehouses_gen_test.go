@@ -21,7 +21,8 @@ var warehousesTestIdAccountObjectIdentifier = randomAccountObjectIdentifier()
 const (
 	case_Warehouses_validation_Create_ResourceMonitor_ValidIdentifierIfSet                 testCaseName = "validation_Create_ResourceMonitor_ValidIdentifierIfSet"
 	case_Warehouses_validation_Create_name_ValidIdentifier                                 testCaseName = "validation_Create_name_ValidIdentifier"
-	case_Warehouses_validation_Create_opts_ConflictingFields                               testCaseName = "validation_Create_opts_ConflictingFields"
+	case_Warehouses_validation_Create_opts_ConflictingFields_OrReplace_IfNotExists         testCaseName = "validation_Create_opts_ConflictingFields_OrReplace_IfNotExists"
+	case_Warehouses_validation_Create_opts_ConflictingFields_ResourceConstraint_Generation testCaseName = "validation_Create_opts_ConflictingFields_ResourceConstraint_Generation"
 	case_Warehouses_validation_Create_Tag_ValidIdentifier                                  testCaseName = "validation_Create_Tag_ValidIdentifier"
 	case_Warehouses_sql_Create_basic                                                       testCaseName = "sql_Create_basic"
 	case_Warehouses_sql_Create_all                                                         testCaseName = "sql_Create_all"
@@ -135,12 +136,16 @@ var warehousesTests = WarehousesTestsContext{
 				},
 			},
 			validationCase[*CreateWarehouseOptions]{
-				Name:        case_Warehouses_validation_Create_opts_ConflictingFields,
+				Name:        case_Warehouses_validation_Create_opts_ConflictingFields_OrReplace_IfNotExists,
 				ExpectedErr: errOneOf("CreateWarehouseOptions", "OrReplace", "IfNotExists"),
 				DefaultModify: func(opts *CreateWarehouseOptions) {
 					opts.OrReplace = new(true)
 					opts.IfNotExists = new(true)
 				},
+			},
+			validationCase[*CreateWarehouseOptions]{
+				Name:        case_Warehouses_validation_Create_opts_ConflictingFields_ResourceConstraint_Generation,
+				ExpectedErr: errOneOf("CreateWarehouseOptions", "ResourceConstraint", "Generation"),
 			},
 			validationCase[*CreateWarehouseOptions]{
 				Name:        case_Warehouses_validation_Create_Tag_ValidIdentifier,

@@ -227,6 +227,7 @@ func (r replicationGroupsRow) convert() (*ReplicationGroup, error) {
 	mapNullStringWithMapping(&result.SecondaryState, r.SecondaryState, ToReplicationGroupSecondaryState)
 	mapNullTimeToNonNullableField(&result.NextScheduledRefresh, r.NextScheduledRefresh)
 	mapNullString(&result.Owner, r.Owner)
-	mapNullBool(&result.ReadOnly, r.ReadOnly)
+	mapNullStringWithMapping(&result.ErrorIntegration, r.ErrorIntegration, ParseAccountObjectIdentifier)
+	mapNullBool(&result.IsPrimaryReadOnly, r.IsPrimaryReadOnly)
 	return result, nil
 }
