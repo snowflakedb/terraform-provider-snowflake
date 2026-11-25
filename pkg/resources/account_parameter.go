@@ -9,8 +9,6 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/experimentalfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -18,16 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var accountParameterSupportedParameters = buildAccountParameterSupportedParameters()
-
-func buildAccountParameterSupportedParameters() []sdk.AccountParameter {
-	catalogParams := defs.ParameterDefsForLevel(ssot.ParameterLevelAccountExt)
-	params := make([]sdk.AccountParameter, len(catalogParams))
-	for i, p := range catalogParams {
-		params[i] = sdk.AccountParameter(p.SqlName)
-	}
-	return params
-}
+// TODO(next prs): sdk.AllAccountParameters also contains SERVICE_CALLER_TOKEN_VALIDITY_SECS, which the catalog writer does not support yet, so the SDK is asked instead.
+// Once the catalog levels are fixed, this variable is replaced by sdk.AllAccountParameters.
+var accountParameterSupportedParameters = sdk.SupportedAccountParameters()
 
 // suppressValueTypeForSupportedAccountParameter hides value_type diffs once the provider supports the parameter.
 func suppressValueTypeForSupportedAccountParameter(_, _, _ string, d *schema.ResourceData) bool {

@@ -323,3 +323,29 @@ func TestParameters_SetObjectParameterOnObjectWithGenericFallback(t *testing.T) 
 		require.ErrorContains(t, err, "integer value expected for SOME_FUTURE_PARAMETER parameter")
 	})
 }
+
+func TestSupportedParameters(t *testing.T) {
+	t.Run("account", func(t *testing.T) {
+		supported := SupportedAccountParameters()
+		require.Contains(t, supported, AccountParameterDataRetentionTimeInDays)
+		// It is in the generated list, but the catalog write path does not support it.
+		require.Contains(t, AllAccountParameters, AccountParameterServiceCallerTokenValiditySecs)
+		require.NotContains(t, supported, AccountParameterServiceCallerTokenValiditySecs)
+	})
+
+	t.Run("objects", func(t *testing.T) {
+		require.Contains(t, SupportedObjectParameters(ObjectTypeDatabase), ObjectParameterDataRetentionTimeInDays)
+		require.NotContains(t, SupportedObjectParameters(ObjectTypeDatabase), ObjectParameter("METRIC_LEVEL"))
+		require.Empty(t, SupportedObjectParameters(ObjectTypeTable))
+		require.Empty(t, SupportedObjectParameters(ObjectType("NewObjectType")))
+	})
+
+	t.Run("every object type with a catalog writer is asked", func(t *testing.T) {
+		for objectType := range objectParameterCatalogSetters {
+			require.Contains(t, objectParameterCatalogSupport, objectType)
+		}
+		for objectType := range objectParameterCatalogSupport {
+			require.Contains(t, objectParameterCatalogSetters, objectType)
+		}
+	})
+}
