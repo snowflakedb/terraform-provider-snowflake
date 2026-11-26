@@ -201,6 +201,14 @@ func hierarchyRenameSchemaObjectTestCases(t *testing.T) []hierarchyRenameSchemaO
 			exists: showError(testClient().ProjectionPolicy.Show),
 		},
 		{
+			name:     "Quota",
+			resource: resources.Quota,
+			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
+				return model.QuotaFromId("t", id)
+			},
+			exists: showError(testClient().Quota.Show),
+		},
+		{
 			name:     "RowAccessPolicy",
 			resource: resources.RowAccessPolicy,
 			model: func(t *testing.T, id sdk.SchemaObjectIdentifier) accconfig.ResourceModel {
