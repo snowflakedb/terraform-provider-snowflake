@@ -949,6 +949,22 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "AggregationPolicy",
+			objectType: sdk.ObjectTypeAggregationPolicy,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				id, cleanup := testClientHelper().AggregationPolicy.CreateAggregationPolicy(t)
+				policy, err := client.AggregationPolicies.ShowByID(ctx, id)
+				require.NoError(t, err)
+				return policy, cleanup
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.AggregationPolicies.Alter(ctx, sdk.NewAlterAggregationPolicyRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.AggregationPolicies.Alter(ctx, sdk.NewAlterAggregationPolicyRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "ProjectionPolicy",
 			objectType: sdk.ObjectTypeProjectionPolicy,
 			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
