@@ -31,7 +31,7 @@ func TestAcc_CortexSearchServices_complete(t *testing.T) {
 	variableSet1 := m()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

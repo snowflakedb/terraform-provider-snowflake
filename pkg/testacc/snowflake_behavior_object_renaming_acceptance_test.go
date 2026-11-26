@@ -510,7 +510,7 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedInternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
@@ -579,7 +579,7 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedInternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
@@ -647,7 +647,7 @@ func TestAcc_DeepHierarchy_AreInConfig_DatabaseRenamedExternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
@@ -714,7 +714,7 @@ func TestAcc_DeepHierarchy_AreInConfig_SchemaRenamedExternally(t *testing.T) {
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
@@ -755,7 +755,7 @@ func TestAcc_DeepHierarchy_AreNotInConfig_DatabaseRenamedExternally(t *testing.T
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
@@ -808,7 +808,7 @@ func TestAcc_DeepHierarchy_AreNotInConfig_SchemaRenamedExternally(t *testing.T) 
 			}
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},

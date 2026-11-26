@@ -20,7 +20,7 @@ func TestAcc_TableConstraint_fk(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -92,7 +92,7 @@ func TestAcc_TableConstraint_pk(t *testing.T) {
 	constraintName := fmt.Sprintf("pk_%s", tableId.Name())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -169,7 +169,7 @@ func TestAcc_TableConstraint_unique(t *testing.T) {
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -242,12 +242,12 @@ func TestAcc_Table_issue2535_newConstraint(t *testing.T) {
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConstraintUniqueConfigUsingTableId(id, "|"),
 				ExpectError:              regexp.MustCompile(`.*Expected SchemaObjectIdentifier identifier type, but got:.*`),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConstraintUniqueConfigUsingTableId(id, "."),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_table_constraint.unique", "type", "UNIQUE"),
@@ -286,7 +286,7 @@ func TestAcc_Table_issue2535_existingTable(t *testing.T) {
 			// fixed in the current version
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConstraintUniqueConfigUsingFullyQualifiedName(id),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_table_constraint.unique", "type", "UNIQUE"),
@@ -368,7 +368,7 @@ resource "snowflake_table_constraint" "unique" {
 //	newName := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 //
 //	resource.Test(t, resource.TestCase{
-//		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+//		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 //		PreCheck:                 func() { TestAccPreCheck(t) },
 //		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 //			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -400,7 +400,7 @@ func TestAcc_TableConstraint_ProperlyHandles_EmptyForeignKeyProperties(t *testin
 	id := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

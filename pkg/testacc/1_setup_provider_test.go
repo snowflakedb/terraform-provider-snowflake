@@ -48,7 +48,7 @@ var (
 	tagsWithExperimentFlagProviderFactory = providerFactoryUsingCache("TagsWithExperimentFlag")
 	servicesProviderFactory               = providerFactoryUsingCache("Services")
 	// warehouseRequiredProviderFactory should be used whenever tests require a warehouse but do not modify the current
-	// session by, e.g., creating new warehouses.
+	// session by, e.g., creating new warehouses. All tests using regular tables must use it.
 	warehouseRequiredProviderFactory = providerFactoryUsingCache("WarehouseRequired")
 	// interactiveWarehouseProviderFactory should be used by interactive warehouse tests. CREATE INTERACTIVE WAREHOUSE
 	// switches the session onto the new warehouse and there is no way to un-use it, so these tests must run on a

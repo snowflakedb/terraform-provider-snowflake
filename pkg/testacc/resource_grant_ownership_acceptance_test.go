@@ -230,7 +230,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnObject_Table_ToAccountRole(t *testing
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -280,7 +280,7 @@ func TestAcc_GrantOwnership_OnObject_Table_ToDatabaseRole(t *testing.T) {
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -445,7 +445,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnAll_InDatabase_ToAccountRole(t *testi
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -495,7 +495,7 @@ func TestAcc_GrantOwnership_BasicUseCase_OnAll_InSchema_ToAccountRole(t *testing
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -804,7 +804,7 @@ func TestAcc_GrantOwnership_OnMaterializedView(t *testing.T) {
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1021,7 +1021,7 @@ func TestAcc_GrantOwnership_OnPipe(t *testing.T) {
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1085,7 +1085,7 @@ func TestAcc_GrantOwnership_OnPipe_PipeExecutionPausedSet(t *testing.T) {
 				WithDependsOn(accountRoleModel.ResourceReference(), pipeModel.ResourceReference(), operateGrantModel.ResourceReference())
 
 			resource.Test(t, resource.TestCase{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 					tfversion.RequireAbove(tfversion.Version1_5_0),
 				},
@@ -1144,7 +1144,7 @@ func TestAcc_GrantOwnership_OnAllPipes(t *testing.T) {
 
 	resourceName := "snowflake_grant_ownership.test"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1301,7 +1301,7 @@ func TestAcc_GrantOwnership_migrateFromV0941_ensureSmoothUpgradeWithNewResourceI
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, accountRoleModel, tableModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -1356,7 +1356,7 @@ func TestAcc_GrantOwnership_IdentifierQuotingDiffSuppression(t *testing.T) {
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, accountRoleModel, schemaModel, tableModel, grantModel),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{

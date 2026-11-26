@@ -17,7 +17,7 @@ func TestAcc_TableColumnMaskingPolicyApplication(t *testing.T) {
 	maskingPolicyId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -91,7 +91,7 @@ func TestAcc_TableColumnMaskingPolicyApplication_BCR2026_02(t *testing.T) {
 				ExpectError:       regexp.MustCompile("expected 13 destination arguments in Scan, not 12"),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   maskingPolicyApplicationTestConfig(tableId, maskingPolicyId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("snowflake_table_column_masking_policy_application.mpa", "table", tableId.FullyQualifiedName()),

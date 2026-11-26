@@ -30,7 +30,7 @@ func TestAcc_DynamicTables_complete(t *testing.T) {
 
 	dataSourceName := "data.snowflake_dynamic_tables.dts"
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},

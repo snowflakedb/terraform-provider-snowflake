@@ -168,7 +168,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create with only required fields
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelBasic),
 				Check:                    assertThat(t, basicNeverSetAssertions...),
 			},
@@ -182,7 +182,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Change only alterable fields - expect an in-place update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelWithAlterableOptional),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -201,7 +201,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Change the alterable fields externally and detect drift - expect Terraform to fix it with an update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				PreConfig: func() {
 					testClient().Table.AlterWithRequest(t, sdk.NewAlterTableRequest(id).WithSet(*sdk.NewTableSetRequest().
 						WithComment(externalComment).
@@ -221,7 +221,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Unset all alterable optional fields - expect an in-place update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelWithAlterableOptionalUnset),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -232,7 +232,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Set cluster_by - expect an in-place update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelWithAlterableOptional),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -243,7 +243,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Change cluster_by - expect an in-place update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelWithAlterableOptionalChanged),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -254,7 +254,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Unset cluster_by (and the other alterable fields) - expect an in-place update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelWithAlterableOptionalUnset),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -265,7 +265,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Set two cluster_by keys - expect an in-place update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelWithClusterByIdName),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -276,7 +276,7 @@ func TestAcc_Table_BasicUseCase(t *testing.T) {
 			},
 			// Reorder cluster_by keys - expect an in-place update
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelWithClusterByNameId),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -307,7 +307,7 @@ func TestAcc_Table_BasicUseCase_Import(t *testing.T) {
 	t.Cleanup(cleanup)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -396,7 +396,7 @@ func TestAcc_Table_CompleteUseCase(t *testing.T) {
 		CheckDestroy: CheckDestroy(t, resources.Table),
 		Steps: []resource.TestStep{
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelComplete),
 				Check: assertThat(
 					t,
@@ -425,7 +425,7 @@ func TestAcc_Table_CompleteUseCase(t *testing.T) {
 			// The configuration omits these fields, so the state after the create holds the unset value ("default"),
 			// while the enforcing import writes the value reported by Snowflake.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   accconfig.FromModels(t, modelComplete),
 				ResourceName:             ref,
 				ImportState:              true,
@@ -549,7 +549,7 @@ func TestAcc_Table_BasicUseCase_Columns(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -677,7 +677,7 @@ func TestAcc_Table_ColumnCollate_Inherited(t *testing.T) {
 	ref := modelInherited.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -728,7 +728,7 @@ func TestAcc_Table_ColumnCollate_ExplicitAndCleared(t *testing.T) {
 	ref := modelEn.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -767,7 +767,7 @@ func TestAcc_Table_Validations(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -812,7 +812,7 @@ func TestAcc_TableDefaults(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1012,7 +1012,7 @@ func TestAcc_Table_EmptyStringColumnDefault_issue2406(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1094,7 +1094,7 @@ func TestAcc_TableIdentity(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1199,7 +1199,7 @@ func TestAcc_TableCollate(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1326,7 +1326,7 @@ func TestAcc_TableRename(t *testing.T) {
 	newComment := random.Comment()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1396,7 +1396,7 @@ func TestAcc_Table_DefaultDataRetentionTime(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1520,7 +1520,7 @@ func TestAcc_Table_DefaultDataRetentionTime_SetOutsideOfTerraform(t *testing.T) 
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1576,7 +1576,7 @@ func TestAcc_Table_DefaultDataRetentionTimeSettingUnsetting(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifierInSchema(schema.ID())
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1666,7 +1666,7 @@ func TestAcc_Table_ClusterBy(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1720,7 +1720,7 @@ func TestAcc_ColumnTypeChangeWithNonTextType(t *testing.T) {
 	ref := modelWide.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1758,7 +1758,7 @@ func TestAcc_Table_gh2733(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1827,7 +1827,7 @@ func TestAcc_Table_issue2844_apostropheInColumnName(t *testing.T) {
 	ref := tableModel.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1881,7 +1881,7 @@ func TestAcc_Table_StructuredArray_issue4146(t *testing.T) {
 	ref := modelExplicit.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -1936,7 +1936,7 @@ func TestAcc_Table_VirtualColumn_issue2418(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2052,7 +2052,7 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 						*sdk.NewTableColumnAddActionRequest("VIRTUAL_COLUMN", testdatatypes.DataTypeNumber_38_0).WithVirtual(*sdk.NewTableColumnVirtualRequest("(ID * 2)")),
 					)))
 				},
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionNoop),
@@ -2084,7 +2084,7 @@ func TestAcc_Table_migrateFromV2_23_0(t *testing.T) {
 			},
 			// A virtual column that is not in the configuration is dropped.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
@@ -2177,7 +2177,7 @@ func TestAcc_Table_migrateFromVersion_0_94_1(t *testing.T) {
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfig(tableId),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "id", tableId.FullyQualifiedName()),
@@ -2214,7 +2214,7 @@ func TestAcc_Table_SuppressQuotingOnDefaultSequence_issue2644(t *testing.T) {
 			},
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigWithSequence(tableId, fmt.Sprintf(`expression = %q`, tableId.FullyQualifiedName()+".NEXTVAL")),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
@@ -2267,7 +2267,7 @@ func TestAcc_Table_issue3007_textColumn(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "VARCHAR(3)"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "column.0.type", "NUMBER(11,2)"),
@@ -2275,7 +2275,7 @@ func TestAcc_Table_issue3007_textColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "VARCHAR(256)"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2287,7 +2287,7 @@ func TestAcc_Table_issue3007_textColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "VARCHAR"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2299,7 +2299,7 @@ func TestAcc_Table_issue3007_textColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, defaultVarchar),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2311,7 +2311,7 @@ func TestAcc_Table_issue3007_textColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "text"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2338,7 +2338,7 @@ func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "NUMBER"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "column.0.type", "NUMBER(11,2)"),
@@ -2346,7 +2346,7 @@ func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "NUMBER(11)"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2359,7 +2359,7 @@ func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "NUMBER"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2371,7 +2371,7 @@ func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, defaultNumber),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2383,7 +2383,7 @@ func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 				),
 			},
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "decimal"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
@@ -2396,7 +2396,7 @@ func TestAcc_Table_issue3007_numberColumn(t *testing.T) {
 			},
 			// Snowflake cannot change the scale of a NUMBER column in place.
 			{
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfigIssue3007(tableId, "NUMBER(38,2)"),
 				ExpectError:              regexp.MustCompile("changing the scale of a number is not supported"),
 			},
@@ -2462,7 +2462,7 @@ func TestAcc_Table_SchemaRemovedExternally(t *testing.T) {
 			// and the "error creating table" error (because of the missing underlying schema).
 			{
 				PreConfig:                func() { UnsetConfigPathEnv(t) },
-				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 				Config:                   tableConfig(tableId),
 				ExpectError:              regexp.MustCompile("object does not exist or not authorized"),
 			},
@@ -2475,7 +2475,7 @@ func TestAcc_Table_Decfloat(t *testing.T) {
 	argName := "A"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2522,7 +2522,7 @@ func TestAcc_Table_AddColumnWithConstantDefault_issue4730(t *testing.T) {
 	tableId := testClient().Ids.RandomSchemaObjectIdentifier()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2610,7 +2610,7 @@ func TestAcc_Table_Transient(t *testing.T) {
 	ref := tableModelTransient.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2676,7 +2676,7 @@ func TestAcc_Table_BasicUseCase_Policies(t *testing.T) {
 	ref := tableWithoutPolicies.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2755,7 +2755,7 @@ func TestAcc_Table_SchemaEvolutionErrorLoggingRowTimestamp(t *testing.T) {
 	ref := modelBasic.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2833,7 +2833,7 @@ func TestAcc_Table_ErrorLoggingAndCommentInOneApply(t *testing.T) {
 	ref := modelBasic.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
@@ -2880,7 +2880,7 @@ func TestAcc_Table_MaxDataExtensionTimeAndDefaultDdlCollation(t *testing.T) {
 	ref := modelSet.ResourceReference()
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: warehouseRequiredProviderFactory,
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
 		},
