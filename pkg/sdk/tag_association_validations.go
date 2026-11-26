@@ -37,6 +37,7 @@ var (
 		ObjectTypeGitRepository,
 		ObjectTypeIcebergTable,
 		ObjectTypeInteractiveTable,
+		ObjectTypeJoinPolicy,
 		ObjectTypeMaterializedView,
 		ObjectTypePipe,
 		ObjectTypeMaskingPolicy,

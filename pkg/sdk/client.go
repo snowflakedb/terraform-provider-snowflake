@@ -59,6 +59,7 @@ type Client struct {
 	HybridTables                 HybridTables
 	IcebergTables                IcebergTables
 	ImageRepositories            ImageRepositories
+	JoinPolicies                 JoinPolicies
 	Listings                     Listings
 	ManagedAccounts              ManagedAccounts
 	MaskingPolicies              MaskingPolicies
@@ -214,6 +215,7 @@ func (c *Client) initialize() {
 	c.HybridTables = &hybridTables{client: c}
 	c.IcebergTables = &icebergTables{client: c}
 	c.ImageRepositories = &imageRepositories{client: c}
+	c.JoinPolicies = &joinPolicies{client: c}
 	c.Listings = &listings{client: c}
 	c.ManagedAccounts = &managedAccounts{client: c}
 	c.MaskingPolicies = &maskingPolicies{client: c}
