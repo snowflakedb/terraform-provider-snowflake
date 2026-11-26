@@ -1,6 +1,66 @@
 package sdk
 
-import "strings"
+import (
+	"fmt"
+	"slices"
+	"strings"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
+)
+
+// openflowRuntimeNodeTypeTiers is the only place that knows which tiers each node type has. Snowflake
+// rejects a tier that does not belong to the runtime's node type. The first tier of a node type is the one
+// CREATE OPENFLOW RUNTIME stores when NODE_TYPE_TIER is omitted.
+var openflowRuntimeNodeTypeTiers = map[OpenflowRuntimeNodeType][]OpenflowRuntimeNodeTypeTier{
+	OpenflowRuntimeNodeTypeSmall:  {OpenflowRuntimeNodeTypeTierS1, OpenflowRuntimeNodeTypeTierS2, OpenflowRuntimeNodeTypeTierS3},
+	OpenflowRuntimeNodeTypeMedium: {OpenflowRuntimeNodeTypeTierM4, OpenflowRuntimeNodeTypeTierM6},
+	OpenflowRuntimeNodeTypeLarge:  {OpenflowRuntimeNodeTypeTierL8},
+}
+
+// OpenflowRuntimeNodeTypeTiersFor returns the tiers that belong to the node type, or nil for an unknown node type.
+func OpenflowRuntimeNodeTypeTiersFor(nodeType OpenflowRuntimeNodeType) []OpenflowRuntimeNodeTypeTier {
+	return slices.Clone(openflowRuntimeNodeTypeTiers[nodeType])
+}
+
+// BelongsTo reports whether the tier is legal for the node type.
+func (t OpenflowRuntimeNodeTypeTier) BelongsTo(nodeType OpenflowRuntimeNodeType) bool {
+	return slices.Contains(openflowRuntimeNodeTypeTiers[nodeType], t)
+}
+
+// ValidateOpenflowRuntimeNodeTypeTier returns an error listing the valid tiers when the tier does not belong to the node type.
+func ValidateOpenflowRuntimeNodeTypeTier(nodeType OpenflowRuntimeNodeType, tier OpenflowRuntimeNodeTypeTier) error {
+	if tier.BelongsTo(nodeType) {
+		return nil
+	}
+	tiers := openflowRuntimeNodeTypeTiers[nodeType]
+	if len(tiers) == 0 {
+		return fmt.Errorf("node type tier %s does not belong to node type %s: the node type has no tiers", tier, nodeType)
+	}
+	return fmt.Errorf("node type tier %s does not belong to node type %s: valid tiers are %s", tier, nodeType, collections.JoinStrings(tiers, ", "))
+}
+
+// ALTER does not validate the tier against the node type: the node type cannot be changed, and the request does not
+// carry it, so Snowflake checks the tier against the runtime's node type. NODE_TYPE_TIER has no UNSET.
+func (opts *CreateOpenflowRuntimeOptions) additionalValidations() error {
+	return validateOpenflowRuntimeNodeTypeTier(opts.NodeType, opts.NodeTypeTier)
+}
+
+func validateOpenflowRuntimeNodeTypeTier(nodeType OpenflowRuntimeNodeType, tier *OpenflowRuntimeNodeTypeTier) error {
+	if tier == nil {
+		return nil
+	}
+	return ValidateOpenflowRuntimeNodeTypeTier(nodeType, *tier)
+}
+
+// DefaultOpenflowRuntimeNodeTypeTier is the tier CREATE OPENFLOW RUNTIME stores when NODE_TYPE_TIER is
+// omitted. ALTER has no UNSET for the property, so this is also the value used to put a runtime back to that default.
+func DefaultOpenflowRuntimeNodeTypeTier(nodeType OpenflowRuntimeNodeType) (OpenflowRuntimeNodeTypeTier, bool) {
+	tiers := openflowRuntimeNodeTypeTiers[nodeType]
+	if len(tiers) == 0 {
+		return "", false
+	}
+	return tiers[0], true
+}
 
 // ParseOpenflowRuntimeExternalAccessIntegrations parses the external_access_integrations column of
 // SHOW and DESCRIBE OPENFLOW RUNTIME, which Snowflake returns as a JSON array of quoted names.

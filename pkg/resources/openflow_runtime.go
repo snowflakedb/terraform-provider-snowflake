@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
@@ -12,6 +13,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -65,6 +67,24 @@ var openflowRuntimeSchema = map[string]*schema.Schema{
 		Description:      fmt.Sprintf("Specifies the size of the runtime's nodes. Snowflake has no ALTER for it, so changing it recreates the runtime. Valid values are (case-insensitive): %s.", possibleValuesListed(sdk.AllOpenflowRuntimeNodeTypes)),
 		ValidateDiagFunc: sdkValidation(sdk.ToOpenflowRuntimeNodeType),
 		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToOpenflowRuntimeNodeType)),
+	},
+	"node_type_tier": {
+		Type:     schema.TypeString,
+		Optional: true,
+		Description: fmt.Sprintf(
+			joinWithSpace(
+				"Specifies the instance tier within `node_type`. Valid values are (case-insensitive): %s.",
+				"The tier has to belong to `node_type`: `S1`, `S2`, and `S3` require `SMALL`; `M4` and `M6` require `MEDIUM`; `L8` requires `LARGE`. A mismatch is reported during plan.",
+				"When omitted, Snowflake picks the default tier of the `node_type`. The tier Snowflake reports is available in `show_output` and `describe_output`.",
+				"Changes made outside of Terraform are detected and reverted to the configured tier, or to the default tier when the field is omitted.",
+				"Changing it updates the runtime in place with `ALTER OPENFLOW RUNTIME ... SET NODE_TYPE_TIER`, but only within the current `node_type`. Changing `node_type` recreates the runtime, so update this field in the same change or remove it.",
+				"Snowflake has no `UNSET` for the tier, so removing the field from the configuration sets the default tier of the `node_type`.",
+				"The tier is read on import. When the configuration omits the field, the first plan after import sets the default tier of the `node_type`, which changes nothing if the runtime already uses it.",
+			),
+			possibleValuesListed(sdk.AllOpenflowRuntimeNodeTypeTiers),
+		),
+		ValidateDiagFunc: sdkValidation(sdk.ToOpenflowRuntimeNodeTypeTier),
+		DiffSuppressFunc: SuppressIfAny(NormalizeAndCompare(sdk.ToOpenflowRuntimeNodeTypeTier), IgnoreChangeToCurrentSnowflakeValueInShow("node_type_tier")),
 	},
 	"min_nodes": {
 		Type:             schema.TypeInt,
@@ -140,13 +160,16 @@ func OpenflowRuntime() *schema.Resource {
 		CustomizeDiff: TrackingCustomDiffWrapper(resources.OpenflowRuntime, customdiff.All(
 			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("database"),
 			TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperimentNotEnabled("schema"),
-			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, ShowOutputAttributeName, "name", "database", "schema", "display_name", "comment", "min_nodes", "max_nodes", "execute_as_role", "external_access_integrations"),
-			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, DescribeOutputAttributeName, "name", "display_name", "comment", "min_nodes", "max_nodes", "execute_as_role", "external_access_integrations"),
+			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, ShowOutputAttributeName, "name", "database", "schema", "display_name", "comment", "min_nodes", "max_nodes", "node_type_tier", "execute_as_role", "external_access_integrations"),
+			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, DescribeOutputAttributeName, "name", "display_name", "comment", "min_nodes", "max_nodes", "node_type_tier", "execute_as_role", "external_access_integrations"),
 			ComputedIfAnyAttributeChanged(openflowRuntimeSchema, FullyQualifiedNameAttributeName, "name", "database", "schema"),
 		)),
 
 		Schema:   openflowRuntimeSchema,
 		Timeouts: openflowRuntimeTimeouts,
+		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
+			openflowRuntimeNodeTypeTierMatchesNodeType,
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: TrackingImportWrapper(resources.OpenflowRuntime, ImportOpenflowRuntime),
 		},
@@ -178,6 +201,9 @@ func ImportOpenflowRuntime(ctx context.Context, d *schema.ResourceData, meta any
 	if runtime.DisplayName != nil && *runtime.DisplayName != "" {
 		errs = errors.Join(errs, d.Set("display_name", *runtime.DisplayName))
 	}
+	if runtime.NodeTypeTier != "" {
+		errs = errors.Join(errs, d.Set("node_type_tier", string(runtime.NodeTypeTier)))
+	}
 	if runtime.Comment != nil && *runtime.Comment != "" {
 		errs = errors.Join(errs, d.Set("comment", *runtime.Comment))
 	}
@@ -206,6 +232,7 @@ func CreateOpenflowRuntime(ctx context.Context, d *schema.ResourceData, meta any
 
 	request := sdk.NewCreateOpenflowRuntimeRequest(id, deployment, nodeType, d.Get("min_nodes").(int), d.Get("max_nodes").(int), executeAsRole)
 	if err := errors.Join(
+		attributeMappedValueCreateBuilder(d, "node_type_tier", request.WithNodeTypeTier, sdk.ToOpenflowRuntimeNodeTypeTier),
 		stringAttributeCreateBuilder(d, "display_name", request.WithDisplayName),
 		stringAttributeCreateBuilder(d, "comment", request.WithComment),
 		attributeMappedValueCreateBuilder(d, "external_access_integrations", request.WithExternalAccessIntegrations, ToOpenflowRuntimeExternalAccessIntegrationsRequest),
@@ -267,6 +294,7 @@ func ReadOpenflowRuntime(withExternalChangesMarking bool) schema.ReadContextFunc
 				d,
 				outputMapping{"display_name", "display_name", displayName, displayName, nil},
 				outputMapping{"comment", "comment", comment, comment, nil},
+				outputMapping{"node_type_tier", "node_type_tier", string(runtime.NodeTypeTier), string(runtime.NodeTypeTier), nil},
 			); err != nil {
 				return diag.FromErr(err)
 			}
@@ -347,6 +375,7 @@ func UpdateOpenflowRuntime(ctx context.Context, d *schema.ResourceData, meta any
 		intAttributeUpdateSetOnly(d, "min_nodes", &set.MinNodes),
 		intAttributeUpdateSetOnly(d, "max_nodes", &set.MaxNodes),
 		accountObjectIdentifierAttributeUpdate(d, "execute_as_role", &set.ExecuteAsRole, &executeAsRoleUnset),
+		openflowRuntimeNodeTypeTierUpdate(d, set),
 	); err != nil {
 		return diag.FromErr(err)
 	}
@@ -410,6 +439,67 @@ func DeleteOpenflowRuntime(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 	d.SetId("")
+	return nil
+}
+
+// openflowRuntimeNodeTypeTierMatchesNodeType rejects a node_type_tier that does not belong to node_type.
+// Both values have to be known; otherwise the SDK validation of CREATE catches the mismatch during apply.
+func openflowRuntimeNodeTypeTierMatchesNodeType(_ context.Context, req schema.ValidateResourceConfigFuncRequest, resp *schema.ValidateResourceConfigFuncResponse) {
+	rawConfig := req.RawConfig
+	if rawConfig.IsNull() || !rawConfig.IsKnown() {
+		return
+	}
+	tierValue := rawConfig.GetAttr("node_type_tier")
+	if tierValue.IsNull() || !tierValue.IsKnown() || tierValue.AsString() == "" {
+		return
+	}
+	nodeTypeValue := rawConfig.GetAttr("node_type")
+	if nodeTypeValue.IsNull() || !nodeTypeValue.IsKnown() {
+		return
+	}
+	tier, err := sdk.ToOpenflowRuntimeNodeTypeTier(tierValue.AsString())
+	if err != nil {
+		return
+	}
+	nodeType, err := sdk.ToOpenflowRuntimeNodeType(nodeTypeValue.AsString())
+	if err != nil {
+		return
+	}
+	if err := sdk.ValidateOpenflowRuntimeNodeTypeTier(nodeType, tier); err != nil {
+		resp.Diagnostics = append(resp.Diagnostics, diag.Diagnostic{
+			Severity:      diag.Error,
+			Summary:       "Invalid node_type_tier",
+			Detail:        err.Error(),
+			AttributePath: cty.GetAttrPath("node_type_tier"),
+		})
+	}
+}
+
+// openflowRuntimeNodeTypeTierUpdate sets the configured tier, or the tier CREATE stores when the argument
+// is removed. NODE_TYPE_TIER has no UNSET. node_type is ForceNew, so the tier is only ever changed within the current
+// node type, which the plan-time validation has already checked against the configuration.
+func openflowRuntimeNodeTypeTierUpdate(d *schema.ResourceData, set *sdk.OpenflowRuntimeSetRequest) error {
+	if !d.HasChange("node_type_tier") {
+		return nil
+	}
+	if v, ok := d.GetOk("node_type_tier"); ok {
+		tier, err := sdk.ToOpenflowRuntimeNodeTypeTier(v.(string))
+		if err != nil {
+			return err
+		}
+		set.NodeTypeTier = &tier
+		return nil
+	}
+	nodeType, err := sdk.ToOpenflowRuntimeNodeType(d.Get("node_type").(string))
+	if err != nil {
+		return err
+	}
+	defaultTier, ok := sdk.DefaultOpenflowRuntimeNodeTypeTier(nodeType)
+	if !ok {
+		return fmt.Errorf("no default node_type_tier for node_type %s", nodeType)
+	}
+	log.Printf("[DEBUG] node_type_tier was removed, setting the default tier %s of the %s node type", defaultTier, nodeType)
+	set.NodeTypeTier = &defaultTier
 	return nil
 }
 

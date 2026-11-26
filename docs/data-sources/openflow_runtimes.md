@@ -135,6 +135,7 @@ Read-Only:
 - `min_nodes` (Number)
 - `name` (String)
 - `node_type` (String)
+- `node_type_tier` (String)
 - `owner` (String)
 - `schema_name` (String)
 - `status` (String)

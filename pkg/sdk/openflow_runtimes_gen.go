@@ -27,6 +27,7 @@ type CreateOpenflowRuntimeOptions struct {
 	name                       SchemaObjectIdentifier                     `ddl:"identifier"`
 	InDeployment               AccountObjectIdentifier                    `ddl:"identifier" sql:"IN DEPLOYMENT"`
 	NodeType                   OpenflowRuntimeNodeType                    `ddl:"parameter,single_quotes" sql:"NODE_TYPE"`
+	NodeTypeTier               *OpenflowRuntimeNodeTypeTier               `ddl:"parameter,single_quotes" sql:"NODE_TYPE_TIER"`
 	MinNodes                   int                                        `ddl:"parameter" sql:"MIN_NODES"`
 	MaxNodes                   int                                        `ddl:"parameter" sql:"MAX_NODES"`
 	ExecuteAsRole              AccountObjectIdentifier                    `ddl:"identifier,equals" sql:"EXECUTE_AS_ROLE"`
@@ -69,6 +70,7 @@ type OpenflowRuntimeSet struct {
 	DisplayName                *string                                    `ddl:"parameter,single_quotes" sql:"DISPLAY_NAME"`
 	MinNodes                   *int                                       `ddl:"parameter" sql:"MIN_NODES"`
 	MaxNodes                   *int                                       `ddl:"parameter" sql:"MAX_NODES"`
+	NodeTypeTier               *OpenflowRuntimeNodeTypeTier               `ddl:"parameter,single_quotes" sql:"NODE_TYPE_TIER"`
 	ExternalAccessIntegrations *OpenflowRuntimeExternalAccessIntegrations `ddl:"parameter,parentheses" sql:"EXTERNAL_ACCESS_INTEGRATIONS"`
 	ExecuteAsRole              *AccountObjectIdentifier                   `ddl:"identifier,equals" sql:"EXECUTE_AS_ROLE"`
 	Comment                    *string                                    `ddl:"parameter,single_quotes" sql:"COMMENT"`
@@ -106,6 +108,7 @@ type openflowRuntimeRow struct {
 	MinNodes                   int            `db:"min_nodes"`
 	MaxNodes                   int            `db:"max_nodes"`
 	NodeType                   string         `db:"node_type"`
+	NodeTypeTier               string         `db:"node_type_tier"`
 	DisplayName                sql.NullString `db:"display_name"`
 	ExternalAccessIntegrations sql.NullString `db:"external_access_integrations"`
 	InitiallySuspended         bool           `db:"initially_suspended"`
@@ -126,6 +129,7 @@ type OpenflowRuntime struct {
 	MinNodes                   int
 	MaxNodes                   int
 	NodeType                   OpenflowRuntimeNodeType
+	NodeTypeTier               OpenflowRuntimeNodeTypeTier
 	DisplayName                *string
 	ExternalAccessIntegrations []AccountObjectIdentifier
 	InitiallySuspended         bool
@@ -169,7 +173,7 @@ type openflowRuntimeDetailsRow struct {
 	Owner                      string         `db:"owner"`
 	Comment                    sql.NullString `db:"comment"`
 	ServerUrl                  sql.NullString `db:"server_url"`
-	NodeTypeTier               sql.NullString `db:"node_type_tier"`
+	NodeTypeTier               string         `db:"node_type_tier"`
 }
 
 type OpenflowRuntimeDetails struct {
@@ -188,5 +192,5 @@ type OpenflowRuntimeDetails struct {
 	Owner                      string
 	Comment                    *string
 	ServerUrl                  *string
-	NodeTypeTier               *string
+	NodeTypeTier               OpenflowRuntimeNodeTypeTier
 }

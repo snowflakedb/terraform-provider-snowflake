@@ -92,6 +92,11 @@ func (o *OpenflowRuntimeResourceAssert) HasNodeType(expected string) *OpenflowRu
 	return o
 }
 
+func (o *OpenflowRuntimeResourceAssert) HasNodeTypeTier(expected string) *OpenflowRuntimeResourceAssert {
+	o.StringValueSet("node_type_tier", expected)
+	return o
+}
+
 ///////////////////////////////////
 // Attribute value string checks //
 ///////////////////////////////////
@@ -148,6 +153,11 @@ func (o *OpenflowRuntimeResourceAssert) HasMinNodesString(expected string) *Open
 
 func (o *OpenflowRuntimeResourceAssert) HasNodeTypeString(expected string) *OpenflowRuntimeResourceAssert {
 	o.ValueSet("node_type", expected)
+	return o
+}
+
+func (o *OpenflowRuntimeResourceAssert) HasNodeTypeTierString(expected string) *OpenflowRuntimeResourceAssert {
+	o.ValueSet("node_type_tier", expected)
 	return o
 }
 
@@ -210,6 +220,11 @@ func (o *OpenflowRuntimeResourceAssert) HasNoNodeType() *OpenflowRuntimeResource
 	return o
 }
 
+func (o *OpenflowRuntimeResourceAssert) HasNoNodeTypeTier() *OpenflowRuntimeResourceAssert {
+	o.ValueNotSet("node_type_tier")
+	return o
+}
+
 ////////////////////////////
 // Attribute empty checks //
 ////////////////////////////
@@ -231,6 +246,11 @@ func (o *OpenflowRuntimeResourceAssert) HasExternalAccessIntegrationsEmpty() *Op
 
 func (o *OpenflowRuntimeResourceAssert) HasFullyQualifiedNameEmpty() *OpenflowRuntimeResourceAssert {
 	o.ValueSet("fully_qualified_name", "")
+	return o
+}
+
+func (o *OpenflowRuntimeResourceAssert) HasNodeTypeTierEmpty() *OpenflowRuntimeResourceAssert {
+	o.ValueSet("node_type_tier", "")
 	return o
 }
 
@@ -290,5 +310,10 @@ func (o *OpenflowRuntimeResourceAssert) HasMinNodesNotEmpty() *OpenflowRuntimeRe
 
 func (o *OpenflowRuntimeResourceAssert) HasNodeTypeNotEmpty() *OpenflowRuntimeResourceAssert {
 	o.ValuePresent("node_type")
+	return o
+}
+
+func (o *OpenflowRuntimeResourceAssert) HasNodeTypeTierNotEmpty() *OpenflowRuntimeResourceAssert {
+	o.ValuePresent("node_type_tier")
 	return o
 }

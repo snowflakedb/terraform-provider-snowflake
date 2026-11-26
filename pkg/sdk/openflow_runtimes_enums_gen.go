@@ -35,6 +35,46 @@ func ToOpenflowRuntimeNodeType(s string) (OpenflowRuntimeNodeType, error) {
 	}
 }
 
+type OpenflowRuntimeNodeTypeTier string
+
+const (
+	OpenflowRuntimeNodeTypeTierS1 OpenflowRuntimeNodeTypeTier = "S1"
+	OpenflowRuntimeNodeTypeTierS2 OpenflowRuntimeNodeTypeTier = "S2"
+	OpenflowRuntimeNodeTypeTierS3 OpenflowRuntimeNodeTypeTier = "S3"
+	OpenflowRuntimeNodeTypeTierM4 OpenflowRuntimeNodeTypeTier = "M4"
+	OpenflowRuntimeNodeTypeTierM6 OpenflowRuntimeNodeTypeTier = "M6"
+	OpenflowRuntimeNodeTypeTierL8 OpenflowRuntimeNodeTypeTier = "L8"
+)
+
+var AllOpenflowRuntimeNodeTypeTiers = []OpenflowRuntimeNodeTypeTier{
+	OpenflowRuntimeNodeTypeTierS1,
+	OpenflowRuntimeNodeTypeTierS2,
+	OpenflowRuntimeNodeTypeTierS3,
+	OpenflowRuntimeNodeTypeTierM4,
+	OpenflowRuntimeNodeTypeTierM6,
+	OpenflowRuntimeNodeTypeTierL8,
+}
+
+func ToOpenflowRuntimeNodeTypeTier(s string) (OpenflowRuntimeNodeTypeTier, error) {
+	s = strings.ToUpper(s)
+	switch s {
+	case string(OpenflowRuntimeNodeTypeTierS1):
+		return OpenflowRuntimeNodeTypeTierS1, nil
+	case string(OpenflowRuntimeNodeTypeTierS2):
+		return OpenflowRuntimeNodeTypeTierS2, nil
+	case string(OpenflowRuntimeNodeTypeTierS3):
+		return OpenflowRuntimeNodeTypeTierS3, nil
+	case string(OpenflowRuntimeNodeTypeTierM4):
+		return OpenflowRuntimeNodeTypeTierM4, nil
+	case string(OpenflowRuntimeNodeTypeTierM6):
+		return OpenflowRuntimeNodeTypeTierM6, nil
+	case string(OpenflowRuntimeNodeTypeTierL8):
+		return OpenflowRuntimeNodeTypeTierL8, nil
+	default:
+		return "", fmt.Errorf("invalid openflow runtime node type tier: %s", s)
+	}
+}
+
 type OpenflowRuntimeStatus string
 
 const (

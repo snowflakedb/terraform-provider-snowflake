@@ -10,6 +10,11 @@ var OpenflowRuntimeNodeTypeEnumDef = g.NewEnum(
 	"SMALL", "MEDIUM", "LARGE",
 )
 
+var OpenflowRuntimeNodeTypeTierEnumDef = g.NewEnum(
+	"OpenflowRuntimeNodeTypeTier", "OpenflowRuntimeNodeTypeTiers",
+	"S1", "S2", "S3", "M4", "M6", "L8",
+)
+
 // OpenflowRuntimeStatusEnumDef covers both the legacy status names and the newer aliases, since
 // Snowflake can return either spelling. The aliases below fold onto the legacy names, so callers only
 // ever see one spelling.
@@ -56,10 +61,11 @@ var openflowRuntimesDef = g.NewInterface(
 		IfNotExists().
 		Name().
 		// Clause order follows the published CREATE OPENFLOW RUNTIME syntax exactly - IN DEPLOYMENT,
-		// NODE_TYPE, MIN_NODES, MAX_NODES, EXECUTE_AS_ROLE - because option order has broken queries here
-		// before.
+		// NODE_TYPE, NODE_TYPE_TIER, MIN_NODES, MAX_NODES, EXECUTE_AS_ROLE - because option order has
+		// broken queries here before.
 		Identifier("InDeployment", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("IN DEPLOYMENT").Required()).
 		Assignment("NODE_TYPE", OpenflowRuntimeNodeTypeEnumDef.Kind(), g.ParameterOptions().SingleQuotes().Required()).
+		OptionalEnumAssignment("NODE_TYPE_TIER", OpenflowRuntimeNodeTypeTierEnumDef, g.ParameterOptions().SingleQuotes()).
 		NumberAssignment("MIN_NODES", g.ParameterOptions().Required()).
 		NumberAssignment("MAX_NODES", g.ParameterOptions().Required()).
 		Identifier("ExecuteAsRole", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE_AS_ROLE").Equals().Required()).
@@ -68,7 +74,8 @@ var openflowRuntimesDef = g.NewInterface(
 		OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "InDeployment").
-		WithValidation(g.ValidIdentifier, "ExecuteAsRole"),
+		WithValidation(g.ValidIdentifier, "ExecuteAsRole").
+		WithAdditionalValidations(),
 ).AlterOperation(
 	"https://docs.snowflake.com/en/sql-reference/sql/alter-openflow-runtime",
 	g.NewQueryStruct("AlterOpenflowRuntime").
@@ -92,10 +99,11 @@ var openflowRuntimesDef = g.NewInterface(
 				OptionalTextAssignment("DISPLAY_NAME", g.ParameterOptions().SingleQuotes()).
 				OptionalNumberAssignment("MIN_NODES", g.ParameterOptions()).
 				OptionalNumberAssignment("MAX_NODES", g.ParameterOptions()).
+				OptionalEnumAssignment("NODE_TYPE_TIER", OpenflowRuntimeNodeTypeTierEnumDef, g.ParameterOptions().SingleQuotes()).
 				OptionalQueryStructField("ExternalAccessIntegrations", openflowRuntimesExternalAccessIntegrationsDef, g.ParameterOptions().SQL("EXTERNAL_ACCESS_INTEGRATIONS").Parentheses()).
 				OptionalIdentifier("ExecuteAsRole", g.KindOfTPointer[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().SQL("EXECUTE_AS_ROLE").Equals()).
 				OptionalTextAssignment("COMMENT", g.ParameterOptions().SingleQuotes()).
-				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
+				WithValidation(g.AtLeastOneValueSet, "MinNodes", "MaxNodes", "NodeTypeTier", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
 			g.KeywordOptions().SQL("SET"),
 		).
 		OptionalQueryStructField(
@@ -134,6 +142,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Number("min_nodes").
 		Number("max_nodes").
 		Enum("node_type", OpenflowRuntimeNodeTypeEnumDef).
+		Enum("node_type_tier", OpenflowRuntimeNodeTypeTierEnumDef).
 		OptionalText("display_name").
 		Field("external_access_integrations", "sql.NullString", "[]AccountObjectIdentifier", g.WithCustomParser("ParseOpenflowRuntimeExternalAccessIntegrations")).
 		Bool("initially_suspended").
@@ -175,9 +184,7 @@ var openflowRuntimesDef = g.NewInterface(
 		Text("owner").
 		OptionalText("comment").
 		OptionalText("server_url").
-		// Optional defensively, not because the column is gated: a pointer costs nothing and avoids the
-		// whole DESCRIBE failing if node_type_tier is ever NULL.
-		OptionalText("node_type_tier"),
+		Enum("node_type_tier", OpenflowRuntimeNodeTypeTierEnumDef),
 	g.NewQueryStruct("DescribeOpenflowRuntime").
 		Describe().
 		SQL("OPENFLOW RUNTIME").
@@ -185,5 +192,6 @@ var openflowRuntimesDef = g.NewInterface(
 		WithValidation(g.ValidIdentifier, "name"),
 ).WithEnums(
 	OpenflowRuntimeNodeTypeEnumDef,
+	OpenflowRuntimeNodeTypeTierEnumDef,
 	OpenflowRuntimeStatusEnumDef,
 )

@@ -103,9 +103,7 @@ func OpenflowRuntimeDetailsToSchema(openflowRuntimeDetails *sdk.OpenflowRuntimeD
 	if openflowRuntimeDetails.ServerUrl != nil {
 		openflowRuntimeDetailsSchema["server_url"] = (*openflowRuntimeDetails.ServerUrl)
 	}
-	if openflowRuntimeDetails.NodeTypeTier != nil {
-		openflowRuntimeDetailsSchema["node_type_tier"] = (*openflowRuntimeDetails.NodeTypeTier)
-	}
+	openflowRuntimeDetailsSchema["node_type_tier"] = string(openflowRuntimeDetails.NodeTypeTier)
 	return openflowRuntimeDetailsSchema
 }
 

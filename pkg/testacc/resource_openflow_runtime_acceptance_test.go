@@ -44,6 +44,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 		deploymentId.Name(), currentRole.Name(), 1, 1, string(sdk.OpenflowRuntimeNodeTypeSmall))
 	withOptionals := model.OpenflowRuntime("t", id.DatabaseName(), id.SchemaName(), id.Name(),
 		deploymentId.Name(), currentRole.Name(), 2, 1, string(sdk.OpenflowRuntimeNodeTypeSmall)).
+		WithNodeTypeTier(string(sdk.OpenflowRuntimeNodeTypeTierS2)).
 		WithDisplayName(displayName).
 		WithComment(comment).
 		WithExternalAccessIntegrations(externalAccessIntegrationId)
@@ -56,6 +57,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasDeploymentString(deploymentId.Name()).
 			HasNodeTypeString(string(sdk.OpenflowRuntimeNodeTypeSmall)).
+			HasNoNodeTypeTier().
 			HasMinNodesString("1").
 			HasMaxNodesString("1").
 			HasExecuteAsRoleString(currentRole.Name()).
@@ -67,6 +69,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasStatus(sdk.OpenflowRuntimeStatusActive).
 			HasDeployment(deploymentId.Name()).
 			HasNodeType(sdk.OpenflowRuntimeNodeTypeSmall).
+			HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS1).
 			HasMinNodes(1).
 			HasMaxNodes(1).
 			HasDatabaseName(id.DatabaseName()).
@@ -93,7 +96,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasInitiallySuspended(false).
 			HasKeyNotEmpty().
 			HasServerUrlNotEmpty().
-			HasNodeTypeTierNotEmpty().
+			HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS1).
 			HasNoExternalAccessIntegrations().
 			HasOwner(currentRole.Name()),
 	}
@@ -105,6 +108,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasDeploymentString(deploymentId.Name()).
 			HasNodeTypeString(string(sdk.OpenflowRuntimeNodeTypeSmall)).
+			HasNodeTypeTierString(string(sdk.OpenflowRuntimeNodeTypeTierS2)).
 			HasMinNodesString("1").
 			HasMaxNodesString("2").
 			HasExecuteAsRoleString(currentRole.Name()).
@@ -116,6 +120,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasStatus(sdk.OpenflowRuntimeStatusActive).
 			HasDeployment(deploymentId.Name()).
 			HasNodeType(sdk.OpenflowRuntimeNodeTypeSmall).
+			HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS2).
 			HasMinNodes(1).
 			HasMaxNodes(2).
 			HasDatabaseName(id.DatabaseName()).
@@ -142,7 +147,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasInitiallySuspended(false).
 			HasKeyNotEmpty().
 			HasServerUrlNotEmpty().
-			HasNodeTypeTierNotEmpty().
+			HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS2).
 			HasExternalAccessIntegrations(externalAccessIntegrationId).
 			HasOwner(currentRole.Name()),
 	}
@@ -154,6 +159,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasSchemaString(id.SchemaName()).
 			HasDeploymentString(deploymentId.Name()).
 			HasNodeTypeString(string(sdk.OpenflowRuntimeNodeTypeSmall)).
+			HasNoNodeTypeTier().
 			HasMinNodesString("1").
 			HasMaxNodesString("1").
 			HasExecuteAsRoleString(currentRole.Name()).
@@ -165,6 +171,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasStatus(sdk.OpenflowRuntimeStatusActive).
 			HasDeployment(deploymentId.Name()).
 			HasNodeType(sdk.OpenflowRuntimeNodeTypeSmall).
+			HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS1).
 			HasMinNodes(1).
 			HasMaxNodes(1).
 			HasDatabaseName(id.DatabaseName()).
@@ -191,7 +198,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 			HasInitiallySuspended(false).
 			HasKeyNotEmpty().
 			HasServerUrlNotEmpty().
-			HasNodeTypeTierNotEmpty().
+			HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS1).
 			HasNoExternalAccessIntegrations().
 			HasOwner(currentRole.Name()),
 	}
@@ -208,12 +215,13 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 				Config: config.FromModels(t, basic),
 				Check:  assertThat(t, assertBasic...),
 			},
-			// 2. Import - required fields only
+			// 2. Import - required fields only. Import records the tier Snowflake stored, which this config does not set.
 			{
-				Config:            config.FromModels(t, basic),
-				ResourceName:      ref,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  config.FromModels(t, basic),
+				ResourceName:            ref,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"node_type_tier"},
 			},
 			// 3. Update - set the optionals and scale max_nodes up, all in place
 			{
@@ -239,6 +247,7 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 						WithSet(*sdk.NewOpenflowRuntimeSetRequest().
 							WithComment(externallyChangedComment).
 							WithDisplayName(externallyChangedDisplayName).
+							WithNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS3).
 							WithMinNodes(2).
 							WithMaxNodes(3)))
 				},
@@ -253,6 +262,8 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 						planchecks.ExpectChange(ref, "min_nodes", tfjson.ActionUpdate, sdk.String("2"), sdk.String("1")),
 						planchecks.ExpectDrift(ref, "max_nodes", sdk.String("2"), sdk.String("3")),
 						planchecks.ExpectChange(ref, "max_nodes", tfjson.ActionUpdate, sdk.String("3"), sdk.String("2")),
+						planchecks.ExpectDrift(ref, "node_type_tier", sdk.String(string(sdk.OpenflowRuntimeNodeTypeTierS2)), sdk.String(string(sdk.OpenflowRuntimeNodeTypeTierS3))),
+						planchecks.ExpectChange(ref, "node_type_tier", tfjson.ActionUpdate, sdk.String(string(sdk.OpenflowRuntimeNodeTypeTierS3)), sdk.String(string(sdk.OpenflowRuntimeNodeTypeTierS2))),
 					},
 				},
 				Config: config.FromModels(t, withOptionals),
@@ -265,10 +276,13 @@ func TestAcc_OpenflowRuntime_BasicUseCase(t *testing.T) {
 						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
 						planchecks.ExpectChange(ref, "comment", tfjson.ActionUpdate, sdk.String(comment), nil),
 						planchecks.ExpectChange(ref, "display_name", tfjson.ActionUpdate, sdk.String(displayName), nil),
+						planchecks.ExpectChange(ref, "node_type_tier", tfjson.ActionUpdate, sdk.String(string(sdk.OpenflowRuntimeNodeTypeTierS2)), nil),
 					},
 				},
 				Config: config.FromModels(t, basic),
-				Check:  assertThat(t, assertOptionalsUnset...),
+				Check: assertThat(t, append(assertOptionalsUnset,
+					objectassert.OpenflowRuntime(t, id).HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS1),
+				)...),
 			},
 		},
 	})
@@ -334,6 +348,12 @@ func TestAcc_OpenflowRuntime_Validations(t *testing.T) {
 		deployment.Name(), role.Name(), 1, 1, "INVALID")
 	invalidMinNodes := model.OpenflowRuntime("t", id.DatabaseName(), id.SchemaName(), id.Name(),
 		deployment.Name(), role.Name(), 1, 0, string(sdk.OpenflowRuntimeNodeTypeSmall))
+	invalidTier := model.OpenflowRuntime("t", id.DatabaseName(), id.SchemaName(), id.Name(),
+		deployment.Name(), role.Name(), 1, 1, string(sdk.OpenflowRuntimeNodeTypeSmall)).
+		WithNodeTypeTier("INVALID")
+	mismatchedTier := model.OpenflowRuntime("t", id.DatabaseName(), id.SchemaName(), id.Name(),
+		deployment.Name(), role.Name(), 1, 1, string(sdk.OpenflowRuntimeNodeTypeSmall)).
+		WithNodeTypeTier(string(sdk.OpenflowRuntimeNodeTypeTierM4))
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
@@ -351,6 +371,16 @@ func TestAcc_OpenflowRuntime_Validations(t *testing.T) {
 				Config:      config.FromModels(t, invalidMinNodes),
 				PlanOnly:    true,
 				ExpectError: regexp.MustCompile(`expected min_nodes to be at least \(1\), got 0`),
+			},
+			{
+				Config:      config.FromModels(t, invalidTier),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`invalid openflow runtime node type tier: INVALID`),
+			},
+			{
+				Config:      config.FromModels(t, mismatchedTier),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`node\s+type\s+tier\s+M4\s+does\s+not\s+belong\s+to\s+node\s+type\s+SMALL:\s+valid\s+tiers\s+are\s+S1,\s+S2,\s+S3`),
 			},
 		},
 	})

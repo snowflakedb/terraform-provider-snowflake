@@ -120,8 +120,8 @@ func (o *OpenflowRuntimeDescribeOutputAssert) HasServerUrl(expected string) *Ope
 	return o
 }
 
-func (o *OpenflowRuntimeDescribeOutputAssert) HasNodeTypeTier(expected string) *OpenflowRuntimeDescribeOutputAssert {
-	o.StringValueSet("node_type_tier", expected)
+func (o *OpenflowRuntimeDescribeOutputAssert) HasNodeTypeTier(expected sdk.OpenflowRuntimeNodeTypeTier) *OpenflowRuntimeDescribeOutputAssert {
+	o.StringValueSet("node_type_tier", string(expected))
 	return o
 }
 

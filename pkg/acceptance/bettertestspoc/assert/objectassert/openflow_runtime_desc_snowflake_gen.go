@@ -314,25 +314,11 @@ func (o *OpenflowRuntimeDetailsAssert) HasNoServerUrl() *OpenflowRuntimeDetailsA
 	return o
 }
 
-func (o *OpenflowRuntimeDetailsAssert) HasNodeTypeTier(expected string) *OpenflowRuntimeDetailsAssert {
+func (o *OpenflowRuntimeDetailsAssert) HasNodeTypeTier(expected sdk.OpenflowRuntimeNodeTypeTier) *OpenflowRuntimeDetailsAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntimeDetails) error {
 		t.Helper()
-		if o.NodeTypeTier == nil {
-			return fmt.Errorf("expected node type tier to have value; got: nil")
-		}
-		if *o.NodeTypeTier != expected {
-			return fmt.Errorf("expected node type tier: %v; got: %v", expected, *o.NodeTypeTier)
-		}
-		return nil
-	})
-	return o
-}
-
-func (o *OpenflowRuntimeDetailsAssert) HasNoNodeTypeTier() *OpenflowRuntimeDetailsAssert {
-	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntimeDetails) error {
-		t.Helper()
-		if o.NodeTypeTier != nil {
-			return fmt.Errorf("expected node type tier to be nil; got: %v", *o.NodeTypeTier)
+		if o.NodeTypeTier != expected {
+			return fmt.Errorf("expected node type tier: %v; got: %v", expected, o.NodeTypeTier)
 		}
 		return nil
 	})

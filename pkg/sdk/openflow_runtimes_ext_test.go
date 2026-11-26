@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/acceptance/helpers/random"
@@ -19,6 +20,13 @@ func init() {
 	schemaId := randomDatabaseObjectIdentifier()
 
 	openflowRuntimesTests.Create.
+		withAdditionalValidationCase(
+			"validation_Create_NodeTypeTier_belongsToNodeType",
+			func(opts *CreateOpenflowRuntimeOptions) {
+				opts.NodeTypeTier = new(OpenflowRuntimeNodeTypeTierM4)
+			},
+			fmt.Errorf("node type tier M4 does not belong to node type SMALL: valid tiers are S1, S2, S3"),
+		).
 		withDefaultOpts(func() *CreateOpenflowRuntimeOptions {
 			return &CreateOpenflowRuntimeOptions{
 				name:          id,
@@ -39,6 +47,7 @@ func init() {
 			func(opts *CreateOpenflowRuntimeOptions) {
 				opts.IfNotExists = new(true)
 				opts.NodeType = OpenflowRuntimeNodeTypeLarge
+				opts.NodeTypeTier = new(OpenflowRuntimeNodeTypeTierL8)
 				opts.MinNodes = 2
 				opts.MaxNodes = 5
 				opts.ExternalAccessIntegrations = &OpenflowRuntimeExternalAccessIntegrations{
@@ -47,7 +56,7 @@ func init() {
 				opts.DisplayName = new("My Runtime")
 				opts.Comment = &comment
 			},
-			"CREATE OPENFLOW RUNTIME IF NOT EXISTS %s IN DEPLOYMENT %s NODE_TYPE = 'LARGE' MIN_NODES = 2 MAX_NODES = 5 EXECUTE_AS_ROLE = %s"+
+			"CREATE OPENFLOW RUNTIME IF NOT EXISTS %s IN DEPLOYMENT %s NODE_TYPE = 'LARGE' NODE_TYPE_TIER = 'L8' MIN_NODES = 2 MAX_NODES = 5 EXECUTE_AS_ROLE = %s"+
 				" EXTERNAL_ACCESS_INTEGRATIONS = (%s) DISPLAY_NAME = 'My Runtime' COMMENT = '%s'",
 			id.FullyQualifiedName(), deploymentId.FullyQualifiedName(), roleId.FullyQualifiedName(), eaiId.FullyQualifiedName(), comment,
 		)
@@ -104,6 +113,7 @@ func init() {
 				opts.Set = &OpenflowRuntimeSet{
 					MinNodes:      new(2),
 					MaxNodes:      new(5),
+					NodeTypeTier:  new(OpenflowRuntimeNodeTypeTierS2),
 					ExecuteAsRole: &roleId,
 					ExternalAccessIntegrations: &OpenflowRuntimeExternalAccessIntegrations{
 						ExternalAccessIntegrations: []AccountObjectIdentifier{eaiId},
@@ -112,7 +122,7 @@ func init() {
 					Comment:     &comment,
 				}
 			},
-			"ALTER OPENFLOW RUNTIME %s SET DISPLAY_NAME = 'Updated Runtime' MIN_NODES = 2 MAX_NODES = 5 EXTERNAL_ACCESS_INTEGRATIONS = (%s) EXECUTE_AS_ROLE = %s COMMENT = '%s'",
+			"ALTER OPENFLOW RUNTIME %s SET DISPLAY_NAME = 'Updated Runtime' MIN_NODES = 2 MAX_NODES = 5 NODE_TYPE_TIER = 'S2' EXTERNAL_ACCESS_INTEGRATIONS = (%s) EXECUTE_AS_ROLE = %s COMMENT = '%s'",
 			id.FullyQualifiedName(), eaiId.FullyQualifiedName(), roleId.FullyQualifiedName(), comment,
 		).
 		withModifyAndExpectedSqlf(
@@ -280,4 +290,59 @@ func TestParseOpenflowRuntimeExternalAccessIntegrations(t *testing.T) {
 		require.Len(t, ids, 1)
 		assert.Equal(t, "ONLY_EAI", ids[0].Name())
 	})
+}
+
+func TestOpenflowRuntimeNodeTypeTierBelongsTo(t *testing.T) {
+	belongs := map[OpenflowRuntimeNodeType][]OpenflowRuntimeNodeTypeTier{
+		OpenflowRuntimeNodeTypeSmall:  {OpenflowRuntimeNodeTypeTierS1, OpenflowRuntimeNodeTypeTierS2, OpenflowRuntimeNodeTypeTierS3},
+		OpenflowRuntimeNodeTypeMedium: {OpenflowRuntimeNodeTypeTierM4, OpenflowRuntimeNodeTypeTierM6},
+		OpenflowRuntimeNodeTypeLarge:  {OpenflowRuntimeNodeTypeTierL8},
+	}
+	for _, nodeType := range AllOpenflowRuntimeNodeTypes {
+		for _, tier := range AllOpenflowRuntimeNodeTypeTiers {
+			want := false
+			for _, allowed := range belongs[nodeType] {
+				if tier == allowed {
+					want = true
+				}
+			}
+			assert.Equal(t, want, tier.BelongsTo(nodeType), "%s belongs to %s", tier, nodeType)
+		}
+	}
+	assert.False(t, OpenflowRuntimeNodeTypeTierS1.BelongsTo(OpenflowRuntimeNodeType("OTHER")))
+}
+
+func TestDefaultOpenflowRuntimeNodeTypeTier(t *testing.T) {
+	defaults := map[OpenflowRuntimeNodeType]OpenflowRuntimeNodeTypeTier{
+		OpenflowRuntimeNodeTypeSmall:  OpenflowRuntimeNodeTypeTierS1,
+		OpenflowRuntimeNodeTypeMedium: OpenflowRuntimeNodeTypeTierM4,
+		OpenflowRuntimeNodeTypeLarge:  OpenflowRuntimeNodeTypeTierL8,
+	}
+	for _, nodeType := range AllOpenflowRuntimeNodeTypes {
+		got, ok := DefaultOpenflowRuntimeNodeTypeTier(nodeType)
+		require.True(t, ok, nodeType)
+		assert.Equal(t, defaults[nodeType], got)
+	}
+	_, ok := DefaultOpenflowRuntimeNodeTypeTier(OpenflowRuntimeNodeType("OTHER"))
+	assert.False(t, ok)
+}
+
+func TestOpenflowRuntimeNodeTypeTiersFor(t *testing.T) {
+	assert.Equal(t, []OpenflowRuntimeNodeTypeTier{OpenflowRuntimeNodeTypeTierS1, OpenflowRuntimeNodeTypeTierS2, OpenflowRuntimeNodeTypeTierS3}, OpenflowRuntimeNodeTypeTiersFor(OpenflowRuntimeNodeTypeSmall))
+	assert.Equal(t, []OpenflowRuntimeNodeTypeTier{OpenflowRuntimeNodeTypeTierM4, OpenflowRuntimeNodeTypeTierM6}, OpenflowRuntimeNodeTypeTiersFor(OpenflowRuntimeNodeTypeMedium))
+	assert.Equal(t, []OpenflowRuntimeNodeTypeTier{OpenflowRuntimeNodeTypeTierL8}, OpenflowRuntimeNodeTypeTiersFor(OpenflowRuntimeNodeTypeLarge))
+	assert.Empty(t, OpenflowRuntimeNodeTypeTiersFor(OpenflowRuntimeNodeType("OTHER")))
+
+	// the returned slice is a copy
+	tiers := OpenflowRuntimeNodeTypeTiersFor(OpenflowRuntimeNodeTypeSmall)
+	tiers[0] = OpenflowRuntimeNodeTypeTierL8
+	assert.True(t, OpenflowRuntimeNodeTypeTierS1.BelongsTo(OpenflowRuntimeNodeTypeSmall))
+}
+
+func TestValidateOpenflowRuntimeNodeTypeTier(t *testing.T) {
+	require.NoError(t, ValidateOpenflowRuntimeNodeTypeTier(OpenflowRuntimeNodeTypeMedium, OpenflowRuntimeNodeTypeTierM6))
+	require.EqualError(t, ValidateOpenflowRuntimeNodeTypeTier(OpenflowRuntimeNodeTypeMedium, OpenflowRuntimeNodeTypeTierS1),
+		"node type tier S1 does not belong to node type MEDIUM: valid tiers are M4, M6")
+	require.EqualError(t, ValidateOpenflowRuntimeNodeTypeTier(OpenflowRuntimeNodeType("OTHER"), OpenflowRuntimeNodeTypeTierS1),
+		"node type tier S1 does not belong to node type OTHER: the node type has no tiers")
 }

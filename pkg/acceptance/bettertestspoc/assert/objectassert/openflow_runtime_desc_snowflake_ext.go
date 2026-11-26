@@ -32,7 +32,7 @@ func (o *OpenflowRuntimeDetailsAssert) HasServerUrlNotEmpty() *OpenflowRuntimeDe
 func (o *OpenflowRuntimeDetailsAssert) HasNodeTypeTierNotEmpty() *OpenflowRuntimeDetailsAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntimeDetails) error {
 		t.Helper()
-		if o.NodeTypeTier == nil || *o.NodeTypeTier == "" {
+		if o.NodeTypeTier == "" {
 			return fmt.Errorf("expected node type tier to be not empty")
 		}
 		return nil

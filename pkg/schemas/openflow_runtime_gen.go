@@ -34,6 +34,10 @@ var ShowOpenflowRuntimeSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"node_type_tier": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 	"display_name": {
 		Type:     schema.TypeString,
 		Computed: true,
@@ -91,6 +95,7 @@ func OpenflowRuntimeToSchema(openflowRuntime *sdk.OpenflowRuntime) map[string]an
 	openflowRuntimeSchema["min_nodes"] = openflowRuntime.MinNodes
 	openflowRuntimeSchema["max_nodes"] = openflowRuntime.MaxNodes
 	openflowRuntimeSchema["node_type"] = string(openflowRuntime.NodeType)
+	openflowRuntimeSchema["node_type_tier"] = string(openflowRuntime.NodeTypeTier)
 	if openflowRuntime.DisplayName != nil {
 		openflowRuntimeSchema["display_name"] = (*openflowRuntime.DisplayName)
 	}

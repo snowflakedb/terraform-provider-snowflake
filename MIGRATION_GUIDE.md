@@ -53,6 +53,14 @@ The provider knew `METRIC_LEVEL` only on functions and procedures and `SERVICE_C
 
 No changes are required in your configuration.
 
+### *(new feature)* `node_type_tier` in `snowflake_openflow_runtime`
+
+The [`snowflake_openflow_runtime`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/openflow_runtime) resource has a new optional `node_type_tier` field. It has to be used together with `node_type`, because each tier belongs to one node type. See the resource documentation for the allowed combinations and for how changes, removal, and import behave.
+
+No configuration changes are required.
+
+Reference: [#5362](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5362).
+
 ### *(improvement)* `snowflake_external_volume` rotates S3-compatible credentials in place
 
 Changing `storage_aws_key_id` or `storage_aws_secret_key` of an `S3COMPAT` storage location in [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume) used to remove the storage location and add it again with the new credentials. Snowflake does not allow removing the active storage location while the volume is in use, so such an apply could fail.

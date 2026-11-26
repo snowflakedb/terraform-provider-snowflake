@@ -81,6 +81,11 @@ func (o *OpenflowRuntimeShowOutputAssert) HasNodeType(expected sdk.OpenflowRunti
 	return o
 }
 
+func (o *OpenflowRuntimeShowOutputAssert) HasNodeTypeTier(expected sdk.OpenflowRuntimeNodeTypeTier) *OpenflowRuntimeShowOutputAssert {
+	o.StringValueSet("node_type_tier", string(expected))
+	return o
+}
+
 func (o *OpenflowRuntimeShowOutputAssert) HasDisplayName(expected string) *OpenflowRuntimeShowOutputAssert {
 	o.StringValueSet("display_name", expected)
 	return o
@@ -162,6 +167,11 @@ func (o *OpenflowRuntimeShowOutputAssert) HasNoMaxNodes() *OpenflowRuntimeShowOu
 
 func (o *OpenflowRuntimeShowOutputAssert) HasNoNodeType() *OpenflowRuntimeShowOutputAssert {
 	o.ValueNotSet("node_type")
+	return o
+}
+
+func (o *OpenflowRuntimeShowOutputAssert) HasNoNodeTypeTier() *OpenflowRuntimeShowOutputAssert {
+	o.ValueNotSet("node_type_tier")
 	return o
 }
 

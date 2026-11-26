@@ -79,6 +79,7 @@ func (r *CreateOpenflowRuntimeRequest) toOpts() *CreateOpenflowRuntimeOptions {
 		name:          r.name,
 		InDeployment:  r.InDeployment,
 		NodeType:      r.NodeType,
+		NodeTypeTier:  r.NodeTypeTier,
 		MinNodes:      r.MinNodes,
 		MaxNodes:      r.MaxNodes,
 		ExecuteAsRole: r.ExecuteAsRole,
@@ -117,6 +118,7 @@ func (r *AlterOpenflowRuntimeRequest) toOpts() *AlterOpenflowRuntimeOptions {
 			DisplayName:   r.Set.DisplayName,
 			MinNodes:      r.Set.MinNodes,
 			MaxNodes:      r.Set.MaxNodes,
+			NodeTypeTier:  r.Set.NodeTypeTier,
 			ExecuteAsRole: r.Set.ExecuteAsRole,
 			Comment:       r.Set.Comment,
 		}
@@ -180,6 +182,7 @@ func (r openflowRuntimeRow) convert() (*OpenflowRuntime, error) {
 	}
 	mapStringWithMapping(&result.Status, r.Status, ToOpenflowRuntimeStatus)
 	mapStringWithMapping(&result.NodeType, r.NodeType, ToOpenflowRuntimeNodeType)
+	mapStringWithMapping(&result.NodeTypeTier, r.NodeTypeTier, ToOpenflowRuntimeNodeTypeTier)
 	mapNullString(&result.DisplayName, r.DisplayName)
 	if r.ExternalAccessIntegrations.Valid {
 		if v, err := ParseOpenflowRuntimeExternalAccessIntegrations(r.ExternalAccessIntegrations.String); err != nil {
@@ -224,7 +227,7 @@ func (r openflowRuntimeDetailsRow) convert() (*OpenflowRuntimeDetails, error) {
 	mapNullString(&result.Key, r.Key)
 	mapNullString(&result.Comment, r.Comment)
 	mapNullString(&result.ServerUrl, r.ServerUrl)
-	mapNullString(&result.NodeTypeTier, r.NodeTypeTier)
+	mapStringWithMapping(&result.NodeTypeTier, r.NodeTypeTier, ToOpenflowRuntimeNodeTypeTier)
 	if err := r.additionalConvert(result); err != nil {
 		return nil, err
 	}

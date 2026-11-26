@@ -23,6 +23,7 @@ type OpenflowRuntimeModel struct {
 	MaxNodes                   tfconfig.Variable `json:"max_nodes,omitempty"`
 	MinNodes                   tfconfig.Variable `json:"min_nodes,omitempty"`
 	NodeType                   tfconfig.Variable `json:"node_type,omitempty"`
+	NodeTypeTier               tfconfig.Variable `json:"node_type_tier,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
 
@@ -171,6 +172,11 @@ func (o *OpenflowRuntimeModel) WithNodeType(nodeType string) *OpenflowRuntimeMod
 	return o
 }
 
+func (o *OpenflowRuntimeModel) WithNodeTypeTier(nodeTypeTier string) *OpenflowRuntimeModel {
+	o.NodeTypeTier = tfconfig.StringVariable(nodeTypeTier)
+	return o
+}
+
 //////////////////////////////////////////
 // below it's possible to set any value //
 //////////////////////////////////////////
@@ -232,5 +238,10 @@ func (o *OpenflowRuntimeModel) WithMinNodesValue(value tfconfig.Variable) *Openf
 
 func (o *OpenflowRuntimeModel) WithNodeTypeValue(value tfconfig.Variable) *OpenflowRuntimeModel {
 	o.NodeType = value
+	return o
+}
+
+func (o *OpenflowRuntimeModel) WithNodeTypeTierValue(value tfconfig.Variable) *OpenflowRuntimeModel {
+	o.NodeTypeTier = value
 	return o
 }

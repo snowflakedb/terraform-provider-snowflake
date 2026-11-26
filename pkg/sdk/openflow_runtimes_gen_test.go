@@ -8,6 +8,7 @@ import (
 
 func init() {
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OpenflowRuntimeNodeType]{"OpenflowRuntimeNodeType", AllOpenflowRuntimeNodeTypes, ToOpenflowRuntimeNodeType})
+	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OpenflowRuntimeNodeTypeTier]{"OpenflowRuntimeNodeTypeTier", AllOpenflowRuntimeNodeTypeTiers, ToOpenflowRuntimeNodeTypeTier})
 	allEnumConversionTests = append(allEnumConversionTests, typedEnumTestProvider[OpenflowRuntimeStatus]{"OpenflowRuntimeStatus", AllOpenflowRuntimeStatuses, ToOpenflowRuntimeStatus})
 }
 
@@ -164,11 +165,12 @@ var openflowRuntimesTests = OpenflowRuntimesTestsContext{
 			},
 			validationCase[*AlterOpenflowRuntimeOptions]{
 				Name:        case_OpenflowRuntimes_validation_Alter_opts_Set_AtLeastOneValueSet,
-				ExpectedErr: errAtLeastOneOf("AlterOpenflowRuntimeOptions.Set", "MinNodes", "MaxNodes", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
+				ExpectedErr: errAtLeastOneOf("AlterOpenflowRuntimeOptions.Set", "MinNodes", "MaxNodes", "NodeTypeTier", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"),
 				DefaultModify: func(opts *AlterOpenflowRuntimeOptions) {
 					opts.Set = &OpenflowRuntimeSet{}
 					opts.Set.MinNodes = nil
 					opts.Set.MaxNodes = nil
+					opts.Set.NodeTypeTier = nil
 					opts.Set.ExecuteAsRole = nil
 					opts.Set.ExternalAccessIntegrations = nil
 					opts.Set.DisplayName = nil

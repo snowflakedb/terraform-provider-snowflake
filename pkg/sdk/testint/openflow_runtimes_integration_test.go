@@ -55,6 +55,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 				HasMinNodes(1).
 				HasMaxNodes(1).
 				HasNodeType(sdk.OpenflowRuntimeNodeTypeSmall).
+				HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS1).
 				HasNoDisplayName().
 				HasNoExternalAccessIntegrations().
 				HasInitiallySuspended(false).
@@ -81,6 +82,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 
 		request := sdk.NewCreateOpenflowRuntimeRequest(id, deploymentId, sdk.OpenflowRuntimeNodeTypeMedium, 1, 2, executeAsRoleId).
 			WithIfNotExists(true).
+			WithNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierM6).
 			WithExternalAccessIntegrations(*sdk.NewOpenflowRuntimeExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegration})).
 			WithDisplayName(displayName).
 			WithComment(comment)
@@ -104,6 +106,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 				HasMinNodes(1).
 				HasMaxNodes(2).
 				HasNodeType(sdk.OpenflowRuntimeNodeTypeMedium).
+				HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierM6).
 				HasDisplayName(displayName).
 				HasExternalAccessIntegrations(externalAccessIntegration).
 				HasInitiallySuspended(false).
@@ -149,6 +152,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 				WithDisplayName(displayName).
 				WithMinNodes(1).
 				WithMaxNodes(3).
+				WithNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS2).
 				WithExternalAccessIntegrations(*sdk.NewOpenflowRuntimeExternalAccessIntegrationsRequest([]sdk.AccountObjectIdentifier{externalAccessIntegration})).
 				WithComment(comment),
 		))
@@ -161,6 +165,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 				HasDisplayName(displayName).
 				HasMinNodes(1).
 				HasMaxNodes(3).
+				HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS2).
 				HasExternalAccessIntegrations(externalAccessIntegration).
 				HasComment(comment),
 		)
@@ -180,6 +185,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 			t, objectassert.OpenflowRuntime(t, id).
 				HasNoDisplayName().
 				HasNoComment().
+				HasNodeTypeTier(sdk.OpenflowRuntimeNodeTypeTierS2).
 				HasNoExternalAccessIntegrations(),
 		)
 
@@ -187,6 +193,11 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 		// not model it, so raw SQL is the only way to reach it, as for a connector's DEFAULT_VERSION.
 		_, err = client.ExecForTests(ctx, "ALTER OPENFLOW RUNTIME "+id.FullyQualifiedName()+" UNSET EXECUTE_AS_ROLE")
 		require.ErrorContains(t, err, "cannot unset property")
+
+		// NODE_TYPE_TIER is the same shape: the server rejects UNSET, and a runtime always has a tier.
+		// The SDK does not model the clause.
+		_, err = client.ExecForTests(ctx, "ALTER OPENFLOW RUNTIME "+id.FullyQualifiedName()+" UNSET NODE_TYPE_TIER")
+		require.ErrorContains(t, err, "cannot unset property 'NODE_TYPE_TIER'")
 
 		// The role can still be moved with SET. PUBLIC rather than a purpose-made role, since the test role
 		// cannot CREATE ROLE, and it only works once the integrations are detached: the server checks that
@@ -239,7 +250,7 @@ func TestInt_OpenflowRuntimes(t *testing.T) {
 	t.Run("describe", func(t *testing.T) {
 		id := existingRuntimeId
 
-		// DESCRIBE returns server_url and node_type_tier, which SHOW does not, and omits database_name,
+		// DESCRIBE returns server_url, which SHOW does not, and omits database_name,
 		// schema_name, created_on and updated_on. The pre-provisioned runtime is MEDIUM, executes as PUBLIC,
 		// and has no comment or external access integrations. "create: complete" pins the values it sets on
 		// a runtime it owns.

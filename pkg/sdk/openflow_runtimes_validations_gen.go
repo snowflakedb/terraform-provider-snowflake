@@ -26,6 +26,7 @@ func (opts *CreateOpenflowRuntimeOptions) validate() error {
 	if !ValidObjectIdentifier(opts.ExecuteAsRole) {
 		errs = append(errs, errInvalidIdentifier("CreateOpenflowRuntimeOptions", "ExecuteAsRole"))
 	}
+	errs = append(errs, opts.additionalValidations())
 	if valueSet(opts.ExternalAccessIntegrations) {
 		if valueSet(opts.ExternalAccessIntegrations.ExternalAccessIntegrations) {
 			for externalAccessIntegrationIdx, externalAccessIntegration := range opts.ExternalAccessIntegrations.ExternalAccessIntegrations {
@@ -53,8 +54,8 @@ func (opts *AlterOpenflowRuntimeOptions) validate() error {
 		errs = append(errs, errExactlyOneOf("AlterOpenflowRuntimeOptions", "Suspend", "Resume", "ResumeRecovery", "Restart", "RestartRecovery", "Terminate", "TerminateCascade", "Upgrade", "RenameTo", "Set", "Unset", "AddExternalAccessIntegrations", "RemoveExternalAccessIntegrations"))
 	}
 	if valueSet(opts.Set) {
-		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.ExecuteAsRole, opts.Set.ExternalAccessIntegrations, opts.Set.DisplayName, opts.Set.Comment) {
-			errs = append(errs, errAtLeastOneOf("AlterOpenflowRuntimeOptions.Set", "MinNodes", "MaxNodes", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"))
+		if !anyValueSet(opts.Set.MinNodes, opts.Set.MaxNodes, opts.Set.NodeTypeTier, opts.Set.ExecuteAsRole, opts.Set.ExternalAccessIntegrations, opts.Set.DisplayName, opts.Set.Comment) {
+			errs = append(errs, errAtLeastOneOf("AlterOpenflowRuntimeOptions.Set", "MinNodes", "MaxNodes", "NodeTypeTier", "ExecuteAsRole", "ExternalAccessIntegrations", "DisplayName", "Comment"))
 		}
 		if valueSet(opts.Set.ExternalAccessIntegrations) {
 			if valueSet(opts.Set.ExternalAccessIntegrations.ExternalAccessIntegrations) {

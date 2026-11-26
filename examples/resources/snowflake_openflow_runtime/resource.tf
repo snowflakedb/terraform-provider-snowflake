@@ -17,6 +17,7 @@ resource "snowflake_openflow_runtime" "complete" {
   name            = "my_runtime_complete"
   deployment      = "my_deployment"
   node_type       = "MEDIUM"
+  node_type_tier  = "M6"
   min_nodes       = 1
   max_nodes       = 4
   execute_as_role = "MY_OPENFLOW_ROLE"

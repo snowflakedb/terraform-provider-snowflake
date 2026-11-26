@@ -25,6 +25,11 @@ func (s *CreateOpenflowRuntimeRequest) WithIfNotExists(ifNotExists bool) *Create
 	return s
 }
 
+func (s *CreateOpenflowRuntimeRequest) WithNodeTypeTier(nodeTypeTier OpenflowRuntimeNodeTypeTier) *CreateOpenflowRuntimeRequest {
+	s.NodeTypeTier = &nodeTypeTier
+	return s
+}
+
 func (s *CreateOpenflowRuntimeRequest) WithExternalAccessIntegrations(externalAccessIntegrations OpenflowRuntimeExternalAccessIntegrationsRequest) *CreateOpenflowRuntimeRequest {
 	s.ExternalAccessIntegrations = &externalAccessIntegrations
 	return s
@@ -158,6 +163,11 @@ func (s *OpenflowRuntimeSetRequest) WithMinNodes(minNodes int) *OpenflowRuntimeS
 
 func (s *OpenflowRuntimeSetRequest) WithMaxNodes(maxNodes int) *OpenflowRuntimeSetRequest {
 	s.MaxNodes = &maxNodes
+	return s
+}
+
+func (s *OpenflowRuntimeSetRequest) WithNodeTypeTier(nodeTypeTier OpenflowRuntimeNodeTypeTier) *OpenflowRuntimeSetRequest {
+	s.NodeTypeTier = &nodeTypeTier
 	return s
 }
 

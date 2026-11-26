@@ -122,6 +122,17 @@ func (o *OpenflowRuntimeAssert) HasNodeType(expected sdk.OpenflowRuntimeNodeType
 	return o
 }
 
+func (o *OpenflowRuntimeAssert) HasNodeTypeTier(expected sdk.OpenflowRuntimeNodeTypeTier) *OpenflowRuntimeAssert {
+	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntime) error {
+		t.Helper()
+		if o.NodeTypeTier != expected {
+			return fmt.Errorf("expected node type tier: %v; got: %v", expected, o.NodeTypeTier)
+		}
+		return nil
+	})
+	return o
+}
+
 func (o *OpenflowRuntimeAssert) HasDisplayName(expected string) *OpenflowRuntimeAssert {
 	o.AddAssertion(func(t *testing.T, o *sdk.OpenflowRuntime) error {
 		t.Helper()

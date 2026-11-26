@@ -7,6 +7,8 @@ description: |-
 
 -> **Note** Every mutating statement is asynchronous and the provider waits for the runtime to settle before returning, so applies take minutes rather than seconds. If you encounter timeout errors, use a [`timeouts` block](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts) to set higher limits for your environment.
 
+-> **Note** `node_type_tier` has to be used together with `node_type`: each tier belongs to one node type. When `node_type_tier` is omitted, Snowflake uses the default tier of the node type and the tier Snowflake reports is in `show_output` and `describe_output`. See the `node_type_tier` field description for the allowed combinations and for how changes, removal, and import behave.
+
 -> **Note** A runtime is created inside an Openflow deployment, and connectors are created inside a runtime's schema, so a connector's `database` and `schema` must match its runtime's.
 
 # snowflake_openflow_runtime (Resource)
@@ -38,6 +40,7 @@ resource "snowflake_openflow_runtime" "complete" {
   name            = "my_runtime_complete"
   deployment      = "my_deployment"
   node_type       = "MEDIUM"
+  node_type_tier  = "M6"
   min_nodes       = 1
   max_nodes       = 4
   execute_as_role = "MY_OPENFLOW_ROLE"
@@ -78,6 +81,7 @@ resource "snowflake_openflow_runtime" "complete" {
 - `comment` (String) Specifies a comment for the Openflow runtime.
 - `display_name` (String) A free-text alias for the runtime. Shown in the Openflow UI in place of the runtime's identifier when set.
 - `external_access_integrations` (Set of String) Specifies the names of the external access integrations that allow the runtime egress to external data sources. Supported for Snowflake-managed deployments only.
+- `node_type_tier` (String) Specifies the instance tier within `node_type`. Valid values are (case-insensitive): `S1` | `S2` | `S3` | `M4` | `M6` | `L8`. The tier has to belong to `node_type`: `S1`, `S2`, and `S3` require `SMALL`; `M4` and `M6` require `MEDIUM`; `L8` requires `LARGE`. A mismatch is reported during plan. When omitted, Snowflake picks the default tier of the `node_type`. The tier Snowflake reports is available in `show_output` and `describe_output`. Changes made outside of Terraform are detected and reverted to the configured tier, or to the default tier when the field is omitted. Changing it updates the runtime in place with `ALTER OPENFLOW RUNTIME ... SET NODE_TYPE_TIER`, but only within the current `node_type`. Changing `node_type` recreates the runtime, so update this field in the same change or remove it. Snowflake has no `UNSET` for the tier, so removing the field from the configuration sets the default tier of the `node_type`. The tier is read on import. When the configuration omits the field, the first plan after import sets the default tier of the `node_type`, which changes nothing if the runtime already uses it.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -138,6 +142,7 @@ Read-Only:
 - `min_nodes` (Number)
 - `name` (String)
 - `node_type` (String)
+- `node_type_tier` (String)
 - `owner` (String)
 - `schema_name` (String)
 - `status` (String)

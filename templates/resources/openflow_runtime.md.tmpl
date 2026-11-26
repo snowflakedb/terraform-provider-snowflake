@@ -11,6 +11,8 @@ description: |-
 
 -> **Note** Every mutating statement is asynchronous and the provider waits for the runtime to settle before returning, so applies take minutes rather than seconds. If you encounter timeout errors, use a [`timeouts` block](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts) to set higher limits for your environment.
 
+-> **Note** `node_type_tier` has to be used together with `node_type`: each tier belongs to one node type. When `node_type_tier` is omitted, Snowflake uses the default tier of the node type and the tier Snowflake reports is in `show_output` and `describe_output`. See the `node_type_tier` field description for the allowed combinations and for how changes, removal, and import behave.
+
 -> **Note** A runtime is created inside an Openflow deployment, and connectors are created inside a runtime's schema, so a connector's `database` and `schema` must match its runtime's.
 
 # {{.Name}} ({{.Type}})
