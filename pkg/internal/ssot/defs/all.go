@@ -22,6 +22,7 @@ func All() []ssot.Object {
 		CodeBundle,
 		BackupPolicy,
 		BackupSet,
+		AggregationPolicy,
 		ProjectionPolicy,
 		PostgresMirror,
 		Share,

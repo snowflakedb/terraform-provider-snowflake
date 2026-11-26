@@ -25,6 +25,7 @@ var (
 		ObjectTypeSchema,
 
 		// schema level
+		ObjectTypeAggregationPolicy,
 		ObjectTypeAgent,
 		ObjectTypeAlert,
 		ObjectTypeBudget,

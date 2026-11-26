@@ -25,6 +25,7 @@ type Client struct {
 
 	// DDL Commands
 	Accounts                     Accounts
+	AggregationPolicies          AggregationPolicies
 	Alerts                       Alerts
 	ApiIntegrations              ApiIntegrations
 	ApplicationPackages          ApplicationPackages
@@ -177,6 +178,7 @@ func NewClient(cfg *gosnowflake.Config, opts ...func(*FileReaderConfig)) (*Clien
 
 func (c *Client) initialize() {
 	c.Accounts = &accounts{client: c}
+	c.AggregationPolicies = &aggregationPolicies{client: c}
 	c.Alerts = &alerts{client: c}
 	c.ApiIntegrations = &apiIntegrations{client: c}
 	c.ApplicationPackages = &applicationPackages{client: c}
