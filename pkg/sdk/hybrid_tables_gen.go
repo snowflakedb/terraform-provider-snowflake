@@ -350,15 +350,19 @@ type ShowPrimaryKeysHybridTableOptions struct {
 }
 
 type tablePrimaryKeyRow struct {
-	ConstraintName string `db:"constraint_name"`
-	ColumnName     string `db:"column_name"`
-	KeySequence    int    `db:"key_sequence"`
+	ConstraintName string         `db:"constraint_name"`
+	ColumnName     string         `db:"column_name"`
+	KeySequence    int            `db:"key_sequence"`
+	Rely           string         `db:"rely"`
+	Comment        sql.NullString `db:"comment"`
 }
 
 type TablePrimaryKey struct {
 	ConstraintName string
 	ColumnName     string
 	KeySequence    int
+	Rely           string
+	Comment        *string
 }
 
 // ShowUniqueKeysHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-unique-keys.
@@ -370,15 +374,19 @@ type ShowUniqueKeysHybridTableOptions struct {
 }
 
 type tableUniqueKeyRow struct {
-	ConstraintName string `db:"constraint_name"`
-	ColumnName     string `db:"column_name"`
-	KeySequence    int    `db:"key_sequence"`
+	ConstraintName string         `db:"constraint_name"`
+	ColumnName     string         `db:"column_name"`
+	KeySequence    int            `db:"key_sequence"`
+	Rely           string         `db:"rely"`
+	Comment        sql.NullString `db:"comment"`
 }
 
 type TableUniqueKey struct {
 	ConstraintName string
 	ColumnName     string
 	KeySequence    int
+	Rely           string
+	Comment        *string
 }
 
 // ShowImportedKeysHybridTableOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-imported-keys.
@@ -390,15 +398,17 @@ type ShowImportedKeysHybridTableOptions struct {
 }
 
 type tableImportedKeyRow struct {
-	FkName         string `db:"fk_name"`
-	FkColumnName   string `db:"fk_column_name"`
-	KeySequence    int    `db:"key_sequence"`
-	PkDatabaseName string `db:"pk_database_name"`
-	PkSchemaName   string `db:"pk_schema_name"`
-	PkTableName    string `db:"pk_table_name"`
-	PkColumnName   string `db:"pk_column_name"`
-	DeleteRule     string `db:"delete_rule"`
-	UpdateRule     string `db:"update_rule"`
+	FkName         string         `db:"fk_name"`
+	FkColumnName   string         `db:"fk_column_name"`
+	KeySequence    int            `db:"key_sequence"`
+	PkDatabaseName string         `db:"pk_database_name"`
+	PkSchemaName   string         `db:"pk_schema_name"`
+	PkTableName    string         `db:"pk_table_name"`
+	PkColumnName   string         `db:"pk_column_name"`
+	DeleteRule     string         `db:"delete_rule"`
+	UpdateRule     string         `db:"update_rule"`
+	Rely           string         `db:"rely"`
+	Comment        sql.NullString `db:"comment"`
 }
 
 type TableImportedKey struct {
@@ -411,4 +421,6 @@ type TableImportedKey struct {
 	PkColumnName   string
 	DeleteRule     string
 	UpdateRule     string
+	Rely           string
+	Comment        *string
 }

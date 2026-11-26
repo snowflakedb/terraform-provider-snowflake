@@ -135,3 +135,14 @@ func (d TableColumnDetails) TypeString() string {
 	}
 	return d.TypeRaw
 }
+
+// TableConstraint is one primary, unique, or foreign key of a table, merged from its SHOW ... KEYS rows.
+type TableConstraint = HybridTableConstraint
+
+// GetConstraints reads the keys with SHOW PRIMARY KEYS, SHOW UNIQUE KEYS, and SHOW IMPORTED KEYS, ordered by kind,
+// then by column names.
+// TODO [next PRs]: the hybrid table SDK implements these commands, and they work the same on any table, so this calls
+// it for now. Move the implementation here and make hybridTables call this instead.
+func (v *tables) GetConstraints(ctx context.Context, id SchemaObjectIdentifier) ([]TableConstraint, error) {
+	return v.client.HybridTables.GetConstraints(ctx, id)
+}

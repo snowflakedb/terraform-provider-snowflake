@@ -345,7 +345,9 @@ var hybridTablesDef = g.NewInterface(
 	g.StructPair("tablePrimaryKeyRow", "TablePrimaryKey").
 		Text("constraint_name").
 		Text("column_name").
-		Number("key_sequence"),
+		Number("key_sequence").
+		Text("rely").
+		OptionalText("comment"),
 	g.NewQueryStruct("ShowPrimaryKeysHybridTable").
 		Show().SQL("PRIMARY KEYS").SQL("IN TABLE").
 		Name().
@@ -357,7 +359,9 @@ var hybridTablesDef = g.NewInterface(
 	g.StructPair("tableUniqueKeyRow", "TableUniqueKey").
 		Text("constraint_name").
 		Text("column_name").
-		Number("key_sequence"),
+		Number("key_sequence").
+		Text("rely").
+		OptionalText("comment"),
 	g.NewQueryStruct("ShowUniqueKeysHybridTable").
 		Show().SQL("UNIQUE KEYS").SQL("IN TABLE").
 		Name().
@@ -375,7 +379,9 @@ var hybridTablesDef = g.NewInterface(
 		Text("pk_table_name").
 		Text("pk_column_name").
 		Text("delete_rule").
-		Text("update_rule"),
+		Text("update_rule").
+		Text("rely").
+		OptionalText("comment"),
 	g.NewQueryStruct("ShowImportedKeysHybridTable").
 		Show().SQL("IMPORTED KEYS").SQL("IN TABLE").
 		Name().

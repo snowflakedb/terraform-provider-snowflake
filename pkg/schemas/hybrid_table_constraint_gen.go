@@ -26,6 +26,8 @@ var ShowHybridTableConstraintSchema = mergeSchema(map[string]*schema.Schema{
 		Elem:     &schema.Schema{Type: schema.TypeString},
 		Computed: true,
 	},
+	// rely is skipped and won't be generated
+	// comment is skipped and won't be generated
 	// referenced_table: manual addition and mapping is needed
 	"referenced_columns": {
 		Type:     schema.TypeList,
@@ -43,6 +45,8 @@ func HybridTableConstraintToSchema(hybridTableConstraint *sdk.HybridTableConstra
 	hybridTableConstraintSchema["name"] = hybridTableConstraint.Name
 	hybridTableConstraintSchema["kind"] = string(hybridTableConstraint.Kind)
 	hybridTableConstraintSchema["columns"] = hybridTableConstraint.Columns
+	// rely is skipped and won't be generated
+	// comment is skipped and won't be generated
 	// referenced_table: manual addition and mapping is needed
 	hybridTableConstraintSchema["referenced_columns"] = hybridTableConstraint.ReferencedColumns
 	// delete_rule: manual addition and mapping is needed

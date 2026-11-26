@@ -29,6 +29,8 @@ type Tables interface {
 	SelectCheckConstraints(ctx context.Context, request *SelectCheckConstraintsTableRequest) ([]TableCheckConstraintDetails, error)
 	ShowParameters(ctx context.Context, id SchemaObjectIdentifier) ([]*Parameter, error)
 	ShowParametersDetails(ctx context.Context, id SchemaObjectIdentifier) (*TableParametersDetails, error)
+	// GetConstraints returns the primary, unique, and foreign keys of the table, one entry per constraint.
+	GetConstraints(ctx context.Context, id SchemaObjectIdentifier) ([]TableConstraint, error)
 }
 
 // TableParametersDetails holds the object's parameters with values parsed into their Go types.

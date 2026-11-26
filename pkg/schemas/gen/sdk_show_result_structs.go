@@ -67,7 +67,8 @@ var SdkShowResultStructs = []ShowResultSchemaDef{
 	{ObjectStruct: sdk.Grant{}, SkipFields: []string{"grant_on", "grant_to"}},
 	{ObjectStruct: sdk.HybridTable{}},
 	// ManualFields: FK-only scalars (zero-value for PK/UNIQUE; ext leaves them unset).
-	{ObjectStruct: sdk.HybridTableConstraint{}, ManualFields: []string{"referenced_table", "delete_rule", "update_rule"}},
+	// SkipFields: rely and comment are read for the table resources; show_keys_output does not expose them yet.
+	{ObjectStruct: sdk.HybridTableConstraint{}, SkipFields: []string{"rely", "comment"}, ManualFields: []string{"referenced_table", "delete_rule", "update_rule"}},
 	{ObjectStruct: sdk.HybridTableIndex{}},
 	{ObjectStruct: sdk.IcebergTable{}, ManualFields: []string{"auto_refresh_status", "partition_specs"}},
 	{ObjectStruct: sdk.ImageRepository{}},

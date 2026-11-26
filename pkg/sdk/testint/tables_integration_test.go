@@ -1377,6 +1377,193 @@ func TestInt_Table(t *testing.T) {
 			HasConstraintTable(id.Name()))
 	})
 
+	t.Run("get constraints: primary key, unique, and foreign key", func(t *testing.T) {
+		referencedId := createTableWithColumns(t, "REF_A", "REF_B")
+		addConstraint(t, referencedId, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "REF_A"}, {Value: "REF_B"}})))
+
+		id := createTableWithColumns(t, "ID", "CODE", "REF_A", "REF_B")
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithName("pk_Id").
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "ID"}}).
+			WithRely(true).
+			WithComment("primary key comment")))
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithName("uq_Code").
+			WithUnique(true).
+			WithColumns([]sdk.Column{{Value: "CODE"}})))
+		addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithFK(*sdk.NewTableOutOfLineFKRequest(referencedId).
+			WithName("fk_Ref").
+			WithColumns([]sdk.Column{{Value: "REF_B"}, {Value: "REF_A"}}).
+			WithRefColumns([]sdk.Column{{Value: "REF_A"}, {Value: "REF_B"}}).
+			WithComment("foreign key comment")))
+
+		constraints, err := client.Tables.GetConstraints(ctx, id)
+		require.NoError(t, err)
+		require.Equal(t, []sdk.TableConstraint{
+			{Name: "pk_Id", Kind: sdk.ColumnConstraintTypePrimaryKey, Columns: []string{"ID"}, Rely: true, Comment: new("primary key comment")},
+			{Name: "uq_Code", Kind: sdk.ColumnConstraintTypeUnique, Columns: []string{"CODE"}},
+			{
+				Name:              "fk_Ref",
+				Kind:              sdk.ColumnConstraintTypeForeignKey,
+				Columns:           []string{"REF_B", "REF_A"},
+				Comment:           new("foreign key comment"),
+				ReferencedTable:   referencedId,
+				ReferencedColumns: []string{"REF_A", "REF_B"},
+				DeleteRule:        "NO ACTION",
+				UpdateRule:        "NO ACTION",
+			},
+		}, constraints)
+	})
+
+	t.Run("get constraints: every key kind created with the table", func(t *testing.T) {
+		parentId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err := client.Tables.Create(ctx, sdk.NewCreateTableRequest(parentId, *sdk.NewCreateTableColumnsAndConstraintsRequest().
+			WithColumns([]sdk.TableColumnRequest{
+				*sdk.NewTableColumnRequest("ID_A", testdatatypes.DataTypeNumber),
+				*sdk.NewTableColumnRequest("ID_B", testdatatypes.DataTypeNumber),
+				*sdk.NewTableColumnRequest("CODE", testdatatypes.DataTypeVarchar_100),
+			}).
+			WithOutOfLineConstraint([]sdk.TableOutOfLineConstraintRequest{
+				*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+					WithName("pk_Parent").
+					WithPrimaryKey(true).
+					WithColumns([]sdk.Column{{Value: "ID_A"}, {Value: "ID_B"}})),
+				*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+					WithName("uq_Parent_Code").
+					WithUnique(true).
+					WithColumns([]sdk.Column{{Value: "CODE"}})),
+			})))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(parentId))
+
+		// The child table has a two-column primary key with RELY and a comment, named, unnamed, inline, and two-column
+		// unique keys, and named and unnamed foreign keys, to the primary key and to a unique key of the parent.
+		childId := testClientHelper().Ids.RandomSchemaObjectIdentifier()
+		err = client.Tables.Create(ctx, sdk.NewCreateTableRequest(childId, *sdk.NewCreateTableColumnsAndConstraintsRequest().
+			WithColumns([]sdk.TableColumnRequest{
+				*sdk.NewTableColumnRequest("ID", testdatatypes.DataTypeNumber),
+				*sdk.NewTableColumnRequest("VERSION", testdatatypes.DataTypeNumber),
+				*sdk.NewTableColumnRequest("EMAIL", testdatatypes.DataTypeVarchar_100).
+					WithInlineConstraint(*sdk.NewTableColumnInlineConstraintRequest().WithUniquePK(*sdk.NewTableColumnInlineUniquePKRequest().
+						WithName("uq_Email").
+						WithUnique(true))),
+				*sdk.NewTableColumnRequest("LOGIN", testdatatypes.DataTypeVarchar_100),
+				*sdk.NewTableColumnRequest("FIRST_NAME", testdatatypes.DataTypeVarchar_100),
+				*sdk.NewTableColumnRequest("LAST_NAME", testdatatypes.DataTypeVarchar_100),
+				*sdk.NewTableColumnRequest("PARENT_A", testdatatypes.DataTypeNumber),
+				*sdk.NewTableColumnRequest("PARENT_B", testdatatypes.DataTypeNumber),
+				*sdk.NewTableColumnRequest("PARENT_CODE", testdatatypes.DataTypeVarchar_100),
+			}).
+			WithOutOfLineConstraint([]sdk.TableOutOfLineConstraintRequest{
+				*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+					WithName("pk_Child").
+					WithPrimaryKey(true).
+					WithColumns([]sdk.Column{{Value: "ID"}, {Value: "VERSION"}}).
+					WithRely(true).
+					WithComment("primary key comment")),
+				*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+					WithName("uq_Name").
+					WithUnique(true).
+					WithColumns([]sdk.Column{{Value: "LAST_NAME"}, {Value: "FIRST_NAME"}}).
+					WithComment("unique comment")),
+				*sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+					WithUnique(true).
+					WithColumns([]sdk.Column{{Value: "LOGIN"}})),
+				*sdk.NewTableOutOfLineConstraintRequest().WithFK(*sdk.NewTableOutOfLineFKRequest(parentId).
+					WithName("fk_Parent").
+					WithColumns([]sdk.Column{{Value: "PARENT_A"}, {Value: "PARENT_B"}}).
+					WithRefColumns([]sdk.Column{{Value: "ID_A"}, {Value: "ID_B"}}).
+					WithRely(true).
+					WithComment("foreign key comment")),
+				*sdk.NewTableOutOfLineConstraintRequest().WithFK(*sdk.NewTableOutOfLineFKRequest(parentId).
+					WithColumns([]sdk.Column{{Value: "PARENT_CODE"}}).
+					WithRefColumns([]sdk.Column{{Value: "CODE"}})),
+			})))
+		require.NoError(t, err)
+		t.Cleanup(cleanupTableProvider(childId))
+
+		constraints, err := client.Tables.GetConstraints(ctx, childId)
+		require.NoError(t, err)
+
+		// Snowflake names an unnamed constraint SYS_CONSTRAINT_<uuid>.
+		for i := range constraints {
+			if strings.HasPrefix(constraints[i].Name, "SYS_CONSTRAINT_") {
+				constraints[i].Name = "<generated>"
+			}
+		}
+		require.Equal(t, []sdk.TableConstraint{
+			{Name: "pk_Child", Kind: sdk.ColumnConstraintTypePrimaryKey, Columns: []string{"ID", "VERSION"}, Rely: true, Comment: new("primary key comment")},
+			{Name: "uq_Email", Kind: sdk.ColumnConstraintTypeUnique, Columns: []string{"EMAIL"}},
+			{Name: "uq_Name", Kind: sdk.ColumnConstraintTypeUnique, Columns: []string{"LAST_NAME", "FIRST_NAME"}, Comment: new("unique comment")},
+			{Name: "<generated>", Kind: sdk.ColumnConstraintTypeUnique, Columns: []string{"LOGIN"}},
+			{
+				Name:              "fk_Parent",
+				Kind:              sdk.ColumnConstraintTypeForeignKey,
+				Columns:           []string{"PARENT_A", "PARENT_B"},
+				Rely:              true,
+				Comment:           new("foreign key comment"),
+				ReferencedTable:   parentId,
+				ReferencedColumns: []string{"ID_A", "ID_B"},
+				DeleteRule:        "NO ACTION",
+				UpdateRule:        "NO ACTION",
+			},
+			{
+				Name:              "<generated>",
+				Kind:              sdk.ColumnConstraintTypeForeignKey,
+				Columns:           []string{"PARENT_CODE"},
+				ReferencedTable:   parentId,
+				ReferencedColumns: []string{"CODE"},
+				DeleteRule:        "NO ACTION",
+				UpdateRule:        "NO ACTION",
+			},
+		}, constraints)
+	})
+
+	t.Run("get constraints: no constraints", func(t *testing.T) {
+		id := createTableWithColumns(t, "ID")
+
+		constraints, err := client.Tables.GetConstraints(ctx, id)
+		require.NoError(t, err)
+		require.Empty(t, constraints)
+	})
+
+	// Snowflake accepts DEFERRABLE, INITIALLY IMMEDIATE, and ENABLE on a standard table without an error, but it
+	// does not create the constraint. The same holds for a foreign key with a match type other than FULL or an action
+	// other than NO ACTION.
+	t.Run("add constraint: non-default properties do not create the constraint", func(t *testing.T) {
+		referencedId := createTableWithColumns(t, "REF_ID")
+		addConstraint(t, referencedId, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*sdk.NewTableOutOfLineUniquePKRequest().
+			WithPrimaryKey(true).
+			WithColumns([]sdk.Column{{Value: "REF_ID"}})))
+
+		id := createTableWithColumns(t, "ID")
+		for _, uniquePK := range []*sdk.TableOutOfLineUniquePKRequest{
+			sdk.NewTableOutOfLineUniquePKRequest().WithDeferrable(true),
+			sdk.NewTableOutOfLineUniquePKRequest().WithInitiallyImmediate(true),
+			sdk.NewTableOutOfLineUniquePKRequest().WithEnable(true),
+		} {
+			addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithUniquePK(*uniquePK.
+				WithPrimaryKey(true).
+				WithColumns([]sdk.Column{{Value: "ID"}})))
+		}
+		for _, foreignKey := range []*sdk.TableOutOfLineFKRequest{
+			sdk.NewTableOutOfLineFKRequest(referencedId).WithMatch(sdk.MatchTypeSimple),
+			sdk.NewTableOutOfLineFKRequest(referencedId).WithOn(*sdk.NewForeignKeyOnAction().WithOnDelete(new(sdk.ForeignKeyCascadeAction))),
+			sdk.NewTableOutOfLineFKRequest(referencedId).WithOn(*sdk.NewForeignKeyOnAction().WithOnUpdate(new(sdk.ForeignKeySetNullAction))),
+		} {
+			addConstraint(t, id, *sdk.NewTableOutOfLineConstraintRequest().WithFK(*foreignKey.
+				WithColumns([]sdk.Column{{Value: "ID"}}).
+				WithRefColumns([]sdk.Column{{Value: "REF_ID"}})))
+		}
+
+		constraints, err := client.Tables.GetConstraints(ctx, id)
+		require.NoError(t, err)
+		require.Empty(t, constraints)
+	})
+
 	t.Run("add constraint: not null", func(t *testing.T) {
 		id := testClientHelper().Ids.RandomSchemaObjectIdentifier()
 		columns := []sdk.TableColumnRequest{

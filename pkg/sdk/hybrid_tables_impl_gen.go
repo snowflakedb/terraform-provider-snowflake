@@ -400,7 +400,9 @@ func (r tablePrimaryKeyRow) convert() (*TablePrimaryKey, error) {
 		ConstraintName: r.ConstraintName,
 		ColumnName:     r.ColumnName,
 		KeySequence:    r.KeySequence,
+		Rely:           r.Rely,
 	}
+	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }
 
@@ -416,7 +418,9 @@ func (r tableUniqueKeyRow) convert() (*TableUniqueKey, error) {
 		ConstraintName: r.ConstraintName,
 		ColumnName:     r.ColumnName,
 		KeySequence:    r.KeySequence,
+		Rely:           r.Rely,
 	}
+	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }
 
@@ -438,7 +442,9 @@ func (r tableImportedKeyRow) convert() (*TableImportedKey, error) {
 		PkColumnName:   r.PkColumnName,
 		DeleteRule:     r.DeleteRule,
 		UpdateRule:     r.UpdateRule,
+		Rely:           r.Rely,
 	}
+	mapNullString(&result.Comment, r.Comment)
 	return result, nil
 }
 

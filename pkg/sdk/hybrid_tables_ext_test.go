@@ -820,6 +820,32 @@ func TestHybridTableDetailsRow_SplitTypeAndCollation(t *testing.T) {
 	}
 }
 
+func TestHybridTableConstraints_keyRowConversions(t *testing.T) {
+	t.Run("primary keys", func(t *testing.T) {
+		rows := primaryKeysToKeyRows([]TablePrimaryKey{
+			{ConstraintName: "PK_T", ColumnName: "ID", KeySequence: 1, Rely: "true", Comment: new("pk comment")},
+			{ConstraintName: "PK_T", ColumnName: "TENANT", KeySequence: 2, Rely: "false"},
+		})
+
+		assert.Equal(t, []keyRow{
+			{ConstraintName: "PK_T", ColumnName: "ID", KeySequence: 1, Rely: "true", Comment: new("pk comment")},
+			{ConstraintName: "PK_T", ColumnName: "TENANT", KeySequence: 2, Rely: "false"},
+		}, rows)
+	})
+
+	t.Run("unique keys", func(t *testing.T) {
+		rows := uniqueKeysToKeyRows([]TableUniqueKey{
+			{ConstraintName: "UQ_T", ColumnName: "EMAIL", KeySequence: 1, Rely: "true", Comment: new("uq comment")},
+			{ConstraintName: "UQ_T", ColumnName: "TENANT", KeySequence: 2, Rely: "false"},
+		})
+
+		assert.Equal(t, []keyRow{
+			{ConstraintName: "UQ_T", ColumnName: "EMAIL", KeySequence: 1, Rely: "true", Comment: new("uq comment")},
+			{ConstraintName: "UQ_T", ColumnName: "TENANT", KeySequence: 2, Rely: "false"},
+		}, rows)
+	})
+}
+
 func TestHybridTableConstraints_mergeKeyRows(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -836,11 +862,11 @@ func TestHybridTableConstraints_mergeKeyRows(t *testing.T) {
 		{
 			name: "single-column primary key",
 			rows: []keyRow{
-				{ConstraintName: "PK_T", ColumnName: "ID", KeySequence: 1},
+				{ConstraintName: "PK_T", ColumnName: "ID", KeySequence: 1, Rely: "true", Comment: new("pk comment")},
 			},
 			kind: ColumnConstraintTypePrimaryKey,
 			expected: []HybridTableConstraint{
-				{Name: "PK_T", Kind: ColumnConstraintTypePrimaryKey, Columns: []string{"ID"}},
+				{Name: "PK_T", Kind: ColumnConstraintTypePrimaryKey, Columns: []string{"ID"}, Rely: true, Comment: new("pk comment")},
 			},
 		},
 		{
@@ -884,6 +910,8 @@ func TestHybridTableConstraints_mergeForeignKeyRows(t *testing.T) {
 				PkColumnName:   "B",
 				DeleteRule:     "NO ACTION",
 				UpdateRule:     "NO ACTION",
+				Rely:           "true",
+				Comment:        new("fk comment"),
 			},
 			{
 				FkName:         "FK_T",
@@ -895,6 +923,8 @@ func TestHybridTableConstraints_mergeForeignKeyRows(t *testing.T) {
 				PkColumnName:   "A",
 				DeleteRule:     "NO ACTION",
 				UpdateRule:     "NO ACTION",
+				Rely:           "true",
+				Comment:        new("fk comment"),
 			},
 		}
 
@@ -902,6 +932,8 @@ func TestHybridTableConstraints_mergeForeignKeyRows(t *testing.T) {
 			{
 				Name:              "FK_T",
 				Kind:              ColumnConstraintTypeForeignKey,
+				Rely:              true,
+				Comment:           new("fk comment"),
 				Columns:           []string{"PARENT_A", "PARENT_B"},
 				ReferencedTable:   NewSchemaObjectIdentifier("DB", "SCH", "PARENT"),
 				ReferencedColumns: []string{"A", "B"},

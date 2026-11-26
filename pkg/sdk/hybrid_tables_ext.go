@@ -48,6 +48,8 @@ type HybridTableConstraint struct {
 	Name    string
 	Kind    ColumnConstraintType
 	Columns []string // ordered by key_sequence
+	Rely    bool
+	Comment *string
 
 	// FK-only; zero-value for PK/UNIQUE.
 	ReferencedTable   SchemaObjectIdentifier
@@ -64,12 +66,14 @@ type keyRow struct {
 	ConstraintName string
 	ColumnName     string
 	KeySequence    int
+	Rely           string
+	Comment        *string
 }
 
 func primaryKeysToKeyRows(in []TablePrimaryKey) []keyRow {
 	out := make([]keyRow, len(in))
 	for i, r := range in {
-		out[i] = keyRow{ConstraintName: r.ConstraintName, ColumnName: r.ColumnName, KeySequence: r.KeySequence}
+		out[i] = keyRow{ConstraintName: r.ConstraintName, ColumnName: r.ColumnName, KeySequence: r.KeySequence, Rely: r.Rely, Comment: r.Comment}
 	}
 	return out
 }
@@ -77,7 +81,7 @@ func primaryKeysToKeyRows(in []TablePrimaryKey) []keyRow {
 func uniqueKeysToKeyRows(in []TableUniqueKey) []keyRow {
 	out := make([]keyRow, len(in))
 	for i, r := range in {
-		out[i] = keyRow{ConstraintName: r.ConstraintName, ColumnName: r.ColumnName, KeySequence: r.KeySequence}
+		out[i] = keyRow{ConstraintName: r.ConstraintName, ColumnName: r.ColumnName, KeySequence: r.KeySequence, Rely: r.Rely, Comment: r.Comment}
 	}
 	return out
 }
@@ -101,7 +105,8 @@ func mergeKeyRows(rows []keyRow, kind ColumnConstraintType) []HybridTableConstra
 	for _, name := range order {
 		grp := byName[name]
 		sort.SliceStable(grp, func(i, j int) bool { return grp[i].KeySequence < grp[j].KeySequence })
-		c := HybridTableConstraint{Name: name, Kind: kind}
+		// Rely and comment are the same on every row of a constraint.
+		c := HybridTableConstraint{Name: name, Kind: kind, Rely: grp[0].Rely == "true", Comment: grp[0].Comment}
 		for _, r := range grp {
 			c.Columns = append(c.Columns, r.ColumnName)
 		}
@@ -128,12 +133,14 @@ func mergeForeignKeyRows(rows []TableImportedKey) []HybridTableConstraint {
 	for _, name := range order {
 		grp := byName[name]
 		sort.SliceStable(grp, func(i, j int) bool { return grp[i].KeySequence < grp[j].KeySequence })
-		// ReferencedTable, DeleteRule, and UpdateRule are identical across all rows of a
-		// given FK, so we take them from the first row.
+		// ReferencedTable, DeleteRule, UpdateRule, Rely, and Comment are identical across all
+		// rows of a given FK, so we take them from the first row.
 		first := grp[0]
 		c := HybridTableConstraint{
 			Name:            name,
 			Kind:            ColumnConstraintTypeForeignKey,
+			Rely:            first.Rely == "true",
+			Comment:         first.Comment,
 			ReferencedTable: NewSchemaObjectIdentifier(first.PkDatabaseName, first.PkSchemaName, first.PkTableName),
 			DeleteRule:      first.DeleteRule,
 			UpdateRule:      first.UpdateRule,

@@ -863,6 +863,7 @@ var Table = ssot.Object{
 			ssot.SdkShowParameters(),
 			ssot.SdkShowParametersDetails(),
 			ssot.SdkAlter(ssot.SdkAlterAdditionalValidations()),
+			ssot.SdkCustomInterfaceMethods(),
 		),
 		ssot.WithDataSource(
 			ssot.DataSourceWithTerse(),
@@ -1052,6 +1053,13 @@ var Table = ssot.Object{
 		"migrateTableToV2_24_0",
 	},
 	CustomOperations: append(tableCreateVariantOperations, tableDescribeOperations...),
+	CustomInterfaceMethods: []ssot.CustomInterfaceMethodSpec{
+		{
+			Name:    "GetConstraints",
+			Doc:     "GetConstraints returns the primary, unique, and foreign keys of the table, one entry per constraint.",
+			Returns: []string{"[]TableConstraint", "error"},
+		},
+	},
 	Attributes: []ssot.Attribute{
 		TableAttrs.ClusterBy,
 		TableAttrs.Column,
