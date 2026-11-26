@@ -479,3 +479,71 @@ func Test_lifecycle_suspendForAlter(t *testing.T) {
 		require.Equal(t, &SuspendForAlterModel{When: []string{"comment", "size"}}, model.SuspendForAlter)
 	})
 }
+
+func Test_lifecycle_setFieldsNotSetByReadGenerated(t *testing.T) {
+	generated := withHooks(ssot.WithShowByIdInSdk(ssot.Generated()), ssot.WithSetFieldsNotSetByRead(ssot.Generated()))
+	// The template output is formatted later, so the tests ignore the whitespace.
+	squash := func(s string) string { return strings.Join(strings.Fields(s), " ") }
+
+	t.Run("schema object", func(t *testing.T) {
+		got := squash(renderLifecycle(t, lifecycleModel(generated)))
+		require.Contains(t, got, "_, err = meta.(*provider.Context).Client.Pools.ShowByID(ctx, id)")
+		require.Contains(t, got, `if err := errors.Join( d.Set("name", id.Name()), d.Set("database", id.DatabaseName()), d.Set("schema", id.SchemaName()), ); err != nil { return nil, err }`)
+		require.NotContains(t, got, "importPermissiveMode")
+		require.NotContains(t, got, "SetFieldsNotSetByReadExt")
+	})
+
+	t.Run("database object", func(t *testing.T) {
+		got := squash(renderTemplate(t, "setFieldsNotSetByRead", lifecycleModel(generated, func(obj *ssot.Object) { obj.IdType = "DatabaseObjectIdentifier" })))
+		require.Equal(t, `if err := errors.Join( d.Set("name", id.Name()), d.Set("database", id.DatabaseName()), ); err != nil { return nil, err }`, got)
+	})
+
+	t.Run("account object", func(t *testing.T) {
+		got := squash(renderTemplate(t, "setFieldsNotSetByRead", lifecycleModel(generated, func(obj *ssot.Object) { obj.IdType = "AccountObjectIdentifier" })))
+		require.Equal(t, `if err := errors.Join( d.Set("name", id.Name()), ); err != nil { return nil, err }`, got)
+	})
+
+	t.Run("ext call keeps the show row and the permissive mode", func(t *testing.T) {
+		got := squash(renderLifecycle(t, lifecycleModel(withHooks(ssot.WithShowByIdInSdk(ssot.Generated())))))
+		require.Contains(t, got, "pool, err := meta.(*provider.Context).Client.Pools.ShowByID(ctx, id)")
+		require.Contains(t, got, "poolSetFieldsNotSetByReadExt(d, id, pool, importPermissiveMode)")
+	})
+}
+
+func Test_lifecycle_setDescribeOutputGenerated(t *testing.T) {
+	body := ssot.Attribute{Name: "body", Type: ssot.AttrString, Required: true}
+	comment := ssot.Attribute{Name: "comment", Type: ssot.AttrString}
+	model := func(change func(*ssot.Object)) ResourceModel {
+		return lifecycleModel(withHooks(ssot.WithDescribeInSdk(ssot.Generated()), ssot.WithSetDescribeOutput(ssot.Generated())), func(obj *ssot.Object) {
+			obj.DescribeFailRead = true
+			obj.Attributes = []ssot.Attribute{body, comment}
+			obj.Describe = ssot.OutputSpec{Columns: []*ssot.Attribute{&body, &comment}}
+			change(obj)
+		})
+	}
+
+	t.Run("a required describe-only column is copied", func(t *testing.T) {
+		require.Equal(t, "\t\t\td.Set(\"body\", poolDetails.Body),\n", renderTemplate(t, "setDescribeOutput", model(func(*ssot.Object) {})))
+	})
+
+	t.Run("a column that SHOW returns is left to the show output", func(t *testing.T) {
+		got := renderTemplate(t, "setDescribeOutput", model(func(obj *ssot.Object) { obj.Show = ssot.OutputSpec{Columns: []*ssot.Attribute{&body}} }))
+		require.Empty(t, got)
+	})
+
+	t.Run("it needs the describe to fail the read", func(t *testing.T) {
+		require.PanicsWithValue(t, `object "Pool": a generated SetDescribeOutput needs DescribeInSdk and DescribeFailRead, because it reads the details`, func() {
+			model(func(obj *ssot.Object) { obj.DescribeFailRead = false })
+		})
+	})
+
+	t.Run("only a plain string is supported", func(t *testing.T) {
+		number := ssot.Attribute{Name: "limit", Type: ssot.AttrInt, Required: true}
+		require.PanicsWithValue(t, `object "Pool": SetDescribeOutput is not generated for column "limit": only a plain string is supported`, func() {
+			model(func(obj *ssot.Object) {
+				obj.Attributes = []ssot.Attribute{number}
+				obj.Describe = ssot.OutputSpec{Columns: []*ssot.Attribute{&number}}
+			})
+		})
+	})
+}

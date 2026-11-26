@@ -379,8 +379,8 @@ func rowAccessPolicyFieldSchema(objectKind string) *schema.Schema {
 	}
 }
 
-// aggregationPolicySchema builds the aggregation_policy schema.
-func aggregationPolicySchema(objectKind string) *schema.Schema {
+// aggregationPolicyFieldSchema builds the aggregation_policy schema.
+func aggregationPolicyFieldSchema(objectKind string) *schema.Schema {
 	return &schema.Schema{
 		Type:     schema.TypeList,
 		MaxItems: 1,

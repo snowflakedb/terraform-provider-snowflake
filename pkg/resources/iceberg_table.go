@@ -38,7 +38,7 @@ var icebergTableSchema = collections.MergeMaps(
 		"foreign_key_constraint": foreignKeyConstraintSchema(),
 		"check_constraint":       checkConstraintSchema(),
 		"row_access_policy":      rowAccessPolicyFieldSchema("Iceberg table"),
-		"aggregation_policy":     aggregationPolicySchema("Iceberg table"),
+		"aggregation_policy":     aggregationPolicyFieldSchema("Iceberg table"),
 		"base_location": {
 			Type:             schema.TypeString,
 			Optional:         true,

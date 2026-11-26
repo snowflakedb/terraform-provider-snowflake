@@ -17,7 +17,7 @@ func Import{{ .Name }}(ctx context.Context, d *tfschema.ResourceData, meta any) 
 	if err != nil {
 		return nil, err
 	}
-{{ if .Hooks.SetFieldsNotSetByRead.Present }}
+{{ if and .Hooks.SetFieldsNotSetByRead.Present (not .Hooks.SetFieldsNotSetByRead.Generate) }}
 	importPermissiveMode := meta.(*provider.Context).Experiments.IsEnabled(experimentalfeatures.ImportPermissiveMode)
 {{ end -}}
 {{ template "setFieldsNotSetByRead" . -}}

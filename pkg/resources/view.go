@@ -205,7 +205,7 @@ var viewSchema = map[string]*schema.Schema{
 		Description: "Specifies a comment for the view.",
 	},
 	"row_access_policy":  rowAccessPolicyFieldSchema("view"),
-	"aggregation_policy": aggregationPolicySchema("view"),
+	"aggregation_policy": aggregationPolicyFieldSchema("view"),
 	"statement": {
 		Type:             schema.TypeString,
 		Required:         true,

@@ -171,6 +171,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.AccountRole: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Roles.ShowByID)
 	},
+	resources.AggregationPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.AggregationPolicies.ShowByID)
+	},
 	resources.Alert: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Alerts.ShowByID)
 	},

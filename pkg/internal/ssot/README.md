@@ -605,6 +605,17 @@ returns an `error`. `Omitted` drops the call. A resource does not list these hoo
 is omitted. `SetDescribeOutput` does not omit it, so that ext only sets what the generated call does not. Warehouse omits `ShowOutputSet` itself because its
 `SetConfigFieldsExt` sets it.
 
+`WithSetFieldsNotSetByRead(Generated())` emits the Import step that sets the identifier fields from the parsed id: `name` for an
+account object, `database` and `name` for a database object, `database`, `schema` and `name` for a schema object. Read writes
+every other field after the import. Import then ignores the SHOW row, so `ShowByIdInSdk` assigns it to `_`, and the
+`importPermissiveMode` variable is not declared. Any other `IdType` panics. `ExtCall` keeps `<prefix>SetFieldsNotSetByReadExt`,
+for an import that sets more than the identifier.
+
+`WithSetDescribeOutput(Generated())` emits a `d.Set` in Read for every required attribute that is a DESCRIBE column and not a
+SHOW column, such as the body of a policy. The generated external changes do not track a required attribute, so Read copies
+the DESCRIBE value on every read. It needs `DescribeInSdk` and `DescribeFailRead`, and supports plain string columns only; any
+other column panics. `ExtCall` keeps `<prefix>SetDescribeOutputExt`.
+
 `BeforeCreate` is `Omitted` by default. `WithBeforeCreate(Generated())` adopts an object that Snowflake creates itself
 instead of creating it. List those names in `IdentityNamesCreatedBySnowflake`, such as `PUBLIC` for a schema. When the
 identity name matches one of them, ignoring case and outer spaces, and `ShowByID` finds the object, the generated code

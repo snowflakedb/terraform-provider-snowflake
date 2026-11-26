@@ -329,6 +329,8 @@ func ModelFromInputObject(input ResourceObject, preamble *genhelpers.PreambleMod
 	// Building the mappings panics when a generated hook cannot describe a column.
 	model.ShowExternalChanges()
 	model.DescribeExternalChanges()
+	model.IdentityStateSets()
+	model.DescribeStateSets()
 	return model
 }
 

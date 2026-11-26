@@ -9,6 +9,7 @@ const (
 	AccountPasswordPolicyAttachment                        resource = "snowflake_account_password_policy_attachment"
 	AccountRole                                            resource = "snowflake_account_role"
 	AccountSessionPolicyAttachment                         resource = "snowflake_account_session_policy_attachment"
+	AggregationPolicy                                      resource = "snowflake_aggregation_policy"
 	Alert                                                  resource = "snowflake_alert"
 	ApiAuthenticationIntegrationWithAuthorizationCodeGrant resource = "snowflake_api_authentication_integration_with_authorization_code_grant"
 	ApiAuthenticationIntegrationWithClientCredentials      resource = "snowflake_api_authentication_integration_with_client_credentials"
