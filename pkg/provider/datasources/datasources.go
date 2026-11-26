@@ -5,6 +5,7 @@ type datasource string
 const (
 	Accounts                       datasource = "snowflake_accounts"
 	AccountRoles                   datasource = "snowflake_account_roles"
+	AggregationPolicies            datasource = "snowflake_aggregation_policies"
 	Alerts                         datasource = "snowflake_alerts"
 	ApiIntegrations                datasource = "snowflake_api_integrations"
 	AuthenticationPolicies         datasource = "snowflake_authentication_policies"

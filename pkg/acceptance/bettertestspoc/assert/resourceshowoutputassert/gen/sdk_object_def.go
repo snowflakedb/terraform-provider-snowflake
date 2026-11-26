@@ -21,6 +21,7 @@ type SdkObjectShowOutputDetails struct {
 var dataSourceMappingNormalized = map[string]dataSourceDef{
 	// Show output - standard:
 	normalized(sdk.Account{}):                     {"Accounts"},
+	normalized(sdk.AggregationPolicy{}):           {"AggregationPolicies"},
 	normalized(sdk.Alert{}):                       {"Alerts"},
 	normalized(sdk.ApiIntegration{}):              {"ApiIntegrations"},
 	normalized(sdk.AuthenticationPolicy{}):        {"AuthenticationPolicies"},
@@ -78,6 +79,7 @@ var dataSourceMappingNormalized = map[string]dataSourceDef{
 	normalized(sdk.Table{}):                       {"Tables"},
 
 	// Describe output:
+	normalized(sdk.AggregationPolicyDetails{}):      {"AggregationPolicies"},
 	normalized(sdk.AlertDetails{}):                  {"Alerts"},
 	normalized(sdk.ApiIntegrationAllDetails{}):      {"ApiIntegrations"},
 	normalized(sdk.BackupPolicyDetails{}):           {"BackupPolicies"},

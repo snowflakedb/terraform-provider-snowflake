@@ -31,6 +31,10 @@ var allDatasourcesSchemaDefs = []DatasourceSchemaDef{
 		schema: datasources.AccountRoles().Schema,
 	},
 	{
+		name:   "AggregationPolicies",
+		schema: datasources.AggregationPolicies().Schema,
+	},
+	{
 		name:   "Alerts",
 		schema: datasources.Alerts().Schema,
 	},

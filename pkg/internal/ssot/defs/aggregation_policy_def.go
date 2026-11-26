@@ -62,6 +62,7 @@ var AggregationPolicy = ssot.Object{
 	DescribeFailRead: true,
 	IdType:           "SchemaObjectIdentifier",
 	Generators: []ssot.GeneratorOption{
+		ssot.WithAllGenerators(),
 		ssot.WithSdk(
 			ssot.SdkDefineFromSsot(),
 			ssot.SdkCreate(),
@@ -80,12 +81,6 @@ var AggregationPolicy = ssot.Object{
 				ssot.SdkDescribeDetailsFromIdentifier(),
 			),
 		),
-		ssot.WithObjectAssert(ssot.ObjectAssertShow(), ssot.ObjectAssertDescribe()),
-		ssot.WithSchema(ssot.SchemaShow(), ssot.SchemaDescribe()),
-		ssot.WithResource(),
-		ssot.WithModel(),
-		ssot.WithResourceAssert(),
-		ssot.WithShowOutputAssert(ssot.ShowOutputShow(), ssot.ShowOutputDescribe()),
 	},
 	// body is SET BODY -> and cannot share a SET with comment, so the update sends it in its own SET (the Body group).
 	// SHOW does not return body. Read takes it from DESCRIBE.

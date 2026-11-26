@@ -31,6 +31,21 @@ func ImportedAggregationPolicyShowOutput(t *testing.T, id string) *AggregationPo
 	return &aggregationPolicyAssert
 }
 
+func AggregationPoliciesDatasourceShowOutput(t *testing.T, name string) *AggregationPolicyShowOutputAssert {
+	t.Helper()
+
+	return AggregationPoliciesDatasourceShowOutputOnIdx(t, name, 0)
+}
+
+func AggregationPoliciesDatasourceShowOutputOnIdx(t *testing.T, name string, idx int) *AggregationPolicyShowOutputAssert {
+	t.Helper()
+
+	aggregationPolicyAssert := AggregationPolicyShowOutputAssert{
+		ResourceAssert: assert.NewDatasourceShowOutputAssert(name, "aggregation_policies", idx),
+	}
+	return &aggregationPolicyAssert
+}
+
 ////////////////////////////
 // Attribute value checks //
 ////////////////////////////
