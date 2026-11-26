@@ -136,6 +136,7 @@ func TestInt_SafeUnsetTagOnNonExistingSchemaObject(t *testing.T) {
 		{ObjectType: sdk.ObjectTypeAggregationPolicy},
 		{ObjectType: sdk.ObjectTypeMaskingPolicy},
 		{ObjectType: sdk.ObjectTypeProjectionPolicy},
+		{ObjectType: sdk.ObjectTypeJoinPolicy},
 		{ObjectType: sdk.ObjectTypeRowAccessPolicy},
 		{ObjectType: sdk.ObjectTypeImageRepository},
 		{ObjectType: sdk.ObjectTypeGitRepository},

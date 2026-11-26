@@ -981,6 +981,22 @@ func TestInt_TagsAssociations(t *testing.T) {
 			},
 		},
 		{
+			name:       "JoinPolicy",
+			objectType: sdk.ObjectTypeJoinPolicy,
+			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
+				id, cleanup := testClientHelper().JoinPolicy.Create(t)
+				policy, err := client.JoinPolicies.ShowByID(ctx, id)
+				require.NoError(t, err)
+				return policy, cleanup
+			},
+			setTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.TagAssociation) error {
+				return client.JoinPolicies.Alter(ctx, sdk.NewAlterJoinPolicyRequest(id).WithSetTags(tags))
+			},
+			unsetTags: func(id sdk.SchemaObjectIdentifier, tags []sdk.ObjectIdentifier) error {
+				return client.JoinPolicies.Alter(ctx, sdk.NewAlterJoinPolicyRequest(id).WithUnsetTags(tags))
+			},
+		},
+		{
 			name:       "EventTable",
 			objectType: sdk.ObjectTypeEventTable,
 			setupObject: func() (IDProvider[sdk.SchemaObjectIdentifier], func()) {
