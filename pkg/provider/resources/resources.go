@@ -83,6 +83,7 @@ const (
 	IntelligenceCortexAgentAttachment                      resource = "snowflake_intelligence_cortex_agent_attachment"
 	InternalStage                                          resource = "snowflake_stage_internal"
 	JobService                                             resource = "snowflake_job_service"
+	JoinPolicy                                             resource = "snowflake_join_policy"
 	LegacyServiceUser                                      resource = "snowflake_legacy_service_user"
 	Listing                                                resource = "snowflake_listing"
 	ManagedAccount                                         resource = "snowflake_managed_account"

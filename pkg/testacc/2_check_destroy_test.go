@@ -345,6 +345,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.JobService: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Services.ShowByID)
 	},
+	resources.JoinPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.JoinPolicies.ShowByID)
+	},
 	resources.LegacyServiceUser: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Users.ShowByID)
 	},
