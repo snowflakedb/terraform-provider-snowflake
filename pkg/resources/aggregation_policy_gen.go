@@ -9,6 +9,7 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/helpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -25,7 +26,7 @@ func AggregationPolicy() *tfschema.Resource {
 		CreateContext: aggregationPolicyCreateExt,
 		ReadContext:   aggregationPolicyReadExt,
 		UpdateContext: aggregationPolicyUpdateExt,
-		DeleteContext: TrackingDeleteWrapper(resources.AggregationPolicy, DeleteAggregationPolicy),
+		DeleteContext: PreviewFeatureDeleteContextWrapper(string(previewfeatures.AggregationPolicyResource), TrackingDeleteWrapper(resources.AggregationPolicy, DeleteAggregationPolicy)),
 		Importer:      aggregationPolicyImporterExt,
 
 		CustomizeDiff: aggregationPolicyCustomizeDiff,

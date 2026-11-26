@@ -1,6 +1,7 @@
 <!-- Section of preview data sources -->
 ### Currently preview data sources 
 
+- [snowflake_aggregation_policies](./docs/data-sources/aggregation_policies)
 - [snowflake_alerts](./docs/data-sources/alerts)
 - [snowflake_backup_policies](./docs/data-sources/backup_policies)
 - [snowflake_backup_sets](./docs/data-sources/backup_sets)

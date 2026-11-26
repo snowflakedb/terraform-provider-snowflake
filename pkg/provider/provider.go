@@ -627,6 +627,7 @@ func getResources() map[string]*schema.Resource {
 		"snowflake_account_password_policy_attachment":                           resources.AccountPasswordPolicyAttachment(),
 		"snowflake_account_parameter":                                            resources.AccountParameter(),
 		"snowflake_account_session_policy_attachment":                            resources.AccountSessionPolicyAttachment(),
+		"snowflake_aggregation_policy":                                           resources.AggregationPolicy(),
 		"snowflake_alert":                                                        resources.Alert(),
 		"snowflake_api_authentication_integration_with_authorization_code_grant": resources.ApiAuthenticationIntegrationWithAuthorizationCodeGrant(),
 		"snowflake_api_authentication_integration_with_client_credentials":       resources.ApiAuthenticationIntegrationWithClientCredentials(),
@@ -785,6 +786,7 @@ func getDataSources() map[string]*schema.Resource {
 	dataSourcesByName := map[string]*schema.Resource{
 		"snowflake_accounts":                           datasources.Accounts(),
 		"snowflake_account_roles":                      datasources.AccountRoles(),
+		"snowflake_aggregation_policies":               datasources.AggregationPolicies(),
 		"snowflake_alerts":                             datasources.Alerts(),
 		"snowflake_api_integrations":                   datasources.ApiIntegrations(),
 		"snowflake_authentication_policies":            datasources.AuthenticationPolicies(),

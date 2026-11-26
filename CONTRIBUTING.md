@@ -305,11 +305,11 @@ Implement the resource schema, read/create/update/delete, acceptance tests, and 
 
   - When server capabilities are incomplete, document current limitations and ensure Update/Create sequences handle supported paths without requiring double-applies. Remember to use the model builder and assertions that you can automatically generate.
 
-  - Add an example usage of the object. It should be auto-included in the generated documentation via the `.md.tmpl` file.
+  - Add an example usage of the object. It is auto-included in the generated documentation by the default templates (`templates/resources.md.tmpl`, `templates/data-sources.md.tmpl`).
 
-  - The resource's documentation should also include a `Preview feature` section. It could be a good idea to copy-paste and modify one of the existing files located in `templates/resources/*.md.tmpl`.
+  - The resource's documentation should also include a `Preview feature` section. Do not copy a template for it. The default template renders the caution when the resource description starts with `docs.WithPreviewFeatureMark()`. Add `templates/resources/<name>.md.tmpl` or `templates/data-sources/<name>.md.tmpl` only when the page needs resource or object specific text, such as limitations, quirks, caveats, or a migration note. Otherwise use the default template.
 
-  - use `make docs` to generate documentation based on the `.md.tmpl` file (which is the file you should edit instead of `.md` file).
+  - use `make docs` to generate documentation from the template (the default one, or the per-object `.md.tmpl` when there is one), the schema descriptions, and the examples. Edit those instead of the generated `.md` file.
 
 - Implement acceptance tests
   - Provide “basic” and “complete” cases; test rename, validations, and plan drift (ConfigPlanChecks). Avoid relying on “Safe” client wrappers for correctness checks; validate against the same paths real users hit.
@@ -348,7 +348,7 @@ Example patterns validated by the data source:
 Once the resource and data source are stable (promoted from preview), move the registrations:
 
 - Move resource/data source registration from `acceptanceTestsProvider()` in `pkg/testacc/1_setup_provider_test.go` to the production provider in `pkg/provider/provider.go`
-- Add documentation templates (`templates/resources/`, `templates/data-sources/`) and usage examples (`examples/resources/`, `examples/data-sources/`)
+- Add usage examples (`examples/resources/`, `examples/data-sources/`). Add a documentation template (`templates/resources/`, `templates/data-sources/`) only when the page needs object specific text; otherwise the default templates are used
 - Run `make docs` to generate final documentation
 
 ## Advanced Debugging

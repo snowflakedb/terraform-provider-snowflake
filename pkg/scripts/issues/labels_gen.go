@@ -27,6 +27,7 @@ var RepositoryLabels = []string{
 	"resource:account_password_policy_attachment",
 	"resource:account_role",
 	"resource:account_session_policy_attachment",
+	"resource:aggregation_policy",
 	"resource:alert",
 	"resource:api_authn_integration_authz_code_grant",
 	"resource:api_authn_integration_client_credentials",
@@ -190,6 +191,7 @@ var RepositoryLabels = []string{
 
 	"data_source:account_roles",
 	"data_source:accounts",
+	"data_source:aggregation_policies",
 	"data_source:alerts",
 	"data_source:api_integrations",
 	"data_source:authentication_policies",

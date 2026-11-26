@@ -2,6 +2,7 @@
 ### Currently preview resources 
 
 - [snowflake_account_password_policy_attachment](./docs/resources/account_password_policy_attachment)
+- [snowflake_aggregation_policy](./docs/resources/aggregation_policy)
 - [snowflake_alert](./docs/resources/alert)
 - [snowflake_api_integration](./docs/resources/api_integration)
 - [snowflake_backup_policy](./docs/resources/backup_policy)

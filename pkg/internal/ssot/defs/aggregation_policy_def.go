@@ -61,6 +61,7 @@ var AggregationPolicy = ssot.Object{
 	NamePlural:       "AggregationPolicies",
 	DescribeFailRead: true,
 	IdType:           "SchemaObjectIdentifier",
+	PreviewFeature:   true,
 	Generators: []ssot.GeneratorOption{
 		ssot.WithAllGenerators(),
 		ssot.WithSdk(

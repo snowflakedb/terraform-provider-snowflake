@@ -1,0 +1,196 @@
+---
+page_title: "snowflake_aggregation_policies Data Source - terraform-provider-snowflake"
+subcategory: "Preview"
+description: |-
+  Data source used to get details of filtered aggregation policies. Filtering is aligned with the current possibilities for SHOW AGGREGATION POLICIES https://docs.snowflake.com/en/sql-reference/sql/show-aggregation-policies query. The results of SHOW and DESCRIBE are encapsulated in one output collection aggregation_policies.
+---
+
+!> **Caution: Preview Feature** This feature is considered a preview feature in the provider, regardless of the state of the resource in Snowflake. We do not guarantee its stability. It will be reworked and marked as a stable feature in future releases. Breaking changes are expected, even without bumping the major version. To use this feature, add the relevant feature name to `preview_features_enabled` field in the [provider configuration](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs#schema). Please always refer to the [Getting Help](https://github.com/snowflakedb/terraform-provider-snowflake?tab=readme-ov-file#getting-help) section in our Github repo to best determine how to get help for your questions.
+
+# snowflake_aggregation_policies (Data Source)
+
+Data source used to get details of filtered aggregation policies. Filtering is aligned with the current possibilities for [SHOW AGGREGATION POLICIES](https://docs.snowflake.com/en/sql-reference/sql/show-aggregation-policies) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `aggregation_policies`.
+
+## Example Usage
+
+```terraform
+# Simple usage
+data "snowflake_aggregation_policies" "simple" {
+}
+
+output "simple_output" {
+  value = data.snowflake_aggregation_policies.simple.aggregation_policies
+}
+
+# Filtering (like)
+data "snowflake_aggregation_policies" "like" {
+  like = "aggregation-policy-name"
+}
+
+output "like_output" {
+  value = data.snowflake_aggregation_policies.like.aggregation_policies
+}
+
+# Filtering by prefix (like)
+data "snowflake_aggregation_policies" "like_prefix" {
+  like = "prefix%"
+}
+
+output "like_prefix_output" {
+  value = data.snowflake_aggregation_policies.like_prefix.aggregation_policies
+}
+
+# Filtering (starts_with)
+data "snowflake_aggregation_policies" "starts_with" {
+  starts_with = "prefix-"
+}
+
+output "starts_with_output" {
+  value = data.snowflake_aggregation_policies.starts_with.aggregation_policies
+}
+
+# Filtering (limit)
+data "snowflake_aggregation_policies" "limit" {
+  limit {
+    rows = 10
+  }
+}
+
+output "limit_output" {
+  value = data.snowflake_aggregation_policies.limit.aggregation_policies
+}
+
+# Filtering (in)
+data "snowflake_aggregation_policies" "in_account" {
+  in {
+    account = true
+  }
+}
+
+data "snowflake_aggregation_policies" "in_database" {
+  in {
+    database = "<database_name>"
+  }
+}
+
+data "snowflake_aggregation_policies" "in_schema" {
+  in {
+    schema = "\"<database_name>\".\"<schema_name>\""
+  }
+}
+
+output "in_filtered" {
+  value = {
+    "account" : data.snowflake_aggregation_policies.in_account.aggregation_policies,
+    "database" : data.snowflake_aggregation_policies.in_database.aggregation_policies,
+    "schema" : data.snowflake_aggregation_policies.in_schema.aggregation_policies,
+  }
+}
+
+# Without additional data (to limit the number of calls made for every found aggregation policy)
+data "snowflake_aggregation_policies" "only_show" {
+  # with_describe is turned on by default and it calls DESCRIBE AGGREGATION POLICY for every aggregation policy found and attaches its output to aggregation_policies.*.describe_output field
+  with_describe = false
+}
+
+output "only_show_output" {
+  value = data.snowflake_aggregation_policies.only_show.aggregation_policies
+}
+
+# Ensure the number of aggregation policies is equal to at least one element (with the use of postcondition)
+data "snowflake_aggregation_policies" "assert_with_postcondition" {
+  like = "aggregation-policy-name%"
+  lifecycle {
+    postcondition {
+      condition     = length(self.aggregation_policies) > 0
+      error_message = "there should be at least one aggregation policy"
+    }
+  }
+}
+
+# Ensure the number of aggregation policies is equal to exactly one element (with the use of check block)
+check "aggregation_policy_check" {
+  data "snowflake_aggregation_policies" "assert_with_check_block" {
+    like = "aggregation-policy-name"
+  }
+
+  assert {
+    condition     = length(data.snowflake_aggregation_policies.assert_with_check_block.aggregation_policies) == 1
+    error_message = "aggregation policies filtered by '${data.snowflake_aggregation_policies.assert_with_check_block.like}' returned ${length(data.snowflake_aggregation_policies.assert_with_check_block.aggregation_policies)} aggregation policies where one was expected"
+  }
+}
+```
+
+-> **Note** If a field has a default value, it is shown next to the type in the schema.
+
+<!-- schema generated by tfplugindocs -->
+## Schema
+
+### Optional
+
+- `in` (Block List, Max: 1) IN clause to filter the list of objects (see [below for nested schema](#nestedblock--in))
+- `like` (String) Filters the output with **case-insensitive** pattern, with support for SQL wildcard characters (`%` and `_`).
+- `limit` (Block List, Max: 1) Limits the number of rows returned. If the `limit.from` is set, then the limit will start from the first element matched by the expression. The expression is only used to match with the first element, later on the elements are not matched by the prefix, but you can enforce a certain pattern with `starts_with` or `like`. (see [below for nested schema](#nestedblock--limit))
+- `starts_with` (String) Filters the output with **case-sensitive** characters indicating the beginning of the object name.
+- `with_describe` (Boolean) (Default: `true`) Runs DESC AGGREGATION POLICY for each aggregation policy returned by SHOW AGGREGATION POLICIES. The output of describe is saved to the describe_output field. By default this value is set to true.
+
+### Read-Only
+
+- `aggregation_policies` (List of Object) Holds the aggregated output of all aggregation policy details queries. (see [below for nested schema](#nestedatt--aggregation_policies))
+- `id` (String) The ID of this resource.
+
+<a id="nestedblock--in"></a>
+### Nested Schema for `in`
+
+Optional:
+
+- `account` (Boolean) Returns records for the entire account.
+- `database` (String) Returns records for the current database in use or for a specified database.
+- `schema` (String) Returns records for the current schema in use or a specified schema. Use fully qualified name.
+
+
+<a id="nestedblock--limit"></a>
+### Nested Schema for `limit`
+
+Required:
+
+- `rows` (Number) The maximum number of rows to return.
+
+Optional:
+
+- `from` (String) Specifies a **case-sensitive** pattern that is used to match object name. After the first match, the limit on the number of rows will be applied.
+
+
+<a id="nestedatt--aggregation_policies"></a>
+### Nested Schema for `aggregation_policies`
+
+Read-Only:
+
+- `describe_output` (List of Object) (see [below for nested schema](#nestedobjatt--aggregation_policies--describe_output))
+- `show_output` (List of Object) (see [below for nested schema](#nestedobjatt--aggregation_policies--show_output))
+
+<a id="nestedobjatt--aggregation_policies--describe_output"></a>
+### Nested Schema for `aggregation_policies.describe_output`
+
+Read-Only:
+
+- `body` (String)
+- `name` (String)
+- `return_type` (String)
+- `signature` (String)
+
+
+<a id="nestedobjatt--aggregation_policies--show_output"></a>
+### Nested Schema for `aggregation_policies.show_output`
+
+Read-Only:
+
+- `comment` (String)
+- `created_on` (String)
+- `database_name` (String)
+- `kind` (String)
+- `name` (String)
+- `options` (String)
+- `owner` (String)
+- `owner_role_type` (String)
+- `schema_name` (String)

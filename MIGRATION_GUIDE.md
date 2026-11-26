@@ -28,6 +28,21 @@ for changes required after enabling given [Snowflake BCR Bundle](https://docs.sn
 
 ## v2.24.x ➞ v2.25.0
 
+### *(new feature)* Aggregation policy resource and data source
+
+We have added a new preview resource, [`snowflake_aggregation_policy`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/aggregation_policy), for managing [aggregation policies](https://docs.snowflake.com/en/sql-reference/sql/create-aggregation-policy). CREATE requires a body, an SQL expression that calls `AGGREGATION_CONSTRAINT` or `NO_AGGREGATION_CONSTRAINT`. Changing the body updates the policy in place.
+
+We have also added a new preview data source, [`snowflake_aggregation_policies`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/data-sources/aggregation_policies), for listing aggregation policies. It supports `like`, `starts_with`, `limit`, and `in` (`account`, `database`, or `schema`). `with_describe` is on by default and runs DESCRIBE for each policy returned by SHOW.
+
+These features will be marked as stable in future releases. Breaking changes are expected, even without bumping the major version. To use them, add the corresponding value to the `preview_features_enabled` field in the provider configuration:
+
+- `snowflake_aggregation_policy_resource` for `snowflake_aggregation_policy`;
+- `snowflake_aggregation_policies_datasource` for `snowflake_aggregation_policies`.
+
+No changes are required for existing configurations unless you want to adopt these preview features with Terraform.
+
+Reference: [#4417](https://github.com/snowflakedb/terraform-provider-snowflake/issues/4417).
+
 ### *(new feature)* `METRIC_LEVEL` and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on databases and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account
 
 The provider knew `METRIC_LEVEL` only on functions and procedures and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` only on services, although Snowflake also supports them on databases, and `SERVICE_CALLER_TOKEN_VALIDITY_SECS` on the account.

@@ -7,7 +7,9 @@ import (
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider/docs"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/datasources"
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/previewfeatures"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
@@ -42,9 +44,9 @@ var aggregationPoliciesSchema = collections.MergeMaps(
 
 func AggregationPolicies() *schema.Resource {
 	return &schema.Resource{
-		ReadContext: TrackingReadWrapper(datasources.AggregationPolicies, ReadAggregationPolicies),
+		ReadContext: PreviewFeatureReadWrapper(string(previewfeatures.AggregationPoliciesDatasource), TrackingReadWrapper(datasources.AggregationPolicies, ReadAggregationPolicies)),
 		Schema:      aggregationPoliciesSchema,
-		Description: "Data source used to get details of filtered aggregation policies. Filtering is aligned with the current possibilities for [SHOW AGGREGATION POLICIES](https://docs.snowflake.com/en/sql-reference/sql/show-aggregation-policies) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `aggregation_policies`.",
+		Description: docs.WithPreviewFeatureMark() + "Data source used to get details of filtered aggregation policies. Filtering is aligned with the current possibilities for [SHOW AGGREGATION POLICIES](https://docs.snowflake.com/en/sql-reference/sql/show-aggregation-policies) query. The results of SHOW and DESCRIBE are encapsulated in one output collection `aggregation_policies`.",
 	}
 }
 
