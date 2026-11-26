@@ -61,6 +61,7 @@ func Test_ToObjectType(t *testing.T) {
 		{input: "PIPE", want: ObjectTypePipe},
 		{input: "ALERT", want: ObjectTypeAlert},
 		{input: "SNOWFLAKE.CORE.BUDGET", want: ObjectTypeBudget},
+		{input: "SNOWFLAKE.CORE.QUOTA", want: ObjectTypeQuota},
 		{input: "SNOWFLAKE.ML.CLASSIFICATION", want: ObjectTypeClassification},
 		{input: "APPLICATION", want: ObjectTypeApplication},
 		{input: "APPLICATION PACKAGE", want: ObjectTypeApplicationPackage},
