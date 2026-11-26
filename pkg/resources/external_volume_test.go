@@ -1,6 +1,7 @@
 package resources
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
@@ -235,6 +236,125 @@ func Test_parseStorageLocation_validation(t *testing.T) {
 			var got []sdk.ExternalVolumeStorageLocationItem
 			err := listBlockAttributeCreate(d, "storage_location", &got, parseStorageLocation)
 			require.ErrorContains(t, err, tt.wantErr)
+		})
+	}
+}
+
+func Test_s3CompatCredentialUpdates(t *testing.T) {
+	s3CompatLocation := func(name, endpoint, keyId, secretKey string) sdk.ExternalVolumeStorageLocationItem {
+		return sdk.ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name: name,
+			S3CompatStorageLocationParams: &sdk.S3CompatStorageLocationParams{
+				StorageBaseUrl:  "s3compat://bucket/",
+				StorageEndpoint: endpoint,
+				Credentials:     sdk.ExternalVolumeS3CompatCredentials{AwsKeyId: keyId, AwsSecretKey: secretKey},
+			},
+		}}
+	}
+	gcsLocation := func(name string) sdk.ExternalVolumeStorageLocationItem {
+		return sdk.ExternalVolumeStorageLocationItem{ExternalVolumeStorageLocation: sdk.ExternalVolumeStorageLocation{
+			Name:                     name,
+			GCSStorageLocationParams: &sdk.GCSStorageLocationParams{StorageBaseUrl: "gcs://bucket/"},
+		}}
+	}
+	updateRequest := func(name, keyId, secretKey string) sdk.ExternalVolumeUpdateStorageLocationRequest {
+		return *sdk.NewExternalVolumeUpdateStorageLocationRequest(name, *sdk.NewExternalVolumeUpdateCredentialsRequest(keyId, secretKey))
+	}
+
+	tests := []struct {
+		name                    string
+		oldLocations            []sdk.ExternalVolumeStorageLocationItem
+		newLocations            []sdk.ExternalVolumeStorageLocationItem
+		wantRequests            []sdk.ExternalVolumeUpdateStorageLocationRequest
+		wantUpdatedOldLocations []sdk.ExternalVolumeStorageLocationItem
+	}{
+		{
+			name:                    "credentials changed",
+			oldLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+			newLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-2", "secret-2")},
+			wantRequests:            []sdk.ExternalVolumeUpdateStorageLocationRequest{updateRequest("loc", "key-2", "secret-2")},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-2", "secret-2")},
+		},
+		{
+			name:                    "only secret key changed",
+			oldLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "")},
+			newLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+			wantRequests:            []sdk.ExternalVolumeUpdateStorageLocationRequest{updateRequest("loc", "key-1", "secret-1")},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+		},
+		{
+			name:                    "nothing changed",
+			oldLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+			newLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+		},
+		{
+			name:                    "credentials and endpoint changed",
+			oldLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+			newLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "other-endpoint", "key-2", "secret-2")},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+		},
+		{
+			name:                    "credentials and name changed",
+			oldLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+			newLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("other-loc", "endpoint", "key-2", "secret-2")},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+		},
+		{
+			name:                    "provider changed",
+			oldLocations:            []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+			newLocations:            []sdk.ExternalVolumeStorageLocationItem{gcsLocation("loc")},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{s3CompatLocation("loc", "endpoint", "key-1", "secret-1")},
+		},
+		{
+			name: "credentials changed and location moved",
+			oldLocations: []sdk.ExternalVolumeStorageLocationItem{
+				gcsLocation("gcs"),
+				s3CompatLocation("loc", "endpoint", "key-1", "secret-1"),
+			},
+			newLocations: []sdk.ExternalVolumeStorageLocationItem{
+				s3CompatLocation("loc", "endpoint", "key-2", "secret-2"),
+				gcsLocation("gcs"),
+			},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{
+				gcsLocation("gcs"),
+				s3CompatLocation("loc", "endpoint", "key-1", "secret-1"),
+			},
+		},
+		{
+			name: "credentials changed in multiple locations and location added",
+			oldLocations: []sdk.ExternalVolumeStorageLocationItem{
+				s3CompatLocation("loc-1", "endpoint", "key-1", "secret-1"),
+				gcsLocation("gcs"),
+				s3CompatLocation("loc-2", "endpoint", "key-1", "secret-1"),
+			},
+			newLocations: []sdk.ExternalVolumeStorageLocationItem{
+				s3CompatLocation("loc-1", "endpoint", "key-2", "secret-2"),
+				gcsLocation("gcs"),
+				s3CompatLocation("loc-2", "endpoint", "key-3", "secret-3"),
+				gcsLocation("added"),
+			},
+			wantRequests: []sdk.ExternalVolumeUpdateStorageLocationRequest{
+				updateRequest("loc-1", "key-2", "secret-2"),
+				updateRequest("loc-2", "key-3", "secret-3"),
+			},
+			wantUpdatedOldLocations: []sdk.ExternalVolumeStorageLocationItem{
+				s3CompatLocation("loc-1", "endpoint", "key-2", "secret-2"),
+				gcsLocation("gcs"),
+				s3CompatLocation("loc-2", "endpoint", "key-3", "secret-3"),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			oldLocationsBefore := slices.Clone(tt.oldLocations)
+
+			requests, updatedOldLocations := s3CompatCredentialUpdates(tt.oldLocations, tt.newLocations)
+
+			assert.Equal(t, tt.wantRequests, requests)
+			assert.Equal(t, tt.wantUpdatedOldLocations, updatedOldLocations)
+			assert.Equal(t, oldLocationsBefore, tt.oldLocations)
 		})
 	}
 }

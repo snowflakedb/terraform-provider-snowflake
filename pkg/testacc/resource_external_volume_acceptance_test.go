@@ -607,6 +607,9 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 
 	s3CompatLocation := getS3CompatStorageLocation(s3CompatLocationName, s3CompatBaseUrl, s3CompatEndpoint, s3CompatAwsKeyId, s3CompatAwsSecretKey)
 
+	s3CompatRotatedAwsKeyId := "AKIAIOSFODNN7ROTATED"
+	s3CompatRotatedLocation := getS3CompatStorageLocation(s3CompatLocationName, s3CompatBaseUrl, s3CompatEndpoint, s3CompatRotatedAwsKeyId, "rotatedSecretKey12345678901234567890123")
+
 	resource.Test(t, resource.TestCase{
 		TerraformVersionChecks: []tfversion.TerraformVersionCheck{
 			tfversion.RequireAbove(tfversion.Version1_5_0),
@@ -886,6 +889,42 @@ func TestAcc_ExternalVolume_BasicUseCase_S3Compat(t *testing.T) {
 								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{
 									Endpoint:       s3CompatEndpoint,
 									AwsAccessKeyId: s3CompatAwsKeyId,
+								},
+							},
+						}),
+				),
+			},
+			// rotate credentials in place
+			{
+				ProtoV6ProviderFactories: TestAccProtoV6ProviderFactories,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(ref, plancheck.ResourceActionUpdate),
+					},
+				},
+				ConfigDirectory: ConfigurationDirectory("TestAcc_ExternalVolume/single/basic"),
+				ConfigVariables: externalVolume(config.ListVariable(s3CompatRotatedLocation), externalVolumeName, "", ""),
+				Check: assertThat(
+					t,
+					resourceassert.ExternalVolumeResource(t, ref).
+						HasStorageLocationLength(1).
+						HasS3CompatStorageLocationAtIndex(
+							0,
+							s3CompatLocationName,
+							s3CompatBaseUrl,
+							s3CompatEndpoint,
+							s3CompatRotatedAwsKeyId,
+						),
+					resourceshowoutputassert.ExternalVolumeDescribeOutput(t, ref).
+						HasStorageLocations([]sdk.ExternalVolumeStorageLocationDetails{
+							{
+								Name:            s3CompatLocationName,
+								StorageProvider: "S3COMPAT",
+								StorageBaseUrl:  s3CompatBaseUrl,
+								EncryptionType:  string(sdk.S3EncryptionTypeNone),
+								S3CompatStorageLocation: &sdk.StorageLocationS3CompatDetails{
+									Endpoint:       s3CompatEndpoint,
+									AwsAccessKeyId: s3CompatRotatedAwsKeyId,
 								},
 							},
 						}),

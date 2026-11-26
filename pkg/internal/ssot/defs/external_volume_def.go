@@ -153,7 +153,7 @@ var (
 			ExternalVolumeStorageLocationAttrs.EncryptionKmsKeyId,
 		},
 	}
-	// UPDATE STORAGE_LOCATION '<name>' CREDENTIALS = (...) of ALTER: the name and the credentials of an existing location.
+	// UPDATE STORAGE_LOCATION = '<name>' CREDENTIALS = (...) of ALTER: the name and the credentials of an existing location.
 	externalVolumeUpdateCredentials = ssot.Attribute{
 		Name:      "update_credentials",
 		Type:      ssot.AttrObject,
@@ -167,7 +167,7 @@ var (
 		SqlOnly:   true,
 		CreateSql: ssot.ObjectParameter(),
 		Children: []ssot.Attribute{
-			ssot.WithCreateSql(&ExternalVolumeStorageLocationAttrs.Name, ssot.StringParameter(ssot.Sql("STORAGE_LOCATION"), ssot.NoEquals(), ssot.Required())),
+			ssot.WithCreateSql(&ExternalVolumeStorageLocationAttrs.Name, ssot.StringParameter(ssot.Sql("STORAGE_LOCATION"), ssot.Required())),
 			externalVolumeUpdateCredentials,
 		},
 	}

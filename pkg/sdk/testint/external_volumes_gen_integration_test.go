@@ -735,6 +735,38 @@ func TestInt_ExternalVolumes(t *testing.T) {
 			))
 	})
 
+	t.Run("Alter - update s3compat storage location credentials", func(t *testing.T) {
+		id, cleanup := testClientHelper().ExternalVolume.CreateWithRequest(t, sdk.NewCreateExternalVolumeRequest(
+			testClientHelper().Ids.RandomAccountObjectIdentifier(),
+			s3CompatStorageLocationsBasic,
+		))
+		t.Cleanup(cleanup)
+
+		newAwsKeyId := "AKIAIOSFODNN7EXAMPLE"
+		req := sdk.NewAlterExternalVolumeRequest(id).WithUpdateStorageLocation(
+			*sdk.NewExternalVolumeUpdateStorageLocationRequest(
+				s3CompatStorageLocationsBasic[0].ExternalVolumeStorageLocation.Name,
+				*sdk.NewExternalVolumeUpdateCredentialsRequest(newAwsKeyId, awsSecretKey),
+			),
+		)
+
+		err := client.ExternalVolumes.Alter(ctx, req)
+		require.NoError(t, err)
+
+		assertThatObject(t, objectassert.ExternalVolumeDetails(t, id).
+			HasStorageLocationsWith(
+				objectassert.NewExternalVolumeStorageLocationDetailsAssert().
+					HasName(s3CompatStorageLocationsBasic[0].ExternalVolumeStorageLocation.Name).
+					HasStorageProvider(string(sdk.StorageProviderS3compat)).
+					HasStorageBaseUrl(s3CompatBaseUrl).
+					HasStorageAllowedLocations(defaultAllowedLocation(s3CompatBaseUrl)).
+					HasEncryptionType("NONE").
+					HasS3CompatStorageLocationWith(objectassert.NewStorageLocationS3CompatDetailsAssert().
+						HasEndpoint(s3CompatEndpoint).
+						HasAwsAccessKeyId(newAwsKeyId)),
+			))
+	})
+
 	t.Run("Show with like", func(t *testing.T) {
 		id, cleanup := testClientHelper().ExternalVolume.Create(t)
 		t.Cleanup(cleanup)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/provider"
@@ -147,6 +148,13 @@ func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData,
 		return err
 	}
 
+	credentialUpdates, oldLocations := s3CompatCredentialUpdates(oldLocations, newLocations)
+	for _, credentialUpdate := range credentialUpdates {
+		if err := client.ExternalVolumes.Alter(ctx, sdk.NewAlterExternalVolumeRequest(id).WithUpdateStorageLocation(credentialUpdate)); err != nil {
+			return err
+		}
+	}
+
 	// Storage locations can only be added to the tail of the list, but can be
 	// removed at any position. Given this limitation, to keep the configuration order
 	// matching that on Snowflake the list needs to be partially recreated. For example, if a location
@@ -191,6 +199,36 @@ func externalVolumeAlterSetInSdkExt(ctx context.Context, d *schema.ResourceData,
 		return removeThenAddWithPlaceholder(tempStorageLocation, removedLocations, addedLocations, removeLocation, addLocation)
 	}
 	return removeThenAdd(removedLocations, addedLocations, removeLocation, addLocation)
+}
+
+// s3CompatCredentialUpdates returns UPDATE requests for S3COMPAT storage locations that stay at the same position
+// and differ only in credentials. It also returns the old locations with those credentials applied.
+func s3CompatCredentialUpdates(oldLocations, newLocations []sdk.ExternalVolumeStorageLocationItem) ([]sdk.ExternalVolumeUpdateStorageLocationRequest, []sdk.ExternalVolumeStorageLocationItem) {
+	var requests []sdk.ExternalVolumeUpdateStorageLocationRequest
+	updatedOldLocations := slices.Clone(oldLocations)
+	for i := range min(len(oldLocations), len(newLocations)) {
+		oldLocation := oldLocations[i].ExternalVolumeStorageLocation
+		newLocation := newLocations[i].ExternalVolumeStorageLocation
+		if oldLocation.S3CompatStorageLocationParams == nil || newLocation.S3CompatStorageLocationParams == nil {
+			continue
+		}
+		newCredentials := newLocation.S3CompatStorageLocationParams.Credentials
+		if oldLocation.S3CompatStorageLocationParams.Credentials == newCredentials {
+			continue
+		}
+		oldParamsWithNewCredentials := *oldLocation.S3CompatStorageLocationParams
+		oldParamsWithNewCredentials.Credentials = newCredentials
+		oldLocation.S3CompatStorageLocationParams = &oldParamsWithNewCredentials
+		if !reflect.DeepEqual(oldLocation, newLocation) {
+			continue
+		}
+		requests = append(requests, *sdk.NewExternalVolumeUpdateStorageLocationRequest(
+			newLocation.Name,
+			*sdk.NewExternalVolumeUpdateCredentialsRequest(newCredentials.AwsKeyId, newCredentials.AwsSecretKey),
+		))
+		updatedOldLocations[i] = newLocations[i]
+	}
+	return requests, updatedOldLocations
 }
 
 // =============================================================================

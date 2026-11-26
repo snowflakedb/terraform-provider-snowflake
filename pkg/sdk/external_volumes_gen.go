@@ -106,7 +106,7 @@ type ExternalVolumeSet struct {
 }
 
 type ExternalVolumeUpdateStorageLocation struct {
-	StorageLocation string                          `ddl:"parameter,single_quotes,no_equals" sql:"STORAGE_LOCATION"`
+	StorageLocation string                          `ddl:"parameter,single_quotes" sql:"STORAGE_LOCATION"`
 	Credentials     ExternalVolumeUpdateCredentials `ddl:"list,parentheses,no_comma" sql:"CREDENTIALS ="`
 }
 

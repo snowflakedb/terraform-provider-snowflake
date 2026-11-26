@@ -38,6 +38,16 @@ The provider knew `METRIC_LEVEL` only on functions and procedures and `SERVICE_C
 
 No changes are required in your configuration.
 
+### *(improvement)* `snowflake_external_volume` rotates S3-compatible credentials in place
+
+Changing `storage_aws_key_id` or `storage_aws_secret_key` of an `S3COMPAT` storage location in [`snowflake_external_volume`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/external_volume) used to remove the storage location and add it again with the new credentials. Snowflake does not allow removing the active storage location while the volume is in use, so such an apply could fail.
+
+The provider now runs [`ALTER EXTERNAL VOLUME ... UPDATE STORAGE_LOCATION = '<name>' CREDENTIALS = (...)`](https://docs.snowflake.com/en/sql-reference/sql/alter-external-volume) when only the credentials of an `S3COMPAT` storage location change and the location keeps its name and position. Other storage location changes still remove and add locations as before.
+
+No configuration changes are required. If you rotate the credentials outside of Terraform, for example with `snowflake_execute`, you can manage them in `snowflake_external_volume` instead.
+
+Reference: [#5386](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5386).
+
 ### *(bug fix)* `snowflake_api_integration_git_repository_oauth2` accepts provider-specific OAuth scopes
 
 Previously, [`snowflake_api_integration_git_repository_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_oauth2) rejected `oauth_allowed_scopes` values other than `read_api`, `read_repository`, and `write_repository`. `terraform plan` failed with:
