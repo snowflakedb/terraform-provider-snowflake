@@ -3,6 +3,7 @@
 # Contributing
 
 - [Contributing](#contributing)
+  - [Our development model](#our-development-model)
   - [Setting up the development environment](#setting-up-the-development-environment)
   - [Repository structure](#repository-structure)
   - [Code Generation](#code-generation)
@@ -16,6 +17,8 @@
     - [Before submitting the PR](#before-submitting-the-pr)
     - [Naming and describing the PR](#naming-and-describing-the-pr)
     - [Requesting the review](#requesting-the-review)
+    - [Contributor License Agreement](#contributor-license-agreement)
+    - [How your PR gets merged](#how-your-pr-gets-merged)
     - [Adding Support for a new Snowflake Object](#adding-support-for-a-new-snowflake-object)
       - [1. Add the object to the SDK](#1-add-the-object-to-the-sdk)
       - [2. Add integration tests](#2-add-integration-tests)
@@ -24,6 +27,16 @@
       - [5. Register in provider](#5-register-in-provider)
   - [Advanced Debugging](#advanced-debugging)
   - [Extending the migration script](#extending-the-migration-script)
+
+## Our development model
+
+This repository (`snowflakedb/terraform-provider-snowflake`) is a mirror. Development happens in an internal Snowflake repository, and every merged change is synced here automatically — we do not merge changes directly in this repository.
+
+This does not change how you reach us:
+- **Issues and [discussions](https://github.com/snowflakedb/terraform-provider-snowflake/discussions)** remain the way to report bugs, request features, or ask questions.
+- **Pull requests** are still opened here, against the [dev](https://github.com/snowflakedb/terraform-provider-snowflake/tree/dev) branch, following the process described below.
+
+What's different is how a PR gets merged — see [How your PR gets merged](#how-your-pr-gets-merged).
 
 ## Setting up the development environment
 
@@ -239,6 +252,21 @@ During our review we try to point out the unhandled special cases, missing tests
 Please do not resolve our comments. We prefer to resolve ourselves after the comments are followed up by the contributor.
 
 **⚠️ Important ⚠️** Tests and checks are not run automatically after your PR. We run them manually, when we are happy with the state of the change (even if some corrections are still necessary).
+
+### Contributor License Agreement
+
+Every contributor has to sign the Snowflake Contributor License Agreement (CLA) once, before we can import a PR. The process is automated:
+1. After you open a PR, the CLA Assistant Lite bot comments with a link to the CLA Document, unless you have already signed it.
+2. Read the CLA Document and sign it by posting a comment on the PR with exactly this text: `I have read the CLA Document and I hereby sign the CLA`.
+3. The bot confirms with `All contributors have signed the CLA ✍️ ✅` and the `CLA` check turns green. Your signature is recorded, so you do not have to sign again in your next PRs.
+
+If the PR has several authors, each of them has to sign. If the check does not pick up your comment, re-run the `CLA` check.
+
+### How your PR gets merged
+
+Once your PR is approved, ready, and the CLA is signed, a maintainer imports it into our internal repository for final integration by commenting `/ok-to-import` on the PR. A bot then confirms the import. This may include additional adjustments and testing beyond what's visible on GitHub (for example, running our full internal test suite against live Snowflake accounts).
+
+The PR stays open in the meantime. After the change is merged internally, it is mirrored back to this repository automatically as regular commits — not as a merged pull request — and your PR is closed automatically once the change lands in the `main` branch. Attribution to you as the original author is preserved in the internal merge commit and carried through to the mirrored history.
 
 ### Adding Support for a new Snowflake Object
 

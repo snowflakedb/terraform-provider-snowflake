@@ -138,7 +138,7 @@ The provider talks to Snowflake through the [gosnowflake](https://github.com/sno
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for requirements, the PR workflow and others.
+This repository is a mirror of our internal development repository — merges happen internally and are synced here automatically. Issues, discussions, and pull requests are still the way to reach us. See [CONTRIBUTING.md](CONTRIBUTING.md) for requirements, the PR workflow and others.
 
 ## Releases
 
