@@ -28,6 +28,12 @@ func FirstLetterLowercase(in string) string {
 	return strings.ToLower(in[:1]) + in[1:]
 }
 
+// FirstLetterLowercaseParameterName lowercases the first letter like FirstLetterLowercase and appends the forbidden
+// attribute name suffix when the result is a Go keyword that cannot be a parameter name (e.g. Type -> type_).
+func FirstLetterLowercaseParameterName(in string) string {
+	return SanitizeAttributeName(FirstLetterLowercase(in))
+}
+
 func FirstLetterUppercase(in string) string {
 	return strings.ToUpper(in[:1]) + in[1:]
 }

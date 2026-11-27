@@ -76,6 +76,7 @@ func Test_ToObjectType(t *testing.T) {
 		{input: "PACKAGES POLICY", want: ObjectTypePackagesPolicy},
 		{input: "COMPUTE POOL", want: ObjectTypeComputePool},
 		{input: "AGGREGATION POLICY", want: ObjectTypeAggregationPolicy},
+		{input: "DATA MOVEMENT RULE", want: ObjectTypeDataMovementRule},
 		{input: "AUTHENTICATION POLICY", want: ObjectTypeAuthenticationPolicy},
 		{input: "HYBRID TABLE", want: ObjectTypeHybridTable},
 		{input: "IMAGE REPOSITORY", want: ObjectTypeImageRepository},

@@ -5,14 +5,14 @@
 func New{{ $name }}(
 {{- range .Fields }}
     {{- if (and .ShouldBeInDto .Required) }}
-        {{ FirstLetterLowercase .Name }} {{ .DtoKind }},
+        {{ FirstLetterLowercaseParameterName .Name }} {{ .DtoKind }},
     {{- end }}
 {{- end }}
 ) *{{ $name }} {
 s := {{ $name }}{}
 {{- range .Fields }}
     {{- if (and .ShouldBeInDto .Required) }}
-        s.{{ .Name }} = {{ FirstLetterLowercase .Name }}
+        s.{{ .Name }} = {{ FirstLetterLowercaseParameterName .Name }}
     {{- end }}
 {{- end }}
 return &s
@@ -20,8 +20,8 @@ return &s
 
 {{ range .Fields }}
     {{- if (and .ShouldBeInDto (not .Required)) }}
-func (s *{{ $name }}) With{{ .Name }}({{ FirstLetterLowercase .Name }}  {{ if .IsSlice }}[]{{ end }}{{ .DtoDecl }}) *{{ $name }} {
-    s.{{ .Name }} = {{ if .IsPointer }}&{{ end }}{{ FirstLetterLowercase .Name }}
+func (s *{{ $name }}) With{{ .Name }}({{ FirstLetterLowercaseParameterName .Name }}  {{ if .IsSlice }}[]{{ end }}{{ .DtoDecl }}) *{{ $name }} {
+    s.{{ .Name }} = {{ if .IsPointer }}&{{ end }}{{ FirstLetterLowercaseParameterName .Name }}
     return s
 }
     {{- end }}

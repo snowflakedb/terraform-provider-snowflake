@@ -25,6 +25,7 @@ func All() []ssot.Object {
 		AggregationPolicy,
 		ProjectionPolicy,
 		JoinPolicy,
+		DataMovementRule,
 		PostgresMirror,
 		Share,
 		ReplicationGroup,

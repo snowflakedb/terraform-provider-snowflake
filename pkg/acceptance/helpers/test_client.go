@@ -37,6 +37,7 @@ type TestClient struct {
 	Database                     *DatabaseClient
 	DatabaseRole                 *DatabaseRoleClient
 	DataMetricFunctionClient     *DataMetricFunctionClient
+	DataMovementRule             *DataMovementRuleClient
 	DataMetricFunctionReferences *DataMetricFunctionReferencesClient
 	DynamicTable                 *DynamicTableClient
 	EventTable                   *EventTableClient
@@ -153,6 +154,7 @@ func NewTestClient(
 		Database:                     NewDatabaseClient(context, idsGenerator),
 		DatabaseRole:                 NewDatabaseRoleClient(context, idsGenerator),
 		DataMetricFunctionClient:     NewDataMetricFunctionClient(context, idsGenerator),
+		DataMovementRule:             NewDataMovementRuleClient(context, idsGenerator),
 		DataMetricFunctionReferences: NewDataMetricFunctionReferencesClient(context),
 		DynamicTable:                 NewDynamicTableClient(context, idsGenerator),
 		EventTable:                   NewEventTableClient(context, idsGenerator),

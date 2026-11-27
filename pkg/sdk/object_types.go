@@ -81,6 +81,7 @@ const (
 	ObjectTypeComputePool            ObjectType = "COMPUTE POOL"
 	ObjectTypePostgresInstance       ObjectType = "POSTGRES INSTANCE"
 	ObjectTypeAggregationPolicy      ObjectType = "AGGREGATION POLICY"
+	ObjectTypeDataMovementRule       ObjectType = "DATA MOVEMENT RULE"
 	ObjectTypeAuthenticationPolicy   ObjectType = "AUTHENTICATION POLICY"
 	ObjectTypeHybridTable            ObjectType = "HYBRID TABLE"
 	ObjectTypeImageRepository        ObjectType = "IMAGE REPOSITORY"
@@ -207,6 +208,7 @@ var allObjectTypes = []ObjectType{
 	ObjectTypeComputePool,
 	ObjectTypePostgresInstance,
 	ObjectTypeAggregationPolicy,
+	ObjectTypeDataMovementRule,
 	ObjectTypeAuthenticationPolicy,
 	ObjectTypeHybridTable,
 	ObjectTypeImageRepository,
@@ -331,6 +333,7 @@ func objectTypeSingularToPluralMap() map[ObjectType]PluralObjectType {
 		ObjectTypeComputePool:                 PluralObjectTypeComputePool,
 		ObjectTypePostgresInstance:            PluralObjectTypePostgresInstances,
 		ObjectTypeAggregationPolicy:           PluralObjectTypeAggregationPolicies,
+		ObjectTypeDataMovementRule:            PluralObjectTypeDataMovementRules,
 		ObjectTypeAuthenticationPolicy:        PluralObjectTypeAuthenticationPolicies,
 		ObjectTypeHybridTable:                 PluralObjectTypeHybridTables,
 		ObjectTypeImageRepository:             PluralObjectTypeImageRepositories,
@@ -469,6 +472,7 @@ const (
 	PluralObjectTypeComputePool                  PluralObjectType = "COMPUTE POOLS"
 	PluralObjectTypePostgresInstances            PluralObjectType = "POSTGRES INSTANCES"
 	PluralObjectTypeAggregationPolicies          PluralObjectType = "AGGREGATION POLICIES"
+	PluralObjectTypeDataMovementRules            PluralObjectType = "DATA MOVEMENT RULES"
 	PluralObjectTypeAuthenticationPolicies       PluralObjectType = "AUTHENTICATION POLICIES"
 	PluralObjectTypeHybridTables                 PluralObjectType = "HYBRID TABLES"
 	PluralObjectTypeImageRepositories            PluralObjectType = "IMAGE REPOSITORIES"

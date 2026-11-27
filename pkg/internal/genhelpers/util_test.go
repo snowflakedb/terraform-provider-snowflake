@@ -157,3 +157,22 @@ func Test_SanitizeAttributeName(t *testing.T) {
 		})
 	}
 }
+
+func Test_FirstLetterLowercaseParameterName(t *testing.T) {
+	testCases := []struct {
+		input    string
+		expected string
+	}{
+		{input: "Type", expected: "type_"},
+		{input: "type", expected: "type_"},
+		{input: "Name", expected: "name"},
+		{input: "MaxRows", expected: "maxRows"},
+		{input: "TypeName", expected: "typeName"},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s=>%s", tc.input, tc.expected), func(t *testing.T) {
+			require.Equal(t, tc.expected, FirstLetterLowercaseParameterName(tc.input))
+		})
+	}
+}

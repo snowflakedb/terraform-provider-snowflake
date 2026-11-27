@@ -41,6 +41,7 @@ type Client struct {
 	Connections                  Connections
 	CortexAgents                 CortexAgents
 	CortexSearchServices         CortexSearchServices
+	DataMovementRules            DataMovementRules
 	DatabaseRoles                DatabaseRoles
 	Databases                    Databases
 	DataMetricFunctionReferences DataMetricFunctionReferences
@@ -197,6 +198,7 @@ func (c *Client) initialize() {
 	c.ContextFunctions = &contextFunctions{client: c}
 	c.CortexAgents = &cortexAgents{client: c}
 	c.CortexSearchServices = &cortexSearchServices{client: c}
+	c.DataMovementRules = &dataMovementRules{client: c}
 	c.DatabaseRoles = &databaseRoles{client: c}
 	c.Databases = &databases{client: c}
 	c.DataMetricFunctionReferences = &dataMetricFunctionReferences{client: c}

@@ -148,7 +148,7 @@ func init() {
 	subTemplates, _ = subTemplates.New("showObjectTypeMethodTemplate").Parse(showObjectTypeMethodTemplateContent)
 	subTemplates, _ = subTemplates.New("dtoDeclTemplate").Parse(dtoStructsTemplateContent)
 	subTemplates, _ = subTemplates.New("dtoBuilderTemplate").Funcs(genhelpers.BuildTemplateFuncMap(
-		genhelpers.FirstLetterLowercase,
+		genhelpers.FirstLetterLowercaseParameterName,
 	)).Parse(dtoBuilderTemplateContent)
 
 	OperationStructIterateTemplate, _ = subTemplates.New("optionsIterateTemplate").Parse(operationStructIterateTemplateContent)
