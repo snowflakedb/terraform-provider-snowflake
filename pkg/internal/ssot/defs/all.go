@@ -31,6 +31,7 @@ func All() []ssot.Object {
 		ReplicationGroupSecondary,
 		FailoverGroup,
 		FailoverGroupSecondary,
+		DatabaseRole,
 	}
 	for _, obj := range objs {
 		ssot.ValidateObject(obj)
