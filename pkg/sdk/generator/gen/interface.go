@@ -70,6 +70,8 @@ type Interface struct {
 	DescribeDetailsMethods []*DescribeDetailsConfig
 	// DescribeDetailsFromIdentifier, when set, generates DescribeDetails that copies identifier fields onto the DESCRIBE plain struct.
 	DescribeDetailsFromIdentifier *DescribeDetailsFromIdentifierConfig
+	// ShowByIDFromIdentifier, when set, makes the generated ShowByID copy identifier fields onto the SHOW row it found.
+	ShowByIDFromIdentifier *ShowByIDFromIdentifierConfig
 	// SuspendIfStartedConfig, when set (via SuspendIfStarted), drives generation of the SuspendIfStarted method body.
 	SuspendIfStartedConfig *SuspendIfStartedConfig
 	// DescribeParse, when set (via WithDescribeParse), drives generation of Parse<NameSingular>Described.

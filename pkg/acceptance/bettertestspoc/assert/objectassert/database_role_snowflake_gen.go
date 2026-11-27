@@ -75,28 +75,6 @@ func (d *DatabaseRoleAssert) HasNameNotEmpty() *DatabaseRoleAssert {
 	return d
 }
 
-func (d *DatabaseRoleAssert) HasDatabaseName(expected string) *DatabaseRoleAssert {
-	d.AddAssertion(func(t *testing.T, o *sdk.DatabaseRole) error {
-		t.Helper()
-		if o.DatabaseName != expected {
-			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
-		}
-		return nil
-	})
-	return d
-}
-
-func (d *DatabaseRoleAssert) HasDatabaseNameNotEmpty() *DatabaseRoleAssert {
-	d.AddAssertion(func(t *testing.T, o *sdk.DatabaseRole) error {
-		t.Helper()
-		if o.DatabaseName == "" {
-			return fmt.Errorf("expected database name to be non-empty")
-		}
-		return nil
-	})
-	return d
-}
-
 func (d *DatabaseRoleAssert) HasIsDefault(expected bool) *DatabaseRoleAssert {
 	d.AddAssertion(func(t *testing.T, o *sdk.DatabaseRole) error {
 		t.Helper()
@@ -223,6 +201,28 @@ func (d *DatabaseRoleAssert) HasOwnerRoleTypeNotEmpty() *DatabaseRoleAssert {
 		t.Helper()
 		if o.OwnerRoleType == "" {
 			return fmt.Errorf("expected owner role type to be non-empty")
+		}
+		return nil
+	})
+	return d
+}
+
+func (d *DatabaseRoleAssert) HasDatabaseName(expected string) *DatabaseRoleAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.DatabaseRole) error {
+		t.Helper()
+		if o.DatabaseName != expected {
+			return fmt.Errorf("expected database name: %v; got: %v", expected, o.DatabaseName)
+		}
+		return nil
+	})
+	return d
+}
+
+func (d *DatabaseRoleAssert) HasDatabaseNameNotEmpty() *DatabaseRoleAssert {
+	d.AddAssertion(func(t *testing.T, o *sdk.DatabaseRole) error {
+		t.Helper()
+		if o.DatabaseName == "" {
+			return fmt.Errorf("expected database name to be non-empty")
 		}
 		return nil
 	})

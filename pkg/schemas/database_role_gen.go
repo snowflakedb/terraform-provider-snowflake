@@ -17,10 +17,6 @@ var ShowDatabaseRoleSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
-	"database_name": {
-		Type:     schema.TypeString,
-		Computed: true,
-	},
 	"is_default": {
 		Type:     schema.TypeBool,
 		Computed: true,
@@ -57,6 +53,10 @@ var ShowDatabaseRoleSchema = map[string]*schema.Schema{
 		Type:     schema.TypeString,
 		Computed: true,
 	},
+	"database_name": {
+		Type:     schema.TypeString,
+		Computed: true,
+	},
 }
 
 var _ = ShowDatabaseRoleSchema
@@ -65,7 +65,6 @@ func DatabaseRoleToSchema(databaseRole *sdk.DatabaseRole) map[string]any {
 	databaseRoleSchema := make(map[string]any)
 	databaseRoleSchema["created_on"] = databaseRole.CreatedOn
 	databaseRoleSchema["name"] = databaseRole.Name
-	databaseRoleSchema["database_name"] = databaseRole.DatabaseName
 	databaseRoleSchema["is_default"] = databaseRole.IsDefault
 	databaseRoleSchema["is_current"] = databaseRole.IsCurrent
 	databaseRoleSchema["is_inherited"] = databaseRole.IsInherited
@@ -75,6 +74,7 @@ func DatabaseRoleToSchema(databaseRole *sdk.DatabaseRole) map[string]any {
 	databaseRoleSchema["owner"] = databaseRole.Owner
 	databaseRoleSchema["comment"] = databaseRole.Comment
 	databaseRoleSchema["owner_role_type"] = databaseRole.OwnerRoleType
+	databaseRoleSchema["database_name"] = databaseRole.DatabaseName
 	return databaseRoleSchema
 }
 

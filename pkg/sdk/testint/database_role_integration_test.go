@@ -171,7 +171,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		role1.DatabaseName = ""
 		role2.DatabaseName = ""
 
-		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId())
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithIn(sdk.ExtendedInWithoutSchema{Database: testClientHelper().Ids.DatabaseId()})
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 		require.NoError(t, err)
 
@@ -188,7 +188,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		role1.DatabaseName = ""
 		role2.DatabaseName = ""
 
-		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).WithLike(sdk.Like{Pattern: &role1.Name})
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithIn(sdk.ExtendedInWithoutSchema{Database: testClientHelper().Ids.DatabaseId()}).WithLike(sdk.Like{Pattern: &role1.Name})
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 
 		require.NoError(t, err)
@@ -212,7 +212,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 		role1.DatabaseName = ""
 		role2.DatabaseName = ""
 
-		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithIn(sdk.ExtendedInWithoutSchema{Database: testClientHelper().Ids.DatabaseId()}).
 			WithLike(sdk.Like{
 				Pattern: sdk.Pointer(prefix + "%"),
 			}).
@@ -229,7 +229,7 @@ func TestInt_DatabaseRoles(t *testing.T) {
 	})
 
 	t.Run("show database_role: no matches", func(t *testing.T) {
-		showRequest := sdk.NewShowDatabaseRoleRequest().WithDatabase(testClientHelper().Ids.DatabaseId()).WithLike(sdk.Like{Pattern: sdk.Pointer("non-existent")})
+		showRequest := sdk.NewShowDatabaseRoleRequest().WithIn(sdk.ExtendedInWithoutSchema{Database: testClientHelper().Ids.DatabaseId()}).WithLike(sdk.Like{Pattern: sdk.Pointer("non-existent")})
 		returnedDatabaseRoles, err := client.DatabaseRoles.Show(ctx, showRequest)
 
 		require.NoError(t, err)

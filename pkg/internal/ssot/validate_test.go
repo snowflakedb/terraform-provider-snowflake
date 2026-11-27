@@ -1047,6 +1047,117 @@ func Test_ValidateObject_showPlainOnly(t *testing.T) {
 	})
 }
 
+func Test_ValidateObject_showByIDFromIdentifier(t *testing.T) {
+	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
+	databaseName := Attribute{Name: "database_name", Type: AttrString, Readonly: true}
+	schemaName := Attribute{Name: "schema_name", Type: AttrString, Readonly: true}
+	comment := Attribute{Name: "comment", Type: AttrString, Readonly: true}
+	obj := func(idType string, generators ...GeneratorOption) Object {
+		return Object{
+			Name:       "Widget",
+			NamePlural: "Widgets",
+			IdType:     idType,
+			Show:       OutputSpec{Columns: []*Attribute{&name, &databaseName, &schemaName, &comment}},
+			Generators: generators,
+		}
+	}
+	require.NotPanics(t, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkShow(
+			SdkShowOptionalIn(),
+			SdkShowByIDFiltering(SdkShowByIDIn, SdkShowByIDLike),
+			SdkShowPlainOnly(&databaseName, "string"),
+			SdkShowByIDFromIdentifier(),
+		))))
+	})
+	schema := obj("SchemaObjectIdentifier", WithSdk(SdkShow(
+		SdkShowOptionalExtendedIn(),
+		SdkShowByIDFiltering(SdkShowByIDExtendedIn),
+		SdkShowByIDPredicate(SdkShowByIDPredicateName),
+		SdkShowPlainOnly(&schemaName, "string"),
+		SdkShowPlainOnly(&databaseName, "string"),
+		SdkShowByIDFromIdentifier(),
+	)))
+	require.NotPanics(t, func() { ValidateObject(schema) })
+	require.Equal(t, []string{"DatabaseName", "SchemaName"}, schema.ShowByIDFromIdentifierAssignments())
+
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier needs SdkShow`, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(func(s *SdkGenerator) { s.ShowByIDFromIdentifier = true })))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier needs IdType SchemaObjectIdentifier or DatabaseObjectIdentifier`, func() {
+		ValidateObject(obj("AccountObjectIdentifier", WithSdk(SdkShow(
+			SdkShowPlainOnly(&databaseName, "string"),
+			SdkShowByIDFromIdentifier(),
+		))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier needs a plain-only DatabaseName`, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkShow(SdkShowByIDFromIdentifier()))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier plain-only field "SchemaName" must be DatabaseName`, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkShow(
+			SdkShowPlainOnly(&schemaName, "string"),
+			SdkShowByIDFromIdentifier(),
+		))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier plain-only field "Comment" must be DatabaseName or SchemaName`, func() {
+		ValidateObject(obj("SchemaObjectIdentifier", WithSdk(SdkShow(
+			SdkShowPlainOnly(&comment, "string"),
+			SdkShowByIDFromIdentifier(),
+		))))
+	})
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier plain-only field "DatabaseName" must be a string`, func() {
+		ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkShow(
+			SdkShowPlainOnly(&databaseName, "AccountObjectIdentifier"),
+			SdkShowByIDFromIdentifier(),
+		))))
+	})
+	withCustomShowByID := obj("DatabaseObjectIdentifier", WithSdk(SdkShow(
+		SdkShowPlainOnly(&databaseName, "string"),
+		SdkShowByIDFromIdentifier(),
+	)))
+	withCustomShowByID.CustomInterfaceMethods = []CustomInterfaceMethodSpec{{Name: "ShowByID"}}
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier conflicts with custom interface method ShowByID`, func() {
+		ValidateObject(withCustomShowByID)
+	})
+	withCustomShowByID.CustomInterfaceMethods = []CustomInterfaceMethodSpec{{Name: "ShowByIDSafely"}}
+	require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier conflicts with custom interface method ShowByIDSafely`, func() {
+		ValidateObject(withCustomShowByID)
+	})
+
+	schemaOnly := obj("SchemaObjectIdentifier", WithSdk(SdkShow(
+		SdkShowOptionalIn(),
+		SdkShowByIDFiltering(SdkShowByIDIn),
+		SdkShowPlainOnly(&schemaName, "string"),
+		SdkShowByIDFromIdentifier(),
+	)))
+	require.NotPanics(t, func() { ValidateObject(schemaOnly) })
+	require.Equal(t, []string{"SchemaName"}, schemaOnly.ShowByIDFromIdentifierAssignments())
+
+	for _, predicate := range []SdkShowByIDPredicateKind{SdkShowByIDPredicateFullID, SdkShowByIDPredicateAccountName, SdkShowByIDPredicateNameAndLocator} {
+		require.PanicsWithValue(t, fmt.Sprintf(`object "Widget": SdkShowByIDFromIdentifier needs the name ShowByID predicate, got %q`, predicate), func() {
+			ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkShow(
+				SdkShowOptionalIn(),
+				SdkShowByIDFiltering(SdkShowByIDIn),
+				SdkShowByIDPredicate(predicate),
+				SdkShowPlainOnly(&databaseName, "string"),
+				SdkShowByIDFromIdentifier(),
+			))))
+		})
+	}
+	for name, filtering := range map[string][]SdkShowByIDFilteringKind{
+		"default LIKE": nil,
+		"LIKE only":    {SdkShowByIDLike},
+		"no filtering": {SdkShowByIDNone},
+	} {
+		require.PanicsWithValue(t, `object "Widget": SdkShowByIDFromIdentifier needs an IN ShowByID filter`, func() {
+			ValidateObject(obj("DatabaseObjectIdentifier", WithSdk(SdkShow(
+				SdkShowByIDFiltering(filtering...),
+				SdkShowPlainOnly(&databaseName, "string"),
+				SdkShowByIDFromIdentifier(),
+			))))
+		}, name)
+	}
+}
+
 func Test_ValidateObject_describePlainOnlyField(t *testing.T) {
 	name := Attribute{Name: "name", Type: AttrString, Readonly: true}
 	obj := func(generators ...GeneratorOption) Object {

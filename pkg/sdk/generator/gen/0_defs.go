@@ -152,19 +152,25 @@ func preprocessDefinition(definition *Interface, logger *log.Logger) {
 }
 
 // omitAdditionalConvertForIdentifierCopies drops the additionalConvert hook when DescribeDetails copies every
-// plain-only DESCRIBE field from the identifier. A plain-only field outside that list keeps the hook.
+// plain-only DESCRIBE field from the identifier, or ShowByID copies every plain-only SHOW field.
+// A plain-only field outside that list keeps the hook.
 // A column marked manual still calls additionalConvert through its field pair.
 func omitAdditionalConvertForIdentifierCopies(definition *Interface) {
-	cfg := definition.DescribeDetailsFromIdentifier
-	if cfg == nil {
-		return
+	if cfg := definition.DescribeDetailsFromIdentifier; cfg != nil {
+		omitAdditionalConvertWhenCovered(definition, cfg.Fields, func(op *Operation) *Mapping { return op.DescribeMapping })
 	}
-	covered := make(map[string]struct{}, len(cfg.Fields))
-	for _, name := range cfg.Fields {
+	if cfg := definition.ShowByIDFromIdentifier; cfg != nil {
+		omitAdditionalConvertWhenCovered(definition, cfg.Fields, func(op *Operation) *Mapping { return op.ShowMapping })
+	}
+}
+
+func omitAdditionalConvertWhenCovered(definition *Interface, fields []string, mappingOf func(op *Operation) *Mapping) {
+	covered := make(map[string]struct{}, len(fields))
+	for _, name := range fields {
 		covered[name] = struct{}{}
 	}
 	for _, op := range definition.Operations {
-		mapping := op.DescribeMapping
+		mapping := mappingOf(op)
 		if mapping == nil || len(mapping.PlainOnlyFields) == 0 {
 			continue
 		}

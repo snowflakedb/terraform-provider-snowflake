@@ -80,9 +80,6 @@ func (opts *ShowDatabaseRoleOptions) validate() error {
 		return ErrNilOptions
 	}
 	var errs []error
-	if !ValidObjectIdentifier(opts.Database) {
-		errs = append(errs, errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"))
-	}
 	errs = append(errs, opts.additionalValidations())
 	return JoinErrors(errs...)
 }

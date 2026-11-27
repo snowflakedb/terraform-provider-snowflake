@@ -92,6 +92,7 @@ func ValidateObject(obj Object) {
 	validateDescribePlainOnlyFields(obj)
 	validateDescribeDetailsFromIdentifier(obj)
 	validateShowPlainOnlyFields(obj)
+	validateShowByIDFromIdentifier(obj)
 	g := ObjectGenerators(obj.Generators...)
 	validateGeneratorSkips(obj, "object-assertion", "SHOW", g.ObjectAssert.Show, obj.PairedShowColumns(), g.ObjectAssert.ShowSkipFields)
 	validateGeneratorSkips(obj, "object-assertion", "DESCRIBE", g.ObjectAssert.Describe, obj.Describe.Columns, g.ObjectAssert.DescribeSkipFields)
@@ -1375,22 +1376,86 @@ func validateDescribeDetailsFromIdentifier(obj Object) {
 // DescribeDetailsFromIdentifierAssignments are the plain-only fields DescribeDetails copies from the identifier,
 // in assignment order. SchemaObjectIdentifier allows DatabaseName and SchemaName. DatabaseObjectIdentifier allows DatabaseName.
 func (obj Object) DescribeDetailsFromIdentifierAssignments() []string {
-	allowed := describeDetailsIdentifierFields(obj.IdType)
+	fields := ObjectGenerators(obj.Generators...).Sdk.DescribePlainOnlyFields
+	copied := make([]identifierCopyField, len(fields))
+	for i, field := range fields {
+		copied[i] = identifierCopyField{Name: field.Name, Kind: field.Kind}
+	}
+	return identifierCopyAssignments(obj, "SdkDescribeDetailsFromIdentifier", copied)
+}
+
+// validateShowByIDFromIdentifier rejects a ShowByID that copies identifier fields when the generated ShowByID could
+// stamp them onto the wrong row or never find one, or when the plain-only SHOW columns are not identifier parts.
+// The SHOW must be scoped to the identifier's container by an IN filter, and the row must be matched by name only,
+// because the copied fields are still empty when FindFirst runs. SchemaObjectIdentifier allows DatabaseName and
+// SchemaName. DatabaseObjectIdentifier allows DatabaseName.
+func validateShowByIDFromIdentifier(obj Object) {
+	sdk := ObjectGenerators(obj.Generators...).Sdk
+	if !sdk.ShowByIDFromIdentifier {
+		return
+	}
+	if !sdk.Show {
+		panic(fmt.Sprintf("object %q: SdkShowByIDFromIdentifier needs SdkShow", obj.Name))
+	}
+	for _, spec := range obj.CustomInterfaceMethods {
+		if spec.Name == "ShowByID" || spec.Name == "ShowByIDSafely" {
+			panic(fmt.Sprintf("object %q: SdkShowByIDFromIdentifier conflicts with custom interface method %s", obj.Name, spec.Name))
+		}
+	}
+	// The assignments are recomputed by the SDK generator; this call only runs their validation.
+	_ = obj.ShowByIDFromIdentifierAssignments()
+	if sdk.ShowByIDPredicate != "" && sdk.ShowByIDPredicate != SdkShowByIDPredicateName {
+		panic(fmt.Sprintf("object %q: SdkShowByIDFromIdentifier needs the name ShowByID predicate, got %q", obj.Name, sdk.ShowByIDPredicate))
+	}
+	if !slices.ContainsFunc(sdk.ShowByIDFiltering, isShowByIDInFiltering) {
+		panic(fmt.Sprintf("object %q: SdkShowByIDFromIdentifier needs an IN ShowByID filter", obj.Name))
+	}
+}
+
+func isShowByIDInFiltering(kind SdkShowByIDFilteringKind) bool {
+	switch kind {
+	case SdkShowByIDIn, SdkShowByIDExtendedIn, SdkShowByIDExtendedInWithoutSchema:
+		return true
+	default:
+		return false
+	}
+}
+
+// ShowByIDFromIdentifierAssignments are the plain-only SHOW fields ShowByID copies from the identifier, in assignment
+// order. SchemaObjectIdentifier allows DatabaseName and SchemaName. DatabaseObjectIdentifier allows DatabaseName.
+func (obj Object) ShowByIDFromIdentifierAssignments() []string {
+	fields := ObjectGenerators(obj.Generators...).Sdk.ShowPlainOnlyFields
+	copied := make([]identifierCopyField, len(fields))
+	for i, field := range fields {
+		copied[i] = identifierCopyField{Name: ColumnFieldName(*field.Column), Kind: field.Kind}
+	}
+	return identifierCopyAssignments(obj, "SdkShowByIDFromIdentifier", copied)
+}
+
+// identifierCopyField is a plain-only field that an option copies from the identifier.
+type identifierCopyField struct {
+	Name string
+	Kind string
+}
+
+// identifierCopyAssignments validates the plain-only fields option copies from the identifier and returns their names
+// in assignment order. Each field must be a string identifier part, and at least one must be present.
+func identifierCopyAssignments(obj Object, option string, fields []identifierCopyField) []string {
+	allowed := identifierCopyFields(obj.IdType)
 	if allowed == nil {
-		panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier needs IdType SchemaObjectIdentifier or DatabaseObjectIdentifier", obj.Name))
+		panic(fmt.Sprintf("object %q: %s needs IdType SchemaObjectIdentifier or DatabaseObjectIdentifier", obj.Name, option))
 	}
 	label := identifierFieldLabel(allowed)
-	fields := ObjectGenerators(obj.Generators...).Sdk.DescribePlainOnlyFields
 	if len(fields) == 0 {
-		panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier needs a plain-only %s", obj.Name, label))
+		panic(fmt.Sprintf("object %q: %s needs a plain-only %s", obj.Name, option, label))
 	}
 	present := make(map[string]struct{}, len(fields))
 	for _, field := range fields {
 		if !slices.Contains(allowed, field.Name) {
-			panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier plain-only field %q must be %s", obj.Name, field.Name, label))
+			panic(fmt.Sprintf("object %q: %s plain-only field %q must be %s", obj.Name, option, field.Name, label))
 		}
 		if field.Kind != "string" {
-			panic(fmt.Sprintf("object %q: SdkDescribeDetailsFromIdentifier plain-only field %q must be a string", obj.Name, field.Name))
+			panic(fmt.Sprintf("object %q: %s plain-only field %q must be a string", obj.Name, option, field.Name))
 		}
 		present[field.Name] = struct{}{}
 	}
@@ -1403,9 +1468,9 @@ func (obj Object) DescribeDetailsFromIdentifierAssignments() []string {
 	return assigned
 }
 
-// describeDetailsIdentifierFields are the plain-only fields DescribeDetails can copy from idType.
-// Nil means this option does not support that identifier.
-func describeDetailsIdentifierFields(idType string) []string {
+// identifierCopyFields are the plain-only fields an identifier-copy option can copy from idType.
+// Nil means the options do not support that identifier.
+func identifierCopyFields(idType string) []string {
 	switch idType {
 	case "SchemaObjectIdentifier":
 		return []string{"DatabaseName", "SchemaName"}

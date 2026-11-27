@@ -13,12 +13,12 @@ type DatabaseRoles interface {
 	Drop(ctx context.Context, request *DropDatabaseRoleRequest) error
 	DropSafely(ctx context.Context, id DatabaseObjectIdentifier) error
 	Show(ctx context.Context, request *ShowDatabaseRoleRequest) ([]DatabaseRole, error)
+	ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error)
+	ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error)
 	Grant(ctx context.Context, request *GrantDatabaseRoleRequest) error
 	Revoke(ctx context.Context, request *RevokeDatabaseRoleRequest) error
 	GrantToShare(ctx context.Context, request *GrantToShareDatabaseRoleRequest) error
 	RevokeFromShare(ctx context.Context, request *RevokeFromShareDatabaseRoleRequest) error
-	ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error)
-	ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error)
 	RevokeSafely(ctx context.Context, request *RevokeDatabaseRoleRequest) error
 	RevokeFromShareSafely(ctx context.Context, request *RevokeFromShareDatabaseRoleRequest) error
 }
@@ -64,15 +64,14 @@ type DropDatabaseRoleOptions struct {
 
 // ShowDatabaseRoleOptions is based on https://docs.snowflake.com/en/sql-reference/sql/show-database-roles.
 type ShowDatabaseRoleOptions struct {
-	show          bool                    `ddl:"static" sql:"SHOW"`
-	databaseRoles bool                    `ddl:"static" sql:"DATABASE ROLES"`
-	Like          *Like                   `ddl:"keyword" sql:"LIKE"`
-	inDatabase    bool                    `ddl:"static" sql:"IN DATABASE"`
-	Database      AccountObjectIdentifier `ddl:"identifier"`
-	Limit         *LimitFrom              `ddl:"keyword" sql:"LIMIT"`
+	show          bool                     `ddl:"static" sql:"SHOW"`
+	databaseRoles bool                     `ddl:"static" sql:"DATABASE ROLES"`
+	Like          *Like                    `ddl:"keyword" sql:"LIKE"`
+	In            *ExtendedInWithoutSchema `ddl:"keyword" sql:"IN"`
+	Limit         *LimitFrom               `ddl:"keyword" sql:"LIMIT"`
 }
 
-type databaseRoleDBRow struct {
+type databaseRolesRow struct {
 	CreatedOn              string         `db:"created_on"`
 	Name                   string         `db:"name"`
 	IsDefault              sql.NullString `db:"is_default"`
@@ -89,7 +88,6 @@ type databaseRoleDBRow struct {
 type DatabaseRole struct {
 	CreatedOn              string
 	Name                   string
-	DatabaseName           string
 	IsDefault              bool
 	IsCurrent              bool
 	IsInherited            bool
@@ -99,6 +97,7 @@ type DatabaseRole struct {
 	Owner                  string
 	Comment                string
 	OwnerRoleType          string
+	DatabaseName           string
 }
 
 func (v *DatabaseRole) ID() DatabaseObjectIdentifier {

@@ -22,6 +22,7 @@ var variantsOf = ssotdefs.VariantsOf
 // Show, Terse, SQL, OptionalSQL, Like, plain IN or ExtendedIn, On, StartsWith, LimitFrom, Limit.
 // An empty ShowByID filtering list emits LIKE. SdkShowByIDNone emits no filter.
 // ShowByIDPredicate selects the FindFirst match. Empty keeps the interface default.
+// SdkShowByIDFromIdentifier makes the generated ShowByID copy plain-only identifier fields from the id.
 func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 	cfg := obj.SdkConfig()
 	if !cfg.Show {
@@ -35,6 +36,9 @@ func (i *Interface) ShowOperationFromObject(obj ssot.Object) *Interface {
 	)
 	if cfg.ShowByIDPredicate != "" {
 		i.WithShowByIDFindPredicateKind(showByIDPredicateFromObject(obj, cfg.ShowByIDPredicate))
+	}
+	if cfg.ShowByIDFromIdentifier {
+		i = i.WithShowByIDFromIdentifier(obj.ShowByIDFromIdentifierAssignments())
 	}
 	return i
 }

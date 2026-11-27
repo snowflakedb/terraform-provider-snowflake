@@ -3,28 +3,7 @@ package sdk
 import (
 	"context"
 	"errors"
-
-	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
-
-func (v *databaseRoles) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error) {
-	request := NewShowDatabaseRoleRequest().WithDatabase(id.DatabaseId()).WithLike(Like{Pointer(id.Name())})
-	databaseRoles, err := v.Show(ctx, request)
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := collections.FindFirst(databaseRoles, func(r DatabaseRole) bool { return r.Name == id.Name() })
-	if err != nil {
-		return nil, err
-	}
-	result.DatabaseName = id.DatabaseName()
-	return result, nil
-}
-
-func (v *databaseRoles) ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error) {
-	return SafeShowById(v.client, v.ShowByID, ctx, id)
-}
 
 func (v *databaseRoles) RevokeSafely(ctx context.Context, request *RevokeDatabaseRoleRequest) error {
 	return SafeRevokePrivileges(func() error { return v.Revoke(ctx, request) })
@@ -63,15 +42,15 @@ func (opts *AlterDatabaseRoleOptions) additionalValidations() error {
 	return nil
 }
 
+// additionalValidations requires IN DATABASE, the only scope SHOW DATABASE ROLES accepts. The generated IN is optional and
+// can also name an account, an application, or an application package.
 func (opts *ShowDatabaseRoleOptions) additionalValidations() error {
-	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
-		return errors.Join(ErrPatternRequiredForLikeKeyword)
+	var errs []error
+	if opts.In == nil || !ValidObjectIdentifier(opts.In.Database) || valueSet(opts.In.Account) || valueSet(opts.In.Application) || valueSet(opts.In.ApplicationPackage) {
+		errs = append(errs, errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"))
 	}
-	return nil
-}
-
-func (r databaseRoleDBRow) additionalConvert(_ *DatabaseRole) error {
-	// additionalConvert is generated as DatabaseName is a plain only field.
-	// it can't be currently set here, as it is not a returned value, and we can get it only from ID(), which is not passed to convert method
-	return nil
+	if valueSet(opts.Like) && !valueSet(opts.Like.Pattern) {
+		errs = append(errs, ErrPatternRequiredForLikeKeyword)
+	}
+	return errors.Join(errs...)
 }

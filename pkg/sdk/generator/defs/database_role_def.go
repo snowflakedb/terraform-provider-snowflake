@@ -1,6 +1,7 @@
 package defs
 
 import (
+	ssotdefs "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot/defs"
 	g "github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk/generator/gen/sdkcommons"
 )
@@ -61,34 +62,8 @@ var databaseRolesDef = g.NewInterface(
 		IfExists().
 		Name().
 		WithValidation(g.ValidIdentifier, "name"),
-).ShowOperationWithPairedStructs(
-	"https://docs.snowflake.com/en/sql-reference/sql/show-database-roles",
-	g.StructPair("databaseRoleDBRow", "DatabaseRole").
-		Text("created_on").
-		Text("name").
-		PlainOnlyField("DatabaseName", "string"). // not returned by SHOW; populated manually in Show override (see _ext.go)
-		OptionalBoolFromText("is_default", g.WithRequiredInPlain()).
-		OptionalBoolFromText("is_current", g.WithRequiredInPlain()).
-		OptionalBoolFromText("is_inherited", g.WithRequiredInPlain()).
-		Number("granted_to_roles").
-		Number("granted_to_database_roles").
-		Number("granted_database_roles").
-		Text("owner").
-		OptionalText("comment", g.WithRequiredInPlain()).
-		OptionalText("owner_role_type", g.WithRequiredInPlain()),
-	// TODO: The generated Show implementation does not populate DatabaseName (it comes from the request, not the DB row).
-	// A custom Show override in _ext.go is needed to populate it after convertRows. Once the generator supports
-	// a post-convert hook for Show, this can be moved back to generated code.
-	g.NewQueryStruct("ShowDatabaseRoles").
-		Show().
-		SQL("DATABASE ROLES").
-		OptionalLike().
-		SQL("IN DATABASE").
-		Identifier("Database", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions()).
-		OptionalLimitFrom().
-		WithValidation(g.ValidIdentifier, "Database").
-		WithValidation(g.AdditionalValidations),
-	g.ShowByIDSuppressed,
+).ShowOperationFromObject(
+	ssotdefs.DatabaseRole,
 ).CustomOperation(
 	"Grant",
 	"https://docs.snowflake.com/en/sql-reference/sql/grant-database-role",
@@ -129,14 +104,6 @@ var databaseRolesDef = g.NewInterface(
 		Identifier("Share", g.KindOfT[sdkcommons.AccountObjectIdentifier](), g.IdentifierOptions().Required()).
 		WithValidation(g.ValidIdentifier, "name").
 		WithValidation(g.ValidIdentifier, "Share"),
-).WithCustomInterfaceMethod(
-	"ShowByID", "",
-	[]*g.MethodParameter{g.NewMethodParameter("id", "DatabaseObjectIdentifier")},
-	"*DatabaseRole", "error",
-).WithCustomInterfaceMethod(
-	"ShowByIDSafely", "",
-	[]*g.MethodParameter{g.NewMethodParameter("id", "DatabaseObjectIdentifier")},
-	"*DatabaseRole", "error",
 ).WithCustomInterfaceMethod(
 	"RevokeSafely", "",
 	[]*g.MethodParameter{g.NewMethodParameter("request", "*RevokeDatabaseRoleRequest")},

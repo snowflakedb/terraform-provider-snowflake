@@ -4,11 +4,13 @@ package sdk
 
 import (
 	"context"
+
+	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/collections"
 )
 
 var (
 	_ DatabaseRoles                = (*databaseRoles)(nil)
-	_ convertibleRow[DatabaseRole] = new(databaseRoleDBRow)
+	_ convertibleRow[DatabaseRole] = new(databaseRolesRow)
 )
 
 type databaseRoles struct {
@@ -36,11 +38,31 @@ func (v *databaseRoles) DropSafely(ctx context.Context, id DatabaseObjectIdentif
 
 func (v *databaseRoles) Show(ctx context.Context, request *ShowDatabaseRoleRequest) ([]DatabaseRole, error) {
 	opts := request.toOpts()
-	dbRows, err := validateAndQuery[databaseRoleDBRow](v.client, ctx, opts)
+	dbRows, err := validateAndQuery[databaseRolesRow](v.client, ctx, opts)
 	if err != nil {
 		return nil, err
 	}
-	return convertRows[databaseRoleDBRow, DatabaseRole](dbRows)
+	return convertRows[databaseRolesRow, DatabaseRole](dbRows)
+}
+
+func (v *databaseRoles) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error) {
+	request := NewShowDatabaseRoleRequest().
+		WithLike(Like{Pattern: String(id.Name())}).
+		WithIn(ExtendedInWithoutSchema{Database: id.DatabaseId()})
+	databaseRoles, err := v.Show(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	result, err := collections.FindFirst(databaseRoles, func(r DatabaseRole) bool { return r.Name == id.Name() })
+	if err != nil {
+		return nil, err
+	}
+	result.DatabaseName = id.DatabaseName()
+	return result, nil
+}
+
+func (v *databaseRoles) ShowByIDSafely(ctx context.Context, id DatabaseObjectIdentifier) (*DatabaseRole, error) {
+	return SafeShowById(v.client, v.ShowByID, ctx, id)
 }
 
 func (v *databaseRoles) Grant(ctx context.Context, request *GrantDatabaseRoleRequest) error {
@@ -104,14 +126,14 @@ func (r *DropDatabaseRoleRequest) toOpts() *DropDatabaseRoleOptions {
 
 func (r *ShowDatabaseRoleRequest) toOpts() *ShowDatabaseRoleOptions {
 	opts := &ShowDatabaseRoleOptions{
-		Like:     r.Like,
-		Database: r.Database,
-		Limit:    r.Limit,
+		Like:  r.Like,
+		In:    r.In,
+		Limit: r.Limit,
 	}
 	return opts
 }
 
-func (r databaseRoleDBRow) convert() (*DatabaseRole, error) {
+func (r databaseRolesRow) convert() (*DatabaseRole, error) {
 	result := &DatabaseRole{
 		CreatedOn:              r.CreatedOn,
 		Name:                   r.Name,
@@ -125,9 +147,6 @@ func (r databaseRoleDBRow) convert() (*DatabaseRole, error) {
 	mapNullStringToRequiredBool(&result.IsInherited, r.IsInherited)
 	mapNullStringToNonNullableField(&result.Comment, r.Comment)
 	mapNullStringToNonNullableField(&result.OwnerRoleType, r.OwnerRoleType)
-	if err := r.additionalConvert(result); err != nil {
-		return nil, err
-	}
 	return result, nil
 }
 

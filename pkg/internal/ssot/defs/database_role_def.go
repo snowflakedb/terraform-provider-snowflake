@@ -11,6 +11,7 @@ var DatabaseRoleAttrs = struct {
 	Comment                ssot.Attribute
 	CreatedOn              ssot.Attribute
 	Name                   ssot.Attribute
+	DatabaseName           ssot.Attribute
 	IsDefault              ssot.Attribute
 	IsCurrent              ssot.Attribute
 	IsInherited            ssot.Attribute
@@ -28,6 +29,7 @@ var DatabaseRoleAttrs = struct {
 	},
 	CreatedOn:              ssot.Attribute{Name: "created_on", Type: ssot.AttrString, Readonly: true},
 	Name:                   ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true},
+	DatabaseName:           ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true},
 	IsDefault:              ssot.Attribute{Name: "is_default", Type: ssot.AttrBool, StoredAsText: true, OptionalInDb: true, BoolTrueValue: "Y", Readonly: true},
 	IsCurrent:              ssot.Attribute{Name: "is_current", Type: ssot.AttrBool, StoredAsText: true, OptionalInDb: true, BoolTrueValue: "Y", Readonly: true},
 	IsInherited:            ssot.Attribute{Name: "is_inherited", Type: ssot.AttrBool, StoredAsText: true, OptionalInDb: true, BoolTrueValue: "Y", Readonly: true},
@@ -54,13 +56,31 @@ var DatabaseRoleAttrs = struct {
 // LIMIT ... FROM are applied, not only accepted: each filtered a database with two roles to the expected row, and a LIKE
 // that matches nothing returned no rows. STARTS WITH and SHOW TERSE are rejected, so they are not added.
 //
-// The database is not a SHOW column. The SDK fills DatabaseName from the request.
+// TODO(SNOW-4638641): SHOW DATABASE ROLES does not return the database, which is a missing feature in Snowflake.
+// database_name is a plain-only SHOW field, and the generated ShowByID copies it from the identifier
+// (SdkShowByIDFromIdentifier). Show leaves it empty. Make it a SHOW column when Snowflake returns it.
+//
+// SHOW DATABASE ROLES requires IN DATABASE. A database role is a database-level object like a schema, so the SDK has the
+// optional IN without a schema level, and the ext validation requires its database.
 //
 // Object parameters: none is documented for a database role.
 var DatabaseRole = ssot.Object{
 	Name:       "DatabaseRole",
 	NamePlural: "DatabaseRoles",
 	IdType:     "DatabaseObjectIdentifier",
+	Generators: []ssot.GeneratorOption{
+		ssot.WithSdk(
+			ssot.SdkShow(
+				ssot.SdkShowOptionalLike(),
+				ssot.SdkShowOptionalExtendedInWithoutSchema(),
+				ssot.SdkShowOptionalLimitFrom(),
+				ssot.SdkShowAdditionalValidations(),
+				ssot.SdkShowByIDFiltering(ssot.SdkShowByIDExtendedInWithoutSchema, ssot.SdkShowByIDLike),
+				ssot.SdkShowPlainOnly(&DatabaseRoleAttrs.DatabaseName, "string"),
+				ssot.SdkShowByIDFromIdentifier(),
+			),
+		),
+	},
 	Attributes: []ssot.Attribute{
 		DatabaseRoleAttrs.Comment,
 	},
@@ -84,6 +104,7 @@ var DatabaseRole = ssot.Object{
 		Columns: []*ssot.Attribute{
 			&DatabaseRoleAttrs.CreatedOn,
 			&DatabaseRoleAttrs.Name,
+			&DatabaseRoleAttrs.DatabaseName,
 			&DatabaseRoleAttrs.IsDefault,
 			&DatabaseRoleAttrs.IsCurrent,
 			&DatabaseRoleAttrs.IsInherited,

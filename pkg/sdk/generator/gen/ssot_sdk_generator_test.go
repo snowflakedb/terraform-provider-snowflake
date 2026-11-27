@@ -2006,6 +2006,100 @@ func Test_DescribeOperationFromObject_detailsMethod(t *testing.T) {
 	require.Equal(t, "AccountObjectIdentifier", got.CustomMethods[0].Parameters[0].Kind)
 }
 
+func Test_ShowOperationFromObject_showByIDFromIdentifier(t *testing.T) {
+	name := ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true}
+	databaseName := ssot.Attribute{Name: "database_name", Type: ssot.AttrString, Readonly: true}
+	schemaName := ssot.Attribute{Name: "schema_name", Type: ssot.AttrString, Readonly: true}
+	obj := func(idType string, columns []*ssot.Attribute, opts ...ssot.SdkShowOption) ssot.Object {
+		return ssot.Object{
+			Name:       "Widget",
+			NamePlural: "Widgets",
+			IdType:     idType,
+			Show:       ssot.OutputSpec{Columns: columns},
+			Generators: []ssot.GeneratorOption{ssot.WithSdk(ssot.SdkShow(opts...))},
+		}
+	}
+
+	database := obj("DatabaseObjectIdentifier", []*ssot.Attribute{&name, &databaseName},
+		ssot.SdkShowOptionalLike(),
+		ssot.SdkShowOptionalIn(),
+		ssot.SdkShowByIDFiltering(ssot.SdkShowByIDIn, ssot.SdkShowByIDLike),
+		ssot.SdkShowPlainOnly(&databaseName, "string"),
+		ssot.SdkShowByIDFromIdentifier(),
+	)
+	got := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").ShowOperationFromObject(database)
+	require.Equal(t, &ShowByIDFromIdentifierConfig{Fields: []string{"DatabaseName"}}, got.ShowByIDFromIdentifier)
+	preprocessDefinition(got, log.New(io.Discard, "", 0))
+	require.False(t, got.Operations[0].ShowMapping.HasManualConvert())
+
+	var implOut strings.Builder
+	require.NoError(t, ImplementationTemplate.Execute(&implOut, got))
+	// The template output is not gofmt-ed yet, so whitespace is normalized before comparing.
+	normalized := func(s string) string { return strings.Join(strings.Fields(s), " ") }
+	require.Contains(t, normalized(implOut.String()), normalized(`func (v *widgets) ShowByID(ctx context.Context, id DatabaseObjectIdentifier) (*Widget, error) {
+	request := NewShowWidgetRequest().
+		WithLike(Like{Pattern: String(id.Name())}).
+		WithIn(In{Database: id.DatabaseId()})
+	widgets, err := v.Show(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	result, err := collections.FindFirst(widgets, func(r Widget) bool { return r.Name == id.Name() })
+	if err != nil {
+		return nil, err
+	}
+	result.DatabaseName = id.DatabaseName()
+	return result, nil
+}`))
+	require.NotContains(t, implOut.String(), "additionalConvert")
+
+	schema := obj("SchemaObjectIdentifier", []*ssot.Attribute{&name, &schemaName, &databaseName},
+		ssot.SdkShowOptionalIn(),
+		ssot.SdkShowByIDFiltering(ssot.SdkShowByIDIn),
+		ssot.SdkShowPlainOnly(&schemaName, "string"),
+		ssot.SdkShowPlainOnly(&databaseName, "string"),
+		ssot.SdkShowByIDFromIdentifier(),
+	)
+	got = NewInterface("Widgets", "Widget", "SchemaObjectIdentifier").ShowOperationFromObject(schema)
+	require.Equal(t, []string{"DatabaseName", "SchemaName"}, got.ShowByIDFromIdentifier.Fields)
+	preprocessDefinition(got, log.New(io.Discard, "", 0))
+	implOut.Reset()
+	require.NoError(t, ImplementationTemplate.Execute(&implOut, got))
+	require.Contains(t, normalized(implOut.String()), "WithIn(In{Schema: id.SchemaId()})")
+	require.Contains(t, normalized(implOut.String()), "result.DatabaseName = id.DatabaseName() result.SchemaName = id.SchemaName() return result, nil")
+	require.NotContains(t, implOut.String(), "additionalConvert")
+
+	// A plain-only field that is not copied from the identifier keeps additionalConvert.
+	extra := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").
+		ShowOperationWithPairedStructs(
+			"https://example.com",
+			StructPair("widgetsRow", "Widget").Text("name").PlainOnlyField("DatabaseName", "string").PlainOnlyField("Comment", "string"),
+			NewQueryStruct("ShowWidgets").Show().SQL("WIDGETS"),
+		).
+		WithShowByIDFromIdentifier([]string{"DatabaseName"})
+	preprocessDefinition(extra, log.New(io.Discard, "", 0))
+	require.True(t, extra.Operations[0].ShowMapping.HasManualConvert())
+
+	// Without the option, ShowByID returns FindFirst directly, as before.
+	plain := NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").ShowOperationFromObject(obj("DatabaseObjectIdentifier", []*ssot.Attribute{&name}))
+	preprocessDefinition(plain, log.New(io.Discard, "", 0))
+	implOut.Reset()
+	require.NoError(t, ImplementationTemplate.Execute(&implOut, plain))
+	require.Contains(t, normalized(implOut.String()), "return collections.FindFirst(widgets, func(r Widget) bool { return r.Name == id.Name() })")
+	require.NotContains(t, implOut.String(), "result.")
+
+	require.PanicsWithValue(t, `interface "Widgets": ShowByID from identifier needs a generated ShowByID`, func() {
+		NewInterface("Widgets", "Widget", "DatabaseObjectIdentifier").
+			ShowOperationWithPairedStructs(
+				"https://example.com",
+				StructPair("widgetsRow", "Widget").Text("name").PlainOnlyField("DatabaseName", "string"),
+				NewQueryStruct("ShowWidgets").Show().SQL("WIDGETS"),
+				ShowByIDSuppressed,
+			).
+			WithShowByIDFromIdentifier([]string{"DatabaseName"})
+	})
+}
+
 func Test_DescribeOperationFromObject_detailsFromIdentifier(t *testing.T) {
 	name := ssot.Attribute{Name: "name", Type: ssot.AttrString, Readonly: true}
 	obj := func(idType string, opts ...ssot.SdkDescribeOption) ssot.Object {

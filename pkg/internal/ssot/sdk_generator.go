@@ -113,11 +113,20 @@ type SdkShowPlainOnlyField struct {
 
 // SdkShowPlainOnly marks a SHOW column as plain-only. column is the same *Attribute that sits in Show.Columns.
 // The column stays in Columns for the schema and the assertions, but the SHOW row does not read it:
-// convert skips it, and additionalConvert in the SDK ext file fills the plain field. kind is the plain Go type.
+// convert skips it, and additionalConvert in the SDK ext file fills the plain field, unless SdkShowByIDFromIdentifier
+// copies it from the identifier. kind is the plain Go type.
 func SdkShowPlainOnly(column *Attribute, kind string) SdkShowOption {
 	return func(s *SdkGenerator) {
 		s.ShowPlainOnlyFields = append(s.ShowPlainOnlyFields, SdkShowPlainOnlyField{Column: column, Kind: kind})
 	}
+}
+
+// SdkShowByIDFromIdentifier makes the generated ShowByID copy plain-only identifier fields from the id onto the row it
+// found, for a SHOW that does not return those columns. SchemaObjectIdentifier copies DatabaseName and SchemaName.
+// DatabaseObjectIdentifier copies DatabaseName. Each copied field is a SdkShowPlainOnly column of kind string.
+// ShowByID must filter with an IN kind and match by name, and plain Show leaves the copied fields empty.
+func SdkShowByIDFromIdentifier() SdkShowOption {
+	return func(s *SdkGenerator) { s.ShowByIDFromIdentifier = true }
 }
 
 func SdkShowOptionalStartsWith() SdkShowOption {

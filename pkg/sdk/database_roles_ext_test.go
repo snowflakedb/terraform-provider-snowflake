@@ -98,9 +98,26 @@ func init() {
 	databaseRolesTests.Show.
 		withDefaultOpts(func() *ShowDatabaseRoleOptions {
 			return &ShowDatabaseRoleOptions{
-				Database: databaseId,
+				In: &ExtendedInWithoutSchema{Database: databaseId},
 			}
 		}).
+		withAdditionalValidationCase(
+			"validation_Show_In_missing",
+			func(opts *ShowDatabaseRoleOptions) { opts.In = nil },
+			errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"),
+		).
+		withAdditionalValidationCase(
+			"validation_Show_In_withoutDatabase",
+			func(opts *ShowDatabaseRoleOptions) { opts.In = &ExtendedInWithoutSchema{Account: new(true)} },
+			errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"),
+		).
+		withAdditionalValidationCase(
+			"validation_Show_In_databaseAndApplication",
+			func(opts *ShowDatabaseRoleOptions) {
+				opts.In = &ExtendedInWithoutSchema{Database: databaseId, Application: databaseId}
+			},
+			errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"),
+		).
 		withAdditionalValidationCase(
 			"validation_Show_Like_patternRequired",
 			func(opts *ShowDatabaseRoleOptions) { opts.Like = &Like{} },
@@ -126,6 +143,14 @@ func init() {
 			},
 			`SHOW DATABASE ROLES LIKE '%s' IN DATABASE %s`,
 			id.Name(), databaseId.FullyQualifiedName(),
+		).
+		withModifyAndExpectedSqlf(
+			case_DatabaseRoles_sql_Show_In,
+			func(opts *ShowDatabaseRoleOptions) {
+				opts.In = &ExtendedInWithoutSchema{Database: databaseId}
+			},
+			`SHOW DATABASE ROLES IN DATABASE %s`,
+			databaseId.FullyQualifiedName(),
 		).
 		withModifyAndExpectedSqlf(
 			case_DatabaseRoles_sql_Show_Limit,

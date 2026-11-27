@@ -28,10 +28,10 @@ const (
 	case_DatabaseRoles_validation_Drop_name_ValidIdentifier                          testCaseName = "validation_Drop_name_ValidIdentifier"
 	case_DatabaseRoles_sql_Drop_basic                                                testCaseName = "sql_Drop_basic"
 	case_DatabaseRoles_sql_Drop_all                                                  testCaseName = "sql_Drop_all"
-	case_DatabaseRoles_validation_Show_Database_ValidIdentifier                      testCaseName = "validation_Show_Database_ValidIdentifier"
 	case_DatabaseRoles_sql_Show_basic                                                testCaseName = "sql_Show_basic"
 	case_DatabaseRoles_sql_Show_all                                                  testCaseName = "sql_Show_all"
 	case_DatabaseRoles_sql_Show_Like                                                 testCaseName = "sql_Show_Like"
+	case_DatabaseRoles_sql_Show_In                                                   testCaseName = "sql_Show_In"
 	case_DatabaseRoles_sql_Show_Limit                                                testCaseName = "sql_Show_Limit"
 	case_DatabaseRoles_validation_Grant_name_ValidIdentifier                         testCaseName = "validation_Grant_name_ValidIdentifier"
 	case_DatabaseRoles_validation_Grant_opts_To_ExactlyOneValueSet_NoneSet           testCaseName = "validation_Grant_opts_To_ExactlyOneValueSet_NoneSet"
@@ -210,15 +210,7 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 		withDefaultOpts(func() *ShowDatabaseRoleOptions {
 			return &ShowDatabaseRoleOptions{}
 		}).
-		withValidationCases(
-			validationCase[*ShowDatabaseRoleOptions]{
-				Name:        case_DatabaseRoles_validation_Show_Database_ValidIdentifier,
-				ExpectedErr: errInvalidIdentifier("ShowDatabaseRoleOptions", "Database"),
-				DefaultModify: func(opts *ShowDatabaseRoleOptions) {
-					opts.Database = emptyAccountObjectIdentifier
-				},
-			},
-		).
+		withValidationCases().
 		withSqlCases(
 			sqlCase[*ShowDatabaseRoleOptions]{
 				Name:           case_DatabaseRoles_sql_Show_basic,
@@ -229,6 +221,9 @@ var databaseRolesTests = DatabaseRolesTestsContext{
 			},
 			sqlCase[*ShowDatabaseRoleOptions]{
 				Name: case_DatabaseRoles_sql_Show_Like,
+			},
+			sqlCase[*ShowDatabaseRoleOptions]{
+				Name: case_DatabaseRoles_sql_Show_In,
 			},
 			sqlCase[*ShowDatabaseRoleOptions]{
 				Name: case_DatabaseRoles_sql_Show_Limit,

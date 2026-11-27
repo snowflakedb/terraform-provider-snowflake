@@ -59,11 +59,6 @@ func (d *DatabaseRoleShowOutputAssert) HasName(expected string) *DatabaseRoleSho
 	return d
 }
 
-func (d *DatabaseRoleShowOutputAssert) HasDatabaseName(expected string) *DatabaseRoleShowOutputAssert {
-	d.StringValueSet("database_name", expected)
-	return d
-}
-
 func (d *DatabaseRoleShowOutputAssert) HasIsDefault(expected bool) *DatabaseRoleShowOutputAssert {
 	d.BoolValueSet("is_default", expected)
 	return d
@@ -109,6 +104,11 @@ func (d *DatabaseRoleShowOutputAssert) HasOwnerRoleType(expected string) *Databa
 	return d
 }
 
+func (d *DatabaseRoleShowOutputAssert) HasDatabaseName(expected string) *DatabaseRoleShowOutputAssert {
+	d.StringValueSet("database_name", expected)
+	return d
+}
+
 ///////////////////////////////
 // Attribute no value checks //
 ///////////////////////////////
@@ -120,11 +120,6 @@ func (d *DatabaseRoleShowOutputAssert) HasNoCreatedOn() *DatabaseRoleShowOutputA
 
 func (d *DatabaseRoleShowOutputAssert) HasNoName() *DatabaseRoleShowOutputAssert {
 	d.ValueNotSet("name")
-	return d
-}
-
-func (d *DatabaseRoleShowOutputAssert) HasNoDatabaseName() *DatabaseRoleShowOutputAssert {
-	d.ValueNotSet("database_name")
 	return d
 }
 
@@ -170,5 +165,10 @@ func (d *DatabaseRoleShowOutputAssert) HasNoComment() *DatabaseRoleShowOutputAss
 
 func (d *DatabaseRoleShowOutputAssert) HasNoOwnerRoleType() *DatabaseRoleShowOutputAssert {
 	d.ValueNotSet("owner_role_type")
+	return d
+}
+
+func (d *DatabaseRoleShowOutputAssert) HasNoDatabaseName() *DatabaseRoleShowOutputAssert {
+	d.ValueNotSet("database_name")
 	return d
 }

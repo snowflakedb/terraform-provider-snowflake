@@ -48,8 +48,11 @@ type SdkGenerator struct {
 	// ShowResultFilterHook makes the generated Show drop rows for which the SDK ext file's excludeFromShow returns true.
 	ShowResultFilterHook bool
 	// ShowPlainOnlyFields are SHOW columns that only the plain struct has. convert skips them and additionalConvert in the
-	// SDK ext file fills them.
+	// SDK ext file fills them; the hook is omitted when ShowByIDFromIdentifier copies all of them from the identifier.
 	ShowPlainOnlyFields []SdkShowPlainOnlyField
+	// ShowByIDFromIdentifier makes the generated ShowByID copy plain-only identifier fields from the id onto the row it
+	// found. SchemaObjectIdentifier copies DatabaseName and SchemaName. DatabaseObjectIdentifier copies DatabaseName.
+	ShowByIDFromIdentifier bool
 
 	DescribeDoc     string
 	DescribeSql     string

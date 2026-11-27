@@ -106,8 +106,8 @@ func (s *ShowDatabaseRoleRequest) WithLike(like Like) *ShowDatabaseRoleRequest {
 	return s
 }
 
-func (s *ShowDatabaseRoleRequest) WithDatabase(database AccountObjectIdentifier) *ShowDatabaseRoleRequest {
-	s.Database = database
+func (s *ShowDatabaseRoleRequest) WithIn(in ExtendedInWithoutSchema) *ShowDatabaseRoleRequest {
+	s.In = &in
 	return s
 }
 

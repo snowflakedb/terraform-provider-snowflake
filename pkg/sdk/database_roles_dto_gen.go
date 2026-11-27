@@ -44,9 +44,9 @@ type DropDatabaseRoleRequest struct {
 }
 
 type ShowDatabaseRoleRequest struct {
-	Like     *Like
-	Database AccountObjectIdentifier
-	Limit    *LimitFrom
+	Like  *Like
+	In    *ExtendedInWithoutSchema
+	Limit *LimitFrom
 }
 
 type GrantDatabaseRoleRequest struct {
