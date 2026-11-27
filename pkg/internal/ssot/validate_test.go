@@ -2362,7 +2362,7 @@ func Test_Object_SuspendForAlterWhen(t *testing.T) {
 			o.Attributes = append(o.Attributes,
 				Attribute{Name: "kind", Type: AttrString, ForceNew: true},
 				Attribute{Name: "created_on", Type: AttrString, Readonly: true},
-				Attribute{Name: "fingerprint", Type: AttrString, Computed: true},
+				Attribute{Name: "fingerprint", Type: AttrString, FixedValue: "x"},
 				Attribute{Name: "initially_suspended", Type: AttrBool, CreateOnly: true},
 				Attribute{Name: "then_action", Type: AttrString, SqlOnly: true},
 			)

@@ -15,7 +15,8 @@ func Test_Attribute_ChangesInPlace(t *testing.T) {
 		"ForceNew":   {Attribute{Name: "a", ForceNew: true}, false},
 		"Readonly":   {Attribute{Name: "a", Readonly: true}, false},
 		"CreateOnly": {Attribute{Name: "a", CreateOnly: true}, false},
-		"Computed":   {Attribute{Name: "a", Computed: true}, false},
+		"Computed":   {Attribute{Name: "a", Computed: true}, true},
+		"Fixed":      {Attribute{Name: "a", FixedValue: "X"}, false},
 		"SqlOnly":    {Attribute{Name: "a", SqlOnly: true}, false},
 		"SkipUpdate": {Attribute{Name: "a", SkipUpdate: true}, true},
 	}
@@ -35,7 +36,8 @@ func Test_Attribute_CanUpdate(t *testing.T) {
 		"ForceNew":   {Attribute{Name: "a", ForceNew: true}, false},
 		"Readonly":   {Attribute{Name: "a", Readonly: true}, false},
 		"CreateOnly": {Attribute{Name: "a", CreateOnly: true}, false},
-		"Computed":   {Attribute{Name: "a", Computed: true}, false},
+		"Computed":   {Attribute{Name: "a", Computed: true}, true},
+		"Fixed":      {Attribute{Name: "a", FixedValue: "X"}, false},
 		"SqlOnly":    {Attribute{Name: "a", SqlOnly: true}, false},
 		// An attribute that a hook updates changes in place, but the generated ApplySetUnset leaves it out.
 		"SkipUpdate": {Attribute{Name: "a", SkipUpdate: true}, false},

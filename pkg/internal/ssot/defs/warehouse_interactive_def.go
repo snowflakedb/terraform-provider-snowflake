@@ -97,12 +97,13 @@ var WarehouseInteractiveAttrs = struct {
 		},
 		CreateSql: ssot.ListParameter("SchemaObjectIdentifier", ssot.Parentheses(), ssot.NoEquals()),
 	},
-	// Computed in Terraform: the generator emits it as computed-only.
-	// Computed skips output suppression: SHOW already has a column of this name.
+	// FixedValue is INTERACTIVE. CREATE does not send WAREHOUSE_TYPE: the object words are INTERACTIVE WAREHOUSE.
+	// The schema field is computed. SHOW drift suppression is skipped, so a different type recreates the resource.
 	WarehouseType: ssot.Attribute{
 		Name:        "warehouse_type",
 		Type:        ssot.AttrString,
-		Computed:    true,
+		FixedValue:  "INTERACTIVE",
+		ShowName:    "type",
 		Description: "Specifies the type for the interactive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
 }

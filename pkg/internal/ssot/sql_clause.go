@@ -149,6 +149,23 @@ type SqlVariant struct {
 // A zero option field keeps the constructor default.
 type SqlClauseOption func(*SqlClause)
 
+// FixedSQL is the CREATE text of a fixed value. Single quotes wrap it, unless the clause says otherwise.
+// WAREHOUSE_TYPE with FixedValue ADAPTIVE and single quotes is WAREHOUSE_TYPE = 'ADAPTIVE'.
+func (a Attribute) FixedSQL(clause SqlClause) string {
+	text := clause.SQLText(a)
+	value := a.FixedValue
+	switch clause.Quotes {
+	case SqlQuotesSingle:
+		value = "'" + strings.ReplaceAll(value, "'", "''") + "'"
+	case SqlQuotesDouble:
+		value = `"` + value + `"`
+	}
+	if clause.Equals == SqlEqualsNo {
+		return text + " " + value
+	}
+	return text + " = " + value
+}
+
 // SQLText is the clause text. Empty SQL is the uppercase attribute Name.
 func (c SqlClause) SQLText(attr Attribute) string {
 	if c.SQL != "" {

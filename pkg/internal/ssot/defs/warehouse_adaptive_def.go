@@ -29,12 +29,13 @@ var WarehouseAdaptiveAttrs = struct {
 		Type:        ssot.AttrString,
 		Description: "Specifies a comment for the adaptive warehouse.",
 	},
-	// Computed in Terraform: the generator emits it as computed-only.
-	// Computed skips output suppression: SHOW already has a column of this name.
+	// FixedValue sends WAREHOUSE_TYPE = 'ADAPTIVE' on CREATE. The schema field is computed.
+	// SHOW drift suppression is skipped, so a different type recreates the resource.
 	WarehouseType: ssot.Attribute{
 		Name:          "warehouse_type",
 		Type:          ssot.AttrString,
-		Computed:      true,
+		FixedValue:    "ADAPTIVE",
+		ShowName:      "type",
 		UpdateMapping: ssot.CustomUpdate("warehouseAdaptiveTypeUpdate"),
 		Description:   "Specifies the type for the adaptive warehouse. This field is used for checking external changes and recreating the resource if needed.",
 	},
@@ -66,15 +67,6 @@ var WarehouseAdaptiveAttrs = struct {
 // Show columns that cannot reuse WarehouseAttrs.
 // auto_resume is writable there and is not an adaptive attribute.
 // The performance columns are Readonly there and these names are adaptive attributes.
-
-// warehouseAdaptiveWarehouseType is always emitted on CREATE as a private static field.
-// SqlOnly keeps it out of schema, resource, model, and assertions.
-// The resource warehouse_type field stays a separate computed attribute.
-var warehouseAdaptiveWarehouseType = ssot.Attribute{
-	Name:      "warehouse_type_static",
-	SqlOnly:   true,
-	CreateSql: ssot.StaticSQL("warehouseType", "WAREHOUSE_TYPE = 'ADAPTIVE'"),
-}
 
 var (
 	warehouseAdaptiveAutoResumeShow = ssot.Attribute{
@@ -125,7 +117,6 @@ var WarehouseAdaptive = ssot.Object{
 	Attributes: []ssot.Attribute{
 		WarehouseAdaptiveAttrs.Comment,
 		WarehouseAdaptiveAttrs.WarehouseType,
-		warehouseAdaptiveWarehouseType,
 		WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
 		WarehouseAdaptiveAttrs.QueryThroughputMultiplier,
 		WarehouseAdaptiveAttrs.ResourceMonitor,
@@ -159,7 +150,7 @@ var WarehouseAdaptive = ssot.Object{
 		Doc:                   "https://docs.snowflake.com/en/user-guide/warehouses-adaptive",
 		AdditionalValidations: true,
 		Clauses: []*ssot.Attribute{
-			&warehouseAdaptiveWarehouseType,
+			&WarehouseAdaptiveAttrs.WarehouseType,
 			&WarehouseAdaptiveAttrs.Comment,
 			&WarehouseAdaptiveAttrs.MaxQueryPerformanceLevel,
 			&WarehouseAdaptiveAttrs.QueryThroughputMultiplier,

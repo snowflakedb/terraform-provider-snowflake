@@ -178,6 +178,11 @@ type Attribute struct {
 	// UpdateMapping overrides the update helper deduced the same way.
 	// Nil means deduce one.
 	UpdateMapping UpdateMapping
+	// FixedValue is the constant this resource always sends. The user does not choose it.
+	// Empty means the user sets the value. The schema field is computed, and SHOW drift suppression
+	// is skipped so a different value recreates the resource. A CREATE clause is emitted as that
+	// constant, such as WAREHOUSE_TYPE = 'ADAPTIVE'.
+	FixedValue string
 }
 
 // Tags is the optional TAG clause. Put it on a CREATE list. It is not an Attributes entry.
@@ -230,10 +235,13 @@ func (a *Attribute) EffectiveShowName() string {
 	return a.Name
 }
 
+// IsFixed reports an attribute whose value is FixedValue. The user does not set it.
+func (a Attribute) IsFixed() bool { return a.FixedValue != "" }
+
 // ChangesInPlace reports an attribute whose change Terraform applies without recreating the object: it is not ForceNew,
-// Readonly, Computed, CreateOnly, or SqlOnly.
+// Readonly, fixed, CreateOnly, or SqlOnly.
 func (a Attribute) ChangesInPlace() bool {
-	return !a.ForceNew && !a.Readonly && !a.Computed && !a.CreateOnly && !a.SqlOnly
+	return !a.ForceNew && !a.Readonly && !a.IsFixed() && !a.CreateOnly && !a.SqlOnly
 }
 
 // ColumnEnum returns ShowEnum when it is set, and Enum otherwise.

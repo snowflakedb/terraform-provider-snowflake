@@ -168,6 +168,10 @@ Add a new field to the group that matches its purpose, and to this table.
   on `Attributes`, so the schema, model builders, and resource assertions include it. `setStateToValuesFromConfig`
   leaves it out. It is not a CREATE or ALTER column unless it is also on those lists. `SkipCreate` leaves it out of
   generated create when the value is not sent.
+- `FixedValue` - the constant this resource always sends. The user does not choose it. The schema field is
+  computed, and SHOW drift suppression is skipped so a different value recreates the resource. A CREATE clause
+  is emitted as that constant. Adaptive `warehouse_type` is `ADAPTIVE`. Interactive `warehouse_type` is
+  `INTERACTIVE`; its CREATE does not repeat the clause because the object words are `INTERACTIVE WAREHOUSE`.
 - `Computed` - the generator emits the field as computed-only: `Computed` and neither `Optional` nor `Required`.
   Drift tracking and output suppression skip it. Adaptive `warehouse_type` sets it.
 - `ServerDefault` - Snowflake fills a describe-only field when the configuration omits it, and that value is not
@@ -743,7 +747,7 @@ then starts with `TemporaryWorkaroundIdentifierForceNewIfHierarchyRenamesExperim
 `<prefix>HandleExternalChangesInDescribeExt`. The ext function keeps nested drift and the config fields copied on
 every read. The describe hook also requires `DescribeInSdk`. A column is included when its name is a resource
 attribute, it is not create-only, it is not an identifier field (`database`, `schema`, `name`), and it is not
-`comment`. Comment is copied on every read. A required or `Computed` attribute is copied on every read. Describe also skips a
+`comment`. Comment is copied on every read. A required or fixed attribute is copied on every read. Describe also skips a
 column that is already a SHOW column, and includes a column only when `ServerDefault` is set. The schema suppressor
 is derived from the same rule: SHOW uses `IgnoreChangeToCurrentSnowflakeValueInShow`, and a describe-only
 `ServerDefault` field uses `IgnoreChangeToCurrentSnowflakeValueInDescribe`. Column order is the mapping order. The output key is
@@ -783,7 +787,7 @@ An object that must be suspended while it is altered declares `SuspendForAlter` 
 type; Snowflake rejects property changes on a started alert with "since it is not suspended"). It reuses the SHOW `State`
 column and its enum (`Started` and `Suspended` are enum values), and the object's `SUSPEND` and `RESUME` ALTER keywords
 (`IF SUSPENDED` makes the resume safe when it is declared). `When` lists the attributes whose in-place change needs the
-suspension; empty means every attribute that changes in place (not `ForceNew`, `Readonly`, `Computed`, `CreateOnly`, or
+suspension; empty means every attribute that changes in place (not `ForceNew`, `Readonly`, fixed, `CreateOnly`, or
 `SqlOnly`, see `Object.SuspendForAlterWhen`). `Enabled` is the bool attribute that owns the state (an alert's `enabled`).
 The SDK checks SHOW five times, one second apart, after the SUSPEND. Two generators use the declaration, so it needs
 `SdkSuspendIfStarted()` and `WithSuspendForAlter(Generated())`. The hook is generated or omitted; it has no ext call.

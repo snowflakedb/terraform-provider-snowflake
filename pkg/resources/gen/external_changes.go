@@ -122,7 +122,7 @@ func columnByName(columns []*ssot.Attribute) map[string]*ssot.Attribute {
 }
 
 func scalarDriftCandidate(attr ssot.Attribute, identity map[string]struct{}) bool {
-	if attr.Required || attr.Computed || attr.CreateOnly || attr.Readonly || attr.SqlOnly || attr.Name == "comment" {
+	if attr.Required || attr.IsFixed() || attr.CreateOnly || attr.Readonly || attr.SqlOnly || attr.Name == "comment" {
 		return false
 	}
 	if _, skip := identity[attr.Name]; skip {

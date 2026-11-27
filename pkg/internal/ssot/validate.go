@@ -79,6 +79,15 @@ func ValidateObject(obj Object) {
 		if a.BoolTrueValue != "" && !a.StoredAsText {
 			panic(fmt.Sprintf("object %q: attribute %q sets BoolTrueValue without StoredAsText", obj.Name, a.Name))
 		}
+		if a.IsFixed() && a.SqlOnly {
+			panic(fmt.Sprintf("object %q: fixed attribute %q is a resource attribute", obj.Name, a.Name))
+		}
+		if a.IsFixed() && a.Required {
+			panic(fmt.Sprintf("object %q: fixed attribute %q is not required", obj.Name, a.Name))
+		}
+		if a.IsFixed() && (a.SetSql.Present || a.UnsetSql.Present) {
+			panic(fmt.Sprintf("object %q: fixed attribute %q is not set or unset", obj.Name, a.Name))
+		}
 	}
 	nested := nestedAttributeNames(obj)
 	validateColumnList(obj, "SHOW", obj.Show.Columns, attrs, sqlOnly, nested)

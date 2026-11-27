@@ -2,6 +2,7 @@ package gen
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/genhelpers"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/internal/ssot"
@@ -87,6 +88,9 @@ func attributeClause(attr ssot.Attribute, statement attributeSqlStatement) ssot.
 }
 
 func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.SqlClause, statement attributeSqlStatement) *QueryStruct {
+	if attr.IsFixed() && statement == attributeSqlCreate && clause.Kind == ssot.SqlKindParameter {
+		return v.appendFixedValueClause(attr, clause)
+	}
 	switch clause.Kind {
 	case ssot.SqlKindParameter:
 		return v.appendParameterClause(attr, clause, clauseRequired(attr, clause, statement))
@@ -107,6 +111,15 @@ func (v *QueryStruct) appendAttributeClause(attr ssot.Attribute, clause ssot.Sql
 	default:
 		panic(fmt.Sprintf("attribute %q: sql kind %q", attr.Name, clause.Kind))
 	}
+}
+
+// appendFixedValueClause emits the constant, such as WAREHOUSE_TYPE = 'ADAPTIVE', with no config field.
+func (v *QueryStruct) appendFixedValueClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {
+	name := clauseGoFieldName(attr, clause)
+	if clause.Field == "" {
+		name = strings.ToLower(name[:1]) + name[1:]
+	}
+	return v.SQLWithCustomFieldName(name, attr.FixedSQL(clause))
 }
 
 func (v *QueryStruct) appendStaticClause(attr ssot.Attribute, clause ssot.SqlClause) *QueryStruct {

@@ -171,3 +171,10 @@ func Test_NestedSqlFieldsFor_createSetUnset(t *testing.T) {
 	require.Equal(t, "TableSetAggregationPolicy", attr.SqlStructNameFor("Table", ClauseSet))
 	require.Equal(t, "TableUnsetAggregationPolicy", attr.SqlStructNameFor("Table", ClauseUnset))
 }
+
+func Test_Attribute_FixedSQL(t *testing.T) {
+	attr := Attribute{Name: "warehouse_type", FixedValue: "ADAPTIVE", CreateSql: Clause(SingleQuotes())}
+	require.Equal(t, "WAREHOUSE_TYPE = 'ADAPTIVE'", attr.FixedSQL(attr.CreateSql))
+	plain := Attribute{Name: "catalog_source", FixedValue: "POLARIS", CreateSql: Clause(NoQuotes())}
+	require.Equal(t, "CATALOG_SOURCE = POLARIS", plain.FixedSQL(plain.CreateSql))
+}
