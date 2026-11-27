@@ -414,6 +414,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.OpenflowRuntime: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.OpenflowRuntimes.ShowByID)
 	},
+	resources.OrganizationListing: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.Listings.ShowByID)
+	},
 	resources.PasswordPolicy: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.PasswordPolicies.ShowByID)
 	},
