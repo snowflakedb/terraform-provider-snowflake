@@ -124,6 +124,7 @@ type CreateExternalOauthSecurityIntegrationOptions struct {
 	ExternalOauthAnyRoleMode                   *ExternalOauthSecurityIntegrationAnyRoleModeOption                  `ddl:"parameter" sql:"EXTERNAL_OAUTH_ANY_ROLE_MODE"`
 	ExternalOauthScopeDelimiter                *string                                                             `ddl:"parameter,single_quotes" sql:"EXTERNAL_OAUTH_SCOPE_DELIMITER"`
 	ExternalOauthScopeMappingAttribute         *string                                                             `ddl:"parameter,single_quotes" sql:"EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE"`
+	IsAgentic                                  *bool                                                               `ddl:"parameter" sql:"IS_AGENTIC"`
 	Comment                                    *string                                                             `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -197,6 +198,7 @@ type CreateOauthForCustomClientsSecurityIntegrationOptions struct {
 	NetworkPolicy               *AccountObjectIdentifier                         `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
 	OauthClientRsaPublicKey     *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY"`
 	OauthClientRsaPublicKey2    *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY_2"`
+	IsAgentic                   *bool                                            `ddl:"parameter" sql:"IS_AGENTIC"`
 	Comment                     *string                                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -369,12 +371,14 @@ type ExternalOauthIntegrationSet struct {
 	ExternalOauthAnyRoleMode                   *ExternalOauthSecurityIntegrationAnyRoleModeOption                   `ddl:"parameter" sql:"EXTERNAL_OAUTH_ANY_ROLE_MODE"`
 	ExternalOauthScopeDelimiter                *string                                                              `ddl:"parameter,single_quotes" sql:"EXTERNAL_OAUTH_SCOPE_DELIMITER"`
 	ExternalOauthScopeMappingAttribute         *string                                                              `ddl:"parameter,single_quotes" sql:"EXTERNAL_OAUTH_SCOPE_MAPPING_ATTRIBUTE"`
+	IsAgentic                                  *bool                                                                `ddl:"parameter" sql:"IS_AGENTIC"`
 	Comment                                    *StringAllowEmpty                                                    `ddl:"parameter" sql:"COMMENT"`
 }
 
 type ExternalOauthIntegrationUnset struct {
 	Enabled                   *bool `ddl:"keyword" sql:"ENABLED"`
 	ExternalOauthAudienceList *bool `ddl:"keyword" sql:"EXTERNAL_OAUTH_AUDIENCE_LIST"`
+	IsAgentic                 *bool `ddl:"keyword" sql:"IS_AGENTIC"`
 }
 
 // AlterOauthForPartnerApplicationsSecurityIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-security-integration-oauth-snowflake.
@@ -431,6 +435,7 @@ type OauthForCustomClientsIntegrationSet struct {
 	NetworkPolicy               *AccountObjectIdentifier                         `ddl:"identifier,single_quotes,equals" sql:"NETWORK_POLICY"`
 	OauthClientRsaPublicKey     *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY"`
 	OauthClientRsaPublicKey2    *string                                          `ddl:"parameter,single_quotes" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY_2"`
+	IsAgentic                   *bool                                            `ddl:"parameter" sql:"IS_AGENTIC"`
 	Comment                     *string                                          `ddl:"parameter,single_quotes" sql:"COMMENT"`
 }
 
@@ -440,6 +445,7 @@ type OauthForCustomClientsIntegrationUnset struct {
 	OauthClientRsaPublicKey  *bool `ddl:"keyword" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY"`
 	OauthClientRsaPublicKey2 *bool `ddl:"keyword" sql:"OAUTH_CLIENT_RSA_PUBLIC_KEY_2"`
 	OauthUseSecondaryRoles   *bool `ddl:"keyword" sql:"OAUTH_USE_SECONDARY_ROLES"`
+	IsAgentic                *bool `ddl:"keyword" sql:"IS_AGENTIC"`
 }
 
 // AlterSaml2SecurityIntegrationOptions is based on https://docs.snowflake.com/en/sql-reference/sql/alter-security-integration-saml2.
@@ -604,6 +610,7 @@ type OauthIntegrationForCustomClientsDetails struct {
 	OauthTokenEndpoint                 *SecurityIntegrationProperty
 	OauthAllowedAuthorizationEndpoints *SecurityIntegrationProperty
 	OauthAllowedTokenEndpoints         *SecurityIntegrationProperty
+	IsAgentic                          *SecurityIntegrationProperty
 }
 
 type ExternalOauthSecurityIntegrationDetails struct {
@@ -619,6 +626,7 @@ type ExternalOauthSecurityIntegrationDetails struct {
 	ExternalOauthTokenUserMappingClaim         *SecurityIntegrationProperty
 	ExternalOauthSnowflakeUserMappingAttribute *SecurityIntegrationProperty
 	ExternalOauthScopeDelimiter                *SecurityIntegrationProperty
+	IsAgentic                                  *SecurityIntegrationProperty
 	Comment                                    *SecurityIntegrationProperty
 }
 

@@ -28,6 +28,7 @@ type ExternalOauthSecurityIntegrationModel struct {
 	ExternalOauthTokenUserMappingClaim         tfconfig.Variable `json:"external_oauth_token_user_mapping_claim,omitempty"`
 	ExternalOauthType                          tfconfig.Variable `json:"external_oauth_type,omitempty"`
 	FullyQualifiedName                         tfconfig.Variable `json:"fully_qualified_name,omitempty"`
+	IsAgentic                                  tfconfig.Variable `json:"is_agentic,omitempty"`
 	RelatedParameters                          tfconfig.Variable `json:"related_parameters,omitempty"`
 
 	DynamicBlock *config.DynamicBlock `json:"dynamic,omitempty"`
@@ -182,6 +183,11 @@ func (e *ExternalOauthSecurityIntegrationModel) WithFullyQualifiedName(fullyQual
 	return e
 }
 
+func (e *ExternalOauthSecurityIntegrationModel) WithIsAgentic(isAgentic string) *ExternalOauthSecurityIntegrationModel {
+	e.IsAgentic = tfconfig.StringVariable(isAgentic)
+	return e
+}
+
 // related_parameters attribute type is not yet supported, so WithRelatedParameters can't be generated
 
 //////////////////////////////////////////
@@ -270,6 +276,11 @@ func (e *ExternalOauthSecurityIntegrationModel) WithExternalOauthTypeValue(value
 
 func (e *ExternalOauthSecurityIntegrationModel) WithFullyQualifiedNameValue(value tfconfig.Variable) *ExternalOauthSecurityIntegrationModel {
 	e.FullyQualifiedName = value
+	return e
+}
+
+func (e *ExternalOauthSecurityIntegrationModel) WithIsAgenticValue(value tfconfig.Variable) *ExternalOauthSecurityIntegrationModel {
+	e.IsAgentic = value
 	return e
 }
 

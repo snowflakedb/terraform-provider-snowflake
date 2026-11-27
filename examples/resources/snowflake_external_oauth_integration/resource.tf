@@ -19,6 +19,7 @@ resource "snowflake_external_oauth_integration" "test" {
   external_oauth_scope_delimiter                  = ","
   external_oauth_scope_mapping_attribute          = "scope"
   external_oauth_snowflake_user_mapping_attribute = "LOGIN_NAME"
+  is_agentic                                      = "true"
   external_oauth_token_user_mapping_claim         = ["upn"]
   name                                            = "test"
   external_oauth_type                             = "CUSTOM"
@@ -36,6 +37,7 @@ resource "snowflake_external_oauth_integration" "test" {
   external_oauth_scope_delimiter                  = ","
   external_oauth_scope_mapping_attribute          = "scope"
   external_oauth_snowflake_user_mapping_attribute = "LOGIN_NAME"
+  is_agentic                                      = "true"
   external_oauth_token_user_mapping_claim         = ["upn"]
   name                                            = "test"
   external_oauth_type                             = "CUSTOM"

@@ -14,6 +14,7 @@ import (
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/provider/resources"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/schemas"
 	"github.com/Snowflake-Labs/terraform-provider-snowflake/pkg/sdk"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -140,6 +141,14 @@ var oauthIntegrationForCustomClientsSchema = map[string]*schema.Schema{
 		DiffSuppressFunc: ignoreTrimSpaceSuppressFunc,
 		Description:      externalChangesNotDetectedFieldDescription("Specifies a Base64-encoded RSA public key, without the -----BEGIN PUBLIC KEY----- and -----END PUBLIC KEY----- headers."),
 	},
+	"is_agentic": {
+		Type:             schema.TypeString,
+		Optional:         true,
+		Default:          BooleanDefault,
+		ValidateDiagFunc: validateBooleanString,
+		DiffSuppressFunc: IgnoreChangeToCurrentSnowflakeValueInShow("is_agentic"),
+		Description:      booleanStringFieldDescription("Specifies whether sessions authenticated through this integration are treated as agent sessions. When true, Snowflake marks every session authenticated through this integration as an agent session, so `SYS_CONTEXT('SNOWFLAKE$CURRENT', 'IS_AGENT_ACTIVATED')` returns `TRUE` for it. For more information, check [agent identity documentation](https://docs.snowflake.com/en/user-guide/agent-identity)."),
+	},
 	"comment": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -205,6 +214,7 @@ func OauthIntegrationForCustomClients() *schema.Resource {
 				"network_policy",
 				"oauth_client_rsa_public_key",
 				"oauth_client_rsa_public_key_2",
+				"is_agentic",
 				"comment",
 			),
 		)),
@@ -215,6 +225,17 @@ func OauthIntegrationForCustomClients() *schema.Resource {
 		Timeouts: defaultTimeouts,
 		ValidateRawResourceConfigFuncs: []schema.ValidateRawResourceConfigFunc{
 			oauthAllowedRolesListRequiresSecondaryRolesNone,
+		},
+
+		// v0 state has no is_agentic. Leaving it empty would plan a change to the schema default on the next
+		// apply, and that apply would run UNSET IS_AGENTIC on an integration that may have it set outside Terraform.
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    cty.EmptyObject,
+				Upgrade: v2_23_0_IsAgenticSecurityIntegrationStateUpgrader,
+			},
 		},
 	}
 }
@@ -285,6 +306,14 @@ func ImportOauthForCustomClientsIntegration(ctx context.Context, d *schema.Resou
 	}); err == nil {
 		roles := sdk.ParseCommaSeparatedStringArray(prop.Value, false)
 		if err = d.Set("blocked_roles_list", roles); err != nil {
+			return nil, err
+		}
+	}
+
+	if isAgentic, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
+		return property.Name == "IS_AGENTIC"
+	}); err == nil {
+		if err = d.Set("is_agentic", isAgentic.Value); err != nil {
 			return nil, err
 		}
 	}
@@ -383,6 +412,10 @@ func CreateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 
 	if v, ok := d.GetOk("oauth_client_rsa_public_key_2"); ok {
 		req.WithOauthClientRsaPublicKey2(v.(string))
+	}
+
+	if err := booleanStringAttributeCreateBuilder(d, "is_agentic", req.WithIsAgentic); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if v, ok := d.GetOk("comment"); ok {
@@ -552,15 +585,23 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 				return diag.FromErr(err)
 			}
 
-			if err = handleExternalChangesToObjectInDescribe(
-				d,
-				describeMapping{"oauth_allow_non_tls_redirect_uri", "oauth_allow_non_tls_redirect_uri", oauthAllowNonTlsRedirectUri.Value, oauthAllowNonTlsRedirectUri.Value, nil},
-				describeMapping{"oauth_enforce_pkce", "oauth_enforce_pkce", oauthEnforcePkce.Value, oauthEnforcePkce.Value, nil},
-				describeMapping{"oauth_use_secondary_roles", "oauth_use_secondary_roles", oauthUseSecondaryRoles.Value, oauthUseSecondaryRoles.Value, nil},
-				describeMapping{"oauth_issue_refresh_tokens", "oauth_issue_refresh_tokens", oauthIssueRefreshTokens.Value, oauthIssueRefreshTokens.Value, nil},
-				describeMapping{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidityValue, nil},
-				describeMapping{"blocked_roles_list", "blocked_roles_list", blockedRolesList.Value, sdk.ParseCommaSeparatedStringArray(blockedRolesList.Value, false), nil},
-			); err != nil {
+			describeMappings := []describeMapping{
+				{"oauth_allow_non_tls_redirect_uri", "oauth_allow_non_tls_redirect_uri", oauthAllowNonTlsRedirectUri.Value, oauthAllowNonTlsRedirectUri.Value, nil},
+				{"oauth_enforce_pkce", "oauth_enforce_pkce", oauthEnforcePkce.Value, oauthEnforcePkce.Value, nil},
+				{"oauth_use_secondary_roles", "oauth_use_secondary_roles", oauthUseSecondaryRoles.Value, oauthUseSecondaryRoles.Value, nil},
+				{"oauth_issue_refresh_tokens", "oauth_issue_refresh_tokens", oauthIssueRefreshTokens.Value, oauthIssueRefreshTokens.Value, nil},
+				{"oauth_refresh_token_validity", "oauth_refresh_token_validity", oauthRefreshTokenValidity.Value, oauthRefreshTokenValidityValue, nil},
+				{"blocked_roles_list", "blocked_roles_list", blockedRolesList.Value, sdk.ParseCommaSeparatedStringArray(blockedRolesList.Value, false), nil},
+			}
+
+			// IS_AGENTIC is a newer property; skip external change detection instead of failing the read if DESCRIBE does not return it.
+			if isAgentic, err := collections.FindFirst(integrationProperties, func(property sdk.SecurityIntegrationProperty) bool {
+				return property.Name == "IS_AGENTIC"
+			}); err == nil {
+				describeMappings = append(describeMappings, describeMapping{"is_agentic", "is_agentic", isAgentic.Value, isAgentic.Value, nil})
+			}
+
+			if err = handleExternalChangesToObjectInDescribe(d, describeMappings...); err != nil {
 				return diag.FromErr(err)
 			}
 		}
@@ -573,6 +614,7 @@ func ReadContextOauthIntegrationForCustomClients(withExternalChangesMarking bool
 			"oauth_issue_refresh_tokens",
 			"oauth_refresh_token_validity",
 			"blocked_roles_list",
+			"is_agentic",
 		}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -727,6 +769,10 @@ func UpdateContextOauthIntegrationForCustomClients(ctx context.Context, d *schem
 		} else {
 			unset.WithOauthClientRsaPublicKey2(true)
 		}
+	}
+
+	if err := booleanStringAttributeUpdate(d, "is_agentic", &set.IsAgentic, &unset.IsAgentic); err != nil {
+		return diag.FromErr(err)
 	}
 
 	if d.HasChange("comment") {

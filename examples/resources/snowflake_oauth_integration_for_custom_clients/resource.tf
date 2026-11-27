@@ -22,5 +22,6 @@ resource "snowflake_oauth_integration_for_custom_clients" "complete" {
   network_policy                   = snowflake_network_policy.example.fully_qualified_name
   oauth_client_rsa_public_key      = file("rsa.pub")
   oauth_client_rsa_public_key_2    = file("rsa2.pub")
+  is_agentic                       = "true"
   comment                          = "my oauth integration"
 }
