@@ -37,6 +37,7 @@ const (
 	CortexSearchService                                    resource = "snowflake_cortex_search_service"
 	CurrentAccount                                         resource = "snowflake_current_account"
 	CurrentOrganizationAccount                             resource = "snowflake_current_organization_account"
+	DataMovementRule                                       resource = "snowflake_data_movement_rule"
 	Database                                               resource = "snowflake_database"
 	DatabaseRole                                           resource = "snowflake_database_role"
 	DynamicTable                                           resource = "snowflake_dynamic_table"

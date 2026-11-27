@@ -228,7 +228,7 @@ func constructorArg(scope createScope, src ssot.Attribute, resolved ResourceAttr
 		panic(fmt.Sprintf("object %q: required attribute %q has no CreateMapping", scope.stem, src.Name))
 	}
 	return &CreateConstructorArg{
-		Var:      genhelpers.FirstLetterLowercase(genhelpers.SnakeCaseToCamel(src.Name)),
+		Var:      genhelpers.FirstLetterLowercaseParameterName(genhelpers.SnakeCaseToCamel(src.Name)),
 		Get:      fmt.Sprintf("d.Get(%s).(%s)", scope.key(src.Name), cast),
 		EnumName: resolved.EnumName,
 		Parser:   parser,

@@ -237,7 +237,7 @@ var resourceAttributeRules = []resourceAttributeRule{
 	},
 	{
 		Name:        RuleConfiguredDiffSuppress,
-		Description: "Configured suppressors compose with inferred normalization. Ignore-always replaces that normalization and stands alone.",
+		Description: "Configured suppressors compose with inferred normalization. Statement suppression documents SQL normalization. Ignore-always stands alone and replaces inferred normalization.",
 		When: func(in ssot.Attribute, _ resourceAttributeRuleContext) bool {
 			return in.DiffSuppress != nil
 		},
@@ -256,6 +256,9 @@ var resourceAttributeRules = []resourceAttributeRule{
 				switch suppress.Kind {
 				case ssot.SuppressStatement:
 					expression = "DiffSuppressStatement"
+					if out.DescriptionExpr != "" {
+						out.DescriptionExpr = fmt.Sprintf("diffSuppressStatementFieldDescription(%s)", out.DescriptionExpr)
+					}
 				case ssot.SuppressShow:
 					expression = fmt.Sprintf("IgnoreChangeToCurrentSnowflakeValueInShow(%q)", key)
 				case ssot.SuppressDescribe:

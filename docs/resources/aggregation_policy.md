@@ -42,7 +42,7 @@ resource "snowflake_aggregation_policy" "complete" {
 
 ### Required
 
-- `body` (String) SQL expression that determines the restrictions of an aggregation policy. The expression must call AGGREGATION_CONSTRAINT or NO_AGGREGATION_CONSTRAINT.
+- `body` (String) SQL expression that determines the restrictions of an aggregation policy. The expression must call AGGREGATION_CONSTRAINT or NO_AGGREGATION_CONSTRAINT. To mitigate permadiff on this field, the provider replaces blank characters with a space. This can lead to false positives in cases where a change in case or run of whitespace is semantically significant.
 - `database` (String) The database in which to create the aggregation policy. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the aggregation policy; must be unique for the schema in which the aggregation policy is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the aggregation policy. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.

@@ -54,6 +54,12 @@ func (c *DataMovementRuleClient) Describe(t *testing.T, id sdk.SchemaObjectIdent
 	return c.client().Describe(context.Background(), id)
 }
 
+func (c *DataMovementRuleClient) Alter(t *testing.T, request *sdk.AlterDataMovementRuleRequest) {
+	t.Helper()
+	err := c.client().Alter(context.Background(), request)
+	require.NoError(t, err)
+}
+
 func (c *DataMovementRuleClient) DropFunc(t *testing.T, id sdk.SchemaObjectIdentifier) func() {
 	t.Helper()
 	ctx := context.Background()

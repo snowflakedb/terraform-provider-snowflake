@@ -90,7 +90,7 @@ func modelAttributeFromField(field ssot.ClassifiedField, requestTypeOverride str
 
 func typedAttribute(name, attributeType, variableMethod string, original schema.ValueType, required bool, sdkType, sdkKind string) ResourceConfigBuilderAttributeModel {
 	return ResourceConfigBuilderAttributeModel{
-		Name:           name,
+		Name:           genhelpers.SanitizeAttributeName(name),
 		JsonName:       name,
 		AttributeType:  attributeType,
 		Required:       required,

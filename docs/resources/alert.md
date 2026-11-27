@@ -65,8 +65,8 @@ resource "snowflake_alert" "on_new_data" {
 
 ### Required
 
-- `action` (String) The SQL statement that should be executed if the condition returns one or more rows.
-- `condition` (String) The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)
+- `action` (String) The SQL statement that should be executed if the condition returns one or more rows. To mitigate permadiff on this field, the provider replaces blank characters with a space. This can lead to false positives in cases where a change in case or run of whitespace is semantically significant.
+- `condition` (String) The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL) To mitigate permadiff on this field, the provider replaces blank characters with a space. This can lead to false positives in cases where a change in case or run of whitespace is semantically significant.
 - `database` (String) The database in which to create the alert. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `name` (String) Specifies the identifier for the alert; must be unique for the schema in which the alert is created. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.
 - `schema` (String) The schema in which to create the alert. Due to technical limitations (read more [here](../guides/identifiers_rework_design_decisions#known-limitations-and-identifier-recommendations)), avoid using the following characters: `|`, `.`, `"`.

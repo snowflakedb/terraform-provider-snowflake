@@ -161,7 +161,8 @@ Add a new field to the group that matches its purpose, and to this table.
   output suppressor below. `ssot.SuppressStatement` stays manual. `ssot.SuppressShow` and `ssot.SuppressDescribe`
   still compose when set, including `WithKey`, and then derivation skips that kind. Nested combinations are
   flattened. Output strategies apply to fields, not collection elems. Statement suppression uses the resource's
-  `DiffSuppressStatement` helper for strings, including string elems. `ssot.SuppressAlways` ignores every diff.
+  `DiffSuppressStatement` helper for strings, including string elems, and wraps the field description with
+  `diffSuppressStatementFieldDescription` when a description is present. `ssot.SuppressAlways` ignores every diff.
   It stands alone and replaces inferred normalization, emitting `ignoreAlwaysSuppressFunc`.
 - `Deprecated` - the schema `Deprecated` message. Empty means the attribute is not deprecated. The attribute stays
   on `Attributes`, so the schema, model builders, and resource assertions include it. `setStateToValuesFromConfig`

@@ -26,13 +26,13 @@ var alertAttributesSchema = map[string]*tfschema.Schema{
 		Type:             tfschema.TypeString,
 		Required:         true,
 		DiffSuppressFunc: DiffSuppressStatement,
-		Description:      "The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)",
+		Description:      diffSuppressStatementFieldDescription("The SQL statement that represents the condition for the alert. (SELECT, SHOW, CALL)"),
 	},
 	"action": {
 		Type:             tfschema.TypeString,
 		Required:         true,
 		DiffSuppressFunc: DiffSuppressStatement,
-		Description:      "The SQL statement that should be executed if the condition returns one or more rows.",
+		Description:      diffSuppressStatementFieldDescription("The SQL statement that should be executed if the condition returns one or more rows."),
 	},
 	"alert_schedule": {
 		Type:     tfschema.TypeList,

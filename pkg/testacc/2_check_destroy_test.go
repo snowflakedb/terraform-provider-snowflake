@@ -252,6 +252,9 @@ var showByIdFunctions = map[resources.Resource]runShowByIdFunc{
 	resources.CortexSearchService: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.CortexSearchServices.ShowByID)
 	},
+	resources.DataMovementRule: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
+		return runShowById(ctx, id, client.DataMovementRules.ShowByID)
+	},
 	resources.Database: func(ctx context.Context, client *sdk.Client, id sdk.ObjectIdentifier) error {
 		return runShowById(ctx, id, client.Databases.ShowByID)
 	},

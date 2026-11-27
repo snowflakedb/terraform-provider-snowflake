@@ -32,12 +32,13 @@ var AggregationPolicyAttrs = struct {
 	ReturnType    ssot.Attribute
 }{
 	Body: ssot.Attribute{
-		Name:        "body",
-		Type:        ssot.AttrString,
-		Required:    true,
-		Description: "SQL expression that determines the restrictions of an aggregation policy. The expression must call AGGREGATION_CONSTRAINT or NO_AGGREGATION_CONSTRAINT.",
-		CreateSql:   ssot.StringParameter(ssot.Sql("AS () RETURNS AGGREGATION_CONSTRAINT ->"), ssot.NoEquals(), ssot.NoQuotes(), ssot.Required(), ssot.FieldName("Body")),
-		SetSql:      ssot.StringParameter(ssot.Sql("BODY ->"), ssot.NoEquals(), ssot.NoQuotes(), ssot.FieldName("SetBody")),
+		Name:         "body",
+		Type:         ssot.AttrString,
+		Required:     true,
+		Description:  "SQL expression that determines the restrictions of an aggregation policy. The expression must call AGGREGATION_CONSTRAINT or NO_AGGREGATION_CONSTRAINT.",
+		DiffSuppress: ssot.SuppressStatement,
+		CreateSql:    ssot.StringParameter(ssot.Sql("AS () RETURNS AGGREGATION_CONSTRAINT ->"), ssot.NoEquals(), ssot.NoQuotes(), ssot.Required(), ssot.FieldName("Body")),
+		SetSql:       ssot.StringParameter(ssot.Sql("BODY ->"), ssot.NoEquals(), ssot.NoQuotes(), ssot.FieldName("SetBody")),
 	},
 	Comment: ssot.Attribute{
 		Name:        "comment",

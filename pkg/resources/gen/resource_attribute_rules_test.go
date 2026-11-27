@@ -73,7 +73,7 @@ func Test_applyResourceAttributeRules_sqlStatementNormalizes(t *testing.T) {
 
 	require.Equal(t, SchemaTypeString, got.TfType)
 	require.Equal(t, "DiffSuppressStatement", got.DiffSuppressExpr)
-	require.Equal(t, `"The SQL statement."`, got.DescriptionExpr)
+	require.Equal(t, `diffSuppressStatementFieldDescription("The SQL statement.")`, got.DescriptionExpr)
 }
 
 func Test_applyResourceAttributeRules_requiredBoolIsNative(t *testing.T) {

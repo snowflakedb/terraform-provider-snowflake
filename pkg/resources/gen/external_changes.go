@@ -172,7 +172,7 @@ func (m ResourceModel) mappingFor(col *ssot.Attribute, resolved ResourceAttribut
 // outputValues is the compare and set expressions for one outputMapping.
 // An OptionalInShow column prepares a local from the nullable SDK field.
 func (m ResourceModel) outputValues(col *ssot.Attribute, resolved ResourceAttribute, goField string, build *ExternalChangeBuild) (string, string) {
-	local := genhelpers.FirstLetterLowercase(genhelpers.SnakeCaseToCamel(col.Name))
+	local := genhelpers.FirstLetterLowercaseParameterName(genhelpers.SnakeCaseToCamel(col.Name))
 	switch col.Type {
 	case ssot.AttrString, ssot.AttrEnum:
 		if col.OptionalInShow {

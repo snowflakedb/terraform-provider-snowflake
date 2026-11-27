@@ -11,9 +11,10 @@ import (
 
 var aggregationPolicyAttributesSchema = map[string]*tfschema.Schema{
 	"body": {
-		Type:        tfschema.TypeString,
-		Required:    true,
-		Description: "SQL expression that determines the restrictions of an aggregation policy. The expression must call AGGREGATION_CONSTRAINT or NO_AGGREGATION_CONSTRAINT.",
+		Type:             tfschema.TypeString,
+		Required:         true,
+		DiffSuppressFunc: DiffSuppressStatement,
+		Description:      diffSuppressStatementFieldDescription("SQL expression that determines the restrictions of an aggregation policy. The expression must call AGGREGATION_CONSTRAINT or NO_AGGREGATION_CONSTRAINT."),
 	},
 	"comment": {
 		Type:        tfschema.TypeString,
