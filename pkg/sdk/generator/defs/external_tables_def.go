@@ -154,7 +154,7 @@ var externalTablePairs = g.StructPair("externalTableRow", "ExternalTable").
 	Text("file_format_name").
 	OptionalText("file_format_type", g.WithRequiredInPlain()).
 	Text("cloud").
-	Text("region").
+	OptionalText("region", g.WithRequiredInPlain()).
 	OptionalText("notification_channel", g.WithRequiredInPlain()).
 	OptionalTime("last_refreshed_on", g.WithRequiredInPlain()).
 	Text("table_format").

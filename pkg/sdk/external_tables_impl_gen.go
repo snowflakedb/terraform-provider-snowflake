@@ -507,12 +507,12 @@ func (r externalTableRow) convert() (*ExternalTable, error) {
 		Location:       r.Location,
 		FileFormatName: r.FileFormatName,
 		Cloud:          r.Cloud,
-		Region:         r.Region,
 		TableFormat:    r.TableFormat,
 		OwnerRoleType:  r.OwnerRoleType,
 	}
 	mapNullStringToNonNullableField(&result.InvalidReason, r.InvalidReason)
 	mapNullStringToNonNullableField(&result.FileFormatType, r.FileFormatType)
+	mapNullStringToNonNullableField(&result.Region, r.Region)
 	mapNullStringToNonNullableField(&result.NotificationChannel, r.NotificationChannel)
 	mapNullTimeToNonNullableField(&result.LastRefreshedOn, r.LastRefreshedOn)
 	mapNullStringToNonNullableField(&result.LastRefreshDetails, r.LastRefreshDetails)
