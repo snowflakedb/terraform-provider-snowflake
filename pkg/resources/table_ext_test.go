@@ -44,6 +44,31 @@ func Test_withRecreatedVirtualColumns(t *testing.T) {
 	assert.True(t, slices.ContainsFunc(changed, func(c changedColumn) bool { return c.newColumn.name == "W" && c.changedComment }))
 }
 
+func Test_splitRemovedColumns(t *testing.T) {
+	t.Run("renaming the only column drops it after the new one is added", func(t *testing.T) {
+		old := columns{{name: "x", dataType: "VARIANT"}}
+		new := columns{{name: "X", dataType: "VARIANT"}}
+		removed, added, _ := old.diffs(new)
+
+		dropBefore, dropAfter := splitRemovedColumns(removed, added)
+
+		assert.Empty(t, dropBefore)
+		assert.Equal(t, columns{{name: "x", dataType: "VARIANT"}}, dropAfter)
+	})
+
+	t.Run("recreated virtual column is dropped before it is added again", func(t *testing.T) {
+		old := columns{{name: "ID"}, {name: "V", as: "ID * 2"}, {name: "OLD"}}
+		new := columns{{name: "ID"}, {name: "V", as: "id*3"}, {name: "NEW"}}
+		removed, added, changed := old.diffs(new)
+		removed, added, _ = withRecreatedVirtualColumns(old, new, removed, added, changed)
+
+		dropBefore, dropAfter := splitRemovedColumns(removed, added)
+
+		assert.Equal(t, columns{{name: "V", as: "ID * 2"}}, dropBefore)
+		assert.Equal(t, columns{{name: "OLD"}}, dropAfter)
+	})
+}
+
 func Test_toColumnConfig_virtualColumn(t *testing.T) {
 	got := toColumnConfig([]sdk.TableColumnDetails{
 		{Name: "ID", Kind: sdk.TableColumnKindColumn, TypeRaw: "NUMBER(38,0)", Null: true},

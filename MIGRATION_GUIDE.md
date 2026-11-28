@@ -71,6 +71,20 @@ No configuration changes are required. If you rotate the credentials outside of 
 
 Reference: [#5386](https://github.com/snowflakedb/terraform-provider-snowflake/issues/5386).
 
+### *(bug fix)* `snowflake_table` can replace all columns in one update
+
+Previously, [`snowflake_table`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/table) dropped the removed columns before it added the new ones. When one apply replaced every column, for example by renaming the only column, Snowflake rejected the drop:
+
+```text
+cannot drop all the columns of a table
+```
+
+The provider now adds the new columns first and drops the removed ones afterwards. A column that is added again under the same name, such as a virtual column with a changed `as` expression, is still dropped first. Renaming a column is still a drop and an add, so the data of the old column is not kept.
+
+No configuration changes are required.
+
+Reference: [#3677](https://github.com/snowflakedb/terraform-provider-snowflake/issues/3677).
+
 ### *(bug fix)* `snowflake_api_integration_git_repository_oauth2` accepts provider-specific OAuth scopes
 
 Previously, [`snowflake_api_integration_git_repository_oauth2`](https://registry.terraform.io/providers/snowflakedb/snowflake/latest/docs/resources/api_integration_git_repository_oauth2) rejected `oauth_allowed_scopes` values other than `read_api`, `read_repository`, and `write_repository`. `terraform plan` failed with:
