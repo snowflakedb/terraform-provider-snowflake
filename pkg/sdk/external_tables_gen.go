@@ -249,7 +249,7 @@ type externalTableRow struct {
 	FileFormatName      string         `db:"file_format_name"`
 	FileFormatType      sql.NullString `db:"file_format_type"`
 	Cloud               string         `db:"cloud"`
-	Region              string         `db:"region"`
+	Region              sql.NullString `db:"region"`
 	NotificationChannel sql.NullString `db:"notification_channel"`
 	LastRefreshedOn     sql.NullTime   `db:"last_refreshed_on"`
 	TableFormat         string         `db:"table_format"`
