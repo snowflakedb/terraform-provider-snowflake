@@ -221,15 +221,26 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 	removed, added, changed := oldColumns.diffs(newColumns)
 	removed, added, changed = withRecreatedVirtualColumns(oldColumns, newColumns, removed, added, changed)
 
-	if len(removed) > 0 {
-		removedColumnNames := make([]string, len(removed))
-		for i, r := range removed {
-			removedColumnNames[i] = r.name
+	dropColumns := func(toDrop columns) diag.Diagnostics {
+		if len(toDrop) == 0 {
+			return nil
 		}
-		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithDropColumns(*sdk.NewTableDropColumnActionRequest(toColumns(removedColumnNames)))))
+		droppedColumnNames := make([]string, len(toDrop))
+		for i, r := range toDrop {
+			droppedColumnNames[i] = r.name
+		}
+		err := client.Tables.Alter(ctx, sdk.NewAlterTableRequest(id).WithColumnAction(*sdk.NewTableColumnActionRequest().WithDropColumns(*sdk.NewTableDropColumnActionRequest(toColumns(droppedColumnNames)))))
 		if err != nil {
 			return diag.FromErr(fmt.Errorf("error dropping columns on table %v: %w", id.FullyQualifiedName(), err))
 		}
+		return nil
+	}
+
+	// Columns that are added again under the same name have to go first. All other removed columns are dropped after
+	// the new ones are added, because Snowflake does not allow dropping every column of a table.
+	dropBeforeAdd, dropAfterAdd := splitRemovedColumns(removed, added)
+	if diags := dropColumns(dropBeforeAdd); diags != nil {
+		return diags
 	}
 
 	for _, cA := range added {
@@ -287,6 +298,10 @@ func tableAfterAlterColumnsExt(ctx context.Context, d *schema.ResourceData, meta
 			return diag.FromErr(fmt.Errorf("error adding column %v on table %v: %w", cA.name, id.FullyQualifiedName(), err))
 		}
 	}
+	if diags := dropColumns(dropAfterAdd); diags != nil {
+		return diags
+	}
+
 	for _, cA := range changed {
 		if cA.changedDataType || cA.changedCollate {
 			dataType, err := datatypes.ParseDataType(cA.newColumn.dataType)
@@ -521,6 +536,25 @@ func (c columns) getChangedColumnProperties(new columns) (changed changedColumns
 
 func (c columns) diffs(new columns) (removed columns, added columns, changed changedColumns) {
 	return c.getNewIn(new), new.getNewIn(c), c.getChangedColumnProperties(new)
+}
+
+// splitRemovedColumns splits the removed columns into the ones that have to be dropped before the added columns are
+// created (a column with the same name is added again, e.g. a recreated virtual column) and the ones that can be
+// dropped afterwards. Dropping last keeps at least one column in the table when all columns are replaced at once,
+// e.g. when the only column is renamed.
+func splitRemovedColumns(removed, added columns) (dropBeforeAdd columns, dropAfterAdd columns) {
+	addedNames := make(map[string]bool, len(added))
+	for _, a := range added {
+		addedNames[a.name] = true
+	}
+	for _, r := range removed {
+		if addedNames[r.name] {
+			dropBeforeAdd = append(dropBeforeAdd, r)
+		} else {
+			dropAfterAdd = append(dropAfterAdd, r)
+		}
+	}
+	return dropBeforeAdd, dropAfterAdd
 }
 
 // withRecreatedVirtualColumns drops and adds again every column whose virtual expression changed, because Snowflake
